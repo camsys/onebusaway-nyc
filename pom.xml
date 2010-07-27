@@ -42,7 +42,8 @@
     </scm>
 
     <modules>
-      <module>onebusaway-nyc-webapp</module>
+        <module>onebusaway-nyc-stif-loader</module>
+        <module>onebusaway-nyc-webapp</module>
     </modules>
 
     <build>
@@ -143,11 +144,11 @@
                         <goals>
                             <goal>enforce</goal>
                         </goals>
-            <configuration>
-              <rules>
-                <requirePluginVersions/>
-              </rules>
-            </configuration>
+                        <configuration>
+                            <rules>
+                                <requirePluginVersions />
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
