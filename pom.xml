@@ -42,6 +42,7 @@
     </scm>
 
     <modules>
+      <module>onebusaway-nyc-webapp</module>
     </modules>
 
     <build>
