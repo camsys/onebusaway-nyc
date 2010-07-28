@@ -111,7 +111,7 @@
                     <!-- By default, we exclude anything in the org.onebusaway.integration package from regular unit test -->
                     <configuration>
                         <excludes>
-                            <exclude>**/*IntegrationTest</exclude>
+                            <exclude>**/*IntegrationTest.java</exclude>
                         </excludes>
                     </configuration>
                     <executions>
