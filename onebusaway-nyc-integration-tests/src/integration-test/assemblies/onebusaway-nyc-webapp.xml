@@ -1,0 +1,23 @@
+<assembly>
+    <id>onebusaway-nyc-webapp</id>
+    <formats>
+        <format>war</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>org.onebusaway:onebusaway-nyc-webapp</include>
+            </includes>
+            <unpack>true</unpack>
+            <scope>runtime</scope>
+        </dependencySet>
+    </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>src/integration-test/resources-onebusaway-nyc-webapp</directory>
+            <outputDirectory>WEB-INF/classes</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

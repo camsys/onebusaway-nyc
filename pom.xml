@@ -12,7 +12,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>onebusaway-nyc</name>
-    
+
     <properties>
         <onebusaway.version>0.0.1-SNAPSHOT</onebusaway.version>
     </properties>
@@ -47,6 +47,7 @@
     </scm>
 
     <modules>
+        <module>onebusaway-nyc-integration-tests</module>
         <module>onebusaway-nyc-stif-loader</module>
         <module>onebusaway-nyc-vehicle-tracking</module>
         <module>onebusaway-nyc-vehicle-tracking-webapp</module>
