@@ -7,5 +7,6 @@
   </parent>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-stif-loader</artifactId>
+  <name>onebusaway-nyc-stif-loader</name>
   
 </project>
