@@ -18,12 +18,15 @@ package org.onebusaway.nyc.stif;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
@@ -63,15 +66,11 @@ public class StifTripLoader {
 		}
 	}
 	
-	private File path;
-	private InputStream stream;
+
 	private GtfsRelationalDao gtfsDao;
 	private Map<String, List<Trip>> tripsBySignCode;
+	private Map<TripIdentifier, List<Trip>> tripsByIdentifier;
 
-	public void setPath(File path) {
-		this.path = path;
-	}
-	
 	public void setGtfsDao(GtfsRelationalDao dao) {
 		this.gtfsDao = dao;
 	}
@@ -80,9 +79,9 @@ public class StifTripLoader {
 		return tripsBySignCode;
 	}
 	
-	public void run() {
-		StifRecordReader reader;
-		HashMap<TripIdentifier, List<Trip>> tripsByIdentifier = new HashMap<TripIdentifier, List<Trip>>();
+	@PostConstruct
+	public void init() {
+		tripsByIdentifier = new HashMap<TripIdentifier, List<Trip>>();
 		for (Trip trip : gtfsDao.getAllTrips()) {
 			TripIdentifier id = new TripIdentifier(trip);
 			List<Trip> trips = tripsByIdentifier.get(id);
@@ -94,11 +93,20 @@ public class StifTripLoader {
 		}
 		
 		tripsBySignCode = new HashMap<String, List<Trip>>();
-		
+	}
+	
+	public void run(File path) {
 		try {
-			if (stream == null) {
-				stream = new FileInputStream(path);
-			}
+			run(new FileInputStream(path));
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException("Error loading " + path , e);
+		}
+	}
+	
+	public void run (InputStream stream) {
+		StifRecordReader reader;
+
+		try {
 			reader = new StifRecordReader(stream);
 			while(true) {
 				StifRecord record = reader.read();
@@ -125,9 +133,5 @@ public class StifTripLoader {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public void setStream(InputStream in) {
-		this.stream = in;
 	}
 }
