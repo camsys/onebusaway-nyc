@@ -15,6 +15,7 @@
 
     <properties>
         <onebusaway.version>0.0.1-SNAPSHOT</onebusaway.version>
+        <onebusaway.gtfs.version>1.1.5</onebusaway.gtfs.version>
     </properties>
 
     <repositories>
@@ -162,5 +163,11 @@
             </plugin>
         </plugins>
     </build>
-
+	<dependencies>
+	    <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-gtfs</artifactId>
+            <version>${onebusaway.gtfs.version}</version>
+        </dependency>
+	</dependencies>
 </project>
