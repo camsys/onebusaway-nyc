@@ -29,6 +29,14 @@ import org.onebusaway.nyc.stif.model.StifRecordFactory;
 import org.onebusaway.nyc.stif.model.TimetableRecordFactory;
 import org.onebusaway.nyc.stif.model.TripRecordFactory;
 
+/** 
+ * Read records from a STIF file.  STIF is MTA's internal format for bus information.
+ * 
+ * All names are from the MTA's documentation for STIF, version 2.5.
+ * 
+ * This only supports a tiny subset of STIF -- just what we need for location matching.
+ * We get the rest of the schedule data from GTFS.
+ */
 public class StifRecordReader {
 	private static final int BUFFER_SIZE = 4096;
 	private InputStream inputStream;
@@ -50,6 +58,9 @@ public class StifRecordReader {
 		inputStream = stream;
 	}
 
+	/** 
+	 * Read the next record from the STIF file.  Returns null at end-of-file 
+	 * */
 	public StifRecord read() throws IOException {
 		int recordStart;
 		int end = -1;

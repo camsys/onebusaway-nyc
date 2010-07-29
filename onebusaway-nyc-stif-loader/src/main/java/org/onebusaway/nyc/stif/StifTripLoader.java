@@ -33,18 +33,17 @@ import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.nyc.stif.model.StifRecord;
 import org.onebusaway.nyc.stif.model.TripRecord;
 
-
+/** 
+ * Create a mapping from Destination Sign Code (DSC) to GTFS Trip objects using  
+ * data in STIF, MTA's internal format. 
+ */
 public class StifTripLoader {
-	class TripIdentifier {
+	private class TripIdentifier {
 		public int startTime;
 		public String routeName;
 		public TripIdentifier(Trip trip) {
 			this.routeName = trip.getRoute().getId().getId();
 			this.startTime = gtfsDao.getStopTimesForTrip(trip).get(0).getDepartureTime();
-		}
-		public TripIdentifier(int startTime, String routeName) {
-			this.startTime = startTime;
-			this.routeName = routeName;
 		}
 		public TripIdentifier(TripRecord tripRecord) {
 			routeName = tripRecord.getRoute();
@@ -75,10 +74,16 @@ public class StifTripLoader {
 		this.gtfsDao = dao;
 	}
 	
-	public Map<String, List<Trip>>  getTripMapping() {
+	/**
+	 * Get the mapping from DSC to list of trips.
+	 */
+	public Map<String, List<Trip>> getTripMapping() {
 		return tripsBySignCode;
 	}
 	
+	/**
+	 * After calling setGtfsDao, call init() to read the trips and set up the trip mapping.
+	 */
 	@PostConstruct
 	public void init() {
 		tripsByIdentifier = new HashMap<TripIdentifier, List<Trip>>();
@@ -95,6 +100,9 @@ public class StifTripLoader {
 		tripsBySignCode = new HashMap<String, List<Trip>>();
 	}
 	
+	/** 
+	 * For each STIF file, call run().
+	 */
 	public void run(File path) {
 		try {
 			run(new FileInputStream(path));
