@@ -10,12 +10,14 @@ public class HelloWorldIntegrationTest extends NycWebappTestSupport {
   public void test() {
 
     // Open the webpage in selenium
-    open("/index.html");
+    open("/index.action");
+    
+    String expectedText = "Hello one bus away NY!";
 
     // Verify that text is present
-    assertTrue(isTextPresent("Hello World"));
+    assertTrue(isTextPresent(expectedText));
 
     // Verify that text is present at a particular DOM location
-    assertEquals("Hello World", getText("xpath=html/body/h2"));
+    assertEquals(expectedText, getText("xpath=html/body/h1"));
   }
 }
