@@ -16,6 +16,7 @@
 		<gwt-version>2.0.0</gwt-version>
 		<xwiki.version>2.3.1</xwiki.version>
 		<xwiki.integration.version>0.0.1-SNAPSHOT</xwiki.integration.version>
+        <struts.version>2.1.8.1</struts.version>
 	</properties>
     
 
@@ -47,7 +48,7 @@
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-sitemesh-plugin</artifactId>
-            <version>${struts-version}</version>
+            <version>${struts.version}</version>
         </dependency>
 
         <dependency>
