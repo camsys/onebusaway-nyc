@@ -33,5 +33,8 @@ public class TestStifTripLoader {
 	      loader.run(in);
 	      Map<String, List<Trip>> mapping = loader.getTripMapping();
 	      assertTrue(mapping.containsKey("1140"));
+	      List<Trip> trips = mapping.get("1140");
+	      assertEquals(trips.get(0).getBlockId(), "11559238");
+	      
 	}
 }
