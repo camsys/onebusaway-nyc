@@ -4,4 +4,14 @@
 
 <web-app>
     <display-name>onebusaway-nyc-vehicle-tracking-webapp</display-name>
+
+    <servlet>
+        <servlet-name>post-servlet</servlet-name>
+        <servlet-class>org.onebusaway.nyc.vehicle_tracking.webapp.servlets.PostServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>post-servlet</servlet-name>
+        <url-pattern>/post_servlet</url-pattern>
+    </servlet-mapping>
 </web-app>

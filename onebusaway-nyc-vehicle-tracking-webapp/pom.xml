@@ -12,6 +12,15 @@
     <packaging>war</packaging>
     <name>onebusaway-nyc-vehicle-tracking-webapp</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+        </dependency>
+    </dependencies>
+
+
     <build>
         <finalName>onebusaway-nyc-vehicle-tracking-webapp</finalName>
     </build>
