@@ -4,7 +4,7 @@ import org.onebusaway.siri.model.ServiceDelivery;
 import org.onebusaway.siri.model.Siri;
 import org.onebusaway.siri.model.VehicleActivity;
 import org.onebusaway.siri.model.VehicleLocation;
-import org.onebusaway.transit_data_federation.services.realtime.TripPositionService;
+import org.onebusaway.transit_data_federation.services.realtime.VehiclePositionListener;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -23,7 +23,7 @@ public class PostServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private XStream xstream;
   @Autowired
-  TripPositionService positionService;
+  VehiclePositionListener listener;
   
   @Override
   public void init() {
@@ -42,7 +42,7 @@ public class PostServlet extends HttpServlet {
     VehicleActivity vehicleActivity = delivery.VehicleMonitoringDelivery.deliveries.get(0);
     VehicleLocation location = vehicleActivity.MonitoredVehicleJourney.VehicleLocation;
     /* insert into */
-    if (positionService == null) {
+    if (listener == null) {
       System.out.println("wrong!");
     }
     
