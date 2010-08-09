@@ -48,5 +48,7 @@ public class PostServlet extends HttpServlet {
     BufferedReader reader = req.getReader();
     Siri siri = (Siri) _xstream.fromXML(reader);
     _vehicleLocationService.handleVehicleLocation(siri);
+    resp.setStatus(200);
+    resp.getWriter().write("ok");
   }
 }
