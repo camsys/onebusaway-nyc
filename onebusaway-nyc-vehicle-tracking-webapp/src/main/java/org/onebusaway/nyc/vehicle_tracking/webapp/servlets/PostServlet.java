@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,8 +51,9 @@ public class PostServlet extends HttpServlet {
     Siri siri = (Siri) _xstream.fromXML(reader);
     _vehicleLocationService.handleVehicleLocation(siri);
     resp.setStatus(200);
-    PrintWriter writer = resp.getWriter();
-    writer.write("ok");
+    resp.setContentType("text/html;charset=UTF-8");
+    ServletOutputStream writer = resp.getOutputStream();
+    writer.print("ok");
     writer.close();
   }
 }
