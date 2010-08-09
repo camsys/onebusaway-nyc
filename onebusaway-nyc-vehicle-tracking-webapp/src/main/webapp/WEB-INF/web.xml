@@ -1,34 +1,46 @@
-<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:web="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+    <display-name>onebusaway-nyc-vehicle-tracking-webapp</display-name>
 
-<web-app>
-	<display-name>onebusaway-nyc-vehicle-tracking-webapp</display-name>
+    <context-param>
+        <param-name>defaultHtmlEscape</param-name>
+        <param-value>true</param-value>
+    </context-param>
 
-	<context-param>
-		<param-name>defaultHtmlEscape</param-name>
-		<param-value>true</param-value>
-	</context-param>
-	
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath:org/onebusaway/nyc/vehicle_tracking/application-context*.xml
-					 classpath:data-sources.xml
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            classpath:org/onebusaway/nyc/vehicle_tracking/webapp/application-context-webapp.xml
+            classpath:data-sources.xml
 		</param-value>
-	</context-param>
+    </context-param>
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>post-servlet</servlet-name>
+        <servlet-class>org.onebusaway.nyc.vehicle_tracking.webapp.servlets.PostServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>spring</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>post-servlet</servlet-name>
+        <url-pattern>/post_servlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>spring</servlet-name>
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
     
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
-
-	<servlet>
-		<servlet-name>post-servlet</servlet-name>
-		<servlet-class>org.onebusaway.nyc.vehicle_tracking.webapp.servlets.PostServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>post-servlet</servlet-name>
-		<url-pattern>/post_servlet</url-pattern>
-	</servlet-mapping>
 </web-app>

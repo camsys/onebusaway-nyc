@@ -17,8 +17,7 @@
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
     <import resource="classpath:org/onebusaway/container/application-context-hibernate.xml" />
-    <import resource="classpath:org/onebusaway/transit_data_federation/application-context-common.xml" />
     
-    <context:component-scan base-package="org.onebusaway.transit_data_federation.services.realtime" />
-    
+    <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl"/>
+
 </beans>

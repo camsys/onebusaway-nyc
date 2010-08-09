@@ -1,54 +1,65 @@
 package org.onebusaway.nyc.vehicle_tracking.model;
 
-import org.hibernate.annotations.AccessType;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.AccessType;
+
 @Entity
-@Table(name = "oba_raw_location")
+@Table(name = "oba_nyc_raw_location")
 @AccessType("field")
-public class RawLocation {
-  
+public class NycVehicleLocationRecord {
+
   @Id
   private long id;
-  
+
   private long time;
-  
-  private double Latitude;
-  private double Longitude;
-  private double Bearing;
+
+  private double latitude;
+
+  private double longitude;
+
+  private double bearing;
 
   public void setId(long id) {
     this.id = id;
   }
+
   public long getId() {
     return id;
   }
+
   public void setTime(long time) {
     this.time = time;
   }
+
   public long getTime() {
     return time;
   }
+
   public void setLatitude(double latitude) {
-    Latitude = latitude;
+    this.latitude = latitude;
   }
+
   public double getLatitude() {
-    return Latitude;
+    return latitude;
   }
+
   public void setLongitude(double longitude) {
-    Longitude = longitude;
+    this.longitude = longitude;
   }
+
   public double getLongitude() {
-    return Longitude;
+    return longitude;
   }
+
   public void setBearing(double bearing) {
-    Bearing = bearing;
+    this.bearing = bearing;
   }
+
   public double getBearing() {
-    return Bearing;
+    return bearing;
   }
 
 }

@@ -1,34 +1,41 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>onebusaway-nyc</artifactId>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>onebusaway-nyc</artifactId>
+        <groupId>org.onebusaway</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
     <groupId>org.onebusaway</groupId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-  <groupId>org.onebusaway</groupId>
-  <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
-  <name>onebusaway-nyc-vehicle-tracking</name>
-  <dependencies>
-  	<dependency>
-  		<groupId>org.hibernate</groupId>
-  		<artifactId>hibernate-core</artifactId>
-  		<version>3.3.2.GA</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.hibernate</groupId>
-  		<artifactId>hibernate-annotations</artifactId>
-  		<version>3.4.0.GA</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.onebusaway</groupId>
-  		<artifactId>onebusaway-container</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
-  	</dependency>
-  </dependencies>
+    <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
+    <name>onebusaway-nyc-vehicle-tracking</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-container</artifactId>
+            <version>${onebusaway.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data</artifactId>
+            <version>${onebusaway.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-realtime-api</artifactId>
+            <version>${onebusaway.version}</version>
+        </dependency>
+        <!--  Right now, this is just needed for distance calculations? -->
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-geospatial</artifactId>
+            <version>${onebusaway.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-siri-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

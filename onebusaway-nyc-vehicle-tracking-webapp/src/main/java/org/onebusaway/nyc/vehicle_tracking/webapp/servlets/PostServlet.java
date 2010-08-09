@@ -1,15 +1,5 @@
 package org.onebusaway.nyc.vehicle_tracking.webapp.servlets;
 
-import org.onebusaway.siri.model.ServiceDelivery;
-import org.onebusaway.siri.model.Siri;
-import org.onebusaway.siri.model.VehicleActivity;
-import org.onebusaway.siri.model.VehicleLocation;
-import org.onebusaway.transit_data_federation.services.realtime.VehiclePositionListener;
-
-import com.thoughtworks.xstream.XStream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -18,33 +8,45 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.siri.model.Siri;
+import org.onebusaway.siri.model.VehicleActivity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import com.thoughtworks.xstream.XStream;
+
 public class PostServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
-  private XStream xstream;
+
+  private XStream _xstream;
+
+  private VehicleLocationService _vehicleLocationService;
+
   @Autowired
-  VehiclePositionListener listener;
-  
+  public void setVehicleLocationService(
+      VehicleLocationService vehicleLocationService) {
+    _vehicleLocationService = vehicleLocationService;
+  }
+
   @Override
   public void init() {
-    xstream = new XStream();
-    xstream.processAnnotations(Siri.class);
-    xstream.processAnnotations(VehicleActivity.class);
+    _xstream = new XStream();
+    _xstream.processAnnotations(Siri.class);
+    _xstream.processAnnotations(VehicleActivity.class);
+
+    WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+    context.getAutowireCapableBeanFactory().autowireBean(this);
   }
-  
+
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
 
     BufferedReader reader = req.getReader();
-    Siri siri = (Siri) xstream.fromXML(reader);
-    ServiceDelivery delivery = siri.ServiceDelivery;
-    VehicleActivity vehicleActivity = delivery.VehicleMonitoringDelivery.deliveries.get(0);
-    VehicleLocation location = vehicleActivity.MonitoredVehicleJourney.VehicleLocation;
-    /* insert into */
-    if (listener == null) {
-      System.out.println("wrong!");
-    }
-    
+    Siri siri = (Siri) _xstream.fromXML(reader);
+    _vehicleLocationService.handleVehicleLocation(siri);
   }
 }
