@@ -2,7 +2,6 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.servlets;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -19,7 +18,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.thoughtworks.xstream.XStream;
 
-public class PostServlet extends HttpServlet {
+public class VehicleLocationCollectionServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
 

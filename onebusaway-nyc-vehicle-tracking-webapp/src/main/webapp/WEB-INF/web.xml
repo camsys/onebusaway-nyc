@@ -24,8 +24,8 @@
     </listener>
 
     <servlet>
-        <servlet-name>post-servlet</servlet-name>
-        <servlet-class>org.onebusaway.nyc.vehicle_tracking.webapp.servlets.PostServlet</servlet-class>
+        <servlet-name>update_location</servlet-name>
+        <servlet-class>org.onebusaway.nyc.vehicle_tracking.webapp.servlets.VehicleLocationCollectionServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
@@ -35,8 +35,8 @@
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>post-servlet</servlet-name>
-        <url-pattern>/post_servlet</url-pattern>
+        <servlet-name>update_location</servlet-name>
+        <url-pattern>/update-location</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>spring</servlet-name>
