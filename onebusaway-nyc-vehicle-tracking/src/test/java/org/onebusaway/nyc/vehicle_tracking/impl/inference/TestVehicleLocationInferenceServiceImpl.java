@@ -85,13 +85,19 @@ public class TestVehicleLocationInferenceServiceImpl {
     assertNotNull(in);
     reader.readEntities(NycTestLocationRecord.class, in);
 
-    Thread.sleep(100); //wait for processing to finish (but not very long)
-    List<VehicleLocationRecord> records = service.getLatestProcessedVehicleLocationRecords();
-    assertEquals(1, records.size());
-    VehicleLocationRecord lastLocation = records.get(0);
+    /* wait a max of two seconds for processing to finish */
+    VehicleLocationRecord lastLocation = null;
+    for (int i = 0; i < 20; ++i) {
+      Thread.sleep(100); //wait for processing to finish (but not very long)
+      List<VehicleLocationRecord> records = service.getLatestProcessedVehicleLocationRecords();
+      assertEquals(1, records.size());
+      lastLocation = records.get(0);
+      if (Math.abs(40.717632 - lastLocation.getCurrentLocationLat()) < 0.0000001) {
+        break;
+      }
+    }
     assertEquals(40.717632, lastLocation.getCurrentLocationLat(), 0.0000001);
     assertEquals(-73.920038, lastLocation.getCurrentLocationLon(), 0.0000001);
-    
   }
 
 }
