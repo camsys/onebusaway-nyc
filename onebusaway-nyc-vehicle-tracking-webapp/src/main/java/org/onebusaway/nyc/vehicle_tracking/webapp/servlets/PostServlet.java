@@ -2,6 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.servlets;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -49,6 +50,8 @@ public class PostServlet extends HttpServlet {
     Siri siri = (Siri) _xstream.fromXML(reader);
     _vehicleLocationService.handleVehicleLocation(siri);
     resp.setStatus(200);
-    resp.getWriter().write("ok");
+    PrintWriter writer = resp.getWriter();
+    writer.write("ok");
+    writer.close();
   }
 }
