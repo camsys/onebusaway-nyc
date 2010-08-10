@@ -23,7 +23,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 
-public class TestVehicleLocationInferenceServiceImpl {
+public class VehicleLocationInferenceServiceImplTest {
 
   @Test
   public void testInference() throws CsvEntityIOException, IOException,
