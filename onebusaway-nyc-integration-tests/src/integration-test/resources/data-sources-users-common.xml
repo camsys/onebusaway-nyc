@@ -26,35 +26,13 @@
         doesn't actually do much geocoding... it's just there for testing
     -->
     <bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.FixedGeocoderImpl">
-        <property name="lat" value="47.65475043477393" />
-        <property name="lon" value="-122.3078727722168" />
-        <property name="city" value="Seattle" />
-        <property name="state" value="WA" />
-        <property name="postalCode" value="98105" />
+        <property name="lat" value="40.71951191642972" />
+        <property name="lon" value="-73.99991512298584" />
+        <property name="city" value="New York" />
+        <property name="state" value="NY" />
+        <property name="postalCode" value="10013" />
     </bean>
 
     <bean id="serviceArea" class="org.onebusaway.presentation.impl.DefaultServiceAreaServiceImpl" />
-
-    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
-        <property name="properties">
-            <props>
-                <prop key="ehCacheConfiguration.configLocation">classpath:org/onebusaway/container/ehcache-terracotta.xml</prop>
-                <prop key="ehCacheConfiguration.terracottaUrl">localhost:${terracotta.port}</prop>
-
-                <prop key="lastSelectedStopServiceCache.overflowToDisk">false</prop>
-                <prop key="lastSelectedStopServiceCache.terracottaClustered">true</prop>
-
-                <prop key="userLastAccessTimeServiceCache.overflowToDisk">false</prop>
-                <prop key="userLastAccessTimeServiceCache.terracottaClustered">true</prop>
-
-                <prop key="userIndexCache.terracottaClustered">true</prop>
-                <prop key="userCache.terracottaClustered">true</prop>
-                <prop key="userIndicesCache.terracottaClustered">true</prop>
-                <prop key="userRolesCache.terracottaClustered">true</prop>
-                <prop key="userRoleCache.terracottaClustered">true</prop>
-                <prop key="cacheManager.cacheManagerName">org.onebusaway.sharedCacheManager</prop>
-            </props>
-        </property>
-    </bean>
 
 </beans>

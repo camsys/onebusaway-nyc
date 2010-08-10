@@ -16,7 +16,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>src/integration-test/resources-onebusaway-api-webapp</directory>
+            <directory>src/integration-test/resources/onebusaway-api-webapp</directory>
             <outputDirectory>WEB-INF/classes</outputDirectory>
         </fileSet>
     </fileSets>

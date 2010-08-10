@@ -7,4 +7,12 @@
 
     <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-common.xml"/>
 
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc_webapp.cacheManager</prop>
+            </props>
+        </property>
+    </bean>
+
 </beans>

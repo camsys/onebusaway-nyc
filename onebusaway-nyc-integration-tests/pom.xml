@@ -15,7 +15,8 @@
         <tomcat-version>5.5.29</tomcat-version>
         <cargo.jvmargs>-Xmx1G -XX:MaxPermSize=256m</cargo.jvmargs>
         <hsqldb.port>9930</hsqldb.port>
-
+        <pauseDuringIntegrationTest>false</pauseDuringIntegrationTest>
+        
         <!-- This value is in milliseconds, so 5 minutes... thing run slow on the CI server sometimes -->
         <ping_timeout>300000</ping_timeout>
 
@@ -30,28 +31,17 @@
     </properties>
 
     <dependencies>
-        <!--
-            Even though this is referenced by onebusaway-transit-data-federation-webapp, we include it directly since we
-            need to build our transit data bundle and the WAR doesn't export the reference
-        -->
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-transit-data-federation</artifactId>
             <version>${onebusaway.version}</version>
         </dependency>
         <dependency>
-            <groupId>hsqldb</groupId>
+            <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>2.0.0</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data-federation-webapp</artifactId>
-            <version>${onebusaway.version}</version>
-            <type>war</type>
-        </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-api-webapp</artifactId>
@@ -70,7 +60,13 @@
             <version>${onebusaway.version}</version>
             <type>war</type>
         </dependency>
-
+        
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-vehicle-tracking-webapp</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-webapp</artifactId>
@@ -81,7 +77,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -110,6 +105,7 @@
                             <systemPropertyVariables>
                                 <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
                                 <org.onebusaway.webapp.port>${org.onebusaway.api_webapp.port}</org.onebusaway.webapp.port>
+                                <pauseDuringIntegrationTest>${pauseDuringIntegrationTest}</pauseDuringIntegrationTest>
                             </systemPropertyVariables>
                         </configuration>
                     </execution>
@@ -131,9 +127,9 @@
                         <configuration>
                             <descriptors>
                                 <descriptor>src/integration-test/assemblies/onebusaway-api-webapp.xml</descriptor>
+                                <descriptor>src/integration-test/assemblies/onebusaway-nyc-vehicle-tracking-webapp.xml</descriptor>
                                 <descriptor>src/integration-test/assemblies/onebusaway-nyc-webapp.xml</descriptor>
                                 <descriptor>src/integration-test/assemblies/onebusaway-sms-webapp.xml</descriptor>
-                                <descriptor>src/integration-test/assemblies/onebusaway-transit-data-federation-webapp.xml</descriptor>
                                 <descriptor>src/integration-test/assemblies/onebusaway-webapp.xml</descriptor>
                             </descriptors>
                         </configuration>
@@ -167,6 +163,26 @@
                     </execution>
                 </executions>
             </plugin>
+	        <!-- Start up an embedded database for sharing the user database between webapps -->
+            <plugin>
+                <groupId>org.onebusaway.plugins</groupId>
+                <artifactId>maven-hsqldb-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>user-database</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <deleteOnEntry>true</deleteOnEntry>
+                            <dbName>${project.build.directory}/org_onebusaway_database_users</dbName>
+                            <port>${hsqldb.port}</port>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Start up all the webapps using the cargo plugin -->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
@@ -177,6 +193,7 @@
                         <containerId>tomcat5x</containerId>
                         <systemProperties>
                             <onebusaway_prefix>${basedir}</onebusaway_prefix>
+                            <hsqldb.port>${hsqldb.port}</hsqldb.port>
                             <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
                         </systemProperties>
                         <zipUrlInstaller>
@@ -189,14 +206,14 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>start-container-transit-data-federation-webapp</id>
+                        <id>start-container-nyc-vehicle-tracking-webapp</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>start</goal>
                         </goals>
                         <configuration>
                             <configuration>
-                                <home>${project.build.directory}/tomcat5x/transit-data-federation-webapp</home>
+                                <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>
@@ -206,13 +223,13 @@
                                 <deployables>
                                     <deployable>
                                         <groupId>org.onebusaway</groupId>
-                                        <artifactId>onebusaway-transit-data-federation-webapp</artifactId>
+                                        <artifactId>onebusaway-nyc-vehicle-tracking-webapp</artifactId>
                                         <type>war</type>
                                         <properties>
-                                            <context>onebusaway-transit-data-federation-webapp</context>
+                                            <context>onebusaway-nyc-vehicle-tracking-webapp</context>
                                         </properties>
-                                        <location>${project.build.directory}/onebusaway-nyc-integration-tests-onebusaway-transit-data-federation-webapp.war</location>
-                                        <pingURL>http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-transit-data-federation-webapp/</pingURL>
+                                        <location>${project.build.directory}/onebusaway-nyc-integration-tests-onebusaway-nyc-vehicle-tracking-webapp.war</location>
+                                        <pingURL>http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/</pingURL>
                                         <pingTimeout>${ping_timeout}</pingTimeout>
                                     </deployable>
                                 </deployables>
@@ -303,14 +320,14 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>stop-container-transit-data-federation-webapp</id>
+                        <id>stop-container-nyc-vehicle-tracking-webapp</id>
                         <phase>post-integration-test</phase>
                         <goals>
                             <goal>stop</goal>
                         </goals>
                         <configuration>
                             <configuration>
-                                <home>${project.build.directory}/tomcat5x/transit-data-federation-webapp</home>
+                                <home>${project.build.directory}/tomcat5x/onebusaway-nyc-vehicle-tracking-webapp</home>
                                 <properties>
                                     <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.transit_data_federation_webapp.port}</cargo.servlet.port>

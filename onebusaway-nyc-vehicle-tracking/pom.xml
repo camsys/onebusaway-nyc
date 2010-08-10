@@ -13,23 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-container</artifactId>
-            <version>${onebusaway.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data</artifactId>
-            <version>${onebusaway.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-realtime-api</artifactId>
-            <version>${onebusaway.version}</version>
-        </dependency>
-        <!--  Right now, this is just needed for distance calculations? -->
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-geospatial</artifactId>
+            <artifactId>onebusaway-transit-data-federation</artifactId>
             <version>${onebusaway.version}</version>
         </dependency>
         <dependency>
@@ -37,11 +21,17 @@
             <artifactId>onebusaway-siri-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.5.6</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>

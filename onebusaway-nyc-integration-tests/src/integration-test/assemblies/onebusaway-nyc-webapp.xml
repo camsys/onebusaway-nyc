@@ -13,10 +13,16 @@
             <unpack>true</unpack>
             <scope>runtime</scope>
         </dependencySet>
+        <dependencySet>
+            <outputDirectory>WEB-INF/lib</outputDirectory>
+            <includes>
+                <include>org.hsqldb:hsqldb</include>
+            </includes>
+        </dependencySet>
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>src/integration-test/resources-onebusaway-nyc-webapp</directory>
+            <directory>src/integration-test/resources/onebusaway-nyc-webapp</directory>
             <outputDirectory>WEB-INF/classes</outputDirectory>
         </fileSet>
     </fileSets>

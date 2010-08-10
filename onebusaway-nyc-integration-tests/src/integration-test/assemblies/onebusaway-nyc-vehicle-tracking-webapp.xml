@@ -1,5 +1,5 @@
 <assembly>
-    <id>onebusaway-transit-data-federation-webapp</id>
+    <id>onebusaway-nyc-vehicle-tracking-webapp</id>
     <formats>
         <format>war</format>
     </formats>
@@ -8,7 +8,7 @@
         <dependencySet>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>org.onebusaway:onebusaway-transit-data-federation-webapp</include>
+                <include>org.onebusaway:onebusaway-nyc-vehicle-tracking-webapp</include>
             </includes>
             <unpack>true</unpack>
             <scope>runtime</scope>
@@ -16,7 +16,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <directory>src/integration-test/resources/onebusaway-transit-data-federation-webapp</directory>
+            <directory>src/integration-test/resources/onebusaway-nyc-vehicle-tracking-webapp</directory>
             <outputDirectory>WEB-INF/classes</outputDirectory>
         </fileSet>
     </fileSets>
