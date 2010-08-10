@@ -9,7 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.VehiclePositionExporter;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.siri.model.Siri;
 import org.onebusaway.siri.model.VehicleActivity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +28,20 @@ public class VehicleLocationCollectionServlet extends HttpServlet {
 
   private VehicleLocationService _vehicleLocationService;
 
+  private VehiclePositionExporter _vehiclePositionExporter;
+
+  private VehicleLocationListener _vehicleLocationListener;
+
   @Autowired
   public void setVehicleLocationService(
       VehicleLocationService vehicleLocationService) {
     _vehicleLocationService = vehicleLocationService;
+  }
+  
+  @Autowired
+  public void setVehicleLocationListener(
+      VehicleLocationListener vehicleLocationListener) {
+    _vehicleLocationListener = vehicleLocationListener;
   }
 
   @Override
@@ -40,6 +52,12 @@ public class VehicleLocationCollectionServlet extends HttpServlet {
 
     WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     context.getAutowireCapableBeanFactory().autowireBean(this);
+    
+    _vehiclePositionExporter = new VehiclePositionExporter();
+    _vehiclePositionExporter.setUpdateFrequency(1);
+    _vehiclePositionExporter.setVehiclePositionService(_vehicleLocationService);
+    _vehiclePositionExporter.setVehiclePostionListener(_vehicleLocationListener);
+    _vehiclePositionExporter.start();
   }
 
   @Override
