@@ -6,7 +6,8 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
     <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-common.xml"/>
-
+    <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-users-common.xml" />
+    
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
