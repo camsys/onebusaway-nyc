@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
+           
+    <!-- This turns on automatic annotation configuration -->
+    <context:annotation-config />
+
+    <import resource="classpath:org/onebusaway/users/application-context.xml" />
+    <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
+    <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
+    <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
+
+    <context:component-scan base-package="org.onebusaway.webapp.impl" />
+
+    <!--
+        Override the current user strategy of the CurrentUserService with one that will automatically create as user as
+        needed and set a Remember Me cookie to remember that user for the future
+    -->
+    <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.AutoUserCurrentUserStrategyImpl" primary="true" />
+
+    <sec:http>
+        <sec:intercept-url pattern="/admin/**" access="ROLE_ADMINISTRATOR" />
+        <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
+        <sec:remember-me />
+        <sec:logout invalidate-session="false" logout-url="/logout.action" />
+    </sec:http>
+
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="userIndexAuthenticationFilter.defaultTargetUrl">/user/index.action</prop>
+                <prop key="userIndexAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
+                <prop key="everyLastLoginAuthenticationFilter.defaultTargetUrl">/user/index.action</prop>
+                <prop key="everyLastLoginAuthenticationFilter.authenticationFailureUrl">/login.action?failure=true</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
+        <property name="geocoderService" ref="externalGeocoderImpl" />
+    </bean>
+
+</beans>

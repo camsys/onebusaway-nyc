@@ -26,7 +26,8 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 
 <head>
-<title><decorator:title /></title>
+  <title><decorator:title default="OneBusAway NYC" /></title>
+  <decorator:head />
 </head>
 
 <body>

@@ -29,7 +29,7 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
-        <servlet-name>spring</servlet-name>
+        <servlet-name>remoting</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
@@ -39,8 +39,13 @@
         <url-pattern>/update-location</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>spring</servlet-name>
+        <servlet-name>remoting</servlet-name>
         <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
+    <!-- This second mapping helps us automatically catch /remoting mapping in addition to the *.do actions above -->
+    <servlet-mapping>
+        <servlet-name>remoting</servlet-name>
+        <url-pattern>/remoting/*</url-pattern>
     </servlet-mapping>
     
 </web-app>
