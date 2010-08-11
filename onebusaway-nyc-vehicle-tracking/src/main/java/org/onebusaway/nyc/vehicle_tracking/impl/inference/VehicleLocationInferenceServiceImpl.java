@@ -14,7 +14,10 @@ import javax.annotation.PreDestroy;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
+import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,10 +26,17 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private ExecutorService _executorService;
 
+  private VehicleLocationListener _vehicleLocationListener;
+  
   private int _numberOfProcessingThreads = 10;
 
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
+  @Autowired
+  public void setVehicleLocationListener(VehicleLocationListener vehicleLocationListener) {
+    _vehicleLocationListener = vehicleLocationListener;
+  }
+  
   public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
@@ -92,16 +102,28 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private class ProcessingTask implements Runnable {
 
-    private VehicleLocationInferenceRecord _record;
+    private VehicleLocationInferenceRecord _inferenceRecord;
 
     public ProcessingTask(VehicleLocationInferenceRecord record) {
-      _record = record;
+      _inferenceRecord = record;
     }
 
     @Override
     public void run() {
-      VehicleInferenceInstance existing = getInstanceForVehicle(_record.getVehicleId());
-      existing.handleUpdate(_record);
+      VehicleInferenceInstance existing = getInstanceForVehicle(_inferenceRecord.getVehicleId());
+      existing.handleUpdate(_inferenceRecord);
+      VehicleState state = existing.getCurrentState();
+      
+      VehicleLocationRecord location = new VehicleLocationRecord();
+      location.setTripId(state.getTripId());
+      location.setCurrentLocationLat(state.getLat());
+      location.setCurrentLocationLon(state.getLon());
+      location.setCurrentTime(_inferenceRecord.getTimestamp());
+      location.setVehicleId(_inferenceRecord.getVehicleId());
+      /* fixme: need to infer service date */
+      
+      _vehicleLocationListener.handleVehicleLocationRecord(location);
+      
     }
   }
 

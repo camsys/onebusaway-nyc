@@ -47,6 +47,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     record.setLon(location.Longitude);
     record.setTimestamp(delivery.ResponseTimestamp.getTimeInMillis());
     _vehicleLocationInferenceService.handleVehicleLocation(record);
+
   }
 
   @Override
