@@ -38,9 +38,9 @@ for line in reader:
     request = siri_template % row
 
     #generate request
-    conn = httplib.HTTPConnection('localhost:9180')
+    conn = httplib.HTTPConnection('localhost:6180')
 
-    conn.request("POST", "/.../update_location", request, {})
+    conn.request("POST", "/onebusaway-nyc-vehicle-tracking-webapp/update-location", request, {})
 
     response = conn.getresponse()
     data = response.read()

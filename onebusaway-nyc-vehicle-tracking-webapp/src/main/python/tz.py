@@ -61,4 +61,4 @@ class USTimeZone(tzinfo):
         else:
             return ZERO
 
-Eastern  = USTimeZone(-5, "Eastern",  "-5:00", "-4:00")
+Eastern  = USTimeZone(-5, "Eastern",  "-05:00", "-04:00")
