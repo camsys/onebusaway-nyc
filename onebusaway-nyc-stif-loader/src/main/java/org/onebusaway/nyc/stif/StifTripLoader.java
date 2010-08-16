@@ -33,11 +33,14 @@ import org.onebusaway.nyc.stif.model.StifRecord;
 import org.onebusaway.nyc.stif.model.TimetableRecord;
 import org.onebusaway.nyc.stif.model.TripRecord;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * Create a mapping from Destination Sign Code (DSC) to GTFS Trip objects using
  * data in STIF, MTA's internal format.
  */
-public class StifTripLoader {
+public class StifTripLoader  implements Runnable {
+
   private class TripIdentifier {
     public int startTime;
     public String routeName;
@@ -74,7 +77,9 @@ public class StifTripLoader {
     }
   }
 
+  @Autowired
   private GtfsRelationalDao gtfsDao;
+  
   private Map<String, List<Trip>> tripsBySignCode;
   private Map<TripIdentifier, List<Trip>> tripsByIdentifier;
 
@@ -89,7 +94,7 @@ public class StifTripLoader {
     return tripsBySignCode;
   }
 
-  public ServiceCode scheduleIdForGtfsDayCode(char dayCode) {
+  public static ServiceCode scheduleIdForGtfsDayCode(char dayCode) {
     switch (dayCode) {
       case 'A':
         return ServiceCode.SATURDAY;
@@ -219,5 +224,11 @@ public class StifTripLoader {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void run() {
+    // TODO Auto-generated method stub
+    
   }
 }
