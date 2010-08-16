@@ -12,11 +12,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +54,7 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public void handleVehicleLocation(VehicleLocationInferenceRecord record) {
+  public void handleVehicleLocation(NycVehicleLocationRecord record) {
     _executorService.execute(new ProcessingTask(record));
   }
 
@@ -102,9 +101,9 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private class ProcessingTask implements Runnable {
 
-    private VehicleLocationInferenceRecord _inferenceRecord;
+    private NycVehicleLocationRecord _inferenceRecord;
 
-    public ProcessingTask(VehicleLocationInferenceRecord record) {
+    public ProcessingTask(NycVehicleLocationRecord record) {
       _inferenceRecord = record;
     }
 
@@ -118,7 +117,7 @@ public class VehicleLocationInferenceServiceImpl implements
       location.setTripId(state.getTripId());
       location.setCurrentLocationLat(state.getLat());
       location.setCurrentLocationLon(state.getLon());
-      location.setCurrentTime(_inferenceRecord.getTimestamp());
+      location.setCurrentTime(_inferenceRecord.getTime());
       location.setVehicleId(_inferenceRecord.getVehicleId());
       /* fixme: need to infer service date */
       

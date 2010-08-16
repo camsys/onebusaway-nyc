@@ -3,11 +3,11 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 
 public class VehicleInferenceInstance {
 
-  private static ParticleFilterModel<VehicleLocationInferenceRecord> _model = new ParticleFilterModel<VehicleLocationInferenceRecord>();
+  private static ParticleFilterModel<NycVehicleLocationRecord> _model = new ParticleFilterModel<NycVehicleLocationRecord>();
 
   static {
     _model.setParticleFactory(new ParticleFactoryImpl());
@@ -15,7 +15,7 @@ public class VehicleInferenceInstance {
     _model.setSensorModel(new SensorModelImpl());
   }
 
-  private ParticleFilter<VehicleLocationInferenceRecord> _particleFilter;
+  private ParticleFilter<NycVehicleLocationRecord> _particleFilter;
 
   /**
    * Note: We should keep creation of {@link VehicleInferenceInstance} cheap
@@ -26,15 +26,15 @@ public class VehicleInferenceInstance {
 
   }
 
-  public synchronized void handleUpdate(VehicleLocationInferenceRecord record) {
+  public synchronized void handleUpdate(NycVehicleLocationRecord record) {
 
     ensureInitialized();
 
     // If this record occurs BEFORE the most recent update, we ignore it
-    if (record.getTimestamp() < _particleFilter.getTimeOfLastUpdated())
+    if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
       return;
 
-    _particleFilter.updateFilter(record.getTimestamp(), record);
+    _particleFilter.updateFilter(record.getTime(), record);
   }
 
   public VehicleState getCurrentState() {
@@ -55,6 +55,6 @@ public class VehicleInferenceInstance {
     if (_particleFilter != null)
       return;
 
-    _particleFilter = new ParticleFilter<VehicleLocationInferenceRecord>(_model);
+    _particleFilter = new ParticleFilter<NycVehicleLocationRecord>(_model);
   }
 }

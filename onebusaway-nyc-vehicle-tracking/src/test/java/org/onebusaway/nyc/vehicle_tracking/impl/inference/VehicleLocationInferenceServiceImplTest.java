@@ -21,7 +21,7 @@ import org.onebusaway.gtfs.csv.schema.DefaultEntitySchemaFactory;
 import org.onebusaway.gtfs.csv.schema.EntitySchemaFactoryHelper;
 import org.onebusaway.gtfs.csv.schema.beans.CsvEntityMappingBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 
@@ -32,6 +32,7 @@ public class VehicleLocationInferenceServiceImplTest {
     MockVehicleLocationListener() {
       storedRecords = new ArrayList<VehicleLocationRecord>();
     }
+
     @Override
     public void handleVehicleLocationRecord(VehicleLocationRecord record) {
       storedRecords.add(record);
@@ -41,15 +42,16 @@ public class VehicleLocationInferenceServiceImplTest {
     public void handleVehicleLocationRecords(List<VehicleLocationRecord> records) {
       storedRecords.addAll(records);
     }
-    
+
   }
+
   @Test
   public void testInference() throws CsvEntityIOException, IOException,
       InterruptedException {
     final VehicleLocationInferenceServiceImpl service;
     service = new VehicleLocationInferenceServiceImpl();
     MockVehicleLocationListener mockVehicleLocationListener = new MockVehicleLocationListener();
-    service.setVehicleLocationListener(mockVehicleLocationListener );
+    service.setVehicleLocationListener(mockVehicleLocationListener);
     service.start();
     CsvEntityReader reader = new CsvEntityReader();
 
@@ -89,13 +91,13 @@ public class VehicleLocationInferenceServiceImplTest {
       public void handleEntity(Object bean) {
         NycTestLocationRecord record = (NycTestLocationRecord) bean;
 
-        VehicleLocationInferenceRecord location = new VehicleLocationInferenceRecord();
-        location.setTimestamp(record.getTimestamp());
+        NycVehicleLocationRecord location = new NycVehicleLocationRecord();
+        location.setTime(record.getTimestamp());
         assertNotNull(record.getVehicleId());
         location.setVehicleId(new AgencyAndId("MTA NYCT", record.getVehicleId()));
         location.setDestinationSignCode(record.getDsc());
-        location.setLat(record.getLat());
-        location.setLon(record.getLon());
+        location.setLatitude(record.getLat());
+        location.setLongitude(record.getLon());
 
         service.handleVehicleLocation(location);
       }

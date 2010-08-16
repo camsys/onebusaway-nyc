@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<query name="recordsForTimeRange" read-only="true">
+      SELECT r FROM NycVehicleLocationRecord r WHERE :timeFrom &lt;= r.time AND r.time &lt;= :timeTo 
+    </query>
+</hibernate-mapping>

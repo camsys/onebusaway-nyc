@@ -3,7 +3,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.NycVehicleLocationRecordDao;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -20,12 +21,19 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
+  private NycVehicleLocationRecordDao _recordDao;
+
   private String _agencyId = "2008";
 
   @Autowired
   public void setVehicleLocationInferenceService(
       VehicleLocationInferenceService service) {
     _vehicleLocationInferenceService = service;
+  }
+
+  @Autowired
+  public void setRecordDao(NycVehicleLocationRecordDao recordDao) {
+    _recordDao = recordDao;
   }
 
   public void setAgencyId(String agencyId) {
@@ -39,28 +47,29 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     MonitoredVehicleJourney monitoredVehicleJourney = vehicleActivity.MonitoredVehicleJourney;
     VehicleLocation location = monitoredVehicleJourney.VehicleLocation;
 
-    VehicleLocationInferenceRecord record = new VehicleLocationInferenceRecord();
+    NycVehicleLocationRecord record = new NycVehicleLocationRecord();
     record.setVehicleId(new AgencyAndId(_agencyId,
         monitoredVehicleJourney.VehicleRef));
     record.setDestinationSignCode(vehicleActivity.VehicleMonitoringRef);
-    record.setLat(location.Latitude);
-    record.setLon(location.Longitude);
-    record.setTimestamp(delivery.ResponseTimestamp.getTimeInMillis());
-    _vehicleLocationInferenceService.handleVehicleLocation(record);
+    record.setLatitude(location.Latitude);
+    record.setLongitude(location.Longitude);
+    record.setTime(delivery.ResponseTimestamp.getTimeInMillis());
 
+    handleRecord(record);
   }
 
   @Override
   public void handleVehicleLocation(String vehicleId, double lat, double lon,
       String dsc) {
 
-    VehicleLocationInferenceRecord record = new VehicleLocationInferenceRecord();
+    NycVehicleLocationRecord record = new NycVehicleLocationRecord();
+    record.setTime(System.currentTimeMillis());
     record.setVehicleId(new AgencyAndId(_agencyId, vehicleId));
-    record.setLat(lat);
-    record.setLon(lon);
+    record.setLatitude(lat);
+    record.setLongitude(lon);
     record.setDestinationSignCode(dsc);
-
-    _vehicleLocationInferenceService.handleVehicleLocation(record);
+    
+    handleRecord(record);
   }
 
   @Override
@@ -68,4 +77,12 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     return _vehicleLocationInferenceService.getLatestProcessedVehicleLocationRecords();
   }
 
+  /****
+   * Private Methods
+   ****/
+
+  private void handleRecord(NycVehicleLocationRecord record) {
+    _vehicleLocationInferenceService.handleVehicleLocation(record);
+    _recordDao.saveOrUpdateRecord(record);
+  }
 }

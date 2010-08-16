@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 
 /**
  * Create initial particles from an initial observation.
@@ -13,7 +13,7 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceReco
  * @author bdferris
  */
 public class ParticleFactoryImpl implements
-    ParticleFactory<VehicleLocationInferenceRecord> {
+    ParticleFactory<NycVehicleLocationRecord> {
 
   private int _initialNumberOfParticles = 50;
 
@@ -23,7 +23,7 @@ public class ParticleFactoryImpl implements
 
   @Override
   public List<Particle> createParticles(double timestamp,
-      VehicleLocationInferenceRecord obs) {
+      NycVehicleLocationRecord obs) {
 
     List<Particle> particles = new ArrayList<Particle>(
         _initialNumberOfParticles);
@@ -31,8 +31,8 @@ public class ParticleFactoryImpl implements
     for (int i = 0; i < _initialNumberOfParticles; i++) {
       Particle p = new Particle(timestamp);
       VehicleState state = new VehicleState();
-      state.setLat(obs.getLat());
-      state.setLon(obs.getLon());
+      state.setLat(obs.getLatitude());
+      state.setLon(obs.getLongitude());
       p.setData(state);
       particles.add(p);
     }
