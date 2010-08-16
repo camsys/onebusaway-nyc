@@ -2,12 +2,14 @@ package org.onebusaway.nyc.stif;
 
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
+import org.onebusaway.transit_data_federation.impl.ExtendedGtfsRelationalDaoImpl;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
+import java.util.Map;
 
 public class StifTask implements Runnable {
 
@@ -37,8 +39,9 @@ public class StifTask implements Runnable {
   public void run() {
     
     StifTripLoader loader = new StifTripLoader();
-    GtfsRelationalDao dao = _applicationContext.getBean(GtfsRelationalDao.class);
+    GtfsRelationalDao dao = (GtfsRelationalDao) _applicationContext.getBean("springHibernateGtfsRelationalDaoImpl");
     loader.setGtfsDao(dao);
+    loader.init();
     
     File f = _stifPath;
     for (String filename: f.list()) {
