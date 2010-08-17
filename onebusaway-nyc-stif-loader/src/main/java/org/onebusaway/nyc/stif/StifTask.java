@@ -41,16 +41,22 @@ public class StifTask implements Runnable {
     loader.setGtfsDao(dao);
     loader.init();
     
-    File f = _stifPath;
-    for (String filename: f.list()) {
-      File stif = new File(f, filename);
-      loader.run(stif);
-    }
+    loadStif(_stifPath, loader);
     try {
       ObjectSerializationLibrary.writeObject(new File(_bundle.getPath(), "dscToTripMapping"), loader.getTripMapping());
     } catch (Exception ex) {
       throw new IllegalStateException("error writing graph to file", ex);
     }
+  }
 
+  public void loadStif(File path, StifTripLoader loader) {
+    if (path.isDirectory()) {
+      for (String filename : path.list()) {
+        File contained = new File(path, filename);
+        loadStif(contained, loader);
+      }
+    } else {
+      loader.run(path);
+    }
   }
 }
