@@ -2,9 +2,9 @@
  * Copyright 2010, OpenPlans Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -13,6 +13,17 @@
  */
 
 package org.onebusaway.nyc.stif;
+
+import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.gtfs.services.GtfsRelationalDao;
+import org.onebusaway.nyc.stif.model.ServiceCode;
+import org.onebusaway.nyc.stif.model.StifRecord;
+import org.onebusaway.nyc.stif.model.TimetableRecord;
+import org.onebusaway.nyc.stif.model.TripRecord;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,20 +37,12 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.onebusaway.gtfs.model.Trip;
-import org.onebusaway.gtfs.services.GtfsRelationalDao;
-import org.onebusaway.nyc.stif.model.ServiceCode;
-import org.onebusaway.nyc.stif.model.StifRecord;
-import org.onebusaway.nyc.stif.model.TimetableRecord;
-import org.onebusaway.nyc.stif.model.TripRecord;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * Create a mapping from Destination Sign Code (DSC) to GTFS Trip objects using
  * data in STIF, MTA's internal format.
  */
-public class StifTripLoader  implements Runnable {
+public class StifTripLoader {
+  private static final Logger _log = LoggerFactory.getLogger(StifTripLoader.class);
 
   private class TripIdentifier {
     public int startTime;
@@ -59,6 +62,7 @@ public class StifTripLoader  implements Runnable {
       }
     }
 
+    @Override
     public boolean equals(Object other) {
       if (other instanceof TripIdentifier) {
         TripIdentifier otherTrip = (TripIdentifier) other;
@@ -68,10 +72,12 @@ public class StifTripLoader  implements Runnable {
       return false;
     }
 
+    @Override
     public int hashCode() {
       return startTime ^ routeName.hashCode();
     }
 
+    @Override
     public String toString() {
       return "TripIdentifier(" + startTime + ", " + routeName + ")";
     }
@@ -79,7 +85,7 @@ public class StifTripLoader  implements Runnable {
 
   @Autowired
   private GtfsRelationalDao gtfsDao;
-  
+
   private Map<String, List<Trip>> tripsBySignCode;
   private Map<TripIdentifier, List<Trip>> tripsByIdentifier;
 
@@ -127,7 +133,7 @@ public class StifTripLoader  implements Runnable {
 			}
 			trips.add(trip);
 		}
-		
+
 		tripsBySignCode = new HashMap<String, List<Trip>>();
 	}
 
@@ -145,6 +151,7 @@ public class StifTripLoader  implements Runnable {
   public void run(InputStream stream) {
     StifRecordReader reader;
 
+    boolean warned = false;
     try {
       reader = new StifRecordReader(stream);
       ServiceCode serviceCode = null;
@@ -166,37 +173,41 @@ public class StifTripLoader  implements Runnable {
           TripIdentifier id = new TripIdentifier(tripRecord);
           List<Trip> trips = tripsByIdentifier.get(id);
           if (trips == null) {
-            
+
             // trip in stif but not in gtfs
-            throw new RuntimeException("trip not found for " + id);
+            if (!warned) {
+              warned = true;
+              _log.warn("gtfs trip not found for " + id);
+            }
+            continue;
           }
-          
+
           List<Trip> filtered = new ArrayList<Trip>();
           /* filter trips by schedule */
-          for (Trip trip : trips) { 
+          for (Trip trip : trips) {
             /* Service codes are of the form
             20100627CA
             Only the last two characters are important.
-            They have the meaning: 
+            They have the meaning:
             A = sat
             B = weekday closed
             C = weekday open
             D = sun
 
-            The first character is for trips on that day's STIF schedule, while the second 
+            The first character is for trips on that day's STIF schedule, while the second
             character is for trips on the next day's STIF schedule (but that run on that day).
-            
+
             To figure out whether a GTFS trip corresponds to a STIF trip,
             if the STIF trip is before midnight, check daycode1; else check daycode2
             */
-            
+
             String serviceId = trip.getServiceId().getId();
             char dayCode1 = serviceId.charAt(serviceId.length() - 2);
             char dayCode2 = serviceId.charAt(serviceId.length() - 1);
-            
+
             //schedule runs on on days where a dayCode1 is followed by a dayCode2;
             //contains all trips from dayCode1, and pre-midnight trips for dayCode2;
-            
+
             if (tripRecord.getOriginTime() < 0) {
               /* possible trip records are those containing the previous day */
               if (scheduleIdForGtfsDayCode(dayCode2) == serviceCode) {
@@ -211,7 +222,7 @@ public class StifTripLoader  implements Runnable {
             }
 
           }
-          
+
           List<Trip> sctrips = tripsBySignCode.get(code);
           if (sctrips == null) {
             sctrips = new ArrayList<Trip>();
@@ -226,9 +237,4 @@ public class StifTripLoader  implements Runnable {
     }
   }
 
-  @Override
-  public void run() {
-    // TODO Auto-generated method stub
-    
-  }
 }

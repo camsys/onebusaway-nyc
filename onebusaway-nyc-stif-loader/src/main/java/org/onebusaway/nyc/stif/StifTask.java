@@ -2,14 +2,12 @@ package org.onebusaway.nyc.stif;
 
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
-import org.onebusaway.transit_data_federation.impl.ExtendedGtfsRelationalDaoImpl;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.io.File;
-import java.util.Map;
 
 public class StifTask implements Runnable {
 
