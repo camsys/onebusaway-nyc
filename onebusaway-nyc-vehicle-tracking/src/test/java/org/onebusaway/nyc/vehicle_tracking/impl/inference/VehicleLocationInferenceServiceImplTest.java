@@ -3,20 +3,9 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Test;
-import org.onebusaway.gtfs.csv.CsvEntityContext;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.EntityHandler;
-import org.onebusaway.gtfs.csv.exceptions.CsvEntityException;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
-import org.onebusaway.gtfs.csv.schema.AbstractFieldMapping;
-import org.onebusaway.gtfs.csv.schema.BeanWrapper;
 import org.onebusaway.gtfs.csv.schema.DefaultEntitySchemaFactory;
 import org.onebusaway.gtfs.csv.schema.EntitySchemaFactoryHelper;
 import org.onebusaway.gtfs.csv.schema.beans.CsvEntityMappingBean;
@@ -24,6 +13,13 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+
+import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VehicleLocationInferenceServiceImplTest {
   class MockVehicleLocationListener implements VehicleLocationListener {
@@ -61,29 +57,7 @@ public class VehicleLocationInferenceServiceImplTest {
     CsvEntityMappingBean record = helper.addEntity(NycTestLocationRecord.class);
     record.setAutoGenerateSchema(false);
     reader.setEntitySchemaFactory(factory);
-    record.addAdditionalFieldMapping(new AbstractFieldMapping(
-        NycTestLocationRecord.class, "", "", true) {
-
-      @Override
-      public void translateFromObjectToCSV(CsvEntityContext context,
-          BeanWrapper object, Map<String, Object> csvValues)
-          throws CsvEntityException {
-        /* don't bother */
-      }
-
-      @Override
-      public void translateFromCSVToObject(CsvEntityContext context,
-          Map<String, Object> csvValues, BeanWrapper object)
-          throws CsvEntityException {
-
-        NycTestLocationRecord record = object.getWrappedInstance(NycTestLocationRecord.class);
-        record.setDsc(csvValues.get("dsc").toString());
-        record.setTimestamp(csvValues.get("dt").toString());
-        record.setVehicleId(csvValues.get("vid").toString());
-        record.setLat(Double.parseDouble(csvValues.get("lat").toString()));
-        record.setLon(Double.parseDouble(csvValues.get("lon").toString()));
-      }
-    });
+    record.addAdditionalFieldMapping(new NycTestLocationRecord.FieldMapping());
 
     reader.addEntityHandler(new EntityHandler() {
 
