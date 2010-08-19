@@ -17,7 +17,9 @@
 	<excludes>
 		<pattern>/styles/*</pattern>
 		<pattern>/images/*</pattern>
-		<patterns>/where/mobile/*</patterns>
+		<pattern>/where/mobile/*</pattern>
+		<pattern>/css/*</pattern>
+		<pattern>/js/*</pattern>
 		<pattern>*.cache.html</pattern>
 	</excludes>
 

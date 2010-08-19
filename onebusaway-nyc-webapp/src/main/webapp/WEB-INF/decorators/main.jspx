@@ -26,17 +26,62 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=8" />
+
   <title><decorator:title default="OneBusAway NYC" /></title>
-  <decorator:head />
+  
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen,print"/>
+  <link rel="stylesheet" href="css/screen.css" type="text/css" media="screen,print"/>
+  <link rel="stylesheet" href="css/tracker.css" type="text/css" media="screen,print"/>
+
+<![CDATA[
+<!--[if IE 6]>
+       <link rel="stylesheet" href="css/ie6.css" type="text/css" media="screen,print"/>
+<![endif]-->
+
+<script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"></script>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/oba/Config.js"></script>
+<script type="text/javascript" src="js/oba/Util.js"></script>
+<script type="text/javascript" src="js/oba/Popup.js"></script>
+<script type="text/javascript" src="js/oba/Marker.js"></script>
+<script type="text/javascript" src="js/oba/RouteMap.js"></script>
+<script type="text/javascript" src="js/oba/Tracker.js"></script>
+]]>
+
+<decorator:head />
 </head>
 
 <body>
 
-<div>
-<p>onebusaway ny heading</p>
-</div>
+  <div id="page">
+    <div id="header">
+      <h1>A City Transit Agency</h1>
+
+      <ul>
+        <li><a href="tracker.html">Tracker</a></li>
+        <li><a href="help.html">Help</a></li>
+      </ul>
+    </div>
 
 <decorator:body />
+
+<div id="footer">
+<ul class="first">
+	<li><a href="#">About</a></li>
+	<li><a href="#">Contact Us</a></li>
+</ul>
+
+<ul>
+	<li><a href="#">Text Only/Mobile</a></li>
+	<li><a href="#">Developer API</a></li>
+</ul>
+
+<p>&amp;copy 2010, A City Transit Agency</p>
+</div>
+
+</div>
 
 </body>
 </html>

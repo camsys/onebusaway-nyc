@@ -22,6 +22,45 @@ under the License.
 <title>One Bus Away NY</title>
 </head>
 <body>
-<h1><s:property value="message" /></h1>
+<div id="content">
+<div id="sidebar">
+<div id="search">
+<form action="search.php">
+<p><label>Search for:</label> <input type="text" name="q" /></p>
+
+<p class="small">TIP: Enter an intersection, bus route or bus stop
+number.</p>
+</form>
+
+<div id="example-searches">
+<p>Example Searches:</p>
+
+<ul>
+	<li><a href="#">14th and broadway</a></li>
+	<li><a href="#">14AVEC0001</a></li>
+	<li><a href="#">M14D</a></li>
+</ul>
+</div>
+
+<ul id="search-results">
+</ul>
+</div>
+
+<div id="current_layers">
+<p class="header"><a href="#">Displayed Routes (<span id="n-displayed-routes">0</span>)</a></p>
+
+<div id="displayed-routes">
+<p id="no-routes-displayed-message">You haven't added any routes to the map yet.</p>
+
+<ul id="displayed-routes-list">
+</ul>
+</div>
+</div>
+</div>
+
+<div id="map"></div>
+
+
+</div>
 </body>
 </html>
