@@ -27,13 +27,13 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
                 OBA.theInfoWindow = new google.maps.InfoWindow();
     
                 // we need to append this node to the map for the size to be calculated properly
-                $wrappedContent = jQuery('<div id="popup"></div>')
+                wrappedContent = jQuery('<div id="popup"></div>')
                                     .append(bubbleNodeFn(json))
                                     .appendTo("#map");
                                                         
-                $wrappedContent = $wrappedContent.css("width", 250).css("height", $wrappedContent.height());
+                wrappedContent = wrappedContent.css("width", 250).css("height", wrappedContent.height());
                         
-                OBA.theInfoWindow.setContent($wrappedContent.get(0));                
+                OBA.theInfoWindow.setContent(wrappedContent.get(0));                
                 OBA.theInfoWindow.open(map, marker);
             });
         }

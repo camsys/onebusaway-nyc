@@ -108,14 +108,14 @@ OBA.Tracker = function() {
     }
           
     function makeStopElement(record) {
-      var $el = jQuery('<div id="stop-' + record.stopId + '" class="stop result"></div>')
+      var el = jQuery('<div id="stop-' + record.stopId + '" class="stop result"></div>')
                       .append('<p class="name">' + record.name + '</p>');
       
                    
-      var $controls = jQuery('<ul></ul>').addClass("controls")
+      var controls = jQuery('<ul></ul>').addClass("controls")
                 .append('<li><a class="showOnMap" href="#">Show on Map</a></li>');
       
-      $el.append($controls);
+      el.append(controls);
 
       // display routes available at this stop
       if(typeof record.routesAvailable !== 'undefined') {
@@ -129,29 +129,29 @@ OBA.Tracker = function() {
 
           description += '</ul>';
           
-          $el.append(jQuery(description));
+          el.append(jQuery(description));
       }
 
-      return $el;      
+      return el;      
     }
 
     function makeRouteElement(record) {
-      var $el = jQuery('<div id="route-' + record.routeId + '" class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
+      var el = jQuery('<div id="route-' + record.routeId + '" class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
                 .append('<p class="name">' + record.name + '</p>')
                 .append('<p class="description">' + OBA.Util.truncate(record.description, 30) + '</p>')
              
-      var $controls = jQuery('<ul></ul>').addClass("controls")
+      var controls = jQuery('<ul></ul>').addClass("controls")
                 .append('<li><a class="addToMap" href="#">Add To Map</a></li>')
                 .append('<li><a class="zoomToExtent" href="#">Zoom To Extent</a></li>')
 
-      $el.append($controls);
+      el.append(controls);
                 
 /*            
         if(typeof record.serviceNotice !== 'undefined') {    
-            $el.append('<p class="notice">' + record.serviceNotice + '</p>');
+            el.append('<p class="notice">' + record.serviceNotice + '</p>');
         }
 */        
-        return $el;
+        return el;
     }
       
     function addSearchControlBehavior() {
