@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class HelloWorldIntegrationTest extends NycWebappTestSupport {
+public class NycWebappIndexPageIntegrationTest extends NycWebappTestSupport {
   @Test
   public void test() {
 
