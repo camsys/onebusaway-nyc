@@ -11,6 +11,7 @@ import org.onebusaway.gtfs.csv.schema.EntitySchemaFactoryHelper;
 import org.onebusaway.gtfs.csv.schema.beans.CsvEntityMappingBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.test.impl.inference.NycTestLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 
@@ -77,7 +78,7 @@ public class VehicleLocationInferenceServiceImplTest {
       }
     });
 
-    InputStream in = getClass().getResourceAsStream("ivn-dsc.csv");
+    InputStream in = NycTestLocationRecord.getTestData();
     assertNotNull(in);
     reader.readEntities(NycTestLocationRecord.class, in);
 

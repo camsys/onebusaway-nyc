@@ -9,7 +9,7 @@ import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
 import org.onebusaway.gtfs.csv.schema.DefaultEntitySchemaFactory;
 import org.onebusaway.gtfs.csv.schema.EntitySchemaFactoryHelper;
 import org.onebusaway.gtfs.csv.schema.beans.CsvEntityMappingBean;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.NycTestLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.test.impl.inference.NycTestLocationRecord;
 import org.onebusaway.siri.model.FramedVehicleJourneyRef;
 import org.onebusaway.siri.model.MonitoredVehicleJourney;
 import org.onebusaway.siri.model.ServiceDelivery;
@@ -110,7 +110,7 @@ public class VehicleTrackingWebappIntegrationTest extends NycWebappTestSupport {
 
     reader.addEntityHandler(new RequestSender(_baseUrl));
 
-    InputStream in = NycTestLocationRecord.class.getResourceAsStream("ivn-dsc.csv");
+    InputStream in = NycTestLocationRecord.getTestData();
     assertNotNull(in);
     reader.readEntities(NycTestLocationRecord.class, in);
     

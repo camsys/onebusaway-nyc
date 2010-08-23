@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.test.impl.inference;
 
 import org.onebusaway.gtfs.csv.CsvEntityContext;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityException;
@@ -6,10 +6,15 @@ import org.onebusaway.gtfs.csv.schema.AbstractFieldMapping;
 import org.onebusaway.gtfs.csv.schema.BeanWrapper;
 import org.onebusaway.gtfs.csv.schema.annotations.CsvFields;
 
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+/*
+ * this is only used for tests, but it has to be in src/main because otherwise
+ * it won't get packaged for use in tests in other packages
+ */
 @CsvFields(filename = "ivn-dsc.csv", fieldOrder = {
     "vehicleId", "date", "time", "lat", "lon", "timestamp", "dsc", "new_dsc"})
 public class NycTestLocationRecord {
@@ -88,5 +93,9 @@ public class NycTestLocationRecord {
 
   public String getDsc() {
     return dsc;
+  }
+
+  public static InputStream getTestData() {
+    return NycTestLocationRecord.class.getResourceAsStream("ivn-dsc.csv");
   }
 }
