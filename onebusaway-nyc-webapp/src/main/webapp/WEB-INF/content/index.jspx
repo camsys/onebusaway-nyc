@@ -25,8 +25,8 @@ under the License.
 <div id="content">
 <div id="sidebar">
 <div id="search">
-<!--FIXME url -->
-<form action="/onebusaway-nyc-webapp/search.action">
+<!--FIXME url hard coded -->
+<form action="search.action">
 <p><label>Search for:</label> <input type="text" name="q" /></p>
 
 <p class="small">TIP: Enter an intersection, bus route or bus stop

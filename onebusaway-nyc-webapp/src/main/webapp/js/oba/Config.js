@@ -18,16 +18,16 @@ OBA.Config = {
     debug: true,
 
     // urls to fetch various data
-    searchUrl: "/onebusaway-nyc-webapp/search.action",
-    routeShapeUrl: "/onebusaway-nyc-webapp/route.action",
-    stopsUrl: "/onebusaway-nyc-webapp/stops.action",
-    stopUrl: "/onebusaway-nyc-webapp/stop.action",
-    vehiclesUrl:"/onebusaway-nyc-webapp/vehicles.action",
-    vehicleUrl: "/onebusaway-nyc-webapp/vehicle.action",
+    searchUrl: "search.action",
+    routeShapeUrl: "route.action",
+    stopsUrl: "stops.action",
+    stopUrl: "stop.action",
+    vehiclesUrl:"vehicles.action",
+    vehicleUrl: "vehicle.action",
 
     // milliseconds to wait in between polls for bus locations
     pollingInterval: 5000,
 
     // image url
-    vehicleIcon: "/onebusaway-nyc-webapp/img/vehicle.png"
+    vehicleIcon: "img/vehicle.png"
 };
