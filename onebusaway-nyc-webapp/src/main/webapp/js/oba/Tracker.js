@@ -79,7 +79,6 @@ OBA.Tracker = function() {
 
       var anyResults = false;
       var searchResultsList = jQuery("#search-results");
-
       searchResultsList.empty();
 
       jQuery.each(json.searchResults, function(i, record) {
@@ -121,8 +120,8 @@ OBA.Tracker = function() {
       if(typeof record.routesAvailable !== 'undefined') {
           var description = '<ul class="description">';
           
-          jQuery.each(record.routesAvailable, function(routeId) {
-            var route = record.routesAvailable[routeId];
+          jQuery.each(record.routesAvailable, function(i, route) {
+        	var routeId = route.routeId;
 
             description += '<li>' + routeId + ' - ' + OBA.Util.truncate(route.description, 30) + '</li>';
           });

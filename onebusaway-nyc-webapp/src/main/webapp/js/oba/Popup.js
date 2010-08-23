@@ -51,7 +51,7 @@ OBA.StopPopup = function(stopId, map) {
     var generateStopMarkup = function(json) {
         var stop = json.stop;
         
-        if (! stop) 
+        if (!stop) 
             return null;
         
         var header = '<p class="header">' + stop.name + '</p>' +
@@ -63,23 +63,22 @@ OBA.StopPopup = function(stopId, map) {
         if(typeof stop.routesAvailable !== 'undefined') {
             service += '<p>This stop serves:</p><ul>';       
 
-            jQuery.each(stop.routesAvailable, function(routeId) {
-                var route = stop.routesAvailable[routeId];
+            jQuery.each(stop.routesAvailable, function(i, route) {
+                var routeId  = route.routeId;
 
                 if(typeof route.serviceNotice !== 'undefined') {
                     notices += '<li>' + route.serviceNotice + '</li>';
                 }
                 
-                for(var i = 0; i < route.distanceAway.length; i++) {
-                    // routes with a service notice should appear red
-                    if(typeof route.serviceNotice !== 'undefined') {
-                        service += '<li class="hasNotice">';
-                    } else {
-                        service += '<li>';
-                    }
-                    
-                    service += '<a href="#" class="searchLink" rel="' + routeId + '">' + OBA.Util.truncate(routeId + ' - ' + route.description, 30) + '</a> (' + route.distanceAway[i][0] + ' stops, ' + route.distanceAway[i][1] + ' ft.)</li>'; 
-                }
+                // routes with a service notice should appear red
+                var liHeading = (typeof route.serviceNotice === "undefined")
+                        ? "<li>"
+                		: '<li class="hasNotice">';
+                
+                jQuery.each(route.distanceAway, function(j, distanceAway) {
+                	service += liHeading;
+                    service += '<a href="#" class="searchLink" rel="' + routeId + '">' + OBA.Util.truncate(routeId + ' - ' + route.description, 30) + '</a> (' + distanceAway.stops + ' stops, ' + distanceAway.feet + ' ft.)</li>';
+                });
            });
            
            service += '</ul>';
@@ -115,7 +114,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
     var generateVehicleMarkup = function(json) {
         var vehicle = json.vehicle;
         
-        if (! vehicle) 
+        if (!vehicle) 
             return null;
         
         var header = '<p class="header' + ((typeof vehicle.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(vehicle.routeId + ' - ' + vehicle.description, 35) + '</p>' +
@@ -134,10 +133,10 @@ OBA.VehiclePopup = function(vehicleId, map) {
         if(typeof vehicle.nextStops !== 'undefined') {
             nextStops += '<p>Next stops:<ul>';       
 
-            jQuery.each(vehicle.nextStops, function(stopId) {
-                var stop = vehicle.nextStops[stopId];
-               
-                nextStops += '<li><a href="#" class="searchLink" rel="' + stopId + '">' + OBA.Util.truncate(stop.name, 30) + '</a> (' + stop.distanceAway[0] + ' stops, ' + stop.distanceAway[1] + ' ft.)</li>';
+            jQuery.each(vehicle.nextStops, function(i, stop) {
+                var stopId = stop.stopId;
+
+                nextStops += '<li><a href="#" class="searchLink" rel="' + stopId + '">' + OBA.Util.truncate(stop.name, 30) + '</a> (' + stop.distanceAway.stops + ' stops, ' + stop.distanceAway.feet + ' ft.)</li>';
            });
     
            nextStops += '</ul>';

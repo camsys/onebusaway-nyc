@@ -24,6 +24,17 @@ OBA.Util = (function() {
                 text = text.substr(0, length - 3) + "...";
                 
             return text;
-        }    
+        },
+        serializeArray: function(lst, keyname) {
+        	var result = null;
+            jQuery.each(lst, function(i, x) {
+            	if (!result) {
+            		result = keyname + "=" + x;
+            	} else {
+            		result += "&" + keyname + "=" + x;
+            	}
+            });
+            return result;
+        }
     }
 })();

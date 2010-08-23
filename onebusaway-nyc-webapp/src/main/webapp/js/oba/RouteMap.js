@@ -55,10 +55,14 @@ OBA.RouteMap = function(mapNode, mapOptions) {
         } else {
           routesToSerialize = routeIds;
         }
+        
+        // struts doesn't like the [] request syntax
+        // so we serialize the request manually here
+        var serializedRoutes = OBA.Util.serializeArray(routesToSerialize, "routeIds");
   
-        jQuery.getJSON(OBA.Config.vehiclesUrl, {routeIds: routesToSerialize}, function(json) {
+        jQuery.getJSON(OBA.Config.vehiclesUrl, serializedRoutes, function(json) {
           var vehicles = json.vehicles;
- 
+          
           if (!vehicles) {
             return;
           }
@@ -82,14 +86,14 @@ OBA.RouteMap = function(mapNode, mapOptions) {
               var vehicleMarker = vehicleMarkers[vehicle.vehicleId];
             
               if (vehicleMarker) {
-                var latlng = new google.maps.LatLng(vehicle.latlng[0], vehicle.latlng[1]);
+                var latlng = new google.maps.LatLng(vehicle.latLng[0], vehicle.latLng[1]);
   
                 vehicleMarker.updatePosition(latlng);
                 if (!vehicleMarker.isDisplayed())
                     vehicleMarker.addMarker();
                 addVehicleMarkerToRouteMap(routeId, vehicleMarker);
               } else {
-                vehicleMarker = OBA.VehicleMarker(vehicle.vehicleId, vehicle.latlng, map);
+                vehicleMarker = OBA.VehicleMarker(vehicle.vehicleId, vehicle.latLng, map);
                 vehicleMarkers[vehicle.vehicleId] = vehicleMarker;
  
                 addVehicleMarkerToRouteMap(routeId, vehicleMarker);
@@ -119,11 +123,11 @@ OBA.RouteMap = function(mapNode, mapOptions) {
       // add and remove shapes also take care of updating the display
       // if this is a problem we can factor this back out
       addRoute: function(routeId, json) {    
-        var coords = json.route && json.route.polyline;
+        var coords = json.route && json.route.polyLine;
           
         if (! coords)
           return;
-          
+
         var latlngs = jQuery.map(coords, function(x) {
             return new google.maps.LatLng(x[0], x[1]);
         });
