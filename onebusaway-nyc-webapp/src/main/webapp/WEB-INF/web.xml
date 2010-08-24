@@ -71,13 +71,4 @@
         <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
     </listener>
 
-    <servlet>
-        <servlet-name>WebappServiceServletImpl</servlet-name>
-        <servlet-class>org.onebusaway.webapp.impl.WebappServiceServletImpl</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>WebappServiceServletImpl</servlet-name>
-        <url-pattern>/services/webapp</url-pattern>
-    </servlet-mapping>
-
 </web-app>
