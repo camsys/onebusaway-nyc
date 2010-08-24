@@ -172,9 +172,8 @@ public class MapView extends Composite {
   private class StopInfoWidgetHandlerImpl implements StopInfoWidgetHandler {
 
     @Override
-    public void handleRealTimeLinkClicked() {
-      // TODO Auto-generated method stub
-
+    public void handleRealTimeLinkClicked(StopBean stop) {
+      
     }
 
     @Override
@@ -184,10 +183,9 @@ public class MapView extends Composite {
     }
 
     @Override
-    public void handleScheduleLinkClicked() {
+    public void handleScheduleLinkClicked(StopBean stop) {
       // TODO Auto-generated method stub
 
     }
-
   }
 }
