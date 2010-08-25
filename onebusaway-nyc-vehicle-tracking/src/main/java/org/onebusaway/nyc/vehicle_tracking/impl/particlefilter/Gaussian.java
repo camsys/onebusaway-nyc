@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import java.util.Random;
 

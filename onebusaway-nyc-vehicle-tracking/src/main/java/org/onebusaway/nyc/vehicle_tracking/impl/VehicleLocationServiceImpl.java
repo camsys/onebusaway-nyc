@@ -59,17 +59,29 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Override
-  public void handleVehicleLocation(String vehicleId, double lat, double lon,
-      String dsc) {
+  public void handleVehicleLocation(long time, String vehicleId, double lat,
+      double lon, String dsc) {
 
     NycVehicleLocationRecord record = new NycVehicleLocationRecord();
-    record.setTime(System.currentTimeMillis());
+    record.setTime(time);
     record.setVehicleId(new AgencyAndId(_agencyId, vehicleId));
     record.setLatitude(lat);
     record.setLongitude(lon);
     record.setDestinationSignCode(dsc);
-    
+
     handleRecord(record);
+  }
+
+  @Override
+  public void resetVehicleLocation(String vehicleId) {
+    AgencyAndId vid = new AgencyAndId(_agencyId, vehicleId);
+    _vehicleLocationInferenceService.resetVehicleLocation(vid);
+  }
+
+  @Override
+  public VehicleLocationRecord getVehicleLocationForVehicle(String vehicleId) {
+    AgencyAndId vid = new AgencyAndId(_agencyId, vehicleId);
+    return _vehicleLocationInferenceService.getVehicleLocationForVehicle(vid);
   }
 
   @Override

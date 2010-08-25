@@ -22,7 +22,8 @@ public class UpdateVehicleLocationController {
   public ModelAndView index(@RequestParam() String vehicleId,
       @RequestParam() double lat, @RequestParam() double lon, String dsc) {
 
-    _vehicleLocationService.handleVehicleLocation(vehicleId, lat, lon, dsc);
+    _vehicleLocationService.handleVehicleLocation(System.currentTimeMillis(),
+        vehicleId, lat, lon, dsc);
 
     return new ModelAndView("update-vehicle-location.jspx");
   }

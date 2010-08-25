@@ -17,9 +17,9 @@
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
     <import resource="classpath:org/onebusaway/container/application-context-hibernate.xml" />
-    
-    <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl"/>
-    
+
+    <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl" />
+
     <bean class="org.onebusaway.container.spring.ListBeanPostProcessor">
         <property name="target" value="hibernateAnnotatedClassesMutable" />
         <property name="values">
@@ -28,14 +28,33 @@
             </list>
         </property>
     </bean>
-    
+
     <bean class="org.onebusaway.container.spring.ListBeanPostProcessor">
         <property name="target" value="hibernateMappingLocationsMutable" />
         <property name="values">
             <list>
-                <value>classpath:org/onebusaway/nyc/vehicle_tracking/impl/NycVehicleLocationRecordDaoImpl.hibernate.xml</value>
+                <value>classpath:org/onebusaway/nyc/vehicle_tracking/impl/NycVehicleLocationRecordDaoImpl.hibernate.xml
+                </value>
             </list>
         </property>
+    </bean>
+
+    <bean id="particleFactory" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl" />
+    <bean id="motionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl" />
+    <bean id="sensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.SensorModelImpl" />
+
+    <bean id="particleFilterModel" class="org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel">
+        <property name="particleFactory" ref="particleFactory" />
+        <property name="motionModel" ref="motionModel" />
+        <property name="sensorModel" ref="sensorModel" />
+    </bean>
+
+    <!--
+        Note the scope="prototype". That means a new instance of this bean will be returned every time it's requested.
+    -->
+    <bean id="vehicleInferenceInstance" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance"
+        scope="prototype">
+        <property name="model" ref="particleFilterModel" />
     </bean>
 
 </beans>

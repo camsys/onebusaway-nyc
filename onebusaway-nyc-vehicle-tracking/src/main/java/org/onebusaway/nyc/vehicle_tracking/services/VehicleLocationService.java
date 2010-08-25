@@ -27,13 +27,24 @@ public interface VehicleLocationService {
   /**
    * Convenience method for updating a vehicle location from data directly
    * 
+   * @param time TODO
    * @param vehicleId
    * @param lat
    * @param lon
    * @param dsc destination sign code
    */
-  public void handleVehicleLocation(String vehicleId, double lat, double lon,
-      String dsc);
+  public void handleVehicleLocation(long time, String vehicleId, double lat,
+      double lon, String dsc);
+
+  /**
+   * Convenience method for clearing any active location inference data for the
+   * specified vehicle
+   * 
+   * @param vehicleId
+   */
+  public void resetVehicleLocation(String vehicleId);
+  
+  public VehicleLocationRecord getVehicleLocationForVehicle(String vehicleId);
 
   /**
    * @return a list of the latest processed vehicle position records

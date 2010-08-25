@@ -2,56 +2,71 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
+/**
+ * We make this class immutable so that we don't have to worry about particle
+ * filter methods changing it out from under us
+ * 
+ * @author bdferris
+ * 
+ */
 public class VehicleState {
 
-  private double lat;
+  private final AgencyAndId tripId;
 
-  private double lon;
+  private final double positionDeviation;
 
-  private AgencyAndId tripId;
+  private final EdgeState edgeState;
 
-  private double positionDeviation;
-
-  public VehicleState() {
-    
-  }
-  
   public VehicleState(VehicleState state) {
-    this.lat = state.lat;
-    this.lon = state.lon;
     this.tripId = state.tripId;
     this.positionDeviation = state.positionDeviation;
+    this.edgeState = state.edgeState;
   }
 
-  public double getLat() {
-    return lat;
+  private VehicleState(Builder builder) {
+    this.tripId = builder.tripId;
+    this.positionDeviation = builder.positionDeviation;
+    this.edgeState = builder.edgeState;
   }
 
-  public void setLat(double lat) {
-    this.lat = lat;
-  }
-
-  public double getLon() {
-    return lon;
-  }
-
-  public void setLon(double lon) {
-    this.lon = lon;
+  public static Builder builder() {
+    return new Builder();
   }
 
   public AgencyAndId getTripId() {
     return tripId;
   }
 
-  public void setTripId(AgencyAndId tripId) {
-    this.tripId = tripId;
-  }
-
   public double getPositionDeviation() {
     return positionDeviation;
   }
 
-  public void setPositionDeviation(double positionDeviation) {
-    this.positionDeviation = positionDeviation;
+  public EdgeState getEdgeState() {
+    return edgeState;
+  }
+
+  public static class Builder {
+
+    private AgencyAndId tripId = null;
+
+    private double positionDeviation;
+
+    private EdgeState edgeState = null;
+
+    public VehicleState create() {
+      return new VehicleState(this);
+    }
+
+    public void setTripId(AgencyAndId tripId) {
+      this.tripId = tripId;
+    }
+
+    public void setPositionDeviation(double positionDeviation) {
+      this.positionDeviation = positionDeviation;
+    }
+
+    public void setEdgeState(EdgeState edgeState) {
+      this.edgeState = edgeState;
+    }
   }
 }

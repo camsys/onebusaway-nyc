@@ -16,26 +16,45 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
 public class VehicleLocationInferenceServiceImpl implements
     VehicleLocationInferenceService {
 
+  private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
+
   private ExecutorService _executorService;
 
   private VehicleLocationListener _vehicleLocationListener;
-  
+
   private int _numberOfProcessingThreads = 10;
 
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
+  private ApplicationContext _applicationContext;
+
   @Autowired
-  public void setVehicleLocationListener(VehicleLocationListener vehicleLocationListener) {
+  public void setVehicleLocationListener(
+      VehicleLocationListener vehicleLocationListener) {
     _vehicleLocationListener = vehicleLocationListener;
   }
-  
+
+  /**
+   * Usually, we shoudn't ever have a reference to ApplicationContext, but we
+   * need it for the prototype
+   * 
+   * @param applicationContext
+   */
+  @Autowired
+  public void setApplicationContext(ApplicationContext applicationContext) {
+    _applicationContext = applicationContext;
+  }
+
   public void setNumberOfProcessingThreads(int numberOfProcessingThreads) {
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
@@ -59,23 +78,27 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
+  public void resetVehicleLocation(AgencyAndId vid) {
+    _vehicleInstancesByVehicleId.remove(vid);
+  }
+
+  @Override
+  public VehicleLocationRecord getVehicleLocationForVehicle(AgencyAndId vid) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
+    if (instance == null)
+      return null;
+    return instance.getCurrentState();
+  }
+
+  @Override
   public List<VehicleLocationRecord> getLatestProcessedVehicleLocationRecords() {
 
     List<VehicleLocationRecord> records = new ArrayList<VehicleLocationRecord>();
 
     for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
-
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
-      VehicleState state = instance.getCurrentState();
-
-      VehicleLocationRecord record = new VehicleLocationRecord();
-      record.setCurrentLocationLat(state.getLat());
-      record.setCurrentLocationLon(state.getLon());
-      // TODO: Is this the right time?
-      record.setCurrentTime(System.currentTimeMillis());
-      record.setPositionDeviation(state.getPositionDeviation());
-      record.setTripId(state.getTripId());
+      VehicleLocationRecord record = instance.getCurrentState();
       record.setVehicleId(vehicleId);
       records.add(record);
     }
@@ -88,15 +111,18 @@ public class VehicleLocationInferenceServiceImpl implements
    ****/
 
   private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
-    /**
-     * Maybe there is a better idiom for the ConcurrentMap access?
-     */
-    VehicleInferenceInstance instance = new VehicleInferenceInstance();
-    VehicleInferenceInstance existing = _vehicleInstancesByVehicleId.putIfAbsent(
-        vehicleId, instance);
-    if (existing == null)
-      existing = instance;
-    return existing;
+
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+
+    if (instance == null) {
+      VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
+      instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId,
+          newInstance);
+      if (instance == null)
+        instance = newInstance;
+    }
+
+    return instance;
   }
 
   private class ProcessingTask implements Runnable {
@@ -109,21 +135,18 @@ public class VehicleLocationInferenceServiceImpl implements
 
     @Override
     public void run() {
-      VehicleInferenceInstance existing = getInstanceForVehicle(_inferenceRecord.getVehicleId());
-      existing.handleUpdate(_inferenceRecord);
-      VehicleState state = existing.getCurrentState();
-      
-      VehicleLocationRecord location = new VehicleLocationRecord();
-      location.setTripId(state.getTripId());
-      location.setCurrentLocationLat(state.getLat());
-      location.setCurrentLocationLon(state.getLon());
-      location.setCurrentTime(_inferenceRecord.getTime());
-      location.setVehicleId(_inferenceRecord.getVehicleId());
-      /* fixme: need to infer service date */
-      
-      _vehicleLocationListener.handleVehicleLocationRecord(location);
-      
+
+      try {
+        VehicleInferenceInstance existing = getInstanceForVehicle(_inferenceRecord.getVehicleId());
+        existing.handleUpdate(_inferenceRecord);
+
+        VehicleLocationRecord record = existing.getCurrentState();
+        record.setVehicleId(_inferenceRecord.getVehicleId());
+        _vehicleLocationListener.handleVehicleLocationRecord(record);
+
+      } catch (Throwable ex) {
+        _log.error("error processing new location record for inference", ex);
+      }
     }
   }
-
 }

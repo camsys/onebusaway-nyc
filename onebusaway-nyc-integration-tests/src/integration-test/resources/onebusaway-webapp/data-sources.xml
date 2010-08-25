@@ -7,6 +7,7 @@
 
     <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-common.xml" />
     <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-users-common.xml" />
+    <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-users-extended.xml" />
 
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">

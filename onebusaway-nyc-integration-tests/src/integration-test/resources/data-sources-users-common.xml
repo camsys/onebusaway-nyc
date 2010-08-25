@@ -12,18 +12,4 @@
         <property name="password" value="" />
     </bean>
 
-    <!--
-        The Geocoder is used in the SMS interface for determining your default search location. The DefaultGeocoderImpl
-        doesn't actually do much geocoding... it's just there for testing
-    -->
-    <bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.FixedGeocoderImpl">
-        <property name="lat" value="40.71951191642972" />
-        <property name="lon" value="-73.99991512298584" />
-        <property name="city" value="New York" />
-        <property name="state" value="NY" />
-        <property name="postalCode" value="10013" />
-    </bean>
-
-    <bean id="serviceArea" class="org.onebusaway.presentation.impl.DefaultServiceAreaServiceImpl" />
-
 </beans>

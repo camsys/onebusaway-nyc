@@ -7,6 +7,7 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
@@ -28,5 +29,17 @@ public class VehicleLocationsController {
     ModelAndView mv = new ModelAndView("vehicle-locations.jspx");
     mv.addObject("records", records);
     return mv;
+  }
+  
+  @RequestMapping("/vehicle-location.do")
+  public ModelAndView vehicleLocation(@RequestParam() String vehicleId) {
+    VehicleLocationRecord record = _vehicleLocationService.getVehicleLocationForVehicle(vehicleId);
+    return new ModelAndView("json","record",record);
+  }
+  
+  @RequestMapping("/vehicle-location!reset.do")
+  public ModelAndView resetVehicleLocation(@RequestParam() String vehicleId) {
+    _vehicleLocationService.resetVehicleLocation(vehicleId);
+    return new ModelAndView("json","record",null);
   }
 }
