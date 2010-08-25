@@ -19,7 +19,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     var defaultMapOptions = {
       zoom: 15,
       mapTypeControl: false,
-      center: new google.maps.LatLng(40.714346,-73.995409),
+      center: new google.maps.LatLng(40.70988943430561,-73.96564720877076),
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
@@ -36,6 +36,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     // state used for the map
     var routeIdToShapes = {};
     var routeIdsToVehicleMarkers = {};
+    var stopMarkers = {};
     var numberOfRoutes = 0;
     var vehicleMarkers = {};
     var isVehiclePolling = false;
@@ -112,12 +113,78 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
         vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
     };
- 
+    
+    var requestStops = function() {
+    	var mapBounds = map.getBounds();
+    	var minLatLng = mapBounds.getSouthWest();
+    	var maxLatLng = mapBounds.getNorthEast();
+        jQuery.getJSON(OBA.Config.stopsUrl,
+        		{minLat: minLatLng.lat(), minLng: minLatLng.lng(),
+        	     maxLat: maxLatLng.lat(), maxLng: maxLatLng.lng()},
+        	    function(json) {
+            var stops = json.stops;
+
+            if (!stops)
+              return;
+
+            // keep track of the new ids that came in so we can remove the old ones
+            // that are no longer shown
+            var newStopIds = {};
+            jQuery.each(stops, function(i, stop) {
+                var stopId = stop.stopId;
+            	
+                newStopIds[stopId] = stopId;
+            	
+            	var marker = stopMarkers[stopId];
+            	if (marker) {
+            	    marker.updatePosition(stop.latlng);
+            	} else {
+            	    marker = OBA.StopMarker(stop.stopId, stop.latlng, map, stop.name);
+            	    stopMarkers[stopId] = marker;
+            	}
+            });
+            
+            // remove the old markers that aren't currently shown
+            for (var stopId in stopMarkers) {
+                var marker = stopMarkers[stopId];
+                if (!newStopIds[stopId]) {
+                    marker.removeMarker();
+                    delete stopMarkers[stopId];
+                }
+            }
+         });
+    };
+    
+    google.maps.event.addListener(map, "idle", requestStops);
+
     return {
       getMap: function() { return map; },
 
       containsRoute: function(routeId) {
         return routeId in routeIdToShapes;
+      },
+      
+      showStop: function(stopId) {
+    	  if (console && console.log) {
+    		  console.log("showing stop: " + stopId);
+    	  }
+    	  if (stopMarkers[stopId]) {
+    		  // stop marker is already on map, can just display the popup
+    	      stopMarker.showPopup();
+    	  } else {
+    	      jQuery.getJson(OBA.config.stopUrl, {stopId: stopId}, function(json) {
+    	          var stop = json.stop;
+    	          if (!stop)
+    	              return;
+    	          
+    	          var marker = OBA.StopMarker(stopId, stop.latlng, map);
+    	          stopMarkers[stopId] = marker;
+    	          
+    	          map.setCenter(new google.maps.LatLng(stop.latlng[0], stop.latlng[1]));
+    	      });
+    		  // will need to make another json request for the stop lat/lng
+    		  // zoom the map there, create the marker, and then display the popup
+    	  }
       },
   
       // add and remove shapes also take care of updating the display

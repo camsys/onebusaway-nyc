@@ -16,9 +16,6 @@ var OBA = window.OBA || {};
 
 OBA.Tracker = function() {
 
-    // stopid to stopMarkers
-    var stopMarkers = {};
-
     var mapNode = document.getElementById("map");
     var routeMap = OBA.RouteMap(mapNode);
     var map = routeMap.getMap();
@@ -163,15 +160,7 @@ OBA.Tracker = function() {
     function handleShowOnMap(e) {
       var stopIdStr = jQuery(this).parent().parent().parent("div").attr("id");
       var stopId = stopIdStr.substring("stop-".length);
-      var stopMarker = stopMarkers[stopId];
-      
-      if (!stopMarker)
-        return false;
-
-      // showing the popup automatically zooms to it
-      stopMarker.showPopup();
-
-      return false;
+      routeMap.showStop(stopId);
     }
 
     function handleZoomToExtent(e) {
@@ -251,21 +240,6 @@ OBA.Tracker = function() {
       return false;
     }
 
-    function addStopsToMap() {
-      jQuery.getJSON(OBA.Config.stopsUrl, {}, function(json) {
-        var stops = json.stops;
-
-        if (!stops)
-          return;
-
-        jQuery.each(stops, function(i, stop) {
-          var marker = OBA.StopMarker(stop.stopId, stop.latlng, map, stop.name);
-
-          stopMarkers[stop.stopId] = marker;
-        });
-      });
-    }
-
     return {
         getMap: function() {
             return map;
@@ -275,10 +249,6 @@ OBA.Tracker = function() {
             addSearchBehavior();
             addSearchControlBehavior();
             addExampleSearchBehavior();
-            addStopsToMap();
-
-//          XXX FIXME
-//          OBA.State(map);
         }
     };
 };
