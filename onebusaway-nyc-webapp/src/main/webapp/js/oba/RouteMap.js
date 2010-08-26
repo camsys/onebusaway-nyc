@@ -170,6 +170,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     	  }
     	  if (stopMarkers[stopId]) {
     		  // stop marker is already on map, can just display the popup
+    	      var stopMarker = stopMarkers[stopId];
     	      stopMarker.showPopup();
     	  } else {
     	      jQuery.getJson(OBA.config.stopUrl, {stopId: stopId}, function(json) {
