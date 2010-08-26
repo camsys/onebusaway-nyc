@@ -1,11 +1,18 @@
 package org.onebusaway.nyc.webapp.actions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.onebusaway.nyc.webapp.model.AvailableRoute;
+import org.onebusaway.nyc.webapp.model.DistanceAway;
 import org.onebusaway.nyc.webapp.model.StopDetails;
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.services.TransitDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Handles requests for detailed info for a particular stop, suitable for a popup
@@ -18,26 +25,36 @@ public class StopAction extends OneBusAwayNYCActionSupport {
   private StopDetails stopDetails;
   private String stopId;
   
+  @Autowired
+  private TransitDataService service;
+  
   @Override
   public String execute() throws Exception {
     stopDetails = makeStopDetails(stopId);
     return SUCCESS;
   }
   
-  // FIXME stubbed data
   private StopDetails makeStopDetails(String stopId) {
-    String name;
-    List<Double> latlng;
-    List<AvailableRoute> availableRoutes = makeAvailableRoutes();
+    StopBean stop = service.getStop(stopId);
     
-    if (stopId.equals("S000001")) {
-      name = "Mulberry and Canal";
-      latlng = makeLatLng(40.717078345319955, -73.9985418201294);
-    } else {
-      name = "Allen and Delancey";
-      latlng = makeLatLng(40.71912753071832, -73.99034498937989);
+    String stopName = stop.getName();
+    List<Double> latLng = makeLatLng(stop.getLat(), stop.getLon());
+    // FIXME set last update time appropriately
+    String lastUpdateTime = "one minute ago";
+    
+    List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
+    List<RouteBean> routes = stop.getRoutes();        
+    for (RouteBean routeBean : routes) {
+      String shortName = routeBean.getShortName();
+      String longName = routeBean.getLongName();
+      
+      // FIXME stubbed out distance aways as we don't have it in the api yet
+      List<DistanceAway> distanceAways = Arrays.asList(
+          new DistanceAway[] {new DistanceAway(0, 0)});
+      availableRoutes.add(new AvailableRoute(shortName, longName, distanceAways));
     }
-    return new StopDetails(stopId, name, latlng, "one minute ago", availableRoutes);
+    
+    return new StopDetails(stopId, stopName, latLng, lastUpdateTime, availableRoutes);
   }
 
   public void setStopId(String stopId) {
