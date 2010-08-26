@@ -11,7 +11,7 @@ import org.onebusaway.nyc.webapp.model.RouteDetails;
  * Handles requests for a particular route's geometry
  */
 @ParentPackage("json-default")
-@Result(type="json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class RouteAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;

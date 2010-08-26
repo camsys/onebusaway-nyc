@@ -13,7 +13,7 @@ import org.onebusaway.nyc.webapp.model.search.StopSearchResult;
  * Handles requests for a generic search. Can return route/stop specific results.
  */
 @ParentPackage("json-default")
-@Result(type="json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class SearchAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;

@@ -13,7 +13,7 @@ import org.onebusaway.nyc.webapp.model.VehicleDetails;
  * Handles requests for detailed info on a particular vehicle, suitable for a popup.
  */
 @ParentPackage("json-default")
-@Result(type = "json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class VehicleAction extends OneBusAwayNYCActionSupport {
   
   private static final long serialVersionUID = 1L;

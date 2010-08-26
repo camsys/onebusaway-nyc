@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Handles requests for detailed info for a particular stop, suitable for a popup
  */
 @ParentPackage("json-default")
-@Result(type="json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class StopAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;

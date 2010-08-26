@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Handles requests to retrieve stop ids/latlngs
  */
 @ParentPackage("json-default")
-@Result(type="json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class StopsAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;

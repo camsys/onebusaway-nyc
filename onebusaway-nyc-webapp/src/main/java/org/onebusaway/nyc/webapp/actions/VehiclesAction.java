@@ -14,7 +14,7 @@ import org.onebusaway.nyc.webapp.model.VehicleRoute;
  * This is suitable for updating the locations of vehicles for currently displayed routes.
  */
 @ParentPackage("json-default")
-@Result(type="json")
+@Result(type="json", params={"callbackParameter", "callback"})
 public class VehiclesAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
