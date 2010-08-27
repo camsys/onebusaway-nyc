@@ -2,6 +2,8 @@ package org.onebusaway.nyc.webapp.actions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,8 +139,29 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
         }
       }
     }
-
+    
+    sortSearchResults();
+    
     return SUCCESS;
+  }
+
+  private void sortSearchResults() {
+    Collections.sort(searchResults, new Comparator<SearchResult>() {
+
+      @Override
+      public int compare(SearchResult o1, SearchResult o2) {
+        if ((o1 instanceof RouteSearchResult) && (o2 instanceof StopSearchResult))
+          return -1;
+        else if ((o1 instanceof StopSearchResult) && (o2 instanceof RouteSearchResult))
+          return 1;
+        else if ((o1 instanceof RouteSearchResult) && (o2 instanceof RouteSearchResult))
+          return ((RouteSearchResult) o1).getName().compareTo(((RouteSearchResult) o2).getName());
+        else if ((o1 instanceof StopSearchResult) && (o2 instanceof StopSearchResult))
+          return ((StopSearchResult) o1).getName().compareTo(((StopSearchResult) o2).getName());
+        else
+          throw new IllegalStateException("Unknown search result types");
+      }
+    });
   }
 
   private List<StopsBean> fetchStopsFromGeocoder(String q) {
