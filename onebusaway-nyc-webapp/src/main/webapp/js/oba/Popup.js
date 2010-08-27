@@ -48,6 +48,12 @@ function makeJsonFetcher(url, data) {
 }
 
 OBA.StopPopup = function(stopId, map) {
+    var parseStopId = function(stopId) {
+        var idx = stopId.indexOf("_");
+        if (idx === -1)
+            return stopId;
+        return stopId.substring(idx + 1);
+    };
     var generateStopMarkup = function(json) {
         var stop = json.stop;
         
@@ -55,7 +61,7 @@ OBA.StopPopup = function(stopId, map) {
             return null;
         
         var header = '<p class="header">' + stop.name + '</p>' +
-                     '<p class="description">Stop ID ' + stop.stopId + '</p>' + 
+                     '<p class="description">Stop ID ' + parseStopId(stop.stopId) + '</p>' + 
                      '<p class="meta">Updated ' + stop.lastUpdate + '.</p>';
             
         var service = '';           

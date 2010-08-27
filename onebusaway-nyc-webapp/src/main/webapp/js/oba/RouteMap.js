@@ -165,9 +165,6 @@ OBA.RouteMap = function(mapNode, mapOptions) {
       },
       
       showStop: function(stopId) {
-    	  if (console && console.log) {
-    		  console.log("showing stop: " + stopId);
-    	  }
     	  if (stopMarkers[stopId]) {
     		  // stop marker is already on map, can just display the popup
     	      var stopMarker = stopMarkers[stopId];

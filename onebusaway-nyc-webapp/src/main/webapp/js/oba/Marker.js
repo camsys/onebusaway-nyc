@@ -45,8 +45,9 @@ OBA.Marker = function(entityId, latlng, map, popup, icon) {
         },
         
         updatePosition: function(latlng) {
-            marker.setPosition(latlng);
+            marker.setPosition(new google.maps.LatLng(latlng[0], latlng[1]));
         },
+        
         isDisplayed: function() {
             return marker.getMap() != null;
         }

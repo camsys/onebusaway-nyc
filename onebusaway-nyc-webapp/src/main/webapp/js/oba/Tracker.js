@@ -105,7 +105,7 @@ OBA.Tracker = function() {
           
     function makeStopElement(record) {
       var el = jQuery('<div id="stop-' + record.stopId + '" class="stop result"></div>')
-                      .append('<p class="name">' + record.name + '</p>');
+                      .append('<p class="name">' + OBA.Util.truncate(record.name, 25) + '</p>');
       
                    
       var controls = jQuery('<ul></ul>').addClass("controls")
@@ -133,7 +133,7 @@ OBA.Tracker = function() {
 
     function makeRouteElement(record) {
       var el = jQuery('<div id="route-' + record.routeId + '" class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
-                .append('<p class="name">' + record.name + '</p>')
+                .append('<p class="name">' + OBA.Util.truncate(record.name, 25) + '</p>')
                 .append('<p class="description">' + OBA.Util.truncate(record.description, 30) + '</p>')
              
       var controls = jQuery('<ul></ul>').addClass("controls")
@@ -158,6 +158,7 @@ OBA.Tracker = function() {
     }
             
     function handleShowOnMap(e) {
+      e.preventDefault();
       var stopIdStr = jQuery(this).parent().parent().parent("div").attr("id");
       var stopId = stopIdStr.substring("stop-".length);
       routeMap.showStop(stopId);
