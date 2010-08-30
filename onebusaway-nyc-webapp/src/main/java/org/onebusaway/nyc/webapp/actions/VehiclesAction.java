@@ -32,14 +32,15 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport {
   private List<VehicleRoute> makeVehicleLatLngs(String[] routeIds) {
     List<VehicleRoute> vehicles = new ArrayList<VehicleRoute>(2);
     for (String routeId : routeIds) {
-      if (routeId.equals("M14D")) {
+      String justRouteId = parseIdWithoutAgency(routeId);
+      if (justRouteId.equals("Q54")) {
         List<VehicleLatLng> vehicleLatLngs = Arrays.asList(
             new VehicleLatLng[] {
                 new VehicleLatLng("8213", makeLatLng(40.71818426273522, -74.00017260321046)),
                 new VehicleLatLng("8210", makeLatLng(40.71408577078771, -73.9972972751465))
             });
         vehicles.add(new VehicleRoute(routeId, vehicleLatLngs));
-      } else if (routeId.equals("M14A")) {
+      } else if (justRouteId.equals("B62")) {
         List<VehicleLatLng> vehicleLatLngs = Arrays.asList(
             new VehicleLatLng[] {
                 new VehicleLatLng("8214", makeLatLng(40.71805415575759, -73.99085997351075)),

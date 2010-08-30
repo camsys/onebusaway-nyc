@@ -20,3 +20,8 @@
     padding: 0px;
     margin: 0px;
 }
+
+#displayed-routes,
+#search {
+    width: 320px;
+}

@@ -15,13 +15,13 @@
 var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, mapOptions) {
-
     var defaultMapOptions = {
       zoom: 15,
       mapTypeControl: false,
       center: new google.maps.LatLng(40.70988943430561,-73.96564720877076),
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
+
     var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
 
     var map = new google.maps.Map(mapNode, options);
@@ -34,6 +34,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     }
 
     // state used for the map
+	var routeIds = {};
     var routeIdToShapes = {};
     var routeIdsToVehicleMarkers = {};
     var stopMarkers = {};
@@ -73,7 +74,14 @@ OBA.RouteMap = function(mapNode, mapOptions) {
             var vehicles = routeIdsToVehicleMarkers[routeId];
 
             if (vehicles) {
-              vehicles.push(vehicleMarker);
+              var alreadyThere = false;
+              var markerId = vehicleMarker.getId();
+              jQuery.each(vehicles, function(i, vehicle) {
+                if (vehicle.getId() === markerId)
+                  alreadyThere = true;
+              });
+              if (!alreadyThere)
+                vehicles.push(vehicleMarker);
             } else {
               vehicles = [vehicleMarker];
               routeIdsToVehicleMarkers[routeId] = vehicles;
@@ -188,9 +196,12 @@ OBA.RouteMap = function(mapNode, mapOptions) {
       // add and remove shapes also take care of updating the display
       // if this is a problem we can factor this back out
       addRoute: function(routeId, json) {    
-        var coords = json.route && json.route.polyLine;
+        if (routeId in routeIdToShapes)
+			    return;
+
+        var coords = json && json.polyLine;
           
-        if (! coords)
+        if (!coords)
           return;
 
         var latlngs = jQuery.map(coords, function(x) {
@@ -217,6 +228,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
           isVehiclePolling = true;
           vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
         }
+
+		routeIds[routeId] = 1;
       },
  
       removeRoute: function(routeId) {
@@ -244,6 +257,18 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 clearTimeout(vehicleTimerId);
             }
         }
+
+		delete routeIds[routeId];
+      },
+
+	  // FIXME
+      getRoutes: function() {
+		var a = new Array();
+		
+		for(var i in routeIds)
+			a.push(i);
+	
+		return a;
       },
  
       getCount: function() {

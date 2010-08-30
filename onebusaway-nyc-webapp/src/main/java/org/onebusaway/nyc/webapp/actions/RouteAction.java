@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.webapp.actions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
@@ -17,11 +18,11 @@ public class RouteAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
   
   private String routeId;
-  private RouteDetails routeDetails;
+  private List<RouteDetails> routesDetails = new ArrayList<RouteDetails>();
   
   @Override
   public String execute() throws Exception {
-    routeDetails = makeRouteDetails(routeId);
+    routesDetails = Arrays.asList(makeRouteDetails(routeId));
     return SUCCESS;
   }
 
@@ -54,8 +55,8 @@ public class RouteAction extends OneBusAwayNYCActionSupport {
     this.routeId = routeId;
   }
   
-  public RouteDetails getRoute() {
-    return routeDetails;
+  public List<RouteDetails> getRoutes() {
+    return routesDetails;
   }
 
 }

@@ -45,11 +45,15 @@ OBA.Marker = function(entityId, latlng, map, popup, icon) {
         },
         
         updatePosition: function(latlng) {
-            marker.setPosition(new google.maps.LatLng(latlng[0], latlng[1]));
+            marker.setPosition(latlng);
         },
         
         isDisplayed: function() {
             return marker.getMap() != null;
+        },
+
+        getId: function() {
+            return entityId;
         }
     };
 };

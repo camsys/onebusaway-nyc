@@ -44,7 +44,7 @@ a:hover {
 }
 
 #header {
-	background-image: url('http://www.mta.info/template/images/topbar_background.png');
+	background-image: url('img/topbar_background.png');
 	background-repeat: repeat-x;
 
 	height: 100px;
