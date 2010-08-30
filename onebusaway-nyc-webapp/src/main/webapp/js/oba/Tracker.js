@@ -20,11 +20,13 @@ OBA.Tracker = function() {
     var headerDiv = null;
     var footerDiv = null;
     var contentDiv = null;
+	var searchDiv = null;
     var sidebarHeaders = null;
     var displayedRoutesDiv = null;
     var searchResultsDiv = null;
 
     var mapNode = document.getElementById("map");
+
     var routeMap = OBA.RouteMap(mapNode);
     var map = routeMap.getMap();
     var state = OBA.State(map, routeMap, makeRouteElement);
@@ -55,17 +57,17 @@ OBA.Tracker = function() {
         e.preventDefault();
 
         var formData = jQuery(this).serialize();
-        var search = jQuery("#search");
-        var searchResultsList = jQuery("#search-results");
+        var searchResults = jQuery("#search-results");
+        var searchResultsList = jQuery("#search-results-list");
 
         jQuery.ajax({
             beforeSend: function(xhr) {
                 searchResultsList.empty();
                 
-                search.addClass("loading");                
+                searchResults.addClass("loading");                
             },
             complete: function(xhr, s) {
-                search.removeClass("loading");
+                searchResults.removeClass("loading");
             },
             success: function(data, s, xhr) {
                 exampleSearches.remove();
@@ -84,7 +86,7 @@ OBA.Tracker = function() {
         return;
 
       var anyResults = false;
-      var searchResultsList = jQuery("#search-results");
+      var searchResultsList = jQuery("#search-results-list");
       searchResultsList.empty();
 
       jQuery.each(json.searchResults, function(i, record) {
@@ -127,9 +129,7 @@ OBA.Tracker = function() {
           var description = '<ul class="description">';
           
           jQuery.each(record.routesAvailable, function(i, route) {
-        	var routeId = route.routeId;
-
-            description += '<li>' + routeId + ' - ' + OBA.Util.truncate(route.description, 30) + '</li>';
+            description += '<li>' + route.routeId + ' - ' + OBA.Util.truncate(route.description, 30) + '</li>';
           });
 
           description += '</ul>';
@@ -155,8 +155,8 @@ OBA.Tracker = function() {
     }
       
     function addSearchControlBehavior() {
-      jQuery("#search .showOnMap").live("click", handleShowOnMap);
-      jQuery("#search .addToMap").live("click", handleAddToMap);
+      jQuery("#search-results-list .showOnMap").live("click", handleShowOnMap);
+      jQuery("#search-results-list .addToMap").live("click", handleAddToMap);
       jQuery("#displayed-routes-list .zoomToExtent").live("click", handleZoomToExtent);
       jQuery("#displayed-routes-list .removeFromMap").live("click", handleRemoveFromMap);
     }
@@ -192,6 +192,8 @@ OBA.Tracker = function() {
         return false;
       }
 
+      jQuery("#no-routes-displayed-message").hide();
+
       // clone the search result element to place in the routes displayed list
       var clonedDiv = resultDiv.clone();
 
@@ -216,7 +218,6 @@ OBA.Tracker = function() {
         routeMap.addRoute(routeId, json.routes[0]);
         
         // update text info on screen
-        jQuery("#no-routes-displayed-message").hide();
         jQuery("#n-displayed-routes").text(routeMap.getCount());
 
 	  	// update hash state
@@ -233,6 +234,7 @@ OBA.Tracker = function() {
       var routeId = routeIdStr.substring("displayedroute-".length);
 
       displayRouteDiv.fadeOut("fast", function() { displayRouteDiv.remove(); });
+
       routeMap.removeRoute(routeId);
 
       // find the control link for the matching search result element
@@ -260,17 +262,18 @@ OBA.Tracker = function() {
 		footerDiv = jQuery("#footer");
 		contentDiv = jQuery("#content");
 
+		searchDiv = jQuery("#search");
 		sidebarHeaders = jQuery("#sidebar p.header");
 		displayedRoutesDiv = jQuery("#displayed-routes");
-		searchResultsDiv = jQuery("#search")
+		searchResultsDiv = jQuery("#search-results")
 	
 		function resize() {
 			var h = theWindow.height() - footerDiv.height() - headerDiv.height();
 
 			contentDiv.height(h);
 
-			searchResultsDiv.height(Math.ceil(h * .60 - sidebarHeaders.outerHeight()));
-			displayedRoutesDiv.height(Math.floor(h * .40));
+			searchResultsDiv.height(Math.ceil(h * .75 - sidebarHeaders.outerHeight() - searchDiv.outerHeight()));
+			displayedRoutesDiv.height(Math.floor(h * .25));
 		}
 	
 		// call when the window is resized

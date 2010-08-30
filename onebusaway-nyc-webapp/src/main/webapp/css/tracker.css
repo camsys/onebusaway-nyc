@@ -13,17 +13,8 @@
 /* under the License. */
 
 #search {
-    position: relative;
-    height: 60%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    position: relative;
-}
-
-#search.loading {
-	background-image: url('img/spinner.gif');
-	background-repeat: no-repeat;
-    background-position: 125px 50%;
+    height: 85px;
+	border-bottom: 1px solid #DFDFDF;
 }
 
 #search form {
@@ -39,7 +30,7 @@
 #search form input {
 	font-size: 15px;
 	font-family: inherit;
-	width: 97%;
+	width: 265px;
 }
 
 #search form p.small {
@@ -47,15 +38,31 @@
 	font-size: 10px;
 }
 
+#search-results {
+	overflow-y: auto;
+	overflow-x: hidden;
+	position: relative;
+	height: 75%;
+}
+
+#search-results.loading {
+	background-image: url('img/spinner.gif');
+	background-repeat: no-repeat;
+    background-position: 125px 50%;
+}
+
+#search-results li {
+	list-style-type: none;
+}
+
 #example-searches,
-#search-results,
+#search-results-list,
 #displayed-routes-list {
-    padding-left: 15px;
-    padding-right: 15px;
+	padding: 15px;
 }
 
 #displayed-routes {
-    height: 20%;
+    height: 25%;
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;

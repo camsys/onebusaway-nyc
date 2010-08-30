@@ -15,8 +15,6 @@
 var OBA = window.OBA || {};
 
 OBA.Util = (function() {
-    var textSizer = null;
-
     return {
     	truncate: function(text, length) {
             // FIXME: truncate on word boundaries?
@@ -28,6 +26,7 @@ OBA.Util = (function() {
         },
         serializeArray: function(lst, keyname) {
         	var result = null;
+
             jQuery.each(lst, function(i, x) {
             	if (!result) {
             		result = keyname + "=" + x;
@@ -35,6 +34,7 @@ OBA.Util = (function() {
             		result += "&" + keyname + "=" + x;
             	}
             });
+
             return result;
         }
     };

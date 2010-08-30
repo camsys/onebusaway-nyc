@@ -32,7 +32,10 @@ under the License.
 <p class="small">TIP: Enter an intersection, bus route or bus stop
 number.</p>
 </form>
+</div>
 
+
+<div id="search-results">
 <div id="example-searches">
 <p>Example Searches:</p>
 
@@ -43,12 +46,12 @@ number.</p>
 </ul>
 </div>
 
-<ul id="search-results">
+<ul id="search-results-list">
 </ul>
 </div>
 
 <div id="current_layers">
-<p class="header"><a href="#">Displayed Routes (<span id="n-displayed-routes">0</span>)</a></p>
+<p class="header">Displayed Routes (<span id="n-displayed-routes">0</span>)</p>
 
 <div id="displayed-routes">
 <p id="no-routes-displayed-message">You haven't added any routes to the map yet.</p>

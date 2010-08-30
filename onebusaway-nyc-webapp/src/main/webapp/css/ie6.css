@@ -12,16 +12,16 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-#sidebar {
-    width: 300px;
+#content #sidebar {
+    width: 280px;
 }
 
-#map {
-    padding: 0px;
-    margin: 0px;
+#content #map {
+    position: relative;
+    height: 100%;	
 }
 
 #displayed-routes,
-#search {
-    width: 320px;
+#search-results {
+    width: 300px;
 }
