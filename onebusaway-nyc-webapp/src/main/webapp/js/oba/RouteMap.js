@@ -185,18 +185,18 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     	      var stopMarker = stopMarkers[stopId];
     	      stopMarker.showPopup();
     	  } else {
-    	      jQuery.getJson(OBA.config.stopUrl, {stopId: stopId}, function(json) {
+    	      jQuery.getJSON(OBA.Config.stopUrl, {stopId: stopId}, function(json) {
     	          var stop = json.stop;
     	          if (!stop)
     	              return;
     	          
-    	          var marker = OBA.StopMarker(stopId, stop.latlng, map);
+    	          var marker = OBA.StopMarker(stopId, stop.latLng, map);
     	          stopMarkers[stopId] = marker;
     	          
-    	          map.setCenter(new google.maps.LatLng(stop.latlng[0], stop.latlng[1]));
+    	          map.setCenter(new google.maps.LatLng(stop.latLng[0], stop.latLng[1]));
+    	          
+    	          marker.showPopup();
     	      });
-    		  // will need to make another json request for the stop lat/lng
-    		  // zoom the map there, create the marker, and then display the popup
     	  }
       },
   
