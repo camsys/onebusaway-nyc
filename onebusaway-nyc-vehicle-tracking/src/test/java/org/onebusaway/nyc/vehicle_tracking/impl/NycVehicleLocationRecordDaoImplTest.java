@@ -33,8 +33,8 @@ public class NycVehicleLocationRecordDaoImplTest {
   @Test
   public void test() {
 
-    NycVehicleLocationRecordDaoImpl dao = new NycVehicleLocationRecordDaoImpl();
-    dao.setSessionFactory(_sessionFactory);
+    VehicleTrackingMutableDaoImpl dao = new VehicleTrackingMutableDaoImpl();
+    dao.setMutableSessionFactory(_sessionFactory);
 
     long t = System.currentTimeMillis();
 
@@ -46,7 +46,7 @@ public class NycVehicleLocationRecordDaoImplTest {
     record.setTime(t);
     record.setVehicleId(new AgencyAndId("2008", "123"));
 
-    dao.saveOrUpdateRecord(record);
+    dao.saveOrUpdateVehicleLocationRecord(record);
 
     List<NycVehicleLocationRecord> records = dao.getRecordsForTimeRange(
         t - 1000, t + 1000);

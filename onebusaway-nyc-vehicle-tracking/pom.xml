@@ -13,6 +13,11 @@
     <dependencies>
         <dependency>
             <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-stif-loader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-transit-data-federation</artifactId>
             <version>${onebusaway.version}</version>
         </dependency>

@@ -6,6 +6,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterMod
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
+import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
 
 public class VehicleInferenceInstance {
 
@@ -20,13 +21,14 @@ public class VehicleInferenceInstance {
     // If this record occurs BEFORE the most recent update, we ignore it
     if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
       return;
-    
+
     Observation observation = new Observation(record);
 
     _particleFilter.updateFilter(record.getTime(), observation);
   }
 
   public synchronized VehicleLocationRecord getCurrentState() {
+
     Particle particle = _particleFilter.getMostLikelyParticle();
     VehicleState state = particle.getData();
 
@@ -37,8 +39,13 @@ public class VehicleInferenceInstance {
     record.setCurrentLocationLon(p.getLon());
 
     record.setCurrentTime((long) particle.getTimestamp());
-    record.setPositionDeviation(state.getPositionDeviation());
-    record.setTripId(state.getTripId());
+    // record.setPositionDeviation(state.getPositionDeviation());
+
+    TripInstanceProxy tripInstance = state.getTripInstance();
+    if (tripInstance != null) {
+      record.setTripId(tripInstance.getTrip().getId());
+      record.setServiceDate(tripInstance.getServiceDate());
+    }
 
     return record;
   }

@@ -10,6 +10,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.transit_data_federation.impl.walkplanner.StreetGraphLibrary;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
+import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkNodeEntry;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkPlannerGraph;
@@ -33,6 +34,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private WalkPlannerGraph _streetGraph;
 
+  private TripsFromObservationService _tripsFromObservationServie;
+
   private int _initialNumberOfParticles = 50;
 
   private double _initialSearchRadius = 200;
@@ -48,6 +51,12 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   @Autowired
   public void setStreetGraph(WalkPlannerGraph streetGraph) {
     _streetGraph = streetGraph;
+  }
+
+  @Autowired
+  public void setTripsFromObservationService(
+      TripsFromObservationService tripsFromObservationService) {
+    _tripsFromObservationServie = tripsFromObservationService;
   }
 
   /**
@@ -81,6 +90,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   @Override
   public List<Particle> createParticles(double timestamp, Observation obs) {
 
+    CDFMap<TripInstanceProxy> trips = _tripsFromObservationServie.determinePotentialTripsForObservation(obs);
+
     ProjectedPoint point = obs.getPoint();
 
     Collection<WalkNodeEntry> nodes = determineNearbyStreetNodes(point);
@@ -99,7 +110,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     CDFMap<EdgeState> cdf = constructCDFForPotentialEdges(
         potentialEdgeLocations, g, point);
 
-    return sampleParticlesFromPotentialEdges(timestamp, cdf);
+    return sampleParticlesFromPotentialEdges(timestamp, cdf, trips);
   }
 
   private Collection<WalkNodeEntry> determineNearbyStreetNodes(
@@ -148,7 +159,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   private List<Particle> sampleParticlesFromPotentialEdges(double timestamp,
-      CDFMap<EdgeState> cdf) {
+      CDFMap<EdgeState> cdf, CDFMap<TripInstanceProxy> trips) {
 
     List<Particle> particles = new ArrayList<Particle>(
         _initialNumberOfParticles);
@@ -156,12 +167,16 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
       EdgeState edgeLocation = cdf.sample();
+      TripInstanceProxy trip = null;
+      if( ! trips.isEmpty())
+        trip = trips.sample();
 
       Particle p = new Particle(timestamp);
 
       VehicleState.Builder state = VehicleState.builder();
       state.setEdgeState(edgeLocation);
-
+      state.setTripInstance(trip);
+      
       p.setData(state.create());
       particles.add(p);
     }

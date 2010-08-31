@@ -11,14 +11,14 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
  * @author bdferris
  * @see NycVehicleLocationRecord
  */
-public interface NycVehicleLocationRecordDao {
+public interface VehicleTrackingMutableDao {
 
   /**
    * Persist the specified record to the database
    * 
    * @param record
    */
-  public void saveOrUpdateRecord(NycVehicleLocationRecord record);
+  public void saveOrUpdateVehicleLocationRecord(NycVehicleLocationRecord record);
 
   /**
    * @param timeFrom - unix time (ms)
@@ -27,4 +27,5 @@ public interface NycVehicleLocationRecordDao {
    */
   public List<NycVehicleLocationRecord> getRecordsForTimeRange(long timeFrom,
       long timeTo);
+
 }

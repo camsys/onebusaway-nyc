@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.NycVehicleLocationRecordDao;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingMutableDao;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.MonitoredVehicleJourney;
 import org.onebusaway.siri.model.ServiceDelivery;
@@ -21,7 +21,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
-  private NycVehicleLocationRecordDao _recordDao;
+  private VehicleTrackingMutableDao _recordDao;
 
   private String _agencyId = "2008";
 
@@ -32,7 +32,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Autowired
-  public void setRecordDao(NycVehicleLocationRecordDao recordDao) {
+  public void setRecordDao(VehicleTrackingMutableDao recordDao) {
     _recordDao = recordDao;
   }
 
@@ -95,6 +95,6 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   private void handleRecord(NycVehicleLocationRecord record) {
     _vehicleLocationInferenceService.handleVehicleLocation(record);
-    _recordDao.saveOrUpdateRecord(record);
+    _recordDao.saveOrUpdateVehicleLocationRecord(record);
   }
 }

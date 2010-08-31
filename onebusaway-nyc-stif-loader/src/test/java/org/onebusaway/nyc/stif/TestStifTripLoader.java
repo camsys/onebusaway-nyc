@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 
@@ -29,12 +30,13 @@ public class TestStifTripLoader {
 	      
 	      StifTripLoader loader = new StifTripLoader();
 	      loader.setGtfsDao(dao);
-	      loader.init();
 	      loader.run(in);
-	      Map<String, List<Trip>> mapping = loader.getTripMapping();
+	      Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
 	      assertTrue(mapping.containsKey("1140"));
-	      List<Trip> trips = mapping.get("1140");
-	      assertEquals(trips.get(0).getBlockId(), "11559238");
+	      List<AgencyAndId> trips = mapping.get("1140");
+	      AgencyAndId tripId = trips.get(0);
+	      Trip trip = dao.getTripForId(tripId);
+	      assertEquals(trip.getBlockId(), "11559238");
 	      
 	}
 }

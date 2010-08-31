@@ -4,15 +4,14 @@ import java.util.List;
 
 import org.hibernate.SessionFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.NycVehicleLocationRecordDao;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingMutableDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NycVehicleLocationRecordDaoImpl implements
-    NycVehicleLocationRecordDao {
+public class VehicleTrackingMutableDaoImpl implements VehicleTrackingMutableDao {
 
   private HibernateTemplate _template;
 
@@ -24,13 +23,13 @@ public class NycVehicleLocationRecordDaoImpl implements
    * @param sessionFactory
    */
   @Autowired
-  public void setSessionFactory(
+  public void setMutableSessionFactory(
       @Qualifier("mutable") SessionFactory sessionFactory) {
     _template = new HibernateTemplate(sessionFactory);
   }
 
   @Override
-  public void saveOrUpdateRecord(NycVehicleLocationRecord record) {
+  public void saveOrUpdateVehicleLocationRecord(NycVehicleLocationRecord record) {
     _template.saveOrUpdate(record);
   }
 

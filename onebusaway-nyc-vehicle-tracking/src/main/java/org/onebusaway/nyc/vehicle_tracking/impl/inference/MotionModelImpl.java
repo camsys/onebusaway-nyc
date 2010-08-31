@@ -5,6 +5,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Gaussian;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
+import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkNodeEntry;
 
@@ -47,9 +48,22 @@ public class MotionModelImpl implements MotionModel<Observation> {
   @Override
   public Particle move(Particle parent, double timestamp, double timeElapsed,
       Observation obs) {
-    
-    // Let's move! We need:
-    // A velocity
+
+    EdgeState edgeState = moveParticle(parent, timestamp, obs);
+    TripInstanceProxy tripInstance = determineTripInstance(parent, timestamp,
+        obs, edgeState);
+
+    VehicleState.Builder state = VehicleState.builder();
+    state.setEdgeState(edgeState);
+    state.setTripInstance(tripInstance);
+
+    Particle particle = new Particle(timestamp, parent);
+    particle.setData(state.create());
+    return particle;
+  }
+
+  private EdgeState moveParticle(Particle parent, double timestamp,
+      Observation obs) {
 
     VehicleState parentState = parent.getData();
     EdgeState edgeState = parentState.getEdgeState();
@@ -107,13 +121,12 @@ public class MotionModelImpl implements MotionModel<Observation> {
         edgeState = new EdgeState(edge);
       }
     }
+    return edgeState;
+  }
 
-    VehicleState.Builder state = VehicleState.builder();
-    state.setEdgeState(edgeState);
-
-    Particle particle = new Particle(timestamp, parent);
-    particle.setData(state.create());
-    return particle;
+  private TripInstanceProxy determineTripInstance(Particle parent,
+      double timestamp, Observation obs, EdgeState edgeState) {
+    return null;
   }
 
   private PointVector vector(ProjectedPoint a, ProjectedPoint b) {

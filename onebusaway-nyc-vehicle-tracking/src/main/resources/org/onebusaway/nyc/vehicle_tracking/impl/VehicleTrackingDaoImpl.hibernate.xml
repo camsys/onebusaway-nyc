@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <query name="destinationSignCodeRecordsForDestinationSignCode" read-only="true">
+      SELECT r FROM DestinationSignCodeRecord r WHERE destinationSignCode = :destinationSignCode 
+    </query>
+    <query name="destinationSignCodeRecordsForTripId" read-only="true">
+      SELECT r FROM DestinationSignCodeRecord r WHERE tripId = :tripId 
+    </query>
+</hibernate-mapping>
