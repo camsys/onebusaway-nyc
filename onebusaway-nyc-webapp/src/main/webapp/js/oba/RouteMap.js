@@ -206,13 +206,19 @@ OBA.RouteMap = function(mapNode, mapOptions) {
         if (routeId in routeIdToShapes)
 			    return;
 
-        var coords = json && json.polyLine;
-          
-        if (!coords)
+        var encodedPolylines = json && json.polylines;
+        if (!encodedPolylines)
           return;
 
-        var latlngs = jQuery.map(coords, function(x) {
-            return new google.maps.LatLng(x[0], x[1]);
+        // polylines is a list of encoded polylines from the server
+        // here we decode them and put them into one list of lat lngs
+        var latlngs = [];
+        jQuery.each(encodedPolylines, function(_, encodedPolyline) {
+            var latlngList = OBA.Util.decodePolyline(encodedPolyline.points);
+            var googleLatLngList = jQuery.map(latlngList, function(latlng) {
+                return new google.maps.LatLng(latlng[0], latlng[1]);
+            });
+            jQuery.merge(latlngs, googleLatLngList);
         });
 
         var shape = new google.maps.Polyline({
