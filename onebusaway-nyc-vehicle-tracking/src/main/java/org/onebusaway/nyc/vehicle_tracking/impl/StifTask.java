@@ -69,6 +69,11 @@ public class StifTask implements Runnable {
   }
 
   public void loadStif(File path, StifTripLoader loader) {
+    
+    // Exclude files and directories like .svn
+    if( path.getName().startsWith("."))
+      return;
+    
     if (path.isDirectory()) {
       for (String filename : path.list()) {
         File contained = new File(path, filename);
