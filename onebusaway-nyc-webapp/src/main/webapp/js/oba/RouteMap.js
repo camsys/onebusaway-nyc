@@ -190,26 +190,33 @@ OBA.RouteMap = function(mapNode, mapOptions) {
       containsRoute: function(routeId) {
         return routeId in routeIdToShapes;
       },
-      
+
       showStop: function(stopId) {
-    	  if (stopMarkers[stopId]) {
-    		  // stop marker is already on map, can just display the popup
-    	      var stopMarker = stopMarkers[stopId];
-    	      stopMarker.showPopup();
-    	  } else {
-    	      jQuery.getJSON(OBA.Config.stopUrl, {stopId: stopId}, function(json) {
-    	          var stop = json.stop;
-    	          if (!stop)
-    	              return;
-    	          
-    	          var marker = OBA.StopMarker(stopId, stop.latLng, map);
-    	          stopMarkers[stopId] = marker;
-    	          
-    	          map.setCenter(new google.maps.LatLng(stop.latLng[0], stop.latLng[1]));
-    	          
-    	          marker.showPopup();
-    	      });
-    	  }
+        if (stopMarkers[stopId]) {
+            // stop marker is already on map, can just display the popup
+            var stopMarker = stopMarkers[stopId];
+            stopMarker.showPopup();
+        } else {
+            var url = OBA.Config.stopUrl + "/" + stopId + ".json";
+            jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
+                var stop;
+                try {
+                    stop = json.data.references.stops[0];
+                } catch (typeError) {
+                    OBA.Util.log("invalid stop response from server");
+                    return;
+                }
+
+                var stopId = stop.id;
+                var latlng = [stop.lat, stop.lon];
+                var marker = OBA.StopMarker(stopId, latlng, map);
+                stopMarkers[stopId] = marker;
+
+                map.setCenter(new google.maps.LatLng(latlng[0], latlng[1]));
+
+                marker.showPopup();
+            });
+        }
       },
 
       // add and remove shapes also take care of updating the display
