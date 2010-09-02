@@ -126,39 +126,51 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
         vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
     };
-    
-    var requestStops = function() {
-    	var mapBounds = map.getBounds();
-    	var minLatLng = mapBounds.getSouthWest();
-    	var maxLatLng = mapBounds.getNorthEast();
-        jQuery.getJSON(OBA.Config.stopsUrl,
-        		{minLat: minLatLng.lat(), minLng: minLatLng.lng(),
-        	     maxLat: maxLatLng.lat(), maxLng: maxLatLng.lng()},
-        	    function(json) {
-            var stops = json.stops;
 
-            if (!stops)
-              return;
+    var requestStops = function() {
+        // calculate the request lat/lon and spans to use for the request
+        var mapBounds = map.getBounds();
+        var minLatLng = mapBounds.getSouthWest(), maxLatLng = mapBounds.getNorthEast();
+        var lat = minLatLng.lat(), lon = minLatLng.lng();
+        var latSpan = Math.abs(maxLatLng.lat() - lat) * 2;
+        var lonSpan = Math.abs(maxLatLng.lng() - lon) * 2;
+
+        jQuery.getJSON(OBA.Config.stopsUrl,
+                       {version: 2, key: OBA.Config.apiKey,
+                        lat: lat, lon: lon, latSpan: latSpan, lonSpan: lonSpan
+                        },
+                       function(json) {
+
+            var stops;
+            try {
+                stops = json.data.list;
+            } catch (typeError) {
+                OBA.Util.log("invalid response from server: ");
+                OBA.Util.log(json);
+                return;
+            }
 
             // keep track of the new ids that came in so we can remove the old ones
             // that are no longer shown
             var newStopIds = {};
 
             jQuery.each(stops, function(i, stop) {
-                var stopId = stop.stopId;
-            	
-                newStopIds[stopId] = stopId;
-            	
-            	var marker = stopMarkers[stopId];
+                    var stopId = stop.id;
+                    var latlng = [stop.lat, stop.lon];
+                    var name = stop.name;
 
-            	if (marker) {
-            	    marker.updatePosition(new google.maps.LatLng(stop.latlng[0], stop.latlng[1]));
-            	} else {
-            	    marker = OBA.StopMarker(stop.stopId, stop.latlng, map, stop.name);
-            	    stopMarkers[stopId] = marker;
-            	}
+                newStopIds[stopId] = stopId;
+
+                var marker = stopMarkers[stopId];
+
+                if (marker) {
+                    marker.updatePosition(new google.maps.LatLng(latlng[0], latlng[1]));
+                } else {
+                    marker = OBA.StopMarker(stopId, latlng, map, name);
+                    stopMarkers[stopId] = marker;
+                }
             });
-            
+
             // remove the old markers that aren't currently shown
             for (var stopId in stopMarkers) {
                 var marker = stopMarkers[stopId];
@@ -169,7 +181,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
             }
          });
     };
-    
+
     google.maps.event.addListener(map, "idle", requestStops);
 
     return {
@@ -199,12 +211,12 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     	      });
     	  }
       },
-  
+
       // add and remove shapes also take care of updating the display
       // if this is a problem we can factor this back out
-      addRoute: function(routeId, json) {    
+      addRoute: function(routeId, json) {
         if (routeId in routeIdToShapes)
-			    return;
+            return;
 
         var encodedPolylines = json && json.polylines;
         if (!encodedPolylines)
@@ -227,15 +239,15 @@ OBA.RouteMap = function(mapNode, mapOptions) {
               strokeOpacity: 0.5,
               strokeWeight: 5
         });
-          
+
         routeIdToShapes[routeId] = shape;
         shape.setMap(map);
- 
+
         numberOfRoutes += 1;
- 
+
         // always make an initial request just for this route
         requestRoutes([routeId]);
- 
+
         // update the timer task
         if (!isVehiclePolling) {
           isVehiclePolling = true;
@@ -244,23 +256,23 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 		routeIds[routeId] = 1;
       },
- 
+
       removeRoute: function(routeId) {
         var shape = routeIdToShapes[routeId];
- 
+
         if (shape) {
           delete routeIdToShapes[routeId];
           numberOfRoutes -= 1;
           shape.setMap(null);
         }
- 
+
         var vehicles = routeIdsToVehicleMarkers[routeId];
-  
+
         if (vehicles) {
           jQuery.each(vehicles, function(i, vehicleMarker) {
             vehicleMarker.removeMarker();
           });
- 
+
           delete routeIdsToVehicleMarkers[routeId];
         }
 

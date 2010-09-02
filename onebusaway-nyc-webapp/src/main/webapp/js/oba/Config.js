@@ -20,7 +20,7 @@ OBA.Config = {
     // urls to fetch various data
     searchUrl: "search.action",
     routeShapeUrl: "route.action",
-    stopsUrl: "stops.action",
+    stopsUrl: "/onebusaway-api-webapp/api/where/stops-for-location.json",
     stopUrl: "stop.action",
     vehiclesUrl:"vehicles.action",
     vehicleUrl: "vehicle.action",
@@ -29,5 +29,8 @@ OBA.Config = {
     pollingInterval: 5000,
 
     // image url
-    vehicleIcon: "img/vehicle.png"
+    vehicleIcon: "img/vehicle.png",
+
+    // api key used for webapp
+    apiKey: "TEST",
 };
