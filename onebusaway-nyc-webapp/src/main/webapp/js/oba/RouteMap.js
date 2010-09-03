@@ -221,34 +221,31 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
       // add and remove shapes also take care of updating the display
       // if this is a problem we can factor this back out
-      addRoute: function(routeId, json) {
+      addRoute: function(routeId, shape) {
         if (routeId in routeIdToShapes)
             return;
 
-        var encodedPolylines = json && json.polylines;
-        if (!encodedPolylines)
-          return;
-
         // polylines is a list of encoded polylines from the server
         // here we decode them and put them into one list of lat lngs
-        var latlngs = [];
-        jQuery.each(encodedPolylines, function(_, encodedPolyline) {
-            var latlngList = OBA.Util.decodePolyline(encodedPolyline.points);
-            var googleLatLngList = jQuery.map(latlngList, function(latlng) {
+        var polylines = [];
+        jQuery.each(shape, function(_, encodedPolyline) {
+            var latlngs = OBA.Util.decodePolyline(encodedPolyline.points);
+            var googleLatLngs = jQuery.map(latlngs, function(latlng) {
                 return new google.maps.LatLng(latlng[0], latlng[1]);
             });
-            jQuery.merge(latlngs, googleLatLngList);
+            
+            var polyline = new google.maps.Polyline({
+                path: googleLatLngs,
+                strokeColor: "#0000FF",
+                strokeOpacity: 0.5,
+                strokeWeight: 5
+            });
+            polyline.setMap(map);
+            polylines.push(polyline);
         });
 
-        var shape = new google.maps.Polyline({
-              path: latlngs,
-              strokeColor: "#0000FF",
-              strokeOpacity: 0.5,
-              strokeWeight: 5
-        });
 
-        routeIdToShapes[routeId] = shape;
-        shape.setMap(map);
+        routeIdToShapes[routeId] = polylines;
 
         numberOfRoutes += 1;
 
@@ -261,16 +258,18 @@ OBA.RouteMap = function(mapNode, mapOptions) {
           vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
         }
 
-		routeIds[routeId] = 1;
+        routeIds[routeId] = 1;
       },
 
       removeRoute: function(routeId) {
-        var shape = routeIdToShapes[routeId];
+        var polylines = routeIdToShapes[routeId];
 
-        if (shape) {
+        if (polylines) {
           delete routeIdToShapes[routeId];
           numberOfRoutes -= 1;
-          shape.setMap(null);
+          jQuery.each(polylines, function(_, polyline) {
+              polyline.setMap(null);
+          });
         }
 
         var vehicles = routeIdsToVehicleMarkers[routeId];

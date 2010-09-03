@@ -19,7 +19,7 @@ OBA.Config = {
 
     // urls to fetch various data
     searchUrl: "search.action",
-    routeShapeUrl: "route.action",
+    routeShapeUrl: "/onebusaway-api-webapp/api/where/stops-for-route",
     stopsUrl: "/onebusaway-api-webapp/api/where/stops-for-location.json",
     stopUrl: "/onebusaway-api-webapp/api/where/arrivals-and-departures-for-stop",
     vehiclesUrl:"vehicles.action",

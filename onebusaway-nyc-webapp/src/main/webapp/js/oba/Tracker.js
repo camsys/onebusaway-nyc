@@ -214,21 +214,30 @@ OBA.Tracker = function() {
       // user from clicking on it twice
       controlLink.addClass("disabled");
 
-      jQuery.getJSON(OBA.Config.routeShapeUrl, OBA.Util.serializeArray(new Array(routeId), "routeId"), function(json) {
-        routeMap.addRoute(routeId, json.routes[0]);
-        
-        // update text info on screen
-        jQuery("#n-displayed-routes").text(routeMap.getCount());
+      var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";
+      jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
+          var shape;
+          try {
+              shape = json.data.entry.polylines;
+          } catch (typeError) {
+              OBA.Util.log("invalid route response from server");
+              OBA.Util.log(json);
+              return;
+          }
+          routeMap.addRoute(routeId, shape);
 
-	  	// update hash state
-        state.saveState();
+          // update text info on screen
+          jQuery("#n-displayed-routes").text(routeMap.getCount());
+
+          // update hash state
+          state.saveState();
       });
 
       return false;
     }
 
     function handleRemoveFromMap(e) {
-	  var controlLink = jQuery(this);
+      var controlLink = jQuery(this);
       var displayRouteDiv = controlLink.parent().parent().parent("div");
       var routeIdStr = displayRouteDiv.attr("id");
       var routeId = routeIdStr.substring("displayedroute-".length);
