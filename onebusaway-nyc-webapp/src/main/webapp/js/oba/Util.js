@@ -79,6 +79,14 @@ OBA.Util = (function() {
           }
 
           return array;
+        },
+        parseEntityId: function(entityId) {
+            var idx = entityId.indexOf("_");
+
+            if (idx === -1)
+                return entityId;
+
+            return entityId.substring(idx + 1);
         }
     };
 })();

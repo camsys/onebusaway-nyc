@@ -47,15 +47,6 @@ function makeJsonFetcher(url, data) {
 }
 
 OBA.StopPopup = function(stopId, map) {
-    var parseStopId = function(stopId) {
-        var idx = stopId.indexOf("_");
-
-        if (idx === -1)
-            return stopId;
-
-        return stopId.substring(idx + 1);
-    };
-
     var generateStopMarkup = function(json) {
         var stop, routes, arrivals;
         try {
@@ -95,7 +86,7 @@ OBA.StopPopup = function(stopId, map) {
         var lastUpdate = "One minute ago";
 
         var header = '<p class="header">' + name + '</p>' +
-                     '<p class="description">Stop ID ' + parseStopId(stopId) + '</p>' + 
+                     '<p class="description">Stop ID ' + OBA.Util.parseEntityId(stopId) + '</p>' + 
                      '<p class="meta">Updated ' + lastUpdate + '.</p>';
 
         var service = '';
@@ -106,6 +97,7 @@ OBA.StopPopup = function(stopId, map) {
 
             jQuery.each(routes, function(i, route) {
                 var routeId  = route.id;
+                var routeIdDisplay = OBA.Util.parseEntityId(routeId);
                 var shortName = route.shortName;
                 var longName = route.longName;
 
@@ -117,8 +109,8 @@ OBA.StopPopup = function(stopId, map) {
                 // routes with a service notice should appear red
                 service += (serviceNotice ? '<li class="hasNotice">' : "<li>");
 
-                service += '<a href="#" class="searchLink" rel="' + routeId + '">'
-                          + OBA.Util.truncate(routeId + ' - ' + longName, 30) + '</a>';
+                service += '<a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
+                          + OBA.Util.truncate(routeIdDisplay + ' - ' + longName, 30) + '</a>';
 
                 // and the distance away for each vehicle for that route
                 var vehicleInfos = routeToVehicleInfo[routeId] || [];
