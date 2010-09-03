@@ -115,7 +115,7 @@ OBA.StopPopup = function(stopId, map) {
                     notices += '<li>' + serviceNotice + '</li>';
 
                 // routes with a service notice should appear red
-                service += (serviceNotice ? "<li>" : '<li class="hasNotice">');
+                service += (serviceNotice ? '<li class="hasNotice">' : "<li>");
 
                 service += '<a href="#" class="searchLink" rel="' + routeId + '">'
                           + OBA.Util.truncate(routeId + ' - ' + longName, 30) + '</a>';
