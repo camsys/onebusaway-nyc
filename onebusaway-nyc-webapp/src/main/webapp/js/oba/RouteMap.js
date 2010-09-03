@@ -307,15 +307,18 @@ OBA.RouteMap = function(mapNode, mapOptions) {
       },
 
       getBounds: function(routeId) {
-          var shape = routeIdToShapes[routeId];
-          if (!shape) return null;
+          var polylines = routeIdToShapes[routeId];
+          if (!polylines) return null;
 
           var latlngBounds = new google.maps.LatLngBounds();
-          var path = shape.getPath();
-          for (var i = 0; i < path.length; i++) {
-              var latlng = path.getAt(i);
-              latlngBounds.extend(latlng);
-          }
+          
+          jQuery.each(polylines, function(_, polyline) {
+              var path = polyline.getPath();
+              for (var i = 0; i < path.length; i++) {
+                  var latlng = path.getAt(i);
+                  latlngBounds.extend(latlng);
+              }
+          });
           return latlngBounds;
       }
     };
