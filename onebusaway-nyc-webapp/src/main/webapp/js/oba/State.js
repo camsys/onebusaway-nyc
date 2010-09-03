@@ -10,6 +10,68 @@ OBA.State = function(map, routeMap, makeRouteFn) {
             state[k] = v;
         } 
     }
+    
+    // fetch one route at a time
+    function fetchRoutes(routeId, remainingRouteIds, displayedRoutes, displayedRoutesList) {
+        var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";
+        jQuery.ajax({
+            beforeSend: function(xhr) {
+                displayedRoutes.addClass("loading");                
+            },
+            complete: function(xhr, s) {
+                displayedRoutes.removeClass("loading");
+            },
+            success: function(json, s, xhr) {
+                
+                var shape;
+                try {
+                    shape = json.data.entry.polylines;
+                } catch (typeError) {
+                    OBA.Util.log("invalid route response from server");
+                    OBA.Util.log(json);
+                    return;
+                }
+
+                    routeMap.addRoute(routeId, shape);
+                    
+                    var jsonRouteResponse;
+                    try {
+                        jsonRouteResponse = json.data.references.routes[0];
+                    } catch (typeError) {
+                        OBA.Util.log("invalid route response from server");
+                        OBA.Util.log(json);
+                        return;
+                    }
+
+                    // adapt the data returned from server to match what the route
+                    // generator function expects
+                    var routeData = {routeId: routeId,
+                                     //serviceNotice: null,
+                                     name: jsonRouteResponse.shortName,
+                                     description: jsonRouteResponse.longName};                    
+
+                    var clonedDiv = makeRouteFn(routeData);
+                    var clonedControlLink = clonedDiv.find(".addToMap");
+
+                    clonedDiv.attr("id", "displayedroute-" + routeId);
+
+                    // update the control link class to alter the event fired 
+                    var clonedControlLink = clonedDiv.find(".addToMap");
+                    clonedControlLink.removeClass("addToMap");
+                    clonedControlLink.addClass("removeFromMap");
+                    clonedControlLink.html("Remove from map");
+
+                    displayedRoutesList.append(jQuery("<li></li>").append(clonedDiv));
+                    
+                    if (remainingRouteIds.length > 0)
+                        fetchRoutes(remainingRouteIds[0], remainingRouteIds.slice(1),
+                                    displayedRoutes, displayedRoutesList);
+            },
+            dataType: "json",
+            data: {version: 2, key: OBA.Config.apiKey},
+            url: url
+        });
+    }
 
     function loadState(hash) {
 		if(currentHash === hash || hash === null)
@@ -36,54 +98,18 @@ OBA.State = function(map, routeMap, makeRouteFn) {
 			var displayedRoutes = jQuery("#displayed-routes");
 			var displayedRoutesList = jQuery("#displayed-routes-list");
 
- 	        jQuery("#no-routes-displayed-message").hide();
-	        jQuery("#n-displayed-routes").text(routeIds.length);
+	        if (routeIds.length > 0) {
+                displayedRoutesList.empty();
 
-	        jQuery.ajax({
-	            beforeSend: function(xhr) {
-					displayedRoutesList.empty();
-					
-					var r = routeMap.getRoutes();
-					
-					for(var i = 0; i < r.length; i++) {
-						var route = r[i];
-						
-						routeMap.removeRoute(route);
-					}
-
-	                displayedRoutes.addClass("loading");                
-	            },
-	            complete: function(xhr, s) {
-	                displayedRoutes.removeClass("loading");
-	            },
-	            success: function(json, s, xhr) {
-					if(typeof json.routes === 'undefined') {
-						return;
-					}
-
-					for(var i in json.routes) {
-						var route = json.routes[i];
-
-					    routeMap.addRoute(route.routeId, route);
-
-						var clonedDiv = makeRouteFn(route);
-						var clonedControlLink = clonedDiv.find(".addToMap");
-
-						clonedDiv.attr("id", "displayedroute-" + route.routeId);
-
-		     			// update the control link class to alter the event fired 
-						var clonedControlLink = clonedDiv.find(".addToMap");
-						clonedControlLink.removeClass("addToMap");
-						clonedControlLink.addClass("removeFromMap");
-						clonedControlLink.html("Remove from map");
-
-						displayedRoutesList.append(jQuery("<li></li>").append(clonedDiv));
-					}
-				},
-	            dataType: "json",
-	            data: OBA.Util.serializeArray(routeIds, "routeId"),
-	            url: OBA.Config.routeShapeUrl
-	        });
+                jQuery.each(routeMap.getRoutes(), function(_, routeId) {
+                    routeMap.removeRoute(routeId);
+                });
+                
+	            fetchRoutes(routeIds[0], routeIds.slice(1), displayedRoutes, displayedRoutesList);
+	            
+	            jQuery("#no-routes-displayed-message").hide();
+	            jQuery("#n-displayed-routes").text(routeIds.length);
+	        }
 		} else {	
 			jQuery("#n-displayed-routes").text("0");
 			jQuery("#displayed-routes-list").empty();
