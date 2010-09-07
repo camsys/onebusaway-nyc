@@ -130,14 +130,12 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     var requestStops = function() {
         // calculate the request lat/lon and spans to use for the request
         var mapBounds = map.getBounds();
-        var minLatLng = mapBounds.getSouthWest(), maxLatLng = mapBounds.getNorthEast();
-        var lat = minLatLng.lat(), lon = minLatLng.lng();
-        var latSpan = Math.abs(maxLatLng.lat() - lat) * 2;
-        var lonSpan = Math.abs(maxLatLng.lng() - lon) * 2;
-
+        var minLatLng = mapBounds.getSouthWest(), centerLatLng = mapBounds.getCenter();
+        var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
+        var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
         jQuery.getJSON(OBA.Config.stopsUrl,
                        {version: 2, key: OBA.Config.apiKey,
-                        lat: lat, lon: lon, latSpan: latSpan, lonSpan: lonSpan
+                        lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
                         },
                        function(json) {
 
