@@ -1,10 +1,9 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.geospatial.model.PointVector;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry;
-
-import edu.washington.cs.rse.geospatial.PointVector;
 
 /**
  * Simple bean for holding information about an edge, a point on that edge, and

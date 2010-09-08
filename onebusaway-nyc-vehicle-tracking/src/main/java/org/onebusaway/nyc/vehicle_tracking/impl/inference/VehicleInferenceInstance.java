@@ -38,7 +38,7 @@ public class VehicleInferenceInstance {
     record.setCurrentLocationLat(p.getLat());
     record.setCurrentLocationLon(p.getLon());
 
-    record.setCurrentTime((long) particle.getTimestamp());
+    record.setTimeOfRecord((long) particle.getTimestamp());
     // record.setPositionDeviation(state.getPositionDeviation());
 
     TripInstanceProxy tripInstance = state.getTripInstance();

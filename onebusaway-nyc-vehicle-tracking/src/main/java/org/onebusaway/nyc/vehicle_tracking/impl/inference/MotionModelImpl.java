@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.geospatial.model.PointVector;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Gaussian;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
@@ -8,8 +9,6 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkNodeEntry;
-
-import edu.washington.cs.rse.geospatial.PointVector;
 
 /**
  * Motion model implementation for vehicle location inference.

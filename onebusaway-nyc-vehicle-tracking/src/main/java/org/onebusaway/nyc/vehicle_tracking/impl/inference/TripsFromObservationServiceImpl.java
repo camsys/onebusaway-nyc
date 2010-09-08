@@ -16,8 +16,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Gaussian;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.transit_data_federation.services.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.realtime.TripPosition;
-import org.onebusaway.transit_data_federation.services.realtime.TripPositionService;
+import org.onebusaway.transit_data_federation.services.realtime.TripLocation;
+import org.onebusaway.transit_data_federation.services.realtime.TripLocationService;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
@@ -31,7 +31,7 @@ class TripsFromObservationServiceImpl implements TripsFromObservationService {
 
   private CalendarService _calendarService;
 
-  private TripPositionService _tripPositionService;
+  private TripLocationService _tripPositionService;
 
   private DestinationSignCodeService _destinationSignCodeService;
 
@@ -71,7 +71,7 @@ class TripsFromObservationServiceImpl implements TripsFromObservationService {
   }
 
   @Autowired
-  public void setTripPositionService(TripPositionService tripPositionService) {
+  public void setTripPositionService(TripLocationService tripPositionService) {
     _tripPositionService = tripPositionService;
   }
 
@@ -193,13 +193,13 @@ class TripsFromObservationServiceImpl implements TripsFromObservationService {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
 
-    Map<TripInstanceProxy, TripPosition> tripInstances = _tripPositionService.getScheduledTripsForBounds(
+    Map<TripInstanceProxy, TripLocation> tripInstances = _tripPositionService.getScheduledTripsForBounds(
         bounds, time);
 
-    for (Map.Entry<TripInstanceProxy, TripPosition> entry : tripInstances.entrySet()) {
+    for (Map.Entry<TripInstanceProxy, TripLocation> entry : tripInstances.entrySet()) {
       TripInstanceProxy tripInstance = entry.getKey();
-      TripPosition position = entry.getValue();
-      CoordinatePoint point = position.getPosition();
+      TripLocation position = entry.getValue();
+      CoordinatePoint point = position.getLocation();
       double d = SphericalGeometryLibrary.distance(point.getLat(),
           point.getLon(), record.getLatitude(), record.getLongitude());
       double probability = _nearbyTripSigma.getProbability(d);
