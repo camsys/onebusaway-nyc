@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.onebusaway.nyc.webapp.model.AvailableRoute;
 import org.onebusaway.nyc.webapp.model.DistanceAway;
+import org.onebusaway.webapp.impl.WebappIdParser;
 
 import com.opensymphony.xwork2.ActionSupport;
 
@@ -33,11 +34,7 @@ public abstract class OneBusAwayNYCActionSupport extends ActionSupport {
   }
 
   protected String parseIdWithoutAgency(String id) {
-    if (id == null) throw new NullPointerException("id is null");
-    id = id.trim();
-    String[] fields = id.split("_", 2);
-    if (fields.length != 2) throw new IllegalArgumentException("'" + id + "' does not look like an id with an agency");
-    return fields[1];
+    return new WebappIdParser().parseIdWithoutAgency(id);
   }
 
 }
