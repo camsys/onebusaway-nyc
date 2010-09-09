@@ -30,6 +30,7 @@ OBA.Config = {
 
     // image url
     vehicleIcon: "img/vehicle.png",
+    stopIcon: "img/stop.png",
 
     // api key used for webapp
     apiKey: "TEST",

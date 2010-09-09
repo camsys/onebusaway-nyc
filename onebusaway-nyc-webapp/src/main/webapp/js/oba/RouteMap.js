@@ -15,18 +15,33 @@
 var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, mapOptions) {
+	var transitMapType = new google.maps.ImageMapType({
+	     getTileUrl: function(coord, zoom) {
+	         return 'http://mt1.google.com/vt/lyrs=m@132,transit|vm:1&hl=en&opts=r&x=' + coord.x + '&y=' + coord.y + '&z=' + zoom + '&s=Galileo'; 
+	     },
+         tileSize: new google.maps.Size(256, 256),
+         opacity:1.0,
+         maxZoom: 17,
+         minZoom: 15,
+         name: 'Transit',
+         isPng: true,
+         alt: ''
+	});
+
     var defaultMapOptions = {
       zoom: 12,
       mapTypeControl: false,
 	  navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
       center: new google.maps.LatLng(40.70988943430561,-73.96564720877076),
-      mapTypeId: google.maps.MapTypeId.ROADMAP
+      mapTypeId: 'transit'
     };
-
+	
     var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
 
     var map = new google.maps.Map(mapNode, options);
 
+    map.mapTypes.set('transit',transitMapType);
+    
     if (OBA.Config.debug) {
         google.maps.event.addListener(map, "click", function(e) {
           if (console && console.log)

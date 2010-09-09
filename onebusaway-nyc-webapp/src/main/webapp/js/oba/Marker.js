@@ -60,7 +60,8 @@ OBA.Marker = function(entityId, latlng, map, popup, icon) {
 
 OBA.StopMarker = function(stopId, latlng, map) {
     return OBA.Marker(stopId, latlng, map,
-        OBA.StopPopup(stopId, map));
+        OBA.StopPopup(stopId, map),
+        OBA.Config.stopIcon);
 };
 
 OBA.VehicleMarker = function(vehicleId, latlng, map) {
