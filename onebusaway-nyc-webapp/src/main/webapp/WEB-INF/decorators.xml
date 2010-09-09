@@ -18,6 +18,7 @@
 		<pattern>/styles/*</pattern>
 		<pattern>/images/*</pattern>
 		<pattern>/where/mobile/*</pattern>
+		<pattern>/mobile*</pattern>
 		<pattern>/css/*</pattern>
 		<pattern>/js/*</pattern>
 		<pattern>*.cache.html</pattern>
