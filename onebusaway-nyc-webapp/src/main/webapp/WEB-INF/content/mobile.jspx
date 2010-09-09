@@ -30,9 +30,9 @@ under the License.
 <p>TIP: Enter an intersection, bus route, or bus stop number.</p>
 <p>Example searches:</p>
 <ul>
-<li>Broadway and Havemeyer St</li>
-<li>302292</li>
-<li>B62</li>
+<li><a href="mobile.action?q=Broadway%20and%20Havemeyer%20St">Broadway and Havemeyer St</a></li>
+<li><a href="mobile.action?q=302292">302292</a></li>
+<li><a href="mobile.action?q=B62">B62</a></li>
 </ul>
 
 <s:iterator value="searchResults">
