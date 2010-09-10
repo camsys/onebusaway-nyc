@@ -1,4 +1,4 @@
-package org.onebusaway.webapp.impl;
+package org.onebusaway.nyc.webapp.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +17,7 @@ import org.onebusaway.nyc.webapp.model.DistanceAway;
 import org.onebusaway.nyc.webapp.model.search.RouteSearchResult;
 import org.onebusaway.nyc.webapp.model.search.SearchResult;
 import org.onebusaway.nyc.webapp.model.search.StopSearchResult;
+import org.onebusaway.nyc.webapp.service.NycSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
@@ -24,7 +25,6 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.webapp.service.NycSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class NycSearchServiceImpl implements NycSearchService {

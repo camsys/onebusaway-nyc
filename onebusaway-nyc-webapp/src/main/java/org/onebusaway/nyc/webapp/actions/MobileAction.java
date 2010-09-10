@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.onebusaway.nyc.webapp.model.search.SearchResult;
-import org.onebusaway.webapp.service.NycSearchService;
+import org.onebusaway.nyc.webapp.service.NycSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class MobileAction extends OneBusAwayNYCActionSupport {

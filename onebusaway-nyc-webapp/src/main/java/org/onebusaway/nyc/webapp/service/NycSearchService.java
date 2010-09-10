@@ -1,4 +1,4 @@
-package org.onebusaway.webapp.service;
+package org.onebusaway.nyc.webapp.service;
 
 import java.util.List;
 
