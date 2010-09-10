@@ -24,8 +24,10 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.webapp.service.NycSearchService;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public class NycSearcher {
+public class NycSearchServiceImpl implements NycSearchService {
   
   private final static Pattern routePattern = Pattern.compile("(?:[BMQS]|BX)[0-9]+");
   
@@ -34,17 +36,16 @@ public class NycSearcher {
   
   private WebappIdParser idParser = new WebappIdParser();
 
-  private final TransitDataService transitService;
-  private final GeocoderService geocoderService;
-  private final ServiceAreaService serviceArea;
+  @Autowired
+  private TransitDataService transitService;
   
-  public NycSearcher(TransitDataService transitService,
-      GeocoderService geocoderService, ServiceAreaService serviceArea) {
-        this.transitService = transitService;
-        this.geocoderService = geocoderService;
-        this.serviceArea = serviceArea;
-  }
+  @Autowired
+  private GeocoderService geocoderService;
+  
+  @Autowired
+  private ServiceAreaService serviceArea;
 
+  @Override
   public List<SearchResult> search(String q) {
     List<SearchResult> results = new ArrayList<SearchResult>();
     

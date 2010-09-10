@@ -5,11 +5,8 @@ import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
-import org.onebusaway.geocoder.services.GeocoderService;
 import org.onebusaway.nyc.webapp.model.search.SearchResult;
-import org.onebusaway.presentation.services.ServiceAreaService;
-import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.webapp.impl.NycSearcher;
+import org.onebusaway.webapp.service.NycSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -23,13 +20,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   private List<SearchResult> searchResults = new ArrayList<SearchResult>();
   
   @Autowired
-  private TransitDataService transitService;
-  
-  @Autowired
-  private ServiceAreaService serviceArea;
-  
-  @Autowired
-  private GeocoderService geocoderService;
+  private NycSearchService searchService;
   
   // from q variable in query string
   private String q;
@@ -38,9 +29,8 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   public String execute() {
     if (q == null || q.isEmpty())
       return SUCCESS;
-    
-    NycSearcher searcher = new NycSearcher(transitService, geocoderService, serviceArea);
-    searchResults = searcher.search(q);
+
+    searchResults = searchService.search(q);
 
     return SUCCESS;
   }
