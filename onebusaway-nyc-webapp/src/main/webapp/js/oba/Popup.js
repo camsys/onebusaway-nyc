@@ -48,16 +48,27 @@ function makeJsonFetcher(url, data) {
 
 OBA.StopPopup = function(stopId, map) {
     var generateStopMarkup = function(json) {
-        var stop, routes, arrivals;
+        var stop, routeIds, routeIdMap, routeReferences, routes, arrivals;
         try {
             stop = json.data.references.stops[0];
-            routes = json.data.references.routes;
+            routeIds = stop.routeIds;
+            routeReferences = json.data.references.routes;
             arrivals = json.data.entry.arrivalsAndDepartures;
         } catch (typeError) {
             OBA.Util.log("invalid stop response from server");
             OBA.Util.log(json);
             return;
         }
+        routeIdMap = {};
+        jQuery.each(routeIds, function(_, routeId) {
+            routeIdMap[routeId] = routeId;
+        });
+        routes = [];
+        jQuery.each(routeReferences, function(_, routeReference) {
+            if (routeReference.id in routeIdMap) {
+                routes.push(routeReference);
+            }
+        });
 
         // stop information
         var stopId = stop.id;
@@ -68,6 +79,9 @@ OBA.StopPopup = function(stopId, map) {
         var routeToVehicleInfo = {};
         jQuery.each(arrivals, function(_, arrival) {
                 var routeId = arrival.routeId;
+                if (!(routeId in routeIdMap)) {
+                    return;
+                }
                 var headsign = arrival.tripHeadsign;
                 // FIXME stops and distance away
                 var stops = 0;
