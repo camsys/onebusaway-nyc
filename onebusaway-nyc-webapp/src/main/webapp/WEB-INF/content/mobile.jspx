@@ -20,47 +20,85 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>Mobile Interface</title>
+
+<style type="text/css">
+BODY {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 16px;
+}
+
+DIV, FORM, P, UL, LI {
+	padding: 0px;
+	margin: 0px;
+}
+
+FORM {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+INPUT.q {
+	width: 200px;
+}
+
+DIV {
+	padding-bottom: 15px;
+}
+
+P.small {
+	font-size: 75%;
+}
+
+LI {
+	list-style-type: none;
+}
+</style>
 </head>
+
 <body>
+
+<div>
 <p>Search for:</p>
+
 <form action="mobile.action">
-<input type="text" name="q" value="${q}" />
+<input type="text" name="q" class="q" value="${q}"/>
 <input type="submit" value="Go" />
 </form>
-<font size="2" color="gray">TIP: Enter an intersection, bus route, or bus stop number.</font>
-<p>Example searches:</p>
-<ul>
-<li><a href="mobile.action?q=Broadway%20and%20Havemeyer%20St">Broadway and Havemeyer St</a></li>
-<li><a href="mobile.action?q=302292">302292</a></li>
-<li><a href="mobile.action?q=B62">B62</a></li>
-</ul>
+
+<p class="small">TIP: Enter an intersection, bus route, or bus stop number.</p>
+</div>
+
+<div>
+	<p>Example searches:</p>
+	<ul>
+	<li><a href="mobile.action?q=Broadway%20and%20Havemeyer%20St">Broadway and Havemeyer St</a></li>
+	<li><a href="mobile.action?q=302292">302292</a></li>
+	<li><a href="mobile.action?q=B62">B62</a></li>
+	</ul>
+</div>
 
 <s:iterator value="searchResults">
-
 <s:if test="%{type.equals('stop')}">
-<p>
+	<div>
+		<p>
+		<strong><s:property value="name" /></strong><br/>
 
-<strong><s:property value="name" /></strong><br />
-
-<s:iterator value="routesAvailable">
-<u><s:property value="routeId" /></u><br />
-
-<s:iterator value="distanceAway">
-<s:property value="stops" /> stops, <s:property value="feet" /> feet<br />
-</s:iterator>
-
-</s:iterator>
-
-</p>
-
+		<s:iterator value="routesAvailable">
+			<a href="mobile.action?q=${routeId}"><s:property value="routeId" /></a><br />
+			<s:iterator value="distanceAway">
+				<s:property value="stops" /> stops, <s:property value="feet" /> feet<br />
+			</s:iterator>
+		</s:iterator>
+		</p>
+	</div>
 </s:if>
-
 <s:elseif test="%{type.equals('route')}">
-<p>
-<strong><s:property value="name" /></strong><br />
-</p>
+	<div>
+		<p>
+		<strong><s:property value="name" /></strong><br />
+		</p>
+	</div>
 </s:elseif>
-
 </s:iterator>
 
 </body>
