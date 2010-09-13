@@ -27,7 +27,7 @@ under the License.
 <input type="text" name="q" value="${q}" />
 <input type="submit" value="Go" />
 </form>
-<p>TIP: Enter an intersection, bus route, or bus stop number.</p>
+<font size="2" color="gray">TIP: Enter an intersection, bus route, or bus stop number.</font>
 <p>Example searches:</p>
 <ul>
 <li><a href="mobile.action?q=Broadway%20and%20Havemeyer%20St">Broadway and Havemeyer St</a></li>
@@ -38,21 +38,27 @@ under the License.
 <s:iterator value="searchResults">
 
 <s:if test="%{type.equals('stop')}">
-<p><strong><s:property value="name" /></strong></p>
+<p>
+
+<strong><s:property value="name" /></strong><br />
 
 <s:iterator value="routesAvailable">
-<p><s:property value="routeId" /></p>
+<u><s:property value="routeId" /></u><br />
 
 <s:iterator value="distanceAway">
-<p><s:property value="stops" /> stops, <s:property value="feet" /> feet</p>
+<s:property value="stops" /> stops, <s:property value="feet" /> feet<br />
 </s:iterator>
 
 </s:iterator>
+
+</p>
 
 </s:if>
 
 <s:elseif test="%{type.equals('route')}">
-<p><s:property value="name" /></p>
+<p>
+<strong><s:property value="name" /></strong><br />
+</p>
 </s:elseif>
 
 </s:iterator>
