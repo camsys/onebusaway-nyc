@@ -21,10 +21,11 @@ under the License.
 <head>
 <title>Mobile Interface</title>
 
+<meta name="viewport" content="width = device-width"/>
+
 <style type="text/css">
-BODY {
+BODY, HTML {
 	font-family: Helvetica, Arial, sans-serif;
-	font-size: 16px;
 }
 
 DIV, FORM, P, UL, LI {
@@ -38,7 +39,12 @@ FORM {
 }
 
 INPUT.q {
-	width: 200px;
+	width: 150px;
+}
+
+INPUT.s {
+	margin-left: 5px;
+	width: 40px;
 }
 
 DIV {
@@ -46,7 +52,7 @@ DIV {
 }
 
 P.small {
-	font-size: 75%;
+	font-size: 70%;
 }
 
 LI {
@@ -62,20 +68,31 @@ LI {
 
 <form action="mobile.action">
 <input type="text" name="q" class="q" value="${q}"/>
-<input type="submit" value="Go" />
+<input type="submit" class="s" value="Go" />
 </form>
 
 <p class="small">TIP: Enter an intersection, bus route, or bus stop number.</p>
 </div>
 
-<div>
-	<p>Example searches:</p>
-	<ul>
-	<li><a href="mobile.action?q=Broadway%20and%20Havemeyer%20St">Broadway and Havemeyer St</a></li>
-	<li><a href="mobile.action?q=302292">302292</a></li>
-	<li><a href="mobile.action?q=B62">B62</a></li>
-	</ul>
-</div>
+<s:if test="%{searchResults.size==0}">
+<c:if test="${empty #parameters.q}">
+	<div>
+		<p>Example searches:</p>
+		<ul>
+		<li><a href="mobile.action?q=Broadway%20and%20Havemeyer%20St">Broadway and Havemeyer St</a></li>
+		<li><a href="mobile.action?q=302292">302292</a></li>
+		<li><a href="mobile.action?q=B62">B62</a></li>
+		</ul>
+	</div>
+</c:if>
+<s:else>
+	<div>
+		<p>
+		No results found.
+		</p>
+	</div>
+</s:else>
+</s:if>
 
 <s:iterator value="searchResults">
 <s:if test="%{type.equals('stop')}">
