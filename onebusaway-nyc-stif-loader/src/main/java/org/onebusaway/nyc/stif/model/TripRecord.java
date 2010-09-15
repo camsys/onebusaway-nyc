@@ -22,6 +22,8 @@ public class TripRecord implements StifRecord {
 	private String route;
 	private int originTime;
 	private int tripType;
+  private int destinationTime;
+  private String originLocation;
 	
 	public void setSignCode(String signCode) {
 		this.signCode = signCode;
@@ -53,4 +55,18 @@ public class TripRecord implements StifRecord {
 	public int getTripType() {
 		return tripType;
 	}
+  public void setDestinationTime(int destinationTime) {
+    this.destinationTime = destinationTime;
+  }
+  public int getDestinationTime() {
+    return destinationTime;
+  }
+
+  public void setOriginLocation(String originLocation) {
+    this.originLocation = originLocation;
+  }
+
+  public String getOriginLocation() {
+    return originLocation;
+  }
 }

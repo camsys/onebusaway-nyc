@@ -28,14 +28,16 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
 	@SuppressWarnings("unchecked")
 	private static StifFieldDefinition[] fields = {
 		new FieldDef(3-1, "record type", null),
-		new FieldDef(7-3, "origin location", null),
+		new FieldDef(7-3, "origin location", new TripFieldSetter() {
+      public void setField(TripRecord record) {record.setOriginLocation(getStringData());}}),
 		new FieldDef(15-7, "origin time", new TripFieldSetter() {
 			public void setField(TripRecord record) {record.setOriginTime(getTimeFromCentiminutes());}}),
 		new FieldDef(17-15, "direction", null),		
 		new FieldDef(19-17, "trip type",  new TripFieldSetter() {
 			public void setField(TripRecord record) {record.setTripType(getInteger());}}),
 		new FieldDef(23-19, "destination location", null),
-		new FieldDef(31-23, "destination time", null),
+		new FieldDef(31-23, "destination time", new TripFieldSetter() {
+		    public void setField(TripRecord record) {record.setDestinationTime(getInteger());}}),
 		new FieldDef(35-31, "pick code", null),
 		new FieldDef(41-35, "primary run number", null),
 		new FieldDef(53-41, "path code", null),

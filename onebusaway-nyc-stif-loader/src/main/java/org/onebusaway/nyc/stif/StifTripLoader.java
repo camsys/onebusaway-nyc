@@ -31,9 +31,11 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.onebusaway.gtfs.impl.HibernateGtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.gtfs.services.HibernateOperation;
+import org.onebusaway.nyc.stif.model.GeographyRecord;
 import org.onebusaway.nyc.stif.model.ServiceCode;
 import org.onebusaway.nyc.stif.model.StifRecord;
 import org.onebusaway.nyc.stif.model.TimetableRecord;
@@ -53,14 +55,17 @@ public class StifTripLoader {
   private class TripIdentifier {
     public int startTime;
     public String routeName;
+    public String startStop;
 
-    public TripIdentifier(String routeName, int startTime) {
+    public TripIdentifier(String routeName, int startTime, String startStop) {
       this.routeName = routeName;
       this.startTime = startTime;
+      this.startStop = startStop;
     }
 
     public TripIdentifier(TripRecord tripRecord) {
       routeName = tripRecord.getRoute();
+      startStop = getStopIdForLocation(tripRecord.getOriginLocation());
       startTime = tripRecord.getOriginTime();
       if (startTime < 0) {
         // skip a day ahead for previous-day trips.
@@ -73,6 +78,7 @@ public class StifTripLoader {
       if (other instanceof TripIdentifier) {
         TripIdentifier otherTrip = (TripIdentifier) other;
         return otherTrip.startTime == startTime
+            && otherTrip.startStop.equals(startStop)
             && otherTrip.routeName.equals(routeName);
       }
       return false;
@@ -80,12 +86,13 @@ public class StifTripLoader {
 
     @Override
     public int hashCode() {
-      return startTime ^ routeName.hashCode();
+      return startTime + routeName.hashCode() + 31 * startStop.hashCode();
     }
 
     @Override
     public String toString() {
-      return "TripIdentifier(" + startTime + ", " + routeName + ")";
+      return "TripIdentifier(" + startTime + ", " + routeName + "," + startStop
+          + ")";
     }
   }
 
@@ -95,9 +102,15 @@ public class StifTripLoader {
 
   private Map<TripIdentifier, List<Trip>> tripsByIdentifier;
 
+  private Map<String, String> stopIdsByLocation = new HashMap<String, String>();
+
   @Autowired
   public void setGtfsDao(GtfsRelationalDao dao) {
     this.gtfsDao = dao;
+  }
+
+  public String getStopIdForLocation(String originLocation) {
+    return stopIdsByLocation.get(originLocation);
   }
 
   /**
@@ -151,6 +164,11 @@ public class StifTripLoader {
         }
         if (record instanceof TimetableRecord) {
           serviceCode = ((TimetableRecord) record).getServiceCode();
+        }
+        if (record instanceof GeographyRecord) {
+          GeographyRecord geographyRecord = ((GeographyRecord) record);
+          stopIdsByLocation.put(geographyRecord.getIdentifier(),
+              geographyRecord.getBoxID());
         }
         if (record instanceof TripRecord) {
           TripRecord tripRecord = (TripRecord) record;
@@ -262,7 +280,8 @@ public class StifTripLoader {
 
     String routeName = trip.getRoute().getId().getId();
     int startTime = -1;
-
+    String startStop;
+    
     /**
      * This is WAY faster if we are working in hibernate, in that we don't need
      * to look up EVERY StopTime for a Trip, along with the Stop objects for
@@ -270,20 +289,23 @@ public class StifTripLoader {
      */
     if (gtfsDao instanceof HibernateGtfsRelationalDaoImpl) {
       HibernateGtfsRelationalDaoImpl dao = (HibernateGtfsRelationalDaoImpl) gtfsDao;
-      List<?> values = (List<?>) dao.execute(new HibernateOperation() {
+      List<?> rows = (List<?>) dao.execute(new HibernateOperation() {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
             SQLException {
-          Query query = session.createQuery("SELECT MIN(st.departureTime) FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0");
+          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 ORDER BY st.departureTime ASC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
       });
-      Integer value = (Integer) values.get(0);
-      startTime = value.intValue();
+      Object[] values = (Object[]) rows.get(0);
+      startTime = ((Integer) values[0]);
+      startStop = (String) values[1];
     } else {
-      startTime = gtfsDao.getStopTimesForTrip(trip).get(0).getDepartureTime();
+      StopTime stopTime = gtfsDao.getStopTimesForTrip(trip).get(0);
+      startTime = stopTime.getDepartureTime();
+      startStop = stopTime.getStop().getId().getId();
     }
-    return new TripIdentifier(routeName, startTime);
+    return new TripIdentifier(routeName, startTime, startStop);
   }
 }

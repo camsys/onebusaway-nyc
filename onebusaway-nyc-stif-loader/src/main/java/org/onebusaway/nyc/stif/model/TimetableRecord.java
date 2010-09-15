@@ -16,6 +16,9 @@
 
 package org.onebusaway.nyc.stif.model;
 
+/**
+ * The header for a schedule for one bus line for one service period
+ */
 public class TimetableRecord implements StifRecord {
 
 	private String routeIdentifier;
