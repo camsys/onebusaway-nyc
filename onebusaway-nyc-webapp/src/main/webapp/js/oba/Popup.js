@@ -184,7 +184,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
         notices += '</ul>';
             
         var nextStops = '';
-        if(typeof vehicle.nextStops !== 'undefined') {
+        if(typeof vehicle.nextStops !== 'undefined' && vehicle.nextStops.length > 0) {
             nextStops += '<p>Next stops:<ul>';       
 
             jQuery.each(vehicle.nextStops, function(i, stop) {

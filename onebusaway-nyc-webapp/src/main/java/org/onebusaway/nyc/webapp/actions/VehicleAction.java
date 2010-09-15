@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.webapp.actions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,12 +31,13 @@ public class VehicleAction extends OneBusAwayNYCActionSupport {
 
   // FIXME stubbed data
   private VehicleDetails makeVehicleDetails(String vehicleId) {
-    List<NextStop> nextStops = Arrays.asList(
-        new NextStop[] {
-            new NextStop(vehicleId, "S000001", "Mulberry and Canal", new DistanceAway(2, 100), "one minute ago"),
-            new NextStop(vehicleId, "S000002", "Allen and Delancey", new DistanceAway(3, 150), "one minute ago")
-        });
-    return new VehicleDetails(vehicleId, "14th Street Crosstown via Avenue A", "one minute ago", "M14A", nextStops);
+//    List<NextStop> nextStops = Arrays.asList(
+//        new NextStop[] {
+//            new NextStop(vehicleId, "S000001", "Mulberry and Canal", new DistanceAway(2, 100), "one minute ago"),
+//            new NextStop(vehicleId, "S000002", "Allen and Delancey", new DistanceAway(3, 150), "one minute ago")
+//        });
+    List<NextStop> nextStops = new ArrayList<NextStop>();
+    return new VehicleDetails(vehicleId, "LI CITY QUEENS PLAZA", "one minute ago", "B62", nextStops);
   }
 
   public void setVehicleId(String vehicleId) {
