@@ -22,7 +22,7 @@ OBA.Config = {
     routeShapeUrl: "/onebusaway-api-webapp/api/where/stops-for-route",
     stopsUrl: "/onebusaway-api-webapp/api/where/stops-for-location.json",
     stopUrl: "/onebusaway-api-webapp/api/where/arrivals-and-departures-for-stop",
-    vehiclesUrl:"vehicles.action",
+    vehiclesUrl:"/onebusaway-api-webapp/api/where/trips-for-route",
     vehicleUrl: "vehicle.action",
 
     // milliseconds to wait in between polls for bus locations

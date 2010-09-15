@@ -60,30 +60,35 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     var vehicleTimerId = null;
  
     var requestRoutes = function(routeIds) {
-        var routesToSerialize;
+        var routesToRequest;
  
         if (typeof routeIds === "undefined") {
           // to be more efficient we can store the list of all route ids
           // separately in memory, yagni now
-          routesToSerialize = [];
+          routesToRequest = [];
         
           for (var routeId in routeIdToShapes) {
-            routesToSerialize.push(routeId);
+            routesToRequest.push(routeId);
           }
         } else {
-          routesToSerialize = routeIds;
+          routesToRequest = routeIds;
         }
         
-        // struts doesn't like the [] request syntax
-        // so we serialize the request manually here
-        var serializedRoutes = OBA.Util.serializeArray(routesToSerialize, "routeIds");
-  
-        jQuery.getJSON(OBA.Config.vehiclesUrl, serializedRoutes, function(json) {
-          var vehicles = json.vehicles;
-          
-          if (!vehicles) {
+        // we'll be serializing the requests to be one at a time, so this is the base case
+        if (routesToRequest.length == 0)
             return;
-          }
+
+        var routeId = routesToRequest[0];
+        var remainingRouteIds = routesToRequest.slice(1);
+        var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";
+        jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
+            try {
+                var tripDetailsList = json.data.list;
+            } catch (typeError) {
+                OBA.Util.log("unknown server vehicles response");
+                OBA.Util.log(json);
+                return;
+            }
           
           // helper function to add an element to a map where values are lists
           var addVehicleMarkerToRouteMap = function(routeId, vehicleMarker) {
@@ -106,14 +111,21 @@ OBA.RouteMap = function(mapNode, mapOptions) {
             }
           };
  
-          jQuery.each(vehicles, function(i, vehicleSection) {
-            var routeId = vehicleSection.routeId;
-  
-            jQuery.each(vehicleSection.vehicles, function(i, vehicle) {
-              var vehicleMarker = vehicleMarkers[vehicle.vehicleId];
+          jQuery.each(tripDetailsList, function(i, tripDetails) {
+              // we only show the vehicles that have been predicted and have an id
+              var status = tripDetails.status;
+              var predicted = status.predicted;
+              var vehicleId = status.vehicleId;
+              if (!predicted || (!vehicleId)) {
+                  OBA.Util.log("not predicted or no vehicle id: skipping");
+                  return;
+              }
+
+              var latLng = [status.position.lat, status.position.lon];
+              var vehicleMarker = vehicleMarkers[vehicleId];
             
               if (vehicleMarker) {
-                var latlng = new google.maps.LatLng(vehicle.latLng[0], vehicle.latLng[1]);
+                var latlng = new google.maps.LatLng(latLng[0], latLng[1]);
   
                 vehicleMarker.updatePosition(latlng);
 
@@ -122,13 +134,15 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
                 addVehicleMarkerToRouteMap(routeId, vehicleMarker);
               } else {
-                vehicleMarker = OBA.VehicleMarker(vehicle.vehicleId, vehicle.latLng, map);
-                vehicleMarkers[vehicle.vehicleId] = vehicleMarker;
+                vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, map);
+                vehicleMarkers[vehicleId] = vehicleMarker;
  
                 addVehicleMarkerToRouteMap(routeId, vehicleMarker);
               }
-            }); // each vehicleSection
-          }); // each vehicles
+            }); // each tripDetail
+          // handle the remaining route ids
+          // this is done in this way to serialize the requests to the server
+          requestRoutes(remainingRouteIds);
         }); // getJSON
     }; // requestRoutes
 
@@ -141,6 +155,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
         vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
     };
+    
 
     var requestStops = function() {
         // calculate the request lat/lon and spans to use for the request
