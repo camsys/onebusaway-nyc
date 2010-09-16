@@ -16,7 +16,7 @@ AppState.prototype.refreshVehicleData = function() {
 	var m = re.exec(href);
 	if (m == null)
 		return;
-	var url = 'vehicle-location-simulation!task-data.do?taskId=' + m[1];
+	var url = 'vehicle-location-simulation!task-summary.do?taskId=' + m[1];
 	var t = this;
 	$.getJSON(url,function(data) {
 		t.handleTaskData(data);

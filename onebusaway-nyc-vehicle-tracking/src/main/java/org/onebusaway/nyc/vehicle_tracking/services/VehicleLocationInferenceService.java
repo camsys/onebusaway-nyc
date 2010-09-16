@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.services;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 
@@ -15,4 +16,12 @@ public interface VehicleLocationInferenceService {
   public VehicleLocationRecord getVehicleLocationForVehicle(AgencyAndId vid);
 
   public List<VehicleLocationRecord> getLatestProcessedVehicleLocationRecords();
+
+  /**
+   * This is primarily here for debugging
+   * 
+   * @param vehicleId
+   * @return the most recent list of particles for the specified vehicle
+   */
+  public List<Particle> getParticlesForVehicleId(AgencyAndId vehicleId);
 }

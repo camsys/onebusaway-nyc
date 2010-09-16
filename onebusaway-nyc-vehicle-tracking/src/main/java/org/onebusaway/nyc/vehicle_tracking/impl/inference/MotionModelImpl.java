@@ -1,14 +1,17 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.Random;
+
 import org.onebusaway.geospatial.model.PointVector;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Gaussian;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkNodeEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Motion model implementation for vehicle location inference.
@@ -17,10 +20,9 @@ import org.onebusaway.transit_data_federation.services.walkplanner.WalkNodeEntry
  */
 public class MotionModelImpl implements MotionModel<Observation> {
 
-  /**
-   * Default variance is 10 mph = 4.4704 meters/sec
-   */
-  private Gaussian _velocity = new Gaussian(0, 4.4704);
+  private static Random _random = new Random();
+
+  private BlocksFromObservationService _blocksFromObservationService;
 
   /**
    * Generally speaking, 66% of our samples will be in the range of left-turn
@@ -29,11 +31,26 @@ public class MotionModelImpl implements MotionModel<Observation> {
   private Gaussian _direction = new Gaussian(0, Math.PI / 2);
 
   /**
-   * 
-   * @param velocityVariance meters/sec
+   * Given a potential distance to travel in physical / street-network space, a
+   * fudge factor that determines how far ahead we will look along the block of
+   * trips in distance to travel
    */
-  public void setVelocityVariance(double velocityVariance) {
-    _velocity = new Gaussian(0, velocityVariance);
+  private double _blockDistanceTravelScale = 1.5;
+
+  /**
+   * At a top speed of 70 mph (31.2928 m/s), we want 20 mph (8.9408 m/s) of
+   * variance.
+   */
+  private double _velocitySigmaScalar = 4.4704 / 31.2928;
+
+  @Autowired
+  public void setBlocksFromObservationService(
+      BlocksFromObservationService blocksFromObservationService) {
+    _blocksFromObservationService = blocksFromObservationService;
+  }
+
+  public void setVelocitySigmaScalar(double velocitySigmaScalar) {
+    _velocitySigmaScalar = velocitySigmaScalar;
   }
 
   /**
@@ -44,24 +61,32 @@ public class MotionModelImpl implements MotionModel<Observation> {
     _direction = new Gaussian(0, directionVariance);
   }
 
+  public void setBlockDistanceTravelScale(double blockDistanceTravelScale) {
+    _blockDistanceTravelScale = blockDistanceTravelScale;
+  }
+
+  /****
+   * {@link MotionModel} Interface
+   ****/
+
   @Override
   public Particle move(Particle parent, double timestamp, double timeElapsed,
       Observation obs) {
 
-    EdgeState edgeState = moveParticle(parent, timestamp, obs);
-    TripInstanceProxy tripInstance = determineTripInstance(parent, timestamp,
-        obs, edgeState);
+    double distanceToTravel = sampleDistanceToTravel(parent, timestamp, obs);
 
-    VehicleState.Builder state = VehicleState.builder();
-    state.setEdgeState(edgeState);
-    state.setTripInstance(tripInstance);
+    EdgeState edgeState = moveParticle(parent, timestamp, obs, distanceToTravel);
+    BlockState blockState = determineBlockInstance(parent, timestamp, obs,
+        edgeState, distanceToTravel);
+
+    VehicleState state = new VehicleState(edgeState, blockState);
 
     Particle particle = new Particle(timestamp, parent);
-    particle.setData(state.create());
+    particle.setData(state);
     return particle;
   }
 
-  private EdgeState moveParticle(Particle parent, double timestamp,
+  private double sampleDistanceToTravel(Particle parent, double timestamp,
       Observation obs) {
 
     VehicleState parentState = parent.getData();
@@ -78,9 +103,30 @@ public class MotionModelImpl implements MotionModel<Observation> {
     // In seconds
     double ellapsedTime = (timestamp - parent.getTimestamp()) / 1000.0;
 
+    if (ellapsedTime == 0)
+      return 0;
+
+    // In meters / second
+    double targetVelocity = straightLineDistance / ellapsedTime;
+
+    double targetNoiseVelocity = targetVelocity * _velocitySigmaScalar;
+
+    double sampledNoiseVelocity = _random.nextGaussian() * targetNoiseVelocity;
+
     // In meters
-    double remainingDistance = straightLineDistance + _velocity.drawSample()
-        * ellapsedTime;
+    return straightLineDistance + sampledNoiseVelocity * ellapsedTime;
+  }
+
+  private EdgeState moveParticle(Particle parent, double timestamp,
+      Observation obs, double remainingDistance) {
+
+    VehicleState parentState = parent.getData();
+    EdgeState edgeState = parentState.getEdgeState();
+    ProjectedPoint currentLocation = edgeState.getPointOnEdge();
+
+    // Our strategy is to move towards the next gps point (with some
+    // probability)
+    ProjectedPoint targetPoint = obs.getPoint();
 
     while (remainingDistance > 0) {
 
@@ -123,9 +169,27 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return edgeState;
   }
 
-  private TripInstanceProxy determineTripInstance(Particle parent,
-      double timestamp, Observation obs, EdgeState edgeState) {
-    return null;
+  private BlockState determineBlockInstance(Particle parent, double timestamp,
+      Observation obs, EdgeState edgeState, double distanceToTravel) {
+
+    VehicleState parentState = parent.getData();
+    BlockState blockState = parentState.getBlockState();
+    String currentDsc = blockState.getDestinationSignCode();
+
+    NycVehicleLocationRecord record = obs.getRecord();
+    String observedDsc = record.getDestinationSignCode();
+
+    // Really, we want to compare the previously OBSERVED dsc
+    if (currentDsc != null && currentDsc.equals(observedDsc)) {
+      return _blocksFromObservationService.advanceState(record.getTime(),
+          edgeState.getPointOnEdge(), blockState, distanceToTravel
+              * _blockDistanceTravelScale);
+    }
+
+    CDFMap<BlockState> blocks = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
+    if (blocks.isEmpty())
+      return null;
+    return blocks.sample();
   }
 
   private PointVector vector(ProjectedPoint a, ProjectedPoint b) {

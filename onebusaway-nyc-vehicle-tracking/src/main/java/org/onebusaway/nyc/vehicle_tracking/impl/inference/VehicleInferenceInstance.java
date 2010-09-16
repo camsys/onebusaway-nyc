@@ -1,12 +1,16 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
+import org.onebusaway.transit_data_federation.services.realtime.BlockInstance;
+import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocation;
 
 public class VehicleInferenceInstance {
 
@@ -41,12 +45,21 @@ public class VehicleInferenceInstance {
     record.setTimeOfRecord((long) particle.getTimestamp());
     // record.setPositionDeviation(state.getPositionDeviation());
 
-    TripInstanceProxy tripInstance = state.getTripInstance();
-    if (tripInstance != null) {
-      record.setTripId(tripInstance.getTrip().getId());
-      record.setServiceDate(tripInstance.getServiceDate());
+    BlockState blockState = state.getBlockState();
+
+    if (blockState != null) {
+      BlockInstance blockInstance = blockState.getBlockInstance();
+      record.setBlockId(blockInstance.getBlock().getId());
+      record.setServiceDate(blockInstance.getServiceDate());
+      
+      ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+      record.setDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
     }
 
     return record;
+  }
+
+  public synchronized List<Particle> getParticles() {
+    return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
   }
 }

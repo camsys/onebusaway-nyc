@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.model;
 
 import java.io.InputStream;
+import java.util.Date;
 
 import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
 import org.onebusaway.gtfs.csv.schema.annotations.CsvFields;
@@ -50,6 +51,10 @@ public class NycTestLocationRecord {
 
   public long getTimestamp() {
     return timestamp;
+  }
+
+  public Date getTimestampAsDate() {
+    return new Date(timestamp);
   }
 
   public void setDsc(String dsc) {

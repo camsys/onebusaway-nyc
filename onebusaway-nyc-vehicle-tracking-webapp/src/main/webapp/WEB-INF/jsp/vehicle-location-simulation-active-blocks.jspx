@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+    xmlns:form="http://www.springframework.org/tags/form">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>Vehicle Location Simulations - Active Blocks</title>
+</head>
+<body>
+
+<p>
+<a href="vehicle-location-simulation.do">Back to Vehicle Location Simulation Console</a>
+</p>
+
+<h2>Block Trips</h2>
+
+<p>This is a list of all block trips SCHEDULED to be active right now.</p>
+
+<table>
+    <thead>
+        <tr>
+            <td>Route</td>
+            <td>Destination</td>
+            <td>Completion Ratio</td>
+            <td>Action</td>
+        </tr>
+    </thead>
+    <tbody>
+
+<ul>
+    <c:forEach var="blockDetails" items="${blocks}">
+    <tr>
+        <c:set var="status" value="${blockDetails.status}"/>
+        <c:set var="trip" value="${status.activeTrip}"/>
+        <td><c:out value="${trip.route.shortName}" /></td>
+        <td><c:out value="${trip.tripHeadsign}" /></td>
+        <td><fmt:formatNumber pattern="0.00" value="${status.scheduledDistanceAlongBlock / status.totalDistanceAlongBlock}" /></td>
+        <td><c:out value="" /></td>
+        <td><a href="vehicle-location-simulation!block.do?blockId=${blockDetails.blockId}&amp;serviceDate=${status.serviceDate}">simulations</a></td>
+    </tr>
+    </c:forEach>
+</ul>
+</tbody>
+</table>
+
+</body>
+</html>

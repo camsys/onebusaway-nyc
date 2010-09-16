@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+    xmlns:form="http://www.springframework.org/tags/form">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>Vehicle Location Simulations - Active Blocks</title>
+</head>
+<style>
+table td {
+   border: 1px solid black;
+}
+</style>
+<body>
+
+<p>
+<a href="vehicle-location-simulation.do">Back to Vehicle Location Simulation Console</a>
+</p>
+
+<h2>Most Recent Observation</h2>
+
+<c:set var="obs" value="${details.lastObservation}"/>
+
+<ul>
+    <li>time:<jsp:text> </jsp:text><fmt:formatDate value="${obs.timestampAsDate}"/></li>
+    <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
+    <li>location:<jsp:text> </jsp:text><c:out value="${obs.lat}"/><jsp:text> </jsp:text><c:out value="${obs.lon}"/></li>
+    <li><jsp:text>dsc: </jsp:text><c:out value="${obs.dsc}"/></li>
+</ul>
+
+<h2>Particles</h2>
+
+<table>
+    <thead>
+        <tr>
+            <td>P</td>
+            <td>BlockId</td>
+            <td>BlockLocation</td>
+            <td>DistanceAlongBlock</td>
+            <td>ScheduledTime</td>
+            <td>EdgeLocation</td>
+        </tr>
+    </thead>
+    <tbody>
+
+<ul>
+    <c:forEach var="p" items="${details.particles}">
+    <tr>
+        <c:set var="edgeState" value="${p.data.edgeState}"/>
+        <c:set var="blockState" value="${p.data.blockState}"/>
+        <c:set var="blockLocation" value="${blockState.blockLocation}"/>
+        
+        <td><c:out value="${p.weight}" /></td>
+        <td><c:out value="${blockState.blockInstance.block.id}" /></td>
+        <td><c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
+        <td><c:out value="${blockLocation.distanceAlongBlock}" /></td>
+        <td><c:out value="${blockLocation.scheduledTime}" /></td>
+        <td><c:out value="${edgeState.pointOnEdge.lat}" /><jsp:text> </jsp:text><c:out value="${edgeState.pointOnEdge.lon}" /></td>
+    </tr>
+    </c:forEach>
+</ul>
+</tbody>
+</table>
+
+<h2>Raw Particle Location (Blocks)</h2>
+<p>
+<c:forEach var="p" items="${details.particles}">
+  <c:set var="blockState" value="${p.data.blockState}"/>
+  <c:set var="blockLocation" value="${blockState.blockLocation}"/>
+  <c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /><br/>
+</c:forEach>
+</p>
+
+</body>
+</html>

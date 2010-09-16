@@ -11,7 +11,7 @@ import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry
  * 
  * @author bdferris
  */
-class EdgeState {
+public class EdgeState {
 
   private final WalkEdgeEntry edge;
 

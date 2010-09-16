@@ -98,8 +98,8 @@ public class ParticleFilter<OBS> {
    */
   public void updateFilter(double timestamp, OBS observation) {
 
-    checkFirst(timestamp, observation);
-    runSingleTimeStep(timestamp, observation);
+    boolean firstTime = checkFirst(timestamp, observation);
+    runSingleTimeStep(timestamp, observation, !firstTime);
     _timeOfLastUpdate = timestamp;
   }
 
@@ -137,12 +137,19 @@ public class ParticleFilter<OBS> {
    * Private Methods
    **************************************************************************/
 
-  private void checkFirst(double timestamp, OBS observation) {
+  /**
+   * @return true if this is the initial entry for these particles
+   */
+  private boolean checkFirst(double timestamp, OBS observation) {
+
     if (!_seenFirst) {
       _particles = createInitialParticlesFromObservation(timestamp, observation);
       _seenFirst = true;
       _timeOfLastUpdate = timestamp;
+      return true;
     }
+
+    return false;
   }
 
   /**
@@ -150,17 +157,22 @@ public class ParticleFilter<OBS> {
    * timestep's worth of sensor readings. Julie's note to self: see
    * KLDParticleFilter's implementation for hints on what existing functions you
    * can use.
+   * 
+   * @param firstTime
    */
-  private void runSingleTimeStep(double timestamp, OBS obs) {
+  private void runSingleTimeStep(double timestamp, OBS obs,
+      boolean moveParticles) {
 
     /**
      * 1. apply the motion model to each particle
      */
-    double elapsed = timestamp - _timeOfLastUpdate;
-    for (int i = 0; i < _particles.size(); i++) {
-      Particle updatedParticle = _motionModel.move(_particles.get(i),
-          timestamp, elapsed, obs);
-      _particles.set(i, updatedParticle);
+    if (moveParticles) {
+      double elapsed = timestamp - _timeOfLastUpdate;
+      for (int i = 0; i < _particles.size(); i++) {
+        Particle updatedParticle = _motionModel.move(_particles.get(i),
+            timestamp, elapsed, obs);
+        _particles.set(i, updatedParticle);
+      }
     }
 
     /**

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:form="http://www.springframework.org/tags/form">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>Block Details</title>
+</head>
+<body>
+
+<h2>Trips</h2>
+
+<ul>
+    <c:forEach var="trip" items="${block.trips}">
+        <c:out value="${trip.id}" />
+        <jsp:text> - </jsp:text>
+        <c:out value="${trip.route.shortName}" />
+        <jsp:text> - </jsp:text>
+        <c:out value="${trip.tripHeadsign}" />
+    </c:forEach>
+</ul>
+
+<h2>Destination Sign Codes</h2>
+
+<ul>
+    <c:forEach var="dsc" items="${dscs}">
+        <c:out value="${dsc}" />
+    </c:forEach>
+</ul>
+
+</body>
+</html>

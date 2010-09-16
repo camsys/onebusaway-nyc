@@ -1,20 +1,14 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Arrays;
-
+import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Gaussian;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.model.ShapePoints;
-import org.onebusaway.transit_data_federation.model.narrative.TripNarrative;
-import org.onebusaway.transit_data_federation.services.ShapePointService;
-import org.onebusaway.transit_data_federation.services.narrative.NarrativeService;
-import org.onebusaway.transit_data_federation.services.tripplanner.TripEntry;
-import org.onebusaway.transit_data_federation.services.tripplanner.TripInstanceProxy;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.onebusaway.transit_data_federation.services.realtime.BlockInstance;
+import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocation;
 
 /**
  * Sensor model implementation for vehicle location inference
@@ -23,38 +17,34 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SensorModelImpl implements SensorModel<Observation> {
 
-  private NarrativeService _narrativeService;
-
-  private ShapePointService _shapePointService;
-
   private Gaussian _locationDeviationModel = new Gaussian(0.0, 20);
 
   private Gaussian _tripLocationDeviationModel = new Gaussian(0.0, 20);
 
-  @Autowired
-  public void setNarrativeService(NarrativeService narrativeService) {
-    _narrativeService = narrativeService;
-  }
+  private Gaussian _scheduleDeviationModel = new Gaussian(0.0, 15 * 60);
 
-  @Autowired
-  public void setShapePointService(ShapePointService shapePointService) {
-    _shapePointService = shapePointService;
+  /**
+   * 
+   * @param locationSigma in meters
+   */
+  public void setLocationSigma(double locationSigma) {
+    _locationDeviationModel = new Gaussian(0, locationSigma);
   }
 
   /**
    * 
-   * @param locationVariance in meters
+   * @param tripLocationSigma in meters
    */
-  public void setLocationVariance(double locationVariance) {
-    _locationDeviationModel = new Gaussian(0, locationVariance);
+  public void setTripLocationSigma(double tripLocationSigma) {
+    _tripLocationDeviationModel = new Gaussian(0, tripLocationSigma);
   }
 
   /**
    * 
-   * @param tripLocationVariance in meters
+   * @param scheduleDeviationSigma time, in seconds
    */
-  public void setTripLocationVariance(double tripLocationVariance) {
-    _tripLocationDeviationModel = new Gaussian(0, tripLocationVariance);
+  public void setScheduleDeviationSigma(double scheduleDeviationSigma) {
+    _scheduleDeviationModel = new Gaussian(0, scheduleDeviationSigma * 60);
   }
 
   @Override
@@ -66,9 +56,12 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
     // Penalize for distance away from trip path
     double pTrip = computeLocationVsTripProbability(particle);
+    
+    // Penalize for deviation from the schedule
+    double pSchedule = computeScheduleDeviationProbability(particle, obs);
 
     // log-likelihood is more mathematically stable
-    return pLocation * pTrip;
+    return pLocation * pTrip * pSchedule;
   }
 
   private double computeLocationVsGpsPropability(Particle particle,
@@ -85,36 +78,39 @@ public class SensorModelImpl implements SensorModel<Observation> {
   private double computeLocationVsTripProbability(Particle particle) {
 
     VehicleState state = particle.getData();
-    TripInstanceProxy tripInstance = state.getTripInstance();
+    BlockState blockState = state.getBlockState();
 
-    if( tripInstance == null)
-      return 1.0;
-    
-    TripEntry trip = tripInstance.getTrip();
-    
-    TripNarrative tripNarrative = _narrativeService.getTripForId(trip.getId());
-    AgencyAndId shapeId = tripNarrative.getShapeId();
-
-    // If we don't have a shape, we just assume uniform distribution
-    if (shapeId == null)
+    if (blockState == null)
       return 1.0;
 
-    ShapePoints points = _shapePointService.getShapePointsForShapeId(shapeId);
+    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    CoordinatePoint p1 = blockLocation.getLocation();
+    ProjectedPoint p2 = state.getEdgeState().getPointOnEdge();
 
-    int index = Arrays.binarySearch(points.getDistTraveled(),
-        state.getTripPositionOffset());
-    if (index < 0)
-      index = -(index + 1);
-
-    double[] lats = points.getLats();
-    double[] lons = points.getLons();
-
-    double lat = lats[index];
-    double lon = lons[index];
-
-    ProjectedPoint point = state.getEdgeState().getPointOnEdge();
-    double distance = SphericalGeometryLibrary.distance(lat, lon,
-        point.getLat(), point.getLon());
+    double distance = SphericalGeometryLibrary.distance(p1.getLat(),
+        p2.getLon(), p2.getLat(), p2.getLon());
     return _tripLocationDeviationModel.getProbability(distance);
+  }
+
+  private double computeScheduleDeviationProbability(Particle particle,
+      Observation observation) {
+
+    VehicleState state = particle.getData();
+    BlockState blockState = state.getBlockState();
+
+    if (blockState == null)
+      return 1.0;
+
+    BlockInstance blockInstance = blockState.getBlockInstance();
+    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+
+    long scheduledTime = blockInstance.getServiceDate()
+        + blockLocation.getScheduledTime() * 1000;
+
+    NycVehicleLocationRecord record = observation.getRecord();
+
+    long delta = Math.abs(scheduledTime - record.getTime()) / 1000;
+
+    return _scheduleDeviationModel.getProbability(delta);
   }
 }

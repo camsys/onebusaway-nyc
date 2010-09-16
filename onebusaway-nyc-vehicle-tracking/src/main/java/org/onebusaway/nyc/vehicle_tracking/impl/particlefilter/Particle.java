@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author bdferris
  * @see ParticleFilter
  */
-public class Particle implements Serializable {
+public class Particle implements Serializable, Comparable<Particle> {
 
   private static final long serialVersionUID = 1L;
 
@@ -83,5 +83,10 @@ public class Particle implements Serializable {
   public String toString() {
     return "Particle(time=" + _timestamp + " weight=" + _weight + " data="
         + _data + ")";
+  }
+
+  @Override
+  public int compareTo(Particle o) {
+    return Double.compare(_weight, o._weight);
   }
 }

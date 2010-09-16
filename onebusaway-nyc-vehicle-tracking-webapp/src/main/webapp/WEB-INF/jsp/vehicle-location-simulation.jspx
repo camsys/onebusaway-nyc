@@ -30,41 +30,12 @@
     </tr>
 </table>
 </form>
-</body>
+
+<h2>Scheduled Trips</h2>
+<p>You can use a trip that's scheduled to be active right now as a template for a simulation run.  See the list of <a href="vehicle-location-simulation!active-blocks.do">Active Trips</a>.</p>
 
 <h2>Active Simulations</h2>
-<table>
-    <thead>
-        <tr>
-            <td>task id</td>
-            <td>records processed</td>
-            <td>records total</td>
-            <td>show</td>
-            <td>toggle</td>
-            <td>step</td>
-            <td>cancel</td>
-        </tr>
-    </thead>
-    <tbody>
-        <c:forEach var="s" items="${simulations}">
-            <tr>
-                <td><c:out value="${s.id}" /></td>
-                <td><c:out value="${s.numberOfRecordsProcessed}" /></td>
-                <td><c:out value="${s.numberOfRecordsTotal}" /></td>
-                <td><a
-                    href="vehicle-location-simulation.html?taskId=${s.id}">show</a>
-                </td>
-                <td><a
-                    href="vehicle-location-simulation!toggle.do?taskId=${s.id}">
-                <c:if test="${s.paused}">resume</c:if> <c:if
-                    test="${!s.paused}">pause</c:if> </a></td>
-                <td><a
-                    href="vehicle-location-simulation!step.do?taskId=${s.id}">step</a></td>
-                <td><a
-                    href="vehicle-location-simulation!cancel.do?taskId=${s.id}">cancel</a></td>
-            </tr>
-        </c:forEach>
-    </tbody>
-</table>
+<jsp:include page="vehicle-location-simulation-summaries-snippet.jspx"/>
 
+</body>
 </html>
