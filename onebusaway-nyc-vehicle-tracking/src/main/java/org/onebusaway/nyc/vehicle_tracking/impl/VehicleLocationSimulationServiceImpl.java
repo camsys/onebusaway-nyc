@@ -3,12 +3,12 @@ package org.onebusaway.nyc.vehicle_tracking.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -19,11 +19,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
-import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
@@ -31,17 +31,27 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDet
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.transit_data_federation.services.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocationService;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.tripplanner.BlockEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripEntry;
+import org.onebusaway.utility.EOutOfRangeStrategy;
+import org.onebusaway.utility.InterpolationLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class VehicleLocationSimulationServiceImpl implements
     VehicleLocationSimulationService {
+
+  private static final String ARG_VEHICLE_ID = "vehicle_id";
+
+  private static final String ARG_SHIFT_START_TIME = "shift_start_time";
+
+  private static final String ARG_LOCATION_SIGMA = "location_sigma";
+
+  private static final String ARG_SCHEDULE_DEVIATIONS = "schedule_deviations";
 
   private int _numberOfThreads = 1;
 
@@ -100,11 +110,13 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public int simulateLocationsFromTrace(InputStream traceInputStream,
-      boolean runInRealtime, boolean pauseOnStart) throws IOException {
+      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime)
+      throws IOException {
 
     SimulatorTask task = new SimulatorTask();
     task.setPauseOnStart(pauseOnStart);
     task.setRunInRealtime(runInRealtime);
+    task.setShiftStartTime(shiftStartTime);
 
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
@@ -132,7 +144,7 @@ public class VehicleLocationSimulationServiceImpl implements
       return task.getSummary();
     return null;
   }
-  
+
   @Override
   public VehicleLocationSimulationDetails getSimulationDetails(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
@@ -191,7 +203,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public int addSimulationForBlockInstance(AgencyAndId blockId,
-      long serviceDate, String parameters) {
+      long serviceDate, Properties properties) {
 
     Random random = new Random();
 
@@ -207,19 +219,23 @@ public class VehicleLocationSimulationServiceImpl implements
     List<StopTimeEntry> stopTimes = blockEntry.getStopTimes();
     int scheduleTime = (int) ((System.currentTimeMillis() - serviceDate) / 1000);
 
-    String vehicleId = null;
+    int shiftStartTime = getShiftStartTimeProperty(properties);
+    String vehicleId = getVehicleIdProperty(random, properties);
+    double locationSigma = getLocationSigma(properties);
+    SortedMap<Double, Integer> scheduleDeviations = getScheduleDeviations(properties);
 
-    if (vehicleId == null) {
-      int vid = random.nextInt(9999);
-      vehicleId = Integer.toString(vid);
-    }
+    scheduleTime -= shiftStartTime;
 
+    StopTimeEntry firstStopTime = stopTimes.get(0);
     StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
+    int firstTime = firstStopTime.getArrivalTime();
     int lastTime = lastStopTime.getDepartureTime();
+
+    scheduleTime = Math.max(firstTime, scheduleTime);
 
     while (scheduleTime <= lastTime) {
 
-      ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockPositionFromScheduledTime(
+      ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
           stopTimes, scheduleTime);
 
       /**
@@ -235,12 +251,25 @@ public class VehicleLocationSimulationServiceImpl implements
 
       CoordinatePoint location = blockLocation.getLocation();
 
-      long timestamp = serviceDate + scheduleTime * 1000;
+      int scheduleDeviation = 0;
+
+      if (!scheduleDeviations.isEmpty()) {
+        double ratio = (scheduleTime - firstTime)
+            / ((double) (lastTime - firstTime));
+        scheduleDeviation = (int) InterpolationLibrary.interpolate(
+            scheduleDeviations, ratio, EOutOfRangeStrategy.LAST_VALUE);
+      }
+
+      long timestamp = serviceDate
+          + (scheduleTime + shiftStartTime + scheduleDeviation) * 1000;
+
+      CoordinatePoint p = applyLocationNoise(location.getLat(),
+          location.getLon(), locationSigma, random);
 
       NycTestLocationRecord record = new NycTestLocationRecord();
       record.setDsc(dsc);
-      record.setLat(location.getLat());
-      record.setLon(location.getLon());
+      record.setLat(p.getLat());
+      record.setLon(p.getLon());
       record.setTimestamp(timestamp);
       record.setVehicleId(vehicleId);
 
@@ -258,6 +287,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private int addTask(SimulatorTask task) {
     task.setId(_taskIndex.incrementAndGet());
+    task.setVehicleLocationService(_vehicleLocationService);
     _tasks.put(task.getId(), task);
     for (Object tag : task.getTags()) {
       List<SimulatorTask> tasks = getTasksForTag(tag, true);
@@ -274,7 +304,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private List<SimulatorTask> getTasksForTag(Object tag, boolean create) {
     List<SimulatorTask> tasks = _tasksByTag.get(tag);
     if (tasks == null && create) {
-      ArrayList<SimulatorTask> newTasks = new ArrayList<VehicleLocationSimulationServiceImpl.SimulatorTask>();
+      ArrayList<SimulatorTask> newTasks = new ArrayList<SimulatorTask>();
       tasks = _tasksByTag.putIfAbsent(tag, newTasks);
       if (tasks == null)
         tasks = newTasks;
@@ -287,186 +317,70 @@ public class VehicleLocationSimulationServiceImpl implements
     return blockId.toString() + "-" + serviceDate;
   }
 
-  private class SimulatorTask implements Runnable, EntityHandler {
+  /****
+   * Simulation Property Methods
+   ****/
 
-    private List<NycTestLocationRecord> _records = new ArrayList<NycTestLocationRecord>();
-
-    private AtomicInteger _recordsProcessed = new AtomicInteger();
-
-    private NycTestLocationRecord _mostRecentRecord = null;
-
-    private int _id;
-
-    private Future<?> _future;
-
-    private volatile boolean _paused;
-
-    private volatile boolean _stepForOne = false;
-
-    private boolean _runInRealtime = false;
-
-    private Set<Object> _tags = new HashSet<Object>();
-
-    public SimulatorTask() {
-
-    }
-
-    public void setId(int id) {
-      _id = id;
-    }
-
-    public int getId() {
-      return _id;
-    }
-
-    public void setFuture(Future<?> future) {
-      _future = future;
-    }
-
-    public Future<?> getFuture() {
-      return _future;
-    }
-
-    public void setPauseOnStart(boolean pauseOnStart) {
-      _paused = pauseOnStart;
-    }
-
-    public void setRunInRealtime(boolean runInRealtime) {
-      _runInRealtime = runInRealtime;
-    }
-
-    public void addTag(Object tag) {
-      _tags.add(tag);
-    }
-
-    public Set<Object> getTags() {
-      return _tags;
-    }
-
-    public void addRecord(NycTestLocationRecord record) {
-      _records.add(record);
-    }
-
-    public synchronized void toggle() {
-      _paused = !_paused;
-      notify();
-    }
-
-    public synchronized void step() {
-      _paused = true;
-      _stepForOne = true;
-      notify();
-    }
-
-    public VehicleLocationSimulationSummary getSummary() {
-      VehicleLocationSimulationSummary summary = new VehicleLocationSimulationSummary();
-      summary.setId(_id);
-      summary.setNumberOfRecordsProcessed(_recordsProcessed.get());
-      summary.setNumberOfRecordsTotal(_records.size());
-      summary.setMostRecentRecord(_mostRecentRecord);
-      summary.setPaused(_paused);
-      return summary;
-    }
-
-    public VehicleLocationSimulationDetails getDetails() {
-      VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
-      details.setId(_id);
-      details.setLastObservation(_mostRecentRecord);
-      List<Particle> particles = _vehicleLocationService.getParticlesForVehicleId(_mostRecentRecord.getVehicleId());
-      if( particles != null) {
-        Collections.sort(particles);
-        details.setParticles(particles);
-      }
-      return details;
-    }
-
-    /****
-     * {@link Runnable} Interface
-     ****/
-
-    @Override
-    public void run() {
-
-      resetAllVehiclesAppearingInRecordData();
-
-      for (NycTestLocationRecord record : _records) {
-
-        if (Thread.interrupted())
-          return;
-
-        if (shouldExitAfterSimulatedWait(record))
-          return;
-
-        if (shouldExitAfterPossiblePause())
-          return;
-
-        _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
-            record.getVehicleId(), record.getLat(), record.getLon(),
-            record.getDsc());
-
-        _recordsProcessed.incrementAndGet();
-
-        _mostRecentRecord = record;
-      }
-    }
-
-    /****
-     * {@link EntityHandler} Interface
-     ****/
-
-    @Override
-    public void handleEntity(Object bean) {
-
-      NycTestLocationRecord record = (NycTestLocationRecord) bean;
-
-      // If the gps hasn't changed, ignore the record
-      if (!_records.isEmpty()) {
-        NycTestLocationRecord prev = _records.get(_records.size() - 1);
-        if (prev.getLat() == record.getLat()
-            && prev.getLon() == record.getLon())
-          return;
-      }
-
-      _records.add(record);
-    }
-
-    private void resetAllVehiclesAppearingInRecordData() {
-      Set<String> vehicleIds = new HashSet<String>();
-
-      for (NycTestLocationRecord record : _records)
-        vehicleIds.add(record.getVehicleId());
-
-      for (String vehicleId : vehicleIds)
-        _vehicleLocationService.resetVehicleLocation(vehicleId);
-    }
-
-    private boolean shouldExitAfterSimulatedWait(NycTestLocationRecord record) {
-
-      if (_runInRealtime && _mostRecentRecord != null) {
-
-        long time = record.getTimestamp() - _mostRecentRecord.getTimestamp();
-
-        try {
-          Thread.sleep(time);
-        } catch (InterruptedException e) {
-          return true;
-        }
-      }
-
-      return false;
-    }
-
-    private synchronized boolean shouldExitAfterPossiblePause() {
-      while (_paused && !_stepForOne) {
-        try {
-          wait();
-        } catch (InterruptedException e) {
-          return true;
-        }
-      }
-      _stepForOne = false;
-      return false;
-    }
+  private int getShiftStartTimeProperty(Properties properties) {
+    int shiftStartTime = 0;
+    if (properties.containsKey(ARG_SHIFT_START_TIME))
+      shiftStartTime = Integer.parseInt(properties.getProperty(ARG_SHIFT_START_TIME)) * 60;
+    return shiftStartTime;
   }
 
+  private String getVehicleIdProperty(Random random, Properties properties) {
+
+    String vehicleId = null;
+
+    if (properties.containsKey(ARG_VEHICLE_ID))
+      vehicleId = properties.getProperty(ARG_VEHICLE_ID);
+
+    if (vehicleId == null) {
+      int vid = random.nextInt(9999);
+      vehicleId = Integer.toString(vid);
+    }
+    return vehicleId;
+  }
+
+  private double getLocationSigma(Properties properties) {
+    double locationSigma = 0.0;
+    if (properties.containsKey(ARG_LOCATION_SIGMA))
+      locationSigma = Double.parseDouble(properties.getProperty(ARG_LOCATION_SIGMA));
+    return locationSigma;
+  }
+
+  private CoordinatePoint applyLocationNoise(double lat, double lon,
+      double locationSigma, Random random) {
+    if (locationSigma == 0)
+      return new CoordinatePoint(lat, lon);
+    double latRadiusInMeters = random.nextGaussian() * locationSigma;
+    double lonRadiusInMeters = random.nextGaussian() * locationSigma;
+    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(lat, lon,
+        Math.abs(latRadiusInMeters), Math.abs(lonRadiusInMeters));
+    double latRadius = (bounds.getMaxLat() - bounds.getMinLat()) / 2
+        * (latRadiusInMeters / Math.abs(latRadiusInMeters));
+    double lonRadius = (bounds.getMaxLon() - bounds.getMinLon()) / 2
+        * (lonRadiusInMeters / Math.abs(lonRadiusInMeters));
+    return new CoordinatePoint(lat + latRadius, lon + lonRadius);
+  }
+
+  private SortedMap<Double, Integer> getScheduleDeviations(Properties properties) {
+
+    SortedMap<Double, Integer> scheduleDeviations = new TreeMap<Double, Integer>();
+
+    if (properties.containsKey(ARG_SCHEDULE_DEVIATIONS)) {
+      String raw = properties.getProperty(ARG_SCHEDULE_DEVIATIONS);
+      for (String token : raw.split(",")) {
+        String[] kvp = token.split("=");
+        if (kvp.length != 2)
+          throw new IllegalArgumentException(
+              "invalid schedule deviations spec: " + raw);
+        double ratio = Double.parseDouble(kvp[0]);
+        int deviation = Integer.parseInt(kvp[1]) * 60;
+        scheduleDeviations.put(ratio, deviation);
+      }
+    }
+
+    return scheduleDeviations;
+  }
 }

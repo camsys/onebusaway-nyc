@@ -9,12 +9,14 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterMod
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.services.realtime.BlockInstance;
-import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
 public class VehicleInferenceInstance {
 
   private ParticleFilter<Observation> _particleFilter;
+  
+  private NycVehicleLocationRecord _previousRecord = null;
 
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
@@ -26,7 +28,8 @@ public class VehicleInferenceInstance {
     if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
       return;
 
-    Observation observation = new Observation(record);
+    Observation observation = new Observation(record,_previousRecord);
+    _previousRecord = record;
 
     _particleFilter.updateFilter(record.getTime(), observation);
   }

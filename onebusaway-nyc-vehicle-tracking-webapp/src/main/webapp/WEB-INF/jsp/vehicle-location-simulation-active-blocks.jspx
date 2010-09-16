@@ -29,15 +29,14 @@
     <tbody>
 
 <ul>
-    <c:forEach var="blockDetails" items="${blocks}">
+    <c:forEach var="status" items="${blocks}">
     <tr>
-        <c:set var="status" value="${blockDetails.status}"/>
         <c:set var="trip" value="${status.activeTrip}"/>
         <td><c:out value="${trip.route.shortName}" /></td>
         <td><c:out value="${trip.tripHeadsign}" /></td>
         <td><fmt:formatNumber pattern="0.00" value="${status.scheduledDistanceAlongBlock / status.totalDistanceAlongBlock}" /></td>
         <td><c:out value="" /></td>
-        <td><a href="vehicle-location-simulation!block.do?blockId=${blockDetails.blockId}&amp;serviceDate=${status.serviceDate}">simulations</a></td>
+        <td><a href="vehicle-location-simulation!block.do?blockId=${status.block.id}&amp;serviceDate=${status.serviceDate}">simulations</a></td>
     </tr>
     </c:forEach>
 </ul>

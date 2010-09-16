@@ -113,13 +113,18 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     VehicleState parentState = parent.getData();
     BlockState blockState = parentState.getBlockState();
-    String currentDsc = blockState.getDestinationSignCode();
+
+    String previouslyObservedDsc = null;
+    NycVehicleLocationRecord previousRecord = obs.getPreviousRecord();
+    if (previousRecord != null)
+      previouslyObservedDsc = previousRecord.getDestinationSignCode();
 
     NycVehicleLocationRecord record = obs.getRecord();
     String observedDsc = record.getDestinationSignCode();
 
-    // Really, we want to compare the previously OBSERVED dsc
-    if (currentDsc != null && currentDsc.equals(observedDsc)) {
+    // Really, we want to compare the previously OBSERVED dsc to see if it's changed
+    if (previouslyObservedDsc != null
+        && previouslyObservedDsc.equals(observedDsc)) {
       return _blocksFromObservationService.advanceState(record.getTime(),
           edgeState.getPointOnEdge(), blockState, distanceToTravel
               * _blockDistanceTravelScale);

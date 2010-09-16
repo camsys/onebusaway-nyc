@@ -10,10 +10,16 @@ public class Observation {
 
   private final ProjectedPoint _point;
 
+  private NycVehicleLocationRecord _previousRecord;
+
   public Observation(NycVehicleLocationRecord record) {
+    this(record,null);
+  }
+  public Observation(NycVehicleLocationRecord record, NycVehicleLocationRecord previousRecord) {
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
         record.getLongitude());
+    _previousRecord = previousRecord;
   }
 
   public NycVehicleLocationRecord getRecord() {
@@ -22,5 +28,9 @@ public class Observation {
 
   public ProjectedPoint getPoint() {
     return _point;
+  }
+  
+  public NycVehicleLocationRecord getPreviousRecord() {
+    return _previousRecord;
   }
 }

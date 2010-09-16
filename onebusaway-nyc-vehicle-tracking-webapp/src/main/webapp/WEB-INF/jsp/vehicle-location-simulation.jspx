@@ -25,6 +25,10 @@
         <td><input type="checkbox" name="pauseOnStart" /></td>
     </tr>
     <tr>
+        <td>Shift start time to now:</td>
+        <td><input type="checkbox" name="shiftStartTime" /></td>
+    </tr>
+    <tr>
         <td></td>
         <td><input type="submit" value="submit" /></td>
     </tr>
@@ -32,7 +36,9 @@
 </form>
 
 <h2>Scheduled Trips</h2>
-<p>You can use a trip that's scheduled to be active right now as a template for a simulation run.  See the list of <a href="vehicle-location-simulation!active-blocks.do">Active Trips</a>.</p>
+<p>You can use a trip that's scheduled to be active right now as a template for a simulation run.</p>
+
+<p><a href="vehicle-location-simulation!active-blocks.do">See the list of Currently Scheduled Trips</a></p>
 
 <h2>Active Simulations</h2>
 <jsp:include page="vehicle-location-simulation-summaries-snippet.jspx"/>

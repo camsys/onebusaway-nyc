@@ -8,33 +8,40 @@
 </head>
 <body>
 
-<p>
-<a href="vehicle-location-simulation.do">Back to Vehicle Location Simulation Console</a>
-</p>
+<p><a href="vehicle-location-simulation.do">Back to Vehicle
+Location Simulation Console</a></p>
 
 <h2>Block Details</h2>
 <ul>
-    <li><jsp:text>blockId: </jsp:text><c:out value="${block.id}"/></li>
-    <li><jsp:text>serviceDate: </jsp:text><c:out value="${serviceDate}"/></li>
+    <li><jsp:text>blockId: </jsp:text><c:out value="${block.id}" /></li>
+    <li><jsp:text>serviceDate: </jsp:text><c:out
+        value="${serviceDate}" /></li>
+    <li>trips:</li>
+    <ul>
+        <c:forEach var="trip" items="${block.trips}">
+            <li><c:out value="${trip.route.shortName}" /><jsp:text> - </jsp:text>
+            <c:out value="${trip.tripHeadsign}" /><jsp:text> - </jsp:text><c:out value="${trip.id}" /></li>
+        </c:forEach>
+    </ul>
 </ul>
 
 <h2>Active Simulations</h2>
-<jsp:include page="vehicle-location-simulation-summaries-snippet.jspx"/>
+<jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
 
 <h2>Add a Simulation</h2>
-<form action="vehicle-location-simulation!block-add-simulation.do" method="POST">
+<form action="vehicle-location-simulation!block-add-simulation.do"
+    method="POST">
 <table>
     <tr>
         <td>Parameters:</td>
-        <td><textarea name="parameters" rows="10" cols="40"><jsp:text></jsp:text></textarea></td>
+        <td><textarea name="properties" rows="10" cols="40"><jsp:text></jsp:text></textarea></td>
     </tr>
     <tr>
         <td></td>
         <td><input type="submit" value="submit" /></td>
     </tr>
 </table>
-    <input type="hidden" name="blockId" value="${block.id}"/>
-    <input type="hidden" name="serviceDate" value="${serviceDate}"/>
-</form>
+<input type="hidden" name="blockId" value="${block.id}" /> <input
+    type="hidden" name="serviceDate" value="${serviceDate}" /></form>
 </body>
 </html>

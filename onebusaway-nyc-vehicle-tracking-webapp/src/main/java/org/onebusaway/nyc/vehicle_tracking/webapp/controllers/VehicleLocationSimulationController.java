@@ -2,10 +2,12 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -14,9 +16,7 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSer
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
-import org.onebusaway.transit_data.model.blocks.BlockDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
-import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
+import org.onebusaway.transit_data.model.blocks.BlockStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
@@ -73,7 +73,8 @@ public class VehicleLocationSimulationController {
   public ModelAndView uploadTrace(
       @RequestParam("file") MultipartFile file,
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
-      @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart)
+      @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
+      @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime)
       throws IOException {
 
     if (!file.isEmpty()) {
@@ -85,7 +86,7 @@ public class VehicleLocationSimulationController {
         in = new GZIPInputStream(in);
 
       _vehicleLocationSimulationService.simulateLocationsFromTrace(in,
-          realtime, pauseOnStart);
+          realtime, pauseOnStart, shiftStartTime);
     }
 
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
@@ -126,16 +127,10 @@ public class VehicleLocationSimulationController {
   @RequestMapping(value = "/vehicle-location-simulation!active-blocks.do", method = RequestMethod.GET)
   public ModelAndView activeBlocks() {
 
-    List<BlockDetailsBean> blocks = new ArrayList<BlockDetailsBean>();
+    List<BlockStatusBean> blocks = new ArrayList<BlockStatusBean>();
 
     for (String agencyId : _agencyService.getAllAgencyIds()) {
-      TripsForAgencyQueryBean query = new TripsForAgencyQueryBean();
-      query.setAgencyId(agencyId);
-      query.setInclusion(new TripDetailsInclusionBean(false, false, true));
-      query.setMaxCount(Integer.MAX_VALUE);
-      query.setTime(System.currentTimeMillis());
-      
-      ListBean<BlockDetailsBean> beans = _blockStatusBeanService.getBlocksForAgency(query);
+      ListBean<BlockStatusBean> beans = _blockStatusBeanService.getBlocksForAgency(agencyId,System.currentTimeMillis());
       blocks.addAll(beans.getList());
     }
 
@@ -161,11 +156,14 @@ public class VehicleLocationSimulationController {
 
   @RequestMapping(value = "/vehicle-location-simulation!block-add-simulation.do", method = RequestMethod.POST)
   public ModelAndView addBlockSimulation(@RequestParam String blockId,
-      @RequestParam long serviceDate, @RequestParam String parameters) {
+      @RequestParam long serviceDate, @RequestParam String properties) throws IOException {
+    
+    Properties props = new Properties();
+    props.load(new StringReader(properties));
 
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(blockId);
     _vehicleLocationSimulationService.addSimulationForBlockInstance(id,
-        serviceDate, parameters);
+        serviceDate, props);
     
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("blockId", blockId);

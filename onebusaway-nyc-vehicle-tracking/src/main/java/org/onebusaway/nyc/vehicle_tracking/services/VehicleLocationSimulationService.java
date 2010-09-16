@@ -3,12 +3,13 @@ package org.onebusaway.nyc.vehicle_tracking.services;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 
 public interface VehicleLocationSimulationService {
 
-  public int simulateLocationsFromTrace(InputStream traceInputStream, boolean runInRealtime, boolean pauseOnStart) throws IOException;
+  public int simulateLocationsFromTrace(InputStream traceInputStream, boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime) throws IOException;
   
   public List<VehicleLocationSimulationSummary> getSimulations();
   
@@ -24,5 +25,5 @@ public interface VehicleLocationSimulationService {
   
   public List<VehicleLocationSimulationSummary> getSimulationsForBlockInstance(AgencyAndId blockId, long serviceDate);
   
-  public int addSimulationForBlockInstance(AgencyAndId blockId, long serviceDate, String parameters);
+  public int addSimulationForBlockInstance(AgencyAndId blockId, long serviceDate, Properties properties);
 }

@@ -1,10 +1,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.onebusaway.collections.MappingLibrary;
@@ -26,11 +24,11 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.ShapePointService;
 import org.onebusaway.transit_data_federation.services.TransitGraphDao;
-import org.onebusaway.transit_data_federation.services.realtime.ActiveCalendarService;
-import org.onebusaway.transit_data_federation.services.realtime.BlockInstance;
-import org.onebusaway.transit_data_federation.services.realtime.BlockLocation;
-import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocationService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.tripplanner.BlockEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripEntry;
 import org.slf4j.Logger;
@@ -45,13 +43,15 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   private TransitGraphDao _transitGraphDao;
 
-  private ActiveCalendarService _activeCalendarService;
+  private BlockCalendarService _activeCalendarService;
 
   private DestinationSignCodeService _destinationSignCodeService;
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
 
   private ShapePointService _shapePointService;
+
+  private BlockGeospatialService _blockGeospatialService;
 
   private ShapePointsLibrary _shapePointsLibrary = new ShapePointsLibrary();
 
@@ -88,7 +88,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   @Autowired
   public void setActiveCalendarService(
-      ActiveCalendarService activeCalendarService) {
+      BlockCalendarService activeCalendarService) {
     _activeCalendarService = activeCalendarService;
   }
 
@@ -107,6 +107,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   @Autowired
   public void setShapePointService(ShapePointService shapePointService) {
     _shapePointService = shapePointService;
+  }
+
+  @Autowired
+  public void setBlockGeospatialService(
+      BlockGeospatialService blockGeospatialService) {
+    _blockGeospatialService = blockGeospatialService;
   }
 
   /**
@@ -146,7 +152,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   public CDFMap<BlockState> determinePotentialBlocksForObservation(
       Observation observation) {
 
-    CDFMap<BlockState> potentialBlocks = new CDFMap<BlockState>();
+    NycVehicleLocationRecord record = observation.getRecord();
+
+    Set<BlockInstance> potentialBlocks = new HashSet<BlockInstance>();
 
     /**
      * First source of trips: the destination sign code
@@ -158,7 +166,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      */
     computeNearbyBlocks(observation, potentialBlocks);
 
-    return potentialBlocks;
+    return buildCdfForPotentialBlocks(observation, record, potentialBlocks);
   }
 
   @Override
@@ -177,11 +185,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    * Private Methods
    * 
    * @param observation
-   * @param cdf
+   * @param potentialBlocks
    */
 
   private void computePotentialBlocksFromDestinationSignCode(
-      Observation observation, CDFMap<BlockState> cdf) {
+      Observation observation, Set<BlockInstance> potentialBlocks) {
 
     NycVehicleLocationRecord record = observation.getRecord();
     long time = record.getTime();
@@ -214,8 +222,6 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     long timeFrom = time - _tripSearchTimeAfteLastStop;
     long timeTo = time + _tripSearchTimeBeforeFirstStop;
 
-    Set<BlockInstance> blockInstances = new HashSet<BlockInstance>();
-
     for (AgencyAndId tripId : dscTripIds) {
 
       /**
@@ -229,24 +235,13 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       // longer than their corresponding trips?
       List<BlockInstance> instances = _activeCalendarService.getActiveBlocks(
           trip.getBlock().getId(), timeFrom, timeTo);
-      blockInstances.addAll(instances);
+      potentialBlocks.addAll(instances);
     }
 
-    System.out.println(blockInstances.size());
-
-    for (BlockInstance blockInstance : blockInstances) {
-      BlockState state = getBestBlockLocation(time, observation.getPoint(),
-          blockInstance, 0, Double.POSITIVE_INFINITY);
-      double p = scoreState(state, observation);
-      cdf.put(p, state);
-      System.out.println(blockInstance + "\t"
-          + state.getBlockLocation().getDistanceAlongBlock() + "\t"
-          + state.getBlockLocation().getScheduledTime() + "\t" + p);
-    }
   }
 
   private void computeNearbyBlocks(Observation observation,
-      CDFMap<BlockState> cdf) {
+      Set<BlockInstance> potentialBlocks) {
 
     NycVehicleLocationRecord record = observation.getRecord();
     long time = record.getTime();
@@ -254,17 +249,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
 
-    // TODO : Think about this
-    Map<BlockInstance, BlockLocation> blockInstances = new HashMap<BlockInstance, BlockLocation>();
-
-    for (Map.Entry<BlockInstance, BlockLocation> entry : blockInstances.entrySet()) {
-      BlockInstance blockInstance = entry.getKey();
-      BlockState blockState = getBestBlockLocation(time,
-          observation.getPoint(), blockInstance, 0, Double.POSITIVE_INFINITY);
-
-      double p = scoreState(blockState, observation);
-      cdf.put(p, blockState);
-    }
+    Set<BlockInstance> blocks = _blockGeospatialService.getActiveScheduledBlocksPassingThroughBounds(
+        bounds, time, time);
+    potentialBlocks.addAll(blocks);
   }
 
   private BlockState getBestBlockLocation(long timestamp,
@@ -328,7 +315,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
       double distanceAlongBlock = index.distanceAlongShape;
 
-      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockPositionFromDistanceAlongBlock(
+      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
           block.getStopTimes(), distanceAlongBlock);
 
       int scheduledTime = location.getScheduledTime();
@@ -352,11 +339,31 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   private BlockState getAsState(BlockInstance blockInstance,
       double distanceAlongBlock) {
     BlockEntry block = blockInstance.getBlock();
-    ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockPositionFromDistanceAlongBlock(
+    ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
         block.getStopTimes(), distanceAlongBlock);
     TripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getId());
     return new BlockState(blockInstance, blockLocation, dsc);
+  }
+
+  private CDFMap<BlockState> buildCdfForPotentialBlocks(
+      Observation observation, NycVehicleLocationRecord record,
+      Set<BlockInstance> potentialBlocks) {
+    CDFMap<BlockState> cdf = new CDFMap<BlockState>();
+
+    _log.info("potential blocks found: " + potentialBlocks.size());
+    System.out.println(potentialBlocks.size());
+
+    for (BlockInstance blockInstance : potentialBlocks) {
+      BlockState state = getBestBlockLocation(record.getTime(),
+          observation.getPoint(), blockInstance, 0, Double.POSITIVE_INFINITY);
+      double p = scoreState(state, observation);
+      cdf.put(p, state);
+      System.out.println(blockInstance + "\t"
+          + state.getBlockLocation().getDistanceAlongBlock() + "\t"
+          + state.getBlockLocation().getScheduledTime() + "\t" + p);
+    }
+    return cdf;
   }
 
   private double scoreState(BlockState state, Observation observation) {

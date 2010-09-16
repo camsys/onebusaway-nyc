@@ -7,8 +7,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.services.realtime.BlockInstance;
-import org.onebusaway.transit_data_federation.services.realtime.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
 /**
  * Sensor model implementation for vehicle location inference
@@ -55,7 +55,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
     double pLocation = computeLocationVsGpsPropability(particle, obs);
 
     // Penalize for distance away from trip path
-    double pTrip = computeLocationVsTripProbability(particle);
+    double pTrip = computeStreetLocationVsBlockLocationProbability(particle);
     
     // Penalize for deviation from the schedule
     double pSchedule = computeScheduleDeviationProbability(particle, obs);
@@ -64,7 +64,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
     return pLocation * pTrip * pSchedule;
   }
 
-  private double computeLocationVsGpsPropability(Particle particle,
+  public double computeLocationVsGpsPropability(Particle particle,
       Observation obs) {
 
     VehicleState state = particle.getData();
@@ -75,15 +75,17 @@ public class SensorModelImpl implements SensorModel<Observation> {
     return _locationDeviationModel.getProbability(locationDeviation);
   }
 
-  private double computeLocationVsTripProbability(Particle particle) {
+  public double computeStreetLocationVsBlockLocationProbability(Particle particle) {
 
     VehicleState state = particle.getData();
     BlockState blockState = state.getBlockState();
 
-    if (blockState == null)
-      return 1.0;
-
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    
+    // TODO : is this right?  Just a dummy P since we have no block location to compare
+    if (blockLocation == null)
+      return _tripLocationDeviationModel.getProbability(_tripLocationDeviationModel.getSigma());
+
     CoordinatePoint p1 = blockLocation.getLocation();
     ProjectedPoint p2 = state.getEdgeState().getPointOnEdge();
 
@@ -92,17 +94,17 @@ public class SensorModelImpl implements SensorModel<Observation> {
     return _tripLocationDeviationModel.getProbability(distance);
   }
 
-  private double computeScheduleDeviationProbability(Particle particle,
+  public double computeScheduleDeviationProbability(Particle particle,
       Observation observation) {
 
     VehicleState state = particle.getData();
     BlockState blockState = state.getBlockState();
 
-    if (blockState == null)
-      return 1.0;
-
     BlockInstance blockInstance = blockState.getBlockInstance();
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+
+    if (blockLocation == null)
+      return _scheduleDeviationModel.getProbability(_scheduleDeviationModel.getSigma());
 
     long scheduledTime = blockInstance.getServiceDate()
         + blockLocation.getScheduledTime() * 1000;
