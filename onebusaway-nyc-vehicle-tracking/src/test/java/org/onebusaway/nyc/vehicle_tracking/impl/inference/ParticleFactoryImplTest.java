@@ -62,7 +62,9 @@ public class ParticleFactoryImplTest {
 
     graph.initialize();
 
-    factory.setStreetGraph(graph);
+    EdgeStateLibrary lib = new EdgeStateLibrary();
+    lib.setStreetGraph(graph);
+    factory.setEdgeStateLibrary(lib);
 
     NycVehicleLocationRecord record = new NycVehicleLocationRecord();
     record.setLatitude(40.71951801506643);
