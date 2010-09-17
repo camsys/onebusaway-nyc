@@ -112,7 +112,7 @@ LI {
 <s:elseif test="%{type.equals('route')}">
 	<div>
 		<p>
-		<strong><s:property value="name" /></strong><br />
+		<strong><s:property value="tripHeadsign" /></strong><br />
 		</p>
 	</div>
 </s:elseif>

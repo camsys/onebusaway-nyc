@@ -98,7 +98,7 @@ OBA.Tracker = function() {
           var routeElement = makeRouteElement(record);
           searchResultsList.append(jQuery("<li></li>").append(routeElement));
 
-          if (routeMap.containsRoute(record.routeId)) {
+          if (routeMap.containsRoute(record.routeId, record.directionId)) {
               // if we already have the route displayed
               // its control should be disabled
               routeElement.find(".controls a").addClass("disabled");
@@ -142,7 +142,9 @@ OBA.Tracker = function() {
 
     function makeRouteElement(record) {
       var el = jQuery('<div id="route-' + record.routeId + '" class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
-                .append('<p class="name">' + OBA.Util.truncate(record.name, 25) + '</p>')
+                .append('<p class="name"><span class="direction-' + record.directionId + '">' +
+                        OBA.Util.truncate(record.tripHeadsign, 25) + 
+                        '</span></p>')
                 .append('<p class="description">' + OBA.Util.truncate(record.description, 30) + '</p>');
              
       var controls = jQuery('<ul></ul>').addClass("controls")
@@ -169,11 +171,13 @@ OBA.Tracker = function() {
     }
 
     function handleZoomToExtent(e) {
-        var displayRouteDiv = jQuery(this).parent().parent().parent("div");
+        var displayRouteDiv = jQuery(this).parents("div.result");
         var routeIdStr = displayRouteDiv.attr("id");
         var routeId = routeIdStr.substring("displayedroute-".length);
+        var directionIdStr = displayRouteDiv.find(".name span").attr("class");
+        var directionId = directionIdStr.substring("direction-".length);
 
-        var latlngBounds = routeMap.getBounds(routeId);
+        var latlngBounds = routeMap.getBounds(routeId, directionId);
 
         if (latlngBounds) {
             map.fitBounds(latlngBounds);
@@ -187,8 +191,10 @@ OBA.Tracker = function() {
       var resultDiv = controlLink.parent().parent().parent("div");
       var routeIdStr = resultDiv.attr("id");
       var routeId = routeIdStr.substring("route-".length);
+      var directionIdStr = resultDiv.find(".name span").attr("class");
+      var directionId = directionIdStr.substring("direction-".length);
 
-      if (routeMap.containsRoute(routeId)) {
+      if (routeMap.containsRoute(routeId, directionId)) {
         return false;
       }
 
@@ -217,14 +223,33 @@ OBA.Tracker = function() {
       var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";
       jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
           var shape;
-          try {
-              shape = json.data.entry.polylines;
-          } catch (typeError) {
-              OBA.Util.log("invalid route response from server");
+          var stopGroupings = json.data.entry.stopGroupings;
+          var directionStopGrouping = null;
+          jQuery.each(stopGroupings, function(_, stopGrouping) {
+              if (stopGrouping.type === "direction")
+                  directionStopGrouping = stopGrouping;
+          });
+          if (directionStopGrouping === null) {
+              OBA.Util.log("Could not find direction stop grouping");
               OBA.Util.log(json);
               return;
           }
-          routeMap.addRoute(routeId, shape);
+          var stopGroups = directionStopGrouping.stopGroups;
+          var shape = null;
+          for ( var i = 0; i < stopGroups.length; i++) {
+              var stopGroup = stopGroups[i];
+              if (stopGroup.id === directionId) {
+                  shape = stopGroup.polylines;
+                  break;
+              }
+          }
+          if (shape === null) {
+              OBA.Util.log("Could not find shape for route direction: " + directionId);
+              OBA.Util.log(json);
+              return;
+          }
+          
+          routeMap.addRoute(routeId, directionId, shape);
 
           // update text info on screen
           jQuery("#n-displayed-routes").text(routeMap.getCount());
@@ -241,14 +266,19 @@ OBA.Tracker = function() {
       var displayRouteDiv = controlLink.parent().parent().parent("div");
       var routeIdStr = displayRouteDiv.attr("id");
       var routeId = routeIdStr.substring("displayedroute-".length);
+      var directionIdStr = displayRouteDiv.find(".name span").attr("class");
+      var directionId = directionIdStr.substring("direction-".length);
 
       displayRouteDiv.fadeOut("fast", function() { displayRouteDiv.remove(); });
 
-      routeMap.removeRoute(routeId);
+      routeMap.removeRoute(routeId, directionId);
 
       // find the control link for the matching search result element
       // and re-enable it
-      jQuery("#route-" + routeId + " a.disabled").removeClass("disabled");
+      // we need to find it by the direction, and then remove the disabled link correctly from there
+      var directionSpan = jQuery("#route-" + routeId + " .direction-" + directionId);
+      directionSpan.parents("div.result").find("a.disabled").removeClass("disabled");
+//      jQuery("#route-" + routeId + ".name span.direction-" + directionId + " a.disabled").removeClass("disabled");
 
       // update text info on screen
       var nDisplayedRoutes = routeMap.getCount();

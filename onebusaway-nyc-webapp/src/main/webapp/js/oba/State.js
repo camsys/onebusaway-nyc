@@ -12,7 +12,9 @@ OBA.State = function(map, routeMap, makeRouteFn) {
     }
     
     // fetch one route at a time
-    function fetchRoutes(routeId, remainingRouteIds, displayedRoutes, displayedRoutesList) {
+    function fetchRoutes(routeDirectionId, remainingRouteDirectionIds, displayedRoutes, displayedRoutesList) {
+        var routeId = routeDirectionId[0];
+        var directionId = routeDirectionId[1];
         var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";
         jQuery.ajax({
             beforeSend: function(xhr) {
@@ -32,7 +34,7 @@ OBA.State = function(map, routeMap, makeRouteFn) {
                     return;
                 }
 
-                    routeMap.addRoute(routeId, shape);
+                    routeMap.addRoute(routeId, directionId, shape);
                     
                     var jsonRouteResponse;
                     try {
@@ -46,6 +48,8 @@ OBA.State = function(map, routeMap, makeRouteFn) {
                     // adapt the data returned from server to match what the route
                     // generator function expects
                     var routeData = {routeId: routeId,
+                                     directionId: directionId,
+                                     tripHeadsign: jsonRouteResponse.shortName + " " + jsonRouteResponse.longName,
                                      //serviceNotice: null,
                                      name: jsonRouteResponse.shortName,
                                      description: jsonRouteResponse.longName};                    
@@ -63,8 +67,8 @@ OBA.State = function(map, routeMap, makeRouteFn) {
 
                     displayedRoutesList.append(jQuery("<li></li>").append(clonedDiv));
                     
-                    if (remainingRouteIds.length > 0)
-                        fetchRoutes(remainingRouteIds[0], remainingRouteIds.slice(1),
+                    if (remainingRouteDirectionIds.length > 0)
+                        fetchRoutes(remainingRouteDirectionIds[0], remainingRouteDirectionIds.slice(1),
                                     displayedRoutes, displayedRoutesList);
             },
             dataType: "json",
@@ -93,35 +97,43 @@ OBA.State = function(map, routeMap, makeRouteFn) {
 
 		// displayed route state
 		if(typeof state.r !== 'undefined' && state.r != "") {
-			var routeIds = state.r.split("^");
+		    var encodedRouteDirectionIds = state.r.split("^");
+		    
+		    var routeDirectionIds = [];
+		    jQuery.each(encodedRouteDirectionIds, function(_, routeDirectionId) {
+		        var routeDirectionPair = routeDirectionId.split("!");
+		        routeDirectionIds.push(routeDirectionPair);
+		    });
 
 			var displayedRoutes = jQuery("#displayed-routes");
 			var displayedRoutesList = jQuery("#displayed-routes-list");
 
-	        if (routeIds.length > 0) {
+	        if (routeDirectionIds.length > 0) {
                 displayedRoutesList.empty();
 
-                jQuery.each(routeMap.getRoutes(), function(_, routeId) {
-                    routeMap.removeRoute(routeId);
-                });
+                routeMap.removeAllRoutes();
+//                jQuery.each(routeMap.getRoutes(), function(_, routeId) {
+//                    routeMap.removeRoute(routeId);
+//                });
                 
-	            fetchRoutes(routeIds[0], routeIds.slice(1), displayedRoutes, displayedRoutesList);
+	            fetchRoutes(routeDirectionIds[0], routeDirectionIds.slice(1), displayedRoutes, displayedRoutesList);
 	            
 	            jQuery("#no-routes-displayed-message").hide();
-	            jQuery("#n-displayed-routes").text(routeIds.length);
+	            jQuery("#n-displayed-routes").text(routeDirectionIds.length);
 	        }
 		} else {	
 			jQuery("#n-displayed-routes").text("0");
 			jQuery("#displayed-routes-list").empty();
 			jQuery("#no-routes-displayed-message").show();
 
-			var r = routeMap.getRoutes();
-
-			for(var i = 0; i < r.length; i++) {
-				var route = r[i];
-	
-				routeMap.removeRoute(route);
-			}
+//			var r = routeMap.getRoutes();
+//
+//			for(var i = 0; i < r.length; i++) {
+//				var route = r[i];
+//	
+//				routeMap.removeRoute(route);
+//			}
+			routeMap.removeAllRoutes();
 		}
 
 		haveRestored = true;
@@ -135,7 +147,11 @@ OBA.State = function(map, routeMap, makeRouteFn) {
         setState("z", map.getZoom());
         setState("lng", map.getCenter().lng());
         setState("lat", map.getCenter().lat());
-		setState("r", routeMap.getRoutes().join("^"));
+        var routeDirections = routeMap.getRoutes();
+        var serializedRouteDirections = jQuery.map(routeDirections, function(routeDirection) {
+            return routeDirection[0] + "!" + routeDirection[1];
+        });
+		setState("r", serializedRouteDirections.join("^"));
 
         serialize();
     }

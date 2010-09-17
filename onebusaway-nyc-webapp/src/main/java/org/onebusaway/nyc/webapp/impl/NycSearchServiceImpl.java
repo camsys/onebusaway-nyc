@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,11 +22,16 @@ import org.onebusaway.nyc.webapp.model.search.SearchResult;
 import org.onebusaway.nyc.webapp.model.search.StopSearchResult;
 import org.onebusaway.nyc.webapp.service.NycSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
+import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,8 +84,30 @@ public class NycSearchServiceImpl implements NycSearchService {
           String longName = routeBean.getLongName();
           // FIXME last update time
           String lastUpdate = "one minute ago";
-          RouteSearchResult routeSearchResult = new RouteSearchResult(routeId, shortName, longName, lastUpdate);
-          results.add(routeSearchResult);
+          
+          TripsForRouteQueryBean tripQueryBean = makeTripQueryBean(routeId);
+          ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
+          List<TripDetailsBean> tripsList = tripsForRoute.getList();
+          
+          // keep one search result per direction id
+          // last one wins
+          Map<String, RouteSearchResult> searchResultsTripMap = new HashMap<String, RouteSearchResult>(2);
+          
+          for (TripDetailsBean tripDetailsBean : tripsList) {
+            TripBean trip = tripDetailsBean.getTrip();
+            String directionId = trip.getDirectionId();
+            String tripHeadsign = trip.getTripHeadsign();
+            RouteSearchResult routeSearchResult = new RouteSearchResult(routeId, shortName, longName, lastUpdate, tripHeadsign, directionId);
+            searchResultsTripMap.put(directionId, routeSearchResult);
+          }
+
+          for (RouteSearchResult routeSearchResult : searchResultsTripMap.values()) {            
+            results.add(routeSearchResult);
+          }
+          
+//          RouteSearchResult routeSearchResult = new RouteSearchResult(routeId, shortName, longName, lastUpdate, null);
+//          results.add(routeSearchResult);
+          
         }
       }
     } else {
@@ -141,6 +171,19 @@ public class NycSearchServiceImpl implements NycSearchService {
       return sortSearchResults(results);
     }
   
+  private TripsForRouteQueryBean makeTripQueryBean(String routeId) {
+    TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
+    tripRouteQueryBean.setRouteId(routeId);
+    tripRouteQueryBean.setMaxCount(100);
+    tripRouteQueryBean.setTime(new Date().getTime());
+    TripDetailsInclusionBean inclusionBean = new TripDetailsInclusionBean();
+    inclusionBean.setIncludeTripBean(true);
+    inclusionBean.setIncludeTripSchedule(false);
+    inclusionBean.setIncludeTripStatus(false);
+    tripRouteQueryBean.setInclusion(inclusionBean);
+    return tripRouteQueryBean;
+  }
+
   private boolean isStop(String s) {
     // stops are 6 digits
     int n = s.length();
@@ -184,6 +227,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     for (RouteBean routeBean : stopRouteBeans) {
       String shortName = routeBean.getShortName();
       String longName = routeBean.getLongName();
+      // FIXME need to make this a query for the vehicles
       List<DistanceAway> distanceAways = Arrays.asList(
           new DistanceAway[] { new DistanceAway(0, 0) });
       AvailableRoute availableRoute = new AvailableRoute(shortName, longName, distanceAways);

@@ -10,13 +10,17 @@ public class RouteSearchResult implements SearchResult {
   private final String routeDescription;
   private final String lastUpdate;
   private final String type;
+  private final String tripHeadsign;
+  private final String directionId;
 
   public RouteSearchResult(String routeId, String routeName,
-      String routeDescription, String lastUpdate) {
+      String routeDescription, String lastUpdate, String tripHeadsign, String directionId) {
         this.routeId = routeId;
         this.routeName = routeName;
         this.routeDescription = routeDescription;
         this.lastUpdate = lastUpdate;
+        this.tripHeadsign = tripHeadsign;
+        this.directionId = directionId;
         this.type = "route";
   }
 
@@ -38,6 +42,14 @@ public class RouteSearchResult implements SearchResult {
 
   public String getType() {
     return type;
+  }
+
+  public String getTripHeadsign() {
+    return tripHeadsign;
+  }
+
+  public String getDirectionId() {
+    return directionId;
   }
 
 }
