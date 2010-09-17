@@ -3,11 +3,11 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import org.junit.Before;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.transit_data_federation.DateSupport;
-import org.onebusaway.transit_data_federation.impl.MockEntryFactory;
 import org.onebusaway.transit_data_federation.impl.tripplanner.offline.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.testing.DateSupport;
+import org.onebusaway.transit_data_federation.testing.MockEntryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SensorModelImplTest {

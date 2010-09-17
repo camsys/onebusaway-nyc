@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 
 public interface VehicleLocationSimulationService {
 
@@ -16,6 +17,8 @@ public interface VehicleLocationSimulationService {
   public VehicleLocationSimulationSummary getSimulation(int taskId);
   
   public VehicleLocationSimulationDetails getSimulationDetails(int taskId);
+  
+  public List<NycTestLocationRecord> getSimulationRecords(int taskId);
   
   public void toggleSimulation(int taskId);
   

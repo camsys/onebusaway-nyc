@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -154,6 +155,14 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
+  public List<NycTestLocationRecord> getSimulationRecords(int taskId) {
+    SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      return task.getRecords();
+    return Collections.emptyList();
+  }
+
+  @Override
   public void toggleSimulation(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
@@ -275,7 +284,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
       task.addRecord(record);
 
-      scheduleTime += 90 + random.nextGaussian() * 30;
+      scheduleTime += 60 + random.nextGaussian() * 10;
     }
 
     return addTask(task);

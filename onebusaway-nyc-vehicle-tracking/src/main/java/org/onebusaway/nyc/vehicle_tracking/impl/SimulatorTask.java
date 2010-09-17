@@ -94,6 +94,10 @@ class SimulatorTask implements Runnable, EntityHandler {
     _records.add(record);
   }
 
+  public List<NycTestLocationRecord> getRecords() {
+    return _records;
+  }
+  
   public synchronized void toggle() {
     _paused = !_paused;
     notify();
