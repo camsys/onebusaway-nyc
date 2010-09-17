@@ -41,7 +41,9 @@ import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class NycSearchServiceImpl implements NycSearchService {
   
   private final static Pattern routePattern = Pattern.compile("(?:[BMQS]|BX)[0-9]+");
@@ -84,7 +86,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       } else if (isRoute(q)) {
         SearchQueryBean queryBean = makeSearchQuery(q);
         RoutesBean routes = transitService.getRoutes(queryBean);
-        
+
         for (RouteBean routeBean : routes.getRoutes()) {
           String routeId = routeBean.getId();
           String routeShortName = routeBean.getShortName();
@@ -250,7 +252,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     Matcher matcher = routePattern.matcher(s);
     return matcher.matches();
   }
-  
+
   private List<StopsBean> fetchStopsFromGeocoder(String q) {
     List<StopsBean> result = new ArrayList<StopsBean>();
     List<GeocoderResult> geocoderResults = geocoderService.geocode(q).getResults();
