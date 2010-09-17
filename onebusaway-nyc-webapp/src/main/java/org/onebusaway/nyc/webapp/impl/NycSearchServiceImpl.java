@@ -6,8 +6,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,17 +19,22 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.webapp.model.AvailableRoute;
 import org.onebusaway.nyc.webapp.model.DistanceAway;
+import org.onebusaway.nyc.webapp.model.StopItem;
 import org.onebusaway.nyc.webapp.model.search.RouteSearchResult;
 import org.onebusaway.nyc.webapp.model.search.SearchResult;
 import org.onebusaway.nyc.webapp.model.search.StopSearchResult;
 import org.onebusaway.nyc.webapp.service.NycSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.StopGroupBean;
+import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsBean;
+import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
@@ -80,34 +87,28 @@ public class NycSearchServiceImpl implements NycSearchService {
         
         for (RouteBean routeBean : routes.getRoutes()) {
           String routeId = routeBean.getId();
-          String shortName = routeBean.getShortName();
-          String longName = routeBean.getLongName();
+          String routeShortName = routeBean.getShortName();
+          String routeLongName = routeBean.getLongName();
           // FIXME last update time
           String lastUpdate = "one minute ago";
           
-          TripsForRouteQueryBean tripQueryBean = makeTripQueryBean(routeId);
-          ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
-          List<TripDetailsBean> tripsList = tripsForRoute.getList();
+          Map<String, List<StopBean>> directionIdToStopBeans = createDirectionToStopBeansMap(routeId);
           
-          // keep one search result per direction id
-          // last one wins
-          Map<String, RouteSearchResult> searchResultsTripMap = new HashMap<String, RouteSearchResult>(2);
-          
-          for (TripDetailsBean tripDetailsBean : tripsList) {
-            TripBean trip = tripDetailsBean.getTrip();
-            String directionId = trip.getDirectionId();
-            String tripHeadsign = trip.getTripHeadsign();
-            RouteSearchResult routeSearchResult = new RouteSearchResult(routeId, shortName, longName, lastUpdate, tripHeadsign, directionId);
-            searchResultsTripMap.put(directionId, routeSearchResult);
-          }
+          Map<String, String> directionIdToHeadSign = createDirectionToHeadsignMap(routeId);
 
-          for (RouteSearchResult routeSearchResult : searchResultsTripMap.values()) {            
+          for (Map.Entry<String, List<StopBean>> directionStopBeansEntry : directionIdToStopBeans.entrySet()) {            
+            String directionId = directionStopBeansEntry.getKey();
+            String tripHeadsign = directionIdToHeadSign.get(directionId);
+            List<StopBean> stopBeansList = directionStopBeansEntry.getValue();
+            List<StopItem> stopItemsList = new ArrayList<StopItem>();
+            for (StopBean stopBean : stopBeansList) {
+              StopItem stopItem = new StopItem(stopBean);
+              stopItemsList.add(stopItem);
+            }
+            RouteSearchResult routeSearchResult = new RouteSearchResult(routeId, routeShortName, routeLongName, lastUpdate, tripHeadsign, directionId, stopItemsList);
             results.add(routeSearchResult);
           }
-          
-//          RouteSearchResult routeSearchResult = new RouteSearchResult(routeId, shortName, longName, lastUpdate, null);
-//          results.add(routeSearchResult);
-          
+
         }
       }
     } else {
@@ -170,6 +171,54 @@ public class NycSearchServiceImpl implements NycSearchService {
     
       return sortSearchResults(results);
     }
+
+  private Map<String, String> createDirectionToHeadsignMap(String routeId) {
+    Map<String, String> directionToHeadsign = new HashMap<String, String>();
+
+    TripsForRouteQueryBean tripQueryBean = makeTripQueryBean(routeId);
+    ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
+    List<TripDetailsBean> tripsList = tripsForRoute.getList();    
+    
+    for (TripDetailsBean tripDetailsBean : tripsList) {
+      TripBean trip = tripDetailsBean.getTrip();
+      String directionId = trip.getDirectionId();
+      String tripHeadsign = trip.getTripHeadsign();
+      directionToHeadsign.put(directionId, tripHeadsign);
+    }
+    
+    return directionToHeadsign;
+
+  }
+
+  private Map<String, List<StopBean>> createDirectionToStopBeansMap(String routeId) {
+    Map<String,List<StopBean>> directionIdToStopBeans = new HashMap<String, List<StopBean>>();
+
+    StopsForRouteBean stopsForRoute = transitService.getStopsForRoute(routeId);
+    List<StopBean> stopBeansList = stopsForRoute.getStops();
+    
+    List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+    for (StopGroupingBean stopGroupingBean : stopGroupings) {
+      List<StopGroupBean> stopGroups = stopGroupingBean.getStopGroups();      
+      for (StopGroupBean stopGroupBean : stopGroups) {
+        NameBean name = stopGroupBean.getName();
+        String type = name.getType();
+        if (!type.equals("destination"))
+          continue;
+        
+        List<StopBean> stopsForDirection = new ArrayList<StopBean>();
+        String directionId = stopGroupBean.getId();
+        Set<String> stopIds = new HashSet<String>(stopGroupBean.getStopIds());
+        
+        for (StopBean stopBean : stopBeansList) {
+          String stopBeanId = stopBean.getId();
+          if (stopIds.contains(stopBeanId))
+            stopsForDirection.add(stopBean);
+        }
+        directionIdToStopBeans.put(directionId, stopsForDirection);
+      }
+    }
+    return directionIdToStopBeans;
+  }
   
   private TripsForRouteQueryBean makeTripQueryBean(String routeId) {
     TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();

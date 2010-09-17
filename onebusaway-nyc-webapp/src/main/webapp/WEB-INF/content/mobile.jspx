@@ -113,6 +113,13 @@ LI {
 	<div>
 		<p>
 		<strong><s:property value="tripHeadsign" /></strong><br />
+		<ul>
+			<s:iterator value="stopItems">
+			<li>
+				<a title="${name}" href="mobile.action?q=${id}"><s:property value="name" /></a>
+			</li>
+			</s:iterator>
+		</ul>
 		</p>
 	</div>
 </s:elseif>
