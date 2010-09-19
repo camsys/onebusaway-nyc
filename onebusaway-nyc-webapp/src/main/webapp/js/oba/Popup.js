@@ -180,31 +180,47 @@ OBA.StopPopup = function(stopId, map) {
 
 OBA.VehiclePopup = function(vehicleId, map) {
     var generateVehicleMarkup = function(json) {
-        var vehicle = json.vehicle;
+        try {
+            var tripDetails = json.data.entry;
+            var tripStatus = tripDetails.status;
+            var refs = json.data.references;
+            var stops = refs.stops;
+            var route = refs.routes[0];
+        } catch (typeError) {
+            OBA.Util.log("invalid response for vehicle details");
+            OBA.Util.log(json);
+            return jQuery("<span>No data found for: " + vehicleId + "</span>");
+        }
         
-        if (!vehicle) 
-            return null;
+        // last update date
+        var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
+        var lastUpdateString = lastUpdateDate.getHours() + ":" + lastUpdateDate.getMinutes();
         
-        var header = '<p class="header' + ((typeof vehicle.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(vehicle.routeId + ' - ' + vehicle.description, 35) + '</p>' +
-             '<p class="description">Bus #' + vehicle.vehicleId + '</p>' + 
-             '<p class="meta">Updated ' + vehicle.lastUpdate + '.</p>';
+        var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(route.id + ' - ' + route.longName, 35) + '</p>' +
+             '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' + 
+             '<p class="meta">Last updated ' + lastUpdateString + '.</p>';
 
         var notices = '<ul class="notices">';
 
-        if(typeof vehicle.serviceNotice !== 'undefined') {
-            notices += '<li>' + vehicle.serviceNotice + '</li>';
+        if(typeof tripStatus.serviceNotice !== 'undefined') {
+            notices += '<li>' + tripStatus.serviceNotice + '</li>';
         }
 
         notices += '</ul>';
             
         var nextStops = '';
-        if(typeof vehicle.nextStops !== 'undefined' && vehicle.nextStops.length > 0) {
+        if (typeof stops !== 'undefined' && stops.length > 0) {
             nextStops += '<p>Next stops:<ul>';       
+            jQuery.each(stops, function(i, stop) {
+                var stopId = stop.id;
+                var stopName = stop.name;
 
-            jQuery.each(vehicle.nextStops, function(i, stop) {
-                var stopId = stop.stopId;
+                // we only have one stop currently
+                // this will not work if we get more than one
+                // because we reuse the distance information for each
 
-                nextStops += '<li><a href="#" class="searchLink" rel="' + stopId + '">' + OBA.Util.truncate(stop.name, 30) + '</a> (' + stop.distanceAway.stops + ' stops, ' + stop.distanceAway.feet + ' ft.)</li>';
+                nextStops += '<li><a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(stopId) + '">' + OBA.Util.truncate(stopName, 30) + '</a>';
+//                nextStops += ' (' + stop.distanceAway.stops + ' stops, ' + stop.distanceAway.feet + ' ft.)</li>';
            });
     
            nextStops += '</ul>';
@@ -228,8 +244,9 @@ OBA.VehiclePopup = function(vehicleId, map) {
         return bubble;
     };
     
+    var url = OBA.Config.vehicleUrl + "/" + vehicleId + ".json";
     return OBA.Popup(
         map,
-        makeJsonFetcher(OBA.Config.vehicleUrl, {vehicleId: vehicleId}),
+        makeJsonFetcher(url, {key: OBA.Config.apiKey, version: 2}),
         generateVehicleMarkup);
 };
