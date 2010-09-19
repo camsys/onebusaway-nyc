@@ -74,8 +74,8 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public void handleVehicleLocation(NycVehicleLocationRecord record) {
-    _executorService.execute(new ProcessingTask(record));
+  public void handleVehicleLocation(NycVehicleLocationRecord record, boolean saveResult) {
+    _executorService.execute(new ProcessingTask(record,saveResult));
   }
 
   @Override
@@ -108,11 +108,19 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public List<Particle> getParticlesForVehicleId(AgencyAndId vehicleId) {
+  public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
-    return instance.getParticles();
+    return instance.getCurrentParticles();
+  }
+  
+  @Override
+  public List<Particle> getMostLikelyParticlesForVehicleId(AgencyAndId vehicleId) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    if (instance == null)
+      return null;
+    return instance.getMostLikelyParticles();
   }
 
   /****
@@ -137,9 +145,12 @@ public class VehicleLocationInferenceServiceImpl implements
   private class ProcessingTask implements Runnable {
 
     private NycVehicleLocationRecord _inferenceRecord;
+    
+    private boolean _saveResult;
 
-    public ProcessingTask(NycVehicleLocationRecord record) {
+    public ProcessingTask(NycVehicleLocationRecord record, boolean saveResult) {
       _inferenceRecord = record;
+      _saveResult = saveResult;
     }
 
     @Override
@@ -147,7 +158,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
       try {
         VehicleInferenceInstance existing = getInstanceForVehicle(_inferenceRecord.getVehicleId());
-        existing.handleUpdate(_inferenceRecord);
+        existing.handleUpdate(_inferenceRecord,_saveResult);
 
         VehicleLocationRecord record = existing.getCurrentState();
         record.setVehicleId(_inferenceRecord.getVehicleId());

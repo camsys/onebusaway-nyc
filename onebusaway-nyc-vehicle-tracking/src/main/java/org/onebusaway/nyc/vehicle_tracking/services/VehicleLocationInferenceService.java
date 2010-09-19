@@ -9,7 +9,7 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 
 public interface VehicleLocationInferenceService {
 
-  public void handleVehicleLocation(NycVehicleLocationRecord record);
+  public void handleVehicleLocation(NycVehicleLocationRecord record, boolean saveResult);
 
   public void resetVehicleLocation(AgencyAndId vid);
 
@@ -23,5 +23,14 @@ public interface VehicleLocationInferenceService {
    * @param vehicleId
    * @return the most recent list of particles for the specified vehicle
    */
-  public List<Particle> getParticlesForVehicleId(AgencyAndId vehicleId);
+  public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
+
+  /**
+   * This is primarily here for debugging
+   * 
+   * @param vehicleId
+   * @return the list of most likely particles over time for the specified
+   *         vehicle
+   */
+  public List<Particle> getMostLikelyParticlesForVehicleId(AgencyAndId vehicleId);
 }

@@ -19,11 +19,15 @@ public class UpdateVehicleLocationController {
   }
 
   @RequestMapping("/update-vehicle-location.do")
-  public ModelAndView index(@RequestParam() String vehicleId,
-      @RequestParam() double lat, @RequestParam() double lon, String dsc) {
+  public ModelAndView index(
+      @RequestParam() String vehicleId,
+      @RequestParam() double lat,
+      @RequestParam() double lon,
+      @RequestParam() String dsc,
+      @RequestParam(required = false, defaultValue = "false") boolean saveResults) {
 
     _vehicleLocationService.handleVehicleLocation(System.currentTimeMillis(),
-        vehicleId, lat, lon, dsc);
+        vehicleId, lat, lon, dsc, saveResults);
 
     return new ModelAndView("update-vehicle-location.jspx");
   }

@@ -23,7 +23,7 @@ public class EdgeStateLibrary {
 
   private double _maxSearchRadius = 800;
 
-  private Gaussian _edgeProbability = new Gaussian(0, 200);
+  private Gaussian _edgeProbability = new Gaussian(0, 20);
 
   @Autowired
   public void setStreetGraph(WalkPlannerGraph streetGraph) {

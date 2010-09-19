@@ -15,23 +15,29 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 public class VehicleInferenceInstance {
 
   private ParticleFilter<Observation> _particleFilter;
-  
+
   private NycVehicleLocationRecord _previousRecord = null;
+
+  private List<Particle> _mostLikelyParticles = new ArrayList<Particle>();
 
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
 
-  public synchronized void handleUpdate(NycVehicleLocationRecord record) {
+  public synchronized void handleUpdate(NycVehicleLocationRecord record, boolean saveResult) {
 
     // If this record occurs BEFORE the most recent update, we ignore it
     if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
       return;
 
-    Observation observation = new Observation(record,_previousRecord);
+    Observation observation = new Observation(record, _previousRecord);
     _previousRecord = record;
 
     _particleFilter.updateFilter(record.getTime(), observation);
+
+    if (saveResult) {
+      _mostLikelyParticles.add(_particleFilter.getMostLikelyParticle());
+    }
   }
 
   public synchronized VehicleLocationRecord getCurrentState() {
@@ -54,7 +60,7 @@ public class VehicleInferenceInstance {
       BlockInstance blockInstance = blockState.getBlockInstance();
       record.setBlockId(blockInstance.getBlock().getId());
       record.setServiceDate(blockInstance.getServiceDate());
-      
+
       ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
       record.setDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
     }
@@ -62,7 +68,11 @@ public class VehicleInferenceInstance {
     return record;
   }
 
-  public synchronized List<Particle> getParticles() {
+  public synchronized List<Particle> getCurrentParticles() {
     return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
+  }
+  
+  public synchronized List<Particle> getMostLikelyParticles() {
+    return new ArrayList<Particle>(_mostLikelyParticles);
   }
 }

@@ -10,23 +10,30 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 
 public interface VehicleLocationSimulationService {
 
-  public int simulateLocationsFromTrace(InputStream traceInputStream, boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime) throws IOException;
-  
+  public int simulateLocationsFromTrace(InputStream traceInputStream,
+      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime)
+      throws IOException;
+
   public List<VehicleLocationSimulationSummary> getSimulations();
-  
+
   public VehicleLocationSimulationSummary getSimulation(int taskId);
-  
+
   public VehicleLocationSimulationDetails getSimulationDetails(int taskId);
-  
+
   public List<NycTestLocationRecord> getSimulationRecords(int taskId);
-  
+
+  public List<NycTestLocationRecord> getResultRecords(int taskId);
+
   public void toggleSimulation(int taskId);
-  
+
   public void stepSimulation(int taskId);
-  
+
   public void cancelSimulation(int taskid);
-  
-  public List<VehicleLocationSimulationSummary> getSimulationsForBlockInstance(AgencyAndId blockId, long serviceDate);
-  
-  public int addSimulationForBlockInstance(AgencyAndId blockId, long serviceDate, Properties properties);
+
+  public List<VehicleLocationSimulationSummary> getSimulationsForBlockInstance(
+      AgencyAndId blockId, long serviceDate);
+
+  public int addSimulationForBlockInstance(AgencyAndId blockId,
+      long serviceDate, Properties properties);
+
 }

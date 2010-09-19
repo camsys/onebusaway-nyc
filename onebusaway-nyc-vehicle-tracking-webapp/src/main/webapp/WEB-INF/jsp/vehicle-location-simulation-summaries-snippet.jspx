@@ -16,6 +16,8 @@
             <td>records total</td>
             <td>details</td>
             <td>show</td>
+            <td>simulation</td>
+            <td>results</td>
             <td>toggle</td>
             <td>step</td>
             <td>cancel</td>
@@ -32,6 +34,10 @@
                 <td><a
                     href="vehicle-location-simulation.html?taskId=${s.id}">show</a>
                 </td>
+                <td><a
+                    href="vehicle-location-simulation!task-simulation-records.do?taskId=${s.id}">records</a></td>
+                <td><a
+                    href="vehicle-location-simulation!task-result-records.do?taskId=${s.id}">records</a></td>    
                 <td><a
                     href="vehicle-location-simulation!toggle.do?taskId=${s.id}">
                 <c:if test="${s.paused}">resume</c:if> <c:if

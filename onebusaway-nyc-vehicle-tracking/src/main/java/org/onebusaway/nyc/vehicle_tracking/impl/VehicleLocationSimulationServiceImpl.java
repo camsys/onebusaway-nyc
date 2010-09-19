@@ -31,6 +31,7 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
@@ -151,6 +152,15 @@ public class VehicleLocationSimulationServiceImpl implements
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getDetails();
+    return null;
+  }
+  
+  
+  @Override
+  public List<NycTestLocationRecord> getResultRecords(int taskId) {
+    SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      return task.getResults();
     return null;
   }
 
@@ -282,6 +292,12 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setTimestamp(timestamp);
       record.setVehicleId(vehicleId);
 
+      record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockId));
+      record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
+      record.setActualDsc(dsc);
+      record.setActualLat(location.getLat());
+      record.setActualLon(location.getLon());
+      
       task.addRecord(record);
 
       scheduleTime += 60 + random.nextGaussian() * 10;

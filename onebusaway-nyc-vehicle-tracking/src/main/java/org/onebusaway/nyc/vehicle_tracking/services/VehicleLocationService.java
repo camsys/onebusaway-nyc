@@ -33,9 +33,10 @@ public interface VehicleLocationService {
    * @param lat
    * @param lon
    * @param dsc destination sign code
+   * @param saveResult should we internally save inference results for later access (useful for debugging)
    */
   public void handleVehicleLocation(long time, String vehicleId, double lat,
-      double lon, String dsc);
+      double lon, String dsc, boolean saveResult);
 
   /**
    * Convenience method for clearing any active location inference data for the
@@ -56,8 +57,15 @@ public interface VehicleLocationService {
    * This is here primarily for debugging
    * 
    * @param vehicleId
-   * @return the most recent list of particles for the specified vehicle
+   * @return the current list of particles for the specified vehicle
    */
-  public List<Particle> getParticlesForVehicleId(String vehicleId);
+  public List<Particle> getCurrentParticlesForVehicleId(String vehicleId);
 
+  /**
+   * This is here primarily for debugging
+   * 
+   * @param vehicleId
+   * @return the most likely list of particles for the specified vehicle
+   */
+  public List<Particle> getMostLikelyParticlesForVehicleId(String vehicleId);
 }

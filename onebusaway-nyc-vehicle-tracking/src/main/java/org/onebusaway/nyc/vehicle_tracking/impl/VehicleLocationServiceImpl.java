@@ -56,12 +56,12 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     record.setLongitude(location.Longitude);
     record.setTime(delivery.ResponseTimestamp.getTimeInMillis());
 
-    handleRecord(record);
+    handleRecord(record,false);
   }
 
   @Override
   public void handleVehicleLocation(long time, String vehicleId, double lat,
-      double lon, String dsc) {
+      double lon, String dsc, boolean saveResult) {
 
     NycVehicleLocationRecord record = new NycVehicleLocationRecord();
     record.setTime(time);
@@ -70,7 +70,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     record.setLongitude(lon);
     record.setDestinationSignCode(dsc);
 
-    handleRecord(record);
+    handleRecord(record, saveResult);
   }
 
   @Override
@@ -91,16 +91,21 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Override
-  public List<Particle> getParticlesForVehicleId(String vehicleId) {
-    return _vehicleLocationInferenceService.getParticlesForVehicleId(new AgencyAndId(_agencyId,vehicleId));
+  public List<Particle> getCurrentParticlesForVehicleId(String vehicleId) {
+    return _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(new AgencyAndId(_agencyId,vehicleId));
+  }
+  
+  @Override
+  public List<Particle> getMostLikelyParticlesForVehicleId(String vehicleId) {
+    return _vehicleLocationInferenceService.getMostLikelyParticlesForVehicleId(new AgencyAndId(_agencyId,vehicleId));
   }
   
   /****
    * Private Methods
    ****/
 
-  private void handleRecord(NycVehicleLocationRecord record) {
-    _vehicleLocationInferenceService.handleVehicleLocation(record);
+  private void handleRecord(NycVehicleLocationRecord record, boolean saveResult) {
+    _vehicleLocationInferenceService.handleVehicleLocation(record, saveResult);
     _recordDao.saveOrUpdateVehicleLocationRecord(record);
   }
 }
