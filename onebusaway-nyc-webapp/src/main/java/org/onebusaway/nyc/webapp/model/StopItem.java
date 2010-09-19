@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.webapp.model;
 
+import org.onebusaway.nyc.webapp.impl.WebappIdParser;
 import org.onebusaway.transit_data.model.StopBean;
 
 /**
@@ -11,14 +12,18 @@ public class StopItem {
 
   private final String id;
   private final String name;
+  private final Double distance;
+  
+  private static final WebappIdParser idParser = new WebappIdParser();
 
-  public StopItem(StopBean stopBean) {
-    String stopBeanId = stopBean.getId();
-    String[] idFields = stopBeanId.split("_");
-    if (idFields.length != 2)
-      throw new IllegalArgumentException("Invalid stop bean id that doesn't contain agency: " + stopBeanId);
-    this.id = idFields[1];
-    this.name = stopBean.getName();
+  public StopItem(StopBean stopBean, Double distance) {
+    this(idParser.parseIdWithoutAgency(stopBean.getId()), stopBean.getName(), distance);
+  }
+  
+  public StopItem(String id, String name, Double distance) {
+    this.id = id;
+    this.name = name;
+    this.distance = distance;
   }
 
   public String getId() {
@@ -27,5 +32,16 @@ public class StopItem {
 
   public String getName() {
     return name;
+  }
+
+  public Double getDistance() {
+    return distance;
+  }
+  
+  public String getPresentableDistance() {
+    if (distance == null)
+      return "";
+    int intDistance = distance.intValue();
+    return "" + intDistance;
   }
 }

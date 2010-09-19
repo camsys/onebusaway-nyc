@@ -79,17 +79,18 @@ OBA.StopPopup = function(stopId, map) {
         var routeToVehicleInfo = {};
         jQuery.each(arrivals, function(_, arrival) {
                 var routeId = arrival.routeId;
-                if (!(routeId in routeIdMap)) {
+                var arrivalStopId = arrival.stopId;
+                var predicted = arrival.predicted;
+                if (!predicted || arrivalStopId !== stopId || !(routeId in routeIdMap))
                     return;
-                }
                 var headsign = arrival.tripHeadsign;
                 // FIXME stops and distance away
                 var stops = 0;
-                var feet = 0;
+                var meters = arrival.distanceFromStop;
 
                 var vehicleInfo = {headsign: headsign,
                                    stops: stops,
-                                   feet: feet};
+                                   meters: meters.toPrecision(5)};
                 if (routeToVehicleInfo[routeId])
                     routeToVehicleInfo[routeId].push(vehicleInfo);
                 else
@@ -128,8 +129,12 @@ OBA.StopPopup = function(stopId, map) {
 
                 // and the distance away for each vehicle for that route
                 var vehicleInfos = routeToVehicleInfo[routeId] || [];
+                // sort it based on meter distance
+                vehicleInfos.sort(function(a, b) { return a.meters - b.meters; });
                 jQuery.each(vehicleInfos, function(_, distanceAway) {
-                    service += ' (' + distanceAway.stops + ' stops, ' + distanceAway.feet + ' ft.)';
+                    // just meter distance for now
+//                    service += ' (' + distanceAway.stops + ' stops, ' + distanceAway.meters + ' meters)';
+                    service += ' (' + distanceAway.meters + ' meters)';
                 });
                 service += '</li>';
            });
@@ -162,7 +167,7 @@ OBA.StopPopup = function(stopId, map) {
         map,
         makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey}),
         generateStopMarkup);
-}
+};
 
 OBA.VehiclePopup = function(vehicleId, map) {
     var generateVehicleMarkup = function(json) {
