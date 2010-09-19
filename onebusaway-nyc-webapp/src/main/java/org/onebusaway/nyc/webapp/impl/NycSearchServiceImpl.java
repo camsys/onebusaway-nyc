@@ -64,6 +64,8 @@ public class NycSearchServiceImpl implements NycSearchService {
   
   @Autowired
   private ServiceAreaService serviceArea;
+  
+  private static final SearchResultComparator searchResultComparator = new SearchResultComparator();
 
   @Override
   public List<SearchResult> search(String q) {
@@ -350,23 +352,7 @@ public class NycSearchServiceImpl implements NycSearchService {
   }
   
   private List<SearchResult> sortSearchResults(List<SearchResult> searchResults) {
-    Collections.sort(searchResults, new Comparator<SearchResult>() {
-
-      @Override
-      public int compare(SearchResult o1, SearchResult o2) {
-        if ((o1 instanceof RouteSearchResult) && (o2 instanceof StopSearchResult))
-          return -1;
-        else if ((o1 instanceof StopSearchResult) && (o2 instanceof RouteSearchResult))
-          return 1;
-        else if ((o1 instanceof RouteSearchResult) && (o2 instanceof RouteSearchResult))
-          return ((RouteSearchResult) o1).getName().compareTo(((RouteSearchResult) o2).getName());
-        else if ((o1 instanceof StopSearchResult) && (o2 instanceof StopSearchResult))
-          return ((StopSearchResult) o1).getName().compareTo(((StopSearchResult) o2).getName());
-        else
-          throw new IllegalStateException("Unknown search result types");
-      }
-    });
-    
+    Collections.sort(searchResults, NycSearchServiceImpl.searchResultComparator);
     return searchResults;
   }
   
@@ -390,5 +376,21 @@ public class NycSearchServiceImpl implements NycSearchService {
     }
 
   }
+  
+  public static class SearchResultComparator implements Comparator<SearchResult> {
 
+    @Override
+    public int compare(SearchResult o1, SearchResult o2) {
+      if ((o1 instanceof RouteSearchResult) && (o2 instanceof StopSearchResult))
+        return -1;
+      else if ((o1 instanceof StopSearchResult) && (o2 instanceof RouteSearchResult))
+        return 1;
+      else if ((o1 instanceof RouteSearchResult) && (o2 instanceof RouteSearchResult))
+        return ((RouteSearchResult) o1).getName().compareTo(((RouteSearchResult) o2).getName());
+      else if ((o1 instanceof StopSearchResult) && (o2 instanceof StopSearchResult))
+        return ((StopSearchResult) o1).getName().compareTo(((StopSearchResult) o2).getName());
+      else
+        throw new IllegalStateException("Unknown search result types");
+    }
+  }
 }
