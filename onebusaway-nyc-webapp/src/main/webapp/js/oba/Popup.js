@@ -183,6 +183,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
         try {
             var tripDetails = json.data.entry;
             var tripStatus = tripDetails.status;
+            var stopTimes = tripDetails.schedule.stopTimes;
             var refs = json.data.references;
             var stops = refs.stops;
             var route = refs.routes[0];
@@ -196,6 +197,41 @@ OBA.VehiclePopup = function(vehicleId, map) {
         var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
         var lastUpdateString = lastUpdateDate.getHours() + ":" + lastUpdateDate.getMinutes();
         
+        var stops = stops.slice(0);
+        
+        var stopIdsToStops = {};
+        jQuery.each(stops, function(_, stop) {
+            stopIdsToStops[stop.id] = stop;
+        });
+        
+        // calculate the distances along the trip for all stops
+        jQuery.each(stopTimes, function(_, stopTime) {
+            var stopId = stopTime.stopId;
+            var stop = stopIdsToStops[stopId];
+            stop.scheduledDistance = stopTime.distanceAlongTrip;
+        });
+        
+        // sort the stops by their distance along the route
+        stops.sort(function(a, b) {
+            return a.scheduledDistance - b.scheduledDistance;
+        });
+        
+        // find how far along the trip we are given our current vehicle distance
+        var distanceAlongTrip = tripStatus.distanceAlongTrip;
+        var vehicleDistanceIdx = 0;
+        for (var i = 0; i < stops.length; i++) {
+            var stop = stops[i];
+            var stopDistance = stop.scheduledDistance;
+            var distanceDelta = distanceAlongTrip - stopDistance;
+            if (distanceDelta <= 0) {
+                vehicleDistanceIdx = i;
+                break;
+            }
+        }
+        
+        // and we take the next 3 stops for display
+        var nextStops = stops.slice(vehicleDistanceIdx, stops.length - 3);
+        
         var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(route.id + ' - ' + route.longName, 35) + '</p>' +
              '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' + 
              '<p class="meta">Last updated ' + lastUpdateString + '.</p>';
@@ -208,25 +244,31 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
         notices += '</ul>';
             
-        var nextStops = '';
-        if (typeof stops !== 'undefined' && stops.length > 0) {
-            nextStops += '<p>Next stops:<ul>';       
-            jQuery.each(stops, function(i, stop) {
-                var stopId = stop.id;
+        var nextStopsMarkup = '';
+        
+        if (nextStops && nextStops.length > 0) {
+            nextStopsMarkup += '<p>Next stops:<ul>';       
+            jQuery.each(nextStops, function(i, stop) {
+                var displayStopId = OBA.Util.parseEntityId(stop.id);
                 var stopName = stop.name;
 
                 // we only have one stop currently
                 // this will not work if we get more than one
                 // because we reuse the distance information for each
+                var stopsAway = i+1;
+                var stopsAwayStr = (stopsAway === 1) ? "1 stop" : stopsAway + " stops";
+                var metersDistanceDelta = stop.scheduledDistance - distanceAlongTrip;
+                var feet = OBA.Util.metersToFeet(metersDistanceDelta);
+                var distanceStr = OBA.Util.displayDistance(feet);
 
-                nextStops += '<li><a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(stopId) + '">' + OBA.Util.truncate(stopName, 30) + '</a>';
-//                nextStops += ' (' + stop.distanceAway.stops + ' stops, ' + stop.distanceAway.feet + ' ft.)</li>';
+                nextStopsMarkup += '<li><a href="#" class="searchLink" rel="' + displayStopId + '">' + OBA.Util.truncate(stopName, 30) + '</a>';
+                nextStopsMarkup += ' (' + stopsAwayStr + ' ' + distanceStr + ')</li>';
            });
     
-           nextStops += '</ul>';
+           nextStopsMarkup += '</ul>';
         }
 
-        bubble = jQuery(header + notices + nextStops);
+        bubble = jQuery(header + notices + nextStopsMarkup);
         
         bubble.find("a.searchLink").click(function(e) {
             e.preventDefault();
@@ -247,6 +289,6 @@ OBA.VehiclePopup = function(vehicleId, map) {
     var url = OBA.Config.vehicleUrl + "/" + vehicleId + ".json";
     return OBA.Popup(
         map,
-        makeJsonFetcher(url, {key: OBA.Config.apiKey, version: 2}),
+        makeJsonFetcher(url, {key: OBA.Config.apiKey, version: 2, includeSchedule: true}),
         generateVehicleMarkup);
 };

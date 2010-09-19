@@ -91,6 +91,14 @@ OBA.Util = (function() {
         metersToFeet: function(meters) {
             var feetInMeters = 3.28083989501312;
             return meters * feetInMeters;
+        },
+        displayDistance: function(feet) {
+            if (feet > 5280) {
+                var miles = feet / 5280;
+                return miles.toPrecision(3) + " miles";
+            } else {
+                return Math.round(feet) + " feet";
+            }
         }
     };
 })();
