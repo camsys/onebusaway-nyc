@@ -230,8 +230,8 @@ OBA.VehiclePopup = function(vehicleId, map) {
         }
         
         // and we take the next 3 stops for display
-        var nextStops = stops.slice(vehicleDistanceIdx, stops.length - 3);
-        
+        var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
+
         var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(route.id + ' - ' + route.longName, 35) + '</p>' +
              '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' + 
              '<p class="meta">Last updated ' + lastUpdateString + '.</p>';
