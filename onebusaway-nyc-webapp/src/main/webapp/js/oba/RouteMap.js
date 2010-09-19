@@ -22,14 +22,14 @@ OBA.RouteMap = function(mapNode, mapOptions) {
          tileSize: new google.maps.Size(256, 256),
          opacity:1.0,
          maxZoom: 17,
-         minZoom: 14,
+         minZoom: 12,
          name: 'Transit',
          isPng: true,
          alt: ''
 	});
 
     var defaultMapOptions = {
-      zoom: 14,
+      zoom: 12,
       mapTypeControl: false,
 	  navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
       center: new google.maps.LatLng(40.70988943430561,-73.96564720877076),
@@ -232,8 +232,21 @@ OBA.RouteMap = function(mapNode, mapOptions) {
             }
          });
     };
+    
+    var stopRequester = function() {
+        if (map.getZoom() < 14) {
+            // don't show any stops when zoomed out far
+            for (var stopId in stopMarkers) {
+                var marker = stopMarkers[stopId];
+                marker.removeMarker();
+                delete stopMarkers[stopId];
+            }
+        } else {
+            requestStops();
+        }
+    };
 
-    google.maps.event.addListener(map, "idle", requestStops);
+    google.maps.event.addListener(map, "idle", stopRequester);
     
     var containsRoute = function(routeId, directionId) {
         var directionIdMap = routeIds[routeId] || {};
@@ -267,6 +280,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 stopMarkers[stopId] = marker;
 
                 map.setCenter(new google.maps.LatLng(latlng[0], latlng[1]));
+                // and we have to make sure that the zoom level is close enough so that we can see stops
+                var currentZoom = map.getZoom();
+                if (currentZoom < 14)
+                    map.setZoom(14);
 
                 marker.showPopup();
             });
