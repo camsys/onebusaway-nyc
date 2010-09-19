@@ -195,7 +195,9 @@ OBA.VehiclePopup = function(vehicleId, map) {
         
         // last update date
         var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
-        var lastUpdateString = lastUpdateDate.getHours() + ":" + lastUpdateDate.getMinutes();
+        var minutes = lastUpdateDate.getMinutes();
+        minutes = (minutes < 10) ? "0" + minutes : "" + minutes;
+        var lastUpdateString = lastUpdateDate.getHours() + ":" + minutes;
         
         var stops = stops.slice(0);
         
@@ -232,7 +234,9 @@ OBA.VehiclePopup = function(vehicleId, map) {
         // and we take the next 3 stops for display
         var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
 
-        var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(route.id + ' - ' + route.longName, 35) + '</p>' +
+        var routeIdDisplay = OBA.Util.parseEntityId(route.id);
+        var routeName = route.longName;
+        var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(routeIdDisplay + ' - ' + routeName, 35) + '</p>' +
              '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' + 
              '<p class="meta">Last updated ' + lastUpdateString + '.</p>';
 
