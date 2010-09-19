@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.webapp.model;
 
+import org.onebusaway.nyc.webapp.impl.DistancePresenter;
 import org.onebusaway.nyc.webapp.impl.WebappIdParser;
 import org.onebusaway.transit_data.model.StopBean;
 
@@ -39,9 +40,8 @@ public class StopItem {
   }
   
   public String getPresentableDistance() {
-    if (distance == null)
-      return "";
-    int intDistance = distance.intValue();
-    return "" + intDistance;
+    return distance != null
+        ? DistancePresenter.displayFeet(distance)
+        : "";
   }
 }

@@ -87,10 +87,11 @@ OBA.StopPopup = function(stopId, map) {
                 // FIXME stops and distance away
                 var stops = 0;
                 var meters = arrival.distanceFromStop;
+                var feet = OBA.Util.metersToFeet(meters);
 
                 var vehicleInfo = {headsign: headsign,
                                    stops: stops,
-                                   meters: meters.toPrecision(5)};
+                                   feet: feet};
                 if (routeToVehicleInfo[routeId])
                     routeToVehicleInfo[routeId].push(vehicleInfo);
                 else
@@ -129,12 +130,20 @@ OBA.StopPopup = function(stopId, map) {
 
                 // and the distance away for each vehicle for that route
                 var vehicleInfos = routeToVehicleInfo[routeId] || [];
-                // sort it based on meter distance
-                vehicleInfos.sort(function(a, b) { return a.meters - b.meters; });
+                // sort it based on distance
+                vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
                 jQuery.each(vehicleInfos, function(_, distanceAway) {
                     // just meter distance for now
-//                    service += ' (' + distanceAway.stops + ' stops, ' + distanceAway.meters + ' meters)';
-                    service += ' (' + distanceAway.meters + ' meters)';
+//                    service += ' (' + distanceAway.stops + ' stops, ' + distanceAway.feet + ' feet)';
+                    var feet = distanceAway.feet;
+                    if (feet > 5280) {
+                        var distanceMiles = feet / 5280;
+                        distanceMiles = distanceMiles.toPrecision(3);
+                        service += ' (' + distanceMiles + ' miles)';
+                    } else {
+                        feet = feet.toPrecision(4);
+                        service += ' (' + feet + " feet)";
+                    }
                 });
                 service += '</li>';
            });

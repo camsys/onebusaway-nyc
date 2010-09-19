@@ -87,6 +87,10 @@ OBA.Util = (function() {
                 return entityId;
 
             return entityId.substring(idx + 1);
+        },
+        metersToFeet: function(meters) {
+            var feetInMeters = 3.28083989501312;
+            return meters * feetInMeters;
         }
     };
 })();

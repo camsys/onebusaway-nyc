@@ -2,6 +2,7 @@ package org.onebusaway.nyc.webapp.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -25,6 +26,7 @@ import org.onebusaway.nyc.webapp.model.search.SearchResult;
 import org.onebusaway.nyc.webapp.model.search.StopSearchResult;
 import org.onebusaway.nyc.webapp.service.NycSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
+import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
@@ -33,6 +35,7 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
+import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
@@ -66,6 +69,8 @@ public class NycSearchServiceImpl implements NycSearchService {
   private ServiceAreaService serviceArea;
   
   private static final SearchResultComparator searchResultComparator = new SearchResultComparator();
+  
+  private final Calendar calendar = Calendar.getInstance();
 
   @Override
   public List<SearchResult> search(String q) {
@@ -168,6 +173,8 @@ public class NycSearchServiceImpl implements NycSearchService {
             for (StopBean stopBean : stopBeansList) {
               String stopId = stopBean.getId();
               Double distance = stopIdToDistanceAway.get(stopId);
+              if (distance != null)
+                distance = metersToFeet(distance);
               StopItem stopItem = new StopItem(stopBean, distance);
               stopItemsList.add(stopItem);
             }
@@ -318,19 +325,64 @@ public class NycSearchServiceImpl implements NycSearchService {
     String stopId = stopBean.getId();
     List<Double> latLng = Arrays.asList(new Double[] { stopBean.getLat(), stopBean.getLon() } );
     String stopName = stopBean.getName();
+    
+    int minutesBefore = 5;
+    int minutesAfter = 35;
+    Date now = new Date();
+    calendar.setTime(now);
+    calendar.add(Calendar.MINUTE, -minutesBefore);
+    Date timeFrom = calendar.getTime();
+
+    Map<String, List<Double>> routeIdToDistances = new HashMap<String, List<Double>>();
+    calendar.setTime(now);
+    calendar.add(Calendar.MINUTE, minutesAfter);
+    Date timeTo = calendar.getTime();
+    StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = transitService.getStopWithArrivalsAndDepartures(stopId, timeFrom, timeTo);
+    List<ArrivalAndDepartureBean> arrivalsAndDepartures = stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
+    for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
+      if (arrivalAndDepartureBean.isPredicted()) {
+        double distanceFromStop = arrivalAndDepartureBean.getDistanceFromStop();
+        String routeId = arrivalAndDepartureBean.getTrip().getRoute().getId();
+        List<Double> distances = routeIdToDistances.get(routeId);
+        if (distances == null) {
+          distances = new ArrayList<Double>();
+          routeIdToDistances.put(routeId, distances);
+        }
+        distances.add(distanceFromStop);
+      }
+    }
+    
     List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
     List<RouteBean> stopRouteBeans = stopBean.getRoutes();
     for (RouteBean routeBean : stopRouteBeans) {
       String shortName = routeBean.getShortName();
       String longName = routeBean.getLongName();
-      // FIXME need to make this a query for the vehicles
-      List<DistanceAway> distanceAways = Arrays.asList(
-          new DistanceAway[] { new DistanceAway(0, 0) });
+      String routeId = routeBean.getId();
+      List<Double> distances = routeIdToDistances.get(routeId);
+      
+      // FIXME we only contain absolute distances now
+      // not number of stops away
+      List<DistanceAway> distanceAways;
+      if (distances != null) {
+        distanceAways = new ArrayList<DistanceAway>(distances.size());
+        for (Double meters : distances) {
+          Double feetAway = this.metersToFeet(meters);
+          DistanceAway distanceAway = new DistanceAway(0, feetAway.intValue());
+          distanceAways.add(distanceAway);
+        }
+      } else {
+        distanceAways = new ArrayList<DistanceAway>();
+      }
       AvailableRoute availableRoute = new AvailableRoute(shortName, longName, distanceAways);
       availableRoutes.add(availableRoute);
     }
     StopSearchResult stopSearchResult = new StopSearchResult(stopId, stopName, latLng, availableRoutes);
     return stopSearchResult;
+  }
+
+  private double metersToFeet(double meters) {
+    double feetInMeters = 3.28083989501312;
+    return meters * feetInMeters;
   }
 
   private SearchQueryBean makeSearchQuery(String q) {

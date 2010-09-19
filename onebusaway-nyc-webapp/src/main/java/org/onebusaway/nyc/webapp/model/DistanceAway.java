@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.webapp.model;
 
+import org.onebusaway.nyc.webapp.impl.DistancePresenter;
+
 /**
  * Data transfer object for how far away a vehicle is
  */
@@ -20,5 +22,8 @@ public class DistanceAway {
   public int getFeet() {
     return feetAway;
   }
-
+  
+  public String getPresentableDistance() {
+    return DistancePresenter.displayFeet(feetAway);
+  }
 }

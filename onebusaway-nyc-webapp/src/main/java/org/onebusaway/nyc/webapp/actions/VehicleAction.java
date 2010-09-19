@@ -1,12 +1,10 @@
 package org.onebusaway.nyc.webapp.actions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
-import org.onebusaway.nyc.webapp.model.DistanceAway;
 import org.onebusaway.nyc.webapp.model.NextStop;
 import org.onebusaway.nyc.webapp.model.VehicleDetails;
 
