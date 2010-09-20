@@ -53,6 +53,8 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private Set<Object> _tags = new HashSet<Object>();
 
+  private String _vehicleId = null;
+
   public SimulatorTask() {
 
   }
@@ -105,6 +107,15 @@ class SimulatorTask implements Runnable, EntityHandler {
       record.setTimestamp(record.getTimestamp() + _startTimeOffset);
     }
     _records.add(record);
+    String vid = record.getVehicleId();
+    if (_vehicleId != null) {
+      if (!_vehicleId.equals(vid))
+        throw new IllegalArgumentException(
+            "simulation should only include records for same vehicleId: expected="
+                + _vehicleId + " actual=" + vid);
+    } else {
+      _vehicleId = vid;
+    }
   }
 
   public List<NycTestLocationRecord> getRecords() {
@@ -136,7 +147,7 @@ class SimulatorTask implements Runnable, EntityHandler {
     VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
     details.setId(_id);
     details.setLastObservation(_mostRecentRecord);
-    List<Particle> particles = _vehicleLocationService.getCurrentParticlesForVehicleId(_mostRecentRecord.getVehicleId());
+    List<Particle> particles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
     if (particles != null) {
       Collections.sort(particles);
       details.setParticles(particles);
@@ -145,7 +156,7 @@ class SimulatorTask implements Runnable, EntityHandler {
   }
 
   public List<NycTestLocationRecord> getResults() {
-    List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_mostRecentRecord.getVehicleId());
+    List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
     List<NycTestLocationRecord> records = new ArrayList<NycTestLocationRecord>();
     for (Particle particle : particles) {
 
@@ -167,11 +178,21 @@ class SimulatorTask implements Runnable, EntityHandler {
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       record.setActualLat(blockLocation.getLocation().getLat());
       record.setActualLon(blockLocation.getLocation().getLon());
-      record.setVehicleId(_mostRecentRecord.getVehicleId());
+      record.setVehicleId(_vehicleId);
       records.add(record);
     }
 
     return records;
+  }
+
+  public void resetAllVehiclesAppearingInRecordData() {
+    Set<String> vehicleIds = new HashSet<String>();
+
+    for (NycTestLocationRecord record : _records)
+      vehicleIds.add(record.getVehicleId());
+
+    for (String vehicleId : vehicleIds)
+      _vehicleLocationService.resetVehicleLocation(vehicleId);
   }
 
   /****
@@ -195,8 +216,6 @@ class SimulatorTask implements Runnable, EntityHandler {
         if (shouldExitAfterPossiblePause())
           return;
 
-        _mostRecentRecord = record;
-
         _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
             record.getVehicleId(), record.getLat(), record.getLon(),
             record.getDsc(), true);
@@ -204,6 +223,7 @@ class SimulatorTask implements Runnable, EntityHandler {
         if (shouledExitAfterWaitingForInferenceToComplete())
           return;
 
+        _mostRecentRecord = record;
         _recordsProcessed.incrementAndGet();
       }
     } catch (Throwable ex) {
@@ -228,16 +248,6 @@ class SimulatorTask implements Runnable, EntityHandler {
     }
 
     addRecord(record);
-  }
-
-  private void resetAllVehiclesAppearingInRecordData() {
-    Set<String> vehicleIds = new HashSet<String>();
-
-    for (NycTestLocationRecord record : _records)
-      vehicleIds.add(record.getVehicleId());
-
-    for (String vehicleId : vehicleIds)
-      _vehicleLocationService.resetVehicleLocation(vehicleId);
   }
 
   private boolean shouldExitAfterSimulatedWait(NycTestLocationRecord record) {
@@ -272,7 +282,7 @@ class SimulatorTask implements Runnable, EntityHandler {
 
     for (int i = 0; i < 10; i++) {
 
-      List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_mostRecentRecord.getVehicleId());
+      List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
 
       int a = particles.size();
       int b = _recordsProcessed.get();

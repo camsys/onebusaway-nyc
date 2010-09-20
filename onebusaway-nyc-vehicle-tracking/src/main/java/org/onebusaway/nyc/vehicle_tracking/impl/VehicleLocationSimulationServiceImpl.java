@@ -192,6 +192,7 @@ public class VehicleLocationSimulationServiceImpl implements
     if (task != null) {
       Future<?> future = task.getFuture();
       future.cancel(true);
+      task.resetAllVehiclesAppearingInRecordData();
       for (Object tag : task.getTags()) {
         List<SimulatorTask> list = getTasksForTag(tag, false);
         if (list != null) {
