@@ -45,7 +45,7 @@
         <property name="properties">
             <props>
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
-                <prop key="tripPositionServiceImpl.persistTripPositionRecords">false</prop>
+                <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
             </props>
         </property>
     </bean>
