@@ -120,7 +120,7 @@ public class VehicleTrackingWebappIntegrationTest {
 
     double d = SphericalGeometryLibrary.distance(record.getLat(),
         record.getLon(), lat, lon);
-    assertTrue(d < 20);
+    assertTrue(d < 100);
 
   }
 

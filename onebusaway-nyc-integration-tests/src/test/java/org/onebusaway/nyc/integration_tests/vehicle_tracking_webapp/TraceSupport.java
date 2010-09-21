@@ -35,8 +35,8 @@ public class TraceSupport {
 
     try {
       HttpClient client = new HttpClient();
-      PostMethod post = new PostMethod(
-          url("/vehicle-location-simulation!upload-trace.do"));
+      String url = url("/vehicle-location-simulation!upload-trace.do");
+      PostMethod post = new PostMethod(url);
 
       ByteArrayPartSource source = getResourceAsPartSource(fileName, in);
       FilePart filePart = new FilePart("file", source);

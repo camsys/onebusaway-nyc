@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 
-public class VehicleLocationSimulationTest {
+public class VehicleLocationSimulationIntegrationTest {
 
   private static TraceSupport _traceSupport = new TraceSupport();
 
