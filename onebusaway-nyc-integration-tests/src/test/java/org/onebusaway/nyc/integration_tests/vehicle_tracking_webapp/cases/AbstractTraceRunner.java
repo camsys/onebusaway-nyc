@@ -68,6 +68,9 @@ public class AbstractTraceRunner {
 
       List<NycTestLocationRecord> actual = _traceSupport.getSimulationResults(taskId);
 
+      String asString = _traceSupport.getRecordsAsString(actual);
+      _log.debug("actual records:\n" + asString);
+
       if (actual.size() < expected.size()) {
         if (t + _maxTimeout < System.currentTimeMillis()) {
           fail("waited but never received enough records: expected="
@@ -108,4 +111,5 @@ public class AbstractTraceRunner {
     }
 
   }
+
 }

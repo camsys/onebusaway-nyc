@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
+import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 
@@ -80,6 +82,16 @@ public class TraceSupport {
     if (trace.getName().endsWith(".gz"))
       is = new GZIPInputStream(is);
     return readRecords(is);
+  }
+
+  public String getRecordsAsString(List<NycTestLocationRecord> actual) {
+    CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
+    StringWriter out = new StringWriter();
+    EntityHandler handler = factory.createWriter(NycTestLocationRecord.class,
+        out);
+    for (NycTestLocationRecord record : actual)
+      handler.handleEntity(record);
+    return out.toString();
   }
 
   /****
