@@ -36,7 +36,7 @@ import org.onebusaway.siri.model.VehicleMonitoringDelivery;
 
 import com.thoughtworks.xstream.XStream;
 
-public class VehicleTrackingWebappIntegrationTest {
+public class VehicleTrackingWebappIntegrationTestIgnore {
 
   private String _baseUrl;
 

@@ -289,7 +289,10 @@ class SimulatorTask implements Runnable, EntityHandler {
     for (int i = 0; i < 10; i++) {
 
       List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
-
+      
+      if (particles == null)
+        particles = Collections.emptyList();
+      
       int a = particles.size();
       int b = _recordsProcessed.get();
 

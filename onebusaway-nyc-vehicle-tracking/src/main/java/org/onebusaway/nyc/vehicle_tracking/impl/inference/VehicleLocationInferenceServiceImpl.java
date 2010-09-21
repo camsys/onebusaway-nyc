@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -119,7 +120,7 @@ public class VehicleLocationInferenceServiceImpl implements
   public List<Particle> getMostLikelyParticlesForVehicleId(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
-      return null;
+      return Collections.emptyList();
     return instance.getMostLikelyParticles();
   }
 
