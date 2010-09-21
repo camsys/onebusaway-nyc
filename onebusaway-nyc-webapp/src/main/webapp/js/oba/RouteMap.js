@@ -232,21 +232,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
             }
          });
     };
-    
-    var stopRequester = function() {
-        if (map.getZoom() < 14) {
-            // don't show any stops when zoomed out far
-            for (var stopId in stopMarkers) {
-                var marker = stopMarkers[stopId];
-                marker.removeMarker();
-                delete stopMarkers[stopId];
-            }
-        } else {
-            requestStops();
-        }
-    };
 
-    google.maps.event.addListener(map, "idle", stopRequester);
+    google.maps.event.addListener(map, "idle", requestStops);
     
     var containsRoute = function(routeId, directionId) {
         var directionIdMap = routeIds[routeId] || {};
