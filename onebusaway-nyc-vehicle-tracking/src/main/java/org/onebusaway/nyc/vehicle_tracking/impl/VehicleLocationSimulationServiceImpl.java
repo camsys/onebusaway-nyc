@@ -55,6 +55,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private static final String ARG_SCHEDULE_DEVIATIONS = "schedule_deviations";
 
+  private static final String ARG_INCLUDE_START = "include_start";
+
   private int _numberOfThreads = 1;
 
   private ExecutorService _executor;
@@ -154,8 +156,7 @@ public class VehicleLocationSimulationServiceImpl implements
       return task.getDetails();
     return null;
   }
-  
-  
+
   @Override
   public List<NycTestLocationRecord> getResultRecords(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
@@ -251,6 +252,9 @@ public class VehicleLocationSimulationServiceImpl implements
     int firstTime = firstStopTime.getArrivalTime();
     int lastTime = lastStopTime.getDepartureTime();
 
+    if (isIncludeStartTime(properties))
+      scheduleTime = firstTime;
+
     scheduleTime = Math.max(firstTime, scheduleTime);
 
     while (scheduleTime <= lastTime) {
@@ -298,7 +302,7 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualDsc(dsc);
       record.setActualLat(location.getLat());
       record.setActualLon(location.getLon());
-      
+
       task.addRecord(record);
 
       scheduleTime += 60 + random.nextGaussian() * 10;
@@ -408,5 +412,12 @@ public class VehicleLocationSimulationServiceImpl implements
     }
 
     return scheduleDeviations;
+  }
+
+  private boolean isIncludeStartTime(Properties properties) {
+    if (!properties.containsKey(ARG_INCLUDE_START))
+      return false;
+    String value = properties.getProperty(ARG_INCLUDE_START).toLowerCase();
+    return value.equals("true") || value.equals("yes") || value.equals("1");
   }
 }

@@ -341,6 +341,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     BlockEntry block = blockInstance.getBlock();
     ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
         block.getStopTimes(), distanceAlongBlock);
+    if( blockLocation == null)
+      throw new IllegalStateException("no blockLocation for " + blockInstance + " d=" + distanceAlongBlock);
     TripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getId());
     return new BlockState(blockInstance, blockLocation, dsc);
