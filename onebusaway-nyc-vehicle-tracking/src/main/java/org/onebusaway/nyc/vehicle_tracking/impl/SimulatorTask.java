@@ -156,8 +156,14 @@ class SimulatorTask implements Runnable, EntityHandler {
   }
 
   public List<NycTestLocationRecord> getResults() {
+    
     List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
+    
+    if( particles == null)
+      return Collections.emptyList();
+    
     List<NycTestLocationRecord> records = new ArrayList<NycTestLocationRecord>();
+    
     for (Particle particle : particles) {
 
       VehicleState state = particle.getData();
