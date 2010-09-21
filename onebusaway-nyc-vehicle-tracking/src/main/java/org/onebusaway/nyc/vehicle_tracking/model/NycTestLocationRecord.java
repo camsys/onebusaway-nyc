@@ -22,6 +22,7 @@ public class NycTestLocationRecord implements Serializable {
   @CsvField(name = "dt", mapping = DateTimeFieldMappingFactory.class)
   private long timestamp;
 
+  @CsvField(optional=true)
   private String dsc;
 
   /****

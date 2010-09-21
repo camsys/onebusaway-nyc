@@ -29,6 +29,8 @@ public class AbstractTraceRunner {
 
   private long _maxTimeout = 2 * 60 * 1000;
 
+  private String _expectedBlockId;
+
   public AbstractTraceRunner(String trace) {
     _trace = trace;
   }
@@ -44,6 +46,10 @@ public class AbstractTraceRunner {
 
   public void setMaxTimeout(long maxTimeout) {
     _maxTimeout = maxTimeout;
+  }
+
+  public void setExpectedBlockId(String expectedBlockId) {
+    _expectedBlockId = expectedBlockId;
   }
 
   @Test
@@ -74,20 +80,27 @@ public class AbstractTraceRunner {
       assertEquals(expected.size(), actual.size());
 
       for (int i = 0; i < expected.size(); i++) {
+
         NycTestLocationRecord expRecord = expected.get(i);
         NycTestLocationRecord actRecord = actual.get(i);
+
         double d = SphericalGeometryLibrary.distance(expRecord.getActualLat(),
             expRecord.getActualLon(), actRecord.getLat(), actRecord.getLon());
+
         assertTrue("record=" + i + " distance=" + d, d < _distanceTolerance);
+
+        String expectedBlockId = expRecord.getActualBlockId();
+
+        if (_expectedBlockId != null)
+          expectedBlockId = _expectedBlockId;
+
         if (i < _allowBlockMismatchOnFirstNRecords) {
-          if (!expRecord.getActualBlockId().equals(actRecord.getActualBlockId())) {
-            _log.info("block mismatch: expected="
-                + expRecord.getActualBlockId() + " actual="
-                + actRecord.getActualBlockId() + " i=" + i);
+          if (!expectedBlockId.equals(actRecord.getActualBlockId())) {
+            _log.info("block mismatch: expected=" + expectedBlockId
+                + " actual=" + actRecord.getActualBlockId() + " i=" + i);
           }
         } else {
-          assertEquals(expRecord.getActualBlockId(),
-              actRecord.getActualBlockId());
+          assertEquals(expectedBlockId, actRecord.getActualBlockId());
         }
       }
 
