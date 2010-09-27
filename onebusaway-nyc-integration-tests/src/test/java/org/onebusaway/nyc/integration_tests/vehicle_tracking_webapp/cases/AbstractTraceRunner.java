@@ -99,7 +99,7 @@ public class AbstractTraceRunner {
 
         if (i < _allowBlockMismatchOnFirstNRecords) {
           if (!expectedBlockId.equals(actRecord.getActualBlockId())) {
-            _log.info("block mismatch: expected=" + expectedBlockId
+            _log.info("expected block mismatch: expected=" + expectedBlockId
                 + " actual=" + actRecord.getActualBlockId() + " i=" + i);
           }
         } else {
