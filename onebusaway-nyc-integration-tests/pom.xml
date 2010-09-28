@@ -173,6 +173,7 @@
                                 <classpath />
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
                                 <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle.xml</argument>
                                 <argument>${project.build.directory}/transit-data-bundle</argument>
                             </arguments>
