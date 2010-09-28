@@ -28,9 +28,16 @@ OBA.Config = {
     // milliseconds to wait in between polls for bus locations
     pollingInterval: 5000,
 
-    // image url
-    vehicleIcon: "img/vehicle.png",
-    stopIcon: "img/stop.png",
+    // marker images used
+    // both are 16x16, and we want to have them centered on the location
+    vehicleIcon: new google.maps.MarkerImage("img/vehicle.png",
+            new google.maps.Size(16, 16),
+            new google.maps.Point(0,0),
+            new google.maps.Point(8, 8)),
+    stopIcon: new google.maps.MarkerImage("img/stop.png",
+            new google.maps.Size(16, 16),
+            new google.maps.Point(0,0),
+            new google.maps.Point(8, 8)),
 
     // api key used for webapp
     apiKey: "TEST"
