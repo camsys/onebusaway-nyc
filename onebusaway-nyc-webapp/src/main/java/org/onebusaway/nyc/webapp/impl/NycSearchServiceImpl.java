@@ -230,9 +230,10 @@ public class NycSearchServiceImpl implements NycSearchService {
         }
       } else {
         // try an intersection search
-        List<StopsBean> stopsList = fetchStopsFromGeocoder(q);
-        for (StopsBean stopsBean : stopsList) {
-          for (StopBean stopBean : stopsBean.getStops()) {
+        List<StopsBean> stopsBeanList = fetchStopsFromGeocoder(q);
+        for (StopsBean stopsBean : stopsBeanList) {
+          List<StopBean> stopsList = stopsBean.getStops();
+          for (StopBean stopBean : stopsList) {
             StopSearchResult stopSearchResult = makeStopSearchResult(stopBean);
             results.add(stopSearchResult);            
           }
@@ -315,6 +316,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       
       // and add any stops for it
       SearchQueryBean searchQueryBean = makeSearchQuery(bounds);
+      searchQueryBean.setMaxCount(10);
       StopsBean stops = transitService.getStops(searchQueryBean);
       result.add(stops);
     }
