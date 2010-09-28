@@ -33,5 +33,5 @@ OBA.Config = {
     stopIcon: "img/stop.png",
 
     // api key used for webapp
-    apiKey: "TEST",
+    apiKey: "TEST"
 };
