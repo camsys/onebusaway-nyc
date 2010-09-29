@@ -187,12 +187,14 @@ OBA.VehiclePopup = function(vehicleId, map) {
             var refs = json.data.references;
             var stops = refs.stops;
             var route = refs.routes[0];
+            var trip = refs.trips[0];
+            var headsign = trip.tripHeadsign;
         } catch (typeError) {
             OBA.Util.log("invalid response for vehicle details");
             OBA.Util.log(json);
             return jQuery("<span>No data found for: " + vehicleId + "</span>");
         }
-        
+
         // last update date
         var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
         var minutes = lastUpdateDate.getMinutes();
@@ -234,9 +236,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
         // and we take the next 3 stops for display
         var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
 
-        var routeIdDisplay = OBA.Util.parseEntityId(route.id);
-        var routeName = route.longName;
-        var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(routeIdDisplay + ' - ' + routeName, 35) + '</p>' +
+        var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + OBA.Util.truncate(headsign, 35) + '</p>' +
              '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' + 
              '<p class="meta">Last updated ' + lastUpdateString + '.</p>';
 
@@ -293,6 +293,6 @@ OBA.VehiclePopup = function(vehicleId, map) {
     var url = OBA.Config.vehicleUrl + "/" + vehicleId + ".json";
     return OBA.Popup(
         map,
-        makeJsonFetcher(url, {key: OBA.Config.apiKey, version: 2, includeSchedule: true}),
+        makeJsonFetcher(url, {key: OBA.Config.apiKey, version: 2, includeSchedule: true, includeTrip: true}),
         generateVehicleMarkup);
 };
