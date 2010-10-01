@@ -187,7 +187,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
         var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
         var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
         jQuery.getJSON(OBA.Config.stopsUrl,
-                       {version: 2, key: OBA.Config.apiKey,
+                       {version: 2, key: OBA.Config.apiKey, maxCount: 250,
                         lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
                         },
                        function(json) {
