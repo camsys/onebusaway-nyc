@@ -117,7 +117,7 @@ OBA.Tracker = function() {
           
     function makeStopElement(record) {
       var el = jQuery('<div id="stop-' + record.stopId + '" class="stop result"></div>')
-                      .append('<p class="name">' + OBA.Util.truncate(record.name, 25) + '</p>');
+                      .append('<p class="name">' + OBA.Util.truncate(record.name, 18) + '</p>');
 
       var controls = jQuery('<ul></ul>').addClass("controls")
                 .append('<li><a class="showOnMap" href="#">Show on Map</a></li>');
@@ -143,7 +143,7 @@ OBA.Tracker = function() {
     function makeRouteElement(record) {
       var el = jQuery('<div id="route-' + record.routeId + '" class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
                 .append('<p class="name"><span class="direction-' + record.directionId + '">' +
-                        OBA.Util.truncate(record.tripHeadsign, 25) + 
+                        OBA.Util.truncate(record.tripHeadsign, 18) + 
                         '</span></p>')
                 .append('<p class="description">' + OBA.Util.truncate(record.description, 30) + '</p>');
              
