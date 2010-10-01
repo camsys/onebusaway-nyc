@@ -28,6 +28,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 
 public class TraceSupport {
 
+  private boolean shiftStartTime;
+
   public String uploadTraceForSimulation(File path) throws IOException {
     return uploadTraceForSimulation(path.getName(), new FileInputStream(path));
   }
@@ -43,8 +45,10 @@ public class TraceSupport {
       ByteArrayPartSource source = getResourceAsPartSource(fileName, in);
       FilePart filePart = new FilePart("file", source);
       StringPart stringPart = new StringPart("returnId", "true");
+      StringPart param = new StringPart("shiftStartTime", "" + shiftStartTime);
+
       post.setRequestEntity(new MultipartRequestEntity(new Part[] {
-          filePart, stringPart}, new HttpMethodParams()));
+          filePart, stringPart, param}, new HttpMethodParams()));
       client.executeMethod(post);
 
       return post.getResponseBodyAsString();
@@ -138,6 +142,14 @@ public class TraceSupport {
     reader.addEntityHandler(records);
     reader.readEntities(NycTestLocationRecord.class, in);
     return records.getValues();
+  }
+
+  public void setShiftStartTime(boolean shiftStartTime) {
+    this.shiftStartTime = shiftStartTime;
+  }
+
+  public boolean getShiftStartTime() {
+    return shiftStartTime;
   }
 
 }
