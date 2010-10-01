@@ -52,7 +52,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NycSearchServiceImpl implements NycSearchService {
 
-  private final static Pattern routePattern = Pattern.compile("(?:[BMQS]|BX)[0-9]+");
+  private final static Pattern routePattern = Pattern.compile("(?:[BMQS]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
   
   // when querying for stops from a lat/lng, use this distance in meters
   private double distanceToStops = 200;
@@ -217,7 +217,7 @@ public class NycSearchServiceImpl implements NycSearchService {
             List<RouteBean> routes = stopBean.getRoutes();
             for (RouteBean routeBean : routes) {
               String idNoAgency = idParser.parseIdWithoutAgency(routeBean.getId());
-              if (idNoAgency.equals(route)) {
+              if (idNoAgency.equalsIgnoreCase(route)) {
                 useStop = true;
                 break;
               }
