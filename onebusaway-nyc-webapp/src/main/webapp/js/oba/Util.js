@@ -99,6 +99,12 @@ OBA.Util = (function() {
             } else {
                 return Math.round(feet) + " feet";
             }
+        },
+        displayTime: function(dateObj) {
+            // take a javascript date object and return a suitable string representation for display
+            var minutes = dateObj.getMinutes();
+            minutes = (minutes < 10) ? "0" + minutes : "" + minutes;
+            return dateObj.getHours() + ":" + minutes;
         }
     };
 })();

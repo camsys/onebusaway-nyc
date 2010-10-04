@@ -74,6 +74,7 @@ OBA.StopPopup = function(stopId, map) {
         var stopId = stop.id;
         var latlng = [stop.lat, stop.lon];
         var name = stop.name;
+        var latestUpdate = null;
 
         // vehicle location
         var routeToVehicleInfo = {};
@@ -88,6 +89,8 @@ OBA.StopPopup = function(stopId, map) {
                 var stops = 0;
                 var meters = arrival.distanceFromStop;
                 var feet = OBA.Util.metersToFeet(meters);
+                var updateTime = parseInt(arrival.lastUpdateTime);
+                latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
 
                 var vehicleInfo = {headsign: headsign,
                                    stops: stops,
@@ -98,12 +101,14 @@ OBA.StopPopup = function(stopId, map) {
                     routeToVehicleInfo[routeId] = [vehicleInfo];
             });
 
-        // FIXME last update time
-        var lastUpdate = "One minute ago";
+        // last update time
+        var lastUpdateDate = new Date(latestUpdate);
+        var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
+
 
         var header = '<p class="header">' + name + '</p>' +
                      '<p class="description">Stop ID ' + OBA.Util.parseEntityId(stopId) + '</p>' + 
-                     '<p class="meta">Updated ' + lastUpdate + '.</p>';
+                     '<p class="meta">Updated ' + lastUpdateString + '.</p>';
 
         var service = '';
         var notices = '<ul class="notices">';
@@ -133,8 +138,6 @@ OBA.StopPopup = function(stopId, map) {
                 // sort it based on distance
                 vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
                 jQuery.each(vehicleInfos, function(_, distanceAway) {
-                    // just meter distance for now
-//                    service += ' (' + distanceAway.stops + ' stops, ' + distanceAway.feet + ' feet)';
                     var feet = distanceAway.feet;
                     if (feet > 5280) {
                         var distanceMiles = feet / 5280;
@@ -197,9 +200,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
         // last update date
         var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
-        var minutes = lastUpdateDate.getMinutes();
-        minutes = (minutes < 10) ? "0" + minutes : "" + minutes;
-        var lastUpdateString = lastUpdateDate.getHours() + ":" + minutes;
+        var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
         
         var stops = stops.slice(0);
         
