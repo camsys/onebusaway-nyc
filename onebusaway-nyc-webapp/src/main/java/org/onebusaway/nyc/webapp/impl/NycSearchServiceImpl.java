@@ -2,7 +2,6 @@ package org.onebusaway.nyc.webapp.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -53,42 +52,40 @@ import org.springframework.stereotype.Component;
 public class NycSearchServiceImpl implements NycSearchService {
 
   private final static Pattern routePattern = Pattern.compile("(?:[BMQS]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
-  
+
   // when querying for stops from a lat/lng, use this distance in meters
   private double distanceToStops = 200;
-  
+
   private WebappIdParser idParser = new WebappIdParser();
 
   @Autowired
   private TransitDataService transitService;
-  
+
   @Autowired
   private GeocoderService geocoderService;
-  
+
   @Autowired
   private ServiceAreaService serviceArea;
-  
+
   private static final SearchResultComparator searchResultComparator = new SearchResultComparator();
-  
-  private final Calendar calendar = Calendar.getInstance();
 
   @Override
   public List<SearchResult> search(String q) {
     List<SearchResult> results = new ArrayList<SearchResult>();
-    
+
     if (q == null)
       return results;
     q = q.trim();
     if (q.isEmpty())
       return results;
-    
+
     String[] fields = q.split(" ");
     if (fields.length == 1) {
       // we are probably a query for a route or a stop
       if (isStop(q)) {
         SearchQueryBean queryBean = makeSearchQuery(q);
         StopsBean stops = transitService.getStops(queryBean);
-        
+
         for (StopBean stopBean : stops.getStops()) {
           StopSearchResult stopSearchResult = makeStopSearchResult(stopBean);
           results.add(stopSearchResult);
@@ -103,19 +100,20 @@ public class NycSearchServiceImpl implements NycSearchService {
           String routeLongName = routeBean.getLongName();
           // FIXME last update time
           String lastUpdate = "one minute ago";
-          
-          // create lookups keyed by directionId to the different bits of information we need for the response
+
+          // create lookups keyed by directionId to the different bits of
+          // information we need for the response
           Map<String, List<StopBean>> directionIdToStopBeans = createDirectionToStopBeansMap(routeId);
           Map<String, String> directionIdToHeadsign = new HashMap<String, String>();
           Map<String, String> directionIdToTripId = new HashMap<String, String>();
           // go from trip id to a mapping of stop id -> distance along trip
-          Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String,Double>>();
+          Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String, Double>>();
           Map<String, Double> stopIdToDistanceAway = new HashMap<String, Double>();
-          
+
           TripsForRouteQueryBean tripQueryBean = makeTripQueryBean(routeId);
           ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
-          List<TripDetailsBean> tripsList = tripsForRoute.getList();    
-          
+          List<TripDetailsBean> tripsList = tripsForRoute.getList();
+
           for (TripDetailsBean tripDetailsBean : tripsList) {
             TripBean trip = tripDetailsBean.getTrip();
             String tripId = trip.getId();
@@ -146,7 +144,7 @@ public class NycSearchServiceImpl implements NycSearchService {
             TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
             if (tripStatusBean == null || !tripStatusBean.isPredicted())
               continue;
-            
+
             StopBean closestStop = tripStatusBean.getClosestStop();
             String closestStopId = closestStop.getId();
             Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
@@ -156,19 +154,20 @@ public class NycSearchServiceImpl implements NycSearchService {
             stopIdToDistanceAway.put(closestStopId, distanceAway);
           }
 
-          for (Map.Entry<String, List<StopBean>> directionStopBeansEntry : directionIdToStopBeans.entrySet()) {            
+          for (Map.Entry<String, List<StopBean>> directionStopBeansEntry : directionIdToStopBeans.entrySet()) {
             String directionId = directionStopBeansEntry.getKey();
             String tripId = directionIdToTripId.get(directionId);
             String tripHeadsign = directionIdToHeadsign.get(directionId);
             // on the off chance that this happens degrade more gracefully
             if (tripHeadsign == null)
               tripHeadsign = routeLongName;
-            
+
             List<StopBean> stopBeansList = directionStopBeansEntry.getValue();
             Map<String, Double> stopIdToDistances = tripIdToStopDistancesMap.get(tripId);
-            Comparator<StopBean> stopBeanComparator = new NycSearchServiceImpl.StopBeanComparator(stopIdToDistances);
+            Comparator<StopBean> stopBeanComparator = new NycSearchServiceImpl.StopBeanComparator(
+                stopIdToDistances);
             Collections.sort(stopBeansList, stopBeanComparator);
-            
+
             List<StopItem> stopItemsList = new ArrayList<StopItem>();
             for (StopBean stopBean : stopBeansList) {
               String stopId = stopBean.getId();
@@ -178,14 +177,16 @@ public class NycSearchServiceImpl implements NycSearchService {
               StopItem stopItem = new StopItem(stopBean, distance);
               stopItemsList.add(stopItem);
             }
-            RouteSearchResult routeSearchResult = new RouteSearchResult(routeId, routeShortName, routeLongName, lastUpdate, tripHeadsign, directionId, stopItemsList);
+            RouteSearchResult routeSearchResult = new RouteSearchResult(
+                routeId, routeShortName, routeLongName, lastUpdate,
+                tripHeadsign, directionId, stopItemsList);
             results.add(routeSearchResult);
           }
         }
       }
     } else {
       // we should be either an intersection and route or an intersection
-      
+
       // if we're a route, set route and the geocoder query appropriately
       String route = null;
       String queryNoRoute = null;
@@ -197,17 +198,16 @@ public class NycSearchServiceImpl implements NycSearchService {
           sb.append(" ");
         }
         queryNoRoute = sb.toString().trim();
-      }
-      else if (isRoute(fields[fields.length-1])) {
-        route = fields[fields.length-1];
+      } else if (isRoute(fields[fields.length - 1])) {
+        route = fields[fields.length - 1];
         StringBuilder sb = new StringBuilder(32);
-        for (int i = 0; i < fields.length-1; i++) {
+        for (int i = 0; i < fields.length - 1; i++) {
           sb.append(fields[i]);
           sb.append(" ");
         }
         queryNoRoute = sb.toString().trim();
       }
-      
+
       if (route != null) {
         // we are a route and intersection
         List<StopsBean> stopsList = fetchStopsFromGeocoder(queryNoRoute);
@@ -224,7 +224,7 @@ public class NycSearchServiceImpl implements NycSearchService {
             }
             if (useStop) {
               StopSearchResult stopSearchResult = makeStopSearchResult(stopBean);
-              results.add(stopSearchResult);   
+              results.add(stopSearchResult);
             }
           }
         }
@@ -235,35 +235,35 @@ public class NycSearchServiceImpl implements NycSearchService {
           List<StopBean> stopsList = stopsBean.getStops();
           for (StopBean stopBean : stopsList) {
             StopSearchResult stopSearchResult = makeStopSearchResult(stopBean);
-            results.add(stopSearchResult);            
+            results.add(stopSearchResult);
           }
         }
       }
     }
 
-    
-      return sortSearchResults(results);
-    }
+    return sortSearchResults(results);
+  }
 
-  private Map<String, List<StopBean>> createDirectionToStopBeansMap(String routeId) {
-    Map<String,List<StopBean>> directionIdToStopBeans = new HashMap<String, List<StopBean>>();
+  private Map<String, List<StopBean>> createDirectionToStopBeansMap(
+      String routeId) {
+    Map<String, List<StopBean>> directionIdToStopBeans = new HashMap<String, List<StopBean>>();
 
     StopsForRouteBean stopsForRoute = transitService.getStopsForRoute(routeId);
     List<StopBean> stopBeansList = stopsForRoute.getStops();
-    
+
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
-      List<StopGroupBean> stopGroups = stopGroupingBean.getStopGroups();      
+      List<StopGroupBean> stopGroups = stopGroupingBean.getStopGroups();
       for (StopGroupBean stopGroupBean : stopGroups) {
         NameBean name = stopGroupBean.getName();
         String type = name.getType();
         if (!type.equals("destination"))
           continue;
-        
+
         List<StopBean> stopsForDirection = new ArrayList<StopBean>();
         String directionId = stopGroupBean.getId();
         Set<String> stopIds = new HashSet<String>(stopGroupBean.getStopIds());
-        
+
         for (StopBean stopBean : stopBeansList) {
           String stopBeanId = stopBean.getId();
           if (stopIds.contains(stopBeanId))
@@ -274,7 +274,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     }
     return directionIdToStopBeans;
   }
-  
+
   private TripsForRouteQueryBean makeTripQueryBean(String routeId) {
     TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
     tripRouteQueryBean.setRouteId(routeId);
@@ -300,7 +300,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     }
     return true;
   }
-  
+
   private boolean isRoute(String s) {
     Matcher matcher = routePattern.matcher(s);
     return matcher.matches();
@@ -312,8 +312,9 @@ public class NycSearchServiceImpl implements NycSearchService {
     for (GeocoderResult geocoderResult : geocoderResults) {
       double lat = geocoderResult.getLatitude();
       double lng = geocoderResult.getLongitude();
-      CoordinateBounds bounds = SphericalGeometryLibrary.bounds(lat, lng, distanceToStops);
-      
+      CoordinateBounds bounds = SphericalGeometryLibrary.bounds(lat, lng,
+          distanceToStops);
+
       // and add any stops for it
       SearchQueryBean searchQueryBean = makeSearchQuery(bounds);
       searchQueryBean.setMaxCount(10);
@@ -325,22 +326,19 @@ public class NycSearchServiceImpl implements NycSearchService {
 
   private StopSearchResult makeStopSearchResult(StopBean stopBean) {
     String stopId = stopBean.getId();
-    List<Double> latLng = Arrays.asList(new Double[] { stopBean.getLat(), stopBean.getLon() } );
+    List<Double> latLng = Arrays.asList(new Double[] {
+        stopBean.getLat(), stopBean.getLon()});
     String stopName = stopBean.getName();
-    
+
+    Date now = new Date();
     int minutesBefore = 5;
     int minutesAfter = 35;
-    Date now = new Date();
-    calendar.setTime(now);
-    calendar.add(Calendar.MINUTE, -minutesBefore);
-    Date timeFrom = calendar.getTime();
-
     Map<String, List<Double>> routeIdToDistances = new HashMap<String, List<Double>>();
-    calendar.setTime(now);
-    calendar.add(Calendar.MINUTE, minutesAfter);
-    Date timeTo = calendar.getTime();
-    StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = transitService.getStopWithArrivalsAndDepartures(stopId, timeFrom, timeTo);
+
+    StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = transitService.getStopWithArrivalsAndDepartures(
+        stopId, now, minutesBefore, minutesAfter);
     List<ArrivalAndDepartureBean> arrivalsAndDepartures = stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
+
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
       if (arrivalAndDepartureBean.isPredicted()) {
         double distanceFromStop = arrivalAndDepartureBean.getDistanceFromStop();
@@ -353,7 +351,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         distances.add(distanceFromStop);
       }
     }
-    
+
     List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
     List<RouteBean> stopRouteBeans = stopBean.getRoutes();
     for (RouteBean routeBean : stopRouteBeans) {
@@ -361,7 +359,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       String longName = routeBean.getLongName();
       String routeId = routeBean.getId();
       List<Double> distances = routeIdToDistances.get(routeId);
-      
+
       // FIXME we only contain absolute distances now
       // not number of stops away
       List<DistanceAway> distanceAways;
@@ -375,10 +373,12 @@ public class NycSearchServiceImpl implements NycSearchService {
       } else {
         distanceAways = new ArrayList<DistanceAway>();
       }
-      AvailableRoute availableRoute = new AvailableRoute(shortName, longName, distanceAways);
+      AvailableRoute availableRoute = new AvailableRoute(shortName, longName,
+          distanceAways);
       availableRoutes.add(availableRoute);
     }
-    StopSearchResult stopSearchResult = new StopSearchResult(stopId, stopName, latLng, availableRoutes);
+    StopSearchResult stopSearchResult = new StopSearchResult(stopId, stopName,
+        latLng, availableRoutes);
     return stopSearchResult;
   }
 
@@ -390,11 +390,11 @@ public class NycSearchServiceImpl implements NycSearchService {
   private SearchQueryBean makeSearchQuery(String q) {
     return makeSearchQuery(q, serviceArea.getServiceArea());
   }
-  
+
   private SearchQueryBean makeSearchQuery(CoordinateBounds bounds) {
     return makeSearchQuery(null, bounds);
   }
-  
+
   private SearchQueryBean makeSearchQuery(String q, CoordinateBounds bounds) {
     SearchQueryBean queryBean = new SearchQueryBean();
     queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
@@ -404,12 +404,12 @@ public class NycSearchServiceImpl implements NycSearchService {
       queryBean.setQuery(q);
     return queryBean;
   }
-  
+
   private List<SearchResult> sortSearchResults(List<SearchResult> searchResults) {
     Collections.sort(searchResults, NycSearchServiceImpl.searchResultComparator);
     return searchResults;
   }
-  
+
   public class StopBeanComparator implements Comparator<StopBean> {
 
     private final Map<String, Double> stopIdToDistances;
@@ -430,19 +430,25 @@ public class NycSearchServiceImpl implements NycSearchService {
     }
 
   }
-  
-  public static class SearchResultComparator implements Comparator<SearchResult> {
+
+  public static class SearchResultComparator implements
+      Comparator<SearchResult> {
 
     @Override
     public int compare(SearchResult o1, SearchResult o2) {
       if ((o1 instanceof RouteSearchResult) && (o2 instanceof StopSearchResult))
         return -1;
-      else if ((o1 instanceof StopSearchResult) && (o2 instanceof RouteSearchResult))
+      else if ((o1 instanceof StopSearchResult)
+          && (o2 instanceof RouteSearchResult))
         return 1;
-      else if ((o1 instanceof RouteSearchResult) && (o2 instanceof RouteSearchResult))
-        return ((RouteSearchResult) o1).getName().compareTo(((RouteSearchResult) o2).getName());
-      else if ((o1 instanceof StopSearchResult) && (o2 instanceof StopSearchResult))
-        return ((StopSearchResult) o1).getName().compareTo(((StopSearchResult) o2).getName());
+      else if ((o1 instanceof RouteSearchResult)
+          && (o2 instanceof RouteSearchResult))
+        return ((RouteSearchResult) o1).getName().compareTo(
+            ((RouteSearchResult) o2).getName());
+      else if ((o1 instanceof StopSearchResult)
+          && (o2 instanceof StopSearchResult))
+        return ((StopSearchResult) o1).getName().compareTo(
+            ((StopSearchResult) o2).getName());
       else
         throw new IllegalStateException("Unknown search result types");
     }
