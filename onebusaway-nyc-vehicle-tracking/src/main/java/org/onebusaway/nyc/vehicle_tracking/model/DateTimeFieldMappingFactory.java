@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.onebusaway.gtfs.csv.CsvEntityContext;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityException;
@@ -20,6 +21,10 @@ public class DateTimeFieldMappingFactory implements FieldMappingFactory {
 
   private static SimpleDateFormat _format = new SimpleDateFormat(
       "yyyy-MM-dd' 'HH:mm:ss");
+  
+  static {
+    _format.setTimeZone(TimeZone.getTimeZone("Amercia/New_York"));
+  }
 
   @Override
   public FieldMapping createFieldMapping(EntitySchemaFactory schemaFactory,

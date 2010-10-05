@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.services.GtfsRelationalDao;
+import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.nyc.stif.StifTripLoader;
 import org.onebusaway.nyc.vehicle_tracking.model.DestinationSignCodeRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -20,15 +22,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class StifTask implements Runnable {
 
-  private GtfsRelationalDao _gtfsRelationalDao;
+  private Logger _log = LoggerFactory.getLogger(StifTask.class);
+
+  private GtfsMutableRelationalDao _gtfsMutableRelationalDao;
 
   private VehicleTrackingDao _vehicleTrackingDao;
 
   private File _stifPath;
 
   @Autowired
-  public void setGtfsRelationalDao(GtfsRelationalDao gtfsRelationalDao) {
-    _gtfsRelationalDao = gtfsRelationalDao;
+  public void setGtfsMutableRelationalDao(GtfsMutableRelationalDao gtfsMutableRelationalDao) {
+    _gtfsMutableRelationalDao = gtfsMutableRelationalDao;
   }
 
   @Autowired
@@ -50,7 +54,7 @@ public class StifTask implements Runnable {
   public void run() {
 
     StifTripLoader loader = new StifTripLoader();
-    loader.setGtfsDao(_gtfsRelationalDao);
+    loader.setGtfsDao(_gtfsMutableRelationalDao);
 
     loadStif(_stifPath, loader);
 
@@ -66,14 +70,19 @@ public class StifTask implements Runnable {
         _vehicleTrackingDao.saveOrUpdateDestinationSignCodeRecord(record);
       }
     }
+
+    int withoutMatch = loader.getTripsWithoutMatchCount();
+    int total = loader.getTripsCount();
+
+    _log.info("stif trips without match: " + withoutMatch + " / " + total);
   }
 
   public void loadStif(File path, StifTripLoader loader) {
-    
+
     // Exclude files and directories like .svn
-    if( path.getName().startsWith("."))
+    if (path.getName().startsWith("."))
       return;
-    
+
     if (path.isDirectory()) {
       for (String filename : path.list()) {
         File contained = new File(path, filename);

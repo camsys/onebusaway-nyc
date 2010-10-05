@@ -31,7 +31,7 @@
 <ul>
     <c:forEach var="status" items="${blocks}">
     <tr>
-        <c:set var="trip" value="${status.activeTrip}"/>
+        <c:set var="trip" value="${status.activeTrip.trip}"/>
         <td><c:out value="${trip.route.shortName}" /></td>
         <td><c:out value="${trip.tripHeadsign}" /></td>
         <td><fmt:formatNumber pattern="0.00" value="${status.scheduledDistanceAlongBlock / status.totalDistanceAlongBlock}" /></td>

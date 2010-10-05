@@ -58,7 +58,7 @@ public class VehicleInferenceInstance {
 
     if (blockState != null) {
       BlockInstance blockInstance = blockState.getBlockInstance();
-      record.setBlockId(blockInstance.getBlock().getId());
+      record.setBlockId(blockInstance.getBlock().getBlock().getId());
       record.setServiceDate(blockInstance.getServiceDate());
 
       ScheduledBlockLocation blockLocation = blockState.getBlockLocation();

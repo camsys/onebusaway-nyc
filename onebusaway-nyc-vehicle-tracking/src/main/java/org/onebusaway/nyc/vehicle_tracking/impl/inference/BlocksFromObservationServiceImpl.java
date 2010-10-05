@@ -29,7 +29,8 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialSer
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.tripplanner.BlockEntry;
+import org.onebusaway.transit_data_federation.services.tripplanner.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.tripplanner.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -249,7 +250,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
 
-    Set<BlockInstance> blocks = _blockGeospatialService.getActiveScheduledBlocksPassingThroughBounds(
+    List<BlockInstance> blocks = _blockGeospatialService.getActiveScheduledBlocksPassingThroughBounds(
         bounds, time, time);
     potentialBlocks.addAll(blocks);
   }
@@ -258,7 +259,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       ProjectedPoint targetPoint, BlockInstance blockInstance,
       double blockDistanceFrom, double blockDistanceTo) {
 
-    BlockEntry block = blockInstance.getBlock();
+    BlockConfigurationEntry block = blockInstance.getBlock();
 
     ShapePoints shapePoints = getShapePointsForBlock(block);
 
@@ -270,7 +271,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     if (shapePoints == null || shapePoints.getSize() == 0)
       throw new IllegalStateException("block had no shape points: "
-          + block.getId());
+          + block.getBlock().getId());
 
     double[] distances = shapePoints.getDistTraveled();
 
@@ -330,21 +331,23 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     return getAsState(blockInstance, index.distanceAlongShape);
   }
 
-  private ShapePoints getShapePointsForBlock(BlockEntry block) {
+  private ShapePoints getShapePointsForBlock(BlockConfigurationEntry block) {
+    // TODO : BLOCK : Ok, since we have the BlockInstance in the parent
     List<AgencyAndId> shapePointIds = MappingLibrary.map(block.getTrips(),
-        "shapeId");
+        "trip.shapeId");
     return _shapePointService.getShapePointsForShapeIds(shapePointIds);
   }
 
   private BlockState getAsState(BlockInstance blockInstance,
       double distanceAlongBlock) {
-    BlockEntry block = blockInstance.getBlock();
+    BlockConfigurationEntry block = blockInstance.getBlock();
     ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
         block.getStopTimes(), distanceAlongBlock);
-    if( blockLocation == null)
-      throw new IllegalStateException("no blockLocation for " + blockInstance + " d=" + distanceAlongBlock);
-    TripEntry activeTrip = blockLocation.getActiveTrip();
-    String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getId());
+    if (blockLocation == null)
+      throw new IllegalStateException("no blockLocation for " + blockInstance
+          + " d=" + distanceAlongBlock);
+    BlockTripEntry activeTrip = blockLocation.getActiveTrip();
+    String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
     return new BlockState(blockInstance, blockLocation, dsc);
   }
 

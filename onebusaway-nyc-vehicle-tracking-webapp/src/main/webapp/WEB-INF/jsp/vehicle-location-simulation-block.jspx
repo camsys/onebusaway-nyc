@@ -12,18 +12,21 @@
 Location Simulation Console</a></p>
 
 <h2>Block Details</h2>
-<ul>
-    <li><jsp:text>blockId: </jsp:text><c:out value="${block.id}" /></li>
-    <li><jsp:text>serviceDate: </jsp:text><c:out
-        value="${serviceDate}" /></li>
-    <li>trips:</li>
+<c:forEach var="blockConfig" items="${block.configurations}">
+    <h3>Block Configuration</h3>
     <ul>
-        <c:forEach var="trip" items="${block.trips}">
-            <li><c:out value="${trip.route.shortName}" /><jsp:text> - </jsp:text>
-            <c:out value="${trip.tripHeadsign}" /><jsp:text> - </jsp:text><c:out value="${trip.id}" /></li>
+        <c:forEach var="blockTrip" items="${blockConfig.trips}">
+            <c:set var="trip" value="${blockTrip.trip}" />
+            <li>
+            <c:out value="${trip.id}" />
+            <jsp:text> - </jsp:text>
+            <c:out value="${trip.route.shortName}" />
+            <jsp:text> - </jsp:text>
+            <c:out value="${trip.tripHeadsign}" />
+            </li>
         </c:forEach>
     </ul>
-</ul>
+</c:forEach>
 
 <h2>Active Simulations</h2>
 <jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />

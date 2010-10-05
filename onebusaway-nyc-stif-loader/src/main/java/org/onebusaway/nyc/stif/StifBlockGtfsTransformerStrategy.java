@@ -19,14 +19,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.gtfs_transformer.services.GtfsTransformStrategy;
+import org.onebusaway.gtfs_transformer.services.TransformContext;
 import org.onebusaway.nyc.stif.model.GeographyRecord;
 import org.onebusaway.nyc.stif.model.ServiceCode;
 import org.onebusaway.nyc.stif.model.StifRecord;
@@ -34,60 +33,74 @@ import org.onebusaway.nyc.stif.model.TimetableRecord;
 import org.onebusaway.nyc.stif.model.TripRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Create a mapping from Destination Sign Code (DSC) to GTFS Trip objects using
  * data in STIF, MTA's internal format.
  */
-public class StifTripLoader {
+public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
 
-  private static final Logger _log = LoggerFactory.getLogger(StifTripLoader.class);
+  private static final Logger _log = LoggerFactory.getLogger(StifBlockGtfsTransformerStrategy.class);
 
-  private StifTripLoaderSupport support = new StifTripLoaderSupport();
+  private List<String> _paths = new ArrayList<String>();
 
-  private Map<String, List<AgencyAndId>> tripIdsBySignCode = new HashMap<String, List<AgencyAndId>>();
+  private int _tripsCount;
 
-  private int _tripsCount = 0;
+  private int _tripsWithoutMatchCount;
 
-  private int _tripsWithoutMatchCount = 0;
+  public void setPath(String path) {
+    _paths.add(path);
+  }
 
-  @Autowired
-  public void setGtfsDao(GtfsMutableRelationalDao dao) {
+  public void setPaths(List<String> paths) {
+    _paths.addAll(paths);
+  }
+
+  /****
+   * {@link GtfsTransformStrategy} Interface
+   ****/
+
+  @Override
+  public void run(TransformContext context, GtfsMutableRelationalDao dao) {
+
+    StifTripLoaderSupport support = new StifTripLoaderSupport();
     support.setGtfsDao(dao);
-  }
 
-  /**
-   * Get the mapping from DSC and schedule id to list of trips.
-   */
-  public Map<String, List<AgencyAndId>> getTripMapping() {
-    return tripIdsBySignCode;
-  }
+    for (String path : _paths) {
 
-  public int getTripsCount() {
-    return _tripsCount;
-  }
+      File file = new File(path);
 
-  public int getTripsWithoutMatchCount() {
-    return _tripsWithoutMatchCount;
-  }
-
-  /**
-   * For each STIF file, call run().
-   */
-  public void run(File path) {
-    try {
-      _log.info("loading stif from " + path.getAbsolutePath());
-      InputStream in = new FileInputStream(path);
-      if (path.getName().endsWith(".gz"))
-        in = new GZIPInputStream(in);
-      run(in);
-    } catch (IOException e) {
-      throw new RuntimeException("Error loading " + path, e);
+      run(context, dao, support, file);
     }
   }
 
-  public void run(InputStream stream) {
+  private void run(TransformContext context, GtfsMutableRelationalDao dao,
+      StifTripLoaderSupport support, File path) {
+
+    // Exclude files and directories like .svn
+    if (path.getName().startsWith("."))
+      return; 
+
+    if (path.isDirectory()) {
+      for (File child : path.listFiles())
+        run(context, dao, support, child);
+    } else {
+      try {
+
+        _log.info("loading stif from " + path.getAbsolutePath());
+        InputStream in = new FileInputStream(path);
+        if (path.getName().endsWith(".gz"))
+          in = new GZIPInputStream(in);
+        run(context, dao, support, in);
+      } catch (IOException e) {
+        throw new RuntimeException("Error loading " + path.getAbsolutePath(), e);
+      }
+    }
+  }
+
+  public void run(TransformContext context, GtfsMutableRelationalDao dao,
+      StifTripLoaderSupport support, InputStream stream) {
+
     StifRecordReader reader;
 
     boolean warned = false;
@@ -113,7 +126,6 @@ public class StifTripLoader {
           if (tripType == 2 || tripType == 3 || tripType == 4) {
             continue; // deadhead or to/from depot
           }
-          String code = tripRecord.getSignCode();
 
           TripIdentifier id = support.getIdentifierForTripRecord(tripRecord);
           List<Trip> trips = support.getTripsForIdentifier(id);
@@ -156,25 +168,24 @@ public class StifTripLoader {
             // contains all trips from dayCode1, and pre-midnight trips for
             // dayCode2;
 
+            String blockId = tripRecord.getBlockNumber();
+
             if (tripRecord.getOriginTime() < 0) {
               /* possible trip records are those containing the previous day */
               if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2) == serviceCode) {
                 filtered.add(trip);
+                trip.setBlockId(blockId);
+                dao.updateEntity(trip);
               }
             } else {
               if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1) == serviceCode) {
                 filtered.add(trip);
+                trip.setBlockId(blockId);
+                dao.updateEntity(trip);
               }
             }
-          }
 
-          List<AgencyAndId> sctrips = tripIdsBySignCode.get(code);
-          if (sctrips == null) {
-            sctrips = new ArrayList<AgencyAndId>();
-            tripIdsBySignCode.put(code, sctrips);
           }
-          for (Trip trip : filtered)
-            sctrips.add(trip.getId());
         }
 
       }

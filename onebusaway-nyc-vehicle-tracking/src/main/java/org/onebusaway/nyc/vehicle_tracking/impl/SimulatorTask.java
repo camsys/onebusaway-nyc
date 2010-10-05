@@ -21,7 +21,7 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.tripplanner.BlockEntry;
+import org.onebusaway.transit_data_federation.services.tripplanner.BlockConfigurationEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,7 +171,7 @@ class SimulatorTask implements Runnable, EntityHandler {
       ProjectedPoint p = edgeState.getPointOnEdge();
       BlockState blockState = state.getBlockState();
       BlockInstance blockInstance = blockState.getBlockInstance();
-      BlockEntry block = blockInstance.getBlock();
+      BlockConfigurationEntry block = blockInstance.getBlock();
       ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
       NycTestLocationRecord record = new NycTestLocationRecord();
@@ -180,7 +180,7 @@ class SimulatorTask implements Runnable, EntityHandler {
       record.setLat(p.getLat());
       record.setLon(p.getLon());
 
-      record.setActualBlockId(AgencyAndIdLibrary.convertToString(block.getId()));
+      record.setActualBlockId(AgencyAndIdLibrary.convertToString(block.getBlock().getId()));
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       record.setActualLat(blockLocation.getLocation().getLat());
       record.setActualLon(blockLocation.getLocation().getLon());

@@ -8,25 +8,27 @@
 </head>
 <body>
 
-<h2>Trips</h2>
 
-<ul>
-    <c:forEach var="trip" items="${block.trips}">
-        <c:out value="${trip.id}" />
-        <jsp:text> - </jsp:text>
-        <c:out value="${trip.route.shortName}" />
-        <jsp:text> - </jsp:text>
-        <c:out value="${trip.tripHeadsign}" />
-    </c:forEach>
-</ul>
+<h2>Block Configurations</h2>
 
-<h2>Destination Sign Codes</h2>
+<c:forEach var="blockConfig" items="${block.configurations}">
+    <h3>Block Configuration</h3>
+    <ul>
+        <c:forEach var="blockTrip" items="${blockConfig.trips}">
+            <li>
+            <c:set var="trip" value="${blockTrip.trip}" />
+            <c:out value="${trip.id}" />
+            <jsp:text> - </jsp:text>
+            <c:out value="${trip.route.shortName}" />
+            <jsp:text> - </jsp:text>
+            <c:out value="${trip.tripHeadsign}" />
+            <jsp:text> - </jsp:text>
+            <cout value="${dscs[trip.id]}" />
+            </li>
+        </c:forEach>
+    </ul>
+</c:forEach>
 
-<ul>
-    <c:forEach var="dsc" items="${dscs}">
-        <c:out value="${dsc}" />
-    </c:forEach>
-</ul>
 
 </body>
 </html>

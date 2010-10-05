@@ -32,12 +32,13 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDet
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.transit_data_federation.services.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.tripplanner.BlockEntry;
-import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeEntry;
-import org.onebusaway.transit_data_federation.services.tripplanner.TripEntry;
+import org.onebusaway.transit_data_federation.services.tripplanner.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.tripplanner.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.tripplanner.BlockTripEntry;
 import org.onebusaway.utility.EOutOfRangeStrategy;
 import org.onebusaway.utility.InterpolationLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +64,6 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private VehicleLocationService _vehicleLocationService;
 
-  private TransitGraphDao _transitGraphDao;
-
   private ScheduledBlockLocationService _scheduledBlockLocationService;
 
   private DestinationSignCodeService _destinationSignCodeService;
@@ -75,15 +74,12 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private AtomicInteger _taskIndex = new AtomicInteger();
 
+  private BlockCalendarService _blockCalendarService;
+
   @Autowired
   public void setVehicleLocationService(
       VehicleLocationService vehicleLocationService) {
     _vehicleLocationService = vehicleLocationService;
-  }
-
-  @Autowired
-  public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
-    _transitGraphDao = transitGraphDao;
   }
 
   @Autowired
@@ -96,6 +92,11 @@ public class VehicleLocationSimulationServiceImpl implements
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
+  }
+
+  @Autowired
+  public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
+    _blockCalendarService = blockCalendarService;
   }
 
   public void setNumberOfThread(int numberOfThreads) {
@@ -236,8 +237,10 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setPauseOnStart(false);
     task.setRunInRealtime(true);
 
-    BlockEntry blockEntry = _transitGraphDao.getBlockEntryForId(blockId);
-    List<StopTimeEntry> stopTimes = blockEntry.getStopTimes();
+    BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
+        blockId, serviceDate);
+    BlockConfigurationEntry block = blockInstance.getBlock();
+    List<BlockStopTimeEntry> stopTimes = block.getStopTimes();
     int scheduleTime = (int) ((System.currentTimeMillis() - serviceDate) / 1000);
 
     int shiftStartTime = getShiftStartTimeProperty(properties);
@@ -247,10 +250,10 @@ public class VehicleLocationSimulationServiceImpl implements
 
     scheduleTime -= shiftStartTime;
 
-    StopTimeEntry firstStopTime = stopTimes.get(0);
-    StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
-    int firstTime = firstStopTime.getArrivalTime();
-    int lastTime = lastStopTime.getDepartureTime();
+    BlockStopTimeEntry firstStopTime = stopTimes.get(0);
+    BlockStopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
+    int firstTime = firstStopTime.getStopTime().getArrivalTime();
+    int lastTime = lastStopTime.getStopTime().getDepartureTime();
 
     if (isIncludeStartTime(properties))
       scheduleTime = firstTime;
@@ -268,8 +271,8 @@ public class VehicleLocationSimulationServiceImpl implements
       if (blockLocation == null)
         return -1;
 
-      TripEntry trip = blockLocation.getActiveTrip();
-      String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(trip.getId());
+      BlockTripEntry trip = blockLocation.getActiveTrip();
+      String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(trip.getTrip().getId());
       if (dsc == null)
         dsc = "0";
 

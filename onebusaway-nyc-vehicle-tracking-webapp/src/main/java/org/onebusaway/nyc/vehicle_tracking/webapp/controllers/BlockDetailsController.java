@@ -1,13 +1,13 @@
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
+import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
+import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
@@ -44,20 +44,23 @@ public class BlockDetailsController {
 
     if (block == null)
       return new ModelAndView("block-details-notFound.jspx");
-
-    List<String> dscs = new ArrayList<String>();
-
-    for (TripBean trip : block.getTrips()) {
-      AgencyAndId tripId = AgencyAndIdLibrary.convertFromString(trip.getId());
-      String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(tripId);
-      if (dsc == null)
-        dsc = "NA";
-      dscs.add(dsc);
+    
+    Map<String,String> dscsByTripId = new HashMap<String, String>();
+    
+    for( BlockConfigurationBean blockConfig : block.getConfigurations() ) {
+      for( BlockTripBean blockTrip : blockConfig.getTrips() ) {
+        TripBean trip = blockTrip.getTrip();
+        AgencyAndId tripId = AgencyAndIdLibrary.convertFromString(trip.getId());
+        String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(tripId);
+        if (dsc == null)
+          dsc = "NA";
+        dscsByTripId.put(trip.getId(),dsc);
+      }
     }
 
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("block", block);
-    model.put("dscs", dscs);
+    model.put("dscs", dscsByTripId);
     return new ModelAndView("block-details.jspx", model);
   }
 

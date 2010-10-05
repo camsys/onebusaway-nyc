@@ -52,7 +52,7 @@ table td {
         <c:set var="blockLocation" value="${blockState.blockLocation}"/>
         
         <td><c:out value="${p.weight}" /></td>
-        <td><c:out value="${blockState.blockInstance.block.id}" /></td>
+        <td><c:out value="${blockState.blockInstance.block.block.id}" /></td>
         <td><c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
         <td><c:out value="${blockLocation.distanceAlongBlock}" /></td>
         <td><c:out value="${blockLocation.scheduledTime}" /></td>
