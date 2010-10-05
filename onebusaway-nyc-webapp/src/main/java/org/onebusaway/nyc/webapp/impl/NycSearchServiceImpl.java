@@ -317,7 +317,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       // and add any stops for it
       SearchQueryBean searchQueryBean = makeSearchQuery(bounds);
-      searchQueryBean.setMaxCount(10);
+      searchQueryBean.setMaxCount(100);
       StopsBean stops = transitService.getStops(searchQueryBean);
       result.add(stops);
     }
