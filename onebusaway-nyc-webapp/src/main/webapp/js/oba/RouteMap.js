@@ -95,6 +95,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 return;
             }
           
+          // keep track of the vehicles that are added for this direction
+          // this is will be a set of vehicleIds
+          var vehiclesAdded = {};
           // helper function to add an element to a map where values are lists
           var addVehicleMarkerToRouteMap = function(routeId, directionId, vehicleMarker) {
             var directionIdMap = routeIdsToVehicleMarkers[routeId];
@@ -121,6 +124,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 directionIdMap[directionId] = [vehicleMarker];
                 routeIdsToVehicleMarkers[routeId] = directionIdMap;
             }
+            
+            // keep track of all vehicles that have been added
+            // so we know which we should remove from the list
+            vehiclesAdded[vehicleMarker.getId()] = true;
           };
  
           jQuery.each(tripDetailsList, function(i, tripDetails) {
@@ -163,6 +170,19 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);
               }
             }); // each tripDetail
+          
+          // remove vehicle markers that haven't been listed in this recent update
+          var vehicles = routeIdsToVehicleMarkers[routeId][directionId];
+          var vehiclesToKeep = [];
+          for (var i = 0; i < vehicles.length; i++) {
+              var vehicle = vehicles[i];
+              if (vehicle.getId() in vehiclesAdded)
+                  vehiclesToKeep.push(vehicle);
+              else
+                  vehicle.removeMarker();
+          }
+          routeIdsToVehicleMarkers[routeId][directionId] = vehiclesToKeep;
+          
           // handle the remaining route ids
           // this is done in this way to serialize the requests to the server
           requestRoutes(remainingRouteIds);
