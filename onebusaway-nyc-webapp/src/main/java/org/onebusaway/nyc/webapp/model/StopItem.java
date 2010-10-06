@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.webapp.model;
 
+import java.util.List;
+
 import org.onebusaway.nyc.webapp.impl.DistancePresenter;
 import org.onebusaway.nyc.webapp.impl.WebappIdParser;
 import org.onebusaway.transit_data.model.StopBean;
@@ -13,18 +15,18 @@ public class StopItem {
 
   private final String id;
   private final String name;
-  private final Double distance;
+  private final List<Double> meterDistances;
   
   private static final WebappIdParser idParser = new WebappIdParser();
 
-  public StopItem(StopBean stopBean, Double distance) {
-    this(idParser.parseIdWithoutAgency(stopBean.getId()), stopBean.getName(), distance);
+  public StopItem(StopBean stopBean, List<Double> meterDistances) {
+    this(idParser.parseIdWithoutAgency(stopBean.getId()), stopBean.getName(), meterDistances);
   }
   
-  public StopItem(String id, String name, Double distance) {
+  public StopItem(String id, String name, List<Double> meterDistances) {
     this.id = id;
     this.name = name;
-    this.distance = distance;
+    this.meterDistances = meterDistances;
   }
 
   public String getId() {
@@ -35,13 +37,16 @@ public class StopItem {
     return name;
   }
 
-  public Double getDistance() {
-    return distance;
+  public List<Double> getDistances() {
+    return meterDistances;
   }
   
-  public String getPresentableDistance() {
-    return distance != null
-        ? DistancePresenter.displayFeet(distance)
-        : "";
+  public String getPresentableDistances() {
+    if (meterDistances == null || meterDistances.size() == 0)
+      return "";
+    StringBuilder b = new StringBuilder();
+    for (Double distance : meterDistances)
+      b.append(" (" + DistancePresenter.displayFeet(distance) + ")");
+    return b.toString();
   }
 }

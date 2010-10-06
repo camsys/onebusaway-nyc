@@ -118,9 +118,7 @@ LI {
 			<s:iterator value="stopItems">
 			<li>
 				<a title="${name}" href="mobile.action?q=${id}"><s:property value="name" /></a>
-				<s:if test="%{distance != null}">
-					(<s:property value="presentableDistance" />)
-				</s:if>
+				<s:property value="presentableDistances" />
 			</li>
 			</s:iterator>
 		</ul>

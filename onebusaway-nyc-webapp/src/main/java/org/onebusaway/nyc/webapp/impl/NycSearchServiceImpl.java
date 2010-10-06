@@ -108,7 +108,7 @@ public class NycSearchServiceImpl implements NycSearchService {
           Map<String, String> directionIdToTripId = new HashMap<String, String>();
           // go from trip id to a mapping of stop id -> distance along trip
           Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String, Double>>();
-          Map<String, Double> stopIdToDistanceAway = new HashMap<String, Double>();
+          Map<String, List<Double>> stopIdToDistanceAways = new HashMap<String, List<Double>>();
 
           TripsForRouteQueryBean tripQueryBean = makeTripQueryBean(routeId);
           ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
@@ -152,7 +152,12 @@ public class NycSearchServiceImpl implements NycSearchService {
               double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
               double stopDistanceAlongroute = stopIdToDistance.get(closestStopId);
               double distanceAway = stopDistanceAlongroute - distanceAlongTrip;
-              stopIdToDistanceAway.put(closestStopId, distanceAway);
+              List<Double> stopDistanceAways = stopIdToDistanceAways.get(closestStopId);
+              if (stopDistanceAways == null) {
+                stopDistanceAways = new ArrayList<Double>();
+                stopIdToDistanceAways.put(closestStopId, stopDistanceAways);
+              }
+              stopDistanceAways.add(distanceAway);
             }
           }
 
@@ -173,10 +178,15 @@ public class NycSearchServiceImpl implements NycSearchService {
             List<StopItem> stopItemsList = new ArrayList<StopItem>();
             for (StopBean stopBean : stopBeansList) {
               String stopId = stopBean.getId();
-              Double distance = stopIdToDistanceAway.get(stopId);
-              if (distance != null)
-                distance = metersToFeet(distance);
-              StopItem stopItem = new StopItem(stopBean, distance);
+              List<Double> distances = stopIdToDistanceAways.get(stopId);
+              List<Double> meterDistances = null;
+              if (distances != null && distances.size() > 0) {
+                meterDistances = new ArrayList<Double>(distances.size());
+                for (Double feetDistance : distances) {
+                  meterDistances.add(metersToFeet(feetDistance));
+                }
+              }
+              StopItem stopItem = new StopItem(stopBean, meterDistances);
               stopItemsList.add(stopItem);
             }
             RouteSearchResult routeSearchResult = new RouteSearchResult(
