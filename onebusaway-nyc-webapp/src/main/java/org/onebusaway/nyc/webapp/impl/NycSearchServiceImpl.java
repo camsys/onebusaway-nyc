@@ -145,13 +145,15 @@ public class NycSearchServiceImpl implements NycSearchService {
             if (tripStatusBean == null || !tripStatusBean.isPredicted())
               continue;
 
-            StopBean closestStop = tripStatusBean.getClosestStop();
-            String closestStopId = closestStop.getId();
-            Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
-            double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
-            double stopDistanceAlongroute = stopIdToDistance.get(closestStopId);
-            double distanceAway = stopDistanceAlongroute - distanceAlongTrip;
-            stopIdToDistanceAway.put(closestStopId, distanceAway);
+            StopBean closestStop = tripStatusBean.getNextStop();
+            if (closestStop != null) {
+              String closestStopId = closestStop.getId();
+              Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
+              double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
+              double stopDistanceAlongroute = stopIdToDistance.get(closestStopId);
+              double distanceAway = stopDistanceAlongroute - distanceAlongTrip;
+              stopIdToDistanceAway.put(closestStopId, distanceAway);
+            }
           }
 
           for (Map.Entry<String, List<StopBean>> directionStopBeansEntry : directionIdToStopBeans.entrySet()) {
