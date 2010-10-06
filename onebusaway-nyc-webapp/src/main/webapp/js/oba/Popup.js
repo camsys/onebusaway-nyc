@@ -85,12 +85,15 @@ OBA.StopPopup = function(stopId, map) {
                 if (!predicted || arrivalStopId !== stopId || !(routeId in routeIdMap))
                     return;
                 var headsign = arrival.tripHeadsign;
-                // FIXME stops and distance away
-                var stops = 0;
-                var meters = arrival.distanceFromStop;
-                var feet = OBA.Util.metersToFeet(meters);
                 var updateTime = parseInt(arrival.lastUpdateTime);
                 latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
+                // only show positive distances
+                var meters = arrival.distanceFromStop;
+                if (meters < 0)
+                    return;
+                var feet = OBA.Util.metersToFeet(meters);
+                // FIXME stops away
+                var stops = 0;
 
                 var vehicleInfo = {headsign: headsign,
                                    stops: stops,
@@ -201,7 +204,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
         // last update date
         var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
         var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
-        
+
         var stops = stops.slice(0);
         
         var stopIdsToStops = {};
