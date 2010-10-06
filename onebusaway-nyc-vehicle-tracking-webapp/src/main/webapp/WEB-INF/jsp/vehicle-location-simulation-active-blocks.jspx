@@ -15,7 +15,7 @@
 
 <h2>Block Trips</h2>
 
-<p>This is a list of all block trips SCHEDULED to be active right now.</p>
+<p>This is a list of all block trips SCHEDULED to be active at <fmt:formatDate type="both" timeStyle="short" dateStyle="short" value="${time}"/></p>
 
 <table>
     <thead>
@@ -23,6 +23,7 @@
             <td>Route</td>
             <td>Destination</td>
             <td>Completion Ratio</td>
+            <td>Predicted</td>
             <td>Action</td>
         </tr>
     </thead>
@@ -35,7 +36,7 @@
         <td><c:out value="${trip.route.shortName}" /></td>
         <td><c:out value="${trip.tripHeadsign}" /></td>
         <td><fmt:formatNumber pattern="0.00" value="${status.scheduledDistanceAlongBlock / status.totalDistanceAlongBlock}" /></td>
-        <td><c:out value="" /></td>
+        <td><c:out value="${status.predicted}" /></td>
         <td><a href="vehicle-location-simulation!block.do?blockId=${status.block.id}&amp;serviceDate=${status.serviceDate}">simulations</a></td>
     </tr>
     </c:forEach>

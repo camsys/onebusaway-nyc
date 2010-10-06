@@ -34,6 +34,6 @@ public interface VehicleLocationSimulationService {
       AgencyAndId blockId, long serviceDate);
 
   public int addSimulationForBlockInstance(AgencyAndId blockId,
-      long serviceDate, Properties properties);
+      long serviceDate, long actualTime, Properties properties);
 
 }

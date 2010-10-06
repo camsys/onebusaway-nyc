@@ -225,7 +225,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public int addSimulationForBlockInstance(AgencyAndId blockId,
-      long serviceDate, Properties properties) {
+      long serviceDate, long actualTime, Properties properties) {
 
     Random random = new Random();
 
@@ -241,7 +241,7 @@ public class VehicleLocationSimulationServiceImpl implements
         blockId, serviceDate);
     BlockConfigurationEntry block = blockInstance.getBlock();
     List<BlockStopTimeEntry> stopTimes = block.getStopTimes();
-    int scheduleTime = (int) ((System.currentTimeMillis() - serviceDate) / 1000);
+    int scheduleTime = (int) ((actualTime - serviceDate) / 1000);
 
     int shiftStartTime = getShiftStartTimeProperty(properties);
     String vehicleId = getVehicleIdProperty(random, properties);

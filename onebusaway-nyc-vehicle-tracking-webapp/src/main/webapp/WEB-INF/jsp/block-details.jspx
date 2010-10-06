@@ -8,27 +8,47 @@
 </head>
 <body>
 
-
-<h2>Block Configurations</h2>
+<h2>Block Details</h2>
 
 <c:forEach var="blockConfig" items="${block.configurations}">
     <h3>Block Configuration</h3>
+    <h4>ServiceIds - Active</h4>
     <ul>
-        <c:forEach var="blockTrip" items="${blockConfig.trips}">
-            <li>
-            <c:set var="trip" value="${blockTrip.trip}" />
-            <c:out value="${trip.id}" />
-            <jsp:text> - </jsp:text>
-            <c:out value="${trip.route.shortName}" />
-            <jsp:text> - </jsp:text>
-            <c:out value="${trip.tripHeadsign}" />
-            <jsp:text> - </jsp:text>
-            <cout value="${dscs[trip.id]}" />
-            </li>
+        <c:forEach var="serviceId"
+            items="${blockConfig.activeServiceIds}">
+            <c:out value="${serviceId}" />
         </c:forEach>
     </ul>
+    <h4>ServiceIds - Inactive</h4>
+    <ul>
+        <c:forEach var="serviceId"
+            items="${blockConfig.inactiveServiceIds}">
+            <c:out value="${serviceId}" />
+        </c:forEach>
+    </ul>
+    <h4>Trips</h4>
+    <table>
+        <thead>
+            <tr>
+                <td>id</td>
+                <td>route</td>
+                <td>headsign</td>
+                <td>dsc</td>
+            </tr>
+        </thead>
+        <tbody>
+            <c:forEach var="blockTrip" items="${blockConfig.trips}">
+                <tr>
+                    <c:set var="trip" value="${blockTrip.trip}" />
+                    <td><c:out value="${trip.id}" /></td>
+                    <td><c:out value="${trip.route.shortName}" /></td>
+                    <td><c:out value="${trip.tripHeadsign}" /></td>
+                    <td><c:out value="${dscs[trip.id]}" /></td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
 </c:forEach>
-
 
 </body>
 </html>

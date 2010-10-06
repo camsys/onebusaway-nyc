@@ -23,7 +23,7 @@ table td {
 <c:set var="obs" value="${details.lastObservation}"/>
 
 <ul>
-    <li>time:<jsp:text> </jsp:text><fmt:formatDate value="${obs.timestampAsDate}"/></li>
+    <li>time:<jsp:text> </jsp:text><fmt:formatDate pattern="yyyy-MM-dd_HH-mm-ss" value="${obs.timestampAsDate}"/></li>
     <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
     <li>location:<jsp:text> </jsp:text><c:out value="${obs.lat}"/><jsp:text> </jsp:text><c:out value="${obs.lon}"/></li>
     <li><jsp:text>dsc: </jsp:text><c:out value="${obs.dsc}"/></li>
@@ -36,6 +36,7 @@ table td {
         <tr>
             <td>P</td>
             <td>BlockId</td>
+            <td>TripId</td>
             <td>BlockLocation</td>
             <td>DistanceAlongBlock</td>
             <td>ScheduledTime</td>
@@ -52,7 +53,8 @@ table td {
         <c:set var="blockLocation" value="${blockState.blockLocation}"/>
         
         <td><c:out value="${p.weight}" /></td>
-        <td><c:out value="${blockState.blockInstance.block.block.id}" /></td>
+        <td><a href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out value="${blockState.blockInstance.block.block.id}" /></a></td>
+        <td><c:out value="${blockLocation.activeTrip.trip.id}" /></td>
         <td><c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
         <td><c:out value="${blockLocation.distanceAlongBlock}" /></td>
         <td><c:out value="${blockLocation.scheduledTime}" /></td>

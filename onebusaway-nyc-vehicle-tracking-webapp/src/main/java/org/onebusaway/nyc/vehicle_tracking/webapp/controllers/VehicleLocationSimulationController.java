@@ -4,14 +4,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
@@ -21,14 +29,20 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDet
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.blocks.BlockStatusBean;
+import org.onebusaway.transit_data.model.blocks.BlockTripBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
 import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +51,11 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class VehicleLocationSimulationController {
+
+  private static final Pattern CALENDAR_OFFSET_PATTERN = Pattern.compile("^(-{0,1}\\d+)(\\w+)$");
+
+  private static final String CALENDAR_OFFSET_KEY = VehicleLocationSimulationController.class
+      + ".calendarOffset";
 
   private VehicleLocationSimulationService _vehicleLocationSimulationService;
 
@@ -68,11 +87,29 @@ public class VehicleLocationSimulationController {
     _blockStatusBeanService = blockStatusBeanService;
   }
 
+  @InitBinder
+  public void initBinder(WebDataBinder binder) {
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm");
+    dateFormat.setLenient(false);
+    binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat,
+        false));
+  }
+
   @RequestMapping(value = "/vehicle-location-simulation.do", method = RequestMethod.GET)
   public ModelAndView index() {
     List<VehicleLocationSimulationSummary> simulations = _vehicleLocationSimulationService.getSimulations();
     return new ModelAndView("vehicle-location-simulation.jspx", "simulations",
         simulations);
+  }
+
+  @RequestMapping(value = "/vehicle-location-simulation!set-calendar-offset.do", method = RequestMethod.GET)
+  public ModelAndView setCalendarOffser(HttpSession session,
+      @RequestParam(required = false) String calendarOffset) {
+    if (calendarOffset != null)
+      session.setAttribute(CALENDAR_OFFSET_KEY, calendarOffset);
+    else
+      session.removeAttribute(CALENDAR_OFFSET_KEY);
+    return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!upload-trace.do", method = RequestMethod.POST)
@@ -156,18 +193,26 @@ public class VehicleLocationSimulationController {
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!active-blocks.do", method = RequestMethod.GET)
-  public ModelAndView activeBlocks() {
+  public ModelAndView activeBlocks(HttpSession session,
+      @RequestParam(required = false) Date time) {
 
     List<BlockStatusBean> blocks = new ArrayList<BlockStatusBean>();
 
+    time = getTime(session, time);
+
     for (String agencyId : _agencyService.getAllAgencyIds()) {
       ListBean<BlockStatusBean> beans = _blockStatusBeanService.getBlocksForAgency(
-          agencyId, System.currentTimeMillis());
+          agencyId, time.getTime());
       blocks.addAll(beans.getList());
     }
 
-    return new ModelAndView("vehicle-location-simulation-active-blocks.jspx",
-        "blocks", blocks);
+    Collections.sort(blocks, new BlockStatusBeanComparator());
+
+    Map<String, Object> m = new HashMap<String, Object>();
+    m.put("blocks", blocks);
+    m.put("time", time);
+
+    return new ModelAndView("vehicle-location-simulation-active-blocks.jspx", m);
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!block.do", method = RequestMethod.GET)
@@ -188,16 +233,18 @@ public class VehicleLocationSimulationController {
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!block-add-simulation.do", method = RequestMethod.POST)
-  public ModelAndView addBlockSimulation(@RequestParam String blockId,
-      @RequestParam long serviceDate, @RequestParam String properties)
-      throws IOException {
+  public ModelAndView addBlockSimulation(HttpSession session,
+      @RequestParam String blockId, @RequestParam long serviceDate,
+      @RequestParam String properties) throws IOException {
+
+    Date time = getTime(session, null);
 
     Properties props = new Properties();
     props.load(new StringReader(properties));
 
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(blockId);
     _vehicleLocationSimulationService.addSimulationForBlockInstance(id,
-        serviceDate, props);
+        serviceDate, time.getTime(), props);
 
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("blockId", blockId);
@@ -226,4 +273,81 @@ public class VehicleLocationSimulationController {
     writer.close();
   }
 
+  private Date getTime(HttpSession session, Date time) {
+
+    if (time == null)
+      time = new Date();
+
+    String calendarOffset = (String) session.getAttribute(CALENDAR_OFFSET_KEY);
+
+    if (calendarOffset != null) {
+
+      Matcher m = CALENDAR_OFFSET_PATTERN.matcher(calendarOffset);
+      if (m.matches()) {
+
+        int amount = Integer.parseInt(m.group(1));
+        String type = m.group(2);
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(time);
+
+        if (type.equals("M"))
+          c.add(Calendar.MONTH, amount);
+        else if (type.equals("w"))
+          c.add(Calendar.WEEK_OF_YEAR, amount);
+        else if (type.equals("d"))
+          c.add(Calendar.DAY_OF_YEAR, amount);
+        else if (type.equals("h"))
+          c.add(Calendar.HOUR, amount);
+        time = c.getTime();
+      }
+    }
+
+    return time;
+  }
+
+  private static class BlockStatusBeanComparator implements
+      Comparator<BlockStatusBean> {
+
+    @Override
+    public int compare(BlockStatusBean o1, BlockStatusBean o2) {
+
+      String r1 = getRouteShortName(o1);
+      String r2 = getRouteShortName(o2);
+
+      int rc = r1.compareTo(r2);
+      if (rc != 0)
+        return rc;
+
+      String headsign1 = getTripHeadsign(o1);
+      String headsign2 = getTripHeadsign(o2);
+
+      rc = headsign1.compareTo(headsign2);
+      if (rc != 0)
+        return rc;
+
+      double d1 = o1.computeBestDistanceAlongBlock();
+      double d2 = o2.computeBestDistanceAlongBlock();
+
+      return Double.compare(d1, d2);
+    }
+
+    private String getRouteShortName(BlockStatusBean bean) {
+      BlockTripBean activeTrip = bean.getActiveTrip();
+      TripBean trip = activeTrip.getTrip();
+      if (trip.getRouteShortName() != null)
+        return trip.getRouteShortName();
+      RouteBean route = trip.getRoute();
+      return route.getShortName();
+    }
+
+    private String getTripHeadsign(BlockStatusBean bean) {
+      BlockTripBean activeTrip = bean.getActiveTrip();
+      TripBean trip = activeTrip.getTrip();
+      if (trip.getTripHeadsign() != null)
+        return trip.getTripHeadsign();
+      RouteBean route = trip.getRoute();
+      return route.getLongName();
+    }
+  }
 }

@@ -11,23 +11,7 @@
 <p><a href="vehicle-location-simulation.do">Back to Vehicle
 Location Simulation Console</a></p>
 
-<h2>Block Details</h2>
-<c:forEach var="blockConfig" items="${block.configurations}">
-    <h3>Block Configuration</h3>
-    <ul>
-        <c:forEach var="blockTrip" items="${blockConfig.trips}">
-            <c:set var="trip" value="${blockTrip.trip}" />
-            <li>
-            <c:out value="${trip.id}" />
-            <jsp:text> - </jsp:text>
-            <c:out value="${trip.route.shortName}" />
-            <jsp:text> - </jsp:text>
-            <c:out value="${trip.tripHeadsign}" />
-            </li>
-        </c:forEach>
-    </ul>
-</c:forEach>
-
+<p><a href="block-details.do?blockId=${block.id}">See more details for this block.</a></p>
 <h2>Active Simulations</h2>
 <jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
 
@@ -46,5 +30,7 @@ Location Simulation Console</a></p>
 </table>
 <input type="hidden" name="blockId" value="${block.id}" /> <input
     type="hidden" name="serviceDate" value="${serviceDate}" /></form>
+
+
 </body>
 </html>
