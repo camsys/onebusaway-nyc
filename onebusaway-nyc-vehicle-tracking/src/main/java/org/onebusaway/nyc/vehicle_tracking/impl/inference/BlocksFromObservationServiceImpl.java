@@ -357,7 +357,6 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
 
     _log.info("potential blocks found: " + potentialBlocks.size());
-    System.out.println(potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
       BlockState state = getBestBlockLocation(record.getTime(),

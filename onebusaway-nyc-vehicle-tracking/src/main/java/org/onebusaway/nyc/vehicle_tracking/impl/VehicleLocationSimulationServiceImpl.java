@@ -58,7 +58,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private static final String ARG_INCLUDE_START = "include_start";
 
-  private int _numberOfThreads = 1;
+  private int _numberOfThreads = 20;
 
   private ExecutorService _executor;
 
