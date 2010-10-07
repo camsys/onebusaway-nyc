@@ -129,20 +129,27 @@ OBA.StopPopup = function(stopId, map) {
                 if (serviceNotice)
                     notices += '<li>' + serviceNotice + '</li>';
 
-                // routes with a service notice should appear red
-                service += (serviceNotice ? '<li class="hasNotice">' : "<li>");
-
-                service += '<a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
-                          + OBA.Util.truncate(routeIdDisplay + ' - ' + longName, 30) + '</a>';
-
                 // and the distance away for each vehicle for that route
                 var vehicleInfos = routeToVehicleInfo[routeId] || [];
                 // sort it based on distance
                 vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
                 for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
+                    // routes with a service notice should appear red
+                    service += (serviceNotice ? '<li class="hasNotice">' : "<li>");
+
+                    service += '<a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
+                              + OBA.Util.truncate(routeIdDisplay + ' - ' + longName, 30) + '</a>';
+
                     var distanceAway = vehicleInfos[i];
-                    service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + " "; 
+                    service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", "; 
                     service += OBA.Util.displayDistance(distanceAway.feet) + ")";
+                }
+                if (vehicleInfos.length === 0) {
+                    // need to print out the route name if we don't have any arrivals though
+                    service += (serviceNotice ? '<li class="hasNotice">' : "<li>");
+
+                    service += '<a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
+                              + OBA.Util.truncate(routeIdDisplay + ' - ' + longName, 30) + '</a>';
                 }
                 service += '</li>';
            });
