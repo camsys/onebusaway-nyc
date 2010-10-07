@@ -95,9 +95,9 @@ OBA.Util = (function() {
         displayDistance: function(feet) {
             if (feet > 5280) {
                 var miles = feet / 5280;
-                return miles.toPrecision(3) + " miles";
+                return miles == 1 ? "1 mile" : miles.toPrecision(3) + " miles";
             } else {
-                return Math.round(feet) + " feet";
+                return feet == 1 ? "1 foot" : Math.round(feet) + " feet";
             }
         },
         displayTime: function(dateObj) {

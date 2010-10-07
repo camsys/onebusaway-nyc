@@ -142,14 +142,7 @@ OBA.StopPopup = function(stopId, map) {
                 jQuery.each(vehicleInfos, function(_, distanceAway) {
                     var feet = distanceAway.feet;
                     service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + " "; 
-                    if (feet > 5280) {
-                        var distanceMiles = feet / 5280;
-                        distanceMiles = distanceMiles.toPrecision(3);
-                        service += distanceMiles + ' miles)';
-                    } else {
-                        feet = feet.toPrecision(4);
-                        service += feet + " feet)";
-                    }
+                    service += OBA.Util.displayDistance(feet) + " )";
                 });
                 service += '</li>';
            });
