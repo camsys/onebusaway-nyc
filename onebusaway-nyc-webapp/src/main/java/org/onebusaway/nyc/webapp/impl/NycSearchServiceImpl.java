@@ -185,6 +185,7 @@ public class NycSearchServiceImpl implements NycSearchService {
                 for (Double feetDistance : distances) {
                   meterDistances.add(metersToFeet(feetDistance));
                 }
+                Collections.sort(meterDistances);
               }
               StopItem stopItem = new StopItem(stopBean, meterDistances);
               stopItemsList.add(stopItem);
