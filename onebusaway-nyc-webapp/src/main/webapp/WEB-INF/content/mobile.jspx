@@ -103,7 +103,6 @@ LI {
 		<s:iterator value="routesAvailable">
 			<a href="mobile.action?q=${routeId}"><s:property value="routeId" /></a><br />
 			<s:iterator value="distanceAway">
-				<!-- <s:property value="stops" /> stops, <s:property value="feet" /> feet<br />  -->
 				<s:property value="presentableDistance" /><br />
 			</s:iterator>
 		</s:iterator>

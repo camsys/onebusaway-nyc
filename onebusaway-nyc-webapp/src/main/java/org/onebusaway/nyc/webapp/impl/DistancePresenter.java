@@ -14,5 +14,11 @@ public class DistancePresenter {
       return feetAsInt + " feet";
     }
   }
+  
+  public static String displayStopsAway(int numberOfStopsAway) {
+    return numberOfStopsAway == 1
+           ? "1 stop"
+           : numberOfStopsAway + " stops";
+  }
 
 }

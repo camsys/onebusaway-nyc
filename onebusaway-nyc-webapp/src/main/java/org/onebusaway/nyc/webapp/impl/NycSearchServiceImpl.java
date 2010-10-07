@@ -345,7 +345,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     Date now = new Date();
     int minutesBefore = 5;
     int minutesAfter = 35;
-    Map<String, List<Double>> routeIdToDistances = new HashMap<String, List<Double>>();
+    Map<String, List<DistanceAway>> routeIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
 
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = transitService.getStopWithArrivalsAndDepartures(
         stopId, now, minutesBefore, minutesAfter);
@@ -353,14 +353,18 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
       if (arrivalAndDepartureBean.isPredicted()) {
-        double distanceFromStop = arrivalAndDepartureBean.getDistanceFromStop();
+        double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
+        if (distanceFromStopInMeters < 0)
+          continue;
+        int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
+        int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway() + 1;
         String routeId = arrivalAndDepartureBean.getTrip().getRoute().getId();
-        List<Double> distances = routeIdToDistances.get(routeId);
+        List<DistanceAway> distances = routeIdToDistanceAways.get(routeId);
         if (distances == null) {
-          distances = new ArrayList<Double>();
-          routeIdToDistances.put(routeId, distances);
+          distances = new ArrayList<DistanceAway>();
+          routeIdToDistanceAways.put(routeId, distances);
         }
-        distances.add(distanceFromStop);
+        distances.add(new DistanceAway(numberOfStopsAway, distanceFromStopInFeet));
       }
     }
 
@@ -370,23 +374,12 @@ public class NycSearchServiceImpl implements NycSearchService {
       String shortName = routeBean.getShortName();
       String longName = routeBean.getLongName();
       String routeId = routeBean.getId();
-      List<Double> distances = routeIdToDistances.get(routeId);
+      List<DistanceAway> distances = routeIdToDistanceAways.get(routeId);
+      if (distances == null)
+        distances = Collections.emptyList();
 
-      // FIXME we only contain absolute distances now
-      // not number of stops away
-      List<DistanceAway> distanceAways;
-      if (distances != null) {
-        distanceAways = new ArrayList<DistanceAway>(distances.size());
-        for (Double meters : distances) {
-          Double feetAway = this.metersToFeet(meters);
-          DistanceAway distanceAway = new DistanceAway(0, feetAway.intValue());
-          distanceAways.add(distanceAway);
-        }
-      } else {
-        distanceAways = new ArrayList<DistanceAway>();
-      }
       AvailableRoute availableRoute = new AvailableRoute(shortName, longName,
-          distanceAways);
+          distances);
       availableRoutes.add(availableRoute);
     }
     StopSearchResult stopSearchResult = new StopSearchResult(stopId, stopName,
