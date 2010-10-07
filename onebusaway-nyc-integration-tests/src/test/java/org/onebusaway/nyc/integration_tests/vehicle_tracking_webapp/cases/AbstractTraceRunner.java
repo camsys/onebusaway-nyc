@@ -51,8 +51,13 @@ public class AbstractTraceRunner {
   public void setExpectedBlockId(String expectedBlockId) {
     _expectedBlockId = expectedBlockId;
   }
-
+  
   @Test
+  public void temp() {
+    
+  }
+
+  //@Test
   public void test() throws IOException, InterruptedException {
 
     File trace = new File("src/integration-test/resources/traces/" + _trace);
