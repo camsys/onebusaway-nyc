@@ -378,6 +378,8 @@ public class NycSearchServiceImpl implements NycSearchService {
       if (distances == null)
         distances = Collections.emptyList();
 
+      Collections.sort(distances);
+
       AvailableRoute availableRoute = new AvailableRoute(shortName, longName,
           distances);
       availableRoutes.add(availableRoute);
