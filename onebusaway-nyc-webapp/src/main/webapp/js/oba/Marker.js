@@ -14,14 +14,14 @@
 
 var OBA = window.OBA || {};
 
-OBA.Marker = function(entityId, latlng, map, popup, icon) {
+OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
     var markerOptions = {
         position: new google.maps.LatLng(latlng[0], latlng[1]),
         map: map
     };
 
-    if (typeof icon !== "undefined") {
-        markerOptions.icon = icon;
+    if (typeof extraMarkerOptions !== "undefined") {
+        jQuery.extend(markerOptions, extraMarkerOptions);
     }
 
     var marker = new google.maps.Marker(markerOptions);
@@ -61,11 +61,11 @@ OBA.Marker = function(entityId, latlng, map, popup, icon) {
 OBA.StopMarker = function(stopId, latlng, map) {
     return OBA.Marker(stopId, latlng, map,
         OBA.StopPopup(stopId, map),
-        OBA.Config.stopIcon);
+        {icon: OBA.Config.stopIcon, zIndex: 1});
 };
 
 OBA.VehicleMarker = function(vehicleId, latlng, map) {
     return OBA.Marker(vehicleId, latlng, map,
         OBA.VehiclePopup(vehicleId, map),
-        OBA.Config.vehicleIcon);
+        {icon: OBA.Config.vehicleIcon, zIndex: 2});
 };
