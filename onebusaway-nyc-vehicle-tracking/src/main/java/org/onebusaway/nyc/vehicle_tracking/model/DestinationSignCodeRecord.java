@@ -25,6 +25,10 @@ public class DestinationSignCodeRecord {
 
   private String destinationSignCode;
 
+  /**
+   * Semantically, if the trip id is null, it means that the destination sign
+   * code indicates an out-of-service vehicle
+   */
   @Embedded
   @AttributeOverrides({
       @AttributeOverride(name = "agencyId", column = @Column(name = "tripId_agencyId", length = 50)),
@@ -47,6 +51,13 @@ public class DestinationSignCodeRecord {
     this.destinationSignCode = destinationSignCode;
   }
 
+  /**
+   * Semantically, if the trip id is null, it means that the destination sign
+   * code indicates an out-of-service vehicle
+   * 
+   * @return the tripId associated with the DSC, or null if an out-of-service
+   *         DSC
+   */
   public AgencyAndId getTripId() {
     return tripId;
   }

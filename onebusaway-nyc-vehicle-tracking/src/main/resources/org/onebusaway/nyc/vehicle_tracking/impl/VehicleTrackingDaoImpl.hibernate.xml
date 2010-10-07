@@ -2,9 +2,12 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
     <query name="destinationSignCodeRecordsForDestinationSignCode" read-only="true">
-      SELECT r FROM DestinationSignCodeRecord r WHERE destinationSignCode = :destinationSignCode 
+      SELECT r FROM DestinationSignCodeRecord r WHERE destinationSignCode = :destinationSignCode AND tripId IS NOT NULL
     </query>
     <query name="destinationSignCodeRecordsForTripId" read-only="true">
       SELECT r FROM DestinationSignCodeRecord r WHERE tripId = :tripId 
+    </query>
+    <query name="outOfServiceDestinationSignCodeRecords" read-only="true">
+      SELECT r FROM DestinationSignCodeRecord r WHERE tripId IS NULL
     </query>
 </hibernate-mapping>

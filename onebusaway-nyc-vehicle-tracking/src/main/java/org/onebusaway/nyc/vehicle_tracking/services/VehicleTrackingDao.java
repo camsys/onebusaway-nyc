@@ -33,4 +33,6 @@ public interface VehicleTrackingDao {
 
   public List<DestinationSignCodeRecord> getDestinationSignCodeRecordsForTripId(
       AgencyAndId tripId);
+  
+  public List<DestinationSignCodeRecord> getOutOfServiceDestinationSignCodeRecords();
 }

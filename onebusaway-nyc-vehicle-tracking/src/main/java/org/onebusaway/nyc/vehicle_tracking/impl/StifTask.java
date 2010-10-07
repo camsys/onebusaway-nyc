@@ -1,8 +1,14 @@
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
@@ -28,10 +34,15 @@ public class StifTask implements Runnable {
 
   private VehicleTrackingDao _vehicleTrackingDao;
 
-  private File _stifPath;
+  private List<File> _stifPaths = new ArrayList<File>();
+
+  private Set<String> _notInServiceDscs = new HashSet<String>();
+
+  private File _notInServiceDscPath;
 
   @Autowired
-  public void setGtfsMutableRelationalDao(GtfsMutableRelationalDao gtfsMutableRelationalDao) {
+  public void setGtfsMutableRelationalDao(
+      GtfsMutableRelationalDao gtfsMutableRelationalDao) {
     _gtfsMutableRelationalDao = gtfsMutableRelationalDao;
   }
 
@@ -44,11 +55,23 @@ public class StifTask implements Runnable {
    * The path of the directory containing STIF files to process
    */
   public void setStifPath(File path) {
-    this._stifPath = path;
+    _stifPaths.add(path);
   }
 
-  public File getStifPath() {
-    return _stifPath;
+  public void setStifPaths(List<File> paths) {
+    _stifPaths.addAll(paths);
+  }
+
+  public void setNotInServiceDsc(String notInServiceDsc) {
+    _notInServiceDscs.add(notInServiceDsc);
+  }
+
+  public void setNotInServiceDscs(List<String> notInServiceDscs) {
+    _notInServiceDscs.addAll(notInServiceDscs);
+  }
+
+  public void setNotInServiceDscPath(File notInServiceDscPath) {
+    _notInServiceDscPath = notInServiceDscPath;
   }
 
   public void run() {
@@ -56,9 +79,12 @@ public class StifTask implements Runnable {
     StifTripLoader loader = new StifTripLoader();
     loader.setGtfsDao(_gtfsMutableRelationalDao);
 
-    loadStif(_stifPath, loader);
+    for (File path : _stifPaths)
+      loadStif(path, loader);
 
     Map<String, List<AgencyAndId>> tripMapping = loader.getTripMapping();
+
+    Set<String> inServiceDscs = new HashSet<String>();
 
     for (Map.Entry<String, List<AgencyAndId>> entry : tripMapping.entrySet()) {
       String destinationSignCode = entry.getKey();
@@ -75,6 +101,21 @@ public class StifTask implements Runnable {
     int total = loader.getTripsCount();
 
     _log.info("stif trips without match: " + withoutMatch + " / " + total);
+
+    readNotInServiceDscs();
+
+    for (String notInServiceDsc : _notInServiceDscs) {
+
+      if (inServiceDscs.contains(notInServiceDsc))
+        _log.warn("overlap between in-service and not-in-service dscs: "
+            + notInServiceDsc);
+
+      DestinationSignCodeRecord record = new DestinationSignCodeRecord();
+      record.setDestinationSignCode(notInServiceDsc);
+      record.setTripId(null);
+      _vehicleTrackingDao.saveOrUpdateDestinationSignCodeRecord(record);
+    }
+
   }
 
   public void loadStif(File path, StifTripLoader loader) {
@@ -90,6 +131,21 @@ public class StifTask implements Runnable {
       }
     } else {
       loader.run(path);
+    }
+  }
+
+  private void readNotInServiceDscs() {
+    if (_notInServiceDscPath != null) {
+      try {
+        BufferedReader reader = new BufferedReader(new FileReader(
+            _notInServiceDscPath));
+        String line = null;
+        while ((line = reader.readLine()) != null)
+          _notInServiceDscs.add(line);
+      } catch (IOException ex) {
+        throw new IllegalStateException("unable to read nonInServiceDscPath: "
+            + _notInServiceDscPath);
+      }
     }
   }
 }

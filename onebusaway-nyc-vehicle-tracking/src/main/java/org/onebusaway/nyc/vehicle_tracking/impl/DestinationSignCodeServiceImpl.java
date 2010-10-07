@@ -34,6 +34,7 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   }
 
   @Override
+  @Cacheable
   public String getDestinationSignCodeForTripId(AgencyAndId tripId) {
     List<DestinationSignCodeRecord> records = _dao.getDestinationSignCodeRecordsForTripId(tripId);
     if (records.size() == 0)
@@ -44,5 +45,12 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
       _log.warn("multiple destination sign codes found for tripId=" + tripId);
       return records.get(0).getDestinationSignCode();
     }
+  }
+
+  @Override
+  @Cacheable
+  public boolean isOutOfServiceDestinationSignCode(String destinationSignCode) {
+
+    return false;
   }
 }
