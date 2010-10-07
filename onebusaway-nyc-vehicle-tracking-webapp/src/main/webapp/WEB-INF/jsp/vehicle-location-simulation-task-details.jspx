@@ -57,7 +57,9 @@ table td {
         <td><c:out value="${blockLocation.activeTrip.trip.id}" /></td>
         <td><c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
         <td><c:out value="${blockLocation.distanceAlongBlock}" /></td>
-        <td><c:out value="${blockLocation.scheduledTime}" /></td>
+        <jsp:useBean id="scheduleTime" class="java.util.Date" />
+        <jsp:setProperty name="scheduleTime" property="time" value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}"/>
+        <td><fmt:formatDate pattern="HH:mm" value="${scheduleTime}"/><jsp:text> (</jsp:text><c:out value="${blockLocation.scheduledTime}" />)</td>
         <td><c:out value="${edgeState.pointOnEdge.lat}" /><jsp:text> </jsp:text><c:out value="${edgeState.pointOnEdge.lon}" /></td>
     </tr>
     </c:forEach>
