@@ -79,7 +79,7 @@ LI {
 	<div>
 		<p>Example searches:</p>
 		<ul>
-		<li><a href="mobile.action?q=Atlantic%20Ave%20and%20Hoyt%20St">Broadway and Havemeyer St</a></li>
+		<li><a href="mobile.action?q=Atlantic%20Ave%20and%20Hoyt%20St">Atlantic Ave and Hoyt St</a></li>
 		<li><a href="mobile.action?q=305394">305394</a></li>
 		<li><a href="mobile.action?q=B63">B63</a></li>
 		</ul>
