@@ -44,9 +44,11 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
 
   private List<String> _paths = new ArrayList<String>();
 
-  private int _tripsCount;
+  private int _stifTripsCount;
 
-  private int _tripsWithoutMatchCount;
+  private int _stifTripsWithoutMatchCount;
+
+  private int _tripsWithBlockCount;
 
   public void setPath(String path) {
     _paths.add(path);
@@ -72,6 +74,11 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
 
       run(context, dao, support, file);
     }
+
+    _log.info("stif trips without matches: " + _stifTripsWithoutMatchCount
+        + "/" + _stifTripsCount);
+    _log.info("trips with blocks: " + _tripsWithBlockCount + "/"
+        + support.getTotalTripCount());
   }
 
   private void run(TransformContext context, GtfsMutableRelationalDao dao,
@@ -79,7 +86,7 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
 
     // Exclude files and directories like .svn
     if (path.getName().startsWith("."))
-      return; 
+      return;
 
     if (path.isDirectory()) {
       for (File child : path.listFiles())
@@ -130,7 +137,7 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
           TripIdentifier id = support.getIdentifierForTripRecord(tripRecord);
           List<Trip> trips = support.getTripsForIdentifier(id);
 
-          _tripsCount++;
+          _stifTripsCount++;
 
           if (trips == null || trips.isEmpty()) {
             // trip in stif but not in gtfs
@@ -138,7 +145,7 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
               warned = true;
               _log.warn("gtfs trip not found for " + id);
             }
-            _tripsWithoutMatchCount++;
+            _stifTripsWithoutMatchCount++;
             continue;
           }
 
@@ -176,12 +183,14 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
                 filtered.add(trip);
                 trip.setBlockId(blockId);
                 dao.updateEntity(trip);
+                _tripsWithBlockCount++;
               }
             } else {
               if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1) == serviceCode) {
                 filtered.add(trip);
                 trip.setBlockId(blockId);
                 dao.updateEntity(trip);
+                _tripsWithBlockCount++;
               }
             }
 

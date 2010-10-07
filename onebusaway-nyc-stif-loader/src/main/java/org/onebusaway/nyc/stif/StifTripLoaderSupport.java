@@ -48,6 +48,8 @@ public class StifTripLoaderSupport {
 
   private Map<String, String> stopIdsByLocation = new HashMap<String, String>();
 
+  private int _totalTripCount;
+
   public void setGtfsDao(GtfsMutableRelationalDao dao) {
     this.gtfsDao = dao;
   }
@@ -58,6 +60,7 @@ public class StifTripLoaderSupport {
         return ServiceCode.SATURDAY;
       case 'B':
         return ServiceCode.WEEKDAY_SCHOOL_CLOSED;
+      case 'E':
       case 'C':
         return ServiceCode.WEEKDAY_SCHOOL_OPEN;
       case 'D':
@@ -67,12 +70,18 @@ public class StifTripLoaderSupport {
     }
   }
 
+  public int getTotalTripCount() {
+    return _totalTripCount;
+  }
+
   public void putStopIdForLocation(String location, String stopId) {
     stopIdsByLocation.put(location, stopId);
   }
 
   public TripIdentifier getIdentifierForTripRecord(TripRecord tripRecord) {
     String routeName = tripRecord.getSignCodeRoute();
+    if (routeName == null || routeName.trim().length() == 0)
+      routeName = tripRecord.getRoute();
     String startStop = getStopIdForLocation(tripRecord.getOriginLocation());
     int startTime = tripRecord.getOriginTime();
     if (startTime < 0) {
@@ -92,6 +101,7 @@ public class StifTripLoaderSupport {
       tripsByIdentifier = new HashMap<TripIdentifier, List<Trip>>();
 
       Collection<Trip> allTrips = gtfsDao.getAllTrips();
+      _totalTripCount = allTrips.size();
       int index = 0;
 
       for (Trip trip : allTrips) {
