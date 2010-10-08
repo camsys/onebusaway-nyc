@@ -91,11 +91,15 @@ OBA.Tracker = function() {
 
       jQuery.each(json.searchResults, function(i, record) {
         if (typeof record.stopId !== 'undefined') {
-          searchResultsList.append(jQuery("<li></li>").append(makeStopElement(record)));
+          var stopElement = makeStopElement(record);
+          stopElement.data("id", record.stopId);
+          searchResultsList.append(jQuery("<li></li>").append(stopElement));
 
           anyResults = true;
-        } else if (typeof record.routeId !== 'undefined') {
+        } else if (typeof record.routeId !== 'undefined' && typeof record.directionId !== 'undefined') {
           var routeElement = makeRouteElement(record);
+          routeElement.data("id", record.routeId);
+          routeElement.data("directionId", record.directionId);
           searchResultsList.append(jQuery("<li></li>").append(routeElement));
 
           if (routeMap.containsRoute(record.routeId, record.directionId)) {
@@ -116,7 +120,7 @@ OBA.Tracker = function() {
     }
           
     function makeStopElement(record) {
-      var el = jQuery('<div id="stop-' + record.stopId + '" class="stop result"></div>')
+      var el = jQuery('<div class="stop result"></div>')
                       .append('<p class="name">' + OBA.Util.truncate(record.name, 18) + '</p>');
 
       var controls = jQuery('<ul></ul>').addClass("controls")
@@ -141,10 +145,10 @@ OBA.Tracker = function() {
     }
 
     function makeRouteElement(record) {
-      var el = jQuery('<div id="route-' + record.routeId + '" class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
-                .append('<p class="name"><span class="direction-' + record.directionId + '">' +
+      var el = jQuery('<div class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
+                .append('<p class="name">' +
                         OBA.Util.truncate(record.tripHeadsign, 18) + 
-                        '</span></p>')
+                        '</p>')
                 .append('<p class="description">' + OBA.Util.truncate(record.description, 30) + '</p>');
              
       var controls = jQuery('<ul></ul>').addClass("controls")
@@ -165,34 +169,26 @@ OBA.Tracker = function() {
             
     function handleShowOnMap(e) {
       e.preventDefault();
-      var stopIdStr = jQuery(this).parent().parent().parent("div").attr("id");
-      var stopId = stopIdStr.substring("stop-".length);
+      var div = jQuery(this).parent().parent().parent("div");
+      var stopId = div.data("id");
       routeMap.showStop(stopId);
     }
 
     function handleZoomToExtent(e) {
         var displayRouteDiv = jQuery(this).parents("div.result");
-        var routeIdStr = displayRouteDiv.attr("id");
-        var routeId = routeIdStr.substring("displayedroute-".length);
-        var directionIdStr = displayRouteDiv.find(".name span").attr("class");
-        var directionId = directionIdStr.substring("direction-".length);
-
+        var routeId = displayRouteDiv.data("id");
+        var directionId = displayRouteDiv.data("directionId");
         var latlngBounds = routeMap.getBounds(routeId, directionId);
-
-        if (latlngBounds) {
+        if (latlngBounds)
             map.fitBounds(latlngBounds);
-		}
-		
         return false;
     }
 
     function handleAddToMap(e) {
       var controlLink = jQuery(this);
       var resultDiv = controlLink.parent().parent().parent("div");
-      var routeIdStr = resultDiv.attr("id");
-      var routeId = routeIdStr.substring("route-".length);
-      var directionIdStr = resultDiv.find(".name span").attr("class");
-      var directionId = directionIdStr.substring("direction-".length);
+      var routeId = resultDiv.data("id");
+      var directionId = resultDiv.data("directionId");
 
       if (routeMap.containsRoute(routeId, directionId)) {
         return false;
@@ -202,9 +198,8 @@ OBA.Tracker = function() {
 
       // clone the search result element to place in the routes displayed list
       var clonedDiv = resultDiv.clone();
-
-      // we can't have two elements with the same id
-      clonedDiv.attr("id", "displayedroute-" + routeId);
+      clonedDiv.data("id", resultDiv.data("id"));
+      clonedDiv.data("directionId", resultDiv.data("directionId"));
 
       // update the control link class to alter the event fired
       var clonedControlLink = clonedDiv.find(".addToMap");
@@ -264,21 +259,20 @@ OBA.Tracker = function() {
     function handleRemoveFromMap(e) {
       var controlLink = jQuery(this);
       var displayRouteDiv = controlLink.parent().parent().parent("div");
-      var routeIdStr = displayRouteDiv.attr("id");
-      var routeId = routeIdStr.substring("displayedroute-".length);
-      var directionIdStr = displayRouteDiv.find(".name span").attr("class");
-      var directionId = directionIdStr.substring("direction-".length);
+      var routeId = displayRouteDiv.data("id");
+      var directionId = displayRouteDiv.data("directionId");
 
       displayRouteDiv.fadeOut("fast", function() { displayRouteDiv.remove(); });
 
       routeMap.removeRoute(routeId, directionId);
 
-      // find the control link for the matching search result element
-      // and re-enable it
-      // we need to find it by the direction, and then remove the disabled link correctly from there
-      var directionSpan = jQuery("#route-" + routeId + " .direction-" + directionId);
-      directionSpan.parents("div.result").find("a.disabled").removeClass("disabled");
-//      jQuery("#route-" + routeId + ".name span.direction-" + directionId + " a.disabled").removeClass("disabled");
+      jQuery("#search-results-list .result").each(function() {
+          var eltRouteId = jQuery(this).data("id");
+          var eltDirectionId = jQuery(this).data("directionId");
+          if (eltRouteId === routeId && eltDirectionId === directionId) {
+              jQuery(this).find("a.disabled").removeClass("disabled");
+          }
+      });
 
       // update text info on screen
       var nDisplayedRoutes = routeMap.getCount();
