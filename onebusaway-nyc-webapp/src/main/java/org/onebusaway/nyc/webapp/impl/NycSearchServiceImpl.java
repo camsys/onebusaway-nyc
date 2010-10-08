@@ -358,7 +358,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         if (distanceFromStopInMeters < 0)
           continue;
         int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
-        int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway() + 1;
+        int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         String routeId = arrivalAndDepartureBean.getTrip().getRoute().getId();
         List<DistanceAway> distances = routeIdToDistanceAways.get(routeId);
         if (distances == null) {

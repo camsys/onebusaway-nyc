@@ -16,9 +16,11 @@ public class DistancePresenter {
   }
   
   public static String displayStopsAway(int numberOfStopsAway) {
-    return numberOfStopsAway == 1
-           ? "1 stop"
-           : numberOfStopsAway + " stops";
+	  if(numberOfStopsAway == 0)
+		  return "< 1 stop";
+	  else	  
+		  return numberOfStopsAway == 1
+		  	? "1 stop"
+			: numberOfStopsAway + " stops";
   }
-
 }

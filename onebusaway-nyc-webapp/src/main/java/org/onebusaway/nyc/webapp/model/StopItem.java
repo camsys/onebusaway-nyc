@@ -44,9 +44,18 @@ public class StopItem {
   public String getPresentableDistances() {
     if (meterDistances == null || meterDistances.size() == 0)
       return "";
+    
     StringBuilder b = new StringBuilder();
-    for (Double distance : meterDistances)
-      b.append(" (" + DistancePresenter.displayFeet(distance) + ")");
+    
+    for (Double distance : meterDistances) {
+      if(b.length() > 0)
+    	  b.append(", ");
+      
+      b.append(DistancePresenter.displayFeet(distance));
+    }
+
+    b.insert(0, " ");
+    
     return b.toString();
   }
 }

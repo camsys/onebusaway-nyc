@@ -24,7 +24,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
   }
   
   public String getPresentableDistance() {
-    return DistancePresenter.displayFeet(feetAway) + " " +
+    return DistancePresenter.displayFeet(feetAway) + ", " +
            DistancePresenter.displayStopsAway(stopsAway);
   }
 
