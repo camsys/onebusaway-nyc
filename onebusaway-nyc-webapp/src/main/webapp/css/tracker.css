@@ -48,7 +48,7 @@
 #search-results.loading {
 	background-image: url('img/spinner.gif');
 	background-repeat: no-repeat;
-    background-position: 125px 50%;
+    background-position: 49% 40%;
 }
 
 #search-results li {
@@ -71,7 +71,7 @@
 #displayed-routes.loading {
 	background-image: url('img/spinner.gif');
 	background-repeat: no-repeat;
-    background-position: 125px 50%;
+    background-position: 49% 40%;
 }
 
 #displayed-routes-list {
