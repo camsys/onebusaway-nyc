@@ -24,7 +24,8 @@ OBA.Config = {
     stopUrl: "/onebusaway-api-webapp/api/where/arrivals-and-departures-for-stop",
     vehiclesUrl:"/onebusaway-api-webapp/api/where/trips-for-route",
     vehicleUrl: "/onebusaway-api-webapp/api/where/trip-for-vehicle",
-
+    stopsForRouteUrl: "/onebusaway-api-webapp/api/where/stops-for-route/MTA NYCT_B63.json",
+    
     // milliseconds to wait in between polls for bus locations
     pollingInterval: 5000,
 

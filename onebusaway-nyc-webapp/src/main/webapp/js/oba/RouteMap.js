@@ -226,7 +226,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
  //       var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
  //       var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
 
-      jQuery.getJSON("http://localhost:8080/onebusaway-api-webapp/api/where/stops-for-route/MTA NYCT_B63.json",
+      jQuery.getJSON(OBA.Config.stopsForRouteUrl,
     		  			{version: 2, key: OBA.Config.apiKey },
     		  			function(json) {
         
