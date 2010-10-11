@@ -29,7 +29,6 @@ OBA.Tracker = function() {
 
     var routeMap = OBA.RouteMap(mapNode);
     var map = routeMap.getMap();
-    var state = OBA.State(map, routeMap, makeRouteElement);
 
     function addExampleSearchBehavior() {
       var searchForm = jQuery("#search form");
@@ -121,7 +120,7 @@ OBA.Tracker = function() {
           
     function makeStopElement(record) {
       var el = jQuery('<div class="stop result"></div>')
-                      .append('<p class="name">' + OBA.Util.truncate(record.name, 18) + '</p>');
+                      .append('<p class="name">' + OBA.Util.truncateToWidth(record.name, 280, 14) + '</p>');
 
       var controls = jQuery('<ul></ul>').addClass("controls")
                 .append('<li><a class="showOnMap" href="#">Show on Map</a></li>');
@@ -133,7 +132,7 @@ OBA.Tracker = function() {
           var description = '<ul class="description">';
           
           jQuery.each(record.routesAvailable, function(i, route) {
-            description += '<li>' + route.routeId + ' - ' + OBA.Util.truncate(route.description, 30) + '</li>';
+            description += '<li>' + route.routeId + ' - ' + OBA.Util.truncateToWidth(route.description, 300, 11) + '</li>';
           });
 
           description += '</ul>';
@@ -147,9 +146,9 @@ OBA.Tracker = function() {
     function makeRouteElement(record) {
       var el = jQuery('<div class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
                 .append('<p class="name">' +
-                        OBA.Util.truncate(record.tripHeadsign, 18) + 
+                        OBA.Util.truncateToWidth(record.tripHeadsign, 280, 14) + 
                         '</p>')
-                .append('<p class="description">' + OBA.Util.truncate(record.description, 30) + '</p>');
+                .append('<p class="description">' + OBA.Util.truncateToWidth(record.description, 300, 11) + '</p>');
              
       var controls = jQuery('<ul></ul>').addClass("controls")
                 .append('<li><a class="addToMap" href="#">Add To Map</a></li>')
@@ -248,9 +247,6 @@ OBA.Tracker = function() {
 
           // update text info on screen
           jQuery("#n-displayed-routes").text(routeMap.getCount());
-
-          // update hash state
-          state.saveState();
       });
 
       return false;
@@ -282,9 +278,6 @@ OBA.Tracker = function() {
       }
 
       jQuery("#n-displayed-routes").text(nDisplayedRoutes);
-
-	  // update hash state
-      state.saveState();
 
       return false;
     }
@@ -324,7 +317,7 @@ OBA.Tracker = function() {
             addSearchBehavior();
             addSearchControlBehavior();
             addExampleSearchBehavior();
-	    	    addResizeBehavior();
+	    	addResizeBehavior();
         }
     };
 };

@@ -16,6 +16,47 @@ var OBA = window.OBA || {};
 
 OBA.Util = (function() {
     return {
+    	/* 
+    	 * A *SIMPLE* width calculator for a given string. Calculated with Helvetica/Arial. (FIXME)
+    	 */
+    	truncateToWidth: function(text, width, size) {
+    		var lwide = "abcdeghkmnopqsuvwxyz234567890";
+    		var lmedium = "ftr-1";
+			var lskinny = "ilj. ";
+
+			var uwide = "abcftrdjleghkmnopqsuvwxyz234567890";
+    		var umedium = "";
+			var uskinny = "1i-. ";
+
+			if(typeof text === 'string') {    			
+    			var w = 0;
+    			for(var i = 0; i < text.length; i++) {
+    				var uppercase = ((text.charCodeAt(i) > 64 && text.charCodeAt(i) < 91) ? true : false);
+    				var c = text.toLowerCase().charAt(i);
+
+    				if(uppercase) {
+    					if(uwide.indexOf(c) >= 0)
+    						w += size - 5;
+    					else if(umedium.indexOf(c) >= 0)
+    						w += Math.floor(size / 2);
+    					else if(uskinny.indexOf(c) >= 0)
+    						w += Math.floor(size / 2);    					
+    				} else {
+    					if(lwide.indexOf(c) >= 0)
+    						w += size - 4;
+    					else if(lmedium.indexOf(c) >= 0)
+    						w += Math.floor(size / 2) - 1;
+    					else if(lskinny.indexOf(c) >= 0)
+    						w += Math.floor(size / 3) - 2;
+    				}
+    				
+    				if(w > width)
+    					return text.substring(0, i - 2) + "...";
+    			}
+       		}
+    		
+            return text;
+        },
     	truncate: function(text, length) {
             // FIXME: truncate on word boundaries?
             if(typeof text === 'string' && text.length > length) {
@@ -101,10 +142,25 @@ OBA.Util = (function() {
             }
         },
         displayTime: function(dateObj) {
-            // take a javascript date object and return a suitable string representation for display
             var minutes = dateObj.getMinutes();
             minutes = (minutes < 10) ? "0" + minutes : "" + minutes;
-            return dateObj.getHours() + ":" + minutes;
+
+            var ampm = "";
+            var hours = dateObj.getHours();
+            
+            if(hours <= 12) {
+            	if(hours == 0) {
+            		hours = 12;
+            	}
+
+            	ampm = "am";
+            } else {
+            	hours = hours - 12;            	
+            	
+            	ampm = "pm";
+            }
+            
+            return hours + ":" + minutes + " " + ampm;
         }
     };
 })();
