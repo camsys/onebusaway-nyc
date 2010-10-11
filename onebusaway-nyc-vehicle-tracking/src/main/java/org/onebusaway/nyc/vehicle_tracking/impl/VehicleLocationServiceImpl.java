@@ -24,7 +24,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   private VehicleTrackingMutableDao _recordDao;
 
-  private String _agencyId = "2008";
+  private String _agencyId = "MTA NYCT";
 
   @Autowired
   public void setVehicleLocationInferenceService(
