@@ -171,10 +171,11 @@ public class NycSearchServiceImpl implements NycSearchService {
 
             List<StopBean> stopBeansList = directionStopBeansEntry.getValue();
             Map<String, Double> stopIdToDistances = tripIdToStopDistancesMap.get(tripId);
-            Comparator<StopBean> stopBeanComparator = new NycSearchServiceImpl.StopBeanComparator(
-                stopIdToDistances);
-            Collections.sort(stopBeansList, stopBeanComparator);
-
+            if (stopIdToDistances != null) {
+              Comparator<StopBean> stopBeanComparator = new NycSearchServiceImpl.StopBeanComparator(
+                  stopIdToDistances);
+              Collections.sort(stopBeansList, stopBeanComparator);
+            }
             List<StopItem> stopItemsList = new ArrayList<StopItem>();
             for (StopBean stopBean : stopBeansList) {
               String stopId = stopBean.getId();
@@ -418,7 +419,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     return searchResults;
   }
 
-  public class StopBeanComparator implements Comparator<StopBean> {
+  public static class StopBeanComparator implements Comparator<StopBean> {
 
     private final Map<String, Double> stopIdToDistances;
 
