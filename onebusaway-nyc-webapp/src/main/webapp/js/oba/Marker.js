@@ -15,9 +15,10 @@
 var OBA = window.OBA || {};
 
 OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
-    var markerOptions = {
-        position: new google.maps.LatLng(latlng[0], latlng[1]),
-        map: map
+//	var lastPosition = null;
+	
+	var markerOptions = {
+        position: new google.maps.LatLng(latlng[0], latlng[1])
     };
 
     if (typeof extraMarkerOptions !== "undefined") {
@@ -31,7 +32,33 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
 
     return {
         showPopup: showPopup,
-        
+/*        
+        getHeading: function() {
+        	p1 = marker.getPosition();
+        	p2 = lastPosition;
+
+        	var lata = p2.lat() * (Math.PI / 180);
+        	var latb = p1.lat() * (Math.PI / 180);
+        	var lnga = p2.lng() * (Math.PI / 180);
+        	var lngb = p1.lng() * (Math.PI / 180);
+        	
+        	// source: http://mathforum.org/library/drmath/view/55417.html
+        	var b = (Math.atan2(Math.cos(lata) * Math.sin(latb) - Math.sin(lata) * Math.cos(latb)
+                     * Math.cos(lngb - lnga), Math.sin(lngb - lnga) * Math.cos(latb))) % (180 * Math.PI);
+
+        	// convert to degrees
+        	b = Math.floor(b * (180 / Math.PI));
+
+        	if(b < 0)
+        		b += 360;
+        	        	
+        	return b;
+        },
+*/    
+    	getRawMarker: function() {
+    		return marker;
+    	},
+    	
         hidePopup: function() {
             popup.hide();
         },
@@ -45,7 +72,7 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
         },
         
         updatePosition: function(latlng) {
-            marker.setPosition(latlng);
+        	marker.setPosition(latlng);
         },
         
         isDisplayed: function() {
@@ -58,14 +85,14 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
     };
 };
 
-OBA.StopMarker = function(stopId, latlng, map) {
+OBA.StopMarker = function(stopId, latlng, map, opts) {
     return OBA.Marker(stopId, latlng, map,
         OBA.StopPopup(stopId, map),
-        {icon: OBA.Config.stopIcon, zIndex: 1});
+        jQuery.extend(opts, {icon: OBA.Config.stopIcon, zIndex: 100}));
 };
 
-OBA.VehicleMarker = function(vehicleId, latlng, map) {
+OBA.VehicleMarker = function(vehicleId, latlng, map, opts) {
     return OBA.Marker(vehicleId, latlng, map,
         OBA.VehiclePopup(vehicleId, map),
-        {icon: OBA.Config.vehicleIcon, zIndex: 2});
+        jQuery.extend(opts, {icon: OBA.Config.vehicleIcon, zIndex: 200, type: 'vehicle'}));
 };

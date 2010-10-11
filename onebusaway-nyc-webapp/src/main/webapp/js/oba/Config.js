@@ -34,10 +34,12 @@ OBA.Config = {
             new google.maps.Size(16, 16),
             new google.maps.Point(0,0),
             new google.maps.Point(8, 8)),
+
+    stopIconFile: "img/stop.png",
     stopIcon: new google.maps.MarkerImage("img/stop.png",
-            new google.maps.Size(16, 16),
+            new google.maps.Size(14, 14),
             new google.maps.Point(0,0),
-            new google.maps.Point(8, 8)),
+            new google.maps.Point(7, 7)),
 
     // api key used for webapp
     apiKey: "TEST"

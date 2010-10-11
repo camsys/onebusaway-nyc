@@ -29,17 +29,28 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 	});
 
     var defaultMapOptions = {
-      zoom: 12,
+      zoom: 13,
       mapTypeControl: false,
 	  navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
-      center: new google.maps.LatLng(40.70988943430561,-73.96564720877076),
+      center: new google.maps.LatLng(40.65182926199445,-74.0065026164856),
       mapTypeId: 'transit'
     };
 	
     var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
 
     var map = new google.maps.Map(mapNode, options);
+    var fluster = new Fluster2(map);
 
+    fluster.gridSize = 30;
+	fluster.styles = {
+			0: {
+				image: OBA.Config.stopIconFile,
+				showCount: false,
+				width: 14,
+				height: 14
+			}
+	};
+        
     map.mapTypes.set('transit',transitMapType);
     
     if (OBA.Config.debug) {
@@ -164,7 +175,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
                 addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);
               } else {
-                vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, map);
+                vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, map, { map: map });
                 vehicleMarkers[vehicleId] = vehicleMarker;
  
                 addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);
@@ -206,20 +217,30 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     
 
     var requestStops = function() {
-        // calculate the request lat/lon and spans to use for the request
-        var mapBounds = map.getBounds();
-        var minLatLng = mapBounds.getSouthWest(), centerLatLng = mapBounds.getCenter();
-        var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
-        var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
-        jQuery.getJSON(OBA.Config.stopsUrl,
-                       {version: 2, key: OBA.Config.apiKey, maxCount: 250,
-                        lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
-                        },
-                       function(json) {
+    	
+// FIXME: switched to route-only while limit for get stops for geographic loation call is limited to 250 or less.
+    	
+    	  // calculate the request lat/lon and spans to use for the request
+ //       var mapBounds = map.getBounds();
+ //       var minLatLng = mapBounds.getSouthWest(), centerLatLng = mapBounds.getCenter();
+ //       var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
+ //       var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
 
+      jQuery.getJSON("http://localhost:8080/onebusaway-api-webapp/api/where/stops-for-route/MTA NYCT_B63.json",
+    		  			{version: 2, key: OBA.Config.apiKey },
+    		  			function(json) {
+        
+//        jQuery.getJSON(OBA.Config.stopsUrl,
+//                       {version: 2, key: OBA.Config.apiKey, maxCount: 250,
+//                        lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
+//                       },
+//                       function(json) {
+
+    		  				
+    		  				
             var stops;
             try {
-                stops = json.data.list;
+                stops = json.data.references.stops;
             } catch (typeError) {
                 OBA.Util.log("invalid response from server: ");
                 OBA.Util.log(json);
@@ -242,7 +263,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 if (marker) {
                     marker.updatePosition(new google.maps.LatLng(latlng[0], latlng[1]));
                 } else {
-                    marker = OBA.StopMarker(stopId, latlng, map, name);
+                    marker = OBA.StopMarker(stopId, latlng, map);
+                    
+                    fluster.addMarker(marker.getRawMarker());
+                    
                     stopMarkers[stopId] = marker;
                 }
             });
@@ -255,10 +279,13 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                     delete stopMarkers[stopId];
                 }
             }
-         });
+            
+            fluster.initialize();            
+    	});
     };
 
-    google.maps.event.addListener(map, "idle", requestStops);
+//    google.maps.event.addListener(map, "idle", requestStops);   
+    requestStops();
     
     var containsRoute = function(routeId, directionId) {
         var directionIdMap = routeIds[routeId] || {};
@@ -294,8 +321,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 map.setCenter(new google.maps.LatLng(latlng[0], latlng[1]));
                 // and we have to make sure that the zoom level is close enough so that we can see stops
                 var currentZoom = map.getZoom();
-                if (currentZoom < 14)
-                    map.setZoom(14);
+                if (currentZoom < 15)
+                    map.setZoom(15);
 
                 marker.showPopup();
             });
@@ -321,8 +348,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 path: googleLatLngs,
                 strokeColor: "#0000FF",
                 strokeOpacity: 0.5,
-                strokeWeight: 5
+                strokeWeight: 5,
+                zIndex: 50
             });
+
             polyline.setMap(map);
             polylines.push(polyline);
         });

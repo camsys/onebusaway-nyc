@@ -26,7 +26,6 @@ OBA.Tracker = function() {
     var searchResultsDiv = null;
 
     var mapNode = document.getElementById("map");
-
     var routeMap = OBA.RouteMap(mapNode);
     var map = routeMap.getMap();
 
@@ -132,7 +131,7 @@ OBA.Tracker = function() {
           var description = '<ul class="description">';
           
           jQuery.each(record.routesAvailable, function(i, route) {
-            description += '<li>' + route.routeId + ' - ' + OBA.Util.truncateToWidth(route.description, 300, 11) + '</li>';
+            description += '<li>' + route.routeId + ' ' + OBA.Util.truncateToWidth(route.description, 275, 11) + '</li>';
           });
 
           description += '</ul>';
@@ -146,9 +145,9 @@ OBA.Tracker = function() {
     function makeRouteElement(record) {
       var el = jQuery('<div class="route result' + ((typeof record.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '"></div>')
                 .append('<p class="name">' +
-                        OBA.Util.truncateToWidth(record.tripHeadsign, 280, 14) + 
+                        OBA.Util.truncateToWidth(record.tripHeadsign, 190, 14) + 
                         '</p>')
-                .append('<p class="description">' + OBA.Util.truncateToWidth(record.description, 300, 11) + '</p>');
+                .append('<p class="description">' + OBA.Util.truncateToWidth(record.description, 275, 11) + '</p>');
              
       var controls = jQuery('<ul></ul>').addClass("controls")
                 .append('<li><a class="addToMap" href="#">Add To Map</a></li>')

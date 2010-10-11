@@ -175,6 +175,7 @@
 }
 
 #popup .header {
+	width: 225px;
     font-size: 14px;
     font-weight: bold;
 }
