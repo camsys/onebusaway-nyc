@@ -54,7 +54,7 @@ public class NycSearchServiceImpl implements NycSearchService {
   private final static Pattern routePattern = Pattern.compile("(?:[BMQS]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
 
   // when querying for stops from a lat/lng, use this distance in meters
-  private double distanceToStops = 200;
+  private double distanceToStops = 100;
 
   private WebappIdParser idParser = new WebappIdParser();
 
@@ -68,6 +68,10 @@ public class NycSearchServiceImpl implements NycSearchService {
   private ServiceAreaService serviceArea;
 
   private static final SearchResultComparator searchResultComparator = new SearchResultComparator();
+  
+  public void setDistanceToStops(double distanceToStops) {
+    this.distanceToStops = distanceToStops;
+  }
 
   @Override
   public List<SearchResult> search(String q) {
