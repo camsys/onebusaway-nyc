@@ -319,14 +319,16 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 stopMarkers[stopId] = marker;
 
                 map.setCenter(new google.maps.LatLng(latlng[0], latlng[1]));
-                // and we have to make sure that the zoom level is close enough so that we can see stops
-                var currentZoom = map.getZoom();
-                if (currentZoom < 15)
-                    map.setZoom(15);
-
+                
                 marker.showPopup();
             });
         }
+        
+        // and we have to make sure that the zoom level is close enough so that we can see stops
+        var currentZoom = map.getZoom();
+
+        if (currentZoom < 15)
+            map.setZoom(15);
       },
 
       // add and remove shapes also take care of updating the display

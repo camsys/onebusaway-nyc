@@ -135,19 +135,18 @@ OBA.StopPopup = function(stopId, map) {
                 vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
                 
                 for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
-                    service += '<a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
+                    service += '<li><a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
                               + routeIdDisplay + ' ' + longName + '</a>';
 
                     var distanceAway = vehicleInfos[i];
                     service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", "; 
-                    service += OBA.Util.displayDistance(distanceAway.feet) + ")";
-                }
-                if (vehicleInfos.length === 0) {
-                    service += '<a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
-                              + OBA.Util.truncateToWidth(routeIdDisplay + ' - ' + longName, 250, 11) + '</a>';
+                    service += OBA.Util.displayDistance(distanceAway.feet) + ")</li>";
                 }
                 
-                service += '</li>';
+                if (vehicleInfos.length === 0) {
+                    service += '<li><a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
+                              + OBA.Util.truncateToWidth(routeIdDisplay + ' - ' + longName, 250, 11) + '</a></li>';
+                }
            });
 
            service += '</ul>';
