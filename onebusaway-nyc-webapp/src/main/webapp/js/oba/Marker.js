@@ -93,7 +93,7 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
         		marker.setIcon(new google.maps.MarkerImage("img/vehicle/vehicle-" + a + ".png",
 							new google.maps.Size(34, 34),
 							new google.maps.Point(0,0),
-							new google.maps.Point(21, 21)));
+							new google.maps.Point(17, 17)));
         	}
         },
         

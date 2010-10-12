@@ -24,7 +24,6 @@ OBA.Config = {
     stopUrl: "/onebusaway-api-webapp/api/where/arrivals-and-departures-for-stop",
     vehiclesUrl:"/onebusaway-api-webapp/api/where/trips-for-route",
     vehicleUrl: "/onebusaway-api-webapp/api/where/trip-for-vehicle",
-    stopsForRouteUrl: "/onebusaway-api-webapp/api/where/stops-for-route/MTA NYCT_B63.json",
     
     // milliseconds to wait in between polls for bus locations
     pollingInterval: 5000,
@@ -32,7 +31,7 @@ OBA.Config = {
     // marker images used
     // both are 16x16, and we want to have them centered on the location
     // NEED TO ALSO UPDATE Marker.js!
-    vehicleIcon: new google.maps.MarkerImage("img/vehicle/vehicle-1.png",
+    vehicleIcon: new google.maps.MarkerImage("img/vehicle.png",
             new google.maps.Size(34, 34),
             new google.maps.Point(0,0),
             new google.maps.Point(17, 17)),

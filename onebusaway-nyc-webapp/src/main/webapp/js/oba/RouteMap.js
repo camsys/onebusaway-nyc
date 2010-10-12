@@ -210,30 +210,21 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     
 
     var requestStops = function() {
-    	
-// FIXME: switched to route-only while limit for get stops for geographic loation call is limited to 250 or less.
-    	
-    	  // calculate the request lat/lon and spans to use for the request
- //       var mapBounds = map.getBounds();
- //       var minLatLng = mapBounds.getSouthWest(), centerLatLng = mapBounds.getCenter();
- //       var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
- //       var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
+    	// calculate the request lat/lon and spans to use for the request
+    	var mapBounds = map.getBounds();
+    	var minLatLng = mapBounds.getSouthWest(), centerLatLng = mapBounds.getCenter();
+    	var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
+    	var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
 
-      jQuery.getJSON(OBA.Config.stopsForRouteUrl,
-    		  			{version: 2, key: OBA.Config.apiKey },
-    		  			function(json) {
-        
-//        jQuery.getJSON(OBA.Config.stopsUrl,
-//                       {version: 2, key: OBA.Config.apiKey, maxCount: 250,
-//                        lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
-//                       },
-//                       function(json) {
+        jQuery.getJSON(OBA.Config.stopsUrl,
+                       {version: 2, key: OBA.Config.apiKey, maxCount: 250,
+                        lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
+                       },
+                       function(json) {
 
-    		  				
-    		  				
             var stops;
             try {
-                stops = json.data.references.stops;
+                stops = json.data.list;
             } catch (typeError) {
                 OBA.Util.log("invalid response from server: ");
                 OBA.Util.log(json);
@@ -277,8 +268,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     	});
     };
 
-//    google.maps.event.addListener(map, "idle", requestStops);   
-    requestStops();
+    google.maps.event.addListener(map, "idle", requestStops);   
     
     var containsRoute = function(routeId, directionId) {
         var directionIdMap = routeIds[routeId] || {};
