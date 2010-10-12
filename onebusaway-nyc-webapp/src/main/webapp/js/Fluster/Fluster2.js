@@ -146,6 +146,7 @@ function Fluster2(_map, _debug)
 		for(var i = 0; i < clusters[me.currentZoomLevel].length; i++)
 		{
 			var cluster = clusters[me.currentZoomLevel][i];
+
 			if(mapBounds.contains(cluster.getPosition()))
 			{
 				cluster.show();

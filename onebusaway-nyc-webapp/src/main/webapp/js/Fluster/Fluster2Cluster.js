@@ -40,7 +40,7 @@ function Fluster2Cluster(_fluster, _marker)
 	this.latSum = 0;
 	this.center = markerPosition;
 	this.map = this.fluster.getMap();
-	this.maxZoom = 15;
+	this.maxZoom = 16;
 	
 	var me = this;
 	
@@ -77,32 +77,44 @@ function Fluster2Cluster(_fluster, _marker)
 	this.show = function()
 	{
 		// Show marker if there is only 1
-		if(this.markers.length == 1 || this.map.getZoom() >= this.maxZoom)
+		if(this.markers.length == 1)
 		{
 			this.markers[0].setMap(me.map);
 		}
 		else if(this.markers.length > 1)
 		{
-			// Hide all markers
-			for(var i = 0; i < this.markers.length; i++)
-			{
-				this.markers[i].setMap(null);
-			}
-			
-			// Create marker
-			if(this.marker == null)
-			{
-				this.marker = new Fluster2ClusterMarker(this.fluster, this);
-				
-				if(this.fluster.debugEnabled)
+			// Show all markers if zoom level is deep enough
+			if(this.map.getZoom() >= this.maxZoom) {
+				for(var i = 0; i < this.markers.length; i++)
 				{
-					google.maps.event.addListener(this.marker, 'mouseover', me.debugShowMarkers);
-					google.maps.event.addListener(this.marker, 'mouseout', me.debugHideMarkers);
+					this.markers[i].setMap(me.map);
 				}
-			}
+
+				if(this.marker !== null) {
+					this.marker.hide();
+				}
+			} else {
+				// Hide all markers
+				for(var i = 0; i < this.markers.length; i++)
+				{
+					this.markers[i].setMap(null);
+				}
 			
-			// Show marker
-			this.marker.show();
+				// Create marker
+				if(this.marker == null)
+				{
+					this.marker = new Fluster2ClusterMarker(this.fluster, this);
+				
+					if(this.fluster.debugEnabled)
+					{
+						google.maps.event.addListener(this.marker, 'mouseover', me.debugShowMarkers);
+						google.maps.event.addListener(this.marker, 'mouseout', me.debugHideMarkers);
+					}
+				}
+
+				// Show marker
+				this.marker.show();
+			}			
 		}
 	};
 	

@@ -310,8 +310,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
         // and we have to make sure that the zoom level is close enough so that we can see stops
         var currentZoom = map.getZoom();
 
-        if (currentZoom < 15)
-            map.setZoom(15);
+        if (currentZoom < 16)
+            map.setZoom(16);
       },
 
       // add and remove shapes also take care of updating the display
