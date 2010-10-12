@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+    <bean id="serviceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+<!--        <property name="serviceUrl" value="http://dev.oba.openplans.org:9090/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />-->
+        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+    </bean>
+
+<!--     Database Connection Configuration -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.postgresql.Driver" />
+        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
+        <property name="username" value="postgres" />
+        <property name="password" value="" />
+    </bean>
+
+	<bean id="webappHibernateProperties"
+		class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+		<property name="target" value="hibernateProperties" />
+		<property name="properties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+				<prop key="hibernate.connection.autocommit">false</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="webappMutableHibernateProperties"
+		class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+		<property name="target" value="hibernatePropertiesMutable" />
+		<property name="properties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+				<prop key="hibernate.connection.autocommit">false</prop>
+			</props>
+		</property>
+	</bean>
+
+    <bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.FixedGeocoderImpl">
+        <property name="lat" value="40.7092062847316" />
+        <property name="lon" value="-73.9595317722168" />
+        <property name="city" value="Brooklyn" />
+        <property name="state" value="NY" />
+        <property name="postalCode" value="10013" />
+    </bean>
+
+<!--need to move the google geocoder into the presentation module first -->
+<!--	<bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.GoogleGeocoderImpl" />-->
+
+    <bean id="serviceArea" class="org.onebusaway.presentation.impl.DefaultServiceAreaServiceImpl">
+        <property name="defaultBounds">
+            <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
+                <property name="minLat" value="40.57963926492829" />
+                <property name="minLon" value="-74.19498680838014" />
+                <property name="maxLat" value="40.94577345952476" />
+                <property name="maxLon" value="-73.69785546072389" />
+            </bean>
+        </property>
+    </bean>
+    
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc_sms_webapp.cacheManager</prop>
+            </props>
+        </property>
+    </bean>
+    
+<!--    <bean id="smsAbbreviationsFactory" class="org.onebusaway.presentation.impl.text.XmlTextModificationsFactory">-->
+<!--        <property name="resource" value="classpath:sms-destination-abbreviations.xml" />-->
+<!--    </bean>-->
+<!---->
+<!--    <bean id="smsAbbreviations" factory-bean="smsAbbreviationsFactory" factory-method="create">-->
+<!--        <qualifier value="smsDestinationAbbreviations" />-->
+<!--    </bean>-->
+
+</beans>
