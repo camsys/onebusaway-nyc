@@ -55,6 +55,8 @@
         <module>onebusaway-nyc-vehicle-tracking</module>
         <module>onebusaway-nyc-vehicle-tracking-webapp</module>
         <module>onebusaway-nyc-webapp</module>
+        <module>onebusaway-nyc-sms-webapp</module>
+        <module>onebusaway-nyc-presentation</module>
     </modules>
 
     <build>
@@ -195,7 +197,16 @@
                 <artifactId>onebusaway-gtfs-transformer</artifactId>
                 <version>${onebusaway.gtfs.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.onebusaway</groupId>
+                <artifactId>onebusaway-presentation</artifactId>
+                <version>${onebusaway.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.onebusaway</groupId>
+                <artifactId>onebusaway-nyc-presentation</artifactId>
+                <version>${onebusaway.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.onebusaway</groupId>
                 <artifactId>onebusaway-transit-data-federation</artifactId>
@@ -304,6 +315,11 @@
 
             <dependency>
                 <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.5.6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>1.5.6</version>
             </dependency>
@@ -318,6 +334,30 @@
                 <artifactId>mockito-core</artifactId>
                 <version>1.8.0</version>
                 <scope>test</scope>
+            </dependency>
+            
+            <!-- servlet versions-->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>2.4</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>jsp-api</artifactId>
+                <version>2.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>jstl</artifactId>
+                <version>1.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>taglibs</groupId>
+                <artifactId>standard</artifactId>
+                <version>1.1.2</version>
             </dependency>
 
             <!-- nyc components are using postgres as back end -->
