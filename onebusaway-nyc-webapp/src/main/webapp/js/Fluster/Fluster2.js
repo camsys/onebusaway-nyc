@@ -195,13 +195,45 @@ function Fluster2(_map, _debug)
 			console.log('Fluster2: ' + message);
 		}
 	};
-	
+
 	/**
 	 * Adds a marker to the Fluster.
 	 */
 	this.addMarker = function(_marker)
 	{
 		me.markers.push(_marker);
+		
+		var zoom = map.getZoom();
+		
+		if(clusters[zoom]) {
+			var clustersThisZoomLevel = clusters[zoom];
+			var clusterCount = clustersThisZoomLevel.length;
+			
+			var markerPosition = _marker.getPosition();
+			var done = false;
+		
+			// Find a cluster which contains the marker
+			for(var j = clusterCount - 1; j >= 0; j--)
+			{
+				var cluster = clustersThisZoomLevel[j];
+
+				if(cluster.contains(markerPosition))
+				{
+					cluster.addMarker(_marker);
+					done = true;
+					break;
+				}
+			}
+		
+			if(!done)
+			{
+				// No cluster found, create a new one
+				var cluster = new Fluster2Cluster(me, _marker);
+
+				clustersThisZoomLevel.push(cluster);
+			}
+		}
+		
 	};
 	
 	/**
