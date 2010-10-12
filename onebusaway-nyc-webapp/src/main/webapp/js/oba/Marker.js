@@ -15,7 +15,7 @@
 var OBA = window.OBA || {};
 
 OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
-//	var lastPosition = null;
+	var lastPosition = null;
 	
 	var markerOptions = {
         position: new google.maps.LatLng(latlng[0], latlng[1])
@@ -32,8 +32,11 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
 
     return {
         showPopup: showPopup,
-/*        
+        
         getHeading: function() {
+        	if(lastPosition === null)
+        		return -1;
+
         	p1 = marker.getPosition();
         	p2 = lastPosition;
 
@@ -51,11 +54,11 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
 
         	if(b < 0)
         		b += 360;
-        	        	
+        	
         	return b;
         },
-*/    
-    	getRawMarker: function() {
+
+        getRawMarker: function() {
     		return marker;
     	},
     	
@@ -71,8 +74,27 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
             marker.setMap(null);
         },
         
+        distance: function(p1, p2) {
+        	if(p1 === null || p2 === null)
+        		return null;
+        	
+        	return Math.sqrt(Math.pow(p1.lat() - p2.lat(), 2) + Math.pow(p1.lng() - p2.lng(), 2));
+        },
+        
         updatePosition: function(latlng) {
+        	if(lastPosition === null || this.distance(latlng, lastPosition) > .0008)         	
+        		lastPosition = marker.getPosition();
+
         	marker.setPosition(latlng);
+        	
+        	if(extraMarkerOptions.type === 'vehicle') {
+        		var a = this.getHeading();
+
+        		marker.setIcon(new google.maps.MarkerImage("img/vehicle/vehicle-" + a + ".png",
+							new google.maps.Size(34, 34),
+							new google.maps.Point(0,0),
+							new google.maps.Point(21, 21)));
+        	}
         },
         
         isDisplayed: function() {

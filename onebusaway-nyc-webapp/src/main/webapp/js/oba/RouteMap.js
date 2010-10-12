@@ -53,13 +53,6 @@ OBA.RouteMap = function(mapNode, mapOptions) {
         
     map.mapTypes.set('transit',transitMapType);
     
-    if (OBA.Config.debug) {
-        google.maps.event.addListener(map, "click", function(e) {
-          if (console && console.log)
-            console.log(e.latLng.lat() + "," + e.latLng.lng());
-        });
-    }
-
     // state used for the map
 	var routeIds = {};
     var routeIdToShapes = {};
