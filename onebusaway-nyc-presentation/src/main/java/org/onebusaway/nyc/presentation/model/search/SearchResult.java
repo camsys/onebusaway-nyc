@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.model.search;
+package org.onebusaway.nyc.presentation.model.search;
 
 /**
  * marker interface to allow for route or stop search results

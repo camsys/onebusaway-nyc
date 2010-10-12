@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.webapp.model;
 
+import org.onebusaway.nyc.presentation.model.DistanceAway;
+
 /**
  * Data transfer object for a vehicle's next stop
  */

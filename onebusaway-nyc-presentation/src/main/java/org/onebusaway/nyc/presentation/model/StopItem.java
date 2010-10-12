@@ -1,9 +1,9 @@
-package org.onebusaway.nyc.webapp.model;
+package org.onebusaway.nyc.presentation.model;
 
 import java.util.List;
 
-import org.onebusaway.nyc.webapp.impl.DistancePresenter;
-import org.onebusaway.nyc.webapp.impl.WebappIdParser;
+import org.onebusaway.nyc.presentation.impl.DistancePresenter;
+import org.onebusaway.nyc.presentation.impl.WebappIdParser;
 import org.onebusaway.transit_data.model.StopBean;
 
 /**

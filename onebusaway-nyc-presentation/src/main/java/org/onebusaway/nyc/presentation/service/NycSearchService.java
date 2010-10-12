@@ -1,8 +1,8 @@
-package org.onebusaway.nyc.webapp.service;
+package org.onebusaway.nyc.presentation.service;
 
 import java.util.List;
 
-import org.onebusaway.nyc.webapp.model.search.SearchResult;
+import org.onebusaway.nyc.presentation.model.search.SearchResult;
 
 /**
  * nyc specific search logic

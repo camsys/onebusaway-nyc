@@ -36,4 +36,9 @@ public class GoogleGeocoderResult extends GeocoderResult {
     return address != null ? address : "";
   }
   
+  @Override
+  public String toString() {
+    return "Google Geocoder Result: " + getLatitude() + "," + getLongitude();
+  }
+  
 }

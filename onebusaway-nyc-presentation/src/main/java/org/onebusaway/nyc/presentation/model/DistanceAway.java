@@ -1,6 +1,6 @@
-package org.onebusaway.nyc.webapp.model;
+package org.onebusaway.nyc.presentation.model;
 
-import org.onebusaway.nyc.webapp.impl.DistancePresenter;
+import org.onebusaway.nyc.presentation.impl.DistancePresenter;
 
 /**
  * Data transfer object for how far away a vehicle is

@@ -1,17 +1,16 @@
 package org.onebusaway.geocoder.impl;
 
-import org.onebusaway.geocoder.model.GeocoderResults;
-import org.onebusaway.geocoder.model.GoogleAddressComponent;
-import org.onebusaway.geocoder.model.GoogleGeocoderResult;
-import org.onebusaway.geocoder.services.GeocoderService;
-
-import org.apache.commons.digester.Digester;
-
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+
+import org.apache.commons.digester.Digester;
+import org.onebusaway.geocoder.model.GeocoderResults;
+import org.onebusaway.geocoder.model.GoogleAddressComponent;
+import org.onebusaway.geocoder.model.GoogleGeocoderResult;
+import org.onebusaway.geocoder.services.GeocoderService;
 
 public class GoogleGeocoderImpl implements GeocoderService {
 
@@ -22,9 +21,12 @@ public class GoogleGeocoderImpl implements GeocoderService {
   public void setSensor(boolean sensor) {
     this.sensor = sensor;
   }
+  
+  public GoogleGeocoderImpl() {
+    System.out.println("Google Geocoder implementation instantiated");
+  }
 
   public GeocoderResults geocode(String location) {
-
     StringBuilder b = new StringBuilder();
     b.append(BASE_URL);
     b.append("?");
@@ -56,7 +58,6 @@ public class GoogleGeocoderImpl implements GeocoderService {
         try { inputStream.close(); } catch (Exception ex) {}
       }
     }
-
     return results;
   }
 

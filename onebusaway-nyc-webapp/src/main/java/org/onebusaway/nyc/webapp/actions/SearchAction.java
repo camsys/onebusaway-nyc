@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
-import org.onebusaway.nyc.webapp.model.search.SearchResult;
-import org.onebusaway.nyc.webapp.service.NycSearchService;
+import org.onebusaway.nyc.presentation.model.search.SearchResult;
+import org.onebusaway.nyc.presentation.service.NycSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

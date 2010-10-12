@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.impl;
+package org.onebusaway.nyc.presentation.impl;
 
 /**
  * Utility to remove the agency id from an entity id

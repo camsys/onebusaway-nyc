@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.impl;
+package org.onebusaway.nyc.presentation.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,13 +17,13 @@ import org.onebusaway.geocoder.model.GeocoderResult;
 import org.onebusaway.geocoder.services.GeocoderService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.webapp.model.AvailableRoute;
-import org.onebusaway.nyc.webapp.model.DistanceAway;
-import org.onebusaway.nyc.webapp.model.StopItem;
-import org.onebusaway.nyc.webapp.model.search.RouteSearchResult;
-import org.onebusaway.nyc.webapp.model.search.SearchResult;
-import org.onebusaway.nyc.webapp.model.search.StopSearchResult;
-import org.onebusaway.nyc.webapp.service.NycSearchService;
+import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
+import org.onebusaway.nyc.presentation.model.search.SearchResult;
+import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
+import org.onebusaway.nyc.presentation.service.NycSearchService;
+import org.onebusaway.nyc.presentation.model.AvailableRoute;
+import org.onebusaway.nyc.presentation.model.DistanceAway;
+import org.onebusaway.nyc.presentation.model.StopItem;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ListBean;

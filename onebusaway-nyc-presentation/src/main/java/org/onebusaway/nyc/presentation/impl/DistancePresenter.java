@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.impl;
+package org.onebusaway.nyc.presentation.impl;
 
 /**
  * Used to format distances for display in jsp's

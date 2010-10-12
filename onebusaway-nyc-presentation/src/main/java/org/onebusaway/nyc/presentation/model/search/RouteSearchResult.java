@@ -1,8 +1,8 @@
-package org.onebusaway.nyc.webapp.model.search;
+package org.onebusaway.nyc.presentation.model.search;
 
 import java.util.List;
 
-import org.onebusaway.nyc.webapp.model.StopItem;
+import org.onebusaway.nyc.presentation.model.StopItem;
 
 /**
  * Data transfer object for route search results

@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.model;
+package org.onebusaway.nyc.presentation.model;
 
 import java.util.List;
 
