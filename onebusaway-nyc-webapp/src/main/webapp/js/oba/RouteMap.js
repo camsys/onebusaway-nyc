@@ -245,10 +245,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 var marker = stopMarkers[stopId];
 
                 if (marker) {
-                    marker.updatePosition(new google.maps.LatLng(latlng[0], latlng[1]));
+//                    marker.updatePosition(new google.maps.LatLng(latlng[0], latlng[1]));
                 } else {
                     marker = OBA.StopMarker(stopId, latlng, map);
-                    
+
                     fluster.addMarker(marker.getRawMarker());
                     
                     stopMarkers[stopId] = marker;

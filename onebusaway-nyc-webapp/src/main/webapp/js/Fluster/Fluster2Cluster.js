@@ -40,7 +40,6 @@ function Fluster2Cluster(_fluster, _marker)
 	this.latSum = 0;
 	this.center = markerPosition;
 	this.map = this.fluster.getMap();
-	this.maxZoom = 16;
 	
 	var me = this;
 	
@@ -71,6 +70,13 @@ function Fluster2Cluster(_fluster, _marker)
 		this.markers.push(_marker);
 	};
 
+	this.expand = function() {
+		for(var i = 0; i < this.markers.length; i++)
+		{
+			this.markers[i].setMap(me.map);
+		}
+	}
+	
 	/**
 	 * Shows either the only marker or a cluster marker instead.
 	 */
@@ -83,38 +89,26 @@ function Fluster2Cluster(_fluster, _marker)
 		}
 		else if(this.markers.length > 1)
 		{
-			// Show all markers if zoom level is deep enough
-			if(this.map.getZoom() >= this.maxZoom) {
-				for(var i = 0; i < this.markers.length; i++)
-				{
-					this.markers[i].setMap(me.map);
-				}
-
-				if(this.marker !== null) {
-					this.marker.hide();
-				}
-			} else {
-				// Hide all markers
-				for(var i = 0; i < this.markers.length; i++)
-				{
-					this.markers[i].setMap(null);
-				}
+			// Hide all markers
+			for(var i = 0; i < this.markers.length; i++)
+			{
+				this.markers[i].setMap(null);
+			}
 			
-				// Create marker
-				if(this.marker == null)
-				{
-					this.marker = new Fluster2ClusterMarker(this.fluster, this);
+			// Create marker
+			if(this.marker == null)
+			{
+				this.marker = new Fluster2ClusterMarker(this.fluster, this);
 				
-					if(this.fluster.debugEnabled)
-					{
-						google.maps.event.addListener(this.marker, 'mouseover', me.debugShowMarkers);
-						google.maps.event.addListener(this.marker, 'mouseout', me.debugHideMarkers);
-					}
+				if(this.fluster.debugEnabled)
+				{
+					google.maps.event.addListener(this.marker, 'mouseover', me.debugShowMarkers);
+					google.maps.event.addListener(this.marker, 'mouseout', me.debugHideMarkers);
 				}
+			}
 
-				// Show marker
-				this.marker.show();
-			}			
+			// Show marker
+			this.marker.show();
 		}
 	};
 	

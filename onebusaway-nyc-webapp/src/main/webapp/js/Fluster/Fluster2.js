@@ -37,6 +37,7 @@ function Fluster2(_map, _debug)
 	// Properties
 	this.debugEnabled = _debug;
 	this.gridSize = 60;
+	this.maxZoom = 15;
 	this.markers = new Array();
 	this.currentZoomLevel = -1;
 	this.styles = {
@@ -141,6 +142,8 @@ function Fluster2(_map, _debug)
 	 */
 	function showClustersInBounds()
 	{
+		console.log(me.markers.length);
+		
 		var mapBounds = map.getBounds();
 		
 		for(var i = 0; i < clusters[me.currentZoomLevel].length; i++)
@@ -149,7 +152,12 @@ function Fluster2(_map, _debug)
 
 			if(mapBounds.contains(cluster.getPosition()))
 			{
-				cluster.show();
+				if(map.getZoom() > me.maxZoom) {
+					cluster.expand();
+					cluster.hide();
+				} else {				
+					cluster.show();
+				}
 			}
 		}
 	}
