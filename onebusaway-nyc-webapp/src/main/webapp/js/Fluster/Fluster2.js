@@ -142,8 +142,6 @@ function Fluster2(_map, _debug)
 	 */
 	function showClustersInBounds()
 	{
-		console.log(me.markers.length);
-		
 		var mapBounds = map.getBounds();
 		
 		for(var i = 0; i < clusters[me.currentZoomLevel].length; i++)
