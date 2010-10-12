@@ -32,31 +32,6 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
 
     return {
         showPopup: showPopup,
-        
-        getHeading: function() {
-        	if(lastPosition === null)
-        		return -1;
-
-        	p1 = marker.getPosition();
-        	p2 = lastPosition;
-
-        	var lata = p2.lat() * (Math.PI / 180);
-        	var latb = p1.lat() * (Math.PI / 180);
-        	var lnga = p2.lng() * (Math.PI / 180);
-        	var lngb = p1.lng() * (Math.PI / 180);
-        	
-        	// source: http://mathforum.org/library/drmath/view/55417.html
-        	var b = (Math.atan2(Math.cos(lata) * Math.sin(latb) - Math.sin(lata) * Math.cos(latb)
-                     * Math.cos(lngb - lnga), Math.sin(lngb - lnga) * Math.cos(latb))) % (180 * Math.PI);
-
-        	// convert to degrees
-        	b = Math.floor(b * (180 / Math.PI));
-
-        	if(b < 0)
-        		b += 360;
-        	
-        	return b;
-        },
 
         getRawMarker: function() {
     		return marker;
@@ -86,8 +61,9 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
         		lastPosition = marker.getPosition();
 
         	marker.setPosition(latlng);
-        	
-        	if(extraMarkerOptions.type === 'vehicle') {
+
+        	// FIXME
+/*        	if(extraMarkerOptions.type === 'vehicle') {
         		var a = this.getHeading();
 
         		marker.setIcon(new google.maps.MarkerImage("img/vehicle/vehicle-" + a + ".png",
@@ -95,6 +71,7 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
 							new google.maps.Point(0,0),
 							new google.maps.Point(17, 17)));
         	}
+*/
         },
         
         isDisplayed: function() {

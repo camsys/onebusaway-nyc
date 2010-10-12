@@ -41,7 +41,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     var map = new google.maps.Map(mapNode, options);
     var fluster = new Fluster2(map);
 
-    fluster.gridSize = 30;
+    fluster.gridSize = 40;
 	fluster.styles = {
 			0: {
 				image: OBA.Config.stopIconFile,
