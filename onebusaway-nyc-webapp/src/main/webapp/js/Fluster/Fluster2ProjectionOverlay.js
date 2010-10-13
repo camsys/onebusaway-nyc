@@ -30,7 +30,7 @@ function Fluster2ProjectionOverlay(map)
 	google.maps.OverlayView.call(this);
 	this.setMap(map);
 	
-	this.getP = function()
+	this.getP = function() 
 	{
 		return this.getProjection();
 	};
@@ -38,6 +38,4 @@ function Fluster2ProjectionOverlay(map)
 
 Fluster2ProjectionOverlay.prototype = new google.maps.OverlayView();
 
-Fluster2ProjectionOverlay.prototype.draw = function()
-{
-};
+Fluster2ProjectionOverlay.prototype.draw = function() {};

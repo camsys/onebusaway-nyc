@@ -37,20 +37,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     };
 	
     var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
-
     var map = new google.maps.Map(mapNode, options);
-    var fluster = new Fluster2(map);
 
-    fluster.gridSize = 40;
-	fluster.styles = {
-			0: {
-				image: OBA.Config.stopIconFile,
-				showCount: false,
-				width: 14,
-				height: 14
-			}
-	};
-        
     map.mapTypes.set('transit',transitMapType);
     
     // state used for the map
@@ -63,6 +51,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     var isVehiclePolling = false;
     var vehicleTimerId = null;
  
+    var fluster = new Fluster2(map, false, stopMarkers);
+
+    fluster.initialize();            
+	
     var requestRoutes = function(routeIds) {
         var routesToRequest;
  
@@ -245,6 +237,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 var marker = stopMarkers[stopId];
 
                 if (marker) {
+// removed for performance
 //                    marker.updatePosition(new google.maps.LatLng(latlng[0], latlng[1]));
                 } else {
                     marker = OBA.StopMarker(stopId, latlng, map);
@@ -255,16 +248,18 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 }
             });
 
+// removed for performance
+/*          
             // remove the old markers that aren't currently shown
             for (var stopId in stopMarkers) {
                 var marker = stopMarkers[stopId];
                 if (!newStopIds[stopId]) {
                     marker.removeMarker();
+
                     delete stopMarkers[stopId];
                 }
             }
-            
-            fluster.initialize();            
+*/            
     	});
     };
 

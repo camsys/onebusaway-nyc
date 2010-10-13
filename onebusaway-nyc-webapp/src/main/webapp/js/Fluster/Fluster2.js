@@ -25,104 +25,30 @@
  * @param {google.maps.Map} the Google Map v3
  * @param {bool} run in debug mode or not
  */
-function Fluster2(_map, _debug)
+function Fluster2(_map, _debug, stopMarkers)
 {
 	// Private variables
 	var map = _map;
 	var projection = new Fluster2ProjectionOverlay(map);
-	var me = this;
 	var clusters = new Object();
-	var markersLeft = new Object();
+	var me = this;
 	
 	// Properties
-	this.debugEnabled = _debug;
-	this.gridSize = 60;
+	this.gridSize = 40;
 	this.maxZoom = 15;
-	this.markers = new Array();
-	this.currentZoomLevel = -1;
-	this.styles = {
-		0: {
-			image: 'http://gmaps-utility-library.googlecode.com/svn/trunk/markerclusterer/1.0/images/m1.png',
-			textColor: '#FFFFFF',
-			width: 53,
-			height: 52
-		},
-		10: {
-			image: 'http://gmaps-utility-library.googlecode.com/svn/trunk/markerclusterer/1.0/images/m2.png',
-			textColor: '#FFFFFF',
-			width: 56,
-			height: 55
-		},
-		20: {
-			image: 'http://gmaps-utility-library.googlecode.com/svn/trunk/markerclusterer/1.0/images/m3.png',
-			textColor: '#FFFFFF',
-			width: 66,
-			height: 65
-		}
-	};
-	
+	this.currentZoomLevel = _map.getZoom();			
+
 	// Timeouts
 	var zoomChangedTimeout = null;
 	
 	/**
 	 * Create clusters for the current zoom level and assign markers.
 	 */
-	function createClusters()
+	function createClusters(zoomChange)
 	{
 		var zoom = map.getZoom();
 		
-		if(clusters[zoom])
-		{
-			me.debug('Clusters for zoom level ' + zoom + ' already initialized.');
-		}
-		else
-		{
-			// Create clusters array
-			var clustersThisZoomLevel = new Array();
-			
-			// Set cluster count
-			var clusterCount = 0;
-			
-			// Get marker count
-			var markerCount = me.markers.length;
-			
-			// Walk all markers
-			for(var i = 0; i < markerCount; i++)
-			{
-				var marker = me.markers[i];
-				var markerPosition = marker.getPosition();
-				var done = false;
-				
-				// Find a cluster which contains the marker
-				for(var j = clusterCount - 1; j >= 0; j--)
-				{
-					var cluster = clustersThisZoomLevel[j];
-					if(cluster.contains(markerPosition))
-					{
-						cluster.addMarker(marker);
-						done = true;
-						break;
-					}
-				}
-				
-				if(!done)
-				{
-					// No cluster found, create a new one
-					var cluster = new Fluster2Cluster(me, marker);
-					clustersThisZoomLevel.push(cluster);
-					
-					// Increase cluster count
-					clusterCount++;
-				}
-			}
-			
-			clusters[zoom] = clustersThisZoomLevel;
-			
-			me.debug('Initialized ' + clusters[zoom].length + ' clusters for zoom level ' + zoom + '.');
-		}
-		
-		// Hide markers of previous zoom level
-		if(clusters[me.currentZoomLevel])
+		if(clusters[me.currentZoomLevel] && zoomChange)
 		{
 			for(var i = 0; i < clusters[me.currentZoomLevel].length; i++)
 			{
@@ -130,12 +56,42 @@ function Fluster2(_map, _debug)
 			}
 		}
 		
-		// Set current zoom level
-		me.currentZoomLevel = zoom;
+		if(! clusters[zoom]) {
+			clusters[zoom] = new Array();
 		
-		// Show clusters
+			for(id in stopMarkers) {
+				var done = false;
+				var marker = stopMarkers[id].getRawMarker();
+				var mapBounds = map.getBounds();
+	
+				// Find a cluster which contains the marker
+				for(var j = clusters[zoom].length - 1; j >= 0; j--)
+				{
+					var cluster = clusters[zoom][j];
+	
+					if(cluster.contains(marker.getPosition()))
+					{
+						cluster.addMarker(marker);
+						done = true;
+						break;
+					}
+				}
+				
+				// No cluster found, create a new one
+				if(!done)
+				{
+					var cluster = new Fluster2Cluster(me, marker);
+					cluster.show();
+					
+					clusters[zoom].push(cluster);
+				}
+			} // for stopMarkers
+		}
+		
+		me.currentZoomLevel = _map.getZoom();	
+		
 		showClustersInBounds();
-	}
+	};
 	
 	/**
 	 * Displays all clusters inside the current map bounds.
@@ -143,11 +99,11 @@ function Fluster2(_map, _debug)
 	function showClustersInBounds()
 	{
 		var mapBounds = map.getBounds();
-		
+			
 		for(var i = 0; i < clusters[me.currentZoomLevel].length; i++)
 		{
 			var cluster = clusters[me.currentZoomLevel][i];
-
+	
 			if(mapBounds.contains(cluster.getPosition()))
 			{
 				if(map.getZoom() > me.maxZoom) {
@@ -156,6 +112,8 @@ function Fluster2(_map, _debug)
 				} else {				
 					cluster.show();
 				}
+			} else {
+				cluster.hide();
 			}
 		}
 	}
@@ -166,7 +124,8 @@ function Fluster2(_map, _debug)
 	this.zoomChanged = function()
 	{
 		window.clearInterval(zoomChangedTimeout);
-		zoomChangedTimeout = window.setTimeout(createClusters, 500);
+		
+		zoomChangedTimeout = window.setTimeout(function() { createClusters(true); }, 500);
 	};
 	
 	/**
@@ -184,64 +143,37 @@ function Fluster2(_map, _debug)
 	{
 		return projection.getP();
 	};
-	
-	/**
-	 * Prints debug messages to console if debugging is enabled.
-	 */
-	this.debug = function(message)
-	{
-		if(me.debugEnabled)
-		{
-			console.log('Fluster2: ' + message);
-		}
-	};
 
 	/**
 	 * Adds a marker to the Fluster.
 	 */
 	this.addMarker = function(_marker)
 	{
-		me.markers.push(_marker);
-		
-		var zoom = map.getZoom();
-		
-		if(clusters[zoom]) {
-			var clustersThisZoomLevel = clusters[zoom];
-			var clusterCount = clustersThisZoomLevel.length;
-			
-			var markerPosition = _marker.getPosition();
+		if(clusters[me.currentZoomLevel]) {
 			var done = false;
-		
-			// Find a cluster which contains the marker
-			for(var j = clusterCount - 1; j >= 0; j--)
-			{
-				var cluster = clustersThisZoomLevel[j];
+			var marker = _marker;
+			var mapBounds = map.getBounds();
 
-				if(cluster.contains(markerPosition))
+			// Find a cluster which contains the marker
+			for(var j = clusters[me.currentZoomLevel].length - 1; j >= 0; j--)
+			{
+				var cluster = clusters[me.currentZoomLevel][j];
+
+				if(cluster.contains(marker.getPosition()))
 				{
-					cluster.addMarker(_marker);
+					cluster.addMarker(marker);
 					done = true;
 					break;
 				}
 			}
-		
+			
+			// No cluster found, create a new one
 			if(!done)
 			{
-				// No cluster found, create a new one
-				var cluster = new Fluster2Cluster(me, _marker);
-
-				clustersThisZoomLevel.push(cluster);
-			}
-		}
-		
-	};
-	
-	/**
-	 * Returns the currently assigned styles.
-	 */
-	this.getStyles = function()
-	{
-		return me.styles;
+				var cluster = new Fluster2Cluster(me, marker);
+				clusters[me.currentZoomLevel].push(cluster);
+			}			
+		}		
 	};
 	
 	/**
@@ -250,11 +182,10 @@ function Fluster2(_map, _debug)
 	 */
 	this.initialize = function()
 	{		
-		// Add event listeners
-		google.maps.event.addListener(map, 'zoom_changed', this.zoomChanged);
+		google.maps.event.addListener(map, 'zoom_changed', this.zoomChanged); // calls createClusters()
 		google.maps.event.addListener(map, 'dragend', showClustersInBounds);
 
 		// Setup markers for the current state
-		window.setTimeout(createClusters, 1000);
+		window.setTimeout(function() { createClusters(false); }, 1000);	
 	};
 }

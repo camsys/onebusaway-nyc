@@ -45,7 +45,7 @@ function Fluster2Cluster(_fluster, _marker)
 	
 	// Get properties from fluster
 	var projection = _fluster.getProjection();
-	var gridSize = _fluster.gridSize;
+	var gridSize = _fluster.gridSize; 
 	
 	// Calculate bounds
 	var position = projection.fromLatLngToDivPixel(markerPosition);
@@ -73,7 +73,7 @@ function Fluster2Cluster(_fluster, _marker)
 	this.expand = function() {
 		for(var i = 0; i < this.markers.length; i++)
 		{
-			this.markers[i].setMap(me.map);
+			this.markers[i].setMap(this.map);
 		}
 	}
 	
@@ -85,7 +85,7 @@ function Fluster2Cluster(_fluster, _marker)
 		// Show marker if there is only 1
 		if(this.markers.length == 1)
 		{
-			this.markers[0].setMap(me.map);
+			this.markers[0].setMap(this.map);
 		}
 		else if(this.markers.length > 1)
 		{
@@ -96,15 +96,9 @@ function Fluster2Cluster(_fluster, _marker)
 			}
 			
 			// Create marker
-			if(this.marker == null)
+			if(this.marker === null)
 			{
 				this.marker = new Fluster2ClusterMarker(this.fluster, this);
-				
-				if(this.fluster.debugEnabled)
-				{
-					google.maps.event.addListener(this.marker, 'mouseover', me.debugShowMarkers);
-					google.maps.event.addListener(this.marker, 'mouseout', me.debugHideMarkers);
-				}
 			}
 
 			// Show marker
@@ -120,28 +114,12 @@ function Fluster2Cluster(_fluster, _marker)
 		if(this.marker != null)
 		{
 			this.marker.hide();
-		}
-	};
-	
-	/**
-	 * Shows all markers included by this cluster (debugging only).
-	 */
-	this.debugShowMarkers = function()
-	{
-		for(var i = 0; i < me.markers.length; i++)
-		{
-			me.markers[i].setVisible(true);
-		}
-	};
-	
-	/**
-	 * Hides all markers included by this cluster (debugging only).
-	 */
-	this.debugHideMarkers = function()
-	{
-		for(var i = 0; i < me.markers.length; i++)
-		{
-			me.markers[i].setVisible(false);
+			
+			// Hide all markers
+			for(var i = 0; i < this.markers.length; i++)
+			{
+				this.markers[i].setMap(null);
+			}
 		}
 	};
 	
@@ -186,10 +164,12 @@ function Fluster2Cluster(_fluster, _marker)
 			me.markers[0].getPosition(),
 			me.markers[0].getPosition()
 		);
+		
 		for(var i = 1; i < me.markers.length; i++)
 		{
 			bounds.extend(me.markers[i].getPosition());
 		}
+
 		return bounds;
 	};
 	
