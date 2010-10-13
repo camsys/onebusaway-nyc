@@ -14,6 +14,20 @@ public interface NycSearchService {
    * @param q Query to search for
    * @return List of search results matching query according to nyc logic
    */
-  public abstract List<SearchResult> search(String q);
+  public List<SearchResult> search(String q);
+  
+  /**
+   * Returns true if routeString can represent a route
+   * @param routeString String to check
+   * @return true if routeString represents a route
+   */
+  public boolean isRoute(String routeString);
+  
+  /**
+   * Returns true if stopString looks like a stop
+   * @param stopString String to check
+   * @return true if stopString represents a stop
+   */
+  public boolean isStop(String stopString);
 
 }

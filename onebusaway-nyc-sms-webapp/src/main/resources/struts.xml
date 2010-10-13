@@ -30,6 +30,14 @@
 <!--        -->
 <!--        <default-interceptor-ref name="onebusaway-sms-webapp-stack"/>-->
 
+    <global-results>
+        <result name="ServiceException">/WEB-INF/content/exception.jspx</result>
+    </global-results>
+    
+    <global-exception-mappings>
+        <exception-mapping exception="org.onebusaway.exceptions.ServiceException" result="ServiceException" />
+    </global-exception-mappings>
+
 <!--        maybe provide one exception that shows the default text-->
 <!--        <global-results>-->
 <!--            <result name="ServiceException">/WEB-INF/content/exception.jspx</result>-->

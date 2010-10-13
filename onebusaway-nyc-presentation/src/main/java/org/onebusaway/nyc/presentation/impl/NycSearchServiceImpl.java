@@ -306,7 +306,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     return tripRouteQueryBean;
   }
 
-  private boolean isStop(String s) {
+  public boolean isStop(String s) {
     // stops are 6 digits
     int n = s.length();
     if (n != 6)
@@ -319,7 +319,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     return true;
   }
 
-  private boolean isRoute(String s) {
+  public boolean isRoute(String s) {
     Matcher matcher = routePattern.matcher(s);
     return matcher.matches();
   }
@@ -347,6 +347,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     List<Double> latLng = Arrays.asList(new Double[] {
         stopBean.getLat(), stopBean.getLon()});
     String stopName = stopBean.getName();
+    String stopDirection = stopBean.getDirection();
 
     Date now = new Date();
     int minutesBefore = 5;
@@ -391,7 +392,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       availableRoutes.add(availableRoute);
     }
     StopSearchResult stopSearchResult = new StopSearchResult(stopId, stopName,
-        latLng, availableRoutes);
+        latLng, stopDirection, availableRoutes);
     return stopSearchResult;
   }
 

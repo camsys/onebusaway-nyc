@@ -22,6 +22,18 @@ under the License.
 <title>One Bus Away NYC SMS</title>
 </head>
 <body>
-Hello <s:property value="message" />
+<s:iterator value="stopResults">
+  <s:property value="stopDirection" />:<br />
+  <s:iterator value="routesAvailable">
+    <s:if test="distanceAway.empty">
+      <s:property value="routeId" />: No upcoming arrivals<br />
+    </s:if>
+    <s:else>
+      <s:iterator value="distanceAway">
+        <s:property value="routeId" />: <s:property value="presentableDistance" /><br />
+      </s:iterator>
+    </s:else>
+  </s:iterator>
+</s:iterator>
 </body>
 </html>
