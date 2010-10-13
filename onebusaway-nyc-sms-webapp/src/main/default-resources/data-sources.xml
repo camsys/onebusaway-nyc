@@ -4,8 +4,6 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
-    <context:component-scan base-package="org.onebusaway.nyc.presentation.impl" />
-
     <bean id="serviceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
 <!--        <property name="serviceUrl" value="http://dev.oba.openplans.org:9090/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />-->

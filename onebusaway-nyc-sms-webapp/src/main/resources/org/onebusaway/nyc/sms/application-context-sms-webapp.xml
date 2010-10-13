@@ -19,6 +19,8 @@
     <!-- This turns on automatic annotation configuration -->
     <context:annotation-config />
 
+    <context:component-scan base-package="org.onebusaway.nyc.presentation.impl" />
+
 <!-- is users config needed?-->
 <!--    <import resource="classpath:org/onebusaway/users/application-context.xml" />-->
     <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
