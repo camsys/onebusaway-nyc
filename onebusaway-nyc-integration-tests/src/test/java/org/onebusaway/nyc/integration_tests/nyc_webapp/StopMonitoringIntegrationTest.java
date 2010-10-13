@@ -89,7 +89,7 @@ public class StopMonitoringIntegrationTest {
     client.executeMethod(get);
 
     String response = get.getResponseBodyAsString();
-    assertTrue(response.startsWith("<Siri"));
+    assertTrue(response, response.startsWith("<Siri"));
 
     XStream xstream = new XStream();
     xstream.processAnnotations(Siri.class);
