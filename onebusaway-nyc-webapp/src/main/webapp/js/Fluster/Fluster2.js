@@ -98,6 +98,9 @@ function Fluster2(_map, _debug, stopMarkers)
 	 */
 	function showClustersInBounds()
 	{
+		if(! clusters[me.currentZoomLevel])
+			return;
+		
 		var mapBounds = map.getBounds();
 			
 		for(var i = 0; i < clusters[me.currentZoomLevel].length; i++)
@@ -176,6 +179,10 @@ function Fluster2(_map, _debug, stopMarkers)
 		}		
 	};
 	
+	this.refresh = function() {
+		showClustersInBounds();
+	};
+	
 	/**
 	 * Sets map event handlers and setup's the markers for the current
 	 * map state.
@@ -183,7 +190,6 @@ function Fluster2(_map, _debug, stopMarkers)
 	this.initialize = function()
 	{		
 		google.maps.event.addListener(map, 'zoom_changed', this.zoomChanged); // calls createClusters()
-		google.maps.event.addListener(map, 'dragend', showClustersInBounds);
 
 		// Setup markers for the current state
 		window.setTimeout(function() { createClusters(false); }, 1000);	

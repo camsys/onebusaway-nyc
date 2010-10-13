@@ -248,6 +248,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 }
             });
 
+            fluster.refresh();
+            
 // removed for performance
 /*          
             // remove the old markers that aren't currently shown
