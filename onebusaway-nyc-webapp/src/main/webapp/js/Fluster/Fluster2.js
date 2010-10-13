@@ -48,7 +48,7 @@ function Fluster2(_map, _debug, stopMarkers)
 	{
 		var zoom = map.getZoom();
 		
-		if(clusters[me.currentZoomLevel] && zoomChange)
+		if(clusters[me.currentZoomLevel] && zoomChange && zoom !== me.currentZoomLevel)
 		{
 			for(var i = 0; i < clusters[me.currentZoomLevel].length; i++)
 			{
@@ -190,6 +190,7 @@ function Fluster2(_map, _debug, stopMarkers)
 	this.initialize = function()
 	{		
 		google.maps.event.addListener(map, 'zoom_changed', this.zoomChanged); // calls createClusters()
+		google.maps.event.addListener(map, 'dragend', showClustersInBounds); 
 
 		// Setup markers for the current state
 		window.setTimeout(function() { createClusters(false); }, 1000);	
