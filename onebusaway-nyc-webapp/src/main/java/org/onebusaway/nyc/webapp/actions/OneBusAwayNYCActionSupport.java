@@ -20,19 +20,6 @@ public abstract class OneBusAwayNYCActionSupport extends ActionSupport {
     return Arrays.asList(new Double[] { lat, lng} );
   }
 
-  // FIXME stubbed data
-  protected List<AvailableRoute> makeAvailableRoutes() {
-    List<DistanceAway> distanceAways = Arrays.asList(
-        new DistanceAway[] { new DistanceAway(2, 100), new DistanceAway(3, 2500) });       
-    return Arrays.asList(new AvailableRoute[] {
-        new AvailableRoute("M14A",
-            "14th Street Crosstown to LES/Delancey via Avenue A",
-            distanceAways),
-        new AvailableRoute("M14D",
-            "14th Street Crosstown to LES/Delancey via Avenue D",
-            distanceAways)});
-  }
-
   protected String parseIdWithoutAgency(String id) {
     return new WebappIdParser().parseIdWithoutAgency(id);
   }
