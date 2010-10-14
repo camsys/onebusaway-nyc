@@ -48,29 +48,15 @@ function makeJsonFetcher(url, data) {
 
 OBA.StopPopup = function(stopId, map) {
     var generateStopMarkup = function(json) {
-        var stop, routeIds, routeIdMap, routeReferences, routes, arrivals;
+        var stop, arrivals;
         try {
             stop = json.data.references.stops[0];
-            routeIds = stop.routeIds;
-            routeReferences = json.data.references.routes;
             arrivals = json.data.entry.arrivalsAndDepartures;
         } catch (typeError) {
             OBA.Util.log("invalid stop response from server");
             OBA.Util.log(json);
             return;
         }
-        
-        routeIdMap = {};
-        jQuery.each(routeIds, function(_, routeId) {
-            routeIdMap[routeId] = routeId;
-        });
-        
-        routes = [];
-        jQuery.each(routeReferences, function(_, routeReference) {
-            if (routeReference.id in routeIdMap) {
-                routes.push(routeReference);
-            }
-        });
 
         // stop information
         var stopId = stop.id;
@@ -80,31 +66,37 @@ OBA.StopPopup = function(stopId, map) {
 
         // vehicle location
         var routeToVehicleInfo = {};
+        var routeDirectionCount = 0;
         jQuery.each(arrivals, function(_, arrival) {
-                var routeId = arrival.routeId;
-                var arrivalStopId = arrival.stopId;
-                var predicted = arrival.predicted;
-                if (!predicted || arrivalStopId !== stopId || !(routeId in routeIdMap))
+        		var headsign = arrival.tripHeadsign;
+        		var arrivalStopId = arrival.stopId;
+                
+                if (arrivalStopId !== stopId)
                     return;
         
+                var predicted = arrival.predicted;
                 var headsign = arrival.tripHeadsign;
                 var updateTime = parseInt(arrival.lastUpdateTime);
                 latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
-                
+
                 // only show positive distances
                 var meters = arrival.distanceFromStop;
                 if (meters < 0)
                     return;
+
                 var feet = OBA.Util.metersToFeet(meters);
                 var stops = arrival.numberOfStopsAway + 1;
 
-                var vehicleInfo = {headsign: headsign,
-                                   stops: stops,
-                                   feet: feet};
-                if (routeToVehicleInfo[routeId])
-                    routeToVehicleInfo[routeId].push(vehicleInfo);
-                else
-                    routeToVehicleInfo[routeId] = [vehicleInfo];
+                var vehicleInfo = {stops: stops,
+                                   feet: feet,
+                                   predicted: predicted};
+                
+                if (routeToVehicleInfo[headsign])
+                    routeToVehicleInfo[headsign].push(vehicleInfo);
+                else {
+                    routeToVehicleInfo[headsign] = [vehicleInfo];
+                    routeDirectionCount++;
+                }
             });
 
         // last update time
@@ -119,37 +111,39 @@ OBA.StopPopup = function(stopId, map) {
         var notices = '<ul class="notices">';
         // FIXME service notices
 
-        if(routes.length > 0) {
+		if(routeDirectionCount > 0) {
             service += '<p>This stop serves:</p><ul>';
 
-            jQuery.each(routes, function(_, route) {
-                var routeId  = route.id;
-                var routeIdDisplay = OBA.Util.parseEntityId(routeId);
-                var shortName = route.shortName;
-                var longName = route.longName;
-
-                // and the distance away for each vehicle for that route
-                var vehicleInfos = routeToVehicleInfo[routeId] || [];
-
+            jQuery.each(routeToVehicleInfo, function(headsign, vehicleInfos) {
                 // sort it based on distance
                 vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
-                
-                for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
-                    service += '<li><a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
-                              + routeIdDisplay + ' ' + longName + '</a>';
 
+                var included = false;
+                for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
                     var distanceAway = vehicleInfos[i];
+                    
+                    if(distanceAway.stops < 0 || distanceAway.predicted === false)
+                    	continue;
+                    
+                    service += '<li><a href="#" class="searchLink" rel="' + headsign + '">'
+                              + OBA.Util.truncateToWidth(headsign, 100, 11) + '</a>';
+
                     service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", "; 
                     service += OBA.Util.displayDistance(distanceAway.feet) + ")</li>";
+
+                    included = true;
                 }
-                
-                if (vehicleInfos.length === 0) {
-                    service += '<li><a href="#" class="searchLink" rel="' + routeIdDisplay + '">'
-                              + OBA.Util.truncateToWidth(routeIdDisplay + ' - ' + longName, 250, 11) + '</a></li>';
+
+                // no actual vehicles are in the system--but display that they usually stop here...
+                if(! included) {
+                    service += '<li><a href="#" class="searchLink" rel="' + headsign + '">'
+                    		+ OBA.Util.truncateToWidth(headsign, 200, 11) + '</a>';
                 }
            });
 
            service += '</ul>';
+        } else {
+            service += '<p>This stop has no service available.</p><ul>';
         }
 
         notices += '</ul>';
@@ -175,7 +169,7 @@ OBA.StopPopup = function(stopId, map) {
     var url = OBA.Config.stopUrl + "/" + stopId + ".json";
     return OBA.Popup(
         map,
-        makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey}),
+        makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey, minutesBefore: 1440, minutesAfter: 1440 }),
         generateStopMarkup);
 };
 
@@ -265,7 +259,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
                 var feet = OBA.Util.metersToFeet(metersDistanceDelta);
                 var distanceStr = OBA.Util.displayDistance(feet);
 
-                nextStopsMarkup += '<li><a href="#" class="searchLink" rel="' + displayStopId + '">' + OBA.Util.truncateToWidth(stopName, 250, 11) + '</a>';
+                nextStopsMarkup += '<li><a href="#" class="searchLink" rel="' + displayStopId + '">' + OBA.Util.truncateToWidth(stopName, 200, 11) + '</a>';
                 nextStopsMarkup += ' (' + stopsAwayStr + ', ' + distanceStr + ')</li>';
            });
     

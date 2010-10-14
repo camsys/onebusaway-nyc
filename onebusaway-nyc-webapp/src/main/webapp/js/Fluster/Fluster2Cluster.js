@@ -73,9 +73,10 @@ function Fluster2Cluster(_fluster, _marker)
 	this.expand = function() {
 		for(var i = 0; i < this.markers.length; i++)
 		{
-			this.markers[i].setMap(this.map);
+			if(this.markers[i].getMap() === null)
+				this.markers[i].setMap(this.map);
 		}
-	}
+	};
 	
 	/**
 	 * Shows either the only marker or a cluster marker instead.
