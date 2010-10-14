@@ -131,7 +131,7 @@ OBA.Tracker = function() {
           var description = '<ul class="description">';
           
           jQuery.each(record.routesAvailable, function(i, route) {
-            description += '<li>' + route.routeId + ' ' + OBA.Util.truncateToWidth(route.description, 275, 11) + '</li>';
+            description += '<li>' + OBA.Util.truncateToWidth(route.headsign, 275, 11) + '</li>';
           });
 
           description += '</ul>';

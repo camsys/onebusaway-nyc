@@ -101,7 +101,7 @@ LI {
 		<strong><s:property value="name" /></strong><br/>
 
 		<s:iterator value="routesAvailable">
-			<a href="mobile.action?q=${routeId}"><s:property value="routeId" /></a><br />
+			<a href="mobile.action?q=${routeId}"><s:property value="headsign" /></a><br />
 			<s:iterator value="distanceAway">
 				<s:property value="presentableDistance" /><br />
 			</s:iterator>
