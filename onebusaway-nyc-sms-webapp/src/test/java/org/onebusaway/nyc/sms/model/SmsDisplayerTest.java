@@ -13,10 +13,15 @@ import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 
 public class SmsDisplayerTest {
+  
+  private AvailableRoute makeAvailableRoute(List<DistanceAway> distanceAways) {
+    // helper function to create available routes
+    return new AvailableRoute("routeid", "route description", "route headsign", distanceAways);
+  }
 
   @Test
   public void testSingleStopResponseNoArrivals() {
-    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", new ArrayList<DistanceAway>());
+    AvailableRoute availableRoute = makeAvailableRoute(new ArrayList<DistanceAway>());
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     routes.add(availableRoute);
     StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes);
@@ -36,7 +41,7 @@ public class SmsDisplayerTest {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(distanceAway1);
     distanceAways.add(distanceAway2);
-    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     routes.add(availableRoute);
     StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes);
@@ -57,7 +62,7 @@ public class SmsDisplayerTest {
       DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100);
       distanceAways.add(distanceAway);
     }
-    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     routes.add(availableRoute);
     StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes);
@@ -93,7 +98,7 @@ public class SmsDisplayerTest {
   public void testTwoStopResponseNoArrivals() {
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
 
     StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
@@ -119,7 +124,7 @@ public class SmsDisplayerTest {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(new DistanceAway(1, 100));
     distanceAways.add(new DistanceAway(2, 200));
-    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
     StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
@@ -149,7 +154,7 @@ public class SmsDisplayerTest {
       DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100);
       distanceAways.add(distanceAway);
     }
-    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
     StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
@@ -177,7 +182,7 @@ public class SmsDisplayerTest {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(new DistanceAway(1, 100));
     distanceAways.add(new DistanceAway(2, 200));
-    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
