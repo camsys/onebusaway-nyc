@@ -61,7 +61,7 @@ function Fluster2(_map, _debug, stopMarkers)
 		
 			for(id in stopMarkers) {
 				var done = false;
-				var marker = stopMarkers[id].getRawMarker();
+				var marker = stopMarkers[id];
 				var mapBounds = map.getBounds();
 	
 				// Find a cluster which contains the marker

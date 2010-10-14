@@ -124,7 +124,7 @@ OBA.StopPopup = function(stopId, map) {
                     if(distanceAway.stops < 0 || distanceAway.predicted === false || distanceAway.feet < 0)
                     	continue;
                     
-                    service += '<li><a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(vehicleInfos.routeId) + '">'
+                    service += '<li><a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(distanceAway.routeId) + '">'
                               + OBA.Util.truncateToWidth(headsign, 100, 11) + '</a>';
 
                     service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", "; 
@@ -168,7 +168,7 @@ OBA.StopPopup = function(stopId, map) {
     var url = OBA.Config.stopUrl + "/" + stopId + ".json";
     return OBA.Popup(
         map,
-        makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey}),
+        makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey, minutesBefore: 1440, minutesAfter: 1440}),
         generateStopMarkup);
 };
 

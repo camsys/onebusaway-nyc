@@ -151,7 +151,7 @@ OBA.Tracker = function() {
              
       var controls = jQuery('<ul></ul>').addClass("controls")
                 .append('<li><a class="addToMap" href="#">Add To Map</a></li>')
-                .append('<li><a class="zoomToExtent" href="#">Zoom To Extent</a></li>')
+                .append('<li><a class="zoomToExtent" href="#">Zoom To Extent</a></li>');
 
       el.append(controls);
                 

@@ -243,7 +243,6 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                     marker = OBA.StopMarker(stopId, latlng, map);
 
                     fluster.addMarker(marker.getRawMarker());
-                    
                     stopMarkers[stopId] = marker;
                 }
             });
@@ -270,45 +269,46 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     var containsRoute = function(routeId, directionId) {
         var directionIdMap = routeIds[routeId] || {};
         return directionId in directionIdMap;
-    }
-
+    };
+    
     return {
       getMap: function() { return map; },
 
       containsRoute: containsRoute,
 
-      showStop: function(stopId) {
-        if (stopMarkers[stopId]) {
-            // stop marker is already on map, can just display the popup
-            var stopMarker = stopMarkers[stopId];
-            stopMarker.showPopup();
-        } else {
-            var url = OBA.Config.stopUrl + "/" + stopId + ".json";
-            jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
-                var stop;
-                try {
-                    stop = json.data.references.stops[0];
-                } catch (typeError) {
-                    OBA.Util.log("invalid stop response from server");
-                    return;
-                }
+      showStop: function(stopId) {      
+    	if (stopMarkers[stopId]) {
+       		// stop marker is already on map, can just display the popup
+      		var stopMarker = stopMarkers[stopId];
+      		stopMarker.setMap(map);
 
-                var stopId = stop.id;
-                var latlng = [stop.lat, stop.lon];
-                var marker = OBA.StopMarker(stopId, latlng, map);
-                stopMarkers[stopId] = marker;
+      		map.setCenter(stopMarker.getPosition());
+      		stopMarker.showPopup();
+      	} else {
+      		var url = OBA.Config.stopUrl + "/" + stopId + ".json";
+	        
+      		jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
+	              var stop;
+	              try {
+	                  stop = json.data.references.stops[0];
+	              } catch (typeError) {
+	                  OBA.Util.log("invalid stop response from server");
+	                  return;
+	              }
+	
+	              var stopId = stop.id;
+	              var latlng = [stop.lat, stop.lon];
+	              var marker = OBA.StopMarker(stopId, latlng, map);
+	
+	              fluster.addMarker(marker.getRawMarker());
+	         	  marker.setMap(map);
 
-                map.setCenter(new google.maps.LatLng(latlng[0], latlng[1]));
-                
-                marker.showPopup();
-            });
-        }
-        
-        // and we have to make sure that the zoom level is close enough so that we can see stops
-        var currentZoom = map.getZoom();
-
-        if (currentZoom < 16)
-            map.setZoom(16);
+	              stopMarkers[stopId] = marker;
+	              
+	         	  map.setCenter(marker.getPosition());
+	         	  marker.showPopup();
+	        });
+          }
       },
 
       // add and remove shapes also take care of updating the display

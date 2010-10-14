@@ -16,6 +16,7 @@ var OBA = window.OBA || {};
 
 OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
 	var lastPosition = null;
+	var popupVisible = false;
 	
 	var markerOptions = {
         position: new google.maps.LatLng(latlng[0], latlng[1])
@@ -26,7 +27,10 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
     }
 
     var marker = new google.maps.Marker(markerOptions);
-    var showPopup = function() { popup.show(marker); };
+    var showPopup = function() { 
+    	popupVisible = true;
+    	popup.show(marker); 
+    };
 
     google.maps.event.addListener(marker, "click", showPopup);
 
@@ -37,8 +41,25 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
     		return marker;
     	},
     	
+    	getPosition: function() {
+    		return marker.getPosition();
+    	},
+    	
         hidePopup: function() {
+        	popupVisible = false;
             popup.hide();
+        },
+        
+        getMap: function() {
+        	return marker.getMap();
+        },
+        
+        setMap: function(map) {
+        	// can't hide the marker while the popup is visible!
+        	if(map === null && popupVisible === true)
+        		return;
+        	
+        	marker.setMap(map);
         },
         
         addMarker: function() {
