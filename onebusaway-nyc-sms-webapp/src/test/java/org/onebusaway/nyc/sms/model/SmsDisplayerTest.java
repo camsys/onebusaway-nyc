@@ -88,6 +88,30 @@ public class SmsDisplayerTest {
     StopSearchResult stopSearchResult = new StopSearchResult("AgencyId_123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), stopDirection, routes);
     return stopSearchResult;
   }
+  
+  @Test
+  public void testTwoStopResponseNoArrivals() {
+    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
+    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    routes.add(availableRoute);
+
+    StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
+    StopSearchResult stopResult2 = makeStopSearchResult(routes, "S");
+    List<SearchResult> searchResults = new ArrayList<SearchResult>();
+    searchResults.add(stopResult1);
+    searchResults.add(stopResult2);
+    
+    SmsDisplayer sms = new SmsDisplayer(searchResults);
+    sms.twoStopResponse();
+    
+    String actual = sms.toString();
+    String exp = "N:\n" +
+                 "routeid: No upcoming arrivals\n" +
+                 "S:\n" +
+                 "routeid: No upcoming arrivals\n";
+    assertEquals(exp, actual);
+  }
 
   @Test
   public void testTwoStopResponse() {
@@ -95,6 +119,36 @@ public class SmsDisplayerTest {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(new DistanceAway(1, 100));
     distanceAways.add(new DistanceAway(2, 200));
+    AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
+    routes.add(availableRoute);
+    
+    StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
+    StopSearchResult stopResult2 = makeStopSearchResult(routes, "S");
+    List<SearchResult> searchResults = new ArrayList<SearchResult>();
+    searchResults.add(stopResult1);
+    searchResults.add(stopResult2);
+    
+    SmsDisplayer sms = new SmsDisplayer(searchResults);
+    sms.twoStopResponse();
+    
+    String actual = sms.toString();
+    String exp = "N:\n" +
+                 "routeid: 100 feet, 1 stop\n" +
+                 "routeid: 200 feet, 2 stops\n" +
+                 "S:\n" +
+                 "routeid: 100 feet, 1 stop\n" +
+                 "routeid: 200 feet, 2 stops\n";
+    assertEquals(exp, actual);
+  }
+  
+  @Test
+  public void testTwoStopResponseManyArrivals() {
+    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
+    for (int i = 0; i < 20; i++) {
+      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100);
+      distanceAways.add(distanceAway);
+    }
     AvailableRoute availableRoute = new AvailableRoute("routeid", "route description", distanceAways);
     routes.add(availableRoute);
     
