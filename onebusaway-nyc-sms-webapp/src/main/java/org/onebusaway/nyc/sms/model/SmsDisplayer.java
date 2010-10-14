@@ -15,18 +15,28 @@ public class SmsDisplayer {
   /** search results from the nyc search service */
   private final List<SearchResult> searchResults;
   
+  private static final int MAX_CHARS = 160;
+  
   /** sms response returned back */
-  private final StringBuilder response = new StringBuilder(160);
+  private final StringBuilder response = new StringBuilder(SmsDisplayer.MAX_CHARS);
 
   public SmsDisplayer(List<SearchResult> searchResults) {
     this.searchResults = searchResults;
+  }
+  
+  private void addToResponse(Object obj) {
+    String s = obj.toString();
+    int currentLength = response.length();
+    if (currentLength + s.length() > SmsDisplayer.MAX_CHARS)
+      return;
+    response.append(s);
   }
   
   // prepare the different type of responses
 
   public void singleStopResponse() {
     if (searchResults.size() != 1) {
-      response.append("Stop not found");
+      addToResponse("Stop not found");
     } else {
       StopSearchResult stopSearchResult = (StopSearchResult) searchResults.get(0);
       List<AvailableRoute> routesAvailable = stopSearchResult.getRoutesAvailable();
@@ -34,11 +44,11 @@ public class SmsDisplayer {
         String routeId = availableRoute.getRouteId();
         List<DistanceAway> distanceAways = availableRoute.getDistanceAway();
         if (distanceAways.isEmpty()) {
-          response.append(routeId + ": No upcoming arrivals\n");
+          addToResponse(routeId + ": No upcoming arrivals\n");
         } else {
           for (DistanceAway distanceAway : distanceAways) {
             String presentableDistance = distanceAway.getPresentableDistance();
-            response.append(routeId + ": " + presentableDistance + "\n");
+            addToResponse(routeId + ": " + presentableDistance + "\n");
           }
         }
       }
@@ -46,24 +56,24 @@ public class SmsDisplayer {
   }
 
   public void noResultsResponse() {
-    response.append("No stops found");
+    addToResponse("No stops found\n");
   }
 
   public void twoStopResponse() {
     for (SearchResult searchResult : searchResults) {
       StopSearchResult stopSearchResult = (StopSearchResult) searchResult;
       String stopDirection = stopSearchResult.getStopDirection();
-      response.append(stopDirection + ":\n");
+      addToResponse(stopDirection + ":\n");
       List<AvailableRoute> routesAvailable = stopSearchResult.getRoutesAvailable();
       for (AvailableRoute availableRoute : routesAvailable) {
         String routeId = availableRoute.getRouteId();
         List<DistanceAway> distanceAways = availableRoute.getDistanceAway();
         if (distanceAways.isEmpty()) {
-          response.append(routeId + ": No upcoming arrivals\n");
+          addToResponse(routeId + ": No upcoming arrivals\n");
         } else {
           for (DistanceAway distanceAway : distanceAways) {
             String presentableDistance = distanceAway.getPresentableDistance();
-            response.append(routeId + ": " + presentableDistance + "\n");
+            addToResponse(routeId + ": " + presentableDistance + "\n");
           }
         }
       }
@@ -71,12 +81,12 @@ public class SmsDisplayer {
   }
 
   public void manyStopResponse() {
-    response.append("Send:\n");
+    addToResponse("Send:\n");
     for (SearchResult searchResult : searchResults) {
       StopSearchResult stopSearchResult = (StopSearchResult) searchResult;
       String stopIdNoAgency = stopSearchResult.getStopIdNoAgency();
       String stopDirection = stopSearchResult.getStopDirection();
-      response.append(stopIdNoAgency + " for " + stopDirection + "\n");
+      addToResponse(stopIdNoAgency + " for " + stopDirection + "\n");
     }
   }
   
