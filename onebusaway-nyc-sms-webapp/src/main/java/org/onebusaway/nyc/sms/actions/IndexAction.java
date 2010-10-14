@@ -24,7 +24,8 @@ public class IndexAction extends AbstractNycSmsAction {
 
   // stop search result for single stop template
   public StopSearchResult getStopResult() {
-    assert searchResults.size() == 1;
+    if (searchResults.size() != 1)
+      return null;
     SearchResult result = searchResults.get(0);
     return (StopSearchResult) result;
   }
