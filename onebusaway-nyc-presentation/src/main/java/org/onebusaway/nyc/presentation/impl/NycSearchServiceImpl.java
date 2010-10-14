@@ -362,7 +362,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     	String headsign = arrivalAndDepartureBean.getTrip().getTripHeadsign();
     	String shortName = arrivalAndDepartureBean.getTrip().getRoute().getShortName();
     	String longName = arrivalAndDepartureBean.getTrip().getRoute().getLongName();;
-    	List<DistanceAway> distances = Collections.emptyList();
+    	List<DistanceAway> distances = new ArrayList<DistanceAway>();
 
     	if (arrivalAndDepartureBean.isPredicted()) {
     		double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
