@@ -1,12 +1,11 @@
 package org.onebusaway.nyc.sms.actions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
-import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
+import org.onebusaway.nyc.sms.model.SmsDisplayer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndexAction extends AbstractNycSmsAction {
@@ -18,24 +17,9 @@ public class IndexAction extends AbstractNycSmsAction {
   
   /** text message */
   private String message;
-  
-  /** results returned to jsp */
-  private List<SearchResult> searchResults;
 
-  // stop search result for single stop template
-  public StopSearchResult getStopResult() {
-    if (searchResults.size() != 1)
-      return null;
-    SearchResult result = searchResults.get(0);
-    return (StopSearchResult) result;
-  }
-  
-  public List<StopSearchResult> getStopResults() {
-    List<StopSearchResult> result = new ArrayList<StopSearchResult>(searchResults.size());
-    for (SearchResult searchResult : searchResults)
-      result.add((StopSearchResult) searchResult);
-    return result;
-  }
+  /** contains logic for preparing sms responses */
+  private SmsDisplayer sms;
   
   public String getMessage() {
     return message;
@@ -43,6 +27,10 @@ public class IndexAction extends AbstractNycSmsAction {
 
   public void setMessage(String message) {
     this.message = message;
+  }
+  
+  public String getSmsResponse() {
+    return sms.toString();
   }
 
   @Override
@@ -57,18 +45,24 @@ public class IndexAction extends AbstractNycSmsAction {
     if (searchService.isRoute(message))
       throw new ServiceException("Route specified");
 
-    searchResults = searchService.search(message);
+    List<SearchResult> searchResults = searchService.search(message);
     
-    if (searchService.isStop(message))
-      return "single-stop";
+    sms = new SmsDisplayer(searchResults);
     
-    int nResults = searchResults.size();
-    if (nResults == 0)
-      return "no-stops";
-    if (nResults == 1)
-      return "single-stop";
-    if (nResults == 2)
-      return "two-stops";
-    return "many-stops";
+    if (searchService.isStop(message)) {
+      sms.singleStopResponse();
+    } else {
+      int nResults = searchResults.size();
+      if (nResults == 0)
+        sms.noResultsResponse();
+      else if (nResults == 1)
+        sms.singleStopResponse();
+      else if (nResults == 2)
+        sms.twoStopResponse();
+      else
+        sms.manyStopResponse();
+    }
+
+    return SUCCESS;
   }
 }
