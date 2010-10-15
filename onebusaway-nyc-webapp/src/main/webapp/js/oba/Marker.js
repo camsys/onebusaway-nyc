@@ -26,36 +26,26 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
     }
 
     var marker = new google.maps.Marker(markerOptions);
-    var showPopup = function() { 
-    	popup.show(marker); 
-    };
+    var showPopup = function() { popup.show(marker); };
 
     google.maps.event.addListener(marker, "click", showPopup);
 
     return {
         showPopup: showPopup,
 
-        getRawMarker: function() {
-    		return marker;
-    	},
-    	
     	getPosition: function() {
     		return marker.getPosition();
     	},
     	
-        hidePopup: function() {
-            popup.hide();
-        },
-        
         getMap: function() {
         	return marker.getMap();
         },
-        
+
         setMap: function(map) {
-        	// can't hide the marker while the popup is visible!
-        	if(map === null && OBA.theInfoWindow !== null)
-        		return;
-        	
+        	if(map === null)
+        		if(OBA.theInfoWindowMarker !== null && OBA.theInfoWindowMarker.getPosition() === marker.getPosition())
+        			return;
+
         	marker.setMap(map);
         },
         
@@ -66,30 +56,9 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
         removeMarker: function() {
             marker.setMap(null);
         },
-        
-        distance: function(p1, p2) {
-        	if(p1 === null || p2 === null)
-        		return null;
-        	
-        	return Math.sqrt(Math.pow(p1.lat() - p2.lat(), 2) + Math.pow(p1.lng() - p2.lng(), 2));
-        },
-        
+
         updatePosition: function(latlng) {
-        	if(lastPosition === null || this.distance(latlng, lastPosition) > .0008)         	
-        		lastPosition = marker.getPosition();
-
         	marker.setPosition(latlng);
-
-        	// FIXME
-/*        	if(extraMarkerOptions.type === 'vehicle') {
-        		var a = this.getHeading();
-
-        		marker.setIcon(new google.maps.MarkerImage("img/vehicle/vehicle-" + a + ".png",
-							new google.maps.Size(34, 34),
-							new google.maps.Point(0,0),
-							new google.maps.Point(17, 17)));
-        	}
-*/
         },
         
         isDisplayed: function() {

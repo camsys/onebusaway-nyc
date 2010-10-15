@@ -236,31 +236,15 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
                 var marker = stopMarkers[stopId];
 
-                if (marker) {
-// removed for performance
-//                    marker.updatePosition(new google.maps.LatLng(latlng[0], latlng[1]));
-                } else {
+                if (! marker) {
                     marker = OBA.StopMarker(stopId, latlng, map);
 
-                    fluster.addMarker(marker.getRawMarker());
+                    fluster.addMarker(marker);
                     stopMarkers[stopId] = marker;
                 }
             });
 
             fluster.refresh();
-            
-// removed for performance
-/*          
-            // remove the old markers that aren't currently shown
-            for (var stopId in stopMarkers) {
-                var marker = stopMarkers[stopId];
-                if (!newStopIds[stopId]) {
-                    marker.removeMarker();
-
-                    delete stopMarkers[stopId];
-                }
-            }
-*/            
     	});
     };
 
@@ -276,14 +260,19 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
       containsRoute: containsRoute,
 
-      showStop: function(stopId) {      
+      showStop: function(stopId) {   
+      	var mapBounds = map.getBounds();
+
     	if (stopMarkers[stopId]) {
        		// stop marker is already on map, can just display the popup
-      		var stopMarker = stopMarkers[stopId];
-      		stopMarker.setMap(map);
+      		var marker = stopMarkers[stopId];
+      		marker.setMap(map);
+      		OBA.theInfoWindowMarker = marker;
+       	  
+      		if(! mapBounds.contains(marker.getPosition()))
+      			map.setCenter(marker.getPosition());
 
-      		map.setCenter(stopMarker.getPosition());
-      		stopMarker.showPopup();
+      		marker.showPopup();
       	} else {
       		var url = OBA.Config.stopUrl + "/" + stopId + ".json";
 	        
@@ -299,14 +288,17 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 	              var stopId = stop.id;
 	              var latlng = [stop.lat, stop.lon];
 	              var marker = OBA.StopMarker(stopId, latlng, map);
-	
-	              fluster.addMarker(marker.getRawMarker());
 	         	  marker.setMap(map);
+	         	  OBA.theInfoWindowMarker = marker;
+	         	  
+	              fluster.addMarker(marker);
 
 	              stopMarkers[stopId] = marker;
-	              
-	         	  map.setCenter(marker.getPosition());
-	         	  marker.showPopup();
+
+	       		  if(! mapBounds.contains(marker.getPosition()))
+	       			map.setCenter(marker.getPosition());
+	         	
+	       		  marker.showPopup();
 	        });
           }
       },

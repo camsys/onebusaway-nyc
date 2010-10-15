@@ -15,6 +15,7 @@
 var OBA = window.OBA || {};
 
 OBA.theInfoWindow = null;
+OBA.theInfoWindowMarker = null;
 
 OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
     return {
@@ -24,7 +25,8 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
             
             fetchFn(function(json) {
                 OBA.theInfoWindow = new google.maps.InfoWindow();
-    
+                OBA.theInfoWindowMarker = marker;
+                
                 // we need to append this node to the map for the size to be calculated properly
                 wrappedContent = jQuery('<div id="popup"></div>')
                                     .append(bubbleNodeFn(json))
@@ -34,6 +36,11 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
                         
                 OBA.theInfoWindow.setContent(wrappedContent.get(0));                
                 OBA.theInfoWindow.open(map, marker);
+                
+                google.maps.event.addListenerOnce(OBA.theInfoWindow, 'closeclick', function() {
+                	OBA.theInfoWindowMarker = null;
+                	OBA.theInfoWindow = null;
+                });
             });
         }
     };

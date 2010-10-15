@@ -71,6 +71,12 @@ function Fluster2Cluster(_fluster, _marker)
 	};
 
 	this.expand = function() {
+		// Hide marker
+		if(this.marker != null)
+		{
+			this.marker.hide();
+		}
+		
 		for(var i = 0; i < this.markers.length; i++)
 		{
 			if(this.markers[i].getMap() === null)

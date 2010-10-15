@@ -111,7 +111,6 @@ function Fluster2(_map, _debug, stopMarkers)
 			{
 				if(map.getZoom() > me.maxZoom) {
 					cluster.expand();
-					cluster.hide();
 				} else {				
 					cluster.show();
 				}
