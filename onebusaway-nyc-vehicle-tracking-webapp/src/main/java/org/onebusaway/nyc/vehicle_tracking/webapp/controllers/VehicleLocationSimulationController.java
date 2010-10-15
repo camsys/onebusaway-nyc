@@ -119,6 +119,7 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
       @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime,
       @RequestParam(value = "minimumRecordInterval", required = false) int minimumRecordInterval,
+      @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
       @RequestParam(required = false, defaultValue = "false") boolean returnId)
       throws IOException {
 
@@ -133,7 +134,8 @@ public class VehicleLocationSimulationController {
         in = new GZIPInputStream(in);
 
       taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(in,
-          realtime, pauseOnStart, shiftStartTime, minimumRecordInterval);
+          realtime, pauseOnStart, shiftStartTime, minimumRecordInterval,
+          bypassInference);
     }
 
     if (returnId) {
@@ -241,8 +243,11 @@ public class VehicleLocationSimulationController {
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!block-add-simulation.do", method = RequestMethod.POST)
-  public ModelAndView addBlockSimulation(HttpSession session,
-      @RequestParam String blockId, @RequestParam long serviceDate,
+  public ModelAndView addBlockSimulation(
+      HttpSession session,
+      @RequestParam String blockId,
+      @RequestParam long serviceDate,
+      @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
       @RequestParam String properties) throws IOException {
 
     Date time = getTime(session, null);
@@ -251,8 +256,9 @@ public class VehicleLocationSimulationController {
     props.load(new StringReader(properties));
 
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(blockId);
+
     _vehicleLocationSimulationService.addSimulationForBlockInstance(id,
-        serviceDate, time.getTime(), props);
+        serviceDate, time.getTime(), bypassInference, props);
 
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("blockId", blockId);

@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.gtfs.csv.EntityHandler;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -18,6 +19,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
+import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -51,6 +53,8 @@ class SimulatorTask implements Runnable, EntityHandler {
   private boolean _runInRealtime = false;
 
   private boolean _shiftStartTime = false;
+
+  private boolean _bypassInference = false;
 
   private int _minimumRecordInterval = 0;
 
@@ -99,6 +103,10 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   public void setMinimumRecordInterval(int minimumRecordInterval) {
     _minimumRecordInterval = minimumRecordInterval;
+  }
+
+  public void setBypassInference(boolean bypassInference) {
+    _bypassInference = bypassInference;
   }
 
   public void addTag(Object tag) {
@@ -206,11 +214,13 @@ class SimulatorTask implements Runnable, EntityHandler {
       record.setLon(p.getLon());
 
       record.setActualBlockId(AgencyAndIdLibrary.convertToString(block.getBlock().getId()));
+      record.setActualServiceDate(blockInstance.getServiceDate());
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       record.setActualLat(blockLocation.getLocation().getLat());
       record.setActualLon(blockLocation.getLocation().getLon());
       record.setActualPhase(journeyState.getPhase().toString());
       record.setVehicleId(_vehicleId);
+      
       records.add(record);
     }
 
@@ -253,12 +263,31 @@ class SimulatorTask implements Runnable, EntityHandler {
         _log.info("sending record: index=" + recordIndex);
         recordIndex++;
 
-        _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
-            record.getVehicleId(), record.getLat(), record.getLon(),
-            record.getDsc(), true);
+        if (_bypassInference) {
 
-        if (shouledExitAfterWaitingForInferenceToComplete())
-          return;
+          if (record.getActualBlockId() == null)
+            throw new IllegalStateException(
+                "expected actualBlockId to be set when running in inference-bypass mode");
+
+          VehicleLocationRecord vlr = new VehicleLocationRecord();
+          vlr.setTimeOfRecord(record.getTimestamp());
+          vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getActualBlockId()));
+          vlr.setServiceDate(record.getActualServiceDate());
+          vlr.setDistanceAlongBlock(record.getActualDistanceAlongBlock());
+          vlr.setCurrentLocationLat(record.getActualLat());
+          vlr.setCurrentLocationLon(record.getActualLon());
+          vlr.setStatus(record.getActualPhase());
+          vlr.setVehicleId(new AgencyAndId(_vehicleLocationService.getDefaultVehicleAgencyId(),_vehicleId));
+          _vehicleLocationService.handleVehicleLocation(vlr);
+
+        } else {
+          _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
+              record.getVehicleId(), record.getLat(), record.getLon(),
+              record.getDsc(), true);
+
+          if (shouledExitAfterWaitingForInferenceToComplete())
+            return;
+        }
 
         _mostRecentRecord = record;
         _recordsProcessed.incrementAndGet();

@@ -16,6 +16,8 @@ import org.onebusaway.siri.model.VehicleLocation;
  * @see VehicleLocation
  */
 public interface VehicleLocationService {
+  
+  public String getDefaultVehicleAgencyId();
 
   /**
    * Receive an incoming vehicle location SIRI record from a vehicle. This is an
@@ -37,6 +39,11 @@ public interface VehicleLocationService {
    */
   public void handleVehicleLocation(long time, String vehicleId, double lat,
       double lon, String dsc, boolean saveResult);
+  
+  /**
+   * Convenience method for bypassing inference completely and injecting a completed vehicle location record into the data stream.
+   */
+  public void handleVehicleLocation(VehicleLocationRecord record);
 
   /**
    * Convenience method for clearing any active location inference data for the

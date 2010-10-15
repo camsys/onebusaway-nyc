@@ -8,6 +8,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingMutableDao;
+import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.MonitoredVehicleJourney;
 import org.onebusaway.siri.model.ServiceDelivery;
@@ -22,6 +23,8 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
+  private VehicleLocationListener _vehicleLocationListener;
+
   private VehicleTrackingMutableDao _recordDao;
 
   private String _agencyId = "MTA NYCT";
@@ -33,12 +36,22 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Autowired
+  public void setVehicleLocationListener(
+      VehicleLocationListener vehicleLocationListener) {
+    _vehicleLocationListener = vehicleLocationListener;
+  }
+
+  @Autowired
   public void setRecordDao(VehicleTrackingMutableDao recordDao) {
     _recordDao = recordDao;
   }
 
   public void setAgencyId(String agencyId) {
     _agencyId = agencyId;
+  }
+  
+  public String getDefaultVehicleAgencyId() {
+    return _agencyId;
   }
 
   @Override
@@ -56,7 +69,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     record.setLongitude(location.Longitude);
     record.setTime(delivery.ResponseTimestamp.getTimeInMillis());
 
-    handleRecord(record,false);
+    handleRecord(record, false);
   }
 
   @Override
@@ -74,9 +87,15 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Override
+  public void handleVehicleLocation(VehicleLocationRecord record) {
+    _vehicleLocationListener.handleVehicleLocationRecord(record);
+  }
+
+  @Override
   public void resetVehicleLocation(String vehicleId) {
     AgencyAndId vid = new AgencyAndId(_agencyId, vehicleId);
     _vehicleLocationInferenceService.resetVehicleLocation(vid);
+    _vehicleLocationListener.resetVehicleLocation(vid);
   }
 
   @Override
@@ -92,14 +111,16 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   @Override
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId) {
-    return _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(new AgencyAndId(_agencyId,vehicleId));
+    return _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(new AgencyAndId(
+        _agencyId, vehicleId));
   }
-  
+
   @Override
   public List<Particle> getMostLikelyParticlesForVehicleId(String vehicleId) {
-    return _vehicleLocationInferenceService.getMostLikelyParticlesForVehicleId(new AgencyAndId(_agencyId,vehicleId));
+    return _vehicleLocationInferenceService.getMostLikelyParticlesForVehicleId(new AgencyAndId(
+        _agencyId, vehicleId));
   }
-  
+
   /****
    * Private Methods
    ****/

@@ -25,6 +25,7 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EJourneyPhase;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
@@ -115,15 +116,16 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public int simulateLocationsFromTrace(InputStream traceInputStream,
-      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval)
-      throws IOException {
+      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime,
+      int minimumRecordInterval, boolean bypassInference) throws IOException {
 
     SimulatorTask task = new SimulatorTask();
     task.setPauseOnStart(pauseOnStart);
     task.setRunInRealtime(runInRealtime);
     task.setShiftStartTime(shiftStartTime);
     task.setMinimumRecordInterval(minimumRecordInterval);
-    
+    task.setBypassInference(bypassInference);
+
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
     reader.readEntities(NycTestLocationRecord.class, traceInputStream);
@@ -188,7 +190,7 @@ public class VehicleLocationSimulationServiceImpl implements
     if (task != null)
       task.step();
   }
-  
+
   @Override
   public void stepSimulation(int taskId, int recordIndex) {
     SimulatorTask task = _tasks.get(taskId);
@@ -233,7 +235,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public int addSimulationForBlockInstance(AgencyAndId blockId,
-      long serviceDate, long actualTime, Properties properties) {
+      long serviceDate, long actualTime, boolean bypassInference,
+      Properties properties) {
 
     Random random = new Random();
 
@@ -244,6 +247,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
     task.setPauseOnStart(false);
     task.setRunInRealtime(true);
+    task.setBypassInference(bypassInference);
 
     BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
         blockId, serviceDate);
@@ -309,10 +313,12 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setVehicleId(vehicleId);
 
       record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockId));
+      record.setActualServiceDate(serviceDate);
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       record.setActualDsc(dsc);
       record.setActualLat(location.getLat());
       record.setActualLon(location.getLon());
+      record.setActualPhase(EJourneyPhase.IN_PROGRESS.toString());
 
       task.addRecord(record);
 

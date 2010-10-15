@@ -12,7 +12,7 @@ public interface VehicleLocationSimulationService {
 
   public int simulateLocationsFromTrace(InputStream traceInputStream,
       boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime,
-      int minimumRecordInterval) throws IOException;
+      int minimumRecordInterval, boolean bypassInference) throws IOException;
 
   public List<VehicleLocationSimulationSummary> getSimulations();
 
@@ -36,6 +36,6 @@ public interface VehicleLocationSimulationService {
       AgencyAndId blockId, long serviceDate);
 
   public int addSimulationForBlockInstance(AgencyAndId blockId,
-      long serviceDate, long actualTime, Properties properties);
+      long serviceDate, long actualTime, boolean bypassInference, Properties properties);
 
 }

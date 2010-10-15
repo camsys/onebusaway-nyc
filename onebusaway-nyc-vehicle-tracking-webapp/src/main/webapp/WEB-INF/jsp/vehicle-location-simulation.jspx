@@ -7,7 +7,7 @@
 <title>Vehicle Location Simulations</title>
 <style type="text/css">
 #stepRecordIndex {
-  width: 2em
+	width: 2em
 }
 </style>
 </head>
@@ -35,7 +35,20 @@
     </tr>
     <tr>
         <td>Minimum record interval:</td>
-        <td><p><input type="text" name="minimumRecordInterval" value="60"/></p><p> Records coming less than N seconds after the previous record will be pruned.</p></td>
+        <td>
+        <p><input type="text" name="minimumRecordInterval"
+            value="60" /> - Records coming less than N seconds after
+        the previous record will be pruned.</p>
+        </td>
+    </tr>
+    <tr>
+        <td>Bypass Inference:</td>
+        <td>
+        <p><input type="checkbox" name="bypassInference" /> -
+        Bypass inference engine and pass vehile location records
+        directly to the transit data federation. Assumes "actual"
+        ground-truth info is set in the trace.</p>
+        </td>
     </tr>
     <tr>
         <td></td>
@@ -45,12 +58,14 @@
 </form>
 
 <h2>Scheduled Trips</h2>
-<p>You can use a trip that's scheduled to be active right now as a template for a simulation run.</p>
+<p>You can use a trip that's scheduled to be active right now as a
+template for a simulation run.</p>
 
-<p><a href="vehicle-location-simulation!active-blocks.do">See the list of Currently Scheduled Trips</a></p>
+<p><a href="vehicle-location-simulation!active-blocks.do">See
+the list of Currently Scheduled Trips</a></p>
 
 <h2>Active Simulations</h2>
-<jsp:include page="vehicle-location-simulation-summaries-snippet.jspx"/>
+<jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
 
 </body>
 </html>

@@ -33,6 +33,9 @@ public class NycTestLocationRecord implements Serializable {
   private String actualBlockId;
 
   @CsvField(optional = true)
+  private long actualServiceDate;
+
+  @CsvField(optional = true)
   private double actualDistanceAlongBlock = Double.NaN;
 
   @CsvField(optional = true)
@@ -101,6 +104,14 @@ public class NycTestLocationRecord implements Serializable {
 
   public void setActualBlockId(String actualBlockId) {
     this.actualBlockId = actualBlockId;
+  }
+
+  public long getActualServiceDate() {
+    return actualServiceDate;
+  }
+
+  public void setActualServiceDate(long actualServiceDate) {
+    this.actualServiceDate = actualServiceDate;
   }
 
   public double getActualDistanceAlongBlock() {

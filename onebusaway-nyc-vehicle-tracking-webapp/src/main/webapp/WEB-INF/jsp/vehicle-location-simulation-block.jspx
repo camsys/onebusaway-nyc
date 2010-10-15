@@ -20,6 +20,15 @@ Location Simulation Console</a></p>
     method="POST">
 <table>
     <tr>
+        <td>Bypass Inference:</td>
+        <td>
+        <p><input type="checkbox" name="bypassInference" /> -
+        Bypass inference engine and pass vehile location records
+        directly to the transit data federation. Assumes "actual"
+        ground-truth info is set in the trace.</p>
+        </td>
+    </tr>
+    <tr>
         <td>Parameters:</td>
         <td><textarea name="properties" rows="10" cols="40"><jsp:text></jsp:text></textarea></td>
     </tr>
