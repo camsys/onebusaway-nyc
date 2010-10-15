@@ -8,14 +8,12 @@ import java.util.Set;
 import org.onebusaway.collections.MappingLibrary;
 import org.onebusaway.collections.Min;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.XYPoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.geospatial.services.UTMLibrary;
 import org.onebusaway.geospatial.services.UTMProjection;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Gaussian;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
@@ -64,19 +62,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   /**
    * Default is 30 minutes
    */
-  private long _tripSearchTimeBeforeFirstStop = 30 * 60 * 1000;
+  private long _tripSearchTimeBeforeFirstStop = 50 * 60 * 1000;
 
   /**
    * Default is 30 minutes
    */
   private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
-
-  /**
-   * We need some way of scoring nearby trips
-   */
-  private Gaussian _nearbyTripSigma = new Gaussian(0, 400);
-
-  private Gaussian _scheduleDeviationSigma = new Gaussian(0, 32 * 60);
 
   /****
    * Public Methods
@@ -137,24 +128,13 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     _shapePointsLibrary.setLocalMinimumThreshold(localMinimumThreshold);
   }
 
-  /**
-   * 
-   * @param scheduleDeviationSigma time, in seconds
-   */
-  public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
-    _scheduleDeviationSigma = new Gaussian(0, scheduleDeviationSigma);
-  }
-
   /****
    * {@link BlocksFromObservationService} Interface
    ****/
-
+  
   @Override
-  public CDFMap<BlockState> determinePotentialBlocksForObservation(
+  public Set<BlockInstance> determinePotentialBlocksForObservation(
       Observation observation) {
-
-    NycVehicleLocationRecord record = observation.getRecord();
-
     Set<BlockInstance> potentialBlocks = new HashSet<BlockInstance>();
 
     /**
@@ -166,8 +146,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      * Second source of trips: trips nearby the current gps location
      */
     computeNearbyBlocks(observation, potentialBlocks);
-
-    return buildCdfForPotentialBlocks(observation, record, potentialBlocks);
+    return potentialBlocks;
   }
 
   @Override
@@ -349,47 +328,5 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
     return new BlockState(blockInstance, blockLocation, dsc);
-  }
-
-  private CDFMap<BlockState> buildCdfForPotentialBlocks(
-      Observation observation, NycVehicleLocationRecord record,
-      Set<BlockInstance> potentialBlocks) {
-    CDFMap<BlockState> cdf = new CDFMap<BlockState>();
-
-    _log.info("potential blocks found: " + potentialBlocks.size());
-
-    for (BlockInstance blockInstance : potentialBlocks) {
-      BlockState state = getBestBlockLocation(record.getTime(),
-          observation.getPoint(), blockInstance, 0, Double.POSITIVE_INFINITY);
-      double p = scoreState(state, observation);
-      cdf.put(p, state);
-      System.out.println(blockInstance + "\t"
-          + state.getBlockLocation().getDistanceAlongBlock() + "\t"
-          + state.getBlockLocation().getScheduledTime() + "\t" + p);
-    }
-    return cdf;
-  }
-
-  private double scoreState(BlockState state, Observation observation) {
-
-    ScheduledBlockLocation blockLocation = state.getBlockLocation();
-    CoordinatePoint p1 = blockLocation.getLocation();
-    ProjectedPoint p2 = observation.getPoint();
-
-    double d = SphericalGeometryLibrary.distance(p1.getLat(), p1.getLon(),
-        p2.getLat(), p2.getLon());
-    double prob1 = _nearbyTripSigma.getProbability(d);
-
-    BlockInstance blockInstance = state.getBlockInstance();
-    long serviceDate = blockInstance.getServiceDate();
-    int scheduledTime = blockLocation.getScheduledTime();
-
-    long time = serviceDate + scheduledTime * 1000;
-    long recordTime = observation.getRecord().getTime();
-
-    long timeDelta = Math.abs(time - recordTime) / 1000;
-    double prob2 = _scheduleDeviationSigma.getProbability(timeDelta);
-
-    return prob1 * prob2;
   }
 }

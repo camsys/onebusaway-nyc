@@ -9,9 +9,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.gtfs.csv.EntityHandler;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.EdgeState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
@@ -45,9 +46,13 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private volatile boolean _stepForOne = false;
 
+  private int _stepRecordIndex = -1;
+
   private boolean _runInRealtime = false;
 
   private boolean _shiftStartTime = false;
+
+  private int _minimumRecordInterval = 0;
 
   private long _startTimeOffset = 0;
 
@@ -92,6 +97,10 @@ class SimulatorTask implements Runnable, EntityHandler {
     _shiftStartTime = shiftStartTime;
   }
 
+  public void setMinimumRecordInterval(int minimumRecordInterval) {
+    _minimumRecordInterval = minimumRecordInterval;
+  }
+
   public void addTag(Object tag) {
     _tags.add(tag);
   }
@@ -106,6 +115,14 @@ class SimulatorTask implements Runnable, EntityHandler {
         _startTimeOffset = System.currentTimeMillis() - record.getTimestamp();
       record.setTimestamp(record.getTimestamp() + _startTimeOffset);
     }
+
+    // Should we prune a record that comes too close behind a previous record?
+    if (!_records.isEmpty()) {
+      NycTestLocationRecord previous = _records.get(_records.size() - 1);
+      if ((record.getTimestamp() - previous.getTimestamp()) / 1000 < _minimumRecordInterval)
+        return;
+    }
+
     _records.add(record);
     String vid = record.getVehicleId();
     if (_vehicleId != null) {
@@ -133,6 +150,13 @@ class SimulatorTask implements Runnable, EntityHandler {
     notify();
   }
 
+  public synchronized void step(int recordIndex) {
+    _paused = true;
+    _stepForOne = true;
+    _stepRecordIndex = recordIndex;
+    notify();
+  }
+
   public VehicleLocationSimulationSummary getSummary() {
     VehicleLocationSimulationSummary summary = new VehicleLocationSimulationSummary();
     summary.setId(_id);
@@ -156,20 +180,21 @@ class SimulatorTask implements Runnable, EntityHandler {
   }
 
   public List<NycTestLocationRecord> getResults() {
-    
+
     List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
-    
-    if( particles == null)
+
+    if (particles == null)
       return Collections.emptyList();
-    
+
     List<NycTestLocationRecord> records = new ArrayList<NycTestLocationRecord>();
-    
+
     for (Particle particle : particles) {
 
       VehicleState state = particle.getData();
       EdgeState edgeState = state.getEdgeState();
       ProjectedPoint p = edgeState.getPointOnEdge();
-      BlockState blockState = state.getBlockState();
+      JourneyState journeyState = state.getJourneyState();
+      BlockState blockState = journeyState.getBlockState();
       BlockInstance blockInstance = blockState.getBlockInstance();
       BlockConfigurationEntry block = blockInstance.getBlock();
       ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
@@ -184,6 +209,7 @@ class SimulatorTask implements Runnable, EntityHandler {
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       record.setActualLat(blockLocation.getLocation().getLat());
       record.setActualLon(blockLocation.getLocation().getLon());
+      record.setActualPhase(journeyState.getPhase().toString());
       record.setVehicleId(_vehicleId);
       records.add(record);
     }
@@ -211,6 +237,8 @@ class SimulatorTask implements Runnable, EntityHandler {
     try {
       resetAllVehiclesAppearingInRecordData();
 
+      int recordIndex = 0;
+
       for (NycTestLocationRecord record : _records) {
 
         if (Thread.interrupted())
@@ -221,6 +249,9 @@ class SimulatorTask implements Runnable, EntityHandler {
 
         if (shouldExitAfterPossiblePause())
           return;
+
+        _log.info("sending record: index=" + recordIndex);
+        recordIndex++;
 
         _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
             record.getVehicleId(), record.getLat(), record.getLon(),
@@ -243,16 +274,7 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   @Override
   public void handleEntity(Object bean) {
-
     NycTestLocationRecord record = (NycTestLocationRecord) bean;
-
-    // If the gps hasn't changed, ignore the record
-    if (!_records.isEmpty()) {
-      NycTestLocationRecord prev = _records.get(_records.size() - 1);
-      if (prev.getLat() == record.getLat() && prev.getLon() == record.getLon())
-        return;
-    }
-
     addRecord(record);
   }
 
@@ -280,7 +302,13 @@ class SimulatorTask implements Runnable, EntityHandler {
         return true;
       }
     }
-    _stepForOne = false;
+
+    if (_stepRecordIndex == -1
+        || _stepRecordIndex < _recordsProcessed.intValue()) {
+      _stepForOne = false;
+      _stepRecordIndex = -1;
+    }
+
     return false;
   }
 
@@ -289,10 +317,10 @@ class SimulatorTask implements Runnable, EntityHandler {
     for (int i = 0; i < 10; i++) {
 
       List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
-      
+
       if (particles == null)
         particles = Collections.emptyList();
-      
+
       int a = particles.size();
       int b = _recordsProcessed.get();
 
@@ -310,4 +338,5 @@ class SimulatorTask implements Runnable, EntityHandler {
     _log.warn("vehicle location inference never completed");
     return true;
   }
+
 }

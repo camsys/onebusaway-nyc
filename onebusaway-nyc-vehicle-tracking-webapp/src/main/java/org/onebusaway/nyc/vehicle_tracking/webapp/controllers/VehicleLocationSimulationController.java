@@ -118,6 +118,7 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
       @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
       @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime,
+      @RequestParam(value = "minimumRecordInterval", required = false) int minimumRecordInterval,
       @RequestParam(required = false, defaultValue = "false") boolean returnId)
       throws IOException {
 
@@ -132,7 +133,7 @@ public class VehicleLocationSimulationController {
         in = new GZIPInputStream(in);
 
       taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(in,
-          realtime, pauseOnStart, shiftStartTime);
+          realtime, pauseOnStart, shiftStartTime, minimumRecordInterval);
     }
 
     if (returnId) {
@@ -152,6 +153,13 @@ public class VehicleLocationSimulationController {
   @RequestMapping(value = "/vehicle-location-simulation!step.do", method = RequestMethod.GET)
   public ModelAndView step(@RequestParam() int taskId) {
     _vehicleLocationSimulationService.stepSimulation(taskId);
+    return new ModelAndView("redirect:/vehicle-location-simulation.do");
+  }
+
+  @RequestMapping(value = "/vehicle-location-simulation!step-to.do", method = RequestMethod.GET)
+  public ModelAndView stepTo(@RequestParam() int taskId,
+      @RequestParam() int recordIndex) {
+    _vehicleLocationSimulationService.stepSimulation(taskId, recordIndex);
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
 

@@ -22,7 +22,7 @@ public class NycTestLocationRecord implements Serializable {
   @CsvField(name = "dt", mapping = DateTimeFieldMappingFactory.class)
   private long timestamp;
 
-  @CsvField(optional=true)
+  @CsvField(optional = true)
   private String dsc;
 
   /****
@@ -43,6 +43,9 @@ public class NycTestLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private double actualLon = Double.NaN;
+
+  @CsvField(optional = true)
+  private String actualPhase = null;
 
   public void setVehicleId(String vehicleId) {
     this.vehicleId = vehicleId;
@@ -130,6 +133,14 @@ public class NycTestLocationRecord implements Serializable {
 
   public void setActualLon(double actualLon) {
     this.actualLon = actualLon;
+  }
+
+  public String getActualPhase() {
+    return actualPhase;
+  }
+
+  public void setActualPhase(String actualPhase) {
+    this.actualPhase = actualPhase;
   }
 
   public static InputStream getTestData() {

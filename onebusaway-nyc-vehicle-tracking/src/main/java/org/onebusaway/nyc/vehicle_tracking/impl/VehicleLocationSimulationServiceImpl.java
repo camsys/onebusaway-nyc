@@ -115,14 +115,15 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public int simulateLocationsFromTrace(InputStream traceInputStream,
-      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime)
+      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval)
       throws IOException {
 
     SimulatorTask task = new SimulatorTask();
     task.setPauseOnStart(pauseOnStart);
     task.setRunInRealtime(runInRealtime);
     task.setShiftStartTime(shiftStartTime);
-
+    task.setMinimumRecordInterval(minimumRecordInterval);
+    
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
     reader.readEntities(NycTestLocationRecord.class, traceInputStream);
@@ -186,6 +187,13 @@ public class VehicleLocationSimulationServiceImpl implements
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       task.step();
+  }
+  
+  @Override
+  public void stepSimulation(int taskId, int recordIndex) {
+    SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      task.step(recordIndex);
   }
 
   @Override

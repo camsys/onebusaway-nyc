@@ -255,8 +255,7 @@ public class ParticleFilter<OBS> {
 
     if (mostRecentIndex == CDF.INVALID_INDEX) {
       throw new IllegalArgumentException(
-          "Thou art boned: Empty CDF Found: No particle has "
-              + "any likelihood! " + i);
+          "Empty CDF Found: No particle has any likelihood! " + i);
     }
 
     return new CDF(accumulate, index, sum);

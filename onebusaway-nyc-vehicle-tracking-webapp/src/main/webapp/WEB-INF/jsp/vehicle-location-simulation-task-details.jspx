@@ -35,6 +35,7 @@ table td {
     <thead>
         <tr>
             <td>P</td>
+            <td>Phase</td>
             <td>BlockId</td>
             <td>TripId</td>
             <td>BlockLocation</td>
@@ -49,10 +50,12 @@ table td {
     <c:forEach var="p" items="${details.particles}">
     <tr>
         <c:set var="edgeState" value="${p.data.edgeState}"/>
-        <c:set var="blockState" value="${p.data.blockState}"/>
+        <c:set var="journeyState" value="${p.data.journeyState}"/>
+        <c:set var="blockState" value="${journeyState.blockState}"/>
         <c:set var="blockLocation" value="${blockState.blockLocation}"/>
         
         <td><c:out value="${p.weight}" /></td>
+        <td><c:out value="${journeyState.phase}"/></td>
         <td><a href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out value="${blockState.blockInstance.block.block.id}" /></a></td>
         <td><c:out value="${blockLocation.activeTrip.trip.id}" /></td>
         <td><c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
@@ -70,7 +73,8 @@ table td {
 <h2>Raw Particle Location (Blocks)</h2>
 <p>
 <c:forEach var="p" items="${details.particles}">
-  <c:set var="blockState" value="${p.data.blockState}"/>
+  <c:set var="journeyState" value="${p.data.journeyState}"/>
+  <c:set var="blockState" value="${journeyState.blockState}"/>
   <c:set var="blockLocation" value="${blockState.blockLocation}"/>
   <c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /><br/>
 </c:forEach>

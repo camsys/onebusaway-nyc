@@ -1,5 +1,6 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.PointVector;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
@@ -45,6 +46,10 @@ public class EdgeState {
     return pointOnEdge;
   }
 
+  public CoordinatePoint getLocationOnEdge() {
+    return pointOnEdge.toCoordinatePoint();
+  }
+
   public double getDistanceAlongEdge() {
     return distanceAlongEdge;
   }
@@ -59,5 +64,10 @@ public class EdgeState {
     double y = from.getY() + v.getY();
     ProjectedPoint p = ProjectedPointFactory.reverse(x, y, from.getSrid());
     return new EdgeState(edge, p, distanceAlongEdge + remainingDistance);
+  }
+  
+  @Override
+  public String toString() {
+    return pointOnEdge.getLat() + " " + pointOnEdge.getLon() + " " + edge + " " + distanceAlongEdge;
   }
 }

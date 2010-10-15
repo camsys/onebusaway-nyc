@@ -50,4 +50,9 @@
         </property>
     </bean>
 
+    <bean id="baseLocationServiceImpl" class="org.onebusaway.nyc.vehicle_tracking.impl.BaseLocationServiceImpl">
+        <property name="path"
+            value="${onebusaway_prefix}/src/integration-test/resources/BaseLocations.txt" />
+    </bean>
+
 </beans>

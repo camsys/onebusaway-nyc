@@ -23,7 +23,7 @@ public class DateTimeFieldMappingFactory implements FieldMappingFactory {
       "yyyy-MM-dd' 'HH:mm:ss");
   
   static {
-    _format.setTimeZone(TimeZone.getTimeZone("Amercia/New_York"));
+    _format.setTimeZone(TimeZone.getTimeZone("America/New_York"));
   }
 
   @Override

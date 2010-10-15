@@ -5,6 +5,11 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>Vehicle Location Simulations</title>
+<style type="text/css">
+#stepRecordIndex {
+  width: 2em
+}
+</style>
 </head>
 <body>
 
@@ -27,6 +32,10 @@
     <tr>
         <td>Shift start time to now:</td>
         <td><input type="checkbox" name="shiftStartTime" /></td>
+    </tr>
+    <tr>
+        <td>Minimum record interval:</td>
+        <td><p><input type="text" name="minimumRecordInterval" value="60"/></p><p> Records coming less than N seconds after the previous record will be pruned.</p></td>
     </tr>
     <tr>
         <td></td>

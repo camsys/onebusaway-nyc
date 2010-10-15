@@ -35,4 +35,9 @@ public class CDFMap<T> {
   public int size() {
     return _entries.size();
   }
+  
+  @Override
+  public String toString() {
+    return _entries.toString();
+  }
 }

@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;

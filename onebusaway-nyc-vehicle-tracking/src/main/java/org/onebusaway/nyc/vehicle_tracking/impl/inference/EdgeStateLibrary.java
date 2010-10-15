@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Gaussian;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.transit_data_federation.impl.walkplanner.StreetGraphLibrary;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry;
@@ -23,7 +24,7 @@ public class EdgeStateLibrary {
 
   private double _maxSearchRadius = 800;
 
-  private Gaussian _edgeProbability = new Gaussian(0, 20);
+  private DeviationModel _edgeProbability = new DeviationModel(20);
 
   @Autowired
   public void setStreetGraph(WalkPlannerGraph streetGraph) {
@@ -47,7 +48,7 @@ public class EdgeStateLibrary {
   }
 
   public void setEdgeProbabilitySigma(double edgeProbabilitySigma) {
-    _edgeProbability = new Gaussian(0, edgeProbabilitySigma);
+    _edgeProbability = new DeviationModel(edgeProbabilitySigma);
   }
 
   public CDFMap<EdgeState> calculatePotentialEdgeStates(ProjectedPoint location) {
@@ -107,7 +108,7 @@ public class EdgeStateLibrary {
 
     for (EdgeState edgeLocation : potentialEdgeLocations) {
       double d = point.distance(edgeLocation.getPointOnEdge());
-      double p = _edgeProbability.getProbability(d);
+      double p = _edgeProbability.probability(d);
       cdf.put(p, edgeLocation);
     }
 

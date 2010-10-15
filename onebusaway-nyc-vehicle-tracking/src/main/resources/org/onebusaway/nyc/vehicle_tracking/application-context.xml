@@ -38,8 +38,50 @@
     </bean>
 
     <bean id="particleFactory" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl" />
-    <bean id="motionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl" />
-    <bean id="sensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.SensorModelImpl" />
+
+    <!-- Motion Model -->
+
+    <bean id="motionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl">
+        <property name="motionModels">
+            <map>
+                <entry key="AT_BASE" value-ref="atBaseMotionModel" />
+                <entry key="DEADHEAD_BEFORE" value-ref="deadheadBeforeMotionModel" />
+                <entry key="IN_PROGRESS" value-ref="inProgressMotionModel" />
+                <entry key="LAYOVER" value-ref="layoverMotionModel" />
+                <entry key="DEADHEAD_AFTER" value-ref="deadheadAfterMotionModel" />
+                <entry key="UNKNOWN" value-ref="unknownMotionModel" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="atBaseMotionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.JourneyAtBaseMotionModel" />
+    <bean id="deadheadBeforeMotionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.JourneyDeadheadBeforeMotionModel" />
+    <bean id="inProgressMotionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.JourneyInProgressMotionModel" />
+    <bean id="layoverMotionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.JourneyLayoverMotionModel" />
+    <bean id="deadheadAfterMotionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.JourneyDeadheadAfterMotionModel" />
+    <bean id="unknownMotionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.JourneyUnknownMotionModel" />
+
+    <!-- Sensor Model -->
+
+    <bean id="sensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.SensorModelImpl">
+        <property name="sensorModels">
+            <map>
+                <entry key="AT_BASE" value-ref="atBaseSensorModel" />
+                <entry key="DEADHEAD_BEFORE" value-ref="deadheadBeforeSensorModel" />
+                <entry key="IN_PROGRESS" value-ref="inProgressSensorModel" />
+                <entry key="LAYOVER" value-ref="layoverSensorModel" />
+                <entry key="DEADHEAD_AFTER" value-ref="deadheadAfterSensorModel" />
+                <entry key="UNKNOWN" value-ref="unknownSensorModel" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="atBaseSensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.sensor_model.JourneyAtBaseSensorModelImpl" />
+    <bean id="deadheadBeforeSensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.sensor_model.JourneyDeadheadBeforeSensorModelImpl" />
+    <bean id="inProgressSensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.sensor_model.JourneyInProgressSensorModelImpl" />
+    <bean id="layoverSensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.sensor_model.JourneyLayoverSensorModelImpl" />
+    <bean id="deadheadAfterSensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.sensor_model.JourneyDeadheadAfterSensorModelImpl" />
+    <bean id="unknownSensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.sensor_model.JourneyUnknownSensorModelImpl" />
 
     <bean id="particleFilterModel" class="org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel">
         <property name="particleFactory" ref="particleFactory" />

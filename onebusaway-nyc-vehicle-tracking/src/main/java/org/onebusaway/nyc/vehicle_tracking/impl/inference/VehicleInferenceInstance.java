@@ -3,6 +3,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
@@ -24,7 +26,8 @@ public class VehicleInferenceInstance {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
 
-  public synchronized void handleUpdate(NycVehicleLocationRecord record, boolean saveResult) {
+  public synchronized void handleUpdate(NycVehicleLocationRecord record,
+      boolean saveResult) {
 
     // If this record occurs BEFORE the most recent update, we ignore it
     if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
@@ -54,7 +57,7 @@ public class VehicleInferenceInstance {
     record.setTimeOfRecord((long) particle.getTimestamp());
     // record.setPositionDeviation(state.getPositionDeviation());
 
-    BlockState blockState = state.getBlockState();
+    BlockState blockState = state.getJourneyState().getBlockState();
 
     if (blockState != null) {
       BlockInstance blockInstance = blockState.getBlockInstance();
@@ -71,7 +74,7 @@ public class VehicleInferenceInstance {
   public synchronized List<Particle> getCurrentParticles() {
     return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
   }
-  
+
   public synchronized List<Particle> getMostLikelyParticles() {
     return new ArrayList<Particle>(_mostLikelyParticles);
   }

@@ -50,7 +50,11 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   @Override
   @Cacheable
   public boolean isOutOfServiceDestinationSignCode(String destinationSignCode) {
-
+    List<DestinationSignCodeRecord> records = _dao.getOutOfServiceDestinationSignCodeRecords();
+    for( DestinationSignCodeRecord record : records) {
+      if( record.getDestinationSignCode().equals(destinationSignCode))
+        return true;
+    }
     return false;
   }
 }

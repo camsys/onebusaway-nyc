@@ -64,6 +64,8 @@
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.vehicle_tracking.impl.StifTask">
         <property name="stifPath"
             value="${onebusaway_prefix}/src/integration-test/resources/stifs" />
+	    <property name="notInServiceDscPath"
+            value="${onebusaway_prefix}/src/integration-test/resources/not-of-service-dscs.txt" />
     </bean>
 
 </beans>

@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;

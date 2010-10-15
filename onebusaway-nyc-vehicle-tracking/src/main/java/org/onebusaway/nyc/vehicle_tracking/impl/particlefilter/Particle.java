@@ -34,6 +34,13 @@ public class Particle implements Serializable, Comparable<Particle> {
     _parent = parent;
     _weight = weight;
   }
+  
+  public Particle(double timestamp, Particle parent, double weight, Object data) {
+    _timestamp = timestamp;
+    _parent = parent;
+    _weight = weight;
+    _data = data;
+  }
 
   public Particle(Particle particle) {
     _timestamp = particle.getTimestamp();
@@ -77,6 +84,14 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   public Particle cloneParticle() {
     return new Particle(this);
+  }
+  
+  public Particle advanceParticle(long timestamp) {
+    Particle p = new Particle(_timestamp);
+    p.setData(_data);
+    p.setParent(this);
+    p.setWeight(_weight);
+    return p;
   }
 
   @Override
