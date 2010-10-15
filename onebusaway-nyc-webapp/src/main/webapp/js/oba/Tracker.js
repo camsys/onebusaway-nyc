@@ -127,7 +127,7 @@ OBA.Tracker = function() {
       el.append(controls);
 
       // display routes available at this stop
-      if(typeof record.routesAvailable !== 'undefined') {
+      if(typeof record.routesAvailable !== 'undefined' && record.routesAvailable.length > 0) {
           var description = '<ul class="description">';
           
           jQuery.each(record.routesAvailable, function(i, route) {
@@ -137,6 +137,8 @@ OBA.Tracker = function() {
           description += '</ul>';
           
           el.append(jQuery(description));
+      } else {
+    	  el.append('<ul class="description">No service is available at this stop.</ul>');
       }
 
       return el;      

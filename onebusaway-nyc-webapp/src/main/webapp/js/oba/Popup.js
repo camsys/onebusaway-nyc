@@ -192,7 +192,7 @@ OBA.StopPopup = function(stopId, map) {
     var url = OBA.Config.stopUrl + "/" + stopId + ".json";
     return OBA.Popup(
         map,
-        makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey, minutesBefore: 1440, minutesAfter: 1440}),
+        makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey, minutesAfter: 1440}),
         generateStopMarkup);
 };
 
