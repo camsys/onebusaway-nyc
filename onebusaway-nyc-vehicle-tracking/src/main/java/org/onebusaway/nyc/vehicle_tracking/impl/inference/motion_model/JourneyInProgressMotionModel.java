@@ -180,7 +180,6 @@ public class JourneyInProgressMotionModel implements JourneyMotionModel {
     _log.info("nextDSC=" + observedDsc);
 
     Set<BlockInstance> instances = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
-    return _blockStateSamplingStrategy.sampleBlockStateForJourneyInProgress(
-        instances, obs);
+    return _blockStateSamplingStrategy.cdfForJourneyInProgress(instances, obs).sample();
   }
 }

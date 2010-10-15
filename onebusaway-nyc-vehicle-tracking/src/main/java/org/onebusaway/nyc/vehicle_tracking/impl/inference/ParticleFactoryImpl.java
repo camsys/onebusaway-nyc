@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.StateTransitionService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -13,7 +14,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
-import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private BlockStateSamplingStrategyImpl _blockStateSamplingStrategy;
 
-  private BaseLocationService _baseLocationService;
+  private StateTransitionService _stateTransitionService;
 
   @Autowired
   public void setEdgeStateLibrary(EdgeStateLibrary edgeStateLibrary) {
@@ -68,8 +68,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Autowired
-  public void setBaseLocationService(BaseLocationService baseLocationService) {
-    _baseLocationService = baseLocationService;
+  public void setStateTransitionService(
+      StateTransitionService stateTransitionService) {
+    _stateTransitionService = stateTransitionService;
   }
 
   public void setInitialNumberOfParticles(int initialNumberOfParticles) {
@@ -95,7 +96,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     CDFMap<EdgeState> cdf = _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
     Set<BlockInstance> blocks = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
-    CDFMap<BlockState> blockCdf = _blockStateSamplingStrategy.blockStateCdfAtJourneyStart(
+
+    CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(
+        blocks, obs);
+
+    CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(
         blocks, obs);
 
     List<Particle> particles = new ArrayList<Particle>(
@@ -106,30 +111,15 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
-      EdgeState edgeLocation = cdf.sample();
+      EdgeState edgeState = cdf.sample();
 
-      BlockState blockState = null;
-
-      if (!blocks.isEmpty()) {
-        blockState = blockCdf.sample();
-      } else {
-        blockState = new BlockState(null, null, null);
-      }
-
-      CoordinatePoint locationOnEdge = edgeLocation.getLocationOnEdge();
-
+      CoordinatePoint locationOnEdge = edgeState.getLocationOnEdge();
       MotionState motionState = new MotionState(obs.getTime(), locationOnEdge);
 
-      String baseName = _baseLocationService.getBaseNameForLocation(locationOnEdge);
+      JourneyState js = determineJourneyState(edgeState, locationOnEdge,
+          blocks, atStartCdf, inProgresCdf, obs);
 
-      JourneyState js = null;
-
-      if (baseName != null)
-        js = JourneyState.atBase(blockState);
-      else
-        js = JourneyState.deadheadBefore(blockState, locationOnEdge);
-
-      VehicleState state = new VehicleState(edgeLocation, motionState, js);
+      VehicleState state = new VehicleState(edgeState, motionState, js);
 
       Particle p = new Particle(timestamp);
       p.setData(state);
@@ -139,4 +129,31 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
+  public JourneyState determineJourneyState(EdgeState edgeState,
+      CoordinatePoint locationOnEdge, Set<BlockInstance> blocks,
+      CDFMap<BlockState> atStartCdf, CDFMap<BlockState> inProgressCdf,
+      Observation obs) {
+
+    // If we're at a base to start, we favor that over all other possibilities
+    if (_stateTransitionService.isAtBase(edgeState)) {
+
+      BlockState blockState = null;
+
+      if (!atStartCdf.isEmpty())
+        blockState = atStartCdf.sample();
+
+      return _stateTransitionService.transitionToBase(blockState, obs);
+    }
+
+    // No blocks? Jump to the unknown state
+    if (blocks.isEmpty())
+      return JourneyState.unknown();
+
+    // At this point, we could be dead heading before a block or actually on a
+    // block in progress. We slightly favor blocks already in progress
+    if (Math.random() < 0.75)
+      return JourneyState.inProgress(inProgressCdf.sample());
+    else
+      return JourneyState.deadheadBefore(atStartCdf.sample(), locationOnEdge);
+  }
 }

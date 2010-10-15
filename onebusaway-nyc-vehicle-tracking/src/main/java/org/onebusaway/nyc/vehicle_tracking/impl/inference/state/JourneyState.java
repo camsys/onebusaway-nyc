@@ -11,8 +11,6 @@ public final class JourneyState {
   private final Object data;
 
   private JourneyState(EJourneyPhase phase, BlockState blockState, Object data) {
-    if (blockState == null)
-      throw new IllegalArgumentException("blockState cannot be null");
     this.phase = phase;
     this.blockState = blockState;
     this.data = data;
@@ -53,7 +51,7 @@ public final class JourneyState {
     return new JourneyState(EJourneyPhase.DEADHEAD_AFTER, blockState, null);
   }
 
-  public static JourneyState unknown(BlockState blockState) {
-    return new JourneyState(EJourneyPhase.UNKNOWN, blockState, null);
+  public static JourneyState unknown() {
+    return new JourneyState(EJourneyPhase.UNKNOWN, null, null);
   }
 }

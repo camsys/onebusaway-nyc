@@ -122,8 +122,7 @@ public class StateTransitionService {
 
     } else {
       // Resume a block already in progress
-      BlockState blockState = _blockStateSamplingStrategy.sampleBlockStateForJourneyInProgress(
-          instances, obs);
+      BlockState blockState = _blockStateSamplingStrategy.cdfForJourneyInProgress(instances, obs).sample();
       return JourneyState.inProgress(blockState);
     }
   }

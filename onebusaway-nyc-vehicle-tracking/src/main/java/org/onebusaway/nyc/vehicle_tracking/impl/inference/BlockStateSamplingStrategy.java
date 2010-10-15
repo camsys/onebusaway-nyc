@@ -15,14 +15,14 @@ public interface BlockStateSamplingStrategy {
   public BlockState sampleBlockStateAtJourneyStart(
       Set<BlockInstance> potentialBlocks, Observation observation);
 
-  public CDFMap<BlockState> blockStateCdfAtJourneyStart(
+  public CDFMap<BlockState> cdfForJourneyAtStart(
+      Set<BlockInstance> potentialBlocks, Observation observation);
+  
+  public CDFMap<BlockState> cdfForJourneyInProgress(
       Set<BlockInstance> potentialBlocks, Observation observation);
 
   public BlockState sampleBlockStateAtJourneyStart(
       Set<BlockInstance> potentialBlocks, Observation observation,
       BlockState currentBlockState);
-
-  public BlockState sampleBlockStateForJourneyInProgress(
-      Set<BlockInstance> potentialBlocks, Observation observation);
 
 }

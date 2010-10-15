@@ -98,14 +98,14 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   public BlockState sampleBlockStateAtJourneyStart(
       Set<BlockInstance> potentialBlocks, Observation observation) {
 
-    CDFMap<BlockState> cdf = blockStateCdfAtJourneyStart(potentialBlocks,
+    CDFMap<BlockState> cdf = cdfForJourneyAtStart(potentialBlocks,
         observation);
 
     return cdf.sample();
   }
 
   @Override
-  public CDFMap<BlockState> blockStateCdfAtJourneyStart(
+  public CDFMap<BlockState> cdfForJourneyAtStart(
       Set<BlockInstance> potentialBlocks, Observation observation) {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
@@ -163,16 +163,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     return cdf.sample();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateSamplingStrategy
-   * #sampleBlockStateForJourneyInProgress(java.util.Set,
-   * org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation)
-   */
   @Override
-  public BlockState sampleBlockStateForJourneyInProgress(
+  public CDFMap<BlockState> cdfForJourneyInProgress(
       Set<BlockInstance> potentialBlocks, Observation observation) {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
@@ -195,7 +187,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
           + "\t" + blockInstance);
     }
 
-    return cdf.sample();
+    return cdf;
   }
 
   /****

@@ -60,14 +60,16 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   private double _tripSearchRadius = 800;
 
   /**
-   * Default is 30 minutes
+   * Default is 50 minutes
    */
-  private long _tripSearchTimeBeforeFirstStop = 50 * 60 * 1000;
+  private long _tripSearchTimeBeforeFirstStop = 60 * 60 * 1000;
 
   /**
    * Default is 30 minutes
    */
   private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
+
+  private boolean _includeNearbyBlocks = false;
 
   /****
    * Public Methods
@@ -128,13 +130,18 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     _shapePointsLibrary.setLocalMinimumThreshold(localMinimumThreshold);
   }
 
+  public void setIncludeNearbyBlocks(boolean includeNearbyBlocks) {
+    _includeNearbyBlocks = includeNearbyBlocks;
+  }
+
   /****
    * {@link BlocksFromObservationService} Interface
    ****/
-  
+
   @Override
   public Set<BlockInstance> determinePotentialBlocksForObservation(
       Observation observation) {
+
     Set<BlockInstance> potentialBlocks = new HashSet<BlockInstance>();
 
     /**
@@ -143,9 +150,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     computePotentialBlocksFromDestinationSignCode(observation, potentialBlocks);
 
     /**
-     * Second source of trips: trips nearby the current gps location
+     * Second source of trips: trips nearby the current gps location Ok we're
+     * not doing this for now
      */
-    computeNearbyBlocks(observation, potentialBlocks);
+    if (_includeNearbyBlocks)
+      computeNearbyBlocks(observation, potentialBlocks);
+
     return potentialBlocks;
   }
 
@@ -163,10 +173,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   /*****
    * Private Methods
-   * 
-   * @param observation
-   * @param potentialBlocks
-   */
+   ****/
 
   private void computePotentialBlocksFromDestinationSignCode(
       Observation observation, Set<BlockInstance> potentialBlocks) {
