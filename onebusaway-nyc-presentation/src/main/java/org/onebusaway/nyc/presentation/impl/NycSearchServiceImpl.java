@@ -375,10 +375,19 @@ public class NycSearchServiceImpl implements NycSearchService {
     		}
     	}
     	
-    	if(! headsignToRoutesAvailable.keySet().contains(headsign)) {
-    		Collections.sort(distances);
+		AvailableRoute availableRoute = headsignToRoutesAvailable.get(headsign);
 
-    		AvailableRoute availableRoute = new AvailableRoute(shortName, longName, headsign, distances);
+		// set existing instance of availableRoutes with our updated distances.
+		if(availableRoute != null) {
+			List<DistanceAway> newDistances = availableRoute.getDistanceAway();
+			
+			newDistances.addAll(distances);
+			
+	    	Collections.sort(distances);
+			availableRoute.setDistances(newDistances);						
+		} else {
+	    	Collections.sort(distances);
+    		availableRoute = new AvailableRoute(shortName, longName, headsign, distances);
       	  
     		headsignToRoutesAvailable.put(headsign, availableRoute);    	
     	}
