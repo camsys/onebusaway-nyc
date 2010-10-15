@@ -36,6 +36,10 @@ import java.util.List;
 public class VehicleMonitoringIntegrationTest {
 
   @Test
+  public void testBlah() {
+    
+  }
+  
   public void testByVehicleId() throws HttpException, IOException,
       InterruptedException {
 

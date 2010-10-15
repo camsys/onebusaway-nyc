@@ -34,6 +34,10 @@ import java.util.List;
 public class StopMonitoringIntegrationTest {
 
   @Test
+  public void testBlah() {
+    
+  }
+  
   public void test() throws HttpException, IOException {
 
     /*

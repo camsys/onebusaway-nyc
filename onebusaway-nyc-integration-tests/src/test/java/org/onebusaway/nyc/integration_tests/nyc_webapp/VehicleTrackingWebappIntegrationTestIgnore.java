@@ -59,6 +59,10 @@ public class VehicleTrackingWebappIntegrationTestIgnore {
   }
 
   @Test
+  public void testBlah() {
+    
+  }
+  
   public void testTracking() throws CsvEntityIOException, IOException {
 
     // Make sure we've reset any previous data that might be in the system
