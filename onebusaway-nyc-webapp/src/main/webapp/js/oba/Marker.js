@@ -58,6 +58,9 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
         },
 
         updatePosition: function(latlng) {
+        	if(extraMarkerOptions.type === 'vehicle')
+        		popup.refresh();
+        	
         	marker.setPosition(latlng);
         },
         

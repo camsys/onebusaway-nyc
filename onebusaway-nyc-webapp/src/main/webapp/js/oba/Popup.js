@@ -18,8 +18,28 @@ OBA.theInfoWindow = null;
 OBA.theInfoWindowMarker = null;
 
 OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
-    return {
-        show: function(marker) {    
+	function createWrapper(content) {
+		var wrappedContent = jQuery('<div id="popup"></div>')
+                            .append(content)
+                            .appendTo("#map");
+                                                
+        wrappedContent = wrappedContent.css("width", 250).css("height", wrappedContent.height());
+        
+        return wrappedContent.get(0);
+	};
+	
+	return {
+    	refresh: function() {
+            fetchFn(function(json) {
+            	if(OBA.theInfoWindow === null)
+            		return;
+                        
+                OBA.theInfoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
+            });
+    		
+    	},
+    	
+    	show: function(marker) {    
             if(OBA.theInfoWindow)
                 OBA.theInfoWindow.close();
             
@@ -27,14 +47,7 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
                 OBA.theInfoWindow = new google.maps.InfoWindow();
                 OBA.theInfoWindowMarker = marker;
                 
-                // we need to append this node to the map for the size to be calculated properly
-                wrappedContent = jQuery('<div id="popup"></div>')
-                                    .append(bubbleNodeFn(json))
-                                    .appendTo("#map");
-                                                        
-                wrappedContent = wrappedContent.css("width", 250).css("height", wrappedContent.height());
-                        
-                OBA.theInfoWindow.setContent(wrappedContent.get(0));                
+                OBA.theInfoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
                 OBA.theInfoWindow.open(map, marker);
                 
                 google.maps.event.addListenerOnce(OBA.theInfoWindow, 'closeclick', function() {
