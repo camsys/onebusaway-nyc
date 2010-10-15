@@ -350,8 +350,8 @@ public class NycSearchServiceImpl implements NycSearchService {
     String stopDirection = stopBean.getDirection();
 
     Date now = new Date();
-    int minutesBefore = 5;
-    int minutesAfter = 35;
+    int minutesBefore = 1440;
+    int minutesAfter = 1440;
     Map<String, AvailableRoute> headsignToRoutesAvailable = new HashMap<String, AvailableRoute>();
 
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = transitService.getStopWithArrivalsAndDepartures(
