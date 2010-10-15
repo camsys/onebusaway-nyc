@@ -90,7 +90,7 @@ OBA.StopPopup = function(stopId, map) {
                 // only show positive distances
                 var meters = arrival.distanceFromStop;
                 var feet = OBA.Util.metersToFeet(meters);
-                var stops = arrival.numberOfStopsAway + 1;
+                var stops = arrival.numberOfStopsAway;
 
                 var vehicleInfo = {routeId: routeId,
                 				   stops: stops,
@@ -134,7 +134,11 @@ OBA.StopPopup = function(stopId, map) {
                     service += '<li><a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(distanceAway.routeId) + '">'
                               + OBA.Util.truncateToWidth(headsign, 100, 11) + '</a>';
 
-                    service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", "; 
+                    if(distanceAway.stops === 0) 
+                    	service += " (< 1 stop, "; 
+                    else
+                    	service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", "; 
+                    
                     service += OBA.Util.displayDistance(distanceAway.feet) + ")</li>";
 
                     included = true;
@@ -259,8 +263,14 @@ OBA.VehiclePopup = function(vehicleId, map) {
                 // we only have one stop currently
                 // this will not work if we get more than one
                 // because we reuse the distance information for each
-                var stopsAway = i+1;
-                var stopsAwayStr = (stopsAway === 1) ? "1 stop" : stopsAway + " stops";
+                var stopsAway = i;
+                var stopsAwayStr = null;
+                
+                if(stopsAway === 0)
+                	stopsAwayStr = "< 1 stop";
+                else
+                	stopsAwayStr = (stopsAway === 1) ? "1 stop" : stopsAway + " stops";
+                
                 var metersDistanceDelta = stop.scheduledDistance - distanceAlongTrip;
                 var feet = OBA.Util.metersToFeet(metersDistanceDelta);
                 var distanceStr = OBA.Util.displayDistance(feet);
