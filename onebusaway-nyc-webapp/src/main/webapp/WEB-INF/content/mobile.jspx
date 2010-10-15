@@ -21,7 +21,7 @@ under the License.
 <head>
 <title>Mobile Interface</title>
 
-<meta name="viewport" content="width = device-width"/>
+<meta name="viewport" content="width = 350"/>
 
 <style type="text/css">
 BODY, HTML {
