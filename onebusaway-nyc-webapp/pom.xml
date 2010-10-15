@@ -19,6 +19,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-presentation</artifactId>
+            <version>${project.version}</version>
         </dependency>
         
         <!-- the json package is included directly here -->
