@@ -118,7 +118,7 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
       @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
       @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime,
-      @RequestParam(value = "minimumRecordInterval", required = false) int minimumRecordInterval,
+      @RequestParam(value = "minimumRecordInterval", required = false, defaultValue="0") int minimumRecordInterval,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
       @RequestParam(required = false, defaultValue = "false") boolean returnId)
       throws IOException {
