@@ -42,5 +42,10 @@
         <property name="service" ref="transitDataServiceImpl" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
+    
+    <bean name="/vehicle-location-listener" class="org.springframework.remoting.caucho.HessianServiceExporter">
+        <property name="service" ref="vehicleStatusServiceImpl" />
+        <property name="serviceInterface" value="org.onebusaway.realtime.api.VehicleLocationListener" />
+    </bean>
 
 </beans>
