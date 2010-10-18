@@ -65,8 +65,10 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     record.setVehicleId(new AgencyAndId(_agencyId,
         monitoredVehicleJourney.VehicleRef));
     record.setDestinationSignCode(vehicleActivity.VehicleMonitoringRef);
-    record.setLatitude(location.Latitude);
-    record.setLongitude(location.Longitude);
+    if (location.Latitude != null) {
+      record.setLatitude(location.Latitude);
+      record.setLongitude(location.Longitude);
+    }
     record.setTime(delivery.ResponseTimestamp.getTimeInMillis());
 
     handleRecord(record, false);
