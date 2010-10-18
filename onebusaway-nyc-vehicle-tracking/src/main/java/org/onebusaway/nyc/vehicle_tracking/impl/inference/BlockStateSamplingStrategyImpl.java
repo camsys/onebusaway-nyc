@@ -98,8 +98,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   public BlockState sampleBlockStateAtJourneyStart(
       Set<BlockInstance> potentialBlocks, Observation observation) {
 
-    CDFMap<BlockState> cdf = cdfForJourneyAtStart(potentialBlocks,
-        observation);
+    CDFMap<BlockState> cdf = cdfForJourneyAtStart(potentialBlocks, observation);
 
     return cdf.sample();
   }
@@ -302,12 +301,24 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private double scoreBlockChange(BlockState newBlockState,
       BlockState oldBlockState) {
-    boolean blockChanged = !newBlockState.getBlockInstance().equals(
-        oldBlockState.getBlockInstance());
+
+    boolean blockChanged = blockChanged(newBlockState, oldBlockState);
     if (blockChanged)
       return 0.5;
     else
       return 0.95;
+  }
+
+  private boolean blockChanged(BlockState newBlockState,
+      BlockState oldBlockState) {
+    if (newBlockState == null && oldBlockState == null)
+      return false;
+    if (newBlockState == null && oldBlockState != null)
+      return true;
+    if (newBlockState != null && oldBlockState == null)
+      return true;
+    return !newBlockState.getBlockInstance().equals(
+        oldBlockState.getBlockInstance());
   }
 
   private double scoreState(BlockState state, Observation observation) {

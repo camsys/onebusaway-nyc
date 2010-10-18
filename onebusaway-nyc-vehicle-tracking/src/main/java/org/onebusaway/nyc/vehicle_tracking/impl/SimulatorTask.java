@@ -202,25 +202,31 @@ class SimulatorTask implements Runnable, EntityHandler {
       EdgeState edgeState = state.getEdgeState();
       ProjectedPoint p = edgeState.getPointOnEdge();
       JourneyState journeyState = state.getJourneyState();
-      BlockState blockState = journeyState.getBlockState();
-      BlockInstance blockInstance = blockState.getBlockInstance();
-      BlockConfigurationEntry block = blockInstance.getBlock();
-      ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
       NycTestLocationRecord record = new NycTestLocationRecord();
       record.setTimestamp((long) particle.getTimestamp());
-      record.setDsc(blockState.getDestinationSignCode());
+
       record.setLat(p.getLat());
       record.setLon(p.getLon());
 
-      record.setActualBlockId(AgencyAndIdLibrary.convertToString(block.getBlock().getId()));
-      record.setActualServiceDate(blockInstance.getServiceDate());
-      record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
-      record.setActualLat(blockLocation.getLocation().getLat());
-      record.setActualLon(blockLocation.getLocation().getLon());
+      BlockState blockState = state.getBlockState();
+
+      if (blockState != null) {
+        BlockInstance blockInstance = blockState.getBlockInstance();
+        BlockConfigurationEntry block = blockInstance.getBlock();
+        ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+
+        record.setDsc(blockState.getDestinationSignCode());
+        record.setActualBlockId(AgencyAndIdLibrary.convertToString(block.getBlock().getId()));
+        record.setActualServiceDate(blockInstance.getServiceDate());
+        record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
+        record.setActualLat(blockLocation.getLocation().getLat());
+        record.setActualLon(blockLocation.getLocation().getLon());
+      }
+
       record.setActualPhase(journeyState.getPhase().toString());
       record.setVehicleId(_vehicleId);
-      
+
       records.add(record);
     }
 
@@ -277,7 +283,8 @@ class SimulatorTask implements Runnable, EntityHandler {
           vlr.setCurrentLocationLat(record.getActualLat());
           vlr.setCurrentLocationLon(record.getActualLon());
           vlr.setStatus(record.getActualPhase());
-          vlr.setVehicleId(new AgencyAndId(_vehicleLocationService.getDefaultVehicleAgencyId(),_vehicleId));
+          vlr.setVehicleId(new AgencyAndId(
+              _vehicleLocationService.getDefaultVehicleAgencyId(), _vehicleId));
           _vehicleLocationService.handleVehicleLocation(vlr);
 
         } else {

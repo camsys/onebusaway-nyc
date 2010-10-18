@@ -1,16 +1,13 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Map;
-
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EJourneyPhase;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Sensor model implementation for vehicle location inference
@@ -21,11 +18,12 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   private DeviationModel _snapToStreetDeviationModel = new DeviationModel(30);
 
-  private Map<EJourneyPhase, SensorModel<Observation>> _sensorModels;
+  private VehicleStateSensorModel _vehicleStateSensorModel;
 
-  public void setSensorModels(
-      Map<EJourneyPhase, SensorModel<Observation>> sensorModels) {
-    _sensorModels = sensorModels;
+  @Autowired
+  public void setVehicleSensorModel(
+      VehicleStateSensorModel vehicleStateSensorModel) {
+    _vehicleStateSensorModel = vehicleStateSensorModel;
   }
 
   @Override
@@ -43,10 +41,14 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   public double getJourneySensorModelProbability(Particle particle,
       VehicleState state, Observation observation) {
-    JourneyState js = state.getJourneyState();
 
-    SensorModel<Observation> sm = _sensorModels.get(js.getPhase());
-    return sm.likelihood(particle, observation);
+    VehicleState parentState = null;
+    Particle parent = particle.getParent();
+
+    if (parent != null)
+      parentState = parent.getData();
+
+    return _vehicleStateSensorModel.likelihood(parentState, state, observation);
   }
 
   public double getSnapToStreetProbability(VehicleState state,

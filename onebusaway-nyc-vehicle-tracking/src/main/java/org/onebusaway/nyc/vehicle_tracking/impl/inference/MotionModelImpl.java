@@ -1,11 +1,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Map;
-
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.motion_model.JourneyMotionModel;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EJourneyPhase;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -24,7 +21,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
   private EdgeStateLibrary _edgeStateLibrary;
 
-  private Map<EJourneyPhase, JourneyMotionModel> _motionModels;
+  private BlockStateTransitionModel _blockStateTransitionModel;
+
+  private JourneyStateTransitionModel _journeyMotionModel;
 
   /**
    * Distance, in meters, that a bus has to travel to be considered "in motion"
@@ -36,9 +35,16 @@ public class MotionModelImpl implements MotionModel<Observation> {
     _edgeStateLibrary = edgeStateLibrary;
   }
 
-  public void setMotionModels(
-      Map<EJourneyPhase, JourneyMotionModel> motionModels) {
-    _motionModels = motionModels;
+  @Autowired
+  public void setBlockStateTransitionModel(
+      BlockStateTransitionModel blockStateTransitionModel) {
+    _blockStateTransitionModel = blockStateTransitionModel;
+  }
+
+  @Autowired
+  public void setJourneyMotionModel(
+      JourneyStateTransitionModel journeyMotionModel) {
+    _journeyMotionModel = journeyMotionModel;
   }
 
   public void setMotionThreshold(double motionThreshold) {
@@ -52,23 +58,33 @@ public class MotionModelImpl implements MotionModel<Observation> {
     // First snap to the street grid
     CDFMap<EdgeState> edges = _edgeStateLibrary.calculatePotentialEdgeStates(obs.getPoint());
     EdgeState edgeState = edges.sample();
-    
+
     VehicleState parentState = parent.getData();
+
+    MotionState motionState = updateMotionState(parentState, edgeState, obs);
+
+    BlockState blockState = _blockStateTransitionModel.transitionBlockState(
+        parentState, edgeState, obs);
+
+    JourneyState js = _journeyMotionModel.move(parentState, edgeState,
+        motionState, blockState, obs);
+
+    VehicleState vs = new VehicleState(edgeState, motionState, blockState, js);
+    return new Particle(timestamp, parent, 1.0, vs);
+  }
+
+  public MotionState updateMotionState(VehicleState parentState,
+      EdgeState edgeState, Observation obs) {
+    
     MotionState motionState = parentState.getMotionState();
-
-    JourneyState parentJourneyState = parentState.getJourneyState();
-    JourneyMotionModel motionModel = _motionModels.get(parentJourneyState.getPhase());
-
-    JourneyState js = motionModel.move(parent, parentState, edgeState,
-        motionState, obs, parentJourneyState);
 
     CoordinatePoint locationOnEdge = edgeState.getLocationOnEdge();
     double d = SphericalGeometryLibrary.distance(
         motionState.getLastInMotionLocation(), locationOnEdge);
+
     if (d > _motionThreshold)
       motionState = new MotionState(obs.getTime(), locationOnEdge);
 
-    VehicleState vs = new VehicleState(edgeState, motionState, js);
-    return new Particle(timestamp, parent, 1.0, vs);
+    return motionState;
   }
 }

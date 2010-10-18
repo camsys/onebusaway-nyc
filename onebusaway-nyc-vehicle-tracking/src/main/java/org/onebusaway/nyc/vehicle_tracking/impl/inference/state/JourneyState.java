@@ -6,13 +6,10 @@ public final class JourneyState {
 
   private final EJourneyPhase phase;
 
-  private final BlockState blockState;
-
   private final Object data;
 
-  private JourneyState(EJourneyPhase phase, BlockState blockState, Object data) {
+  private JourneyState(EJourneyPhase phase, Object data) {
     this.phase = phase;
-    this.blockState = blockState;
     this.data = data;
   }
 
@@ -20,38 +17,46 @@ public final class JourneyState {
     return phase;
   }
 
-  public BlockState getBlockState() {
-    return blockState;
-  }
-
   @SuppressWarnings("unchecked")
   public <T> T getData() {
     return (T) data;
   }
 
-  public static JourneyState atBase(BlockState blockState) {
-    return new JourneyState(EJourneyPhase.AT_BASE, blockState, null);
+  public static JourneyState atBase() {
+    return new JourneyState(EJourneyPhase.AT_BASE, null);
   }
 
-  public static JourneyState deadheadBefore(BlockState blockState,
-      CoordinatePoint journeyStart) {
+  public static JourneyState deadheadBefore(CoordinatePoint journeyStart) {
     JourneyStartState jss = new JourneyStartState(journeyStart);
-    return new JourneyState(EJourneyPhase.DEADHEAD_BEFORE, blockState, jss);
+    return new JourneyState(EJourneyPhase.DEADHEAD_BEFORE, jss);
   }
 
-  public static JourneyState inProgress(BlockState blockState) {
-    return new JourneyState(EJourneyPhase.IN_PROGRESS, blockState, null);
+  public static JourneyState layoverBefore() {
+    return new JourneyState(EJourneyPhase.LAYOVER_BEFORE, null);
   }
 
-  public static JourneyState layover(BlockState blockState) {
-    return new JourneyState(EJourneyPhase.LAYOVER, blockState, null);
+  public static JourneyState inProgress() {
+    return new JourneyState(EJourneyPhase.IN_PROGRESS, null);
   }
 
-  public static JourneyState deadheadAfter(BlockState blockState) {
-    return new JourneyState(EJourneyPhase.DEADHEAD_AFTER, blockState, null);
+  public static JourneyState layoverDuring() {
+    return new JourneyState(EJourneyPhase.LAYOVER_DURING, null);
+  }
+
+  public static JourneyState deadheadDuring(CoordinatePoint journeyStart) {
+    JourneyStartState jss = new JourneyStartState(journeyStart);
+    return new JourneyState(EJourneyPhase.DEADHEAD_DURING, jss);
+  }
+
+  public static JourneyState offRoute() {
+    return new JourneyState(EJourneyPhase.OFF_ROUTE, null);
+  }
+
+  public static JourneyState deadheadAfter() {
+    return new JourneyState(EJourneyPhase.DEADHEAD_AFTER, null);
   }
 
   public static JourneyState unknown() {
-    return new JourneyState(EJourneyPhase.UNKNOWN, null, null);
+    return new JourneyState(EJourneyPhase.UNKNOWN, null);
   }
 }

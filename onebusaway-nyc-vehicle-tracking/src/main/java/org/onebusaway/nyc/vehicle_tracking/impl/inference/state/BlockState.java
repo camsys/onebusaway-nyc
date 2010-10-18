@@ -16,6 +16,12 @@ public final class BlockState {
 
   public BlockState(BlockInstance blockInstance,
       ScheduledBlockLocation blockLocation, String destinationSignCode) {
+    if (blockInstance == null)
+      throw new IllegalArgumentException("blockInstance is null");
+    if (blockLocation == null)
+      throw new IllegalArgumentException("blockLocation is null");
+    if (destinationSignCode == null)
+      throw new IllegalArgumentException("dsc is null");
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;

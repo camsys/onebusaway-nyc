@@ -16,16 +16,19 @@ public final class VehicleState {
 
   private final MotionState motionState;
 
+  private final BlockState blockState;
+
   private final JourneyState journeyState;
 
   public VehicleState(VehicleState state) {
     this.edgeState = state.edgeState;
     this.motionState = state.motionState;
+    this.blockState = state.blockState;
     this.journeyState = state.journeyState;
   }
 
   public VehicleState(EdgeState edgeState, MotionState motionState,
-      JourneyState journeyState) {
+      BlockState blockState, JourneyState journeyState) {
     if (edgeState == null)
       throw new IllegalArgumentException("edgeState cannot be null");
     if (motionState == null)
@@ -34,6 +37,7 @@ public final class VehicleState {
       throw new IllegalArgumentException("journeyPhase cannot be null");
     this.edgeState = edgeState;
     this.motionState = motionState;
+    this.blockState = blockState;
     this.journeyState = journeyState;
   }
 
@@ -43,6 +47,10 @@ public final class VehicleState {
 
   public MotionState getMotionState() {
     return motionState;
+  }
+
+  public BlockState getBlockState() {
+    return blockState;
   }
 
   public JourneyState getJourneyState() {

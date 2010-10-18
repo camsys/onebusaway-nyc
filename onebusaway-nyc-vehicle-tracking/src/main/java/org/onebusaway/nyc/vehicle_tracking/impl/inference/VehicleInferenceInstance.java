@@ -57,7 +57,7 @@ public class VehicleInferenceInstance {
     record.setTimeOfRecord((long) particle.getTimestamp());
     // record.setPositionDeviation(state.getPositionDeviation());
 
-    BlockState blockState = state.getJourneyState().getBlockState();
+    BlockState blockState = state.getBlockState();
 
     if (blockState != null) {
       BlockInstance blockInstance = blockState.getBlockInstance();

@@ -51,7 +51,7 @@ table td {
     <tr>
         <c:set var="edgeState" value="${p.data.edgeState}"/>
         <c:set var="journeyState" value="${p.data.journeyState}"/>
-        <c:set var="blockState" value="${journeyState.blockState}"/>
+        <c:set var="blockState" value="${p.data.blockState}"/>
         <c:set var="blockLocation" value="${blockState.blockLocation}"/>
         
         <td><c:out value="${p.weight}" /></td>
@@ -74,7 +74,7 @@ table td {
 <p>
 <c:forEach var="p" items="${details.particles}">
   <c:set var="journeyState" value="${p.data.journeyState}"/>
-  <c:set var="blockState" value="${journeyState.blockState}"/>
+  <c:set var="blockState" value="${p.data.blockState}"/>
   <c:set var="blockLocation" value="${blockState.blockLocation}"/>
   <c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /><br/>
 </c:forEach>
