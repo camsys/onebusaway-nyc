@@ -49,7 +49,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   public void setAgencyId(String agencyId) {
     _agencyId = agencyId;
   }
-  
+
   public String getDefaultVehicleAgencyId() {
     return _agencyId;
   }
@@ -114,12 +114,6 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   @Override
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId) {
     return _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(new AgencyAndId(
-        _agencyId, vehicleId));
-  }
-
-  @Override
-  public List<Particle> getMostLikelyParticlesForVehicleId(String vehicleId) {
-    return _vehicleLocationInferenceService.getMostLikelyParticlesForVehicleId(new AgencyAndId(
         _agencyId, vehicleId));
   }
 

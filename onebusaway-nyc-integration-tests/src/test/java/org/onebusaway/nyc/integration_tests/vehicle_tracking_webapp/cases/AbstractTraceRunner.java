@@ -35,6 +35,8 @@ public class AbstractTraceRunner {
    */
   private long _maxTimeout = 20 * 1000;
 
+  private double _minLayoverDuringRatio = 0.95;
+
   public AbstractTraceRunner(String trace) {
     _trace = trace;
   }
@@ -45,6 +47,10 @@ public class AbstractTraceRunner {
 
   public void setMaxTimeout(long maxTimeout) {
     _maxTimeout = maxTimeout;
+  }
+
+  public void setMinLayoverDuringRatio(double minLayoverDuringRatio) {
+    _minLayoverDuringRatio = minLayoverDuringRatio;
   }
 
   @Test
@@ -152,8 +158,9 @@ public class AbstractTraceRunner {
 
     double layoverDuringRatio = computePhaseRatio(expPhaseCounts,
         actPhaseCounts, EVehiclePhase.LAYOVER_DURING);
+
     assertTrue("layoverDuringRatio=" + layoverDuringRatio,
-        layoverDuringRatio > 0.95);
+        layoverDuringRatio > _minLayoverDuringRatio);
 
     /**
      * Check that distanceAlongBlockDeviations are within tolerances

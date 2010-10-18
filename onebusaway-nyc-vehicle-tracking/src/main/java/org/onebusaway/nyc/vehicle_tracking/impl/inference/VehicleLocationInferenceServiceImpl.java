@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,8 +74,9 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public void handleVehicleLocation(NycVehicleLocationRecord record, boolean saveResult) {
-    _executorService.execute(new ProcessingTask(record,saveResult));
+  public void handleVehicleLocation(NycVehicleLocationRecord record,
+      boolean saveResult) {
+    _executorService.execute(new ProcessingTask(record, saveResult));
   }
 
   @Override
@@ -115,14 +115,6 @@ public class VehicleLocationInferenceServiceImpl implements
       return null;
     return instance.getCurrentParticles();
   }
-  
-  @Override
-  public List<Particle> getMostLikelyParticlesForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
-    if (instance == null)
-      return Collections.emptyList();
-    return instance.getMostLikelyParticles();
-  }
 
   /****
    * Private Methods
@@ -146,7 +138,7 @@ public class VehicleLocationInferenceServiceImpl implements
   private class ProcessingTask implements Runnable {
 
     private NycVehicleLocationRecord _inferenceRecord;
-    
+
     private boolean _saveResult;
 
     public ProcessingTask(NycVehicleLocationRecord record, boolean saveResult) {
@@ -159,7 +151,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
       try {
         VehicleInferenceInstance existing = getInstanceForVehicle(_inferenceRecord.getVehicleId());
-        existing.handleUpdate(_inferenceRecord,_saveResult);
+        existing.handleUpdate(_inferenceRecord, _saveResult);
 
         VehicleLocationRecord record = existing.getCurrentState();
         record.setVehicleId(_inferenceRecord.getVehicleId());

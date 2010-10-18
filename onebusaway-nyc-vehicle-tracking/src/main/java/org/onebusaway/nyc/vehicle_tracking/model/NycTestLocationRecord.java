@@ -50,6 +50,9 @@ public class NycTestLocationRecord implements Serializable {
   @CsvField(optional = true)
   private String actualPhase = null;
 
+  @CsvField(optional = true)
+  private String actualStatus = null;
+
   public void setVehicleId(String vehicleId) {
     this.vehicleId = vehicleId;
   }
@@ -152,6 +155,14 @@ public class NycTestLocationRecord implements Serializable {
 
   public void setActualPhase(String actualPhase) {
     this.actualPhase = actualPhase;
+  }
+
+  public String getActualStatus() {
+    return actualStatus;
+  }
+
+  public void setActualStatus(String actualStatus) {
+    this.actualStatus = actualStatus;
   }
 
   public static InputStream getTestData() {

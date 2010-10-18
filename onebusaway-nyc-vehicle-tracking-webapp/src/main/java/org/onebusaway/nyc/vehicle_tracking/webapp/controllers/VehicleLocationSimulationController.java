@@ -280,6 +280,9 @@ public class VehicleLocationSimulationController {
 
     EntityHandler handler = factory.createWriter(NycTestLocationRecord.class,
         writer);
+    
+    if( records == null)
+      records = Collections.emptyList();
 
     for (NycTestLocationRecord record : records)
       handler.handleEntity(record);

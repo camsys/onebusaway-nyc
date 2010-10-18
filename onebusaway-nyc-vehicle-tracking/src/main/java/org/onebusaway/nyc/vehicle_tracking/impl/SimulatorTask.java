@@ -10,21 +10,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.tripplanner.BlockConfigurationEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +25,8 @@ class SimulatorTask implements Runnable, EntityHandler {
   private static Logger _log = LoggerFactory.getLogger(SimulatorTask.class);
 
   private List<NycTestLocationRecord> _records = new ArrayList<NycTestLocationRecord>();
+
+  private List<NycTestLocationRecord> _results = new ArrayList<NycTestLocationRecord>();
 
   private AtomicInteger _recordsProcessed = new AtomicInteger();
 
@@ -188,49 +182,7 @@ class SimulatorTask implements Runnable, EntityHandler {
   }
 
   public List<NycTestLocationRecord> getResults() {
-
-    List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
-
-    if (particles == null)
-      return Collections.emptyList();
-
-    List<NycTestLocationRecord> records = new ArrayList<NycTestLocationRecord>();
-
-    for (Particle particle : particles) {
-
-      VehicleState state = particle.getData();
-      EdgeState edgeState = state.getEdgeState();
-      ProjectedPoint p = edgeState.getPointOnEdge();
-      JourneyState journeyState = state.getJourneyState();
-
-      NycTestLocationRecord record = new NycTestLocationRecord();
-      record.setTimestamp((long) particle.getTimestamp());
-
-      record.setLat(p.getLat());
-      record.setLon(p.getLon());
-
-      BlockState blockState = state.getBlockState();
-
-      if (blockState != null) {
-        BlockInstance blockInstance = blockState.getBlockInstance();
-        BlockConfigurationEntry block = blockInstance.getBlock();
-        ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-
-        record.setDsc(blockState.getDestinationSignCode());
-        record.setActualBlockId(AgencyAndIdLibrary.convertToString(block.getBlock().getId()));
-        record.setActualServiceDate(blockInstance.getServiceDate());
-        record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
-        record.setActualLat(blockLocation.getLocation().getLat());
-        record.setActualLon(blockLocation.getLocation().getLon());
-      }
-
-      record.setActualPhase(journeyState.getPhase().toString());
-      record.setVehicleId(_vehicleId);
-
-      records.add(record);
-    }
-
-    return records;
+    return _results;
   }
 
   public void resetAllVehiclesAppearingInRecordData() {
@@ -288,11 +240,12 @@ class SimulatorTask implements Runnable, EntityHandler {
           _vehicleLocationService.handleVehicleLocation(vlr);
 
         } else {
+
           _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
               record.getVehicleId(), record.getLat(), record.getLon(),
               record.getDsc(), true);
 
-          if (shouledExitAfterWaitingForInferenceToComplete())
+          if (shouledExitAfterWaitingForInferenceToComplete(record))
             return;
         }
 
@@ -348,21 +301,13 @@ class SimulatorTask implements Runnable, EntityHandler {
     return false;
   }
 
-  private boolean shouledExitAfterWaitingForInferenceToComplete() {
+  private boolean shouledExitAfterWaitingForInferenceToComplete(
+      NycTestLocationRecord record) {
 
     for (int i = 0; i < 10; i++) {
 
-      List<Particle> particles = _vehicleLocationService.getMostLikelyParticlesForVehicleId(_vehicleId);
-
-      if (particles == null)
-        particles = Collections.emptyList();
-
-      int a = particles.size();
-      int b = _recordsProcessed.get();
-
-      if (a > b) {
+      if (processResultRecord(record))
         return false;
-      }
 
       try {
         Thread.sleep(100);
@@ -372,6 +317,44 @@ class SimulatorTask implements Runnable, EntityHandler {
     }
 
     _log.warn("vehicle location inference never completed");
+    return true;
+  }
+
+  private boolean processResultRecord(NycTestLocationRecord record) {
+
+    VehicleLocationRecord result = _vehicleLocationService.getVehicleLocationForVehicle(record.getVehicleId());
+
+    if (result == null || result.getTimeOfRecord() < record.getTimestamp())
+      return false;
+
+    NycTestLocationRecord rr = new NycTestLocationRecord();
+
+    if (result.getBlockId() != null)
+      rr.setActualBlockId(result.getBlockId().toString());
+
+    rr.setActualDistanceAlongBlock(result.getDistanceAlongBlock());
+
+    // Is this right?
+    rr.setActualDsc(record.getDsc());
+
+    rr.setActualLat(result.getCurrentLocationLat());
+    rr.setActualLon(result.getCurrentLocationLon());
+
+    if (result.getPhase() != null)
+      rr.setActualPhase(result.getPhase().toString());
+
+    rr.setActualStatus(result.getStatus());
+    rr.setActualServiceDate(result.getServiceDate());
+
+    rr.setDsc(record.getDsc());
+    rr.setLat(record.getLat());
+    rr.setLon(record.getLon());
+
+    rr.setTimestamp(result.getTimeOfRecord());
+    rr.setVehicleId(record.getVehicleId());
+
+    _results.add(rr);
+
     return true;
   }
 

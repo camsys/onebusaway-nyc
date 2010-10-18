@@ -16,7 +16,7 @@ import org.onebusaway.siri.model.VehicleLocation;
  * @see VehicleLocation
  */
 public interface VehicleLocationService {
-  
+
   public String getDefaultVehicleAgencyId();
 
   /**
@@ -35,13 +35,15 @@ public interface VehicleLocationService {
    * @param lat
    * @param lon
    * @param dsc destination sign code
-   * @param saveResult should we internally save inference results for later access (useful for debugging)
+   * @param saveResult should we internally save inference results for later
+   *          access (useful for debugging)
    */
   public void handleVehicleLocation(long time, String vehicleId, double lat,
       double lon, String dsc, boolean saveResult);
-  
+
   /**
-   * Convenience method for bypassing inference completely and injecting a completed vehicle location record into the data stream.
+   * Convenience method for bypassing inference completely and injecting a
+   * completed vehicle location record into the data stream.
    */
   public void handleVehicleLocation(VehicleLocationRecord record);
 
@@ -67,12 +69,4 @@ public interface VehicleLocationService {
    * @return the current list of particles for the specified vehicle
    */
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId);
-
-  /**
-   * This is here primarily for debugging
-   * 
-   * @param vehicleId
-   * @return the most likely list of particles for the specified vehicle
-   */
-  public List<Particle> getMostLikelyParticlesForVehicleId(String vehicleId);
 }
