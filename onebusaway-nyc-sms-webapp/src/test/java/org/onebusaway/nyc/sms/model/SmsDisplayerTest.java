@@ -111,9 +111,9 @@ public class SmsDisplayerTest {
     sms.twoStopResponse();
     
     String actual = sms.toString();
-    String exp = "N:\n" +
+    String exp = "N-bound:\n" +
                  "routeid: No upcoming arrivals\n" +
-                 "S:\n" +
+                 "S-bound:\n" +
                  "routeid: No upcoming arrivals\n";
     assertEquals(exp, actual);
   }
@@ -137,10 +137,10 @@ public class SmsDisplayerTest {
     sms.twoStopResponse();
     
     String actual = sms.toString();
-    String exp = "N:\n" +
+    String exp = "N-bound:\n" +
                  "routeid: 100 feet, 1 stop\n" +
                  "routeid: 200 feet, 2 stops\n" +
-                 "S:\n" +
+                 "S-bound:\n" +
                  "routeid: 100 feet, 1 stop\n" +
                  "routeid: 200 feet, 2 stops\n";
     assertEquals(exp, actual);
@@ -167,10 +167,10 @@ public class SmsDisplayerTest {
     sms.twoStopResponse();
     
     String actual = sms.toString();
-    String exp = "N:\n" +
+    String exp = "N-bound:\n" +
                  "routeid: 100 feet, 1 stop\n" +
                  "routeid: 200 feet, 2 stops\n" +
-                 "S:\n" +
+                 "S-bound:\n" +
                  "routeid: 100 feet, 1 stop\n" +
                  "routeid: 200 feet, 2 stops\n";
     assertEquals(exp, actual);
@@ -196,10 +196,10 @@ public class SmsDisplayerTest {
     
     String actual = sms.toString();
     String exp = "Send:\n" +
-                 "123456 for N\n" +
-                 "123456 for S\n" +
-                 "123456 for E\n" +
-                 "123456 for W\n";
+                 "123456 for N-bound\n" +
+                 "123456 for S-bound\n" +
+                 "123456 for E-bound\n" +
+                 "123456 for W-bound\n";
     assertEquals(exp, actual);
   }
 
