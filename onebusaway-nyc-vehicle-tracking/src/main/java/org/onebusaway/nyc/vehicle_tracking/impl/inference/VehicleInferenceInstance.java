@@ -48,6 +48,25 @@ public class VehicleInferenceInstance {
     if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
       return;
 
+    /**
+     * Recall that a vehicle might send a location update with missing lat-lon
+     * if it's sitting at the curb with the engine turned off.
+     */
+    boolean latlonMissing = record.locationDataIsMissing();
+
+    if (latlonMissing) {
+
+      /**
+       * If we don't have a previous record, we can't use the previous lat-lon
+       * to replace the missing values
+       */
+      if (_previousRecord == null)
+        return;
+
+      record.setLatitude(_previousRecord.getLatitude());
+      record.setLongitude(_previousRecord.getLongitude());
+    }
+
     Observation observation = new Observation(record, _previousRecord);
     _previousRecord = record;
 

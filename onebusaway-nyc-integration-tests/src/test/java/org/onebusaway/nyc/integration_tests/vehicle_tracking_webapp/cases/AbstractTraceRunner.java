@@ -123,10 +123,14 @@ public class AbstractTraceRunner {
       NycTestLocationRecord expRecord = expected.get(i);
       NycTestLocationRecord actRecord = actual.get(i);
 
-      double d = SphericalGeometryLibrary.distance(expRecord.getActualLat(),
-          expRecord.getActualLon(), actRecord.getLat(), actRecord.getLon());
+      // Only run distance comparison if lat-lon is set for expected record
+      if (!expRecord.locationDataIsMissing()) {
 
-      assertTrue("record=" + i + " distance=" + d, d < _distanceTolerance);
+        double d = SphericalGeometryLibrary.distance(expRecord.getActualLat(),
+            expRecord.getActualLon(), actRecord.getLat(), actRecord.getLon());
+
+        assertTrue("record=" + i + " distance=" + d, d < _distanceTolerance);
+      }
 
       EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
       EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getActualPhase());

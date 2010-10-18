@@ -39,7 +39,7 @@ public class NycVehicleLocationRecord {
   private String destinationSignCode;
 
   @Embedded
-  @AttributeOverrides( {
+  @AttributeOverrides({
       @AttributeOverride(name = "agencyId", column = @Column(name = "vehicle_agencyId", length = 50)),
       @AttributeOverride(name = "id", column = @Column(name = "vehicle_id"))})
   private AgencyAndId vehicleId;
@@ -98,5 +98,14 @@ public class NycVehicleLocationRecord {
 
   public void setVehicleId(AgencyAndId vehicleId) {
     this.vehicleId = vehicleId;
+  }
+
+  /**
+   * Location data is considered missing if the values are NaN or if both are
+   * zero
+   */
+  public boolean locationDataIsMissing() {
+    return (Double.isNaN(this.latitude) || Double.isNaN(this.longitude))
+        || (this.latitude == 0.0 && this.longitude == 0.0);
   }
 }

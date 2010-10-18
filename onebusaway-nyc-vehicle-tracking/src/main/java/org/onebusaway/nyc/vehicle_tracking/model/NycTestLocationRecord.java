@@ -168,4 +168,13 @@ public class NycTestLocationRecord implements Serializable {
   public static InputStream getTestData() {
     return NycTestLocationRecord.class.getResourceAsStream("ivn-dsc.csv");
   }
+
+  /**
+   * Location data is considered missing if the values are NaN or if both are
+   * zero
+   */
+  public boolean locationDataIsMissing() {
+    return (Double.isNaN(this.lat) || Double.isNaN(this.lon))
+        || (this.lat == 0.0 && this.lon == 0.0);
+  }
 }
