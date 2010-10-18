@@ -4,12 +4,12 @@ import java.util.Set;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EJourneyPhase;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.tripplanner.BlockConfigurationEntry;
@@ -80,7 +80,7 @@ public class BlockStateTransitionModel {
     EdgeState prevEdgeState = parentState.getEdgeState();
     BlockState blockState = parentState.getBlockState();
     JourneyState parentJourneyState = parentState.getJourneyState();
-    EJourneyPhase phase = parentJourneyState.getPhase();
+    EVehiclePhase phase = parentJourneyState.getPhase();
 
     /**
      * If our DSC has not changed, we don't concern ourselves with switching
@@ -88,7 +88,7 @@ public class BlockStateTransitionModel {
      */
     if (!hasDestinationSignCodeChangedBetweenObservations(obs)) {
 
-      if (EJourneyPhase.isActiveDuringBlock(phase)) {
+      if (EVehiclePhase.isActiveDuringBlock(phase)) {
 
         /**
          * Update our block location along the block when we're actively serving
@@ -96,7 +96,7 @@ public class BlockStateTransitionModel {
          */
         return advanceAlongBlock(prevEdgeState, edgeState, blockState, obs);
 
-      } else if (phase.equals(EJourneyPhase.AT_BASE)) {
+      } else if (phase.equals(EVehiclePhase.AT_BASE)) {
 
         /**
          * If we're at the base and our current block state has been run to
@@ -132,7 +132,7 @@ public class BlockStateTransitionModel {
      * handle that is determined by which journey phase we're in.
      */
 
-    if (EJourneyPhase.isActiveBeforeBlock(phase)) {
+    if (EVehiclePhase.isActiveBeforeBlock(phase)) {
 
       if (outOfService) {
         /**
@@ -153,7 +153,7 @@ public class BlockStateTransitionModel {
             instances, obs, blockState);
       }
 
-    } else if (EJourneyPhase.isActiveDuringBlock(phase)) {
+    } else if (EVehiclePhase.isActiveDuringBlock(phase)) {
 
       if (outOfService) {
         /**

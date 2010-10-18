@@ -1,19 +1,20 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.realtime.api.EVehiclePhase;
 
 public final class JourneyState {
 
-  private final EJourneyPhase phase;
+  private final EVehiclePhase phase;
 
   private final Object data;
 
-  private JourneyState(EJourneyPhase phase, Object data) {
+  private JourneyState(EVehiclePhase phase, Object data) {
     this.phase = phase;
     this.data = data;
   }
 
-  public EJourneyPhase getPhase() {
+  public EVehiclePhase getPhase() {
     return phase;
   }
 
@@ -23,40 +24,36 @@ public final class JourneyState {
   }
 
   public static JourneyState atBase() {
-    return new JourneyState(EJourneyPhase.AT_BASE, null);
+    return new JourneyState(EVehiclePhase.AT_BASE, null);
   }
 
   public static JourneyState deadheadBefore(CoordinatePoint journeyStart) {
     JourneyStartState jss = new JourneyStartState(journeyStart);
-    return new JourneyState(EJourneyPhase.DEADHEAD_BEFORE, jss);
+    return new JourneyState(EVehiclePhase.DEADHEAD_BEFORE, jss);
   }
 
   public static JourneyState layoverBefore() {
-    return new JourneyState(EJourneyPhase.LAYOVER_BEFORE, null);
+    return new JourneyState(EVehiclePhase.LAYOVER_BEFORE, null);
   }
 
   public static JourneyState inProgress() {
-    return new JourneyState(EJourneyPhase.IN_PROGRESS, null);
+    return new JourneyState(EVehiclePhase.IN_PROGRESS, null);
   }
 
   public static JourneyState layoverDuring() {
-    return new JourneyState(EJourneyPhase.LAYOVER_DURING, null);
+    return new JourneyState(EVehiclePhase.LAYOVER_DURING, null);
   }
 
   public static JourneyState deadheadDuring(CoordinatePoint journeyStart) {
     JourneyStartState jss = new JourneyStartState(journeyStart);
-    return new JourneyState(EJourneyPhase.DEADHEAD_DURING, jss);
-  }
-
-  public static JourneyState offRoute() {
-    return new JourneyState(EJourneyPhase.OFF_ROUTE, null);
+    return new JourneyState(EVehiclePhase.DEADHEAD_DURING, jss);
   }
 
   public static JourneyState deadheadAfter() {
-    return new JourneyState(EJourneyPhase.DEADHEAD_AFTER, null);
+    return new JourneyState(EVehiclePhase.DEADHEAD_AFTER, null);
   }
 
   public static JourneyState unknown() {
-    return new JourneyState(EJourneyPhase.UNKNOWN, null);
+    return new JourneyState(EVehiclePhase.UNKNOWN, null);
   }
 }

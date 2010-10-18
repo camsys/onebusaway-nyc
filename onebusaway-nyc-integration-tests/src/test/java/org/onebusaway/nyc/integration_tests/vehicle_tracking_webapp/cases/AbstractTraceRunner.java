@@ -12,8 +12,8 @@ import org.junit.Test;
 import org.onebusaway.collections.Counter;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.TraceSupport;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EJourneyPhase;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,8 +98,8 @@ public class AbstractTraceRunner {
   public void validateRecords(List<NycTestLocationRecord> expected,
       List<NycTestLocationRecord> actual) {
 
-    Counter<EJourneyPhase> expPhaseCounts = new Counter<EJourneyPhase>();
-    Counter<EJourneyPhase> actPhaseCounts = new Counter<EJourneyPhase>();
+    Counter<EVehiclePhase> expPhaseCounts = new Counter<EVehiclePhase>();
+    Counter<EVehiclePhase> actPhaseCounts = new Counter<EVehiclePhase>();
 
     int totalBlockComparisons = 0;
     int totalCorrectBlockComparisons = 0;
@@ -116,16 +116,16 @@ public class AbstractTraceRunner {
 
       assertTrue("record=" + i + " distance=" + d, d < _distanceTolerance);
 
-      EJourneyPhase expPhase = EJourneyPhase.valueOf(expRecord.getActualPhase());
-      EJourneyPhase actPhase = EJourneyPhase.valueOf(actRecord.getActualPhase());
+      EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
+      EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getActualPhase());
 
       expPhaseCounts.increment(expPhase);
 
       if (expPhase.equals(actPhase))
         actPhaseCounts.increment(expPhase);
 
-      if (EJourneyPhase.isActiveDuringBlock(expPhase)
-          && EJourneyPhase.isActiveDuringBlock(actPhase)) {
+      if (EVehiclePhase.isActiveDuringBlock(expPhase)
+          && EVehiclePhase.isActiveDuringBlock(actPhase)) {
         String expectedBlockId = expRecord.getActualBlockId();
         String actualBlockId = actRecord.getActualBlockId();
 
@@ -147,11 +147,11 @@ public class AbstractTraceRunner {
      ****/
 
     double inProgressRatio = computePhaseRatio(expPhaseCounts, actPhaseCounts,
-        EJourneyPhase.IN_PROGRESS);
+        EVehiclePhase.IN_PROGRESS);
     assertTrue("inProgressRatio=" + inProgressRatio, inProgressRatio > 0.95);
 
     double layoverDuringRatio = computePhaseRatio(expPhaseCounts,
-        actPhaseCounts, EJourneyPhase.LAYOVER_DURING);
+        actPhaseCounts, EVehiclePhase.LAYOVER_DURING);
     assertTrue("layoverDuringRatio=" + layoverDuringRatio,
         layoverDuringRatio > 0.95);
 
@@ -170,8 +170,8 @@ public class AbstractTraceRunner {
     assertTrue("stdDev" + stdDev, stdDev < 70.0);
   }
 
-  public double computePhaseRatio(Counter<EJourneyPhase> expPhaseCounts,
-      Counter<EJourneyPhase> actPhaseCounts, EJourneyPhase phase) {
+  public double computePhaseRatio(Counter<EVehiclePhase> expPhaseCounts,
+      Counter<EVehiclePhase> actPhaseCounts, EVehiclePhase phase) {
     return (double) actPhaseCounts.getCount(phase)
         / (double) expPhaseCounts.getCount(phase);
   }

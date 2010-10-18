@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
@@ -47,7 +48,8 @@ public class VehicleInferenceInstance {
 
     Particle particle = _particleFilter.getMostLikelyParticle();
     VehicleState state = particle.getData();
-
+    JourneyState journeyState = state.getJourneyState();
+    
     ProjectedPoint p = state.getEdgeState().getPointOnEdge();
 
     VehicleLocationRecord record = new VehicleLocationRecord();
@@ -56,6 +58,8 @@ public class VehicleInferenceInstance {
 
     record.setTimeOfRecord((long) particle.getTimestamp());
     // record.setPositionDeviation(state.getPositionDeviation());
+    
+    record.setPhase(journeyState.getPhase());
 
     BlockState blockState = state.getBlockState();
 

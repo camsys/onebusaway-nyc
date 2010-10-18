@@ -3,7 +3,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EJourneyPhase;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -12,6 +11,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -84,12 +84,6 @@ public class VehicleStateSensorModel {
   private double _shortRangeProgressDistance = 500;
 
   /**
-   * If we're move than X meters off our block path, we're considered off-route,
-   * but still serving the block
-   */
-  private double _offRouteDistance = 500;
-
-  /**
    * If we're more than X meters off our block path, then we really don't think
    * we're serving the block any more
    */
@@ -134,8 +128,6 @@ public class VehicleStateSensorModel {
         return likelihoodDeadheadDuring(state, observation);
       case LAYOVER_DURING:
         return likelihoodLayoverDuring(state, observation);
-      case OFF_ROUTE:
-        return likelihoodOffRoute(parentState, state, observation);
       case DEADHEAD_AFTER:
         return likelihoodDeadheadAfter(state, observation);
       case UNKNOWN:
@@ -316,24 +308,6 @@ public class VehicleStateSensorModel {
     return pVehicleIsOnSchedule * pVehicleHasNotMoved * pServedSomePartOfBlock;
   }
 
-  private double likelihoodOffRoute(VehicleState parentState,
-      VehicleState state, Observation observation) {
-
-    // If we don't have a block, we can't be in progress on a block
-    if (state.getBlockState() == null)
-      return 0.0;
-
-    double pOffRoute = computeOffRouteProbability(state);
-
-    // Penalize for deviation from the schedule
-    double pSchedule = computeScheduleDeviationProbability(state, observation);
-
-    double pBlockSwitch = computeBlockSwitchProbability(parentState, state,
-        observation);
-
-    return pOffRoute * pSchedule * pBlockSwitch;
-  }
-
   private double likelihoodDeadheadAfter(VehicleState state,
       Observation observation) {
 
@@ -476,8 +450,8 @@ public class VehicleStateSensorModel {
     /**
      * This method only applies if we haven't already started the block
      */
-    EJourneyPhase parentPhase = parentState.getJourneyState().getPhase();
-    if (!EJourneyPhase.isActiveBeforeBlock(parentPhase))
+    EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
+    if (!EVehiclePhase.isActiveBeforeBlock(parentPhase))
       return 0.0;
 
     /**
@@ -690,19 +664,7 @@ public class VehicleStateSensorModel {
     double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
         state.getEdgeState(), state.getBlockState());
 
-    if (distanceToBlock < _offRouteDistance)
-      return 1.0;
-    else
-      return 0.0;
-  }
-
-  public double computeOffRouteProbability(VehicleState state) {
-
-    double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
-        state.getEdgeState(), state.getBlockState());
-
-    if (_offRouteDistance <= distanceToBlock
-        && distanceToBlock < _offBlockDistance)
+    if (distanceToBlock <= _offBlockDistance)
       return 1.0;
     else
       return 0.0;

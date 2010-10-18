@@ -57,8 +57,6 @@ public class JourneyStateTransitionModel {
         return moveDeadheadDuring(parentJourneyState);
       case LAYOVER_DURING:
         return moveLayoverDuring(edgeState);
-      case OFF_ROUTE:
-        return moveOffRoute(edgeState);
       case DEADHEAD_AFTER:
         return moveDeadheadAfter(edgeState);
       case UNKNOWN:
@@ -116,8 +114,7 @@ public class JourneyStateTransitionModel {
 
     return Arrays.asList(JourneyState.inProgress(),
         JourneyState.deadheadDuring(edgeState.getLocationOnEdge()),
-        JourneyState.layoverDuring(), JourneyState.offRoute(),
-        JourneyState.deadheadAfter());
+        JourneyState.layoverDuring(), JourneyState.deadheadAfter());
   }
 
   private List<JourneyState> moveDeadheadDuring(JourneyState parentJourneyState) {
@@ -126,24 +123,16 @@ public class JourneyStateTransitionModel {
 
     return Arrays.asList(JourneyState.inProgress(),
         JourneyState.deadheadDuring(start.getJourneyStart()),
-        JourneyState.layoverDuring(), JourneyState.offRoute());
+        JourneyState.layoverDuring());
   }
 
   private List<JourneyState> moveLayoverDuring(EdgeState edgeState) {
 
     return Arrays.asList(JourneyState.inProgress(),
         JourneyState.deadheadDuring(edgeState.getLocationOnEdge()),
-        JourneyState.layoverDuring(), JourneyState.offRoute());
+        JourneyState.layoverDuring());
   }
-
-  private List<JourneyState> moveOffRoute(EdgeState edgeState) {
-
-    return Arrays.asList(JourneyState.inProgress(),
-        JourneyState.deadheadDuring(edgeState.getLocationOnEdge()),
-        JourneyState.layoverDuring(), JourneyState.offRoute(),
-        JourneyState.deadheadAfter());
-  }
-
+  
   private List<JourneyState> moveDeadheadAfter(EdgeState edgeState) {
 
     return Arrays.asList(JourneyState.atBase(),
