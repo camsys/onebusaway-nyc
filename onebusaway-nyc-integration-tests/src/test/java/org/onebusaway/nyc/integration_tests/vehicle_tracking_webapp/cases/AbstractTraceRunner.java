@@ -165,9 +165,9 @@ public class AbstractTraceRunner {
     double stdDev = Descriptive.sampleStandardDeviation(
         distanceAlongBlockDeviations.size(), variance);
 
-    assertTrue("median=" + median, median < 20.0);
-    assertTrue("mean=" + mean, mean < 20.0);
-    assertTrue("stdDev" + stdDev, stdDev < 50.0);
+    assertTrue("median=" + median, median < 40.0);
+    assertTrue("mean=" + mean, mean < 40.0);
+    assertTrue("stdDev" + stdDev, stdDev < 70.0);
   }
 
   public double computePhaseRatio(Counter<EJourneyPhase> expPhaseCounts,
