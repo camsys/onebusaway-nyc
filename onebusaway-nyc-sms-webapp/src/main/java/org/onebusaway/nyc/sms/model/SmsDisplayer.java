@@ -42,15 +42,19 @@ public class SmsDisplayer {
     } else {
       StopSearchResult stopSearchResult = (StopSearchResult) searchResults.get(0);
       List<AvailableRoute> routesAvailable = stopSearchResult.getRoutesAvailable();
-      for (AvailableRoute availableRoute : routesAvailable) {
-        String routeId = availableRoute.getRouteId();
-        List<DistanceAway> distanceAways = availableRoute.getDistanceAway();
-        if (distanceAways.isEmpty()) {
-          addToResponse(routeId + ": No upcoming arrivals\n");
-        } else {
-          for (DistanceAway distanceAway : distanceAways) {
-            String presentableDistance = distanceAway.getPresentableDistance();
-            addToResponse(routeId + ": " + presentableDistance + "\n");
+      if (routesAvailable.isEmpty()) {
+        addToResponse("No routes available\n");
+      } else {
+        for (AvailableRoute availableRoute : routesAvailable) {
+          String routeId = availableRoute.getRouteId();
+          List<DistanceAway> distanceAways = availableRoute.getDistanceAway();
+          if (distanceAways.isEmpty()) {
+            addToResponse(routeId + ": No upcoming arrivals\n");
+          } else {
+            for (DistanceAway distanceAway : distanceAways) {
+              String presentableDistance = distanceAway.getPresentableDistance();
+              addToResponse(routeId + ": " + presentableDistance + "\n");
+            }
           }
         }
       }

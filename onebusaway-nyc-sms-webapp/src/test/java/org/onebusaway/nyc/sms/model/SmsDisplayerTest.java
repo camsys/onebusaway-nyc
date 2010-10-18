@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.sms.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -200,6 +200,19 @@ public class SmsDisplayerTest {
                  "123456 for S-bound\n" +
                  "123456 for E-bound\n" +
                  "123456 for W-bound\n";
+    assertEquals(exp, actual);
+  }
+  
+  @Test
+  public void testNoAvailableRoutesCase() {
+    List<SearchResult> searchResults = new ArrayList<SearchResult>();
+    searchResults.add(makeStopSearchResult(new ArrayList<AvailableRoute>(), "N"));
+    
+    SmsDisplayer sms = new SmsDisplayer(searchResults);
+    sms.singleStopResponse();
+    
+    String actual = sms.toString();
+    String exp = "No routes available\n";
     assertEquals(exp, actual);
   }
 
