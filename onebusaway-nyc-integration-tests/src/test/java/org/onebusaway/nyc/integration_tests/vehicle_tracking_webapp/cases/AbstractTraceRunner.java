@@ -37,6 +37,8 @@ public class AbstractTraceRunner {
 
   private double _minLayoverDuringRatio = 0.95;
 
+  private boolean _checkLayoverDuringRatio = true;
+
   public AbstractTraceRunner(String trace) {
     _trace = trace;
   }
@@ -47,6 +49,10 @@ public class AbstractTraceRunner {
 
   public void setMaxTimeout(long maxTimeout) {
     _maxTimeout = maxTimeout;
+  }
+
+  public void checkLayoverDuringRatio(boolean checkLayoverDuringRatio) {
+    _checkLayoverDuringRatio = checkLayoverDuringRatio;
   }
 
   public void setMinLayoverDuringRatio(double minLayoverDuringRatio) {
@@ -159,8 +165,10 @@ public class AbstractTraceRunner {
     double layoverDuringRatio = computePhaseRatio(expPhaseCounts,
         actPhaseCounts, EVehiclePhase.LAYOVER_DURING);
 
-    assertTrue("layoverDuringRatio=" + layoverDuringRatio,
-        layoverDuringRatio > _minLayoverDuringRatio);
+    if (_checkLayoverDuringRatio) {
+      assertTrue("layoverDuringRatio=" + layoverDuringRatio,
+          layoverDuringRatio > _minLayoverDuringRatio);
+    }
 
     /**
      * Check that distanceAlongBlockDeviations are within tolerances
@@ -179,7 +187,9 @@ public class AbstractTraceRunner {
 
   public double computePhaseRatio(Counter<EVehiclePhase> expPhaseCounts,
       Counter<EVehiclePhase> actPhaseCounts, EVehiclePhase phase) {
-    return (double) actPhaseCounts.getCount(phase)
-        / (double) expPhaseCounts.getCount(phase);
+    double expected = (double) expPhaseCounts.getCount(phase);
+    if (expected == 0)
+      return 1.0;
+    return actPhaseCounts.getCount(phase) / expected;
   }
 }
