@@ -20,18 +20,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.DistanceExtensions;
 import org.onebusaway.siri.model.MonitoredCall;
@@ -42,36 +36,8 @@ import org.onebusaway.siri.model.Siri;
 import org.onebusaway.siri.model.StopMonitoringDelivery;
 import org.onebusaway.utility.DateLibrary;
 
-import com.caucho.hessian.client.HessianProxyFactory;
-import com.thoughtworks.xstream.XStream;
 
-public class StopMonitoringIntegrationTest {
-
-  /**
-   * July 7, 2010 - 11:00 am in NYC
-   */
-  private String _timeString = "2010-07-07T11:30:00-04:00";
-
-  private Date _time;
-
-  private VehicleLocationListener _vehicleLocationListener;
-  
-  private AgencyAndId _vehicleId = new AgencyAndId("2008","4444");
-
-  @Before
-  public void before() throws ParseException, MalformedURLException {
-    
-    _time = DateLibrary.getIso8601StringAsTime(_timeString);
-    
-    String federationPort = System.getProperty("org.onebusaway.transit_data_federation_webapp.port","9905");
-    HessianProxyFactory factory = new HessianProxyFactory();
-    
-    // Connect the VehicleLocationListener for directly injecting location records
-    _vehicleLocationListener = (VehicleLocationListener) factory.create(VehicleLocationListener.class, "http://localhost:" + federationPort + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-location-listener");
-    
-    // Reset any location records between test runs
-    _vehicleLocationListener.resetVehicleLocation(_vehicleId);
-  }
+public class StopMonitoringIntegrationTest extends SiriIntegrationTest {
 
   @Test
   public void testEmptyResults() throws HttpException, IOException {
@@ -181,27 +147,10 @@ public class StopMonitoringIntegrationTest {
     MonitoredVehicleJourney journey = delivery.visits.get(0).MonitoredVehicleJourney;
     assertNotNull(journey.OnwardCalls);
     assertTrue(journey.OnwardCalls.size() >= 2);
+    assertNotNull(journey.MonitoredCall);
+    assertNotNull(journey.MonitoredCall.Extensions);
     Double distanceFromRequestedStop = journey.MonitoredCall.Extensions.Distances.DistanceFromCall;
     assertTrue(journey.OnwardCalls.get(0).Extensions.Distances.DistanceFromCall > distanceFromRequestedStop);
 
-  }
-
-  private Siri getResponse(String query) throws IOException, HttpException {
-
-    HttpClient client = new HttpClient();
-    String port = System.getProperty("org.onebusaway.webapp.port", "9000");
-    String url = "http://localhost:" + port + "/onebusaway-api-webapp/siri/"
-        + query;
-    GetMethod get = new GetMethod(url);
-    client.executeMethod(get);
-
-    String response = get.getResponseBodyAsString();
-    assertTrue(response, response.startsWith("<Siri"));
-
-    XStream xstream = new XStream();
-    xstream.processAnnotations(Siri.class);
-    Siri siri = (Siri) xstream.fromXML(response);
-    assertNotNull(siri);
-    return siri;
   }
 }
