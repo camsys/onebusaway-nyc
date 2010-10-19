@@ -182,7 +182,9 @@ class SimulatorTask implements Runnable, EntityHandler {
   }
 
   public List<NycTestLocationRecord> getResults() {
-    return _results;
+    synchronized (_results) {
+      return new ArrayList<NycTestLocationRecord>(_results);
+    }
   }
 
   public void resetAllVehiclesAppearingInRecordData() {
@@ -353,7 +355,9 @@ class SimulatorTask implements Runnable, EntityHandler {
     rr.setTimestamp(result.getTimeOfRecord());
     rr.setVehicleId(record.getVehicleId());
 
-    _results.add(rr);
+    synchronized (_results) {
+      _results.add(rr);
+    }
 
     return true;
   }
