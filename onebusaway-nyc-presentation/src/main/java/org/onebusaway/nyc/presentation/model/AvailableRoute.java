@@ -11,7 +11,7 @@ public class AvailableRoute {
   private final String routeId;
   private final String routeDescription;
   private final String routeHeadsign;
-  private List<DistanceAway> distanceAways;
+  private final List<DistanceAway> distanceAways;
 
   public AvailableRoute(String routeId, String routeDescription, String routeHeadsign,
       List<DistanceAway> distanceAways) {
@@ -21,10 +21,6 @@ public class AvailableRoute {
         this.distanceAways = distanceAways;
   }
 
-  public void setDistances(List<DistanceAway> distanceAways) {
-	this.distanceAways = distanceAways;  
-  }
-  
   public String getHeadsign() {
     return routeHeadsign;
   }
