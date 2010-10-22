@@ -161,7 +161,7 @@ OBA.Tracker = function() {
              
       var controls = jQuery('<ul class="controls"></ul>')
                 .append('<li><a class="addToMap" href="#">Add To Map</a></li>')
-                .append('<li><a class="zoomToExtent" href="#">Zoom To Extent</a></li>');
+                .append('<li><a class="zoomToExtent" href="#">Show Entire Route</a></li>');
 
       // if we already have the route displayed
       // its control should be disabled
@@ -214,6 +214,7 @@ OBA.Tracker = function() {
         clonedControlLink.removeClass("addToMap");
         clonedControlLink.addClass("removeFromMap");
         clonedControlLink.html("Remove from map");
+        clonedControlLink.removeClass("disabled");
 
         jQuery("<li></li>").append(clonedDiv)
           .appendTo(jQuery("#displayed-routes-list"))
@@ -227,9 +228,9 @@ OBA.Tracker = function() {
     // adds search result to "displayed routes" and adds to map. 
     function handleAddToMap(e) {
       var controlLink = jQuery(this);
-      var routeId = clonedDiv.data("id");
-      var directionId = clonedDiv.data("directionId");
       var resultDiv = controlLink.parents("div.result");
+      var routeId = resultDiv.data("id");
+      var directionId = resultDiv.data("directionId");
 
       if (routeMap.containsRoute(routeId, directionId)) {
         return false;
