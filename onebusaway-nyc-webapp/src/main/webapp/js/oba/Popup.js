@@ -20,28 +20,30 @@ OBA.theInfoWindowMarker = null;
 OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 	function createWrapper(content) {
 		var wrappedContent = jQuery('<div id="popup"></div>')
-                            .append(content)
-                            .appendTo("#map");
+								.append(content)
+								.appendTo("#map");
                                                 
-        wrappedContent = wrappedContent.css("width", 250).css("height", wrappedContent.height());
+        wrappedContent = wrappedContent.css("width", 250)
+        					.css("height", wrappedContent.height());
         
         return wrappedContent.get(0);
 	};
 	
 	return {
     	refresh: function() {
-            fetchFn(function(json) {
-            	if(OBA.theInfoWindow === null)
-            		return;
-                        
+        	if(OBA.theInfoWindow === null) {
+        		return;
+        	}
+        	
+        	fetchFn(function(json) {            
                 OBA.theInfoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
             });
-    		
     	},
     	
     	show: function(marker) {    
-            if(OBA.theInfoWindow)
+            if(OBA.theInfoWindow) {
                 OBA.theInfoWindow.close();
+            }
             
             fetchFn(function(json) {
                 OBA.theInfoWindow = new google.maps.InfoWindow();
@@ -59,7 +61,7 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
     };
 };
 
-// utilities? scope wrap to prevent global leak?
+// FIXME utilities? scope wrap to prevent global leak?
 function makeJsonFetcher(url, data) {
     return function(callback) {
         jQuery.getJSON(url, data, callback);
@@ -68,7 +70,8 @@ function makeJsonFetcher(url, data) {
 
 OBA.StopPopup = function(stopId, map) {
     var generateStopMarkup = function(json) {
-        var stop, arrivals;
+        var stop, arrivals = null;
+        
         try {
             stop = json.data.references.stops[0];
             arrivals = json.data.entry.arrivalsAndDepartures;
@@ -78,11 +81,9 @@ OBA.StopPopup = function(stopId, map) {
             return;
         }
 
-        // stop information
         var stopId = stop.id;
-        var latlng = [stop.lat, stop.lon];
-        var name = stop.name;
         var latestUpdate = null;
+        var name = stop.name;
 
         // vehicle location
         var routeToVehicleInfo = {};
@@ -91,9 +92,10 @@ OBA.StopPopup = function(stopId, map) {
         		var headsign = arrival.tripHeadsign;
         		var arrivalStopId = arrival.stopId;
                 
-                if (arrivalStopId !== stopId)
+                if (arrivalStopId !== stopId) {
                     return;
-        
+                }
+                
                 var predicted = arrival.predicted;
                 var routeId = arrival.routeId;
                 var headsign = arrival.tripHeadsign;
@@ -110,66 +112,70 @@ OBA.StopPopup = function(stopId, map) {
                                    feet: feet,
                                    predicted: predicted};
                 
-                if (routeToVehicleInfo[headsign])
+                if (routeToVehicleInfo[headsign]) {
                     routeToVehicleInfo[headsign].push(vehicleInfo);
-                else {
+                } else {
                     routeToVehicleInfo[headsign] = [vehicleInfo];
                     routeDirectionCount++;
                 }
             });
 
-        // last update time
         var lastUpdateDate = new Date(latestUpdate);
         var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
-
+        
         var header = '<p class="header">' + name + '</p>' +
-                     '<p class="description">Stop ID ' + OBA.Util.parseEntityId(stopId) + '</p>' + 
-                     '<p class="meta">Last updated at ' + lastUpdateString + '.</p>';
+                     '<p class="description">Stop #' + OBA.Util.parseEntityId(stopId) + '</p>' + 
+                     '<p class="meta">Last updated at ' + lastUpdateString + '</p>';
 
         var service = '';
-        // FIXME service notices
-        var notices = '<ul class="notices">';
+        var notices = '<ul class="notices"></ul>'; // FIXME: service notices
 
 		if(routeDirectionCount > 0) {
             service += '<p>This stop serves:</p><ul>';
 
             jQuery.each(routeToVehicleInfo, function(headsign, vehicleInfos) {
-                // sort it based on distance
+                // sort based on distance
                 vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
 
                 var included = false;
                 for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
                     var distanceAway = vehicleInfos[i];
                     
-                    if(distanceAway.stops < 0 || distanceAway.predicted === false || distanceAway.feet < 0)
+                    if(distanceAway.stops < 0 || distanceAway.predicted === false || distanceAway.feet < 0) {
                     	continue;
+                    }
                     
-                    service += '<li><a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(distanceAway.routeId) + '">'
-                              + OBA.Util.truncateToWidth(headsign, 100, 11) + '</a>';
+                    service += '<li>';
+                    service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(distanceAway.routeId) + '">';
+                    service += OBA.Util.truncateToWidth(headsign, 100, 11);
+                    service += '</a>';
 
-                    if(distanceAway.stops === 0) 
-                    	service += " (< 1 stop, "; 
-                    else
-                    	service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", "; 
+                    if(distanceAway.stops === 0) {
+                    	service += " (< 1 stop, " + OBA.Util.displayDistance(distanceAway.feet) + ")";
+                    } else {
+                    	service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", ";
+                    	service += OBA.Util.displayDistance(distanceAway.feet) + ")";
+                    }
                     
-                    service += OBA.Util.displayDistance(distanceAway.feet) + ")</li>";
+                    service += '</li>';
 
                     included = true;
                 }
 
-                // no actual vehicles are in the system--but display that they usually stop here...
+                // no actual vehicles are in the system--but display those that usually stop here...
                 if(! included) {
-                    service += '<li><a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(vehicleInfos[0].routeId) + '">'
-                    		+ OBA.Util.truncateToWidth(headsign, 200, 11) + '</a>';
+                    service += '<li>';
+                    service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(vehicleInfos[0].routeId) + '">';
+                    service += OBA.Util.truncateToWidth(headsign, 200, 11);
+                    service += '</a>';
+                    service += '</li>';
                 }
            });
 
            service += '</ul>';
         } else {
-            service += '<p>This stop has no service available.</p><ul>';
+           service += '<p>This stop has no service available.</p><ul>';
         }
-
-        notices += '</ul>';
 
         var bubble = jQuery(header + notices + service);
 
@@ -213,10 +219,6 @@ OBA.VehiclePopup = function(vehicleId, map) {
             return jQuery("<span>No data found for: " + vehicleId + "</span>");
         }
 
-        // last update date
-        var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
-        var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
-
         var stops = stops.slice(0);
         
         var stopIdsToStops = {};
@@ -232,9 +234,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
         });
         
         // sort the stops by their distance along the route
-        stops.sort(function(a, b) {
-            return a.scheduledDistance - b.scheduledDistance;
-        });
+        stops.sort(function(a, b) { return a.scheduledDistance - b.scheduledDistance; });
         
         // find how far along the trip we are given our current vehicle distance
         var distanceAlongTrip = tripStatus.distanceAlongTrip;
@@ -249,47 +249,49 @@ OBA.VehiclePopup = function(vehicleId, map) {
             }
         }
         
+        // last update date
+        var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
+        var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
+
         var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + headsign + '</p>' +
-             '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' + 
-             '<p class="meta">Last updated at ' + lastUpdateString + '.</p>';
+        			 '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' +
+        			 '<p class="meta">Last updated at ' + lastUpdateString + '</p>';
 
-        // service notices
-        var notices = '<ul class="notices">';
-
-        if(typeof tripStatus.serviceNotice !== 'undefined') {
-            notices += '<li>' + tripStatus.serviceNotice + '</li>';
-        }
-
-        notices += '</ul>';
+        // service notices FIXME
+        var notices = '<ul class="notices"></ul>';
             
         // next stops
         var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
         var nextStopsMarkup = '';
         
-        if (nextStops && nextStops.length > 0) {
-            nextStopsMarkup += '<p>Next stops:<ul>';       
- 
-            jQuery.each(nextStops, function(i, stop) {
+        if (nextStops && nextStops.length > 0) { 
+        	nextStopsMarkup += '<p>Next stops:</p><ul>';
+            
+        	jQuery.each(nextStops, function(i, stop) {
                 var displayStopId = OBA.Util.parseEntityId(stop.id);
                 var stopName = stop.name;
+
+                nextStopsMarkup += '<li>';
+                nextStopsMarkup += '<a href="#" class="searchLink" rel="' + displayStopId + '">' 
+                							+ OBA.Util.truncateToWidth(stopName, 200, 11) + '</a>';
 
                 // we only have one stop currently
                 // this will not work if we get more than one
                 // because we reuse the distance information for each
                 var stopsAway = i;
-                var stopsAwayStr = null;
-                
-                if(stopsAway === 0)
-                	stopsAwayStr = "< 1 stop";
-                else
-                	stopsAwayStr = (stopsAway === 1) ? "1 stop" : stopsAway + " stops";
-                
+                var stopsAwayStr = null;                
                 var metersDistanceDelta = stop.scheduledDistance - distanceAlongTrip;
                 var feet = OBA.Util.metersToFeet(metersDistanceDelta);
                 var distanceStr = OBA.Util.displayDistance(feet);
+                
+                if(stopsAway === 0) {
+                	stopsAwayStr = "< 1 stop";
+                } else {
+                	stopsAwayStr = (stopsAway === 1) ? "1 stop" : stopsAway + " stops";
+                }
 
-                nextStopsMarkup += '<li><a href="#" class="searchLink" rel="' + displayStopId + '">' + OBA.Util.truncateToWidth(stopName, 200, 11) + '</a>';
-                nextStopsMarkup += ' (' + stopsAwayStr + ', ' + distanceStr + ')</li>';
+                nextStopsMarkup += ' (' + stopsAwayStr + ', ' + distanceStr + ')';
+                nextStopsMarkup += '</li>';
            });
     
            nextStopsMarkup += '</ul>';

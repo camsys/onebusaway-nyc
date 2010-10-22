@@ -30,7 +30,6 @@ OBA.Config = {
 
     // marker images used
     // both are 16x16, and we want to have them centered on the location
-    // NEED TO ALSO UPDATE Marker.js!
     vehicleIcon: new google.maps.MarkerImage("img/vehicle.png",
             new google.maps.Size(34, 34),
             new google.maps.Point(0,0),

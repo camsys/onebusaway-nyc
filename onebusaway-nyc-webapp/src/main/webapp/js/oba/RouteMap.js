@@ -52,9 +52,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
     var vehicleTimerId = null;
  
     var fluster = new Fluster2(map, false, stopMarkers);
-
     fluster.initialize();            
-	
+    
     var requestRoutes = function(routeIds) {
         var routesToRequest;
  
@@ -74,9 +73,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
         }
         
         // we'll be serializing the requests to be one at a time, so this is the base case
-        if (routesToRequest.length == 0)
+        if (routesToRequest.length === 0) {
             return;
-
+        }
+        
         var routeId = routesToRequest[0][0];
         var directionId = routesToRequest[0][1];
         var remainingRouteIds = routesToRequest.slice(1);
@@ -91,11 +91,11 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 return;
             }
           
-          // keep track of the vehicles that are added for this direction
-          // this is will be a set of vehicleIds
-          var vehiclesAdded = {};
-          // helper function to add an element to a map where values are lists
-          var addVehicleMarkerToRouteMap = function(routeId, directionId, vehicleMarker) {
+            // keep track of the vehicles that are added for this direction
+            // this is will be a set of vehicleIds
+            var vehiclesAdded = {};
+            // helper function to add an element to a map where values are lists
+            var addVehicleMarkerToRouteMap = function(routeId, directionId, vehicleMarker) {
             var directionIdMap = routeIdsToVehicleMarkers[routeId];
             
             if (directionIdMap) {
@@ -106,12 +106,14 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                     var markerId = vehicleMarker.getId();
 
                     jQuery.each(vehicles, function(i, vehicle) {
-                        if (vehicle.getId() === markerId)
+                        if (vehicle.getId() === markerId) {
                             alreadyThere = true;
+                        }
                     });
 
-                    if (!alreadyThere)
+                    if (!alreadyThere) {
                         vehicles.push(vehicleMarker);
+                    }
                 } else {
                     directionIdMap[directionId] = [vehicleMarker];
                 }
@@ -141,8 +143,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                   var tripReference = tripReferencesList[i];
                   if (tripReference.id === vehicleTripId) {
                       var vehicleDirectionId = tripReference.directionId;
-                      if (vehicleDirectionId !== directionId)
+                      if (vehicleDirectionId !== directionId) {
                           return;
+                      }
                       break;
                   }
               }
@@ -155,9 +158,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
   
                 vehicleMarker.updatePosition(latlng);
 
-                if (!vehicleMarker.isDisplayed())
+                if (!vehicleMarker.isDisplayed()) {
                     vehicleMarker.addMarker();
-
+                }
+                
                 addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);
               } else {
                 vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, map, { map: map });
@@ -175,10 +179,11 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                   var vehiclesToKeep = [];
                   for (var i = 0; i < vehicles.length; i++) {
                       var vehicle = vehicles[i];
-                      if (vehicle.getId() in vehiclesAdded)
+                      if (vehicle.getId() in vehiclesAdded) {
                           vehiclesToKeep.push(vehicle);
-                      else
+                      } else {
                           vehicle.removeMarker();
+                      }
                   }
                   routeIdsToVehicleMarkers[routeId][directionId] = vehiclesToKeep;
               }
@@ -199,7 +204,6 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
         vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
     };
-    
 
     var requestStops = function() {
     	// calculate the request lat/lon and spans to use for the request
@@ -212,8 +216,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                        {version: 2, key: OBA.Config.apiKey, maxCount: 250,
                         lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
                        },
-                       function(json) {
-
+         function(json) {
             var stops;
             try {
                 stops = json.data.list;
@@ -228,9 +231,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
             var newStopIds = {};
 
             jQuery.each(stops, function(i, stop) {
-                    var stopId = stop.id;
-                    var latlng = [stop.lat, stop.lon];
-                    var name = stop.name;
+                var stopId = stop.id;
+                var latlng = [stop.lat, stop.lon];
+                var name = stop.name;
 
                 newStopIds[stopId] = stopId;
 
@@ -269,9 +272,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
       		marker.setMap(map);
       		OBA.theInfoWindowMarker = marker;
        	  
-      		if(! mapBounds.contains(marker.getPosition()))
+      		if(! mapBounds.contains(marker.getPosition())) {
       			map.setCenter(marker.getPosition());
-
+      		}
+      		
       		marker.showPopup();
       	} else {
       		var url = OBA.Config.stopUrl + "/" + stopId + ".json";
@@ -295,68 +299,102 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 	              stopMarkers[stopId] = marker;
 
-	       		  if(! mapBounds.contains(marker.getPosition()))
+	       		  if(! mapBounds.contains(marker.getPosition())) {
 	       			map.setCenter(marker.getPosition());
-	         	
+	       		  }
+	       		  
 	       		  marker.showPopup();
 	        });
           }
       },
 
-      // add and remove shapes also take care of updating the display
-      // if this is a problem we can factor this back out
-      addRoute: function(routeId, directionId, shape) {
-        if (containsRoute(routeId, directionId))
-            return;
+      addRoute: function(routeId, directionId, successFn) {
+          if (containsRoute(routeId, directionId))
+              return;
+    	  
+    	  var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";
 
-        // polylines is a list of encoded polylines from the server
-        // here we decode them and put them into one list of lat lngs
-        var polylines = [];
-        jQuery.each(shape, function(_, encodedPolyline) {
-            var latlngs = OBA.Util.decodePolyline(encodedPolyline.points);
-            var googleLatLngs = jQuery.map(latlngs, function(latlng) {
-                return new google.maps.LatLng(latlng[0], latlng[1]);
+      	  jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
+                var shape;
+                var stopGroupings = json.data.entry.stopGroupings;
+                var directionStopGrouping = null;
+                jQuery.each(stopGroupings, function(_, stopGrouping) {
+                    if (stopGrouping.type === "direction") {
+                        directionStopGrouping = stopGrouping;
+                    }
+                });
+                if (directionStopGrouping === null) {
+                    OBA.Util.log("Could not find direction stop grouping");
+                    OBA.Util.log(json);
+                    return;
+                }
+                var stopGroups = directionStopGrouping.stopGroups;
+                var shape = null;
+                for ( var i = 0; i < stopGroups.length; i++) {
+                    var stopGroup = stopGroups[i];
+                    if (stopGroup.id === directionId) {
+                        shape = stopGroup.polylines;
+                        break;
+                    }
+                }
+                if (shape === null) {
+                    OBA.Util.log("Could not find shape for route direction: " + directionId);
+                    OBA.Util.log(json);
+                    return;
+                }
+
+                // polylines is a list of encoded polylines from the server
+                // here we decode them and put them into one list of lat lngs
+                var polylines = [];
+                jQuery.each(shape, function(_, encodedPolyline) {
+                    var latlngs = OBA.Util.decodePolyline(encodedPolyline.points);
+                    var googleLatLngs = jQuery.map(latlngs, function(latlng) {
+                        return new google.maps.LatLng(latlng[0], latlng[1]);
+                    });
+                    
+                    var polyline = new google.maps.Polyline({
+                        path: googleLatLngs,
+                        strokeColor: "#0000FF",
+                        strokeOpacity: 0.5,
+                        strokeWeight: 5,
+                        zIndex: 50
+                    });
+
+                    polyline.setMap(map);
+                    polylines.push(polyline);
+                });
+
+                var directionIdToShapes = routeIdToShapes[routeId];
+                if (!directionIdToShapes) {
+                    directionIdToShapes = {};
+                    routeIdToShapes[routeId] = directionIdToShapes;
+                }
+                directionIdToShapes[directionId] = polylines;
+
+                numberOfRoutes += 1;
+
+                // always make an initial request just for this route
+                requestRoutes([[routeId, directionId]]);
+
+                // update the timer task
+                if (!isVehiclePolling) {
+                  isVehiclePolling = true;
+                  vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
+                }
+
+                var directionIdMap = routeIds[routeId];
+                if (!directionIdMap) {
+                    directionIdMap = {};
+                    routeIds[routeId] = directionIdMap;
+                }
+                directionIdMap[directionId] = 1;
+
+                if(typeof successFn === 'function') {
+                	successFn(routeId, directionId);
+                }
             });
-            
-            var polyline = new google.maps.Polyline({
-                path: googleLatLngs,
-                strokeColor: "#0000FF",
-                strokeOpacity: 0.5,
-                strokeWeight: 5,
-                zIndex: 50
-            });
-
-            polyline.setMap(map);
-            polylines.push(polyline);
-        });
-
-
-        var directionIdToShapes = routeIdToShapes[routeId];
-        if (!directionIdToShapes) {
-            directionIdToShapes = {};
-            routeIdToShapes[routeId] = directionIdToShapes;
-        }
-        directionIdToShapes[directionId] = polylines;
-
-        numberOfRoutes += 1;
-
-        // always make an initial request just for this route
-        requestRoutes([[routeId, directionId]]);
-
-        // update the timer task
-        if (!isVehiclePolling) {
-          isVehiclePolling = true;
-          vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
-        }
-
-        var directionIdMap = routeIds[routeId];
-        if (!directionIdMap) {
-            directionIdMap = {};
-            routeIds[routeId] = directionIdMap;
-        }
-        directionIdMap[directionId] = 1;
       },
-
+ 
       removeRoute: function(routeId, directionId) {
         var directionIdMap = routeIdToShapes[routeId] || {};
         var polylines = directionIdMap[directionId];
@@ -392,31 +430,11 @@ OBA.RouteMap = function(mapNode, mapOptions) {
             delete directionIdMap[directionId];
         }
       },
-
-      getRoutes: function() {
-		var result = [];
-		for (var routeId in routeIds) {
-		    var directionIdMap = routeIds[routeId];
-		    for (var directionId in directionIdMap) {
-		        result.push([routeId, directionId]);
-		    }
-		}
-		return result;
-      },
       
-      removeAllRoutes: function() {
-          for (var routeId in routeIds) {
-              var directionIdMap = routeIds[routeId];
-              for (var directionId in directionIdMap) {
-                  removeRoute(routeId, directionId);
-              }
-          }
-      },
- 
       getCount: function() {
           return numberOfRoutes;
       },
-
+      
       getBounds: function(routeId, directionId) {
           var directionIdMap = routeIdToShapes[routeId] || {};
           var polylines = directionIdMap[directionId];
@@ -431,6 +449,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                   latlngBounds.extend(latlng);
               }
           });
+          
           return latlngBounds;
       }
     };

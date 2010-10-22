@@ -14,18 +14,12 @@
 
 var OBA = window.OBA || {};
 
-OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
-	var lastPosition = null;
-	
+OBA.Marker = function(entityId, latlng, map, popup, options) {
 	var markerOptions = {
         position: new google.maps.LatLng(latlng[0], latlng[1])
     };
 
-    if (typeof extraMarkerOptions !== "undefined") {
-        jQuery.extend(markerOptions, extraMarkerOptions);
-    }
-
-    var marker = new google.maps.Marker(markerOptions);
+    var marker = new google.maps.Marker(jQuery.extend(markerOptions, options || {}));
     var showPopup = function() { popup.show(marker); };
 
     google.maps.event.addListener(marker, "click", showPopup);
@@ -33,19 +27,18 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
     return {
         showPopup: showPopup,
 
-    	getPosition: function() {
-    		return marker.getPosition();
-    	},
-    	
         getMap: function() {
         	return marker.getMap();
         },
 
         setMap: function(map) {
-        	if(map === null)
-        		if(OBA.theInfoWindowMarker !== null && OBA.theInfoWindowMarker.getPosition() === marker.getPosition())
+        	// marker cannot be removed from map if it is attached to the current infoWindow.
+        	if(map === null) {
+        		if(OBA.theInfoWindowMarker !== null && OBA.theInfoWindowMarker.getPosition() === marker.getPosition()) {
         			return;
-
+        		}
+        	}
+        
         	marker.setMap(map);
         },
         
@@ -58,12 +51,18 @@ OBA.Marker = function(entityId, latlng, map, popup, extraMarkerOptions) {
         },
 
         updatePosition: function(latlng) {
-        	if(extraMarkerOptions.type === 'vehicle')
+        	// refresh infoWindow with marker if we're a vehicle marker/popup
+        	if(OBA.theInfoWindow !== null && options.type === 'vehicle') {
         		popup.refresh();
+        	}
         	
         	marker.setPosition(latlng);
         },
-        
+
+    	getPosition: function() {
+    		return marker.getPosition();
+    	},
+    	
         isDisplayed: function() {
             return marker.getMap() != null;
         },
