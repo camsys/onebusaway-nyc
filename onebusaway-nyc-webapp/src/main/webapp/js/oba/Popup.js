@@ -120,12 +120,15 @@ OBA.StopPopup = function(stopId, map) {
                 }
             });
 
-        var lastUpdateDate = new Date(latestUpdate);
-        var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
+        var lastUpdateString = null;
+        if (latestUpdate !== 0) {
+            var lastUpdateDate = new Date(latestUpdate);
+            lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
+        }
         
         var header = '<p class="header">' + name + '</p>' +
                      '<p class="description">Stop #' + OBA.Util.parseEntityId(stopId) + '</p>' + 
-                     '<p class="meta">Last updated at ' + lastUpdateString + '</p>';
+                     (lastUpdateString ? '<p class="meta">Last updated at ' + lastUpdateString + '</p>' : '');
 
         var service = '';
         var notices = '<ul class="notices"></ul>'; // FIXME: service notices
