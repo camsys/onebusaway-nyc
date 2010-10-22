@@ -8,10 +8,10 @@ public class DistancePresenter {
   public static String displayFeet(double feet) {
     if (feet > 5280) {
       double miles = feet / 5280;
-      return String.format("%1.2f miles", miles);
+      return String.format("%1.2f mi", miles);
     } else {
       int feetAsInt = (int) feet;
-      return feetAsInt + " feet";
+      return feetAsInt + " ft";
     }
   }
   
