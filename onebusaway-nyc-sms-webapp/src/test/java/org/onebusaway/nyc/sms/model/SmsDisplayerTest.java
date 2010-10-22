@@ -51,7 +51,7 @@ public class SmsDisplayerTest {
     SmsDisplayer sms = new SmsDisplayer(searchResults);
     sms.singleStopResponse();
     String actual = sms.toString();
-    String exp = "routeid: 300 feet, 1 stop\n" + "routeid: 900 feet, 2 stops\n";
+    String exp = "routeid: 300 ft, 1 stop\n" + "routeid: 900 ft, 2 stops\n";
     assertEquals(exp, actual);
   }
 
@@ -72,11 +72,12 @@ public class SmsDisplayerTest {
     SmsDisplayer sms = new SmsDisplayer(searchResults);
     sms.singleStopResponse();
     String actual = sms.toString();
-    String exp = "routeid: 100 feet, 1 stop\n" +
-                 "routeid: 200 feet, 2 stops\n" +
-                 "routeid: 300 feet, 3 stops\n" +
-                 "routeid: 400 feet, 4 stops\n" +
-                 "routeid: 500 feet, 5 stops\n";
+    String exp = "routeid: 100 ft, 1 stop\n" +
+                 "routeid: 200 ft, 2 stops\n" +
+                 "routeid: 300 ft, 3 stops\n" +
+                 "routeid: 400 ft, 4 stops\n" +
+                 "routeid: 500 ft, 5 stops\n" +
+                 "routeid: 600 ft, 6 stops\n";
     assertEquals(exp, actual);
   }
 
@@ -138,11 +139,11 @@ public class SmsDisplayerTest {
     
     String actual = sms.toString();
     String exp = "N-bound:\n" +
-                 "routeid: 100 feet, 1 stop\n" +
-                 "routeid: 200 feet, 2 stops\n" +
+                 "routeid: 100 ft, 1 stop\n" +
+                 "routeid: 200 ft, 2 stops\n" +
                  "S-bound:\n" +
-                 "routeid: 100 feet, 1 stop\n" +
-                 "routeid: 200 feet, 2 stops\n";
+                 "routeid: 100 ft, 1 stop\n" +
+                 "routeid: 200 ft, 2 stops\n";
     assertEquals(exp, actual);
   }
   
@@ -168,11 +169,11 @@ public class SmsDisplayerTest {
     
     String actual = sms.toString();
     String exp = "N-bound:\n" +
-                 "routeid: 100 feet, 1 stop\n" +
-                 "routeid: 200 feet, 2 stops\n" +
+                 "routeid: 100 ft, 1 stop\n" +
+                 "routeid: 200 ft, 2 stops\n" +
                  "S-bound:\n" +
-                 "routeid: 100 feet, 1 stop\n" +
-                 "routeid: 200 feet, 2 stops\n";
+                 "routeid: 100 ft, 1 stop\n" +
+                 "routeid: 200 ft, 2 stops\n";
     assertEquals(exp, actual);
   }
 
