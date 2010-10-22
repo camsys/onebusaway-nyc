@@ -51,9 +51,11 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
         },
 
         updatePosition: function(latlng) {
-        	// refresh infoWindow with marker if we're a vehicle marker/popup
-        	if(OBA.theInfoWindow !== null && options.type === 'vehicle') {
-        		popup.refresh();
+        	// refresh infoWindow if the infoWindow-bound marker is the same as us
+        	if(OBA.theInfoWindow !== null) {
+        		if(OBA.theInfoWindowMarker !== null && OBA.theInfoWindowMarker.getPosition() == marker.getPosition()) {
+        			popup.refresh();
+        		}
         	}
         	
         	marker.setPosition(latlng);
