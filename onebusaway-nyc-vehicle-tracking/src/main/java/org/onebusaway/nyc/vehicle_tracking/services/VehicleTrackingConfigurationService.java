@@ -17,4 +17,8 @@ public interface VehicleTrackingConfigurationService {
    * @return the time threshold, in seconds
    */
   public int getVehicleStalledTimeThreshold();
+
+  void setVehicleOffRouteDistanceThreshold(double vehicleOffRouteDistanceThreshold);
+
+  void setVehicleStalledTimeThreshold(int vehicleStalledTimeThreshold);
 }

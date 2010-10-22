@@ -22,6 +22,12 @@
             <version>${project.version}</version>
         </dependency>
         
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-vehicle-tracking-webapp</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         <!-- the json package is included directly here -->
         <!-- in the oba webapp, it gets pulled in from the everylastlogin module -->
         <dependency>
