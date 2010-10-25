@@ -14,18 +14,17 @@
 
 package org.onebusaway.nyc.webapp.actions;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 public class IndexActionTest {
 
   @Test
-  public void testExecute() {
+  public void testExecute() throws Exception {
     IndexAction action = new IndexAction();
-    action.execute();
-    assertEquals("message set in execute", "Hello one bus away NY!",
-        action.getMessage());
+    String response = action.execute();
+    assertEquals("successful response", "success", response);
   }
 
 }
