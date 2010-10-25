@@ -1,13 +1,14 @@
-package org.onebusaway.nyc.webapp.actions;
+package org.onebusaway.nyc.webapp.actions.mobile;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class MobileAction extends OneBusAwayNYCActionSupport {
+public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
   

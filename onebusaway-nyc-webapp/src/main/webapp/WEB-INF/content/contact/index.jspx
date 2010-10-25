@@ -19,11 +19,9 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>One Bus Away NY Admin Interface</title>
+<title>Contact us</title>
 </head>
 <body>
-
-<s:a href="edit-parameters">Change inference parameters</s:a>
-
+<h1>Contact us</h1>
 </body>
 </html>

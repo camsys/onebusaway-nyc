@@ -66,7 +66,7 @@ LI {
 <div>
 <p>Search for:</p>
 
-<form action="mobile.action">
+<form action="/onebusaway-nyc-webapp/mobile/">
 <input type="text" name="q" class="q" value="${q}"/>
 <input type="submit" class="s" value="Go" />
 </form>
@@ -79,9 +79,9 @@ LI {
 	<div>
 		<p>Example searches:</p>
 		<ul>
-		<li><a href="mobile.action?q=Atlantic%20Ave%20and%20Hoyt%20St">Atlantic Ave and Hoyt St</a></li>
-		<li><a href="mobile.action?q=305394">305394</a></li>
-		<li><a href="mobile.action?q=B63">B63</a></li>
+		<li><a href="/onebusaway-nyc-webapp/mobile/?q=Atlantic%20Ave%20and%20Hoyt%20St">Atlantic Ave and Hoyt St</a></li>
+		<li><a href="/onebusaway-nyc-webapp/mobile/?q=305394">305394</a></li>
+		<li><a href="/onebusaway-nyc-webapp/mobile/?q=B63">B63</a></li>
 		</ul>
 	</div>
 </c:if>
@@ -101,7 +101,7 @@ LI {
 		<strong><s:property value="name" /></strong><br/>
 
 		<s:iterator value="routesAvailable">
-			<a href="mobile.action?q=${routeId}"><s:property value="headsign" /></a><br />
+			<a href="/onebusaway-nyc-webapp/mobile/?q=${routeId}"><s:property value="headsign" /></a><br />
 			<s:iterator value="distanceAway">
 				<s:property value="presentableDistance" /><br />
 			</s:iterator>
@@ -116,7 +116,7 @@ LI {
 		<ul>
 			<s:iterator value="stopItems">
 			<li>
-				<a title="${name}" href="mobile.action?q=${id}"><s:property value="name" /></a>
+				<a title="${name}" href="/onebusaway-nyc-webapp/mobile/?q=${id}"><s:property value="name" /></a>
 				<s:property value="presentableDistances" />
 			</li>
 			</s:iterator>
