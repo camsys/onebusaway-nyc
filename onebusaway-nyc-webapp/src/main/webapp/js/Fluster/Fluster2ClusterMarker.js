@@ -44,7 +44,7 @@ function Fluster2ClusterMarker(_fluster, _cluster)
 	});
 };
 
-Fluster2ClusterMarker.prototype = new google.maps.Marker();
+Fluster2ClusterMarker.prototype = new google.maps.Marker({ zIndex:100 });
 
 Fluster2ClusterMarker.prototype.hide = function()
 {
