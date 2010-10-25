@@ -22,22 +22,6 @@ import com.opensymphony.xwork2.ActionSupport;
  */
 public class IndexAction extends ActionSupport {
 
-  /**
-   * serial id
-   */
   private static final long serialVersionUID = 1L;
-
-  // temporary test
-  private String message;
-
-  public String getMessage() {
-    return message;
-  }
-
-  @Override
-  public String execute() {
-    message = "Hello one bus away NY!";
-    return SUCCESS;
-  }
 
 }
