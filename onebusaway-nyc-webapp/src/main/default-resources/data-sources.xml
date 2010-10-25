@@ -8,9 +8,12 @@
         <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
 <!--        <property name="serviceUrl" value="http://dev.oba.openplans.org:9090/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />-->
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService" />
     </bean>
 
+    <bean id="configServiceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-configuration" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService" />
+    </bean>
 <!--     Database Connection Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
