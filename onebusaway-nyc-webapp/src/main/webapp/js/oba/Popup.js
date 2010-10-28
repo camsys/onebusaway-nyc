@@ -87,7 +87,8 @@ OBA.StopPopup = function(stopId, map) {
 
         // vehicle location
         var routeToVehicleInfo = {};
-        var routeDirectionCount = 0;
+        var headsignToRoute = {};
+        var routeToVehicleCount = 0;
         jQuery.each(arrivals, function(_, arrival) {
         		var headsign = arrival.tripHeadsign;
         		var arrivalStopId = arrival.stopId;
@@ -95,6 +96,13 @@ OBA.StopPopup = function(stopId, map) {
                 if (arrivalStopId !== stopId) {
                     return;
                 }
+
+                headsignToRoute[headsign] = arrival.routeId;
+                routeToVehicleInfo[headsign] = [];
+                routeToVehicleCount++;                
+                
+                if(OBA.Config.vehicleFilterFunction(arrival.tripStatus) === false)
+                	return
                 
                 var predicted = arrival.predicted;
                 var routeId = arrival.routeId;
@@ -114,9 +122,6 @@ OBA.StopPopup = function(stopId, map) {
                 
                 if (routeToVehicleInfo[headsign]) {
                     routeToVehicleInfo[headsign].push(vehicleInfo);
-                } else {
-                    routeToVehicleInfo[headsign] = [vehicleInfo];
-                    routeDirectionCount++;
                 }
             });
 
@@ -130,55 +135,59 @@ OBA.StopPopup = function(stopId, map) {
                      '<p class="description">Stop #' + OBA.Util.parseEntityId(stopId) + '</p>' + 
                      (lastUpdateString ? '<p class="meta">Last updated at ' + lastUpdateString + '</p>' : '');
 
-        var service = '';
+        var service = '<p>This stop serves:</p><ul>';
         var notices = '<ul class="notices"></ul>'; // FIXME: service notices
 
-		if(routeDirectionCount > 0) {
-            service += '<p>This stop serves:</p><ul>';
+        jQuery.each(routeToVehicleInfo, function(headsign, vehicleInfos) {
+            // sort based on distance
+            vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
 
-            jQuery.each(routeToVehicleInfo, function(headsign, vehicleInfos) {
-                // sort based on distance
-                vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
+            var included = false;
+            for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
+                var distanceAway = vehicleInfos[i];
+                
+                if(distanceAway.feet < 0)
+                	continue;
+                
+                service += '<li>';
+                service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(distanceAway.routeId) + '">';
+                service += OBA.Util.truncateToWidth(headsign, 100, 11);
+                service += '</a>';
 
-                var included = false;
-                for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
-                    var distanceAway = vehicleInfos[i];
-                    
-                    if(distanceAway.stops < 0 || distanceAway.predicted === false || distanceAway.feet < 0) {
-                    	continue;
-                    }
-                    
-                    service += '<li>';
-                    service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(distanceAway.routeId) + '">';
-                    service += OBA.Util.truncateToWidth(headsign, 100, 11);
-                    service += '</a>';
-
-                    if(distanceAway.stops === 0) {
-                    	service += " (< 1 stop, " + OBA.Util.displayDistance(distanceAway.feet) + ")";
-                    } else {
-                    	service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", ";
-                    	service += OBA.Util.displayDistance(distanceAway.feet) + ")";
-                    }
-                    
-                    service += '</li>';
-
-                    included = true;
+                if(distanceAway.stops === 0) {
+                	service += " (< 1 stop, " + OBA.Util.displayDistance(distanceAway.feet) + ")";
+                } else {
+                	service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", ";
+                	service += OBA.Util.displayDistance(distanceAway.feet) + ")";
                 }
+                
+                service += '</li>';
 
-                // no actual vehicles are in the system--but display those that usually stop here...
-                if(! included) {
-                    service += '<li>';
-                    service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(vehicleInfos[0].routeId) + '">';
-                    service += OBA.Util.truncateToWidth(headsign, 200, 11);
-                    service += '</a>';
-                    service += '</li>';
-                }
-           });
+                included = true;
+            }
 
-           service += '</ul>';
-        } else {
-           service += '<p>This stop has no service available.</p><ul>';
+            // no actual vehicles are in the system--but display those that usually stop here...
+            if(! included && headsign !== null) {
+                service += '<li>';
+                service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(headsignToRoute[headsign]) + '">';
+                service += OBA.Util.truncateToWidth(headsign, 200, 11);
+                service += '</a>';
+                service += '</li>';
+            }
+        });
+        
+        // default response if no headsigns are available
+        if(routeToVehicleCount == 0) {
+        	var route = json.data.references.routes[0];
+
+        	service += '<li>';
+            service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(route.id) + '">';
+            service += OBA.Util.truncateToWidth(route.longName, 100, 11);
+            service += '</a>';
+            service += '</li>';
         }
+
+        service += '</ul>';
 
         var bubble = jQuery(header + notices + service);
 
@@ -267,7 +276,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
         var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
         var nextStopsMarkup = '';
         
-        if (nextStops && nextStops.length > 0) { 
+        if (nextStops && nextStops.length > 0 && (typeof tripStatus.status !== 'undefined' && tripStatus.status !== 'DEVIATED')) { 
         	nextStopsMarkup += '<p>Next stops:</p><ul>';
             
         	jQuery.each(nextStops, function(i, stop) {
@@ -298,6 +307,8 @@ OBA.VehiclePopup = function(vehicleId, map) {
            });
     
            nextStopsMarkup += '</ul>';
+        } else {
+        	nextStopsMarkup += '<p>Next stops are not known for this vehicle.</p>';
         }
 
         bubble = jQuery(header + notices + nextStopsMarkup);

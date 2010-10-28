@@ -42,5 +42,26 @@ OBA.Config = {
             new google.maps.Point(7, 7)),
 
     // api key used for webapp
-    apiKey: "TEST"
+    apiKey: "TEST",
+    
+    vehicleFilterFunction: function(tripStatus) {
+    	// don't show non-realtime trips (row 8)
+    	if(tripStatus.predicted === false || tripStatus.distanceAlongTrip === 0)
+    		return false;
+    	
+    	// hide disabled vehicles (row 7)
+    	if(typeof tripStatus.status !== 'undefined' && tripStatus.status !== '' && tripStatus.status === 'DISABLED')
+    		return false;
+    	
+    	// hide deadheading vehicles (row 3)
+    	// hide vehicles at the depot (row 1)
+    	if(typeof tripStatus.phase !== 'undefined' && tripStatus.phase !== '' && tripStatus.phase !== 'IN_PROGRESS')
+    		return false;
+
+  	  	// hide data >= 5m old (row 5)
+    	if(typeof tripStatus.lastUpdateTime !== 'undefined' && new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * 60 * 5)
+    		return false;
+  	  
+    	return true;
+    }
 };

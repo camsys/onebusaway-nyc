@@ -133,10 +133,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
               var status = tripDetails.status;
               var predicted = status.predicted;
               var vehicleId = status.vehicleId;
-              if (!predicted || (!vehicleId)) {
-                  return;
-              }
               
+              if(OBA.Config.vehicleFilterFunction(tripDetails.status) === false || ! vehicleId)
+              	return;
+
               // check to make sure that the bus is headed in the right direction
               var vehicleTripId = tripDetails.tripId;
               for (var i = 0; i < tripReferencesList.length; i++) {
