@@ -23,6 +23,7 @@ import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
 import org.onebusaway.nyc.presentation.model.AvailableRoute;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
+import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.StopItem;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -50,9 +51,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NycSearchServiceImpl implements NycSearchService {
-
   private final static Pattern routePattern = Pattern.compile("(?:[BMQS]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
-
+ 
   // when querying for stops from a lat/lng, use this distance in meters
   private double distanceToStops = 100;
 
@@ -74,174 +74,88 @@ public class NycSearchServiceImpl implements NycSearchService {
   }
 
   @Override
-  public List<SearchResult> search(String q) {
-    List<SearchResult> results = new ArrayList<SearchResult>();
+  public List<SearchResult> search(String q, Mode m) {
+	List<SearchResult> results = new ArrayList<SearchResult>();
 
     if (q == null)
       return results;
+    
     q = q.trim();
+    
     if (q.isEmpty())
       return results;
 
     String[] fields = q.split(" ");
+    // we are probably a query for a route or a stop ID
     if (fields.length == 1) {
-      // we are probably a query for a route or a stop
       if (isStop(q)) {
         SearchQueryBean queryBean = makeSearchQuery(q);
         StopsBean stops = transitService.getStops(queryBean);
 
         for (StopBean stopBean : stops.getStops()) {
-          StopSearchResult stopSearchResult = makeStopSearchResult(stopBean);
+          StopSearchResult stopSearchResult = makeStopSearchResult(stopBean, m);
           results.add(stopSearchResult);
         }
+    
       } else if (isRoute(q)) {
         SearchQueryBean queryBean = makeSearchQuery(q);
         RoutesBean routes = transitService.getRoutes(queryBean);
 
         for (RouteBean routeBean : routes.getRoutes()) {
-          String routeId = routeBean.getId();
-          String routeShortName = routeBean.getShortName();
-          String routeLongName = routeBean.getLongName();
-          // FIXME last update time
-          String lastUpdate = "one minute ago";
-
-          // create lookups keyed by directionId to the different bits of
-          // information we need for the response
-          Map<String, List<StopBean>> directionIdToStopBeans = createDirectionToStopBeansMap(routeId);
-          Map<String, String> directionIdToHeadsign = new HashMap<String, String>();
-          Map<String, String> directionIdToTripId = new HashMap<String, String>();
-          // go from trip id to a mapping of stop id -> distance along trip
-          Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String, Double>>();
-          Map<String, List<Double>> stopIdToDistanceAways = new HashMap<String, List<Double>>();
-
-          TripsForRouteQueryBean tripQueryBean = makeTripsForRouteQueryBean(routeId);
-          ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
-          List<TripDetailsBean> tripsList = tripsForRoute.getList();
-
-          for (TripDetailsBean tripDetailsBean : tripsList) {
-            TripBean trip = tripDetailsBean.getTrip();
-            String tripId = trip.getId();
-            String tripDirectionId = trip.getDirectionId();
-            String tripHeadsign = trip.getTripHeadsign();
-            directionIdToHeadsign.put(tripDirectionId, tripHeadsign);
-            directionIdToTripId.put(tripDirectionId, tripId);
-
-            // determine distances along trip for each stop if we haven't gotten
-            // this trip yet
-            if (!tripIdToStopDistancesMap.containsKey(tripId)) {
-              TripStopTimesBean schedule = tripDetailsBean.getSchedule();
-              List<TripStopTimeBean> stopTimes = schedule.getStopTimes();
-              for (TripStopTimeBean tripStopTimeBean : stopTimes) {
-                StopBean stopBean = tripStopTimeBean.getStop();
-                String stopId = stopBean.getId();
-                double distanceAlongTrip = tripStopTimeBean.getDistanceAlongTrip();
-
-                Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
-                if (stopIdToDistance == null) {
-                  stopIdToDistance = new HashMap<String, Double>();
-                  tripIdToStopDistancesMap.put(tripId, stopIdToDistance);
-                }
-                stopIdToDistance.put(stopId, distanceAlongTrip);
-              }
-            }
-
-            TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
-            if (tripStatusBean == null || !tripStatusBean.isPredicted())
-              continue;
-
-            StopBean closestStop = tripStatusBean.getNextStop();
-            if (closestStop != null) {
-              String closestStopId = closestStop.getId();
-              Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
-              double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
-              double stopDistanceAlongroute = stopIdToDistance.get(closestStopId);
-              double distanceAway = stopDistanceAlongroute - distanceAlongTrip;
-              List<Double> stopDistanceAways = stopIdToDistanceAways.get(closestStopId);
-              if (stopDistanceAways == null) {
-                stopDistanceAways = new ArrayList<Double>();
-                stopIdToDistanceAways.put(closestStopId, stopDistanceAways);
-              }
-              stopDistanceAways.add(distanceAway);
-            }
-          }
-
-          for (Map.Entry<String, List<StopBean>> directionStopBeansEntry : directionIdToStopBeans.entrySet()) {
-            String directionId = directionStopBeansEntry.getKey();
-            String tripId = directionIdToTripId.get(directionId);
-            String tripHeadsign = directionIdToHeadsign.get(directionId);
-            // on the off chance that this happens degrade more gracefully
-            if (tripHeadsign == null)
-              tripHeadsign = routeLongName;
-
-            List<StopBean> stopBeansList = directionStopBeansEntry.getValue();
-            Map<String, Double> stopIdToDistances = tripIdToStopDistancesMap.get(tripId);
-            if (stopIdToDistances != null) {
-              Comparator<StopBean> stopBeanComparator = new NycSearchServiceImpl.StopBeanComparator(
-                  stopIdToDistances);
-              Collections.sort(stopBeansList, stopBeanComparator);
-            }
-            List<StopItem> stopItemsList = new ArrayList<StopItem>();
-            for (StopBean stopBean : stopBeansList) {
-              String stopId = stopBean.getId();
-              List<Double> distances = stopIdToDistanceAways.get(stopId);
-              List<Double> meterDistances = null;
-              if (distances != null && distances.size() > 0) {
-                meterDistances = new ArrayList<Double>(distances.size());
-                for (Double feetDistance : distances) {
-                  meterDistances.add(metersToFeet(feetDistance));
-                }
-                Collections.sort(meterDistances);
-              }
-              StopItem stopItem = new StopItem(stopBean, meterDistances);
-              stopItemsList.add(stopItem);
-            }
-            RouteSearchResult routeSearchResult = new RouteSearchResult(
-                routeId, routeShortName, routeLongName, lastUpdate,
-                tripHeadsign, directionId, stopItemsList);
-            results.add(routeSearchResult);
-          }
+        	List<RouteSearchResult> routeSearchResult = makeRouteSearchResult(routeBean, m);
+        	results.addAll(routeSearchResult);
         }
       }
-    } else {
-      // we should be either an intersection and route or an intersection
 
+    // we should be either an intersection and route or an intersection
+    } else {
       // if we're a route, set route and the geocoder query appropriately
       String route = null;
       String queryNoRoute = null;
+
       if (isRoute(fields[0])) {
         route = fields[0];
         StringBuilder sb = new StringBuilder(32);
+      
         for (int i = 1; i < fields.length; i++) {
           sb.append(fields[i]);
           sb.append(" ");
         }
+        
         queryNoRoute = sb.toString().trim();
+      
       } else if (isRoute(fields[fields.length - 1])) {
         route = fields[fields.length - 1];
         StringBuilder sb = new StringBuilder(32);
+        
         for (int i = 0; i < fields.length - 1; i++) {
           sb.append(fields[i]);
           sb.append(" ");
         }
+        
         queryNoRoute = sb.toString().trim();
       }
 
+      // we are a route and intersection
       if (route != null) {
-        // we are a route and intersection
         List<StopsBean> stopsList = fetchStopsFromGeocoder(queryNoRoute);
+
         for (StopsBean stopsBean : stopsList) {
           for (StopBean stopBean : stopsBean.getStops()) {
             boolean useStop = false;
+        
             List<RouteBean> routes = stopBean.getRoutes();
             for (RouteBean routeBean : routes) {
               String idNoAgency = idParser.parseIdWithoutAgency(routeBean.getId());
+            
               if (idNoAgency.equalsIgnoreCase(route)) {
                 useStop = true;
                 break;
               }
             }
+            
             if (useStop) {
-              StopSearchResult stopSearchResult = makeStopSearchResult(stopBean);
+              StopSearchResult stopSearchResult = makeStopSearchResult(stopBean, m);
               results.add(stopSearchResult);
             }
           }
@@ -251,8 +165,9 @@ public class NycSearchServiceImpl implements NycSearchService {
         List<StopsBean> stopsBeanList = fetchStopsFromGeocoder(q);
         for (StopsBean stopsBean : stopsBeanList) {
           List<StopBean> stopsList = stopsBean.getStops();
+
           for (StopBean stopBean : stopsList) {
-            StopSearchResult stopSearchResult = makeStopSearchResult(stopBean);
+            StopSearchResult stopSearchResult = makeStopSearchResult(stopBean, m);
             results.add(stopSearchResult);
           }
         }
@@ -262,8 +177,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     return sortSearchResults(results);
   }
 
-  private Map<String, List<StopBean>> createDirectionToStopBeansMap(
-      String routeId) {
+  private Map<String, List<StopBean>> createDirectionToStopBeansMap(String routeId) {
     Map<String, List<StopBean>> directionIdToStopBeans = new HashMap<String, List<StopBean>>();
 
     StopsForRouteBean stopsForRoute = transitService.getStopsForRoute(routeId);
@@ -275,6 +189,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       for (StopGroupBean stopGroupBean : stopGroups) {
         NameBean name = stopGroupBean.getName();
         String type = name.getType();
+
         if (!type.equals("destination"))
           continue;
 
@@ -287,6 +202,7 @@ public class NycSearchServiceImpl implements NycSearchService {
           if (stopIds.contains(stopBeanId))
             stopsForDirection.add(stopBean);
         }
+
         directionIdToStopBeans.put(directionId, stopsForDirection);
       }
     }
@@ -341,20 +257,186 @@ public class NycSearchServiceImpl implements NycSearchService {
     }
     return result;
   }
+  
+  private List<RouteSearchResult> makeRouteSearchResult(RouteBean routeBean, Mode m) {
+	  List<RouteSearchResult> results = new ArrayList<RouteSearchResult>();
+	  
+	  String routeId = routeBean.getId();
+      String routeShortName = routeBean.getShortName();
+      String routeLongName = routeBean.getLongName();
 
-  private StopSearchResult makeStopSearchResult(StopBean stopBean) {
+      // create lookups keyed by directionId to the different bits of
+      // information we need for the response
+      Map<String, List<StopBean>> directionIdToStopBeans = createDirectionToStopBeansMap(routeId);
+      Map<String, String> directionIdToHeadsign = new HashMap<String, String>();
+      Map<String, String> directionIdToTripId = new HashMap<String, String>();
+
+      Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String, Double>>();
+      Map<String, List<DistanceAway>> stopIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
+
+      TripsForRouteQueryBean tripQueryBean = makeTripsForRouteQueryBean(routeId);
+      ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
+      List<TripDetailsBean> tripsList = tripsForRoute.getList();
+
+      // create a map of trip ids->(stop ids->distances along trip values) to figure out which stop the vehicle is between
+      // this is all with schedule data only so far... 
+      for (TripDetailsBean tripDetailsBean : tripsList) {
+        TripBean trip = tripDetailsBean.getTrip();
+        String tripId = trip.getId();
+        String tripDirectionId = trip.getDirectionId();
+        String tripHeadsign = trip.getTripHeadsign();
+
+        directionIdToHeadsign.put(tripDirectionId, tripHeadsign);
+        directionIdToTripId.put(tripDirectionId, tripId);
+
+        if(!tripIdToStopDistancesMap.containsKey(tripId)) {
+          TripStopTimesBean schedule = tripDetailsBean.getSchedule();
+          List<TripStopTimeBean> stopTimes = schedule.getStopTimes();
+
+          for (TripStopTimeBean tripStopTimeBean : stopTimes) {
+              StopBean stopBean = tripStopTimeBean.getStop();
+              String stopId = stopBean.getId();
+              double distanceAlongTrip = tripStopTimeBean.getDistanceAlongTrip();
+
+              Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
+              
+              if (stopIdToDistance == null) {
+                stopIdToDistance = new HashMap<String, Double>();
+                tripIdToStopDistancesMap.put(tripId, stopIdToDistance);
+              }
+
+              stopIdToDistance.put(stopId, distanceAlongTrip);
+            }
+        }
+
+        TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
+        
+        // should we display this vehicle on the UI specified by "m"? 
+        if(tripStatusBean == null || ! shouldDisplayTripForUIMode(tripStatusBean, m))
+        	continue;
+
+        /*
+         * Now that we have a structure of stops and each stop's distance along the route, 
+         * we can calculate how far the vehicle (for which we only have distance along *route*) is away
+         * from its next stop in meters (which we also have a distance along route for).
+         */        
+        StopBean closestStop = tripStatusBean.getNextStop();
+
+        if (closestStop != null) {
+          String closestStopId = closestStop.getId();
+          Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
+
+          double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
+          double stopDistanceAlongRoute = stopIdToDistance.get(closestStopId);
+          double distanceAwayFromClosestStopInMeters = stopDistanceAlongRoute - distanceAlongTrip;
+          int distanceAwayFromClosestStopInFeet = (int) this.metersToFeet(distanceAwayFromClosestStopInMeters);
+          
+          List<DistanceAway> stopDistanceAways = stopIdToDistanceAways.get(closestStopId);
+          
+          if (stopDistanceAways == null) {
+            stopDistanceAways = new ArrayList<DistanceAway>();
+            stopIdToDistanceAways.put(closestStopId, stopDistanceAways);
+          }
+
+          // (we're always 0 stops away from our next stop, by definition!)
+          DistanceAway distanceAway = new DistanceAway(0, distanceAwayFromClosestStopInFeet, new Date(tripStatusBean.getLastUpdateTime()), m);
+
+          stopDistanceAways.add(distanceAway);
+        }
+      }
+      
+      // for each route direction for the route we are creating a result for...
+      for (Map.Entry<String, List<StopBean>> directionStopBeansEntry : directionIdToStopBeans.entrySet()) {
+        String directionId = directionStopBeansEntry.getKey();
+        String tripId = directionIdToTripId.get(directionId);
+        String tripHeadsign = directionIdToHeadsign.get(directionId);
+        
+        // on the off chance that this happens degrade more gracefully
+        if (tripHeadsign == null)
+          tripHeadsign = routeLongName;
+
+        // get list of stops for this route *direction*
+        List<StopBean> stopBeansList = directionStopBeansEntry.getValue();
+        Map<String, Double> stopIdToDistances = tripIdToStopDistancesMap.get(tripId);
+
+        // (sort by order in route)
+        if (stopIdToDistances != null) {
+          Comparator<StopBean> stopBeanComparator = new NycSearchServiceImpl.StopBeanComparator(stopIdToDistances);
+          Collections.sort(stopBeansList, stopBeanComparator);
+        }
+
+        // for each stop on the route, by order bus will stop there...
+        List<StopItem> stopItemsList = new ArrayList<StopItem>();
+        
+        for (StopBean stopBean : stopBeansList) {
+          String stopId = stopBean.getId();
+          List<DistanceAway> distances = stopIdToDistanceAways.get(stopId);
+
+          // if there is more than one vehicle stopping at this stop, sort the vehicles by distance away from this stop
+          if (distances != null && distances.size() > 0) {
+            Collections.sort(distances);
+          }
+
+          StopItem stopItem = new StopItem(stopBean, distances, m);
+          stopItemsList.add(stopItem);
+        }
+        
+        RouteSearchResult routeSearchResult = new RouteSearchResult(
+                routeId, routeShortName, routeLongName,
+                tripHeadsign, directionId, stopItemsList);
+
+        results.add(routeSearchResult);
+      }
+
+      return results;
+  }
+
+  private boolean shouldDisplayTripForUIMode(TripStatusBean statusBean, Mode m) {
+	  // UI states here: https://spreadsheets.google.com/ccc?key=0Al2nqv1nCD71dGt5SkpHajRQZmdLaVZScnhoYVhiZWc&hl=en#gid=0
+
+	  // don't show non-realtime trips (row 8)
+	  if(statusBean.isPredicted() == false || Double.isNaN(statusBean.getDistanceAlongTrip()))
+		  return false;
+	  	  
+	  // hide disabled vehicles (row 7)
+	  if((statusBean.getStatus() != null && statusBean.getStatus().compareTo("DISABLED") == 0))
+		  return false;
+	  
+	  // hide deadheading vehicles (row 3)
+	  // hide vehicles at the depot (row 1)
+	  if((statusBean.getPhase() != null && statusBean.getPhase().compareTo("IN_PROGRESS") != 0))
+		  return false;
+
+	  // hide deviated vehicles from mobile web + sms interfaces (row 4)
+	  if(m == Mode.MOBILE_WEB || m == Mode.SMS) {
+		  if((statusBean.getStatus() != null && statusBean.getStatus().compareTo("DEVIATED") == 0))
+			  return false;
+	  }
+	  
+	  // hide data >= 5m old (row 5)
+	  if(new Date().getTime() - statusBean.getLastUpdateTime() >=  1000 * 60 * 5)
+		  return false;
+
+	  return true;
+  }
+  
+  private StopSearchResult makeStopSearchResult(StopBean stopBean, Mode m) {
     String stopId = stopBean.getId();
-    List<Double> latLng = Arrays.asList(new Double[] {
-        stopBean.getLat(), stopBean.getLon()});
+    List<Double> latLng = Arrays.asList(new Double[] {stopBean.getLat(), stopBean.getLon()});
     String stopName = stopBean.getName();
     String stopDirection = stopBean.getDirection();
 
-    Date now = new Date();
-    int minutesBefore = 5;
-    int minutesAfter = 1440;
     Map<String, List<DistanceAway>> routeIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
     Map<String, String> routeIdToHeadsign = new HashMap<String, String>();
     List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
+
+    /*
+     * Search for trips that will stop at this stop between (now - minutesBefore) and (now + minutesAfter).
+     * Calculate each trip vehicle's distance away from this stop, filtering by the logic in shouldDisplayArrivalAndDepatureForMode().
+     */    
+    Date now = new Date();
+    int minutesBefore = 5;
+    int minutesAfter = 2880; // 2h
 
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = transitService.getStopWithArrivalsAndDepartures(
         stopId, now, minutesBefore, minutesAfter);
@@ -363,39 +445,52 @@ public class NycSearchServiceImpl implements NycSearchService {
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
       TripBean tripBean = arrivalAndDepartureBean.getTrip();
       String headsign = tripBean.getTripHeadsign();
-      
       String routeId = tripBean.getRoute().getId();
+
+      // (we keep this for later, since we need to display all headsigns for a given route that we found)
+      // FIXME: should we store the frequency of each headsign to pick the most common one and display that? 
       routeIdToHeadsign.put(routeId, headsign);
-
-      if (arrivalAndDepartureBean.isPredicted()) {
+     
+      if(arrivalAndDepartureBean.getDistanceFromStop() < 0)
+    	  continue;
+      
+      // should we display this vehicle on the UI specified by "m"? 
+      if(shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m)) {
         double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
+        int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
+        int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
 
-        if (distanceFromStopInMeters >= 0) {
-          int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
-          int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
-
-          DistanceAway distanceAway = new DistanceAway(numberOfStopsAway, distanceFromStopInFeet);
-          List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
-          if (distanceAways == null) {
-            distanceAways = new ArrayList<DistanceAway>();
-            routeIdToDistanceAways.put(routeId, distanceAways);
-          }
-          distanceAways.add(distanceAway);
+        DistanceAway distanceAway = new DistanceAway(numberOfStopsAway, distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), m);
+        List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);	        
+        
+        if (distanceAways == null) {
+           distanceAways = new ArrayList<DistanceAway>();
+           routeIdToDistanceAways.put(routeId, distanceAways);
         }
+          
+        distanceAways.add(distanceAway);
       }
     }
     
+    /*
+     * Create AvailableRoute objects for each route at the given stop. Bring in DistanceAway objects, if available, from above.
+     */    
     List<RouteBean> routes = stopBean.getRoutes();
+    
     for (RouteBean routeBean : routes) {
       String routeId = routeBean.getId();
       String shortName = routeBean.getShortName();
       String longName = routeBean.getLongName();
       String headsign = routeIdToHeadsign.get(routeId);
+
       if (headsign == null)
         headsign = longName;
+      
       List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
+      
       if (distanceAways == null)
         distanceAways = Collections.emptyList();
+      
       Collections.sort(distanceAways);
       AvailableRoute availableRoute = new AvailableRoute(shortName, longName, headsign, distanceAways);
       availableRoutes.add(availableRoute);

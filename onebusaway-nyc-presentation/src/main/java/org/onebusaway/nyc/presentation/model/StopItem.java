@@ -15,18 +15,18 @@ public class StopItem {
 
   private final String id;
   private final String name;
-  private final List<Double> meterDistances;
+  private final List<DistanceAway> distanceAways;
   
   private static final WebappIdParser idParser = new WebappIdParser();
 
-  public StopItem(StopBean stopBean, List<Double> meterDistances) {
-    this(idParser.parseIdWithoutAgency(stopBean.getId()), stopBean.getName(), meterDistances);
+  public StopItem(StopBean stopBean, List<DistanceAway> distanceAways, Mode m) {
+    this(idParser.parseIdWithoutAgency(stopBean.getId()), stopBean.getName(), distanceAways);
   }
   
-  public StopItem(String id, String name, List<Double> meterDistances) {
+  public StopItem(String id, String name, List<DistanceAway> distanceAways) {
     this.id = id;
     this.name = name;
-    this.meterDistances = meterDistances;
+    this.distanceAways = distanceAways;
   }
 
   public String getId() {
@@ -37,21 +37,21 @@ public class StopItem {
     return name;
   }
 
-  public List<Double> getDistances() {
-    return meterDistances;
+  public List<DistanceAway> getDistanceAways() {
+    return distanceAways;
   }
   
   public String getPresentableDistances() {
-    if (meterDistances == null || meterDistances.size() == 0)
+    if (distanceAways == null || distanceAways.size() == 0)
       return "";
     
     StringBuilder b = new StringBuilder();
     
-    for (Double distance : meterDistances) {
-      if(b.length() > 0)
+    for (DistanceAway distanceAway : distanceAways) {    	
+    	if(b.length() > 0)
     	  b.append(", ");
       
-      b.append(DistancePresenter.displayFeet(distance));
+        b.append(distanceAway.getPresentableDistanceWithoutStops());
     }
 
     b.insert(0, " ");

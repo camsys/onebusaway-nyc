@@ -2,6 +2,7 @@ package org.onebusaway.nyc.presentation.service;
 
 import java.util.List;
 
+import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 
 /**
@@ -14,7 +15,7 @@ public interface NycSearchService {
    * @param q Query to search for
    * @return List of search results matching query according to nyc logic
    */
-  public List<SearchResult> search(String q);
+  public List<SearchResult> search(String q, Mode m);
   
   /**
    * Returns true if routeString can represent a route
