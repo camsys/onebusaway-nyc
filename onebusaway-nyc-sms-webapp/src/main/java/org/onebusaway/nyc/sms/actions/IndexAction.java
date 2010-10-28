@@ -3,6 +3,7 @@ package org.onebusaway.nyc.sms.actions;
 import java.util.List;
 
 import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
 import org.onebusaway.nyc.sms.model.SmsDisplayer;
@@ -45,7 +46,7 @@ public class IndexAction extends AbstractNycSmsAction {
     if (searchService.isRoute(message))
       throw new ServiceException("Route specified");
 
-    List<SearchResult> searchResults = searchService.search(message);
+    List<SearchResult> searchResults = searchService.search(message, Mode.SMS);
     
     sms = new SmsDisplayer(searchResults);
     
