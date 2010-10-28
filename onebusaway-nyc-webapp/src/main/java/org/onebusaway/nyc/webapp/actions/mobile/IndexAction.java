@@ -3,6 +3,7 @@ package org.onebusaway.nyc.webapp.actions.mobile;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
@@ -22,7 +23,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   @Override
   public String execute() throws Exception {
     if (q != null)
-      searchResults = searchService.search(q);
+      searchResults = searchService.search(q, Mode.MOBILE_WEB);
     return SUCCESS;
   }
 

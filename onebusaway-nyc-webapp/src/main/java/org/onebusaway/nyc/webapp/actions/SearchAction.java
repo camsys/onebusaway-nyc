@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
+import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     if (q == null || q.isEmpty())
       return SUCCESS;
 
-    searchResults = searchService.search(q);
+    searchResults = searchService.search(q, Mode.DESKTOP_WEB);
 
     return SUCCESS;
   }
