@@ -22,13 +22,6 @@ under the License.
 <title>One Bus Away NY Admin Interface</title>
 </head>
 <body>
-
-<ul>
-<li><a title="edit parameters" href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Change inference parameters</a></li>
-<li><a title="vehicles" href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
-<li><a title="routes" href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
-<li><a title="reporting" href="/onebusaway-nyc-webapp/admin/reporting.action">Reporting</a></li>
-</ul>
-
+<h1>Routes</h1>
 </body>
 </html>

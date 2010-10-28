@@ -1,12 +1,11 @@
 package org.onebusaway.nyc.webapp.actions.admin;
 
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService;
 import org.apache.struts2.interceptor.validation.SkipValidation;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.ActionSupport;
-
-public class EditParametersAction extends ActionSupport {
+public class EditParametersAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
 

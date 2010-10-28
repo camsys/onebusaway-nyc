@@ -54,6 +54,10 @@ under the License.
       <ul>
         <li><a href="/onebusaway-nyc-webapp/">Tracker</a></li>
         <li><a href="/onebusaway-nyc-webapp/help/">Help</a></li>
+        <li><a href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Parameters</a></li>
+        <li><a href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
+        <li><a href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
+        <li><a href="/onebusaway-nyc-webapp/admin/reporting.action">Reporting</a></li>
       </ul>
     </div>
 
