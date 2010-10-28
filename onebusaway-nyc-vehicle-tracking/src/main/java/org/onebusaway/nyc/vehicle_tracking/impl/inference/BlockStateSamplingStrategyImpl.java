@@ -25,8 +25,8 @@ import org.onebusaway.transit_data_federation.services.ShapePointService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.tripplanner.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.tripplanner.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +109,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
 
-    _log.info("potential blocks found: " + potentialBlocks.size());
+    //_log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
@@ -120,9 +120,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       cdf.put(p, state);
 
+      /*
       System.out.println(state.getBlockLocation().getDistanceAlongBlock()
           + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
           + "\t" + blockInstance);
+       */
     }
     return cdf;
   }
@@ -143,7 +145,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
 
-    _log.info("potential blocks found: " + potentialBlocks.size());
+    //_log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
@@ -154,9 +156,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       cdf.put(p, state);
 
+      /*
       System.out.println(state.getBlockLocation().getDistanceAlongBlock()
           + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
           + "\t" + blockInstance);
+       */
     }
 
     return cdf.sample();
@@ -170,7 +174,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     NycVehicleLocationRecord record = observation.getRecord();
 
-    _log.info("potential blocks found: " + potentialBlocks.size());
+    //_log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
@@ -181,9 +185,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       cdf.put(p, state);
 
+      /*
       System.out.println(state.getBlockLocation().getDistanceAlongBlock()
           + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
           + "\t" + blockInstance);
+      */
     }
 
     return cdf;

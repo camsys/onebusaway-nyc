@@ -5,12 +5,16 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
+import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.TraceSupport;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -38,6 +42,8 @@ public class AbstractTraceRunner {
   private double _minLayoverDuringRatio = 0.95;
 
   private boolean _checkLayoverDuringRatio = true;
+
+  private boolean _saveResultsOnAssertionError = true;
 
   public AbstractTraceRunner(String trace) {
     _trace = trace;
@@ -98,16 +104,25 @@ public class AbstractTraceRunner {
         continue;
       }
 
-      assertEquals(expected.size(), actual.size());
+      try {
+        assertEquals(expected.size(), actual.size());
 
-      validateRecords(expected, actual);
+        validateRecords(expected, actual);
+
+      } finally {
+        if (_saveResultsOnAssertionError)
+          writeResultsOnAssertionError(actual);
+      }
 
       return;
     }
-
   }
 
-  public void validateRecords(List<NycTestLocationRecord> expected,
+  /****
+   * Protected Methods
+   ****/
+
+  protected void validateRecords(List<NycTestLocationRecord> expected,
       List<NycTestLocationRecord> actual) {
 
     Counter<EVehiclePhase> expPhaseCounts = new Counter<EVehiclePhase>();
@@ -189,7 +204,27 @@ public class AbstractTraceRunner {
     assertTrue("stdDev" + stdDev, stdDev < 70.0);
   }
 
-  public double computePhaseRatio(Counter<EVehiclePhase> expPhaseCounts,
+  protected void writeResultsOnAssertionError(List<NycTestLocationRecord> actual) {
+    try {
+      File outputFile = File.createTempFile(getClass().getName() + "-",
+          "-results.csv");
+      CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
+      Writer out = new FileWriter(outputFile);
+      EntityHandler handler = factory.createWriter(NycTestLocationRecord.class,
+          out);
+
+      for (NycTestLocationRecord record : actual)
+        handler.handleEntity(record);
+
+      out.close();
+
+      System.err.println("on assertion error, wrote results to " + outputFile);
+    } catch (Exception ex) {
+      _log.error("error writing results on assertion error", ex);
+    }
+  }
+
+  private double computePhaseRatio(Counter<EVehiclePhase> expPhaseCounts,
       Counter<EVehiclePhase> actPhaseCounts, EVehiclePhase phase) {
     double expected = (double) expPhaseCounts.getCount(phase);
     if (expected == 0)
