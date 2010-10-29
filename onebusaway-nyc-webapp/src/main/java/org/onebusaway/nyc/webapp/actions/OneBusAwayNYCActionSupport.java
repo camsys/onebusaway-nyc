@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.onebusaway.nyc.presentation.impl.WebappIdParser;
-import org.onebusaway.nyc.presentation.model.AvailableRoute;
-import org.onebusaway.nyc.presentation.model.DistanceAway;
 
 import com.opensymphony.xwork2.ActionSupport;
 

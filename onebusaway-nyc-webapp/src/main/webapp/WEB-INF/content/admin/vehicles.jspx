@@ -22,6 +22,31 @@ under the License.
 <title>One Bus Away NY Admin Interface</title>
 </head>
 <body>
-<h1>Vehicles</h1>
+<h1>Tracked Vehicles</h1>
+<form method="POST" action="/onebusaway-nyc-webapp/admin/vehicles.action">
+<table>
+<tr>
+<th>Status</th>
+<th>Disable</th>
+<th>Vehicle ID</th>
+<th>Last Valid GPS</th>
+<th>Headsign</th>
+<th>Inferred State</th>
+<th>Location</th>
+</tr>
+<s:iterator value="vehicles">
+<tr>
+<td><div class="status">status</div></td>
+<!-- <td><s:checkbox name="%{disableName}" value="%{disabled}" label="Disabled" /></td> -->
+<td>checkbox</td>
+<td><s:property value="vehicleId" /></td>
+<td><s:property value="lastUpdateTime" /></td>
+<td><s:property value="headsign" /></td>
+<td><s:property value="inferredState" /></td>
+<td><s:property value="location" /></td>
+</tr>
+</s:iterator>
+</table>
+</form>
 </body>
 </html>
