@@ -37,7 +37,10 @@ function Fluster2ClusterMarker(_fluster, _cluster)
 
 	this.setMap(this.map);
 	this.setPosition(this.position);
-	this.setIcon(OBA.Config.stopIcon);
+	this.setIcon(new google.maps.MarkerImage(OBA.Config.stopIconFilePrefix + "." + OBA.Config.stopIconFileType,
+			OBA.Config.stopIconSize,
+			new google.maps.Point(0,0),
+			OBA.Config.stopIconCenter));
 
 	google.maps.event.addDomListener(this, 'click', function() {
 		this.map.fitBounds(this.cluster.getMarkerBounds());

@@ -240,7 +240,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 var marker = stopMarkers[stopId];
 
                 if (! marker) {
-                    marker = OBA.StopMarker(stopId, latlng, map);
+                	marker = OBA.StopMarker(stopId, latlng, stop.direction, map);
 
                     fluster.addMarker(marker);
                     stopMarkers[stopId] = marker;

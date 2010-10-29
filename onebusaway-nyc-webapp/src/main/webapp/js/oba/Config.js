@@ -29,18 +29,16 @@ OBA.Config = {
     pollingInterval: 5000,
 
     // marker images used
-    // both are 16x16, and we want to have them centered on the location
     vehicleIcon: new google.maps.MarkerImage("img/vehicle/vehicle-unknown.png",
             new google.maps.Size(20, 20),
             new google.maps.Point(0,0),
             new google.maps.Point(10, 10)),
 
-    stopIconFile: "img/stop.png",
-    stopIcon: new google.maps.MarkerImage("img/stop.png",
-            new google.maps.Size(14, 14),
-            new google.maps.Point(0,0),
-            new google.maps.Point(7, 7)),
-
+    stopIconFilePrefix: "img/stop/stop",
+    stopIconFileType: "png",
+    stopIconSize: new google.maps.Size(24,24),
+    stopIconCenter: new google.maps.Point(12,12),
+    
     // api key used for webapp
     apiKey: "TEST",
     

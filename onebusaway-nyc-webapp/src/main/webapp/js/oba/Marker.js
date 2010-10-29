@@ -19,7 +19,7 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
         position: new google.maps.LatLng(latlng[0], latlng[1])
     };
 
-    var marker = new google.maps.Marker(jQuery.extend(markerOptions, options || {}));
+	var marker = new google.maps.Marker(jQuery.extend(markerOptions, options || {}));
     var showPopup = function() { popup.show(marker); };
 
     google.maps.event.addListener(marker, "click", showPopup);
@@ -75,14 +75,25 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
     };
 };
 
-OBA.StopMarker = function(stopId, latlng, map, opts) {
-    return OBA.Marker(stopId, latlng, map,
+OBA.StopMarker = function(stopId, latlng, direction, map, opts) {
+	var opts = jQuery.extend(opts || {}, {zIndex: 100});
+	
+	if(typeof opts['icon'] === 'undefined' && direction != null) {
+		var marker = new google.maps.MarkerImage(OBA.Config.stopIconFilePrefix + '-' + direction + '.' + OBA.Config.stopIconFileType,
+								OBA.Config.stopIconSize,
+								new google.maps.Point(0,0),
+								OBA.Config.stopIconCenter);
+	
+		opts['icon'] = marker;
+	}
+
+	return OBA.Marker(stopId, latlng, map,
         OBA.StopPopup(stopId, map),
-        jQuery.extend(opts, {icon: OBA.Config.stopIcon, zIndex: 100}));
+        opts);
 };
 
 OBA.VehicleMarker = function(vehicleId, latlng, map, opts) {
     return OBA.Marker(vehicleId, latlng, map,
         OBA.VehiclePopup(vehicleId, map),
-        jQuery.extend(opts, {icon: OBA.Config.vehicleIcon, zIndex: 200, type: 'vehicle'}));
+        jQuery.extend(opts || {}, {icon: OBA.Config.vehicleIcon, zIndex: 200, type: 'vehicle'}));
 };
