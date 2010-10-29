@@ -70,7 +70,7 @@ under the License.
 </ul>
 
 <ul>
-	<li><a href="/onebusaway-nyc-webapp/mobile.action">Text Only/Mobile</a></li>
+	<li><a href="/onebusaway-nyc-webapp/mobile/index.action">Text Only/Mobile</a></li>
 	<li><a href="/onebusaway-nyc-webapp/wiki/developer-api.action">Developer API</a></li>
 </ul>
 
