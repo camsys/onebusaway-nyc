@@ -2,16 +2,32 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
     xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <xwiki.version>2.3.1</xwiki.version>
+        <xwiki.integration.version>0.0.1-SNAPSHOT</xwiki.integration.version>
+    </properties>
+
     <parent>
         <artifactId>onebusaway-nyc</artifactId>
         <groupId>org.onebusaway</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+
+    <repositories>
+        <!-- Required for the xwiki-rendering-macros -->
+        <repository>
+            <id>xwiki</id>
+            <url>http://maven.xwiki.org/releases</url>
+        </repository>
+    </repositories>
+    
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-webapp</artifactId>
     <packaging>war</packaging>
 
     <name>onebusaway-nyc-webapp</name>
+    
 
     <dependencies>
 
@@ -28,6 +44,34 @@
             <version>${project.version}</version>
         </dependency>
         
+        <!-- Wiki Integration Support -->
+        <!-- XWiki depends on an old verion of beanutils that causes conflicts for some reason -->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-wiki-integration-tags</artifactId>
+            <version>${xwiki.integration.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-wiki-integration-xwiki-impl</artifactId>
+            <version>${xwiki.integration.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-wiki-integration-xwiki-struts-macros</artifactId>
+            <version>${xwiki.integration.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-wiki-integration-xwiki-macros</artifactId>
+            <version>${xwiki.integration.version}</version>
+        </dependency>
+
         <!-- the json package is included directly here -->
         <!-- in the oba webapp, it gets pulled in from the everylastlogin module -->
         <dependency>

@@ -22,6 +22,6 @@ under the License.
 <title>About us</title>
 </head>
 <body>
-<h1>About us</h1>
+<wiki:wiki name="About" />
 </body>
 </html>

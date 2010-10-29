@@ -72,5 +72,15 @@
             </props>
         </property>
     </bean>
+    
+    <bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl">
+        <property name="xwikiUrl" value="http://dev.oba.openplans.org/xwiki" />
+    </bean>
 
+    <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl">
+        <property name="wikiDocumentViewUrl" value="/onebusaway-nyc-webapp/p/%{documentName}.action" />
+        <property name="wikiDocumentEditUrl" value="http://dev.oba.openplans.org/xwiki/bin/edit/Main/%{documentName}" />
+        <property name="wikiAttachmentUrl" value="http://dev.oba.openplans.org/bin/download/Main/%{documentName}/%{attachmentName}" />
+    </bean>
+    
 </beans>
