@@ -24,8 +24,11 @@
 		<pattern>*.cache.html</pattern>
 	</excludes>
 
-	<decorator name="main" page="main.jspx">
+	<decorator name="tracker" page="tracker.jspx">
 		<pattern>/*</pattern>
+	</decorator>
+	<decorator name="wiki" page="wiki.jspx">
+		<pattern>/wiki/*</pattern>
 	</decorator>
 
 	<!--    <decorator name="main-tools" page="main-tools.jspx">-->

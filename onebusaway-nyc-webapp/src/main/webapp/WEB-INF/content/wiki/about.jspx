@@ -19,9 +19,11 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>Contact us</title>
+<title>About</title>
 </head>
 <body>
-<h1>Contact us</h1>
+<div id="text">
+<wiki:wiki name="About" />
+</div>
 </body>
 </html>

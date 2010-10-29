@@ -19,9 +19,14 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>Developer api</title>
+<title>Help</title>
 </head>
 <body>
-<h1>Developer api</h1>
+<div id="sidebar">
+<wiki:wiki name="HelpTOC" />
+</div>
+<div id="text">
+<p>Test</p>
+</div>
 </body>
 </html>

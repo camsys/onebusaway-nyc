@@ -13,23 +13,23 @@
 /* under the License. */
 
 #sidebar {
-    float: left;
+    float: left;    
+	padding-right: 15px;
+	padding-bottom: 15px;
+	border-right: 1px solid #ACACAC;
 }
 
-#sidebar .help_topic {
-	padding: 15px;
+#sidebar ul {
+	padding-top: 15px;
+	padding-left: 15px;
 }
 
-#sidebar .help_topic h2 {
-	font-size: 14px;
-	padding-bottom: 5px;
+#sidebar ul li ul {
+	padding-top: 0px;
 }
 
 #text {
     padding: 15px;
-    margin-left: 300px;
-    
-	border-left: 1px solid #ACACAC;
 }
 
 #text p {

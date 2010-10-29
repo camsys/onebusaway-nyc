@@ -52,8 +52,8 @@ under the License.
       <h1>A City Transit Agency</h1>
 
       <ul>
-        <li><a href="/onebusaway-nyc-webapp/">Tracker</a></li>
-        <li><a href="/onebusaway-nyc-webapp/help/">Help</a></li>
+        <li><a href="/onebusaway-nyc-webapp/index.action">Tracker</a></li>
+        <li><a href="/onebusaway-nyc-webapp/wiki/help.action">Help</a></li>
         <li><a href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Parameters</a></li>
         <li><a href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
         <li><a href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
@@ -65,19 +65,17 @@ under the License.
 
 <div id="footer">
 <ul class="first">
-	<li><a href="/onebusaway-nyc-webapp/about/">About</a></li>
-	<li><a href="/onebusaway-nyc-webapp/contact/">Contact Us</a></li>
+	<li><a href="/onebusaway-nyc-webapp/wiki/about.action">About</a></li>
+	<li><a href="/onebusaway-nyc-webapp/wiki/contact-us.action">Contact Us</a></li>
 </ul>
 
 <ul>
-	<li><a href="/onebusaway-nyc-webapp/mobile/">Text Only/Mobile</a></li>
-	<li><a href="/onebusaway-nyc-webapp/developer-api/">Developer API</a></li>
+	<li><a href="/onebusaway-nyc-webapp/mobile.action">Text Only/Mobile</a></li>
+	<li><a href="/onebusaway-nyc-webapp/wiki/developer-api.action">Developer API</a></li>
 </ul>
 
 <p>&amp;copy 2010, A City Transit Agency</p>
 </div>
-
 </div>
-
 </body>
 </html>
