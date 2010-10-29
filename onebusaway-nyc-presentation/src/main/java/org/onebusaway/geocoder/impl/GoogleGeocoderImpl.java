@@ -21,10 +21,6 @@ public class GoogleGeocoderImpl implements GeocoderService {
   public void setSensor(boolean sensor) {
     this.sensor = sensor;
   }
-  
-  public GoogleGeocoderImpl() {
-    System.out.println("Google Geocoder implementation instantiated");
-  }
 
   public GeocoderResults geocode(String location) {
     StringBuilder b = new StringBuilder();
