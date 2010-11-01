@@ -1,8 +1,6 @@
 package org.onebusaway.nyc.webapp.actions.admin;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,14 +42,14 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
     
     String method = request.getMethod().toUpperCase();
     if (method.equals("POST")) {
-      Enumeration parameterNames = request.getParameterNames();
-      while (parameterNames.hasMoreElements()) {
-        String key = parameterNames.nextElement().toString();
-        if (key.startsWith("disable_")) {
-          String vehicleId = key.substring("disable".length());
-          // TODO fill in disabling logic
-        }
-      }
+//      Enumeration parameterNames = request.getParameterNames();
+//      while (parameterNames.hasMoreElements()) {
+//        String key = parameterNames.nextElement().toString();
+//        if (key.startsWith("disable_")) {
+//          String vehicleId = key.substring("disable".length());
+//          // TODO fill in disabling logic
+//        }
+//      }
     }
 
     for (VehicleStatusBean vehicleStatusBean : vehicleStatusBeans) {
@@ -84,37 +82,60 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
     public String getStatusClass() {
       String status = vehicleStatusBean.getStatus();
       TripBean tripBean = vehicleStatusBean.getTrip();
+      if (tripBean == null)
+        return "red";
       String tripHeadsign = tripBean.getTripHeadsign();
-      if (tripHeadsign != null && status.equals(EVehiclePhase.IN_PROGRESS.toString()))
-        return "normal";
       long lastUpdateTime = vehicleStatusBean.getLastUpdateTime();
       long now = System.currentTimeMillis();
-      // TODO correct logic
-      return "orange";
+      long timeDiff = now - lastUpdateTime;
+      long redMillisThreshold = 1000 * 60 * 5;
+      long orangeMillisThreshold = 1000 * 60 * 2;
+      if (timeDiff > redMillisThreshold)
+        return "status red";
+      if (timeDiff > orangeMillisThreshold)
+        return "status orange";
+      if (!status.equals(EVehiclePhase.IN_PROGRESS.toString()))
+        return "status orange";
+      return "status normal";
     }
     
     @SuppressWarnings("unused")
     public String getLastUpdateTime() {
       long lastUpdateTime = vehicleStatusBean.getLastUpdateTime();
-      Date date = new Date(lastUpdateTime);
-      // FIXME use calendar
-      return date.toString();
+      long now = System.currentTimeMillis();
+      long timeDiff = now - lastUpdateTime;
+      long seconds = timeDiff / 1000;
+      if (seconds < 60)
+        return seconds == 1 ? "1 second" : seconds + " seconds";
+      if (seconds >= 60 && seconds < 120)
+        return "1 minute";
+      long minutes = seconds / 60;
+      return minutes + " minutes";
     }
     
     @SuppressWarnings("unused")
     public String getHeadsign() {
       TripBean trip = vehicleStatusBean.getTrip();
+      if (trip == null)
+        return "Not In Service";
       String tripHeadsign = trip.getTripHeadsign();
       return tripHeadsign;
     }
     
-    @SuppressWarnings("unused")
     public String getInferredState() {
+      TripBean trip = vehicleStatusBean.getTrip();
+      if (trip == null)
+        return "No Trip";
       String status = vehicleStatusBean.getStatus();
       if (status.equals(EVehiclePhase.IN_PROGRESS.toString()))
         return "Normal";
-      // TODO correct logic
       return "Unknown";
+    }
+    
+    @SuppressWarnings("unused")
+    public String getInferredStateClass() {
+      String inferredState = getInferredState();
+      return inferredState != "Normal" ? "inferred-state error" : "inferred-state";
     }
     
     @SuppressWarnings("unused")
@@ -128,12 +149,11 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       String vehicleId = vehicleStatusBean.getVehicleId();
       return "disable_" + vehicleId;
     }
-    
+
     @SuppressWarnings("unused")
     public boolean isDisabled() {
       // TODO fill in
       return false;
     }
   }
-
 }

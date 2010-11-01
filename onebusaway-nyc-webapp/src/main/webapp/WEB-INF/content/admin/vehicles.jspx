@@ -23,7 +23,7 @@ under the License.
 </head>
 <body>
 <h1>Tracked Vehicles</h1>
-<form method="POST" action="/onebusaway-nyc-webapp/admin/vehicles.action">
+<s:form method="POST" action="/admin/vehicles.action">
 <table>
 <tr>
 <th>Status</th>
@@ -36,17 +36,21 @@ under the License.
 </tr>
 <s:iterator value="vehicles">
 <tr>
-<td><div class="status">status</div></td>
-<!-- <td><s:checkbox name="%{disableName}" value="%{disabled}" label="Disabled" /></td> -->
-<td>checkbox</td>
+<td><s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div></td>
+<td>
+<s:checkbox name="%{disabledName}"
+            value="%{disabled}"
+            fieldValue="true"
+            />
+</td>
 <td><s:property value="vehicleId" /></td>
 <td><s:property value="lastUpdateTime" /></td>
 <td><s:property value="headsign" /></td>
-<td><s:property value="inferredState" /></td>
+<td><s:div cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
 <td><s:property value="location" /></td>
 </tr>
 </s:iterator>
 </table>
-</form>
+</s:form>
 </body>
 </html>
