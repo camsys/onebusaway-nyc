@@ -26,12 +26,12 @@ class VehicleTrackingConfigurationServiceImpl implements
   }
 
   @Override
-  public void setVehicleOffRouteDistanceThreshold(double _vehicleOffRouteDistanceThreshold) {
-    this._vehicleOffRouteDistanceThreshold = _vehicleOffRouteDistanceThreshold;
+  public void setVehicleOffRouteDistanceThreshold(double vehicleOffRouteDistanceThreshold) {
+    _vehicleOffRouteDistanceThreshold = vehicleOffRouteDistanceThreshold;
   }
 
   @Override
-  public void setVehicleStalledTimeThreshold(int _vehicleStalledTimeThreshold) {
-    this._vehicleStalledTimeThreshold = _vehicleStalledTimeThreshold;
+  public void setVehicleStalledTimeThreshold(int vehicleStalledTimeThreshold) {
+    _vehicleStalledTimeThreshold = vehicleStalledTimeThreshold;
   }
 }

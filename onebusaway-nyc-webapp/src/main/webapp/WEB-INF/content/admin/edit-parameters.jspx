@@ -27,6 +27,7 @@ under the License.
   <s:textfield name="noProgressTimeout" value="%{noProgressTimeout}" label="Timeout for No Progress"/>
   <s:textfield name="offRouteDistance" value="%{offRouteDistance}" label="Off Route Distance"/>
   <s:textfield name="staleDataTimeout" value="%{staleDataTimeout}" label="Stale Data Timeout"/>
+  <s:textfield name="staleDataGhostTimeout" value="%{staleDataGhostTimeout}" label="Stale Data Ghost Timeout"/>
   <s:submit name="submit" value="Submit"/>
 </s:form>
 

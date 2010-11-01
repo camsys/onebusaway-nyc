@@ -16,7 +16,7 @@
     <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
     <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
 
-    <context:component-scan base-package="org.onebusaway.webapp.impl" />
+    <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
 
     <!--
         Override the current user strategy of the CurrentUserService with one that will automatically create as user as

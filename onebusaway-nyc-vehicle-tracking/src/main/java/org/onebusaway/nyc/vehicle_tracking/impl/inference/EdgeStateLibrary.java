@@ -12,6 +12,7 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkEdgeEntry;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkNodeEntry;
 import org.onebusaway.transit_data_federation.services.walkplanner.WalkPlannerGraph;
+import org.onebusaway.transit_data_federation.services.walkplanner.WalkPlannerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +28,10 @@ public class EdgeStateLibrary {
   private DeviationModel _edgeProbability = new DeviationModel(20);
 
   @Autowired
+  public void setWalkPlannerService(WalkPlannerService walkPlannerService) {
+    _streetGraph = walkPlannerService.getWalkPlannerGraph();
+  }
+  
   public void setStreetGraph(WalkPlannerGraph streetGraph) {
     _streetGraph = streetGraph;
   }

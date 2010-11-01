@@ -57,7 +57,7 @@
     <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
         <property name="taskName" value="stif" />
         <property name="afterTaskName" value="gtfs" />
-        <property name="beforeTaskName" value="trip_graph" />
+        <property name="beforeTaskName" value="transit_graph" />
         <property name="task" ref="stifLoaderTask" />
     </bean>
 
