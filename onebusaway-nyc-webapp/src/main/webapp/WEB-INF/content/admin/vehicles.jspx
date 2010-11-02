@@ -20,6 +20,9 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>One Bus Away NY Admin Interface</title>
+
+<link rel="stylesheet" href="/onebusaway-nyc-webapp/css/vehicles.css" type="text/css" media="screen,print"/>
+
 <![CDATA[
 <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"></script>
 <script type="text/javascript" src="/onebusaway-nyc-webapp/js/jquery.js"></script>
@@ -48,11 +51,11 @@ under the License.
             fieldValue="true"
             />
 </td>
-<td><s:property value="vehicleId" /></td>
+<td class="vehicleId"><s:property value="vehicleId" /></td>
 <td><s:property value="lastUpdateTime" /></td>
 <td><s:property value="headsign" /></td>
 <td><s:div cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
-<td><s:property value="location" /></td>
+<td><a href="#" class="map-link"><img src="/onebusaway-nyc-webapp/img/map.png" /></a><span class="map-location"><s:property value="location" /></span></td>
 </tr>
 </s:iterator>
 </table>

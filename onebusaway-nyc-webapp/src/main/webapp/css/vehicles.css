@@ -1,0 +1,51 @@
+/* Copyright 2010, OpenPlans */
+/* Licensed under the Apache License, Version 2.0 (the */
+/* "License"); you may not use this file except in compliance */
+/* with the License.  You may obtain a copy of the License at */
+/*  */
+/* http://www.apache.org/licenses/LICENSE-2.0 */
+/*  */
+/* Unless required by applicable law or agreed to in writing, */
+/* software distributed under the License is distributed on an */
+/* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY */
+/* KIND, either express or implied.  See the License for the */
+/* specific language governing permissions and limitations */
+/* under the License. */
+
+#map-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: white;
+    border: 1px solid black;
+    padding: 10px;
+    width: 200px;
+    height: 200px;
+}
+
+#google-map {
+	clear: right;
+	height: 180px;
+	width: 200px;
+}
+
+#map-overlay a {
+	float: right;
+	text-decoration: none;
+}
+#map-overlay a:hover {
+	text-decoration: underline;
+}
+
+#vehicle-table {
+	width: 100%;
+	text-align: center;
+}
+
+#vehicle-table td a img {
+	border: none;
+}
+
+#vehicle-table td a span {
+	display: none;
+}

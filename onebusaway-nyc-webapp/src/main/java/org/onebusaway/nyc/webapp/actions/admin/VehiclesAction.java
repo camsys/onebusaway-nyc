@@ -141,7 +141,9 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
     @SuppressWarnings("unused")
     public String getLocation() {
       CoordinatePoint location = vehicleStatusBean.getLocation();
-      return location.toString();
+      double lat = location.getLat();
+      double lon = location.getLon();
+      return lat + "," + lon;
     }
     
     @SuppressWarnings("unused")
