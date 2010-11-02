@@ -83,7 +83,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       String status = vehicleStatusBean.getStatus();
       TripBean tripBean = vehicleStatusBean.getTrip();
       if (tripBean == null)
-        return "red";
+        return "status red";
       String tripHeadsign = tripBean.getTripHeadsign();
       long lastUpdateTime = vehicleStatusBean.getLastUpdateTime();
       long now = System.currentTimeMillis();
