@@ -20,19 +20,24 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>One Bus Away NY Admin Interface</title>
+<![CDATA[
+<script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"></script>
+<script type="text/javascript" src="/onebusaway-nyc-webapp/js/jquery.js"></script>
+<script type="text/javascript" src="/onebusaway-nyc-webapp/js/oba/VehiclesAdmin.js"></script>
+]]>
 </head>
 <body>
 <h1>Tracked Vehicles</h1>
 <s:form method="POST" action="/admin/vehicles.action">
-<table>
+<table id="vehicle-table">
 <tr>
-<th>Status</th>
-<th>Disable</th>
-<th>Vehicle ID</th>
-<th>Last Valid GPS</th>
-<th>Headsign</th>
-<th>Inferred State</th>
-<th>Location</th>
+<th><a href="#">Status</a></th>
+<th><a href="#">Disable</a></th>
+<th><a href="#">Vehicle ID</a></th>
+<th><a href="#">Last Valid GPS</a></th>
+<th><a href="#">Headsign</a></th>
+<th><a href="#">Inferred State</a></th>
+<th><a href="#">Location</a></th>
 </tr>
 <s:iterator value="vehicles">
 <tr>
