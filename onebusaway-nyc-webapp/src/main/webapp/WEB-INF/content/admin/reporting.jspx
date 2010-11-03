@@ -20,8 +20,16 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>One Bus Away NY Admin Interface</title>
+<link rel="stylesheet" href="/onebusaway-nyc-webapp/css/reporting.css" type="text/css" media="screen,print"/>
 </head>
 <body>
-<h1>Reporting</h1>
+<div id="content">
+<h1>Generate Report</h1>
+<form method="GET" action="reporting.action">
+<div class="row"><select><option value="custom">Custom</option></select></div>
+<div class="row"><textarea>&amp;nbsp;</textarea></div>
+<div class="row"><input type="submit" value="Download CSV" /></div>
+</form>
+</div>
 </body>
 </html>
