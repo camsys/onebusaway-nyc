@@ -27,15 +27,11 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
-
-  private static Logger _log = LoggerFactory.getLogger(BlockStateSamplingStrategyImpl.class);
 
   private DestinationSignCodeService _destinationSignCodeService;
 
@@ -109,7 +105,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
 
-    //_log.info("potential blocks found: " + potentialBlocks.size());
+    // _log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
@@ -121,9 +117,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       cdf.put(p, state);
 
       /*
-      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
-          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-          + "\t" + blockInstance);
+       * System.out.println(state.getBlockLocation().getDistanceAlongBlock() +
+       * "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p + "\t" +
+       * blockInstance);
        */
     }
     return cdf;
@@ -145,7 +141,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
 
-    //_log.info("potential blocks found: " + potentialBlocks.size());
+    // _log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
@@ -157,9 +153,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       cdf.put(p, state);
 
       /*
-      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
-          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-          + "\t" + blockInstance);
+       * System.out.println(state.getBlockLocation().getDistanceAlongBlock() +
+       * "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p + "\t" +
+       * blockInstance);
        */
     }
 
@@ -174,7 +170,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     NycVehicleLocationRecord record = observation.getRecord();
 
-    //_log.info("potential blocks found: " + potentialBlocks.size());
+    // _log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
@@ -186,10 +182,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       cdf.put(p, state);
 
       /*
-      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
-          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-          + "\t" + blockInstance);
-      */
+       * System.out.println(state.getBlockLocation().getDistanceAlongBlock() +
+       * "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p + "\t" +
+       * blockInstance);
+       */
     }
 
     return cdf;
@@ -261,7 +257,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       double distanceAlongBlock = index.distanceAlongShape;
 
       ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-          block.getStopTimes(), distanceAlongBlock);
+          block, distanceAlongBlock);
 
       int scheduledTime = location.getScheduledTime();
       long scheduleTimestamp = blockInstance.getServiceDate() + scheduledTime
@@ -279,7 +275,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       double distanceAlongBlock) {
     BlockConfigurationEntry block = blockInstance.getBlock();
     ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-        block.getStopTimes(), distanceAlongBlock);
+        block, distanceAlongBlock);
     if (blockLocation == null)
       throw new IllegalStateException("no blockLocation for " + blockInstance
           + " d=" + distanceAlongBlock);

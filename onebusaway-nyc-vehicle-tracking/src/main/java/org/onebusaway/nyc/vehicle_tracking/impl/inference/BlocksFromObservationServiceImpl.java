@@ -303,7 +303,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       double distanceAlongBlock = index.distanceAlongShape;
 
       ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-          block.getStopTimes(), distanceAlongBlock);
+          block, distanceAlongBlock);
 
       int scheduledTime = location.getScheduledTime();
       long scheduleTimestamp = blockInstance.getServiceDate() + scheduledTime
@@ -328,7 +328,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       double distanceAlongBlock) {
     BlockConfigurationEntry block = blockInstance.getBlock();
     ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-        block.getStopTimes(), distanceAlongBlock);
+        block, distanceAlongBlock);
     if (blockLocation == null)
       throw new IllegalStateException("no blockLocation for " + blockInstance
           + " d=" + distanceAlongBlock);

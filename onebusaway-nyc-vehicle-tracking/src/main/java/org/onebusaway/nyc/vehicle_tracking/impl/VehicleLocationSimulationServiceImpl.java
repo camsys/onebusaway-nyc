@@ -275,7 +275,7 @@ public class VehicleLocationSimulationServiceImpl implements
     while (scheduleTime <= lastTime) {
 
       ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-          stopTimes, scheduleTime);
+          block, scheduleTime);
 
       /**
        * Not in service?
