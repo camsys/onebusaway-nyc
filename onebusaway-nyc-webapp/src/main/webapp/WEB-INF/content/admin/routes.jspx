@@ -20,8 +20,36 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>One Bus Away NY Admin Interface</title>
+<link rel="stylesheet" href="/onebusaway-nyc-webapp/css/routes.css" type="text/css" media="screen,print"/>
 </head>
 <body>
+<div id="content">
 <h1>Routes</h1>
+<table>
+<tr>
+<th>Route Name/Direction</th>
+<th>Service Alert</th>
+<th>Has Detour</th>
+</tr>
+<tr>
+<td>B63 to Bay Ridge</td>
+<td>
+<textarea>&amp;nbsp;</textarea>
+<br />
+<input type="submit" value="Save" />
+</td>
+<td class="center"><input type="checkbox" name="detour" /></td>
+</tr>
+<tr>
+<td>B63 to Cobble Hill</td>
+<td>
+<textarea>&amp;nbsp;</textarea>
+<br />
+<input type="submit" value="Save" />
+</td>
+<td class="center"><input type="checkbox" name="detour" /></td>
+</tr>
+</table>
+</div>
 </body>
 </html>
