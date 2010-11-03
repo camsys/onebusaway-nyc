@@ -20,16 +20,47 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>One Bus Away NY</title>
+<link rel="stylesheet" href="/onebusaway-nyc-webapp/css/parameters.css" type="text/css" media="screen,print"/>
 </head>
 <body>
 
+<div id="content">
 <s:form method="post" action="edit-parameters!submit">
-  <s:textfield name="noProgressTimeout" value="%{noProgressTimeout}" label="Timeout for No Progress"/>
-  <s:textfield name="offRouteDistance" value="%{offRouteDistance}" label="Off Route Distance"/>
-  <s:textfield name="staleDataTimeout" value="%{staleDataTimeout}" label="Stale Data Timeout"/>
-  <s:textfield name="staleDataGhostTimeout" value="%{staleDataGhostTimeout}" label="Stale Data Ghost Timeout"/>
-  <s:submit name="submit" value="Submit"/>
+  <div class="config-group">
+  <div class="configuration-parameter">
+    <h2>"Stalled timeout"</h2>
+    <p>This is the number of minutes after which a bus, if it does not move, is considered to not be making progress. Bus is sending messages. "No progress" busses are hidden in the UI, reported as such in the API.</p>
+    <s:textfield name="noProgressTimeout" value="%{noProgressTimeout}" label="Timeout for No Progress" size="3" />
+    <span>minutes</span>
+  </div>
+  <div class="configuration-parameter">
+    <h2>No Messages: Stale</h2>
+    <p>Bus is not sending messages. After this period, the data is
+considered "stale".</p>
+    <s:textfield name="staleDataTimeout" value="%{staleDataTimeout}" label="Stale Data Timeout"/>
+	<span>minutes</span>
+  </div>
+  </div>
+  <div class="config-group">
+  <div class="configuration-parameter">
+    <h2>"Off Route" Distance</h2>
+    <p>This is the distance away from a matched route that a bus is  allowed to deviate before it is considered "off route". Such buses are hidden in the UI, reported as such in the API.</p>
+    <s:textfield name="offRouteDistance" value="%{offRouteDistance}" label="Off Route Distance"/>
+    <span>meters</span>
+  </div>
+  <div class="configuration-parameter">
+    <h2>No Messages: Hide</h2>
+    <p>Bus is not sending messages. After this period, the bus is hidden from users.</p>
+    <s:textfield name="staleDataGhostTimeout" value="%{staleDataGhostTimeout}" label="Stale Data Ghost Timeout"/>
+    <span>minutes</span>  
+  </div>
+  </div>
+  <div class="submit">
+    <s:submit name="submit" value="Save" />
+    <a title="cancel" href="edit-parameters.action">Cancel</a>
+  </div>
 </s:form>
+</div>
 
 </body>
 </html>
