@@ -12,6 +12,10 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
+#content {
+	margin: 0.5em 1em;
+}
+
 #map-overlay {
     position: absolute;
     top: 50%;
@@ -40,6 +44,7 @@
 #vehicle-table {
 	width: 100%;
 	text-align: center;
+	margin-top: 2em;
 }
 
 #vehicle-table td a img {

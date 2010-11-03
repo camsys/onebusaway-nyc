@@ -30,6 +30,7 @@ under the License.
 ]]>
 </head>
 <body>
+<div id="content">
 <h1>Tracked Vehicles</h1>
 <s:form method="POST" action="/admin/vehicles.action">
 <table id="vehicle-table">
@@ -60,5 +61,6 @@ under the License.
 </s:iterator>
 </table>
 </s:form>
+</div>
 </body>
 </html>
