@@ -15,6 +15,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
@@ -236,7 +237,8 @@ class SimulatorTask implements Runnable, EntityHandler {
           vlr.setDistanceAlongBlock(record.getActualDistanceAlongBlock());
           vlr.setCurrentLocationLat(record.getActualLat());
           vlr.setCurrentLocationLon(record.getActualLon());
-          vlr.setStatus(record.getActualPhase());
+          vlr.setPhase(EVehiclePhase.valueOf(record.getActualPhase()));
+          vlr.setStatus(record.getActualStatus());
           vlr.setVehicleId(new AgencyAndId(
               _vehicleLocationService.getDefaultVehicleAgencyId(), _vehicleId));
           _vehicleLocationService.handleVehicleLocation(vlr);
