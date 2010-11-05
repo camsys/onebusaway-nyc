@@ -17,7 +17,7 @@ under the License.
 -->
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	xmlns:decorator="http://www.opensymphony.com/sitemesh/decorator">
+	xmlns:decorator="http://www.opensymphony.com/sitemesh/decorator" xmlns:s="/struts-tags">
 
 <jsp:output doctype-root-element="html"
 	doctype-public="-//W3C//DTD XHTML 1.1 Transitional//EN"
@@ -46,17 +46,22 @@ under the License.
 
 <body>
 
-  <div id="page">
+   <div id="page">
     <div id="header">
       <h1>A City Transit Agency</h1>
 
       <ul>
-        <li><a href="/onebusaway-nyc-webapp/index.action">Tracker</a></li>
-        <li><a href="/onebusaway-nyc-webapp/wiki/help.action">Help</a></li>
-        <li><a href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Parameters</a></li>
-        <li><a href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
-        <li><a href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
-        <li><a href="/onebusaway-nyc-webapp/admin/reporting.action">Reporting</a></li>
+        <li><a href="/onebusaway-nyc-webapp/index.action">Home</a></li>
+        <li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=Help">Help</a></li>
+
+		<s:if test="adminUser">
+	        <li><a href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Parameters</a></li>
+	        <li><a href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
+	        <li><a href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
+	        <li><a href="/onebusaway-nyc-webapp/admin/reporting.action">Reporting</a></li>
+	        <li><a href="/onebusaway-nyc-webapp/logout.action">Logout</a></li>       
+		</s:if>
+	
       </ul>
     </div>
 
@@ -64,13 +69,13 @@ under the License.
 
 <div id="footer">
 <ul class="first">
-	<li><a href="/onebusaway-nyc-webapp/wiki/about.action">About</a></li>
-	<li><a href="/onebusaway-nyc-webapp/wiki/contact-us.action">Contact Us</a></li>
+	<li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=About">About</a></li>
+	<li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=ContactUs">Contact Us</a></li>
 </ul>
 
 <ul>
 	<li><a href="/onebusaway-nyc-webapp/mobile/index.action">Text Only/Mobile</a></li>
-	<li><a href="/onebusaway-nyc-webapp/wiki/developer-api.action">Developer API</a></li>
+	<li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=DeveloperAPI">Developer API</a></li>
 </ul>
 
 <p>&amp;copy 2010, A City Transit Agency</p>

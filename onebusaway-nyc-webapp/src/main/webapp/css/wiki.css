@@ -17,6 +17,7 @@
 	padding-right: 15px;
 	padding-bottom: 15px;
 	border-right: 1px solid #ACACAC;
+	width: 310px;
 }
 
 #sidebar ul {
@@ -30,12 +31,14 @@
 
 #text {
     padding: 15px;
+	float: left;
 }
 
 #text p {
 	padding-bottom: 15px;
 }
 
+#text h1,
 #text h2 {
 	padding-bottom: 5px;
 }

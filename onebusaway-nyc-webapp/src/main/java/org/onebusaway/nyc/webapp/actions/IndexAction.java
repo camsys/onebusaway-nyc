@@ -14,13 +14,13 @@
 
 package org.onebusaway.nyc.webapp.actions;
 
-import com.opensymphony.xwork2.ActionSupport;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 
 /**
  * Action for home page
  * 
  */
-public class IndexAction extends ActionSupport {
+public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
 

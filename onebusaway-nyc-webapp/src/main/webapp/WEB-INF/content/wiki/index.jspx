@@ -19,11 +19,19 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>Developer API</title>
+<title><s:property value="name" /></title>
 </head>
 <body>
+
+<s:if test="isHelp">
+	<div id="sidebar">
+		<wiki:wiki name="HelpTOC"/>
+	</div>
+</s:if>
+
 <div id="text">
-<wiki:wiki name="DeveloperAPI" />
+	<s:property value="content"  escape="false"/>
 </div>
+
 </body>
 </html>
