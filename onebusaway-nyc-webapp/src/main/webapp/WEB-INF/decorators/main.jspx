@@ -33,12 +33,13 @@ under the License.
   
   <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/reset.css" type="text/css" media="screen,print"/>
   <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/screen.css" type="text/css" media="screen,print"/>
-  <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/wiki.css" type="text/css" media="screen,print"/>
+  <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/tracker.css" type="text/css" media="screen,print"/>
 
 <![CDATA[
 <!--[if IE 6]>
        <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/ie6.css" type="text/css" media="screen,print"/>
 <![endif]-->
+
 ]]>
 
 <decorator:head />
@@ -46,22 +47,21 @@ under the License.
 
 <body>
 
-   <div id="page">
+  <div id="page">
     <div id="header">
       <h1>A City Transit Agency</h1>
 
       <ul>
         <li><a href="/onebusaway-nyc-webapp/index.action">Home</a></li>
-        <li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=Help">Help</a></li>
+        <li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=HelpIndex">Help</a></li>
 
 		<s:if test="adminUser">
 	        <li><a href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Parameters</a></li>
 	        <li><a href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
 	        <li><a href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
 	        <li><a href="/onebusaway-nyc-webapp/admin/reporting.action">Reporting</a></li>
-	        <li><a href="/onebusaway-nyc-webapp/logout.action">Logout</a></li>       
 		</s:if>
-	
+
       </ul>
     </div>
 

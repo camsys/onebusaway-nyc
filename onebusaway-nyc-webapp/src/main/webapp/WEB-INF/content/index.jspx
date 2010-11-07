@@ -42,7 +42,7 @@ under the License.
 
 </head>
 <body>
-<div id="content">
+<div id="content" class="map">
 <div id="sidebar">
 <div id="search">
 <!--FIXME url hard coded -->

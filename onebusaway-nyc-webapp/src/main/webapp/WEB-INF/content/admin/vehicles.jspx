@@ -30,7 +30,7 @@ under the License.
 ]]>
 </head>
 <body>
-<div id="content">
+<div id="text">
 <h1>Tracked Vehicles</h1>
 <s:form method="POST" action="/admin/vehicles.action">
 <table id="vehicle-table">

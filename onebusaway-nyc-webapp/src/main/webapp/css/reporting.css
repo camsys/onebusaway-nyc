@@ -12,16 +12,12 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-#content {
-	margin: 0.5em 1em;
-}
-
-#content textarea {
+#text textarea {
 	width: 500px;
 	height: 75px;
-	padding: 0.5em;
 }
 
-.row {
-	margin: 1em 0;
+#text div {
+	padding-top: 10px;
+	padding-bottom: 10px;
 }

@@ -27,12 +27,15 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	public String execute() throws Exception {
 
 		if (namespace != null && name != null) {
+			isHelp = (name.length() >= 4 && name.substring(0, 4).compareTo("Help") == 0);					
+			
 			try {
 				WikiPage page = _wikiDocumentService.getWikiPage(namespace, name, false);
-				isHelp = (name.length() >= 4 && name.substring(0, 4).compareTo("Help") == 0);					
-				
+
 				if (page != null) {
 					content = _wikiRenderingService.renderPage(page);					
+				} else {
+					content = "<h2>404 Not Found</h2><p>The requested page was not found on the server.</p>";
 				}
 			} catch (Exception ex) {
 				throw new JspException(ex);

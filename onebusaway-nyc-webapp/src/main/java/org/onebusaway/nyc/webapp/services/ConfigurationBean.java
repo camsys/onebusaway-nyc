@@ -8,7 +8,7 @@ public class ConfigurationBean {
 
   private int staleDataTimeout = 300;
 
-  private int staleDataGhostTimeout = 120;
+  private int hideTimeout = 120;
 
   public ConfigurationBean() {
 
@@ -22,7 +22,7 @@ public class ConfigurationBean {
     this.noProgressTimeout = bean.noProgressTimeout;
     this.offRouteDistance = bean.offRouteDistance;
     this.staleDataTimeout = bean.staleDataTimeout;
-    this.staleDataGhostTimeout = bean.staleDataGhostTimeout;
+    this.hideTimeout = bean.hideTimeout;
   }
 
   public int getNoProgressTimeout() {
@@ -50,10 +50,10 @@ public class ConfigurationBean {
   }
 
   public int getStaleDataGhostTimeout() {
-    return staleDataGhostTimeout;
+    return hideTimeout;
   }
 
   public void setStaleDataGhostTimeout(int staleDataGhostTimeout) {
-    this.staleDataGhostTimeout = staleDataGhostTimeout;
+    this.hideTimeout = staleDataGhostTimeout;
   }
 }

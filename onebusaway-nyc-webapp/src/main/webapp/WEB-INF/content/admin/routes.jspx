@@ -23,7 +23,7 @@ under the License.
 <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/routes.css" type="text/css" media="screen,print"/>
 </head>
 <body>
-<div id="content">
+<div id="text">
 <h1>Routes</h1>
 <table>
 <tr>
@@ -35,21 +35,20 @@ under the License.
 <td>B63 to Bay Ridge</td>
 <td>
 <textarea>&amp;nbsp;</textarea>
-<br />
-<input type="submit" value="Save" />
 </td>
-<td class="center"><input type="checkbox" name="detour" /></td>
+<td><input type="checkbox" name="detour" /></td>
 </tr>
 <tr>
 <td>B63 to Cobble Hill</td>
 <td>
 <textarea>&amp;nbsp;</textarea>
-<br />
-<input type="submit" value="Save" />
 </td>
-<td class="center"><input type="checkbox" name="detour" /></td>
+<td><input type="checkbox" name="detour" /></td>
 </tr>
 </table>
+
+<input type="submit" value="Save" />
+
 </div>
 </body>
 </html>

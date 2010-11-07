@@ -12,22 +12,20 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-#content {
-	margin: 0.5em 1em;
-}
-
 .config-group {
 	clear: both;
 }
 
 .configuration-parameter {
 	float: left;
-	width: 45%;
-	margin: 1em 3em 1em 0;
+	width: 35%;
+	padding-bottom: 20px;
+	padding-right: 50px;
 }
 
 .configuration-parameter p {
-	margin: 0.5em 0;
+	padding-top: 15px;
+	padding-bottom: 15px;
 }
 
 .configuration-parameter span {

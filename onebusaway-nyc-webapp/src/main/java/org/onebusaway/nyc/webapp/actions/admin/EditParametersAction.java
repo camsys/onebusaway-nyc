@@ -42,7 +42,8 @@ public class EditParametersAction extends OneBusAwayNYCActionSupport implements
       @RequiredFieldValidator(fieldName = "noProgressTimeout", message = "noProgressTimeout not set"),
       @RequiredFieldValidator(fieldName = "offRouteDistance", message = "offRouteDistance not set"),
       @RequiredFieldValidator(fieldName = "staleDataTimeout", message = "staleDataTimeout not set"),
-      @RequiredFieldValidator(fieldName = "staleDataGhostTimeout", message = "staleDataGhostTimeout not set")})
+      @RequiredFieldValidator(fieldName = "hideTimeout", message = "hideTimeout not set")})
+      
   public String submit() {
     _configurationService.setConfiguration(_model);
     return SUCCESS;

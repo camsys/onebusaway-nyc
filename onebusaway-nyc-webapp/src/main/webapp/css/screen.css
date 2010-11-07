@@ -88,6 +88,62 @@ a:hover {
 	color: #444444;
 }
 
+#help-sidebar {
+    float: left;    
+	padding-right: 15px;
+	padding-bottom: 15px;
+	width: 310px;
+}
+
+#help-sidebar ul {
+	padding-top: 15px;
+	padding-left: 15px;
+}
+
+#help-sidebar ul li ul {
+	padding-top: 0px;
+}
+
+#text {
+	border-left: 1px solid #ACACAC;
+    padding: 15px;
+	float: left;
+	min-height: 300px;
+}
+
+#text p {
+	padding-bottom: 15px;
+}
+
+#text h1,
+#text h2 {
+	font-weight: normal;
+	font-size: 22px;
+	padding-bottom: 5px;
+}
+
+#text fieldset {
+	padding: 10px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+#text fieldset label {
+	display: block;
+	padding-bottom: 3px;
+}
+
+#text fieldset label.inline {
+	display: inline;
+}
+
+#text fieldset input, 
+#text fieldset select, 
+#text fieldset textarea {
+	font-family:inherit;
+	font-size:15px;
+}
+	
 #footer {
     position: relative;
 

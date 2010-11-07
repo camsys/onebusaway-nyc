@@ -24,13 +24,13 @@ under the License.
 <body>
 
 <s:if test="isHelp">
-	<div id="sidebar">
+	<div id="help-sidebar">
 		<wiki:wiki name="HelpTOC"/>
 	</div>
 </s:if>
 
 <div id="text">
-	<s:property value="content"  escape="false"/>
+	<s:property value="content" escape="false"/>
 </div>
 
 </body>

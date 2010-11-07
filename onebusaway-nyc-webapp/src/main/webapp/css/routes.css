@@ -12,20 +12,20 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-#content {
-	margin: 0.5em 1em;
+#text table {
+	padding-top: 10px;
+	width: 600px;
 }
 
-#content table {
-	margin-top: 2em;
-	width: 500px;
+#text th {
+	text-align: left;	
 }
 
-#content table textarea {
-	width: 300px;
-	height: 100px;
+#text td {
+	padding-bottom: 20px;
 }
 
-.center {
-    text-align: center;
+#text textarea {
+	width: 250px;
+	height: 40px;
 }

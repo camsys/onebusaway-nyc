@@ -12,10 +12,6 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-#content {
-	margin: 0.5em 1em;
-}
-
 #map-overlay {
     position: absolute;
     top: 50%;
@@ -41,16 +37,33 @@
 	text-decoration: underline;
 }
 
-#vehicle-table {
-	width: 100%;
-	text-align: center;
-	margin-top: 2em;
+#text table {
+	width: 1000px;
+	padding-top: 10px;
 }
 
-#vehicle-table td a img {
-	border: none;
+#text th {
+	text-align: left;	
 }
 
-#vehicle-table td a span {
-	display: none;
+#text td a img {
+	border: none;	
+}
+
+#text .status {
+	width: 15px;
+	height: 15px;
+	text-indent: -9999px;	
+}
+
+#text .status.red {
+	background-color: red;	
+}
+
+#text .status.green {
+	background-color: green;	
+}
+
+#text .status.orange {
+	background-color: orange;	
 }
