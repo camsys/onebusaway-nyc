@@ -11,8 +11,8 @@
     </bean>
 
     <bean id="configServiceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-configuration" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService" />
+        <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
 <!--     Database Connection Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
