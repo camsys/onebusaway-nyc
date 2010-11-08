@@ -47,13 +47,16 @@ OBA.Config = {
     	if(tripStatus.predicted === false || tripStatus.distanceAlongTrip === 0)
     		return false;
     	
+    	var status = ((typeof tripStatus.status !== 'undefined' && tripStatus.status !== '') ? tripStatus.status : null);
+    	var phase = ((typeof tripStatus.phase !== 'undefined' && tripStatus.phase !== '') ? tripStatus.phase : null);
+    	
     	// hide disabled vehicles (row 7)
-    	if(typeof tripStatus.status !== 'undefined' && tripStatus.status !== '' && tripStatus.status === 'DISABLED')
+    	if(status !== null && status.toLowerCase() === 'disabled')
     		return false;
     	
     	// hide deadheading vehicles (row 3)
     	// hide vehicles at the depot (row 1)
-    	if(typeof tripStatus.phase !== 'undefined' && tripStatus.phase !== '' && tripStatus.phase !== 'IN_PROGRESS')
+    	if(phase !== null && phase.toLowerCase() !== 'in_progress')
     		return false;
 
   	  	// hide data >= 5m old (row 5)
