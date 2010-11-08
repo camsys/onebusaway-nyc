@@ -19,10 +19,10 @@
 
     <bean id="serviceArea" class="org.onebusaway.presentation.impl.DefaultServiceAreaServiceImpl" />
     
-    <bean id="vehicleTrackingConfigurationService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+    <bean id="vehicleTrackingManagementService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl"
-            value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-configuration" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService" />
+            value="http://localhost:${org.onebusaway.transit_data_federation_webapp.port}/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
 
 </beans>
