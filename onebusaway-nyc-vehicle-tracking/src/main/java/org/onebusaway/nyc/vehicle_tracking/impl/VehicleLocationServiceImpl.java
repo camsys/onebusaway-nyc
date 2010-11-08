@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -70,6 +71,18 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
       record.setLongitude(location.Longitude);
     }
     record.setTime(delivery.ResponseTimestamp.getTimeInMillis());
+    record.setTimeReceived(new Date().getTime());
+
+    if (vehicleActivity.Extensions != null
+        && vehicleActivity.Extensions.NMEA != null) {
+      for (String sentence : vehicleActivity.Extensions.NMEA.sentences) {
+        if (sentence.startsWith("$GPRMC")) {
+          record.setRmc(sentence);
+        } else if (sentence.startsWith("$GPGGA")) {
+          record.setGga(sentence);
+        }
+      }
+    }
 
     handleRecord(record, false);
   }

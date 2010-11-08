@@ -30,6 +30,8 @@ public class NycVehicleLocationRecord {
 
   private long time;
 
+  private long timeReceived;
+
   private double latitude;
 
   private double longitude;
@@ -37,6 +39,11 @@ public class NycVehicleLocationRecord {
   private double bearing;
 
   private String destinationSignCode;
+
+  /** raw GPS sentences */
+  private String gga;
+
+  private String rmc;
 
   @Embedded
   @AttributeOverrides({
@@ -107,5 +114,29 @@ public class NycVehicleLocationRecord {
   public boolean locationDataIsMissing() {
     return (Double.isNaN(this.latitude) || Double.isNaN(this.longitude))
         || (this.latitude == 0.0 && this.longitude == 0.0);
+  }
+
+  public void setGga(String gga) {
+    this.gga = gga;
+  }
+
+  public String getGga() {
+    return gga;
+  }
+
+  public void setRmc(String rmc) {
+    this.rmc = rmc;
+  }
+
+  public String getRmc() {
+    return rmc;
+  }
+
+  public void setTimeReceived(long timeReceived) {
+    this.timeReceived = timeReceived;
+  }
+
+  public long getTimeReceived() {
+    return timeReceived;
   }
 }
