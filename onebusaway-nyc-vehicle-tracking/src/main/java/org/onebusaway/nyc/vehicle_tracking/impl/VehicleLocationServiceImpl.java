@@ -83,6 +83,8 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
         }
       }
     }
+    String deviceId = monitoredVehicleJourney.FramedVehicleJourneyRef.DatedVehicleJourneyRef;
+    record.setDeviceId(deviceId);
 
     handleRecord(record, false);
   }

@@ -40,6 +40,8 @@ public class NycVehicleLocationRecord {
 
   private String destinationSignCode;
 
+  private String deviceId;
+
   /** raw GPS sentences */
   private String gga;
 
@@ -138,5 +140,13 @@ public class NycVehicleLocationRecord {
 
   public long getTimeReceived() {
     return timeReceived;
+  }
+
+  public void setDeviceId(String deviceId) {
+    this.deviceId = deviceId;
+  }
+
+  public String getDeviceId() {
+    return deviceId;
   }
 }
