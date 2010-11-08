@@ -415,21 +415,21 @@ public class NycSearchServiceImpl implements NycSearchService {
         || Double.isNaN(statusBean.getDistanceAlongTrip()))
       return false;
 
+    String status = statusBean.getStatus();
+    String phase = statusBean.getPhase();
+    
     // hide disabled vehicles (row 7)
-    if ((statusBean.getStatus() != null && statusBean.getStatus().compareTo(
-        "DISABLED") == 0))
+    if(status != null && status.toLowerCase().compareTo("disabled") == 0)
       return false;
 
     // hide deadheading vehicles (row 3)
     // hide vehicles at the depot (row 1)
-    if ((statusBean.getPhase() != null && statusBean.getPhase().compareTo(
-        "IN_PROGRESS") != 0))
+    if (phase != null && phase.toLowerCase().compareTo("in_progress") != 0)
       return false;
 
     // hide deviated vehicles from mobile web + sms interfaces (row 4)
     if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
-      if ((statusBean.getStatus() != null && statusBean.getStatus().compareTo(
-          "DEVIATED") == 0))
+      if(status != null && status.toLowerCase().compareTo("deviated") == 0)
         return false;
     }
 
