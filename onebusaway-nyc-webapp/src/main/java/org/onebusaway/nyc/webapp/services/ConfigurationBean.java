@@ -49,11 +49,11 @@ public class ConfigurationBean {
     this.staleDataTimeout = staleDataTimeout;
   }
 
-  public int getStaleDataGhostTimeout() {
+  public int getHideTimeout() {
     return hideTimeout;
   }
 
-  public void setStaleDataGhostTimeout(int staleDataGhostTimeout) {
-    this.hideTimeout = staleDataGhostTimeout;
+  public void setHideTimeout(int hideTimeout) {
+    this.hideTimeout = hideTimeout;
   }
 }
