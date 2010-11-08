@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.Converter;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService;
+import org.onebusaway.nyc.transit_data.services.VehicleTrackingConfigurationService;
 import org.onebusaway.nyc.webapp.services.ConfigurationBean;
 import org.onebusaway.nyc.webapp.services.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;

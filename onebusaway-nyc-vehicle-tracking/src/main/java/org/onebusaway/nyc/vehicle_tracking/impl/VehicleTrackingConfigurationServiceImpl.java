@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingConfigurationService;
+import org.onebusaway.nyc.transit_data.services.VehicleTrackingConfigurationService;
 import org.springframework.stereotype.Component;
 
 @Component

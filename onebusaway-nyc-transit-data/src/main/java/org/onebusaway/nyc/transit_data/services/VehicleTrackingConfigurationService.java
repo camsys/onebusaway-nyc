@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.vehicle_tracking.services;
+package org.onebusaway.nyc.transit_data.services;
 
 public interface VehicleTrackingConfigurationService {
 

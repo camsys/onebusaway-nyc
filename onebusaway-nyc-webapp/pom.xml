@@ -21,13 +21,13 @@
             <url>http://maven.xwiki.org/releases</url>
         </repository>
     </repositories>
-    
+
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-webapp</artifactId>
     <packaging>war</packaging>
 
     <name>onebusaway-nyc-webapp</name>
-    
+
 
     <dependencies>
 
@@ -37,13 +37,19 @@
             <artifactId>onebusaway-nyc-presentation</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
+            <artifactId>onebusaway-nyc-transit-data</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-realtime-api</artifactId>
+            <version>${onebusaway.version}</version>
+        </dependency>
+
         <!-- Wiki Integration Support -->
         <!-- XWiki depends on an old verion of beanutils that causes conflicts for some reason -->
         <dependency>
