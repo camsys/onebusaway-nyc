@@ -1,6 +1,16 @@
 package org.onebusaway.nyc.transit_data.services;
 
-public interface VehicleTrackingConfigurationService {
+import java.util.List;
+
+import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
+
+public interface VehicleTrackingManagementService {
+
+  public void setVehicleStatus(String vehicleId, boolean status);
+
+  public List<NycVehicleStatusBean> getAllVehicleStatuses();
+
+  public NycVehicleStatusBean getVehicleStatusForVehicleId(String vehicleId);
 
   /**
    * A vehicle actively serving a block that is more than the specified distance
@@ -18,7 +28,8 @@ public interface VehicleTrackingConfigurationService {
    */
   public int getVehicleStalledTimeThreshold();
 
-  void setVehicleOffRouteDistanceThreshold(double vehicleOffRouteDistanceThreshold);
+  void setVehicleOffRouteDistanceThreshold(
+      double vehicleOffRouteDistanceThreshold);
 
   void setVehicleStalledTimeThreshold(int vehicleStalledTimeThreshold);
 }

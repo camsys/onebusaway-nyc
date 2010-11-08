@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.Converter;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingConfigurationService;
+import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.webapp.services.ConfigurationBean;
 import org.onebusaway.nyc.webapp.services.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConfigurationServiceImpl implements ConfigurationService {
 
-  private VehicleTrackingConfigurationService _vehicleTrackingConfigurationService;
+  private VehicleTrackingManagementService _vehicleTrackingManagementService;
 
   private File _path;
 
@@ -33,9 +33,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
   }
 
   @Autowired
-  public void setVehicleTrackingConfigurationService(
-      VehicleTrackingConfigurationService vehicleTrackingConfigurationService) {
-    _vehicleTrackingConfigurationService = vehicleTrackingConfigurationService;
+  public void setVehicleTrackingManagementService(
+      VehicleTrackingManagementService vehicleTrackingManagementService) {
+    _vehicleTrackingManagementService = vehicleTrackingManagementService;
   }
 
   @PostConstruct
@@ -65,8 +65,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
    ****/
 
   private void notifySettings() {
-    _vehicleTrackingConfigurationService.setVehicleOffRouteDistanceThreshold(_config.getOffRouteDistance());
-    _vehicleTrackingConfigurationService.setVehicleStalledTimeThreshold(_config.getNoProgressTimeout());
+    _vehicleTrackingManagementService.setVehicleOffRouteDistanceThreshold(_config.getOffRouteDistance());
+    _vehicleTrackingManagementService.setVehicleStalledTimeThreshold(_config.getNoProgressTimeout());
   }
 
   private ConfigurationBean loadSettings() {

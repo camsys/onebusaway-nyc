@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingConfigurationService;
+import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -27,7 +27,7 @@ public class VehicleInferenceInstance {
 
   private ParticleFilter<Observation> _particleFilter;
 
-  private VehicleTrackingConfigurationService _configurationService;
+  private VehicleTrackingManagementService _managementService;
 
   private NycVehicleLocationRecord _previousRecord = null;
 
@@ -37,8 +37,8 @@ public class VehicleInferenceInstance {
 
   @Autowired
   public void setVehicleTrackingConfigurationService(
-      VehicleTrackingConfigurationService configurationService) {
-    _configurationService = configurationService;
+      VehicleTrackingManagementService managementService) {
+    _managementService = managementService;
   }
 
   public synchronized void handleUpdate(NycVehicleLocationRecord record,
@@ -109,11 +109,11 @@ public class VehicleInferenceInstance {
 
         double d = SphericalGeometryLibrary.distance(edgeLocation,
             blockLocation.getLocation());
-        if (d > _configurationService.getVehicleOffRouteDistanceThreshold())
+        if (d > _managementService.getVehicleOffRouteDistanceThreshold())
           statusFields.add("deviated");
 
         int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState.getLastInMotionTime()) / 1000);
-        if (secondsSinceLastMotion > _configurationService.getVehicleStalledTimeThreshold())
+        if (secondsSinceLastMotion > _managementService.getVehicleStalledTimeThreshold())
           statusFields.add("stalled");
       }
 
