@@ -8,6 +8,8 @@ public final class NycVehicleStatusBean implements Serializable {
 
   private String vehicleId;
 
+  private boolean enabled;
+
   private String mostRecentDestinationSignCode;
 
   private String inferredDestinationSignCode;
@@ -18,6 +20,14 @@ public final class NycVehicleStatusBean implements Serializable {
 
   public void setVehicleId(String vehicleId) {
     this.vehicleId = vehicleId;
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   public String getMostRecentDestinationSignCode() {
