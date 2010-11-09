@@ -271,7 +271,10 @@ public class NycSearchServiceImpl implements NycSearchService {
 
   private List<RouteSearchResult> makeRouteSearchResult(RouteBean routeBean,
       Mode m) {
-    List<RouteSearchResult> results = new ArrayList<RouteSearchResult>();
+
+    ConfigurationBean config = configurationService.getConfiguration();  
+
+	List<RouteSearchResult> results = new ArrayList<RouteSearchResult>();
 
     String routeId = routeBean.getId();
     String routeShortName = routeBean.getShortName();
@@ -357,7 +360,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         // (we're always 0 stops away from our next stop, by definition!)
         DistanceAway distanceAway = new DistanceAway(0,
             distanceAwayFromClosestStopInFeet, new Date(
-                tripStatusBean.getLastUpdateTime()), m);
+                tripStatusBean.getLastUpdateTime()), m, config.getStaleDataTimeout());
 
         stopDistanceAways.add(distanceAway);
       }
@@ -416,7 +419,8 @@ public class NycSearchServiceImpl implements NycSearchService {
     // https://spreadsheets.google.com/ccc?key=0Al2nqv1nCD71dGt5SkpHajRQZmdLaVZScnhoYVhiZWc&hl=en#gid=0
 
     // don't show non-realtime trips (row 8)
-    if (statusBean == null || statusBean.isPredicted() == false
+    if (statusBean == null 
+    	|| statusBean.isPredicted() == false
         || Double.isNaN(statusBean.getDistanceAlongTrip()))
       return false;
 
@@ -438,15 +442,19 @@ public class NycSearchServiceImpl implements NycSearchService {
         return false;
     }
 
-    // hide data >= 5m old (row 5)
-    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * 60 * 5)
+    // hide data >= (hide timeout) minutes old (row 5)
+    ConfigurationBean config = configurationService.getConfiguration();
+    
+    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout())
       return false;
 
     return true;
   }
 
   private StopSearchResult makeStopSearchResult(StopBean stopBean, Mode m) {
-    String stopId = stopBean.getId();
+    ConfigurationBean config = configurationService.getConfiguration();
+
+	String stopId = stopBean.getId();
     List<Double> latLng = Arrays.asList(new Double[] {
         stopBean.getLat(), stopBean.getLon()});
     String stopName = stopBean.getName();
@@ -493,10 +501,10 @@ public class NycSearchServiceImpl implements NycSearchService {
         double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
         int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
         int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
-
+        
         DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
             distanceFromStopInFeet, new Date(
-                arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), m);
+                arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), m, config.getStaleDataTimeout());
         List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
 
         if (distanceAways == null) {

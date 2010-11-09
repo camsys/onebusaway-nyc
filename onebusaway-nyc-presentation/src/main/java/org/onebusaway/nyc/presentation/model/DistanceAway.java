@@ -1,6 +1,10 @@
 package org.onebusaway.nyc.presentation.model;
 
 import org.onebusaway.nyc.presentation.impl.DistancePresenter;
+import org.onebusaway.nyc.presentation.service.ConfigurationBean;
+import org.onebusaway.nyc.presentation.service.ConfigurationService;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.Date;
 
 /**
@@ -10,14 +14,16 @@ public class DistanceAway implements Comparable<DistanceAway> {
 
   private final int stopsAway;
   private final int feetAway;
+  private final int staleTimeoutSeconds;
   private final Date timestamp;
   private Mode currentMode;
-  
-  public DistanceAway(int stopsAway, int feetAway, Date timestamp, Mode m) {
+    
+  public DistanceAway(int stopsAway, int feetAway, Date timestamp, Mode m, int staleTimeoutSeconds) {
     this.stopsAway = stopsAway;
     this.feetAway = feetAway;
     this.timestamp = timestamp;
     this.currentMode = m;
+    this.staleTimeoutSeconds = staleTimeoutSeconds;
   }
 
   public int getStops() {
@@ -34,8 +40,8 @@ public class DistanceAway implements Comparable<DistanceAway> {
 
   private String addModifiers(String s) {
 	StringBuilder b = new StringBuilder(s);
-
-	if(new Date().getTime() - timestamp.getTime() > 1000 * 60 * 2) {
+    
+	if(new Date().getTime() - timestamp.getTime() > 1000 * this.staleTimeoutSeconds) {
 		switch(currentMode) {
 			case SMS:			
 				b.insert(0, "~");
