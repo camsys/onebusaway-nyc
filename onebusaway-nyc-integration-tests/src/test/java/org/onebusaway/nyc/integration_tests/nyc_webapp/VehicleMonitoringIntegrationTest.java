@@ -31,7 +31,7 @@ import java.text.ParseException;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-public class VehicleMonitoringIntegrationTest extends SiriIntegrationTest {
+public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
 
   @Test
   public void testByVehicleId() throws HttpException, IOException,

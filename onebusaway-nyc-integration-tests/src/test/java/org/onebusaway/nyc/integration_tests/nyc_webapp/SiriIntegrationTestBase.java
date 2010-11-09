@@ -21,7 +21,7 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.Date;
 
-public class SiriIntegrationTest {
+public class SiriIntegrationTestBase {
 
   /**
    * July 7, 2010 - 11:00 am in NYC
@@ -34,7 +34,7 @@ public class SiriIntegrationTest {
 
   protected AgencyAndId _vehicleId = new AgencyAndId("2008", "4444");
 
-  public SiriIntegrationTest() {
+  public SiriIntegrationTestBase() {
     super();
   }
 
@@ -56,7 +56,7 @@ public class SiriIntegrationTest {
   protected Siri getResponse(String query) throws IOException, HttpException {
   
     HttpClient client = new HttpClient();
-    String port = System.getProperty("org.onebusaway.webapp.port", "9180");
+    String port = System.getProperty("org.onebusaway.webapp.port", "9000");
     String url = "http://localhost:" + port + "/onebusaway-api-webapp/siri/"
         + query;
     GetMethod get = new GetMethod(url);

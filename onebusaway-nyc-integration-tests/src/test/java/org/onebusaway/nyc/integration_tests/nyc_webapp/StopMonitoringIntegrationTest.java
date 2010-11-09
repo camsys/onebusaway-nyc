@@ -37,7 +37,7 @@ import org.onebusaway.siri.model.StopMonitoringDelivery;
 import org.onebusaway.utility.DateLibrary;
 
 
-public class StopMonitoringIntegrationTest extends SiriIntegrationTest {
+public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
 
   @Test
   public void testEmptyResults() throws HttpException, IOException {
