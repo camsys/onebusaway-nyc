@@ -74,7 +74,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     record.setTimeReceived(new Date().getTime());
 
     if (vehicleActivity.Extensions != null
-        && vehicleActivity.Extensions.NMEA != null) {
+        && vehicleActivity.Extensions.NMEA != null && vehicleActivity.Extensions.NMEA.sentences != null) {
       for (String sentence : vehicleActivity.Extensions.NMEA.sentences) {
         if (sentence.startsWith("$GPRMC")) {
           record.setRmc(sentence);
