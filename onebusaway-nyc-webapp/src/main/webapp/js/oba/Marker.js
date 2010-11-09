@@ -50,6 +50,21 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
             marker.setMap(null);
         },
 
+        updateOrientation: function(_orientation) {
+        	var orientation = 'undefined';
+
+        	if(typeof _orientation !== 'undefined' && _orientation !== 'NaN') {
+        		orientation = Math.floor(_orientation / 30) * 30;
+        	}
+
+        	var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
+					OBA.Config.vehicleIconSize,
+					new google.maps.Point(0,0),
+					OBA.Config.vehicleIconCenter);
+
+       		marker.setIcon(icon);        	
+        },
+        
         updatePosition: function(latlng) {
         	// refresh infoWindow if the infoWindow-bound marker is the same as us
         	if(OBA.theInfoWindow !== null) {
@@ -57,7 +72,7 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
         			popup.refresh();
         		}
         	}
-        	
+
         	marker.setPosition(latlng);
         },
 
@@ -93,7 +108,18 @@ OBA.StopMarker = function(stopId, latlng, direction, map, opts) {
 };
 
 OBA.VehicleMarker = function(vehicleId, latlng, map, opts) {
+	var opts = jQuery.extend(opts || {}, {zIndex: 200});
+	
+	if(typeof opts['icon'] === 'undefined') {
+		var marker = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-unknown.' + OBA.Config.vehicleIconFileType,
+								OBA.Config.vehicleIconSize,
+								new google.maps.Point(0,0),
+								OBA.Config.vehicleIconCenter);
+	
+		opts['icon'] = marker;
+	}
+	
     return OBA.Marker(vehicleId, latlng, map,
         OBA.VehiclePopup(vehicleId, map),
-        jQuery.extend(opts || {}, {icon: OBA.Config.vehicleIcon, zIndex: 200, type: 'vehicle'}));
+        opts);
 };

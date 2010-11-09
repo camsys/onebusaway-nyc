@@ -157,7 +157,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 var latlng = new google.maps.LatLng(latLng[0], latLng[1]);
   
                 vehicleMarker.updatePosition(latlng);
-
+                vehicleMarker.updateOrientation(status.orientation);
+                
                 if (!vehicleMarker.isDisplayed()) {
                     vehicleMarker.addMarker();
                 }

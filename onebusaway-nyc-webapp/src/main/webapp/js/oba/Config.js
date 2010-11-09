@@ -29,10 +29,10 @@ OBA.Config = {
     pollingInterval: 5000,
 
     // marker images used
-    vehicleIcon: new google.maps.MarkerImage("img/vehicle/vehicle-unknown.png",
-            new google.maps.Size(20, 20),
-            new google.maps.Point(0,0),
-            new google.maps.Point(10, 10)),
+    vehicleIconFilePrefix: "img/vehicle/vehicle",
+    vehicleIconFileType: "png",
+    vehicleIconSize: new google.maps.Size(20,20),
+    vehicleIconCenter: new google.maps.Point(10,10),
 
     stopIconFilePrefix: "img/stop/stop",
     stopIconFileType: "png",
