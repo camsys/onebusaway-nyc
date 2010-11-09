@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.impl;
+package org.onebusaway.nyc.presentation.impl;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -14,8 +14,8 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.Converter;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
-import org.onebusaway.nyc.webapp.services.ConfigurationBean;
-import org.onebusaway.nyc.webapp.services.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.ConfigurationBean;
+import org.onebusaway.nyc.presentation.service.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

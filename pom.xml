@@ -208,6 +208,11 @@
                 <artifactId>onebusaway-transit-data-federation</artifactId>
                 <version>${onebusaway.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.onebusaway</groupId>
+                <artifactId>onebusaway-nyc-transit-data</artifactId>
+                <version>${onebusaway.version}</version>
+            </dependency>
 
             <!-- Spring Framework -->
             <dependency>

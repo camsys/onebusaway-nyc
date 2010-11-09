@@ -25,6 +25,8 @@ import org.onebusaway.nyc.presentation.model.AvailableRoute;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.StopItem;
+import org.onebusaway.nyc.presentation.service.ConfigurationBean;
+import org.onebusaway.nyc.presentation.service.ConfigurationService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
@@ -66,6 +68,9 @@ public class NycSearchServiceImpl implements NycSearchService {
   @Autowired
   private GeocoderService geocoderService;
 
+  @Autowired
+  private ConfigurationService configurationService;
+  
   @Autowired
   private ServiceAreaService serviceArea;
 
@@ -410,11 +415,8 @@ public class NycSearchServiceImpl implements NycSearchService {
     // UI states here:
     // https://spreadsheets.google.com/ccc?key=0Al2nqv1nCD71dGt5SkpHajRQZmdLaVZScnhoYVhiZWc&hl=en#gid=0
 
-	if(statusBean == null)
-		return false;
-	  
     // don't show non-realtime trips (row 8)
-    if (statusBean.isPredicted() == false
+    if (statusBean == null || statusBean.isPredicted() == false
         || Double.isNaN(statusBean.getDistanceAlongTrip()))
       return false;
 

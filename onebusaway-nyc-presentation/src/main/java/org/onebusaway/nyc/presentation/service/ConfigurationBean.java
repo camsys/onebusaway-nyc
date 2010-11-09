@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.services;
+package org.onebusaway.nyc.presentation.service;
 
 public class ConfigurationBean {
 

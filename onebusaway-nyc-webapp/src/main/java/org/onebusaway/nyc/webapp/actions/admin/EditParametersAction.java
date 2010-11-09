@@ -2,8 +2,8 @@ package org.onebusaway.nyc.webapp.actions.admin;
 
 import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.services.ConfigurationBean;
-import org.onebusaway.nyc.webapp.services.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.ConfigurationBean;
+import org.onebusaway.nyc.presentation.service.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ModelDriven;
