@@ -43,11 +43,8 @@ OBA.Config = {
     apiKey: "TEST",
     
     vehicleFilterFunction: function(tripStatus) {
-    	if(tripStatus === null)
-    		return false;
-    	
     	// don't show non-realtime trips (row 8)
-    	if(tripStatus.predicted === false || tripStatus.distanceAlongTrip === 0)
+    	if(tripStatus === null || tripStatus.predicted === false || tripStatus.distanceAlongTrip === 0)
     		return false;
     	
     	var status = ((typeof tripStatus.status !== 'undefined' && tripStatus.status !== '') ? tripStatus.status : null);
@@ -62,8 +59,8 @@ OBA.Config = {
     	if(phase !== null && phase.toLowerCase() !== 'in_progress')
     		return false;
 
-  	  	// hide data >= 5m old (row 5)
-    	if(typeof tripStatus.lastUpdateTime !== 'undefined' && new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * 60 * 5)
+    	// hide data >= hideTimeout seconds old (row 5)
+    	if(typeof tripStatus.lastUpdateTime !== 'undefined' && new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.hideTimeout)
     		return false;
   	  
     	return true;

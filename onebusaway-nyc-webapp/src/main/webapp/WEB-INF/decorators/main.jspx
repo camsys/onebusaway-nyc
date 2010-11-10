@@ -31,16 +31,23 @@ under the License.
 
   <title><decorator:title default="OneBusAway NYC" /></title>
   
-  <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/reset.css" type="text/css" media="screen,print"/>
-  <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/screen.css" type="text/css" media="screen,print"/>
-  <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/tracker.css" type="text/css" media="screen,print"/>
+  <s:url var="url" value="/css/reset.css"></s:url>
+  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<![CDATA[
-<!--[if IE 6]>
-       <link rel="stylesheet" href="/onebusaway-nyc-webapp/css/ie6.css" type="text/css" media="screen,print"/>
-<![endif]-->
+  <s:url var="url" value="/css/screen.css"></s:url>
+  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-]]>
+  <s:url var="url" value="/css/tracker.css"></s:url>
+  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+
+<jsp:text>
+&lt;!--[if IE 6]&gt;
+</jsp:text>
+	<s:url var="url" value="/css/ie6.css"></s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+<jsp:text>
+&lt;![endif]--&gt;
+</jsp:text>
 
 <decorator:head />
 </head>
@@ -52,14 +59,26 @@ under the License.
       <h1>A City Transit Agency</h1>
 
       <ul>
-        <li><a href="/onebusaway-nyc-webapp/index.action">Home</a></li>
-        <li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=HelpIndex">Help</a></li>
+      	<s:url var="url" action="index"></s:url>
+        <li><a href="${url}">Home</a></li>
+		
+		<s:url var="url" action="wiki/index">
+			<s:param name="name">HelpIndex</s:param>
+		</s:url>
+        <li><a href="${url}">Help</a></li>
 
 		<s:if test="adminUser">
-	        <li><a href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Parameters</a></li>
-	        <li><a href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
-	        <li><a href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
-	        <li><a href="/onebusaway-nyc-webapp/admin/reporting.action">Reporting</a></li>
+			<s:url var="url" action="/admin/edit-parameters"></s:url>
+	        <li><a href="${url}">Parameters</a></li>
+
+			<s:url var="url" action="/admin/vehicles"></s:url>
+	        <li><a href="${url}">Vehicles</a></li>
+
+			<s:url var="url" action="/admin/routes"></s:url>
+	        <li><a href="${url}">Routes</a></li>
+
+			<s:url var="url" action="/admin/reporting"></s:url>
+	        <li><a href="${url}">Reporting</a></li>
 		</s:if>
 
       </ul>
@@ -69,13 +88,25 @@ under the License.
 
 <div id="footer">
 <ul class="first">
-	<li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=About">About</a></li>
-	<li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=ContactUs">Contact Us</a></li>
+	<s:url var="url" action="/wiki/index">
+		<s:param name="name">About</s:param>
+	</s:url>
+	<li><a href="${url}">About</a></li>
+
+	<s:url var="url" action="/wiki/index">
+		<s:param name="name">ContactUs</s:param>
+	</s:url>
+	<li><a href="${url}">Contact Us</a></li>
 </ul>
 
 <ul>
-	<li><a href="/onebusaway-nyc-webapp/mobile/index.action">Text Only/Mobile</a></li>
-	<li><a href="/onebusaway-nyc-webapp/wiki/index.action?name=DeveloperAPI">Developer API</a></li>
+	<s:url var="url" action="/mobile/index"></s:url>
+	<li><a href="${url}">Text Only/Mobile</a></li>
+
+	<s:url var="url" action="/wiki/index">
+		<s:param name="name">DeveloperAPI</s:param>
+	</s:url>
+	<li><a href="${url}">Developer API</a></li>
 </ul>
 
 <p>&amp;copy 2010, A City Transit Agency</p>
