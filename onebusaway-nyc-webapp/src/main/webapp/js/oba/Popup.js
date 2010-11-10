@@ -128,7 +128,8 @@ OBA.StopPopup = function(stopId, map) {
             });
 
         var lastUpdateString = null;
-        if (latestUpdate !== 0) {
+        
+        if (latestUpdate !== null && latestUpdate !== 0) {
             var lastUpdateDate = new Date(latestUpdate);
             lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
         }
