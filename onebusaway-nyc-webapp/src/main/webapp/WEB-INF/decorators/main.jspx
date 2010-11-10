@@ -59,10 +59,10 @@ under the License.
       <h1>A City Transit Agency</h1>
 
       <ul>
-      	<s:url var="url" action="index"></s:url>
+      	<s:url var="url" action="/index"></s:url>
         <li><a href="${url}">Home</a></li>
 		
-		<s:url var="url" action="wiki/index">
+		<s:url var="url" action="/wiki/index">
 			<s:param name="name">HelpIndex</s:param>
 		</s:url>
         <li><a href="${url}">Help</a></li>
