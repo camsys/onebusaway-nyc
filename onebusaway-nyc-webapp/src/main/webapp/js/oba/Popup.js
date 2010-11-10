@@ -98,7 +98,9 @@ OBA.StopPopup = function(stopId, map) {
                 }
 
                 headsignToRoute[headsign] = arrival.routeId;
-                routeToVehicleInfo[headsign] = [];
+                if (! routeToVehicleInfo[headsign]) {
+                    routeToVehicleInfo[headsign] = [];
+                }
                 routeToVehicleCount++;                
                 
                 if(OBA.Config.vehicleFilterFunction(arrival.tripStatus) === false)
