@@ -266,11 +266,16 @@ OBA.VehiclePopup = function(vehicleId, map) {
         // last update date
         var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
         var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
-
+        var isStale = (new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.staleDataTimeout);
+        
         var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + headsign + '</p>' +
         			 '<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' +
         			 '<p class="meta">Last updated at ' + lastUpdateString + '</p>';
 
+        if(isStale) {
+        	header += '<p class="meta stale">Location data is out of date and may be unreliable</p>';
+        }
+        
         // service notices FIXME
         var notices = '<ul class="notices"></ul>';
             

@@ -47,7 +47,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 				b.insert(0, "~");
 				break;
 			case MOBILE_WEB:
-				b.append(" (estimated)");
+				b.append(" (location data is old)");
 				break;
 			default:
 				break;
