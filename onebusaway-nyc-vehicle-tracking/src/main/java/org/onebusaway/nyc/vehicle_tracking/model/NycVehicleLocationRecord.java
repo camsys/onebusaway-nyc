@@ -53,6 +53,7 @@ public class NycVehicleLocationRecord {
       @AttributeOverride(name = "id", column = @Column(name = "vehicle_id"))})
   private AgencyAndId vehicleId;
 
+  @Column(name = "rawData", length = 32000)
   private String rawData;
 
   public void setId(long id) {

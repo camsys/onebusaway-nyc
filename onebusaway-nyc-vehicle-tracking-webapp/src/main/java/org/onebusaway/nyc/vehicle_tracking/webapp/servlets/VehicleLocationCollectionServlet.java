@@ -26,8 +26,6 @@ public class VehicleLocationCollectionServlet extends HttpServlet {
 
   private VehicleLocationService _vehicleLocationService;
 
-  private String logDirectory = "/tmp/";
-
   @Autowired
   public void setVehicleLocationService(
       VehicleLocationService vehicleLocationService) {

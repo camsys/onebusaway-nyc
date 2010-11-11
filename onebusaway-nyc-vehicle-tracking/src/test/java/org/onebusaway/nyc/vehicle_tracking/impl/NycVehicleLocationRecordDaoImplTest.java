@@ -46,6 +46,12 @@ public class NycVehicleLocationRecordDaoImplTest {
     record.setTime(t);
     record.setVehicleId(new AgencyAndId("2008", "123"));
 
+    String aVeryLongString = "a very long string";
+    for (int i = 0; i < 7; ++i) {
+      aVeryLongString += aVeryLongString;
+    }
+    record.setRawData(aVeryLongString);
+
     dao.saveOrUpdateVehicleLocationRecord(record);
 
     List<NycVehicleLocationRecord> records = dao.getRecordsForTimeRange(
