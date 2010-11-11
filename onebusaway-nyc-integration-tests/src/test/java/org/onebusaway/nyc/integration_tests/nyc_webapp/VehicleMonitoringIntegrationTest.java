@@ -44,7 +44,7 @@ public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
     record.setBlockId(new AgencyAndId("2008", "12023519"));
     record.setCurrentLocationLat(40.73272);
     record.setCurrentLocationLon(-73.95457);
-    record.setDistanceAlongBlock(43753.36285532166);
+    record.setDistanceAlongBlock(43253.36285532166);
     record.setServiceDate(1278475200000L);
     record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime(
         "2010-07-07T11:27:38-04:00").getTime());
@@ -83,7 +83,7 @@ public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
     record.setBlockId(new AgencyAndId("2008", "12023519"));
     record.setCurrentLocationLat(40.73272);
     record.setCurrentLocationLon(-73.95457);
-    record.setDistanceAlongBlock(43753.36285532166);
+    record.setDistanceAlongBlock(43253.36285532166);
     record.setServiceDate(1278475200000L);
     record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime(
         "2010-07-07T11:27:38-04:00").getTime());

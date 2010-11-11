@@ -74,15 +74,15 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     
     VehicleLocationRecord record = new VehicleLocationRecord();
     record.setBlockId(new AgencyAndId("2008", "12023519"));
-    record.setCurrentLocationLat(40.73272);
-    record.setCurrentLocationLon(-73.95457);
-    record.setDistanceAlongBlock(43753.36285532166);
+    record.setCurrentLocationLat(40.73383);
+    record.setCurrentLocationLon(-73.9548574);
+    record.setDistanceAlongBlock(43053.36285532166);
     record.setServiceDate(1278475200000L);
     record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime("2010-07-07T11:29:38-04:00").getTime());
     record.setVehicleId(_vehicleId);
     _vehicleLocationListener.handleVehicleLocationRecord(record);
 
-    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305286&OperatorRef=2008&time="
+    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=308187&OperatorRef=2008&time="
         + _timeString);
 
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
@@ -107,28 +107,28 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     
     /* no onward calls requested so none returned */
     MonitoredVehicleJourney journey = visit.MonitoredVehicleJourney;
-    assertEquals("20100627CC_069000_B43_0033_B62_8",journey.CourseOfJourneyRef);
-    assertEquals("801027",journey.DestinationRef);
-    assertEquals("1",journey.DirectionRef);
+    assertEquals("20100627CC_060000_B43_0032_B43_9", journey.CourseOfJourneyRef);
+    assertEquals("305286", journey.DestinationRef);
+    assertEquals("0", journey.DirectionRef);
     assertEquals("B43",journey.LineRef);
     assertTrue(journey.Monitored);
-    assertEquals("305287",journey.OriginRef);
-    assertEquals("B43 LEFRTS GDNS PROSPCT PK STA",journey.PublishedLineName);
-    assertEquals(40.737194,journey.VehicleLocation.Latitude,1e-6);
-    assertEquals(-73.955673,journey.VehicleLocation.Longitude,1e-6);
+    assertEquals("308075", journey.OriginRef);
+    assertEquals("B43 GREENPOINT BOX ST", journey.PublishedLineName);
+    assertEquals(40.73383, journey.VehicleLocation.Latitude, 1e-6);
+    assertEquals(-73.9548574, journey.VehicleLocation.Longitude, 1e-6);
     assertEquals(_vehicleId.toString(),journey.VehicleRef);
     
     assertNull(journey.OnwardCalls);
 
     MonitoredCall mc = journey.MonitoredCall;
-    assertEquals("305175",mc.StopPointRef);
+    assertEquals("308187", mc.StopPointRef);
     assertFalse(mc.VehicleAtStop);
     assertEquals(1,mc.VisitNumber);
     
     DistanceExtensions dex = mc.Extensions;
-    assertEquals(1762.7,dex.Distances.CallDistanceAlongRoute,0.1);
-    assertEquals(1762.8,dex.Distances.DistanceFromCall,0.1);
-    assertEquals(9,dex.Distances.StopsFromCall);
+    assertEquals(10937.84424, dex.Distances.CallDistanceAlongRoute, 0.1);
+    assertEquals(340.88057, dex.Distances.DistanceFromCall, 0.1);
+    assertEquals(1, dex.Distances.StopsFromCall);
   }
 
   //@Test
