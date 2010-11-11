@@ -58,13 +58,14 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Override
-  public void handleVehicleLocation(Siri siri) {
+  public void handleVehicleLocation(Siri siri, String body) {
     ServiceDelivery delivery = siri.ServiceDelivery;
     VehicleActivity vehicleActivity = delivery.VehicleMonitoringDelivery.deliveries.get(0);
     MonitoredVehicleJourney monitoredVehicleJourney = vehicleActivity.MonitoredVehicleJourney;
     VehicleLocation location = monitoredVehicleJourney.VehicleLocation;
 
     NycVehicleLocationRecord record = new NycVehicleLocationRecord();
+    record.setRawData(body);
     record.setVehicleId(new AgencyAndId(_agencyId,
         monitoredVehicleJourney.VehicleRef));
     record.setDestinationSignCode(vehicleActivity.VehicleMonitoringRef);

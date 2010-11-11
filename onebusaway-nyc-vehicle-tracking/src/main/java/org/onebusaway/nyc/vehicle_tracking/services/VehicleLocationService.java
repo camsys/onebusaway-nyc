@@ -25,8 +25,9 @@ public interface VehicleLocationService {
    * unprocessed location record with destination sign code information.
    * 
    * @param siri the raw SIRI record
+   * @param body
    */
-  public void handleVehicleLocation(Siri siri);
+  public void handleVehicleLocation(Siri siri, String body);
 
   /**
    * Convenience method for updating a vehicle location from data directly

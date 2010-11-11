@@ -1,8 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.webapp.servlets;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -61,15 +59,9 @@ public class VehicleLocationCollectionServlet extends HttpServlet {
       out.append(new String(buf, 0, n));
     }
     String body = out.toString();
-    /* temporarily log body */
-    long time = System.currentTimeMillis();
-    FileWriter outputStream = new FileWriter(new File(logDirectory + time));
-    outputStream.write(body);
-    outputStream.close();
 
-    /* process normally */
     Siri siri = (Siri) _xstream.fromXML(body);
-    _vehicleLocationService.handleVehicleLocation(siri);
+    _vehicleLocationService.handleVehicleLocation(siri, body);
 
     resp.setStatus(200);
     resp.setContentType("text/html;charset=UTF-8");

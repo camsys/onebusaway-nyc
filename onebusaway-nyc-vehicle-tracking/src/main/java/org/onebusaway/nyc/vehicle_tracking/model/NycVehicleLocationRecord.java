@@ -53,6 +53,8 @@ public class NycVehicleLocationRecord {
       @AttributeOverride(name = "id", column = @Column(name = "vehicle_id"))})
   private AgencyAndId vehicleId;
 
+  private String rawData;
+
   public void setId(long id) {
     this.id = id;
   }
@@ -148,5 +150,13 @@ public class NycVehicleLocationRecord {
 
   public String getDeviceId() {
     return deviceId;
+  }
+
+  public void setRawData(String rawData) {
+    this.rawData = rawData;
+  }
+
+  public String getRawData() {
+    return rawData;
   }
 }
