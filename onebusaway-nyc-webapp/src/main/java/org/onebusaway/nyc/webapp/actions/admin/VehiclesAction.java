@@ -32,6 +32,8 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
   private static final long serialVersionUID = 1L;
   
   private static final WebappIdParser idParser = new WebappIdParser();
+  
+  private String agencyId = "MTA NYCT";
 
   @Autowired
   private TransitDataService transitService;
@@ -47,10 +49,14 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
   public void setServletRequest(HttpServletRequest request) {
     this.request = request;
   }
+  
+  public void setAgencyId(String agencyId) {
+    this.agencyId = agencyId;
+  }
 
   @Override
   public String execute() throws Exception {
-    ListBean<VehicleStatusBean> vehiclesForAgencyListBean = transitService.getAllVehiclesForAgency("MTA NYCT", System.currentTimeMillis());
+    ListBean<VehicleStatusBean> vehiclesForAgencyListBean = transitService.getAllVehiclesForAgency(agencyId, System.currentTimeMillis());
     List<VehicleStatusBean> vehicleStatusBeans = vehiclesForAgencyListBean.getList();
     
     // first get a model of all the vehicle statuses key'ed off vehicle id for easy lookup
