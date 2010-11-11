@@ -10,6 +10,7 @@
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-integration-tests</artifactId>
     <name>onebusaway-nyc-integration-tests</name>
+    <packaging>pom</packaging>
 
     <properties>
         <tomcat-version>5.5.29</tomcat-version>
@@ -139,7 +140,7 @@
                     <execution>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>assembly</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
