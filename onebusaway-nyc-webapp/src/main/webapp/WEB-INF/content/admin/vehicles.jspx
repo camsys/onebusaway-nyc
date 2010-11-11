@@ -47,10 +47,7 @@ under the License.
 <tr>
 <td><s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div></td>
 <td>
-<s:checkbox name="%{disabledName}"
-            value="%{disabled}"
-            fieldValue="true"
-            />
+<input type="checkbox" name="${disabledName}" value="${disabled}" />
 </td>
 <td class="vehicleId"><s:property value="vehicleId" /></td>
 <td><s:property value="lastUpdateTime" /></td>
@@ -60,6 +57,7 @@ under the License.
 </tr>
 </s:iterator>
 </table>
+<s:submit value="Save" />
 </s:form>
 </div>
 </body>
