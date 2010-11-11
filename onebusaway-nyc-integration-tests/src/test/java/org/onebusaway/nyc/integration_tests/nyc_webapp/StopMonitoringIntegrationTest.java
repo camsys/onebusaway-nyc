@@ -73,19 +73,16 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     //2179,40.7372545433,-73.9557642325,2010-07-07 11:29:38,4430,2008_12023519,1278475200000,43753.36285532166,4430,40.7372545433,-73.9557642325,IN_PROGRESS
     
     VehicleLocationRecord record = new VehicleLocationRecord();
-    record.setBlockId(new AgencyAndId("2008","12023519"));
-    record.setCurrentLocationLat(40.7372545433);
-    record.setCurrentLocationLon(-73.9557642325);
+    record.setBlockId(new AgencyAndId("2008", "12023519"));
+    record.setCurrentLocationLat(40.73272);
+    record.setCurrentLocationLon(-73.95457);
     record.setDistanceAlongBlock(43753.36285532166);
     record.setServiceDate(1278475200000L);
     record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime("2010-07-07T11:29:38-04:00").getTime());
     record.setVehicleId(_vehicleId);
     _vehicleLocationListener.handleVehicleLocationRecord(record);
-    
-    /**
-     * We call this without first injecting real-time data first
-     */
-    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305175&OperatorRef=2008&time="
+
+    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305286&OperatorRef=2008&time="
         + _timeString);
 
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
@@ -106,7 +103,7 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     assertEquals(record.getTimeOfRecord(),visit.RecordedAtTime.getTimeInMillis());
     
     // TODO : Should this be the case?
-    // assertEquals("305175",visit.MonitoringRef);
+    // assertEquals("305286",visit.MonitoringRef);
     
     /* no onward calls requested so none returned */
     MonitoredVehicleJourney journey = visit.MonitoredVehicleJourney;
@@ -137,7 +134,7 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
   //@Test
   public void testOnwardCalls() throws HttpException, IOException {
 
-    Siri siri = getResponse("stop-monitoring.xml?key=TEST&OperatorRef=2008&MonitoringRef=305344&StopMonitoringDetailLevel=calls");
+    Siri siri = getResponse("stop-monitoring.xml?key=TEST&OperatorRef=2008&MonitoringRef=305286&StopMonitoringDetailLevel=calls");
 
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
     List<StopMonitoringDelivery> deliveries = serviceDelivery.stopMonitoringDeliveries;

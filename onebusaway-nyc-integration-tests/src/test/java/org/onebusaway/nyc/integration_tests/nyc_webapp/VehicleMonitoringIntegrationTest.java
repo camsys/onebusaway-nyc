@@ -42,11 +42,12 @@ public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
 
     VehicleLocationRecord record = new VehicleLocationRecord();
     record.setBlockId(new AgencyAndId("2008", "12023519"));
-    record.setCurrentLocationLat(40.7372545433);
-    record.setCurrentLocationLon(-73.9557642325);
+    record.setCurrentLocationLat(40.73272);
+    record.setCurrentLocationLon(-73.95457);
     record.setDistanceAlongBlock(43753.36285532166);
     record.setServiceDate(1278475200000L);
-    record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime("2010-07-07T11:29:38-04:00").getTime());
+    record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime(
+        "2010-07-07T11:27:38-04:00").getTime());
     record.setVehicleId(_vehicleId);
     _vehicleLocationListener.handleVehicleLocationRecord(record);
 
@@ -71,4 +72,42 @@ public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
     assertEquals("B43", journey.LineRef);
   }
 
+  @Test
+  public void testOnwardCalls() throws HttpException, IOException,
+      InterruptedException, ParseException {
+
+    // 2179,40.7372545433,-73.9557642325,2010-07-07
+    // 11:29:38,4430,2008_12023519,1278475200000,43753.36285532166,4430,40.7372545433,-73.9557642325,IN_PROGRESS
+
+    VehicleLocationRecord record = new VehicleLocationRecord();
+    record.setBlockId(new AgencyAndId("2008", "12023519"));
+    record.setCurrentLocationLat(40.73272);
+    record.setCurrentLocationLon(-73.95457);
+    record.setDistanceAlongBlock(43753.36285532166);
+    record.setServiceDate(1278475200000L);
+    record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime(
+        "2010-07-07T11:27:38-04:00").getTime());
+    record.setVehicleId(_vehicleId);
+    _vehicleLocationListener.handleVehicleLocationRecord(record);
+
+    Siri siri = getResponse("vehicle-monitoring.xml?key=TEST&OperatorRef=2008&VehicleMonitoringDetailLevel=calls&VehicleRef="
+        + _vehicleId.getId() + "&time=" + _timeString);
+
+    GregorianCalendar now = new GregorianCalendar();
+
+    ServiceDelivery serviceDelivery = siri.ServiceDelivery;
+    assertTrue(serviceDelivery.ResponseTimestamp.getTimeInMillis()
+        - now.getTimeInMillis() < 1000);
+    List<VehicleActivity> deliveries = serviceDelivery.VehicleMonitoringDelivery.deliveries;
+    assertNotNull(serviceDelivery.VehicleMonitoringDelivery.deliveries);
+    /* there's only one stop requested */
+    assertTrue(deliveries.size() == 1);
+    VehicleActivity delivery = deliveries.get(0);
+
+    /* onward calls requested */
+    MonitoredVehicleJourney journey = delivery.MonitoredVehicleJourney;
+    assertNotNull(journey.OnwardCalls);
+
+    assertEquals("B43", journey.LineRef);
+  }
 }
