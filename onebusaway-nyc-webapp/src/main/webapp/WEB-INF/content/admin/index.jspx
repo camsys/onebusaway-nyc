@@ -24,10 +24,18 @@ under the License.
 <body>
 
 <ul>
-<li><a title="edit parameters" href="/onebusaway-nyc-webapp/admin/edit-parameters.action">Change inference parameters</a></li>
-<li><a title="vehicles" href="/onebusaway-nyc-webapp/admin/vehicles.action">Vehicles</a></li>
-<li><a title="routes" href="/onebusaway-nyc-webapp/admin/routes.action">Routes</a></li>
-<li><a title="reporting" href="/onebusaway-nyc-webapp/admin/reporting.action">Reporting</a></li>
+<li>
+<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
+<a title="edit parameters" href="${url}">Change inference parameters</a></li>
+<li>
+<s:url var="url" namespace="/admin" action="vehicles"></s:url>
+<a title="vehicles" href="${url}">Vehicles</a></li>
+<li>
+<s:url var="url" namespace="/admin" action="routes"></s:url>
+<a title="routes" href="${url}">Routes</a></li>
+<li>
+<s:url var="url" namespace="/admin" action="reporting"></s:url>
+<a title="reporting" href="${url}">Reporting</a></li>
 </ul>
 
 </body>
