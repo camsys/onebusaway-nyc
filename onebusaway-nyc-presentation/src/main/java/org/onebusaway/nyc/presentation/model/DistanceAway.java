@@ -1,11 +1,8 @@
 package org.onebusaway.nyc.presentation.model;
 
-import org.onebusaway.nyc.presentation.impl.DistancePresenter;
-import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.ConfigurationService;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.Date;
+
+import org.onebusaway.nyc.presentation.impl.DistancePresenter;
 
 /**
  * Data transfer object for how far away a vehicle is

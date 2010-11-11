@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.services;
 import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.Siri;
 import org.onebusaway.siri.model.VehicleLocation;
@@ -55,12 +56,31 @@ public interface VehicleLocationService {
    */
   public void resetVehicleLocation(String vehicleId);
 
+  /**
+   * 
+   * @param vehicleId
+   * @return the most recent vehicle location record for the specified vehicle
+   */
   public VehicleLocationRecord getVehicleLocationForVehicle(String vehicleId);
+
+  /**
+   * 
+   * @param vehicleId
+   * @return the most recent vehicle location management record for the
+   *         specified vehicle
+   */
+  public VehicleLocationManagementRecord getVehicleLocationManagementRecordForVehicle(
+      String vehicleId);
 
   /**
    * @return a list of the latest processed vehicle position records
    */
   public List<VehicleLocationRecord> getLatestProcessedVehicleLocationRecords();
+
+  /**
+   * @return a list of the most recent vehicle location management records
+   */
+  public List<VehicleLocationManagementRecord> getVehicleLocationManagementRecords();
 
   /**
    * This is here primarily for debugging
@@ -69,4 +89,6 @@ public interface VehicleLocationService {
    * @return the current list of particles for the specified vehicle
    */
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId);
+
+  public void setVehicleStatus(String vehicleId, boolean enabled);
 }

@@ -14,6 +14,7 @@ import javax.annotation.PreDestroy;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -109,6 +110,39 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
+  public VehicleLocationManagementRecord getVehicleLocationManagementRecordForVehicle(
+      AgencyAndId vid) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
+    if (instance == null)
+      return null;
+    return instance.getCurrentManagementState();
+  }
+
+  @Override
+  public List<VehicleLocationManagementRecord> getVehicleLocationManagementRecords() {
+
+    List<VehicleLocationManagementRecord> records = new ArrayList<VehicleLocationManagementRecord>();
+
+    for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
+      AgencyAndId vehicleId = entry.getKey();
+      VehicleInferenceInstance instance = entry.getValue();
+      VehicleLocationManagementRecord record = instance.getCurrentManagementState();
+      record.setVehicleId(vehicleId);
+      records.add(record);
+    }
+
+    return records;
+  }
+
+  @Override
+  public void setVehicleStatus(AgencyAndId vid, boolean enabled) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
+    if (instance == null)
+      return;
+    instance.setVehicleStatus(enabled);
+  }
+
+  @Override
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
@@ -151,11 +185,14 @@ public class VehicleLocationInferenceServiceImpl implements
 
       try {
         VehicleInferenceInstance existing = getInstanceForVehicle(_inferenceRecord.getVehicleId());
-        existing.handleUpdate(_inferenceRecord, _saveResult);
+        boolean passOnRecord = existing.handleUpdate(_inferenceRecord,
+            _saveResult);
 
-        VehicleLocationRecord record = existing.getCurrentState();
-        record.setVehicleId(_inferenceRecord.getVehicleId());
-        _vehicleLocationListener.handleVehicleLocationRecord(record);
+        if (passOnRecord) {
+          VehicleLocationRecord record = existing.getCurrentState();
+          record.setVehicleId(_inferenceRecord.getVehicleId());
+          _vehicleLocationListener.handleVehicleLocationRecord(record);
+        }
 
       } catch (Throwable ex) {
         _log.error("error processing new location record for inference", ex);

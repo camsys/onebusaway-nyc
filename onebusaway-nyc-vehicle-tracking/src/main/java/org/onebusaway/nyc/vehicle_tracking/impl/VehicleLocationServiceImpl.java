@@ -6,6 +6,7 @@ import java.util.List;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingMutableDao;
@@ -16,6 +17,7 @@ import org.onebusaway.siri.model.ServiceDelivery;
 import org.onebusaway.siri.model.Siri;
 import org.onebusaway.siri.model.VehicleActivity;
 import org.onebusaway.siri.model.VehicleLocation;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +76,8 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     record.setTimeReceived(new Date().getTime());
 
     if (vehicleActivity.Extensions != null
-        && vehicleActivity.Extensions.NMEA != null && vehicleActivity.Extensions.NMEA.sentences != null) {
+        && vehicleActivity.Extensions.NMEA != null
+        && vehicleActivity.Extensions.NMEA.sentences != null) {
       for (String sentence : vehicleActivity.Extensions.NMEA.sentences) {
         if (sentence.startsWith("$GPRMC")) {
           record.setRmc(sentence);
@@ -110,14 +113,14 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   @Override
   public void resetVehicleLocation(String vehicleId) {
-    AgencyAndId vid = new AgencyAndId(_agencyId, vehicleId);
+    AgencyAndId vid = getVehicleId(vehicleId);
     _vehicleLocationInferenceService.resetVehicleLocation(vid);
     _vehicleLocationListener.resetVehicleLocation(vid);
   }
 
   @Override
   public VehicleLocationRecord getVehicleLocationForVehicle(String vehicleId) {
-    AgencyAndId vid = new AgencyAndId(_agencyId, vehicleId);
+    AgencyAndId vid = getVehicleId(vehicleId);
     return _vehicleLocationInferenceService.getVehicleLocationForVehicle(vid);
   }
 
@@ -132,6 +135,24 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
         _agencyId, vehicleId));
   }
 
+  @Override
+  public VehicleLocationManagementRecord getVehicleLocationManagementRecordForVehicle(
+      String vehicleId) {
+    AgencyAndId vid = getVehicleId(vehicleId);
+    return _vehicleLocationInferenceService.getVehicleLocationManagementRecordForVehicle(vid);
+  }
+
+  @Override
+  public List<VehicleLocationManagementRecord> getVehicleLocationManagementRecords() {
+    return _vehicleLocationInferenceService.getVehicleLocationManagementRecords();
+  }
+
+  @Override
+  public void setVehicleStatus(String vehicleId, boolean enabled) {
+    AgencyAndId vid = getVehicleId(vehicleId);
+    _vehicleLocationInferenceService.setVehicleStatus(vid, enabled);
+  }
+
   /****
    * Private Methods
    ****/
@@ -140,4 +161,11 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     _vehicleLocationInferenceService.handleVehicleLocation(record, saveResult);
     _recordDao.saveOrUpdateVehicleLocationRecord(record);
   }
+
+  private AgencyAndId getVehicleId(String vehicleId) {
+    if (vehicleId.startsWith(_agencyId))
+      return AgencyAndIdLibrary.convertFromString(vehicleId);
+    return new AgencyAndId(_agencyId, vehicleId);
+  }
+
 }

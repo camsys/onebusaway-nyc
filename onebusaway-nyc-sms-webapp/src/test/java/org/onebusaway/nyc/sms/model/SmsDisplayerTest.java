@@ -38,8 +38,8 @@ public class SmsDisplayerTest {
 
   @Test
   public void testSingleStopResponseCoupleOfArrivals() {
-    DistanceAway distanceAway1 = new DistanceAway(1, 300, new Date(), Mode.SMS);
-    DistanceAway distanceAway2 = new DistanceAway(2, 900, new Date(), Mode.SMS);
+    DistanceAway distanceAway1 = new DistanceAway(1, 300, new Date(), Mode.SMS,300);
+    DistanceAway distanceAway2 = new DistanceAway(2, 900, new Date(), Mode.SMS,300);
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(distanceAway1);
     distanceAways.add(distanceAway2);
@@ -61,7 +61,7 @@ public class SmsDisplayerTest {
   public void testSingleStopResponseLotsOfArrivals() {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     for (int i = 0; i < 20; i++) {
-      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(),  Mode.SMS);
+      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(),  Mode.SMS,300);
       distanceAways.add(distanceAway);
     }
     AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
@@ -125,8 +125,8 @@ public class SmsDisplayerTest {
   public void testTwoStopResponse() {
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS));
-    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS));
+    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300));
+    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300));
     AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
@@ -154,7 +154,7 @@ public class SmsDisplayerTest {
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     for (int i = 0; i < 20; i++) {
-      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(), Mode.SMS);
+      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(), Mode.SMS,300);
       distanceAways.add(distanceAway);
     }
     AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
@@ -183,8 +183,8 @@ public class SmsDisplayerTest {
   public void testManyStopResponse() {
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS));
-    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS));
+    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300));
+    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300));
     AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     

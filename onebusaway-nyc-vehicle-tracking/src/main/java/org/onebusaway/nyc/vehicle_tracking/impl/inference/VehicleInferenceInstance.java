@@ -17,6 +17,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -31,6 +32,8 @@ public class VehicleInferenceInstance {
 
   private NycVehicleLocationRecord _previousRecord = null;
 
+  private boolean _enabled = true;
+
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
@@ -41,12 +44,19 @@ public class VehicleInferenceInstance {
     _managementService = managementService;
   }
 
-  public synchronized void handleUpdate(NycVehicleLocationRecord record,
+  /**
+   * 
+   * @param record
+   * @param saveResult
+   * @return true if the resulting inferred location record should be passed on,
+   *         otherwise false
+   */
+  public synchronized boolean handleUpdate(NycVehicleLocationRecord record,
       boolean saveResult) {
 
     // If this record occurs BEFORE the most recent update, we ignore it
     if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
-      return;
+      return false;
 
     /**
      * Recall that a vehicle might send a location update with missing lat-lon
@@ -61,7 +71,7 @@ public class VehicleInferenceInstance {
        * to replace the missing values
        */
       if (_previousRecord == null)
-        return;
+        return false;
 
       record.setLatitude(_previousRecord.getLatitude());
       record.setLongitude(_previousRecord.getLongitude());
@@ -71,6 +81,8 @@ public class VehicleInferenceInstance {
     _previousRecord = record;
 
     _particleFilter.updateFilter(record.getTime(), observation);
+
+    return _enabled;
   }
 
   public synchronized VehicleLocationRecord getCurrentState() {
@@ -133,7 +145,31 @@ public class VehicleInferenceInstance {
     return record;
   }
 
+  public synchronized VehicleLocationManagementRecord getCurrentManagementState() {
+
+    VehicleLocationManagementRecord record = new VehicleLocationManagementRecord();
+    record.setEnabled(_enabled);
+
+    if (_previousRecord != null)
+      record.setMostRecentDestinationSignCode(_previousRecord.getDestinationSignCode());
+
+    Particle particle = _particleFilter.getMostLikelyParticle();
+
+    if (particle != null) {
+      VehicleState state = particle.getData();
+      BlockState blockState = state.getBlockState();
+      record.setInferredDestinationSignCode(blockState.getDestinationSignCode());
+    }
+
+    return record;
+  }
+
+  public synchronized void setVehicleStatus(boolean enabled) {
+    _enabled = enabled;
+  }
+
   public synchronized List<Particle> getCurrentParticles() {
     return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
   }
+
 }
