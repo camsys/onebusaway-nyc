@@ -22,7 +22,8 @@ under the License.
 <title>One Bus Away NY Admin Interface</title>
 </head>
 <body>
-
+<div id="text">
+<h1>Admin Functions</h1>
 <ul>
 <li>
 <s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
@@ -37,6 +38,6 @@ under the License.
 <s:url var="url" namespace="/admin" action="reporting"></s:url>
 <a title="reporting" href="${url}">Reporting</a></li>
 </ul>
-
+</div>
 </body>
 </html>
