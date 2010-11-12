@@ -164,8 +164,11 @@ public class VehicleStateSensorModel {
         blockState, observation);
 
     double pLongTermProgressTowardsStartOfBlock = computeLongRangeProgressTowardsStartOfBlockProbability(state);
-    double pShortTermProgressTowardsStartOfBlock = computeShortRangeProgressTowardsStartOfBlockProbability(
-        parentState, state);
+
+    double pShortTermProgressTowardsStartOfBlock = 1.0;
+    if (parentState != null)
+      pShortTermProgressTowardsStartOfBlock = computeShortRangeProgressTowardsStartOfBlockProbability(
+          parentState, state);
 
     double pProgressTowardsStartOfBlock = or(
         pLongTermProgressTowardsStartOfBlock,
@@ -216,8 +219,10 @@ public class VehicleStateSensorModel {
      * As we get closer to the start of the block, we don't want to start the
      * block until we actually get there.
      */
-    double pNotMakingShortRangeProgressTowardsStartOfBlock = 1.0 - computeShortRangeProgressTowardsStartOfBlockProbability(
-        parentState, state);
+    double pNotMakingShortRangeProgressTowardsStartOfBlock = 1.0;
+    if (parentState != null)
+      pNotMakingShortRangeProgressTowardsStartOfBlock = 1.0 - computeShortRangeProgressTowardsStartOfBlockProbability(
+          parentState, state);
 
     /**
      * Penalize for deviation from the schedule

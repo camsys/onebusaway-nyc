@@ -170,7 +170,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     NycVehicleLocationRecord record = observation.getRecord();
 
-    // _log.info("potential blocks found: " + potentialBlocks.size());
+    System.out.println("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
@@ -181,11 +181,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       cdf.put(p, state);
 
-      /*
-       * System.out.println(state.getBlockLocation().getDistanceAlongBlock() +
-       * "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p + "\t" +
-       * blockInstance);
-       */
+      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
+          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
+          + "\t" + blockInstance);
     }
 
     return cdf;
