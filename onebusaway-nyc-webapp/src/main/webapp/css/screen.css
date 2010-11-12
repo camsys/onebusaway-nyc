@@ -109,17 +109,45 @@ a:hover {
     padding: 15px;
 	float: left;
 	min-height: 300px;
+	width: 800px;
 }
 
 #text p {
 	padding-bottom: 15px;
 }
 
+#text table {
+	padding: 20px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+#text td {
+	padding: 5px;
+}
+	
 #text h1,
 #text h2 {
 	font-weight: normal;
 	font-size: 22px;
+	padding-bottom: 10px;
+	padding-top: 30px;
+}
+
+#text h1:first-child,
+#text h2:first-child {
+	padding-top: 0px;
+}
+
+#text ul {
+	padding-left: 20px;
+	padding-top: 5px;
 	padding-bottom: 5px;
+}
+
+#text ul li {
+	list-style-type: disc;
+	padding-bottom: 10px;
 }
 
 #text fieldset {
