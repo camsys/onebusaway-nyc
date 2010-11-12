@@ -29,11 +29,7 @@ under the License.
 <p class="error"><s:property value="reportError" /></p>
 </s:if>
 <s:form method="GET" action="reporting!submit">
-<div>
-<s:select name="reportType" list="#{'custom':'custom'}">
-</s:select>
-</div>
-<div><s:textarea name="customQuery"></s:textarea></div>
+<div><s:textarea name="query"></s:textarea></div>
 <div><s:submit value="Download CSV" /></div>
 </s:form>
 </div>

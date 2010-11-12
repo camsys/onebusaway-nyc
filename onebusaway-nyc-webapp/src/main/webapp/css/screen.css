@@ -171,6 +171,11 @@ a:hover {
 	font-family:inherit;
 	font-size:15px;
 }
+
+#text .error {
+	font-weight: bold;
+	color: red;
+}
 	
 #footer {
     position: relative;

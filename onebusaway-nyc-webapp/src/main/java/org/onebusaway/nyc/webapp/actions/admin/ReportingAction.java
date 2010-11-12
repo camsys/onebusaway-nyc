@@ -33,19 +33,27 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private SessionFactory sessionFactory;
   
-  private String reportType;
-  private String customQuery;
+  private String query;
+  private String reportError;
 
   private InputStream inputStream;
 
-  private String reportError;
-  
+  // if there is an error running the sql, this will contain an error message
   public String getReportError() {
     return reportError;
   }
 
+  // this is the download streamed to the user
   public InputStream getInputStream() {
     return inputStream;
+  }
+
+  public String getQuery() {
+    return query;
+  }
+
+  public void setQuery(String query) {
+    this.query = query;
   }
 
   @Override
@@ -68,21 +76,20 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
       session = sessionFactory.openSession();
       connection = getConnectionFromSession(session);
       statement = connection.createStatement();
-      rs = statement.executeQuery(customQuery);
+      rs = statement.executeQuery(query);
     } catch (Exception e) {
       // make sure everything is closed if an exception was thrown
       try { rs.close(); } catch (Exception ex) {}
       try { statement.close(); } catch (Exception ex) {}
       try { connection.close(); } catch (Exception ex) {}
       try { session.close(); } catch (Exception ex) {}
-      
-      reportError = "Error executing query";
-      
+
+      reportError = e.getMessage();
       // not really "success", but we'll use the same template with the error displayed
       return SUCCESS;
     }
     
-    // final so the thread can close it
+    // final so the output generator thread can close it
     final Session finalSession = session;
     final Connection finalConnection = connection;
     final Statement finalStatement = statement;
@@ -118,25 +125,10 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
         }
       }
     });
-    
+
+    // the input stream will get populated by the piped output stream
     inputStream = pipedInputStream;
     return "download";
-  }
-
-  public String getReportType() {
-    return reportType == null ? "custom" : reportType;
-  }
-
-  public void setReportType(String reportType) {
-    this.reportType = reportType;
-  }
-
-  public String getCustomQuery() {
-    return customQuery;
-  }
-
-  public void setCustomQuery(String customQuery) {
-    this.customQuery = customQuery;
   }
 
 }
