@@ -82,9 +82,11 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
     return SUCCESS;
   }
   
-  private void handleSituationUpdateOrDelete(SituationBean situationBean, String notice, boolean hasDetour) {
+  private void handleSituationUpdateOrDelete(SituationBean situationBean,
+      String notice, boolean hasDetour) {
     if ((notice == null || notice.trim().length() == 0) && !hasDetour) {
-        // TODO XXX REMOVE SITUATION BEAN
+      String situationId = situationBean.getId();
+      transitDataService.removeServiceAlert(situationId);
     } else {
       DefaultedTextBean descriptionBean = new DefaultedTextBean();
       descriptionBean.setValue(notice);
