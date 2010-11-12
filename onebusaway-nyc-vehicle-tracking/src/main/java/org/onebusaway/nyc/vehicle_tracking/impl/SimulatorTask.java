@@ -9,15 +9,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.gtfs.csv.EntityHandler;
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
-import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,33 +222,15 @@ class SimulatorTask implements Runnable, EntityHandler {
         recordIndex++;
 
         if (_bypassInference) {
-
-          if (record.getActualBlockId() == null)
-            throw new IllegalStateException(
-                "expected actualBlockId to be set when running in inference-bypass mode");
-
-          VehicleLocationRecord vlr = new VehicleLocationRecord();
-          vlr.setTimeOfRecord(record.getTimestamp());
-          vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getActualBlockId()));
-          vlr.setServiceDate(record.getActualServiceDate());
-          vlr.setDistanceAlongBlock(record.getActualDistanceAlongBlock());
-          vlr.setCurrentLocationLat(record.getActualLat());
-          vlr.setCurrentLocationLon(record.getActualLon());
-          vlr.setPhase(EVehiclePhase.valueOf(record.getActualPhase()));
-          vlr.setStatus(record.getActualStatus());
-          vlr.setVehicleId(new AgencyAndId(
-              _vehicleLocationService.getDefaultVehicleAgencyId(), _vehicleId));
-          _vehicleLocationService.handleVehicleLocation(vlr);
-
+          _vehicleLocationService.handleNycTestLocationRecord(record);
         } else {
-
           _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
               record.getVehicleId(), record.getLat(), record.getLon(),
               record.getDsc(), true);
-
-          if (shouledExitAfterWaitingForInferenceToComplete(record))
-            return;
         }
+
+        if (shouledExitAfterWaitingForInferenceToComplete(record))
+          return;
 
         _mostRecentRecord = record;
         _recordsProcessed.incrementAndGet();

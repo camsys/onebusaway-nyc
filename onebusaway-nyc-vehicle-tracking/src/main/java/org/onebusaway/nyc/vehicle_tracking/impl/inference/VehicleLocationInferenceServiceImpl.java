@@ -13,6 +13,7 @@ import javax.annotation.PreDestroy;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
@@ -75,9 +76,18 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public void handleVehicleLocation(NycVehicleLocationRecord record,
-      boolean saveResult) {
-    _executorService.execute(new ProcessingTask(record, saveResult));
+  public void handleNycVehicleLocationRecord(NycVehicleLocationRecord record) {
+    _executorService.execute(new ProcessingTask(record));
+  }
+
+  @Override
+  public void handleVehicleLocationRecord(VehicleLocationRecord record) {
+    _executorService.execute(new ProcessingTask(record));
+  }
+
+  @Override
+  public void handleNycTestLocationRecord(AgencyAndId vehicleId, NycTestLocationRecord record) {
+    _executorService.execute(new ProcessingTask(vehicleId, record));
   }
 
   @Override
@@ -171,32 +181,57 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private class ProcessingTask implements Runnable {
 
+    private AgencyAndId _vehicleId; 
+    
     private NycVehicleLocationRecord _inferenceRecord;
 
-    private boolean _saveResult;
+    private NycTestLocationRecord _nycTestLocationRecord;
 
-    public ProcessingTask(NycVehicleLocationRecord record, boolean saveResult) {
+    private VehicleLocationRecord _vehicleLocationRecord;
+
+    public ProcessingTask(NycVehicleLocationRecord record) {
+      _vehicleId = record.getVehicleId();
       _inferenceRecord = record;
-      _saveResult = saveResult;
+    }
+
+    public ProcessingTask(AgencyAndId vehicleId, NycTestLocationRecord record) {
+      _vehicleId = vehicleId;
+      _nycTestLocationRecord = record;
+    }
+
+    public ProcessingTask(VehicleLocationRecord record) {
+      _vehicleId = record.getVehicleId();
+      _vehicleLocationRecord = record;
     }
 
     @Override
     public void run() {
 
       try {
-        VehicleInferenceInstance existing = getInstanceForVehicle(_inferenceRecord.getVehicleId());
-        boolean passOnRecord = existing.handleUpdate(_inferenceRecord,
-            _saveResult);
+        VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
+
+        boolean passOnRecord = sendRecord(existing);
 
         if (passOnRecord) {
           VehicleLocationRecord record = existing.getCurrentState();
-          record.setVehicleId(_inferenceRecord.getVehicleId());
+          record.setVehicleId(_vehicleId);
           _vehicleLocationListener.handleVehicleLocationRecord(record);
         }
 
       } catch (Throwable ex) {
         _log.error("error processing new location record for inference", ex);
       }
+    }
+
+    private boolean sendRecord(VehicleInferenceInstance existing) {
+      if (_inferenceRecord != null) {
+        return existing.handleUpdate(_inferenceRecord);
+      } else if (_nycTestLocationRecord != null) {
+        return existing.handleBypassUpdate(_nycTestLocationRecord);
+      } else if (_vehicleLocationRecord != null) {
+        return existing.handleBypassUpdate(_vehicleLocationRecord);
+      }
+      return false;
     }
   }
 }

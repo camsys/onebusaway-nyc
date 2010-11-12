@@ -85,6 +85,8 @@ class VehicleTrackingManagementServiceImpl implements
     NycVehicleStatusBean bean = new NycVehicleStatusBean();
     bean.setVehicleId(AgencyAndIdLibrary.convertToString(record.getVehicleId()));
     bean.setEnabled(record.isEnabled());
+    bean.setLastUpdateTime(record.getLastUpdateTime());
+    bean.setLastGpsTime(record.getLastGpsTime());
     bean.setMostRecentDestinationSignCode(record.getMostRecentDestinationSignCode());
     bean.setInferredDestinationSignCode(record.getInferredDestinationSignCode());
     return bean;

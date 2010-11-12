@@ -16,10 +16,12 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +32,17 @@ public class VehicleInferenceInstance {
 
   private VehicleTrackingManagementService _managementService;
 
+  private boolean _enabled = true;
+
   private NycVehicleLocationRecord _previousRecord = null;
 
-  private boolean _enabled = true;
+  private VehicleLocationRecord _vehicleLocationRecord;
+
+  private long _lastUpdateTime = 0;
+
+  private long _lastGpsTime = 0;
+
+  private NycTestLocationRecord _nycTestLocationRecord;
 
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
@@ -47,12 +57,10 @@ public class VehicleInferenceInstance {
   /**
    * 
    * @param record
-   * @param saveResult
    * @return true if the resulting inferred location record should be passed on,
    *         otherwise false
    */
-  public synchronized boolean handleUpdate(NycVehicleLocationRecord record,
-      boolean saveResult) {
+  public synchronized boolean handleUpdate(NycVehicleLocationRecord record) {
 
     // If this record occurs BEFORE the most recent update, we ignore it
     if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
@@ -78,15 +86,102 @@ public class VehicleInferenceInstance {
     }
 
     Observation observation = new Observation(record, _previousRecord);
+
     _previousRecord = record;
+    _vehicleLocationRecord = null;
+    _nycTestLocationRecord = null;
+    _lastUpdateTime = record.getTime();
+    if (!latlonMissing)
+      _lastGpsTime = record.getTime();
 
     _particleFilter.updateFilter(record.getTime(), observation);
 
     return _enabled;
   }
 
-  public synchronized VehicleLocationRecord getCurrentState() {
+  /**
+   * Her
+   * 
+   * @param record
+   * @return
+   */
+  public synchronized boolean handleBypassUpdate(VehicleLocationRecord record) {
+    _previousRecord = null;
+    _vehicleLocationRecord = record;
+    _nycTestLocationRecord = null;
+    _lastUpdateTime = record.getTimeOfRecord();
+    if (record.isCurrentLocationSet())
+      _lastGpsTime = record.getTimeOfRecord();
 
+    return _enabled;
+  }
+
+  public synchronized boolean handleBypassUpdate(NycTestLocationRecord record) {
+    _previousRecord = null;
+    _vehicleLocationRecord = null;
+    _nycTestLocationRecord = record;
+    _lastUpdateTime = record.getTimestamp();
+    if (!record.locationDataIsMissing())
+      _lastGpsTime = record.getTimestamp();
+
+    return _enabled;
+  }
+
+  public synchronized VehicleLocationRecord getCurrentState() {
+    if (_previousRecord != null)
+      return getMostRecentParticleAsVehicleLocationRecord();
+    else if (_vehicleLocationRecord != null)
+      return _vehicleLocationRecord;
+    else if (_nycTestLocationRecord != null)
+      return getNycTestLocationRecordAsVehicleLocationRecord(_nycTestLocationRecord);
+    else
+      return null;
+  }
+
+  public synchronized VehicleLocationManagementRecord getCurrentManagementState() {
+
+    VehicleLocationManagementRecord record = new VehicleLocationManagementRecord();
+    record.setEnabled(_enabled);
+    record.setLastUpdateTime(_lastUpdateTime);
+    record.setLastGpsTime(_lastGpsTime);
+
+    if (_previousRecord != null) {
+
+      record.setMostRecentDestinationSignCode(_previousRecord.getDestinationSignCode());
+
+      Particle particle = _particleFilter.getMostLikelyParticle();
+
+      if (particle != null) {
+        VehicleState state = particle.getData();
+        BlockState blockState = state.getBlockState();
+        if (blockState != null)
+          record.setInferredDestinationSignCode(blockState.getDestinationSignCode());
+      }
+    } else if (_vehicleLocationRecord != null) {
+
+      record.setVehicleId(_vehicleLocationRecord.getVehicleId());
+
+    } else if (_nycTestLocationRecord != null) {
+      record.setMostRecentDestinationSignCode(_nycTestLocationRecord.getDsc());
+      record.setInferredDestinationSignCode(_nycTestLocationRecord.getActualDsc());
+    }
+
+    return record;
+  }
+
+  public synchronized void setVehicleStatus(boolean enabled) {
+    _enabled = enabled;
+  }
+
+  public synchronized List<Particle> getCurrentParticles() {
+    return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
+  }
+
+  /****
+   * Private Methods
+   ****/
+
+  private VehicleLocationRecord getMostRecentParticleAsVehicleLocationRecord() {
     Particle particle = _particleFilter.getMostLikelyParticle();
 
     VehicleState state = particle.getData();
@@ -145,31 +240,23 @@ public class VehicleInferenceInstance {
     return record;
   }
 
-  public synchronized VehicleLocationManagementRecord getCurrentManagementState() {
+  private VehicleLocationRecord getNycTestLocationRecordAsVehicleLocationRecord(
+      NycTestLocationRecord record) {
 
-    VehicleLocationManagementRecord record = new VehicleLocationManagementRecord();
-    record.setEnabled(_enabled);
+    if (record.getActualBlockId() == null)
+      throw new IllegalStateException(
+          "expected actualBlockId to be set when running in inference-bypass mode");
 
-    if (_previousRecord != null)
-      record.setMostRecentDestinationSignCode(_previousRecord.getDestinationSignCode());
-
-    Particle particle = _particleFilter.getMostLikelyParticle();
-
-    if (particle != null) {
-      VehicleState state = particle.getData();
-      BlockState blockState = state.getBlockState();
-      record.setInferredDestinationSignCode(blockState.getDestinationSignCode());
-    }
-
-    return record;
-  }
-
-  public synchronized void setVehicleStatus(boolean enabled) {
-    _enabled = enabled;
-  }
-
-  public synchronized List<Particle> getCurrentParticles() {
-    return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
+    VehicleLocationRecord vlr = new VehicleLocationRecord();
+    vlr.setTimeOfRecord(record.getTimestamp());
+    vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getActualBlockId()));
+    vlr.setServiceDate(record.getActualServiceDate());
+    vlr.setDistanceAlongBlock(record.getActualDistanceAlongBlock());
+    vlr.setCurrentLocationLat(record.getActualLat());
+    vlr.setCurrentLocationLon(record.getActualLon());
+    vlr.setPhase(EVehiclePhase.valueOf(record.getActualPhase()));
+    vlr.setStatus(record.getActualStatus());
+    return vlr;
   }
 
 }

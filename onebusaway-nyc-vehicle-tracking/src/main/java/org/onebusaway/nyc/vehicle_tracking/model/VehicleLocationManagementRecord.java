@@ -8,6 +8,10 @@ public class VehicleLocationManagementRecord {
 
   private boolean enabled;
 
+  private long lastUpdateTime;
+
+  private long lastGpsTime;
+
   private String mostRecentDestinationSignCode;
 
   private String inferredDestinationSignCode;
@@ -26,6 +30,22 @@ public class VehicleLocationManagementRecord {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public long getLastUpdateTime() {
+    return lastUpdateTime;
+  }
+
+  public void setLastUpdateTime(long lastUpdateTime) {
+    this.lastUpdateTime = lastUpdateTime;
+  }
+
+  public long getLastGpsTime() {
+    return lastGpsTime;
+  }
+
+  public void setLastGpsTime(long lastGpsTime) {
+    this.lastGpsTime = lastGpsTime;
   }
 
   public String getMostRecentDestinationSignCode() {

@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.services;
 import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.Siri;
@@ -48,6 +49,12 @@ public interface VehicleLocationService {
    * completed vehicle location record into the data stream.
    */
   public void handleVehicleLocation(VehicleLocationRecord record);
+  
+  /**
+   * 
+   * @param record
+   */
+  public void handleNycTestLocationRecord(NycTestLocationRecord record);
 
   /**
    * Convenience method for clearing any active location inference data for the
@@ -92,4 +99,6 @@ public interface VehicleLocationService {
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId);
 
   public void setVehicleStatus(String vehicleId, boolean enabled);
+
+  
 }
