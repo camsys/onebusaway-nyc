@@ -192,7 +192,13 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       if (trip == null)
         return "Not In Service";
       String tripHeadsign = trip.getTripHeadsign();
-      return tripHeadsign;
+      String inferredDestinationSignCode = nycVehicleStatusBean.getInferredDestinationSignCode();
+      String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
+      if (inferredDestinationSignCode.equals(mostRecentDestinationSignCode)) {
+        return inferredDestinationSignCode + ": " + tripHeadsign;
+      } else {
+        return inferredDestinationSignCode + ": " + tripHeadsign + " (bus sent " + mostRecentDestinationSignCode + ")";
+      }
     }
     
     public String getInferredState() {
