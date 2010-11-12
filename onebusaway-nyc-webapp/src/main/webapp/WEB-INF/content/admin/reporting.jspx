@@ -25,11 +25,17 @@ under the License.
 <body>
 <div id="text">
 <h1>Generate Report</h1>
-<form method="GET" action="reporting.action">
-<div><select><option value="custom">Custom</option></select></div>
-<div><textarea>&amp;nbsp;</textarea></div>
-<div><input type="submit" value="Download CSV" /></div>
-</form>
+<s:if test="%{reportError != null}">
+<p class="error"><s:property value="reportError" /></p>
+</s:if>
+<s:form method="GET" action="reporting!submit">
+<div>
+<s:select name="reportType" list="#{'custom':'custom'}">
+</s:select>
+</div>
+<div><s:textarea name="customQuery"></s:textarea></div>
+<div><s:submit value="Download CSV" /></div>
+</s:form>
 </div>
 </body>
 </html>
