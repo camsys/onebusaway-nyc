@@ -100,7 +100,7 @@ number.</p>
 
 <ul id="displayed-routes-list">
 </ul>
-<small>Last changed: $Revision$</small>
+<small>Last changed: ${revision}</small>
 </div>
 </div>
 </div>
