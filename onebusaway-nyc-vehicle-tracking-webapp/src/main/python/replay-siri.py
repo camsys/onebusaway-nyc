@@ -27,7 +27,7 @@ while 1:
                                   "POST", body=row.rawData)
         if not resp['status'] == '200':
             print resp, content
-            print rawdata
+            print row.rawData
             print
 
         if lastCheck < row.timeReceived:
