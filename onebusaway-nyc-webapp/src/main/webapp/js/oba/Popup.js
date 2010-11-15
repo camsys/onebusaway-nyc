@@ -148,6 +148,9 @@ OBA.StopPopup = function(stopId, map) {
             var included = false;
             for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
                 var distanceAway = vehicleInfos[i];
+            	if (distanceAway.stops > 50) {
+            		continue;
+            	}
                 
                 if(distanceAway.feet < 0)
                 	continue;
