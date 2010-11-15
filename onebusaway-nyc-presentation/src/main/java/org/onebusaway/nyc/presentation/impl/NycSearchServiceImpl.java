@@ -502,6 +502,10 @@ public class NycSearchServiceImpl implements NycSearchService {
         int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
         int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         
+        if (numberOfStopsAway > 50) {
+          continue;
+        }
+
         DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
             distanceFromStopInFeet, new Date(
                 arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), m, config.getStaleDataTimeout());
