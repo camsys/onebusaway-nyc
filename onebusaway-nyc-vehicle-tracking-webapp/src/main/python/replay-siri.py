@@ -1,3 +1,4 @@
+import sys
 from sqlobject import *
 from time import time, sleep
 from httplib2 import Http
@@ -20,6 +21,7 @@ while 1:
     sleep(1)
     for row in LocationRecord.select(LocationRecord.q.timeReceived > lastCheck).orderBy("timeReceived"):
         print "sending row"
+        sys.stdout.flush()
         h = Http()
         resp, content = h.request(targetServer, 
                                   "POST", body=row.rawData)
