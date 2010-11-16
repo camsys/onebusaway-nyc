@@ -15,6 +15,8 @@ import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.presentation.impl.WebappIdParser;
+import org.onebusaway.nyc.presentation.service.ConfigurationBean;
+import org.onebusaway.nyc.presentation.service.ConfigurationService;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
@@ -44,6 +46,9 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
   private List<VehicleBag> vehicles = new ArrayList<VehicleBag>();
 
   private HttpServletRequest request;
+
+  @Autowired
+  private ConfigurationService configurationService;
 
   @Override
   public void setServletRequest(HttpServletRequest request) {
@@ -106,7 +111,8 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
     for (NycVehicleStatusBean nycVehicleStatusBean : nycVehicleStatuses) {
       String vehicleId = nycVehicleStatusBean.getVehicleId();
       VehicleStatusBean vehicleStatusBean = vehicleMap.get(vehicleId);
-      VehicleBag vehicleBag = new VehicleBag(nycVehicleStatusBean, vehicleStatusBean);
+      VehicleBag vehicleBag = new VehicleBag(nycVehicleStatusBean,
+          vehicleStatusBean, configurationService.getConfiguration());
       vehicles.add(vehicleBag);
     }
     return SUCCESS;
@@ -120,10 +126,13 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
   private static class VehicleBag {
     private NycVehicleStatusBean nycVehicleStatusBean;
     private VehicleStatusBean vehicleStatusBean;
+    private ConfigurationBean configuration;
 
-    public VehicleBag(NycVehicleStatusBean nycVehicleStatusBean, VehicleStatusBean vehicleStatusBean) {
+    public VehicleBag(NycVehicleStatusBean nycVehicleStatusBean,
+        VehicleStatusBean vehicleStatusBean, ConfigurationBean configuration) {
       this.nycVehicleStatusBean = nycVehicleStatusBean;
       this.vehicleStatusBean = vehicleStatusBean;
+      this.configuration = configuration;
     }
     
     @SuppressWarnings("unused")
@@ -145,8 +154,8 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       long lastUpdateTime = vehicleStatusBean.getLastUpdateTime();
       long now = System.currentTimeMillis();
       long timeDiff = now - lastUpdateTime;
-      long redMillisThreshold = 1000 * 60 * 5;
-      long orangeMillisThreshold = 1000 * 60 * 2;
+      long redMillisThreshold = configuration.getNoProgressTimeout() * 1000;
+      long orangeMillisThreshold = configuration.getHideTimeout() * 1000;
       if (timeDiff > redMillisThreshold)
         return "status red";
       if (timeDiff > orangeMillisThreshold)
