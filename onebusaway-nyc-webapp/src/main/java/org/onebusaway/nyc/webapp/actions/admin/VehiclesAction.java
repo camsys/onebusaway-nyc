@@ -152,13 +152,17 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
         return "status red";
       String tripHeadsign = tripBean.getTripHeadsign();
       long lastUpdateTime = vehicleStatusBean.getLastUpdateTime();
+      long lastGpsTime = nycVehicleStatusBean.getLastGpsTime();
       long now = System.currentTimeMillis();
-      long timeDiff = now - lastUpdateTime;
+      long updateTimeDiff = now - lastUpdateTime;
+      long gpsTimeDiff = now - lastGpsTime;
       long redMillisThreshold = configuration.getNoProgressTimeout() * 1000;
       long orangeMillisThreshold = configuration.getHideTimeout() * 1000;
-      if (timeDiff > redMillisThreshold)
+      if (updateTimeDiff > redMillisThreshold
+          || gpsTimeDiff > redMillisThreshold)
         return "status red";
-      if (timeDiff > orangeMillisThreshold)
+      if (updateTimeDiff > orangeMillisThreshold
+          || gpsTimeDiff > orangeMillisThreshold)
         return "status orange";
       if (status == null || !status.equals(EVehiclePhase.IN_PROGRESS.toString()))
         return "status orange";
