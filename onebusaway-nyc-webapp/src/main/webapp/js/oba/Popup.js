@@ -298,7 +298,6 @@ OBA.VehiclePopup = function(vehicleId, map) {
         
         // service notices
         var applicableSituationIds = {};
-        var vehicleIsOnDetour = false;
         jQuery.each(tripStatus.situationIds, function(_, sid) {
         	applicableSituationIds[sid] = sid;
         });
@@ -310,12 +309,6 @@ OBA.VehiclePopup = function(vehicleId, map) {
         	
         	if(situationId in applicableSituationIds) {
         	   	 notices += '<li>' + situation.description.value + '</li>';
-
-        	   	 if(vehicleIsOnDetour === false) {
-        	   		 if(typeof situation.miscellaneousReason !== 'undefined' && situation.miscellaneousReason === 'detour') {
-        	   			 vehicleIsOnDetour = true;
-        	   		 }
-        	   	 }
         	}        	
         });
 
@@ -326,7 +319,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
         var nextStopsMarkup = '';
         
         if (nextStops && nextStops.length > 0 && 
-        		((typeof tripStatus.status !== 'undefined' && tripStatus.status !== 'deviated') || vehicleIsOnDetour === true)) { 
+        		(typeof tripStatus.status !== 'undefined' && tripStatus.status !== 'deviated')) { 
         	nextStopsMarkup += '<p>Next stops:</p><ul>';
             
         	jQuery.each(nextStops, function(i, stop) {
