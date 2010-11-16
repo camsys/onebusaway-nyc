@@ -29,7 +29,7 @@ under the License.
 	</div>
 </s:if>
 
-<div id="text">
+<div id="text" class="wiki">
 	<s:property value="content" escape="false"/>
 </div>
 

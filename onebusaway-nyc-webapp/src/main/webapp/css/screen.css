@@ -92,7 +92,7 @@ a:hover {
     float: left;    
 	padding-right: 15px;
 	padding-bottom: 15px;
-	width: 310px;
+	width: 20%;
 }
 
 #help-sidebar ul {
@@ -109,7 +109,11 @@ a:hover {
     padding: 15px;
 	float: left;
 	min-height: 300px;
-	width: 800px;
+	width: 100%;
+}
+
+#text.wiki {	
+	width: 75%;
 }
 
 #text p {
