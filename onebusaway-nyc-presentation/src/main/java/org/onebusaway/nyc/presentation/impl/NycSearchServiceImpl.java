@@ -340,13 +340,15 @@ public class NycSearchServiceImpl implements NycSearchService {
       	directionIdToServiceAlerts.put(tripDirectionId, serviceAlertIdsToNaturalLanguageStringBeans);
       }
 
-      for(SituationBean situationBean : tripStatusBean.getSituations()) {
-    	  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToNaturalLanguageStringBeans.get(situationBean.getId());
+      if(tripStatusBean.getSituations() != null) {
+    	  for(SituationBean situationBean : tripStatusBean.getSituations()) {
+    		  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToNaturalLanguageStringBeans.get(situationBean.getId());
     	  
-          if (serviceAlert == null) {
-        	  serviceAlertIdsToNaturalLanguageStringBeans.put(situationBean.getId(), situationBean.getDescription());
-          }
-      }     
+    		  if (serviceAlert == null) {
+    			  serviceAlertIdsToNaturalLanguageStringBeans.put(situationBean.getId(), situationBean.getDescription());
+    		  }
+    	  }     
+      }
       
       // should we display this vehicle on the UI specified by "m"?
       if (tripStatusBean == null
@@ -366,7 +368,12 @@ public class NycSearchServiceImpl implements NycSearchService {
         Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
 
         double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
-        double stopDistanceAlongRoute = stopIdToDistance.get(closestStopId);
+        Double stopDistanceAlongRoute = stopIdToDistance.get(closestStopId);
+        
+        // shouldn't happen, but sometimes does (FIXME)
+        if(stopDistanceAlongRoute == null)
+        	stopDistanceAlongRoute = 0.0;
+        	
         double distanceAwayFromClosestStopInMeters = stopDistanceAlongRoute
             - distanceAlongTrip;
         int distanceAwayFromClosestStopInFeet = (int) this.metersToFeet(distanceAwayFromClosestStopInMeters);
@@ -539,11 +546,13 @@ public class NycSearchServiceImpl implements NycSearchService {
         continue;
 
       // add service alerts to our list of service alerts for all routes at this stop
-      for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
-      	NaturalLanguageStringBean serviceAlert = serviceAlertIdsToServiceAlerts.get(situationBean.getId());
+      if(arrivalAndDepartureBean.getSituations() != null) {
+    	  for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
+    		  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToServiceAlerts.get(situationBean.getId());
       	
-      	if(serviceAlert == null)
-      		serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
+    		  if(serviceAlert == null)
+    			  serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
+    	  }
       }
       
       // should we display this vehicle on the UI specified by "m"?
