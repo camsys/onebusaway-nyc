@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 
@@ -26,7 +27,7 @@ public class SmsDisplayerTest {
     AvailableRoute availableRoute = makeAvailableRoute(new ArrayList<DistanceAway>());
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     routes.add(availableRoute);
-    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes);
+    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
     searchResults.add(stopSearchResult);
     
@@ -46,7 +47,7 @@ public class SmsDisplayerTest {
     AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     routes.add(availableRoute);
-    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes);
+    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
     searchResults.add(stopSearchResult);
     
@@ -67,7 +68,7 @@ public class SmsDisplayerTest {
     AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
     List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
     routes.add(availableRoute);
-    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes);
+    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
     searchResults.add(stopSearchResult);
     
@@ -93,7 +94,7 @@ public class SmsDisplayerTest {
   }
   
   private StopSearchResult makeStopSearchResult(List<AvailableRoute> routes, String stopDirection) {
-    StopSearchResult stopSearchResult = new StopSearchResult("AgencyId_123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), stopDirection, routes);
+    StopSearchResult stopSearchResult = new StopSearchResult("AgencyId_123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), stopDirection, routes, null);
     return stopSearchResult;
   }
   
