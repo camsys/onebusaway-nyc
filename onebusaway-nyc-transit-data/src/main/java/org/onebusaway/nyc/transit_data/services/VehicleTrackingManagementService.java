@@ -5,6 +5,8 @@ import java.util.List;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
 
 public interface VehicleTrackingManagementService {
+  
+  public String getDefaultAgencyId();
 
   public void setVehicleStatus(String vehicleId, boolean status);
 

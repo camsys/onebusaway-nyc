@@ -3,10 +3,14 @@ package org.onebusaway.nyc.vehicle_tracking.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.transit_data.model.AgencyBean;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,14 +25,41 @@ class VehicleTrackingManagementServiceImpl implements
 
   private VehicleLocationService _vehicleLocationService;
 
+  private TransitDataService _transitDataService;
+
   @Autowired
-  public void setVehicleTr(VehicleLocationService vehicleLocationService) {
+  public void setVehicleLocationService(
+      VehicleLocationService vehicleLocationService) {
     _vehicleLocationService = vehicleLocationService;
+  }
+
+  @Autowired
+  public void setTransitDataService(TransitDataService transitDataService) {
+    _transitDataService = transitDataService;
   }
 
   /****
    * {@link VehicleTrackingManagementService} Interface
    ****/
+
+  @Override
+  @Cacheable
+  public String getDefaultAgencyId() {
+
+    List<AgencyWithCoverageBean> agenciesWithCoverage = _transitDataService.getAgenciesWithCoverage();
+
+    if (agenciesWithCoverage.isEmpty())
+      throw new IllegalStateException("No agencies found!");
+
+    for (AgencyWithCoverageBean awc : agenciesWithCoverage) {
+      AgencyBean agency = awc.getAgency();
+      if (agency.getName().contains("MTA"))
+        return agency.getId();
+    }
+
+    AgencyWithCoverageBean awc = agenciesWithCoverage.get(0);
+    return awc.getAgency().getId();
+  }
 
   @Override
   public double getVehicleOffRouteDistanceThreshold() {
@@ -91,4 +122,5 @@ class VehicleTrackingManagementServiceImpl implements
     bean.setInferredDestinationSignCode(record.getInferredDestinationSignCode());
     return bean;
   }
+
 }

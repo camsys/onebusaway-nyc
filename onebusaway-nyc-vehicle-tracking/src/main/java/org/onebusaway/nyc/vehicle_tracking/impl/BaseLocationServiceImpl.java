@@ -3,7 +3,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -14,7 +13,9 @@ import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.ListEntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
 import org.onebusaway.nyc.vehicle_tracking.model.BaseLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTransitDataBundle;
 import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -26,10 +27,11 @@ class BaseLocationServiceImpl implements BaseLocationService {
 
   private STRtree _tree;
 
-  private List<File> _paths = new ArrayList<File>();
+  private NycTransitDataBundle _bundle;
 
-  public void setPath(File path) {
-    _paths.add(path);
+  @Autowired
+  public void setBundle(NycTransitDataBundle bundle) {
+    _bundle = bundle;
   }
 
   @PostConstruct
@@ -40,7 +42,8 @@ class BaseLocationServiceImpl implements BaseLocationService {
     ListEntityHandler<BaseLocationRecord> records = new ListEntityHandler<BaseLocationRecord>();
     reader.addEntityHandler(records);
 
-    for (File path : _paths)
+    File path = _bundle.getBaseLocationsPath();
+    if (path.exists())
       reader.readEntities(BaseLocationRecord.class, new FileReader(path));
 
     List<BaseLocationRecord> values = records.getValues();

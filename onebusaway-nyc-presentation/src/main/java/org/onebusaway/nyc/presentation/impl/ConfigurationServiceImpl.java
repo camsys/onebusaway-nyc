@@ -28,6 +28,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
   private ConfigurationBean _config = new ConfigurationBean();
 
+  private String _agencyId;
+
   public void setPath(File path) {
     _path = path;
   }
@@ -42,11 +44,16 @@ public class ConfigurationServiceImpl implements ConfigurationService {
   public void setup() {
     _config = loadSettings();
     // notifySettings();
+    _agencyId = _vehicleTrackingManagementService.getDefaultAgencyId();
   }
 
   /****
    * {@link ConfigurationService} Interface
    ****/
+  
+  public String getDefaultAgencyId() {
+    return _agencyId;
+  }
 
   @Override
   public ConfigurationBean getConfiguration() {

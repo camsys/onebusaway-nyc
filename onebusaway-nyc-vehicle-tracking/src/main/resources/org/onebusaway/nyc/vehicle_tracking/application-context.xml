@@ -18,6 +18,10 @@
 
     <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl" />
 
+    <bean id="nycTransitDataBundle" class="org.onebusaway.nyc.vehicle_tracking.model.NycTransitDataBundle">
+        <property name="path" value="${bundlePath}" />
+    </bean>
+
     <bean class="org.onebusaway.container.spring.ListBeanPostProcessor">
         <property name="target" value="hibernateAnnotatedClassesMutable" />
         <property name="values">

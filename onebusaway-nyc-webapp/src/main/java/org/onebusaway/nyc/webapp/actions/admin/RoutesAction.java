@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.onebusaway.nyc.presentation.service.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.DefaultedTextBean;
@@ -15,63 +16,59 @@ import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Results( {@Result(type = "redirectAction", name = "redirect", params = {
+@Results({@Result(type = "redirectAction", name = "redirect", params = {
     "namespace", "/admin", "actionName", "routes"})})
 public class RoutesAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
-  
+
   @Autowired
   private TransitDataService transitDataService;
+
+  @Autowired
+  private ConfigurationService configService;
 
   // TODO the service notices are hard coded by route+direction for now
   // for the B63
   private String noticeB63CobbleHill;
   private String noticeB63BayRidge;
-  
+
   private boolean detourB63CobbleHill;
   private boolean detourB63BayRidge;
-  
-  private String agencyId = "MTA NYCT";
-  
+
   private static final String cobbleHillDirection = "0";
   private static final String bayRidgeDirection = "1";
-  
-  public void setAgencyId(String agencyId) {
-    this.agencyId = agencyId;
-  }
-  
-  private List<SituationBean> fetchServiceAlerts() {
-    SituationQueryBean query = new SituationQueryBean();
-    query.setAgencyId(agencyId);
-    query.setTime(System.currentTimeMillis());
-    ListBean<SituationBean> serviceAlertsList = transitDataService.getServiceAlerts(query);
-    List<SituationBean> serviceAlerts = serviceAlertsList.getList();
-    return serviceAlerts;
-  }
-  
+
   @Override
   public String execute() throws Exception {
-    List<SituationBean> serviceAlerts = fetchServiceAlerts();    
+
+    /**
+     * Note: constructing the route id this way is kind of a hack, but it will suffice for the pilot
+     */
+    String agencyId = configService.getDefaultAgencyId();
+
+    List<SituationBean> serviceAlerts = fetchServiceAlerts(agencyId);
     for (SituationBean situationBean : serviceAlerts) {
-      // our service notices will be stored in the description of the situation bean
+      // our service notices will be stored in the description of the situation
+      // bean
       DefaultedTextBean description = situationBean.getDescription();
       String serviceNotice = description.getValue();
-      
+
       String miscellaneousReason = situationBean.getMiscellaneousReason();
-      boolean hasDetour = miscellaneousReason != null && miscellaneousReason.trim().length() > 0;
-      
+      boolean hasDetour = miscellaneousReason != null
+          && miscellaneousReason.trim().length() > 0;
+
       SituationAffectsBean affects = situationBean.getAffects();
       List<SituationAffectedVehicleJourneyBean> vehicleJourneys = affects.getVehicleJourneys();
       for (SituationAffectedVehicleJourneyBean situationAffectedVehicleJourneyBean : vehicleJourneys) {
         String lineId = situationAffectedVehicleJourneyBean.getLineId();
         String direction = situationAffectedVehicleJourneyBean.getDirection();
         // we only support one service notice for each line+direction
-        if (lineId.equals("B63")) {
+        if (lineId.equals(agencyId + "_B63")) {
           if (direction.equals(cobbleHillDirection)) {
             setNoticeB63CobbleHill(serviceNotice);
             setDetourB63CobbleHill(hasDetour);
-          } else if (direction.equals(bayRidgeDirection) ) {
+          } else if (direction.equals(bayRidgeDirection)) {
             setNoticeB63BayRidge(serviceNotice);
             setDetourB63BayRidge(hasDetour);
           }
@@ -81,7 +78,16 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
 
     return SUCCESS;
   }
-  
+
+  private List<SituationBean> fetchServiceAlerts(String agencyId) {
+    SituationQueryBean query = new SituationQueryBean();
+    query.setAgencyId(agencyId);
+    query.setTime(System.currentTimeMillis());
+    ListBean<SituationBean> serviceAlertsList = transitDataService.getServiceAlerts(query);
+    List<SituationBean> serviceAlerts = serviceAlertsList.getList();
+    return serviceAlerts;
+  }
+
   private void handleSituationUpdateOrDelete(SituationBean situationBean,
       String notice, boolean hasDetour) {
     if ((notice == null || notice.trim().length() == 0) && !hasDetour) {
@@ -96,8 +102,10 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
     }
   }
 
-  private void handleCreateSituationBean(String notice, boolean hasDetour, String direction) {
-    // we don't create the situation bean if the notice is empty and there's no detour
+  private void handleCreateSituationBean(String agencyId, String notice,
+      boolean hasDetour, String direction) {
+    // we don't create the situation bean if the notice is empty and there's no
+    // detour
     if ((notice == null || notice.trim().length() == 0) && !hasDetour)
       return;
 
@@ -106,53 +114,61 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
     descriptionBean.setValue(notice);
     situationBean.setDescription(descriptionBean);
     situationBean.setMiscellaneousReason(hasDetour ? "detour" : null);
-    
+
     // add the affected lines
     SituationAffectsBean situationAffectsBean = new SituationAffectsBean();
     SituationAffectedVehicleJourneyBean situationAffectedVehicleJourneyBean = new SituationAffectedVehicleJourneyBean();
-    situationAffectedVehicleJourneyBean.setLineId("B63");
+    situationAffectedVehicleJourneyBean.setLineId(agencyId + "_B63");
     situationAffectedVehicleJourneyBean.setDirection(direction);
-    List<SituationAffectedVehicleJourneyBean> vehicleJourneys = new ArrayList<SituationAffectedVehicleJourneyBean>(1);
+    List<SituationAffectedVehicleJourneyBean> vehicleJourneys = new ArrayList<SituationAffectedVehicleJourneyBean>(
+        1);
     vehicleJourneys.add(situationAffectedVehicleJourneyBean);
     situationAffectsBean.setVehicleJourneys(vehicleJourneys);
     situationBean.setAffects(situationAffectsBean);
-    
+
     transitDataService.createServiceAlert(agencyId, situationBean);
   }
 
   public String submit() {
+    
+    String agencyId = configService.getDefaultAgencyId();
+    
     // keep track of whether we handled some cases, so we know if we need
     // to create new situation beans or not
     boolean bayRidgeHandled = false;
     boolean cobbleHillHandled = false;
-    
+
     // the case where we have situation beans that already exist
     // and we either have to update or remove them
-    List<SituationBean> serviceAlerts = fetchServiceAlerts();
+    List<SituationBean> serviceAlerts = fetchServiceAlerts(agencyId);
     for (SituationBean situationBean : serviceAlerts) {
       SituationAffectsBean affects = situationBean.getAffects();
       List<SituationAffectedVehicleJourneyBean> vehicleJourneys = affects.getVehicleJourneys();
       for (SituationAffectedVehicleJourneyBean situationAffectedVehicleJourneyBean : vehicleJourneys) {
         String lineId = situationAffectedVehicleJourneyBean.getLineId();
         String direction = situationAffectedVehicleJourneyBean.getDirection();
-        if (lineId.equals("B63")) {
+        if (lineId.equals(agencyId + "_B63")) {
           if (direction.equals(cobbleHillDirection)) {
-            handleSituationUpdateOrDelete(situationBean, noticeB63CobbleHill, detourB63CobbleHill);
+            handleSituationUpdateOrDelete(situationBean, noticeB63CobbleHill,
+                detourB63CobbleHill);
             cobbleHillHandled = true;
           } else if (direction.equals(bayRidgeDirection)) {
-            handleSituationUpdateOrDelete(situationBean, noticeB63BayRidge, detourB63BayRidge);
+            handleSituationUpdateOrDelete(situationBean, noticeB63BayRidge,
+                detourB63BayRidge);
             bayRidgeHandled = true;
           }
         }
       }
     }
-    
+
     // handle the case where we might have to create new situation beans
     if (!bayRidgeHandled)
-      handleCreateSituationBean(noticeB63BayRidge, detourB63BayRidge, bayRidgeDirection);
-    
+      handleCreateSituationBean(agencyId, noticeB63BayRidge,
+          detourB63BayRidge, bayRidgeDirection);
+
     if (!cobbleHillHandled)
-      handleCreateSituationBean(noticeB63CobbleHill, detourB63CobbleHill, cobbleHillDirection);
+      handleCreateSituationBean(agencyId, noticeB63CobbleHill,
+          detourB63CobbleHill, cobbleHillDirection);
 
     return "redirect";
   }
