@@ -25,7 +25,7 @@
 
 	<s:if test="anonymousUser">
 		<s:if test="failure">
-			<p class="login_failure">There was a problem with your login.</p>
+			<p class="error">There was a problem with your login.</p>
 		</s:if>
 
 	    <s:form action="/userIndex_login" method="put">

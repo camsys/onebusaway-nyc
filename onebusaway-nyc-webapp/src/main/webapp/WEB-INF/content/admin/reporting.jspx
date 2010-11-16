@@ -20,7 +20,9 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>One Bus Away NY Admin Interface</title>
-<link rel="stylesheet" href="/onebusaway-nyc-webapp/css/reporting.css" type="text/css" media="screen,print"/>
+
+<s:url var="url" value="/css/reporting.css"></s:url>
+<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 </head>
 <body>
 <div id="text">
@@ -28,6 +30,7 @@ under the License.
 <s:if test="%{reportError != null}">
 <p class="error"><s:property value="reportError" /></p>
 </s:if>
+
 <s:form method="GET" action="reporting!submit">
 <div><s:textarea name="query"></s:textarea></div>
 <div><s:submit value="Download CSV" /></div>

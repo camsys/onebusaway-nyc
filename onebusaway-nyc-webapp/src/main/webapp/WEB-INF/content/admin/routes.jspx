@@ -20,7 +20,9 @@ under the License.
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>One Bus Away NY Admin Interface</title>
-<link rel="stylesheet" href="/onebusaway-nyc-webapp/css/routes.css" type="text/css" media="screen,print"/>
+
+<s:url var="url" value="/css/routes.css"></s:url>
+<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 </head>
 <body>
 <div id="text">
