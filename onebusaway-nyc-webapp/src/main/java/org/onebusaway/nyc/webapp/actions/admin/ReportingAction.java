@@ -75,8 +75,10 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
     try {
       session = sessionFactory.openSession();
       connection = getConnectionFromSession(session);
+      connection.setReadOnly(true);
       statement = connection.createStatement();
       rs = statement.executeQuery(query);
+      
     } catch (Exception e) {
       // make sure everything is closed if an exception was thrown
       try { rs.close(); } catch (Exception ex) {}
