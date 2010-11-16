@@ -43,6 +43,8 @@ import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+import org.onebusaway.transit_data.model.service_alerts.SituationBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
@@ -285,6 +287,9 @@ public class NycSearchServiceImpl implements NycSearchService {
     Map<String, List<StopBean>> directionIdToStopBeans = createDirectionToStopBeansMap(routeId);
     Map<String, String> directionIdToHeadsign = new HashMap<String, String>();
     Map<String, String> directionIdToTripId = new HashMap<String, String>();
+    
+    // a map of direction id -> (service alert id -> value)
+    Map<String, Map<String, NaturalLanguageStringBean>> directionIdToServiceAlerts = new HashMap<String, Map<String, NaturalLanguageStringBean>>();
 
     Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String, Double>>();
     Map<String, List<DistanceAway>> stopIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
@@ -292,7 +297,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     TripsForRouteQueryBean tripQueryBean = makeTripsForRouteQueryBean(routeId);
     ListBean<TripDetailsBean> tripsForRoute = transitService.getTripsForRoute(tripQueryBean);
     List<TripDetailsBean> tripsList = tripsForRoute.getList();
-
+    
     // create a map of trip ids->(stop ids->distances along trip values) to
     // figure out which stop the vehicle is between
     // this is all with schedule data only so far...
@@ -304,7 +309,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       directionIdToHeadsign.put(tripDirectionId, tripHeadsign);
       directionIdToTripId.put(tripDirectionId, tripId);
-
+      
       if (!tripIdToStopDistancesMap.containsKey(tripId)) {
         TripStopTimesBean schedule = tripDetailsBean.getSchedule();
         List<TripStopTimeBean> stopTimes = schedule.getStopTimes();
@@ -327,11 +332,27 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
 
+      /* compile a list of service alerts that affect this route+direction... */
+      Map<String, NaturalLanguageStringBean> serviceAlertIdsToNaturalLanguageStringBeans = directionIdToServiceAlerts.get(tripDirectionId);
+
+      if (serviceAlertIdsToNaturalLanguageStringBeans == null) {
+    	serviceAlertIdsToNaturalLanguageStringBeans = new HashMap<String, NaturalLanguageStringBean>();
+      	directionIdToServiceAlerts.put(tripDirectionId, serviceAlertIdsToNaturalLanguageStringBeans);
+      }
+
+      for(SituationBean situationBean : tripStatusBean.getSituations()) {
+    	  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToNaturalLanguageStringBeans.get(situationBean.getId());
+    	  
+          if (serviceAlert == null) {
+        	  serviceAlertIdsToNaturalLanguageStringBeans.put(situationBean.getId(), situationBean.getDescription());
+          }
+      }     
+      
       // should we display this vehicle on the UI specified by "m"?
       if (tripStatusBean == null
           || !shouldDisplayTripForUIMode(tripStatusBean, m))
         continue;
-
+      
       /*
        * Now that we have a structure of stops and each stop's distance along
        * the route, we can calculate how far the vehicle (for which we only have
@@ -400,13 +421,22 @@ public class NycSearchServiceImpl implements NycSearchService {
           Collections.sort(distances);
         }
 
-        StopItem stopItem = new StopItem(stopBean, distances, m);
+        StopItem stopItem = new StopItem(stopBean, distances);
         stopItemsList.add(stopItem);
       }
 
+      Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = directionIdToServiceAlerts.get(directionId);
+      List<NaturalLanguageStringBean> serviceAlerts = null;
+ 
+      if(serviceAlertIdsToServiceAlerts == null) {
+    	  serviceAlerts = Collections.emptyList();
+      } else {
+    	  serviceAlerts = new ArrayList<NaturalLanguageStringBean>(serviceAlertIdsToServiceAlerts.values());
+      }
+      	
       RouteSearchResult routeSearchResult = new RouteSearchResult(routeId,
           routeShortName, routeLongName, tripHeadsign, directionId,
-          stopItemsList);
+          stopItemsList, serviceAlerts);
 
       results.add(routeSearchResult);
     }
@@ -438,7 +468,18 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     // hide deviated vehicles from mobile web + sms interfaces (row 4)
     if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
-      if(status != null && status.toLowerCase().compareTo("deviated") == 0)
+      boolean routeIsOnDetour = false;
+      
+	  for(SituationBean situationBean : statusBean.getSituations()) {
+   		  String miscelleanousReason = situationBean.getMiscellaneousReason();
+    		  
+   		  if(miscelleanousReason != null && miscelleanousReason.compareTo("detour") == 0) {
+   			  routeIsOnDetour = true;
+   			  break;
+   		  }
+   	  }
+    	
+      if((status != null && status.toLowerCase().compareTo("deviated") == 0) && ! routeIsOnDetour)
         return false;
     }
 
@@ -463,6 +504,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     Map<String, List<DistanceAway>> routeIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
     Map<String, String> routeIdToHeadsign = new HashMap<String, String>();
     List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
+    Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = new HashMap<String, NaturalLanguageStringBean>();
 
     /*
      * Search for trips that will stop at this stop between (now -
@@ -496,6 +538,14 @@ public class NycSearchServiceImpl implements NycSearchService {
       if (arrivalAndDepartureBean.getDistanceFromStop() < 0)
         continue;
 
+      // add service alerts to our list of service alerts for all routes at this stop
+      for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
+      	NaturalLanguageStringBean serviceAlert = serviceAlertIdsToServiceAlerts.get(situationBean.getId());
+      	
+      	if(serviceAlert == null)
+      		serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
+      }
+      
       // should we display this vehicle on the UI specified by "m"?
       if (shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m)) {
         double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
@@ -518,7 +568,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
         distanceAways.add(distanceAway);
       }
-    }
+    } // for arrivalanddeparture beans
 
     /*
      * Create AvailableRoute objects for each route at the given stop. Bring in
@@ -546,8 +596,16 @@ public class NycSearchServiceImpl implements NycSearchService {
       availableRoutes.add(availableRoute);
     }
 
+    List<NaturalLanguageStringBean> serviceAlerts = null;
+
+    if(serviceAlertIdsToServiceAlerts.isEmpty()) {
+  	  serviceAlerts = Collections.emptyList();
+    } else {
+  	  serviceAlerts = new ArrayList<NaturalLanguageStringBean>(serviceAlertIdsToServiceAlerts.values());
+    }
+    	
     StopSearchResult stopSearchResult = new StopSearchResult(stopId, stopName,
-        latLng, stopDirection, availableRoutes);
+        latLng, stopDirection, availableRoutes, serviceAlerts);
 
     return stopSearchResult;
   }

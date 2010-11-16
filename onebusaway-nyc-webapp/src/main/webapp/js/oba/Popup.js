@@ -75,6 +75,7 @@ OBA.StopPopup = function(stopId, map) {
         try {
             stop = json.data.references.stops[0];
             arrivals = json.data.entry.arrivalsAndDepartures;
+            refs = json.data.references;
         } catch (typeError) {
             OBA.Util.log("invalid stop response from server");
             OBA.Util.log(json);
@@ -87,6 +88,7 @@ OBA.StopPopup = function(stopId, map) {
 
         // vehicle location
         var routeToVehicleInfo = {};
+        var applicableSituationIds = {};
         var headsignToRoute = {};
         var routeToVehicleCount = 0;
         jQuery.each(arrivals, function(_, arrival) {
@@ -104,14 +106,17 @@ OBA.StopPopup = function(stopId, map) {
                 routeToVehicleCount++;                
                 
                 if(OBA.Config.vehicleFilterFunction(arrival.tripStatus) === false)
-                	return
+                	return;          
                 
                 var predicted = arrival.predicted;
                 var routeId = arrival.routeId;
                 var headsign = arrival.tripHeadsign;
                 var updateTime = parseInt(arrival.lastUpdateTime);
                 latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
-
+                jQuery.each(arrival.situationIds, function(_, situationId) {
+                	applicableSituationIds[situationId] = situationId;
+                });
+                
                 // only show positive distances
                 var meters = arrival.distanceFromStop;
                 var feet = OBA.Util.metersToFeet(meters);
@@ -125,10 +130,9 @@ OBA.StopPopup = function(stopId, map) {
                 if (routeToVehicleInfo[headsign]) {
                     routeToVehicleInfo[headsign].push(vehicleInfo);
                 }
-            });
+        });
 
-        var lastUpdateString = null;
-        
+        var lastUpdateString = null;        
         if (latestUpdate !== null && latestUpdate !== 0) {
             var lastUpdateDate = new Date(latestUpdate);
             lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
@@ -138,8 +142,20 @@ OBA.StopPopup = function(stopId, map) {
                      '<p class="description">Stop #' + OBA.Util.parseEntityId(stopId) + '</p>' + 
                      (lastUpdateString ? '<p class="meta">Last updated at ' + lastUpdateString + '</p>' : '');
 
+        // service notices
+        var notices = '<ul class="notices">';
+
+        jQuery.each(refs.situations, function(_, situation) {
+        	var situationId = situation.id;
+        	
+        	if(situationId in applicableSituationIds) {
+        	   	 notices += '<li>' + situation.description.value + '</li>';
+        	}        	
+        });
+
+        notices += '</ul>';
+        
         var service = '<p>This stop serves:</p><ul>';
-        var notices = '<ul class="notices"></ul>'; // FIXME: service notices
 
         jQuery.each(routeToVehicleInfo, function(headsign, vehicleInfos) {
             // sort based on distance
@@ -280,14 +296,37 @@ OBA.VehiclePopup = function(vehicleId, map) {
         	header += '<p class="meta stale">Location data is out of date and may be unreliable</p>';
         }
         
-        // service notices FIXME
-        var notices = '<ul class="notices"></ul>';
-            
+        // service notices
+        var applicableSituationIds = {};
+        var vehicleIsOnDetour = false;
+        jQuery.each(tripStatus.situationIds, function(_, sid) {
+        	applicableSituationIds[sid] = sid;
+        });
+        
+        var notices = '<ul class="notices">';
+
+        jQuery.each(refs.situations, function(_, situation) {
+        	var situationId = situation.id;
+        	
+        	if(situationId in applicableSituationIds) {
+        	   	 notices += '<li>' + situation.description.value + '</li>';
+
+        	   	 if(vehicleIsOnDetour === false) {
+        	   		 if(typeof situation.miscellaneousReason !== 'undefined' && situation.miscellaneousReason === 'detour') {
+        	   			 vehicleIsOnDetour = true;
+        	   		 }
+        	   	 }
+        	}        	
+        });
+
+        notices += '</ul>';
+        
         // next stops
         var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
         var nextStopsMarkup = '';
         
-        if (nextStops && nextStops.length > 0 && (typeof tripStatus.status !== 'undefined' && tripStatus.status !== 'DEVIATED')) { 
+        if (nextStops && nextStops.length > 0 && 
+        		((typeof tripStatus.status !== 'undefined' && tripStatus.status !== 'deviated') || vehicleIsOnDetour === true)) { 
         	nextStopsMarkup += '<p>Next stops:</p><ul>';
             
         	jQuery.each(nextStops, function(i, stop) {

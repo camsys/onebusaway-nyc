@@ -18,7 +18,7 @@ public class StopItem {
   
   private static final WebappIdParser idParser = new WebappIdParser();
 
-  public StopItem(StopBean stopBean, List<DistanceAway> distanceAways, Mode m) {
+  public StopItem(StopBean stopBean, List<DistanceAway> distanceAways) {
     this(idParser.parseIdWithoutAgency(stopBean.getId()), stopBean.getName(), distanceAways);
   }
   

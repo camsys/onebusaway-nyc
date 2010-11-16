@@ -3,6 +3,7 @@ package org.onebusaway.nyc.presentation.model.search;
 import java.util.List;
 
 import org.onebusaway.nyc.presentation.model.StopItem;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 /**
  * Data transfer object for route search results
@@ -16,15 +17,18 @@ public class RouteSearchResult implements SearchResult {
   private final String tripHeadsign;
   private final String directionId;
   private final List<StopItem> stopItems;
+  private final List<NaturalLanguageStringBean> serviceAlerts;
 
   public RouteSearchResult(String routeId, String routeName,
-      String routeDescription, String tripHeadsign, String directionId, List<StopItem> stopItems) {
+      String routeDescription, String tripHeadsign, String directionId, 
+      	List<StopItem> stopItems, List<NaturalLanguageStringBean> serviceAlerts) {
         this.routeId = routeId;
         this.routeName = routeName;
         this.routeDescription = routeDescription;
         this.tripHeadsign = tripHeadsign;
         this.directionId = directionId;
         this.stopItems = stopItems;
+        this.serviceAlerts = serviceAlerts;
         this.type = "route";
   }
 
@@ -56,4 +60,7 @@ public class RouteSearchResult implements SearchResult {
     return stopItems;
   }
 
+  public List<NaturalLanguageStringBean> getServiceAlerts() {
+	return serviceAlerts;
+  }
 }
