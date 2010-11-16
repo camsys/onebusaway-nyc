@@ -104,7 +104,11 @@ OBA.StopPopup = function(stopId, map) {
                     routeToVehicleInfo[headsign] = [];
                 }
                 routeToVehicleCount++;                
-                
+
+                jQuery.each(arrival.situationIds, function(_, situationId) {
+                	applicableSituationIds[situationId] = situationId;
+                });
+
                 if(OBA.Config.vehicleFilterFunction(arrival.tripStatus) === false)
                 	return;          
                 
@@ -113,9 +117,6 @@ OBA.StopPopup = function(stopId, map) {
                 var headsign = arrival.tripHeadsign;
                 var updateTime = parseInt(arrival.lastUpdateTime);
                 latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
-                jQuery.each(arrival.situationIds, function(_, situationId) {
-                	applicableSituationIds[situationId] = situationId;
-                });
                 
                 // only show positive distances
                 var meters = arrival.distanceFromStop;
