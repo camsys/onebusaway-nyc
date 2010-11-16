@@ -8,7 +8,7 @@ import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.presentation.service.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.service_alerts.DefaultedTextBean;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectedVehicleJourneyBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationBean;
@@ -51,7 +51,7 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
     for (SituationBean situationBean : serviceAlerts) {
       // our service notices will be stored in the description of the situation
       // bean
-      DefaultedTextBean description = situationBean.getDescription();
+      NaturalLanguageStringBean description = situationBean.getDescription();
       String serviceNotice = description.getValue();
 
       String miscellaneousReason = situationBean.getMiscellaneousReason();
@@ -94,7 +94,7 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
       String situationId = situationBean.getId();
       transitDataService.removeServiceAlert(situationId);
     } else {
-      DefaultedTextBean descriptionBean = new DefaultedTextBean();
+      NaturalLanguageStringBean descriptionBean = new NaturalLanguageStringBean();
       descriptionBean.setValue(notice);
       situationBean.setDescription(descriptionBean);
       situationBean.setMiscellaneousReason(hasDetour ? "detour" : null);
@@ -110,7 +110,7 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
       return;
 
     SituationBean situationBean = new SituationBean();
-    DefaultedTextBean descriptionBean = new DefaultedTextBean();
+    NaturalLanguageStringBean descriptionBean = new NaturalLanguageStringBean();
     descriptionBean.setValue(notice);
     situationBean.setDescription(descriptionBean);
     situationBean.setMiscellaneousReason(hasDetour ? "detour" : null);
