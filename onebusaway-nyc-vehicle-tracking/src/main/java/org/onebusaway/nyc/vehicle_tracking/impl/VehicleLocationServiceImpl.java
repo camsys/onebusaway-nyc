@@ -25,6 +25,8 @@ import org.springframework.stereotype.Component;
 @Component
 class VehicleLocationServiceImpl implements VehicleLocationService {
 
+  private static final int THREE_HOURS = 3 * 60 * 60 * 1000;
+
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   private VehicleLocationListener _vehicleLocationListener;
@@ -74,7 +76,11 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
       record.setLatitude(location.Latitude);
       record.setLongitude(location.Longitude);
     }
-    record.setTime(delivery.ResponseTimestamp.getTimeInMillis());
+    long time = delivery.ResponseTimestamp.getTimeInMillis();
+    long delta = Math.abs(System.currentTimeMillis() + THREE_HOURS - time);
+    if (delta <60 * 1000 )
+      time -= THREE_HOURS; 
+    record.setTime(time);
     record.setTimeReceived(new Date().getTime());
 
     if (vehicleActivity.Extensions != null
