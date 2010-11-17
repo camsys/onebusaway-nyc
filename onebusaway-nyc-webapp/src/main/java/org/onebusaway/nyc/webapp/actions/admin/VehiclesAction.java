@@ -213,7 +213,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
         return inferredDestinationSignCode + ": " + tripHeadsign;
       } else {
         return inferredDestinationSignCode + ": " + tripHeadsign
-            + " (bus sent " + mostRecentDestinationSignCode + ")";
+            + "<br/>(bus sent " + mostRecentDestinationSignCode + ")";
       }
     }
 

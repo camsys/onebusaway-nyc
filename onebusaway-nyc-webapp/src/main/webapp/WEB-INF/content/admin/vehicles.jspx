@@ -69,7 +69,7 @@ under the License.
 
 					<td><s:property value="lastUpdateTime" /></td>
 
-					<td><s:property value="headsign" /></td>
+					<td><s:property value="headsign" escape="false"/></td>
 
 					<td><s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
 
