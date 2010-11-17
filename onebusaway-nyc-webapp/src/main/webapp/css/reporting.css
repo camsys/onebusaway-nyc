@@ -17,6 +17,11 @@
 	height: 75px;
 }
 
+#text label {
+	display: block;
+	padding-bottom: 3px;
+}
+
 #text div {
 	padding-top: 10px;
 	padding-bottom: 10px;

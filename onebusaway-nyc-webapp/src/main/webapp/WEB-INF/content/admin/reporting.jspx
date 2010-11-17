@@ -27,14 +27,22 @@ under the License.
 <body>
 <div id="text">
 <h1>Generate Report</h1>
+
 <s:if test="%{reportError != null}">
 <p class="error"><s:property value="reportError" /></p>
 </s:if>
 
 <s:form method="GET" action="reporting!submit">
-<div><s:textarea name="query"></s:textarea></div>
+<div>
+	<label>
+	Enter an SQL query:
+	</label>
+	<s:textarea name="query"></s:textarea>
+</div>
+
 <div><s:submit value="Download Tab Delimited File" /></div>
 </s:form>
+
 </div>
 </body>
 </html>
