@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.ServletRequestAware;
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.presentation.impl.WebappIdParser;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
 import org.onebusaway.nyc.presentation.service.ConfigurationService;
@@ -27,20 +26,21 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Results( {@Result(type = "redirectAction", name = "redirect", params = {
+@Results({@Result(type = "redirectAction", name = "redirect", params = {
     "namespace", "/admin", "actionName", "vehicles"})})
-public class VehiclesAction extends OneBusAwayNYCActionSupport implements ServletRequestAware {
+public class VehiclesAction extends OneBusAwayNYCActionSupport implements
+    ServletRequestAware {
 
   private static final long serialVersionUID = 1L;
-  
+
   private static final WebappIdParser idParser = new WebappIdParser();
-  
+
   @Autowired
   private TransitDataService transitService;
-  
+
   @Autowired
   private VehicleTrackingManagementService vehicleTrackingManagementService;
-  
+
   private List<VehicleBag> vehicles = new ArrayList<VehicleBag>();
 
   private HttpServletRequest request;
@@ -55,10 +55,11 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
 
   @Override
   public String execute() throws Exception {
-    
+
     String agencyId = configurationService.getDefaultAgencyId();
-    
-    ListBean<VehicleStatusBean> vehiclesForAgencyListBean = transitService.getAllVehiclesForAgency(agencyId, System.currentTimeMillis());
+
+    ListBean<VehicleStatusBean> vehiclesForAgencyListBean = transitService.getAllVehiclesForAgency(
+        agencyId, System.currentTimeMillis());
     List<VehicleStatusBean> vehicleStatusBeans = vehiclesForAgencyListBean.getList();
     List<NycVehicleStatusBean> nycVehicleStatuses = vehicleTrackingManagementService.getAllVehicleStatuses();
     Map<String, VehicleStatusBean> vehicleMap = new HashMap<String, VehicleStatusBean>();
@@ -74,7 +75,8 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
 
     String method = request.getMethod().toUpperCase();
     if (method.equals("POST")) {
-      // keep track of vehicles that have been disabled so we can enable the others
+      // keep track of vehicles that have been disabled so we can enable the
+      // others
       Set<String> disabledVehicles = new HashSet<String>();
 
       Enumeration<?> parameterNames = request.getParameterNames();
@@ -84,27 +86,30 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
           String vehicleId = key.substring("disable_".length());
           NycVehicleStatusBean nycVehicleStatusBean = nycVehicleMap.get(vehicleId);
           if (nycVehicleStatusBean == null) {
-            vehicleTrackingManagementService.setVehicleStatus(vehicleId, false);            
+            vehicleTrackingManagementService.setVehicleStatus(vehicleId, false);
           } else {
             // no need to call disable on it if it's already disabled
             boolean isDisabled = !nycVehicleStatusBean.isEnabled();
             if (!isDisabled)
-              vehicleTrackingManagementService.setVehicleStatus(vehicleId, false);
+              vehicleTrackingManagementService.setVehicleStatus(vehicleId,
+                  false);
           }
           disabledVehicles.add(vehicleId);
         }
       }
 
-      // enable all the vehicles that haven't been explicitly disabled from the interface
+      // enable all the vehicles that haven't been explicitly disabled from the
+      // interface
       for (NycVehicleStatusBean nycVehicleStatusBean : nycVehicleStatuses) {
         String vehicleId = nycVehicleStatusBean.getVehicleId();
-        if (!disabledVehicles.contains(vehicleId) && !nycVehicleStatusBean.isEnabled())
-            vehicleTrackingManagementService.setVehicleStatus(vehicleId, true);
+        if (!disabledVehicles.contains(vehicleId)
+            && !nycVehicleStatusBean.isEnabled())
+          vehicleTrackingManagementService.setVehicleStatus(vehicleId, true);
       }
-      
+
       return "redirect";
     }
-    
+
     for (NycVehicleStatusBean nycVehicleStatusBean : nycVehicleStatuses) {
       String vehicleId = nycVehicleStatusBean.getVehicleId();
       VehicleStatusBean vehicleStatusBean = vehicleMap.get(vehicleId);
@@ -131,24 +136,24 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       this.vehicleStatusBean = vehicleStatusBean;
       this.configuration = configuration;
     }
-    
+
     @SuppressWarnings("unused")
     public String getVehicleId() {
       String vehicleIdWithAgency = nycVehicleStatusBean.getVehicleId();
       String idWithoutAgency = idParser.parseIdWithoutAgency(vehicleIdWithAgency);
       return idWithoutAgency;
     }
-    
+
     @SuppressWarnings("unused")
     public String getStatusClass() {
       if (vehicleStatusBean == null)
         return "status red";
-      String status = vehicleStatusBean.getStatus();
+      String phase = nycVehicleStatusBean.getPhase();
       TripBean tripBean = vehicleStatusBean.getTrip();
       if (tripBean == null)
         return "status red";
       String tripHeadsign = tripBean.getTripHeadsign();
-      long lastUpdateTime = vehicleStatusBean.getLastUpdateTime();
+      long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
       long lastGpsTime = nycVehicleStatusBean.getLastGpsTime();
       long now = System.currentTimeMillis();
       long updateTimeDiff = now - lastUpdateTime;
@@ -161,11 +166,11 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       if (updateTimeDiff > orangeMillisThreshold
           || gpsTimeDiff > orangeMillisThreshold)
         return "status orange";
-      if (status == null || !status.equals(EVehiclePhase.IN_PROGRESS.toLabel()))
+      if (phase == null || !phase.equals(EVehiclePhase.IN_PROGRESS.toLabel()))
         return "status orange";
-      return "status normal";
+      return "status green";
     }
-    
+
     @SuppressWarnings("unused")
     public String getLastUpdateTime() {
       long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
@@ -179,7 +184,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       long minutes = seconds / 60;
       return minutes + " minutes";
     }
-    
+
     @SuppressWarnings("unused")
     public String getLastCommTime() {
       long lastUpdateTime = nycVehicleStatusBean.getLastGpsTime();
@@ -193,7 +198,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       long minutes = seconds / 60;
       return minutes + " minutes";
     }
-    
+
     @SuppressWarnings("unused")
     public String getHeadsign() {
       if (vehicleStatusBean == null)
@@ -207,36 +212,37 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       if (inferredDestinationSignCode.equals(mostRecentDestinationSignCode)) {
         return inferredDestinationSignCode + ": " + tripHeadsign;
       } else {
-        return inferredDestinationSignCode + ": " + tripHeadsign + " (bus sent " + mostRecentDestinationSignCode + ")";
+        return inferredDestinationSignCode + ": " + tripHeadsign
+            + " (bus sent " + mostRecentDestinationSignCode + ")";
       }
     }
-    
+
     public String getInferredState() {
-      if (vehicleStatusBean == null)
+      if (!nycVehicleStatusBean.isEnabled())
         return "Disabled";
+      String phase = nycVehicleStatusBean.getPhase();
+      if (phase != null && phase.equals(EVehiclePhase.IN_PROGRESS.toLabel()))
+        return "Normal";
       TripBean trip = vehicleStatusBean.getTrip();
       if (trip == null)
         return "No Trip";
-      String phase = vehicleStatusBean.getPhase();
-      if (phase != null && phase.equals(EVehiclePhase.IN_PROGRESS.toString().toLowerCase()))
-        return "Normal";
       return phase;
     }
-    
+
     @SuppressWarnings("unused")
     public String getInferredStateClass() {
       String inferredState = getInferredState();
-      return inferredState != "Normal" ? "inferred-state error" : "inferred-state";
+      return "Normal".equals(inferredState) ? "inferred-state"
+          : "inferred-state error";
     }
-    
+
     @SuppressWarnings("unused")
     public String getLocation() {
-      CoordinatePoint location = vehicleStatusBean.getLocation();
-      double lat = location.getLat();
-      double lon = location.getLon();
+      double lat = nycVehicleStatusBean.getLastGpsLat();
+      double lon = nycVehicleStatusBean.getLastGpsLon();
       return lat + "," + lon;
     }
-    
+
     @SuppressWarnings("unused")
     public String getDisabledName() {
       String vehicleId = vehicleStatusBean.getVehicleId();

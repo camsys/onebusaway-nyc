@@ -120,7 +120,7 @@ class VehicleTrackingManagementServiceImpl implements
     bean.setLastGpsTime(record.getLastGpsTime());
     bean.setLastGpsLat(record.getLastGpsLat());
     bean.setLastGpsLon(record.getLastGpsLon());
-    bean.setPhase(record.getPhase().toString());
+    bean.setPhase(record.getPhase().toLabel());
     bean.setStatus(record.getStatus());
     bean.setMostRecentDestinationSignCode(record.getMostRecentDestinationSignCode());
     bean.setInferredDestinationSignCode(record.getInferredDestinationSignCode());

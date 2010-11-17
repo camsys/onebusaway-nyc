@@ -168,6 +168,8 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   public void setVehicleStatus(String vehicleId, boolean enabled) {
     AgencyAndId vid = getVehicleId(vehicleId);
     _vehicleLocationInferenceService.setVehicleStatus(vid, enabled);
+    if( ! enabled )
+      _vehicleLocationListener.resetVehicleLocation(vid);
   }
 
   /****

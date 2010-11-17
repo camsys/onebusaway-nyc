@@ -36,7 +36,7 @@ under the License.
 <div id="text">
 <h1>Tracked Vehicles</h1>
 
-<s:form method="POST" action="vehicles.action">
+<s:form method="POST" action="vehicles">
 <table id="vehicle-table">
 <tr>
 <th><a href="#">Status</a></th>
@@ -48,9 +48,9 @@ under the License.
 <th><a href="#">Inferred State</a></th>
 <th><a href="#">Location</a></th>
 </tr>
-<s:iterator value="vehicles">
+<s:iterator value="vehicles" status="status">
 <tr>
-<td><s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div></td>
+<td><s:div name="status_%{#status.index}" cssClass="%{statusClass}"><s:property value="statusClass" /></s:div></td>
 <td>
 <s:if test="%{disabled}">
 <input type="checkbox" name="${disabledName}" checked="true" />
@@ -63,7 +63,7 @@ under the License.
 <td><s:property value="lastCommTime" /></td>
 <td><s:property value="lastUpdateTime" /></td>
 <td><s:property value="headsign" /></td>
-<td><s:div cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
+<td><s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
 <td><a href="#" class="map-link"><s:url var="iconUrl" value="/img/map.png"></s:url><img src="${iconUrl}" /></a><span class="map-location"><s:property value="location" /></span></td>
 </tr>
 </s:iterator>
