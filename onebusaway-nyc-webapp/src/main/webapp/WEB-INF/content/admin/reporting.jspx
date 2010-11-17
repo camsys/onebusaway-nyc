@@ -33,7 +33,7 @@ under the License.
 
 <s:form method="GET" action="reporting!submit">
 <div><s:textarea name="query"></s:textarea></div>
-<div><s:submit value="Download CSV" /></div>
+<div><s:submit value="Download Tab Delimited File" /></div>
 </s:form>
 </div>
 </body>

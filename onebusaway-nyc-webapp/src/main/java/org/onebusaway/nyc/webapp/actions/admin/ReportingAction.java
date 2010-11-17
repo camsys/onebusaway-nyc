@@ -20,14 +20,14 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Results( {@Result(type = "stream", name = "download", params = {
-    "contentType", "text/csv", "contentDisposition", "filename=\"report.csv\""})})
+    "contentType", "text/plain", "contentDisposition", "attachment; filename=\"report.txt\""})})
 public class ReportingAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
   
   private static final ExecutorService executorService = Executors.newCachedThreadPool();
   
-  private static final byte[] comma = ",".getBytes();
+  private static final byte[] columnDelimiter = "\t".getBytes();
   private static final byte[] newline = "\n".getBytes();
   
   @Autowired
@@ -76,6 +76,7 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
       session = sessionFactory.openSession();
       connection = getConnectionFromSession(session);
       connection.setReadOnly(true);
+      
       statement = connection.createStatement();
       rs = statement.executeQuery(query);
       
@@ -105,19 +106,45 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
     @Override
     public void run() {
         try {
-          while (finalRS.next()) {
-            ResultSetMetaData metaData = finalRS.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            for (int i = 0; i < columnCount; i++) {
-              String value = finalRS.getString(i + 1);
-              byte[] valueBytes = value.getBytes();
+          // column labels
+          ResultSetMetaData metaData = finalRS.getMetaData();
+          int columnCount = metaData.getColumnCount();
+
+          for (int i = 0; i < columnCount; i++) {
+        	  String columnName = metaData.getColumnName(i + 1);
+              byte[] bytes = columnName.getBytes();
+
               if (i > 0)
-                pipedOutputStream.write(comma);
-              pipedOutputStream.write(valueBytes);
-            }
-            pipedOutputStream.write(newline);
+                pipedOutputStream.write(columnDelimiter);
+  
+              pipedOutputStream.write(bytes);
           }
-        } catch (Exception e) {
+
+          pipedOutputStream.write(newline);
+
+          // column values
+          while (finalRS.next()) {        	  
+        	  for (int i = 0; i < columnCount; i++) {
+        		  String value = finalRS.getString(i + 1);
+              
+        		  if(value == null)
+        			  value = "null";
+        		  else {
+        			  // remove returns
+        			  value = value.replaceAll("\n|\r", "");
+        		  }
+              
+        		  byte[] valueBytes = value.getBytes();
+
+        		  if (i > 0)
+        			  pipedOutputStream.write(columnDelimiter);
+
+        		  pipedOutputStream.write(valueBytes);
+        	  }
+
+        	  pipedOutputStream.write(newline);
+          }
+        } catch (Exception e) {        	
         } finally {
           try { pipedOutputStream.close(); } catch (IOException e) {}
           try { finalRS.close(); } catch (SQLException e) {}
