@@ -142,6 +142,11 @@ jQuery(document).ready(function() {
     addTableSortBehaviors();
     tweakLatLngsAndPrepareData();
     addShowMapBehavior();
+    
+    // refresh every 1m
+    setTimeout(function() {
+    	window.location.href = window.location.href;
+    }, 60 * 1000);
 });
 
 })();
