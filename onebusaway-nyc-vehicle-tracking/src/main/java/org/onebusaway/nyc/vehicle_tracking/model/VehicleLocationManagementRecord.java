@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.model;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.realtime.api.EVehiclePhase;
 
 public class VehicleLocationManagementRecord {
 
@@ -11,6 +12,14 @@ public class VehicleLocationManagementRecord {
   private long lastUpdateTime;
 
   private long lastGpsTime;
+
+  private double lastGpsLat = Double.NaN;
+
+  private double lastGpsLon = Double.NaN;
+
+  private EVehiclePhase phase;
+
+  private String status;
 
   private String mostRecentDestinationSignCode;
 
@@ -46,6 +55,38 @@ public class VehicleLocationManagementRecord {
 
   public void setLastGpsTime(long lastGpsTime) {
     this.lastGpsTime = lastGpsTime;
+  }
+
+  public double getLastGpsLat() {
+    return lastGpsLat;
+  }
+
+  public void setLastGpsLat(double lastGpsLat) {
+    this.lastGpsLat = lastGpsLat;
+  }
+
+  public double getLastGpsLon() {
+    return lastGpsLon;
+  }
+
+  public void setLastGpsLon(double lastGpsLon) {
+    this.lastGpsLon = lastGpsLon;
+  }
+
+  public EVehiclePhase getPhase() {
+    return phase;
+  }
+
+  public void setPhase(EVehiclePhase phase) {
+    this.phase = phase;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
   }
 
   public String getMostRecentDestinationSignCode() {

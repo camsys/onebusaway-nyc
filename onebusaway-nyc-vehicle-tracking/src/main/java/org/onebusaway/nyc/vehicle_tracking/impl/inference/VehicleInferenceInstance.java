@@ -148,6 +148,8 @@ public class VehicleInferenceInstance {
     if (_previousRecord != null) {
 
       record.setMostRecentDestinationSignCode(_previousRecord.getDestinationSignCode());
+      record.setLastGpsLat(_previousRecord.getLatitude());
+      record.setLastGpsLon(_previousRecord.getLongitude());
 
       Particle particle = _particleFilter.getMostLikelyParticle();
 
@@ -156,6 +158,7 @@ public class VehicleInferenceInstance {
         BlockState blockState = state.getBlockState();
         if (blockState != null)
           record.setInferredDestinationSignCode(blockState.getDestinationSignCode());
+
       }
     } else if (_vehicleLocationRecord != null) {
 
@@ -164,6 +167,12 @@ public class VehicleInferenceInstance {
     } else if (_nycTestLocationRecord != null) {
       record.setMostRecentDestinationSignCode(_nycTestLocationRecord.getDsc());
       record.setInferredDestinationSignCode(_nycTestLocationRecord.getActualDsc());
+    }
+
+    VehicleLocationRecord state = getCurrentState();
+    if (state != null) {
+      record.setPhase(state.getPhase());
+      record.setStatus(state.getStatus());
     }
 
     return record;

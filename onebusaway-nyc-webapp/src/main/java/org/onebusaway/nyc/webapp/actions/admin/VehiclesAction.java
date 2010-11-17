@@ -35,14 +35,12 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
   
   private static final WebappIdParser idParser = new WebappIdParser();
   
-  private String agencyId = "MTA NYCT";
-
   @Autowired
   private TransitDataService transitService;
   
   @Autowired
   private VehicleTrackingManagementService vehicleTrackingManagementService;
-
+  
   private List<VehicleBag> vehicles = new ArrayList<VehicleBag>();
 
   private HttpServletRequest request;
@@ -54,13 +52,12 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
   public void setServletRequest(HttpServletRequest request) {
     this.request = request;
   }
-  
-  public void setAgencyId(String agencyId) {
-    this.agencyId = agencyId;
-  }
 
   @Override
   public String execute() throws Exception {
+    
+    String agencyId = configurationService.getDefaultAgencyId();
+    
     ListBean<VehicleStatusBean> vehiclesForAgencyListBean = transitService.getAllVehiclesForAgency(agencyId, System.currentTimeMillis());
     List<VehicleStatusBean> vehicleStatusBeans = vehiclesForAgencyListBean.getList();
     List<NycVehicleStatusBean> nycVehicleStatuses = vehicleTrackingManagementService.getAllVehicleStatuses();
@@ -164,7 +161,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       if (updateTimeDiff > orangeMillisThreshold
           || gpsTimeDiff > orangeMillisThreshold)
         return "status orange";
-      if (status == null || !status.equals(EVehiclePhase.IN_PROGRESS.toString()))
+      if (status == null || !status.equals(EVehiclePhase.IN_PROGRESS.toLabel()))
         return "status orange";
       return "status normal";
     }
@@ -220,10 +217,10 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
       TripBean trip = vehicleStatusBean.getTrip();
       if (trip == null)
         return "No Trip";
-      String status = vehicleStatusBean.getStatus();
-      if (status != null && status.equals(EVehiclePhase.IN_PROGRESS.toString()))
+      String phase = vehicleStatusBean.getPhase();
+      if (phase != null && phase.equals(EVehiclePhase.IN_PROGRESS.toString().toLowerCase()))
         return "Normal";
-      return "Unknown";
+      return phase;
     }
     
     @SuppressWarnings("unused")

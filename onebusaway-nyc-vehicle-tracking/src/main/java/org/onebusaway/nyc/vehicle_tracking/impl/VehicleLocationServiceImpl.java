@@ -76,6 +76,9 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
       record.setLatitude(location.Latitude);
       record.setLongitude(location.Longitude);
     }
+    /**
+     * TODO : This is a hack to deal with the lack of timezone info in SIRI records
+     */
     long time = delivery.ResponseTimestamp.getTimeInMillis();
     long delta = Math.abs(System.currentTimeMillis() + THREE_HOURS - time);
     if (delta <60 * 1000 )
