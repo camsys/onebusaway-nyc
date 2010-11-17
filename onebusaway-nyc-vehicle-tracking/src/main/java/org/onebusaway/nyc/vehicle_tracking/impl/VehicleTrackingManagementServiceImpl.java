@@ -1,7 +1,13 @@
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+
+import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
@@ -12,12 +18,16 @@ import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 class VehicleTrackingManagementServiceImpl implements
     VehicleTrackingManagementService {
+
+  private static Logger _log = LoggerFactory.getLogger(VehicleTrackingManagementServiceImpl.class);
 
   private double _vehicleOffRouteDistanceThreshold = 500;
 
@@ -26,6 +36,8 @@ class VehicleTrackingManagementServiceImpl implements
   private VehicleLocationService _vehicleLocationService;
 
   private TransitDataService _transitDataService;
+
+  private File _configPath;
 
   @Autowired
   public void setVehicleLocationService(
@@ -36,6 +48,34 @@ class VehicleTrackingManagementServiceImpl implements
   @Autowired
   public void setTransitDataService(TransitDataService transitDataService) {
     _transitDataService = transitDataService;
+  }
+
+  public void setConfigPath(File configPath) {
+    _configPath = configPath;
+  }
+
+  @PostConstruct
+  public void setup() {
+
+    if (_configPath == null || !_configPath.exists())
+      return;
+
+    try {
+      Properties p = new Properties();
+      FileReader in = new FileReader(_configPath);
+      p.load(in);
+      in.close();
+
+      if (p.containsKey("noProgressTimeout"))
+        _vehicleStalledTimeThreshold = Integer.parseInt(p.getProperty("noProgressTimeout"));
+
+      if (p.containsKey("offRouteDistance"))
+        _vehicleOffRouteDistanceThreshold = Double.parseDouble("offRouteDistance");
+
+    } catch (IOException ex) {
+      _log.warn("error loading configuration properties from " + _configPath,
+          ex);
+    }
   }
 
   /****
