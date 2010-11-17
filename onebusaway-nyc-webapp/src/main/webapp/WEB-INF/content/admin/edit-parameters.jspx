@@ -45,7 +45,7 @@ under the License.
   <div class="config-group">
   <div class="configuration-parameter">
     <h2>"Off Route" Distance</h2>
-    <p>This is the distance away from a matched route that a bus is  allowed to deviate before it is considered "off route". Such buses are hidden in the UI, and reported as such in the API.</p>
+    <p>This is the distance away from a matched route that a bus is  allowed to deviate before it is considered "off route". Such buses are hidden in the mobile and SMS interfaces, and reported as such in the desktop web interface and API.</p>
     <s:textfield name="offRouteDistance" value="%{offRouteDistance}" label="Off Route Distance" size="3"/>
     <span>meters</span>
   </div>
