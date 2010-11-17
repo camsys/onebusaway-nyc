@@ -96,11 +96,12 @@ public class ParticleFilter<OBS> {
    * This is the major method that will be called repeatedly by an outside
    * client in order to drive the filter. Each call runs a single timestep.
    */
-  public void updateFilter(double timestamp, OBS observation) {
+  public void updateFilter(double timestamp, double timeReceived,
+      OBS observation) {
 
-    boolean firstTime = checkFirst(timestamp, observation);
+    boolean firstTime = checkFirst(timestamp, timeReceived, observation);
     runSingleTimeStep(timestamp, observation, !firstTime);
-    _timeOfLastUpdate = timestamp;
+    _timeOfLastUpdate = timeReceived;
   }
 
   /**
@@ -109,7 +110,7 @@ public class ParticleFilter<OBS> {
    */
   public void updateFilterWithoutObservation(double timestamp) throws Exception {
 
-    checkFirst(timestamp, null);
+    checkFirst(timestamp, timestamp, null);
     double elapsed = timestamp - _timeOfLastUpdate;
     for (int i = 0; i < _particles.size(); i++) {
       Particle updatedParticle = _motionModel.move(_particles.get(i),
@@ -140,12 +141,13 @@ public class ParticleFilter<OBS> {
   /**
    * @return true if this is the initial entry for these particles
    */
-  private boolean checkFirst(double timestamp, OBS observation) {
+  private boolean checkFirst(double timestamp, double timeReceived,
+      OBS observation) {
 
     if (!_seenFirst) {
       _particles = createInitialParticlesFromObservation(timestamp, observation);
       _seenFirst = true;
-      _timeOfLastUpdate = timestamp;
+      _timeOfLastUpdate = timeReceived;
       return true;
     }
 

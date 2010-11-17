@@ -90,11 +90,12 @@ public class VehicleInferenceInstance {
     _previousRecord = record;
     _vehicleLocationRecord = null;
     _nycTestLocationRecord = null;
-    _lastUpdateTime = record.getTime();
+    _lastUpdateTime = record.getTimeReceived();
     if (!latlonMissing)
-      _lastGpsTime = record.getTime();
+      _lastGpsTime = record.getTimeReceived();
 
-    _particleFilter.updateFilter(record.getTime(), observation);
+    _particleFilter.updateFilter(record.getTime(), record.getTimeReceived(),
+        observation);
 
     return _enabled;
   }
