@@ -34,10 +34,15 @@ under the License.
 
 <s:form method="GET" action="reporting!submit">
 <div>
-	<label>
-	Enter an SQL query:
-	</label>
-	<s:textarea name="query"></s:textarea>
+	<p>
+		<label>
+		Enter an SQL query:
+		</label>
+		<s:textarea name="query"></s:textarea>
+	</p>
+	<p class="small">
+		NOTE: This field can only execute select queries. Updates, drops or deletes cannot be executed from this interface. 
+	</p>
 </div>
 
 <div><s:submit value="Download Tab Delimited File" /></div>

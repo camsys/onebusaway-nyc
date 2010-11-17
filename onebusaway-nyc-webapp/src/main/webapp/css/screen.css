@@ -117,7 +117,11 @@ a:hover {
 }
 
 #text p {
-	padding-bottom: 15px;
+}
+
+#text p.small {
+	font-size: 10px;
+	padding-top: 5px;
 }
 
 #text table {
