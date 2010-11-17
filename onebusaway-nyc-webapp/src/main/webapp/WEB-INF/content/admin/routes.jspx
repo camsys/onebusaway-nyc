@@ -25,6 +25,7 @@ under the License.
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 </head>
 <body>
+<div id="content">
 <div id="text">
 	<h1>Routes</h1>
 
@@ -68,5 +69,7 @@ under the License.
 <s:submit value="Save" />
 </s:form>
 </div>
+</div>
+
 </body>
 </html>

@@ -152,13 +152,6 @@
     font-size: 14px;
 }
 
-#content #sidebar {
-    float: left;
-
-    height: 100%;
-    width: 325px;
-}
-
 #content #map {
     position: relative;
     height: 100%;

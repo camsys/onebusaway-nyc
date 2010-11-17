@@ -12,20 +12,21 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-#text table {
+#content #text table {
+	padding: 0px;
 	padding-top: 10px;
 	width: 60%;
 }
 
-#text th {
+#content #text th {
 	text-align: left;	
 }
 
-#text td {
+#content #text td {
 	padding-bottom: 20px;
 }
 
-#text textarea {
+#content #text textarea {
 	width: 250px;
 	height: 40px;
 }

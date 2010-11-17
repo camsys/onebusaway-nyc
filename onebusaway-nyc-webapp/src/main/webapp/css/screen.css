@@ -88,103 +88,97 @@ a:hover {
 	color: #444444;
 }
 
-#help-sidebar {
-    float: left;    
-	padding-right: 15px;
-	padding-bottom: 15px;
-	width: 20%;
+#content #sidebar {
+    float: left;
+
+    height: 100%;
+    width: 325px;
 }
 
-#help-sidebar ul {
-	padding-top: 15px;
-	padding-left: 15px;
+#content #text {
+    position: relative;
+	padding: 15px;
 }
 
-#help-sidebar ul li ul {
-	padding-top: 0px;
-}
-
-#text {
+#content.help #text {
 	border-left: 1px solid #ACACAC;
-    padding: 15px;
-	float: left;
+	margin-left: 325px;
 	min-height: 300px;
-	width: 100%;
 }
 
-#text.wiki {	
-	width: 75%;
+#content.help #sidebar .wrapper {
+	padding: 15px;
 }
 
-#text p {
-}
+#content.help #sidebar .wrapper ul {
+	padding-bottom: 10px;	
+} 
 
-#text p.small {
+#content #text p.small {
 	font-size: 10px;
 	padding-top: 5px;
 }
 
-#text table {
+#content #text table {
 	padding: 20px;
 	padding-left: 0px;
 	padding-right: 0px;
 }
 
-#text td {
+#content #text td {
 	padding: 5px;
 }
 	
-#text h1,
-#text h2 {
+#content #text h1,
+#content #text h2 {
 	font-weight: normal;
 	font-size: 22px;
 	padding-bottom: 10px;
 	padding-top: 30px;
 }
 
-#text h1:first-child,
-#text h2:first-child {
+#content #text h1:first-child,
+#content #text h2:first-child {
 	padding-top: 0px;
 }
 
-#text ul {
-	padding-left: 20px;
-	padding-top: 5px;
-	padding-bottom: 5px;
-}
-
-#text ul li {
-	list-style-type: disc;
-	padding-bottom: 10px;
-}
-
-#text fieldset {
+#content #text fieldset {
 	padding: 10px;
 	padding-left: 0px;
 	padding-right: 0px;
 }
 
-#text fieldset label {
+#content #text fieldset label {
 	display: block;
 	padding-bottom: 3px;
 }
 
-#text fieldset label.inline {
+#content #text fieldset label.inline {
 	display: inline;
 }
 
-#text fieldset input, 
-#text fieldset select, 
-#text fieldset textarea {
+#content #text fieldset input, 
+#content #text fieldset select, 
+#content #text fieldset textarea {
 	font-family:inherit;
 	font-size:15px;
 }
 
-#text .error {
+#content #text .error {
 	font-weight: bold;
 	color: red;
 }
-	
+
+#content.help #text ul {
+	padding: 15px;
+}
+
+#content.help #text ul li {
+	list-style-type: disc;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
 #footer {
     position: relative;
 

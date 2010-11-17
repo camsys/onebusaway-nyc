@@ -26,40 +26,44 @@ under the License.
 </head>
 <body>
 
+<div id="content">
 <div id="text">
-<s:form method="post" action="edit-parameters!submit">
-  <div class="config-group">
-  <div class="configuration-parameter">
-    <h2>"Stalled" Timeout</h2>
-    <p>This is the number of minutes after which a bus, if it does not move, is considered to not be making progress; bus is sending location messages. "No progress" busses are hidden in the UI, and reported as such in the API.</p>
-    <s:textfield name="noProgressTimeout" value="%{noProgressTimeout}" label="Timeout for No Progress" size="3" />
-    <span>seconds</span>
-  </div>
-  <div class="configuration-parameter">
-    <h2>No Messages: Stale</h2>
-    <p>Bus is not sending location messages--after this period, the data is considered "stale".</p>
-    <s:textfield name="staleDataTimeout" value="%{staleDataTimeout}" label="Stale Data Timeout" size="3"/>
-	<span>seconds</span>
-  </div>
-  </div>
-  <div class="config-group">
-  <div class="configuration-parameter">
-    <h2>"Off Route" Distance</h2>
-    <p>This is the distance away from a matched route that a bus is  allowed to deviate before it is considered "off route". Such buses are hidden in the mobile and SMS interfaces, and reported as such in the desktop web interface and API.</p>
-    <s:textfield name="offRouteDistance" value="%{offRouteDistance}" label="Off Route Distance" size="3"/>
-    <span>meters</span>
-  </div>
-  <div class="configuration-parameter">
-    <h2>No Messages: Hide</h2>
-    <p>Bus is not sending location messages--after this period, the bus is hidden from users.</p>
-    <s:textfield name="hideTimeout" value="%{hideTimeout}" label="Hide Timeout" size="3"/>
-    <span>seconds</span>  
-  </div>
-  </div>
-  <div class="submit">
-    <s:submit name="submit" value="Save" />
-  </div>
-</s:form>
+	<s:form method="post" action="edit-parameters!submit">
+  		<div class="config-group">
+		  <div class="configuration-parameter">
+		    <h2>"Stalled" Timeout</h2>
+		    <p>This is the number of minutes after which a bus, if it does not move, is considered to not be making progress; bus is sending location messages. "No progress" busses are hidden in the UI, and reported as such in the API.</p>
+		    <s:textfield name="noProgressTimeout" value="%{noProgressTimeout}" label="Timeout for No Progress" size="3" />
+		    <span>seconds</span>
+		  </div>
+		  <div class="configuration-parameter">
+		    <h2>No Messages: Stale</h2>
+		    <p>Bus is not sending location messages--after this period, the data is considered "stale".</p>
+		    <s:textfield name="staleDataTimeout" value="%{staleDataTimeout}" label="Stale Data Timeout" size="3"/>
+			<span>seconds</span>
+		  </div>
+	   </div>
+  
+  	   <div class="config-group">
+		  <div class="configuration-parameter">
+    		<h2>"Off Route" Distance</h2>
+    		<p>This is the distance away from a matched route that a bus is  allowed to deviate before it is considered "off route". Such buses are hidden in the mobile and SMS interfaces, and reported as such in the desktop web interface and API.</p>
+    		<s:textfield name="offRouteDistance" value="%{offRouteDistance}" label="Off Route Distance" size="3"/>
+    		<span>meters</span>
+  		  </div>
+  		  <div class="configuration-parameter">
+    		<h2>No Messages: Hide</h2>
+    		<p>Bus is not sending location messages--after this period, the bus is hidden from users.</p>
+    		<s:textfield name="hideTimeout" value="%{hideTimeout}" label="Hide Timeout" size="3"/>
+    		<span>seconds</span>  
+  		  </div>
+	   </div>
+  
+  	  <div class="submit">
+    	<s:submit name="submit" value="Save" />
+      </div>
+	</s:form>
+</div>
 </div>
 
 </body>

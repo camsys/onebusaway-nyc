@@ -22,22 +22,19 @@ under the License.
 <title>One Bus Away NY Admin Interface</title>
 </head>
 <body>
+
+<div id="content">
 <div id="text">
-<h1>Admin Functions</h1>
-<ul>
-<li>
-<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
-<a title="edit parameters" href="${url}">Change inference parameters</a></li>
-<li>
-<s:url var="url" namespace="/admin" action="vehicles"></s:url>
-<a title="vehicles" href="${url}">Vehicles</a></li>
-<li>
-<s:url var="url" namespace="/admin" action="routes"></s:url>
-<a title="routes" href="${url}">Routes</a></li>
-<li>
-<s:url var="url" namespace="/admin" action="reporting"></s:url>
-<a title="reporting" href="${url}">Reporting</a></li>
-</ul>
+	<h1>Admin Functions</h1>
+	
+	<ul>
+		<li><s:url var="url" namespace="/admin" action="edit-parameters"></s:url><a title="edit parameters" href="${url}">Parameters</a></li>
+		<li><s:url var="url" namespace="/admin" action="vehicles"></s:url><a title="vehicles" href="${url}">Vehicles</a></li>
+		<li><s:url var="url" namespace="/admin" action="routes"></s:url><a title="routes" href="${url}">Routes</a></li>
+		<li><s:url var="url" namespace="/admin" action="reporting"></s:url><a title="reporting" href="${url}">Reporting</a></li>
+	</ul>
 </div>
+</div>
+
 </body>
 </html>

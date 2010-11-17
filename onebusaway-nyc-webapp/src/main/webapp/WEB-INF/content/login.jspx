@@ -20,6 +20,7 @@
 	<title>Login</title>
 </head>
 <body>
+<div id="content">
 <div id="text">
 	<h2>Login</h2>
 
@@ -51,6 +52,7 @@
 	<s:else>
 		<p>You are already logged in.  Click to <a href="logout.action">logout</a>.</p>
 	</s:else>
+</div>
 </div>
 </body>
 </html>

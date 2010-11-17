@@ -25,29 +25,35 @@ under the License.
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 </head>
 <body>
+<div id="content">
 <div id="text">
-<h1>Generate Report</h1>
+	<h1>Generate Report</h1>
 
-<s:if test="%{reportError != null}">
-<p class="error"><s:property value="reportError" /></p>
-</s:if>
+	<s:if test="%{reportError != null}">
+		<p class="error"><s:property value="reportError" /></p>
+	</s:if>
 
-<s:form method="GET" action="reporting!submit">
-<div>
-	<p>
-		<label>
-		Enter an SQL query:
-		</label>
-		<s:textarea name="query"></s:textarea>
-	</p>
-	<p class="small">
-		NOTE: This field can only execute select queries. Updates, drops or deletes cannot be executed from this interface. 
-	</p>
+	<s:form method="GET" action="reporting!submit">
+	<div>
+		<p>
+			<label>
+			Enter an SQL query:
+			</label>
+			<s:textarea name="query"></s:textarea>
+		</p>
+	
+		<p class="small">
+			NOTE: This field can only execute select queries. Updates, drops or deletes cannot be executed from this interface. 
+		</p>
+	</div>
+
+	<div class="submit">
+		<s:submit value="Download Tab Delimited File" />
+	</div>
+	</s:form>
+
+</div>
 </div>
 
-<div><s:submit value="Download Tab Delimited File" /></div>
-</s:form>
-
-</div>
 </body>
 </html>

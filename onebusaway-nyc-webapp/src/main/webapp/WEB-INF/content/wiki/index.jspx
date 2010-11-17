@@ -22,16 +22,20 @@ under the License.
 <title><s:property value="name" /></title>
 </head>
 <body>
+<div id="content" class="help">
 
 <s:if test="isHelp">
-	<div id="help-sidebar">
-		<wiki:wiki name="HelpTOC"/>
+	<div id="sidebar">
+		<div class="wrapper">
+			<wiki:wiki name="HelpTOC"/>
+		</div>
 	</div>
 </s:if>
 
-<div id="text" class="wiki">
+<div id="text">
 	<s:property value="content" escape="false"/>
 </div>
 
+</div>
 </body>
 </html>

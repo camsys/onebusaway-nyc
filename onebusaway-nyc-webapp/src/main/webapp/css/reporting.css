@@ -12,17 +12,20 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-#text textarea {
-	width: 500px;
+#content #text textarea {
+	width: 60%;
 	height: 75px;
 }
 
-#text label {
+#content #text label {
 	display: block;
 	padding-bottom: 3px;
 }
 
-#text div {
+#content #text div {
 	padding-top: 10px;
-	padding-bottom: 10px;
+}
+
+#content #text div.submit {
+	padding-top: 25px;
 }

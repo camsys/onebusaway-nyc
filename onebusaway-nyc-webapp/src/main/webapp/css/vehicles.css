@@ -12,6 +12,39 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
+#content #text table {
+	width: 90%;
+	padding: 0px;
+	padding-top: 10px;
+	padding-bottom: 15px;
+}
+
+#content #text th {
+	text-align: left;	
+}
+
+#content #text td a img {
+	border: none;	
+}
+
+#content #text .status {
+	width: 15px;
+	height: 15px;
+	text-indent: -9999px;	
+}
+
+#content #text .status.red {
+	background-color: red;	
+}
+
+#content #text .status.green {
+	background-color: green;	
+}
+
+#content #text .status.orange {
+	background-color: orange;	
+}
+
 #map-overlay {
     position: absolute;
     top: 50%;
@@ -35,35 +68,4 @@
 }
 #map-overlay a:hover {
 	text-decoration: underline;
-}
-
-#text table {
-	width: 100%;
-	padding-top: 10px;
-}
-
-#text th {
-	text-align: left;	
-}
-
-#text td a img {
-	border: none;	
-}
-
-#text .status {
-	width: 15px;
-	height: 15px;
-	text-indent: -9999px;	
-}
-
-#text .status.red {
-	background-color: red;	
-}
-
-#text .status.green {
-	background-color: green;	
-}
-
-#text .status.orange {
-	background-color: orange;	
 }
