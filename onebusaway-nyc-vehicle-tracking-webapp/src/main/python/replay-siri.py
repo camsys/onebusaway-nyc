@@ -23,6 +23,7 @@ while 1:
         print "sending row"
         sys.stdout.flush()
         h = Http()
+        h.force_exception_to_status_code = True
         resp, content = h.request(targetServer, 
                                   "POST", body=row.rawData)
         if not resp['status'] == '200':
