@@ -54,9 +54,14 @@ function createMaps() {
 		
 		var location = el.html();
 		var location_v = location.split(",");
+
+		if(location_v.length != 2)
+			return;
+		
 		var lat = location_v[0];
 		var lng = location_v[1];
 		var latlng = new google.maps.LatLng(lat, lng);
+
 		var mapOptions = {
 		      zoom: 15,
 		      center: latlng,
