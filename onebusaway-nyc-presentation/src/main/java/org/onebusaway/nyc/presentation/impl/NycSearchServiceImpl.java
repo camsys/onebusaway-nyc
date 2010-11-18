@@ -276,7 +276,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     ConfigurationBean config = configurationService.getConfiguration();  
 
-	List<RouteSearchResult> results = new ArrayList<RouteSearchResult>();
+    List<RouteSearchResult> results = new ArrayList<RouteSearchResult>();
 
     String routeId = routeBean.getId();
     String routeShortName = routeBean.getShortName();
@@ -365,15 +365,10 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       if (closestStop != null) {
         String closestStopId = closestStop.getId();
-        Map<String, Double> stopIdToDistance = tripIdToStopDistancesMap.get(tripId);
 
         double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
-        Double stopDistanceAlongRoute = stopIdToDistance.get(closestStopId);
-        
-        // shouldn't happen, but sometimes does (FIXME)
-        if(stopDistanceAlongRoute == null)
-        	stopDistanceAlongRoute = 0.0;
-        	
+        double stopDistanceAlongRoute = tripStatusBean.getNextStopDistanceAlongTrip();
+
         double distanceAwayFromClosestStopInMeters = stopDistanceAlongRoute
             - distanceAlongTrip;
         int distanceAwayFromClosestStopInFeet = (int) this.metersToFeet(distanceAwayFromClosestStopInMeters);
@@ -477,15 +472,18 @@ public class NycSearchServiceImpl implements NycSearchService {
     if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
       boolean routeIsOnDetour = false;
       
-	  for(SituationBean situationBean : statusBean.getSituations()) {
-   		  String miscelleanousReason = situationBean.getMiscellaneousReason();
+      List<SituationBean> situations = statusBean.getSituations();
+      if (situations != null) {
+        for (SituationBean situationBean : situations) {
+          String miscelleanousReason = situationBean.getMiscellaneousReason();
     		  
-   		  if(miscelleanousReason != null && miscelleanousReason.compareTo("detour") == 0) {
-   			  routeIsOnDetour = true;
-   			  break;
-   		  }
-   	  }
-    	
+              if (miscelleanousReason != null
+              && miscelleanousReason.compareTo("detour") == 0) {
+            routeIsOnDetour = true;
+            break;
+          }
+        }
+      }
       if((status != null && status.toLowerCase().compareTo("deviated") == 0) && ! routeIsOnDetour)
         return false;
     }

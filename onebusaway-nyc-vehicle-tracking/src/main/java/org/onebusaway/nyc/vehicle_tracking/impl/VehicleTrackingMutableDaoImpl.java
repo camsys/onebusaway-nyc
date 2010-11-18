@@ -30,7 +30,11 @@ public class VehicleTrackingMutableDaoImpl implements VehicleTrackingMutableDao 
 
   @Override
   public void saveOrUpdateVehicleLocationRecord(NycVehicleLocationRecord record) {
+    try {
     _template.saveOrUpdate(record);
+    } catch (Exception e) {
+      System.out.println("exception: " + e);
+    }
   }
 
   @SuppressWarnings("unchecked")
