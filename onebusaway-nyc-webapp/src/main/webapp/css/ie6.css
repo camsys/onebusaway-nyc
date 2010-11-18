@@ -13,7 +13,7 @@
 /* under the License. */
 
 #content #sidebar {
-    width: 300px;
+    width: 325px;
 }
 
 #content #map {
@@ -23,5 +23,5 @@
 
 #displayed-routes,
 #search-results {
-    width: 320px;
+    width: 325px;
 }

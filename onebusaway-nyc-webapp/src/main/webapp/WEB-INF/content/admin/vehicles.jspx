@@ -73,7 +73,7 @@ under the License.
 
 					<td><s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
 
-					<td><a href="#" class="map-link"><s:url var="iconUrl" value="/img/map.png"></s:url><img src="${iconUrl}" /></a><span class="map-location"><s:property value="location" /></span></td>
+					<td><div class="map-location-wrapper"><div class="map-location"><s:property value="location" /></div></div></td>
 				</tr>
 			</s:iterator>
 		</table>

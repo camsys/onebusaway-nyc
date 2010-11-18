@@ -23,6 +23,10 @@
 	text-align: left;	
 }
 
+#content #text td {
+	vertical-align: top;
+}
+
 #content #text td a img {
 	border: none;	
 }
@@ -45,27 +49,14 @@
 	background-color: orange;	
 }
 
-#map-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    background-color: white;
-    border: 1px solid black;
-    padding: 10px;
-    width: 200px;
-    height: 200px;
+#content #text .map-location {
+	height: 120px;
+	width: 80px;	
 }
 
-#google-map {
-	clear: right;
-	height: 180px;
-	width: 200px;
-}
-
-#map-overlay a {
-	float: right;
-	text-decoration: none;
-}
-#map-overlay a:hover {
-	text-decoration: underline;
+#content #text .map-location-wrapper {
+	height: 80px;
+	width: 80px;	
+	overflow: hidden;
+	border: 1px solid #C0C0C0;
 }
