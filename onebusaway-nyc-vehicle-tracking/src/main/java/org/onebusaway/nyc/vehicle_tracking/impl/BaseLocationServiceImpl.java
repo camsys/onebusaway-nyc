@@ -43,8 +43,10 @@ class BaseLocationServiceImpl implements BaseLocationService {
     reader.addEntityHandler(records);
 
     File path = _bundle.getBaseLocationsPath();
-    if (path.exists())
-      reader.readEntities(BaseLocationRecord.class, new FileReader(path));
+    if (!path.exists())
+      throw new RuntimeException("Your bundle has no BaseLocations.txt.");
+
+    reader.readEntities(BaseLocationRecord.class, new FileReader(path));
 
     List<BaseLocationRecord> values = records.getValues();
 
