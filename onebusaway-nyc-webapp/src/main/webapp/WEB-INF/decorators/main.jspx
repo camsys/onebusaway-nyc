@@ -62,11 +62,6 @@ under the License.
       	<s:url var="url" namespace="" action="index"></s:url>
         <li><a href="${url}">Home</a></li>
 		
-		<s:url var="url" namespace="/wiki" action="index">
-			<s:param name="name">HelpIndex</s:param>
-		</s:url>
-        <li><a href="${url}">Help</a></li>
-
 		<s:if test="adminUser">
 			<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
 	        <li><a href="${url}">Parameters</a></li>
@@ -80,7 +75,11 @@ under the License.
 			<s:url var="url" namespace="/admin" action="reporting"></s:url>
 	        <li><a href="${url}">Reporting</a></li>
 		</s:if>
-
+		
+		<s:url var="url" namespace="/wiki" action="index">
+			<s:param name="name">HelpIndex</s:param>
+		</s:url>
+        <li><a href="${url}">Help</a></li>
       </ul>
     </div>
 
