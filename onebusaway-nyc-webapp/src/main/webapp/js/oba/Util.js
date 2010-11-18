@@ -139,15 +139,17 @@ OBA.Util = (function() {
 
             var hours = dateObj.getHours();            
             var amOrPm = "";
-            if(hours <= 12) {
+            if(hours >= 12) {
+            	if(hours > 12)
+            		hours = hours - 12;            	            	
+ 
+            	amOrPm = "pm";
+            } else {
             	if(hours == 0) {
             		hours = 12;
             	}
             	
             	amOrPm = "am";
-            } else {
-            	hours = hours - 12;            	            	
-            	amOrPm = "pm";
             }
             
             return hours + ":" + minutes + " " + amOrPm;
