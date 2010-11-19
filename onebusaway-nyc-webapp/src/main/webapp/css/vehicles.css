@@ -47,12 +47,12 @@
 
 #content #text .map-location {
 	height: 120px;
-	width: 80px;	
+	width: 150px;	
 }
 
 #content #text .map-location-wrapper {
 	height: 80px;
-	width: 80px;	
+	width: 150px;	
 	overflow: hidden;
 	border: 1px solid #C0C0C0;
 }

@@ -213,7 +213,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
         return inferredDestinationSignCode + ": " + tripHeadsign;
       } else {
         return inferredDestinationSignCode + ": " + tripHeadsign
-            + "<br/>(bus sent " + mostRecentDestinationSignCode + ")";
+            + "<br/><span class='error'>(operator entered " + mostRecentDestinationSignCode + ")</span>";
       }
     }
 
@@ -242,6 +242,11 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       double lon = nycVehicleStatusBean.getLastGpsLon();
       return lat + "," + lon;
     }
+    
+    @SuppressWarnings("unused")
+    public double getOrientation() {
+      return vehicleStatusBean.getTripStatus().getOrientation();
+    }    
 
     @SuppressWarnings("unused")
     public String getDisabledName() {

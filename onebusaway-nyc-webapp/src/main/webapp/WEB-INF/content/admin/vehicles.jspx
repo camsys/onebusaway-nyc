@@ -29,6 +29,9 @@ under the License.
 <c:set var="url"><s:url value="/js/jquery.js"/></c:set>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<c:set var="url"><s:url value="/js/oba/Config.js"/></c:set>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 <c:set var="url"><s:url value="/js/oba/VehiclesAdmin.js"/></c:set>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
@@ -73,7 +76,13 @@ under the License.
 
 					<td><s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
 
-					<td><div class="map-location-wrapper"><div class="map-location"><s:property value="location" /></div></div></td>
+					<td>
+						<div class="map-location-wrapper">
+							<div class="map-location">
+								<s:property value="location" />,<s:property value="orientation" />
+							</div>
+						</div>
+					</td>
 				</tr>
 			</s:iterator>
 		</table>

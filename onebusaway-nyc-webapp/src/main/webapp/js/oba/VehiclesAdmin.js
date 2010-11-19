@@ -55,26 +55,41 @@ function createMaps() {
 		var location = el.html();
 		var location_v = location.split(",");
 
-		if(location_v.length != 2)
+		if(location_v.length != 3)
 			return;
 		
 		var lat = location_v[0];
 		var lng = location_v[1];
+		var orientation = Math.floor(location_v[2] / 30) * 30;
 		var latlng = new google.maps.LatLng(lat, lng);
 
 		var mapOptions = {
 		      zoom: 15,
 		      center: latlng,
 		      mapTypeControl: false,
-		      disableDefaultUI: true,
-		      mapTypeId: google.maps.MapTypeId.ROADMAP
+		      streetViewControl: false,
+			  navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
+			  mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
 			
 		var map = new google.maps.Map(elRaw, mapOptions);
+
+    	var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
+				OBA.Config.vehicleIconSize,
+				new google.maps.Point(0,0),
+				OBA.Config.vehicleIconCenter);
+    	
 		var marker = new google.maps.Marker({
 		      position: latlng, 
-		      map: map
+			  icon: icon,
+		      map: map,
+		      clickable: false
 		});
+
+		// (FIXME?) Google maps seems to always take into account marker padding with the assumption of a 
+		// marker that is shaped like its default (i.e. taller than wide). Because of this, we have to adjust 
+		// the map center to make up for this false assumption in our case.
+		map.panBy(0, OBA.Config.vehicleIconSize.height / 2);
 	});
 }
 

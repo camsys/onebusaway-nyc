@@ -29,12 +29,14 @@ OBA.Config = {
     pollingInterval: 5000,
 
     // marker images used
-    vehicleIconFilePrefix: "img/vehicle/vehicle",
+    // (the path below needs to be absolute)
+    vehicleIconFilePrefix: "/img/vehicle/vehicle",
     vehicleIconFileType: "png",
     vehicleIconSize: new google.maps.Size(20,20),
     vehicleIconCenter: new google.maps.Point(10,10),
 
-    stopIconFilePrefix: "img/stop/stop",
+    // (the path below needs to be absolute)
+    stopIconFilePrefix: "/img/stop/stop",
     stopIconFileType: "png",
     stopIconSize: new google.maps.Size(24,24),
     stopIconCenter: new google.maps.Point(12,12),
@@ -49,6 +51,8 @@ OBA.Config = {
     	
     	var status = ((typeof tripStatus.status !== 'undefined' && tripStatus.status !== '') ? tripStatus.status : null);
     	var phase = ((typeof tripStatus.phase !== 'undefined' && tripStatus.phase !== '') ? tripStatus.phase : null);
+    	
+    	OBA.Util.log("BUS: PREDICTED=" + tripStatus.predicted + " STATUS=" + status + " PHASE=" + phase);
     	
     	// hide disabled vehicles (row 7)
     	if(status !== null && status.toLowerCase() === 'disabled')

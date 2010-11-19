@@ -73,7 +73,7 @@ OBA.Util = (function() {
             return result;
         },
         log: function(s) {
-            if(OBA.Util.debug === true && typeof console !== 'undefined' && typeof console.log !== 'undefined') {
+            if(OBA.Config.debug === true && typeof console !== 'undefined' && typeof console.log !== 'undefined') {
                 console.log(s);
             }
         },
