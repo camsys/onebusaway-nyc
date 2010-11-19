@@ -61,6 +61,11 @@ function createMaps() {
 		var lat = location_v[0];
 		var lng = location_v[1];
 		var orientation = Math.floor(location_v[2] / 30) * 30;
+
+		if(orientation == null || orientation == "") {
+			orientation = "unknown";
+		}
+		
 		var latlng = new google.maps.LatLng(lat, lng);
 
 		var mapOptions = {
@@ -73,7 +78,7 @@ function createMaps() {
 		};
 			
 		var map = new google.maps.Map(elRaw, mapOptions);
-
+	
     	var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
 				OBA.Config.vehicleIconSize,
 				new google.maps.Point(0,0),
