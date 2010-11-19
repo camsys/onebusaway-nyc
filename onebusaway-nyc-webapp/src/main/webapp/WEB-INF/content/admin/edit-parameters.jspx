@@ -38,7 +38,7 @@ under the License.
 		  </div>
 		  <div class="configuration-parameter">
 		    <h2>No Messages: Stale</h2>
-		    <p>Bus is not sending location messages--after this period, the data is considered "stale".</p>
+		    <p>Bus is not sending location messages&amp;mdash;after this period, the data is considered "stale".</p>
 		    <s:textfield name="staleDataTimeout" value="%{staleDataTimeout}" label="Stale Data Timeout" size="3"/>
 			<span>seconds</span>
 		  </div>
@@ -53,7 +53,7 @@ under the License.
   		  </div>
   		  <div class="configuration-parameter">
     		<h2>No Messages: Hide</h2>
-    		<p>Bus is not sending location messages--after this period, the bus is hidden from users.</p>
+    		<p>Bus is not sending location messages&amp;mdash;after this period, the bus is hidden from users.</p>
     		<s:textfield name="hideTimeout" value="%{hideTimeout}" label="Hide Timeout" size="3"/>
     		<span>seconds</span>  
   		  </div>
