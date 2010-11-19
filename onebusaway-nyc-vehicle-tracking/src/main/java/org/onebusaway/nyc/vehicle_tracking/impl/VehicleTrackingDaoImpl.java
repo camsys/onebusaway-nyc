@@ -50,4 +50,13 @@ public class VehicleTrackingDaoImpl implements VehicleTrackingDao {
   public List<DestinationSignCodeRecord> getOutOfServiceDestinationSignCodeRecords() {
     return _template.findByNamedQuery("outOfServiceDestinationSignCodeRecords");
   }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<DestinationSignCodeRecord> getAnyDestinationSignCodeRecordsForDestinationSignCode(
+      String destinationSignCode) {
+    return _template.findByNamedQueryAndNamedParam(
+        "anyDestinationSignCodeRecordsForDestinationSignCode",
+        "destinationSignCode", destinationSignCode);
+  }
 }

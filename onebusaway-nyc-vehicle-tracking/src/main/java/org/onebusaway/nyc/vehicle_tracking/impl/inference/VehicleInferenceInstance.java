@@ -85,6 +85,16 @@ public class VehicleInferenceInstance {
       record.setLongitude(_previousRecord.getLongitude());
     }
 
+    /**
+     * Sometimes, DSCs take the form "  11", where there is whitespace in there.
+     * Let's clean it up.
+     */
+    String dsc = record.getDestinationSignCode();
+    if (dsc != null) {
+      dsc = dsc.trim();
+      record.setDestinationSignCode(dsc);
+    }
+
     Observation observation = new Observation(record, _previousRecord);
 
     _previousRecord = record;

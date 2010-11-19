@@ -12,4 +12,6 @@ public interface DestinationSignCodeService {
   public String getDestinationSignCodeForTripId(AgencyAndId tripId);
 
   public boolean isOutOfServiceDestinationSignCode(String destinationSignCode);
+  
+  public boolean isUnknownDestinationSignCode(String destinationSignCode);
 }

@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
@@ -246,6 +247,16 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   @Override
   public void handleEntity(Object bean) {
+    if (bean instanceof NycVehicleLocationRecord) {
+      NycVehicleLocationRecord vlr = (NycVehicleLocationRecord) bean;
+      NycTestLocationRecord record = new NycTestLocationRecord();
+      record.setDsc(vlr.getDestinationSignCode());
+      record.setLat(vlr.getLatitude());
+      record.setLon(vlr.getLongitude());
+      record.setTimestamp(vlr.getTimeReceived());
+      record.setVehicleId(vlr.getVehicleId().getId());
+      bean = record;
+    }
     NycTestLocationRecord record = (NycTestLocationRecord) bean;
     addRecord(record);
   }

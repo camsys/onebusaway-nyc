@@ -26,6 +26,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
@@ -115,9 +116,10 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public int simulateLocationsFromTrace(InputStream traceInputStream,
-      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime,
-      int minimumRecordInterval, boolean bypassInference) throws IOException {
+  public int simulateLocationsFromTrace(String traceType,
+      InputStream traceInputStream, boolean runInRealtime,
+      boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
+      boolean bypassInference) throws IOException {
 
     SimulatorTask task = new SimulatorTask();
     task.setPauseOnStart(pauseOnStart);
@@ -128,7 +130,13 @@ public class VehicleLocationSimulationServiceImpl implements
 
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
-    reader.readEntities(NycTestLocationRecord.class, traceInputStream);
+
+    if (traceType.equals("NycVehicleLocationRecord")) {
+      reader.setTokenizerStrategy(new TabTokenizerStrategy());
+      reader.readEntities(NycVehicleLocationRecord.class, traceInputStream);
+    } else if (traceType.equals("NycTestLocationRecord")) {
+      reader.readEntities(NycTestLocationRecord.class, traceInputStream);
+    }
     traceInputStream.close();
 
     return addTask(task);

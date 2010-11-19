@@ -11,7 +11,9 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.AgencyIdFieldMappingFactory;
 
 /**
  * Raw vehicle location record to be persisted to the database
@@ -30,6 +32,7 @@ public class NycVehicleLocationRecord {
 
   private long time;
 
+  @CsvField(name = "timereceived")
   private long timeReceived;
 
   private double latitude;
@@ -38,8 +41,10 @@ public class NycVehicleLocationRecord {
 
   private double bearing;
 
+  @CsvField(name = "destinationsigncode")
   private String destinationSignCode;
 
+  @CsvField(name = "deviceid")
   private String deviceId;
 
   /** raw GPS sentences */
@@ -51,9 +56,11 @@ public class NycVehicleLocationRecord {
   @AttributeOverrides({
       @AttributeOverride(name = "agencyId", column = @Column(name = "vehicle_agencyId", length = 50)),
       @AttributeOverride(name = "id", column = @Column(name = "vehicle_id"))})
+  @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
   private AgencyAndId vehicleId;
 
   @Column(name = "rawData", length = 3000)
+  @CsvField(name = "rawdata")
   private String rawData;
 
   public void setId(long id) {

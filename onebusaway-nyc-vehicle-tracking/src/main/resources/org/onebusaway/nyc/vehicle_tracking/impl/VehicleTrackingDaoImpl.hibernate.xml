@@ -10,4 +10,7 @@
     <query name="outOfServiceDestinationSignCodeRecords" read-only="true">
       SELECT r FROM DestinationSignCodeRecord r WHERE tripId IS NULL
     </query>
+    <query name="anyDestinationSignCodeRecordsForDestinationSignCode" read-only="true">
+      SELECT r FROM DestinationSignCodeRecord r WHERE destinationSignCode = :destinationSignCode
+    </query>
 </hibernate-mapping>

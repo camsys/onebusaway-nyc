@@ -26,13 +26,22 @@ public interface VehicleTrackingDao {
   /**
    * 
    * @param destinationSignCode
-   * @return a list of records with the matching destination sign code
+   * @return a list of records with the matching destination sign code and an
+   *         assigned trip
    */
   public List<DestinationSignCodeRecord> getDestinationSignCodeRecordsForDestinationSignCode(
       String destinationSignCode);
 
   public List<DestinationSignCodeRecord> getDestinationSignCodeRecordsForTripId(
       AgencyAndId tripId);
-  
+
   public List<DestinationSignCodeRecord> getOutOfServiceDestinationSignCodeRecords();
+
+  /**
+   * 
+   * @param destinationSignCode
+   * @return a list of records with the matching destination sign code
+   */
+  public List<DestinationSignCodeRecord> getAnyDestinationSignCodeRecordsForDestinationSignCode(
+      String destinationSignCode);
 }

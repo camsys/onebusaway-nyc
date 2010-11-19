@@ -10,9 +10,9 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 
 public interface VehicleLocationSimulationService {
 
-  public int simulateLocationsFromTrace(InputStream traceInputStream,
-      boolean runInRealtime, boolean pauseOnStart, boolean shiftStartTime,
-      int minimumRecordInterval, boolean bypassInference) throws IOException;
+  public int simulateLocationsFromTrace(String traceType,
+      InputStream traceInputStream, boolean runInRealtime, boolean pauseOnStart,
+      boolean shiftStartTime, int minimumRecordInterval, boolean bypassInference) throws IOException;
 
   public List<VehicleLocationSimulationSummary> getSimulations();
 

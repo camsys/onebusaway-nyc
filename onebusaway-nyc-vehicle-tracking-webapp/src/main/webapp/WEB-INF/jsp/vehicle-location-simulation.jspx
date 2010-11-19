@@ -37,7 +37,7 @@
         <td>Minimum record interval:</td>
         <td>
         <p><input type="text" name="minimumRecordInterval"
-            value="60" /> - Records coming less than N seconds after
+            value="20" /> - Records coming less than N seconds after
         the previous record will be pruned.</p>
         </td>
     </tr>
@@ -48,6 +48,15 @@
         Bypass inference engine and pass vehile location records
         directly to the transit data federation. Assumes "actual"
         ground-truth info is set in the trace.</p>
+        </td>
+    </tr>
+    <tr>
+        <td>Trace Type</td>
+        <td>
+          <select name="traceType">
+            <option value="NycTestLocationRecord" selected="true">NycTestLocationRecord</option>
+            <option value="NycVehicleLocationRecord">NycVehicleLocationRecord</option>
+          </select>
         </td>
     </tr>
     <tr>

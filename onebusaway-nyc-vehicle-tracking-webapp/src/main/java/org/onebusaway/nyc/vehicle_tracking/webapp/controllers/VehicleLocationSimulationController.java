@@ -119,6 +119,7 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
       @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime,
       @RequestParam(value = "minimumRecordInterval", required = false, defaultValue="0") int minimumRecordInterval,
+      @RequestParam(value = "traceType", required = true) String traceType,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
       @RequestParam(required = false, defaultValue = "false") boolean returnId)
       throws IOException {
@@ -133,9 +134,9 @@ public class VehicleLocationSimulationController {
       if (name.endsWith(".gz"))
         in = new GZIPInputStream(in);
 
-      taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(in,
-          realtime, pauseOnStart, shiftStartTime, minimumRecordInterval,
-          bypassInference);
+      taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(traceType,
+          in, realtime, pauseOnStart, shiftStartTime,
+          minimumRecordInterval, bypassInference);
     }
 
     if (returnId) {

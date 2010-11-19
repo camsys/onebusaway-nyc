@@ -75,7 +75,9 @@ public class BlockStateTransitionModel {
   public BlockState transitionBlockState(VehicleState parentState,
       EdgeState edgeState, Observation obs) {
 
-    boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(obs.getRecord().getDestinationSignCode());
+    String dsc = obs.getRecord().getDestinationSignCode();
+    boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
+    boolean unknownDsc = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
 
     EdgeState prevEdgeState = parentState.getEdgeState();
     BlockState blockState = parentState.getBlockState();
@@ -83,10 +85,11 @@ public class BlockStateTransitionModel {
     EVehiclePhase phase = parentJourneyState.getPhase();
 
     /**
-     * If our DSC has not changed, we don't concern ourselves with switching
-     * blocks, but we still might need to update our block location
+     * If our DSC has not changed or we have an unknown DSC, we don't concern
+     * ourselves with switching blocks, but we still might need to update our
+     * block location
      */
-    if (!hasDestinationSignCodeChangedBetweenObservations(obs)) {
+    if (!hasDestinationSignCodeChangedBetweenObservations(obs) || unknownDsc) {
 
       if (EVehiclePhase.isActiveDuringBlock(phase)) {
 
@@ -190,11 +193,22 @@ public class BlockStateTransitionModel {
         return blockState;
 
       /**
-       * If we've switch to another valid DSC, let's try switching the block
+       * If we've switch to another valid DSC, let's try switching the block.
+       * But the question: are we starting a new block or resuming a block
+       * already in progress?
+       * 
        */
+
       Set<BlockInstance> instances = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
-      return _blockStateSamplingStrategy.sampleBlockStateAtJourneyStart(
-          instances, obs, blockState);
+
+      if (Math.random() < 0.5) {
+        return _blockStateSamplingStrategy.sampleBlockStateAtJourneyStart(
+            instances, obs, blockState);
+      } else {
+        return _blockStateSamplingStrategy.cdfForJourneyInProgress(instances,
+            obs).sample();
+      }
+
     }
   }
 
