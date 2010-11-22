@@ -210,11 +210,11 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       if (vehicleStatusBean == null)
         return "Disabled";
       TripBean trip = vehicleStatusBean.getTrip();
+      String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
       if (trip == null)
-        return "Not In Service";
+        return "Not Available<br/><span class='error'>(operator entered " + mostRecentDestinationSignCode + ")</span>";
       String tripHeadsign = trip.getTripHeadsign();
       String inferredDestinationSignCode = nycVehicleStatusBean.getInferredDestinationSignCode();
-      String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
       if (inferredDestinationSignCode.equals(mostRecentDestinationSignCode)) {
         return inferredDestinationSignCode + ": " + tripHeadsign;
       } else {
