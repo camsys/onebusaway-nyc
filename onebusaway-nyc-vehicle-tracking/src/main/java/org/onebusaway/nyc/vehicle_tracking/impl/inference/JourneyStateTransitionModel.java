@@ -18,10 +18,18 @@ public class JourneyStateTransitionModel {
 
   private VehicleStateSensorModel _vehicleStateSensorModel;
 
+  private BlockStateTransitionModel _blockStateTransitionModel;
+
   @Autowired
   public void setVehicleStateSensorModel(
       VehicleStateSensorModel vehicleStateSensorModel) {
     _vehicleStateSensorModel = vehicleStateSensorModel;
+  }
+
+  @Autowired
+  public void setBlockStateTransitionModel(
+      BlockStateTransitionModel blockStateTransitionModel) {
+    _blockStateTransitionModel = blockStateTransitionModel;
   }
 
   /****
@@ -29,13 +37,13 @@ public class JourneyStateTransitionModel {
    * 
    ****/
 
-  public JourneyState move(VehicleState parentState, EdgeState edgeState,
-      MotionState motionState, BlockState blockState, Observation obs) {
+  public VehicleState move(VehicleState parentState, EdgeState edgeState,
+      MotionState motionState, Observation obs) {
 
     List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
         edgeState);
 
-    return sampleJourneyState(parentState, edgeState, motionState, blockState,
+    return sampleJourneyState(parentState, edgeState, motionState,
         journeyStates, obs);
   }
 
@@ -59,6 +67,8 @@ public class JourneyStateTransitionModel {
         return moveLayoverDuring(edgeState);
       case DEADHEAD_AFTER:
         return moveDeadheadAfter(edgeState);
+      case LAYOVER_AFTER:
+        return moveLayoverAfter(edgeState);
       case UNKNOWN:
         return moveUnknown(edgeState);
       default:
@@ -67,13 +77,16 @@ public class JourneyStateTransitionModel {
     }
   }
 
-  private JourneyState sampleJourneyState(VehicleState parentState,
-      EdgeState edgeState, MotionState motionState, BlockState blockState,
+  private VehicleState sampleJourneyState(VehicleState parentState,
+      EdgeState edgeState, MotionState motionState,
       List<JourneyState> journeyStates, Observation obs) {
 
-    CDFMap<JourneyState> cdf = new CDFMap<JourneyState>();
+    CDFMap<VehicleState> cdf = new CDFMap<VehicleState>();
 
     for (JourneyState journeyState : journeyStates) {
+
+      BlockState blockState = _blockStateTransitionModel.transitionBlockState(
+          parentState, edgeState, motionState, journeyState, obs);
 
       VehicleState vehicleState = new VehicleState(edgeState, motionState,
           blockState, journeyState);
@@ -81,7 +94,7 @@ public class JourneyStateTransitionModel {
       double p = _vehicleStateSensorModel.likelihood(parentState, vehicleState,
           obs);
 
-      cdf.put(p, journeyState);
+      cdf.put(p, vehicleState);
     }
 
     return cdf.sample();
@@ -114,7 +127,8 @@ public class JourneyStateTransitionModel {
 
     return Arrays.asList(JourneyState.inProgress(),
         JourneyState.deadheadDuring(edgeState.getLocationOnEdge()),
-        JourneyState.layoverDuring(), JourneyState.deadheadAfter());
+        JourneyState.layoverDuring(), JourneyState.deadheadAfter(),
+        JourneyState.layoverAfter());
   }
 
   private List<JourneyState> moveDeadheadDuring(JourneyState parentJourneyState) {
@@ -132,13 +146,20 @@ public class JourneyStateTransitionModel {
         JourneyState.deadheadDuring(edgeState.getLocationOnEdge()),
         JourneyState.layoverDuring());
   }
-  
+
   private List<JourneyState> moveDeadheadAfter(EdgeState edgeState) {
 
     return Arrays.asList(JourneyState.atBase(),
         JourneyState.deadheadBefore(edgeState.getLocationOnEdge()),
-        JourneyState.layoverBefore(), JourneyState.inProgress(),
-        JourneyState.deadheadAfter());
+        JourneyState.inProgress(), JourneyState.deadheadAfter(),
+        JourneyState.layoverAfter());
+  }
+
+  private List<JourneyState> moveLayoverAfter(EdgeState edgeState) {
+
+    return Arrays.asList(JourneyState.atBase(),
+        JourneyState.deadheadBefore(edgeState.getLocationOnEdge()),
+        JourneyState.inProgress(), JourneyState.layoverAfter());
   }
 
   private List<JourneyState> moveUnknown(EdgeState edgeState) {

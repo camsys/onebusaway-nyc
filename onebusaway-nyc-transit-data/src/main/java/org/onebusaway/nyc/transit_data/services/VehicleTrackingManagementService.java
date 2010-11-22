@@ -9,6 +9,8 @@ public interface VehicleTrackingManagementService {
   public String getDefaultAgencyId();
 
   public void setVehicleStatus(String vehicleId, boolean status);
+  
+  public void resetVehicleTrackingForVehicleId(String vehicleId);
 
   public List<NycVehicleStatusBean> getAllVehicleStatuses();
 

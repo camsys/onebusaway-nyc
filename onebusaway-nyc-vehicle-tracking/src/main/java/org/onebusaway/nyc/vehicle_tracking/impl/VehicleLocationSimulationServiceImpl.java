@@ -170,6 +170,15 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
+  public VehicleLocationSimulationDetails getParticleDetails(int taskId,
+      int particleId) {
+    SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      return task.getParticleDetails(particleId);
+    return null;
+  }
+
+  @Override
   public List<NycTestLocationRecord> getResultRecords(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)

@@ -19,6 +19,8 @@ public interface VehicleLocationSimulationService {
   public VehicleLocationSimulationSummary getSimulation(int taskId);
 
   public VehicleLocationSimulationDetails getSimulationDetails(int taskId);
+  
+  public VehicleLocationSimulationDetails getParticleDetails(int taskId, int particleId);
 
   public List<NycTestLocationRecord> getSimulationRecords(int taskId);
 

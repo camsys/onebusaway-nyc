@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
-public class DeviationModel {
+public class DeviationModel implements ProbabilityFunction{
 
   private final HalfNormal _dist;
 

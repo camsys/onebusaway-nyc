@@ -42,6 +42,7 @@ table td {
             <td>DistanceAlongBlock</td>
             <td>ScheduledTime</td>
             <td>EdgeLocation</td>
+            <td>LastMotionLocation</td>
         </tr>
     </thead>
     <tbody>
@@ -50,11 +51,12 @@ table td {
     <c:forEach var="p" items="${details.particles}">
     <tr>
         <c:set var="edgeState" value="${p.data.edgeState}"/>
+        <c:set var="motionState" value="${p.data.motionState}"/>
         <c:set var="journeyState" value="${p.data.journeyState}"/>
         <c:set var="blockState" value="${p.data.blockState}"/>
         <c:set var="blockLocation" value="${blockState.blockLocation}"/>
         
-        <td><c:out value="${p.weight}" /></td>
+        <td><a href="vehicle-location-simulation!particle-details.do?taskId=${details.id}&amp;particleId=${p.index}"><c:out value="${p.weight}" /></a></td>
         <td><c:out value="${journeyState.phase}"/></td>
         <td><a href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out value="${blockState.blockInstance.block.block.id}" /></a></td>
         <td><c:out value="${blockLocation.activeTrip.trip.id}" /></td>
@@ -64,6 +66,7 @@ table td {
         <jsp:setProperty name="scheduleTime" property="time" value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}"/>
         <td><fmt:formatDate pattern="HH:mm" value="${scheduleTime}"/><jsp:text> (</jsp:text><c:out value="${blockLocation.scheduledTime}" />)</td>
         <td><c:out value="${edgeState.pointOnEdge.lat}" /><jsp:text> </jsp:text><c:out value="${edgeState.pointOnEdge.lon}" /></td>
+        <td><c:out value="${motionState.lastInMotionLocation.lat}" /><jsp:text> </jsp:text><c:out value="${motionState.lastInMotionLocation.lon}" /></td>
     </tr>
     </c:forEach>
 </ul>

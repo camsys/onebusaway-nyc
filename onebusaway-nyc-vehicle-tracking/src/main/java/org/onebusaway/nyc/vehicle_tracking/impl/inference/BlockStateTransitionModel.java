@@ -6,6 +6,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
@@ -73,7 +74,8 @@ public class BlockStateTransitionModel {
    ****/
 
   public BlockState transitionBlockState(VehicleState parentState,
-      EdgeState edgeState, Observation obs) {
+      EdgeState edgeState, MotionState motionState, JourneyState journeyState,
+      Observation obs) {
 
     String dsc = obs.getRecord().getDestinationSignCode();
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
@@ -81,17 +83,21 @@ public class BlockStateTransitionModel {
 
     EdgeState prevEdgeState = parentState.getEdgeState();
     BlockState blockState = parentState.getBlockState();
-    JourneyState parentJourneyState = parentState.getJourneyState();
-    EVehiclePhase phase = parentJourneyState.getPhase();
+
+    EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
+
+    boolean phaseTransitionSuggestsBlockTransition = getPhaseTransitionSuggestsBlockTransition(
+        parentState, journeyState);
 
     /**
      * If our DSC has not changed or we have an unknown DSC, we don't concern
      * ourselves with switching blocks, but we still might need to update our
      * block location
      */
-    if (!hasDestinationSignCodeChangedBetweenObservations(obs) || unknownDsc) {
+    if (!phaseTransitionSuggestsBlockTransition
+        && (!hasDestinationSignCodeChangedBetweenObservations(obs) || unknownDsc)) {
 
-      if (EVehiclePhase.isActiveDuringBlock(phase)) {
+      if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
 
         /**
          * Update our block location along the block when we're actively serving
@@ -99,7 +105,7 @@ public class BlockStateTransitionModel {
          */
         return advanceAlongBlock(prevEdgeState, edgeState, blockState, obs);
 
-      } else if (phase.equals(EVehiclePhase.AT_BASE)) {
+      } else if (parentPhase.equals(EVehiclePhase.AT_BASE)) {
 
         /**
          * If we're at the base and our current block state has been run to
@@ -135,7 +141,7 @@ public class BlockStateTransitionModel {
      * handle that is determined by which journey phase we're in.
      */
 
-    if (EVehiclePhase.isActiveBeforeBlock(phase)) {
+    if (EVehiclePhase.isActiveBeforeBlock(parentPhase)) {
 
       if (outOfService) {
         /**
@@ -153,10 +159,10 @@ public class BlockStateTransitionModel {
          */
         Set<BlockInstance> instances = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
         return _blockStateSamplingStrategy.sampleBlockStateAtJourneyStart(
-            instances, obs, blockState);
+            instances, obs, blockState, phaseTransitionSuggestsBlockTransition);
       }
 
-    } else if (EVehiclePhase.isActiveDuringBlock(phase)) {
+    } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
 
       if (outOfService) {
         /**
@@ -202,14 +208,32 @@ public class BlockStateTransitionModel {
       Set<BlockInstance> instances = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
 
       if (Math.random() < 0.5) {
+        
         return _blockStateSamplingStrategy.sampleBlockStateAtJourneyStart(
-            instances, obs, blockState);
+            instances, obs, blockState, phaseTransitionSuggestsBlockTransition);
       } else {
         return _blockStateSamplingStrategy.cdfForJourneyInProgress(instances,
             obs).sample();
       }
 
     }
+  }
+
+  private boolean getPhaseTransitionSuggestsBlockTransition(
+      VehicleState parentState, JourneyState journeyState) {
+
+    if (parentState == null || journeyState == null)
+      return false;
+
+    EVehiclePhase from = parentState.getJourneyState().getPhase();
+    EVehiclePhase to = journeyState.getPhase();
+
+    /**
+     * If we've transitioned from layover_after to deadhead_after, the driver
+     * might not have entered a valid DSC switch, so we check anyway
+     */
+    return EVehiclePhase.LAYOVER_AFTER == from
+        && EVehiclePhase.LAYOVER_AFTER != to;
   }
 
   private BlockState advanceAlongBlock(EdgeState prevEdgeState,

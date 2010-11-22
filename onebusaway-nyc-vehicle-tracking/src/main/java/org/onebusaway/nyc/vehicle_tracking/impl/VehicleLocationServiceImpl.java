@@ -109,6 +109,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
     NycVehicleLocationRecord record = new NycVehicleLocationRecord();
     record.setTime(time);
+    record.setTimeReceived(time);
     record.setVehicleId(new AgencyAndId(_agencyId, vehicleId));
     record.setLatitude(lat);
     record.setLongitude(lon);

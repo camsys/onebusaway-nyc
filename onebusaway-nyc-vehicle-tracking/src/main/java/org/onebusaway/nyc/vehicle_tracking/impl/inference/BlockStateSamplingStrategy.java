@@ -23,6 +23,6 @@ public interface BlockStateSamplingStrategy {
 
   public BlockState sampleBlockStateAtJourneyStart(
       Set<BlockInstance> potentialBlocks, Observation observation,
-      BlockState currentBlockState);
+      BlockState currentBlockState, boolean phaseTransitionSuggestsBlockTransition);
 
 }

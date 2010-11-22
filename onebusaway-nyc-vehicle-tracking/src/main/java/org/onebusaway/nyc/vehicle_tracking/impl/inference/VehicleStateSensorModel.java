@@ -9,6 +9,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel2;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -89,7 +90,7 @@ public class VehicleStateSensorModel {
    */
   private double _offBlockDistance = 1000;
 
-  private DeviationModel _endOfBlockDeviationModel = new DeviationModel(200);
+  private DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(200);
 
   /****
    * Service Setters
@@ -130,6 +131,8 @@ public class VehicleStateSensorModel {
         return likelihoodLayoverDuring(state, observation);
       case DEADHEAD_AFTER:
         return likelihoodDeadheadAfter(state, observation);
+      case LAYOVER_AFTER:
+        return likelihoodLayoverAfter(state, observation);
       case UNKNOWN:
         return likelihoodUnknown(state, observation);
     }
@@ -316,17 +319,39 @@ public class VehicleStateSensorModel {
   private double likelihoodDeadheadAfter(VehicleState state,
       Observation observation) {
 
-    // Only allow deadhead after if we've reached the end of the block OR we've
-    // served some part of the block and now we've
-    // REALLY deviated from our route OR we're out-of-service
+    /**
+     * Only allow deadhead after if we've reached the end of the block OR (we've
+     * served some part of the block and now we've REALLY deviated from our
+     * route OR we're out-of-service). Plus, we need to be moving
+     */
 
     double pEndOfBlock = computeProbabilityOfEndOfBlock(state.getBlockState());
+
     double pServedSomePartOfBlock = computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
     double pOffBlock = computeOffBlockProbability(state);
     double pOutOfService = computeOutOfServiceProbability(observation);
 
-    return or(pEndOfBlock, pServedSomePartOfBlock
-        * or(pOffBlock, pOutOfService));
+    double offRouteOrOutOfService = pServedSomePartOfBlock
+        * or(pOffBlock, pOutOfService);
+
+    double pVehicleHasMoved = 1.0 - computeVehicelHasNotMovedProbability(
+        state.getMotionState(), observation);
+
+    return or(pEndOfBlock, offRouteOrOutOfService) * pVehicleHasMoved;
+  }
+
+  private double likelihoodLayoverAfter(VehicleState state,
+      Observation observation) {
+
+    /**
+     * Only allow layover after if we've completed a block and we're not moving
+     */
+
+    double pEndOfBlock = computeProbabilityOfEndOfBlock(state.getBlockState());
+    double pVehicleHasNotMoved = computeVehicelHasNotMovedProbability(
+        state.getMotionState(), observation);
+
+    return pEndOfBlock * pVehicleHasNotMoved;
   }
 
   private double likelihoodUnknown(VehicleState state, Observation observation) {
@@ -335,10 +360,6 @@ public class VehicleStateSensorModel {
     String dsc = record.getDestinationSignCode();
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
 
-    /**
-     * Note that these two probabilities don't have to add up to 1, as they are
-     * conditionally independent.
-     */
     if (outOfService)
       return _propabilityOfUnknownWithAnOutOfServiceDSC;
 
@@ -505,7 +526,7 @@ public class VehicleStateSensorModel {
     if (observedDsc.equals(blockDsc)) {
       return 0.95;
     } else {
-      return 0.05;
+      return 0.95;
     }
   }
 
@@ -656,10 +677,16 @@ public class VehicleStateSensorModel {
     if (parentBlockState.getBlockInstance().equals(
         blockState.getBlockInstance()))
       return 1.0;
-
+    
+    EVehiclePhase fromPhase = parentState.getJourneyState().getPhase();
+    EVehiclePhase toPhase = state.getJourneyState().getPhase();
+    
+    if( EVehiclePhase.LAYOVER_AFTER == fromPhase && EVehiclePhase.LAYOVER_AFTER != toPhase)
+      return 1.0;
+    
     // The block changed!
-    System.out.println("blockFrom=" + parentBlockState.getBlockInstance());
-    System.out.println("blockTo=" + blockState.getBlockInstance());
+    //System.out.println("blockFrom=" + parentBlockState.getBlockInstance());
+    //System.out.println("blockTo=" + blockState.getBlockInstance());
 
     return _probabilityOfBlockChange;
   }

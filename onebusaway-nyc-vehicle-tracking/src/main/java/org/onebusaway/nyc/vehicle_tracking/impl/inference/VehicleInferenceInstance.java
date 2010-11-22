@@ -15,7 +15,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ZeroProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
@@ -24,13 +26,19 @@ import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class VehicleInferenceInstance {
 
+  private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
+
   private ParticleFilter<Observation> _particleFilter;
 
   private VehicleTrackingManagementService _managementService;
+
+  private long _automaticResetWindow = 10 * 60 * 1000;
 
   private boolean _enabled = true;
 
@@ -54,6 +62,10 @@ public class VehicleInferenceInstance {
     _managementService = managementService;
   }
 
+  public void setAutomaticResetWindow(long automaticResetWindow) {
+    _automaticResetWindow = automaticResetWindow;
+  }
+
   /**
    * 
    * @param record
@@ -63,8 +75,17 @@ public class VehicleInferenceInstance {
   public synchronized boolean handleUpdate(NycVehicleLocationRecord record) {
 
     // If this record occurs BEFORE the most recent update, we ignore it
-    if (record.getTime() < _particleFilter.getTimeOfLastUpdated())
+    if (record.getTimeReceived() < _particleFilter.getTimeOfLastUpdated())
       return false;
+
+    /**
+     * If it's been a while since we've last seen a record, reset the particle
+     * filter
+     */
+    if (_previousRecord != null
+        && _previousRecord.getTimeReceived() + _automaticResetWindow < record.getTimeReceived()) {
+      _particleFilter.reset();
+    }
 
     /**
      * Recall that a vehicle might send a location update with missing lat-lon
@@ -104,8 +125,30 @@ public class VehicleInferenceInstance {
     if (!latlonMissing)
       _lastGpsTime = record.getTimeReceived();
 
-    _particleFilter.updateFilter(record.getTime(), record.getTimeReceived(),
-        observation);
+    try {
+      _particleFilter.updateFilter(record.getTime(), record.getTimeReceived(),
+          observation);
+    } catch (ZeroProbabilityParticleFilterException ex) {
+      /**
+       * If the particle filter hangs, we try one hard reset to see if that will
+       * fix it
+       */
+      _log.warn("particle filter crashed for record - attempting reset: time="
+          + record.getTime() + " timeReceived=" + record.getTimeReceived()
+          + " vehicleId=" + record.getVehicleId());
+      _particleFilter.reset();
+      try {
+        _particleFilter.updateFilter(record.getTime(),
+            record.getTimeReceived(), observation);
+      } catch (ParticleFilterException ex2) {
+        _log.warn("particle filter crashed again: time=" + record.getTime()
+            + " timeReceived=" + record.getTimeReceived() + " vehicleId="
+            + record.getVehicleId());
+        throw new IllegalStateException(ex2);
+      }
+    } catch (ParticleFilterException ex) {
+      throw new IllegalStateException(ex);
+    }
 
     return _enabled;
   }

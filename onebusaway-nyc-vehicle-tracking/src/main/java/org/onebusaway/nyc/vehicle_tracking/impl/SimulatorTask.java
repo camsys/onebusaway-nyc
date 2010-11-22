@@ -180,6 +180,27 @@ class SimulatorTask implements Runnable, EntityHandler {
     return details;
   }
 
+  public VehicleLocationSimulationDetails getParticleDetails(int particleId) {
+    VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
+    details.setId(_id);
+    details.setLastObservation(_mostRecentRecord);
+    List<Particle> particles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
+    if (particles != null) {
+      for (Particle p : particles) {
+        if (p.getIndex() == particleId) {
+          List<Particle> history = new ArrayList<Particle>();
+          while (p != null) {
+            history.add(p);
+            p = p.getParent();
+          }
+          details.setParticles(history);
+          break;
+        }
+      }
+    }
+    return details;
+  }
+
   public List<NycTestLocationRecord> getResults() {
     synchronized (_results) {
       return new ArrayList<NycTestLocationRecord>(_results);

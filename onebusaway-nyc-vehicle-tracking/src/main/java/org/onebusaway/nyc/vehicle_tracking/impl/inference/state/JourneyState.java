@@ -52,6 +52,10 @@ public final class JourneyState {
   public static JourneyState deadheadAfter() {
     return new JourneyState(EVehiclePhase.DEADHEAD_AFTER, null);
   }
+  
+  public static JourneyState layoverAfter() {
+    return new JourneyState(EVehiclePhase.LAYOVER_AFTER, null);
+  }
 
   public static JourneyState unknown() {
     return new JourneyState(EVehiclePhase.UNKNOWN, null);

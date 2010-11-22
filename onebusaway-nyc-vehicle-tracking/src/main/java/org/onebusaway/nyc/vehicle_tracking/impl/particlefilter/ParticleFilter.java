@@ -97,7 +97,7 @@ public class ParticleFilter<OBS> {
    * client in order to drive the filter. Each call runs a single timestep.
    */
   public void updateFilter(double timestamp, double timeReceived,
-      OBS observation) {
+      OBS observation) throws ParticleFilterException {
 
     boolean firstTime = checkFirst(timestamp, timeReceived, observation);
     runSingleTimeStep(timestamp, observation, !firstTime);
@@ -163,7 +163,7 @@ public class ParticleFilter<OBS> {
    * @param firstTime
    */
   private void runSingleTimeStep(double timestamp, OBS obs,
-      boolean moveParticles) {
+      boolean moveParticles) throws ParticleFilterException {
 
     /**
      * 1. apply the motion model to each particle
@@ -193,6 +193,7 @@ public class ParticleFilter<OBS> {
     double highestWeight = Double.NEGATIVE_INFINITY;
     double lowestWeight = Double.POSITIVE_INFINITY;
 
+    int index = 0;
     for (Particle p : _particles) {
       double w = p.getWeight();
       if (w > highestWeight) {
@@ -203,6 +204,7 @@ public class ParticleFilter<OBS> {
         _leastLikelyParticle = p.cloneParticle();
         lowestWeight = w;
       }
+      p.setIndex(index++);
     }
 
     if (highestWeight == 0)
@@ -225,7 +227,7 @@ public class ParticleFilter<OBS> {
    * Applies the sensor model (as set by setSensorModel) to each particle in the
    * filter, according to the given observable.
    */
-  private CDF applySensorModel(OBS obs) {
+  private CDF applySensorModel(OBS obs) throws ParticleFilterException {
     int count = _particles.size();
     double accumulate[] = new double[count];
     int index[] = new int[count];
@@ -256,8 +258,7 @@ public class ParticleFilter<OBS> {
     }
 
     if (mostRecentIndex == CDF.INVALID_INDEX) {
-      String message = "Empty CDF Found: No particle has any likelihood! " + i;
-      throw new IllegalArgumentException(message);
+      throw new ZeroProbabilityParticleFilterException();
     }
 
     return new CDF(accumulate, index, sum);
@@ -273,7 +274,8 @@ public class ParticleFilter<OBS> {
    * the number of particles currently running in the filter. Overwrites the old
    * set of particles with this new set.
    */
-  protected void gatherSameNumberOfSamples(OBS obs, boolean isMoving) {
+  protected void gatherSameNumberOfSamples(OBS obs, boolean isMoving)
+      throws ParticleFilterException {
     if (_particles.size() == 0) {
       throw new IllegalStateException(
           "Can't gather same number of particles when you have none");

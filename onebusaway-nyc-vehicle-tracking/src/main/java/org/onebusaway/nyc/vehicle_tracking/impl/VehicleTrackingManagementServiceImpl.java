@@ -128,6 +128,11 @@ class VehicleTrackingManagementServiceImpl implements
   }
 
   @Override
+  public void resetVehicleTrackingForVehicleId(String vehicleId) {
+    _vehicleLocationService.resetVehicleLocation(vehicleId);
+  }
+
+  @Override
   public List<NycVehicleStatusBean> getAllVehicleStatuses() {
     List<VehicleLocationManagementRecord> records = _vehicleLocationService.getVehicleLocationManagementRecords();
     List<NycVehicleStatusBean> beans = new ArrayList<NycVehicleStatusBean>();
@@ -160,7 +165,7 @@ class VehicleTrackingManagementServiceImpl implements
     bean.setLastGpsTime(record.getLastGpsTime());
     bean.setLastGpsLat(record.getLastGpsLat());
     bean.setLastGpsLon(record.getLastGpsLon());
-    if( record.getPhase() != null)
+    if (record.getPhase() != null)
       bean.setPhase(record.getPhase().toLabel());
     bean.setStatus(record.getStatus());
     bean.setMostRecentDestinationSignCode(record.getMostRecentDestinationSignCode());

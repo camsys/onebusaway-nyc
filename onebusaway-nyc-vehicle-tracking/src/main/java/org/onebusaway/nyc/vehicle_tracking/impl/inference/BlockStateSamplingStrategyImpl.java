@@ -1,45 +1,28 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
-import org.onebusaway.collections.MappingLibrary;
-import org.onebusaway.collections.Min;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.model.XYPoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.geospatial.services.UTMLibrary;
-import org.onebusaway.geospatial.services.UTMProjection;
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
-import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
-import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.model.ShapePoints;
-import org.onebusaway.transit_data_federation.services.ShapePointService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
+  private static Logger _log = LoggerFactory.getLogger(BlockStateSamplingStrategyImpl.class);
+
   private DestinationSignCodeService _destinationSignCodeService;
-
-  private ScheduledBlockLocationService _scheduledBlockLocationService;
-
-  private ShapePointService _shapePointService;
-
-  private ShapePointsLibrary _shapePointsLibrary = new ShapePointsLibrary();
 
   /**
    * We need some way of scoring nearby trips
@@ -47,6 +30,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   private DeviationModel _nearbyTripSigma = new DeviationModel(400.0);
 
   private DeviationModel _scheduleDeviationSigma = new DeviationModel(32 * 60);
+
+  private BlockStateService _blockStateService;
 
   /****
    * Public Methods
@@ -59,18 +44,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Autowired
-  public void setScheduledBlockService(
-      ScheduledBlockLocationService scheduledBlockLocationService) {
-    _scheduledBlockLocationService = scheduledBlockLocationService;
-  }
-
-  @Autowired
-  public void setShapePointService(ShapePointService shapePointService) {
-    _shapePointService = shapePointService;
-  }
-
-  public void setLocalMinimumThreshold(double localMinimumThreshold) {
-    _shapePointsLibrary.setLocalMinimumThreshold(localMinimumThreshold);
+  public void setBlockStateService(BlockStateService blockStateService) {
+    _blockStateService = blockStateService;
   }
 
   /**
@@ -105,22 +80,20 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
 
-    // _log.info("potential blocks found: " + potentialBlocks.size());
+    _log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
       // Start at the beginning of the block
-      BlockState state = getAsState(blockInstance, 0.0);
+      BlockState state = _blockStateService.getAsState(blockInstance, 0.0);
 
       double p = scoreJourneyStartState(state, observation);
 
       cdf.put(p, state);
 
-      /*
-       * System.out.println(state.getBlockLocation().getDistanceAlongBlock() +
-       * "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p + "\t" +
-       * blockInstance);
-       */
+      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
+          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
+          + "\t" + blockInstance);
     }
     return cdf;
   }
@@ -137,26 +110,26 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   @Override
   public BlockState sampleBlockStateAtJourneyStart(
       Set<BlockInstance> potentialBlocks, Observation observation,
-      BlockState currentBlockState) {
+      BlockState currentBlockState,
+      boolean phaseTransitionSuggestsBlockTransition) {
 
     CDFMap<BlockState> cdf = new CDFMap<BlockState>();
 
-    // _log.info("potential blocks found: " + potentialBlocks.size());
+    _log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
       // Start at the beginning of the block
-      BlockState state = getAsState(blockInstance, 0.0);
+      BlockState state = _blockStateService.getAsState(blockInstance, 0.0);
 
-      double p = scoreJourneyStartState(state, observation, currentBlockState);
+      double p = scoreJourneyStartState(state, observation, currentBlockState,
+          phaseTransitionSuggestsBlockTransition);
 
       cdf.put(p, state);
 
-      /*
-       * System.out.println(state.getBlockLocation().getDistanceAlongBlock() +
-       * "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p + "\t" +
-       * blockInstance);
-       */
+      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
+          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
+          + "\t" + blockInstance);
     }
 
     return cdf.sample();
@@ -170,12 +143,13 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     NycVehicleLocationRecord record = observation.getRecord();
 
-    System.out.println("potential blocks found: " + potentialBlocks.size());
+    _log.info("potential blocks found: " + potentialBlocks.size());
 
     for (BlockInstance blockInstance : potentialBlocks) {
 
-      BlockState state = getBestBlockLocation(record.getTime(),
-          observation.getPoint(), blockInstance, 0, Double.POSITIVE_INFINITY);
+      BlockState state = _blockStateService.getBestBlockLocation(
+          record.getTime(), observation.getPoint(), blockInstance, 0,
+          Double.POSITIVE_INFINITY);
 
       double p = scoreState(state, observation);
 
@@ -193,106 +167,17 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
    * Private Methods
    ****/
 
-  private BlockState getBestBlockLocation(long timestamp,
-      ProjectedPoint targetPoint, BlockInstance blockInstance,
-      double blockDistanceFrom, double blockDistanceTo) {
-
-    BlockConfigurationEntry block = blockInstance.getBlock();
-
-    ShapePoints shapePoints = getShapePointsForBlock(block);
-
-    UTMProjection projection = UTMLibrary.getProjectionForPoint(
-        shapePoints.getLats()[0], shapePoints.getLons()[0]);
-
-    List<XYPoint> projectedShapePoints = _shapePointsLibrary.getProjectedShapePoints(
-        shapePoints, projection);
-
-    if (shapePoints == null || shapePoints.getSize() == 0)
-      throw new IllegalStateException("block had no shape points: "
-          + block.getBlock().getId());
-
-    double[] distances = shapePoints.getDistTraveled();
-
-    int fromIndex = 0;
-    int toIndex = distances.length;
-
-    if (blockDistanceFrom > 0) {
-      fromIndex = Arrays.binarySearch(distances, blockDistanceFrom);
-      if (fromIndex < 0) {
-        fromIndex = -(fromIndex + 1);
-        // Include the previous point if we didn't get an exact match
-        if (fromIndex > 0)
-          fromIndex--;
-      }
-    }
-
-    if (blockDistanceTo < distances[distances.length - 1]) {
-      toIndex = Arrays.binarySearch(distances, blockDistanceTo);
-      if (toIndex < 0) {
-        toIndex = -(toIndex + 1);
-        // Include the previous point if we didn't get an exact match
-        if (toIndex < distances.length)
-          toIndex++;
-      }
-    }
-
-    XYPoint xyPoint = new XYPoint(targetPoint.getX(), targetPoint.getY());
-
-    List<PointAndIndex> assignments = _shapePointsLibrary.computePotentialAssignments(
-        projectedShapePoints, distances, xyPoint, fromIndex, toIndex);
-
-    if (assignments.size() == 0) {
-      return getAsState(blockInstance, blockDistanceFrom);
-    } else if (assignments.size() == 1) {
-      PointAndIndex pIndex = assignments.get(0);
-      return getAsState(blockInstance, pIndex.distanceAlongShape);
-    }
-
-    Min<PointAndIndex> best = new Min<PointAndIndex>();
-
-    for (PointAndIndex index : assignments) {
-
-      double distanceAlongBlock = index.distanceAlongShape;
-
-      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-          block, distanceAlongBlock);
-
-      int scheduledTime = location.getScheduledTime();
-      long scheduleTimestamp = blockInstance.getServiceDate() + scheduledTime
-          * 1000;
-
-      double delta = Math.abs(scheduleTimestamp - timestamp);
-      best.add(delta, index);
-    }
-
-    PointAndIndex index = best.getMinElement();
-    return getAsState(blockInstance, index.distanceAlongShape);
-  }
-
-  private BlockState getAsState(BlockInstance blockInstance,
-      double distanceAlongBlock) {
-    BlockConfigurationEntry block = blockInstance.getBlock();
-    ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-        block, distanceAlongBlock);
-    if (blockLocation == null)
-      throw new IllegalStateException("no blockLocation for " + blockInstance
-          + " d=" + distanceAlongBlock);
-    BlockTripEntry activeTrip = blockLocation.getActiveTrip();
-    String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
-    return new BlockState(blockInstance, blockLocation, dsc);
-  }
-
-  /*****
-   * State Evaluation Methods
-   ****/
-
   private double scoreJourneyStartState(BlockState state,
       Observation observation) {
     return scoreJourneyStartDestinationSignCode(state, observation);
   }
 
   private double scoreJourneyStartState(BlockState state,
-      Observation observation, BlockState currentBlockState) {
+      Observation observation, BlockState currentBlockState,
+      boolean phaseTransitionSuggestsBlockTransition) {
+
+    if (phaseTransitionSuggestsBlockTransition)
+      return 0.95;
 
     double dscScore = scoreJourneyStartDestinationSignCode(state, observation);
     double blockChangeScore = scoreBlockChange(state, currentBlockState);
@@ -364,12 +249,4 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         return 0.25;
     }
   }
-
-  private ShapePoints getShapePointsForBlock(BlockConfigurationEntry block) {
-    // TODO : BLOCK : Ok, since we have the BlockInstance in the parent
-    List<AgencyAndId> shapePointIds = MappingLibrary.map(block.getTrips(),
-        "trip.shapeId");
-    return _shapePointService.getShapePointsForShapeIds(shapePointIds);
-  }
-
 }

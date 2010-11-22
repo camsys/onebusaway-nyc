@@ -186,6 +186,14 @@ public class VehicleLocationSimulationController {
     return new ModelAndView("vehicle-location-simulation-task-details.jspx",
         "details", details);
   }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!particle-details.do", method = RequestMethod.GET)
+  public ModelAndView particleDetails(@RequestParam() int taskId, @RequestParam() int particleId) {
+
+    VehicleLocationSimulationDetails details = _vehicleLocationSimulationService.getParticleDetails(taskId, particleId);
+    return new ModelAndView("vehicle-location-simulation-task-details.jspx",
+        "details", details);
+  }
 
   @RequestMapping(value = "/vehicle-location-simulation!task-simulation-records.do", method = RequestMethod.GET)
   public void taskRecords(@RequestParam() int taskId,

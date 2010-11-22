@@ -18,6 +18,8 @@ public class Particle implements Serializable, Comparable<Particle> {
   private double _weight = 1.0;
 
   private Particle _parent;
+  
+  private int _index;
 
   private Object _data;
 
@@ -71,6 +73,14 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   public void setParent(Particle parent) {
     _parent = parent;
+  }
+  
+  public int getIndex() {
+    return _index;
+  }
+  
+  public void setIndex(int index) {
+    _index = index;
   }
 
   @SuppressWarnings("unchecked")
