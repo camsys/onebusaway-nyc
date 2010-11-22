@@ -38,4 +38,6 @@ public interface VehicleLocationInferenceService {
    */
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
 
+  public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId);
+
 }

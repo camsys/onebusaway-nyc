@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.model;
 
+import java.util.Date;
+
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
@@ -77,6 +79,10 @@ public class NycVehicleLocationRecord {
 
   public long getTime() {
     return time;
+  }
+  
+  public Date getTimeAsDate() {
+    return new Date(time);
   }
 
   public void setLatitude(double latitude) {

@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ZeroProbabilityPa
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -190,6 +192,36 @@ public class VehicleInferenceInstance {
       return getNycTestLocationRecordAsVehicleLocationRecord(_nycTestLocationRecord);
     else
       return null;
+  }
+
+  public VehicleLocationDetails getDetails() {
+
+    VehicleLocationDetails details = new VehicleLocationDetails();
+
+    NycVehicleLocationRecord lastRecord = _previousRecord;
+    if (lastRecord == null && _nycTestLocationRecord != null) {
+      lastRecord = new NycVehicleLocationRecord();
+      lastRecord.setDestinationSignCode(_nycTestLocationRecord.getDsc());
+      lastRecord.setTime(_nycTestLocationRecord.getTimestamp());
+      lastRecord.setTimeReceived(_nycTestLocationRecord.getTimestamp());
+      lastRecord.setLatitude(_nycTestLocationRecord.getLat());
+      lastRecord.setLongitude(_nycTestLocationRecord.getLon());
+    } else if (lastRecord == null && _vehicleLocationRecord != null) {
+      lastRecord = new NycVehicleLocationRecord();
+      lastRecord.setDestinationSignCode(null);
+      lastRecord.setTime(_vehicleLocationRecord.getTimeOfRecord());
+      lastRecord.setTimeReceived(_vehicleLocationRecord.getTimeOfRecord());
+      lastRecord.setLatitude(_vehicleLocationRecord.getCurrentLocationLat());
+      lastRecord.setLongitude(_vehicleLocationRecord.getCurrentLocationLon());
+    }
+
+    details.setLastObservation(lastRecord);
+
+    List<Particle> particles = getCurrentParticles();
+    Collections.sort(particles);
+    details.setParticles(particles);
+
+    return details;
   }
 
   public synchronized VehicleLocationManagementRecord getCurrentManagementState() {

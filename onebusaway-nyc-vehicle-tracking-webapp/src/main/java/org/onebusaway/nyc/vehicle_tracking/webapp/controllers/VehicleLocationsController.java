@@ -2,6 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import java.util.List;
 
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,16 +31,38 @@ public class VehicleLocationsController {
     mv.addObject("records", records);
     return mv;
   }
-  
+
   @RequestMapping("/vehicle-location.do")
   public ModelAndView vehicleLocation(@RequestParam() String vehicleId) {
     VehicleLocationRecord record = _vehicleLocationService.getVehicleLocationForVehicle(vehicleId);
-    return new ModelAndView("json","record",record);
+    return new ModelAndView("json", "record", record);
   }
-  
+
   @RequestMapping("/vehicle-location!reset.do")
   public ModelAndView resetVehicleLocation(@RequestParam() String vehicleId) {
     _vehicleLocationService.resetVehicleLocation(vehicleId);
-    return new ModelAndView("json","record",null);
+    return new ModelAndView("redirect:/vehicle-locations.do");
+  }
+
+  @RequestMapping("/vehicle-location!particles.do")
+  public ModelAndView particles(@RequestParam() String vehicleId) {
+
+    VehicleLocationDetails details = _vehicleLocationService.getDetailsForVehicleId(vehicleId);
+
+    ModelAndView mv = new ModelAndView("vehicle-location-particles.jspx");
+    mv.addObject("details", details);
+    return mv;
+  }
+
+  @RequestMapping("/vehicle-location!particle.do")
+  public ModelAndView particles(@RequestParam() String vehicleId,
+      @RequestParam() int particleId) {
+
+    VehicleLocationDetails details = _vehicleLocationService.getParticleDetails(
+        vehicleId, particleId);
+
+    ModelAndView mv = new ModelAndView("vehicle-location-particles.jspx");
+    mv.addObject("details", details);
+    return mv;
   }
 }

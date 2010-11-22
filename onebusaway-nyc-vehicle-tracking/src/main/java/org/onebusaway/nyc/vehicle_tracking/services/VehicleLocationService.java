@@ -49,7 +49,7 @@ public interface VehicleLocationService {
    * completed vehicle location record into the data stream.
    */
   public void handleVehicleLocation(VehicleLocationRecord record);
-  
+
   /**
    * 
    * @param record
@@ -90,6 +90,8 @@ public interface VehicleLocationService {
    */
   public List<VehicleLocationManagementRecord> getVehicleLocationManagementRecords();
 
+  public void setVehicleStatus(String vehicleId, boolean enabled);
+
   /**
    * This is here primarily for debugging
    * 
@@ -97,8 +99,8 @@ public interface VehicleLocationService {
    * @return the current list of particles for the specified vehicle
    */
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId);
-
-  public void setVehicleStatus(String vehicleId, boolean enabled);
-
   
+  public VehicleLocationDetails getDetailsForVehicleId(String vehicleId);
+
+  public VehicleLocationDetails getParticleDetails(String vehicleId, int particleId);
 }

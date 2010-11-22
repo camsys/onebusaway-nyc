@@ -16,9 +16,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,6 +160,16 @@ public class VehicleLocationInferenceServiceImpl implements
     if (instance == null)
       return null;
     return instance.getCurrentParticles();
+  }
+  
+  @Override
+  public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    if (instance == null)
+      return null;
+    VehicleLocationDetails details = instance.getDetails();
+    details.setVehicleId(AgencyAndIdLibrary.convertToString(vehicleId));
+    return details;
   }
 
   /****

@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingMutableDao;
@@ -77,12 +79,13 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
       record.setLongitude(location.Longitude);
     }
     /**
-     * TODO : This is a hack to deal with the lack of timezone info in SIRI records
+     * TODO : This is a hack to deal with the lack of timezone info in SIRI
+     * records
      */
     long time = delivery.ResponseTimestamp.getTimeInMillis();
     long delta = Math.abs(System.currentTimeMillis() + THREE_HOURS - time);
-    if (delta <60 * 1000 )
-      time -= THREE_HOURS; 
+    if (delta < 60 * 1000)
+      time -= THREE_HOURS;
     record.setTime(time);
     record.setTimeReceived(new Date().getTime());
 
@@ -149,8 +152,36 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   @Override
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId) {
-    return _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(new AgencyAndId(
-        _agencyId, vehicleId));
+    return _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(getVehicleId(vehicleId));
+  }
+
+  @Override
+  public VehicleLocationDetails getDetailsForVehicleId(String vehicleId) {
+    return _vehicleLocationInferenceService.getDetailsForVehicleId(getVehicleId(vehicleId));
+  }
+
+  @Override
+  public VehicleLocationDetails getParticleDetails(String vehicleId,
+      int particleId) {
+
+    VehicleLocationDetails details = getDetailsForVehicleId(vehicleId);
+    if (details == null)
+      return null;
+    List<Particle> particles = details.getParticles();
+    if (particles != null) {
+      for (Particle p : particles) {
+        if (p.getIndex() == particleId) {
+          List<Particle> history = new ArrayList<Particle>();
+          while (p != null) {
+            history.add(p);
+            p = p.getParent();
+          }
+          details.setParticles(history);
+          return details;
+        }
+      }
+    }
+    return null;
   }
 
   @Override
@@ -169,7 +200,7 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   public void setVehicleStatus(String vehicleId, boolean enabled) {
     AgencyAndId vid = getVehicleId(vehicleId);
     _vehicleLocationInferenceService.setVehicleStatus(vid, enabled);
-    if( ! enabled )
+    if (!enabled)
       _vehicleLocationListener.resetVehicleLocation(vid);
   }
 
