@@ -233,6 +233,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
             jQuery.each(stops, function(i, stop) {
                 var stopId = stop.id;
+                var direction = stop.direction;
                 var latlng = [stop.lat, stop.lon];
                 var name = stop.name;
 
@@ -241,7 +242,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
                 var marker = stopMarkers[stopId];
 
                 if (! marker) {
-                	marker = OBA.StopMarker(stopId, latlng, stop.direction, map);
+                	marker = OBA.StopMarker(stopId, latlng, direction, map);
 
                     fluster.addMarker(marker);
                     stopMarkers[stopId] = marker;
