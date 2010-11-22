@@ -43,7 +43,8 @@ function Fluster2ClusterMarker(_fluster, _cluster)
 			OBA.Config.stopIconCenter));
 
 	google.maps.event.addDomListener(this, 'click', function() {
-		this.map.fitBounds(this.cluster.getMarkerBounds());
+		this.map.setCenter(this.position);
+		this.map.setZoom(16);
 	});
 };
 
