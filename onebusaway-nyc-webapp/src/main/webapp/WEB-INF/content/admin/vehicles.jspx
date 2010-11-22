@@ -66,7 +66,7 @@ under the License.
 						</s:else>
 					</td>
 					
-					<td class="vehicleId"><s:property value="vehicleId" /></td>
+					<td class="vehicleId"><s:property value="vehicleIdWithoutAgency" /></td>
 					
 					<td><s:property value="lastCommTime" /></td>
 
@@ -74,7 +74,19 @@ under the License.
 
 					<td><s:property value="headsign" escape="false"/></td>
 
-					<td><s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}"><s:property value="inferredState" /></s:div></td>
+					<td>
+						<s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}">
+							<p>
+								<s:property value="inferredState" />
+							</p>
+							<p>
+								<s:url var="resetUrl" namespace="/admin" action="reset-vehicle">
+										<s:param name="vehicleId"><s:property value="vehicleId" /></s:param>
+								</s:url>
+								<a href="${resetUrl}">Reset</a>
+							</p>
+						</s:div>
+					</td>
 
 					<td>
 						<div class="map-location-wrapper">

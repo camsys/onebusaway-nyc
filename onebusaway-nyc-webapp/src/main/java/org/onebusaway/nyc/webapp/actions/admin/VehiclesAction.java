@@ -138,12 +138,18 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     }
 
     @SuppressWarnings("unused")
-    public String getVehicleId() {
+    public String getVehicleIdWithoutAgency() {
       String vehicleIdWithAgency = nycVehicleStatusBean.getVehicleId();
       String idWithoutAgency = idParser.parseIdWithoutAgency(vehicleIdWithAgency);
       return idWithoutAgency;
     }
 
+    @SuppressWarnings("unused")
+    public String getVehicleId() {
+      String vehicleIdWithAgency = nycVehicleStatusBean.getVehicleId();
+      return vehicleIdWithAgency;
+    }
+    
     @SuppressWarnings("unused")
     public String getStatusClass() {
       if (vehicleStatusBean == null)
