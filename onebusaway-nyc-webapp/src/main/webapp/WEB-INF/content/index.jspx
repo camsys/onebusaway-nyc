@@ -67,10 +67,10 @@ under the License.
 <div id="content" class="map">
 <div id="sidebar">
 	<div id="search">
-		<s:form action="search">
+		<form action="search.action">
 			<p><label>Search for:</label> <input type="text" name="q" /></p>
 			<p class="small">TIP: Enter an intersection, bus route or bus stop number.</p>
-		</s:form>
+		</form>
 	</div>
 
 	<div id="search-results">
