@@ -39,8 +39,8 @@ under the License.
 <div id="content">
 <div id="text">
 	<h1>Tracked Vehicles</h1>
-
-	<s:form method="POST" action="vehicles.action">
+	
+	<s:form method="POST" action="vehicles" namespace="/admin">
 		<table id="vehicle-table">
 			<tr>
 				<th><a href="#">Status</a></th>
