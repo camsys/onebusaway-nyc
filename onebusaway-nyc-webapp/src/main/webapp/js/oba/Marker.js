@@ -20,13 +20,8 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 	};
 
 	var marker = new google.maps.Marker(jQuery.extend(markerOptions, options || {}));
-	var showPopup = function() { popup.show(marker); };
-
-	google.maps.event.addListener(marker, "click", showPopup);
-
+	
 	return {
-		showPopup: showPopup,
-
 		getMap: function() {
 			return marker.getMap();
 		},
@@ -34,7 +29,7 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 		setMap: function(map) {
 			// marker cannot be removed from map if it is attached to the current infoWindow.
 			if(map === null) {
-				if(OBA.theInfoWindowMarker !== null && OBA.theInfoWindowMarker.getPosition() === marker.getPosition()) {
+				if(OBA.popupMarker !== null && OBA.popupMarker.getId() === entityId) {
 					return;
 				}
 			}
@@ -66,16 +61,32 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 		},
 
 		updatePosition: function(latlng) {
-			// refresh infoWindow if the infoWindow-bound marker is the same as us
-			if(OBA.theInfoWindow !== null) {
-				if(OBA.theInfoWindowMarker !== null && OBA.theInfoWindowMarker.getPosition() == marker.getPosition()) {
-					popup.refresh();
-				}
-			}
-
 			marker.setPosition(latlng);
 		},
 
+		getRawMarker: function() {
+			return marker;
+		},
+		
+		getPopup: function() {
+			return popup;
+		},
+		
+		refreshPopup: function() {
+			popup.refresh();
+
+			// make sure marker is in view if popup window is open if we're a vehicle
+			if(typeof options.type !== 'undefined' && options.type === 'vehicle') {
+				var mapBounds = map.getBounds();
+				var markerPosition = marker.getPosition();
+			
+				if(! mapBounds.contains(markerPosition)) {
+					var newBounds = mapBounds.extend(markerPosition);
+					map.fitBounds(newBounds);				
+				}
+			}
+		},
+		
 		getPosition: function() {
 			return marker.getPosition();
 		},
@@ -91,35 +102,51 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 };
 
 OBA.StopMarker = function(stopId, latlng, direction, map, opts) {
-	opts = jQuery.extend(opts || {}, {zIndex: 100});
+	opts = jQuery.extend(opts || {}, {zIndex: 100, type: 'stop'});
 
-	if(typeof opts.icon === 'undefined' && direction !== null) {
-		var marker = new google.maps.MarkerImage(OBA.Config.stopIconFilePrefix + '-' + direction + '.' + OBA.Config.stopIconFileType,
-				OBA.Config.stopIconSize,
-				new google.maps.Point(0,0),
-				OBA.Config.stopIconCenter);
+	if(typeof opts.icon === 'undefined') {
+		var iconPath = OBA.Config.stopIconFilePrefix + '.' + OBA.Config.stopIconFileType;
 
-		opts.icon = marker;
+		if(direction !== null) {
+			iconPath = OBA.Config.stopIconFilePrefix + '-' + direction + '.' + OBA.Config.stopIconFileType;
+		}
+	
+		var icon = new google.maps.MarkerImage(iconPath,
+					OBA.Config.stopIconSize,
+					new google.maps.Point(0,0),
+					OBA.Config.stopIconCenter);
+
+		opts.icon = icon;
 	}
+	
+	var popup = OBA.StopPopup(stopId, map);
+	var marker = OBA.Marker(stopId, latlng, map, popup, opts);
+	var showPopup = function() { popup.show(marker); };
+	
+	marker.showPopup = showPopup;
+	google.maps.event.addListener(marker.getRawMarker(), "click", showPopup);
 
-	return OBA.Marker(stopId, latlng, map,
-			OBA.StopPopup(stopId, map),
-			opts);
+	return marker;
 };
 
 OBA.VehicleMarker = function(vehicleId, latlng, map, opts) {
-	opts = jQuery.extend(opts || {}, {zIndex: 200});
+	opts = jQuery.extend(opts || {}, {zIndex: 200, type: 'vehicle'});
 
 	if(typeof opts.icon === 'undefined') {
-		var marker = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-unknown.' + OBA.Config.vehicleIconFileType,
-				OBA.Config.vehicleIconSize,
-				new google.maps.Point(0,0),
-				OBA.Config.vehicleIconCenter);
+		var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-unknown.' + OBA.Config.vehicleIconFileType,
+					OBA.Config.vehicleIconSize,
+					new google.maps.Point(0,0),
+					OBA.Config.vehicleIconCenter);
 
-		opts.icon = marker;
+		opts.icon = icon;
 	}
+	
+	var popup = OBA.VehiclePopup(vehicleId, map);
+	var marker = OBA.Marker(vehicleId, latlng, map, popup, opts);
+	var showPopup = function() { popup.show(marker); };
+	
+	marker.showPopup = showPopup;
+	google.maps.event.addListener(marker.getRawMarker(), "click", showPopup);
 
-	return OBA.Marker(vehicleId, latlng, map,
-			OBA.VehiclePopup(vehicleId, map),
-			opts);
+	return marker;
 };

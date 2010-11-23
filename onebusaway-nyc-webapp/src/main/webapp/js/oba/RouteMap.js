@@ -205,6 +205,11 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 		requestRoutes();
 
+		// refresh any open popups
+		if(OBA.popupMarker !== null) {
+			OBA.popupMarker.refreshPopup();
+		}
+		
 		vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
 	};
 
@@ -274,7 +279,6 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				// stop marker is already on map, can just display the popup
 				var marker = stopMarkers[stopId];
 				marker.setMap(map);
-				OBA.theInfoWindowMarker = marker;
 
 				if(! mapBounds.contains(marker.getPosition())) {
 					map.setCenter(marker.getPosition());
@@ -285,7 +289,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				var url = OBA.Config.stopUrl + "/" + stopId + ".json";
 
 				jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
-					var stop;
+					var stop = null;
 					try {
 						stop = json.data.references.stops[0];
 					} catch (typeError) {
@@ -295,9 +299,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 					var stopId = stop.id;
 					var latlng = [stop.lat, stop.lon];
-					var marker = OBA.StopMarker(stopId, latlng, map);
+					var direction = stop.direction;
+					var marker = OBA.StopMarker(stopId, latlng, direction, map);
 					marker.setMap(map);
-					OBA.theInfoWindowMarker = marker;
 
 					fluster.addMarker(marker);
 

@@ -14,49 +14,61 @@
 
 var OBA = window.OBA || {};
 
-OBA.theInfoWindow = null;
-OBA.theInfoWindowMarker = null;
+// the marker associated with any popped up infoWindow
+OBA.popupMarker = null;
 
 OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
+	var infoWindow = null;
+	
 	function createWrapper(content) {
 		var wrappedContent = jQuery('<div id="popup"></div>')
 			.append(content)
 			.appendTo("#map");
 
 		wrappedContent = wrappedContent.css("width", 250)
-		.css("height", wrappedContent.height());
+			.css("height", wrappedContent.height());
 
 		return wrappedContent.get(0);
 	}
 
 	return {
+		hide: function() {
+			if(infoWindow !== null) {
+				infoWindow.close();
+				infoWindow = null;
+			}
+		},
+		
 		refresh: function() {
-			if(OBA.theInfoWindow === null) {
+			if(infoWindow === null) {
 				return;
 			}
 
 			fetchFn(function(json) {            
-				OBA.theInfoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
+				infoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
 			});
 		},
 
 		show: function(marker) {    
-			if(OBA.theInfoWindow) {
-				OBA.theInfoWindow.close();
+			if(OBA.popupMarker !== null) {
+				var popup = OBA.popupMarker.getPopup();
+				
+				if(popup) {
+					popup.hide();
+				}
 			}
 
 			fetchFn(function(json) {
-				OBA.theInfoWindow = new google.maps.InfoWindow();
-				OBA.theInfoWindowMarker = marker;
+				infoWindow = new google.maps.InfoWindow();
+				infoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
+				infoWindow.open(map, marker.getRawMarker());
 
-				OBA.theInfoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
-				OBA.theInfoWindow.open(map, marker);
-
-				google.maps.event.addListenerOnce(OBA.theInfoWindow, 'closeclick', function() {
-					OBA.theInfoWindowMarker = null;
-					OBA.theInfoWindow = null;
+				google.maps.event.addListenerOnce(infoWindow, 'closeclick', function() {
+					OBA.popupMarker = null;
 				});
 			});
+		
+			OBA.popupMarker = marker;
 		}
 	};
 };
@@ -83,8 +95,8 @@ OBA.StopPopup = function(stopId, map) {
 		}
 
 		var stopId = stop.id;
-		var latestUpdate = null;
 		var name = stop.name;
+		var latestUpdate = null;
 
 		// vehicle location
 		var routeToVehicleInfo = {};
@@ -140,8 +152,8 @@ OBA.StopPopup = function(stopId, map) {
 		}
 
 		var header = '<p class="header">' + name + '</p>' +
-		'<p class="description">Stop #' + OBA.Util.parseEntityId(stopId) + '</p>' + 
-		(lastUpdateString ? '<p class="meta">Last updated at ' + lastUpdateString + '</p>' : '');
+					'<p class="description">Stop #' + OBA.Util.parseEntityId(stopId) + '</p>' + 
+					(lastUpdateString ? '<p class="meta">Last updated at ' + lastUpdateString + '</p>' : '');
 
 		// service notices
 		var notices = '<ul class="notices">';
@@ -165,6 +177,7 @@ OBA.StopPopup = function(stopId, map) {
 			var included = false;
 			for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
 				var distanceAway = vehicleInfos[i];
+
 				if (distanceAway.stops > 50) {
 					continue;
 				}
@@ -293,8 +306,8 @@ OBA.VehiclePopup = function(vehicleId, map) {
 		var isStale = (new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.staleDataTimeout);
 
 		var header = '<p class="header' + ((typeof tripStatus.serviceNotice !== 'undefined') ? ' hasNotice' : '') + '">' + headsign + '</p>' +
-		'<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' +
-		'<p class="meta">Last updated at ' + lastUpdateString + '</p>';
+					'<p class="description">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</p>' +
+					'<p class="meta">Last updated at ' + lastUpdateString + '</p>';
 
 		if(isStale) {
 			header += '<p class="meta stale">Location data is out of date and may be unreliable</p>';
@@ -324,6 +337,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
 		if (nextStops && nextStops.length > 0 && 
 				(typeof tripStatus.status !== 'undefined' && tripStatus.status !== 'deviated')) { 
+			
 			nextStopsMarkup += '<p>Next stops:</p><ul>';
 
 			jQuery.each(nextStops, function(i, stop) {
@@ -355,7 +369,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
 			nextStopsMarkup += '</ul>';
 		} else {
-			nextStopsMarkup += '<p>Next stops are not known for this vehicle.</p>';
+			nextStopsMarkup += '<p>Next stops are unknown for this vehicle.</p>';
 		}
 
 		bubble = jQuery(header + notices + nextStopsMarkup);
