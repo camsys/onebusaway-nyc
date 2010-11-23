@@ -30,7 +30,7 @@ function Fluster2(_map, _debug, stopMarkers)
 	// Private variables
 	var map = _map;
 	var projection = new Fluster2ProjectionOverlay(map);
-	var clusters = new Object();
+	var clusters = {};
 	var me = this;
 	
 	// Properties
@@ -57,9 +57,9 @@ function Fluster2(_map, _debug, stopMarkers)
 		}
 		
 		if(! clusters[zoom]) {
-			clusters[zoom] = new Array();
+			clusters[zoom] = [];
 		
-			for(id in stopMarkers) {
+			for(var id in stopMarkers) {
 				var done = false;
 				var marker = stopMarkers[id];
 				var mapBounds = map.getBounds();
@@ -91,15 +91,16 @@ function Fluster2(_map, _debug, stopMarkers)
 		me.currentZoomLevel = _map.getZoom();	
 		
 		showClustersInBounds();
-	};
+	}
 	
 	/**
 	 * Displays all clusters inside the current map bounds.
 	 */
 	function showClustersInBounds()
 	{
-		if(! clusters[me.currentZoomLevel])
+		if(! clusters[me.currentZoomLevel]) {
 			return;
+		}
 		
 		var mapBounds = map.getBounds();
 			

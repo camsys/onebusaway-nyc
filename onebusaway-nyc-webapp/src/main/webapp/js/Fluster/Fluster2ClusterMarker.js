@@ -46,7 +46,7 @@ function Fluster2ClusterMarker(_fluster, _cluster)
 		this.map.setCenter(this.position);
 		this.map.setZoom(16);
 	});
-};
+}
 
 Fluster2ClusterMarker.prototype = new google.maps.Marker({ zIndex:100 });
 

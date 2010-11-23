@@ -33,9 +33,9 @@ function addTableSortBehaviors() {
             rows.sort(function(a, b) {
                 var x = keyFn(a);
                 var y = keyFn(b);
-                if (x < y) return -1;
-                else if (x > y) return 1;
-                else return 0;
+                if (x < y) { return -1; }
+                else if (x > y) { return 1; }
+                else { return 0; }
             });
             if (lastSortIndex === i) {
                 rows.reverse();
@@ -55,14 +55,15 @@ function createMaps() {
 		var location = el.html();
 		var location_v = location.split(",");
 
-		if(location_v.length != 3)
+		if(location_v.length != 3) {
 			return;
+		}
 		
 		var lat = location_v[0];
 		var lng = location_v[1];
 		var orientation = Math.floor(location_v[2] / 30) * 30;
 
-		if(orientation == null || orientation == "") {
+		if(orientation === null || orientation === "") {
 			orientation = "unknown";
 		}
 		
@@ -79,7 +80,7 @@ function createMaps() {
 			
 		var map = new google.maps.Map(elRaw, mapOptions);
 	
-    	var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
+		var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
 				OBA.Config.vehicleIconSize,
 				new google.maps.Point(0,0),
 				OBA.Config.vehicleIconCenter);
