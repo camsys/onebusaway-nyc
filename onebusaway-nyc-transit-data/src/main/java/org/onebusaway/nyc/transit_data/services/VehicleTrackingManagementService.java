@@ -35,5 +35,9 @@ public interface VehicleTrackingManagementService {
   void setVehicleOffRouteDistanceThreshold(
       double vehicleOffRouteDistanceThreshold);
 
+  public boolean isOutOfServiceDestinationSignCode(String destinationSignCode);
+  
+  public boolean isUnknownDestinationSignCode(String destinationSignCode);
+  
   void setVehicleStalledTimeThreshold(int vehicleStalledTimeThreshold);
 }

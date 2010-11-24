@@ -13,6 +13,7 @@ import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -37,6 +38,8 @@ class VehicleTrackingManagementServiceImpl implements
 
   private TransitDataService _transitDataService;
 
+  private DestinationSignCodeService _dscService;
+  
   private File _configPath;
 
   @Autowired
@@ -45,6 +48,11 @@ class VehicleTrackingManagementServiceImpl implements
     _vehicleLocationService = vehicleLocationService;
   }
 
+  @Autowired
+  public void setDestinationSignCodeService(DestinationSignCodeService dscService) {
+	  _dscService = dscService;
+  }
+  
   @Autowired
   public void setTransitDataService(TransitDataService transitDataService) {
     _transitDataService = transitDataService;
@@ -149,6 +157,16 @@ class VehicleTrackingManagementServiceImpl implements
     return getManagementRecordAsStatus(record);
   }
 
+  @Override
+  public boolean isOutOfServiceDestinationSignCode(String destinationSignCode) {
+	  return _dscService.isOutOfServiceDestinationSignCode(destinationSignCode);
+  }
+  
+  @Override
+  public boolean isUnknownDestinationSignCode(String destinationSignCode) {
+	  return _dscService.isUnknownDestinationSignCode(destinationSignCode);	  
+  }
+  
   /****
    * Private Methods
    ****/
