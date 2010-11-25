@@ -114,7 +114,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       String vehicleId = nycVehicleStatusBean.getVehicleId();
       VehicleStatusBean vehicleStatusBean = vehicleMap.get(vehicleId);
       VehicleBag vehicleBag = new VehicleBag(nycVehicleStatusBean,
-          vehicleStatusBean, configurationService.getConfiguration());
+          vehicleStatusBean, configurationService.getConfiguration(), vehicleTrackingManagementService);
       vehicles.add(vehicleBag);
     }
     return SUCCESS;
@@ -129,12 +129,15 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     private NycVehicleStatusBean nycVehicleStatusBean;
     private VehicleStatusBean vehicleStatusBean;
     private ConfigurationBean configuration;
-
+    private VehicleTrackingManagementService vehicleTrackingManagementService;
+    
     public VehicleBag(NycVehicleStatusBean nycVehicleStatusBean,
-        VehicleStatusBean vehicleStatusBean, ConfigurationBean configuration) {
+        VehicleStatusBean vehicleStatusBean, ConfigurationBean configuration,
+        VehicleTrackingManagementService vehicleTrackingManagementService) {
       this.nycVehicleStatusBean = nycVehicleStatusBean;
       this.vehicleStatusBean = vehicleStatusBean;
       this.configuration = configuration;
+      this.vehicleTrackingManagementService = vehicleTrackingManagementService;
     }
 
     @SuppressWarnings("unused")
@@ -209,17 +212,25 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     public String getHeadsign() {
       if (vehicleStatusBean == null)
         return "Disabled";
+      
       TripBean trip = vehicleStatusBean.getTrip();
       String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
-      if (trip == null)
-        return "Not Available<br/><span class='error'>(operator entered " + mostRecentDestinationSignCode + ")</span>";
+      boolean mostRecentDSCIsOutOfService = vehicleTrackingManagementService.isUnknownDestinationSignCode(mostRecentDestinationSignCode);
+
+      if (trip == null) {
+    	  if(mostRecentDSCIsOutOfService)
+    		  return "Not In Service";
+    	  else 	   	  
+    		  return "Unknown<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
+      }
+      
       String tripHeadsign = trip.getTripHeadsign();
       String inferredDestinationSignCode = nycVehicleStatusBean.getInferredDestinationSignCode();
       if (inferredDestinationSignCode.equals(mostRecentDestinationSignCode)) {
         return inferredDestinationSignCode + ": " + tripHeadsign;
       } else {
         return inferredDestinationSignCode + ": " + tripHeadsign
-            + "<br/><span class='error'>(operator entered " + mostRecentDestinationSignCode + ")</span>";
+            + "<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
       }
     }
 
