@@ -29,11 +29,12 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 	});
 
 	var defaultMapOptions = {
-			zoom: 13,
-			mapTypeControl: false,
-			navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
-			center: new google.maps.LatLng(40.65182926199445,-74.0065026164856),
-			mapTypeId: 'transit'
+		zoom: 12,
+		mapTypeControl: false,
+		navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
+		center: new google.maps.LatLng(40.65182926199445,-74.0065026164856),
+		streetViewControl: false,		
+		mapTypeId: 'transit'
 	};
 
 	var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
@@ -78,8 +79,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		}
 
 		var routeId = routesToRequest[0][0];
-		var directionId = routesToRequest[0][1];
+		var directionId = routesToRequest[0][1];		
 		var remainingRouteIds = routesToRequest.slice(1);
+
 		var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";
 		var tripDetailsList, tripReferencesList = null;
 		jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey, includeStatus: true}, function(json) {
@@ -95,6 +97,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			// keep track of the vehicles that are added for this direction
 			// this is will be a set of vehicleIds
 			var vehiclesAdded = {};
+
 			// helper function to add an element to a map where values are lists
 			var addVehicleMarkerToRouteMap = function(routeId, directionId, vehicleMarker) {
 				var directionIdMap = routeIdsToVehicleMarkers[routeId];
@@ -130,12 +133,10 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			};
 
 			jQuery.each(tripDetailsList, function(i, tripDetails) {
-				// we only show the vehicles that have been predicted and have an id
 				var status = tripDetails.status;
-				var predicted = status.predicted;
 				var vehicleId = status.vehicleId;
 
-				if(OBA.Config.vehicleFilterFunction(tripDetails.status) === false || ! vehicleId) {
+				if(OBA.Config.vehicleFilterFunction(status) === false || ! vehicleId) {
 					return;
 				}
 				
@@ -220,10 +221,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
 		var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
 
-		jQuery.getJSON(OBA.Config.stopsUrl,
-				{version: 2, key: OBA.Config.apiKey, maxCount: 250,
-			lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan
-				},
+		jQuery.getJSON(OBA.Config.stopsUrl, {version: 2, key: OBA.Config.apiKey, maxCount: 250,
+			lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan},
 				function(json) {
 					var stops;
 					try {
@@ -242,7 +241,6 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 						var stopId = stop.id;
 						var direction = stop.direction;
 						var latlng = [stop.lat, stop.lon];
-						var name = stop.name;
 
 						newStopIds[stopId] = stopId;
 
@@ -268,9 +266,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 	};
 
 	return {
-		getMap: function() { return map; },
-
 		containsRoute: containsRoute,
+
+		getMap: function() { return map; },
 
 		showStop: function(stopId) {   
 			var mapBounds = map.getBounds();
@@ -304,7 +302,6 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 					marker.setMap(map);
 
 					fluster.addMarker(marker);
-
 					stopMarkers[stopId] = marker;
 
 					if(! mapBounds.contains(marker.getPosition())) {
@@ -447,6 +444,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		getBounds: function(routeId, directionId) {
 			var directionIdMap = routeIdToShapes[routeId] || {};
 			var polylines = directionIdMap[directionId];
+
 			if (!polylines) { 
 				return null; 
 			}

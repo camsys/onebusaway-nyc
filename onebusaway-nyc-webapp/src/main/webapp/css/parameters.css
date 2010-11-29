@@ -12,26 +12,26 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
-.config-group {
+#content #text .config-group {
 	clear: both;
 }
 
-.configuration-parameter {
+#content #text .configuration-parameter {
 	float: left;
-	width: 45%;
+	width: 50%;
 	padding-bottom: 20px;
+}
+
+#content #text .configuration-parameter p {
+	padding: 15px;
 	padding-right: 50px;
+	padding-left: 0px;
 }
 
-.configuration-parameter p {
-	padding-top: 15px;
-	padding-bottom: 15px;
-}
-
-.configuration-parameter span {
+#content #text .configuration-parameter span {
 	margin-left: 5px;
 }
 
-.submit {
+#content #text .submit {
 	clear: both;
 }

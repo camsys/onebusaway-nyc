@@ -16,7 +16,7 @@ var OBA = window.OBA || {};
 
 OBA.Marker = function(entityId, latlng, map, popup, options) {
 	var markerOptions = {
-			position: new google.maps.LatLng(latlng[0], latlng[1])
+		position: new google.maps.LatLng(latlng[0], latlng[1])
 	};
 
 	var marker = new google.maps.Marker(jQuery.extend(markerOptions, options || {}));

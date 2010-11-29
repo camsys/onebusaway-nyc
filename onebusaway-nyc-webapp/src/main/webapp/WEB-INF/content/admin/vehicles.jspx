@@ -38,7 +38,7 @@ under the License.
 <body>
 <div id="content">
 <div id="text">
-	<h1>Tracked Vehicles</h1>
+	<h1>Vehicles</h1>
 	
 	<s:form method="POST" action="vehicles" namespace="/admin">
 		<table id="vehicle-table">

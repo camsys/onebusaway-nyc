@@ -13,18 +13,15 @@
 /* under the License. */
 
 #content #text table {
-	width: 90%;
 	padding: 0px;
 	padding-top: 10px;
 	padding-bottom: 15px;
 }
 
+#content #text td,
 #content #text th {
 	text-align: left;	
-}
-
-#content #text td a img {
-	border: none;	
+	padding-right: 20px;
 }
 
 #content #text .status {

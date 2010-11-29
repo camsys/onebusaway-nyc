@@ -64,43 +64,38 @@ under the License.
 
 </head>
 <body>
+
+<div id="home_alert">
+	<wiki:wiki name="HomeAlert"/>
+</div>
+
 <div id="content" class="map">
-<div id="sidebar">
 	<div id="search">
 		<form action="search.action">
-			<p><label>Search for:</label> <input type="text" name="q" /></p>
-			<p class="small">TIP: Enter an intersection, bus route or bus stop number.</p>
+			<fieldset>
+				<input type="text" name="q" value=""/>	
+				<input type="submit" value="Find" class="submit"/>
+			</fieldset>
+			<div id="no-results">
+				<p>
+				No results were returned for your query.
+				</p>
+
+				<p>
+				Try these example searches:
+				</p>
+				
+				<ul>
+					<li><a href="#">Atlantic Ave and Hoyt St</a></li>
+					<li><a href="#">305394</a></li>
+					<li><a href="#">B63</a></li>
+				</ul>
+			</div>
 		</form>
 	</div>
 
-	<div id="search-results">
-		<div id="example-searches">
-			<p>Example Searches:</p>
-
-			<ul>
-				<li><a href="#">Atlantic Ave and Hoyt St</a></li>
-				<li><a href="#">305394</a></li>
-				<li><a href="#">B63</a></li>
-			</ul>
-		</div>
-
-		<ul id="search-results-list">
-		</ul>
-	</div>
-
-	<div id="current_layers">
-		<p class="header">Displayed Routes (<span id="n-displayed-routes">0</span>)</p>
-
-		<div id="displayed-routes">
-			<p id="no-routes-displayed-message">You haven't added any routes to the map yet.</p>
-
-			<ul id="displayed-routes-list"></ul>
-		</div>
-	</div>
+	<div id="map"></div>
 </div>
 
-<div id="map"></div>
-
-</div>
 </body>
 </html>

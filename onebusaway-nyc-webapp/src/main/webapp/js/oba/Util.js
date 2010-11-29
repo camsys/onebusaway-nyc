@@ -16,62 +16,6 @@ var OBA = window.OBA || {};
 
 OBA.Util = (function() {
 	return {
-		// A *simple* pixel width calculator for a given text string. 
-		// Calculated with Helvetica/Arial. (HACK FIXME)
-		truncateToWidth: function(text, width, size) {
-			var lwide = "abcdeghkmnopqsuvwxyz234567890";
-			var lmedium = "ftr-1";
-			var lskinny = "ilj. ";
-
-			var uwide = "abcftrdjleghkmnopqsuvwxyz234567890";
-			var umedium = "";
-			var uskinny = "1i-. ";
-
-			if(typeof text === 'string') {			
-				var w = 0;
-				for(var i = 0; i < text.length; i++) {
-					var uppercase = ((text.charCodeAt(i) > 64 && text.charCodeAt(i) < 91) ? true : false);
-					var c = text.toLowerCase().charAt(i);
-
-					if(uppercase) {
-						if(uwide.indexOf(c) >= 0) {
-							w += size - 5;
-						}else if(umedium.indexOf(c) >= 0) {
-							w += Math.floor(size / 2);
-						} else if(uskinny.indexOf(c) >= 0) {
-							w += Math.floor(size / 2);  
-						}
-					} else {
-						if(lwide.indexOf(c) >= 0) {
-							w += size - 4;
-						} else if(lmedium.indexOf(c) >= 0) {
-							w += Math.floor(size / 2) - 1;
-						} else if(lskinny.indexOf(c) >= 0) {
-							w += Math.floor(size / 3) - 2;
-						}
-					}
-
-					if(w > width) {
-						return text.substring(0, i - 2) + "...";
-					}
-				}
-			}
-
-			return text;
-		},
-		serializeArray: function(lst, keyname) {
-			var result = null;
-
-			jQuery.each(lst, function(i, x) {
-				if (!result) {
-					result = keyname + "=" + x;
-				} else {
-					result += "&" + keyname + "=" + x;
-				}
-			});
-
-			return result;
-		},
 		log: function(s) {
 			if(OBA.Config.debug === true && typeof console !== 'undefined' && typeof console.log !== 'undefined') {
 				console.log(s);
@@ -128,7 +72,7 @@ OBA.Util = (function() {
 		displayDistance: function(feet) {
 			if (feet > 5280) {
 				var miles = feet / 5280;
-				return miles == 1 ? "1 mile" : miles.toPrecision(3) + " miles";
+				return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
 			} else {
 				return feet == 1 ? "1 foot" : Math.round(feet) + " feet";
 			}
@@ -139,6 +83,7 @@ OBA.Util = (function() {
 
 			var hours = dateObj.getHours();            
 			var amOrPm = "";
+			
 			if(hours >= 12) {
 				if(hours > 12) {
 					hours = hours - 12;        	            	

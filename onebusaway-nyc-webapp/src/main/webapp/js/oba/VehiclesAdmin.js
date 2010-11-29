@@ -20,14 +20,18 @@ function addTableSortBehaviors() {
     var table = jQuery('#vehicle-table');
     // for reverse sorting
     var lastSortIndex = -1;
+
     table.find('th a').each(function(i, a) {
         var keyFn = function(row) {
             var key = jQuery(row).children().slice(i, i+1).text();
             return key;
         };
+    
         jQuery(a).click(function(e) {
             e.preventDefault();
+        
             var rows = table.find('tr').not(":first");
+            
             rows.remove();
             rows = jQuery.makeArray(rows);
             rows.sort(function(a, b) {
@@ -37,12 +41,14 @@ function addTableSortBehaviors() {
                 else if (x > y) { return 1; }
                 else { return 0; }
             });
+            
             if (lastSortIndex === i) {
                 rows.reverse();
                 lastSortIndex = -1;
             } else {
                 lastSortIndex = i;
             }
+            
             table.append(rows);
         });
     });
@@ -63,7 +69,7 @@ function createMaps() {
 		var lng = location_v[1];
 		var orientation = Math.floor(location_v[2] / 30) * 30;
 
-		if(orientation === null || orientation === "") {
+		if(orientation === null || orientation === "" || orientation === 0) {
 			orientation = "unknown";
 		}
 		
@@ -95,7 +101,7 @@ function createMaps() {
 		// (FIXME?) Google maps seems to always take into account marker padding with the assumption of a 
 		// marker that is shaped like its default (i.e. taller than wide). Because of this, we have to adjust 
 		// the map center to make up for this false assumption in our case.
-		map.panBy(0, OBA.Config.vehicleIconSize.height / 2);
+		map.panBy(0, 18);
 	});
 }
 

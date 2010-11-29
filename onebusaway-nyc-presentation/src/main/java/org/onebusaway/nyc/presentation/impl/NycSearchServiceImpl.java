@@ -117,7 +117,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         }
       }
 
-      // we should be either an intersection and route or an intersection
+    // we should be either an intersection and route or an intersection
     } else {
       // if we're a route, set route and the geocoder query appropriately
       String route = null;
@@ -189,8 +189,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     return sortSearchResults(results);
   }
 
-  private Map<String, List<StopBean>> createDirectionToStopBeansMap(
-      String routeId) {
+  private Map<String, List<StopBean>> createDirectionToStopBeansMap(String routeId) {
     Map<String, List<StopBean>> directionIdToStopBeans = new HashMap<String, List<StopBean>>();
 
     StopsForRouteBean stopsForRoute = transitService.getStopsForRoute(routeId);
@@ -271,9 +270,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     return result;
   }
 
-  private List<RouteSearchResult> makeRouteSearchResult(RouteBean routeBean,
-      Mode m) {
-
+  private List<RouteSearchResult> makeRouteSearchResult(RouteBean routeBean, Mode m) {
     ConfigurationBean config = configurationService.getConfiguration();  
 
     List<RouteSearchResult> results = new ArrayList<RouteSearchResult>();
@@ -284,13 +281,12 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     // create lookups keyed by directionId to the different bits of
     // information we need for the response
+    Map<String, Map<String, NaturalLanguageStringBean>> directionIdToServiceAlerts = 
+    	new HashMap<String, Map<String, NaturalLanguageStringBean>>();
     Map<String, List<StopBean>> directionIdToStopBeans = createDirectionToStopBeansMap(routeId);
     Map<String, String> directionIdToHeadsign = new HashMap<String, String>();
     Map<String, String> directionIdToTripId = new HashMap<String, String>();
-    
-    // a map of direction id -> (service alert id -> value)
-    Map<String, Map<String, NaturalLanguageStringBean>> directionIdToServiceAlerts = new HashMap<String, Map<String, NaturalLanguageStringBean>>();
-
+        
     Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String, Double>>();
     Map<String, List<DistanceAway>> stopIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
 
@@ -299,14 +295,14 @@ public class NycSearchServiceImpl implements NycSearchService {
     List<TripDetailsBean> tripsList = tripsForRoute.getList();
     
     // create a map of trip ids->(stop ids->distances along trip values) to
-    // figure out which stop the vehicle is between
-    // this is all with schedule data only so far...
+    // figure out which stop the vehicle is between. This is all with schedule data only so far...
     for (TripDetailsBean tripDetailsBean : tripsList) {
       TripBean trip = tripDetailsBean.getTrip();
       String tripId = trip.getId();
       String tripDirectionId = trip.getDirectionId();
       String tripHeadsign = trip.getTripHeadsign();
 
+      // FIXME: most common headsign? 
       directionIdToHeadsign.put(tripDirectionId, tripHeadsign);
       directionIdToTripId.put(tripDirectionId, tripId);
       
@@ -332,7 +328,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
 
-      /* compile a list of service alerts that affect this route+direction... */
+      // compile a list of service alerts that affect this route+direction
       Map<String, NaturalLanguageStringBean> serviceAlertIdsToNaturalLanguageStringBeans = directionIdToServiceAlerts.get(tripDirectionId);
 
       if (serviceAlertIdsToNaturalLanguageStringBeans == null) {
@@ -365,12 +361,9 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       if (closestStop != null) {
         String closestStopId = closestStop.getId();
-
         double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
         double stopDistanceAlongRoute = tripStatusBean.getNextStopDistanceAlongTrip();
-
-        double distanceAwayFromClosestStopInMeters = stopDistanceAlongRoute
-            - distanceAlongTrip;
+        double distanceAwayFromClosestStopInMeters = stopDistanceAlongRoute - distanceAlongTrip;
         int distanceAwayFromClosestStopInFeet = (int) this.metersToFeet(distanceAwayFromClosestStopInMeters);
 
         List<DistanceAway> stopDistanceAways = stopIdToDistanceAways.get(closestStopId);
@@ -380,10 +373,11 @@ public class NycSearchServiceImpl implements NycSearchService {
           stopIdToDistanceAways.put(closestStopId, stopDistanceAways);
         }
 
-        // (we're always 0 stops away from our next stop, by definition!)
+        // (we're always 0 stops away from our next stop, by definition)
         DistanceAway distanceAway = new DistanceAway(0,
-            distanceAwayFromClosestStopInFeet, new Date(
-                tripStatusBean.getLastUpdateTime()), m, config.getStaleDataTimeout());
+            distanceAwayFromClosestStopInFeet, 
+            new Date(tripStatusBean.getLastUpdateTime()), 
+            m, config.getStaleDataTimeout());
 
         stopDistanceAways.add(distanceAway);
       }
@@ -405,8 +399,8 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       // (sort by order in route)
       if (stopIdToDistances != null) {
-        Comparator<StopBean> stopBeanComparator = new NycSearchServiceImpl.StopBeanComparator(
-            stopIdToDistances);
+        Comparator<StopBean> stopBeanComparator = 
+        	new NycSearchServiceImpl.StopBeanComparator(stopIdToDistances);
         Collections.sort(stopBeansList, stopBeanComparator);
       }
 
@@ -427,9 +421,9 @@ public class NycSearchServiceImpl implements NycSearchService {
         stopItemsList.add(stopItem);
       }
 
-      Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = directionIdToServiceAlerts.get(directionId);
+      // get a list of unique service alerts that affect this route direction
       List<NaturalLanguageStringBean> serviceAlerts = null;
- 
+      Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = directionIdToServiceAlerts.get(directionId);
       if(serviceAlertIdsToServiceAlerts == null) {
     	  serviceAlerts = Collections.emptyList();
       } else {
@@ -477,14 +471,16 @@ public class NycSearchServiceImpl implements NycSearchService {
         for (SituationBean situationBean : situations) {
           String miscelleanousReason = situationBean.getMiscellaneousReason();
     		  
-              if (miscelleanousReason != null
-              && miscelleanousReason.compareTo("detour") == 0) {
+          if (miscelleanousReason != null 
+        	  && miscelleanousReason.compareTo("detour") == 0) {
             routeIsOnDetour = true;
             break;
           }
         }
       }
-      if((status != null && status.toLowerCase().compareTo("deviated") == 0) && ! routeIsOnDetour)
+      
+      if((status != null 
+    	  && status.toLowerCase().compareTo("deviated") == 0) && ! routeIsOnDetour)
         return false;
     }
 
@@ -501,23 +497,22 @@ public class NycSearchServiceImpl implements NycSearchService {
     ConfigurationBean config = configurationService.getConfiguration();
 
 	String stopId = stopBean.getId();
-    List<Double> latLng = Arrays.asList(new Double[] {
-        stopBean.getLat(), stopBean.getLon()});
+    List<Double> latLng = Arrays.asList(new Double[] {stopBean.getLat(), stopBean.getLon()});
     String stopName = stopBean.getName();
     String stopDirection = stopBean.getDirection();
 
-    Map<String, List<DistanceAway>> routeIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
+    Map<String, List<DistanceAway>> routeIdToDistanceAways = 
+    	new HashMap<String, List<DistanceAway>>();
     Map<String, String> routeIdToHeadsign = new HashMap<String, String>();
     List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
-    Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = new HashMap<String, NaturalLanguageStringBean>();
+    Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = 
+    	new HashMap<String, NaturalLanguageStringBean>();
 
     /*
-     * Search for trips that will stop at this stop between (now -
-     * minutesBefore) and (now + minutesAfter). Calculate each trip vehicle's
-     * distance away from this stop, filtering by the logic in
-     * shouldDisplayArrivalAndDepatureForMode().
+     * Search for trips that will stop at this stop between (now - minutesBefore) 
+     * and (now + minutesAfter). Calculate each trip vehicle's distance away from 
+     * this stop, filtering by the logic in shouldDisplayArrivalAndDepatureForMode().
      */
-
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
     query.setTime(System.currentTimeMillis());
     query.setMinutesBefore(5);
@@ -525,8 +520,8 @@ public class NycSearchServiceImpl implements NycSearchService {
     query.setFrequencyMinutesBefore(5);
     query.setFrequencyMinutesAfter(2880);
 
-    StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = transitService.getStopWithArrivalsAndDepartures(
-        stopId, query);
+    StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = 
+    	transitService.getStopWithArrivalsAndDepartures(stopId, query);
     List<ArrivalAndDepartureBean> arrivalsAndDepartures = stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
 
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
@@ -534,10 +529,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       String headsign = tripBean.getTripHeadsign();
       String routeId = tripBean.getRoute().getId();
 
-      // (we keep this for later, since we need to display all headsigns for a
-      // given route that we found)
-      // FIXME: should we store the frequency of each headsign to pick the most
-      // common one and display that?
+      // FIXME: most common headsign?
       routeIdToHeadsign.put(routeId, headsign);
 
       if (arrivalAndDepartureBean.getDistanceFromStop() < 0)
@@ -564,8 +556,8 @@ public class NycSearchServiceImpl implements NycSearchService {
         }
 
         DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
-            distanceFromStopInFeet, new Date(
-                arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), m, config.getStaleDataTimeout());
+            distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), 
+            m, config.getStaleDataTimeout());
         List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
 
         if (distanceAways == null) {
@@ -598,13 +590,14 @@ public class NycSearchServiceImpl implements NycSearchService {
         distanceAways = Collections.emptyList();
 
       Collections.sort(distanceAways);
+
       AvailableRoute availableRoute = new AvailableRoute(shortName, longName,
           headsign, distanceAways);
       availableRoutes.add(availableRoute);
     }
 
+    // Make list of service alerts from our list of unique alerts that apply to routes at this stop
     List<NaturalLanguageStringBean> serviceAlerts = null;
-
     if(serviceAlertIdsToServiceAlerts.isEmpty()) {
   	  serviceAlerts = Collections.emptyList();
     } else {
