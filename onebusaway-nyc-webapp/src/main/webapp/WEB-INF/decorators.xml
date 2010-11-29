@@ -15,7 +15,7 @@
 <decorators defaultdir="/WEB-INF/decorators">
 	<!-- Any urls that are excluded will never be decorated by Sitemesh -->
 	<excludes>
-		<pattern>/m/*</pattern>
+		<pattern>/mobile/*</pattern>
 		<pattern>/css/*</pattern>
 		<pattern>/js/*</pattern>
 	</excludes>

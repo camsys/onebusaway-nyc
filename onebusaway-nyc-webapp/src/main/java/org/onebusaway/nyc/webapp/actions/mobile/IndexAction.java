@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.m;
+package org.onebusaway.nyc.webapp.actions.mobile;
 
 import java.util.ArrayList;
 import java.util.List;
