@@ -114,6 +114,10 @@ a:hover {
 	padding-bottom: 10px;	
 } 
 
+#content #text p {
+	padding-bottom: 15px;
+}
+
 #content #text p.small {
 	font-size: 10px;
 	padding-top: 5px;
