@@ -245,6 +245,7 @@ OBA.StopPopup = function(stopId, map) {
 			var searchInput = jQuery("#search input[type=text]");
 
 			searchInput.val(id);
+			searchInput.removeClass("inactive");
 			searchForm.submit();
 
 			return false;
@@ -392,6 +393,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 			var searchInput = jQuery("#search input[type=text]");
 
 			searchInput.val(id);
+			searchInput.removeClass("inactive");
 			searchForm.submit();
 
 			return false;
