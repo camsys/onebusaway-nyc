@@ -74,7 +74,7 @@ LI.alert {
 <div>
 <p>Search for:</p>
 
-<s:url var="url" namespace="/m" action="index"></s:url>
+<s:url var="url" namespace="/mobile" action="index"></s:url>
 <form action="${url}">
 <input type="text" name="q" class="q" value="${q}"/>
 <input type="submit" class="s" value="Go" />
@@ -89,17 +89,17 @@ LI.alert {
 		<p>Example searches:</p>
 		<ul>
 		
-		<s:url var="url" namespace="/m" action="index">
+		<s:url var="url" namespace="/mobile" action="index">
 			<s:param name="q">Atlantic Ave and Hoyt St</s:param>
 		</s:url>
 		<li><a href="${url}">Atlantic Ave and Hoyt St</a></li>
 
-		<s:url var="url" namespace="/m" action="index">
+		<s:url var="url" namespace="/mobile" action="index">
 			<s:param name="q">305394</s:param>
 		</s:url>
 		<li><a href="${url}">305394</a></li>
 
-		<s:url var="url" namespace="/m" action="index">
+		<s:url var="url" namespace="/mobile" action="index">
 			<s:param name="q">B63</s:param>
 		</s:url>
 		<li><a href="${url}">B63</a></li>
@@ -122,7 +122,7 @@ LI.alert {
 		<strong><s:property value="name" /></strong><br/>
 
 		<s:iterator value="routesAvailable">
-			<s:url var="url" namespace="/m" action="index">
+			<s:url var="url" namespace="/mobile" action="index">
 				<s:param name="q"><s:property value="routeId" /></s:param>
 			</s:url>
 			<a href="${url}"><s:property value="headsign" /></a><br />
@@ -159,7 +159,7 @@ LI.alert {
 		<ul>
 			<s:iterator value="stopItems">
 			<li>
-				<s:url var="url" namespace="/m" action="index">
+				<s:url var="url" namespace="/mobile" action="index">
 					<s:param name="q"><s:property value="id" /></s:param>
 				</s:url>
 
