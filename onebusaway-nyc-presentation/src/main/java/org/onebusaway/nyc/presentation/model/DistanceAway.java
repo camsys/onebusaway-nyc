@@ -2,8 +2,6 @@ package org.onebusaway.nyc.presentation.model;
 
 import java.util.Date;
 
-import org.onebusaway.nyc.presentation.impl.DistancePresenter;
-
 /**
  * Data transfer object for how far away a vehicle is
  */
@@ -53,16 +51,41 @@ public class DistanceAway implements Comparable<DistanceAway> {
 
 	return b.toString();
   }
+
+  private String displayFeet(double feet) {
+	  if (feet > 5280) {
+		  double miles = feet / 5280;
+		  return String.format("%1.2f mi", miles);
+	  } else {
+		  int feetAsInt = (int) feet;
+		  return feetAsInt + " ft";
+	  }
+  }
+
+  private String displayStopsAway(int numberOfStopsAway) {
+	  if(numberOfStopsAway == 0)
+		  return "< 1 stop";
+	  else	  
+		  return numberOfStopsAway == 1
+		  	? "1 stop"
+		  	: numberOfStopsAway + " stops";
+  }
   
   public String getPresentableDistanceWithoutStops() {
-	return this.addModifiers(DistancePresenter.displayFeet(feetAway));
+	if(feetAway <= 50)
+		return "(at stop)";		
+	else 
+		return this.addModifiers(this.displayFeet(feetAway));
   }
   
   public String getPresentableDistance() {
-    return this.addModifiers(DistancePresenter.displayFeet(feetAway)) + ", " +
-    	this.addModifiers(DistancePresenter.displayStopsAway(stopsAway));
+	if(feetAway <= 50) 
+		return "(at stop)";
+	else
+		return this.addModifiers(this.displayFeet(feetAway)) + ", " +
+    		this.addModifiers(this.displayStopsAway(stopsAway));
   }
-
+  
   @Override
   public int hashCode() {
     return 31*feetAway + 31*stopsAway;

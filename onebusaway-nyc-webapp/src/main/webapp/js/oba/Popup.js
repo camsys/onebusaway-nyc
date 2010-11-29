@@ -190,15 +190,19 @@ OBA.StopPopup = function(stopId, map) {
 				service += '<li>';
 				service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(routeId) + '">';
 				service += headsign;
-				service += '</a>';
+				service += '</a> ';
 
-				if(distanceAway.stops === 0) {
-					service += " (< 1 stop, " + OBA.Util.displayDistance(distanceAway.feet) + ")";
+				if(distanceAway.feet <= 50) {
+					service += "(at stop)";
 				} else {
-					service += " (" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", " + 
-						OBA.Util.displayDistance(distanceAway.feet) + ")";
+					if(distanceAway.stops === 0) {
+						service += "(< 1 stop, " + OBA.Util.displayDistance(distanceAway.feet) + ")";
+					} else {
+						service += "(" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", " + 
+							OBA.Util.displayDistance(distanceAway.feet) + ")";
+					}
 				}
-
+				
 				service += '</li>';
 
 				included = true;
@@ -349,23 +353,24 @@ OBA.VehiclePopup = function(vehicleId, map) {
 				var stopName = stop.name;
 
 				nextStopsMarkup += '<li>';
-				nextStopsMarkup += '<a href="#" class="searchLink" rel="' + displayStopId + '">' + stopName + '</a>';
+				nextStopsMarkup += '<a href="#" class="searchLink" rel="' + displayStopId + '">' + stopName + '</a> ';
 
 				// we only have one stop currently this will not work if we get more than one
 				// because we reuse the distance information for each
 				var stopsAway = i;
-				var metersDistanceDelta = stop.scheduledDistance - distanceAlongTrip;
-				var feet = OBA.Util.metersToFeet(metersDistanceDelta);
-				var distanceStr = OBA.Util.displayDistance(feet);
-
-				var stopsAwayStr = null;                
-				if(stopsAway === 0) {
-					stopsAwayStr = "< 1 stop";
+				var feetAway = OBA.Util.metersToFeet(stop.scheduledDistance - distanceAlongTrip);
+								
+				if(feetAway <= 50) {
+					nextStopsMarkup += "(at stop)";
 				} else {
-					stopsAwayStr = (stopsAway === 1) ? "1 stop" : stopsAway + " stops";
+					if(stopsAway === 0) {
+						nextStopsMarkup += "(< 1 stop, " + OBA.Util.displayDistance(feetAway) + ")";
+					} else {
+						nextStopsMarkup += "(" + stopsAway + " stop" + ((stopsAway === 1) ? "" : "s") + ", " + 
+							OBA.Util.displayDistance(feetAway) + ")";
+					}
 				}
 
-				nextStopsMarkup += ' (' + stopsAwayStr + ', ' + distanceStr + ')';
 				nextStopsMarkup += '</li>';
 			});
 
