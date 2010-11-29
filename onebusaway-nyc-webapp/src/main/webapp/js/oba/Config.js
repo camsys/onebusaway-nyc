@@ -78,10 +78,15 @@ OBA.Config = {
 			var html = '';
 			
 			html += '<div class="footer">';
-			html += '<p><strong>At the bus stop...</strong></p><p>';
+
+			html += '<p><strong>At the bus stop...</strong></p>';
+			
+			html += '<p>'
 			html += 'Text "MTA ' + query + '" to 41411 ';
-			html += 'or visit <a href="http://oba.prd.openplans.org/m/?q=' + query + '">http://oba.prd.openplans.org/mobile/?q=' + query + '</a> on your smartphone!';
-			html += '</p></div>';
+			html += 'or visit <a href="http://oba.prd.openplans.org/m/?q=' + query + '">http://' + window.location.hostname + '/m/?q=' + query + '</a> on your smartphone!';
+			html += '</p>';
+			
+			html += '</div>';
 			
 			return html;
 		}
