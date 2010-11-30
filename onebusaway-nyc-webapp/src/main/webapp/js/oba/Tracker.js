@@ -133,6 +133,7 @@ OBA.Tracker = function() {
 
 						map.fitBounds(mapBounds);				
 					} else {
+						map.setZoom(16);
 						routeMap.showStop(json.searchResults[0].stopId);					
 					}					
 				}

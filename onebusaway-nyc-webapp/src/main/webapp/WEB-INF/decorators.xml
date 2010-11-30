@@ -15,7 +15,7 @@
 <decorators defaultdir="/WEB-INF/decorators">
 	<!-- Any urls that are excluded will never be decorated by Sitemesh -->
 	<excludes>
-		<pattern>/mobile/*</pattern>
+		<pattern>/m/*</pattern>
 		<pattern>/css/*</pattern>
 		<pattern>/js/*</pattern>
 	</excludes>
@@ -23,33 +23,4 @@
 	<decorator name="main" page="main.jspx">
 		<pattern>/*</pattern>
 	</decorator>
-
-	<!--    <decorator name="main-tools" page="main-tools.jspx">-->
-	<!--        <pattern>/p/Tools*</pattern>-->
-	<!--    </decorator>-->
-<!---->
-	<!--    <decorator name="iphone" page="iphone.jspx">-->
-	<!--        <pattern>/where/iphone/*</pattern>-->
-	<!--    </decorator>-->
-<!---->
-	<!--    <decorator name="text" page="text.jspx">-->
-	<!--        <pattern>/where/text/*</pattern>-->
-	<!--    </decorator>-->
-<!---->
-	<!--    <decorator name="sms" page="sms.jspx">-->
-	<!--        <pattern>/sms/*</pattern>-->
-	<!--        <pattern>/where/mobile/*</pattern>-->
-	<!--    </decorator>-->
-<!---->
-	<!--    <decorator name="main-research" page="main-research.jspx">-->
-	<!--        <pattern>/p/Research*</pattern>-->
-	<!--    </decorator>-->
-<!---->
-	<!--    <decorator name="main-contact" page="main-contact.jspx">-->
-	<!--        <pattern>/p/ContactUs*</pattern>-->
-	<!--    </decorator>-->
-	<!--    -->
-	<!--    <decorator name="main-user" page="main-user.jspx">-->
-	<!--        <pattern>/user/*</pattern>-->
-	<!--    </decorator>-->
 </decorators>

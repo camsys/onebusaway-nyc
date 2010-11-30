@@ -103,7 +103,7 @@ a:hover {
 #content.help #text {
 	border-left: 1px solid #ACACAC;
 	margin-left: 325px;
-	min-height: 300px;
+	min-height: 500px;
 }
 
 #content.help #sidebar .wrapper {

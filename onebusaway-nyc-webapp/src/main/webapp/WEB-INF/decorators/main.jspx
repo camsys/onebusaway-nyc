@@ -59,7 +59,7 @@ under the License.
       <h1>A City Transit Agency</h1>
 
       <ul>
-      	<s:url var="url" namespace="" action="index"></s:url>
+      	<s:url var="url" value="/"></s:url>
         <li><a href="${url}">Home</a></li>
 		
 		<s:if test="adminUser">
@@ -76,9 +76,7 @@ under the License.
 	        <li><a href="${url}">Reporting</a></li>
 		</s:if>
 		
-		<s:url var="url" namespace="/wiki" action="index">
-			<s:param name="name">HelpIndex</s:param>
-		</s:url>
+		<s:url var="url" namespace="/wiki" action="HelpIndex"/>
         <li><a href="${url}">Help</a></li>
       </ul>
     </div>
@@ -87,24 +85,18 @@ under the License.
 
 <div id="footer">
 <ul class="first">
-	<s:url var="url" namespace="/wiki" action="index">
-		<s:param name="name">About</s:param>
-	</s:url>
+	<s:url var="url" namespace="/wiki" action="About"/>
 	<li><a href="${url}">About</a></li>
 
-	<s:url var="url" namespace="/wiki" action="index">
-		<s:param name="name">ContactUs</s:param>
-	</s:url>
+	<s:url var="url" namespace="/wiki" action="ContactUs"/>
 	<li><a href="${url}">Contact Us</a></li>
 </ul>
 
 <ul>
-	<s:url var="url" namespace="/mobile" action="index"></s:url>
+      	<s:url var="url" value="/m"></s:url>
 	<li><a href="${url}">Text Only/Mobile</a></li>
 
-	<s:url var="url" namespace="/wiki" action="index">
-		<s:param name="name">DeveloperAPI</s:param>
-	</s:url>
+	<s:url var="url" namespace="/wiki" action="DeveloperAPI"/>
 	<li><a href="${url}">Developer API</a></li>
 </ul>
 

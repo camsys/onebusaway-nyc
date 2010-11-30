@@ -24,22 +24,34 @@ under the License.
 <body>
 <s:if test="isHelp">
 	<div id="content" class="help">
-	<div id="sidebar">
-		<div class="wrapper">
-			<wiki:wiki name="HelpTOC"/>
-		</div>
-	</div>
+		<div id="sidebar">
+			<div class="wrapper">
+				<s:if test="admin">
+					<wiki:wiki name="HelpAdminTOC"/>
+				</s:if>
 
-	<div id="text">
-		<s:property value="content" escape="false"/>
-	</div>
+				<wiki:wiki name="HelpTOC"/>
+			</div>
+		</div>
+
+		<div id="text">
+			<s:property value="content" escape="false"/>
+
+			<s:if test="admin">
+			  <p><s:a href="%{editLink}">Edit this page</s:a></p>
+			</s:if>
+		</div>
 	</div>
 </s:if>
 <s:else>
 	<div id="content">
-	<div id="text">
-		<s:property value="content" escape="false"/>
-	</div>
+		<div id="text">
+			<s:property value="content" escape="false"/>
+
+			<s:if test="admin">
+			  <p><s:a href="%{editLink}">Edit this page</s:a></p>
+			</s:if>
+		</div>
 	</div>
 </s:else>
 </body>

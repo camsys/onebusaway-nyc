@@ -171,7 +171,7 @@ OBA.StopPopup = function(stopId, map) {
 		notices += '</ul>';
 
 		// service
-		var service = '<p>This stop serves:</p><ul>';
+		var service = '<p>This stop served by:</p><ul>';
 
 		jQuery.each(routeToVehicleInfo, function(routeId, vehicleInfos) {
 			var headsign = routeToHeadsign[routeId];
@@ -188,10 +188,9 @@ OBA.StopPopup = function(stopId, map) {
 				}
 				
 				service += '<li>';
-				service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(routeId) + '">';
 				service += headsign;
-				service += '</a> ';
-
+				service += " ";
+				
 				if(distanceAway.feet <= 50) {
 					service += "(at stop)";
 				} else {
@@ -212,9 +211,7 @@ OBA.StopPopup = function(stopId, map) {
 			// display this route since it usually stops here...
 			if(! included && headsign !== null) {
 				service += '<li>';
-				service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(routeId) + '">';
 				service += headsign;
-				service += '</a>';
 				service += '</li>';
 			}
 		});
@@ -224,9 +221,7 @@ OBA.StopPopup = function(stopId, map) {
 			var route = json.data.references.routes[0];
 
 			service += '<li>';
-			service += '<a href="#" class="searchLink" rel="' + OBA.Util.parseEntityId(route.id) + '">';
 			service += route.longName;
-			service += '</a>';
 			service += '</li>';
 		}
 

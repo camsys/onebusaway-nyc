@@ -82,8 +82,12 @@ OBA.Config = {
 			html += '<p><strong>At the bus stop...</strong></p>';
 			
 			html += '<p>'
-			html += 'Text "MTA ' + query + '" to 41411 ';
-			html += 'or visit <a href="http://oba.prd.openplans.org/m/?q=' + query + '">http://' + window.location.hostname + '/m/?q=' + query + '</a> on your smartphone!';
+
+			if(type === "stop")	{
+				html += 'Text "MTA ' + query + '" to 41411 or ';
+			}
+			
+			html += 'Visit <a href="http://' + window.location.hostname + '/m/index.action?q=' + query + '">http://' + window.location.hostname + '/m/index.action?q=' + query + '</a> on your smartphone!';
 			html += '</p>';
 			
 			html += '</div>';
