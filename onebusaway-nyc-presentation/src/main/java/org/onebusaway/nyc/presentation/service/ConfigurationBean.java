@@ -6,9 +6,9 @@ public class ConfigurationBean {
 
   private double offRouteDistance = 500;
 
-  private int staleDataTimeout = 300;
+  private int staleDataTimeout = 120;
 
-  private int hideTimeout = 120;
+  private int hideTimeout = 300;
 
   public ConfigurationBean() {
 
