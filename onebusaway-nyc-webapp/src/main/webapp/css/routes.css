@@ -24,6 +24,10 @@
 	padding-right: 20px;
 }
 
+#content #text p {
+	padding: 0px;
+}
+
 #content #text textarea {
 	width: 250px;
 	height: 50px;

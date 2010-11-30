@@ -26,6 +26,10 @@
 	padding-top: 10px;
 }
 
+#content #text p {
+	padding: 0px;
+}
+
 #content #text div.submit {
 	padding-top: 25px;
 }

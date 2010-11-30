@@ -121,6 +121,7 @@ a:hover {
 #content #text p.small {
 	font-size: 10px;
 	padding-top: 5px;
+	padding-bottom: 0px;
 }
 
 #content #text table {
