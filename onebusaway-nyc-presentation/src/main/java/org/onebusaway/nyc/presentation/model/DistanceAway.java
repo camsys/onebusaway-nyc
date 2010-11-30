@@ -72,18 +72,23 @@ public class DistanceAway implements Comparable<DistanceAway> {
   }
   
   public String getPresentableDistanceWithoutStops() {
+	String r = "";  
 	if(feetAway <= 50)
-		return "(at stop)";		
+		r = "at stop";		
 	else 
-		return this.addModifiers(this.displayFeet(feetAway));
+		r = this.displayFeet(feetAway);
+	
+	return this.addModifiers(r);
   }
   
   public String getPresentableDistance() {
-	if(feetAway <= 50) 
-		return "(at stop)";
-	else
-		return this.addModifiers(this.displayFeet(feetAway)) + ", " +
-    		this.addModifiers(this.displayStopsAway(stopsAway));
+	String r = "";  
+	if(feetAway <= 50)
+		r = "at stop";		
+	else 
+		r = this.displayFeet(feetAway) + ", " + this.displayStopsAway(stopsAway);
+		
+	return this.addModifiers(r);
   }
   
   @Override

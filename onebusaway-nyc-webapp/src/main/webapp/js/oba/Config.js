@@ -44,7 +44,7 @@ OBA.Config = {
 		// api key used for webapp
 		apiKey: "TEST",
 
-		vehicleFilterFunction: function(tripStatus) {
+		vehicleFilterFunction: function(type, tripStatus) {
 			// don't show non-realtime trips (row 8)
 			if(tripStatus === null || tripStatus.predicted === false || tripStatus.distanceAlongTrip === 0) {
 				return false;
@@ -60,6 +60,11 @@ OBA.Config = {
 				return false;
 			}
 
+			// hide deviated vehicles in stop popup
+			if(type === "stop" && status !== null && status.toLowerCase() === 'deviated') {
+				return false;
+			}
+			
 			// hide deadheading vehicles (row 3)
 			// hide vehicles at the depot (row 1)
 			if(phase !== null && phase.toLowerCase() !== 'in_progress') {

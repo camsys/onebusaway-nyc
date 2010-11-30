@@ -136,7 +136,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				var status = tripDetails.status;
 				var vehicleId = status.vehicleId;
 
-				if(OBA.Config.vehicleFilterFunction(status) === false || ! vehicleId) {
+				if(OBA.Config.vehicleFilterFunction("vehicle", status) === false || ! vehicleId) {
 					return;
 				}
 				

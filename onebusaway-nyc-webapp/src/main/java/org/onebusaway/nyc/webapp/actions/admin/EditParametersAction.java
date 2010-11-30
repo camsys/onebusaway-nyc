@@ -34,7 +34,6 @@ public class EditParametersAction extends OneBusAwayNYCActionSupport implements
   public String execute() {
     ConfigurationBean config = _configurationService.getConfiguration();
     _model.applyPropertiesFromBean(config);
-    // 300, 120
     return SUCCESS;
   }
 

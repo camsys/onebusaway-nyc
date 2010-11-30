@@ -124,7 +124,7 @@ OBA.StopPopup = function(stopId, map) {
 				applicableSituationIds[situationId] = situationId;
 			});
 
-			if(OBA.Config.vehicleFilterFunction(arrival.tripStatus) === false) {
+			if(OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {
 				return;          
 			}
 			

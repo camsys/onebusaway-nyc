@@ -4,7 +4,6 @@ import javax.servlet.jsp.JspException;
 
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.wiki.api.WikiDocumentService;
