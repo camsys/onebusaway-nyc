@@ -5,6 +5,7 @@ import javax.servlet.jsp.JspException;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.wiki.api.WikiDocumentService;
 import org.onebusaway.wiki.api.WikiPage;
@@ -15,7 +16,11 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
 
-@Result(location = "/WEB-INF/content/wiki/index.jspx")
+
+@Results({
+	@Result(location = "/WEB-INF/content/wiki/index.jspx"),
+	 @Result(name = "notFound", location = "/WEB-INF/content/wiki/index-404.jspx"),
+})
 @Namespace("/wiki/*")
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
@@ -28,17 +33,39 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	private WikiRenderingService _wikiRenderingService;
 
 	protected String namespace = "Main";
-	protected String name;
 	protected String content;
+	protected String toc;
 	protected String editLink;
-	protected boolean isHelp;
+	protected boolean hasToc = false;
 	
 	public boolean isAdmin() {
 		return _currentUserService.isCurrentUserAdmin();
 	}
 	
+	public boolean getHasToc() {
+		return hasToc;
+	}
+	
 	public String getEditLink() {
 		return editLink;
+	}
+	
+	private String getTocPageName(String name) {
+		if(name == null)
+			return null;
+		
+        StringBuffer sb = new StringBuffer(name.length());
+
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+
+            if (Character.isUpperCase(c) && i > 0)
+            	break;
+            else 
+            	sb.append(c);
+        }
+        
+        return sb.toString() + "TOC";
 	}
 	
 	@Override
@@ -50,8 +77,20 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	    String name = proxy.getActionName();
 		
 		if (namespace != null && name != null) {
-			isHelp = (name.length() >= 4 && name.substring(0, 4).compareTo("Help") == 0);					
-			
+			try {
+				WikiPage page = _wikiDocumentService.getWikiPage(namespace, this.getTocPageName(name), false);
+
+				if (page != null) {
+					toc = _wikiRenderingService.renderPage(page);	
+					hasToc = true;
+				} else {
+					toc = null;
+					hasToc = false;
+				}
+			} catch (Exception ex) {
+				hasToc = false;
+			}
+
 			try {
 				WikiPage page = _wikiDocumentService.getWikiPage(namespace, name, false);
 
@@ -59,8 +98,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 					content = _wikiRenderingService.renderPage(page);	
 				    editLink = _wikiRenderingService.getEditLink(page);
 				} else {
-					content = "<h2>404 Not Found</h2><p>The requested page was not found on the server.</p>";
+					content = null;
 					editLink = null;
+					
+					return "notFound";
 				}
 			} catch (Exception ex) {
 				throw new JspException(ex);
@@ -74,23 +115,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		return content;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	public boolean getIsHelp() {
-		return isHelp;
-	}
-	
-	public void setIsHelp(boolean isHelp) {
-		this.isHelp = isHelp;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	public String getToc() {
+		return toc;
 	}
 }

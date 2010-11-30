@@ -100,17 +100,17 @@ a:hover {
 	padding: 15px;
 }
 
-#content.help #text {
+#content.sidebar #text {
 	border-left: 1px solid #ACACAC;
 	margin-left: 325px;
 	min-height: 500px;
 }
 
-#content.help #sidebar .wrapper {
+#content.sidebar #sidebar .wrapper {
 	padding: 15px;
 }
 
-#content.help #sidebar .wrapper ul {
+#content.sidebar #sidebar .wrapper ul {
 	padding-bottom: 10px;	
 } 
 
@@ -172,11 +172,16 @@ a:hover {
 	color: red;
 }
 
-#content.help #text ul {
+#content #text .edit {
+	border-top: 1px solid #EFEFEF;	
+	padding-top: 20px;	
+}
+
+#content.sidebar #text ul {
 	padding: 15px;
 }
 
-#content.help #text ul li {
+#content.sidebar #text ul li {
 	list-style-type: disc;
 	padding-top: 5px;
 	padding-bottom: 5px;

@@ -24,6 +24,11 @@
 	padding-right: 20px;
 }
 
+#content #text p {
+	padding: 0px;
+	margin: 0px;
+}
+
 #content #text .status {
 	width: 15px;
 	height: 15px;

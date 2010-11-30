@@ -22,15 +22,11 @@ under the License.
 <title><s:property value="name" /></title>
 </head>
 <body>
-<s:if test="isHelp">
-	<div id="content" class="help">
+<s:if test="hasToc">
+	<div id="content" class="sidebar">
 		<div id="sidebar">
 			<div class="wrapper">
-				<s:if test="admin">
-					<wiki:wiki name="HelpAdminTOC"/>
-				</s:if>
-
-				<wiki:wiki name="HelpTOC"/>
+				<s:property value="toc" escape="false"/>
 			</div>
 		</div>
 
@@ -38,7 +34,7 @@ under the License.
 			<s:property value="content" escape="false"/>
 
 			<s:if test="admin">
-			  <p><s:a href="%{editLink}">Edit this page</s:a></p>
+			  <p class="edit"><s:a href="%{editLink}">Edit this page</s:a></p>
 			</s:if>
 		</div>
 	</div>
@@ -49,7 +45,7 @@ under the License.
 			<s:property value="content" escape="false"/>
 
 			<s:if test="admin">
-			  <p><s:a href="%{editLink}">Edit this page</s:a></p>
+			  <p class="edit"><s:a href="%{editLink}">Edit this page</s:a></p>
 			</s:if>
 		</div>
 	</div>
