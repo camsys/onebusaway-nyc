@@ -93,7 +93,7 @@ under the License.
 </ul>
 
 <ul>
-      	<s:url var="url" value="/m"></s:url>
+	<s:url var="url" namespace="/mobile" action="index"/>
 	<li><a href="${url}">Text Only/Mobile</a></li>
 
 	<s:url var="url" namespace="/wiki" action="DeveloperAPI"/>
