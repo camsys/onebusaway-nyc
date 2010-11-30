@@ -361,9 +361,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       if (closestStop != null) {
         String closestStopId = closestStop.getId();
-        double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
-        double stopDistanceAlongRoute = tripStatusBean.getNextStopDistanceAlongTrip();
-        double distanceAwayFromClosestStopInMeters = stopDistanceAlongRoute - distanceAlongTrip;
+        double distanceAwayFromClosestStopInMeters = tripStatusBean.getNextStopDistanceFromVehicle();
         int distanceAwayFromClosestStopInFeet = (int) this.metersToFeet(distanceAwayFromClosestStopInMeters);
 
         List<DistanceAway> stopDistanceAways = stopIdToDistanceAways.get(closestStopId);

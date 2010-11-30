@@ -155,14 +155,14 @@ public class VehicleStateLibrary {
   private boolean isLayoverInRange(BlockStopTimeEntry prevStop,
       BlockStopTimeEntry nextStop, ScheduledBlockLocation location) {
 
-    if (prevStop.getDistaceAlongBlock() <= location.getDistanceAlongBlock()
-        && location.getDistanceAlongBlock() <= nextStop.getDistaceAlongBlock())
+    if (prevStop.getDistanceAlongBlock() <= location.getDistanceAlongBlock()
+        && location.getDistanceAlongBlock() <= nextStop.getDistanceAlongBlock())
       return true;
 
     double d1 = Math.abs(location.getDistanceAlongBlock()
-        - prevStop.getDistaceAlongBlock());
+        - prevStop.getDistanceAlongBlock());
     double d2 = Math.abs(location.getDistanceAlongBlock()
-        - nextStop.getDistaceAlongBlock());
+        - nextStop.getDistanceAlongBlock());
     return Math.min(d1, d2) < _layoverStopDistance;
   }
 
