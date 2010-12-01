@@ -35,14 +35,16 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	    ActionProxy proxy = invocation.getProxy();
 
 	    String name = proxy.getActionName().toLowerCase();
-
+	    String namespace = proxy.getNamespace().toLowerCase();
+	    
 	    // FIXME: since Struts doesn't seem to like wildcard namespaces (in wiki/IndexAction) and default
 	    // actions, we have to have this action check to see if it's being called as a "default" action and
 	    // return the 404 message if so. There has to be a better way than this? 
-	    if(! name.equals("") && ! name.equals("index"))
-	    	return "NotFound";
+	    if((name.equals("") || name.equals("index")) && 
+	    		(namespace.equals("") || namespace.equals("/")))
+	    	return SUCCESS;
 	    
-	    return SUCCESS;
+	    return "NotFound";
   }
 
 }
