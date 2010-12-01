@@ -76,6 +76,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	    String name = proxy.getActionName();
 		
 		if (namespace != null && name != null) {
+			// try to get TOC page for this section
 			try {
 				WikiPage page = _wikiDocumentService.getWikiPage(namespace, this.getTocPageName(name), false);
 
@@ -90,6 +91,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 				hasToc = false;
 			}
 
+			// content for page
 			try {
 				WikiPage page = _wikiDocumentService.getWikiPage(namespace, name, false);
 
