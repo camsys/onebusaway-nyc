@@ -34,7 +34,7 @@ under the License.
 			<s:property value="content" escape="false"/>
 
 			<s:if test="admin">
-			  <p class="edit"><s:a href="%{editLink}">Edit this page</s:a></p>
+			  <p class="edit"><s:a href="%{editLink}">Edit This Page</s:a></p>
 			</s:if>
 		</div>
 	</div>
@@ -45,7 +45,7 @@ under the License.
 			<s:property value="content" escape="false"/>
 
 			<s:if test="admin">
-			  <p class="edit"><s:a href="%{editLink}">Edit this page</s:a></p>
+			  <p class="edit"><s:a href="%{editLink}">Edit This Page</s:a></p>
 			</s:if>
 		</div>
 	</div>
