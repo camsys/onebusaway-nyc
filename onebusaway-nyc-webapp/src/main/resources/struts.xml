@@ -32,7 +32,7 @@
 
         <global-results>
          	<result name="NotFound">
-                <param name="location">/WEB-INF/content/404.jspx</param>
+                <param name="location">/WEB-INF/content/error/404.jspx</param>
             </result>
             <result name="NotSetup" type="redirectAction">
                 <param name="namespace">/setup</param>
