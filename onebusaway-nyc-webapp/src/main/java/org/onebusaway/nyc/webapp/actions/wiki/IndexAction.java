@@ -16,10 +16,7 @@ import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
 
 
-@Results({
-	@Result(location = "/WEB-INF/content/wiki/index.jspx"),
-	 @Result(name = "notFound", location = "/WEB-INF/content/wiki/index-404.jspx"),
-})
+@Result(location = "/WEB-INF/content/wiki/index.jspx")
 @Namespace("/wiki/*")
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
@@ -102,7 +99,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 					content = null;
 					editLink = null;
 					
-					return "notFound";
+					return "NotFound";
 				}
 			} catch (Exception ex) {
 				throw new JspException(ex);
