@@ -17,7 +17,7 @@
     <constant name="struts.convention.default.parent.package" value="onebusaway-webapp-default" />
 
     <package name="onebusaway-webapp-default" extends="struts-default">
-    
+
         <interceptors>
             <interceptor name="is-setup" class="org.onebusaway.presentation.impl.users.IsSetupInterceptor" />
             <interceptor-stack name="onebusaway-webapp-stack">
@@ -29,7 +29,9 @@
         </interceptors>
 
         <default-interceptor-ref name="onebusaway-webapp-stack" />
-
+        
+        <default-action-ref name="DefaultAction"></default-action-ref>
+  		
         <global-results>
          	<result name="NotFound">
                 <param name="location">/WEB-INF/content/error/404.jspx</param>
@@ -43,6 +45,12 @@
                 <param name="actionName">index</param>
             </result>
         </global-results>
+
+    	<action name="DefaultAction">
+	        <result name="success">
+                <param name="location">/WEB-INF/content/error/404.jspx</param>
+            </result>
+    	</action>
 
     </package>
 
