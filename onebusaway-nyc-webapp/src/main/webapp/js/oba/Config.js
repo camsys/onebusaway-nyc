@@ -86,7 +86,7 @@ OBA.Config = {
 
 			html += '<p><strong>At the bus stop...</strong></p>';
 			
-			html += '<p>'
+			html += '<p>';
 
 			if(type === "stop")	{
 				html += 'Text "MTA ' + query + '" to 41411 or ';
