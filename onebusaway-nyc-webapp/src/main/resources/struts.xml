@@ -29,8 +29,6 @@
         </interceptors>
 
         <default-interceptor-ref name="onebusaway-webapp-stack" />
-        
-        <default-action-ref name="DefaultAction"></default-action-ref>
   		
         <global-results>
          	<result name="NotFound">
@@ -46,12 +44,6 @@
             </result>
         </global-results>
 
-    	<action name="DefaultAction">
-	        <result name="success">
-                <param name="location">/WEB-INF/content/error/404.jspx</param>
-            </result>
-    	</action>
-
     </package>
-
+    
 </struts>
