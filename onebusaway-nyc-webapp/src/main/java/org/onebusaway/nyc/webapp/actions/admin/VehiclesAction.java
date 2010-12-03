@@ -234,23 +234,51 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       }
     }
 
+    private String upperCaseWords(String s) {
+    	StringBuilder result = new StringBuilder(s.length());
+    	String[] words = s.split("\\s|_");
+    	for(int i=0,l=words.length;i<l;++i) {
+    	  if(i>0) result.append(" ");      
+    	  result.append(Character.toUpperCase(words[i].charAt(0)))
+    	        .append(words[i].substring(1));
+
+    	}
+    	return result.toString();
+    }
+    
     public String getInferredState() {
       if (!nycVehicleStatusBean.isEnabled())
         return "Disabled";
-      String phase = nycVehicleStatusBean.getPhase();
-      if (phase != null && phase.equals(EVehiclePhase.IN_PROGRESS.toLabel()))
-        return "Normal";
+
       TripBean trip = vehicleStatusBean.getTrip();
       if (trip == null)
         return "No Trip";
-      return phase;
+      
+      String status = nycVehicleStatusBean.getStatus();
+      String phase = nycVehicleStatusBean.getPhase();
+      StringBuilder sb = new StringBuilder();
+      
+      if(phase != null)
+    	  sb.append("Phase: " + this.upperCaseWords(phase));
+      else
+    	  sb.append("Phase: Undefined");
+    	  
+      if(sb.length() > 0)
+    	  sb.append("<br/>");
+      
+      if(status != null)
+    	  sb.append("Status: " + this.upperCaseWords(phase));
+      else
+    	  sb.append("Status: Undefined");
+      
+      return sb.toString();
     }
 
     @SuppressWarnings("unused")
     public String getInferredStateClass() {
       String inferredState = getInferredState();
-      return "Normal".equals(inferredState) ? "inferred-state"
-          : "inferred-state error";
+      return "No Trip".equals(inferredState) ? "inferred-state error"
+          : "inferred-state";
     }
 
     @SuppressWarnings("unused")

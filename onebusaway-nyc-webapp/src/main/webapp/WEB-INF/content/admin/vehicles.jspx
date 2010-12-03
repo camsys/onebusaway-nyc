@@ -77,7 +77,7 @@ under the License.
 					<td>
 						<s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}">
 							<p>
-								<s:property value="inferredState" />
+								<s:property value="inferredState" escape="false"/>
 							</p>
 							<p>
 								<s:url var="resetUrl" namespace="/admin" action="reset-vehicle">
