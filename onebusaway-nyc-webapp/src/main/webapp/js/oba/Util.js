@@ -71,7 +71,7 @@ OBA.Util = (function() {
 		},
 		displayDistance: function(feet, stopsAway) {
 			var miles = feet / 5280;
-			if(miles < .20 && stopsAway === 0) {
+			if(feet <= 500 && stopsAway === 0) {
 				return "arriving";
 			} else {
 				return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
