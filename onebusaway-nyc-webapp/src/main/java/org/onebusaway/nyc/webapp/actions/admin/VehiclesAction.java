@@ -215,7 +215,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       
       TripBean trip = vehicleStatusBean.getTrip();
       String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
-      boolean mostRecentDSCIsOutOfService = vehicleTrackingManagementService.isUnknownDestinationSignCode(mostRecentDestinationSignCode);
+      boolean mostRecentDSCIsOutOfService = vehicleTrackingManagementService.isOutOfServiceDestinationSignCode(mostRecentDestinationSignCode);
 
       if (trip == null) {
     	  if(mostRecentDSCIsOutOfService)
