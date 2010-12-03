@@ -22,7 +22,7 @@ under the License.
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>  
 
-	<title>MTA | RealTime Bus</title>
+	<title>A City Transit Agency</title>
 
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
@@ -32,7 +32,7 @@ under the License.
 
 <body>
 	<div id="branding">
-    	Metropolitan Transportation Authority
+    	A City Transit Agency
 	    <h1>RealTime Bus</h1>
 	</div>
 	<div>
@@ -153,7 +153,7 @@ under the License.
 		<s:url var="aboutUrl" namespace="/wiki" action="About"/>	
 		<s:url var="desktopUrl" namespace="/" action="index"/>	
     	<p><a href="${aboutUrl}">About</a> | <a href="${desktopUrl}">View Desktop Version</a></p>
-	    <p id="credit">&amp;copy; 2010, Metropolitan Transportation Authority</p>
+	    <p id="credit">&amp;copy; 2010, A City Transit Agency</p>
 	</div>
 </body>
 </html>
