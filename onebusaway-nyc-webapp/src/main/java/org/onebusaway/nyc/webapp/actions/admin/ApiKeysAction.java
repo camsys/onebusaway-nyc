@@ -61,7 +61,7 @@ public class ApiKeysAction extends OneBusAwayNYCActionSupport implements
   @Validations(requiredStrings = {@RequiredStringValidator(fieldName = "model.apiKey", message = "Error")})
   public String saveOrUpdate() {
 	if(_model.getMinApiRequestInterval() == null)
-		_model.setMinApiRequestInterval(100L);
+		_model.setMinApiRequestInterval(0L);
 	  
 	saveOrUpdateKey(_model.getApiKey(), _model.getMinApiRequestInterval());
     return "list";
@@ -91,7 +91,6 @@ public class ApiKeysAction extends OneBusAwayNYCActionSupport implements
   @SkipValidation
   public String generate() {
     _model.setApiKey(UUID.randomUUID().toString());
-    _model.setMinApiRequestInterval(100L);
     return saveOrUpdate();
   }
   

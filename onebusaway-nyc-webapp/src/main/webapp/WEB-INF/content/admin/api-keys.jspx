@@ -39,10 +39,10 @@ under the License.
  
  	  <tr>
 		<td>
- 	      	<s:textfield name="apiKey" value="%{apiKey}"/>
-
-			<br/>
-			<s:a action="api-keys!generate">Add Randomly Generated Key</s:a>
+ 	      	<s:textfield name="apiKey" value="%{apiKey}" size="40"/>
+			<p class="small">
+			TIP: Add/edit keys above or <s:a action="api-keys!generate">add a new, randomly generated key</s:a>.
+			</p>
  	    </td>
  	    
  	    <td>
@@ -60,8 +60,8 @@ under the License.
 
 	    		<br/>
 			   	<s:url var="deleteUrl" action="api-keys!delete">
-        			<s:param name="apiKey"><s:property value="apiKey"/></s:param>
-		    	</s:url>
+    	    		<s:param name="apiKey"><s:property value="apiKey"/></s:param>
+			   	</s:url>
 	    		<s:a href="%{#deleteUrl}">Delete</s:a>
 	   		</td>
 	   		<td>
@@ -71,6 +71,7 @@ under the License.
 				<s:else>
 		    		<s:property value="minApiRequestInterval"/>
 				</s:else>
+
 		   		<br/>
 		   		&amp;nbsp;
 	   		</td>
