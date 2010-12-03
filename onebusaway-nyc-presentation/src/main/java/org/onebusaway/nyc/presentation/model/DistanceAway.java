@@ -53,13 +53,8 @@ public class DistanceAway implements Comparable<DistanceAway> {
   }
 
   private String displayFeet(double feet) {
-	  if (feet > 5280) {
-		  double miles = feet / 5280;
-		  return String.format("%1.2f mi", miles);
-	  } else {
-		  int feetAsInt = (int) feet;
-		  return feetAsInt + " ft";
-	  }
+	  double miles = feet / 5280;
+	  return String.format("%1.2f mi", miles);
   }
 
   private String displayStopsAway(int numberOfStopsAway) {

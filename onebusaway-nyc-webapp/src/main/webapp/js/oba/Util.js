@@ -70,12 +70,8 @@ OBA.Util = (function() {
 			return meters * feetInMeters;
 		},
 		displayDistance: function(feet) {
-			if (feet > 5280) {
-				var miles = feet / 5280;
-				return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
-			} else {
-				return feet == 1 ? "1 foot" : Math.round(feet) + " feet";
-			}
+			var miles = feet / 5280;
+			return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
 		},
 		displayTime: function(dateObj) {
 			var minutes = dateObj.getMinutes();
