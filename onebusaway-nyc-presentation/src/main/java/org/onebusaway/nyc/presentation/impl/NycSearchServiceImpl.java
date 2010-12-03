@@ -389,7 +389,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       // on the off chance that this happens degrade more gracefully
       if (tripHeadsign == null)
-        tripHeadsign = routeLongName;
+    	 continue;
 
       // get list of stops for this route *direction*
       List<StopBean> stopBeansList = directionStopBeansEntry.getValue();
@@ -580,7 +580,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       String headsign = routeIdToHeadsign.get(routeId);
 
       if (headsign == null)
-        headsign = longName;
+        continue;
 
       List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
 

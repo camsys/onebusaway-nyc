@@ -221,7 +221,7 @@ OBA.StopPopup = function(stopId, map) {
 			var route = json.data.references.routes[0];
 
 			service += '<li>';
-			service += route.longName;
+			service += "No upcoming service is available at this stop.";
 			service += '</li>';
 		}
 
