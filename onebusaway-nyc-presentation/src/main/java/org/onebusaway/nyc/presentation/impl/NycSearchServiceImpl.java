@@ -443,23 +443,33 @@ public class NycSearchServiceImpl implements NycSearchService {
     // UI states here:
     // https://spreadsheets.google.com/ccc?key=0Al2nqv1nCD71dGt5SkpHajRQZmdLaVZScnhoYVhiZWc&hl=en#gid=0
 
+	System.out.println("POTENTIAL BUS: VEHICLE_ID=" + statusBean.getVehicleId() + " DAT=" + statusBean.getDistanceAlongTrip() + " PREDICTED=" + statusBean.isPredicted());
+
     // don't show non-realtime trips (row 8)
     if (statusBean == null 
     	|| statusBean.isPredicted() == false
-        || Double.isNaN(statusBean.getDistanceAlongTrip()))
-      return false;
-
+        || Double.isNaN(statusBean.getDistanceAlongTrip())) {    
+    	System.out.println("HIDING: STATE 1");
+    	return false;
+    }
+    
     String status = statusBean.getStatus();
     String phase = statusBean.getPhase();
+
+    System.out.println("BUS: PREDICTED=" + statusBean.isPredicted() + " STATUS=" + status + " PHASE=" + phase);
     
     // hide disabled vehicles (row 7)
-    if(status != null && status.toLowerCase().compareTo("disabled") == 0)
-      return false;
-
+    if(status != null && status.toLowerCase().compareTo("disabled") == 0) {
+    	System.out.println("HIDING: STATE 2");
+    	return false;
+    }
+    
     // hide deadheading vehicles (row 3)
     // hide vehicles at the depot (row 1)
-    if (phase != null && phase.toLowerCase().compareTo("in_progress") != 0)
-      return false;
+    if (phase != null && phase.toLowerCase().compareTo("in_progress") != 0) {
+    	System.out.println("HIDING: STATE 3");
+    	return false;
+    }
 
     // hide deviated vehicles from mobile web + sms interfaces (row 4)
     if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
@@ -479,16 +489,21 @@ public class NycSearchServiceImpl implements NycSearchService {
       }
       
       if((status != null 
-    	  && status.toLowerCase().compareTo("deviated") == 0) && ! routeIsOnDetour)
+    		  && status.toLowerCase().compareTo("deviated") == 0) && ! routeIsOnDetour) {
+    	System.out.println("HIDING: STATE 4");
         return false;
+      }
     }
 
     // hide data >= (hide timeout) minutes old (row 5)
     ConfigurationBean config = configurationService.getConfiguration();
     
-    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout())
-      return false;
-
+    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout()) {
+       	System.out.println("HIDING: STATE 5");
+       	return false;
+    }
+    
+    System.out.println("SHOWING");
     return true;
   }
 
