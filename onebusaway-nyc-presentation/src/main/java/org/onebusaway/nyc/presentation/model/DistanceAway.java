@@ -6,7 +6,10 @@ import java.util.Date;
  * Data transfer object for how far away a vehicle is
  */
 public class DistanceAway implements Comparable<DistanceAway> {
-
+  private int atStopThresholdInFeet = 50;
+  private int arrivingThresholdInFeet = 500;
+  private int arrivingThresholdInStops = 0;
+	
   private final int stopsAway;
   private final int feetAway;
   private final int staleTimeoutSeconds;
@@ -54,7 +57,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 
   private String displayDistance(double feet, int stopsAway) {
 	  double miles = feet / 5280;
-	  if(feet <= 500 && stopsAway == 0)
+	  if(feet <= arrivingThresholdInFeet && stopsAway == arrivingThresholdInStops)
 		  return "arriving";
 	  else
 		  return String.format("%1.2f mi", miles);
@@ -71,7 +74,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
   
   public String getPresentableDistanceWithoutStops() {
 	String r = "";  
-	if(feetAway <= 50)
+	if(feetAway <= atStopThresholdInFeet)
 		r = "at stop";		
 	else 
 		r = this.displayDistance(feetAway, stopsAway);
@@ -81,7 +84,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
   
   public String getPresentableDistance() {
 	String r = "";  
-	if(feetAway <= 50)
+	if(feetAway <= atStopThresholdInFeet)
 		r = "at stop";		
 	else 
 		r = this.displayStopsAway(stopsAway) + ", " + this.displayDistance(feetAway, stopsAway);

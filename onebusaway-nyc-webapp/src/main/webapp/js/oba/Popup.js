@@ -162,7 +162,6 @@ OBA.StopPopup = function(stopId, map) {
 
 		jQuery.each(refs.situations, function(_, situation) {
 			var situationId = situation.id;
-
 			if(situationId in applicableSituationIds) {
 				notices += '<li>' + situation.description.value + '</li>';
 			}
@@ -183,7 +182,7 @@ OBA.StopPopup = function(stopId, map) {
 			for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
 				var distanceAway = vehicleInfos[i];
 
-				if(distanceAway.feet < 0 || distanceAway.stops > 50) {
+				if(distanceAway.feet < 0 || distanceAway.stops > OBA.Config.vehicleDisplayMaxStopsAway) {
 					continue;
 				}
 				
@@ -191,7 +190,7 @@ OBA.StopPopup = function(stopId, map) {
 				service += headsign;
 				service += " ";
 				
-				if(distanceAway.feet <= 50) {
+				if(distanceAway.feet <= OBA.Config.atStopThresholdInFeet) {
 					service += "(at stop)";
 				} else {
 					if(distanceAway.stops === 0) {
@@ -218,8 +217,6 @@ OBA.StopPopup = function(stopId, map) {
 
 		// default response if no headsigns are available
 		if(routeToVehicleCount === 0) {
-			var route = json.data.references.routes[0];
-
 			service += '<li>';
 			service += "No upcoming service is available at this stop.";
 			service += '</li>';
@@ -356,7 +353,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 				var stopsAway = i;
 				var feetAway = OBA.Util.metersToFeet(stop.scheduledDistance - distanceAlongTrip);
 								
-				if(feetAway <= 50) {
+				if(feetAway <= OBA.Config.atStopThresholdInFeet) {
 					nextStopsMarkup += "(at stop)";
 				} else {
 					if(stopsAway === 0) {

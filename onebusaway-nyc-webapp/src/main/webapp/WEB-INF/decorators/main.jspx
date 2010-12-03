@@ -66,6 +66,9 @@ under the License.
 			<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
 	        <li><a href="${url}">Parameters</a></li>
 
+			<s:url var="url" namespace="/admin" action="api-keys"></s:url>
+	        <li><a href="${url}">API Keys</a></li>
+
 			<s:url var="url" namespace="/admin" action="vehicles"></s:url>
 	        <li><a href="${url}">Vehicles</a></li>
 

@@ -61,7 +61,8 @@ public class NycSearchServiceImpl implements NycSearchService {
 
   // when querying for stops from a lat/lng, use this distance in meters
   private double distanceToStops = 100;
-
+  private int vehicleDisplayMaxStopsAway = 50;
+  
   private WebappIdParser idParser = new WebappIdParser();
 
   @Autowired
@@ -549,7 +550,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
         int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         
-        if (numberOfStopsAway > 50) {
+        if (numberOfStopsAway > vehicleDisplayMaxStopsAway) {
           continue;
         }
 

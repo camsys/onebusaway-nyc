@@ -27,6 +27,10 @@ OBA.Config = {
 
 		// milliseconds to wait in between polls for bus locations
 		pollingInterval: 5000,
+		atStopThresholdInFeet: 50,
+		arrivingThresholdInFeet: 500,
+		arrivingThresholdInStops: 0,
+		vehicleDisplayMaxStopsAway: 50,
 
 		// marker images used
 		// (the path below needs to be absolute)

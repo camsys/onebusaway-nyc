@@ -58,11 +58,9 @@ OBA.Util = (function() {
 		},
 		parseEntityId: function(entityId) {
 			var idx = entityId.indexOf("_");
-
 			if (idx === -1) {
 				return entityId;
 			}
-
 			return entityId.substring(idx + 1);
 		},
 		metersToFeet: function(meters) {
@@ -71,7 +69,7 @@ OBA.Util = (function() {
 		},
 		displayDistance: function(feet, stopsAway) {
 			var miles = feet / 5280;
-			if(feet <= 500 && stopsAway === 0) {
+			if(feet <= OBA.Config.arrivingThresholdInFeet && stopsAway === OBA.Config.arrivingThresholdInStops) {
 				return "arriving";
 			} else {
 				return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
@@ -80,24 +78,19 @@ OBA.Util = (function() {
 		displayTime: function(dateObj) {
 			var minutes = dateObj.getMinutes();
 			minutes = (minutes < 10) ? "0" + minutes : "" + minutes;
-
 			var hours = dateObj.getHours();            
 			var amOrPm = "";
-			
 			if(hours >= 12) {
 				if(hours > 12) {
 					hours = hours - 12;        	            	
 				}
-				
 				amOrPm = "pm";
 			} else {
 				if(hours === 0) {
 					hours = 12;
 				}
-
 				amOrPm = "am";
 			}
-
 			return hours + ":" + minutes + " " + amOrPm;
 		}
 	};
