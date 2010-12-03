@@ -36,8 +36,9 @@ under the License.
 	    <h1>RealTime Bus</h1>
 	</div>
 	<div>
-		<s:url var="url" namespace="/m" action="index"></s:url>
+   		<s:url var="url" namespace="/m" action="index"></s:url>
 		<form action="${url}">
+	        <label for="q">Search for: </label>
 			<input type="text" name="q" class="q" value="${q}"/>
 			<input type="submit" class="s" value="Go" />
 		</form>
