@@ -195,10 +195,10 @@ OBA.StopPopup = function(stopId, map) {
 					service += "(at stop)";
 				} else {
 					if(distanceAway.stops === 0) {
-						service += "(< 1 stop, " + OBA.Util.displayDistance(distanceAway.feet) + ")";
+						service += "(< 1 stop, " + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + ")";
 					} else {
 						service += "(" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + ", " + 
-							OBA.Util.displayDistance(distanceAway.feet) + ")";
+							OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + ")";
 					}
 				}
 				
@@ -360,10 +360,10 @@ OBA.VehiclePopup = function(vehicleId, map) {
 					nextStopsMarkup += "(at stop)";
 				} else {
 					if(stopsAway === 0) {
-						nextStopsMarkup += "(< 1 stop, " + OBA.Util.displayDistance(feetAway) + ")";
+						nextStopsMarkup += "(< 1 stop, " + OBA.Util.displayDistance(feetAway, 0) + ")";
 					} else {
 						nextStopsMarkup += "(" + stopsAway + " stop" + ((stopsAway === 1) ? "" : "s") + ", " + 
-							OBA.Util.displayDistance(feetAway) + ")";
+							OBA.Util.displayDistance(feetAway, stopsAway) + ")";
 					}
 				}
 

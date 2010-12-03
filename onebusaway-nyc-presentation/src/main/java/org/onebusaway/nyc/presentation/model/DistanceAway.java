@@ -52,9 +52,12 @@ public class DistanceAway implements Comparable<DistanceAway> {
 	return b.toString();
   }
 
-  private String displayFeet(double feet) {
+  private String displayDistance(double feet, int stopsAway) {
 	  double miles = feet / 5280;
-	  return String.format("%1.2f mi", miles);
+	  if(miles <= .20 && stopsAway == 0)
+		  return "arriving";
+	  else
+		  return String.format("%1.2f mi", miles);
   }
 
   private String displayStopsAway(int numberOfStopsAway) {
@@ -71,7 +74,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 	if(feetAway <= 50)
 		r = "at stop";		
 	else 
-		r = this.displayFeet(feetAway);
+		r = this.displayDistance(feetAway, stopsAway);
 	
 	return this.addModifiers(r);
   }
@@ -81,7 +84,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 	if(feetAway <= 50)
 		r = "at stop";		
 	else 
-		r = this.displayFeet(feetAway) + ", " + this.displayStopsAway(stopsAway);
+		r = this.displayStopsAway(stopsAway) + ", " + this.displayDistance(feetAway, stopsAway);
 		
 	return this.addModifiers(r);
   }

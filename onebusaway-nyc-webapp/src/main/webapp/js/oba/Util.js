@@ -69,9 +69,13 @@ OBA.Util = (function() {
 			var feetInMeters = 3.28083989501312;
 			return meters * feetInMeters;
 		},
-		displayDistance: function(feet) {
+		displayDistance: function(feet, stopsAway) {
 			var miles = feet / 5280;
-			return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
+			if(miles < .20 && stopsAway === 0) {
+				return "arriving";
+			} else {
+				return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
+			}
 		},
 		displayTime: function(dateObj) {
 			var minutes = dateObj.getMinutes();
