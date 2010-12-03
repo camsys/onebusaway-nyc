@@ -45,8 +45,11 @@ OBA.Config = {
 		apiKey: "TEST",
 
 		vehicleFilterFunction: function(type, tripStatus) {
+			OBA.Util.log("POTENTIAL BUS: VEHICLE_ID=" + tripStatus.vehicleId + " DAT=" + tripStatus.distanceAlongTrip + " PREDICTED=" + tripStatus.predicted);
+			
 			// don't show non-realtime trips (row 8)
 			if(tripStatus === null || tripStatus.predicted === false || tripStatus.distanceAlongTrip === 0) {
+				OBA.Util.log("HIDING: STATE 1");
 				return false;
 			}
 			
@@ -57,25 +60,30 @@ OBA.Config = {
 
 			// hide disabled vehicles (row 7)
 			if(status !== null && status.toLowerCase() === 'disabled') {
+				OBA.Util.log("HIDING: STATE 2");
 				return false;
 			}
 
 			// hide deviated vehicles in stop popup
 			if(type === "stop" && status !== null && status.toLowerCase() === 'deviated') {
+				OBA.Util.log("HIDING: STATE 3");
 				return false;
 			}
 			
 			// hide deadheading vehicles (row 3)
 			// hide vehicles at the depot (row 1)
 			if(phase !== null && phase.toLowerCase() !== 'in_progress') {
+				OBA.Util.log("HIDING: STATE 4");
 				return false;
 			}
 			
 			// hide data >= hideTimeout seconds old (row 5)
 			if(typeof tripStatus.lastUpdateTime !== 'undefined' && new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.hideTimeout) {
+				OBA.Util.log("HIDING: STATE 5");
 				return false;
 			}
-			
+
+			OBA.Util.log("SHOWING");
 			return true;
 		},
 		
