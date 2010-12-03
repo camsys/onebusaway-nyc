@@ -31,6 +31,8 @@ under the License.
 
   <title><decorator:title default="OneBusAway NYC" /></title>
   
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+
   <s:url var="url" value="/css/reset.css"></s:url>
   <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 

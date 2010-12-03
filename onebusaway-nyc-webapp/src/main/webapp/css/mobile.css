@@ -1,0 +1,167 @@
+/* =Reset default CSS. 
+    http://programming4.us/mobile/1284.aspx
+-------------------------------------------------------------- */
+html, body, div, span, object, blockquote, pre,
+abbr, acronym, address, big, cite, code,
+del, dfn, em, font, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center, dl, dt, dd, fieldset, form, label, legend,
+caption, tr, th, td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font-weight: normal;
+    vertical-align: baseline;
+    background: transparent;
+}
+p {
+    border: 0;
+    font-size: 100%;
+    font-weight: normal;
+    vertical-align: baseline;
+    background: transparent;
+}
+a {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    vertical-align: baseline;
+    background: transparent;
+}
+body {
+    line-height: inherit;
+}
+body table {
+    margin: 0;
+    padding: 0;
+    font-size: 100%;
+    font-weight: normal;
+    vertical-align: baseline;
+    background: transparent;
+}
+/* remember to highlight insertions somehow! */
+ins {
+    text-decoration: none;
+}
+del {
+    text-decoration: line-through;
+}
+/* tables still need 'cellspacing="0"' in the markup */
+body table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+
+/* = Override default CSS.
+-------------------------------------------------------------- */
+/* turn off iOS auto test zooming */
+body {
+    background-color: #eaeaea;
+    font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+    -webkit-text-size-adjust: none;
+}
+a:link, 
+a:visited {
+    color: #1919be;
+    text-decoration: none;
+}
+a:hover,
+a:focus {
+    color: #000;
+    text-decoration: underline;
+}
+a:active {
+    color: red;
+    text-decoration: underline;
+}
+#branding {
+    background-color: #0b0ba9;
+    color: #eaeaea;
+    border-top: 0.6em solid #1919be;
+    border-bottom: 0.6em solid #010199;
+    padding: 0.6em 1.2em;
+}
+h1 {
+    color: #fff;
+}
+div {
+    margin: 0.4em;
+    padding: 1.2em;
+    background: #ffffff;
+}
+p {
+    margin: 0 0 0.6em
+}
+small{
+    font-size: 80%;
+    color: #666666;
+}
+.alert {
+    color: #cc0000;
+}
+ul {
+    padding: 0;
+    line-height: 1;
+}
+li {
+    list-style: none;
+    margin-bottom: 0.6em;
+}
+strong {
+    font-weight: bold;
+}
+.refresh {
+    background-color: #aaaaaa;
+    color: #eaeaea;
+    padding: 0;
+    text-align: center;
+    font-size: 80%;
+    text-transform: uppercase;
+}
+.refresh a:link, 
+.refresh a:visited {
+    display: block;
+    padding: 0.6em 1.2em;
+    color: #eaeaea;
+    font-weight: bold;
+    text-decoration: none;
+}
+.refresh a:hover,
+.refresh a:focus {
+    color: #ffffff;
+    text-decoration: none;
+}
+.refresh a:active {
+    color: red;
+    text-decoration: none;
+}
+#footer {
+    background-color: #0b0ba9;
+    color: #999;
+    padding: 0.6em 1.2em;
+}
+#footer a:link, 
+#footer a:visited {
+    color: #ffffff;
+    font-weight: bold;
+}
+#footer a:hover,
+#footer a:focus {
+    color: #ffffff;
+    text-decoration: underline;
+}
+#footer a:active {
+    color: red;
+    text-decoration: underline;
+}
+#credit {
+    color: #eaeaea;
+    font-size: 80%;
+}

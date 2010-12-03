@@ -23,6 +23,7 @@
 	-->
     <rule>
         <condition type="request-uri" operator="notequal">^.*_login$</condition>
+        <condition type="request-uri" operator="notequal">^.*\.ico$</condition>
         <condition type="request-uri" operator="notequal">^/img/.*$</condition>
         <condition type="request-uri" operator="notequal">^/css/.*$</condition>
         <condition type="request-uri" operator="notequal">^/js/.*$</condition>
@@ -32,6 +33,7 @@
     </rule>
     <rule>
         <condition type="request-uri" operator="notequal">^.*_login$</condition>
+        <condition type="request-uri" operator="notequal">^.*\.ico$</condition>
         <condition type="request-uri" operator="notequal">^/img/.*$</condition>
         <condition type="request-uri" operator="notequal">^/css/.*$</condition>
         <condition type="request-uri" operator="notequal">^/js/.*$</condition>

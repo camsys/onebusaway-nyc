@@ -19,159 +19,140 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>Mobile Interface</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>  
 
-<meta name="viewport" content="width = 350"/>
+	<title>MTA | RealTime Bus</title>
 
-<style type="text/css">
-BODY, HTML {
-	font-family: Helvetica, Arial, sans-serif;
-}
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
-DIV, FORM, P, UL, LI {
-	padding: 0px;
-	margin: 0px;
-}
-
-FORM {
-	padding-top: 5px;
-	padding-bottom: 5px;
-}
-
-INPUT.q {
-	width: 150px;
-}
-
-INPUT.s {
-	margin-left: 5px;
-	width: 40px;
-}
-
-DIV {
-	padding-bottom: 15px;
-}
-
-P.small {
-	font-size: 70%;
-}
-
-LI {
-	list-style-type: none;
-}
-
-LI.alert {
-	color: red;
-	padding-top: 15px;
-	padding-bottom: 15px;
-	list-style-type: none;
-}
-
-</style>
+  	<s:url var="url" value="/css/mobile.css"></s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 </head>
 
 <body>
-
-<div>
-<p>Search for:</p>
-
-<s:url var="url" namespace="/m" action="index"></s:url>
-<form action="${url}">
-<input type="text" name="q" class="q" value="${q}"/>
-<input type="submit" class="s" value="Go" />
-</form>
-
-<p class="small">TIP: Enter an intersection, bus route, or bus stop number.</p>
-</div>
-
-<s:if test="%{searchResults.size==0}">
-<c:if test="${empty #parameters.q}">
-	<div>
-		<p>Example searches:</p>
-		<ul>
-		
-		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">Atlantic Ave and Hoyt St</s:param>
-		</s:url>
-		<li><a href="${url}">Atlantic Ave and Hoyt St</a></li>
-
-		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">305394</s:param>
-		</s:url>
-		<li><a href="${url}">305394</a></li>
-
-		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">B63</s:param>
-		</s:url>
-		<li><a href="${url}">B63</a></li>
-		</ul>
+	<div id="branding">
+    	Metropolitan Transportation Authority
+	    <h1>RealTime Bus</h1>
 	</div>
-</c:if>
-<s:else>
 	<div>
-		<p>
-		No results found.
-		</p>
+		<s:url var="url" namespace="/m" action="index"></s:url>
+		<form action="${url}">
+			<input type="text" name="q" class="q" value="${q}"/>
+			<input type="submit" class="s" value="Go" />
+		</form>
+		<p><small><i>TIP: Enter an intersection, bus route, or bus stop number.</i></small></p>
 	</div>
-</s:else>
-</s:if>
 
-<s:iterator value="searchResults">
-<s:if test="%{type.equals('stop')}">
-	<div>
-		<p>
-		<strong><s:property value="name" /></strong><br/>
-
-		<s:iterator value="routesAvailable">
-			<s:url var="url" namespace="/m" action="index">
-				<s:param name="q"><s:property value="routeId" /></s:param>
+	<s:if test="%{searchResults.size==0}">
+		<c:if test="${empty #parameters.q}">
+			<div>
+				<p>Example searches:</p>
+				<ul>			
+					<s:url var="url" namespace="/m" action="index">
+						<s:param name="q">Atlantic Ave and Hoyt St</s:param>
+					</s:url>
+					<li><a href="${url}">Atlantic Ave and Hoyt St</a></li>
+	
+					<s:url var="url" namespace="/m" action="index">
+						<s:param name="q">305394</s:param>
+					</s:url>
+					<li><a href="${url}">305394</a></li>
+	
+					<s:url var="url" namespace="/m" action="index">
+						<s:param name="q">B63</s:param>
+					</s:url>
+					<li><a href="${url}">B63</a></li>
+				</ul>
+			</div>
+		</c:if>
+		<s:else>
+			<div>
+				<p>
+				No results found.
+				</p>
+			</div>
+		</s:else>
+		</s:if>
+	<s:else>
+		<div class="refresh">
+			<s:url var="url" namespace="/m" action="index">				
+				<s:param name="q"><s:property value="q" /></s:param>
 			</s:url>
-			<a href="${url}"><s:property value="headsign" /></a><br />
-
-			<s:iterator value="distanceAway">
-				<s:property value="presentableDistance" /><br />
-			</s:iterator>
-
-			<ul>
-				<s:iterator value="serviceAlerts">
-					<li class="alert">
-						<s:property value="value" />				
+	    	<a href="${url}">Refresh List</a>
+		</div>
+	
+	<s:iterator value="searchResults">
+	
+		<s:if test="%{type.equals('stop')}">
+			<div>
+				<p>
+				<strong><s:property value="name" /></strong><br/>
+	
+				<s:iterator value="routesAvailable">
+					<s:url var="url" namespace="/m" action="index">
+						<s:param name="q"><s:property value="routeId" /></s:param>
+					</s:url>
+					<a href="${url}"><s:property value="headsign" /></a><br />
+	
+					<s:iterator value="distanceAway">
+						<s:property value="presentableDistance" /><br />
+					</s:iterator>
+	
+					<ul>
+						<s:iterator value="serviceAlerts">
+							<li class="alert">
+								<s:property value="value" />				
+							</li>
+						</s:iterator>		
+					</ul>	
+				</s:iterator>
+				</p>
+			</div>
+		</s:if>
+		<s:elseif test="%{type.equals('route')}">
+			<div>
+				<p>
+				<strong><s:property value="tripHeadsign" /></strong><br />
+				
+				<ul>
+					<s:iterator value="serviceAlerts">
+						<li class="alert">
+							<s:property value="value" />				
+						</li>
+					</s:iterator>		
+				</ul>
+	
+				<ul>
+					<s:iterator value="stopItems">
+					<li>
+						<s:url var="url" namespace="/m" action="index">
+							<s:param name="q"><s:property value="id" /></s:param>
+						</s:url>
+	
+						<a title="${name}" href="${url}"><s:property value="name" /></a>
+						<s:property value="presentableDistances" />
 					</li>
-				</s:iterator>		
-			</ul>
-		
-		</s:iterator>
-		</p>
+					</s:iterator>
+				</ul>
+				</p>
+			</div>
+		</s:elseif>
+	</s:iterator>
+
+		<div class="refresh">
+			<s:url var="url" namespace="/m" action="index">				
+				<s:param name="q"><s:property value="q" /></s:param>
+			</s:url>
+	    	<a href="${url}">Refresh List</a>
+		</div>
+	</s:else>
+
+	<div id="footer">
+		<s:url var="aboutUrl" namespace="/wiki" action="About"/>	
+		<s:url var="desktopUrl" namespace="/" action="index"/>	
+    	<p><a href="${aboutUrl}">About</a> | <a href="${desktopUrl}">View Desktop Version</a></p>
+	    <p id="credit">&amp;copy; 2010, Metropolitan Transportation Authority</p>
 	</div>
-</s:if>
-<s:elseif test="%{type.equals('route')}">
-	<div>
-		<p>
-		<strong><s:property value="tripHeadsign" /></strong><br />
-		
-		<ul>
-			<s:iterator value="serviceAlerts">
-				<li class="alert">
-					<s:property value="value" />				
-				</li>
-			</s:iterator>		
-		</ul>
-
-		<ul>
-			<s:iterator value="stopItems">
-			<li>
-				<s:url var="url" namespace="/m" action="index">
-					<s:param name="q"><s:property value="id" /></s:param>
-				</s:url>
-
-				<a title="${name}" href="${url}"><s:property value="name" /></a>
-				<s:property value="presentableDistances" />
-			</li>
-			</s:iterator>
-		</ul>
-		</p>
-	</div>
-</s:elseif>
-</s:iterator>
-
 </body>
 </html>
