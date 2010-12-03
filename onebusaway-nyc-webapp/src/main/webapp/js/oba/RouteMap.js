@@ -62,12 +62,14 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			// to be more efficient we can store the list of all route ids
 			// separately in memory, yagni now
 			routesToRequest = [];
-
+		
 			for (var routeId in routeIdToShapes) {
 				var directionIdMap = routeIdToShapes[routeId];
-				for (var directionId in directionIdMap) {
-					routesToRequest.push([routeId, directionId]);                  
+				var directions = [];				
+				for (var directionId in directionIdMap) {					
+					directions.push(directionId);
 				}
+				routesToRequest.push([routeId, directions]);                  
 			}
 		} else {
 			routesToRequest = routeIds;
@@ -77,14 +79,16 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		if (routesToRequest.length === 0) {
 			return;
 		}
-
-		var routeId = routesToRequest[0][0];
-		var directionId = routesToRequest[0][1];		
+		
+		var routeToRequest = routesToRequest[0];
+		var routeId = routeToRequest[0];
 		var remainingRouteIds = routesToRequest.slice(1);
 
 		var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";
 		var tripDetailsList, tripReferencesList = null;
 		jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey, includeStatus: true}, function(json) {
+			var directionIds = routeToRequest[1];		
+
 			try {
 				tripDetailsList = json.data.list;
 				tripReferencesList = json.data.references.trips;
@@ -141,15 +145,25 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				}
 				
 				// check to make sure that the bus is headed in the right direction
+				var directionId = null;
 				var vehicleTripId = tripDetails.tripId;
 				for (var i = 0; i < tripReferencesList.length; i++) {
 					var tripReference = tripReferencesList[i];
+					var vehicleDirectionId = tripReference.directionId;
+					
 					if (tripReference.id === vehicleTripId) {
-						var vehicleDirectionId = tripReference.directionId;
-						if (vehicleDirectionId !== directionId) {
+						directionId = null;
+						for(var z = 0; z < directionIds.length; z++) {
+							if(vehicleDirectionId === directionIds[z]) {
+								directionId = vehicleDirectionId;
+								break;
+							}
+						}
+						if(directionId !== null) {
+							break;
+						} else {
 							return;
 						}
-						break;
 					}
 				}
 
@@ -380,7 +394,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				numberOfRoutes += 1;
 
 				// always make an initial request just for this route
-				requestRoutes([[routeId, directionId]]);
+				requestRoutes([[routeId, [directionId]]]);
 
 				// update the timer task
 				if (!isVehiclePolling) {
