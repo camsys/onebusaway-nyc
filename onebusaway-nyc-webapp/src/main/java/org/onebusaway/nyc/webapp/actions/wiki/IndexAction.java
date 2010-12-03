@@ -14,7 +14,6 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
 
-
 @Result(location = "/WEB-INF/content/wiki/index.jspx")
 @Namespace("/wiki/*")
 public class IndexAction extends OneBusAwayNYCActionSupport {
@@ -44,7 +43,18 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	public String getEditLink() {
 		return editLink;
 	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public String getToc() {
+		return toc;
+	}
 	
+	/*
+	 * Returns the first word of a camel-cased phrase with "TOC" appended to the end.
+	 */
 	private String getTocPageName(String name) {
 		if(name == null)
 			return null;
@@ -106,13 +116,5 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		}
 
 		return SUCCESS;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public String getToc() {
-		return toc;
 	}
 }

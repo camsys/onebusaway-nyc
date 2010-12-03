@@ -51,11 +51,10 @@ under the License.
 &lt;![endif]--&gt;
 </jsp:text>
 
-<decorator:head />
+	<decorator:head />
 </head>
 
 <body>
-
   <div id="page">
     <div id="header">
       <h1>A City Transit Agency</h1>

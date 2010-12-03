@@ -43,7 +43,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
   @PostConstruct
   public void setup() {
     _config = loadSettings();
-    // notifySettings();
   }
 
   /****

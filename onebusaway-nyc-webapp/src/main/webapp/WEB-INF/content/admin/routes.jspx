@@ -31,42 +31,42 @@ under the License.
 
 	<s:form action="routes!submit">
 	<table>
-	<tr>
-		<th>Route Name/Direction</th>
-		<th>Service Alert</th>
-		<th>Has Detour</th>
-	</tr>
+		<tr>
+			<th>Route Name/Direction</th>
+			<th>Service Alert</th>
+			<th>Has Detour</th>
+		</tr>
 	
-	<tr>
-		<td>B63 COBBLE HILL COLUMBIA ST via 5 AV</td>
-		<td>
-			<p>
-			<s:textarea name="noticeB63CobbleHill"></s:textarea>
-			</p>
-			<p class="small">
-			TIP: To remove a service alert, leave the field empty.
-			</p>
-		</td>
+		<tr>
+			<td>B63 COBBLE HILL COLUMBIA ST via 5 AV</td>
+			<td>
+				<p>
+				<s:textarea name="noticeB63CobbleHill"></s:textarea>
+				</p>
+				<p class="small">
+				TIP: To remove a service alert, leave the field empty.
+				</p>
+			</td>
 		
-		<td><s:checkbox name="detourB63CobbleHill"></s:checkbox></td>
-	</tr>
+			<td><s:checkbox name="detourB63CobbleHill"></s:checkbox></td>
+		</tr>
 
-	<tr>
-		<td>B63 BAY RIDGE SHORE RD via 5 AV</td>
-		<td>
-			<p>
-			<s:textarea name="noticeB63BayRidge"></s:textarea>
-			</p>
-			<p class="small">
-			TIP: To remove a service alert, leave the field empty.
-			</p>
-		</td>
+		<tr>
+			<td>B63 BAY RIDGE SHORE RD via 5 AV</td>
+			<td>
+				<p>
+				<s:textarea name="noticeB63BayRidge"></s:textarea>
+				</p>
+				<p class="small">
+				TIP: To remove a service alert, leave the field empty.
+				</p>
+			</td>
 
-		<td><s:checkbox name="detourB63BayRidge"></s:checkbox></td>
-	</tr>
-</table>
+			<td><s:checkbox name="detourB63BayRidge"></s:checkbox></td>
+		</tr>
+	</table>
 
-<s:submit value="Save" />
+	<s:submit value="Save" />
 </s:form>
 </div>
 </div>

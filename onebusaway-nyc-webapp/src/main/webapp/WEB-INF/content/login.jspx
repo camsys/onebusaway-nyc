@@ -50,7 +50,7 @@
         </s:form>
 	</s:if>
 	<s:else>
-		<p>You are already logged in.  Click to <a href="logout.action">logout</a>.</p>
+		<p>You are already logged in.<br/><a href="logout.action">Logout</a></p>
 	</s:else>
 </div>
 </div>

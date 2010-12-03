@@ -41,7 +41,7 @@ under the License.
 	<h1>Vehicles</h1>
 	
 	<s:form method="POST" action="vehicles" namespace="/admin">
-		<table id="vehicle-table">
+		<table>
 			<tr>
 				<th><a href="#">Status</a></th>
 				<th><a href="#">Disable</a></th>
@@ -55,8 +55,9 @@ under the License.
 
 			<s:iterator value="vehicles">
 				<tr>
-					<td><s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div></td>
-
+					<td>
+						<s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div>
+					</td>
 					<td>
 						<s:if test="%{disabled}">
 							<input type="checkbox" name="${disabledName}" checked="true" />
@@ -65,15 +66,18 @@ under the License.
 							<input type="checkbox" name="${disabledName}" />
 						</s:else>
 					</td>
-					
-					<td class="vehicleId"><s:property value="vehicleIdWithoutAgency" /></td>
-					
-					<td><s:property value="lastCommTime" /></td>
-
-					<td><s:property value="lastUpdateTime" /></td>
-
-					<td><s:property value="headsign" escape="false"/></td>
-
+					<td class="vehicleId">
+						<s:property value="vehicleIdWithoutAgency" />
+					</td>
+					<td>
+						<s:property value="lastCommTime" />
+					</td>
+					<td>
+						<s:property value="lastUpdateTime" />
+					</td>
+					<td>
+						<s:property value="headsign" escape="false"/>
+					</td>
 					<td>
 						<s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}">
 							<p>
@@ -87,7 +91,6 @@ under the License.
 							</p>
 						</s:div>
 					</td>
-
 					<td>
 						<div class="map-location-wrapper">
 							<div class="map-location">

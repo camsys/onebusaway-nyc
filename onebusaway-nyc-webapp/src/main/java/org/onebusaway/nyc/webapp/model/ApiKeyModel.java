@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.onebusaway.nyc.webapp.actions.admin;
+package org.onebusaway.nyc.webapp.model;
 
 public class ApiKeyModel {
   private String apiKey;

@@ -14,6 +14,7 @@ import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.nyc.webapp.model.ApiKeyModel;
 
 import com.opensymphony.xwork2.ModelDriven;
 import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
