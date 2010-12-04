@@ -182,7 +182,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 					addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);
 				} else {
-					vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, map, { map: map });
+					vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, status.orientation, map, { map: map });
 					vehicleMarkers[vehicleId] = vehicleMarker;
 
 					addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);

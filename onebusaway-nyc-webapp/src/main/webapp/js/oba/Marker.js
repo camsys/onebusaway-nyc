@@ -129,7 +129,7 @@ OBA.StopMarker = function(stopId, latlng, direction, map, opts) {
 	return marker;
 };
 
-OBA.VehicleMarker = function(vehicleId, latlng, map, opts) {
+OBA.VehicleMarker = function(vehicleId, latlng, orientation, map, opts) {
 	opts = jQuery.extend(opts || {}, {zIndex: 200, type: 'vehicle'});
 
 	if(typeof opts.icon === 'undefined') {
@@ -144,9 +144,13 @@ OBA.VehicleMarker = function(vehicleId, latlng, map, opts) {
 	var popup = OBA.VehiclePopup(vehicleId, map);
 	var marker = OBA.Marker(vehicleId, latlng, map, popup, opts);
 	var showPopup = function() { popup.show(marker); };
-	
+
 	marker.showPopup = showPopup;
 	google.maps.event.addListener(marker.getRawMarker(), "click", showPopup);
+
+	if(typeof orientation !== 'undefined') {
+		marker.updateOrientation(orientation);
+	}
 
 	return marker;
 };
