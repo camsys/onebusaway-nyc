@@ -83,7 +83,7 @@ under the License.
 						<s:property value="headsign" escape="false"/>
 					</td>
 					<td>
-						<s:div name="inferred_state_%{#status.index}" cssClass="%{inferredStateClass}">
+						<s:div cssClass="%{inferredStateClass}">
 							<p>
 								<s:property value="inferredState" escape="false"/>
 							</p>
@@ -95,12 +95,10 @@ under the License.
 							</p>
 						</s:div>
 					</td>
-					<td>
-						<div class="map-location-wrapper">
-							<div class="map-location">
-								<s:property value="location" />,<s:property value="orientation" />
-							</div>
-						</div>
+					<td class="map">
+						Location: <s:property value="location" />
+						<br/>
+						Orientation: <s:property value="orientation" />
 					</td>
 				</tr>
 			</s:iterator>

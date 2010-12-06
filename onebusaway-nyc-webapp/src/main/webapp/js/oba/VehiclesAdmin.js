@@ -54,26 +54,49 @@ var OBA = window.OBA || {};
 	}
 	
 	function createMaps() {
-		jQuery(".map-location").each(function(_, elRaw) {
+		jQuery(".map").each(function(_, elRaw) {
 			var el = jQuery(elRaw);
-			
-			var location = el.html();
-			var location_v = location.split(",");
-	
-			if(location_v.length != 3) {
+
+			var contents = el.html();
+			if(contents === null) {
 				return;
 			}
 			
-			var lat = location_v[0];
-			var lng = location_v[1];
-			var orientation = Math.floor(location_v[2] / 30) * 30;
+			var location_r = contents.match(/Location\: ([0-9|.|\-| |,]*)/i);
+			var orientation_r = contents.match(/Orientation\: ([0-9]*)/i);
+			if(location_r === null || orientation_r === null 
+				|| location_r.length !== 2 || location_r[1] === ""
+				|| orientation_r.length !== 2) {
+				return;
+			}
+			
+			var location = location_r[1].split(",");			
+
+			if(location === null || location.length !== 2) {
+				return;
+			}
+			
+			var lat = location[0];
+			var lng = location[1];
+
+			if(lat === null || lng === null) {
+				return;
+			}
+			
+			var orientation = Math.floor(orientation_r[1] / 30) * 30;
 	
 			if(orientation === null || orientation === "" || orientation === 0) {
 				orientation = "unknown";
 			}
-			
-			var latlng = new google.maps.LatLng(lat, lng);
+
+			var mapDiv = jQuery("<div></div>").addClass("map-location");
+			var mapWrapper = jQuery("<div></div>").addClass("map-location-wrapper").append(mapDiv);
+
+			el.html("");
+			el.append(mapWrapper);
 	
+			var latlng = new google.maps.LatLng(lat, lng);
+			
 			var mapOptions = {
 			      zoom: 15,
 			      center: latlng,
@@ -83,7 +106,7 @@ var OBA = window.OBA || {};
 				  mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
 				
-			var map = new google.maps.Map(elRaw, mapOptions);
+			var map = new google.maps.Map(mapDiv.get(0), mapOptions);
 		
 			var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
 					OBA.Config.vehicleIconSize,

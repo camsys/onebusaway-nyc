@@ -190,6 +190,10 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     @SuppressWarnings("unused")
     public String getLastUpdateTime() {
       long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
+      
+      if(lastUpdateTime <= 0)
+    	  return "Not Available";
+
       long now = System.currentTimeMillis();
       long timeDiff = now - lastUpdateTime;
       long seconds = timeDiff / 1000;
@@ -204,6 +208,10 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     @SuppressWarnings("unused")
     public String getLastCommTime() {
       long lastUpdateTime = nycVehicleStatusBean.getLastGpsTime();
+      
+      if(lastUpdateTime <= 0)
+    	  return "Not Available";
+      
       long now = System.currentTimeMillis();
       long timeDiff = now - lastUpdateTime;
       long seconds = timeDiff / 1000;
@@ -218,7 +226,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     @SuppressWarnings("unused")
     public String getHeadsign() {
       if (vehicleStatusBean == null)
-        return "Disabled";
+        return "Not Available";
       
       TripBean trip = vehicleStatusBean.getTrip();
       String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
@@ -254,6 +262,9 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     }
     
     public String getInferredState() {
+      if(vehicleStatusBean == null)
+    	  return "Not Available";
+    	
       if (!nycVehicleStatusBean.isEnabled())
         return "Disabled";
 
@@ -268,7 +279,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       if(phase != null)
     	  sb.append("Phase: " + this.upperCaseWords(phase));
       else
-    	  sb.append("Phase: Undefined");
+    	  sb.append("Phase: None");
     	  
       if(sb.length() > 0)
     	  sb.append("<br/>");
@@ -276,7 +287,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       if(status != null)
     	  sb.append("Status: " + this.upperCaseWords(phase));
       else
-    	  sb.append("Status: Undefined");
+    	  sb.append("Status: None");
       
       return sb.toString();
     }
@@ -292,12 +303,25 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     public String getLocation() {
       double lat = nycVehicleStatusBean.getLastGpsLat();
       double lon = nycVehicleStatusBean.getLastGpsLon();
+      
+      if(Double.isNaN(lat) || Double.isNaN(lon))
+    	  return "Not Available";
+      
       return lat + "," + lon;
     }
     
     @SuppressWarnings("unused")
-    public double getOrientation() {
-      return vehicleStatusBean.getTripStatus().getOrientation();
+    public String getOrientation() {
+      try {
+    	  double orientation = vehicleStatusBean.getTripStatus().getOrientation();
+      
+    	  if(Double.isNaN(orientation))
+    		  return "Not Available";
+    	  else
+    		  return new Long(Math.round(orientation)).toString();
+      } catch(Exception e) {
+    	  return "Not Available";
+      }
     }    
 
     @SuppressWarnings("unused")
