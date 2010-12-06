@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.admin;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,6 +55,11 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     this.request = request;
   }
 
+  public String getCurrentTimestamp() {
+	Date now = new Date();
+	return DateFormat.getDateInstance().format(now) + " " + DateFormat.getTimeInstance().format(now);
+  }
+  
   @Override
   public String execute() throws Exception {
 

@@ -40,6 +40,10 @@ under the License.
 <div id="text">
 	<h1>Vehicles</h1>
 	
+	<p>
+	Information current as of <s:property value="currentTimestamp"/>
+	</p>
+	
 	<s:form method="POST" action="vehicles" namespace="/admin">
 		<table>
 			<tr>
