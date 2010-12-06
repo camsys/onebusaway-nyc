@@ -36,8 +36,8 @@ OBA.Config = {
 		// (the path below needs to be absolute)
 		vehicleIconFilePrefix: "/img/vehicle/vehicle",
 		vehicleIconFileType: "png",
-		vehicleIconSize: new google.maps.Size(20,20),
-		vehicleIconCenter: new google.maps.Point(10,10),
+		vehicleIconSize: new google.maps.Size(50,50),
+		vehicleIconCenter: new google.maps.Point(25,25),
 
 		// (the path below needs to be absolute)
 		stopIconFilePrefix: "/img/stop/stop",
@@ -95,17 +95,14 @@ OBA.Config = {
 			var html = '';
 			
 			html += '<div class="footer">';
-
-			html += '<p><strong>At the bus stop...</strong></p>';
+			html += '<span class="header">At the bus stop... </strong></span>';
 			
-			html += '<p>';
-
 			if(type === "stop")	{
-				html += 'Text "MTA ' + query + '" to 41411 or ';
+				html += 'Text "MTA ' + query + '" to 41411 ';
+				html += 'or check <a href="http://' + window.location.hostname + '/m/?q=' + query + '">this stop</a> on your smartphone!';
+			} else if(type === "route") {
+				html += 'Check <a href="http://' + window.location.hostname + '/m/?q=' + query + '">this route</a> on your smartphone!';
 			}
-			
-			html += 'Visit <a href="http://' + window.location.hostname + '/m/?q=' + query + '">http://' + window.location.hostname + '/m/?q=' + query + '</a> on your smartphone!';
-			html += '</p>';
 			
 			html += '</div>';
 			
