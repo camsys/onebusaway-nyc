@@ -16,15 +16,56 @@ package org.onebusaway.nyc.webapp.actions;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionInvocation;
+import com.opensymphony.xwork2.ActionProxy;
 
 public class IndexActionTest {
 
   @Test
   public void testExecute() throws Exception {
+
+    ActionProxy proxy = Mockito.mock(ActionProxy.class);
+    Mockito.when(proxy.getActionName()).thenReturn("index");
+    Mockito.when(proxy.getNamespace()).thenReturn("/");
+
+    ActionInvocation invocation = Mockito.mock(ActionInvocation.class);
+    Mockito.when(invocation.getProxy()).thenReturn(proxy);
+
+    Map<String, Object> c = new HashMap<String, Object>();
+    ActionContext ac = new ActionContext(c);
+    ac.setActionInvocation(invocation);
+    ActionContext.setContext(ac);
+
     IndexAction action = new IndexAction();
     String response = action.execute();
     assertEquals("successful response", "success", response);
+  }
+  
+  @Test
+  public void test404() throws Exception {
+
+    ActionProxy proxy = Mockito.mock(ActionProxy.class);
+    Mockito.when(proxy.getActionName()).thenReturn("something-else");
+    Mockito.when(proxy.getNamespace()).thenReturn("/");
+
+    ActionInvocation invocation = Mockito.mock(ActionInvocation.class);
+    Mockito.when(invocation.getProxy()).thenReturn(proxy);
+
+    Map<String, Object> c = new HashMap<String, Object>();
+    ActionContext ac = new ActionContext(c);
+    ac.setActionInvocation(invocation);
+    ActionContext.setContext(ac);
+
+    IndexAction action = new IndexAction();
+    String response = action.execute();
+    assertEquals("404 response", "NotFound", response);
   }
 
 }
