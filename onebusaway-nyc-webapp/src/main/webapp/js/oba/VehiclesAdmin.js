@@ -16,7 +16,7 @@
 
 var OBA = window.OBA || {};
 	function addTableSortBehaviors() {
-	    var table = jQuery('#vehicle-table');
+	    var table = jQuery('table');
 	    // for reverse sorting
 	    var lastSortIndex = -1;
 	

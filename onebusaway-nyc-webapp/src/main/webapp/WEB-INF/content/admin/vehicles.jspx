@@ -54,7 +54,7 @@ under the License.
 				<th><a href="#">Last Update Time</a></th>
 				<th><a href="#">Headsign</a></th>
 				<th><a href="#">Inferred State</a></th>
-				<th><a href="#">Location</a></th>
+				<th><a href="#">Position</a></th>
 			</tr>
 
 			<s:iterator value="vehicles">
