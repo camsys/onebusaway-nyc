@@ -51,13 +51,23 @@ a:hover {
 	position: relative;
 }
 
-#header h1 {
+#header .title {
     position: absolute;
     top: 30px;
     left: 20px;
-    
+}
+
+#header h1,
+#header h2 {
 	font-size: 18px;
 	color: #FFFFFF;
+	float: left;
+}
+
+#header h1 {
+	border-left: 1px solid #C0C0C0;
+	padding-left: 10px;
+	margin-left: 10px;
 }
 
 #header ul {

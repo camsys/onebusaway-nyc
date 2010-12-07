@@ -57,7 +57,10 @@ under the License.
 <body>
   <div id="page">
     <div id="header">
-      <h1>A City Transit Agency</h1>
+      <div class="title">
+      	<h2>A City Transit Agency</h2>
+	  	<h1>RealTime Bus</h1>
+	  </div>
 
       <ul>
       	<s:url var="url" value="/"></s:url>
