@@ -25,16 +25,10 @@ under the License.
 
 <div id="content">
 <div id="text">
-	<h1>Admin Console</h1>
+	<h1>Administration Console</h1>
 	
 	<p>
-	As an admin, you can access the following features:
-	</p>
-	
-	<p>
-		<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
-		<a title="edit parameters" href="${url}">Parameters</a>
-		<br/>View and edit system parameters that affect UI logic and API results.
+	As an administrator, you can access the following features:
 	</p>
 	
 	<p>
@@ -53,6 +47,24 @@ under the License.
 		<s:url var="url" namespace="/admin" action="reporting"></s:url>
 		<a title="reporting" href="${url}">Reporting</a>
 		<br/>Generate tab-delimited reports for analysis in third-party applications.
+	</p>
+	
+	<p>
+		<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
+		<a title="edit parameters" href="${url}">Parameters</a>
+		<br/>View and edit system parameters that affect UI logic and API results.
+	</p>
+	
+	<p>
+		<s:url var="url" namespace="/admin" action="api-keys"></s:url>
+		<a title="api keys" href="${url}">API Keys</a>
+		<br/>View and edit API keys.
+	</p>
+	
+	<p>
+		<s:url var="url" namespace="/" action="logout"></s:url>
+		<a title="logout" href="${url}">Logout</a>
+		<br/>Log out of the administration console.
 	</p>
 </div>
 </div>

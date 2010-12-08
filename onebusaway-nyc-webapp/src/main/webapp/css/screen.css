@@ -98,6 +98,10 @@ a:hover {
 	float: right;
 }
 
+#header ul li ul {
+	display: none;
+}
+
 #header ul li a {
 	text-decoration: none;
 	font-size: 12px;
@@ -206,37 +210,39 @@ a:hover {
 
 #footer {
     position: relative;
-
-    height: 50px;
+    height: 45px;
     clear: both;
-
 	font-size: 11px;
-
 	border-top: 1px solid #ACACAC;
 	background-color: #EFEFEF;
 	color: #333333;
 }
 
 #footer ul {
-    padding-left: 15px;
-    padding-top: 10px;
-    
-	width: 100px;
-    float: left;
+	float: left;
+	height: 11px;
+	padding: 15px;
 }
 
 #footer ul li {
-	line-height: 150%;
+	padding-left: 10px;
+	margin-left: 10px;
+	border-left: 1px solid #bebebe;
+	float: left;
+}
+
+#footer ul li:first-child {
+	padding-left: 0px;
+	margin-left: 0px;
+	border-left: none;		
 }
 
 #footer ul li a {
 	text-decoration: none;
-	color: #444444;
 }
 
 #footer p {
-    position: absolute;
-    
-    bottom: 10px;
-    right: 15px;
+	float: right;
+	height: 11px;
+	padding: 15px;
 }

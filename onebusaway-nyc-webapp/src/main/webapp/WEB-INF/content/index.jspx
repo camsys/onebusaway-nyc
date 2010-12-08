@@ -82,6 +82,20 @@ under the License.
 		<input type="submit" value="Find" class="submit"/>
 	</form>
 
+	<div id="share_link">
+		<a href="#" class="close"><em>Close</em></a>
+
+		<div class="content">
+			<p>
+			Use the following link in E-mail or IMs:
+			</p>
+			
+			<form>
+				<input type="text" id="url"/>
+			</form>
+		</div>
+	</div>
+	
 	<div id="welcome">
 		<a href="#" class="close"><em>Close</em></a>
 

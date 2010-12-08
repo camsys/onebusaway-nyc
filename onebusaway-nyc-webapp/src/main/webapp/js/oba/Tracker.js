@@ -58,11 +58,26 @@ OBA.Tracker = function() {
 		map.controls[google.maps.ControlPosition.TOP_RIGHT].push(searchForm.get(0));
 	}
 	
-	function addLinkBehavior() {
+	function addShareLinkBehavior() {
+		// link button in header
 		var headerLinks = jQuery("#header ul");
+		var shareLinkDiv = jQuery("#share_link");
 
 		var linkButton = jQuery("<a></a>").click(function() {
+			shareLinkDiv.show();			
+			
+			var shareLinkUrl= jQuery("#share_link .content input");
+			var url = window.location.href + "#";
 
+			if(OBA.popupMarker !== null) {
+				var markerOptions = OBA.popupMarker.getOptions();
+				
+				if(markerOptions['type'] === "stop") {
+					url += OBA.Util.parseEntityId(OBA.popupMarker.getId()); 
+				}
+			}
+			
+			shareLinkUrl.val(url);
 			
 			return false;
 		});
@@ -72,7 +87,15 @@ OBA.Tracker = function() {
 						.append(linkButton);
 		
 		headerLinks.append(linkItem);
-	}
+
+		// close button inside link window
+		var closeButton = jQuery("#share_link a.close");
+		closeButton.click(function() {
+			shareLinkDiv.hide();
+			
+			return false;
+		});
+	}	
 
 	function addAlertBehavior() {
 		var welcomeDiv = jQuery("#welcome");
@@ -181,14 +204,25 @@ OBA.Tracker = function() {
 		});   				
 	}
 
+	function hashChanged(hash) {
+		if(hash !== null && hash !== "") {
+			doSearch(hash);
+		}
+	}
+	
 	return {
 		initialize: function() {
 			addSearchBehavior();
-			addLinkBehavior();
+			addShareLinkBehavior();
 			addAlertBehavior();
 			addResizeBehavior();
 
-			doSearch("B63");
+			routeMap.addRoute("MTA NYCT_B63", "1", null);	
+			routeMap.addRoute("MTA NYCT_B63", "0", null);	
+			
+			google.maps.event.addListener(map, 'projection_changed', function() {
+	            jQuery.history.init(hashChanged);				
+			}); 
 		}
 	};
 };

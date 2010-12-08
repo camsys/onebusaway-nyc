@@ -65,30 +65,41 @@ under the License.
       <ul>
       	<s:url var="url" value="/"></s:url>
         <li><a href="${url}">Home</a></li>
-		
-		<s:if test="adminUser">
-			<s:url var="url" namespace="/admin" action="vehicles"></s:url>
-	        <li><a href="${url}">Vehicles</a></li>
 
-			<s:url var="url" namespace="/admin" action="routes"></s:url>
-	        <li><a href="${url}">Routes</a></li>
+      	<s:url var="url" namespace="/wiki" action="About"></s:url>
+        <li><a href="${url}">About</a></li>
 
-			<s:url var="url" namespace="/admin" action="reporting"></s:url>
-	        <li><a href="${url}">Reporting</a></li>
-
-			<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
-	        <li><a href="${url}">Parameters</a></li>
-
-			<s:url var="url" namespace="/admin" action="api-keys"></s:url>
-	        <li><a href="${url}">API Keys</a></li>
-		</s:if>
-
-		<s:url var="url" namespace="/wiki" action="HelpIndex"/>
-        <li><a href="${url}">Help</a></li>
+      	<s:url var="url" namespace="/wiki" action="ForDevelopers"></s:url>
+        <li><a href="${url}">For Developers</a></li>
 
 		<s:if test="adminUser">
-			<s:url var="url" namespace="/" action="logout"/>
-    	    <li class="right"><a href="${url}">Logout</a></li>	
+	        <li>
+				<s:url var="url" namespace="/admin" action="index"/>
+        		<a href="${url}">Administration Console</a>
+
+				<ul class="sub">
+					<s:url var="url" namespace="/admin" action="vehicles"></s:url>
+	    		    <li><a href="${url}">Vehicles</a></li>
+
+					<s:url var="url" namespace="/admin" action="routes"></s:url>
+	    		    <li><a href="${url}">Routes</a></li>
+
+					<s:url var="url" namespace="/admin" action="reporting"></s:url>
+	    		    <li><a href="${url}">Reporting</a></li>
+
+					<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
+	    		    <li><a href="${url}">Parameters</a></li>
+
+					<s:url var="url" namespace="/admin" action="api-keys"></s:url>
+	    		    <li><a href="${url}">API Keys</a></li>
+
+					<s:url var="url" namespace="/" action="logout"/>
+    			    <li><a href="${url}">Logout</a></li>	
+    	    	</ul>    	    
+    	    </li>
+    	    
+			<s:url var="url" namespace="/wiki" action="HelpIndex"/>
+    	    <li><a href="${url}">Help</a></li>	
     	</s:if>	
       </ul>
     </div>
@@ -96,20 +107,12 @@ under the License.
 <decorator:body />
 
 <div id="footer">
-<ul class="first">
-	<s:url var="url" namespace="/wiki" action="About"/>
-	<li><a href="${url}">About</a></li>
-
+<ul>
 	<s:url var="url" namespace="/wiki" action="ContactUs"/>
 	<li><a href="${url}">Contact Us</a></li>
-</ul>
 
-<ul>
 	<s:url var="url" namespace="/m" action="index"/>
-	<li><a href="${url}">Text Only/Mobile</a></li>
-
-	<s:url var="url" namespace="/wiki" action="DeveloperAPI"/>
-	<li><a href="${url}">Developer API</a></li>
+	<li><a href="${url}">Text Only/Mobile Version</a></li>
 </ul>
 
 <p>&amp;copy; 2010, A City Transit Agency</p>

@@ -234,7 +234,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
 
       if (trip == null) {
     	  if(mostRecentDSCIsOutOfService)
-    		  return "Not In Service<br/>(bus sent " + mostRecentDestinationSignCode + ")";
+    		  return mostRecentDestinationSignCode + ": Not In Service";
     	  else 	   	  
     		  return "Unknown<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
       }

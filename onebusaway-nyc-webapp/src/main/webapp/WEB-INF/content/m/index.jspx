@@ -151,7 +151,7 @@ under the License.
 	<div id="footer">
 		<s:url var="aboutUrl" namespace="/wiki" action="About"/>	
 		<s:url var="desktopUrl" namespace="/" action="index"/>	
-    	<p><a href="${aboutUrl}">About</a> | <a href="${desktopUrl}">View Desktop Version</a></p>
+    	<p><a href="${aboutUrl}">About</a> | <a href="${desktopUrl}">Desktop Version</a></p>
 	    <p id="credit">&amp;copy; 2010, A City Transit Agency</p>
 	</div>
 </body>
