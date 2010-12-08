@@ -92,6 +92,12 @@ a:hover {
 	border-right: 1px solid #ACACAC;
 }
 
+#header ul li.right {
+	border-left: 1px solid #ACACAC;
+	border-right: none;
+	float: right;
+}
+
 #header ul li a {
 	text-decoration: none;
 	font-size: 12px;

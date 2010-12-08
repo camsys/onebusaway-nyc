@@ -463,10 +463,12 @@ public class NycSearchServiceImpl implements NycSearchService {
     	System.out.println("HIDING: STATE 2");
     	return false;
     }
-    
-    // hide deadheading vehicles (row 3)
-    // hide vehicles at the depot (row 1)
-    if (phase != null && phase.toLowerCase().compareTo("in_progress") != 0) {
+
+	// hide deadheading vehicles (except within a block) (row 3)
+	// hide vehicles at the depot (row 1)
+    if (phase != null && phase.toLowerCase().compareTo("in_progress") != 0
+    		&& phase.toLowerCase().compareTo("deadhead_during") != 0 
+    		&& phase.toLowerCase().compareTo("layover_during") != 0) {
     	System.out.println("HIDING: STATE 3");
     	return false;
     }

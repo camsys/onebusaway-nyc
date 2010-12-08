@@ -26,6 +26,9 @@ under the License.
 <c:set var="url"><s:url value="/js/jquery.js"/></c:set>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<c:set var="url"><s:url value="/js/jquery.cookie.js"/></c:set>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 <c:set var="url"><s:url value="/js/jquery.history.js"/></c:set>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
@@ -65,33 +68,26 @@ under the License.
 </head>
 <body>
 
-<div id="home_alert">
-	<wiki:wiki name="HomeAlert"/>
-</div>
-
 <div id="content" class="map">
-	<div id="search">
-		<form action="search.action">
-			<fieldset>
-				<input type="text" name="q" value=""/>	
-				<input type="submit" value="Find" class="submit"/>
-			</fieldset>
+	<form action="search.action" id="search">
+		<div class="wrapper">
+			<input type="text" name="q" value=""/>	
+
 			<div id="no-results">
 				<p>
 				No results were returned for your query.
 				</p>
-
-				<p>
-				Try these example searches:
-				</p>
-				
-				<ul>
-					<li><a href="#">Atlantic Ave and Hoyt St</a></li>
-					<li><a href="#">305394</a></li>
-					<li><a href="#">B63</a></li>
-				</ul>
 			</div>
-		</form>
+		</div>
+		<input type="submit" value="Find" class="submit"/>
+	</form>
+
+	<div id="welcome">
+		<a href="#" class="close"><em>Close</em></a>
+
+		<div class="content">
+			<wiki:wiki name="HomeAlert"/>
+		</div>
 	</div>
 
 	<div id="map"></div>

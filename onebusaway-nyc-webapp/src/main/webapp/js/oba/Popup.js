@@ -63,8 +63,9 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 			fetchFn(function(json) {
 				infoWindow = new google.maps.InfoWindow();
 				infoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
+				infoWindow.setOptions({ zIndex: 100 });
 				infoWindow.open(map, marker.getRawMarker());
-
+				
 				google.maps.event.addListenerOnce(infoWindow, 'closeclick', function() {
 					OBA.popupMarker = null;
 				});
@@ -280,7 +281,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 		// header
 		var header = '<p class="header">' + headsign + '</p>' +
 					'<p><span class="type vehicle">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span>' +
-					'<span class="updated' + ((isStaleData === true) ? "stale" : "") +'">Last updated at ' + lastUpdateString + '</span></p>';
+					'<span class="updated' + ((isStaleData === true) ? " stale" : "") +'">Last updated at ' + lastUpdateString + '</span></p>';
 
 		// service notices
 		var applicableSituationIds = {};
@@ -325,10 +326,8 @@ OBA.VehiclePopup = function(vehicleId, map) {
 					nextStopsMarkup += "<span>at stop</span>";
 				} else {
 					if(stopsAway === 0) {
-//						nextStopsMarkup += "<span>< 1 stop</span>";
 						nextStopsMarkup += "<span>" + OBA.Util.displayDistance(feetAway, 0) + "</span>";
 					} else {
-//						nextStopsMarkup += "<span>" + stopsAway + " stop" + ((stopsAway === 1) ? "" : "s") + "</span>";
 						nextStopsMarkup += "<span>" + OBA.Util.displayDistance(feetAway, stopsAway) + "</span>";
 					}
 				}

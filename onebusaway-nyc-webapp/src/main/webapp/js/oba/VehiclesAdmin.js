@@ -83,12 +83,12 @@ var OBA = window.OBA || {};
 				return;
 			}
 			
-			var orientation = Math.ceil(orientation_r[1] / 30) * 30;
+			var orientation = Math.floor(orientation_r[1] / 30) * 30;
 	
 			if(orientation === null || orientation === "" || orientation === 0) {
 				orientation = "unknown";
 			}
-
+			
 			var mapDiv = jQuery("<div></div>").addClass("map-location");
 			var mapWrapper = jQuery("<div></div>").addClass("map-location-wrapper").append(mapDiv);
 

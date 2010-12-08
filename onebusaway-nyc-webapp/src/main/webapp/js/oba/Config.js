@@ -42,8 +42,8 @@ OBA.Config = {
 		// (the path below needs to be absolute)
 		stopIconFilePrefix: "/img/stop/stop",
 		stopIconFileType: "png",
-		stopIconSize: new google.maps.Size(24,24),
-		stopIconCenter: new google.maps.Point(12,12),
+		stopIconSize: new google.maps.Size(21,21),
+		stopIconCenter: new google.maps.Point(10,10),
 
 		// api key used for webapp
 		apiKey: "TEST",
@@ -74,9 +74,11 @@ OBA.Config = {
 				return false;
 			}
 			
-			// hide deadheading vehicles (row 3)
+			// hide deadheading vehicles (except within a block) (row 3)
 			// hide vehicles at the depot (row 1)
-			if(phase !== null && phase.toLowerCase() !== 'in_progress') {
+			if(phase !== null && phase.toLowerCase() !== 'in_progress' 
+					&& phase.toLowerCase() !== 'deadhead_during' 
+					&& phase.toLowerCase() !== 'layover_during') {	
 				OBA.Util.log("HIDING: STATE 4");
 				return false;
 			}

@@ -22,32 +22,15 @@ OBA.Tracker = function() {
 	var mapNode = document.getElementById("map");
 	var routeMap = OBA.RouteMap(mapNode);
 	var map = routeMap.getMap();
-
-	function addExampleSearchBehavior() {
-		var noResults = jQuery("#no-results");
-		var searchForm = jQuery("#search form");
-		var searchInput = jQuery("#search input[type=text]");
-		
-		jQuery.each(noResults.find("a"), function(_, element) {
-			var link = jQuery(element);
-
-			link.click(function(e) {
-				searchInput.val(link.text());
-				searchInput.removeClass("inactive");				
-				searchForm.submit();
-
-				return false;
-			});
-		});
-	}
 	
 	function addSearchBehavior() {
-		var searchForm = jQuery("#search form");
+		var searchForm = jQuery("#search");
 		var searchInput = jQuery("#search input[type=text]");
+		var noResults = jQuery("#no-results");
 
 		var loseFocus = function() {
-			if(searchInput.val() === "" || searchInput.val() === "Enter an intersection, bus route, or bus stop number.") {
-				searchInput.val("Enter an intersection, bus route, or bus stop number.");
+			if(searchInput.val() === "" || searchInput.val() === "Enter an intersection, stop or route.") {
+				searchInput.val("Enter an intersection, stop or route.");
 				searchInput.addClass("inactive");
 			}
 		};
@@ -56,20 +39,61 @@ OBA.Tracker = function() {
 		searchInput.blur(loseFocus);
 		
 		searchInput.focus(function() {
-			if(searchInput.val() === "Enter an intersection, bus route, or bus stop number.") {
+			if(searchInput.val() === "Enter an intersection, stop or route.") {
 				searchInput.val("");
 			}
 			
+			noResults.hide();
 			searchInput.removeClass("inactive");
 		});
 
 		searchForm.submit(function(e) {
+			noResults.hide();
 			doSearch(searchInput.val());
 
 			return false;
 		});
+	
+		// add search control to Google Maps DIV so the popups avoid popping up under it.	
+		map.controls[google.maps.ControlPosition.TOP_RIGHT].push(searchForm.get(0));
+	}
+	
+	function addLinkBehavior() {
+		var headerLinks = jQuery("#header ul");
+
+		var linkButton = jQuery("<a></a>").click(function() {
+
+			
+			return false;
+		});
+		
+		var linkItem = jQuery("<li></li>").addClass("right")
+						.addClass("link")
+						.append(linkButton);
+		
+		headerLinks.append(linkItem);
 	}
 
+	function addAlertBehavior() {
+		var welcomeDiv = jQuery("#welcome");
+		var contentDiv = jQuery("#welcome .content");
+		var closeButton = jQuery("#welcome a.close");
+
+		closeButton.click(function() {
+			welcomeDiv.hide();
+
+			jQuery.cookie("didShowWelcome", "true", { expires: 9999 });
+			
+			return false;
+		});
+
+		var didShowWelcome = jQuery.cookie("didShowWelcome");
+
+		if(contentDiv.text() !== "" && didShowWelcome !== "true") {
+			welcomeDiv.show();
+		}
+	}
+	
 	function addResizeBehavior() {
 		theWindow = jQuery(window);
 		headerDiv = jQuery("#header");
@@ -93,6 +117,23 @@ OBA.Tracker = function() {
 		jQuery("body").css("overflow", "hidden");
 	}
 
+	// if query is parsable as an integer, this is a stop ID. (FIXME?)
+	function queryIsForStopId(q) {
+		if(q === null || q.length !== 6) { return false; }
+		try {
+			for(var i = 0; i < q.length; i++) {
+				var c = q.charAt(i);
+				var t = parseInt(c);				
+				if(typeof t === undefined || t === null || isNaN(t) === true) {
+					return false;
+				}					
+			}
+			return true;
+		} catch(e) {
+			return false;
+		}
+	}
+	
 	function doSearch(q) {	
 		jQuery.getJSON(OBA.Config.searchUrl, {q: q}, function(json) { 
 			var noResults = jQuery("#no-results");
@@ -119,7 +160,10 @@ OBA.Tracker = function() {
 								successFn(record.routeId, record.directionId));				
 					});
 				} else {
-					if(json.searchResults.length > 1) {
+					if(queryIsForStopId(q) === true) {
+						map.setZoom(16);
+						routeMap.showStop(json.searchResults[0].stopId);					
+					} else {
 						var mapBounds = null;
 						jQuery.each(json.searchResults, function(_, record) {
 							var latlng = new google.maps.LatLng(record.latlng[0], record.latlng[1]);
@@ -130,12 +174,8 @@ OBA.Tracker = function() {
 								mapBounds.extend(latlng);
 							}
 						});
-
-						map.fitBounds(mapBounds);				
-					} else {
-						map.setZoom(16);
-						routeMap.showStop(json.searchResults[0].stopId);					
-					}					
+						map.fitBounds(mapBounds);
+					}
 				}
 			}
 		});   				
@@ -144,9 +184,10 @@ OBA.Tracker = function() {
 	return {
 		initialize: function() {
 			addSearchBehavior();
-			addExampleSearchBehavior();
+			addLinkBehavior();
+			addAlertBehavior();
 			addResizeBehavior();
-			
+
 			doSearch("B63");
 		}
 	};
