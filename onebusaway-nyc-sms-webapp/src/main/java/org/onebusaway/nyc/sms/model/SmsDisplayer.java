@@ -82,7 +82,8 @@ public class SmsDisplayer {
     // helper function to help eliminate duplicate code
     StringBuilder result = new StringBuilder(SmsDisplayer.MAX_CHARS/2);
     String stopDirection = stopSearchResult.getStopDirection();
-    result.append(stopDirection + "-bound:\n");
+    String stopIdNoAgency = stopSearchResult.getStopIdNoAgency();
+    result.append(stopDirection + "-bound (" + stopIdNoAgency + "):\n");
     return result;
   }
   
