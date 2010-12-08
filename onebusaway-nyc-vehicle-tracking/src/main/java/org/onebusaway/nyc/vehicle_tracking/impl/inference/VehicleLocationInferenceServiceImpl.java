@@ -88,7 +88,8 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public void handleNycTestLocationRecord(AgencyAndId vehicleId, NycTestLocationRecord record) {
+  public void handleNycTestLocationRecord(AgencyAndId vehicleId,
+      NycTestLocationRecord record) {
     _executorService.execute(new ProcessingTask(vehicleId, record));
   }
 
@@ -113,9 +114,15 @@ public class VehicleLocationInferenceServiceImpl implements
     for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
-      VehicleLocationRecord record = instance.getCurrentState();
-      record.setVehicleId(vehicleId);
-      records.add(record);
+      if (instance != null) {
+        VehicleLocationRecord record = instance.getCurrentState();
+        if (record != null) {
+          record.setVehicleId(vehicleId);
+          records.add(record);
+        }
+      } else {
+        _log.warn("No VehicleInferenceInstance found: vid=" + vehicleId);
+      }
     }
 
     return records;
@@ -161,7 +168,7 @@ public class VehicleLocationInferenceServiceImpl implements
       return null;
     return instance.getCurrentParticles();
   }
-  
+
   @Override
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
@@ -193,8 +200,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private class ProcessingTask implements Runnable {
 
-    private AgencyAndId _vehicleId; 
-    
+    private AgencyAndId _vehicleId;
+
     private NycVehicleLocationRecord _inferenceRecord;
 
     private NycTestLocationRecord _nycTestLocationRecord;
