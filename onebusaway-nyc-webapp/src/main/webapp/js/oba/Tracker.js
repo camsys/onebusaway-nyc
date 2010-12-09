@@ -69,10 +69,8 @@ OBA.Tracker = function() {
 			var shareLinkUrl= jQuery("#share_link .content input");
 			var url = window.location.href + "#";
 
-			if(OBA.popupMarker !== null) {
-				var markerOptions = OBA.popupMarker.getOptions();
-				
-				if(markerOptions['type'] === "stop") {
+			if(OBA.popupMarker !== null) {				
+				if(OBA.popupMarker.getType() === "stop") {
 					url += OBA.Util.parseEntityId(OBA.popupMarker.getId()); 
 				}
 			}

@@ -63,7 +63,16 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 			fetchFn(function(json) {
 				infoWindow = new google.maps.InfoWindow();
 				infoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
-				infoWindow.setOptions({ zIndex: 100 });
+			
+				var pixelOffset = null;
+				var markerType = marker.getType();
+				if(markerType === "stop") {
+					pixelOffset = new google.maps.Size(0, OBA.Config.stopIconCenter.y);
+				} else if(markerType === "vehicle") {
+					pixelOffset = new google.maps.Size(0, OBA.Config.vehicleIconCenter.y);
+				}
+
+				infoWindow.setOptions({ zIndex: 100, pixelOffset: pixelOffset });
 				infoWindow.open(map, marker.getRawMarker());
 				
 				google.maps.event.addListenerOnce(infoWindow, 'closeclick', function() {

@@ -95,8 +95,8 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 			return marker.getMap() !== null;
 		},
 
-		getOptions: function() {
-			return options;
+		getType: function() {
+			return options['type'];
 		},
 		
 		getId: function() {
