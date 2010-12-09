@@ -67,7 +67,6 @@ OBA.Tracker = function() {
 		
 		jQuery("#share_link a.close").click(closeFn);
 		google.maps.event.addListener(map, 'dragstart', closeFn); 
-		google.maps.event.addListener(map, 'click', closeFn); 
 
 		// add item to header
 		var linkItem = jQuery("<li></li>").addClass("right")
@@ -77,21 +76,19 @@ OBA.Tracker = function() {
 
 		jQuery("#header ul li.link a").click(function() {
 			shareLinkDiv.show();			
-			
+		
 			var shareLinkUrl= jQuery("#share_link .content input");
-			var url = window.location.href.match(/([^#]*)/i)[0] + "#";
+			var searchInput = jQuery("#search input[type=text]");
 
-			var mapCenter = map.getCenter();
-			var mapZoom = map.getZoom();
-			url += mapCenter.lat() + "/" + mapCenter.lng() + "/" + mapZoom;
-			
-			if(OBA.popupMarker !== null) {				
-				if(OBA.popupMarker.getType() === "stop") {
-					url += "/" + OBA.popupMarker.getId(); 
-				}
+			var url = window.location.href.match(/([^#]*)/i)[0] + "#";
+			if(OBA.popupMarker !== null && OBA.popupMarker.getType() === "stop") {				
+				url += OBA.Util.parseEntityId(OBA.popupMarker.getId()); 
+			} else if(searchInput.val() !== null && searchInput.val() !== "") {
+				url += searchInput.val();
 			}
-			
+
 			shareLinkUrl.val(url);
+			shareLinkUrl.select();
 			
 			return false;
 		});
@@ -162,6 +159,10 @@ OBA.Tracker = function() {
 				noResults.fadeIn();
 			} else {
 				noResults.hide();
+
+				if(OBA.popupMarker !== null) {
+					OBA.popupMarker.getPopup().hide();
+				}
 				
 				var displayType = json.searchResults[0].type;
 				
@@ -215,23 +216,13 @@ OBA.Tracker = function() {
 			google.maps.event.addListener(map, 'projection_changed', function() {
 	            jQuery.history.init(function(hash) {
 	            	if(hash !== null && hash !== "") {
-	            		var hash_v = hash.split("/");
-
-	            		if(typeof hash_v[0] !== 'undefined' && typeof hash_v[1] !== 'undefined') {
-							var latlng = new google.maps.LatLng(hash_v[0], hash_v[1]);
-							map.setCenter(latlng);
-						}
-						
-						if(typeof hash_v[2] !== 'undefined') {
-							try {
-								map.setZoom(parseInt(hash_v[2]));
-							} catch(e) {}
-						}
-
-						if(typeof hash_v[3] !== 'undefined') {
-							routeMap.showStop(hash_v[3]);
-	            		}
-	        		}
+	            		var shareLinkDiv = jQuery("#share_link");
+	            		shareLinkDiv.hide();
+	            		
+	            		var searchInput = jQuery("#search input[type=text]");
+	            		searchInput.val(hash).removeClass("inactive");
+	            		doSearch(hash);
+	            	}
 	            });				
 			}); 
 		}
