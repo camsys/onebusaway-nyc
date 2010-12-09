@@ -227,8 +227,8 @@ OBA.Tracker = function() {
 								map.setZoom(parseInt(hash_v[2]));
 							} catch(e) {}
 						}
-debugger;
-	            		if(typeof hash_v[3] !== 'undefined') {
+
+						if(typeof hash_v[3] !== 'undefined') {
 							routeMap.showStop(hash_v[3]);
 	            		}
 	        		}
