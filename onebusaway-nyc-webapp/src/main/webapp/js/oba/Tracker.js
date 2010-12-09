@@ -79,11 +79,15 @@ OBA.Tracker = function() {
 			shareLinkDiv.show();			
 			
 			var shareLinkUrl= jQuery("#share_link .content input");
-			var url = window.location.href + "#";
+			var url = window.location.href.match(/([^#]*)/i)[0] + "#";
 
+			var mapCenter = map.getCenter();
+			var mapZoom = map.getZoom();
+			url += mapCenter.lat() + "/" + mapCenter.lng() + "/" + mapZoom;
+			
 			if(OBA.popupMarker !== null) {				
 				if(OBA.popupMarker.getType() === "stop") {
-					url += OBA.Util.parseEntityId(OBA.popupMarker.getId()); 
+					url += "/" + OBA.popupMarker.getId(); 
 				}
 			}
 			
@@ -211,7 +215,22 @@ OBA.Tracker = function() {
 			google.maps.event.addListener(map, 'projection_changed', function() {
 	            jQuery.history.init(function(hash) {
 	            	if(hash !== null && hash !== "") {
-	        			doSearch(hash);
+	            		var hash_v = hash.split("/");
+
+	            		if(typeof hash_v[0] !== 'undefined' && typeof hash_v[1] !== 'undefined') {
+							var latlng = new google.maps.LatLng(hash_v[0], hash_v[1]);
+							map.setCenter(latlng);
+						}
+						
+						if(typeof hash_v[2] !== 'undefined') {
+							try {
+								map.setZoom(parseInt(hash_v[2]));
+							} catch(e) {}
+						}
+debugger;
+	            		if(typeof hash_v[3] !== 'undefined') {
+							routeMap.showStop(hash_v[3]);
+	            		}
 	        		}
 	            });				
 			}); 
