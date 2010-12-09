@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.onebusaway.nyc.presentation.model.Mode;
@@ -39,4 +41,8 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     this.q = q;
   }
 
+  public String getLastUpdateTime() {
+	Date now = new Date();
+	return DateFormat.getTimeInstance().format(now);
+  }  
 }
