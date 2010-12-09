@@ -115,7 +115,7 @@ under the License.
 			<li><a href="${url}">Text Only/Mobile Version</a></li>
 		</ul>
 
-		<p>&amp;copy; 2010, A City Transit Agency</p>
+		<p>&amp;copy; 2010, A City Transit Agency ([VERSION])</p>
 	</div>
   </div>
 </body>
