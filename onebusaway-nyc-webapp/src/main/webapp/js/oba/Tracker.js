@@ -42,7 +42,6 @@ OBA.Tracker = function() {
 			if(searchInput.val() === "Enter an intersection, stop or route.") {
 				searchInput.val("");
 			}
-			
 			noResults.hide();
 			searchInput.removeClass("inactive");
 		});
@@ -50,7 +49,6 @@ OBA.Tracker = function() {
 		searchForm.submit(function(e) {
 			noResults.hide();
 			doSearch(searchInput.val());
-
 			return false;
 		});
 	
@@ -59,11 +57,25 @@ OBA.Tracker = function() {
 	}
 	
 	function addShareLinkBehavior() {
-		// link button in header
-		var headerLinks = jQuery("#header ul");
 		var shareLinkDiv = jQuery("#share_link");
 
-		var linkButton = jQuery("<a></a>").click(function() {
+		// close button inside link window
+		var closeFn = function() {
+			shareLinkDiv.hide();			
+			return false;
+		};
+		
+		jQuery("#share_link a.close").click(closeFn);
+		google.maps.event.addListener(map, 'dragstart', closeFn); 
+		google.maps.event.addListener(map, 'click', closeFn); 
+
+		// add item to header
+		var linkItem = jQuery("<li></li>").addClass("right")
+						.addClass("link")
+						.append(jQuery("<a></a>"));
+		jQuery("#header ul").append(linkItem);
+
+		jQuery("#header ul li.link a").click(function() {
 			shareLinkDiv.show();			
 			
 			var shareLinkUrl= jQuery("#share_link .content input");
@@ -79,20 +91,6 @@ OBA.Tracker = function() {
 			
 			return false;
 		});
-		
-		var linkItem = jQuery("<li></li>").addClass("right")
-						.addClass("link")
-						.append(linkButton);
-		
-		headerLinks.append(linkItem);
-
-		// close button inside link window
-		var closeButton = jQuery("#share_link a.close");
-		closeButton.click(function() {
-			shareLinkDiv.hide();
-			
-			return false;
-		});
 	}	
 
 	function addAlertBehavior() {
@@ -102,14 +100,12 @@ OBA.Tracker = function() {
 
 		closeButton.click(function() {
 			welcomeDiv.hide();
-
 			jQuery.cookie("didShowWelcome", "true", { expires: 9999 });
-			
 			return false;
 		});
 
+		// show the welcome message if the user hasn't seen it before
 		var didShowWelcome = jQuery.cookie("didShowWelcome");
-
 		if(contentDiv.text() !== "" && didShowWelcome !== "true") {
 			welcomeDiv.show();
 		}
@@ -124,7 +120,6 @@ OBA.Tracker = function() {
 		
 		function resize() {
 			var h = theWindow.height() - footerDiv.height() - headerDiv.height() - homeAlertDiv.height();
-
 			contentDiv.height(h);
 		}
 
@@ -161,7 +156,6 @@ OBA.Tracker = function() {
 			
 			if(json.searchResults.length === 0) {
 				noResults.fadeIn();
-				
 			} else {
 				noResults.hide();
 				
@@ -201,12 +195,6 @@ OBA.Tracker = function() {
 			}
 		});   				
 	}
-
-	function hashChanged(hash) {
-		if(hash !== null && hash !== "") {
-			doSearch(hash);
-		}
-	}
 	
 	return {
 		initialize: function() {
@@ -215,11 +203,17 @@ OBA.Tracker = function() {
 			addAlertBehavior();
 			addResizeBehavior();
 
+			// add default/pilot routes to the map
 			routeMap.addRoute("MTA NYCT_B63", "1", null);	
 			routeMap.addRoute("MTA NYCT_B63", "0", null);	
 			
+			// load any deeplink identified search results
 			google.maps.event.addListener(map, 'projection_changed', function() {
-	            jQuery.history.init(hashChanged);				
+	            jQuery.history.init(function(hash) {
+	            	if(hash !== null && hash !== "") {
+	        			doSearch(hash);
+	        		}
+	            });				
 			}); 
 		}
 	};

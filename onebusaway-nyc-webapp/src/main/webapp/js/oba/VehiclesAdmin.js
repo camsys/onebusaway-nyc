@@ -28,7 +28,7 @@ var OBA = window.OBA || {};
 	    
 	        jQuery(a).click(function(e) {
 	            e.preventDefault();
-	        
+
 	            var rows = table.find('tr').not(":first");
 	            
 	            rows.remove();
@@ -130,7 +130,7 @@ var OBA = window.OBA || {};
 	jQuery(document).ready(function() {
 	    addTableSortBehaviors();
 	    createMaps();
-	    
+
 	    // refresh every 1m
 	    setTimeout(function() {
 	    	window.location.href = window.location.href;
