@@ -83,7 +83,8 @@ OBA.Tracker = function() {
 			var url = window.location.href.match(/([^#]*)/i)[0] + "#";
 			if(OBA.popupMarker !== null && OBA.popupMarker.getType() === "stop") {				
 				url += OBA.Util.parseEntityId(OBA.popupMarker.getId()); 
-			} else if(searchInput.val() !== null && searchInput.val() !== "") {
+			} else if(searchInput.val() !== null && searchInput.val() !== ""
+				&& searchInput.val() !== "Enter an intersection, stop or route.") {
 				url += searchInput.val();
 			}
 

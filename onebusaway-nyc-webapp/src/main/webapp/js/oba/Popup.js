@@ -60,6 +60,9 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 				}
 			}
 
+			var shareLinkDiv = jQuery("#share_link");
+			shareLinkDiv.hide();
+			
 			fetchFn(function(json) {
 				infoWindow = new google.maps.InfoWindow();
 				infoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
