@@ -162,7 +162,7 @@ OBA.StopPopup = function(stopId, map) {
 
 		// header
 		var header = '<p class="header">' + name + '</p>' +
-					'<p><span class="type stop">Stop #' + OBA.Util.parseEntityId(stopId) + '</span>' + 
+					'<p><span class="type stop">Stop #' + OBA.Util.parseEntityId(stopId) + '</span> ' + 
 					(lastUpdateString ? '<span class="updated">Last updated at ' + lastUpdateString + '</span>' : '') + '</p>';
 
 		// service notices
@@ -289,7 +289,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
 		// header
 		var header = '<p class="header">' + headsign + '</p>' +
-					'<p><span class="type vehicle">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span>' +
+					'<p><span class="type vehicle">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span> ' +
 					'<span class="updated' + ((isStaleData === true) ? " stale" : "") +'">Last updated at ' + lastUpdateString + '</span></p>';
 
 		// service notices
