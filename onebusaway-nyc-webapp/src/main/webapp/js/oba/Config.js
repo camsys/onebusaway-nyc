@@ -36,7 +36,7 @@ OBA.Config = {
 		// (the path below needs to be absolute)
 		vehicleIconFilePrefix: "/img/vehicle/vehicle",
 		vehicleIconFileType: "png",
-		vehicleIconSize: new google.maps.Size(50,50),
+		vehicleIconSize: new google.maps.Size(51,51),
 		vehicleIconCenter: new google.maps.Point(25,25),
 
 		// (the path below needs to be absolute)

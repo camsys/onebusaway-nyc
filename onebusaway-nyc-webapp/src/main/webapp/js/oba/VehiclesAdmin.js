@@ -83,7 +83,7 @@ var OBA = window.OBA || {};
 				return;
 			}
 			
-			var orientation = Math.floor(orientation_r[1] / 30) * 30;
+			var orientation = Math.floor(orientation_r[1] / 5) * 5;
 	
 			if(orientation === null || orientation === "" || orientation === 0) {
 				orientation = "unknown";

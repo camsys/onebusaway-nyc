@@ -49,7 +49,7 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 			var orientation = 'undefined';
 
 			if(typeof _orientation !== 'undefined' && _orientation !== 'NaN') {
-				orientation = Math.floor(_orientation / 30) * 30;
+				orientation = Math.floor(_orientation / 5) * 5;
 			}
 
 			var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
