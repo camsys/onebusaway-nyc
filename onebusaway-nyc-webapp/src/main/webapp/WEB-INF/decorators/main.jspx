@@ -51,7 +51,10 @@ under the License.
 &lt;![endif]--&gt;
 </jsp:text>
 
-	<decorator:head />
+  <s:url var="url" value="/css/branding.css"></s:url>
+  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+
+  <decorator:head />
 </head>
 
 <body>
