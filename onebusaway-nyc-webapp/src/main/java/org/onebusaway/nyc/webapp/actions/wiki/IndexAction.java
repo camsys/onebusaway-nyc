@@ -27,6 +27,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	private WikiRenderingService _wikiRenderingService;
 
 	protected String namespace = "Main";
+	protected String name;
 	protected String content;
 	protected String toc;
 	protected String editLink;
@@ -50,6 +51,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
 	public String getToc() {
 		return toc;
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 	/*
@@ -79,7 +84,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	    ActionInvocation invocation = context.getActionInvocation();
 	    ActionProxy proxy = invocation.getProxy();
 
-	    String name = proxy.getActionName();
+	    name = proxy.getActionName();
 		
 		if (namespace != null && name != null) {
 			// try to get TOC page for this section

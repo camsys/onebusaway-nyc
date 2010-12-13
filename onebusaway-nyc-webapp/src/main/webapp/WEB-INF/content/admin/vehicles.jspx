@@ -19,7 +19,7 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>One Bus Away NY Admin Interface</title>
+<title>OneBusAway NYC: Vehicle List</title>
 
 <s:url var="url" value="/css/vehicles.css"></s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>

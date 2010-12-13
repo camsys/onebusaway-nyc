@@ -22,8 +22,8 @@ under the License.
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>  
 
-	<title>A City Transit Agency</title>
-
+	<title>OneBusAway NYC: <s:property value="q"/></title>
+	
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
   	<s:url var="url" value="/css/mobile.css"></s:url>
@@ -33,7 +33,7 @@ under the License.
 <body>
 	<div id="branding">
     	A City Transit Agency
-	    <h1>RealTime Bus</h1>
+	    <h1>OneBusAway NYC</h1>
 	</div>
 	<div>
 		<s:form namespace="/m" action="index">

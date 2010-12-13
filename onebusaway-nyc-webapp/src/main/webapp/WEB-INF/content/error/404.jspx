@@ -19,7 +19,7 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>404 Not Found</title>
+<title>OneBusAway NYC: 404 Not Found</title>
 </head>
 <body>
 
