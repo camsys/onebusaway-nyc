@@ -239,7 +239,13 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     		  return "Unknown<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
       }
       
-      String tripHeadsign = trip.getTripHeadsign();
+      if(nycVehicleStatusBean.getPhase().equals(EVehiclePhase.DEADHEAD_AFTER.toLabel()) ||
+    	  nycVehicleStatusBean.getPhase().equals(EVehiclePhase.DEADHEAD_BEFORE.toLabel()) ||
+    	  nycVehicleStatusBean.getPhase().equals(EVehiclePhase.DEADHEAD_DURING.toLabel())) {
+    	  return "Not Applicable<br/>(bus sent " + mostRecentDestinationSignCode + ")";    	  
+      }
+      
+	  String tripHeadsign = trip.getTripHeadsign();
       String inferredDestinationSignCode = nycVehicleStatusBean.getInferredDestinationSignCode();
       if (inferredDestinationSignCode.equals(mostRecentDestinationSignCode)) {
         return inferredDestinationSignCode + ": " + tripHeadsign;
