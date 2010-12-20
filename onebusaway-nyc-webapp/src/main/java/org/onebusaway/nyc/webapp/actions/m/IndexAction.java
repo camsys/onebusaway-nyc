@@ -45,4 +45,18 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	Date now = new Date();
 	return DateFormat.getTimeInstance().format(now);
   }  
+  
+  public String getTitle() {
+	String title = this.q;
+	
+	if(searchResults.size() == 1) {
+	  SearchResult result = searchResults.get(0);
+	  
+	  if(result != null) {
+		title = result.getName() + " (" + title + ")";
+	  }
+	}
+	
+	return title;
+  }
 }

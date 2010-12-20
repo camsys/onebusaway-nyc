@@ -22,7 +22,7 @@ under the License.
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>  
 
-	<title>OneBusAway NYC: <s:property value="q"/></title>
+	<title>OneBusAway NYC: <s:property value="title"/></title>
 	
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
@@ -75,76 +75,77 @@ under the License.
 		</s:else>
 		</s:if>
 	<s:else>
+		<a name="top"></a>
 		<div class="refresh">
 			<s:url var="url" namespace="/m" action="index">				
 				<s:param name="q"><s:property value="q" /></s:param>
 			</s:url>
-	    	<a href="${url}">Refresh Results (updated at <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}#top">Refresh Results (updated at <s:property value="lastUpdateTime" />)</a>
 		</div>
 	
-	<s:iterator value="searchResults">
-	
-		<s:if test="%{type.equals('stop')}">
-			<div>
-				<p>
-				<strong><s:property value="name" /></strong><br/>
-	
-				<s:iterator value="routesAvailable">
-					<s:url var="url" namespace="/m" action="index">
-						<s:param name="q"><s:property value="routeId" /></s:param>
-					</s:url>
-					<a href="${url}"><s:property value="headsign" /></a><br />
-	
-					<s:iterator value="distanceAway">
-						<s:property value="presentableDistance" /><br />
+		<s:iterator value="searchResults">
+			<s:if test="%{type.equals('stop')}">
+				<div>
+					<p>
+					<strong><s:property value="name" /></strong><br/>
+		
+					<s:iterator value="routesAvailable">
+						<s:url var="url" namespace="/m" action="index">
+							<s:param name="q"><s:property value="routeId" /></s:param>
+						</s:url>
+						<a href="${url}"><s:property value="headsign" /></a><br />
+		
+						<s:iterator value="distanceAway">
+							<s:property value="presentableDistance" /><br />
+						</s:iterator>
+		
+						<ul>
+							<s:iterator value="serviceAlerts">
+								<li class="alert">
+									<s:property value="value" />				
+								</li>
+							</s:iterator>		
+						</ul>	
 					</s:iterator>
-	
+					</p>
+				</div>
+			</s:if>
+			<s:elseif test="%{type.equals('route')}">
+				<div>
+					<p>
+					<strong><s:property value="tripHeadsign" /></strong><br />
+					
 					<ul>
 						<s:iterator value="serviceAlerts">
 							<li class="alert">
 								<s:property value="value" />				
 							</li>
 						</s:iterator>		
-					</ul>	
-				</s:iterator>
-				</p>
-			</div>
-		</s:if>
-		<s:elseif test="%{type.equals('route')}">
-			<div>
-				<p>
-				<strong><s:property value="tripHeadsign" /></strong><br />
-				
-				<ul>
-					<s:iterator value="serviceAlerts">
-						<li class="alert">
-							<s:property value="value" />				
+					</ul>
+		
+					<ul>
+						<s:iterator value="stopItems">
+						<li>
+							<s:url var="url" namespace="/m" action="index">
+								<s:param name="q"><s:property value="id" /></s:param>
+							</s:url>
+		
+							<a title="${name}" href="${url}"><s:property value="name" /></a>
+							<s:property value="presentableDistances" />
 						</li>
-					</s:iterator>		
-				</ul>
-	
-				<ul>
-					<s:iterator value="stopItems">
-					<li>
-						<s:url var="url" namespace="/m" action="index">
-							<s:param name="q"><s:property value="id" /></s:param>
-						</s:url>
-	
-						<a title="${name}" href="${url}"><s:property value="name" /></a>
-						<s:property value="presentableDistances" />
-					</li>
-					</s:iterator>
-				</ul>
-				</p>
-			</div>
-		</s:elseif>
-	</s:iterator>
+						</s:iterator>
+					</ul>
+					</p>
+				</div>
+			</s:elseif>
+		</s:iterator>
 
+		<a name="bottom"></a>
 		<div class="refresh">
 			<s:url var="url" namespace="/m" action="index">				
 				<s:param name="q"><s:property value="q" /></s:param>
 			</s:url>
-	    	<a href="${url}">Refresh Results (updated at <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}#bottom">Refresh Results (updated at <s:property value="lastUpdateTime" />)</a>
 		</div>
 	</s:else>
 
