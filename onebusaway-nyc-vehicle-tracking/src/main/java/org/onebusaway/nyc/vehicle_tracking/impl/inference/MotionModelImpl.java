@@ -1,5 +1,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
@@ -8,6 +11,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -24,10 +28,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
    */
   private double _motionThreshold = 20;
 
+  private BaseLocationService _baseLocationService;
+
   @Autowired
   public void setJourneyMotionModel(
       JourneyStateTransitionModel journeyMotionModel) {
     _journeyMotionModel = journeyMotionModel;
+  }
+
+  @Autowired
+  public void setBaseLocationService(BaseLocationService baseLocationService) {
+    _baseLocationService = baseLocationService;
   }
 
   public void setMotionThreshold(double motionThreshold) {
@@ -35,8 +46,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
   }
 
   @Override
-  public Particle move(Particle parent, double timestamp, double timeElapsed,
-      Observation obs) {
+  public void move(Particle parent, double timestamp, double timeElapsed,
+      Observation obs, List<Particle> results) {
 
     VehicleState parentState = parent.getData();
 
@@ -58,6 +69,12 @@ public class MotionModelImpl implements MotionModel<Observation> {
   private EdgeState determineEdgeState(Observation obs, VehicleState parentState) {
 
     EdgeState edgeState = parentState.getEdgeState();
+
+    /**
+     * We only let the street network edge change if the GPS has changed. This
+     * helps us avoid oscilation between potential states when the bus isn't
+     * moving.
+     */
     if (gpsHasChanged(obs)) {
 
       /**
@@ -76,12 +93,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
        */
     }
 
-    MotionState motionState = updateMotionState(parentState, edgeState, obs);
-
-    VehicleState vs = _journeyMotionModel.move(parentState, edgeState,
-        motionState, obs);
-
-    return new Particle(timestamp, parent, 1.0, vs);
+    return edgeState;
   }
 
   public MotionState updateMotionState(VehicleState parentState,
@@ -104,9 +116,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
       lastInMotionLocation = location;
     }
 
-    // System.out.println(d);
-
-    return motionState;
+    return new MotionState(lastInMotionTime, lastInMotionLocation, atBase,
+        atTerminal);
   }
 
   private boolean gpsHasChanged(Observation obs) {

@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import java.util.List;
+
 /**
  * Particle motion model interface for defining the strategy for moving
  * particles.
@@ -15,9 +17,9 @@ public interface MotionModel<OBS> {
    * @param timestamp timestamp of the new particle
    * @param timeElapsed time elapsed since last move
    * @param obs observation at the given timestamp
-   * @return a newly moved particle
+   * @param results TODO
    * @throws Exception TODO
    */
-  public Particle move(Particle parent, double timestamp, double timeElapsed,
-      OBS obs);
+  public void move(Particle parent, double timestamp, double timeElapsed,
+      OBS obs, List<Particle> results);
 }

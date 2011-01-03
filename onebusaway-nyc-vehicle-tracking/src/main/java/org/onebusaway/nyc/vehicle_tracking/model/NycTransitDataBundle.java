@@ -34,4 +34,8 @@ public class NycTransitDataBundle {
   public File getBaseLocationsPath() {
     return new File(_path, "BaseLocations.txt");
   }
+  
+  public File getTerminalLocationsPath() {
+    return new File(_path, "TerminalLocations.txt");
+  }
 }

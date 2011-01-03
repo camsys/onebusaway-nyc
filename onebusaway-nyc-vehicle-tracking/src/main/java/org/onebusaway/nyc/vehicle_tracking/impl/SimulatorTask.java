@@ -137,6 +137,11 @@ class SimulatorTask implements Runnable, EntityHandler {
         return;
     }
 
+    if (_records.isEmpty() && record.locationDataIsMissing()) {
+      _log.info("pruning initial record with no gps data");
+      return;
+    }
+
     _records.add(record);
     String vid = record.getVehicleId();
     if (_vehicleId != null) {
@@ -331,13 +336,13 @@ class SimulatorTask implements Runnable, EntityHandler {
   private boolean shouledExitAfterWaitingForInferenceToComplete(
       NycTestLocationRecord record) {
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 20; i++) {
 
       if (processResultRecord(record))
         return false;
 
       try {
-        Thread.sleep(100);
+        Thread.sleep(10 * i);
       } catch (InterruptedException ex) {
         return true;
       }

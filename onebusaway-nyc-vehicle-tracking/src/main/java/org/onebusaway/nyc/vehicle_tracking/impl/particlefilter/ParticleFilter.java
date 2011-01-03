@@ -108,22 +108,6 @@ public class ParticleFilter<OBS> {
     _timeOfLastUpdate = timeReceived;
   }
 
-  /**
-   * This provides a way of updating the filter even when no new observations
-   * have been seen.
-   */
-  public void updateFilterWithoutObservation(double timestamp) throws Exception {
-
-    checkFirst(timestamp, timestamp, null);
-    double elapsed = timestamp - _timeOfLastUpdate;
-    for (int i = 0; i < _particles.size(); i++) {
-      Particle updatedParticle = _motionModel.move(_particles.get(i),
-          timestamp, elapsed, null);
-      _particles.set(i, updatedParticle);
-    }
-    _timeOfLastUpdate = timestamp;
-  }
-
   /***************************************************************************
    * Abstract Methods
    **************************************************************************/
@@ -169,16 +153,17 @@ public class ParticleFilter<OBS> {
   private void runSingleTimeStep(double timestamp, OBS obs,
       boolean moveParticles) throws ParticleFilterException {
 
+    int numberOfParticles = _particles.size();
+    List<Particle> particles = _particles;
+
     /**
      * 1. apply the motion model to each particle
      */
     if (moveParticles) {
+      particles = new ArrayList<Particle>(numberOfParticles);
       double elapsed = timestamp - _timeOfLastUpdate;
-      for (int i = 0; i < _particles.size(); i++) {
-        Particle updatedParticle = _motionModel.move(_particles.get(i),
-            timestamp, elapsed, obs);
-        _particles.set(i, updatedParticle);
-      }
+      for (int i = 0; i < _particles.size(); i++)
+        _motionModel.move(_particles.get(i), timestamp, elapsed, obs, particles);
     }
 
     /**
@@ -189,7 +174,7 @@ public class ParticleFilter<OBS> {
     /**
      * 3. track the weighted particles (before resampling and normalization)
      */
-    _weightedParticles = _particles;
+    _weightedParticles = particles;
 
     /**
      * 4. store the most likely particle's information
@@ -198,7 +183,7 @@ public class ParticleFilter<OBS> {
     double lowestWeight = Double.POSITIVE_INFINITY;
 
     int index = 0;
-    for (Particle p : _particles) {
+    for (Particle p : particles) {
       double w = p.getWeight();
       if (w > highestWeight) {
         _mostLikelyParticle = p.cloneParticle();
@@ -222,7 +207,7 @@ public class ParticleFilter<OBS> {
     List<Particle> reweighted = new ArrayList<Particle>(resampled.size());
     for (Particle p : resampled) {
       p = p.cloneParticle();
-      p.setWeight(1.0 / _particles.size());
+      p.setWeight(1.0 / resampled.size());
       reweighted.add(p);
     }
 
@@ -254,23 +239,5 @@ public class ParticleFilter<OBS> {
 
   private double getParticleLikelihood(Particle particle, OBS obs) {
     return _sensorModel.likelihood(particle, obs);
-  }
-
-  /**
-   * Takes the distribution currently represented by the particles, and
-   * resamples this distribution until 'n' new samples are created, where 'n' is
-   * the number of particles currently running in the filter. Overwrites the old
-   * set of particles with this new set.
-   */
-  protected void gatherSameNumberOfSamples(OBS obs, boolean isMoving)
-      throws ParticleFilterException {
-    if (_particles.size() == 0) {
-      throw new IllegalStateException(
-          "Can't gather same number of particles when you have none");
-    }
-    int numClones = _particles.size();
-    CDF cdf = applySensorModel(obs);
-    _particles = cdf.getClonesOfHeavilyWeightedEntries(CDF.RANDOM, _particles,
-        numClones);
   }
 }

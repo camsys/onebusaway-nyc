@@ -29,6 +29,9 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
 
     File outputDirectory = new File(args[args.length - 1]);
 
+    if (!outputDirectory.exists())
+      outputDirectory.mkdirs();
+
     CsvEntityReader csvReader = new CsvEntityReader();
     csvReader.setTokenizerStrategy(new TabTokenizerStrategy());
 

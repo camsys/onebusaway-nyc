@@ -9,22 +9,13 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartStat
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JourneyStateTransitionModel {
 
-  private VehicleStateSensorModel _vehicleStateSensorModel;
-
   private BlockStateTransitionModel _blockStateTransitionModel;
-
-  @Autowired
-  public void setVehicleStateSensorModel(
-      VehicleStateSensorModel vehicleStateSensorModel) {
-    _vehicleStateSensorModel = vehicleStateSensorModel;
-  }
 
   @Autowired
   public void setBlockStateTransitionModel(
@@ -37,14 +28,14 @@ public class JourneyStateTransitionModel {
    * 
    ****/
 
-  public VehicleState move(VehicleState parentState, EdgeState edgeState,
-      MotionState motionState, Observation obs) {
+  public void move(VehicleState parentState, EdgeState edgeState,
+      MotionState motionState, Observation obs, List<VehicleState> results) {
 
     List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
         obs);
 
-    return sampleJourneyState(parentState, edgeState, motionState,
-        journeyStates, obs);
+    generateVehicleStates(parentState, edgeState, motionState, journeyStates,
+        obs, results);
   }
 
   public List<JourneyState> getTransitionJourneyStates(
@@ -75,11 +66,10 @@ public class JourneyStateTransitionModel {
     }
   }
 
-  private VehicleState sampleJourneyState(VehicleState parentState,
+  private void generateVehicleStates(VehicleState parentState,
       EdgeState edgeState, MotionState motionState,
-      List<JourneyState> journeyStates, Observation obs) {
-
-    CDFMap<VehicleState> cdf = new CDFMap<VehicleState>();
+      List<JourneyState> journeyStates, Observation obs,
+      List<VehicleState> results) {
 
     for (JourneyState journeyState : journeyStates) {
 
@@ -89,13 +79,8 @@ public class JourneyStateTransitionModel {
       VehicleState vehicleState = new VehicleState(edgeState, motionState,
           blockState, journeyState, obs);
 
-      double p = _vehicleStateSensorModel.likelihood(parentState, vehicleState,
-          obs);
-
-      cdf.put(p, vehicleState);
+      results.add(vehicleState);
     }
-
-    return cdf.sample();
   }
 
   private List<JourneyState> moveAtBase(Observation obs) {

@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
@@ -33,6 +34,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private BlockStateService _blockStateService;
 
+  private BlocksFromObservationService _blocksFromObservationService;
+
+  private ObservationCache _observationCache;
+
   /****
    * Public Methods
    ****/
@@ -48,6 +53,17 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     _blockStateService = blockStateService;
   }
 
+  @Autowired
+  public void setBlocksFromObservationService(
+      BlocksFromObservationService blocksFromObservationService) {
+    _blocksFromObservationService = blocksFromObservationService;
+  }
+
+  @Autowired
+  public void setObservationCache(ObservationCache observationCache) {
+    _observationCache = observationCache;
+  }
+
   /**
    * 
    * @param scheduleDeviationSigma time, in seconds
@@ -56,108 +72,87 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateSamplingStrategy
-   * #sampleBlockStateAtJourneyStart(java.util.Set,
-   * org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation)
-   */
-
   @Override
-  public BlockState sampleBlockStateAtJourneyStart(
-      Set<BlockInstance> potentialBlocks, Observation observation) {
+  public CDFMap<BlockState> cdfForJourneyAtStart(Observation observation) {
 
-    CDFMap<BlockState> cdf = cdfForJourneyAtStart(potentialBlocks, observation);
+    CDFMap<BlockState> cdf = _observationCache.getValueForObservation(
+        observation, EObservationCacheKey.JOURNEY_START_BLOCK_CDF);
 
-    return cdf.sample();
-  }
+    if (cdf == null) {
 
-  @Override
-  public CDFMap<BlockState> cdfForJourneyAtStart(
-      Set<BlockInstance> potentialBlocks, Observation observation) {
+      Set<BlockInstance> potentialBlocks = _blocksFromObservationService.determinePotentialBlocksForObservation(observation);
 
-    CDFMap<BlockState> cdf = new CDFMap<BlockState>();
+      cdf = new CDFMap<BlockState>();
 
-    _log.info("potential blocks found: " + potentialBlocks.size());
+      StringBuilder b = null;
 
-    for (BlockInstance blockInstance : potentialBlocks) {
+      if (_log.isDebugEnabled()) {
+        b = new StringBuilder();
+        b.append("potential blocks found: ").append(potentialBlocks.size());
+      }
 
-      // Start at the beginning of the block
-      BlockState state = _blockStateService.getAsState(blockInstance, 0.0);
+      for (BlockInstance blockInstance : potentialBlocks) {
 
-      double p = scoreJourneyStartState(state, observation);
+        // Start at the beginning of the block
+        BlockState state = _blockStateService.getAsState(blockInstance, 0.0);
 
-      cdf.put(p, state);
+        double p = scoreJourneyStartState(state, observation);
 
-      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
-          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-          + "\t" + blockInstance);
+        cdf.put(p, state);
+
+        if (_log.isDebugEnabled()) {
+          b.append("\n" + state.getBlockLocation().getDistanceAlongBlock()
+              + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
+              + "\t" + blockInstance);
+
+        }
+      }
+
+      if (_log.isDebugEnabled())
+        _log.debug(b.toString());
     }
     return cdf;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateSamplingStrategy
-   * #sampleBlockStateAtJourneyStart(java.util.Set,
-   * org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation,
-   * org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState)
-   */
   @Override
-  public BlockState sampleBlockStateAtJourneyStart(
-      Set<BlockInstance> potentialBlocks, Observation observation,
-      BlockState currentBlockState,
-      boolean phaseTransitionSuggestsBlockTransition) {
+  public CDFMap<BlockState> cdfForJourneyInProgress(Observation observation) {
 
-    CDFMap<BlockState> cdf = new CDFMap<BlockState>();
+    CDFMap<BlockState> cdf = _observationCache.getValueForObservation(
+        observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK_CDF);
 
-    _log.info("potential blocks found: " + potentialBlocks.size());
+    if (cdf == null) {
 
-    for (BlockInstance blockInstance : potentialBlocks) {
+      Set<BlockInstance> potentialBlocks = _blocksFromObservationService.determinePotentialBlocksForObservation(observation);
 
-      // Start at the beginning of the block
-      BlockState state = _blockStateService.getAsState(blockInstance, 0.0);
+      cdf = new CDFMap<BlockState>();
 
-      double p = scoreJourneyStartState(state, observation, currentBlockState,
-          phaseTransitionSuggestsBlockTransition);
+      NycVehicleLocationRecord record = observation.getRecord();
 
-      cdf.put(p, state);
+      StringBuilder b = null;
+      if (_log.isDebugEnabled()) {
+        b = new StringBuilder();
+        b.append("potential blocks found: " + potentialBlocks.size());
+      }
 
-      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
-          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-          + "\t" + blockInstance);
-    }
+      for (BlockInstance blockInstance : potentialBlocks) {
 
-    return cdf.sample();
-  }
+        BlockState state = _blockStateService.getBestBlockLocation(
+            record.getTime(), observation.getPoint(), blockInstance, 0,
+            Double.POSITIVE_INFINITY);
 
-  @Override
-  public CDFMap<BlockState> cdfForJourneyInProgress(
-      Set<BlockInstance> potentialBlocks, Observation observation) {
+        double p = scoreState(state, observation);
 
-    CDFMap<BlockState> cdf = new CDFMap<BlockState>();
+        cdf.put(p, state);
 
-    NycVehicleLocationRecord record = observation.getRecord();
+        if (_log.isDebugEnabled()) {
+          b.append("\n" + state.getBlockLocation().getDistanceAlongBlock()
+              + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
+              + "\t" + blockInstance);
+        }
+      }
 
-    _log.info("potential blocks found: " + potentialBlocks.size());
-
-    for (BlockInstance blockInstance : potentialBlocks) {
-
-      BlockState state = _blockStateService.getBestBlockLocation(
-          record.getTime(), observation.getPoint(), blockInstance, 0,
-          Double.POSITIVE_INFINITY);
-
-      double p = scoreState(state, observation);
-
-      cdf.put(p, state);
-
-      System.out.println(state.getBlockLocation().getDistanceAlongBlock()
-          + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-          + "\t" + blockInstance);
+      if (_log.isDebugEnabled())
+        _log.debug(b.toString());
     }
 
     return cdf;
@@ -170,40 +165,6 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   private double scoreJourneyStartState(BlockState state,
       Observation observation) {
     return scoreJourneyStartDestinationSignCode(state, observation);
-  }
-
-  private double scoreJourneyStartState(BlockState state,
-      Observation observation, BlockState currentBlockState,
-      boolean phaseTransitionSuggestsBlockTransition) {
-
-    if (phaseTransitionSuggestsBlockTransition)
-      return 0.95;
-
-    double dscScore = scoreJourneyStartDestinationSignCode(state, observation);
-    double blockChangeScore = scoreBlockChange(state, currentBlockState);
-    return dscScore * blockChangeScore;
-  }
-
-  private double scoreBlockChange(BlockState newBlockState,
-      BlockState oldBlockState) {
-
-    boolean blockChanged = blockChanged(newBlockState, oldBlockState);
-    if (blockChanged)
-      return 0.5;
-    else
-      return 0.95;
-  }
-
-  private boolean blockChanged(BlockState newBlockState,
-      BlockState oldBlockState) {
-    if (newBlockState == null && oldBlockState == null)
-      return false;
-    if (newBlockState == null && oldBlockState != null)
-      return true;
-    if (newBlockState != null && oldBlockState == null)
-      return true;
-    return !newBlockState.getBlockInstance().equals(
-        oldBlockState.getBlockInstance());
   }
 
   private double scoreState(BlockState state, Observation observation) {

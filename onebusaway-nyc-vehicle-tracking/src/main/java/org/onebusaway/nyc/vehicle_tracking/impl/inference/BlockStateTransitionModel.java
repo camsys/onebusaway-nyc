@@ -9,6 +9,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -86,7 +87,6 @@ public class BlockStateTransitionModel {
 
     String dsc = obs.getRecord().getDestinationSignCode();
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
-    boolean unknownDsc = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
 
     BlockState blockState = parentState.getBlockState();
 
@@ -168,7 +168,6 @@ public class BlockStateTransitionModel {
      * We are allowing a block change. How we change the block is dependent on
      * the phase.
      */
-
     if (EVehiclePhase.isActiveBeforeBlock(parentPhase)) {
 
       if (outOfService) {
@@ -185,9 +184,8 @@ public class BlockStateTransitionModel {
          * Since we haven't started our block yet, we allow a lot of flexibility
          * in switching to a new block
          */
-        Set<BlockInstance> instances = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
-        return _blockStateSamplingStrategy.sampleBlockStateAtJourneyStart(
-            instances, obs, blockState, phaseTransitionSuggestsBlockTransition);
+        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
+        return cdf.sample();
       }
 
     } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
@@ -204,13 +202,10 @@ public class BlockStateTransitionModel {
        * If we've actively started serving a block, we allow a lot less
        * flexibility in switching to a new block
        */
-      boolean allowBlockChange = Math.random() < _probabilityOfBlockSwitchForValidDscSwitch;
+      boolean allowBlockChangeWhileInProgress = Math.random() < _probabilityOfBlockSwitchForValidDscSwitch;
 
-      if (allowBlockChange) {
-        Set<BlockInstance> instances = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
-        return _blockStateSamplingStrategy.cdfForJourneyInProgress(instances,
-            obs).sample();
-      }
+      if (allowBlockChangeWhileInProgress)
+        return _blockStateSamplingStrategy.cdfForJourneyInProgress(obs).sample();
 
       /**
        * Otherwise we just advance along the current block
@@ -233,15 +228,10 @@ public class BlockStateTransitionModel {
        * 
        */
 
-      Set<BlockInstance> instances = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
-
       if (Math.random() < 0.5) {
-        
-        return _blockStateSamplingStrategy.sampleBlockStateAtJourneyStart(
-            instances, obs, blockState, phaseTransitionSuggestsBlockTransition);
+        return _blockStateSamplingStrategy.cdfForJourneyAtStart(obs).sample();
       } else {
-        return _blockStateSamplingStrategy.cdfForJourneyInProgress(instances,
-            obs).sample();
+        return _blockStateSamplingStrategy.cdfForJourneyInProgress(obs).sample();
       }
 
     }
@@ -305,11 +295,12 @@ public class BlockStateTransitionModel {
       return false;
 
     /**
-     * If we've transitioned from layover_after to deadhead_after, the driver
-     * might not have entered a valid DSC switch, so we check anyway
+     * If the destination sign code has changed, we allow a block transition
      */
-    return EVehiclePhase.LAYOVER_AFTER == from
-        && EVehiclePhase.LAYOVER_AFTER != to;
+    if (hasDestinationSignCodeChangedBetweenObservations(obs))
+      return true;
+
+    return false;
   }
 
   private BlockState advanceAlongBlock(EVehiclePhase phase,

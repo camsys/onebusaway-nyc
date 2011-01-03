@@ -2,7 +2,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -13,7 +12,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
-import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +35,17 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
 
-  private BlocksFromObservationService _blocksFromObservationService;
-
   private int _initialNumberOfParticles = 50;
 
   public double _distanceSamplingFactor = 1.0;
 
   private EdgeStateLibrary _edgeStateLibrary;
 
-  private BlockStateSamplingStrategyImpl _blockStateSamplingStrategy;
+  private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
   private VehicleStateLibrary _vehicleStateLibrary;
+
+  private BaseLocationService _baseLocationService;
 
   @Autowired
   public void setEdgeStateLibrary(EdgeStateLibrary edgeStateLibrary) {
@@ -54,20 +53,19 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Autowired
-  public void setBlocksFromObservationService(
-      BlocksFromObservationService blocksFromObservationService) {
-    _blocksFromObservationService = blocksFromObservationService;
-  }
-
-  @Autowired
   public void setBlockStateSamplingStrategy(
-      BlockStateSamplingStrategyImpl blockStateSamplingStrategy) {
+      BlockStateSamplingStrategy blockStateSamplingStrategy) {
     _blockStateSamplingStrategy = blockStateSamplingStrategy;
   }
 
   @Autowired
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
+  }
+
+  @Autowired
+  public void setBaseLocationService(BaseLocationService baseLocationService) {
+    _baseLocationService = baseLocationService;
   }
 
   public void setInitialNumberOfParticles(int initialNumberOfParticles) {
@@ -92,18 +90,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     //ProjectedPoint point = obs.getPoint();
     //CDFMap<EdgeState> cdf = _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
-    Set<BlockInstance> blocks = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
+    CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
 
-    CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(
-        blocks, obs);
-
-    CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(
-        blocks, obs);
+    CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
 
     List<Particle> particles = new ArrayList<Particle>(
         _initialNumberOfParticles);
 
-    if (blocks.isEmpty())
+    if (atStartCdf.isEmpty() && inProgresCdf.isEmpty())
       _log.warn("no blocks to sample!");
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
@@ -128,11 +122,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   public VehicleState determineJourneyState(EdgeState edgeState,
       MotionState motionState, CoordinatePoint locationOnEdge,
-      Set<BlockInstance> blocks, CDFMap<BlockState> atStartCdf,
-      CDFMap<BlockState> inProgressCdf, Observation obs) {
+      CDFMap<BlockState> atStartCdf, CDFMap<BlockState> inProgressCdf,
+      Observation obs) {
 
     // If we're at a base to start, we favor that over all other possibilities
-    if (_vehicleStateLibrary.isAtBase(edgeState)) {
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
 
       BlockState blockState = null;
 
@@ -142,11 +136,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       return new VehicleState(edgeState, motionState, blockState,
           JourneyState.atBase(), obs);
     }
-
-    // No blocks? Jump to the unknown state
-    if (blocks.isEmpty())
-      return new VehicleState(edgeState, motionState, null,
-          JourneyState.unknown());
 
     // At this point, we could be dead heading before a block or actually on a
     // block in progress. We slightly favor blocks already in progress

@@ -8,9 +8,16 @@ public final class MotionState {
 
   private final CoordinatePoint lastInMotionLocation;
 
-  public MotionState(long lastInMotionTime, CoordinatePoint lastInMotionLocation) {
+  private final boolean atBase;
+
+  private final boolean atTerminal;
+
+  public MotionState(long lastInMotionTime,
+      CoordinatePoint lastInMotionLocation, boolean atBase, boolean atTerminal) {
     this.lastInMotionTime = lastInMotionTime;
     this.lastInMotionLocation = lastInMotionLocation;
+    this.atBase = atBase;
+    this.atTerminal = atTerminal;
   }
 
   public long getLastInMotionTime() {
@@ -21,4 +28,11 @@ public final class MotionState {
     return lastInMotionLocation;
   }
 
+  public boolean isAtBase() {
+    return atBase;
+  }
+
+  public boolean isAtTerminal() {
+    return atTerminal;
+  }
 }

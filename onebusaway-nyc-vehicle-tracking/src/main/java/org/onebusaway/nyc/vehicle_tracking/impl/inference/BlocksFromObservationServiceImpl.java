@@ -125,27 +125,21 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   public Set<BlockInstance> determinePotentialBlocksForObservation(
       Observation observation) {
 
-    if (observation != _lastObservation) {
+    Set<BlockInstance> potentialBlocks = new HashSet<BlockInstance>();
 
-      Set<BlockInstance> potentialBlocks = new HashSet<BlockInstance>();
+    /**
+     * First source of trips: the destination sign code
+     */
+    computePotentialBlocksFromDestinationSignCode(observation, potentialBlocks);
 
-      /**
-       * First source of trips: the destination sign code
-       */
-      computePotentialBlocksFromDestinationSignCode(observation,
-          potentialBlocks);
+    /**
+     * Second source of trips: trips nearby the current gps location Ok we're
+     * not doing this for now
+     */
+    if (_includeNearbyBlocks)
+      computeNearbyBlocks(observation, potentialBlocks);
 
-      /**
-       * Second source of trips: trips nearby the current gps location Ok we're
-       * not doing this for now
-       */
-      if (_includeNearbyBlocks)
-        computeNearbyBlocks(observation, potentialBlocks);
-
-      _potentialBlocksForLastObservation = potentialBlocks;
-    }
-
-    return _potentialBlocksForLastObservation;
+    return potentialBlocks;
   }
 
   @Override

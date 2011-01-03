@@ -1,18 +1,16 @@
 package org.onebusaway.nyc.vehicle_tracking.model;
 
-import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
+import org.onebusaway.nyc.vehicle_tracking.impl.GeometryFieldMappingFactory;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 public class BaseLocationRecord {
 
   private String baseName;
 
-  private double latFrom;
-
-  private double lonFrom;
-
-  private double latTo;
-
-  private double lonTo;
+  @CsvField(mapping = GeometryFieldMappingFactory.class)
+  private Geometry geometry;
 
   public String getBaseName() {
     return baseName;
@@ -22,39 +20,11 @@ public class BaseLocationRecord {
     this.baseName = baseName;
   }
 
-  public double getLatFrom() {
-    return latFrom;
+  public Geometry getGeometry() {
+    return geometry;
   }
 
-  public void setLatFrom(double latFrom) {
-    this.latFrom = latFrom;
-  }
-
-  public double getLonFrom() {
-    return lonFrom;
-  }
-
-  public void setLonFrom(double lonFrom) {
-    this.lonFrom = lonFrom;
-  }
-
-  public double getLatTo() {
-    return latTo;
-  }
-
-  public void setLatTo(double latTo) {
-    this.latTo = latTo;
-  }
-
-  public double getLonTo() {
-    return lonTo;
-  }
-
-  public void setLonTo(double lonTo) {
-    this.lonTo = lonTo;
-  }
-  
-  public CoordinateBounds toBounds() {
-    return new CoordinateBounds(latFrom,lonFrom,latTo,lonTo);
+  public void setGeometry(Geometry geometry) {
+    this.geometry = geometry;
   }
 }
