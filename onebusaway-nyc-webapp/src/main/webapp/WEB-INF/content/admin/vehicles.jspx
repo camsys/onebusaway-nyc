@@ -46,6 +46,7 @@ under the License.
 	
 	<s:form method="POST" action="vehicles" namespace="/admin">
 		<table>
+
 			<tr>
 				<th><a href="#">Status</a></th>
 				<th><a href="#">Disable</a></th>
@@ -58,7 +59,7 @@ under the License.
 			</tr>
 
 			<s:iterator value="vehicles">
-				<tr>
+				<tr class="vehicleId_${vehicleIdWithoutAgency}">
 					<td>
 						<s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div>
 					</td>
@@ -102,6 +103,7 @@ under the License.
 					</td>
 				</tr>
 			</s:iterator>
+
 		</table>
 
 		<s:submit value="Save" />
