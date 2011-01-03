@@ -21,13 +21,14 @@ public class ObservationCache {
 
   private ConcurrentMap<AgencyAndId, ObservationContents> _contentsByVehicleId = new ConcurrentHashMap<AgencyAndId, ObservationCache.ObservationContents>();
 
+  @SuppressWarnings("unchecked")
   public <T> T getValueForObservation(Observation observation, EObservationCacheKey key) {
     NycVehicleLocationRecord record = observation.getRecord();
 
     ObservationContents contents = _contentsByVehicleId.get(record.getVehicleId());
     if (contents == null || contents.getObservation() != observation)
       return null;
-    return contents.getValueForValueType(key);
+    return (T) contents.getValueForValueType(key);
   }
 
   public void putValueForObservation(Observation observation, EObservationCacheKey key,
