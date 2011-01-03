@@ -5,7 +5,6 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
@@ -18,19 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MotionModelImpl implements MotionModel<Observation> {
 
-  private EdgeStateLibrary _edgeStateLibrary;
-
   private JourneyStateTransitionModel _journeyMotionModel;
 
   /**
    * Distance, in meters, that a bus has to travel to be considered "in motion"
    */
   private double _motionThreshold = 20;
-
-  @Autowired
-  public void setEdgeStateLibrary(EdgeStateLibrary edgeStateLibrary) {
-    _edgeStateLibrary = edgeStateLibrary;
-  }
 
   @Autowired
   public void setJourneyMotionModel(
@@ -48,11 +40,40 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     VehicleState parentState = parent.getData();
 
-    // First snap to the street grid
+    /**
+     * Snap the observation to an edge on the street network
+     */
+    EdgeState edgeState = determineEdgeState(obs, parentState);
+
+    MotionState motionState = updateMotionState(parentState, obs);
+
+    List<VehicleState> vehicleStates = new ArrayList<VehicleState>();
+    _journeyMotionModel.move(parentState, edgeState, motionState, obs,
+        vehicleStates);
+
+    for (VehicleState vs : vehicleStates)
+      results.add(new Particle(timestamp, parent, 1.0, vs));
+  }
+
+  private EdgeState determineEdgeState(Observation obs, VehicleState parentState) {
+
     EdgeState edgeState = parentState.getEdgeState();
     if (gpsHasChanged(obs)) {
-      CDFMap<EdgeState> edges = _edgeStateLibrary.calculatePotentialEdgeStates(obs.getPoint());
-      edgeState = edges.sample();
+
+      /**
+       * We can cache the edge CDF for an observation
+       */
+      /*
+       * CDFMap<EdgeState> edges = _observationCache.getValueForObservation(obs,
+       * EObservationCacheKey.STREET_NETWORK_EDGES);
+       * 
+       * if (edges == null) { edges =
+       * _edgeStateLibrary.calculatePotentialEdgeStates(obs.getPoint());
+       * _observationCache.putValueForObservation(obs,
+       * EObservationCacheKey.STREET_NETWORK_EDGES, edges); }
+       * 
+       * edgeState = edges.sample();
+       */
     }
 
     MotionState motionState = updateMotionState(parentState, edgeState, obs);
@@ -64,16 +85,24 @@ public class MotionModelImpl implements MotionModel<Observation> {
   }
 
   public MotionState updateMotionState(VehicleState parentState,
-      EdgeState edgeState, Observation obs) {
+      Observation obs) {
 
     MotionState motionState = parentState.getMotionState();
 
-    CoordinatePoint locationOnEdge = edgeState.getLocationOnEdge();
-    double d = SphericalGeometryLibrary.distance(
-        motionState.getLastInMotionLocation(), locationOnEdge);
+    CoordinatePoint location = obs.getLocation();
 
-    if (d > _motionThreshold)
-      motionState = new MotionState(obs.getTime(), locationOnEdge);
+    long lastInMotionTime = motionState.getLastInMotionTime();
+    CoordinatePoint lastInMotionLocation = motionState.getLastInMotionLocation();
+    boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
+    boolean atTerminal = _baseLocationService.getTerminalNameForLocation(location) != null;
+
+    double d = SphericalGeometryLibrary.distance(
+        motionState.getLastInMotionLocation(), location);
+
+    if (d > _motionThreshold) {
+      lastInMotionTime = obs.getTime();
+      lastInMotionLocation = location;
+    }
 
     // System.out.println(d);
 

@@ -12,5 +12,11 @@ public interface BlocksFromObservationService {
       Observation observation);
 
   public BlockState advanceState(long timestamp, ProjectedPoint targetPoint,
-      BlockState blockState, double maxDistanceToTravel);
+      BlockState blockState, double minDistanceToTravel,
+      double maxDistanceToTravel);
+
+  public BlockState advanceLayoverState(long timestamp, BlockState blockState);
+
+  public BlockState bestState(long timestamp, ProjectedPoint targetPoint,
+      BlockState blockState);
 }

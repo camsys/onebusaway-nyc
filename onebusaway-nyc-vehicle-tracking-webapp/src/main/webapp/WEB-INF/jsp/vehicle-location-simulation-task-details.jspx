@@ -41,14 +41,21 @@ table td {
             <td>BlockLocation</td>
             <td>DistanceAlongBlock</td>
             <td>ScheduledTime</td>
-            <td>EdgeLocation</td>
             <td>LastMotionLocation</td>
         </tr>
     </thead>
     <tbody>
 
 <ul>
-    <c:forEach var="p" items="${details.particles}">
+    <c:if test="${showSampledParticles}">
+        <c:set var="particles" value="${details.sampledParticles}"/>
+        
+    </c:if>
+    <c:if test="${! showSampledParticles}">
+        <c:set var="particles" value="${details.particles}"/>        
+    </c:if>
+    
+    <c:forEach var="p" items="${particles}">
     <tr>
         <c:set var="edgeState" value="${p.data.edgeState}"/>
         <c:set var="motionState" value="${p.data.motionState}"/>
@@ -65,7 +72,6 @@ table td {
         <jsp:useBean id="scheduleTime" class="java.util.Date" />
         <jsp:setProperty name="scheduleTime" property="time" value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}"/>
         <td><fmt:formatDate pattern="HH:mm" value="${scheduleTime}"/><jsp:text> (</jsp:text><c:out value="${blockLocation.scheduledTime}" />)</td>
-        <td><c:out value="${edgeState.pointOnEdge.lat}" /><jsp:text> </jsp:text><c:out value="${edgeState.pointOnEdge.lon}" /></td>
         <td><c:out value="${motionState.lastInMotionLocation.lat}" /><jsp:text> </jsp:text><c:out value="${motionState.lastInMotionLocation.lon}" /></td>
     </tr>
     </c:forEach>

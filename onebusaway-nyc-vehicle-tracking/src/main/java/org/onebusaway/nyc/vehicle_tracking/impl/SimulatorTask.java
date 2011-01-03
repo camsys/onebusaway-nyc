@@ -1,8 +1,12 @@
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -15,7 +19,6 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
-import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +26,13 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private static Logger _log = LoggerFactory.getLogger(SimulatorTask.class);
 
+  private static ParticleComparator _particleComparator = new ParticleComparator();
+
   private List<NycTestLocationRecord> _records = new ArrayList<NycTestLocationRecord>();
 
   private List<NycTestLocationRecord> _results = new ArrayList<NycTestLocationRecord>();
+
+  private Deque<VehicleLocationSimulationDetails> _details = new ArrayDeque<VehicleLocationSimulationDetails>();
 
   private AtomicInteger _recordsProcessed = new AtomicInteger();
 
@@ -48,6 +55,8 @@ class SimulatorTask implements Runnable, EntityHandler {
   private boolean _shiftStartTime = false;
 
   private boolean _bypassInference = false;
+
+  private boolean _fillActualProperties = false;
 
   private int _minimumRecordInterval = 0;
 
@@ -100,6 +109,10 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   public void setBypassInference(boolean bypassInference) {
     _bypassInference = bypassInference;
+  }
+
+  public void setFillActualProperties(boolean fillActualProperties) {
+    _fillActualProperties = fillActualProperties;
   }
 
   public void addTag(Object tag) {
@@ -168,16 +181,15 @@ class SimulatorTask implements Runnable, EntityHandler {
     return summary;
   }
 
-  public VehicleLocationSimulationDetails getDetails() {
-    VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
-    details.setId(_id);
-    details.setLastObservation(_mostRecentRecord);
-    List<Particle> particles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
-    if (particles != null) {
-      Collections.sort(particles);
-      details.setParticles(particles);
+  public VehicleLocationSimulationDetails getDetails(int historyOffset) {
+    int index = 0;
+    for (Iterator<VehicleLocationSimulationDetails> it = _details.descendingIterator(); it.hasNext();) {
+      VehicleLocationSimulationDetails details = it.next();
+      if (index == historyOffset)
+        return details;
+      index++;
     }
-    return details;
+    return null;
   }
 
   public VehicleLocationSimulationDetails getParticleDetails(int particleId) {
@@ -337,42 +349,61 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private boolean processResultRecord(NycTestLocationRecord record) {
 
-    VehicleLocationRecord result = _vehicleLocationService.getVehicleLocationForVehicle(record.getVehicleId());
+    NycTestLocationRecord rr = _vehicleLocationService.getVehicleLocationForVehicle(record.getVehicleId());
 
-    if (result == null || result.getTimeOfRecord() < record.getTimestamp())
+    if (rr == null || rr.getTimestamp() < record.getTimestamp())
       return false;
 
-    NycTestLocationRecord rr = new NycTestLocationRecord();
+    rr.setVehicleId(_vehicleId);
 
-    if (result.getBlockId() != null)
-      rr.setActualBlockId(result.getBlockId().toString());
-
-    rr.setActualDistanceAlongBlock(result.getDistanceAlongBlock());
-
-    // Is this right?
-    rr.setActualDsc(record.getDsc());
-
-    rr.setActualLat(result.getCurrentLocationLat());
-    rr.setActualLon(result.getCurrentLocationLon());
-
-    if (result.getPhase() != null)
-      rr.setActualPhase(result.getPhase().toString());
-
-    rr.setActualStatus(result.getStatus());
-    rr.setActualServiceDate(result.getServiceDate());
-
-    rr.setDsc(record.getDsc());
-    rr.setLat(record.getLat());
-    rr.setLon(record.getLon());
-
-    rr.setTimestamp(result.getTimeOfRecord());
-    rr.setVehicleId(record.getVehicleId());
+    if (_fillActualProperties) {
+      rr.setActualBlockId(rr.getInferredBlockId());
+      rr.setActualBlockLat(rr.getInferredBlockLat());
+      rr.setActualBlockLon(rr.getInferredBlockLon());
+      rr.setActualDistanceAlongBlock(rr.getInferredDistanceAlongBlock());
+      rr.setActualDsc(rr.getInferredDsc());
+      rr.setActualLat(rr.getInferredLat());
+      rr.setActualLon(rr.getInferredLon());
+      rr.setActualPhase(rr.getInferredPhase());
+      rr.setActualServiceDate(rr.getInferredServiceDate());
+      rr.setActualStatus(rr.getInferredStatus());
+      
+      rr.clearInferredValues();
+    }
 
     synchronized (_results) {
       _results.add(rr);
     }
 
+    VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
+    details.setId(_id);
+    details.setLastObservation(record);
+    
+    List<Particle> weightedParticles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
+    if (weightedParticles != null) {
+      Collections.sort(weightedParticles, _particleComparator);
+      details.setParticles(weightedParticles);
+    }
+    
+    List<Particle> sampledParticles = _vehicleLocationService.getCurrentSampledParticlesForVehicleId(_vehicleId);
+    if( sampledParticles != null){
+      Collections.sort(sampledParticles, _particleComparator);
+      details.setSampledParticles(sampledParticles);
+    }
+    
+    _details.add(details);
+    while (_details.size() > 5)
+      _details.removeFirst();
+
     return true;
+  }
+
+  private static class ParticleComparator implements Comparator<Particle> {
+
+    @Override
+    public int compare(Particle o1, Particle o2) {
+      return Double.compare(o2.getWeight(), o1.getWeight());
+    }
   }
 
 }

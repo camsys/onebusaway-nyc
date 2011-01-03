@@ -2,9 +2,9 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import java.util.List;
 
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
-import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +25,7 @@ public class VehicleLocationsController {
   @RequestMapping("/vehicle-locations.do")
   public ModelAndView index() {
 
-    List<VehicleLocationRecord> records = _vehicleLocationService.getLatestProcessedVehicleLocationRecords();
+    List<NycTestLocationRecord> records = _vehicleLocationService.getLatestProcessedVehicleLocationRecords();
 
     ModelAndView mv = new ModelAndView("vehicle-locations.jspx");
     mv.addObject("records", records);
@@ -34,7 +34,7 @@ public class VehicleLocationsController {
 
   @RequestMapping("/vehicle-location.do")
   public ModelAndView vehicleLocation(@RequestParam() String vehicleId) {
-    VehicleLocationRecord record = _vehicleLocationService.getVehicleLocationForVehicle(vehicleId);
+    NycTestLocationRecord record = _vehicleLocationService.getVehicleLocationForVehicle(vehicleId);
     return new ModelAndView("json", "record", record);
   }
 

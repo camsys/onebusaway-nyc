@@ -41,36 +41,34 @@ public class JourneyStateTransitionModel {
       MotionState motionState, Observation obs) {
 
     List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
-        edgeState);
+        obs);
 
     return sampleJourneyState(parentState, edgeState, motionState,
         journeyStates, obs);
   }
 
   public List<JourneyState> getTransitionJourneyStates(
-      VehicleState parentState, EdgeState edgeState) {
+      VehicleState parentState, Observation obs) {
 
     JourneyState parentJourneyState = parentState.getJourneyState();
 
     switch (parentJourneyState.getPhase()) {
       case AT_BASE:
-        return moveAtBase(edgeState);
+        return moveAtBase(obs);
       case DEADHEAD_BEFORE:
         return moveDeadheadBefore(parentJourneyState);
       case LAYOVER_BEFORE:
-        return moveLayoverBefore(edgeState);
+        return moveLayoverBefore(obs);
       case IN_PROGRESS:
-        return moveInProgress(edgeState);
+        return moveInProgress(obs);
       case DEADHEAD_DURING:
         return moveDeadheadDuring(parentJourneyState);
       case LAYOVER_DURING:
-        return moveLayoverDuring(edgeState);
+        return moveLayoverDuring(obs);
       case DEADHEAD_AFTER:
-        return moveDeadheadAfter(edgeState);
+        return moveDeadheadAfter(obs);
       case LAYOVER_AFTER:
-        return moveLayoverAfter(edgeState);
-      case UNKNOWN:
-        return moveUnknown(edgeState);
+        return moveLayoverAfter(obs);
       default:
         throw new IllegalStateException("unknown journey state: "
             + parentJourneyState.getPhase());
@@ -86,10 +84,10 @@ public class JourneyStateTransitionModel {
     for (JourneyState journeyState : journeyStates) {
 
       BlockState blockState = _blockStateTransitionModel.transitionBlockState(
-          parentState, edgeState, motionState, journeyState, obs);
+          parentState, motionState, journeyState, obs);
 
       VehicleState vehicleState = new VehicleState(edgeState, motionState,
-          blockState, journeyState);
+          blockState, journeyState, obs);
 
       double p = _vehicleStateSensorModel.likelihood(parentState, vehicleState,
           obs);
@@ -100,10 +98,10 @@ public class JourneyStateTransitionModel {
     return cdf.sample();
   }
 
-  private List<JourneyState> moveAtBase(EdgeState edgeState) {
+  private List<JourneyState> moveAtBase(Observation obs) {
 
     return Arrays.asList(JourneyState.atBase(), JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(edgeState.getLocationOnEdge()),
+        JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.inProgress());
   }
 
@@ -116,17 +114,17 @@ public class JourneyStateTransitionModel {
         JourneyState.inProgress());
   }
 
-  private List<JourneyState> moveLayoverBefore(EdgeState edgeState) {
+  private List<JourneyState> moveLayoverBefore(Observation obs) {
 
     return Arrays.asList(JourneyState.atBase(), JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(edgeState.getLocationOnEdge()),
+        JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.inProgress());
   }
 
-  private List<JourneyState> moveInProgress(EdgeState edgeState) {
+  private List<JourneyState> moveInProgress(Observation obs) {
 
     return Arrays.asList(JourneyState.inProgress(),
-        JourneyState.deadheadDuring(edgeState.getLocationOnEdge()),
+        JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring(), JourneyState.deadheadAfter(),
         JourneyState.layoverAfter());
   }
@@ -140,32 +138,26 @@ public class JourneyStateTransitionModel {
         JourneyState.layoverDuring());
   }
 
-  private List<JourneyState> moveLayoverDuring(EdgeState edgeState) {
+  private List<JourneyState> moveLayoverDuring(Observation obs) {
 
     return Arrays.asList(JourneyState.inProgress(),
-        JourneyState.deadheadDuring(edgeState.getLocationOnEdge()),
+        JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring());
   }
 
-  private List<JourneyState> moveDeadheadAfter(EdgeState edgeState) {
+  private List<JourneyState> moveDeadheadAfter(Observation obs) {
 
     return Arrays.asList(JourneyState.atBase(),
-        JourneyState.deadheadBefore(edgeState.getLocationOnEdge()),
+        JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.inProgress(), JourneyState.deadheadAfter(),
         JourneyState.layoverAfter());
   }
 
-  private List<JourneyState> moveLayoverAfter(EdgeState edgeState) {
+  private List<JourneyState> moveLayoverAfter(Observation obs) {
 
     return Arrays.asList(JourneyState.atBase(),
-        JourneyState.deadheadBefore(edgeState.getLocationOnEdge()),
-        JourneyState.inProgress(), JourneyState.layoverAfter());
-  }
-
-  private List<JourneyState> moveUnknown(EdgeState edgeState) {
-
-    return Arrays.asList(JourneyState.atBase(),
-        JourneyState.deadheadBefore(edgeState.getLocationOnEdge()),
-        JourneyState.layoverBefore(), JourneyState.inProgress());
+        JourneyState.deadheadBefore(obs.getLocation()),
+        JourneyState.inProgress(), JourneyState.deadheadAfter(),
+        JourneyState.layoverAfter());
   }
 }

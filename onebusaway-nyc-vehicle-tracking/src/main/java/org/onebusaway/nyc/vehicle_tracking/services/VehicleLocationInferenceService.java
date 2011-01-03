@@ -15,13 +15,14 @@ public interface VehicleLocationInferenceService {
 
   public void handleVehicleLocationRecord(VehicleLocationRecord record);
 
-  public void handleNycTestLocationRecord(AgencyAndId vehicleId, NycTestLocationRecord record);
+  public void handleNycTestLocationRecord(AgencyAndId vehicleId,
+      NycTestLocationRecord record);
 
   public void resetVehicleLocation(AgencyAndId vid);
 
-  public VehicleLocationRecord getVehicleLocationForVehicle(AgencyAndId vid);
+  public NycTestLocationRecord getVehicleLocationForVehicle(AgencyAndId vid);
 
-  public List<VehicleLocationRecord> getLatestProcessedVehicleLocationRecords();
+  public List<NycTestLocationRecord> getLatestProcessedVehicleLocationRecords();
 
   public VehicleLocationManagementRecord getVehicleLocationManagementRecordForVehicle(
       AgencyAndId vid);
@@ -37,6 +38,8 @@ public interface VehicleLocationInferenceService {
    * @return the most recent list of particles for the specified vehicle
    */
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
+
+  public List<Particle> getCurrentSampledParticlesForVehicleId(AgencyAndId vehicleId);
 
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId);
 

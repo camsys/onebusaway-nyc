@@ -13,7 +13,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
-import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +89,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   @Override
   public List<Particle> createParticles(double timestamp, Observation obs) {
 
-    ProjectedPoint point = obs.getPoint();
-    CDFMap<EdgeState> cdf = _edgeStateLibrary.calculatePotentialEdgeStates(point);
+    //ProjectedPoint point = obs.getPoint();
+    //CDFMap<EdgeState> cdf = _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
     Set<BlockInstance> blocks = _blocksFromObservationService.determinePotentialBlocksForObservation(obs);
 
@@ -109,13 +108,15 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
-      EdgeState edgeState = cdf.sample();
+      CoordinatePoint location = obs.getLocation();
+      boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
+      boolean atTerminal = _baseLocationService.getTerminalNameForLocation(location) != null;
 
-      CoordinatePoint locationOnEdge = edgeState.getLocationOnEdge();
-      MotionState motionState = new MotionState(obs.getTime(), locationOnEdge);
+      MotionState motionState = new MotionState(obs.getTime(), location,
+          atBase, atTerminal);
 
-      VehicleState state = determineJourneyState(edgeState, motionState,
-          locationOnEdge, blocks, atStartCdf, inProgresCdf, obs);
+      VehicleState state = determineJourneyState(null, motionState,
+          location, atStartCdf, inProgresCdf, obs);
 
       Particle p = new Particle(timestamp);
       p.setData(state);
@@ -139,7 +140,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         blockState = atStartCdf.sample();
 
       return new VehicleState(edgeState, motionState, blockState,
-          JourneyState.atBase());
+          JourneyState.atBase(), obs);
     }
 
     // No blocks? Jump to the unknown state
@@ -150,13 +151,25 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // At this point, we could be dead heading before a block or actually on a
     // block in progress. We slightly favor blocks already in progress
     if (Math.random() < 0.75) {
+
+      // No blocks? Jump to the deadhead-after state
+      if (inProgressCdf.isEmpty())
+        return new VehicleState(edgeState, motionState, null,
+            JourneyState.deadheadAfter(), obs);
+
       BlockState blockState = inProgressCdf.sample();
       return new VehicleState(edgeState, motionState, blockState,
-          JourneyState.inProgress());
+          JourneyState.inProgress(), obs);
     } else {
+
+      // No blocks? Jump to the deadhead-after state
+      if (atStartCdf.isEmpty())
+        return new VehicleState(edgeState, motionState, null,
+            JourneyState.deadheadAfter(), obs);
+
       BlockState blockState = atStartCdf.sample();
       return new VehicleState(edgeState, motionState, blockState,
-          JourneyState.deadheadBefore(locationOnEdge));
+          JourneyState.deadheadBefore(locationOnEdge), obs);
     }
   }
 }

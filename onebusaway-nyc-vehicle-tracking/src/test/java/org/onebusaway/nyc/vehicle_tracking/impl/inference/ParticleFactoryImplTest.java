@@ -71,7 +71,7 @@ public class ParticleFactoryImplTest {
     NycVehicleLocationRecord record = new NycVehicleLocationRecord();
     record.setLatitude(40.71951801506643);
     record.setLongitude(-73.99994730949402);
-    Observation obs = new Observation(record);
+    Observation obs = new Observation(record, record.getDestinationSignCode());
 
     List<Particle> particles = factory.createParticles(
         System.currentTimeMillis(), obs);

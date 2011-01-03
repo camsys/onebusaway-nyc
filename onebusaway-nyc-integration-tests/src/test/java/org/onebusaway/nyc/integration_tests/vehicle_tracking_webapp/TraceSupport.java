@@ -44,11 +44,15 @@ public class TraceSupport {
 
       ByteArrayPartSource source = getResourceAsPartSource(fileName, in);
       FilePart filePart = new FilePart("file", source);
-      StringPart stringPart = new StringPart("returnId", "true");
-      StringPart param = new StringPart("shiftStartTime", "" + shiftStartTime);
+      StringPart returnIdParam = new StringPart("returnId", "true");
+      StringPart shiftStartTimeParam = new StringPart("shiftStartTime", ""
+          + shiftStartTime);
+      StringPart traceTypeParam = new StringPart("traceType",
+          "NycTestLocationRecord");
 
       post.setRequestEntity(new MultipartRequestEntity(new Part[] {
-          filePart, stringPart, param}, new HttpMethodParams()));
+          filePart, returnIdParam, shiftStartTimeParam, traceTypeParam},
+          new HttpMethodParams()));
       client.executeMethod(post);
 
       return post.getResponseBodyAsString();

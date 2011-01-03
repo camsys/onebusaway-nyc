@@ -10,19 +10,22 @@ public class Observation {
   private final NycVehicleLocationRecord _record;
 
   private final ProjectedPoint _point;
+  
+  private final String _lastValidDestinationSignCode;
 
-  private NycVehicleLocationRecord _previousRecord;
+  private Observation _previousObservation;
 
-  public Observation(NycVehicleLocationRecord record) {
-    this(record, null);
+  public Observation(NycVehicleLocationRecord record, String lastValidDestinationSignCode) {
+    this(record, lastValidDestinationSignCode, null);
   }
 
   public Observation(NycVehicleLocationRecord record,
-      NycVehicleLocationRecord previousRecord) {
+      String lastValidDestinationSignCode, Observation previousObservation) {
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
         record.getLongitude());
-    _previousRecord = previousRecord;
+    _previousObservation = previousObservation;
+    _lastValidDestinationSignCode = lastValidDestinationSignCode;
   }
 
   public long getTime() {
@@ -36,12 +39,31 @@ public class Observation {
   public ProjectedPoint getPoint() {
     return _point;
   }
+  
+  public String getLastValidDestinationSignCode() {
+    return _lastValidDestinationSignCode;
+  }
 
   public CoordinatePoint getLocation() {
     return _point.toCoordinatePoint();
   }
+  
+  public Observation getPreviousObservation() {
+    return _previousObservation;
+  }
 
   public NycVehicleLocationRecord getPreviousRecord() {
-    return _previousRecord;
+    if (_previousObservation == null)
+      return null;
+    return _previousObservation.getRecord();
+  }
+
+  public void clearPreviousObservation() {
+    _previousObservation = null;
+  }
+  
+  @Override
+  public String toString() {
+    return _record.toString();
   }
 }

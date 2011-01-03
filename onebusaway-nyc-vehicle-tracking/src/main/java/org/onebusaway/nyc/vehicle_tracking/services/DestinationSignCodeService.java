@@ -13,5 +13,7 @@ public interface DestinationSignCodeService {
 
   public boolean isOutOfServiceDestinationSignCode(String destinationSignCode);
   
+  public boolean isMissingDestinationSignCode(String destinationSignCode);
+  
   public boolean isUnknownDestinationSignCode(String destinationSignCode);
 }

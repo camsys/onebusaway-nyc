@@ -119,7 +119,7 @@ public class VehicleLocationSimulationServiceImpl implements
   public int simulateLocationsFromTrace(String traceType,
       InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
-      boolean bypassInference) throws IOException {
+      boolean bypassInference, boolean fillActualProperties) throws IOException {
 
     SimulatorTask task = new SimulatorTask();
     task.setPauseOnStart(pauseOnStart);
@@ -127,6 +127,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setShiftStartTime(shiftStartTime);
     task.setMinimumRecordInterval(minimumRecordInterval);
     task.setBypassInference(bypassInference);
+    task.setFillActualProperties(fillActualProperties);
 
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
@@ -162,10 +163,10 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public VehicleLocationSimulationDetails getSimulationDetails(int taskId) {
+  public VehicleLocationSimulationDetails getSimulationDetails(int taskId, int historyOffset) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
-      return task.getDetails();
+      return task.getDetails(historyOffset);
     return null;
   }
 
@@ -253,7 +254,7 @@ public class VehicleLocationSimulationServiceImpl implements
   @Override
   public int addSimulationForBlockInstance(AgencyAndId blockId,
       long serviceDate, long actualTime, boolean bypassInference,
-      Properties properties) {
+      boolean fillActualProperties, Properties properties) {
 
     Random random = new Random();
 
@@ -265,6 +266,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setPauseOnStart(false);
     task.setRunInRealtime(true);
     task.setBypassInference(bypassInference);
+    task.setFillActualProperties(fillActualProperties);
 
     BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
         blockId, serviceDate);

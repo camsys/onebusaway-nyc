@@ -23,6 +23,11 @@ public final class JourneyState {
     return (T) data;
   }
 
+  @Override
+  public String toString() {
+    return phase.toString();
+  }
+
   public static JourneyState atBase() {
     return new JourneyState(EVehiclePhase.AT_BASE, null);
   }
@@ -55,9 +60,5 @@ public final class JourneyState {
   
   public static JourneyState layoverAfter() {
     return new JourneyState(EVehiclePhase.LAYOVER_AFTER, null);
-  }
-
-  public static JourneyState unknown() {
-    return new JourneyState(EVehiclePhase.UNKNOWN, null);
   }
 }

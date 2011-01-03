@@ -5,7 +5,6 @@ import java.util.List;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
@@ -30,9 +29,6 @@ public class VehicleStateLibrary {
   /****
    * Vehicle State Methods
    ****/
-
-  public boolean isAtBase(EdgeState edgeState) {
-    String baseName = _baseLocationService.getBaseNameForLocation(edgeState.getLocationOnEdge());
 
     boolean isAtBase = (baseName != null);
     return isAtBase;
@@ -108,30 +104,13 @@ public class VehicleStateLibrary {
     return null;
   }
 
-  public double getClosestDistanceToBlockLocation(EdgeState prevEdgeState,
-      EdgeState edgeState, BlockState blockState) {
-
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-
-    CoordinatePoint blockStart = blockLocation.getLocation();
-    CoordinatePoint currentLocation = edgeState.getLocationOnEdge();
-
-    if (prevEdgeState != null) {
-      CoordinatePoint prevLocationOnEdge = prevEdgeState.getLocationOnEdge();
-      currentLocation = SphericalGeometryLibrary.projectPointToSegmentAppropximate(
-          blockStart, prevLocationOnEdge, currentLocation);
-    }
-
-    return SphericalGeometryLibrary.distance(currentLocation, blockStart);
-  }
-
-  public double getDistanceToBlockLocation(EdgeState edgeState,
+  public double getDistanceToBlockLocation(Observation obs,
       BlockState blockState) {
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
     CoordinatePoint blockStart = blockLocation.getLocation();
-    CoordinatePoint currentLocation = edgeState.getLocationOnEdge();
+    CoordinatePoint currentLocation = obs.getLocation();
 
     return SphericalGeometryLibrary.distance(currentLocation, blockStart);
   }

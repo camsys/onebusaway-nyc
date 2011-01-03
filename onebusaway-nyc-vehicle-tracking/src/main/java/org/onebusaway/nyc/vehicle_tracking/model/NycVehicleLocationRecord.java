@@ -173,4 +173,9 @@ public class NycVehicleLocationRecord {
   public String getRawData() {
     return rawData;
   }
+  
+  @Override
+  public String toString() {
+    return latitude + " " + longitude + " " + destinationSignCode + " " + timeReceived;
+  }
 }

@@ -51,6 +51,13 @@
         </td>
     </tr>
     <tr>
+        <td>Fill Ground-Truth:</td>
+        <td>
+        <p><input type="checkbox" name="fillActualProperties" /> -
+        Use the results of inference to fill in the ground-truth fields of the trace output.</p>
+        </td>
+    </tr>
+    <tr>
         <td>Trace Type</td>
         <td>
           <select name="traceType">

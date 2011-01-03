@@ -15,6 +15,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
@@ -99,25 +100,27 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public VehicleLocationRecord getVehicleLocationForVehicle(AgencyAndId vid) {
+  public NycTestLocationRecord getVehicleLocationForVehicle(AgencyAndId vid) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
     if (instance == null)
       return null;
-    return instance.getCurrentState();
+    NycTestLocationRecord record = instance.getCurrentState();
+    record.setVehicleId(vid.getId());
+    return record;
   }
 
   @Override
-  public List<VehicleLocationRecord> getLatestProcessedVehicleLocationRecords() {
+  public List<NycTestLocationRecord> getLatestProcessedVehicleLocationRecords() {
 
-    List<VehicleLocationRecord> records = new ArrayList<VehicleLocationRecord>();
+    List<NycTestLocationRecord> records = new ArrayList<NycTestLocationRecord>();
 
     for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
       if (instance != null) {
-        VehicleLocationRecord record = instance.getCurrentState();
+        NycTestLocationRecord record = instance.getCurrentState();
         if (record != null) {
-          record.setVehicleId(vehicleId);
+          record.setVehicleId(vehicleId.getId());
           records.add(record);
         }
       } else {
@@ -167,6 +170,14 @@ public class VehicleLocationInferenceServiceImpl implements
     if (instance == null)
       return null;
     return instance.getCurrentParticles();
+  }
+  
+  @Override
+  public List<Particle> getCurrentSampledParticlesForVehicleId(AgencyAndId vehicleId) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    if (instance == null)
+      return null;
+    return instance.getCurrentSampledParticles();
   }
 
   @Override
@@ -232,9 +243,10 @@ public class VehicleLocationInferenceServiceImpl implements
         boolean passOnRecord = sendRecord(existing);
 
         if (passOnRecord) {
-          VehicleLocationRecord record = existing.getCurrentState();
-          record.setVehicleId(_vehicleId);
-          _vehicleLocationListener.handleVehicleLocationRecord(record);
+          NycTestLocationRecord record = existing.getCurrentState();
+          VehicleLocationRecord vlr = RecordLibrary.getNycTestLocationRecordAsVehicleLocationRecord(record);
+          vlr.setVehicleId(_vehicleId);
+          _vehicleLocationListener.handleVehicleLocationRecord(vlr);
         }
 
       } catch (Throwable ex) {

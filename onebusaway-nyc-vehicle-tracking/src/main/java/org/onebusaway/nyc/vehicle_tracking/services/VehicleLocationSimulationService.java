@@ -12,13 +12,13 @@ public interface VehicleLocationSimulationService {
 
   public int simulateLocationsFromTrace(String traceType,
       InputStream traceInputStream, boolean runInRealtime, boolean pauseOnStart,
-      boolean shiftStartTime, int minimumRecordInterval, boolean bypassInference) throws IOException;
+      boolean shiftStartTime, int minimumRecordInterval, boolean bypassInference, boolean fillActualProperties) throws IOException;
 
   public List<VehicleLocationSimulationSummary> getSimulations();
 
   public VehicleLocationSimulationSummary getSimulation(int taskId);
 
-  public VehicleLocationSimulationDetails getSimulationDetails(int taskId);
+  public VehicleLocationSimulationDetails getSimulationDetails(int taskId, int historyOffset);
   
   public VehicleLocationSimulationDetails getParticleDetails(int taskId, int particleId);
 
@@ -38,6 +38,6 @@ public interface VehicleLocationSimulationService {
       AgencyAndId blockId, long serviceDate);
 
   public int addSimulationForBlockInstance(AgencyAndId blockId,
-      long serviceDate, long actualTime, boolean bypassInference, Properties properties);
+      long serviceDate, long actualTime, boolean bypassInference, boolean fillActualProperties, Properties properties);
 
 }

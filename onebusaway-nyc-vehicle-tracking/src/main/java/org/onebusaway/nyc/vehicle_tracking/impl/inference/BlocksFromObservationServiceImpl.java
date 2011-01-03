@@ -15,6 +15,9 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarServi
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
@@ -35,9 +38,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   private BlockGeospatialService _blockGeospatialService;
 
-  private Observation _lastObservation;
+  private BlockStateService _blockStateService;
 
-  private Set<BlockInstance> _potentialBlocksForLastObservation;
+  private VehicleStateLibrary _vehicleStateLibrary;
 
   /**
    * Default is 800 meters
@@ -55,8 +58,6 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
 
   private boolean _includeNearbyBlocks = false;
-
-  private BlockStateService _blockStateService;
 
   /****
    * Public Methods
@@ -88,6 +89,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
+  }
+
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+    _vehicleStateLibrary = vehicleStateLibrary;
   }
 
   /**
@@ -144,14 +150,67 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   @Override
   public BlockState advanceState(long timestamp, ProjectedPoint targetPoint,
-      BlockState blockState, double maxDistanceToTravel) {
+      BlockState blockState, double minDistanceToTravel,
+      double maxDistanceToTravel) {
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
     double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
 
     return _blockStateService.getBestBlockLocation(timestamp, targetPoint,
-        blockState.getBlockInstance(), currentDistanceAlongBlock,
-        currentDistanceAlongBlock + maxDistanceToTravel);
+        blockState.getBlockInstance(), currentDistanceAlongBlock
+            + minDistanceToTravel, currentDistanceAlongBlock
+            + maxDistanceToTravel);
+  }
+
+  @Override
+  public BlockState advanceLayoverState(long timestamp, BlockState blockState) {
+
+    BlockInstance instance = blockState.getBlockInstance();
+    int effectiveTime = (int) ((timestamp - instance.getServiceDate()) / 1000);
+
+    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+
+    int scheduledTime = blockLocation.getScheduledTime();
+
+    /**
+     * We only advance in a layover if we are behind schedule, not ahead of
+     * schedule
+     */
+    if (effectiveTime <= scheduledTime)
+      return blockState;
+
+    BlockStopTimeEntry layoverSpot = _vehicleStateLibrary.getPotentialLayoverSpot(blockLocation);
+
+    if (layoverSpot == null)
+      return blockState;
+
+    /**
+     * The layover spot is the first stop of the next trip starting after the
+     * layover
+     */
+    StopTimeEntry stopTime = layoverSpot.getStopTime();
+
+    /**
+     * We only advance if our schedule time is less than the layover departure
+     * time
+     */
+    if (scheduledTime >= stopTime.getDepartureTime())
+      return blockState;
+
+    return _blockStateService.getScheduledTimeAsState(instance, effectiveTime);
+  }
+
+  /**
+   * Finds the best block state assignment along the ENTIRE length of the block
+   * (potentially expensive operation)
+   */
+  public BlockState bestState(long timestamp, ProjectedPoint targetPoint,
+      BlockState blockState) {
+
+    BlockInstance blockInstance = blockState.getBlockInstance();
+    BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+    return _blockStateService.getBestBlockLocation(timestamp, targetPoint,
+        blockInstance, 0, blockConfig.getTotalBlockDistance());
   }
 
   /*****
@@ -163,7 +222,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     NycVehicleLocationRecord record = observation.getRecord();
     long time = record.getTime();
-    String dsc = record.getDestinationSignCode();
+
+    /**
+     * We use the last valid DSC, which will be the current DSC if it's not 0000
+     * or the most recent good DSC otherwise
+     */
+    String dsc = observation.getLastValidDestinationSignCode();
 
     /**
      * Step 1: Figure out the set of all possible trip ids given the destination

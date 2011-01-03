@@ -1,10 +1,11 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -25,6 +26,8 @@ public class BlockStateTransitionModel {
   private BlocksFromObservationService _blocksFromObservationService;
 
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
+
+  private ObservationCache _observationCache;
 
   /****
    * Parameters
@@ -65,6 +68,11 @@ public class BlockStateTransitionModel {
     _blockStateSamplingStrategy = blockStateSamplingStrategy;
   }
 
+  @Autowired
+  public void setObservationCache(ObservationCache observationCache) {
+    _observationCache = observationCache;
+  }
+
   public void setBlockDistanceTravelScale(double blockDistanceTravelScale) {
     _blockDistanceTravelScale = blockDistanceTravelScale;
   }
@@ -74,28 +82,29 @@ public class BlockStateTransitionModel {
    ****/
 
   public BlockState transitionBlockState(VehicleState parentState,
-      EdgeState edgeState, MotionState motionState, JourneyState journeyState,
-      Observation obs) {
+      MotionState motionState, JourneyState journeyState, Observation obs) {
 
     String dsc = obs.getRecord().getDestinationSignCode();
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
     boolean unknownDsc = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
 
-    EdgeState prevEdgeState = parentState.getEdgeState();
     BlockState blockState = parentState.getBlockState();
 
     EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
 
-    boolean phaseTransitionSuggestsBlockTransition = getPhaseTransitionSuggestsBlockTransition(
-        parentState, journeyState);
+    boolean allowBlockChange = allowBlockTransition(parentState, motionState,
+        journeyState, obs);
 
     /**
-     * If our DSC has not changed or we have an unknown DSC, we don't concern
-     * ourselves with switching blocks, but we still might need to update our
-     * block location
+     * Do we explicitly allow a block change? If not, we just advance along our
+     * current block.
+     * 
+     * Note that we are considering the parentPhase, not the newly proposed
+     * phase here. I think that makes sense, since the proposed journeyPhase is
+     * just an iteration over all phases with no real consideration of
+     * likelihood yet.
      */
-    if (!phaseTransitionSuggestsBlockTransition
-        && (!hasDestinationSignCodeChangedBetweenObservations(obs) || unknownDsc)) {
+    if (!allowBlockChange) {
 
       if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
 
@@ -103,7 +112,27 @@ public class BlockStateTransitionModel {
          * Update our block location along the block when we're actively serving
          * the block
          */
-        return advanceAlongBlock(prevEdgeState, edgeState, blockState, obs);
+        return advanceAlongBlock(parentPhase, blockState, obs);
+
+      } else if (EVehiclePhase.isActiveAfterBlock(parentPhase)) {
+
+        if (blockState == null)
+          return blockState;
+
+        /**
+         * Typically, we've finished up the block at this point and our block
+         * state won't change. However, it's possible for us to go out of
+         * service mid-block. In this situation we want to do our best to keep a
+         * reasonable block match, both to detect how far off-block we've gone
+         * or to correctly re-associate back on-block if need be.
+         * 
+         * Except that there is a performance hit for doing this AND it seems to break things.
+         * 
+         * TODO: Examine whether the tradeoff is worth it
+         */
+
+        //return getClosestBlockState(blockState, obs);
+        return blockState;
 
       } else if (parentPhase.equals(EVehiclePhase.AT_BASE)) {
 
@@ -136,9 +165,8 @@ public class BlockStateTransitionModel {
     }
 
     /**
-     * The destination sign code HAS changed, which is a strong indicator that
-     * we might be updating our block or picking a new block completely. How we
-     * handle that is determined by which journey phase we're in.
+     * We are allowing a block change. How we change the block is dependent on
+     * the phase.
      */
 
     if (EVehiclePhase.isActiveBeforeBlock(parentPhase)) {
@@ -187,7 +215,7 @@ public class BlockStateTransitionModel {
       /**
        * Otherwise we just advance along the current block
        */
-      return advanceAlongBlock(prevEdgeState, edgeState, blockState, obs);
+      return advanceAlongBlock(parentPhase, blockState, obs);
 
     } else {
 
@@ -219,14 +247,62 @@ public class BlockStateTransitionModel {
     }
   }
 
-  private boolean getPhaseTransitionSuggestsBlockTransition(
-      VehicleState parentState, JourneyState journeyState) {
+  public BlockState getClosestBlockState(BlockState blockState, Observation obs) {
 
-    if (parentState == null || journeyState == null)
+    Map<BlockInstance, BlockState> states = _observationCache.getValueForObservation(
+        obs, EObservationCacheKey.CLOSEST_BLOCK_LOCATION);
+
+    if (states == null) {
+      states = new HashMap<BlockInstance, BlockState>();
+      _observationCache.putValueForObservation(obs,
+          EObservationCacheKey.CLOSEST_BLOCK_LOCATION, states);
+    }
+
+    BlockInstance blockInstance = blockState.getBlockInstance();
+
+    BlockState closestState = states.get(blockInstance);
+
+    if (closestState == null) {
+
+      closestState = getClosestBlockStateUncached(blockState, obs);
+
+      states.put(blockInstance, closestState);
+    }
+
+    return closestState;
+  }
+
+  /****
+   * Private Methods
+   ****/
+
+  private boolean allowBlockTransition(VehicleState parentState,
+      MotionState motionState, JourneyState journeyState, Observation obs) {
+
+    /**
+     * Have we just transitioned out of a terminal?
+     */
+    if (parentState != null) {
+      MotionState parentMotionState = parentState.getMotionState();
+
+      // If we just move out of the terminal, allow a block transition
+      if (parentMotionState.isAtTerminal() && !motionState.isAtTerminal()) {
+        return true;
+      }
+    }
+
+    String dsc = obs.getRecord().getDestinationSignCode();
+
+    boolean unknownDSC = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
+
+    /**
+     * If we have an unknown DSC, we don't allow a block change. What about
+     * "0000"? 0000 is no longer considered an unknown DSC, so it should pass
+     * through to here, where we only allow a block change if we've changed from
+     * a good DSC.
+     */
+    if (unknownDSC)
       return false;
-
-    EVehiclePhase from = parentState.getJourneyState().getPhase();
-    EVehiclePhase to = journeyState.getPhase();
 
     /**
      * If we've transitioned from layover_after to deadhead_after, the driver
@@ -236,18 +312,62 @@ public class BlockStateTransitionModel {
         && EVehiclePhase.LAYOVER_AFTER != to;
   }
 
-  private BlockState advanceAlongBlock(EdgeState prevEdgeState,
-      EdgeState edgeState, BlockState blockState, Observation obs) {
+  private BlockState advanceAlongBlock(EVehiclePhase phase,
+      BlockState blockState, Observation obs) {
 
-    double distanceToTravel = SphericalGeometryLibrary.distance(
-        prevEdgeState.getLocationOnEdge(), edgeState.getLocationOnEdge());
+    Observation prevObs = obs.getPreviousObservation();
 
-    return _blocksFromObservationService.advanceState(obs.getTime(),
-        edgeState.getPointOnEdge(), blockState, distanceToTravel
-            * _blockDistanceTravelScale);
+    double distanceToTravel = 300
+        + SphericalGeometryLibrary.distance(prevObs.getLocation(),
+            obs.getLocation()) * _blockDistanceTravelScale;
+
+    /**
+     * TODO: Should we allow a vehicle to travel backwards?
+     */
+    BlockState updatedBlockState = _blocksFromObservationService.advanceState(
+        obs.getTime(), obs.getPoint(), blockState, 0, distanceToTravel);
+
+    if (EVehiclePhase.isLayover(phase)) {
+      updatedBlockState = _blocksFromObservationService.advanceLayoverState(
+          obs.getTime(), blockState);
+    }
+
+    return updatedBlockState;
   }
 
-  private static boolean hasDestinationSignCodeChangedBetweenObservations(
+  private BlockState getClosestBlockStateUncached(BlockState blockState,
+      Observation obs) {
+
+    BlockState closestState;
+    double distanceToTravel = 400;
+
+    Observation prevObs = obs.getPreviousObservation();
+
+    if (prevObs != null) {
+
+      distanceToTravel = Math.max(
+          distanceToTravel,
+          SphericalGeometryLibrary.distance(obs.getLocation(),
+              prevObs.getLocation())
+              * _blockDistanceTravelScale);
+    }
+
+    closestState = _blocksFromObservationService.advanceState(obs.getTime(),
+        obs.getPoint(), blockState, -distanceToTravel, distanceToTravel);
+
+    ScheduledBlockLocation blockLocation = closestState.getBlockLocation();
+    double d = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
+        obs.getLocation());
+
+    if (d > 400) {
+      closestState = _blocksFromObservationService.bestState(obs.getTime(),
+          obs.getPoint(), blockState);
+    }
+
+    return closestState;
+  }
+
+  public static boolean hasDestinationSignCodeChangedBetweenObservations(
       Observation obs) {
 
     String previouslyObservedDsc = null;

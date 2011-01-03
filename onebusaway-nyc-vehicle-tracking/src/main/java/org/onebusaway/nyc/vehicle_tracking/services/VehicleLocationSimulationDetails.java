@@ -12,6 +12,8 @@ public class VehicleLocationSimulationDetails {
   private NycTestLocationRecord lastObservation;
 
   private List<Particle> particles;
+  
+  private List<Particle> sampledParticles;
 
   public int getId() {
     return id;
@@ -35,5 +37,13 @@ public class VehicleLocationSimulationDetails {
 
   public void setParticles(List<Particle> particles) {
     this.particles = particles;
+  }
+
+  public List<Particle> getSampledParticles() {
+    return sampledParticles;
+  }
+
+  public void setSampledParticles(List<Particle> sampledParticles) {
+    this.sampledParticles = sampledParticles;
   }
 }

@@ -140,19 +140,24 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Override
-  public VehicleLocationRecord getVehicleLocationForVehicle(String vehicleId) {
+  public NycTestLocationRecord getVehicleLocationForVehicle(String vehicleId) {
     AgencyAndId vid = getVehicleId(vehicleId);
     return _vehicleLocationInferenceService.getVehicleLocationForVehicle(vid);
   }
 
   @Override
-  public List<VehicleLocationRecord> getLatestProcessedVehicleLocationRecords() {
+  public List<NycTestLocationRecord> getLatestProcessedVehicleLocationRecords() {
     return _vehicleLocationInferenceService.getLatestProcessedVehicleLocationRecords();
   }
 
   @Override
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId) {
     return _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(getVehicleId(vehicleId));
+  }
+
+  @Override
+  public List<Particle> getCurrentSampledParticlesForVehicleId(String vehicleId) {
+    return _vehicleLocationInferenceService.getCurrentSampledParticlesForVehicleId(getVehicleId(vehicleId));
   }
 
   @Override

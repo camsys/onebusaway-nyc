@@ -118,9 +118,10 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
       @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
       @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime,
-      @RequestParam(value = "minimumRecordInterval", required = false, defaultValue="0") int minimumRecordInterval,
+      @RequestParam(value = "minimumRecordInterval", required = false, defaultValue = "0") int minimumRecordInterval,
       @RequestParam(value = "traceType", required = true) String traceType,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
+      @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
       @RequestParam(required = false, defaultValue = "false") boolean returnId)
       throws IOException {
 
@@ -134,9 +135,9 @@ public class VehicleLocationSimulationController {
       if (name.endsWith(".gz"))
         in = new GZIPInputStream(in);
 
-      taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(traceType,
-          in, realtime, pauseOnStart, shiftStartTime,
-          minimumRecordInterval, bypassInference);
+      taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(
+          traceType, in, realtime, pauseOnStart, shiftStartTime,
+          minimumRecordInterval, bypassInference, fillActualProperties);
     }
 
     if (returnId) {
@@ -180,17 +181,25 @@ public class VehicleLocationSimulationController {
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!task-details.do", method = RequestMethod.GET)
-  public ModelAndView taskDetails(@RequestParam() int taskId) {
+  public ModelAndView taskDetails(
+      @RequestParam() int taskId,
+      @RequestParam(required = false, defaultValue = "0") int historyOffset,
+      @RequestParam(required = false, defaultValue = "false") boolean showSampledParticles) {
 
-    VehicleLocationSimulationDetails details = _vehicleLocationSimulationService.getSimulationDetails(taskId);
-    return new ModelAndView("vehicle-location-simulation-task-details.jspx",
-        "details", details);
+    VehicleLocationSimulationDetails details = _vehicleLocationSimulationService.getSimulationDetails(
+        taskId, historyOffset);
+    Map<String, Object> m = new HashMap<String, Object>();
+    m.put("details", details);
+    m.put("showSampledParticles", showSampledParticles);
+    return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
   }
-  
-  @RequestMapping(value = "/vehicle-location-simulation!particle-details.do", method = RequestMethod.GET)
-  public ModelAndView particleDetails(@RequestParam() int taskId, @RequestParam() int particleId) {
 
-    VehicleLocationSimulationDetails details = _vehicleLocationSimulationService.getParticleDetails(taskId, particleId);
+  @RequestMapping(value = "/vehicle-location-simulation!particle-details.do", method = RequestMethod.GET)
+  public ModelAndView particleDetails(@RequestParam() int taskId,
+      @RequestParam() int particleId) {
+
+    VehicleLocationSimulationDetails details = _vehicleLocationSimulationService.getParticleDetails(
+        taskId, particleId);
     return new ModelAndView("vehicle-location-simulation-task-details.jspx",
         "details", details);
   }
@@ -257,6 +266,7 @@ public class VehicleLocationSimulationController {
       @RequestParam String blockId,
       @RequestParam long serviceDate,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
+      @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
       @RequestParam String properties) throws IOException {
 
     Date time = getTime(session, null);
@@ -267,7 +277,8 @@ public class VehicleLocationSimulationController {
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(blockId);
 
     _vehicleLocationSimulationService.addSimulationForBlockInstance(id,
-        serviceDate, time.getTime(), bypassInference, props);
+        serviceDate, time.getTime(), bypassInference, fillActualProperties,
+        props);
 
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("blockId", blockId);
@@ -289,8 +300,8 @@ public class VehicleLocationSimulationController {
 
     EntityHandler handler = factory.createWriter(NycTestLocationRecord.class,
         writer);
-    
-    if( records == null)
+
+    if (records == null)
       records = Collections.emptyList();
 
     for (NycTestLocationRecord record : records)

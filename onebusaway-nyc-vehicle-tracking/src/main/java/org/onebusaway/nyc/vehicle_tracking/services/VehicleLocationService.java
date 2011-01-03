@@ -69,7 +69,7 @@ public interface VehicleLocationService {
    * @param vehicleId
    * @return the most recent vehicle location record for the specified vehicle
    */
-  public VehicleLocationRecord getVehicleLocationForVehicle(String vehicleId);
+  public NycTestLocationRecord getVehicleLocationForVehicle(String vehicleId);
 
   /**
    * 
@@ -83,7 +83,7 @@ public interface VehicleLocationService {
   /**
    * @return a list of the latest processed vehicle position records
    */
-  public List<VehicleLocationRecord> getLatestProcessedVehicleLocationRecords();
+  public List<NycTestLocationRecord> getLatestProcessedVehicleLocationRecords();
 
   /**
    * @return a list of the most recent vehicle location management records
@@ -99,6 +99,8 @@ public interface VehicleLocationService {
    * @return the current list of particles for the specified vehicle
    */
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId);
+  
+  public List<Particle> getCurrentSampledParticlesForVehicleId(String vehicleId);
   
   public VehicleLocationDetails getDetailsForVehicleId(String vehicleId);
 

@@ -65,6 +65,10 @@ public class ParticleFilter<OBS> {
     return Collections.unmodifiableList(_weightedParticles);
   }
 
+  public List<Particle> getSampledParticles() {
+    return Collections.unmodifiableList(_particles);
+  }
+
   public Particle getMostLikelyParticle() {
     return _mostLikelyParticle;
   }
@@ -180,7 +184,7 @@ public class ParticleFilter<OBS> {
     /**
      * 2. apply the sensor model to each particle
      */
-    CDF cdf = applySensorModel(obs);
+    CDFMap<Particle> cdf = applySensorModel(particles, obs);
 
     /**
      * 3. track the weighted particles (before resampling and normalization)
@@ -214,54 +218,38 @@ public class ParticleFilter<OBS> {
      * 5. resample (use the CDF of unevenly weighted particles to create an
      * equal number of equally-weighted ones)
      */
-    List<Particle> resampled = cdf.getClonesOfHeavilyWeightedEntries(
-        CDF.RANDOM, _particles, _particles.size());
-
-    for (Particle p : resampled)
+    List<Particle> resampled = cdf.sample(numberOfParticles);
+    List<Particle> reweighted = new ArrayList<Particle>(resampled.size());
+    for (Particle p : resampled) {
+      p = p.cloneParticle();
       p.setWeight(1.0 / _particles.size());
+      reweighted.add(p);
+    }
 
-    _particles = resampled;
+    _particles = reweighted;
   }
 
   /**
    * Applies the sensor model (as set by setSensorModel) to each particle in the
    * filter, according to the given observable.
    */
-  private CDF applySensorModel(OBS obs) throws ParticleFilterException {
-    int count = _particles.size();
-    double accumulate[] = new double[count];
-    int index[] = new int[count];
-    int mostRecentIndex = CDF.INVALID_INDEX;
-    double sum = 0.0, curr;
+  private CDFMap<Particle> applySensorModel(List<Particle> particles, OBS obs)
+      throws ParticleFilterException {
 
-    int i = 0;
+    CDFMap<Particle> cdf = new CDFMap<Particle>();
 
-    int numParticlesWithLikelihood = 0;
-    for (Particle p : _particles) {
-      curr = getParticleLikelihood(p, obs);
-      if (Double.isNaN(curr)) {
-        curr = 0.00000000001;
-      } else {
-        numParticlesWithLikelihood++;
-      }
-      p.setWeight(curr);
+    for (Particle particle : particles) {
+      double likelihood = getParticleLikelihood(particle, obs);
 
-      sum += curr;
-      accumulate[i] = sum;
-      if (curr > 0.0) {
-        mostRecentIndex = i;
-        index[i] = i;
-      } else {
-        index[i] = mostRecentIndex;
-      }
-      i++;
+      if (Double.isNaN(likelihood))
+        throw new IllegalStateException("NaN likehood");
+
+      particle.setWeight(likelihood);
+      cdf.put(likelihood, particle);
+
     }
 
-    if (mostRecentIndex == CDF.INVALID_INDEX) {
-      throw new ZeroProbabilityParticleFilterException();
-    }
-
-    return new CDF(accumulate, index, sum);
+    return cdf;
   }
 
   private double getParticleLikelihood(Particle particle, OBS obs) {

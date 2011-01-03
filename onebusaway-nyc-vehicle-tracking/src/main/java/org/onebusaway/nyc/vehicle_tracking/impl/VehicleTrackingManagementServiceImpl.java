@@ -30,7 +30,7 @@ class VehicleTrackingManagementServiceImpl implements
 
   private static Logger _log = LoggerFactory.getLogger(VehicleTrackingManagementServiceImpl.class);
 
-  private double _vehicleOffRouteDistanceThreshold = 500;
+  private double _vehicleOffRouteDistanceThreshold = 150;
 
   private int _vehicleStalledTimeThreshold = 2 * 60;
 
