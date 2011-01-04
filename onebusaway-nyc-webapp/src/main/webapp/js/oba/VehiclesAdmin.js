@@ -19,7 +19,7 @@ var OBA = window.OBA || {};
 	var reverseSort = false;
 	
 	var markers = {};
-	
+		
 	function sortTableRows(rows, sortIndex, reverse) { 
         var keyFn = function(row) {
             var key = jQuery(row).children().slice(sortIndex, sortIndex+1).text();
@@ -64,58 +64,9 @@ var OBA = window.OBA || {};
 	    });
 	}
 	
-	function createMap(elRaw) {
-		var el = jQuery(elRaw);
-
-		var contents = el.html();
-		if(contents === null) {
-			return null;
-		}
-		
-		var location_r = contents.match(/Location\: ([0-9|.|\-| |,]*)/i);
-		var orientation_r = contents.match(/Orientation\: ([0-9]*)/i);
-		if(location_r === null || orientation_r === null 
-			|| location_r.length !== 2 || location_r[1] === ""
-			|| orientation_r.length !== 2) {
-			return null;
-		}
-		
-		var location = location_r[1].split(",");			
-		if(location === null || location.length !== 2) {
-			return null;
-		}
-		
-		var lat = location[0];
-		var lng = location[1];
-		if(lat === null || lng === null) {
-			return null;
-		}
-		
-		var orientation = Math.floor(orientation_r[1] / 5) * 5;
-		if(orientation === null || orientation === "" || orientation === 0) {
-			orientation = "unknown";
-		}
-
-		var mapDivWrapper = jQuery("<div></div>")
-							.addClass("map-location-wrapper");
-		
-		var iconUrl = "http://dev.oba.openplans.org/" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType;
-		var image = jQuery("<img></img>")
-						.addClass("map-location")
-						.appendTo(mapDivWrapper)
-						.attr("src", "http://maps.google.com/maps/api/staticmap?size=150x160&markers=shadow:false|icon:" + iconUrl + "|" + lat + "," + lng + "&zoom=15&sensor=false");
-
-		el.html("");
-		el.append(mapDivWrapper);
-	}
-	
 	jQuery(document).ready(function() {
 	    addTableSortBehaviors();
 	    
-		jQuery("td.map").each(function(_, el) {
-			createMap(el);
-		});
-
 	    // refresh every 30s
 	    var refreshFunction = function() {
 	    	jQuery.ajax({
@@ -132,10 +83,9 @@ var OBA = window.OBA || {};
 	               	 oldTableRows.remove();
 	               	 table.append(newTableRows);
 	               	 
-	               	 jQuery("td.map").each(function(_, el) {
-	        			createMap(el);
-	               	 });
-                }
+	               	 jQuery("#timestamp")
+	               	 	.text("Information current as of " + new Date().format("mmm d, yyyy h:mm:ss tt"));
+	            }
             });
 		    
 		    setTimeout(refreshFunction, 30 * 1000);

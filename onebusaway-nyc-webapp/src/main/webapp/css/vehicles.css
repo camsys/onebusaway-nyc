@@ -45,19 +45,3 @@
 #content #text .status.orange {
 	background-color: orange;	
 }
-
-#content #text .map-location {
-	height: 160px;
-	width: 150px;	
-	position: absolute;
-	top: -40px;
-	left: 0px;
-}
-
-#content #text .map-location-wrapper {
-	position: relative;
-	height: 80px;
-	width: 150px;	
-	overflow: hidden;
-	border: 1px solid #C0C0C0;
-}

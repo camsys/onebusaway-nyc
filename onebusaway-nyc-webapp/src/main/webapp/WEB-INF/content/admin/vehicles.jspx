@@ -32,6 +32,9 @@ under the License.
 <c:set var="url"><s:url value="/js/oba/Config.js"/></c:set>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<c:set var="url"><s:url value="/js/oba/DateUtil.js"/></c:set>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 <c:set var="url"><s:url value="/js/oba/VehiclesAdmin.js"/></c:set>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
@@ -40,7 +43,7 @@ under the License.
 <div id="text">
 	<h1>Vehicles</h1>
 	
-	<p>
+	<p id="timestamp">
 	Information current as of <s:property value="currentTimestamp"/>
 	</p>
 	
