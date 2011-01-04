@@ -26,7 +26,7 @@ import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.StopItem;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
@@ -72,7 +72,7 @@ public class NycSearchServiceImpl implements NycSearchService {
   private GeocoderService geocoderService;
 
   @Autowired
-  private ConfigurationService configurationService;
+  private NycConfigurationService configurationService;
   
   @Autowired
   private ServiceAreaService serviceArea;

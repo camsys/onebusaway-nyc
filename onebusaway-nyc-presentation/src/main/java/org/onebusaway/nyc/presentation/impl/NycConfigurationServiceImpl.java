@@ -15,12 +15,12 @@ import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.Converter;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConfigurationServiceImpl implements ConfigurationService {
+public class NycConfigurationServiceImpl implements NycConfigurationService {
 
   private VehicleTrackingManagementService _vehicleTrackingManagementService;
 
@@ -46,7 +46,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
   }
 
   /****
-   * {@link ConfigurationService} Interface
+   * {@link NycConfigurationService} Interface
    ****/
 
   public String getDefaultAgencyId() {
