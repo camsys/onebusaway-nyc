@@ -16,10 +16,9 @@ public class NycWebappIndexPageIntegrationTest extends NycWebappTestSupport {
     String header = "A City Transit Agency";
     assertTrue(isTextPresent(header));
     assertEquals(header, getText("xpath=//div[@id='header']/h1"));
-
+    
     // verify that the default search stub text appears on the page
-    String searchText = "You haven't added any routes to the map yet.";
-    assertTrue(isTextPresent(searchText));
-    assertEquals(searchText, getText("xpath=//p[@id='no-routes-displayed-message']"));
+    String findText = getAttribute("xpath=//form[@action='search.action']/fieldset/input[2]@value");
+    assertEquals("Find",findText);
   }
 }

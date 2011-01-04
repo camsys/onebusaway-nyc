@@ -13,8 +13,18 @@
  */
 package org.onebusaway.nyc.integration_tests.nyc_webapp;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.httpclient.HttpException;
+import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.MonitoredVehicleJourney;
@@ -23,42 +33,35 @@ import org.onebusaway.siri.model.Siri;
 import org.onebusaway.siri.model.VehicleActivity;
 import org.onebusaway.utility.DateLibrary;
 
-import org.apache.commons.httpclient.HttpException;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.GregorianCalendar;
-import java.util.List;
-
 public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
 
   @Test
   public void testByVehicleId() throws HttpException, IOException,
       InterruptedException, ParseException {
 
-    // 2179,40.7372545433,-73.9557642325,2010-07-07
-    // 11:29:38,4430,2008_12023519,1278475200000,43753.36285532166,4430,40.7372545433,-73.9557642325,IN_PROGRESS
+    String timeString = "2010-12-07T11:29:25-08:00";
+    Date time = DateLibrary.getIso8601StringAsTime(timeString);
 
     VehicleLocationRecord record = new VehicleLocationRecord();
-    record.setBlockId(new AgencyAndId("2008", "12023519"));
-    record.setCurrentLocationLat(40.73272);
-    record.setCurrentLocationLon(-73.95457);
-    record.setDistanceAlongBlock(43253.36285532166);
-    record.setServiceDate(1278475200000L);
-    record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime(
-        "2010-07-07T11:27:38-04:00").getTime());
+    record.setBlockId(new AgencyAndId("2008", "12888410"));
+    record.setCurrentLocationLat(40.65266509229019);
+    record.setCurrentLocationLon(-74.00245398573307);
+    record.setDistanceAlongBlock(53097.667367660964);
+    record.setServiceDate(1291698000000L);
+    record.setTimeOfRecord(time.getTime());
     record.setVehicleId(_vehicleId);
+
+    // Reset any existing data first
+    _vehicleLocationListener.resetVehicleLocation(record.getVehicleId());
     _vehicleLocationListener.handleVehicleLocationRecord(record);
 
     Siri siri = getResponse("vehicle-monitoring.xml?key=TEST&OperatorRef=2008&VehicleRef="
-        + _vehicleId.getId() + "&time=" + _timeString);
-
-    GregorianCalendar now = new GregorianCalendar();
+        + _vehicleId.getId() + "&time=" + timeString);
 
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
-    assertTrue(serviceDelivery.ResponseTimestamp.getTimeInMillis()
-        - now.getTimeInMillis() < 1000);
+    assertEquals(time.getTime(),
+        serviceDelivery.ResponseTimestamp.getTimeInMillis());
+
     List<VehicleActivity> deliveries = serviceDelivery.VehicleMonitoringDelivery.deliveries;
     assertNotNull(serviceDelivery.VehicleMonitoringDelivery.deliveries);
     /* there's only one stop requested */
@@ -69,35 +72,36 @@ public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
     MonitoredVehicleJourney journey = delivery.MonitoredVehicleJourney;
     assertNull(journey.OnwardCalls);
 
-    assertEquals("B43", journey.LineRef);
+    assertEquals("B63", journey.LineRef);
   }
 
   @Test
   public void testOnwardCalls() throws HttpException, IOException,
       InterruptedException, ParseException {
 
-    // 2179,40.7372545433,-73.9557642325,2010-07-07
-    // 11:29:38,4430,2008_12023519,1278475200000,43753.36285532166,4430,40.7372545433,-73.9557642325,IN_PROGRESS
+    String timeString = "2010-12-07T11:29:25-08:00";
+    Date time = DateLibrary.getIso8601StringAsTime(timeString);
 
     VehicleLocationRecord record = new VehicleLocationRecord();
-    record.setBlockId(new AgencyAndId("2008", "12023519"));
-    record.setCurrentLocationLat(40.73272);
-    record.setCurrentLocationLon(-73.95457);
-    record.setDistanceAlongBlock(43253.36285532166);
-    record.setServiceDate(1278475200000L);
-    record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime(
-        "2010-07-07T11:27:38-04:00").getTime());
+    record.setBlockId(new AgencyAndId("2008", "12888410"));
+    record.setCurrentLocationLat(40.65266509229019);
+    record.setCurrentLocationLon(-74.00245398573307);
+    record.setDistanceAlongBlock(53097.667367660964);
+    record.setServiceDate(1291698000000L);
+    record.setTimeOfRecord(time.getTime());
     record.setVehicleId(_vehicleId);
+
+    // Reset any existing data first
+    _vehicleLocationListener.resetVehicleLocation(record.getVehicleId());
     _vehicleLocationListener.handleVehicleLocationRecord(record);
 
     Siri siri = getResponse("vehicle-monitoring.xml?key=TEST&OperatorRef=2008&VehicleMonitoringDetailLevel=calls&VehicleRef="
-        + _vehicleId.getId() + "&time=" + _timeString);
-
-    GregorianCalendar now = new GregorianCalendar();
+        + _vehicleId.getId() + "&time=" + timeString);
 
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
-    assertTrue(serviceDelivery.ResponseTimestamp.getTimeInMillis()
-        - now.getTimeInMillis() < 1000);
+    assertEquals(time.getTime(),
+        serviceDelivery.ResponseTimestamp.getTimeInMillis());
+
     List<VehicleActivity> deliveries = serviceDelivery.VehicleMonitoringDelivery.deliveries;
     assertNotNull(serviceDelivery.VehicleMonitoringDelivery.deliveries);
     /* there's only one stop requested */
@@ -108,6 +112,6 @@ public class VehicleMonitoringIntegrationTest extends SiriIntegrationTestBase {
     MonitoredVehicleJourney journey = delivery.MonitoredVehicleJourney;
     assertNotNull(journey.OnwardCalls);
 
-    assertEquals("B43", journey.LineRef);
+    assertEquals("B63", journey.LineRef);
   }
 }

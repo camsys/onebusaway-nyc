@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpException;
@@ -38,14 +39,16 @@ import org.onebusaway.utility.DateLibrary;
 
 
 public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
-
+  
   @Test
   public void testEmptyResults() throws HttpException, IOException {
+    
+    _vehicleLocationListener.resetVehicleLocation(_vehicleId);
 
     /**
      * We call this without first injecting real-time data first
      */
-    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305175&OperatorRef=2008&time="
+    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305413&OperatorRef=2008&time="
         + _timeString);
 
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
@@ -65,28 +68,33 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
 
   @Test
   public void test() throws HttpException, IOException, ParseException {
+    
+    String timeString = "2010-12-07T11:29:25-08:00";
+    Date time = DateLibrary.getIso8601StringAsTime(timeString);
 
     /**
      * Let's inject a location record
      */
     
     //2179,40.7372545433,-73.9557642325,2010-07-07 11:29:38,4430,2008_12023519,1278475200000,43753.36285532166,4430,40.7372545433,-73.9557642325,IN_PROGRESS
-    
+
     VehicleLocationRecord record = new VehicleLocationRecord();
-    record.setBlockId(new AgencyAndId("2008", "12023519"));
-    record.setCurrentLocationLat(40.73383);
-    record.setCurrentLocationLon(-73.9548574);
-    record.setDistanceAlongBlock(43053.36285532166);
-    record.setServiceDate(1278475200000L);
-    record.setTimeOfRecord(DateLibrary.getIso8601StringAsTime("2010-07-07T11:29:38-04:00").getTime());
+    record.setBlockId(new AgencyAndId("2008", "12888410"));
+    record.setCurrentLocationLat(40.65266509229019);
+    record.setCurrentLocationLon(-74.00245398573307);
+    record.setDistanceAlongBlock(53097.667367660964);
+    record.setServiceDate(1291698000000L);
+    record.setTimeOfRecord(time.getTime());
     record.setVehicleId(_vehicleId);
+    
+    // Reset any existing data first
+    _vehicleLocationListener.resetVehicleLocation(record.getVehicleId());
     _vehicleLocationListener.handleVehicleLocationRecord(record);
 
-    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=308187&OperatorRef=2008&time="
-        + _timeString);
-
+    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305364&OperatorRef=2008&time=" + timeString);
+    
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
-    assertEquals(_time.getTime(),
+    assertEquals(time.getTime(),
         serviceDelivery.ResponseTimestamp.getTimeInMillis());
 
     List<StopMonitoringDelivery> deliveries = serviceDelivery.stopMonitoringDeliveries;
@@ -94,7 +102,7 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     assertTrue(deliveries.size() == 1);
     StopMonitoringDelivery delivery = deliveries.get(0);
 
-    assertEquals(_time.getTime(),delivery.ResponseTimestamp.getTimeInMillis());
+    assertEquals(time.getTime(),delivery.ResponseTimestamp.getTimeInMillis());
 
     assertNotNull(delivery.visits);
     assertEquals(1,delivery.visits.size());
@@ -107,28 +115,28 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     
     /* no onward calls requested so none returned */
     MonitoredVehicleJourney journey = visit.MonitoredVehicleJourney;
-    assertEquals("20100627CC_060000_B43_0032_B43_9", journey.CourseOfJourneyRef);
-    assertEquals("305286", journey.DestinationRef);
+    assertEquals("20101024EE_082800_B63_0089_B35_45", journey.CourseOfJourneyRef);
+    assertEquals("801041", journey.DestinationRef);
     assertEquals("0", journey.DirectionRef);
-    assertEquals("B43",journey.LineRef);
+    assertEquals("B63",journey.LineRef);
     assertTrue(journey.Monitored);
-    assertEquals("308075", journey.OriginRef);
-    assertEquals("B43 GREENPOINT BOX ST", journey.PublishedLineName);
-    assertEquals(40.73383, journey.VehicleLocation.Latitude, 1e-6);
-    assertEquals(-73.9548574, journey.VehicleLocation.Longitude, 1e-6);
+    assertEquals("306619", journey.OriginRef);
+    assertEquals("B63 COBBLE HILL COLUMBIA ST via 5 AV", journey.PublishedLineName);
+    assertEquals(40.65266509229019, journey.VehicleLocation.Latitude, 1e-6);
+    assertEquals(-74.00245398573307, journey.VehicleLocation.Longitude, 1e-6);
     assertEquals(_vehicleId.toString(),journey.VehicleRef);
     
     assertNull(journey.OnwardCalls);
 
     MonitoredCall mc = journey.MonitoredCall;
-    assertEquals("308187", mc.StopPointRef);
+    assertEquals("305364", mc.StopPointRef);
     assertFalse(mc.VehicleAtStop);
     assertEquals(1,mc.VisitNumber);
     
     DistanceExtensions dex = mc.Extensions;
-    assertEquals(10937.84424, dex.Distances.CallDistanceAlongRoute, 0.1);
-    assertEquals(340.88057, dex.Distances.DistanceFromCall, 0.1);
-    assertEquals(1, dex.Distances.StopsFromCall);
+    assertEquals(5568.9, dex.Distances.CallDistanceAlongRoute, 0.1);
+    assertEquals(27.7, dex.Distances.DistanceFromCall, 0.1);
+    assertEquals(0, dex.Distances.StopsFromCall);
   }
 
   //@Test

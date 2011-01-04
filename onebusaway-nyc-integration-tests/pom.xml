@@ -10,14 +10,13 @@
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-integration-tests</artifactId>
     <name>onebusaway-nyc-integration-tests</name>
-    <packaging>pom</packaging>
 
     <properties>
         <tomcat-version>5.5.29</tomcat-version>
         <cargo.jvmargs>-Xmx1G -XX:MaxPermSize=256m</cargo.jvmargs>
         <hsqldb.port>9930</hsqldb.port>
         <pauseDuringIntegrationTest>false</pauseDuringIntegrationTest>
-        
+
         <!-- This value is in milliseconds, so 5 minutes... thing run slow on the CI server sometimes -->
         <ping_timeout>300000</ping_timeout>
 
@@ -25,7 +24,7 @@
         <org.onebusaway.webapp.ajp_port>9001</org.onebusaway.webapp.ajp_port>
         <org.onebusaway.webapp.rmi_port>9002</org.onebusaway.webapp.rmi_port>
 
-        <!--  These properties are primarily used in configuring joint integration tests -->
+        <!-- These properties are primarily used in configuring joint integration tests -->
         <org.onebusaway.transit_data_federation_webapp.port>9905</org.onebusaway.transit_data_federation_webapp.port>
         <org.onebusaway.transit_data_federation_webapp.ajp_port>9906</org.onebusaway.transit_data_federation_webapp.ajp_port>
         <org.onebusaway.transit_data_federation_webapp.rmi_port>9907</org.onebusaway.transit_data_federation_webapp.rmi_port>
@@ -43,25 +42,13 @@
             <version>2.0.0</version>
         </dependency>
         <dependency>
-        	<groupId>commons-httpclient</groupId>
-        	<artifactId>commons-httpclient</artifactId>
-        	<version>3.0.1</version>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-api-webapp</artifactId>
-            <version>${onebusaway.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-sms-webapp</artifactId>
-            <version>${onebusaway.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-webapp</artifactId>
             <version>${onebusaway.version}</version>
             <type>war</type>
         </dependency>
@@ -93,9 +80,9 @@
             <version>1.0.2</version>
         </dependency>
         <dependency>
-        	<groupId>org.json</groupId>
-        	<artifactId>json</artifactId>
-        	<version>20090211</version>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
@@ -107,7 +94,7 @@
     <build>
         <finalName>onebusaway-nyc-integration-tests</finalName>
         <plugins>
-            <!-- Configure integration test system properties-->
+            <!-- Configure integration test system properties -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -119,6 +106,12 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
+                            <excludes>
+                                <exclude>none</exclude>
+                            </excludes>
+                            <includes>
+                                <include>**/*IntegrationTest.java</include>
+                            </includes>
                             <!-- We define some test system properties -->
                             <systemPropertyVariables>
                                 <org.onebusaway.transit_data_federation_webapp.port>${org.onebusaway.transit_data_federation_webapp.port}</org.onebusaway.transit_data_federation_webapp.port>
@@ -129,10 +122,8 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--
-                We create custom integration-test versions of all the webapp wars that include custom resources and
-                data-sources for our integration-testing setup
-            -->
+            <!-- We create custom integration-test versions of all the webapp wars that include custom resources and data-sources 
+                for our integration-testing setup -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -147,8 +138,6 @@
                                 <descriptor>src/integration-test/assemblies/onebusaway-api-webapp.xml</descriptor>
                                 <descriptor>src/integration-test/assemblies/onebusaway-nyc-vehicle-tracking-webapp.xml</descriptor>
                                 <descriptor>src/integration-test/assemblies/onebusaway-nyc-webapp.xml</descriptor>
-                                <descriptor>src/integration-test/assemblies/onebusaway-sms-webapp.xml</descriptor>
-                                <descriptor>src/integration-test/assemblies/onebusaway-webapp.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -184,7 +173,7 @@
                     </execution>
                 </executions>
             </plugin>
-	        <!-- Start up an embedded database for sharing the user database between webapps -->
+            <!-- Start up an embedded database for sharing the user database between webapps -->
             <plugin>
                 <groupId>org.onebusaway.plugins</groupId>
                 <artifactId>maven-hsqldb-plugin</artifactId>
@@ -286,17 +275,6 @@
                                     </deployable>
                                     <deployable>
                                         <groupId>org.onebusaway</groupId>
-                                        <artifactId>onebusaway-sms-webapp</artifactId>
-                                        <type>war</type>
-                                        <properties>
-                                            <context>onebusaway-sms-webapp</context>
-                                        </properties>
-                                        <location>${project.build.directory}/onebusaway-nyc-integration-tests-onebusaway-sms-webapp.war</location>
-                                        <pingURL>http://localhost:${org.onebusaway.webapp.port}/onebusaway-sms-webapp/</pingURL>
-                                        <pingTimeout>${ping_timeout}</pingTimeout>
-                                    </deployable>
-                                    <deployable>
-                                        <groupId>org.onebusaway</groupId>
                                         <artifactId>onebusaway-nyc-webapp</artifactId>
                                         <type>war</type>
                                         <properties>
@@ -304,17 +282,6 @@
                                         </properties>
                                         <location>${project.build.directory}/onebusaway-nyc-integration-tests-onebusaway-nyc-webapp.war</location>
                                         <pingURL>http://localhost:${org.onebusaway.webapp.port}/onebusaway-nyc-webapp/</pingURL>
-                                        <pingTimeout>${ping_timeout}</pingTimeout>
-                                    </deployable>
-                                    <deployable>
-                                        <groupId>org.onebusaway</groupId>
-                                        <artifactId>onebusaway-webapp</artifactId>
-                                        <type>war</type>
-                                        <properties>
-                                            <context>onebusaway-webapp</context>
-                                        </properties>
-                                        <location>${project.build.directory}/onebusaway-nyc-integration-tests-onebusaway-webapp.war</location>
-                                        <pingURL>http://localhost:${org.onebusaway.webapp.port}/onebusaway-webapp/</pingURL>
                                         <pingTimeout>${ping_timeout}</pingTimeout>
                                     </deployable>
                                 </deployables>
