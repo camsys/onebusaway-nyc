@@ -3,7 +3,7 @@ package org.onebusaway.nyc.webapp.actions.admin;
 import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.opensymphony.xwork2.ModelDriven;
@@ -15,12 +15,12 @@ public class EditParametersAction extends OneBusAwayNYCActionSupport implements
 
   private static final long serialVersionUID = 1L;
 
-  private ConfigurationService _configurationService;
+  private NycConfigurationService _configurationService;
 
   private ConfigurationBean _model = new ConfigurationBean();
 
   @Autowired
-  public void setConfigurationService(ConfigurationService configurationService) {
+  public void setConfigurationService(NycConfigurationService configurationService) {
     _configurationService = configurationService;
   }
 

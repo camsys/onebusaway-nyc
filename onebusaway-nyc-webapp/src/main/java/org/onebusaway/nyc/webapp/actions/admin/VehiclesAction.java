@@ -17,7 +17,7 @@ import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.nyc.presentation.impl.WebappIdParser;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
@@ -48,7 +48,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
   private HttpServletRequest request;
 
   @Autowired
-  private ConfigurationService configurationService;
+  private NycConfigurationService configurationService;
 
   @Override
   public void setServletRequest(HttpServletRequest request) {

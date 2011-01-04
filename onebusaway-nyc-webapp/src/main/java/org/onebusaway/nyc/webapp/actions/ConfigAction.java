@@ -15,7 +15,7 @@
 package org.onebusaway.nyc.webapp.actions;
 
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,7 +27,7 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
-  private ConfigurationService configurationService;
+  private NycConfigurationService configurationService;
 
   public int getHideTimeout() {
 	    ConfigurationBean config = configurationService.getConfiguration();

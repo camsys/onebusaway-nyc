@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
-import org.onebusaway.nyc.presentation.service.ConfigurationService;
+import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
@@ -26,7 +26,7 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
   private TransitDataService transitDataService;
 
   @Autowired
-  private ConfigurationService configService;
+  private NycConfigurationService configService;
 
   // TODO the service notices are hard coded by route+direction for now
   // for the B63
