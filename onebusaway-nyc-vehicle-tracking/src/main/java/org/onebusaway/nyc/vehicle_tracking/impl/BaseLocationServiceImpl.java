@@ -76,8 +76,11 @@ class BaseLocationServiceImpl implements BaseLocationService {
     if (!path.exists())
       throw new RuntimeException("Your bundle is missing " + path.getName());
 
-    reader.readEntities(BaseLocationRecord.class, new FileReader(path));
-
+    try {
+      reader.readEntities(BaseLocationRecord.class, new FileReader(path));
+    } catch (CsvEntityIOException e) {
+      throw new RuntimeException("Error parsing CSV file " + path, e);
+    }
     List<BaseLocationRecord> values = records.getValues();
 
     STRtree baseLocationTree = new STRtree(values.size());
