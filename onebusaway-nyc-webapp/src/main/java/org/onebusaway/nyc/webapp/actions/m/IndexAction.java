@@ -33,6 +33,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return searchResults;
   }
 
+  public boolean getQueryIsEmpty() {
+	  return q.isEmpty();
+  }
+  
   public String getQ() {
     return q;
   }

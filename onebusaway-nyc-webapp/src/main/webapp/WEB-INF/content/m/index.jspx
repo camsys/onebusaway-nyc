@@ -45,7 +45,7 @@ under the License.
 	</div>
 
 	<s:if test="%{searchResults.size==0}">
-		<c:if test="${empty #parameters.q}">
+		<s:if test="queryIsEmpty">
 			<div>
 				<p>Example searches:</p>
 				<ul>			
@@ -65,11 +65,11 @@ under the License.
 					<li><a href="${url}">B63</a></li>
 				</ul>
 			</div>
-		</c:if>
+		</s:if>
 		<s:else>
 			<div>
 				<p>
-				No results found.
+				No results found for your query.
 				</p>
 			</div>
 		</s:else>
