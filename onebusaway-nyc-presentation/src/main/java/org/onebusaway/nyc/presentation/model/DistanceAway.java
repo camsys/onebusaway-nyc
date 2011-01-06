@@ -6,7 +6,7 @@ import java.util.Date;
  * Data transfer object for how far away a vehicle is
  */
 public class DistanceAway implements Comparable<DistanceAway> {
-  private int atStopThresholdInFeet = 50;
+  private int atStopThresholdInFeet = 100;
   private int arrivingThresholdInFeet = 500;
   private int arrivingThresholdInStops = 0;
 	
