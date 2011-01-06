@@ -61,7 +61,6 @@ public class NycSearchServiceImpl implements NycSearchService {
 
   // when querying for stops from a lat/lng, use this distance in meters
   private double distanceToStops = 100;
-  private int vehicleDisplayMaxStopsAway = 50;
   
   private WebappIdParser idParser = new WebappIdParser();
 
@@ -256,7 +255,7 @@ public class NycSearchServiceImpl implements NycSearchService {
   private List<StopsBean> fetchStopsFromGeocoder(String q) {
     List<StopsBean> result = new ArrayList<StopsBean>();
 
-    // HACK: append brooklyn to addresses to prevent manhattan adresses from being
+    // FIXME HACK: append brooklyn to addresses to prevent manhattan adresses from being
     // returned instead--use google viewport biasing instead?
     if(q != null && q.isEmpty() == false) {
     	q = q + " brooklyn, ny";
@@ -563,10 +562,6 @@ public class NycSearchServiceImpl implements NycSearchService {
         int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
         int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         
-        if (numberOfStopsAway > vehicleDisplayMaxStopsAway) {
-          continue;
-        }
-
         DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
             distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), 
             m, config.getStaleDataTimeout());
