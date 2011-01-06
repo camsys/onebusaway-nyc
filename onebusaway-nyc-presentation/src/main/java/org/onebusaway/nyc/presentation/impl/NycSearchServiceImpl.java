@@ -255,6 +255,13 @@ public class NycSearchServiceImpl implements NycSearchService {
 
   private List<StopsBean> fetchStopsFromGeocoder(String q) {
     List<StopsBean> result = new ArrayList<StopsBean>();
+
+    // HACK: append brooklyn to addresses to prevent manhattan adresses from being
+    // returned instead--use google viewport biasing instead?
+    if(q != null && q.isEmpty() == false) {
+    	q = q + " brooklyn, ny";
+    }
+    
     List<GeocoderResult> geocoderResults = geocoderService.geocode(q).getResults();
     for (GeocoderResult geocoderResult : geocoderResults) {
       double lat = geocoderResult.getLatitude();
@@ -443,24 +450,18 @@ public class NycSearchServiceImpl implements NycSearchService {
     // UI states here:
     // https://spreadsheets.google.com/ccc?key=0Al2nqv1nCD71dGt5SkpHajRQZmdLaVZScnhoYVhiZWc&hl=en#gid=0
 
-	System.out.println("POTENTIAL BUS: VEHICLE_ID=" + statusBean.getVehicleId() + " DAT=" + statusBean.getDistanceAlongTrip() + " PREDICTED=" + statusBean.isPredicted());
-
     // don't show non-realtime trips (row 8)
     if (statusBean == null 
     	|| statusBean.isPredicted() == false
         || Double.isNaN(statusBean.getDistanceAlongTrip())) {    
-    	System.out.println("HIDING: STATE 1");
     	return false;
     }
     
     String status = statusBean.getStatus();
     String phase = statusBean.getPhase();
-
-    System.out.println("BUS: PREDICTED=" + statusBean.isPredicted() + " STATUS=" + status + " PHASE=" + phase);
     
     // hide disabled vehicles (row 7)
     if(status != null && status.toLowerCase().compareTo("disabled") == 0) {
-    	System.out.println("HIDING: STATE 2");
     	return false;
     }
 
@@ -469,7 +470,6 @@ public class NycSearchServiceImpl implements NycSearchService {
     if (phase != null && phase.toLowerCase().compareTo("in_progress") != 0
     		&& phase.toLowerCase().compareTo("deadhead_during") != 0 
     		&& phase.toLowerCase().compareTo("layover_during") != 0) {
-    	System.out.println("HIDING: STATE 3");
     	return false;
     }
 
@@ -492,7 +492,6 @@ public class NycSearchServiceImpl implements NycSearchService {
       
       if((status != null 
     		  && status.toLowerCase().compareTo("deviated") == 0) && ! routeIsOnDetour) {
-    	System.out.println("HIDING: STATE 4");
         return false;
       }
     }
@@ -501,11 +500,9 @@ public class NycSearchServiceImpl implements NycSearchService {
     ConfigurationBean config = configurationService.getConfiguration();
     
     if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout()) {
-       	System.out.println("HIDING: STATE 5");
        	return false;
     }
     
-    System.out.println("SHOWING");
     return true;
   }
 
