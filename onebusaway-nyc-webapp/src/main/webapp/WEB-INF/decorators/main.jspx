@@ -100,10 +100,10 @@ under the License.
     			    <li><a href="${url}">Logout</a></li>	
     	    	</ul>    	    
     	    </li>
-    	    
-			<s:url var="url" namespace="/wiki" action="HelpIndex"/>
-    	    <li><a href="${url}">Help</a></li>	
     	</s:if>
+    	    
+		<s:url var="url" namespace="/wiki" action="HelpIndex"/>
+        <li><a href="${url}">Help</a></li>	
       </ul>
     </div>
 
