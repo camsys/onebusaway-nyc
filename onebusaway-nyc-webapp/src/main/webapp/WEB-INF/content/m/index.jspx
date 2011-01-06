@@ -36,7 +36,7 @@ under the License.
 	    <h1>OneBusAway NYC</h1>
 	</div>
 	<div>
-		<s:form namespace="/m" action="index">
+		<s:form namespace="/m" action="index" method="GET">
 	        <label for="q">Search for: </label>
 			<input type="text" name="q" class="q" value="${q}"/>
 			<input type="submit" class="s" value="Go" />
