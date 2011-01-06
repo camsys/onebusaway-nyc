@@ -516,6 +516,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     Map<String, List<DistanceAway>> routeIdToDistanceAways = 
     	new HashMap<String, List<DistanceAway>>();
+    Map<String, String> headsignToDirectionId = new HashMap<String, String>();
     Map<String, String> routeIdToHeadsign = new HashMap<String, String>();
     List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
     Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = 
@@ -541,10 +542,12 @@ public class NycSearchServiceImpl implements NycSearchService {
       TripBean tripBean = arrivalAndDepartureBean.getTrip();
       String headsign = tripBean.getTripHeadsign();
       String routeId = tripBean.getRoute().getId();
-
+      String directionId = tripBean.getDirectionId();
+      
       // FIXME: most common headsign?
       routeIdToHeadsign.put(routeId, headsign);
-
+      headsignToDirectionId.put(headsign, directionId);
+      
       if (arrivalAndDepartureBean.getDistanceFromStop() < 0)
         continue;
 
@@ -605,7 +608,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       Collections.sort(distanceAways);
 
       AvailableRoute availableRoute = new AvailableRoute(shortName, longName,
-          headsign, distanceAways);
+          headsign, headsignToDirectionId.get(headsign), distanceAways);
       availableRoutes.add(availableRoute);
     }
 
