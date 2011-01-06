@@ -291,7 +291,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     	  sb.append("<br/>");
       
       if(status != null)
-    	  sb.append("Status: " + this.upperCaseWords(phase));
+    	  sb.append("Status: " + this.upperCaseWords(status));
       else
     	  sb.append("Status: None");
       
