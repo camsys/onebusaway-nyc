@@ -136,7 +136,8 @@ a:hover {
 } 
 
 #content #text p {
-	padding-bottom: 15px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 #content #text p.small {
@@ -200,6 +201,9 @@ a:hover {
 
 #content.sidebar #text ul {
 	padding: 15px;
+	padding-left: 30px;
+	padding-top: 0px;
+	padding-bottom: 0px;
 }
 
 #content.sidebar #text ul li {

@@ -69,7 +69,7 @@ OBA.Util = (function() {
 		},
 		displayDistance: function(feet, stopsAway) {
 			var miles = feet / 5280;
-			if(feet <= OBA.Config.arrivingThresholdInFeet && stopsAway === OBA.Config.arrivingThresholdInStops) {
+			if(feet <= OBA.Config.arrivingThresholdInFeet && stopsAway <= OBA.Config.arrivingThresholdInStops) {
 				return "approaching";
 			} else {
 				return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";

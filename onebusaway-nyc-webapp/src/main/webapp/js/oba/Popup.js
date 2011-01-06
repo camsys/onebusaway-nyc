@@ -200,7 +200,7 @@ OBA.StopPopup = function(stopId, map) {
 				for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
 					var distanceAway = vehicleInfos[i];
 	
-					if(distanceAway.feet < 0 || distanceAway.stops > OBA.Config.vehicleDisplayMaxStopsAway) {
+					if(distanceAway.feet < 0) {
 						continue;
 					}
 					
@@ -234,7 +234,7 @@ OBA.StopPopup = function(stopId, map) {
 	var url = OBA.Config.stopUrl + "/" + stopId + ".json";
 	return OBA.Popup(
 			map,
-			makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey, minutesBefore: 5, minutesAfter: 2880}),
+			makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey}),
 			generateStopMarkup);
 };
 

@@ -12,16 +12,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-(function() {
-
 var OBA = window.OBA || {};
+
+OBA.VehiclesAdmin = (function() {
 	var lastSortIndex = -1;
 	var reverseSort = false;
-	
-	var markers = {};
-		
-	function sortTableRows(rows, sortIndex, reverse) { 
-        var keyFn = function(row) {
+
+	function sortTableRows(rows, sortIndex, reverse) {
+		var keyFn = function(row) {
             var key = jQuery(row).children().slice(sortIndex, sortIndex+1).text();
             return key;
         };
@@ -59,39 +57,65 @@ var OBA = window.OBA || {};
 	            lastSortIndex = i;
 	            
 	            oldRows.remove();
-	            table.append(newRows);			            
+	            table.append(newRows);	
+	            
+	            ajaxifyResetLinks();	
 	        });
 	    });
 	}
 	
-	jQuery(document).ready(function() {
-	    addTableSortBehaviors();
-	    
-	    // refresh every 30s
-	    var refreshFunction = function() {
-	    	jQuery.ajax({
-                url: window.location.href,
-                success: function(data) { 
-	                 var table = jQuery("table");
-	
-	                 var oldTableRows = table.find('tr').not(":first");
-	               	 var newTableRows = sortTableRows(
-	               			 	jQuery(data).find("table").find('tr').not(":first"),
-	               			 	lastSortIndex,
-	               			 	reverseSort);
-	 	 
-	               	 oldTableRows.remove();
-	               	 table.append(newTableRows);
-	               	 
-	               	 jQuery("#timestamp")
-	               	 	.text("Information current as of " + new Date().format("mmm d, yyyy h:mm:ss tt"));
-	            }
-            });
-		    
-		    setTimeout(refreshFunction, 30 * 1000);
-	    };
-	    
-	    // kick off the updates...
-	    setTimeout(refreshFunction, 30 * 1000);
-	});
+	function ajaxifyResetLinks() {
+	    jQuery('table').find('tr').not(":first")
+	    .find("a.reset").click(function(e) {
+	    	e.preventDefault();
+
+	   		var element = jQuery(this);
+	    		
+	   		jQuery.ajax({
+	   			url: element.attr("href")
+	   		});
+
+	   		var row = element
+    					.parent().parent()
+    					.parent().parent()
+    					.fadeOut("fast");
+	    		
+    		return false;
+	    });
+	}
+
+	function refreshTable() {
+		jQuery.ajax({
+            url: window.location.href,
+            success: function(data) { 
+                 var table = jQuery("table");
+
+                 var oldTableRows = table.find('tr').not(":first");
+               	 var newTableRows = sortTableRows(
+               			 	jQuery(data).find("table").find('tr').not(":first"),
+               			 	lastSortIndex,
+               			 	reverseSort);
+ 	 
+               	 oldTableRows.remove();
+               	 table.append(newTableRows);
+               	 
+               	 jQuery("#timestamp")
+               	 	.text("Information current as of " + new Date().format("mmm d, yyyy h:mm:ss TT"));
+               	 
+ 	             ajaxifyResetLinks();	
+               	 setTimeout(refreshTable, 30 * 1000);
+            }
+        });
+	}
+
+	return {
+		initialize: function() {
+		    addTableSortBehaviors();
+
+		    ajaxifyResetLinks();
+	        setTimeout(refreshTable, 30 * 1000);			
+		}
+	};
 })();
+
+jQuery(document).ready(function() { OBA.VehiclesAdmin.initialize(); });

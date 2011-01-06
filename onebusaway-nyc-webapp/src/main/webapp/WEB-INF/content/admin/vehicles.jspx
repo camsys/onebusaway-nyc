@@ -95,18 +95,17 @@ under the License.
 								<s:url var="resetUrl" namespace="/admin" action="reset-vehicle">
 										<s:param name="vehicleId"><s:property value="vehicleId" /></s:param>
 								</s:url>
-								<a href="${resetUrl}">Reset</a>
+								<a class="reset" href="${resetUrl}">Reset</a>
 							</p>
 						</s:div>
 					</td>
-					<td class="map">
+					<td>
 						Location: <s:property value="location" />
 						<br/>
 						Orientation: <s:property value="orientation" />
 					</td>
 				</tr>
 			</s:iterator>
-
 		</table>
 
 		<s:submit value="Save" />

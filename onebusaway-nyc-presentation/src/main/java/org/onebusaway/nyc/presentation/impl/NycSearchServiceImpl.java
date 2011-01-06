@@ -529,10 +529,6 @@ public class NycSearchServiceImpl implements NycSearchService {
      */
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
     query.setTime(System.currentTimeMillis());
-    query.setMinutesBefore(5);
-    query.setMinutesAfter(2880); // 2 days
-    query.setFrequencyMinutesBefore(5);
-    query.setFrequencyMinutesAfter(2880);
 
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = 
     	transitService.getStopWithArrivalsAndDepartures(stopId, query);
