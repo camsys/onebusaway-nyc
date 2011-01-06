@@ -197,7 +197,7 @@ public class ParticleFilter<OBS> {
     }
 
     if (highestWeight == 0)
-      throw new IllegalStateException("Error: All particles have zero weight!");
+      throw new ZeroProbabilityParticleFilterException();
 
     /**
      * 5. resample (use the CDF of unevenly weighted particles to create an

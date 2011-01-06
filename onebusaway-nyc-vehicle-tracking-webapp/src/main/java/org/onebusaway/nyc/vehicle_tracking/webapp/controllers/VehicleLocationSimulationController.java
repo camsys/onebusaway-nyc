@@ -118,10 +118,11 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
       @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
       @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime,
-      @RequestParam(value = "minimumRecordInterval", required = false, defaultValue = "0") int minimumRecordInterval,
+      @RequestParam(value = "minimumRecordInterval", required = false, defaultValue = "0") int minimumRecordInterval,      
       @RequestParam(value = "traceType", required = true) String traceType,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
       @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
+      @RequestParam(value = "loop", required = false, defaultValue = "false") boolean loop,      
       @RequestParam(required = false, defaultValue = "false") boolean returnId)
       throws IOException {
 
@@ -137,7 +138,7 @@ public class VehicleLocationSimulationController {
 
       taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(
           traceType, in, realtime, pauseOnStart, shiftStartTime,
-          minimumRecordInterval, bypassInference, fillActualProperties);
+          minimumRecordInterval, bypassInference, fillActualProperties, loop);
     }
 
     if (returnId) {
@@ -159,6 +160,12 @@ public class VehicleLocationSimulationController {
     _vehicleLocationSimulationService.stepSimulation(taskId);
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!restart.do", method = RequestMethod.GET)
+  public ModelAndView restart(@RequestParam() int taskId) {
+    _vehicleLocationSimulationService.restartSimulation(taskId);
+    return new ModelAndView("redirect:/vehicle-location-simulation.do");
+  }
 
   @RequestMapping(value = "/vehicle-location-simulation!step-to.do", method = RequestMethod.GET)
   public ModelAndView stepTo(@RequestParam() int taskId,
@@ -170,6 +177,12 @@ public class VehicleLocationSimulationController {
   @RequestMapping(value = "/vehicle-location-simulation!cancel.do", method = RequestMethod.GET)
   public ModelAndView cancel(@RequestParam() int taskId) {
     _vehicleLocationSimulationService.cancelSimulation(taskId);
+    return new ModelAndView("redirect:/vehicle-location-simulation.do");
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!cancelAll.do", method = RequestMethod.GET)
+  public ModelAndView cancelAll() {
+    _vehicleLocationSimulationService.cancelAllSimulations();
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
 
@@ -190,6 +203,7 @@ public class VehicleLocationSimulationController {
         taskId, historyOffset);
     Map<String, Object> m = new HashMap<String, Object>();
     m.put("details", details);
+    m.put("historyOffset", historyOffset);
     m.put("showSampledParticles", showSampledParticles);
     return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
   }

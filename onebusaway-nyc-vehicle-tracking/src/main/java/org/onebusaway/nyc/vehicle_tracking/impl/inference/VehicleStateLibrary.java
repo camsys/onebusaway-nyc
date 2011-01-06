@@ -42,6 +42,12 @@ public class VehicleStateLibrary {
 
     if (_baseLocationService.getTerminalNameForLocation(obs.getLocation()) != null)
       return true;
+    
+    /**
+     * For now, we assume that if we're at the base, we're NOT in a layover
+     */
+    if(_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
+      return false;
 
     BlockState blockState = state.getBlockState();
 

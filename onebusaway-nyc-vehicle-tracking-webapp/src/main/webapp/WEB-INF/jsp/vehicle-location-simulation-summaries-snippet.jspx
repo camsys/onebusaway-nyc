@@ -21,6 +21,7 @@
                 <td>toggle</td>
                 <td>step</td>
                 <td>step_to</td>
+                <td>restart</td>
                 <td>cancel</td>
             </tr>
         </thead>
@@ -53,6 +54,8 @@
                     <input type="submit" value="Go"/>
                     </form>
                     </td>
+                    <td><a
+                        href="vehicle-location-simulation!restart.do?taskId=${s.id}">restart</a></td>
                     <td><a
                         href="vehicle-location-simulation!cancel.do?taskId=${s.id}">cancel</a></td>
                 </tr>

@@ -96,8 +96,16 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return edgeState;
   }
 
-  public MotionState updateMotionState(VehicleState parentState,
-      Observation obs) {
+  public MotionState updateMotionState(Observation obs) {
+    long lastInMotionTime = obs.getTime();
+    CoordinatePoint lastInMotionLocation = obs.getLocation();
+    boolean atBase = _baseLocationService.getBaseNameForLocation(obs.getLocation()) != null;
+    boolean atTerminal = _baseLocationService.getTerminalNameForLocation(obs.getLocation()) != null;
+    return new MotionState(lastInMotionTime, lastInMotionLocation, atBase,
+        atTerminal);
+  }
+
+  public MotionState updateMotionState(VehicleState parentState, Observation obs) {
 
     MotionState motionState = parentState.getMotionState();
 

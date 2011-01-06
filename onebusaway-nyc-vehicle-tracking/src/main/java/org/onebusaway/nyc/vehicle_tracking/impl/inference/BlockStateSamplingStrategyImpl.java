@@ -126,8 +126,6 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       cdf = new CDFMap<BlockState>();
 
-      NycVehicleLocationRecord record = observation.getRecord();
-
       StringBuilder b = null;
       if (_log.isDebugEnabled()) {
         b = new StringBuilder();
@@ -137,8 +135,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       for (BlockInstance blockInstance : potentialBlocks) {
 
         BlockState state = _blockStateService.getBestBlockLocation(
-            record.getTime(), observation.getPoint(), blockInstance, 0,
-            Double.POSITIVE_INFINITY);
+            observation, blockInstance, 0, Double.POSITIVE_INFINITY);
 
         double p = scoreState(state, observation);
 
@@ -193,8 +190,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   private double scoreJourneyStartDestinationSignCode(BlockState state,
       Observation observation) {
 
-    NycVehicleLocationRecord record = observation.getRecord();
-    String observedDsc = record.getDestinationSignCode();
+    String observedDsc = observation.getLastValidDestinationSignCode();
 
     boolean observedOutOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
 

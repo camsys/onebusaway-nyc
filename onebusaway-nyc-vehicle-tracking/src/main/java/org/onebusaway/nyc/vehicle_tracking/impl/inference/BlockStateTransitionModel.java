@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -86,7 +87,8 @@ public class BlockStateTransitionModel {
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
     String dsc = obs.getRecord().getDestinationSignCode();
-    boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
+    boolean outOfService = dsc != null
+        && _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
 
     BlockState blockState = parentState.getBlockState();
 
@@ -126,12 +128,13 @@ public class BlockStateTransitionModel {
          * reasonable block match, both to detect how far off-block we've gone
          * or to correctly re-associate back on-block if need be.
          * 
-         * Except that there is a performance hit for doing this AND it seems to break things.
+         * Except that there is a performance hit for doing this AND it seems to
+         * break things.
          * 
          * TODO: Examine whether the tradeoff is worth it
          */
 
-        //return getClosestBlockState(blockState, obs);
+        // return getClosestBlockState(blockState, obs);
         return blockState;
 
       } else if (parentPhase.equals(EVehiclePhase.AT_BASE)) {
@@ -185,6 +188,8 @@ public class BlockStateTransitionModel {
          * in switching to a new block
          */
         CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
+        if( cdf.isEmpty() )
+          return null;
         return cdf.sample();
       }
 
@@ -204,8 +209,12 @@ public class BlockStateTransitionModel {
        */
       boolean allowBlockChangeWhileInProgress = Math.random() < _probabilityOfBlockSwitchForValidDscSwitch;
 
-      if (allowBlockChangeWhileInProgress)
-        return _blockStateSamplingStrategy.cdfForJourneyInProgress(obs).sample();
+      if (allowBlockChangeWhileInProgress) {
+        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+        if (cdf.isEmpty())
+          return null;
+        return cdf.sample();
+      }
 
       /**
        * Otherwise we just advance along the current block
@@ -229,9 +238,15 @@ public class BlockStateTransitionModel {
        */
 
       if (Math.random() < 0.5) {
-        return _blockStateSamplingStrategy.cdfForJourneyAtStart(obs).sample();
+        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
+        if (cdf.isEmpty())
+          return null;
+        return cdf.sample();
       } else {
-        return _blockStateSamplingStrategy.cdfForJourneyInProgress(obs).sample();
+        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+        if (cdf.isEmpty())
+          return null;
+        return cdf.sample();
       }
 
     }
@@ -281,15 +296,16 @@ public class BlockStateTransitionModel {
       }
     }
 
-    String dsc = obs.getRecord().getDestinationSignCode();
+    NycVehicleLocationRecord record = obs.getRecord();
+    String dsc = record.getDestinationSignCode();
 
     boolean unknownDSC = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
 
     /**
      * If we have an unknown DSC, we don't allow a block change. What about
-     * "0000"? 0000 is no longer considered an unknown DSC, so it should pass
-     * through to here, where we only allow a block change if we've changed from
-     * a good DSC.
+     * "0000"? 0000 is no longer considered an unknown DSC, so it should pass by
+     * the unknown DSC check, and to the next check, where we only allow a block
+     * change if we've changed from a good DSC.
      */
     if (unknownDSC)
       return false;
@@ -316,7 +332,7 @@ public class BlockStateTransitionModel {
      * TODO: Should we allow a vehicle to travel backwards?
      */
     BlockState updatedBlockState = _blocksFromObservationService.advanceState(
-        obs.getTime(), obs.getPoint(), blockState, 0, distanceToTravel);
+        obs, blockState, 0, distanceToTravel);
 
     if (EVehiclePhase.isLayover(phase)) {
       updatedBlockState = _blocksFromObservationService.advanceLayoverState(
@@ -343,16 +359,15 @@ public class BlockStateTransitionModel {
               * _blockDistanceTravelScale);
     }
 
-    closestState = _blocksFromObservationService.advanceState(obs.getTime(),
-        obs.getPoint(), blockState, -distanceToTravel, distanceToTravel);
+    closestState = _blocksFromObservationService.advanceState(obs, blockState,
+        -distanceToTravel, distanceToTravel);
 
     ScheduledBlockLocation blockLocation = closestState.getBlockLocation();
     double d = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
         obs.getLocation());
 
     if (d > 400) {
-      closestState = _blocksFromObservationService.bestState(obs.getTime(),
-          obs.getPoint(), blockState);
+      closestState = _blocksFromObservationService.bestState(obs, blockState);
     }
 
     return closestState;
@@ -369,8 +384,7 @@ public class BlockStateTransitionModel {
     NycVehicleLocationRecord record = obs.getRecord();
     String observedDsc = record.getDestinationSignCode();
 
-    return previouslyObservedDsc == null
-        || !previouslyObservedDsc.equals(observedDsc);
+    return !ObjectUtils.equals(previouslyObservedDsc, observedDsc);
   }
 
   public static class BlockStateResult {

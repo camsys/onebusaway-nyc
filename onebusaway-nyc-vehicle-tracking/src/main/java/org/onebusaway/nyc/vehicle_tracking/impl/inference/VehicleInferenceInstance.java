@@ -10,6 +10,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.vehicle_tracking.impl.ParticleComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -274,7 +275,7 @@ public class VehicleInferenceInstance {
     details.setLastObservation(lastRecord);
 
     List<Particle> particles = getCurrentParticles();
-    Collections.sort(particles);
+    Collections.sort(particles, ParticleComparator.INSTANCE);
     details.setParticles(particles);
 
     return details;

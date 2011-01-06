@@ -3,7 +3,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,8 +25,6 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private static Logger _log = LoggerFactory.getLogger(SimulatorTask.class);
 
-  private static ParticleComparator _particleComparator = new ParticleComparator();
-
   private List<NycTestLocationRecord> _records = new ArrayList<NycTestLocationRecord>();
 
   private List<NycTestLocationRecord> _results = new ArrayList<NycTestLocationRecord>();
@@ -44,9 +41,13 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private Future<?> _future;
 
+  private volatile int _recordIndex = 0;
+
   private volatile boolean _paused;
 
   private volatile boolean _stepForOne = false;
+
+  private volatile boolean _resetRecordIndex = true;
 
   private int _stepRecordIndex = -1;
 
@@ -65,6 +66,10 @@ class SimulatorTask implements Runnable, EntityHandler {
   private Set<Object> _tags = new HashSet<Object>();
 
   private String _vehicleId = null;
+
+  private boolean _complete = false;
+
+  private boolean _loop;
 
   public SimulatorTask() {
 
@@ -115,6 +120,10 @@ class SimulatorTask implements Runnable, EntityHandler {
     _fillActualProperties = fillActualProperties;
   }
 
+  public void setLoop(boolean loop) {
+    _loop = loop;
+  }
+
   public void addTag(Object tag) {
     _tags.add(tag);
   }
@@ -158,6 +167,10 @@ class SimulatorTask implements Runnable, EntityHandler {
     return _records;
   }
 
+  public synchronized boolean isComplete() {
+    return _complete;
+  }
+
   public synchronized void toggle() {
     _paused = !_paused;
     notify();
@@ -173,6 +186,14 @@ class SimulatorTask implements Runnable, EntityHandler {
     _paused = true;
     _stepForOne = true;
     _stepRecordIndex = recordIndex;
+    notify();
+  }
+
+  public synchronized void restart() {
+    _paused = true;
+    _stepForOne = false;
+    _stepRecordIndex = -1;
+    _resetRecordIndex = true;
     notify();
   }
 
@@ -242,40 +263,63 @@ class SimulatorTask implements Runnable, EntityHandler {
   public void run() {
 
     try {
-      resetAllVehiclesAppearingInRecordData();
-
-      int recordIndex = 0;
-
-      for (NycTestLocationRecord record : _records) {
-
-        if (Thread.interrupted())
-          return;
-
-        if (shouldExitAfterSimulatedWait(record))
-          return;
-
-        if (shouldExitAfterPossiblePause())
-          return;
-
-        _log.info("sending record: index=" + recordIndex);
-        recordIndex++;
-
-        if (_bypassInference) {
-          _vehicleLocationService.handleNycTestLocationRecord(record);
-        } else {
-          _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
-              record.getVehicleId(), record.getLat(), record.getLon(),
-              record.getDsc(), true);
-        }
-
-        if (shouledExitAfterWaitingForInferenceToComplete(record))
-          return;
-
-        _mostRecentRecord = record;
-        _recordsProcessed.incrementAndGet();
+      synchronized (this) {
+        _complete = false;
       }
+
+      runInternal();
+
     } catch (Throwable ex) {
       _log.error("error in simulation run", ex);
+    }
+
+    synchronized (this) {
+      _complete = true;
+    }
+  }
+
+  private void runInternal() {
+
+    while (true) {
+
+      if (Thread.interrupted())
+        return;
+
+      if (shouldExitAfterPossiblePause())
+        return;
+
+      int nextRecordIndex = getNextRecordIndex();
+
+      if (nextRecordIndex >= _records.size()) {
+        if (!_loop)
+          return;
+
+        restart();
+        checkReset();
+        _paused = false;
+        nextRecordIndex = getNextRecordIndex();
+      }
+
+      NycTestLocationRecord record = _records.get(nextRecordIndex);
+
+      if (shouldExitAfterSimulatedWait(record))
+        return;
+
+      _log.info("sending record: index=" + nextRecordIndex);
+
+      if (_bypassInference) {
+        _vehicleLocationService.handleNycTestLocationRecord(record);
+      } else {
+        _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
+            record.getVehicleId(), record.getLat(), record.getLon(),
+            record.getDsc(), true);
+      }
+
+      if (shouledExitAfterWaitingForInferenceToComplete(record))
+        return;
+
+      _mostRecentRecord = record;
+      _recordsProcessed.incrementAndGet();
     }
   }
 
@@ -316,12 +360,17 @@ class SimulatorTask implements Runnable, EntityHandler {
   }
 
   private synchronized boolean shouldExitAfterPossiblePause() {
+
+    checkReset();
+
     while (_paused && !_stepForOne) {
       try {
         wait();
       } catch (InterruptedException e) {
         return true;
       }
+
+      checkReset();
     }
 
     if (_stepRecordIndex == -1
@@ -331,6 +380,21 @@ class SimulatorTask implements Runnable, EntityHandler {
     }
 
     return false;
+  }
+
+  private synchronized int getNextRecordIndex() {
+    checkReset();
+    return _recordIndex++;
+  }
+
+  private void checkReset() {
+    if (_resetRecordIndex) {
+      resetAllVehiclesAppearingInRecordData();
+      _recordIndex = 0;
+      _resetRecordIndex = false;
+      _results.clear();
+      _recordsProcessed.set(0);
+    }
   }
 
   private boolean shouledExitAfterWaitingForInferenceToComplete(
@@ -372,7 +436,7 @@ class SimulatorTask implements Runnable, EntityHandler {
       rr.setActualPhase(rr.getInferredPhase());
       rr.setActualServiceDate(rr.getInferredServiceDate());
       rr.setActualStatus(rr.getInferredStatus());
-      
+
       rr.clearInferredValues();
     }
 
@@ -383,32 +447,23 @@ class SimulatorTask implements Runnable, EntityHandler {
     VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
     details.setId(_id);
     details.setLastObservation(record);
-    
+
     List<Particle> weightedParticles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
     if (weightedParticles != null) {
-      Collections.sort(weightedParticles, _particleComparator);
+      Collections.sort(weightedParticles, ParticleComparator.INSTANCE);
       details.setParticles(weightedParticles);
     }
-    
+
     List<Particle> sampledParticles = _vehicleLocationService.getCurrentSampledParticlesForVehicleId(_vehicleId);
-    if( sampledParticles != null){
-      Collections.sort(sampledParticles, _particleComparator);
+    if (sampledParticles != null) {
+      Collections.sort(sampledParticles, ParticleComparator.INSTANCE);
       details.setSampledParticles(sampledParticles);
     }
-    
+
     _details.add(details);
     while (_details.size() > 5)
       _details.removeFirst();
 
     return true;
   }
-
-  private static class ParticleComparator implements Comparator<Particle> {
-
-    @Override
-    public int compare(Particle o1, Particle o2) {
-      return Double.compare(o2.getWeight(), o1.getWeight());
-    }
-  }
-
 }

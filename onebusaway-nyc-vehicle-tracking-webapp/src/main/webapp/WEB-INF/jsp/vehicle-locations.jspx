@@ -27,8 +27,7 @@
                     href="vehicle-location!particles.do?vehicleId=${vp.vehicleId}">Particles</a></td>
                 <td><a
                     href="vehicle-location!reset.do?vehicleId=${vp.vehicleId}">Reset</a></td>
-                <td><c:out value="${vp.currentLocationLat}" />,<c:out
-                    value="${vp.currentLocationLon}" /></td>
+                <td><c:out value="${vp.lat}" />,<c:out value="${vp.lon}" /></td>
             </tr>
         </c:forEach>
     </tbody>

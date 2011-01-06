@@ -10,7 +10,6 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
-import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -143,14 +142,13 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   @Override
-  public BlockState advanceState(long timestamp, ProjectedPoint targetPoint,
-      BlockState blockState, double minDistanceToTravel,
-      double maxDistanceToTravel) {
+  public BlockState advanceState(Observation observation, BlockState blockState,
+      double minDistanceToTravel, double maxDistanceToTravel) {
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
     double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
 
-    return _blockStateService.getBestBlockLocation(timestamp, targetPoint,
+    return _blockStateService.getBestBlockLocation(observation,
         blockState.getBlockInstance(), currentDistanceAlongBlock
             + minDistanceToTravel, currentDistanceAlongBlock
             + maxDistanceToTravel);
@@ -198,13 +196,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    * Finds the best block state assignment along the ENTIRE length of the block
    * (potentially expensive operation)
    */
-  public BlockState bestState(long timestamp, ProjectedPoint targetPoint,
-      BlockState blockState) {
+  public BlockState bestState(Observation observation, BlockState blockState) {
 
     BlockInstance blockInstance = blockState.getBlockInstance();
     BlockConfigurationEntry blockConfig = blockInstance.getBlock();
-    return _blockStateService.getBestBlockLocation(timestamp, targetPoint,
-        blockInstance, 0, blockConfig.getTotalBlockDistance());
+    return _blockStateService.getBestBlockLocation(observation, blockInstance,
+        0, blockConfig.getTotalBlockDistance());
   }
 
   /*****

@@ -1,7 +1,11 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference;
+package org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -9,8 +13,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel2;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -23,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SensorModelImpl implements SensorModel<Observation> {
+public class SensorModelSupportLibrary {
 
   /****
    * Services
@@ -126,26 +128,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
   }
 
   /****
-   * {@link SensorModel} Interface
-   ****/
-
-  @Override
-  public double likelihood(Particle particle, Observation observation) {
-
-    VehicleState state = particle.getData();
-    VehicleState parentState = null;
-    Particle parent = particle.getParent();
-
-    if (parent != null)
-      parentState = parent.getData();
-
-    double pJourney = likelihood(parentState, state, observation);
-
-    return pJourney;
-  }
-
-  /****
-   * {@link SensorModelImpl} Interface
+   * {@link SensorModelSupportLibrary} Interface
    ****/
 
   public double likelihood(VehicleState parentState, VehicleState state,
@@ -156,7 +139,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
     double pDestinationSignCode = computeDestinationSignCodeProbability(state,
         obs);
 
-    double pBlock = computeBlockProbabilities(parentState, state, obs);
+    double pBlock = computeBlockProbabilities(state, obs);
 
     double pBlockChange = computeBlockSwitchProbability(parentState, state, obs);
 
@@ -214,13 +197,8 @@ public class SensorModelImpl implements SensorModel<Observation> {
     JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
 
-    String observedDsc = obs.getLastValidDestinationSignCode();
-    
-    /**
-     * If we haven't yet seen a valid DSC
-     */
-    if( observedDsc == null)
-      return 1.0;
+    NycVehicleLocationRecord record = obs.getRecord();
+    String observedDsc = record.getDestinationSignCode();
 
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
 
@@ -233,13 +211,11 @@ public class SensorModelImpl implements SensorModel<Observation> {
     return p1;
   }
 
-  /**
-   * @param parentState TODO**
+  /****
    * 
    ****/
 
-  public double computeBlockProbabilities(VehicleState parentState,
-      VehicleState state, Observation obs) {
+  public double computeBlockProbabilities(VehicleState state, Observation obs) {
 
     JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
@@ -263,24 +239,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
         && activeDuringBlock)
       pOnSchedule = computeScheduleDeviationProbability(state, obs);
 
-    /**
-     * Punish for traveling backwards
-     */
-    double pNoReverseTravel = 1.0;
-
-    if (parentState != null && blockState != null) {
-      BlockState parentBlockState = parentState.getBlockState();
-      if (parentBlockState != null
-          && parentBlockState.getBlockInstance().equals(
-              blockState.getBlockInstance())) {
-        ScheduledBlockLocation parentLocation = parentBlockState.getBlockLocation();
-        ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-        if (blockLocation.getDistanceAlongBlock() + 20 < parentLocation.getDistanceAlongBlock())
-          pNoReverseTravel = 0.05;
-      }
-    }
-
-    return p1 * pOnSchedule * pNoReverseTravel;
+    return p1 * pOnSchedule;
   }
 
   /****
@@ -838,7 +797,8 @@ public class SensorModelImpl implements SensorModel<Observation> {
   public double computeDeadheadDestinationSignCodeProbability(
       BlockState blockState, Observation observation) {
 
-    String observedDsc = observation.getLastValidDestinationSignCode();
+    NycVehicleLocationRecord record = observation.getRecord();
+    String observedDsc = record.getDestinationSignCode();
 
     // If the driver hasn't set an in-service DSC yet, we can't punish too much
     if (_destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc))
@@ -967,7 +927,8 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   public double computeOutOfServiceProbability(Observation observation) {
 
-    String dsc = observation.getLastValidDestinationSignCode();
+    NycVehicleLocationRecord record = observation.getRecord();
+    String dsc = record.getDestinationSignCode();
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
 
     /**
@@ -978,6 +939,36 @@ public class SensorModelImpl implements SensorModel<Observation> {
       return _propabilityOfBeingOutOfServiceWithAnOutOfServiceDSC;
     else
       return _propabilityOfBeingOutOfServiceWithAnInServiceDSC;
+  }
+
+  /****
+   * 
+   ****/
+
+  /**
+   * @return true if the the current DSC indicates the vehicle is out of service
+   */
+  public boolean isOutOfServiceDestinationSignCode(Observation obs) {
+
+    NycVehicleLocationRecord record = obs.getRecord();
+    String observedDsc = record.getDestinationSignCode();
+
+    return _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
+  }
+
+  /**
+   * 
+   * @return true if the distance between the observed bus location 
+   */
+  public boolean isOnRoute(Context context) {
+
+    Observation obs = context.getObservation();
+    VehicleState state = context.getState();
+    
+    double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
+        obs, state.getBlockState());
+
+    return distanceToBlock <= _offBlockDistance;
   }
 
   /****

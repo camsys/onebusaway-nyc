@@ -54,17 +54,23 @@
         <td>Fill Ground-Truth:</td>
         <td>
         <p><input type="checkbox" name="fillActualProperties" /> -
-        Use the results of inference to fill in the ground-truth fields of the trace output.</p>
+        Use the results of inference to fill in the ground-truth fields
+        of the trace output.</p>
+        </td>
+    </tr>
+    <tr>
+        <td>Loop:</td>
+        <td>
+        <p><input type="checkbox" name="loop" /> - Loop and restart
+        the trace upon completion.</p>
         </td>
     </tr>
     <tr>
         <td>Trace Type</td>
-        <td>
-          <select name="traceType">
+        <td><select name="traceType">
             <option value="NycTestLocationRecord" selected="true">NycTestLocationRecord</option>
             <option value="NycVehicleLocationRecord">NycVehicleLocationRecord</option>
-          </select>
-        </td>
+        </select></td>
     </tr>
     <tr>
         <td></td>
@@ -82,6 +88,10 @@ the list of Currently Scheduled Trips</a></p>
 
 <h2>Active Simulations</h2>
 <jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
+
+<p>
+<a href="vehicle-location-simulation!cancelAll.do">Cancel All Simulations</a>
+</p>
 
 </body>
 </html>

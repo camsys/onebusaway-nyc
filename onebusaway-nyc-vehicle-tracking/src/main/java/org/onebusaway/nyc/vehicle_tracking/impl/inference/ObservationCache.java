@@ -16,7 +16,8 @@ public class ObservationCache {
     JOURNEY_START_BLOCK_CDF,
     JOURNEY_IN_PROGRESS_BLOCK_CDF,
     CLOSEST_BLOCK_LOCATION,
-    SCHEDULED_BLOCK_LOCATION
+    SCHEDULED_BLOCK_LOCATION,
+    BLOCK_LOCATION    
   }
 
   private ConcurrentMap<AgencyAndId, ObservationContents> _contentsByVehicleId = new ConcurrentHashMap<AgencyAndId, ObservationCache.ObservationContents>();

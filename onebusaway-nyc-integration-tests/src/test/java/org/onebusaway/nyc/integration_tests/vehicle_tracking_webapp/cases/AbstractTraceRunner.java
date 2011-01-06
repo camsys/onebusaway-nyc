@@ -31,6 +31,8 @@ public class AbstractTraceRunner {
 
   private String _trace;
 
+  private int _loops = 1;
+
   private double _distanceTolerance = 100.0;
 
   /**
@@ -70,51 +72,53 @@ public class AbstractTraceRunner {
     File trace = new File("src/integration-test/resources/traces/" + _trace);
     List<NycTestLocationRecord> expected = _traceSupport.readRecords(trace);
 
-    String taskId = _traceSupport.uploadTraceForSimulation(trace);
+    for (int i = 0; i < _loops; i++) {
 
-    // Wait for the task to complete
+      String taskId = _traceSupport.uploadTraceForSimulation(trace);
 
-    long t = System.currentTimeMillis();
-    int prevRecordCount = -1;
+      // Wait for the task to complete
 
-    while (true) {
+      long t = System.currentTimeMillis();
+      int prevRecordCount = -1;
 
-      List<NycTestLocationRecord> actual = _traceSupport.getSimulationResults(taskId);
+      while (true) {
 
-      String asString = _traceSupport.getRecordsAsString(actual);
-      _log.debug("actual records:\n" + asString);
+        List<NycTestLocationRecord> actual = _traceSupport.getSimulationResults(taskId);
 
-      System.out.println("records=" + actual.size() + "/" + expected.size());
+        String asString = _traceSupport.getRecordsAsString(actual);
+        _log.debug("actual records:\n" + asString);
 
-      if (actual.size() < expected.size()) {
+        System.out.println("records=" + actual.size() + "/" + expected.size());
 
-        if (t + _maxTimeout < System.currentTimeMillis()) {
-          fail("waited but never received enough records: expected="
-              + expected.size() + " actual=" + actual.size());
+        if (actual.size() < expected.size()) {
+
+          if (t + _maxTimeout < System.currentTimeMillis()) {
+            fail("waited but never received enough records: expected="
+                + expected.size() + " actual=" + actual.size());
+          }
+
+          // We reset our timeout if the record count is growing
+          if (actual.size() > prevRecordCount) {
+            t = System.currentTimeMillis();
+            prevRecordCount = actual.size();
+          }
+
+          Thread.sleep(1000);
+          continue;
         }
 
-        // We reset our timeout if the record count is growing
-        if (actual.size() > prevRecordCount) {
-          t = System.currentTimeMillis();
-          prevRecordCount = actual.size();
+        try {
+          assertEquals(expected.size(), actual.size());
+
+          validateRecords(expected, actual);
+        } catch (Throwable ex) {
+          if (_saveResultsOnAssertionError)
+            writeResultsOnAssertionError(actual);
+          throw ex;
         }
 
-        Thread.sleep(10 * 1000);
-        continue;
+        break;
       }
-
-      try {
-        assertEquals(expected.size(), actual.size());
-
-        validateRecords(expected, actual);
-      }
-      catch(Throwable ex) {
-        if (_saveResultsOnAssertionError)
-          writeResultsOnAssertionError(actual);
-        throw ex;
-      }
-
-      return;
     }
   }
 
@@ -149,7 +153,7 @@ public class AbstractTraceRunner {
        */
 
       EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
-      EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getActualPhase());
+      EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getInferredPhase());
 
       expPhaseCounts.increment(expPhase);
 
@@ -159,7 +163,7 @@ public class AbstractTraceRunner {
       if (EVehiclePhase.isActiveDuringBlock(expPhase)
           && EVehiclePhase.isActiveDuringBlock(actPhase)) {
         String expectedBlockId = expRecord.getActualBlockId();
-        String actualBlockId = actRecord.getActualBlockId();
+        String actualBlockId = actRecord.getInferredBlockId();
 
         totalBlockComparisons++;
 
@@ -167,7 +171,7 @@ public class AbstractTraceRunner {
           totalCorrectBlockComparisons++;
 
         double expectedDistanceAlongBlock = expRecord.getActualDistanceAlongBlock();
-        double actualDistanceAlongBlock = actRecord.getActualDistanceAlongBlock();
+        double actualDistanceAlongBlock = actRecord.getInferredDistanceAlongBlock();
         double delta = Math.abs(expectedDistanceAlongBlock
             - actualDistanceAlongBlock);
         distanceAlongBlockDeviations.add(delta);
@@ -181,7 +185,7 @@ public class AbstractTraceRunner {
     double inProgressRatio = computePhaseRatio(expPhaseCounts, actPhaseCounts,
         EVehiclePhase.IN_PROGRESS);
     assertTrue("inProgressRatio=" + inProgressRatio, inProgressRatio > 0.95);
-
+    
     double layoverDuringRatio = computePhaseRatio(expPhaseCounts,
         actPhaseCounts, EVehiclePhase.LAYOVER_DURING);
 
@@ -190,19 +194,26 @@ public class AbstractTraceRunner {
           layoverDuringRatio > _minLayoverDuringRatio);
     }
 
-    /**
-     * Check that distanceAlongBlockDeviations are within tolerances
-     */
-    double mean = Descriptive.mean(distanceAlongBlockDeviations);
-    double median = Descriptive.median(distanceAlongBlockDeviations);
-    double variance = Descriptive.sampleVariance(distanceAlongBlockDeviations,
-        mean);
-    double stdDev = Descriptive.sampleStandardDeviation(
-        distanceAlongBlockDeviations.size(), variance);
+    if (distanceAlongBlockDeviations.size() > 1) {
 
-    assertTrue("median=" + median, median < 50.0);
-    assertTrue("mean=" + mean, mean < 50.0);
-    assertTrue("stdDev" + stdDev, stdDev < 100.0);
+      /**
+       * Check that distanceAlongBlockDeviations are within tolerances
+       */
+      double mean = Descriptive.mean(distanceAlongBlockDeviations);
+      double median = Descriptive.median(distanceAlongBlockDeviations);
+      double variance = Descriptive.sampleVariance(
+          distanceAlongBlockDeviations, mean);
+      double stdDev = Descriptive.sampleStandardDeviation(
+          distanceAlongBlockDeviations.size(), variance);
+
+      System.out.println("median=" + median);
+      System.out.println("mean=" + mean);
+      System.out.println("stdDev=" + stdDev);
+
+      assertTrue("median=" + median, median < 50.0);
+      assertTrue("mean=" + mean, mean < 50.0);
+      assertTrue("stdDev" + stdDev, stdDev < 100.0);
+    }
   }
 
   protected void writeResultsOnAssertionError(List<NycTestLocationRecord> actual) {

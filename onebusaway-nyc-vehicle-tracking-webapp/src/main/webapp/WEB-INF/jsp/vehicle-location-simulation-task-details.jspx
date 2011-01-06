@@ -18,6 +18,14 @@ table td {
 <a href="vehicle-location-simulation.do">Back to Vehicle Location Simulation Console</a>
 </p>
 
+<ul>
+    <li>Current History Offset: <c:out value="${historyOffset}"/></li>
+    <li><a href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset+1}">Previous Particles</a></li>
+    <c:if test="${ historyOffset != 0}">
+      <li><a href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset-1}">Next Particles</a></li>
+    </c:if>
+</ul>
+
 <h2>Most Recent Observation</h2>
 
 <c:set var="obs" value="${details.lastObservation}"/>

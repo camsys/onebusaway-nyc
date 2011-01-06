@@ -119,7 +119,8 @@ public class VehicleLocationSimulationServiceImpl implements
   public int simulateLocationsFromTrace(String traceType,
       InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
-      boolean bypassInference, boolean fillActualProperties) throws IOException {
+      boolean bypassInference, boolean fillActualProperties, boolean loop)
+      throws IOException {
 
     SimulatorTask task = new SimulatorTask();
     task.setPauseOnStart(pauseOnStart);
@@ -128,6 +129,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setMinimumRecordInterval(minimumRecordInterval);
     task.setBypassInference(bypassInference);
     task.setFillActualProperties(fillActualProperties);
+    task.setLoop(loop);
 
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
@@ -163,7 +165,8 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public VehicleLocationSimulationDetails getSimulationDetails(int taskId, int historyOffset) {
+  public VehicleLocationSimulationDetails getSimulationDetails(int taskId,
+      int historyOffset) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getDetails(historyOffset);
@@ -217,6 +220,16 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
+  public void restartSimulation(int taskId) {
+    SimulatorTask task = _tasks.get(taskId);
+    if (task != null) {
+      task.restart();
+      if (task.isComplete())
+        _executor.execute(task);
+    }
+  }
+
+  @Override
   public void cancelSimulation(int taskId) {
     SimulatorTask task = _tasks.remove(taskId);
     if (task != null) {
@@ -232,6 +245,14 @@ public class VehicleLocationSimulationServiceImpl implements
         }
       }
     }
+  }
+
+  @Override
+  public void cancelAllSimulations() {
+
+    List<Integer> taskIds = new ArrayList<Integer>(_tasks.keySet());
+    for (int taskId : taskIds)
+      cancelSimulation(taskId);
   }
 
   @Override
