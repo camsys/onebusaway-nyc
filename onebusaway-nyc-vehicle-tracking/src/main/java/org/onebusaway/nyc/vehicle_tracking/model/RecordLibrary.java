@@ -21,8 +21,8 @@ public class RecordLibrary {
     vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getInferredBlockId()));
     vlr.setServiceDate(record.getInferredServiceDate());
     vlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
-    vlr.setCurrentLocationLat(record.getInferredLat());
-    vlr.setCurrentLocationLon(record.getInferredLon());
+    vlr.setCurrentLocationLat(record.getLat());
+    vlr.setCurrentLocationLon(record.getLon());
     vlr.setPhase(EVehiclePhase.valueOf(record.getInferredPhase()));
     vlr.setStatus(record.getInferredStatus());
     return vlr;
