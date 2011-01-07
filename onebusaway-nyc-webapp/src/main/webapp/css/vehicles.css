@@ -22,6 +22,8 @@
 #content #text th {
 	text-align: left;	
 	padding-right: 20px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 #content #text p {
@@ -44,4 +46,21 @@
 
 #content #text .status.orange {
 	background-color: orange;	
+}
+
+#content #text .map-location {
+	height: 160px;
+	width: 150px;
+	position: absolute;
+	top: -35px;
+	left: 0px;
+}
+
+#content #text .map-location-wrapper {
+	position: relative;
+	height: 80px;
+	width: 150px;	
+	overflow: hidden;
+	border: 1px solid #C0C0C0;
+	background-color: #EFEFEF;
 }

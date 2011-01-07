@@ -72,7 +72,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 				  	? "1 stop away"
 				  	: stopsAway + " stops away";			
 		} else {
-		  double milesAway = feetAway / 5280;
+		  double milesAway = (float)feetAway / 5280;
 		  r = String.format("%1.2f mi. away", milesAway);
 		}
 	}

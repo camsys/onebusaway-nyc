@@ -62,19 +62,19 @@ under the License.
 			</tr>
 
 			<s:iterator value="vehicles">
-				<tr class="vehicleId_${vehicleIdWithoutAgency}">
+				<tr>
 					<td>
 						<s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div>
 					</td>
 					<td>
 						<s:if test="%{disabled}">
-							<input type="checkbox" name="${disabledName}" checked="true" />
+							<input type="checkbox" name="disable_${vehicleIdWithoutAgency}" checked="true" />
 						</s:if>
 						<s:else>
-							<input type="checkbox" name="${disabledName}" />
+							<input type="checkbox" name="disable_${vehicleIdWithoutAgency}"/>
 						</s:else>
 					</td>
-					<td class="vehicleId">
+					<td>
 						<s:property value="vehicleIdWithoutAgency" />
 					</td>
 					<td>
@@ -87,7 +87,7 @@ under the License.
 						<s:property value="headsign" escape="false"/>
 					</td>
 					<td>
-						<s:div cssClass="%{inferredStateClass}">
+						<div>
 							<p>
 								<s:property value="inferredState" escape="false"/>
 							</p>
@@ -97,12 +97,14 @@ under the License.
 								</s:url>
 								<a class="reset" href="${resetUrl}">Reset</a>
 							</p>
-						</s:div>
+						</div>
 					</td>
 					<td>
 						Location: <s:property value="location" />
 						<br/>
 						Orientation: <s:property value="orientation" />
+						<br/>
+						<a href="#" class="map">Show On Map</a>
 					</td>
 				</tr>
 			</s:iterator>
