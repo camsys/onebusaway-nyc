@@ -67,12 +67,22 @@ OBA.Util = (function() {
 			var feetInMeters = 3.28083989501312;
 			return meters * feetInMeters;
 		},
-		displayDistance: function(feet, stopsAway) {
-			var miles = feet / 5280;
-			if(feet <= OBA.Config.arrivingThresholdInFeet && stopsAway <= OBA.Config.arrivingThresholdInStops) {
+		displayDistance: function(feetAway, stopsAway) {
+			var milesAway = feetAway / 5280;
+			if(feetAway <= OBA.Config.atStopThresholdInFeet) {
+				return "at stop";
+			} else if(feetAway <= OBA.Config.arrivingThresholdInFeet && stopsAway <= OBA.Config.arrivingThresholdInStops) {
 				return "approaching";
 			} else {
-				return miles == 1 ? "1 mile" : miles.toPrecision(2) + " miles";
+				if(stopsAway <= OBA.Config.showDistanceInStopsThresholdInStops) {
+					if(stopsAway === 0) {
+						return "< 1 stop away";
+					} else {
+						return (stopsAway == 1 ? "1 stop" : stopsAway + " stops") + " away";					
+					}
+				} else {
+					return (milesAway == 1 ? "1 mile" : milesAway.toPrecision(2) + " miles") + " away";
+				}
 			}
 		},
 		displayTime: function(dateObj) {

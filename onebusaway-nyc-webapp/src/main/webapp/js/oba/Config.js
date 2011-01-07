@@ -25,20 +25,23 @@ OBA.Config = {
 		vehiclesUrl:"/onebusaway-api-webapp/api/where/trips-for-route",
 		vehicleUrl: "/onebusaway-api-webapp/api/where/trip-for-vehicle",
 
-		// milliseconds to wait in between polls for bus locations
+		// milliseconds to wait in-between polls for bus locations
 		pollingInterval: 5000,
+
+		// display convention thresholds
+		showDistanceInStopsThresholdInStops: 3,
 		atStopThresholdInFeet: 100,
 		arrivingThresholdInFeet: 500,
 		arrivingThresholdInStops: 0,
 
 		// marker images used
-		// (the path below needs to be absolute)
+		// (the path below needs to be absolute!)
 		vehicleIconFilePrefix: "/img/vehicle/vehicle",
 		vehicleIconFileType: "png",
 		vehicleIconSize: new google.maps.Size(51,51),
 		vehicleIconCenter: new google.maps.Point(25,25),
 
-		// (the path below needs to be absolute)
+		// (the path below needs to be absolute!)
 		stopIconFilePrefix: "/img/stop/stop",
 		stopIconFileType: "png",
 		stopIconSize: new google.maps.Size(21,21),
@@ -75,7 +78,8 @@ OBA.Config = {
 			}
 			
 			// hide data >= hideTimeout seconds old (row 5)
-			if(typeof tripStatus.lastUpdateTime !== 'undefined' && new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.hideTimeout) {
+			if(typeof tripStatus.lastLocationUpdateTime !== 'undefined' 
+				&& new Date().getTime() - tripStatus.lastLocationUpdateTime >= 1000 * OBA.Config.hideTimeout) {
 				return false;
 			}
 

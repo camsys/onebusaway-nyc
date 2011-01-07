@@ -3,7 +3,7 @@ package org.onebusaway.nyc.presentation.model.search;
 import java.util.List;
 
 import org.onebusaway.nyc.presentation.impl.WebappIdParser;
-import org.onebusaway.nyc.presentation.model.AvailableRoute;
+import org.onebusaway.nyc.presentation.model.RouteItem;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 /**
@@ -15,12 +15,12 @@ public class StopSearchResult implements SearchResult {
   private final String name;
   private final List<Double> latlng;
   private final String type;
-  private final List<AvailableRoute> availableRoutes;
+  private final List<RouteItem> availableRoutes;
   private final List<NaturalLanguageStringBean> serviceAlerts;
   private final String stopDirection;
 
   public StopSearchResult(String stopId, String name, List<Double> latlng, String stopDirection, 
-		  List<AvailableRoute> availableRoutes, List<NaturalLanguageStringBean> serviceAlerts) {
+		  List<RouteItem> availableRoutes, List<NaturalLanguageStringBean> serviceAlerts) {
     this.stopId = stopId;
     this.name = name;
     this.latlng = latlng;
@@ -55,7 +55,7 @@ public class StopSearchResult implements SearchResult {
     return stopDirection;
   }
 
-  public List<AvailableRoute> getRoutesAvailable() {
+  public List<RouteItem> getRoutesAvailable() {
     return availableRoutes;
   }
   

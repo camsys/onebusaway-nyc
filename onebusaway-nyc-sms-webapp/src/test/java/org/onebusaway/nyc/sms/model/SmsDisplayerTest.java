@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Date;
 
 import org.junit.Test;
-import org.onebusaway.nyc.presentation.model.AvailableRoute;
+import org.onebusaway.nyc.presentation.model.RouteItem;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
@@ -16,15 +16,15 @@ import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 
 public class SmsDisplayerTest {
   
-  private AvailableRoute makeAvailableRoute(List<DistanceAway> distanceAways) {
+  private RouteItem makeAvailableRoute(List<DistanceAway> distanceAways) {
     // helper function to create available routes
-    return new AvailableRoute("routeid", "route description", "route headsign", "0", distanceAways);
+    return new RouteItem("routeid", "route description", "route headsign", "0", distanceAways);
   }
 
   @Test
   public void testSingleStopResponseNoArrivals() {
-    AvailableRoute availableRoute = makeAvailableRoute(new ArrayList<DistanceAway>());
-    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+	  RouteItem availableRoute = makeAvailableRoute(new ArrayList<DistanceAway>());
+    List<RouteItem> routes = new ArrayList<RouteItem>();
     routes.add(availableRoute);
     StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
@@ -43,8 +43,8 @@ public class SmsDisplayerTest {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(distanceAway1);
     distanceAways.add(distanceAway2);
-    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
-    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    RouteItem availableRoute = makeAvailableRoute(distanceAways);
+    List<RouteItem> routes = new ArrayList<RouteItem>();
     routes.add(availableRoute);
     StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
@@ -64,8 +64,8 @@ public class SmsDisplayerTest {
       DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(),  Mode.SMS,300);
       distanceAways.add(distanceAway);
     }
-    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
-    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    RouteItem availableRoute = makeAvailableRoute(distanceAways);
+    List<RouteItem> routes = new ArrayList<RouteItem>();
     routes.add(availableRoute);
     StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
@@ -92,16 +92,16 @@ public class SmsDisplayerTest {
     assertEquals("No stops found\n", actual);
   }
   
-  private StopSearchResult makeStopSearchResult(List<AvailableRoute> routes, String stopDirection) {
+  private StopSearchResult makeStopSearchResult(List<RouteItem> routes, String stopDirection) {
     StopSearchResult stopSearchResult = new StopSearchResult("AgencyId_123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), stopDirection, routes, null);
     return stopSearchResult;
   }
   
   @Test
   public void testTwoStopResponseNoArrivals() {
-    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
+    RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
 
     StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
@@ -123,11 +123,11 @@ public class SmsDisplayerTest {
 
   @Test
   public void testTwoStopResponse() {
-    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300));
     distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300));
-    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
+    RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
     StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
@@ -151,13 +151,13 @@ public class SmsDisplayerTest {
   
   @Test
   public void testTwoStopResponseManyArrivals() {
-    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     for (int i = 0; i < 20; i++) {
       DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(), Mode.SMS,300);
       distanceAways.add(distanceAway);
     }
-    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
+    RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
     StopSearchResult stopResult1 = makeStopSearchResult(routes, "N");
@@ -181,11 +181,11 @@ public class SmsDisplayerTest {
 
   @Test
   public void testManyStopResponse() {
-    List<AvailableRoute> routes = new ArrayList<AvailableRoute>();
+    List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300));
     distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300));
-    AvailableRoute availableRoute = makeAvailableRoute(distanceAways);
+    RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
@@ -209,7 +209,7 @@ public class SmsDisplayerTest {
   @Test
   public void testNoAvailableRoutesCase() {
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
-    searchResults.add(makeStopSearchResult(new ArrayList<AvailableRoute>(), "N"));
+    searchResults.add(makeStopSearchResult(new ArrayList<RouteItem>(), "N"));
     
     SmsDisplayer sms = new SmsDisplayer(searchResults);
     sms.singleStopResponse();

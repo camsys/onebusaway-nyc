@@ -21,7 +21,7 @@ import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
-import org.onebusaway.nyc.presentation.model.AvailableRoute;
+import org.onebusaway.nyc.presentation.model.RouteItem;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.StopItem;
@@ -77,10 +77,6 @@ public class NycSearchServiceImpl implements NycSearchService {
   private ServiceAreaService serviceArea;
 
   private static final SearchResultComparator searchResultComparator = new SearchResultComparator();
-
-  public void setDistanceToStops(double distanceToStops) {
-    this.distanceToStops = distanceToStops;
-  }
 
   @Override
   public List<SearchResult> search(String q, Mode m) {
@@ -288,11 +284,11 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     // create lookups keyed by directionId to the different bits of
     // information we need for the response
-    Map<String, Map<String, NaturalLanguageStringBean>> directionIdToServiceAlerts = 
-    	new HashMap<String, Map<String, NaturalLanguageStringBean>>();
     Map<String, List<StopBean>> directionIdToStopBeans = createDirectionToStopBeansMap(routeId);
     Map<String, String> directionIdToHeadsign = new HashMap<String, String>();
     Map<String, String> directionIdToTripId = new HashMap<String, String>();
+    Map<String, Map<String, NaturalLanguageStringBean>> directionIdToServiceAlerts = 
+    	new HashMap<String, Map<String, NaturalLanguageStringBean>>();
         
     Map<String, Map<String, Double>> tripIdToStopDistancesMap = new HashMap<String, Map<String, Double>>();
     Map<String, List<DistanceAway>> stopIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
@@ -381,7 +377,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         // (we're always 0 stops away from our next stop, by definition)
         DistanceAway distanceAway = new DistanceAway(0,
             distanceAwayFromClosestStopInFeet, 
-            new Date(tripStatusBean.getLastUpdateTime()), 
+            new Date(tripStatusBean.getLastLocationUpdateTime()), 
             m, config.getStaleDataTimeout());
 
         stopDistanceAways.add(distanceAway);
@@ -498,7 +494,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     // hide data >= (hide timeout) minutes old (row 5)
     ConfigurationBean config = configurationService.getConfiguration();
     
-    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout()) {
+    if (new Date().getTime() - statusBean.getLastLocationUpdateTime() >= 1000 * config.getHideTimeout()) {
        	return false;
     }
     
@@ -517,15 +513,10 @@ public class NycSearchServiceImpl implements NycSearchService {
     	new HashMap<String, List<DistanceAway>>();
     Map<String, String> headsignToDirectionId = new HashMap<String, String>();
     Map<String, String> routeIdToHeadsign = new HashMap<String, String>();
-    List<AvailableRoute> availableRoutes = new ArrayList<AvailableRoute>();
+    List<RouteItem> availableRoutes = new ArrayList<RouteItem>();
     Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = 
     	new HashMap<String, NaturalLanguageStringBean>();
 
-    /*
-     * Search for trips that will stop at this stop between (now - minutesBefore) 
-     * and (now + minutesAfter). Calculate each trip vehicle's distance away from 
-     * this stop, filtering by the logic in shouldDisplayArrivalAndDepatureForMode().
-     */
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
     query.setTime(System.currentTimeMillis());
 
@@ -563,7 +554,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         
         DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
-            distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), 
+            distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 
             m, config.getStaleDataTimeout());
         List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
 
@@ -598,7 +589,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       Collections.sort(distanceAways);
 
-      AvailableRoute availableRoute = new AvailableRoute(shortName, longName,
+      RouteItem availableRoute = new RouteItem(shortName, longName,
           headsign, headsignToDirectionId.get(headsign), distanceAways);
       availableRoutes.add(availableRoute);
     }

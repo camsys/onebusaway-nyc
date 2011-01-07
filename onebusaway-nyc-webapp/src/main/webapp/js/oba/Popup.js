@@ -105,7 +105,7 @@ OBA.StopPopup = function(stopId, map) {
 		} catch (typeError) {
 			OBA.Util.log("invalid stop response from server");
 			OBA.Util.log(json);
-			return;
+			return jQuery("<span>No data found for: " + stopId + "</span>");
 		}
 
 		var stopId = stop.id;
@@ -128,11 +128,8 @@ OBA.StopPopup = function(stopId, map) {
 			
 			// most common headsign? FIXME
 			routeToHeadsign[routeId] = headsign;
-			if (! routeToVehicleInfo[routeId]) {
-				routeToVehicleInfo[routeId] = [];
-			}
-			routeToVehicleCount++;                
 
+			// build map of situation IDs applicable to this stop
 			jQuery.each(arrival.situationIds, function(_, situationId) {
 				applicableSituationIds[situationId] = situationId;
 			});
@@ -141,20 +138,25 @@ OBA.StopPopup = function(stopId, map) {
 				return;          
 			}
 			
-			var routeId = arrival.routeId;
 			var updateTime = parseInt(arrival.lastUpdateTime, 10);
 			var meters = arrival.distanceFromStop;
 			var feet = OBA.Util.metersToFeet(meters);
 			var stops = arrival.numberOfStopsAway;
-
 			latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
 
+			if(feet < 0) {
+				return;
+			}
+			
 			var vehicleInfo = {stops: stops,
 								feet: feet};
 
-			if (routeToVehicleInfo[routeId]) {
-				routeToVehicleInfo[routeId].push(vehicleInfo);
+			if (! routeToVehicleInfo[routeId]) {
+				routeToVehicleInfo[routeId] = [];
 			}
+
+			routeToVehicleInfo[routeId].push(vehicleInfo);				
+			routeToVehicleCount++;                
 		});
 
 		var lastUpdateString = null;        
@@ -165,8 +167,10 @@ OBA.StopPopup = function(stopId, map) {
 
 		// header
 		var header = '<p class="header">' + name + '</p>' +
-					'<p><span class="type stop">Stop #' + OBA.Util.parseEntityId(stopId) + '</span> ' + 
-					(lastUpdateString ? '<span class="updated">Last updated at ' + lastUpdateString + '</span>' : '') + '</p>';
+						'<p>' + 
+							'<span class="type stop">Stop #' + OBA.Util.parseEntityId(stopId) + '</span> ' + 
+							(lastUpdateString ? '<span class="updated">Last updated at ' + lastUpdateString + '</span>' : '') + 
+						'</p>';
 
 		// service notices
 		var notices = '<ul class="notices">';
@@ -180,10 +184,10 @@ OBA.StopPopup = function(stopId, map) {
 
 		notices += '</ul>';
 
-		// service
+		// service at this stop
 		var service = "";
 		if(routeToVehicleCount === 0) {
-			service += '<p class="service">No upcoming service is available at this stop.</p>';
+			service += '<p class="service">No service is available at this stop in the next 30 minutes.</p>';
 		} else {
 			service += '<p class="service">This stop is served by:</p><ul>';
 	
@@ -199,25 +203,8 @@ OBA.StopPopup = function(stopId, map) {
 	
 				for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
 					var distanceAway = vehicleInfos[i];
-	
-					if(distanceAway.feet < 0) {
-						continue;
-					}
-					
 					service += '<li class="arrival">';
-					
-					if(distanceAway.feet <= OBA.Config.atStopThresholdInFeet) {
-						service += "<span>at stop</span>";
-					} else {
-						if(distanceAway.stops === 0) {
-							service += "<span>< 1 stop</span>";
-							service += "<span>" + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + "</span>";
-						} else {
-							service += "<span>" + distanceAway.stops + " stop" + ((distanceAway.stops === 1) ? "" : "s") + "</span>";
-							service += "<span>" + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + "</span>";
-						}
-					}
-					
+					service += "<span>" + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + "</span>";
 					service += '</li>';
 				}
 			});
@@ -258,6 +245,13 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
 		stops = stops.slice(0);
 
+		// applicable situation ID map
+		var applicableSituationIds = {};
+		jQuery.each(tripStatus.situationIds, function(_, sid) {
+			applicableSituationIds[sid] = sid;
+		});
+		
+		// stop ID->stop obj map
 		var stopIdsToStops = {};
 		jQuery.each(stops, function(_, stop) {
 			stopIdsToStops[stop.id] = stop;
@@ -286,26 +280,22 @@ OBA.VehiclePopup = function(vehicleId, map) {
 			}
 		}
 
-		var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
+		var lastUpdateDate = new Date(tripStatus.lastLocationUpdateTime);
 		var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
-		var isStaleData = (new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.staleDataTimeout);
+		var isStaleData = (new Date().getTime() - lastUpdateDate.getTime() >= 1000 * OBA.Config.staleDataTimeout);
 
 		// header
 		var header = '<p class="header">' + headsign + '</p>' +
-					'<p><span class="type vehicle">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span> ' +
-					'<span class="updated' + ((isStaleData === true) ? " stale" : "") +'">Last updated at ' + lastUpdateString + '</span></p>';
+						'<p>' + 
+							'<span class="type vehicle">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span> ' +
+							'<span class="updated' + ((isStaleData === true) ? " stale" : "") +'">Last updated at ' + lastUpdateString + '</span>' + 
+						'</p>';
 
 		// service notices
-		var applicableSituationIds = {};
-		jQuery.each(tripStatus.situationIds, function(_, sid) {
-			applicableSituationIds[sid] = sid;
-		});
-
 		var notices = '<ul class="notices">';
 
 		jQuery.each(refs.situations, function(_, situation) {
 			var situationId = situation.id;
-
 			if(situationId in applicableSituationIds) {
 				notices += '<li>' + situation.description.value + '</li>';
 			}
@@ -315,41 +305,27 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
 		// next stops
 		var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
-		var nextStopsMarkup = '';
 
+		var nextStopsMarkup = '';
 		if (nextStops !== null && nextStops.length > 0 && 
 				(typeof tripStatus.status !== 'undefined' && tripStatus.status !== 'deviated')) { 
 			
 			nextStopsMarkup += '<p class="service">Next stops:</p><ul>';
 
 			jQuery.each(nextStops, function(i, stop) {
-				var displayStopId = OBA.Util.parseEntityId(stop.id);
 				var stopName = stop.name;
+				var feetAway = OBA.Util.metersToFeet(stop.scheduledDistance - distanceAlongTrip);
+				var stopsAway = i;
 
 				nextStopsMarkup += '<li class="nextStop">';
-				nextStopsMarkup += stopName;
-
-				// we only have one stop currently this will not work if we get more than one
-				// because we reuse the distance information for each
-				var stopsAway = i;
-				var feetAway = OBA.Util.metersToFeet(stop.scheduledDistance - distanceAlongTrip);
-								
-				if(feetAway <= OBA.Config.atStopThresholdInFeet) {
-					nextStopsMarkup += "<span>at stop</span>";
-				} else {
-					if(stopsAway === 0) {
-						nextStopsMarkup += "<span>" + OBA.Util.displayDistance(feetAway, 0) + "</span>";
-					} else {
-						nextStopsMarkup += "<span>" + OBA.Util.displayDistance(feetAway, stopsAway) + "</span>";
-					}
-				}
-
+				nextStopsMarkup += stopName;				
+				nextStopsMarkup += "<span>" + OBA.Util.displayDistance(feetAway, stopsAway) + "</span>";
 				nextStopsMarkup += '</li>';
 			});
 
 			nextStopsMarkup += '</ul>';
 		} else {
-			nextStopsMarkup += '<p class="service">Next stops are unknown for this vehicle.</p>';
+			nextStopsMarkup += '<p class="service">Next stops are not known for this vehicle.</p>';
 		}
 
 		// footer

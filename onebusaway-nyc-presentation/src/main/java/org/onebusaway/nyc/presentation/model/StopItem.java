@@ -7,8 +7,6 @@ import org.onebusaway.transit_data.model.StopBean;
 
 /**
  * data transfer object wrapping a stop bean
- * useful to contain logic of returning back just the id portion of the stop
- * which doesn't include the agency id
  */
 public class StopItem {
 
@@ -39,7 +37,11 @@ public class StopItem {
   public List<DistanceAway> getDistanceAways() {
     return distanceAways;
   }
-  
+
+  /*
+   * Returns distance displayed next to each stop in route display page
+   * on mobile interface
+   */
   public String getPresentableDistances() {
     if (distanceAways == null || distanceAways.size() == 0)
       return "";
@@ -50,7 +52,7 @@ public class StopItem {
     	if(b.length() > 0)
     	  b.append(", ");
       
-        b.append(distanceAway.getPresentableDistanceWithoutStops());
+        b.append(distanceAway.getPresentableDistance());
     }
 
     b.insert(0, " ");

@@ -100,7 +100,7 @@ OBA.VehiclesAdmin = (function() {
                	 table.append(newTableRows);
                	 
                	 jQuery("#timestamp")
-               	 	.text("Information current as of " + new Date().format("mmm d, yyyy h:mm:ss TT"));
+               	 	.text("Information current as of " + new Date().format("mmm d, yyyy h:MM:ss TT"));
                	 
  	             ajaxifyResetLinks();	
                	 setTimeout(refreshTable, 30 * 1000);

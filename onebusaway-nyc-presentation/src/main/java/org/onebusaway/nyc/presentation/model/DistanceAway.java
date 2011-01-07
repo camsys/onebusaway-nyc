@@ -9,6 +9,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
   private int atStopThresholdInFeet = 100;
   private int arrivingThresholdInFeet = 500;
   private int arrivingThresholdInStops = 0;
+  private int showDistanceInStopsThresholdInStops = 3;
 	
   private final int stopsAway;
   private final int feetAway;
@@ -24,7 +25,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
     this.staleTimeoutSeconds = staleTimeoutSeconds;
   }
 
-  public int getStops() {
+  public int getStopsAway() {
     return stopsAway;
   }
 
@@ -32,7 +33,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 	    return timestamp;
   }
 
-  public int getFeet() {
+  public int getFeetAway() {
     return feetAway;
   }
 
@@ -55,39 +56,26 @@ public class DistanceAway implements Comparable<DistanceAway> {
 	return b.toString();
   }
 
-  private String displayDistance(double feet, int stopsAway) {
-	  double miles = feet / 5280;
-	  if(feet <= arrivingThresholdInFeet && stopsAway == arrivingThresholdInStops)
-		  return "approaching";
-	  else
-		  return String.format("%1.2f mi", miles);
-  }
-
-  private String displayStopsAway(int numberOfStopsAway) {
-	  if(numberOfStopsAway == 0)
-		  return "< 1 stop";
-	  else	  
-		  return numberOfStopsAway == 1
-		  	? "1 stop"
-		  	: numberOfStopsAway + " stops";
-  }
-  
-  public String getPresentableDistanceWithoutStops() {
-	String r = "";  
-	if(feetAway <= atStopThresholdInFeet)
-		r = "at stop";		
-	else 
-		r = this.displayDistance(feetAway, stopsAway);
-	
-	return this.addModifiers(r);
-  }
-  
   public String getPresentableDistance() {
-	String r = "";  
+	String r = "";
+	
 	if(feetAway <= atStopThresholdInFeet)
 		r = "at stop";		
-	else 
-		r = this.displayStopsAway(stopsAway) + ", " + this.displayDistance(feetAway, stopsAway);
+	else if(feetAway <= arrivingThresholdInFeet && stopsAway <= arrivingThresholdInStops) {
+		r = "approaching";
+	} else {
+		if(stopsAway <= showDistanceInStopsThresholdInStops) {
+			if(stopsAway == 0)
+				  r = "< 1 stop away";
+			else	  
+				  r = stopsAway == 1
+				  	? "1 stop away"
+				  	: stopsAway + " stops away";			
+		} else {
+		  double milesAway = feetAway / 5280;
+		  r = String.format("%1.2f mi. away", milesAway);
+		}
+	}
 		
 	return this.addModifiers(r);
   }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.onebusaway.nyc.presentation.model.AvailableRoute;
+import org.onebusaway.nyc.presentation.model.RouteItem;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
@@ -41,13 +41,13 @@ public class SmsDisplayer {
       addToResponse("Stop not found");
     } else {
       StopSearchResult stopSearchResult = (StopSearchResult) searchResults.get(0);
-      List<AvailableRoute> routesAvailable = stopSearchResult.getRoutesAvailable();
+      List<RouteItem> routesAvailable = stopSearchResult.getRoutesAvailable();
       if (routesAvailable.isEmpty()) {
         addToResponse("No routes available\n");
       } else {
-        for (AvailableRoute availableRoute : routesAvailable) {
+        for (RouteItem availableRoute : routesAvailable) {
           String routeId = availableRoute.getRouteId();
-          List<DistanceAway> distanceAways = availableRoute.getDistanceAway();
+          List<DistanceAway> distanceAways = availableRoute.getDistanceAways();
           if (distanceAways.isEmpty()) {
             addToResponse(routeId + ": No upcoming arrivals\n");
           } else {
@@ -65,12 +65,12 @@ public class SmsDisplayer {
     addToResponse("No stops found\n");
   }
   
-  private List<RouteDistanceAway> getRouteDistanceAways(List<AvailableRoute> routes) {
+  private List<RouteDistanceAway> getRouteDistanceAways(List<RouteItem> routes) {
     // flatten out the available route distanceaway structure for easier iteration
     List<RouteDistanceAway> result = new ArrayList<RouteDistanceAway>();
-    for (AvailableRoute availableRoute : routes) {
+    for (RouteItem availableRoute : routes) {
       String routeId = availableRoute.getRouteId();
-      for (DistanceAway distanceAway : availableRoute.getDistanceAway()) {
+      for (DistanceAway distanceAway : availableRoute.getDistanceAways()) {
         RouteDistanceAway routeDistanceAway = new RouteDistanceAway(routeId, distanceAway);
         result.add(routeDistanceAway);
       }
@@ -87,9 +87,9 @@ public class SmsDisplayer {
     return result;
   }
   
-  private String getNoUpcomingArrivalsString(List<AvailableRoute> routes) {
+  private String getNoUpcomingArrivalsString(List<RouteItem> routes) {
     StringBuilder result = new StringBuilder();
-    for (AvailableRoute availableRoute : routes) {
+    for (RouteItem availableRoute : routes) {
       String routeId = availableRoute.getRouteId();
       result.append(routeId + ": No upcoming arrivals\n");
     }
@@ -102,8 +102,8 @@ public class SmsDisplayer {
     StopSearchResult stopSearchResult2 = (StopSearchResult) searchResults.get(1);
     StringBuilder stopResponse1 = getInitialTwoStopResponse(stopSearchResult1);
     StringBuilder stopResponse2 = getInitialTwoStopResponse(stopSearchResult2);
-    List<AvailableRoute> routesAvailable1 = stopSearchResult1.getRoutesAvailable();
-    List<AvailableRoute> routesAvailable2 = stopSearchResult2.getRoutesAvailable();
+    List<RouteItem> routesAvailable1 = stopSearchResult1.getRoutesAvailable();
+    List<RouteItem> routesAvailable2 = stopSearchResult2.getRoutesAvailable();
     List<RouteDistanceAway> rdaList1 = getRouteDistanceAways(routesAvailable1);
     List<RouteDistanceAway> rdaList2 = getRouteDistanceAways(routesAvailable2);
     Iterator<RouteDistanceAway> it1 = rdaList1.iterator();

@@ -64,6 +64,10 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 			marker.setPosition(latlng);
 		},
 
+		getPosition: function() {
+			return marker.getPosition();
+		},
+
 		getRawMarker: function() {
 			return marker;
 		},
@@ -87,10 +91,6 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 			}
 		},
 		
-		getPosition: function() {
-			return marker.getPosition();
-		},
-
 		isDisplayed: function() {
 			return marker.getMap() !== null;
 		},
@@ -138,9 +138,9 @@ OBA.VehicleMarker = function(vehicleId, latlng, orientation, map, opts) {
 
 	if(typeof opts.icon === 'undefined') {
 		var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-unknown.' + OBA.Config.vehicleIconFileType,
-					OBA.Config.vehicleIconSize,
-					new google.maps.Point(0,0),
-					OBA.Config.vehicleIconCenter);
+						OBA.Config.vehicleIconSize,
+						new google.maps.Point(0,0),
+						OBA.Config.vehicleIconCenter);
 
 		opts.icon = icon;
 	}
