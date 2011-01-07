@@ -43,7 +43,7 @@ public class SmsDisplayer {
       StopSearchResult stopSearchResult = (StopSearchResult) searchResults.get(0);
       List<RouteItem> routesAvailable = stopSearchResult.getRoutesAvailable();
       if (routesAvailable.isEmpty()) {
-        addToResponse("No routes available\n");
+        addToResponse("No upcoming service at this stop\n");
       } else {
         for (RouteItem availableRoute : routesAvailable) {
           String routeId = availableRoute.getRouteId();

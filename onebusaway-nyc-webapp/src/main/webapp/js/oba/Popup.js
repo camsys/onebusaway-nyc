@@ -187,7 +187,7 @@ OBA.StopPopup = function(stopId, map) {
 		// service at this stop
 		var service = "";
 		if(routeToVehicleCount === 0) {
-			service += '<p class="service">No service is available at this stop in the next 30 minutes.</p>';
+			service += '<p class="service">No upcoming service is available at this stop.</p>';
 		} else {
 			service += '<p class="service">This stop is served by:</p><ul>';
 	
