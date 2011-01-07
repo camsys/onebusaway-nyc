@@ -526,17 +526,19 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
       TripBean tripBean = arrivalAndDepartureBean.getTrip();
+      TripStatusBean tripStatusBean = arrivalAndDepartureBean.getTripStatus();      
       String headsign = tripBean.getTripHeadsign();
       String routeId = tripBean.getRoute().getId();
       String directionId = tripBean.getDirectionId();
+      
+      if(routeId == null || headsign == null || directionId == null) {
+    	  continue;
+      }
       
       // FIXME: most common headsign?
       routeIdToHeadsign.put(routeId, headsign);
       headsignToDirectionId.put(headsign, directionId);
       
-      if (arrivalAndDepartureBean.getDistanceFromStop() < 0)
-        continue;
-
       // add service alerts to our list of service alerts for all routes at this stop
       if(arrivalAndDepartureBean.getSituations() != null) {
     	  for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
@@ -547,24 +549,37 @@ public class NycSearchServiceImpl implements NycSearchService {
     	  }
       }
       
-      // should we display this vehicle on the UI specified by "m"?
-      if (shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m)) {
-        double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
-        int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
-        int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
-        
-        DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
-            distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 
-            m, config.getStaleDataTimeout());
-        List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
+      // hide buses that left the stop recently
+      if (arrivalAndDepartureBean.getDistanceFromStop() < 0) 
+        continue;
 
-        if (distanceAways == null) {
-          distanceAways = new ArrayList<DistanceAway>();
-          routeIdToDistanceAways.put(routeId, distanceAways);
-        }
-
-        distanceAways.add(distanceAway);
+      // hide this arrival and departure if it is for a trip that the vehicle is not currently on
+      if(tripBean != null && tripStatusBean != null) {
+    	  TripBean currentTrip = tripStatusBean.getActiveTrip();
+    	  
+    	  if(currentTrip.getBlockId() != tripBean.getBlockId())
+    		  continue;
       }
+      
+      // should we display this vehicle on the UI specified by "m"?
+      if(! shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m))
+    	  continue;
+      
+      double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
+      int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
+      int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
+        
+      DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
+          distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 
+          m, config.getStaleDataTimeout());
+      List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
+
+      if (distanceAways == null) {
+        distanceAways = new ArrayList<DistanceAway>();
+        routeIdToDistanceAways.put(routeId, distanceAways);
+      }
+
+      distanceAways.add(distanceAway);
     } // for arrivalanddeparture beans
 
     /*

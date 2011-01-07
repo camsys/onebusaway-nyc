@@ -122,7 +122,7 @@ OBA.StopPopup = function(stopId, map) {
 			var arrivalStopId = arrival.stopId;
 			var headsign = arrival.tripHeadsign;
 
-			if (arrivalStopId !== stopId || routeId === null) {
+			if (arrivalStopId !== stopId || routeId === null || headsign === null) {
 				return;
 			}
 			
@@ -132,7 +132,18 @@ OBA.StopPopup = function(stopId, map) {
 			// build map of situation IDs applicable to this stop
 			jQuery.each(arrival.situationIds, function(_, situationId) {
 				applicableSituationIds[situationId] = situationId;
-			});
+			});			
+			
+			// hide arrivals that just left the stop 
+			if(arrival.distanceFromStop < 0) {
+				return;
+			}
+			
+			// hide arrivals that won't stop at this stop, don't have a route, or are not  
+			// the vehicle's current trip yet.
+			if(arrival.tripStatus.activeTripId !== arrival.tripId) {
+				return;
+			}
 
 			if(OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {
 				return;          
@@ -143,10 +154,6 @@ OBA.StopPopup = function(stopId, map) {
 			var feet = OBA.Util.metersToFeet(meters);
 			var stops = arrival.numberOfStopsAway;
 			latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
-
-			if(feet < 0) {
-				return;
-			}
 			
 			var vehicleInfo = {stops: stops,
 								feet: feet};
