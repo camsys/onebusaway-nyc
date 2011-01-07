@@ -18,7 +18,7 @@ public class SmsDisplayerTest {
   
   private AvailableRoute makeAvailableRoute(List<DistanceAway> distanceAways) {
     // helper function to create available routes
-    return new AvailableRoute("routeid", "route description", "route headsign", distanceAways);
+    return new AvailableRoute("routeid", "route description", "route headsign", "0", distanceAways);
   }
 
   @Test
