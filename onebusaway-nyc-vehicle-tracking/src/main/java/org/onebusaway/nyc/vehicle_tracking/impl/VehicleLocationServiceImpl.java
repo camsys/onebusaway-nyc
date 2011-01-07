@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
@@ -158,6 +159,12 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   @Override
   public List<Particle> getCurrentSampledParticlesForVehicleId(String vehicleId) {
     return _vehicleLocationInferenceService.getCurrentSampledParticlesForVehicleId(getVehicleId(vehicleId));
+  }
+
+  @Override
+  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
+      String vehicleId) {
+    return _vehicleLocationInferenceService.getCurrentJourneySummariesForVehicleId(getVehicleId(vehicleId));
   }
 
   @Override

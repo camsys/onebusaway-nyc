@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import java.util.List;
+
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 
 /**
@@ -22,6 +24,8 @@ public final class VehicleState {
 
   private final JourneyState journeyState;
 
+  private final List<JourneyPhaseSummary> journeySummaries;
+
   private final Observation observation;
 
   public VehicleState(VehicleState state) {
@@ -29,11 +33,13 @@ public final class VehicleState {
     this.motionState = state.motionState;
     this.blockState = state.blockState;
     this.journeyState = state.journeyState;
+    this.journeySummaries = state.journeySummaries;
     this.observation = state.observation;
   }
 
   public VehicleState(EdgeState edgeState, MotionState motionState,
-      BlockState blockState, JourneyState journeyState, Observation observation) {
+      BlockState blockState, JourneyState journeyState,
+      List<JourneyPhaseSummary> journeySummaries, Observation observation) {
     if (motionState == null)
       throw new IllegalArgumentException("motionState cannot be null");
     if (journeyState == null)
@@ -44,6 +50,7 @@ public final class VehicleState {
     this.motionState = motionState;
     this.blockState = blockState;
     this.journeyState = journeyState;
+    this.journeySummaries = journeySummaries;
     this.observation = observation;
   }
 
@@ -61,6 +68,10 @@ public final class VehicleState {
 
   public JourneyState getJourneyState() {
     return journeyState;
+  }
+
+  public List<JourneyPhaseSummary> getJourneySummaries() {
+    return journeySummaries;
   }
 
   public Observation getObservation() {

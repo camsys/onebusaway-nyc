@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
@@ -33,16 +32,12 @@ public class AbstractTraceRunner {
 
   private int _loops = 1;
 
-  private double _distanceTolerance = 100.0;
-
   /**
    * The max amount of time we should wait for a single record to process
    */
   private long _maxTimeout = 20 * 1000;
 
-  private double _minLayoverDuringRatio = 0.95;
-
-  private boolean _checkLayoverDuringRatio = true;
+  private double _minPhaseRatioForConsideration = 0.05;
 
   private boolean _saveResultsOnAssertionError = true;
 
@@ -50,20 +45,12 @@ public class AbstractTraceRunner {
     _trace = trace;
   }
 
-  public void setDistanceTolerance(double distanceTolerance) {
-    _distanceTolerance = distanceTolerance;
-  }
-
   public void setMaxTimeout(long maxTimeout) {
     _maxTimeout = maxTimeout;
   }
 
-  public void checkLayoverDuringRatio(boolean checkLayoverDuringRatio) {
-    _checkLayoverDuringRatio = checkLayoverDuringRatio;
-  }
-
-  public void setMinLayoverDuringRatio(double minLayoverDuringRatio) {
-    _minLayoverDuringRatio = minLayoverDuringRatio;
+  public void setLoops(int loops) {
+    _loops = loops;
   }
 
   @Test
@@ -71,6 +58,8 @@ public class AbstractTraceRunner {
 
     File trace = new File("src/integration-test/resources/traces/" + _trace);
     List<NycTestLocationRecord> expected = _traceSupport.readRecords(trace);
+
+    int successfulIterations = 0;
 
     for (int i = 0; i < _loops; i++) {
 
@@ -114,12 +103,18 @@ public class AbstractTraceRunner {
         } catch (Throwable ex) {
           if (_saveResultsOnAssertionError)
             writeResultsOnAssertionError(actual);
-          throw ex;
+          if (_loops == 1)
+            throw ex;
+          else
+            successfulIterations++;
         }
 
         break;
       }
     }
+
+    if (_loops > 1)
+      System.out.println("success ratio=" + successfulIterations + "/" + _loops);
   }
 
   /****
@@ -142,16 +137,6 @@ public class AbstractTraceRunner {
       NycTestLocationRecord expRecord = expected.get(i);
       NycTestLocationRecord actRecord = actual.get(i);
 
-      // Only run distance comparison if lat-lon is set for expected record
-      /*
-       * if (!expRecord.locationDataIsMissing()) {
-       * 
-       * double d = SphericalGeometryLibrary.distance(expRecord.getActualLat(),
-       * expRecord.getActualLon(), actRecord.getLat(), actRecord.getLon());
-       * 
-       * assertTrue("record=" + i + " distance=" + d, d < _distanceTolerance); }
-       */
-
       EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
       EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getInferredPhase());
 
@@ -167,14 +152,16 @@ public class AbstractTraceRunner {
 
         totalBlockComparisons++;
 
-        if (expectedBlockId.equals(actualBlockId))
+        if (expectedBlockId.equals(actualBlockId)) {
+
           totalCorrectBlockComparisons++;
 
-        double expectedDistanceAlongBlock = expRecord.getActualDistanceAlongBlock();
-        double actualDistanceAlongBlock = actRecord.getInferredDistanceAlongBlock();
-        double delta = Math.abs(expectedDistanceAlongBlock
-            - actualDistanceAlongBlock);
-        distanceAlongBlockDeviations.add(delta);
+          double expectedDistanceAlongBlock = expRecord.getActualDistanceAlongBlock();
+          double actualDistanceAlongBlock = actRecord.getInferredDistanceAlongBlock();
+          double delta = Math.abs(expectedDistanceAlongBlock
+              - actualDistanceAlongBlock);
+          distanceAlongBlockDeviations.add(delta);
+        }
       }
     }
 
@@ -182,16 +169,19 @@ public class AbstractTraceRunner {
      * Verify Ratios of Expected vs Actual Journey Phases
      ****/
 
-    double inProgressRatio = computePhaseRatio(expPhaseCounts, actPhaseCounts,
-        EVehiclePhase.IN_PROGRESS);
-    assertTrue("inProgressRatio=" + inProgressRatio, inProgressRatio > 0.95);
-    
-    double layoverDuringRatio = computePhaseRatio(expPhaseCounts,
-        actPhaseCounts, EVehiclePhase.LAYOVER_DURING);
+    for (EVehiclePhase phase : EVehiclePhase.values()) {
 
-    if (_checkLayoverDuringRatio) {
-      assertTrue("layoverDuringRatio=" + layoverDuringRatio,
-          layoverDuringRatio > _minLayoverDuringRatio);
+      double expectedCount = expPhaseCounts.getCount(phase);
+      double expRatio = expectedCount / expected.size();
+
+      if (expRatio < _minPhaseRatioForConsideration)
+        continue;
+
+      double relativeRatio = actPhaseCounts.getCount(phase) / expectedCount;
+
+      assertTrue("phase ratio " + phase + "=" + relativeRatio,
+          relativeRatio > 0.95);
+
     }
 
     if (distanceAlongBlockDeviations.size() > 1) {
@@ -210,9 +200,9 @@ public class AbstractTraceRunner {
       System.out.println("mean=" + mean);
       System.out.println("stdDev=" + stdDev);
 
-      assertTrue("median=" + median, median < 50.0);
-      assertTrue("mean=" + mean, mean < 50.0);
-      assertTrue("stdDev" + stdDev, stdDev < 100.0);
+      assertTrue("median=" + median, median < 10.0);
+      assertTrue("mean=" + mean, mean < 10.0);
+      assertTrue("stdDev" + stdDev, stdDev < 20.0);
     }
   }
 
@@ -234,13 +224,5 @@ public class AbstractTraceRunner {
     } catch (Exception ex) {
       _log.error("error writing results on assertion error", ex);
     }
-  }
-
-  private double computePhaseRatio(Counter<EVehiclePhase> expPhaseCounts,
-      Counter<EVehiclePhase> actPhaseCounts, EVehiclePhase phase) {
-    double expected = (double) expPhaseCounts.getCount(phase);
-    if (expected == 0)
-      return 1.0;
-    return actPhaseCounts.getCount(phase) / expected;
   }
 }

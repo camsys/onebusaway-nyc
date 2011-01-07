@@ -23,13 +23,15 @@ import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.ListEntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyPhaseSummaryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel.Context;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel.SensorModelRule;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel.SensorModelSupportLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -65,6 +67,8 @@ public class SensorModelVerificationMain {
   private BlockCalendarService _blockCalendarService;
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
+
+  private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   @Autowired
   public void setMotionModel(MotionModelImpl motionModel) {
@@ -140,6 +144,8 @@ public class SensorModelVerificationMain {
       ex.printStackTrace();
       System.exit(-1);
     }
+
+    System.exit(0);
   }
 
   public void setTraces(List<File> traces) {
@@ -200,8 +206,11 @@ public class SensorModelVerificationMain {
     if (tracePath.isDirectory()) {
       for (File child : tracePath.listFiles())
         getAllTraces(child, traces);
-    } else if (tracePath.getName().endsWith(".csv.gz")) {
-      traces.add(tracePath);
+    } else {
+      String name = tracePath.getName();
+      if (name.endsWith(".csv.gz") || name.endsWith(".csv")) {
+        traces.add(tracePath);
+      }
     }
   }
 
@@ -259,8 +268,11 @@ public class SensorModelVerificationMain {
 
     JourneyState journeyState = createJourneyState(record, prevState, obs);
 
+    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
+        prevState, blockState, journeyState, obs);
+
     return new VehicleState(edgeState, motionState, blockState, journeyState,
-        obs);
+        summaries, obs);
   }
 
   private MotionState createMotionState(VehicleState prevState, Observation obs) {

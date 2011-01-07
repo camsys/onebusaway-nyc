@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel;
+package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 public class Logic {
   

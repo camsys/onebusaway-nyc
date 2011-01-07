@@ -1,7 +1,14 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.BlockTransitionRule;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -98,6 +105,10 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   private DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(200);
 
+  private List<BlockTransitionRule> _rules = Collections.emptyList();
+
+  private SensorModelSupportLibrary _sensorModelLibrary;
+
   /****
    * Service Setters
    ****/
@@ -125,6 +136,11 @@ public class SensorModelImpl implements SensorModel<Observation> {
     _scheduleDeviationLibrary = scheduleDeviationLibrary;
   }
 
+  @Autowired
+  public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
+    _sensorModelLibrary = sensorModelLibrary;
+  }
+
   /****
    * {@link SensorModel} Interface
    ****/
@@ -142,6 +158,11 @@ public class SensorModelImpl implements SensorModel<Observation> {
     double pJourney = likelihood(parentState, state, observation);
 
     return pJourney;
+  }
+
+  @Autowired
+  public void setRules(List<BlockTransitionRule> rules) {
+    _rules = rules;
   }
 
   /****
@@ -176,9 +197,17 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
     double pTransition = computeTransitionProbability(parentState, state, obs);
 
+    double pRules = 1.0;
+
+    Context context = new Context(parentState, state, obs);
+    for (SensorModelRule rule : _rules) {
+      double p = rule.likelihood(_sensorModelLibrary, context);
+      pRules *= p;
+    }
+
     return pAtBase * pDestinationSignCode * pBlock * pBlockChange * pLayover
         * pDeadheadBefore * pInProgress * pDeadheadDuring * pDeadheadAfter
-        * pPrior * pTransition;
+        * pPrior * pTransition * pRules;
   }
 
   /****
@@ -215,11 +244,11 @@ public class SensorModelImpl implements SensorModel<Observation> {
     EVehiclePhase phase = js.getPhase();
 
     String observedDsc = obs.getLastValidDestinationSignCode();
-    
+
     /**
      * If we haven't yet seen a valid DSC
      */
-    if( observedDsc == null)
+    if (observedDsc == null)
       return 1.0;
 
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
@@ -313,20 +342,22 @@ public class SensorModelImpl implements SensorModel<Observation> {
      * The probability of switching a block while actively in progress on
      * another block should be pretty low.
      */
-    if (EVehiclePhase.isActiveDuringBlock(phase))
-      return _probabilityOfBlockChangeWhileInProgress;
+    // if (EVehiclePhase.isActiveDuringBlock(phase))
+    // return _probabilityOfBlockChangeWhileInProgress;
 
     MotionState fromMotionState = parentState.getMotionState();
     MotionState toMotionState = state.getMotionState();
 
-    if (fromMotionState.isAtTerminal() && !toMotionState.isAtTerminal()) {
-      return 1.0;
-    }
+    double pLeavingTerminal = p(fromMotionState.isAtTerminal()
+        && !toMotionState.isAtTerminal());
+    double pSignCodeChanged = p(
+        BlockStateTransitionModel.hasDestinationSignCodeChangedBetweenObservations(obs),
+        0.95);
+    double pRandomBlockChange = _probabilityOfBlockChangeWhileInProgress;
+    double pBlockChangeAtThisLocation = or(pLeavingTerminal, pSignCodeChanged,
+        pRandomBlockChange);
 
-    if (BlockStateTransitionModel.hasDestinationSignCodeChangedBetweenObservations(obs))
-      return 0.95;
-
-    return 0.05;
+    return pBlockChangeAtThisLocation;
   }
 
   /*****

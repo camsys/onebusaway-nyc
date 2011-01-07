@@ -1,7 +1,7 @@
-package org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel;
+package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
-import static org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel.Logic.implies;
-import static org.onebusaway.nyc.vehicle_tracking.impl.inference.sensormodel.Logic.p;
+import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.implies;
+import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;

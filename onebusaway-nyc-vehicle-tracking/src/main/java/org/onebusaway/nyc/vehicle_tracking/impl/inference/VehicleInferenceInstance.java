@@ -12,6 +12,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.impl.ParticleComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -337,6 +338,14 @@ public class VehicleInferenceInstance {
 
   public synchronized List<Particle> getCurrentSampledParticles() {
     return new ArrayList<Particle>(_particleFilter.getSampledParticles());
+  }
+  
+  public synchronized List<JourneyPhaseSummary> getJourneySummaries() {
+    Particle particle = _particleFilter.getMostLikelyParticle();
+    if( particle == null)
+      return Collections.emptyList();
+    VehicleState state = particle.getData();
+    return state.getJourneySummaries();
   }
 
   /****

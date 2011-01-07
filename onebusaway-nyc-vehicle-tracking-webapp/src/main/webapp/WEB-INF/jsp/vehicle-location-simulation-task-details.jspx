@@ -9,33 +9,80 @@
 </head>
 <style>
 table td {
-   border: 1px solid black;
+	border: 1px solid black;
 }
 </style>
 <body>
 
-<p>
-<a href="vehicle-location-simulation.do">Back to Vehicle Location Simulation Console</a>
-</p>
+<p><a href="vehicle-location-simulation.do">Back to Vehicle
+Location Simulation Console</a></p>
 
 <ul>
-    <li>Current History Offset: <c:out value="${historyOffset}"/></li>
-    <li><a href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset+1}">Previous Particles</a></li>
+    <li>Current History Offset: <c:out value="${historyOffset}" /></li>
+    <li><a
+        href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset+1}">Previous
+    Particles</a></li>
     <c:if test="${ historyOffset != 0}">
-      <li><a href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset-1}">Next Particles</a></li>
+        <li><a
+            href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset-1}">Next
+        Particles</a></li>
     </c:if>
 </ul>
 
 <h2>Most Recent Observation</h2>
 
-<c:set var="obs" value="${details.lastObservation}"/>
+<c:set var="obs" value="${details.lastObservation}" />
 
 <ul>
-    <li>time:<jsp:text> </jsp:text><fmt:formatDate pattern="yyyy-MM-dd_HH-mm-ss" value="${obs.timestampAsDate}"/></li>
-    <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
-    <li>location:<jsp:text> </jsp:text><c:out value="${obs.lat}"/><jsp:text> </jsp:text><c:out value="${obs.lon}"/></li>
-    <li><jsp:text>dsc: </jsp:text><c:out value="${obs.dsc}"/></li>
+    <li>time:<jsp:text>
+    </jsp:text><fmt:formatDate pattern="yyyy-MM-dd_HH-mm-ss"
+        value="${obs.timestampAsDate}" /></li>
+    <li><jsp:text>vehicle id: </jsp:text><c:out
+        value="${obs.vehicleId}" /></li>
+    <li>location:<jsp:text>
+    </jsp:text><c:out value="${obs.lat}" /><jsp:text>
+    </jsp:text><c:out value="${obs.lon}" /></li>
+    <li><jsp:text>dsc: </jsp:text><c:out value="${obs.dsc}" /></li>
 </ul>
+
+<h2>Journey Summaries</h2>
+
+<table>
+    <thead>
+        <tr>
+            <td>From</td>
+            <td>To</td>
+            <td>Phase</td>
+            <td>BlockId</td>
+            <td>Completion Ratio From</td>
+            <td>Completion Ratio To</td>
+        </tr>
+    </thead>
+    <tbody>
+        <c:forEach var="summary" items="${details.summaries}">
+            <jsp:useBean id="timeFrom" class="java.util.Date" />
+            <jsp:setProperty name="timeFrom" property="time"
+                value="${summary.timeFrom}" />
+            <jsp:useBean id="timeTo" class="java.util.Date" />
+            <jsp:setProperty name="timeTo" property="time"
+                value="${summary.timeTo}" />
+            <tr>
+                <td><fmt:formatDate pattern="HH:mm"
+                    value="${timeFrom}" /></td>
+                <td><fmt:formatDate pattern="HH:mm"
+                    value="${timeTo}" /></td>
+                <td><c:out value="${summary.phase}" /></td>
+                <td><a
+                    href="block-details.do?blockId=${summary.blockInstance.block.block.id}"><c:out
+                    value="${summary.blockInstance.block.block.id}" /></a></td>
+                <td><fmt:formatNumber pattern="0.00"
+                    value="${summary.blockCompletionRatioFrom}" /></td>
+                    <td><fmt:formatNumber pattern="0.00"
+                    value="${summary.blockCompletionRatioTo}" /></td>
+            </tr>
+        </c:forEach>
+    </tbody>
+</table>
 
 <h2>Particles</h2>
 
@@ -54,48 +101,59 @@ table td {
     </thead>
     <tbody>
 
-<ul>
-    <c:if test="${showSampledParticles}">
-        <c:set var="particles" value="${details.sampledParticles}"/>
-        
-    </c:if>
-    <c:if test="${! showSampledParticles}">
-        <c:set var="particles" value="${details.particles}"/>        
-    </c:if>
-    
-    <c:forEach var="p" items="${particles}">
-    <tr>
-        <c:set var="edgeState" value="${p.data.edgeState}"/>
-        <c:set var="motionState" value="${p.data.motionState}"/>
-        <c:set var="journeyState" value="${p.data.journeyState}"/>
-        <c:set var="blockState" value="${p.data.blockState}"/>
-        <c:set var="blockLocation" value="${blockState.blockLocation}"/>
-        
-        <td><a href="vehicle-location-simulation!particle-details.do?taskId=${details.id}&amp;particleId=${p.index}"><c:out value="${p.weight}" /></a></td>
-        <td><c:out value="${journeyState.phase}"/></td>
-        <td><a href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out value="${blockState.blockInstance.block.block.id}" /></a></td>
-        <td><c:out value="${blockLocation.activeTrip.trip.id}" /></td>
-        <td><c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
-        <td><c:out value="${blockLocation.distanceAlongBlock}" /></td>
-        <jsp:useBean id="scheduleTime" class="java.util.Date" />
-        <jsp:setProperty name="scheduleTime" property="time" value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}"/>
-        <td><fmt:formatDate pattern="HH:mm" value="${scheduleTime}"/><jsp:text> (</jsp:text><c:out value="${blockLocation.scheduledTime}" />)</td>
-        <td><c:out value="${motionState.lastInMotionLocation.lat}" /><jsp:text> </jsp:text><c:out value="${motionState.lastInMotionLocation.lon}" /></td>
-    </tr>
-    </c:forEach>
-</ul>
-</tbody>
+        <c:if test="${showSampledParticles}">
+            <c:set var="particles" value="${details.sampledParticles}" />
+
+        </c:if>
+        <c:if test="${! showSampledParticles}">
+            <c:set var="particles" value="${details.particles}" />
+        </c:if>
+
+        <c:forEach var="p" items="${particles}">
+            <tr>
+                <c:set var="edgeState" value="${p.data.edgeState}" />
+                <c:set var="motionState" value="${p.data.motionState}" />
+                <c:set var="journeyState" value="${p.data.journeyState}" />
+                <c:set var="blockState" value="${p.data.blockState}" />
+                <c:set var="blockLocation"
+                    value="${blockState.blockLocation}" />
+
+                <td><a
+                    href="vehicle-location-simulation!particle-details.do?taskId=${details.id}&amp;particleId=${p.index}"><c:out
+                    value="${p.weight}" /></a></td>
+                <td><c:out value="${journeyState.phase}" /></td>
+                <td><a
+                    href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
+                    value="${blockState.blockInstance.block.block.id}" /></a></td>
+                <td><c:out
+                    value="${blockLocation.activeTrip.trip.id}" /></td>
+                <td><c:out value="${blockLocation.location.lat}" /><jsp:text>
+                </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
+                <td><c:out
+                    value="${blockLocation.distanceAlongBlock}" /></td>
+                <jsp:useBean id="scheduleTime" class="java.util.Date" />
+                <jsp:setProperty name="scheduleTime" property="time"
+                    value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}" />
+                <td><fmt:formatDate pattern="HH:mm"
+                    value="${scheduleTime}" /><jsp:text> (</jsp:text><c:out
+                    value="${blockLocation.scheduledTime}" />)</td>
+                <td><c:out
+                    value="${motionState.lastInMotionLocation.lat}" /><jsp:text>
+                </jsp:text><c:out value="${motionState.lastInMotionLocation.lon}" /></td>
+            </tr>
+        </c:forEach>
+    </tbody>
 </table>
 
 <h2>Raw Particle Location (Blocks)</h2>
-<p>
-<c:forEach var="p" items="${details.particles}">
-  <c:set var="journeyState" value="${p.data.journeyState}"/>
-  <c:set var="blockState" value="${p.data.blockState}"/>
-  <c:set var="blockLocation" value="${blockState.blockLocation}"/>
-  <c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /><br/>
-</c:forEach>
-</p>
+<p><c:forEach var="p" items="${details.particles}">
+    <c:set var="journeyState" value="${p.data.journeyState}" />
+    <c:set var="blockState" value="${p.data.blockState}" />
+    <c:set var="blockLocation" value="${blockState.blockLocation}" />
+    <c:out value="${blockLocation.location.lat}" /><jsp:text>
+    </jsp:text><c:out value="${blockLocation.location.lon}" />
+    <br />
+</c:forEach></p>
 
 </body>
 </html>

@@ -6,6 +6,7 @@ import java.util.List;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -39,18 +40,13 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   public double _distanceSamplingFactor = 1.0;
 
-  private EdgeStateLibrary _edgeStateLibrary;
+  private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
   private VehicleStateLibrary _vehicleStateLibrary;
 
   private BaseLocationService _baseLocationService;
-
-  @Autowired
-  public void setEdgeStateLibrary(EdgeStateLibrary edgeStateLibrary) {
-    _edgeStateLibrary = edgeStateLibrary;
-  }
 
   @Autowired
   public void setBlockStateSamplingStrategy(
@@ -87,8 +83,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   @Override
   public List<Particle> createParticles(double timestamp, Observation obs) {
 
-    //ProjectedPoint point = obs.getPoint();
-    //CDFMap<EdgeState> cdf = _edgeStateLibrary.calculatePotentialEdgeStates(point);
+    // ProjectedPoint point = obs.getPoint();
+    // CDFMap<EdgeState> cdf =
+    // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
     CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
 
@@ -109,8 +106,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       MotionState motionState = new MotionState(obs.getTime(), location,
           atBase, atTerminal);
 
-      VehicleState state = determineJourneyState(null, motionState,
-          location, atStartCdf, inProgresCdf, obs);
+      VehicleState state = determineJourneyState(null, motionState, location,
+          atStartCdf, inProgresCdf, obs);
 
       Particle p = new Particle(timestamp);
       p.setData(state);
@@ -133,7 +130,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       if (!atStartCdf.isEmpty())
         blockState = atStartCdf.sample();
 
-      return new VehicleState(edgeState, motionState, blockState,
+      return vehicleState(edgeState, motionState, blockState,
           JourneyState.atBase(), obs);
     }
 
@@ -143,22 +140,33 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
       // No blocks? Jump to the deadhead-after state
       if (inProgressCdf.isEmpty())
-        return new VehicleState(edgeState, motionState, null,
+        return vehicleState(edgeState, motionState, null,
             JourneyState.deadheadAfter(), obs);
 
       BlockState blockState = inProgressCdf.sample();
-      return new VehicleState(edgeState, motionState, blockState,
+      return vehicleState(edgeState, motionState, blockState,
           JourneyState.inProgress(), obs);
     } else {
 
       // No blocks? Jump to the deadhead-after state
       if (atStartCdf.isEmpty())
-        return new VehicleState(edgeState, motionState, null,
+        return vehicleState(edgeState, motionState, null,
             JourneyState.deadheadAfter(), obs);
 
       BlockState blockState = atStartCdf.sample();
-      return new VehicleState(edgeState, motionState, blockState,
+      return vehicleState(edgeState, motionState, blockState,
           JourneyState.deadheadBefore(locationOnEdge), obs);
     }
+  }
+
+  private VehicleState vehicleState(EdgeState edgeState,
+      MotionState motionState, BlockState blockState,
+      JourneyState journeyState, Observation obs) {
+
+    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
+        null, blockState, journeyState, obs);
+
+    return new VehicleState(edgeState, motionState, blockState, journeyState,
+        summaries, obs);
   }
 }

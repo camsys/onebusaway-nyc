@@ -2,6 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.services;
 
 import java.util.List;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
@@ -99,10 +100,15 @@ public interface VehicleLocationService {
    * @return the current list of particles for the specified vehicle
    */
   public List<Particle> getCurrentParticlesForVehicleId(String vehicleId);
-  
+
   public List<Particle> getCurrentSampledParticlesForVehicleId(String vehicleId);
-  
+
+  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
+      String vehicleId);
+
   public VehicleLocationDetails getDetailsForVehicleId(String vehicleId);
 
-  public VehicleLocationDetails getParticleDetails(String vehicleId, int particleId);
+  public VehicleLocationDetails getParticleDetails(String vehicleId,
+      int particleId);
+
 }

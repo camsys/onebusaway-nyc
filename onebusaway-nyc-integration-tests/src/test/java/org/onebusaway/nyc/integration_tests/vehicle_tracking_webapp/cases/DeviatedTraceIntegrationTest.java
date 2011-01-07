@@ -22,11 +22,6 @@ public class DeviatedTraceIntegrationTest extends AbstractTraceRunner {
 
   public DeviatedTraceIntegrationTest() {
     super("04513-0-deviated.gps.csv.gz");
-
-    // We're purposely allowing the trace to deviate
-    setDistanceTolerance(1000.0);
-
-    setMinLayoverDuringRatio(0.90);
   }
 
   @Override

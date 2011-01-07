@@ -2,6 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.services;
 
 import java.util.List;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 
@@ -12,8 +13,10 @@ public class VehicleLocationSimulationDetails {
   private NycTestLocationRecord lastObservation;
 
   private List<Particle> particles;
-  
+
   private List<Particle> sampledParticles;
+
+  private List<JourneyPhaseSummary> summaries;
 
   public int getId() {
     return id;
@@ -45,5 +48,13 @@ public class VehicleLocationSimulationDetails {
 
   public void setSampledParticles(List<Particle> sampledParticles) {
     this.sampledParticles = sampledParticles;
+  }
+
+  public List<JourneyPhaseSummary> getSummaries() {
+    return summaries;
+  }
+
+  public void setSummaries(List<JourneyPhaseSummary> summaries) {
+    this.summaries = summaries;
   }
 }

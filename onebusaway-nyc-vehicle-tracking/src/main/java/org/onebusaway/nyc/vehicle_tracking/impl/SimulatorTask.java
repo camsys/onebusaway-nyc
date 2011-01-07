@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.gtfs.csv.EntityHandler;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
@@ -459,6 +460,9 @@ class SimulatorTask implements Runnable, EntityHandler {
       Collections.sort(sampledParticles, ParticleComparator.INSTANCE);
       details.setSampledParticles(sampledParticles);
     }
+    
+    List<JourneyPhaseSummary> summaries = _vehicleLocationService.getCurrentJourneySummariesForVehicleId(_vehicleId);
+    details.setSummaries(summaries);
 
     _details.add(details);
     while (_details.size() > 5)

@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
@@ -171,13 +173,23 @@ public class VehicleLocationInferenceServiceImpl implements
       return null;
     return instance.getCurrentParticles();
   }
-  
+
   @Override
-  public List<Particle> getCurrentSampledParticlesForVehicleId(AgencyAndId vehicleId) {
+  public List<Particle> getCurrentSampledParticlesForVehicleId(
+      AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
     return instance.getCurrentSampledParticles();
+  }
+
+  @Override
+  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
+      AgencyAndId vehicleId) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    if (instance == null)
+      return Collections.emptyList();
+    return instance.getJourneySummaries();
   }
 
   @Override
