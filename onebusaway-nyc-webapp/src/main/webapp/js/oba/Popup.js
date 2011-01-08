@@ -116,7 +116,7 @@ OBA.StopPopup = function(stopId, map) {
 		var applicableSituationIds = {};
 		var routeToVehicleInfo = {};
 		var routeToHeadsign = {};
-		var routeToVehicleCount = 0;
+		var routeCount = 0;
 		jQuery.each(arrivals, function(_, arrival) {
 			var routeId = arrival.routeId;
 			var arrivalStopId = arrival.stopId;
@@ -126,6 +126,13 @@ OBA.StopPopup = function(stopId, map) {
 				return;
 			}
 			
+			// (do this before filtering so we have a record of which routes stop
+			// at the stop "usually")
+			if (! routeToVehicleInfo[routeId]) {
+				routeToVehicleInfo[routeId] = [];
+				routeCount++;
+			}
+
 			// most common headsign? FIXME
 			routeToHeadsign[routeId] = headsign;
 
@@ -141,7 +148,8 @@ OBA.StopPopup = function(stopId, map) {
 			
 			// hide arrivals that won't stop at this stop, don't have a route, or are not  
 			// the vehicle's current trip yet.
-			if(arrival.tripStatus.activeTripId !== arrival.tripId) {
+			if(arrival.tripStatus !== null &&
+					arrival.tripStatus.activeTripId !== arrival.tripId) {
 				return;
 			}
 
@@ -158,12 +166,7 @@ OBA.StopPopup = function(stopId, map) {
 			var vehicleInfo = {stops: stops,
 								feet: feet};
 
-			if (! routeToVehicleInfo[routeId]) {
-				routeToVehicleInfo[routeId] = [];
-			}
-
 			routeToVehicleInfo[routeId].push(vehicleInfo);				
-			routeToVehicleCount++;                
 		});
 
 		var lastUpdateString = null;        
@@ -193,7 +196,7 @@ OBA.StopPopup = function(stopId, map) {
 
 		// service at this stop
 		var service = "";
-		if(routeToVehicleCount === 0) {
+		if(routeCount === 0) {
 			service += '<p class="service">No upcoming service is available at this stop.</p>';
 		} else {
 			service += '<p class="service">This stop is served by:</p><ul>';
