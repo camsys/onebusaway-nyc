@@ -74,7 +74,9 @@ under the License.
 
 			<div id="no-results">
 				<p>
-				No results were returned for your query.
+				No results were returned for your query. 
+				<c:set var="url"><s:url value="/wiki/HelpIndex.action"/></c:set>
+				<a href="${url}">Help</a>
 				</p>
 			</div>
 		</div>
