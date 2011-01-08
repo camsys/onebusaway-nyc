@@ -125,7 +125,8 @@ under the License.
 				<div>
 					<p>
 					<a name="${directionId}"></a>
-					<strong><s:property value="tripHeadsign" /></strong><br />
+					<strong><s:property value="tripHeadsign" /></strong>
+					<br />
 					
 					<ul>
 						<s:iterator value="serviceAlerts">

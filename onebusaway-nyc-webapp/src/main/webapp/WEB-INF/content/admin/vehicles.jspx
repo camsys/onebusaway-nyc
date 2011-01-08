@@ -26,16 +26,16 @@ under the License.
 
 <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"><!-- //prevent jspx minimization --></script>
     
-<c:set var="url"><s:url value="/js/jquery.js"/></c:set>
+<s:url var="url" value="/js/jquery.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<c:set var="url"><s:url value="/js/oba/Config.js"/></c:set>
+<s:url var="url" value="/js/oba/Config.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<c:set var="url"><s:url value="/js/oba/DateUtil.js"/></c:set>
+<s:url  var="url" value="/js/oba/DateUtil.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<c:set var="url"><s:url value="/js/oba/VehiclesAdmin.js"/></c:set>
+<s:url  var="url" value="/js/oba/VehiclesAdmin.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
 <body>
@@ -44,7 +44,7 @@ under the License.
 	<h1>Vehicles</h1>
 	
 	<p id="timestamp">
-	Information current as of <s:property value="currentTimestamp"/>
+		Information current as of <s:property value="currentTimestamp"/>
 	</p>
 	
 	<s:form method="POST" action="vehicles" namespace="/admin">
