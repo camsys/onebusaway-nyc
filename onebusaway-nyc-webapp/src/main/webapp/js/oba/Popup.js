@@ -206,7 +206,7 @@ OBA.StopPopup = function(stopId, map) {
 		// service at this stop
 		var service = "";
 		if(routeCount === 0) {
-			service += '<p class="service">Next bus not en-route to your location. Check back shortly for an update.</p>';
+			service += '<p class="service">No upcoming service is available at this stop.</p>';
 		} else {
 			service += '<p class="service">This stop is served by:</p><ul>';
 	
@@ -216,15 +216,19 @@ OBA.StopPopup = function(stopId, map) {
 				service += '<li class="route">';
 				service += headsign;
 				service += '</li>';
-		
-				// sort based on distance
-				vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
+				
+				if(vehicleInfos.length === 0) {
+					service += '<li>Next bus not en-route to your location. Check back shortly for an update.</li>';
+				} else {
+					// sort based on distance
+					vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
 	
-				for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
-					var distanceAway = vehicleInfos[i];
-					service += '<li class="arrival">';
-					service += "<span>" + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + "</span>";
-					service += '</li>';
+					for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
+						var distanceAway = vehicleInfos[i];
+						service += '<li class="arrival">';
+						service += "<span>" + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + "</span>";
+						service += '</li>';
+					}
 				}
 			});
 	

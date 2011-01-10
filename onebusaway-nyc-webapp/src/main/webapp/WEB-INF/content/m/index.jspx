@@ -96,7 +96,7 @@ under the License.
 					</strong><br/>
 		
 					<s:if test="%{routesAvailable.size==0}">
-						<p>Next bus not en-route to your location. Check back shortly for an update.</p>
+						<p>No upcoming service is available at this stop.</p>
 					</s:if>
 					<s:else>
 						<s:iterator value="routesAvailable">
@@ -105,10 +105,15 @@ under the License.
 							</s:url>
 							<a href="${url}#${directionId}"><s:property value="headsign" /></a><br />
 		
-							<s:iterator value="distanceAways">
-								<s:property value="presentableDistance" /><br />
-							</s:iterator>
-		
+							<s:if test="%{distanceAways.size==0}">
+								Next bus not en-route to your location. Check back shortly for an update.
+							</s:if>
+							<s:else>
+								<s:iterator value="distanceAways">
+									<s:property value="presentableDistance" /><br />
+								</s:iterator>
+							</s:else>
+
 							<ul>
 								<s:iterator value="serviceAlerts">
 									<li class="alert">
