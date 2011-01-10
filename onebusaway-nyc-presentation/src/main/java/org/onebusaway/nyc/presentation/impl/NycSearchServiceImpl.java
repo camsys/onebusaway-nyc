@@ -21,6 +21,7 @@ import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
+import org.onebusaway.nyc.presentation.model.DisplayContext;
 import org.onebusaway.nyc.presentation.model.RouteItem;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
@@ -378,7 +379,10 @@ public class NycSearchServiceImpl implements NycSearchService {
         DistanceAway distanceAway = new DistanceAway(0,
             distanceAwayFromClosestStopInFeet, 
             new Date(tripStatusBean.getLastLocationUpdateTime()), 
-            m, config.getStaleDataTimeout());
+            m, 
+            config.getStaleDataTimeout(),
+            DisplayContext.ROUTE,
+            tripStatusBean);
 
         stopDistanceAways.add(distanceAway);
       }
@@ -570,8 +574,13 @@ public class NycSearchServiceImpl implements NycSearchService {
       int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         
       DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
-          distanceFromStopInFeet, new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 
-          m, config.getStaleDataTimeout());
+          distanceFromStopInFeet, 
+          new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 
+          m, 
+          config.getStaleDataTimeout(),
+          DisplayContext.STOP,
+          tripStatusBean);
+
       List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);
 
       if (distanceAways == null) {

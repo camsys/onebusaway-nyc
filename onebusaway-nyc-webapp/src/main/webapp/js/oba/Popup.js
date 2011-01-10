@@ -173,7 +173,9 @@ OBA.StopPopup = function(stopId, map) {
 			latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
 			
 			var vehicleInfo = {stops: stops,
-								feet: feet};
+								feet: feet,
+								tripStatus: arrival.tripStatus
+							  };
 
 			routeToVehicleInfo[routeId].push(vehicleInfo);				
 		});
@@ -226,7 +228,7 @@ OBA.StopPopup = function(stopId, map) {
 					for (var i = 0; i < Math.min(vehicleInfos.length, 3); i++) {
 						var distanceAway = vehicleInfos[i];
 						service += '<li class="arrival">';
-						service += "<span>" + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops) + "</span>";
+						service += "<span>" + OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops, "stop", distanceAway.tripStatus) + "</span>";
 						service += '</li>';
 					}
 				}
@@ -344,7 +346,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
 				nextStopsMarkup += '<li class="nextStop">';
 				nextStopsMarkup += stopName;				
-				nextStopsMarkup += "<span>" + OBA.Util.displayDistance(feetAway, stopsAway) + "</span>";
+				nextStopsMarkup += "<span>" + OBA.Util.displayDistance(feetAway, stopsAway, "vehicle", tripStatus) + "</span>";
 				nextStopsMarkup += '</li>';
 			});
 

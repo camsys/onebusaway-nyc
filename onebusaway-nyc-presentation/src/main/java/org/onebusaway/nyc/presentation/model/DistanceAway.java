@@ -2,6 +2,8 @@ package org.onebusaway.nyc.presentation.model;
 
 import java.util.Date;
 
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
+
 /**
  * Data transfer object for how far away a vehicle is
  */
@@ -16,13 +18,18 @@ public class DistanceAway implements Comparable<DistanceAway> {
   private final int staleTimeoutSeconds;
   private final Date timestamp;
   private Mode currentMode;
-    
-  public DistanceAway(int stopsAway, int feetAway, Date timestamp, Mode m, int staleTimeoutSeconds) {
+  private DisplayContext displayContext;
+  private TripStatusBean statusBean;
+  
+  public DistanceAway(int stopsAway, int feetAway, Date timestamp, Mode m, 
+		  int staleTimeoutSeconds, DisplayContext displayContext, TripStatusBean statusBean) {
     this.stopsAway = stopsAway;
     this.feetAway = feetAway;
     this.timestamp = timestamp;
     this.currentMode = m;
     this.staleTimeoutSeconds = staleTimeoutSeconds;
+    this.displayContext = displayContext;
+    this.statusBean = statusBean;
   }
 
   public int getStopsAway() {
@@ -61,9 +68,9 @@ public class DistanceAway implements Comparable<DistanceAway> {
 	
 	if(feetAway <= atStopThresholdInFeet)
 		r = "at stop";		
-	else if(feetAway <= arrivingThresholdInFeet && stopsAway <= arrivingThresholdInStops) {
+	else if(feetAway <= arrivingThresholdInFeet && stopsAway <= arrivingThresholdInStops)
 		r = "approaching";
-	} else {
+	else {
 		if(stopsAway <= showDistanceInStopsThresholdInStops) {
 			if(stopsAway == 0)
 				  r = "< 1 stop away";
@@ -76,7 +83,15 @@ public class DistanceAway implements Comparable<DistanceAway> {
 		  r = String.format("%1.2f mi. away", milesAway);
 		}
 	}
-		
+
+	// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover
+	if(statusBean != null) {
+		String phase = statusBean.getPhase();
+	
+		if (displayContext == DisplayContext.STOP && phase != null && phase.toLowerCase().equals("layover_during"))
+			r += " (at terminal)";
+	}
+	
 	return this.addModifiers(r);
   }
   

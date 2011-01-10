@@ -67,23 +67,31 @@ OBA.Util = (function() {
 			var feetInMeters = 3.28083989501312;
 			return meters * feetInMeters;
 		},
-		displayDistance: function(feetAway, stopsAway) {
+		displayDistance: function(feetAway, stopsAway, context, tripStatus) {
+			var s = "";
 			var milesAway = feetAway / 5280;
 			if(feetAway <= OBA.Config.atStopThresholdInFeet) {
-				return "at stop";
+				s = "at stop";
 			} else if(feetAway <= OBA.Config.arrivingThresholdInFeet && stopsAway <= OBA.Config.arrivingThresholdInStops) {
-				return "approaching";
+				s = "approaching";
 			} else {
 				if(stopsAway <= OBA.Config.showDistanceInStopsThresholdInStops) {
 					if(stopsAway === 0) {
-						return "< 1 stop away";
+						s = "< 1 stop away";
 					} else {
-						return (stopsAway == 1 ? "1 stop" : stopsAway + " stops") + " away";					
+						s = (stopsAway == 1 ? "1 stop" : stopsAway + " stops") + " away";					
 					}
 				} else {
-					return (milesAway == 1 ? "1 mile" : milesAway.toPrecision(2) + " miles") + " away";
+					s = (milesAway == 1 ? "1 mile" : milesAway.toPrecision(2) + " miles") + " away";
 				}
 			}
+			
+			// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover
+			if(context === "stop" && tripStatus !== null && tripStatus.phase.toLowerCase() === 'layover_during') {
+				s += " (at terminal)";
+			}
+			
+			return s;
 		},
 		displayTime: function(dateObj) {
 			var minutes = dateObj.getMinutes();

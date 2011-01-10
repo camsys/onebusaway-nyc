@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Date;
 
 import org.junit.Test;
+import org.onebusaway.nyc.presentation.model.DisplayContext;
 import org.onebusaway.nyc.presentation.model.RouteItem;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
@@ -38,8 +39,8 @@ public class SmsDisplayerTest {
 
   @Test
   public void testSingleStopResponseCoupleOfArrivals() {
-    DistanceAway distanceAway1 = new DistanceAway(1, 300, new Date(), Mode.SMS,300);
-    DistanceAway distanceAway2 = new DistanceAway(2, 900, new Date(), Mode.SMS,300);
+    DistanceAway distanceAway1 = new DistanceAway(1, 300, new Date(), Mode.SMS,300, DisplayContext.STOP, null);
+    DistanceAway distanceAway2 = new DistanceAway(2, 900, new Date(), Mode.SMS,300, DisplayContext.STOP, null);
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(distanceAway1);
     distanceAways.add(distanceAway2);
@@ -61,7 +62,7 @@ public class SmsDisplayerTest {
   public void testSingleStopResponseLotsOfArrivals() {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     for (int i = 0; i < 20; i++) {
-      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(),  Mode.SMS,300);
+      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(),  Mode.SMS,300, DisplayContext.STOP, null);
       distanceAways.add(distanceAway);
     }
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
@@ -125,8 +126,8 @@ public class SmsDisplayerTest {
   public void testTwoStopResponse() {
     List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300));
-    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300));
+    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300, DisplayContext.STOP, null));
+    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300, DisplayContext.STOP, null));
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
@@ -154,7 +155,7 @@ public class SmsDisplayerTest {
     List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     for (int i = 0; i < 20; i++) {
-      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(), Mode.SMS,300);
+      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(), Mode.SMS,300, DisplayContext.STOP, null);
       distanceAways.add(distanceAway);
     }
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
@@ -183,8 +184,8 @@ public class SmsDisplayerTest {
   public void testManyStopResponse() {
     List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300));
-    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300));
+    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300, DisplayContext.STOP, null));
+    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300, DisplayContext.STOP, null));
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
