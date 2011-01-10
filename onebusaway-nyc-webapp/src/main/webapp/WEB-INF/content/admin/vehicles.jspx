@@ -77,10 +77,10 @@ under the License.
 					<td>
 						<s:property value="vehicleIdWithoutAgency" />
 					</td>
-					<td>
+					<td sortKey="${lastCommTimeEpoch}">
 						<s:property value="lastCommTime" />
 					</td>
-					<td>
+					<td sortKey="${lastUpdateTimeEpoch}">
 						<s:property value="lastUpdateTime" />
 					</td>
 					<td>

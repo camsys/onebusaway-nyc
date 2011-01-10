@@ -77,7 +77,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     }
     for (NycVehicleStatusBean nycVehicleStatusBean : nycVehicleStatuses) {
       String vehicleId = nycVehicleStatusBean.getVehicleId();
-      nycVehicleMap.put(idParser.parseIdWithoutAgency(vehicleId), nycVehicleStatusBean);
+      nycVehicleMap.put(vehicleId, nycVehicleStatusBean);
     }
 
     String method = request.getMethod().toUpperCase();
@@ -90,13 +90,16 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       while (parameterNames.hasMoreElements()) {
         String key = parameterNames.nextElement().toString();
         if (key.startsWith("disable_")) {
-          String vehicleId = key.substring("disable_".length());
+          String vehicleId = vehicleTrackingManagementService.getDefaultAgencyId() + "_" + key.substring("disable_".length());
+
           NycVehicleStatusBean nycVehicleStatusBean = nycVehicleMap.get(vehicleId);
-          if (nycVehicleStatusBean != null) {
+          if (nycVehicleStatusBean == null) {
+            vehicleTrackingManagementService.setVehicleStatus(vehicleId, false);
+          } else {
             // no need to call disable on it if it's already disabled
             boolean isDisabled = !nycVehicleStatusBean.isEnabled();
             if (!isDisabled)
-              vehicleTrackingManagementService.setVehicleStatus(nycVehicleStatusBean.getVehicleId(),
+              vehicleTrackingManagementService.setVehicleStatus(vehicleId,
                   false);
           }
           disabledVehicles.add(vehicleId);
@@ -106,10 +109,10 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       // enable all the vehicles that haven't been explicitly disabled from the
       // interface
       for (NycVehicleStatusBean nycVehicleStatusBean : nycVehicleStatuses) {
-        String vehicleId = idParser.parseIdWithoutAgency(nycVehicleStatusBean.getVehicleId());
+        String vehicleId = nycVehicleStatusBean.getVehicleId();
         if (!disabledVehicles.contains(vehicleId)
             && !nycVehicleStatusBean.isEnabled())
-          vehicleTrackingManagementService.setVehicleStatus(nycVehicleStatusBean.getVehicleId(), true);
+          vehicleTrackingManagementService.setVehicleStatus(vehicleId, true);
       }
 
       return "redirect";
@@ -212,7 +215,18 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       long seconds = timeDiff / 1000;
       return formatTimeInterval(seconds);      
     }
-
+    
+    // key for sorting on client-side
+    @SuppressWarnings("unused")
+    public long getLastUpdateTimeEpoch() {
+        long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
+        
+        if(lastUpdateTime <= 0)
+      	  return -1;
+        else
+          return lastUpdateTime;
+    }
+    
     @SuppressWarnings("unused")
     public String getLastCommTime() {
       long lastUpdateTime = nycVehicleStatusBean.getLastGpsTime();
@@ -226,6 +240,17 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       return formatTimeInterval(seconds);      
     }
 
+    // key for sorting on client-side
+    @SuppressWarnings("unused")
+    public long getLastCommTimeEpoch() {
+        long lastUpdateTime = nycVehicleStatusBean.getLastGpsTime();
+        
+        if(lastUpdateTime <= 0)
+      	  return -1;
+        else
+          return lastUpdateTime;
+    }
+    
     @SuppressWarnings("unused")
     public String getHeadsign() {
       if (vehicleStatusBean == null)

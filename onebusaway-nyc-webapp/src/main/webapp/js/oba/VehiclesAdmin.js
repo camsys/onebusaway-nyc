@@ -20,7 +20,14 @@ OBA.VehiclesAdmin = (function() {
 
 	function sortTableRows(rows, sortIndex, reverse) {
 		var keyFn = function(row) {
-            var key = jQuery(row).children().slice(sortIndex, sortIndex+1).text();
+            var row = jQuery(row).children().slice(sortIndex, sortIndex+1);
+
+            if(typeof row.attr("sortKey") !== 'undefined') {
+            	return row.attr("sortKey");
+            } else {
+            	return row.text();
+            }
+            
             return key;
         };
 
