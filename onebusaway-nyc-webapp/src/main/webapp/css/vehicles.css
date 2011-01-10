@@ -48,6 +48,16 @@
 	background-color: orange;	
 }
 
+#content #text .position img {
+	float: left;
+}
+
+#content #text .position a {
+	margin-bottom: 5px;
+	margin-top: 15px;
+	float: left;	
+}
+
 #content #text .map-location {
 	height: 160px;
 	width: 150px;
@@ -63,4 +73,5 @@
 	overflow: hidden;
 	border: 1px solid #C0C0C0;
 	background-color: #EFEFEF;
+	margin-left: 51px;
 }

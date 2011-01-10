@@ -19,14 +19,23 @@ OBA.popupMarker = null;
 
 OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 	var infoWindow = null;
+	var wrappedContent = null;
 	
 	function createWrapper(content) {
-		var wrappedContent = jQuery('<div id="popup"></div>')
+		// if we created a wrapper and appended it to the map to get its size,
+		// but never put it in a bubble, remove it before we create another.
+		if(wrappedContent !== null) {
+			jQuery(wrappedContent).remove();
+			wrappedContent = null;
+		}
+		
+		wrappedContent = jQuery('<div id="popup"></div>')
 			.append(content)
 			.appendTo("#map");
-
-		wrappedContent = wrappedContent.css("width", 325)
-			.css("height", wrappedContent.height());
+		
+		wrappedContent = wrappedContent
+							.css("width", 325)
+							.css("height", wrappedContent.height());
 
 		return wrappedContent.get(0);
 	}
@@ -197,7 +206,7 @@ OBA.StopPopup = function(stopId, map) {
 		// service at this stop
 		var service = "";
 		if(routeCount === 0) {
-			service += '<p class="service">No upcoming service is available at this stop.</p>';
+			service += '<p class="service">Next bus not en-route to your location. Check back shortly for an update.</p>';
 		} else {
 			service += '<p class="service">This stop is served by:</p><ul>';
 	

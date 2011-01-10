@@ -99,12 +99,12 @@ under the License.
 							</p>
 						</div>
 					</td>
-					<td>
-						Location: <s:property value="location" />
-						<br/>
-						Orientation: <s:property value="orientation" />
-						<br/>
-						<a href="#" class="map">Show On Map</a>
+					<td class="position">
+						<img src="${orientationImagePath}"/>
+
+						<a href="#">
+							<s:property value="location" />
+						</a>
 					</td>
 				</tr>
 			</s:iterator>

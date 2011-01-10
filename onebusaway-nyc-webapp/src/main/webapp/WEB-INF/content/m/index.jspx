@@ -96,7 +96,7 @@ under the License.
 					</strong><br/>
 		
 					<s:if test="%{routesAvailable.size==0}">
-						<p>No upcoming service is available at this stop.</p>
+						<p>Next bus not en-route to your location. Check back shortly for an update.</p>
 					</s:if>
 					<s:else>
 						<s:iterator value="routesAvailable">
