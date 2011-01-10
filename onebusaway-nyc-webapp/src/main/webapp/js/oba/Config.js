@@ -24,9 +24,16 @@ OBA.Config = {
 		stopUrl: "/onebusaway-api-webapp/api/where/arrivals-and-departures-for-stop",
 		vehiclesUrl:"/onebusaway-api-webapp/api/where/trips-for-route",
 		vehicleUrl: "/onebusaway-api-webapp/api/where/trip-for-vehicle",
+		
+		agencyId: "MTA NYCT",
 
 		// milliseconds to wait in-between polls for bus locations
 		pollingInterval: 5000,
+		
+		// Time, in minutes, that we'll look into the past for a scheduled
+		// arrival at a stop.  If a bus is running more than X minutes
+		// late, it won't get listed in the arrival list
+		arrivalsMinutesBefore: 30,
 
 		// display convention thresholds
 		showDistanceInStopsThresholdInStops: 3,

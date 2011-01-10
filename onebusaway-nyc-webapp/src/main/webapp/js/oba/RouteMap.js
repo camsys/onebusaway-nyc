@@ -299,8 +299,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				marker.showPopup();
 			} else {
 				var url = OBA.Config.stopUrl + "/" + stopId + ".json";
-
-				jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
+				var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore};
+				
+				jQuery.getJSON(url, params, function(json) {
 					var stop = null;
 					try {
 						stop = json.data.references.stops[0];

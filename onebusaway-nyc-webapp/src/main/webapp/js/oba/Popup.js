@@ -242,9 +242,11 @@ OBA.StopPopup = function(stopId, map) {
 	};
 
 	var url = OBA.Config.stopUrl + "/" + stopId + ".json";
+	var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore};
+	
 	return OBA.Popup(
 			map,
-			makeJsonFetcher(url, {version: 2, key: OBA.Config.apiKey}),
+			makeJsonFetcher(url, params),
 			generateStopMarkup);
 };
 
