@@ -54,10 +54,9 @@ OBA.VehiclesAdmin = (function() {
 	            var newRows = sortTableRows(oldRows, i, reverseSort);	      
 	            lastSortIndex = i;
 	            oldRows.remove();
-	            table.append(newRows);	            
+	            table.append(newRows);
 	            addResetLinkBehavior();
 			    addMapLinkBehavior();
-			    addIntersectionAnnotation();
 	        });
 	    });
 	}
@@ -149,7 +148,7 @@ OBA.VehiclesAdmin = (function() {
 	function addIntersectionAnnotation() {
 		jQuery('table').find('tr').not(":first")
 	    .find(".position a").each(function(_, el) {
-			var location = jQuery(el).text();
+			var location = jQuery(el).text();	
 			jQuery.ajax({
 	            url: "http://dev.oba.openplans.org/debug/tools/osm.php",
 	            dataType: "jsonp",
@@ -159,7 +158,8 @@ OBA.VehiclesAdmin = (function() {
 	            },
 	            success: function(data) { 
 	            	var textDesc = jQuery("<p></p>")
-	            					.text(data.block);
+	            					.text(data.block)
+	            					.addClass("annotation");
 	            	jQuery(el).parent().prepend(textDesc);
 	            }
 	        });
