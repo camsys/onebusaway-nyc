@@ -52,12 +52,16 @@
 	float: left;
 }
 
-#content #text .position a {
-	margin-bottom: 5px;
-	margin-top: 15px;
-	float: left;	
+#content #text .position div.wrapper {
+	float: left;
+	padding-left: 5px;
+	padding-top: 10px;
 }
 
+#content #text .position {
+	font-size: 12px;
+}
+	
 #content #text .map-location {
 	height: 160px;
 	width: 150px;
@@ -73,5 +77,5 @@
 	overflow: hidden;
 	border: 1px solid #C0C0C0;
 	background-color: #EFEFEF;
-	margin-left: 51px;
+	margin-top: 5px;
 }

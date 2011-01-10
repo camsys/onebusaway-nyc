@@ -102,9 +102,11 @@ under the License.
 					<td class="position">
 						<img src="${orientationImagePath}"/>
 
-						<a href="#">
-							<s:property value="location" />
-						</a>
+						<div class="wrapper">
+							<a href="#">
+								<s:property value="location" />
+							</a>
+						</div>
 					</td>
 				</tr>
 			</s:iterator>
