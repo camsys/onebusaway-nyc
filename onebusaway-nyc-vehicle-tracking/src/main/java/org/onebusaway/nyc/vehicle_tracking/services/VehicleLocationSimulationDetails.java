@@ -12,6 +12,12 @@ public class VehicleLocationSimulationDetails {
 
   private NycTestLocationRecord lastObservation;
 
+  /**
+   * True if the list of particles is a history of a specific particles, as
+   * opposed to the set of particles active right now
+   */
+  private boolean history;
+
   private List<Particle> particles;
 
   private List<Particle> sampledParticles;
@@ -32,6 +38,14 @@ public class VehicleLocationSimulationDetails {
 
   public void setLastObservation(NycTestLocationRecord lastObservation) {
     this.lastObservation = lastObservation;
+  }
+
+  public boolean isHistory() {
+    return history;
+  }
+
+  public void setHistory(boolean history) {
+    this.history = history;
   }
 
   public List<Particle> getParticles() {

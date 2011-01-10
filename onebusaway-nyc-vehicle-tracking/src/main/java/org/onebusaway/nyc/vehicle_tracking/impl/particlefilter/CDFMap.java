@@ -73,6 +73,14 @@ public class CDFMap<T> {
   public boolean isEmpty() {
     return _entries.isEmpty();
   }
+  
+  public boolean hasProbability() {
+    return _cumulativeProb > 0.0;
+  }
+  
+  public boolean canSample() {
+    return ! _entries.isEmpty() && _cumulativeProb > 0.0;
+  }
 
   public int size() {
     return _entries.size();

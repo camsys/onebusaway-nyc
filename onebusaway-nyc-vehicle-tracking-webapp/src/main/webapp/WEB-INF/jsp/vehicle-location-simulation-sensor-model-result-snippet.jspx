@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jsp:root version="1.2" xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:form="http://www.springframework.org/tags/form">
+    <jsp:directive.page contentType="text/html" />
+
+<li><c:out value="${sensorModelResult.name}"/> = <c:out value="${sensorModelResult.probability}"/></li>
+<ul>
+    <c:forEach var="sensorModelResult" items="${sensorModelResult.results}">
+        <c:set var="sensorModelResult" value="${sensorModelResult}" scope="request" />
+        <jsp:include page="vehicle-location-simulation-sensor-model-result-snippet.jspx"/>
+    </c:forEach>
+</ul>
+    
+</jsp:root>

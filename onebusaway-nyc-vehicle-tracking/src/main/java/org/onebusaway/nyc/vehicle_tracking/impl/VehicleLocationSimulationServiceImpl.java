@@ -355,6 +355,7 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockId));
       record.setActualServiceDate(serviceDate);
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
+      record.setActualScheduleTime(blockLocation.getScheduledTime());
       record.setActualDsc(dsc);
       record.setActualLat(location.getLat());
       record.setActualLon(location.getLon());

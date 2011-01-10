@@ -224,12 +224,15 @@ public class ParticleFilter<OBS> {
     CDFMap<Particle> cdf = new CDFMap<Particle>();
 
     for (Particle particle : particles) {
-      double likelihood = getParticleLikelihood(particle, obs);
+      SensorModelResult result = getParticleLikelihood(particle, obs);
+      double likelihood = result.getProbability();
 
       if (Double.isNaN(likelihood))
         throw new IllegalStateException("NaN likehood");
 
       particle.setWeight(likelihood);
+      particle.setResult(result);
+      
       cdf.put(likelihood, particle);
 
     }
@@ -237,7 +240,7 @@ public class ParticleFilter<OBS> {
     return cdf;
   }
 
-  private double getParticleLikelihood(Particle particle, OBS obs) {
+  private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) {
     return _sensorModel.likelihood(particle, obs);
   }
 }

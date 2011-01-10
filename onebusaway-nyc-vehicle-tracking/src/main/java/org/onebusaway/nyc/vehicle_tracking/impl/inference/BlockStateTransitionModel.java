@@ -188,7 +188,7 @@ public class BlockStateTransitionModel {
          * in switching to a new block
          */
         CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
-        if( cdf.isEmpty() )
+        if (! cdf.canSample() )
           return null;
         return cdf.sample();
       }
@@ -211,7 +211,7 @@ public class BlockStateTransitionModel {
 
       if (allowBlockChangeWhileInProgress) {
         CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
-        if (cdf.isEmpty())
+        if (! cdf.canSample() )
           return null;
         return cdf.sample();
       }
@@ -239,12 +239,12 @@ public class BlockStateTransitionModel {
 
       if (Math.random() < 0.5) {
         CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
-        if (cdf.isEmpty())
+        if (! cdf.canSample() )
           return null;
         return cdf.sample();
       } else {
         CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
-        if (cdf.isEmpty())
+        if (! cdf.canSample() )
           return null;
         return cdf.sample();
       }

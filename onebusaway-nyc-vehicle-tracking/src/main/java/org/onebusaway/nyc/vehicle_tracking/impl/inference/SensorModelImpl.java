@@ -18,6 +18,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel2;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -105,7 +106,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   private DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(200);
 
-  private List<BlockTransitionRule> _rules = Collections.emptyList();
+  private List<SensorModelRule> _rules = Collections.emptyList();
 
   private SensorModelSupportLibrary _sensorModelLibrary;
 
@@ -146,7 +147,7 @@ public class SensorModelImpl implements SensorModel<Observation> {
    ****/
 
   @Override
-  public double likelihood(Particle particle, Observation observation) {
+  public SensorModelResult likelihood(Particle particle, Observation observation) {
 
     VehicleState state = particle.getData();
     VehicleState parentState = null;
@@ -155,13 +156,13 @@ public class SensorModelImpl implements SensorModel<Observation> {
     if (parent != null)
       parentState = parent.getData();
 
-    double pJourney = likelihood(parentState, state, observation);
-
-    return pJourney;
+    SensorModelResult result = likelihood(parentState, state, observation);
+    
+    return result;
   }
 
   @Autowired
-  public void setRules(List<BlockTransitionRule> rules) {
+  public void setRules(List<SensorModelRule> rules) {
     _rules = rules;
   }
 
@@ -169,45 +170,60 @@ public class SensorModelImpl implements SensorModel<Observation> {
    * {@link SensorModelImpl} Interface
    ****/
 
-  public double likelihood(VehicleState parentState, VehicleState state,
+  public SensorModelResult likelihood(VehicleState parentState, VehicleState state,
       Observation obs) {
+    
+    SensorModelResult result = new SensorModelResult("pTotal",1.0);
 
     double pAtBase = computeAtBaseProbability(state, obs);
-
+    result.addResultAsAnd("pAtBase",pAtBase);
+    
     double pDestinationSignCode = computeDestinationSignCodeProbability(state,
         obs);
+    result.addResultAsAnd("pDestinationSignCode",pDestinationSignCode);
 
     double pBlock = computeBlockProbabilities(parentState, state, obs);
-
+    result.addResultAsAnd("pBlock",pBlock);
+    
     double pBlockChange = computeBlockSwitchProbability(parentState, state, obs);
-
-    double pLayover = computeLayoverProbabilities(state, obs);
-
+    result.addResultAsAnd("pBlockChange",pBlockChange);
+    
     double pDeadheadBefore = computeDeadheadBeforeProbabilities(parentState,
         state, obs);
-
+    result.addResultAsAnd("pDeadheadBefore",pDeadheadBefore);
+    
     double pInProgress = computeInProgressProbabilities(parentState, state, obs);
-
+    result.addResultAsAnd("pInProgress",pInProgress);
+    
     double pDeadheadDuring = computeDeadheadDuringProbabilities(state, obs);
-
+    result.addResultAsAnd("pDeadheadDuring",pDeadheadDuring);
+    
     double pDeadheadAfter = computeDeadheadOrLayoverAfterProbabilities(state,
         obs);
+    result.addResultAsAnd("pDeadheadAfter",pDeadheadAfter);
 
     double pPrior = computePriorProbability(state);
-
+    result.addResultAsAnd("pPrior",pPrior);
+    
     double pTransition = computeTransitionProbability(parentState, state, obs);
-
+    result.addResultAsAnd("pTransition",pTransition);
+    
     double pRules = 1.0;
 
     Context context = new Context(parentState, state, obs);
     for (SensorModelRule rule : _rules) {
-      double p = rule.likelihood(_sensorModelLibrary, context);
-      pRules *= p;
+      SensorModelResult r = rule.likelihood(_sensorModelLibrary, context);
+      pRules *= r.getProbability();
+      result.addResultAsAnd(r);
     }
 
+    return result;
+    
+    /*
     return pAtBase * pDestinationSignCode * pBlock * pBlockChange * pLayover
         * pDeadheadBefore * pInProgress * pDeadheadDuring * pDeadheadAfter
         * pPrior * pTransition * pRules;
+        * */
   }
 
   /****
@@ -403,69 +419,6 @@ public class SensorModelImpl implements SensorModel<Observation> {
   /****
    * 
    ****/
-
-  /**
-   * Compute various probabilities concerning layovers
-   * 
-   * @param state
-   * @param obs
-   * @return
-   */
-  public double computeLayoverProbabilities(VehicleState state, Observation obs) {
-
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-
-    BlockState blockState = state.getBlockState();
-
-    /**
-     * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
-     */
-
-    double pNotMoved = computeVehicelHasNotMovedProbability(
-        state.getMotionState(), obs);
-
-    double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
-        state, obs));
-
-    /**
-     * LAYOVER_AFTER => ! pAtLayoverLocation
-     */
-    if (phase == EVehiclePhase.LAYOVER_AFTER)
-      pAtLayoverLocation = not(pAtLayoverLocation);
-
-    double pLayoverState = p(EVehiclePhase.isLayover(phase));
-
-    double p1 = biconditional(pNotMoved * pAtLayoverLocation, pLayoverState);
-
-    /**
-     * Rule: LAYOVER_DURING => made some progress on the block
-     */
-
-    double pLayoverDuring = p(phase == EVehiclePhase.LAYOVER_DURING);
-    double pServedSomePartOfBlock = computeProbabilityOfServingSomePartOfBlock(blockState);
-
-    double p2 = implies(pLayoverDuring, pServedSomePartOfBlock);
-
-    /**
-     * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule
-     */
-
-    double p3 = 1.0;
-    boolean isActiveLayoverState = EVehiclePhase.isActiveLayover(phase);
-
-    if (isActiveLayoverState && blockState != null) {
-
-      BlockStopTimeEntry nextStop = phase == EVehiclePhase.LAYOVER_BEFORE
-          ? blockState.getBlockLocation().getNextStop()
-          : _vehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
-
-      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(), blockState,
-          nextStop);
-    }
-
-    return p1 * p2 * p3;
-  }
 
   /**
    * @return the probability that the vehicle has not moved in a while

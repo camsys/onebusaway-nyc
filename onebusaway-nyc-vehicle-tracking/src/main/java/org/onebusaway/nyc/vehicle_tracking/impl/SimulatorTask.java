@@ -233,6 +233,7 @@ class SimulatorTask implements Runnable, EntityHandler {
             p = p.getParent();
           }
           details.setParticles(history);
+          details.setHistory(true);
           break;
         }
       }
@@ -428,9 +429,11 @@ class SimulatorTask implements Runnable, EntityHandler {
 
     if (_fillActualProperties) {
       rr.setActualBlockId(rr.getInferredBlockId());
+      rr.setActualTripId(rr.getInferredTripId());
       rr.setActualBlockLat(rr.getInferredBlockLat());
       rr.setActualBlockLon(rr.getInferredBlockLon());
       rr.setActualDistanceAlongBlock(rr.getInferredDistanceAlongBlock());
+      rr.setActualScheduleTime(rr.getInferredScheduleTime());
       rr.setActualDsc(rr.getInferredDsc());
       rr.setActualLat(rr.getInferredLat());
       rr.setActualLon(rr.getInferredLon());

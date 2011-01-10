@@ -7,11 +7,21 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 
 public class VehicleLocationDetails {
 
+  private String id;
+  
   private String vehicleId;
 
   private NycVehicleLocationRecord lastObservation;
 
   private List<Particle> particles;
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
 
   public String getVehicleId() {
     return vehicleId;

@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
-import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.implies;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.not;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
@@ -11,6 +10,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyPhaseSummaryLib
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -52,7 +52,7 @@ public class BlockTransitionRule implements SensorModelRule {
   }
 
   @Override
-  public double likelihood(SensorModelSupportLibrary library, Context context) {
+  public SensorModelResult likelihood(SensorModelSupportLibrary library, Context context) {
 
     VehicleState state = context.getState();
     List<JourneyPhaseSummary> summaries = state.getJourneySummaries();
@@ -62,7 +62,7 @@ public class BlockTransitionRule implements SensorModelRule {
      * We first need a current block
      */
     if (currentBlock == null)
-      return 1.0;
+      return new SensorModelResult("pBlockTransition - no current block",1.0);
 
     /**
      * If we've been serving a sufficient amount of the current block, we can
@@ -72,7 +72,7 @@ public class BlockTransitionRule implements SensorModelRule {
      */
     int currentBlockDuration = (int) ((currentBlock.getTimeTo() - currentBlock.getTimeFrom()) / 1000);
     if (currentBlockDuration > 5 * 60)
-      return 1.0;
+      return new SensorModelResult("pBlockTransition",1.0);
 
     /**
      * We next need a previous block
@@ -81,14 +81,14 @@ public class BlockTransitionRule implements SensorModelRule {
         summaries, currentBlock);
 
     if (previousBlock == null)
-      return 1.0;
+      return new SensorModelResult("pBlockTransition",1.0);
 
     /**
      * We only care if the two blocks are different
      */
     if (ObjectUtils.equals(currentBlock.getBlockInstance(),
         previousBlock.getBlockInstance()))
-      return 1.0;
+      return new SensorModelResult("pBlockTransition",1.0);
 
     /**
      * Did we complete the previous block?
@@ -110,7 +110,14 @@ public class BlockTransitionRule implements SensorModelRule {
     int blockTransitionDuration = (int) ((currentBlock.getTimeFrom() - previousBlock.getTimeTo()) / 1000);
     double pBlockTransitionHappenedWithNoLayover = p(blockTransitionDuration < 20 * 10);
 
-    return not(pCompletedBlock * pServicedSomePartOfBlock);
+    
+    double pBlockTransition = not(pCompletedBlock * pServicedSomePartOfBlock);
+
+    SensorModelResult result = new SensorModelResult("pBlockTransition", pBlockTransition);
+    result.addResult("pCompletedBlock",pCompletedBlock);
+    result.addResult("pServicedSomePartOfBlock",pServicedSomePartOfBlock);
+
+    return result;
     
     /**
      * We allow you to switch blocks

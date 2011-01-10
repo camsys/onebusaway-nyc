@@ -36,6 +36,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartStat
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
@@ -179,7 +180,9 @@ public class SensorModelVerificationMain {
             VehicleState state = getRecordAsVehicleState(record, prevState, obs);
 
             Context context = new Context(prevState, state, obs);
-            double p = rule.likelihood(_sensorModelSupportLibrary, context);
+            SensorModelResult result = rule.likelihood(_sensorModelSupportLibrary, context);
+            
+            double p = result.getProbability();
 
             if (p <= 0.1) {
               String label = _format.format(p);

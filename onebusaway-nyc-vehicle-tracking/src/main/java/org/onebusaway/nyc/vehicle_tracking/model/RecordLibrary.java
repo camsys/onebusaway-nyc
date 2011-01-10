@@ -19,6 +19,7 @@ public class RecordLibrary {
     vlr.setTimeOfRecord(record.getTimestamp());
     vlr.setTimeOfLocationUpdate(record.getTimestamp());
     vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getInferredBlockId()));
+    vlr.setTripId(AgencyAndIdLibrary.convertFromString(record.getInferredTripId()));
     vlr.setServiceDate(record.getInferredServiceDate());
     vlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
     vlr.setCurrentLocationLat(record.getLat());

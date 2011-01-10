@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jsp:root version="1.2" xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+    xmlns:form="http://www.springframework.org/tags/form">
+    <jsp:directive.page contentType="text/html" />
+
+    <table>
+        <thead>
+            <tr>
+                <td>P</td>
+                <td>Phase</td>
+                <td>BlockId</td>
+                <td>TripId</td>
+                <td>BlockLocation</td>
+                <td>DistanceAlongBlock</td>
+                <td>ScheduledTime</td>
+                <td>LastMotionLocation</td>
+            </tr>
+        </thead>
+        <tbody>
+
+            <c:forEach var="p" items="${particles}">
+                <tr>
+                    <c:set var="edgeState" value="${p.data.edgeState}" />
+                    <c:set var="motionState"
+                        value="${p.data.motionState}" />
+                    <c:set var="journeyState"
+                        value="${p.data.journeyState}" />
+                    <c:set var="blockState" value="${p.data.blockState}" />
+                    <c:set var="blockLocation"
+                        value="${blockState.blockLocation}" />
+                    <td>
+                        <a href="vehicle-location-simulation!particle-details.do?taskId=${details.id}&amp;particleId=${p.index}"><c:out value="${p.weight}"/></a>
+                    </td>
+                    <td><c:out value="${journeyState.phase}" /></td>
+                    <td><a
+                        href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
+                        value="${blockState.blockInstance.block.block.id}" /></a></td>
+                    <td><c:out
+                        value="${blockLocation.activeTrip.trip.id}" /></td>
+                    <td><c:out
+                        value="${blockLocation.location.lat}" /><jsp:text>
+                    </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
+                    <td><c:out
+                        value="${blockLocation.distanceAlongBlock}" /></td>
+                    <jsp:useBean id="scheduleTime"
+                        class="java.util.Date" />
+                    <jsp:setProperty name="scheduleTime" property="time"
+                        value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}" />
+                    <td><fmt:formatDate pattern="HH:mm"
+                        value="${scheduleTime}" /><jsp:text> (</jsp:text><c:out
+                        value="${blockLocation.scheduledTime}" />)</td>
+                    <td><c:out
+                        value="${motionState.lastInMotionLocation.lat}" /><jsp:text>
+                    </jsp:text><c:out
+                        value="${motionState.lastInMotionLocation.lon}" /></td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
+
+</jsp:root>

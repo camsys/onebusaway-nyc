@@ -89,9 +89,38 @@ the list of Currently Scheduled Trips</a></p>
 <h2>Active Simulations</h2>
 <jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
 
-<p>
-<a href="vehicle-location-simulation!cancelAll.do">Cancel All Simulations</a>
-</p>
+<p><a href="vehicle-location-simulation!cancelAll.do">Cancel All
+Simulations</a></p>
+
+<h2>Upload a SingleRecord</h2>
+<form action="update-vehicle-location.do" method="POST">
+<table>
+    <tr>
+        <td>Time::</td>
+        <td><input type="text" name="time" /></td>
+    </tr>
+    <tr>
+        <td>VehicleId:</td>
+        <td><input type="text" name="vehicleId" /></td>
+    </tr>
+    <tr>
+        <td>Lat:</td>
+        <td><input type="text" name="lat" /></td>
+    </tr>
+    <tr>
+        <td>Lon:</td>
+        <td><input type="text" name="lon" /></td>
+    </tr>
+    <tr>
+        <td>DSC:</td>
+        <td><input type="text" name="dsc" /></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><input type="submit" value="Submit" /></td>
+    </tr>
+</table>
+</form>
 
 </body>
 </html>

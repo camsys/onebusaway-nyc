@@ -34,6 +34,8 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -385,10 +387,19 @@ public class VehicleInferenceInstance {
       BlockEntry block = blockConfig.getBlock();
 
       record.setInferredBlockId(AgencyAndIdLibrary.convertToString(block.getId()));
+      
       record.setInferredServiceDate(blockInstance.getServiceDate());
 
       ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
       record.setInferredDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
+      record.setInferredScheduleTime(blockLocation.getScheduledTime());
+      
+      BlockTripEntry activeTrip = blockLocation.getActiveTrip();
+      
+      if( activeTrip != null) {
+        TripEntry trip = activeTrip.getTrip();
+        record.setInferredTripId(AgencyAndIdLibrary.convertToString(trip.getId()));
+      }
 
       CoordinatePoint locationAlongBlock = blockLocation.getLocation();
       if (locationAlongBlock != null) {

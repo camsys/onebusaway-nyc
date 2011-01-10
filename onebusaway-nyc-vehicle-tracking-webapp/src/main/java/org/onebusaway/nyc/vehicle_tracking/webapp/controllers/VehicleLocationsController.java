@@ -1,7 +1,11 @@
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestLocationRecordDestinationSignCodeComparator;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestLocationRecordVehicleComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
@@ -23,10 +27,13 @@ public class VehicleLocationsController {
   }
 
   @RequestMapping("/vehicle-locations.do")
-  public ModelAndView index() {
+  public ModelAndView index(@RequestParam(required=false) String sort) {
 
     List<NycTestLocationRecord> records = _vehicleLocationService.getLatestProcessedVehicleLocationRecords();
 
+    Comparator<NycTestLocationRecord> comparator = getComparatorForSortString(sort);
+    Collections.sort(records,comparator);
+    
     ModelAndView mv = new ModelAndView("vehicle-locations.jspx");
     mv.addObject("records", records);
     return mv;
@@ -64,5 +71,22 @@ public class VehicleLocationsController {
     ModelAndView mv = new ModelAndView("vehicle-location-particles.jspx");
     mv.addObject("details", details);
     return mv;
+  }
+
+  /****
+   * 
+   ****/
+
+  private Comparator<NycTestLocationRecord> getComparatorForSortString(
+      String sort) {
+    if( sort == null )
+      return new NycTestLocationRecordVehicleComparator();
+    
+    sort = sort.toLowerCase().trim();
+    
+    if( sort.equals("dsc"))
+      return new NycTestLocationRecordDestinationSignCodeComparator();
+    
+    return new NycTestLocationRecordVehicleComparator();
   }
 }

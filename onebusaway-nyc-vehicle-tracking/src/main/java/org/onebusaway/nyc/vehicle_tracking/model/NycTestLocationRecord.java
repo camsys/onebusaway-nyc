@@ -6,11 +6,14 @@ import java.util.Date;
 
 import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
 import org.onebusaway.gtfs.csv.schema.annotations.CsvFields;
+import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 
 @CsvFields(filename = "ivn-dsc.csv")
 public class NycTestLocationRecord implements Serializable {
 
   private static final long serialVersionUID = 1L;
+
+  private static final int MISSING_VALUE = -999;
 
   /****
    * Raw Observation Values
@@ -37,10 +40,16 @@ public class NycTestLocationRecord implements Serializable {
   private String inferredBlockId;
 
   @CsvField(optional = true)
+  private String inferredTripId;
+
+  @CsvField(optional = true)
   private long inferredServiceDate;
 
   @CsvField(optional = true)
   private double inferredDistanceAlongBlock = Double.NaN;
+
+  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
+  private int inferredScheduleTime = MISSING_VALUE;
 
   @CsvField(optional = true)
   private String inferredDsc;
@@ -71,10 +80,16 @@ public class NycTestLocationRecord implements Serializable {
   private String actualBlockId;
 
   @CsvField(optional = true)
+  private String actualTripId;
+
+  @CsvField(optional = true)
   private long actualServiceDate;
 
   @CsvField(optional = true)
   private double actualDistanceAlongBlock = Double.NaN;
+
+  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
+  private int actualScheduleTime = MISSING_VALUE;
 
   @CsvField(optional = true)
   private String actualDsc;
@@ -153,10 +168,18 @@ public class NycTestLocationRecord implements Serializable {
     this.inferredBlockId = inferredBlockId;
   }
 
+  public String getInferredTripId() {
+    return inferredTripId;
+  }
+
+  public void setInferredTripId(String inferredTripId) {
+    this.inferredTripId = inferredTripId;
+  }
+
   public boolean isInferredServiceDateSet() {
     return inferredServiceDate > 0;
   }
-  
+
   public long getInferredServiceDate() {
     return inferredServiceDate;
   }
@@ -175,6 +198,18 @@ public class NycTestLocationRecord implements Serializable {
 
   public void setInferredDistanceAlongBlock(double inferredDistanceAlongBlock) {
     this.inferredDistanceAlongBlock = inferredDistanceAlongBlock;
+  }
+
+  public boolean isInferredScheduleTimeSet() {
+    return inferredScheduleTime != MISSING_VALUE;
+  }
+
+  public int getInferredScheduleTime() {
+    return inferredScheduleTime;
+  }
+
+  public void setInferredScheduleTime(int inferredScheduleTime) {
+    this.inferredScheduleTime = inferredScheduleTime;
   }
 
   public String getInferredDsc() {
@@ -273,7 +308,15 @@ public class NycTestLocationRecord implements Serializable {
   public void setActualBlockId(String actualBlockId) {
     this.actualBlockId = actualBlockId;
   }
-  
+
+  public String getActualTripId() {
+    return actualTripId;
+  }
+
+  public void setActualTripId(String actualTripId) {
+    this.actualTripId = actualTripId;
+  }
+
   public boolean isActualServiceDateSet() {
     return actualServiceDate > 0;
   }
@@ -285,9 +328,9 @@ public class NycTestLocationRecord implements Serializable {
   public void setActualServiceDate(long actualServiceDate) {
     this.actualServiceDate = actualServiceDate;
   }
-  
+
   public boolean isActualDistanceAlongBlockSet() {
-    return ! Double.isNaN(actualDistanceAlongBlock);
+    return !Double.isNaN(actualDistanceAlongBlock);
   }
 
   public double getActualDistanceAlongBlock() {
@@ -298,6 +341,18 @@ public class NycTestLocationRecord implements Serializable {
     this.actualDistanceAlongBlock = actualDistanceAlongBlock;
   }
 
+  public boolean isActualScheduleTimeSet() {
+    return actualScheduleTime != MISSING_VALUE;
+  }
+
+  public int getActualScheduleTime() {
+    return actualScheduleTime;
+  }
+
+  public void setActualScheduleTime(int actualScheduleTime) {
+    this.actualScheduleTime = actualScheduleTime;
+  }
+
   public String getActualDsc() {
     return actualDsc;
   }
@@ -305,9 +360,9 @@ public class NycTestLocationRecord implements Serializable {
   public void setActualDsc(String actualDsc) {
     this.actualDsc = actualDsc;
   }
-  
+
   public boolean isActualLatSet() {
-    return ! Double.isNaN(actualLat);
+    return !Double.isNaN(actualLat);
   }
 
   public double getActualLat() {
@@ -317,9 +372,9 @@ public class NycTestLocationRecord implements Serializable {
   public void setActualLat(double actualLat) {
     this.actualLat = actualLat;
   }
-  
+
   public boolean isActualLonSet() {
-    return ! Double.isNaN(actualLon);
+    return !Double.isNaN(actualLon);
   }
 
   public double getActualLon() {
@@ -329,9 +384,9 @@ public class NycTestLocationRecord implements Serializable {
   public void setActualLon(double actualLon) {
     this.actualLon = actualLon;
   }
-  
+
   public boolean isActualBlockLatSet() {
-    return ! Double.isNaN(actualBlockLat);
+    return !Double.isNaN(actualBlockLat);
   }
 
   public double getActualBlockLat() {
@@ -341,9 +396,9 @@ public class NycTestLocationRecord implements Serializable {
   public void setActualBlockLat(double actualBlockLat) {
     this.actualBlockLat = actualBlockLat;
   }
-  
+
   public boolean isActualBlockLonSet() {
-    return ! Double.isNaN(actualBlockLon);
+    return !Double.isNaN(actualBlockLon);
   }
 
   public double getActualBlockLon() {

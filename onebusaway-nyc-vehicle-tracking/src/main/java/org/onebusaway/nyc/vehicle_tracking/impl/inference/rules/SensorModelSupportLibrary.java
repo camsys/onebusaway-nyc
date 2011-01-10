@@ -128,43 +128,6 @@ public class SensorModelSupportLibrary {
   }
 
   /****
-   * {@link SensorModelSupportLibrary} Interface
-   ****/
-
-  public double likelihood(VehicleState parentState, VehicleState state,
-      Observation obs) {
-
-    double pAtBase = computeAtBaseProbability(state, obs);
-
-    double pDestinationSignCode = computeDestinationSignCodeProbability(state,
-        obs);
-
-    double pBlock = computeBlockProbabilities(state, obs);
-
-    double pBlockChange = computeBlockSwitchProbability(parentState, state, obs);
-
-    double pLayover = computeLayoverProbabilities(state, obs);
-
-    double pDeadheadBefore = computeDeadheadBeforeProbabilities(parentState,
-        state, obs);
-
-    double pInProgress = computeInProgressProbabilities(parentState, state, obs);
-
-    double pDeadheadDuring = computeDeadheadDuringProbabilities(state, obs);
-
-    double pDeadheadAfter = computeDeadheadOrLayoverAfterProbabilities(state,
-        obs);
-
-    double pPrior = computePriorProbability(state);
-
-    double pTransition = computeTransitionProbability(parentState, state, obs);
-
-    return pAtBase * pDestinationSignCode * pBlock * pBlockChange * pLayover
-        * pDeadheadBefore * pInProgress * pDeadheadDuring * pDeadheadAfter
-        * pPrior * pTransition;
-  }
-
-  /****
    * Private Methods
    ****/
 
@@ -331,69 +294,6 @@ public class SensorModelSupportLibrary {
   /****
    * 
    ****/
-
-  /**
-   * Compute various probabilities concerning layovers
-   * 
-   * @param state
-   * @param obs
-   * @return
-   */
-  public double computeLayoverProbabilities(VehicleState state, Observation obs) {
-
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-
-    BlockState blockState = state.getBlockState();
-
-    /**
-     * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
-     */
-
-    double pNotMoved = computeVehicelHasNotMovedProbability(
-        state.getMotionState(), obs);
-
-    double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
-        state, obs));
-
-    /**
-     * LAYOVER_AFTER => ! pAtLayoverLocation
-     */
-    if (phase == EVehiclePhase.LAYOVER_AFTER)
-      pAtLayoverLocation = not(pAtLayoverLocation);
-
-    double pLayoverState = p(EVehiclePhase.isLayover(phase));
-
-    double p1 = biconditional(pNotMoved * pAtLayoverLocation, pLayoverState);
-
-    /**
-     * Rule: LAYOVER_DURING => made some progress on the block
-     */
-
-    double pLayoverDuring = p(phase == EVehiclePhase.LAYOVER_DURING);
-    double pServedSomePartOfBlock = computeProbabilityOfServingSomePartOfBlock(blockState);
-
-    double p2 = implies(pLayoverDuring, pServedSomePartOfBlock);
-
-    /**
-     * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule
-     */
-
-    double p3 = 1.0;
-    boolean isActiveLayoverState = EVehiclePhase.isActiveLayover(phase);
-
-    if (isActiveLayoverState && blockState != null) {
-
-      BlockStopTimeEntry nextStop = phase == EVehiclePhase.LAYOVER_BEFORE
-          ? blockState.getBlockLocation().getNextStop()
-          : _vehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
-
-      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(), blockState,
-          nextStop);
-    }
-
-    return p1 * p2 * p3;
-  }
 
   /**
    * @return the probability that the vehicle has not moved in a while

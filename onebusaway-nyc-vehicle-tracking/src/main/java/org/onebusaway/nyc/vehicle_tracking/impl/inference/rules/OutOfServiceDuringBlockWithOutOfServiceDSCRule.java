@@ -8,6 +8,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.springframework.stereotype.Component;
@@ -23,8 +24,11 @@ import org.springframework.stereotype.Component;
 public class OutOfServiceDuringBlockWithOutOfServiceDSCRule implements
     SensorModelRule {
 
+  private static final String NAME = "pOutOfServiceDuringBlockWithOutOfServiceDSC";
+
   @Override
-  public double likelihood(SensorModelSupportLibrary library, Context context) {
+  public SensorModelResult likelihood(SensorModelSupportLibrary library,
+      Context context) {
 
     Observation obs = context.getObservation();
 
@@ -32,14 +36,14 @@ public class OutOfServiceDuringBlockWithOutOfServiceDSCRule implements
 
     // Short circuit - must be out-of-service DSC for rule to apply
     if (!outOfServiceDsc)
-      return 1.0;
+      return new SensorModelResult(NAME);
 
     VehicleState state = context.getState();
     BlockState blockState = state.getBlockState();
 
     // Short circuit - must have block assignment for rule to apply
     if (blockState == null)
-      return 1.0;
+      return new SensorModelResult(NAME);
 
     double pOnRoute = computeOnRouteLikelihood(context.getObservation(),
         blockState);
@@ -48,7 +52,13 @@ public class OutOfServiceDuringBlockWithOutOfServiceDSCRule implements
     double pOutOfServiceDuringPhase = p(phase == EVehiclePhase.DEADHEAD_DURING
         || phase == EVehiclePhase.LAYOVER_DURING);
 
-    return implies(pOnRoute, pOutOfServiceDuringPhase);
+    double p = implies(pOnRoute, pOutOfServiceDuringPhase);
+
+    SensorModelResult result = new SensorModelResult(NAME, p);
+    result.addResult("pOnRoute", pOnRoute);
+    result.addResult("pOutOfServiceDuringPhase", pOutOfServiceDuringPhase);
+
+    return result;
   }
 
   private double computeOnRouteLikelihood(Observation obs, BlockState blockState) {

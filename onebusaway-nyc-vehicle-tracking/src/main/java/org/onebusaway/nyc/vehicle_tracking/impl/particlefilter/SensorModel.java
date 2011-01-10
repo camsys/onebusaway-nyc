@@ -12,5 +12,5 @@ public interface SensorModel<OBS> {
   /**
    * @return likelihood probability on the interval [0.0,1.0]
    */
-  public double likelihood(Particle particle, OBS observation);
+  public SensorModelResult likelihood(Particle particle, OBS observation);
 }

@@ -16,6 +16,8 @@ public class Particle implements Serializable, Comparable<Particle> {
   private double _timestamp;
 
   private double _weight = 1.0;
+  
+  private SensorModelResult _result;
 
   private Particle _parent;
   
@@ -65,6 +67,14 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   public void setWeight(double weight) {
     _weight = weight;
+  }
+  
+  public SensorModelResult getResult() {
+    return _result;
+  }
+  
+  public void setResult(SensorModelResult result) {
+    _result = result;
   }
 
   public Particle getParent() {

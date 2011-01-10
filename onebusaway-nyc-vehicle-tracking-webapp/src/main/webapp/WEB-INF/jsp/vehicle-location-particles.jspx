@@ -25,60 +25,11 @@ table td {
     <li><jsp:text>dsc: </jsp:text><c:out value="${obs.destinationSignCode}"/></li>
 </ul>
 
-
 <h2>Particles</h2>
 
-<table>
-    <thead>
-        <tr>
-            <td>P</td>
-            <td>Phase</td>
-            <td>BlockId</td>
-            <td>TripId</td>
-            <td>BlockLocation</td>
-            <td>DistanceAlongBlock</td>
-            <td>ScheduledTime</td>
-            <td>EdgeLocation</td>
-            <td>LastMotionLocation</td>
-        </tr>
-    </thead>
-    <tbody>
+<c:set var="particles" value="${details.particles}" scope="request" />
 
-<ul>
-    <c:forEach var="p" items="${details.particles}">
-    <tr>
-        <c:set var="edgeState" value="${p.data.edgeState}"/>
-        <c:set var="motionState" value="${p.data.motionState}"/>
-        <c:set var="journeyState" value="${p.data.journeyState}"/>
-        <c:set var="blockState" value="${p.data.blockState}"/>
-        <c:set var="blockLocation" value="${blockState.blockLocation}"/>
-        
-        <td><a href="vehicle-location!particle.do?vehicleId=${details.vehicleId}&amp;particleId=${p.index}"><c:out value="${p.weight}" /></a></td>
-        <td><c:out value="${journeyState.phase}"/></td>
-        <td><a href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out value="${blockState.blockInstance.block.block.id}" /></a></td>
-        <td><c:out value="${blockLocation.activeTrip.trip.id}" /></td>
-        <td><c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
-        <td><c:out value="${blockLocation.distanceAlongBlock}" /></td>
-        <jsp:useBean id="scheduleTime" class="java.util.Date" />
-        <jsp:setProperty name="scheduleTime" property="time" value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}"/>
-        <td><fmt:formatDate pattern="HH:mm" value="${scheduleTime}"/><jsp:text> (</jsp:text><c:out value="${blockLocation.scheduledTime}" />)</td>
-        <td><c:out value="${edgeState.pointOnEdge.lat}" /><jsp:text> </jsp:text><c:out value="${edgeState.pointOnEdge.lon}" /></td>
-        <td><c:out value="${motionState.lastInMotionLocation.lat}" /><jsp:text> </jsp:text><c:out value="${motionState.lastInMotionLocation.lon}" /></td>
-    </tr>
-    </c:forEach>
-</ul>
-</tbody>
-</table>
-
-<h2>Raw Particle Location (Blocks)</h2>
-<p>
-<c:forEach var="p" items="${particles}">
-  <c:set var="journeyState" value="${p.data.journeyState}"/>
-  <c:set var="blockState" value="${p.data.blockState}"/>
-  <c:set var="blockLocation" value="${blockState.blockLocation}"/>
-  <c:out value="${blockLocation.location.lat}" /><jsp:text> </jsp:text><c:out value="${blockLocation.location.lon}" /><br/>
-</c:forEach>
-</p>
+<jsp:include page="particles-snippet.jspx" />
 
 </body>
 </html>
