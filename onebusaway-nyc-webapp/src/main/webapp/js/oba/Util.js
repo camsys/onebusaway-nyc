@@ -86,9 +86,21 @@ OBA.Util = (function() {
 				}
 			}
 			
-			// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover
-			if(context === "stop" && tripStatus !== null && tripStatus.phase.toLowerCase() === 'layover_during') {
-				s += " (at terminal)";
+			// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover at the end terminal
+			// on the previous trip
+			if(context === "stop" && tripStatus !== null && 
+					(tripStatus.phase.toLowerCase() === 'layover_during' ||
+					 tripStatus.phase.toLowerCase() === 'layover_before')) {
+			
+				var distanceAlongTrip = tripStatus.distanceAlongTrip;
+				var totalDistanceAlongTrip = tripStatus.totalDistanceAlongTrip;
+				
+				if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
+					var ratio = distanceAlongTrip / totalDistanceAlongTrip;
+					if(ratio > 0.80) {
+						s += " (at terminal)";						
+					}					
+				}
 			}
 			
 			return s;

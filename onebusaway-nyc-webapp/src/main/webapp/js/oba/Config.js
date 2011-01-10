@@ -79,7 +79,7 @@ OBA.Config = {
 			// hide deadheading vehicles (except within a block) (row 3)
 			// hide vehicles at the depot (row 1)
 			if(phase !== null && phase.toLowerCase() !== 'in_progress' 
-					&& phase.toLowerCase() !== 'deadhead_during' 
+					&& phase.toLowerCase() !== 'layover_before' 
 					&& phase.toLowerCase() !== 'layover_during') {	
 				return false;
 			}

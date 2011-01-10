@@ -154,12 +154,19 @@ OBA.StopPopup = function(stopId, map) {
 			if(arrival.distanceFromStop < 0) {
 				return;
 			}
-			
-			// hide arrivals that won't stop at this stop, don't have a route, or are not  
-			// the vehicle's current trip yet.
-			if(arrival.tripStatus !== null &&
-					arrival.tripStatus.activeTripId !== arrival.tripId) {
-				return;
+
+			// hide arrivals are not the vehicle's current trip yet, except when in layover before or during state.
+			if(arrival.tripStatus !== null && arrival.tripStatus.activeTripId !== arrival.tripId) {
+				
+				var phase = ((typeof arrival.tripStatus.phase !== 'undefined' && arrival.tripStatus.phase !== '') 
+						? arrival.tripStatus.phase : null);
+
+				if(phase !== null
+					&& phase.toLowerCase() !== 'layover_before' 
+					&& phase.toLowerCase() !== 'layover_during') {	
+
+					return;
+				}	
 			}
 
 			if(OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {

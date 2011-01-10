@@ -84,12 +84,24 @@ public class DistanceAway implements Comparable<DistanceAway> {
 		}
 	}
 
-	// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover
+	// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover at the end terminal
+	// on the previous trip
 	if(statusBean != null) {
 		String phase = statusBean.getPhase();
 	
-		if (displayContext == DisplayContext.STOP && phase != null && phase.toLowerCase().equals("layover_during"))
-			r += " (at terminal)";
+		if (displayContext == DisplayContext.STOP && phase != null && 
+				(phase.toLowerCase().equals("layover_during") || phase.toLowerCase().equals("layover_before"))) {
+
+			Double distanceAlongTrip = statusBean.getDistanceAlongTrip();
+			Double totalDistanceAlongTrip = statusBean.getTotalDistanceAlongTrip();
+			
+			if(distanceAlongTrip != null && totalDistanceAlongTrip != null) {
+				Double ratio = distanceAlongTrip / totalDistanceAlongTrip;				
+				if(ratio > .80) {
+					r += " (at terminal)";
+				}
+			}
+		}
 	}
 	
 	return this.addModifiers(r);

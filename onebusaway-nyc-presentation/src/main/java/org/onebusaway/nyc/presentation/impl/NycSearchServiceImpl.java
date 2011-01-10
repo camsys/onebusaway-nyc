@@ -467,7 +467,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 	// hide deadheading vehicles (except within a block) (row 3)
 	// hide vehicles at the depot (row 1)
     if (phase != null && phase.toLowerCase().compareTo("in_progress") != 0
-    		&& phase.toLowerCase().compareTo("deadhead_during") != 0 
+    		&& phase.toLowerCase().compareTo("layover_before") != 0 
     		&& phase.toLowerCase().compareTo("layover_during") != 0) {
     	return false;
     }
@@ -557,12 +557,20 @@ public class NycSearchServiceImpl implements NycSearchService {
       if (arrivalAndDepartureBean.getDistanceFromStop() < 0) 
         continue;
 
-      // hide this arrival and departure if it is for a trip that the vehicle is not currently on
+      // hide arrivals are not the vehicle's current trip yet, except when in layover before or during state.
       if(tripBean != null && tripStatusBean != null) {
-    	  TripBean currentTrip = tripStatusBean.getActiveTrip();
+		  TripBean currentTrip = tripStatusBean.getActiveTrip();
     	  
-    	  if(currentTrip.getBlockId() != tripBean.getBlockId())
-    		  continue;
+    	  if(currentTrip != null && currentTrip.getBlockId() != tripBean.getBlockId()) {
+    		  String phase = tripStatusBean.getPhase();
+    		  
+    		  if(phase != null && 
+    				  !phase.toLowerCase().equals("layover_before") &&
+    				  !phase.toLowerCase().equals("layover_during")) {
+    			  
+    			  continue;
+    		  }
+    	  }
       }
       
       // should we display this vehicle on the UI specified by "m"?
