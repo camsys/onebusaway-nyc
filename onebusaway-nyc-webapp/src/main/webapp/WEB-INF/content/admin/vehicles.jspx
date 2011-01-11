@@ -29,10 +29,10 @@ under the License.
 <s:url var="url" value="/js/jquery.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/Config.js"/>
+<s:url  var="url" value="/js/dateFormat.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url  var="url" value="/js/oba/DateUtil.js"/>
+<s:url var="url" value="/js/oba/Config.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url  var="url" value="/js/oba/VehiclesAdmin.js"/>
@@ -64,7 +64,9 @@ under the License.
 			<s:iterator value="vehicles">
 				<tr>
 					<td>
-						<s:div cssClass="%{statusClass}"><s:property value="statusClass" /></s:div>
+						<s:div cssClass="%{statusClass}">
+							<s:property value="statusClass" />
+						</s:div>
 					</td>
 					<td>
 						<s:if test="%{disabled}">

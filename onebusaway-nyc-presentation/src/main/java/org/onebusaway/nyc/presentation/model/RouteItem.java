@@ -40,6 +40,6 @@ public class RouteItem {
   }
 
   public List<DistanceAway> getDistanceAways() {
-    return distanceAways;
+	    return distanceAways;
   }
 }

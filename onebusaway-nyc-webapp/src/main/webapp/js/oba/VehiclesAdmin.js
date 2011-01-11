@@ -93,6 +93,7 @@ OBA.VehiclesAdmin = (function() {
 		if(contents === null) {
 			return null;
 		}
+		
 		var location_r = el.find("a").text();
 		var lat, lng = null;
 		if(location_r !== null) {
@@ -103,14 +104,14 @@ OBA.VehiclesAdmin = (function() {
 				return null;
 			}
 		}
-		
+
 		var orientation_r = el.parent().find("img").attr("src").match(/([0-9]+)\.png$/i);
 		var orientation = "unknown";		
 		if(orientation_r !== null && orientation_r[1] !== "" && orientation_r[1] !== 0) {
 			orientation = Math.floor(orientation_r[1] / 5) * 5;
 		}
-		var mapDivWrapper = jQuery("<div></div>")
-							.addClass("map-location-wrapper");
+		
+		var mapDivWrapper = jQuery("<div></div>").addClass("map-location-wrapper");
 		var iconUrl = "http://dev.oba.openplans.org/" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType;
 		var image = jQuery("<img></img>")
 						.addClass("map-location")
@@ -148,7 +149,7 @@ OBA.VehiclesAdmin = (function() {
 	function addIntersectionAnnotation() {
 		jQuery('table').find('tr').not(":first")
 	    .find(".position a").each(function(_, el) {
-			var location = jQuery(el).text();	
+			var location = jQuery(el).text();
 			jQuery.ajax({
 	            url: "http://dev.oba.openplans.org/debug/tools/osm.php",
 	            dataType: "jsonp",

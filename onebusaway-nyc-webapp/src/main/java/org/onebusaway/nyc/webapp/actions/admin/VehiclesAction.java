@@ -348,7 +348,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     	  if(Double.isNaN(orientationDeg))
     		  orientationKey = "unknown";
     	  else
-    		  orientationKey = "" + (int)Math.floor(orientationDeg / 5) * 5;
+    		  orientationKey = "" + ((int)Math.floor(orientationDeg / 5) * 5);
       } catch(Exception e) {
     	  orientationKey = "unknown";
       }

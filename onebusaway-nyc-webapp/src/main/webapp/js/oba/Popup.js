@@ -155,21 +155,19 @@ OBA.StopPopup = function(stopId, map) {
 				return;
 			}
 
-			// hide arrivals are not the vehicle's current trip yet, except when in layover before or during state.
+			// hide arrivals that are not on the vehicle's current trip yet, except when in layover before or during state.
 			if(arrival.tripStatus !== null && arrival.tripStatus.activeTripId !== arrival.tripId) {
-				
 				var phase = ((typeof arrival.tripStatus.phase !== 'undefined' && arrival.tripStatus.phase !== '') 
 						? arrival.tripStatus.phase : null);
 
 				if(phase !== null
 					&& phase.toLowerCase() !== 'layover_before' 
 					&& phase.toLowerCase() !== 'layover_during') {	
-
 					return;
 				}	
 			}
 
-			if(OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {
+			if(arrival.tripStatus === null || OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {
 				return;          
 			}
 			
@@ -180,9 +178,8 @@ OBA.StopPopup = function(stopId, map) {
 			latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
 			
 			var vehicleInfo = {stops: stops,
-								feet: feet,
-								tripStatus: arrival.tripStatus
-							  };
+							   feet: feet,
+							   tripStatus: arrival.tripStatus};
 
 			routeToVehicleInfo[routeId].push(vehicleInfo);				
 		});

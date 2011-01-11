@@ -18,11 +18,11 @@ public class DistanceAway implements Comparable<DistanceAway> {
   private final int staleTimeoutSeconds;
   private final Date timestamp;
   private Mode currentMode;
-  private DisplayContext displayContext;
+  private FormattingContext displayContext;
   private TripStatusBean statusBean;
   
   public DistanceAway(int stopsAway, int feetAway, Date timestamp, Mode m, 
-		  int staleTimeoutSeconds, DisplayContext displayContext, TripStatusBean statusBean) {
+		  int staleTimeoutSeconds, FormattingContext displayContext, TripStatusBean statusBean) {
     this.stopsAway = stopsAway;
     this.feetAway = feetAway;
     this.timestamp = timestamp;
@@ -89,7 +89,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 	if(statusBean != null) {
 		String phase = statusBean.getPhase();
 	
-		if (displayContext == DisplayContext.STOP && phase != null && 
+		if (displayContext == FormattingContext.STOP && phase != null && 
 				(phase.toLowerCase().equals("layover_during") || phase.toLowerCase().equals("layover_before"))) {
 
 			Double distanceAlongTrip = statusBean.getDistanceAlongTrip();

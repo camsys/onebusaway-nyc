@@ -21,7 +21,7 @@ import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
-import org.onebusaway.nyc.presentation.model.DisplayContext;
+import org.onebusaway.nyc.presentation.model.FormattingContext;
 import org.onebusaway.nyc.presentation.model.RouteItem;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
@@ -351,8 +351,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       }
       
       // should we display this vehicle on the UI specified by "m"?
-      if (tripStatusBean == null
-          || !shouldDisplayTripForUIMode(tripStatusBean, m))
+      if (tripStatusBean == null || !shouldDisplayTripForUIMode(tripStatusBean, m))
         continue;
       
       /*
@@ -381,7 +380,7 @@ public class NycSearchServiceImpl implements NycSearchService {
             new Date(tripStatusBean.getLastLocationUpdateTime()), 
             m, 
             config.getStaleDataTimeout(),
-            DisplayContext.ROUTE,
+            FormattingContext.ROUTE,
             tripStatusBean);
 
         stopDistanceAways.add(distanceAway);
@@ -509,17 +508,15 @@ public class NycSearchServiceImpl implements NycSearchService {
     ConfigurationBean config = configurationService.getConfiguration();
 
 	String stopId = stopBean.getId();
-    List<Double> latLng = Arrays.asList(new Double[] {stopBean.getLat(), stopBean.getLon()});
     String stopName = stopBean.getName();
     String stopDirection = stopBean.getDirection();
+    List<Double> latLng = Arrays.asList(new Double[] {stopBean.getLat(), stopBean.getLon()});
 
-    Map<String, List<DistanceAway>> routeIdToDistanceAways = 
-    	new HashMap<String, List<DistanceAway>>();
+    Map<String, List<DistanceAway>> routeIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
     Map<String, String> headsignToDirectionId = new HashMap<String, String>();
     Map<String, String> routeIdToHeadsign = new HashMap<String, String>();
     List<RouteItem> availableRoutes = new ArrayList<RouteItem>();
-    Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = 
-    	new HashMap<String, NaturalLanguageStringBean>();
+    Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = new HashMap<String, NaturalLanguageStringBean>();
 
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
     query.setTime(System.currentTimeMillis());
@@ -586,7 +583,7 @@ public class NycSearchServiceImpl implements NycSearchService {
           new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 
           m, 
           config.getStaleDataTimeout(),
-          DisplayContext.STOP,
+          FormattingContext.STOP,
           tripStatusBean);
 
       List<DistanceAway> distanceAways = routeIdToDistanceAways.get(routeId);

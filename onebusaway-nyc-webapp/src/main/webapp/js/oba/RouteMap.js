@@ -140,7 +140,8 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				var status = tripDetails.status;
 				var vehicleId = status.vehicleId;
 
-				if(OBA.Config.vehicleFilterFunction("vehicle", status) === false || ! vehicleId) {
+				if(vehicleId === null || status === null || 
+						OBA.Config.vehicleFilterFunction("vehicle", status) === false) {
 					return;
 				}
 				
