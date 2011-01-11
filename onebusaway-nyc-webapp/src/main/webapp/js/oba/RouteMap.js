@@ -86,7 +86,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 		var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";
 		var tripDetailsList, tripReferencesList = null;
-		jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey, includeStatus: true}, function(json) {
+		jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey, includeStatus: true, 
+			minutesBefore: OBA.Config.arrivalsMinutesBefore}, function(json) {
+			
 			var directionIds = routeToRequest[1];		
 
 			try {
