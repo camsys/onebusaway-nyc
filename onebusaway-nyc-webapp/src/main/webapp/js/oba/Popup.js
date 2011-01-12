@@ -248,7 +248,8 @@ OBA.StopPopup = function(stopId, map) {
 	};
 
 	var url = OBA.Config.stopUrl + "/" + stopId + ".json";
-	var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore};
+	var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
+			minutesAfter: OBA.Config.arrivalsMinutesAfter};
 	
 	return OBA.Popup(
 			map,
