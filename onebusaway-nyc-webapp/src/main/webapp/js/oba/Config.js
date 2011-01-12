@@ -33,8 +33,8 @@ OBA.Config = {
 		// Time, in minutes, that we'll look into the past for a scheduled
 		// arrival at a stop.  If a bus is running more than X minutes
 		// late, it won't get listed in the arrival list. Also change in NycPresentationService.java, line 523-
-		arrivalsMinutesBefore: 30,
-		arrivalsMinutesAfter: 60,
+		arrivalsMinutesBefore: 60,
+		arrivalsMinutesAfter: 90,
 
 		// display convention thresholds
 		showDistanceInStopsThresholdInStops: 3,

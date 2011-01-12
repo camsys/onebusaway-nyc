@@ -520,8 +520,8 @@ public class NycSearchServiceImpl implements NycSearchService {
 
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
     query.setTime(System.currentTimeMillis());
-    query.setMinutesBefore(30);
-    query.setMinutesAfter(60);
+    query.setMinutesBefore(60);
+    query.setMinutesAfter(90);
     
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = 
     	transitService.getStopWithArrivalsAndDepartures(stopId, query);
@@ -551,11 +551,21 @@ public class NycSearchServiceImpl implements NycSearchService {
     			  serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
     	  }
       }
+
+      // hide non-realtime arrivals and departures
+      if(tripStatusBean == null || tripStatusBean.isPredicted() == false 
+    		  || tripStatusBean.getVehicleId() == null || tripStatusBean.getVehicleId().equals("")) {
+    	  continue;
+      }
+      
+      System.out.println("A-D FOR STOP: VID=" + tripStatusBean.getVehicleId());
       
       // hide buses that left the stop recently
-      if (arrivalAndDepartureBean.getDistanceFromStop() < 0) 
-        continue;
-
+      if (arrivalAndDepartureBean.getDistanceFromStop() < 0) {
+    	  System.out.println("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrivalAndDepartureBean.getDistanceFromStop() + ")");
+    	  continue;
+      }
+      
       // hide arrivals are not the vehicle's current trip yet, except when in layover before or during state.
       if(tripBean != null && tripStatusBean != null) {
 		  TripBean currentTrip = tripStatusBean.getActiveTrip();
@@ -567,19 +577,24 @@ public class NycSearchServiceImpl implements NycSearchService {
     				  !phase.toLowerCase().equals("layover_before") &&
     				  !phase.toLowerCase().equals("layover_during")) {
     			  
+    			  System.out.println("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
     			  continue;
     		  }
     	  }
       }
       
       // should we display this vehicle on the UI specified by "m"?
-      if(! shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m))
+      if(! shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m)) {
+    	  System.out.println("   --- HIDING BECAUSE OF FILTER FUNCTION");
     	  continue;
+      }
       
       double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
       int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
       int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         
+      System.out.println("   +++ ADDING TO ARRIVAL LIST");      
+
       DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
           distanceFromStopInFeet, 
           new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 

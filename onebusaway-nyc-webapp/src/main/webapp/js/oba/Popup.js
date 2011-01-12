@@ -135,8 +135,6 @@ OBA.StopPopup = function(stopId, map) {
 				return;
 			}
 			
-			// (do this before filtering so we have a record of which routes stop
-			// at the stop "usually")
 			if (! routeToVehicleInfo[routeId]) {
 				routeToVehicleInfo[routeId] = [];
 				routeCount++;
@@ -149,9 +147,18 @@ OBA.StopPopup = function(stopId, map) {
 			jQuery.each(arrival.situationIds, function(_, situationId) {
 				applicableSituationIds[situationId] = situationId;
 			});			
+
+			// hide non-realtime observations (they are used above to build a picture of what
+			// stops at this stop usually).
+			if(arrival.predicted === false || arrival.vehicleId === null || arrival.vehicleId === "") {
+				return;
+			}
+			
+			OBA.Util.log("A-D FOR STOP: VID=" + arrival.vehicleId);			
 			
 			// hide arrivals that just left the stop 
 			if(arrival.distanceFromStop < 0) {
+				OBA.Util.log("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrival.distanceFromStop + ")");
 				return;
 			}
 
@@ -163,11 +170,14 @@ OBA.StopPopup = function(stopId, map) {
 				if(phase !== null
 					&& phase.toLowerCase() !== 'layover_before' 
 					&& phase.toLowerCase() !== 'layover_during') {	
+					
+					OBA.Util.log("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
 					return;
 				}	
 			}
 
 			if(arrival.tripStatus === null || OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {
+				OBA.Util.log("   --- HIDING BECAUSE OF FILTER FUNCTION");
 				return;          
 			}
 			
@@ -181,6 +191,7 @@ OBA.StopPopup = function(stopId, map) {
 							   feet: feet,
 							   tripStatus: arrival.tripStatus};
 
+			OBA.Util.log("   +++ ADDING TO ARRIVAL LIST");
 			routeToVehicleInfo[routeId].push(vehicleInfo);				
 		});
 
