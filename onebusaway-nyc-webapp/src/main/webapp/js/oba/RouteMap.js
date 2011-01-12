@@ -193,19 +193,20 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			// remove vehicle markers that haven't been listed in this recent update
 			var directionIdMap = routeIdsToVehicleMarkers[routeId];
 			if (directionIdMap) {
-				var vehicles = directionIdMap[directionId];
-				if (vehicles) {
-					var vehiclesToKeep = [];
-					for (var i = 0; i < vehicles.length; i++) {
-						var vehicle = vehicles[i];
-						if (vehicle.getId() in vehiclesAdded) {
-							vehiclesToKeep.push(vehicle);
-						} else {
-							vehicle.removeMarker();
+				jQuery.each(directionIdMap, function(directionId, vehicles) {
+					if (vehicles) {
+						var vehiclesToKeep = [];
+						for (var i = 0; i < vehicles.length; i++) {
+							var vehicle = vehicles[i];
+							if (vehicle.getId() in vehiclesAdded) {
+								vehiclesToKeep.push(vehicle);
+							} else {
+								vehicle.removeMarker();
+							}
 						}
+						routeIdsToVehicleMarkers[routeId][directionId] = vehiclesToKeep;
 					}
-					routeIdsToVehicleMarkers[routeId][directionId] = vehiclesToKeep;
-				}
+				});
 			}
 
 			// handle the remaining route ids
