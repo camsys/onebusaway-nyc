@@ -174,7 +174,7 @@ OBA.VehiclesAdmin = (function() {
 		    addMapLinkBehavior();
 		    addResetLinkBehavior();
 		    addIntersectionAnnotation();
-	        setTimeout(refreshTable, 30 * 1000);			
+//	        setTimeout(refreshTable, 30 * 1000);			
 		}
 	};
 })();
