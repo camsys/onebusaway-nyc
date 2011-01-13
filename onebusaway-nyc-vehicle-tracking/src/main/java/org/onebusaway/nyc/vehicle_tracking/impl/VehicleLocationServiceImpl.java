@@ -173,27 +173,28 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   }
 
   @Override
-  public VehicleLocationDetails getParticleDetails(String vehicleId,
+  public VehicleLocationDetails getDetailsForVehicleId(String vehicleId,
       int particleId) {
 
     VehicleLocationDetails details = getDetailsForVehicleId(vehicleId);
     if (details == null)
       return null;
-    List<Particle> particles = details.getParticles();
-    if (particles != null) {
-      for (Particle p : particles) {
-        if (p.getIndex() == particleId) {
-          List<Particle> history = new ArrayList<Particle>();
-          while (p != null) {
-            history.add(p);
-            p = p.getParent();
-          }
-          details.setParticles(history);
-          return details;
-        }
-      }
-    }
-    return null;
+    return findParticle(details, particleId);
+  }
+
+  @Override
+  public VehicleLocationDetails getBadDetailsForVehicleId(String vehicleId) {
+    return _vehicleLocationInferenceService.getBadDetailsForVehicleId(getVehicleId(vehicleId));
+  }
+
+  @Override
+  public VehicleLocationDetails getBadDetailsForVehicleId(String vehicleId,
+      int particleId) {
+
+    VehicleLocationDetails details = getBadDetailsForVehicleId(vehicleId);
+    if (details == null)
+      return null;
+    return findParticle(details, particleId);
   }
 
   @Override
@@ -225,10 +226,29 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
     _recordDao.saveOrUpdateVehicleLocationRecord(record);
   }
 
+  private VehicleLocationDetails findParticle(VehicleLocationDetails details,
+      int particleId) {
+    List<Particle> particles = details.getParticles();
+    if (particles != null) {
+      for (Particle p : particles) {
+        if (p.getIndex() == particleId) {
+          List<Particle> history = new ArrayList<Particle>();
+          while (p != null) {
+            history.add(p);
+            p = p.getParent();
+          }
+          details.setParticles(history);
+          details.setHistory(true);
+          return details;
+        }
+      }
+    }
+    return null;
+  }
+
   private AgencyAndId getVehicleId(String vehicleId) {
     if (vehicleId.startsWith(_agencyId))
       return AgencyAndIdLibrary.convertFromString(vehicleId);
     return new AgencyAndId(_agencyId, vehicleId);
   }
-
 }

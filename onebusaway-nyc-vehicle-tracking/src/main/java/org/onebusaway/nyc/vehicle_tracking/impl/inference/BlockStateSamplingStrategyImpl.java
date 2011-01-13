@@ -8,7 +8,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObse
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -110,6 +109,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       if (_log.isDebugEnabled())
         _log.debug(b.toString());
+
+      _observationCache.putValueForObservation(observation,
+          EObservationCacheKey.JOURNEY_START_BLOCK_CDF, cdf);
     }
     return cdf;
   }
@@ -134,8 +136,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockInstance blockInstance : potentialBlocks) {
 
-        BlockState state = _blockStateService.getBestBlockLocation(
-            observation, blockInstance, 0, Double.POSITIVE_INFINITY);
+        BlockState state = _blockStateService.getBestBlockLocation(observation,
+            blockInstance, 0, Double.POSITIVE_INFINITY);
 
         double p = scoreState(state, observation);
 
@@ -150,6 +152,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       if (_log.isDebugEnabled())
         _log.debug(b.toString());
+
+      /**
+       * Cache the result
+       */
+      _observationCache.putValueForObservation(observation,
+          EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK_CDF, cdf);
     }
 
     return cdf;

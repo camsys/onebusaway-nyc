@@ -16,7 +16,6 @@ import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,15 +30,11 @@ public class BlockStateTransitionModel {
 
   private ObservationCache _observationCache;
 
+  private VehicleStateLibrary _vehicleStateLibrary;
+
   /****
    * Parameters
    ****/
-
-  /**
-   * What are the odds that we'll allow a block switch when switching between
-   * valid DSCs? Low.
-   */
-  private double _probabilityOfBlockSwitchForValidDscSwitch = 0.05;
 
   /**
    * Given a potential distance to travel in physical / street-network space, a
@@ -75,6 +70,11 @@ public class BlockStateTransitionModel {
     _observationCache = observationCache;
   }
 
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+    _vehicleStateLibrary = vehicleStateLibrary;
+  }
+
   public void setBlockDistanceTravelScale(double blockDistanceTravelScale) {
     _blockDistanceTravelScale = blockDistanceTravelScale;
   }
@@ -86,11 +86,7 @@ public class BlockStateTransitionModel {
   public BlockState transitionBlockState(VehicleState parentState,
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
-    String dsc = obs.getRecord().getDestinationSignCode();
-    boolean outOfService = dsc != null
-        && _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
-
-    BlockState blockState = parentState.getBlockState();
+    BlockState parentBlockState = parentState.getBlockState();
 
     EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
 
@@ -110,146 +106,45 @@ public class BlockStateTransitionModel {
 
       if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
 
-        /**
-         * Update our block location along the block when we're actively serving
-         * the block
-         */
-        return advanceAlongBlock(parentPhase, blockState, obs);
-
-      } else if (EVehiclePhase.isActiveAfterBlock(parentPhase)) {
-
-        if (blockState == null)
-          return blockState;
+        if (parentBlockState == null)
+          return null;
 
         /**
-         * Typically, we've finished up the block at this point and our block
-         * state won't change. However, it's possible for us to go out of
-         * service mid-block. In this situation we want to do our best to keep a
-         * reasonable block match, both to detect how far off-block we've gone
-         * or to correctly re-associate back on-block if need be.
-         * 
-         * Except that there is a performance hit for doing this AND it seems to
-         * break things.
-         * 
-         * TODO: Examine whether the tradeoff is worth it
+         * If we're off block, kill the block
          */
-
-        // return getClosestBlockState(blockState, obs);
-        return blockState;
-
-      } else if (parentPhase.equals(EVehiclePhase.AT_BASE)) {
+        if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
+            parentBlockState))
+          return null;
 
         /**
-         * If we're at the base and our current block state has been run to
-         * completion, it's ok to forget about the block at this point
+         * We're currently in progress on a block, so we update our block
+         * location along the block that we're actively serving
          */
-        if (outOfService && blockState != null) {
-
-          BlockInstance blockInstance = blockState.getBlockInstance();
-          BlockConfigurationEntry blockConfig = blockInstance.getBlock();
-          ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-
-          double remaining = blockConfig.getTotalBlockDistance()
-              - blockLocation.getDistanceAlongBlock();
-
-          if (remaining < 700)
-            return null;
-        }
-
-        return blockState;
+        return advanceAlongBlock(parentPhase, parentBlockState, obs);
 
       } else {
 
         /**
-         * Just keep our existing block location for everything else
+         * We're not serving a block, so we kill the block state
          */
-        return blockState;
+        return null;
       }
+    }
+
+    if (obs.isOutOfService()) {
+      /**
+       * Operator just went out of service so forget the block
+       */
+      return null;
     }
 
     /**
-     * We are allowing a block change. How we change the block is dependent on
-     * the phase.
+     * Resample the block
      */
-    if (EVehiclePhase.isActiveBeforeBlock(parentPhase)) {
-
-      if (outOfService) {
-        /**
-         * Operator just went out of service... let's just keep our current best
-         * guess as to our sign code, or optionally disassociate our block
-         */
-        if (Math.random() < 0.5)
-          return blockState;
-        else
-          return null;
-      } else {
-        /**
-         * Since we haven't started our block yet, we allow a lot of flexibility
-         * in switching to a new block
-         */
-        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
-        if (! cdf.canSample() )
-          return null;
-        return cdf.sample();
-      }
-
-    } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
-
-      if (outOfService) {
-        /**
-         * Operator just went out of service... let's just keep our current best
-         * guess as to our sign code.
-         */
-        return blockState;
-      }
-
-      /**
-       * If we've actively started serving a block, we allow a lot less
-       * flexibility in switching to a new block
-       */
-      boolean allowBlockChangeWhileInProgress = Math.random() < _probabilityOfBlockSwitchForValidDscSwitch;
-
-      if (allowBlockChangeWhileInProgress) {
-        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
-        if (! cdf.canSample() )
-          return null;
-        return cdf.sample();
-      }
-
-      /**
-       * Otherwise we just advance along the current block
-       */
-      return advanceAlongBlock(parentPhase, blockState, obs);
-
-    } else {
-
-      /**
-       * We've completed our block. If we've switch to out-of-service, hold onto
-       * our old block
-       */
-      if (outOfService)
-        return blockState;
-
-      /**
-       * If we've switch to another valid DSC, let's try switching the block.
-       * But the question: are we starting a new block or resuming a block
-       * already in progress?
-       * 
-       */
-
-      if (Math.random() < 0.5) {
-        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
-        if (! cdf.canSample() )
-          return null;
-        return cdf.sample();
-      } else {
-        CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
-        if (! cdf.canSample() )
-          return null;
-        return cdf.sample();
-      }
-
-    }
+    CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+    if (!cdf.canSample())
+      return null;
+    return cdf.sample();
   }
 
   public BlockState getClosestBlockState(BlockState blockState, Observation obs) {
@@ -284,14 +179,15 @@ public class BlockStateTransitionModel {
   private boolean allowBlockTransition(VehicleState parentState,
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
+    Observation prevObs = obs.getPreviousObservation();
+
     /**
      * Have we just transitioned out of a terminal?
      */
-    if (parentState != null) {
-      MotionState parentMotionState = parentState.getMotionState();
+    if (prevObs != null) {
 
       // If we just move out of the terminal, allow a block transition
-      if (parentMotionState.isAtTerminal() && !motionState.isAtTerminal()) {
+      if (prevObs.isAtTerminal() && !obs.isAtTerminal()) {
         return true;
       }
     }
@@ -302,10 +198,11 @@ public class BlockStateTransitionModel {
     boolean unknownDSC = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
 
     /**
-     * If we have an unknown DSC, we don't allow a block change. What about
-     * "0000"? 0000 is no longer considered an unknown DSC, so it should pass by
-     * the unknown DSC check, and to the next check, where we only allow a block
-     * change if we've changed from a good DSC.
+     * If we have an unknown DSC, we assume it's a typo, so we assume our
+     * current block will work for now. What about "0000"? 0000 is no longer
+     * considered an unknown DSC, so it should pass by the unknown DSC check,
+     * and to the next check, where we only allow a block change if we've
+     * changed from a good DSC.
      */
     if (unknownDSC)
       return false;

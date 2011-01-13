@@ -13,7 +13,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
-import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +45,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private VehicleStateLibrary _vehicleStateLibrary;
 
-  private BaseLocationService _baseLocationService;
+  private MotionModelImpl _motionModel;
 
   @Autowired
   public void setBlockStateSamplingStrategy(
@@ -60,8 +59,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Autowired
-  public void setBaseLocationService(BaseLocationService baseLocationService) {
-    _baseLocationService = baseLocationService;
+  public void setMotionModelLibrary(MotionModelImpl motionModel) {
+    _motionModel = motionModel;
   }
 
   public void setInitialNumberOfParticles(int initialNumberOfParticles) {
@@ -99,15 +98,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
-      CoordinatePoint location = obs.getLocation();
-      boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-      boolean atTerminal = _baseLocationService.getTerminalNameForLocation(location) != null;
+      MotionState motionState = _motionModel.updateMotionState(obs);
 
-      MotionState motionState = new MotionState(obs.getTime(), location,
-          atBase, atTerminal);
-
-      VehicleState state = determineJourneyState(null, motionState, location,
-          atStartCdf, inProgresCdf, obs);
+      VehicleState state = determineJourneyState(null, motionState,
+          obs.getLocation(), atStartCdf, inProgresCdf, obs);
 
       Particle p = new Particle(timestamp);
       p.setData(state);
@@ -138,20 +132,20 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // block in progress. We slightly favor blocks already in progress
     if (Math.random() < 0.75) {
 
-      // No blocks? Jump to the deadhead-after state
+      // No blocks? Jump to the deadhead-before state
       if (inProgressCdf.isEmpty())
         return vehicleState(edgeState, motionState, null,
-            JourneyState.deadheadAfter(), obs);
+            JourneyState.deadheadBefore(obs.getLocation()), obs);
 
       BlockState blockState = inProgressCdf.sample();
       return vehicleState(edgeState, motionState, blockState,
           JourneyState.inProgress(), obs);
     } else {
 
-      // No blocks? Jump to the deadhead-after state
+      // No blocks? Jump to the deadhead-before state
       if (atStartCdf.isEmpty())
         return vehicleState(edgeState, motionState, null,
-            JourneyState.deadheadAfter(), obs);
+            JourneyState.deadheadBefore(obs.getLocation()), obs);
 
       BlockState blockState = atStartCdf.sample();
       return vehicleState(edgeState, motionState, blockState,

@@ -39,6 +39,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -71,6 +72,8 @@ public class SensorModelVerificationMain {
 
   private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
+  private BaseLocationService _baseLocationService;
+
   @Autowired
   public void setMotionModel(MotionModelImpl motionModel) {
     _motionModel = motionModel;
@@ -80,6 +83,11 @@ public class SensorModelVerificationMain {
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
     _dscService = destinationSignCodeService;
+  }
+
+  @Autowired
+  public void setBaseLocationService(BaseLocationService baseLocationService) {
+    _baseLocationService = baseLocationService;
   }
 
   @Autowired
@@ -180,8 +188,9 @@ public class SensorModelVerificationMain {
             VehicleState state = getRecordAsVehicleState(record, prevState, obs);
 
             Context context = new Context(prevState, state, obs);
-            SensorModelResult result = rule.likelihood(_sensorModelSupportLibrary, context);
-            
+            SensorModelResult result = rule.likelihood(
+                _sensorModelSupportLibrary, context);
+
             double p = result.getProbability();
 
             if (p <= 0.1) {
@@ -257,7 +266,17 @@ public class SensorModelVerificationMain {
     r.setTimeReceived(record.getTimestamp());
     r.setVehicleId(new AgencyAndId("2008", record.getVehicleId()));
 
-    return new Observation(r, lastValidDestinationSignCode, prevObs);
+    CoordinatePoint location = new CoordinatePoint(record.getLat(),
+        record.getLon());
+
+    boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
+    boolean atTerminal = _baseLocationService.getTerminalNameForLocation(location) != null;
+    boolean outOfService = lastValidDestinationSignCode == null
+        || _dscService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)
+        || _dscService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
+
+    return new Observation(r, lastValidDestinationSignCode, atBase, atTerminal,
+        outOfService, prevObs);
   }
 
   private VehicleState getRecordAsVehicleState(NycTestLocationRecord record,

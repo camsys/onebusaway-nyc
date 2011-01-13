@@ -11,7 +11,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.BaseLocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -28,17 +27,10 @@ public class MotionModelImpl implements MotionModel<Observation> {
    */
   private double _motionThreshold = 20;
 
-  private BaseLocationService _baseLocationService;
-
   @Autowired
   public void setJourneyMotionModel(
       JourneyStateTransitionModel journeyMotionModel) {
     _journeyMotionModel = journeyMotionModel;
-  }
-
-  @Autowired
-  public void setBaseLocationService(BaseLocationService baseLocationService) {
-    _baseLocationService = baseLocationService;
   }
 
   public void setMotionThreshold(double motionThreshold) {
@@ -97,35 +89,28 @@ public class MotionModelImpl implements MotionModel<Observation> {
   }
 
   public MotionState updateMotionState(Observation obs) {
-    long lastInMotionTime = obs.getTime();
-    CoordinatePoint lastInMotionLocation = obs.getLocation();
-    boolean atBase = _baseLocationService.getBaseNameForLocation(obs.getLocation()) != null;
-    boolean atTerminal = _baseLocationService.getTerminalNameForLocation(obs.getLocation()) != null;
-    return new MotionState(lastInMotionTime, lastInMotionLocation, atBase,
-        atTerminal);
+    return updateMotionState(null, obs);
   }
 
   public MotionState updateMotionState(VehicleState parentState, Observation obs) {
 
-    MotionState motionState = parentState.getMotionState();
+    long lastInMotionTime = obs.getTime();
+    CoordinatePoint lastInMotionLocation = obs.getLocation();
 
-    CoordinatePoint location = obs.getLocation();
+    if (parentState != null) {
 
-    long lastInMotionTime = motionState.getLastInMotionTime();
-    CoordinatePoint lastInMotionLocation = motionState.getLastInMotionLocation();
-    boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-    boolean atTerminal = _baseLocationService.getTerminalNameForLocation(location) != null;
+      MotionState motionState = parentState.getMotionState();
 
-    double d = SphericalGeometryLibrary.distance(
-        motionState.getLastInMotionLocation(), location);
+      double d = SphericalGeometryLibrary.distance(
+          motionState.getLastInMotionLocation(), obs.getLocation());
 
-    if (d > _motionThreshold) {
-      lastInMotionTime = obs.getTime();
-      lastInMotionLocation = location;
+      if (d <= _motionThreshold) {
+        lastInMotionTime = motionState.getLastInMotionTime();
+        lastInMotionLocation = motionState.getLastInMotionLocation();
+      }
     }
 
-    return new MotionState(lastInMotionTime, lastInMotionLocation, atBase,
-        atTerminal);
+    return new MotionState(lastInMotionTime, lastInMotionLocation);
   }
 
   private boolean gpsHasChanged(Observation obs) {

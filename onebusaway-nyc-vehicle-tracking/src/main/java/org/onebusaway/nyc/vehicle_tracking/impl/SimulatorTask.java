@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
+import java.text.DateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,8 +17,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSumm
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.RecordLibrary;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +28,13 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private static Logger _log = LoggerFactory.getLogger(SimulatorTask.class);
 
+  private static DateFormat _format = DateFormat.getTimeInstance(DateFormat.SHORT);
+
   private List<NycTestLocationRecord> _records = new ArrayList<NycTestLocationRecord>();
 
   private List<NycTestLocationRecord> _results = new ArrayList<NycTestLocationRecord>();
 
-  private Deque<VehicleLocationSimulationDetails> _details = new ArrayDeque<VehicleLocationSimulationDetails>();
+  private Deque<VehicleLocationDetails> _details = new ArrayDeque<VehicleLocationDetails>();
 
   private AtomicInteger _recordsProcessed = new AtomicInteger();
 
@@ -201,6 +205,7 @@ class SimulatorTask implements Runnable, EntityHandler {
   public VehicleLocationSimulationSummary getSummary() {
     VehicleLocationSimulationSummary summary = new VehicleLocationSimulationSummary();
     summary.setId(_id);
+    summary.setVehicleId(_vehicleId);
     summary.setNumberOfRecordsProcessed(_recordsProcessed.get());
     summary.setNumberOfRecordsTotal(_records.size());
     summary.setMostRecentRecord(_mostRecentRecord);
@@ -208,10 +213,10 @@ class SimulatorTask implements Runnable, EntityHandler {
     return summary;
   }
 
-  public VehicleLocationSimulationDetails getDetails(int historyOffset) {
+  public VehicleLocationDetails getDetails(int historyOffset) {
     int index = 0;
-    for (Iterator<VehicleLocationSimulationDetails> it = _details.descendingIterator(); it.hasNext();) {
-      VehicleLocationSimulationDetails details = it.next();
+    for (Iterator<VehicleLocationDetails> it = _details.descendingIterator(); it.hasNext();) {
+      VehicleLocationDetails details = it.next();
       if (index == historyOffset)
         return details;
       index++;
@@ -219,10 +224,11 @@ class SimulatorTask implements Runnable, EntityHandler {
     return null;
   }
 
-  public VehicleLocationSimulationDetails getParticleDetails(int particleId) {
-    VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
+  public VehicleLocationDetails getParticleDetails(int particleId) {
+    VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
-    details.setLastObservation(_mostRecentRecord);
+    details.setLastObservation(RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(
+        _mostRecentRecord, _vehicleLocationService.getDefaultVehicleAgencyId()));
     List<Particle> particles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
     if (particles != null) {
       for (Particle p : particles) {
@@ -307,7 +313,8 @@ class SimulatorTask implements Runnable, EntityHandler {
       if (shouldExitAfterSimulatedWait(record))
         return;
 
-      _log.info("sending record: index=" + nextRecordIndex);
+      _log.info("sending record: index=" + nextRecordIndex + " "
+          + _format.format(record.getTimestampAsDate()));
 
       if (_bypassInference) {
         _vehicleLocationService.handleNycTestLocationRecord(record);
@@ -448,9 +455,11 @@ class SimulatorTask implements Runnable, EntityHandler {
       _results.add(rr);
     }
 
-    VehicleLocationSimulationDetails details = new VehicleLocationSimulationDetails();
+    VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
-    details.setLastObservation(record);
+    details.setVehicleId(_vehicleId);
+    details.setLastObservation(RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(
+        record, _vehicleLocationService.getDefaultVehicleAgencyId()));
 
     List<Particle> weightedParticles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
     if (weightedParticles != null) {
@@ -463,7 +472,7 @@ class SimulatorTask implements Runnable, EntityHandler {
       Collections.sort(sampledParticles, ParticleComparator.INSTANCE);
       details.setSampledParticles(sampledParticles);
     }
-    
+
     List<JourneyPhaseSummary> summaries = _vehicleLocationService.getCurrentJourneySummariesForVehicleId(_vehicleId);
     details.setSummaries(summaries);
 

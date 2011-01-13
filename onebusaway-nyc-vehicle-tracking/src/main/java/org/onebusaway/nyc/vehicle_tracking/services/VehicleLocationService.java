@@ -108,7 +108,11 @@ public interface VehicleLocationService {
 
   public VehicleLocationDetails getDetailsForVehicleId(String vehicleId);
 
-  public VehicleLocationDetails getParticleDetails(String vehicleId,
+  public VehicleLocationDetails getDetailsForVehicleId(String vehicleId,
       int particleId);
 
+  public VehicleLocationDetails getBadDetailsForVehicleId(String vehicleId);
+
+  public VehicleLocationDetails getBadDetailsForVehicleId(String vehicleId,
+      int particleId);
 }

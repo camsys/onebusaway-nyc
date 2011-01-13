@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.vehicle_tracking.model;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -26,6 +27,19 @@ public class RecordLibrary {
     vlr.setCurrentLocationLon(record.getLon());
     vlr.setPhase(EVehiclePhase.valueOf(record.getInferredPhase()));
     vlr.setStatus(record.getInferredStatus());
+    return vlr;
+  }
+
+  public static NycVehicleLocationRecord getNycTestLocationRecordAsNycVehicleLocationRecord(
+      NycTestLocationRecord record, String agencyId) {
+
+    NycVehicleLocationRecord vlr = new NycVehicleLocationRecord();
+    vlr.setDestinationSignCode(record.getDsc());
+    vlr.setLatitude(record.getLat());
+    vlr.setLongitude(record.getLon());
+    vlr.setTime(record.getTimestamp());
+    vlr.setTimeReceived(record.getTimestamp());
+    vlr.setVehicleId(new AgencyAndId(agencyId,record.getVehicleId()));
     return vlr;
   }
 }

@@ -28,8 +28,8 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -165,7 +165,7 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public VehicleLocationSimulationDetails getSimulationDetails(int taskId,
+  public VehicleLocationDetails getSimulationDetails(int taskId,
       int historyOffset) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
@@ -174,7 +174,7 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public VehicleLocationSimulationDetails getParticleDetails(int taskId,
+  public VehicleLocationDetails getParticleDetails(int taskId,
       int particleId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)

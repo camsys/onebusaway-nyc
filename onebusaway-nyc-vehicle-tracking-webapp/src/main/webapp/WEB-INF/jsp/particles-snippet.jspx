@@ -5,9 +5,20 @@
     xmlns:form="http://www.springframework.org/tags/form">
     <jsp:directive.page contentType="text/html" />
 
+<c:if test="${details.history}">
+    <h2>Sensor Model Result</h2>
+    <ul>
+        <c:set var="sensorModelResult"
+            value="${details.particles[0].result}" scope="request" />
+        <jsp:include
+            page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
+    </ul>
+</c:if>
+
     <table>
         <thead>
             <tr>
+                <td>Time</td>
                 <td>P</td>
                 <td>Phase</td>
                 <td>BlockId</td>
@@ -20,7 +31,7 @@
         </thead>
         <tbody>
 
-            <c:forEach var="p" items="${particles}">
+            <c:forEach var="p" items="${details.particles}">
                 <tr>
                     <c:set var="edgeState" value="${p.data.edgeState}" />
                     <c:set var="motionState"
@@ -30,8 +41,16 @@
                     <c:set var="blockState" value="${p.data.blockState}" />
                     <c:set var="blockLocation"
                         value="${blockState.blockLocation}" />
+                    <td><fmt:formatDate pattern="HH:mm"
+                        value="${p.data.observation.record.timeAsDate}" /></td>
                     <td>
-                        <a href="vehicle-location-simulation!particle-details.do?taskId=${details.id}&amp;particleId=${p.index}"><c:out value="${p.weight}"/></a>
+                        <c:if test="${details.particleFilterFailureActive}">
+                            <c:set var="particleDetailsUrl" value="bad-particle-details"/>
+                        </c:if>
+                        <c:if test="${!details.particleFilterFailureActive}">
+                            <c:set var="particleDetailsUrl" value="particle-details"/>
+                        </c:if>
+                        <a href="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"><c:out value="${p.weight}"/></a>
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>
                     <td><a

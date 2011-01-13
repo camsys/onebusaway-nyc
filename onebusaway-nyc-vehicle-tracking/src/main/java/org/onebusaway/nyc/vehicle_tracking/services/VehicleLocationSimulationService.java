@@ -20,12 +20,12 @@ public interface VehicleLocationSimulationService {
 
   public VehicleLocationSimulationSummary getSimulation(int taskId);
 
-  public VehicleLocationSimulationDetails getSimulationDetails(int taskId,
+  public VehicleLocationDetails getSimulationDetails(int taskId,
       int historyOffset);
 
-  public VehicleLocationSimulationDetails getParticleDetails(int taskId,
+  public VehicleLocationDetails getParticleDetails(int taskId,
       int particleId);
-
+  
   public List<NycTestLocationRecord> getSimulationRecords(int taskId);
 
   public List<NycTestLocationRecord> getResultRecords(int taskId);
@@ -48,5 +48,4 @@ public interface VehicleLocationSimulationService {
   public int addSimulationForBlockInstance(AgencyAndId blockId,
       long serviceDate, long actualTime, boolean bypassInference,
       boolean fillActualProperties, Properties properties);
-
 }

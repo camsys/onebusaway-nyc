@@ -30,7 +30,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class BlockStateService {
 
-  private static Logger _log = LoggerFactory.getLogger(BlockStateService.class);
+  /**
+   * This will sound weird, but DON'T REMOVE THIS
+   */
+  private Logger _log = LoggerFactory.getLogger(BlockStateService.class);
 
   private ObservationCache _observationCache;
 
@@ -38,7 +41,7 @@ public class BlockStateService {
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
 
-  private ShapePointsLibrary _shapePointsLibrary = new ShapePointsLibrary(100);
+  private ShapePointsLibrary _shapePointsLibrary;
 
   private ProjectedShapePointService _projectedShapePointService;
 
@@ -69,6 +72,11 @@ public class BlockStateService {
   public void setProjectedShapePointService(
       ProjectedShapePointService projectedShapePointService) {
     _projectedShapePointService = projectedShapePointService;
+  }
+  
+  @Autowired
+  public void setShapePointsLibrary(ShapePointsLibrary shapePointsLibrary){
+    _shapePointsLibrary = shapePointsLibrary;
   }
 
   public void setLocalMinimumThreshold(double localMinimumThreshold) {

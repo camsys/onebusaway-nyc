@@ -22,6 +22,12 @@ public class VehicleStateLibrary {
 
   private double _layoverStopDistance = 400;
 
+  /**
+   * If we're more than X meters off our block, then we really don't think we're
+   * serving the block any more
+   */
+  private double _offBlockDistance = 1000;
+
   @Autowired
   public void setBaseLocationService(BaseLocationService baseLocationService) {
     _baseLocationService = baseLocationService;
@@ -42,11 +48,11 @@ public class VehicleStateLibrary {
 
     if (_baseLocationService.getTerminalNameForLocation(obs.getLocation()) != null)
       return true;
-    
+
     /**
      * For now, we assume that if we're at the base, we're NOT in a layover
      */
-    if(_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
+    if (_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
       return false;
 
     BlockState blockState = state.getBlockState();
@@ -141,6 +147,10 @@ public class VehicleStateLibrary {
     CoordinatePoint currentLocation = obs.getLocation();
 
     return SphericalGeometryLibrary.distance(currentLocation, blockStart);
+  }
+
+  public boolean isOffBlock(Observation obs, BlockState blockState) {
+    return getDistanceToBlockLocation(obs, blockState) > _offBlockDistance;
   }
 
   /****

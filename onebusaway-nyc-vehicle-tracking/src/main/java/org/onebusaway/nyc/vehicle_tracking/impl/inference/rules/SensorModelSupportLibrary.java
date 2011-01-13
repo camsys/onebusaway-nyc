@@ -19,8 +19,6 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,31 +62,15 @@ public class SensorModelSupportLibrary {
    */
   private int _maxLayover = 30;
 
-  /**
-   * How long in minutes do we let a vehicle run past its next stop arrival
-   * time?
-   */
-  private DeviationModel _vehicleIsOnScheduleModel = new DeviationModel(5);
-
   private DeviationModel _blockLocationDeviationModel = new DeviationModel(50);
 
   private boolean _useBlockLocationDeviationModel = true;
 
   private DeviationModel _scheduleDeviationModel = new DeviationModel(15 * 60);
 
-  /**
-   * What are the odds of switching blocks mid-stream? LOW!
-   */
-  private double _probabilityOfBlockChangeWhileInProgress = 0.01;
-
   private double _propabilityOfBeingOutOfServiceWithAnOutOfServiceDSC = 0.95;
 
   private double _propabilityOfBeingOutOfServiceWithAnInServiceDSC = 0.01;
-
-  /**
-   * We shouldn't be in unknown state if we have an out-of-service DSC
-   */
-  private double _propabilityOfUnknownWithAnOutOfServiceDSC = 0.05;
 
   private double _shortRangeProgressDistance = 500;
 
@@ -203,52 +185,6 @@ public class SensorModelSupportLibrary {
       pOnSchedule = computeScheduleDeviationProbability(state, obs);
 
     return p1 * pOnSchedule;
-  }
-
-  /****
-   * 
-   ****/
-
-  public double computeBlockSwitchProbability(VehicleState parentState,
-      VehicleState state, Observation obs) {
-
-    if (parentState == null)
-      return 1.0;
-
-    BlockState parentBlockState = parentState.getBlockState();
-    BlockState blockState = state.getBlockState();
-
-    if (parentBlockState == null)
-      return 1.0;
-
-    if (blockState == null)
-      return 1.0;
-
-    if (parentBlockState.getBlockInstance().equals(
-        blockState.getBlockInstance()))
-      return 1.0;
-
-    JourneyState journeyState = state.getJourneyState();
-    EVehiclePhase phase = journeyState.getPhase();
-
-    /**
-     * The probability of switching a block while actively in progress on
-     * another block should be pretty low.
-     */
-    if (EVehiclePhase.isActiveDuringBlock(phase))
-      return _probabilityOfBlockChangeWhileInProgress;
-
-    MotionState fromMotionState = parentState.getMotionState();
-    MotionState toMotionState = state.getMotionState();
-
-    if (fromMotionState.isAtTerminal() && !toMotionState.isAtTerminal()) {
-      return 1.0;
-    }
-
-    if (BlockStateTransitionModel.hasDestinationSignCodeChangedBetweenObservations(obs))
-      return 0.95;
-
-    return 0.05;
   }
 
   /*****
@@ -754,34 +690,6 @@ public class SensorModelSupportLibrary {
     return _startBlockOnTimeModel.probability(Math.abs(minutesDiff));
   }
 
-  /**
-   * The general idea is that a bus shouldn't be at its layover beyond its next
-   * stop arrival time.
-   * 
-   * @param layoverStop
-   */
-  public double computeVehicleIsOnScheduleProbability(long timestamp,
-      BlockState blockState, BlockStopTimeEntry layoverStop) {
-
-    BlockInstance blockInstance = blockState.getBlockInstance();
-
-    // No next stop? No point of a layover, methinks...
-    if (layoverStop == null) {
-      return 0.0;
-    }
-
-    StopTimeEntry stopTime = layoverStop.getStopTime();
-    long arrivalTime = blockInstance.getServiceDate()
-        + stopTime.getArrivalTime() * 1000;
-
-    // If we still have time to spare, then no problem!
-    if (timestamp < arrivalTime)
-      return 1.0;
-
-    int minutesLate = (int) ((timestamp - arrivalTime) / (60 * 1000));
-    return _vehicleIsOnScheduleModel.probability(minutesLate);
-  }
-
   public double computeOffBlockProbability(VehicleState state, Observation obs) {
 
     double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
@@ -858,13 +766,13 @@ public class SensorModelSupportLibrary {
 
   /**
    * 
-   * @return true if the distance between the observed bus location 
+   * @return true if the distance between the observed bus location
    */
   public boolean isOnRoute(Context context) {
 
     Observation obs = context.getObservation();
     VehicleState state = context.getState();
-    
+
     double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
         obs, state.getBlockState());
 

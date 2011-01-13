@@ -54,8 +54,6 @@ public class SensorModelResult {
 
   public SensorModelResult addResult(SensorModelResult result) {
 
-    this.probability *= result.probability;
-
     if (results == null)
       results = new ArrayList<SensorModelResult>();
     results.add(result);

@@ -6,6 +6,8 @@ public class VehicleLocationSimulationSummary {
 
   private int id;
 
+  private String vehicleId;
+
   private int numberOfRecordsProcessed;
 
   private int numberOfRecordsTotal;
@@ -14,12 +16,25 @@ public class VehicleLocationSimulationSummary {
 
   private boolean paused = false;
 
+  /**
+   * True when the particle filter has had a failure
+   */
+  private boolean particleFilterFailure;
+
   public int getId() {
     return id;
   }
 
   public void setId(int id) {
     this.id = id;
+  }
+
+  public String getVehicleId() {
+    return vehicleId;
+  }
+
+  public void setVehicleId(String vehicleId) {
+    this.vehicleId = vehicleId;
   }
 
   public int getNumberOfRecordsProcessed() {
@@ -52,5 +67,13 @@ public class VehicleLocationSimulationSummary {
 
   public void setPaused(boolean paused) {
     this.paused = paused;
+  }
+
+  public boolean isParticleFilterFailure() {
+    return particleFilterFailure;
+  }
+
+  public void setParticleFilterFailure(boolean particleFilterFailure) {
+    this.particleFilterFailure = particleFilterFailure;
   }
 }

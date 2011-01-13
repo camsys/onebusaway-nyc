@@ -43,6 +43,8 @@ public interface VehicleLocationInferenceService {
   public List<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId);
 
+  public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId);
+
   public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
       AgencyAndId agencyAndId);
 

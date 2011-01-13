@@ -10,22 +10,28 @@ public class Observation {
   private final NycVehicleLocationRecord _record;
 
   private final ProjectedPoint _point;
-  
+
   private final String _lastValidDestinationSignCode;
+
+  private final boolean atBase;
+
+  private final boolean atTerminal;
+
+  private final boolean outOfService;
 
   private Observation _previousObservation;
 
-  public Observation(NycVehicleLocationRecord record, String lastValidDestinationSignCode) {
-    this(record, lastValidDestinationSignCode, null);
-  }
-
   public Observation(NycVehicleLocationRecord record,
-      String lastValidDestinationSignCode, Observation previousObservation) {
+      String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
+      boolean outOfService, Observation previousObservation) {
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
         record.getLongitude());
-    _previousObservation = previousObservation;
     _lastValidDestinationSignCode = lastValidDestinationSignCode;
+    this.atBase = atBase;
+    this.atTerminal = atTerminal;
+    this.outOfService = outOfService;
+    _previousObservation = previousObservation;
   }
 
   public long getTime() {
@@ -39,15 +45,27 @@ public class Observation {
   public ProjectedPoint getPoint() {
     return _point;
   }
-  
+
   public String getLastValidDestinationSignCode() {
     return _lastValidDestinationSignCode;
+  }
+
+  public boolean isAtBase() {
+    return atBase;
+  }
+
+  public boolean isAtTerminal() {
+    return atTerminal;
+  }
+
+  public boolean isOutOfService() {
+    return outOfService;
   }
 
   public CoordinatePoint getLocation() {
     return _point.toCoordinatePoint();
   }
-  
+
   public Observation getPreviousObservation() {
     return _previousObservation;
   }
@@ -61,7 +79,7 @@ public class Observation {
   public void clearPreviousObservation() {
     _previousObservation = null;
   }
-  
+
   @Override
   public String toString() {
     return _record.toString();

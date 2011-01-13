@@ -25,7 +25,7 @@ import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationDetails;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.transit_data.model.ListBean;
@@ -118,11 +118,11 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
       @RequestParam(value = "pauseOnStart", required = false, defaultValue = "false") boolean pauseOnStart,
       @RequestParam(value = "shiftStartTime", required = false, defaultValue = "false") boolean shiftStartTime,
-      @RequestParam(value = "minimumRecordInterval", required = false, defaultValue = "0") int minimumRecordInterval,      
+      @RequestParam(value = "minimumRecordInterval", required = false, defaultValue = "0") int minimumRecordInterval,
       @RequestParam(value = "traceType", required = true) String traceType,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
       @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
-      @RequestParam(value = "loop", required = false, defaultValue = "false") boolean loop,      
+      @RequestParam(value = "loop", required = false, defaultValue = "false") boolean loop,
       @RequestParam(required = false, defaultValue = "false") boolean returnId)
       throws IOException {
 
@@ -160,7 +160,7 @@ public class VehicleLocationSimulationController {
     _vehicleLocationSimulationService.stepSimulation(taskId);
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
-  
+
   @RequestMapping(value = "/vehicle-location-simulation!restart.do", method = RequestMethod.GET)
   public ModelAndView restart(@RequestParam() int taskId) {
     _vehicleLocationSimulationService.restartSimulation(taskId);
@@ -179,7 +179,7 @@ public class VehicleLocationSimulationController {
     _vehicleLocationSimulationService.cancelSimulation(taskId);
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
-  
+
   @RequestMapping(value = "/vehicle-location-simulation!cancelAll.do", method = RequestMethod.GET)
   public ModelAndView cancelAll() {
     _vehicleLocationSimulationService.cancelAllSimulations();
@@ -199,7 +199,7 @@ public class VehicleLocationSimulationController {
       @RequestParam(required = false, defaultValue = "0") int historyOffset,
       @RequestParam(required = false, defaultValue = "false") boolean showSampledParticles) {
 
-    VehicleLocationSimulationDetails details = _vehicleLocationSimulationService.getSimulationDetails(
+    VehicleLocationDetails details = _vehicleLocationSimulationService.getSimulationDetails(
         taskId, historyOffset);
     Map<String, Object> m = new HashMap<String, Object>();
     m.put("details", details);
@@ -212,7 +212,7 @@ public class VehicleLocationSimulationController {
   public ModelAndView particleDetails(@RequestParam() int taskId,
       @RequestParam() int particleId) {
 
-    VehicleLocationSimulationDetails details = _vehicleLocationSimulationService.getParticleDetails(
+    VehicleLocationDetails details = _vehicleLocationSimulationService.getParticleDetails(
         taskId, particleId);
     return new ModelAndView("vehicle-location-simulation-task-details.jspx",
         "details", details);

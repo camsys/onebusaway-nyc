@@ -291,10 +291,13 @@ public class NycTestLocationRecord implements Serializable {
     inferredDistanceAlongBlock = Double.NaN;
     inferredDsc = null;
     inferredLat = Double.NaN;
-    inferredLon = Double.NaN;
+    inferredLon = Double.NaN;    
     inferredPhase = null;
+    inferredScheduleTime = MISSING_VALUE;
     inferredServiceDate = 0;
     inferredStatus = null;
+    inferredTripId = null;
+    
   }
 
   /****

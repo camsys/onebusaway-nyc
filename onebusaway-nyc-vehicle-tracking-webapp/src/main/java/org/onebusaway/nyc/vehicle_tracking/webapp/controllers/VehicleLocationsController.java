@@ -27,13 +27,13 @@ public class VehicleLocationsController {
   }
 
   @RequestMapping("/vehicle-locations.do")
-  public ModelAndView index(@RequestParam(required=false) String sort) {
+  public ModelAndView index(@RequestParam(required = false) String sort) {
 
     List<NycTestLocationRecord> records = _vehicleLocationService.getLatestProcessedVehicleLocationRecords();
 
     Comparator<NycTestLocationRecord> comparator = getComparatorForSortString(sort);
-    Collections.sort(records,comparator);
-    
+    Collections.sort(records, comparator);
+
     ModelAndView mv = new ModelAndView("vehicle-locations.jspx");
     mv.addObject("records", records);
     return mv;
@@ -61,11 +61,42 @@ public class VehicleLocationsController {
     return mv;
   }
 
+  @RequestMapping(value = "/vehicle-location!particle-details.do")
+  public ModelAndView particleDetails(@RequestParam() String vehicleId,
+      @RequestParam() int particleId) {
+
+    VehicleLocationDetails details = _vehicleLocationService.getDetailsForVehicleId(
+        vehicleId, particleId);
+
+    return new ModelAndView("vehicle-location-particles.jspx", "details",
+        details);
+  }
+
+  @RequestMapping("/vehicle-location!bad-particles.do")
+  public ModelAndView badParticles(@RequestParam() String vehicleId) {
+
+    VehicleLocationDetails details = _vehicleLocationService.getBadDetailsForVehicleId(vehicleId);
+
+    return new ModelAndView("vehicle-location-particles.jspx", "details",
+        details);
+  }
+
+  @RequestMapping(value = "/vehicle-location!bad-particle-details.do")
+  public ModelAndView badParticleDetails(@RequestParam() String vehicleId,
+      @RequestParam() int particleId) {
+
+    VehicleLocationDetails details = _vehicleLocationService.getBadDetailsForVehicleId(
+        vehicleId, particleId);
+
+    return new ModelAndView("vehicle-location-particles.jspx", "details",
+        details);
+  }
+
   @RequestMapping("/vehicle-location!particle.do")
   public ModelAndView particles(@RequestParam() String vehicleId,
       @RequestParam() int particleId) {
 
-    VehicleLocationDetails details = _vehicleLocationService.getParticleDetails(
+    VehicleLocationDetails details = _vehicleLocationService.getDetailsForVehicleId(
         vehicleId, particleId);
 
     ModelAndView mv = new ModelAndView("vehicle-location-particles.jspx");
@@ -79,14 +110,14 @@ public class VehicleLocationsController {
 
   private Comparator<NycTestLocationRecord> getComparatorForSortString(
       String sort) {
-    if( sort == null )
+    if (sort == null)
       return new NycTestLocationRecordVehicleComparator();
-    
+
     sort = sort.toLowerCase().trim();
-    
-    if( sort.equals("dsc"))
+
+    if (sort.equals("dsc"))
       return new NycTestLocationRecordDestinationSignCodeComparator();
-    
+
     return new NycTestLocationRecordVehicleComparator();
   }
 }

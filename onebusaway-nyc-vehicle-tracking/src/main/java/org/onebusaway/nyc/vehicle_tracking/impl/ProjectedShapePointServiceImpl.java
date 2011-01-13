@@ -20,11 +20,16 @@ class ProjectedShapePointServiceImpl implements ProjectedShapePointService {
 
   private ShapePointService _shapePointService;
 
-  private ShapePointsLibrary _shapePointsLibrary = new ShapePointsLibrary(100);
+  private ShapePointsLibrary _shapePointsLibrary;
 
   @Autowired
   public void setShapePointService(ShapePointService shapePointService) {
     _shapePointService = shapePointService;
+  }
+
+  @Autowired
+  public void setShapePointsLibrary(ShapePointsLibrary shapePointsLibrary) {
+    _shapePointsLibrary = shapePointsLibrary;
   }
 
   @Cacheable

@@ -56,13 +56,9 @@ public class JourneyStateTransitionModel {
       case IN_PROGRESS:
         return moveInProgress(obs);
       case DEADHEAD_DURING:
-        return moveDeadheadDuring(parentJourneyState);
+        return moveDeadheadDuring(obs, parentJourneyState);
       case LAYOVER_DURING:
         return moveLayoverDuring(obs);
-      case DEADHEAD_AFTER:
-        return moveDeadheadAfter(obs);
-      case LAYOVER_AFTER:
-        return moveLayoverAfter(obs);
       default:
         throw new IllegalStateException("unknown journey state: "
             + parentJourneyState.getPhase());
@@ -114,42 +110,29 @@ public class JourneyStateTransitionModel {
 
   private List<JourneyState> moveInProgress(Observation obs) {
 
-    return Arrays.asList(JourneyState.inProgress(),
+    return Arrays.asList(JourneyState.atBase(), JourneyState.inProgress(),
         JourneyState.deadheadDuring(obs.getLocation()),
-        JourneyState.layoverDuring(), JourneyState.deadheadAfter(),
-        JourneyState.layoverAfter());
+        JourneyState.layoverDuring(),
+        JourneyState.deadheadBefore(obs.getLocation()),
+        JourneyState.layoverBefore());
   }
 
-  private List<JourneyState> moveDeadheadDuring(JourneyState parentJourneyState) {
+  private List<JourneyState> moveDeadheadDuring(Observation obs,
+      JourneyState parentJourneyState) {
 
     JourneyStartState start = parentJourneyState.getData();
 
-    return Arrays.asList(JourneyState.inProgress(),
+    return Arrays.asList(JourneyState.atBase(), JourneyState.inProgress(),
         JourneyState.deadheadDuring(start.getJourneyStart()),
-        JourneyState.layoverDuring());
+        JourneyState.layoverDuring(),
+        JourneyState.deadheadBefore(obs.getLocation()),
+        JourneyState.layoverBefore());
   }
 
   private List<JourneyState> moveLayoverDuring(Observation obs) {
 
-    return Arrays.asList(JourneyState.inProgress(),
+    return Arrays.asList(JourneyState.atBase(), JourneyState.inProgress(),
         JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring());
   }
-
-  private List<JourneyState> moveDeadheadAfter(Observation obs) {
-
-    return Arrays.asList(JourneyState.atBase(),
-        JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.inProgress(), JourneyState.deadheadAfter(),
-        JourneyState.layoverAfter());
-  }
-
-  private List<JourneyState> moveLayoverAfter(Observation obs) {
-
-    return Arrays.asList(JourneyState.atBase(),
-        JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.inProgress(), JourneyState.deadheadAfter(),
-        JourneyState.layoverAfter());
-  }
-
 }
