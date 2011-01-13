@@ -27,6 +27,10 @@
 	padding-bottom: 5px;
 }
 
+#content #text td {
+	height: 100px;
+}
+
 #content #text p {
 	padding: 0px;
 }
