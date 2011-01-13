@@ -570,7 +570,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       if(tripBean != null && tripStatusBean != null) {
 		  TripBean currentTrip = tripStatusBean.getActiveTrip();
     	  
-    	  if(currentTrip != null && currentTrip.getId() != tripBean.getId()) {
+    	  if(currentTrip != null && !currentTrip.getId().equals(tripBean.getId())) {
     		  String phase = tripStatusBean.getPhase();
     		  
     		  if(phase != null && 
