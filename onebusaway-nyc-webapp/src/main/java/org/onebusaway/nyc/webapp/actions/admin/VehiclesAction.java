@@ -339,21 +339,19 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     }
     
     @SuppressWarnings("unused")
-    public String getOrientationImagePath() {
+    public String getOrientation() {
     	String orientationKey = "unknown";
     	
     	try {
     	  double orientationDeg = vehicleStatusBean.getTripStatus().getOrientation();
       
     	  if(Double.isNaN(orientationDeg))
-    		  orientationKey = "unknown";
+    		  return "Unknown";
     	  else
-    		  orientationKey = "" + ((int)Math.floor(orientationDeg / 5) * 5);
+    		  return "" + Math.floor(orientationDeg / 5) * 5;
       } catch(Exception e) {
-    	  orientationKey = "unknown";
+    	  return "Unknown";
       }
-
-      return "/img/vehicle/vehicle-" + orientationKey + ".png";
     }    
 
     @SuppressWarnings("unused")

@@ -16,18 +16,23 @@
 	padding: 0px;
 	padding-top: 10px;
 	padding-bottom: 15px;
+	clear: both;
 }
 
 #content #text td,
 #content #text th {
 	text-align: left;	
 	padding-right: 20px;
-	padding-top: 10px;
-	padding-bottom: 10px;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 
 #content #text p {
 	padding: 0px;
+}
+
+#content #text p#options {
+	padding-top: 5px;
 }
 
 #content #text .status {
@@ -58,24 +63,28 @@
 	padding-top: 10px;
 }
 
-#content #text .position {
-	font-size: 12px;
-}
-	
 #content #text .map-location {
-	height: 160px;
-	width: 150px;
 	position: absolute;
-	top: -35px;
+	top: 0px;
 	left: 0px;
+	width: 175px;
+	height: 100px;
+}
+
+#content #text .marker {
+	height: 51px;
+	width: 51px;
+	position: absolute;
+	top: 25px;
+	left: 62.5px;
 }
 
 #content #text .map-location-wrapper {
 	position: relative;
-	height: 80px;
-	width: 150px;	
-	overflow: hidden;
+	height: 100px;
+	width: 175px;	
 	border: 1px solid #C0C0C0;
 	background-color: #EFEFEF;
 	margin-top: 5px;
+	overflow: hidden;
 }

@@ -55,22 +55,12 @@ OBA.VehiclesAdmin = (function() {
 	            lastSortIndex = i;
 	            oldRows.remove();
 	            table.append(newRows);
+	            
 	            addResetLinkBehavior();
-			    addMapLinkBehavior();
 	        });
 	    });
 	}
-	
-	function addMapLinkBehavior() {
-	    jQuery('table').find('tr').not(":first")
-	    .find(".position div a").click(function(e) {
-	    	e.preventDefault();
-	   		var element = jQuery(this);
-	   		var parent = element.parent();
-	   		createMap(parent);
-	    });
-	}
-	
+
 	function addResetLinkBehavior() {
 	    jQuery('table').find('tr').not(":first")
 	    .find("a.reset").click(function(e) {
@@ -87,40 +77,96 @@ OBA.VehiclesAdmin = (function() {
 	    });
 	}
 
-	function createMap(elRaw) {
-		var el = jQuery(elRaw);
-		var contents = el.html();
-		if(contents === null) {
-			return null;
-		}
-		
-		var location_r = el.find("a").text();
-		var lat, lng = null;
-		if(location_r !== null) {
-			var location = location_r.split(",");			
-			lat = location[0];
-			lng = location[1];
-			if(lat === null || lng === null) {
+	function createMaps() {		
+		jQuery(".position").each(function(_, el) {
+			el = jQuery(el);
+			
+			var contents = el.html();
+			if(contents === null) {
 				return null;
 			}
-		}
+			
+			var data_r = el.text();
+			var data = data_r.split(",");			
+			
+			var lat, lng = null;
+			try {
+				lat = parseFloat(data[0]);
+				lng = parseFloat(data[1]);
 
-		var orientation_r = el.parent().find("img").attr("src").match(/([0-9]+)\.png$/i);
-		var orientation = "unknown";		
-		if(orientation_r !== null && orientation_r[1] !== "" && orientation_r[1] !== 0) {
-			orientation = Math.floor(orientation_r[1] / 5) * 5;
-		}
-		
-		var mapDivWrapper = jQuery("<div></div>").addClass("map-location-wrapper");
-		var iconUrl = "http://dev.oba.openplans.org/" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType;
-		var image = jQuery("<img></img>")
-						.addClass("map-location")
-						.appendTo(mapDivWrapper)
-						.attr("src", "http://maps.google.com/maps/api/staticmap?size=150x160&markers=shadow:false|icon:" + iconUrl + "|" + lat + "," + lng + "&zoom=15&sensor=false");
-		el.append(mapDivWrapper);
+				if(isNaN(lat) || isNaN(lng)) {
+					return;
+				}
+			} catch(e) {
+				return;
+			}
+
+			var lng = data[1];
+			var orientation = null;
+			try {
+				orientation = Math.floor(data[2] / 5) * 5;
+				
+				if(isNaN(orientation)) {
+					orientation = "unknown";					
+				}
+			} catch(e) {
+				orientation = "unknown";
+			}
+			
+			if(jQuery("#showMap").attr("checked") !== true) {
+				jQuery.ajax({
+		            url: "http://dev.oba.openplans.org/debug/tools/osm.php",
+		            dataType: "jsonp",
+		            data: {
+		            	ll: lat + "," + lng,
+		            	format: "jsonp"
+		            },
+		            success: function(data) { 
+		            	var locationText = jQuery("<p></p>")
+		            					.text(data.block);
+
+						el.find("p").hide();
+		            	el.append(locationText);
+		            }
+		        });
+			} else {
+				var mapDivWrapper = jQuery("<div></div>")
+									.addClass("map-location-wrapper");
+	
+				var mapContainer = jQuery("<div></div>")
+									.addClass("map-location")
+									.appendTo(mapDivWrapper);
+	
+				var marker = jQuery("<img></img>")
+									.addClass("marker")
+									.appendTo(mapDivWrapper)
+									.attr("src", "http://dev.oba.openplans.org/" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType);
+	
+				el.find("p").hide();
+				el.append(mapDivWrapper);	
+	
+				var options = {
+						zoom: 15,
+						mapTypeControl: false,
+						streetViewControl: false,		
+						center: new google.maps.LatLng(lat, lng),
+						mapTypeId: google.maps.MapTypeId.ROADMAP,
+						disableDefaultUI: true,
+						draggable: false,
+						zoomControl: false,
+						scrollwheel: false
+				};
+				new google.maps.Map(mapContainer.get(0), options);
+			}
+		});
 	}	
 	
 	function refreshTable() {
+		if(jQuery("#refresh").attr("checked") !== true) {
+			setTimeout(refreshTable, 30 * 1000);
+			return;
+		}
+		
 		jQuery.ajax({
             url: window.location.href,
             success: function(data) { 
@@ -138,43 +184,20 @@ OBA.VehiclesAdmin = (function() {
                	 jQuery("#timestamp")
                	 	.text("Information current as of " + new Date().format("mmm d, yyyy h:MM:ss TT"));
                	 
+     		     createMaps();               	 
                	 addResetLinkBehavior();	
- 			     addMapLinkBehavior();
- 			     addIntersectionAnnotation();
                	 setTimeout(refreshTable, 30 * 1000);
             }
         });
 	}
 
-	function addIntersectionAnnotation() {
-		jQuery('table').find('tr').not(":first")
-	    .find(".position a").each(function(_, el) {
-			var location = jQuery(el).text();
-			jQuery.ajax({
-	            url: "http://dev.oba.openplans.org/debug/tools/osm.php",
-	            dataType: "jsonp",
-	            data: {
-	            	ll: location,
-	            	format: "jsonp"
-	            },
-	            success: function(data) { 
-	            	var textDesc = jQuery("<p></p>")
-	            					.text(data.block)
-	            					.addClass("annotation");
-	            	jQuery(el).parent().prepend(textDesc);
-	            }
-	        });
-	    });
-	}
-	
 	return {
 		initialize: function() {
 		    addTableSortBehaviors();
-		    
-		    addMapLinkBehavior();
+
+		    createMaps();
 		    addResetLinkBehavior();
-		    addIntersectionAnnotation();
-//	        setTimeout(refreshTable, 30 * 1000);			
+	        setTimeout(refreshTable, 30 * 1000);			
 		}
 	};
 })();
