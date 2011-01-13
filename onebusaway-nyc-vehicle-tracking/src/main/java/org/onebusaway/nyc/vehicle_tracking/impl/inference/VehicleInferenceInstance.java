@@ -126,7 +126,7 @@ public class VehicleInferenceInstance {
 
     /**
      * If it's been a while since we've last seen a record, reset the particle
-     * filter
+     * filter and forget the previous observation
      */
     if (_previousObservation != null) {
       long delta = record.getTime() - _previousObservation.getTime();
@@ -139,6 +139,7 @@ public class VehicleInferenceInstance {
         _log.info("resetting inference for vid=" + record.getVehicleId()
             + " since it's been " + (delta / 1000)
             + " seconds since the previous update");
+        _previousObservation = null;
         _particleFilter.reset();
       }
     }
