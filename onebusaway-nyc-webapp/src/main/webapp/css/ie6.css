@@ -12,6 +12,10 @@
 /* specific language governing permissions and limitations */
 /* under the License. */
 
+#page {
+	margin-left: 50px;
+}
+
 #content #sidebar {
     width: 325px;
 }
@@ -21,7 +25,26 @@
     height: 100%;	
 }
 
-#displayed-routes,
-#search-results {
-    width: 325px;
+#footer ul li { 
+    border-left: medium none;
+    margin-left: 0px;
+    padding-left: 0px;
+    padding-right: 10px;
+}
+
+#welcome .content ul li {
+    border: medium none;
+    margin-left: 0px;
+    padding-left: 0px;
+	padding-right: 10px;
+}
+
+#content.sidebar #sidebar {
+	height: 100%;
+}
+
+#popup ul li.nextStop span,
+#popup ul li.arrival span {
+	padding-left: 0px;
+	margin-left: 0px;
 }

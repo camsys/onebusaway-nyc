@@ -85,7 +85,7 @@ OBA.Tracker = function() {
 			if(OBA.popupMarker !== null && OBA.popupMarker.getType() === "stop") {				
 				url += OBA.Util.parseEntityId(OBA.popupMarker.getId()); 
 			} else if(searchInput.val() !== null && searchInput.val() !== ""
-				&& searchInput.val() !== "Enter an intersection, stop or route.") {
+				&& searchInput.val() !== "Intersection along a route or stop ID") {
 				url += searchInput.val();
 			}
 
