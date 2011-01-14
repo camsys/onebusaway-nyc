@@ -451,7 +451,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     // don't show non-realtime trips (row 8)
     if (statusBean == null 
     	|| statusBean.isPredicted() == false
-        || Double.isNaN(statusBean.getDistanceAlongTrip())) {    
+        || Double.isNaN(statusBean.getDistanceAlongTrip()) || statusBean.getDistanceAlongTrip() == 0) {    
     	return false;
     }
     
