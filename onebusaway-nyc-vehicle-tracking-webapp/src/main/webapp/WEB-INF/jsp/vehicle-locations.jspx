@@ -20,11 +20,11 @@ table td {
     <thead>
         <tr>
             <td>Time</td>
-            <td>Vehicle</td>
+            <td><a href="vehicle-locations.do?sort=vehicle">Vehicle</a></td>
             <td>Particles</td>
             <td>Reset</td>
             <td>Location</td>
-            <td>DSC</td>
+            <td><a href="vehicle-locations.do?sort=dsc">DSC</a></td>
             <td>Phase</td>
             <td>BlockId</td>
             <td>TripId</td>
