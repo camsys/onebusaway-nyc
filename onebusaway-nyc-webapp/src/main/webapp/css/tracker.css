@@ -42,6 +42,10 @@
 	padding-top: 3px;	
 }
 
+#search .wrapper #no-results .examples {
+	padding-top: 5px;
+}
+
 #search .wrapper input {
 	font-size: 16px;
 	font-family: inherit;

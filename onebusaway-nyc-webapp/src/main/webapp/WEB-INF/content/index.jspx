@@ -74,14 +74,17 @@ under the License.
 
 			<div id="no-results">
 				<p>
-					No results were returned for your query. 
-					
 					<s:url var="url" namespace="/wiki" action="HelpIndex"/>
-					<a href="${url}">Help</a>
+					No results found for your query. View <a href="${url}">search tips</a> or<br/>
+					try these example searches:					
+					<ul class="examples">			
+						<li>Intersection: <a href="#Atlantic Ave and Hoyt St">Atlantic Ave and Hoyt St</a></li>
+						<li>Stop ID: <a href="#305394">305394</a></li>
+					</ul>					
 				</p>
 			</div>
 		</div>
-		<input type="submit" value="Find" class="submit"/>
+		<input type="submit" value="Find Stop" class="submit"/>
 	</form>
 
 	<div id="share_link">

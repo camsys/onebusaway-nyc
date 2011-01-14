@@ -50,6 +50,17 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     this.q = q;
   }
 
+  public List<SearchResult>getToc() {
+	  List<SearchResult> tocList = new ArrayList<SearchResult>();
+	  
+	  for(SearchResult _result : searchResults) {
+			if(_result.getType().equals("route"))
+				tocList.add(_result);
+	  }
+	  
+	  return tocList;	  
+  }
+  
   public String getLastUpdateTime() {
 	Date lastUpdated = null;
 	for(SearchResult _result : searchResults) {

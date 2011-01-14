@@ -29,8 +29,8 @@ OBA.Tracker = function() {
 		var noResults = jQuery("#no-results");
 
 		var loseFocus = function() {
-			if(searchInput.val() === "" || searchInput.val() === "Enter an intersection, stop or route.") {
-				searchInput.val("Enter an intersection, stop or route.");
+			if(searchInput.val() === "" || searchInput.val() === "Intersection along a route or stop ID") {
+				searchInput.val("Intersection along a route or stop ID");
 				searchInput.addClass("inactive");
 			}
 		};
@@ -39,7 +39,7 @@ OBA.Tracker = function() {
 		searchInput.blur(loseFocus);
 		
 		searchInput.focus(function() {
-			if(searchInput.val() === "Enter an intersection, stop or route.") {
+			if(searchInput.val() === "Intersection along a route or stop ID") {
 				searchInput.val("");
 			}
 			noResults.hide();

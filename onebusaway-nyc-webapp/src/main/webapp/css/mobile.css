@@ -141,6 +141,9 @@ strong {
     color: red;
     text-decoration: none;
 }
+.homeAlert {
+	background-color: #eaff7f;
+}
 #footer {
     background-color: #0b0ba9;
     color: #999;

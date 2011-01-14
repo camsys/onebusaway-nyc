@@ -39,37 +39,43 @@ under the License.
 		<s:form namespace="/m" action="index" method="GET">
 	        <label for="q">Search for: </label>
 			<input type="text" name="q" class="q" value="${q}"/>
-			<input type="submit" class="s" value="Go" />
+			<input type="submit" class="s" value="Find" />
 		</s:form>
-		<p><small><i>TIP: Enter an intersection, bus route, or bus stop number.</i></small></p>
+		<p><small><i>TIP: Enter a route, an intersection along a route, or a stop ID.</i></small></p>
 	</div>
 
 	<s:if test="%{searchResults.size==0}">
-		<s:if test="! queryIsEmpty">
+		<s:if test="!queryIsEmpty">
 			<div>
 				<p>
-				No results found for your query.
+					<s:url var="url" namespace="/wiki" action="HelpIndex"/>
+					No results found for your query. <a href="${url}">Search Tips</a>
 				</p>
 			</div>
 		</s:if>
+		<s:else>
+			<div class="homeAlert">
+				<wiki:wiki name="HomeAlert"/>
+			</div>
+		</s:else>
 
 		<div>
-			<p>Example searches:</p>
+			<p>Try these example searches:</p>
 			<ul>			
+				<s:url var="url" namespace="/m" action="index">
+					<s:param name="q">B63</s:param>
+				</s:url>
+				<li>Route: <a href="${url}">B63</a></li>
+
 				<s:url var="url" namespace="/m" action="index">
 					<s:param name="q">Atlantic Ave and Hoyt St</s:param>
 				</s:url>
-				<li><a href="${url}">Atlantic Ave and Hoyt St</a></li>
+				<li>Intersection: <a href="${url}">Atlantic Ave and Hoyt St</a></li>
 	
 				<s:url var="url" namespace="/m" action="index">
 					<s:param name="q">305394</s:param>
 				</s:url>
-				<li><a href="${url}">305394</a></li>
-	
-				<s:url var="url" namespace="/m" action="index">
-					<s:param name="q">B63</s:param>
-				</s:url>
-				<li><a href="${url}">B63</a></li>
+				<li>Stop ID: <a href="${url}">305394</a></li>	
 			</ul>
 		</div>
 	</s:if>
@@ -81,8 +87,22 @@ under the License.
 			</s:url>
 	    	<a href="${url}#top">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>
-	
-		<s:iterator value="searchResults">
+
+		<!--  table of contents -->
+		<s:if test="%{toc.size!=0}">
+			<div>
+				<p><strong>Shortcuts To...</strong></p>
+
+				<s:iterator value="toc">
+					<s:if test="%{type.equals('route')}">
+						<a href="#${directionId}"><s:property value="tripHeadsign" /></a>
+						<br/>
+					</s:if>
+				</s:iterator>
+			</div>
+		</s:if>
+
+		<s:iterator value="searchResults">				
 			<s:if test="%{type.equals('stop')}">
 				<div>
 					<p>
