@@ -86,8 +86,8 @@ OBA.Config = {
 			}
 			
 			// hide data >= hideTimeout seconds old (row 5)
-			if(typeof tripStatus.lastLocationUpdateTime !== 'undefined' 
-				&& new Date().getTime() - tripStatus.lastLocationUpdateTime >= 1000 * OBA.Config.hideTimeout) {
+			if(typeof tripStatus.lastUpdateTime !== 'undefined' 
+				&& new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.hideTimeout) {
 				return false;
 			}
 

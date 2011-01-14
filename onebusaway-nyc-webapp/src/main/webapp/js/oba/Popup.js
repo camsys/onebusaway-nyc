@@ -86,7 +86,22 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 
 				infoWindow.setOptions({ zIndex: 100, pixelOffset: pixelOffset });
 				infoWindow.open(map, marker.getRawMarker());
-				
+
+				var updateTime = function() {
+					if(infoWindow !== null) {
+						try {
+							var updatedSpan = jQuery(infoWindow.content).find(".updated");
+							var timestampEpoch = parseInt(updatedSpan.attr("epoch"), 10);
+							var timestamp = new Date(timestampEpoch);
+							updatedSpan.text("Last updated " + OBA.Util.displayTime(timestamp));
+						} catch(e) {
+							return;
+						}
+						setTimeout(updateTime, 1000);						
+					}
+				};	
+				updateTime();
+
 				google.maps.event.addListenerOnce(infoWindow, 'closeclick', function() {
 					OBA.popupMarker = null;
 				});
@@ -182,10 +197,11 @@ OBA.StopPopup = function(stopId, map) {
 			}
 			
 			var updateTime = parseInt(arrival.lastUpdateTime, 10);
+			latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
+
 			var meters = arrival.distanceFromStop;
 			var feet = OBA.Util.metersToFeet(meters);
 			var stops = arrival.numberOfStopsAway;
-			latestUpdate = latestUpdate ? Math.max(latestUpdate, updateTime) : updateTime;
 			
 			var vehicleInfo = {stops: stops,
 							   feet: feet,
@@ -195,17 +211,19 @@ OBA.StopPopup = function(stopId, map) {
 			routeToVehicleInfo[routeId].push(vehicleInfo);				
 		});
 
-		var lastUpdateString = null;        
+		var lastUpdateDate = null;
 		if (latestUpdate !== null && latestUpdate !== 0) {
-			var lastUpdateDate = new Date(latestUpdate);
-			lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
+			lastUpdateDate = new Date(latestUpdate);
 		}
 
 		// header
 		var header = '<p class="header">' + name + '</p>' +
 						'<p>' + 
 							'<span class="type stop">Stop #' + OBA.Util.parseEntityId(stopId) + '</span> ' + 
-							(lastUpdateString ? '<span class="updated">Last updated at ' + lastUpdateString + '</span>' : '') + 
+							(lastUpdateDate !== null ? 
+									'<span class="updated" epoch="' + lastUpdateDate.getTime() + '">' + 
+										'Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
+									'</span>' : '') + 
 						'</p>';
 
 		// service notices
@@ -323,15 +341,16 @@ OBA.VehiclePopup = function(vehicleId, map) {
 			}
 		}
 
-		var lastUpdateDate = new Date(tripStatus.lastLocationUpdateTime);
-		var lastUpdateString = OBA.Util.displayTime(lastUpdateDate);
+		var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
 		var isStaleData = (new Date().getTime() - lastUpdateDate.getTime() >= 1000 * OBA.Config.staleDataTimeout);
 
 		// header
 		var header = '<p class="header">' + headsign + '</p>' +
 						'<p>' + 
 							'<span class="type vehicle">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span> ' +
-							'<span class="updated' + ((isStaleData === true) ? " stale" : "") +'">Last updated at ' + lastUpdateString + '</span>' + 
+							'<span epoch="' + lastUpdateDate.getTime() + '" class="updated' + ((isStaleData === true) ? " stale" : "") +'">' + 
+								'Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
+							'</span>' + 
 						'</p>';
 
 		// service notices

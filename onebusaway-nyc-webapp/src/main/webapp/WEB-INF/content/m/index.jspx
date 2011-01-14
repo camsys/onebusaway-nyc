@@ -79,7 +79,7 @@ under the License.
 			<s:url var="url" namespace="/m" action="index">				
 				<s:param name="q"><s:property value="q" /></s:param>
 			</s:url>
-	    	<a href="${url}#top">Refresh Results (updated at <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}#top">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>
 	
 		<s:iterator value="searchResults">
@@ -163,7 +163,7 @@ under the License.
 			<s:url var="url" namespace="/m" action="index">				
 				<s:param name="q"><s:property value="q" /></s:param>
 			</s:url>
-	    	<a href="${url}#bottom">Refresh Results (updated at <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}#bottom">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>
 	</s:else>
 

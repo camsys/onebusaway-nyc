@@ -106,22 +106,17 @@ OBA.Util = (function() {
 			return s;
 		},
 		displayTime: function(dateObj) {
-			var minutes = dateObj.getMinutes();
-			minutes = (minutes < 10) ? "0" + minutes : "" + minutes;
-			var hours = dateObj.getHours();            
-			var amOrPm = "";
-			if(hours >= 12) {
-				if(hours > 12) {
-					hours = hours - 12;        	            	
-				}
-				amOrPm = "pm";
-			} else {
-				if(hours === 0) {
-					hours = 12;
-				}
-				amOrPm = "am";
+			if(dateObj === null) {
+				return null;
 			}
-			return hours + ":" + minutes + " " + amOrPm;
+			var secondsAgo = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
+			
+			if(secondsAgo < 60) {
+				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s" + " ago");
+			} else {
+				secondsAgo = Math.floor(secondsAgo / 60);
+				return secondsAgo + " minute" + ((secondsAgo === 1) ? "" : "s" + " ago");				
+			}
 		}
 	};
 })();

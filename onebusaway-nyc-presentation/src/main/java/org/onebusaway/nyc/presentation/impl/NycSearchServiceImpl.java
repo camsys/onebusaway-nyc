@@ -377,7 +377,7 @@ public class NycSearchServiceImpl implements NycSearchService {
         // (we're always 0 stops away from our next stop, by definition)
         DistanceAway distanceAway = new DistanceAway(0,
             distanceAwayFromClosestStopInFeet, 
-            new Date(tripStatusBean.getLastLocationUpdateTime()), 
+            new Date(tripStatusBean.getLastUpdateTime()), 
             m, 
             config.getStaleDataTimeout(),
             FormattingContext.ROUTE,
@@ -497,7 +497,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     // hide data >= (hide timeout) minutes old (row 5)
     ConfigurationBean config = configurationService.getConfiguration();
     
-    if (new Date().getTime() - statusBean.getLastLocationUpdateTime() >= 1000 * config.getHideTimeout()) {
+    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout()) {
        	return false;
     }
     
@@ -597,7 +597,7 @@ public class NycSearchServiceImpl implements NycSearchService {
 
       DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
           distanceFromStopInFeet, 
-          new Date(arrivalAndDepartureBean.getTripStatus().getLastLocationUpdateTime()), 
+          new Date(arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), 
           m, 
           config.getStaleDataTimeout(),
           FormattingContext.STOP,

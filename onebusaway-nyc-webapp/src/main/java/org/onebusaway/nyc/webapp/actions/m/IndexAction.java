@@ -5,8 +5,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
+import org.onebusaway.nyc.presentation.model.RouteItem;
+import org.onebusaway.nyc.presentation.model.StopItem;
+import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
 import org.onebusaway.nyc.presentation.model.search.SearchResult;
+import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +51,34 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getLastUpdateTime() {
-	Date now = new Date();
-	return DateFormat.getTimeInstance().format(now);
+	Date lastUpdated = null;
+	for(SearchResult _result : searchResults) {
+		if(_result.getType().equals("route")) {
+			RouteSearchResult result = (RouteSearchResult)_result;
+			for(StopItem stop : result.getStopItems()) {
+				for(DistanceAway distanceAway : stop.getDistanceAways()) {
+					if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
+						lastUpdated = distanceAway.getUpdateTimestamp();
+					}
+				}
+			}
+		} else if(_result.getType().equals("stop")) {
+			StopSearchResult result = (StopSearchResult)_result;
+			for(RouteItem route : result.getRoutesAvailable()) {
+				for(DistanceAway distanceAway : route.getDistanceAways()) {
+					if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
+						lastUpdated = distanceAway.getUpdateTimestamp();
+					}
+				}
+			}
+		}
+	}
+
+	if(lastUpdated != null) {
+		return DateFormat.getTimeInstance().format(lastUpdated);
+	} else {
+		return "(unknown)";
+	}
   }  
   
   public String getTitle() {
