@@ -60,7 +60,7 @@ OBA.Config = {
 
 		vehicleFilterFunction: function(type, tripStatus) {
 			// don't show non-realtime trips (row 8)
-			if(tripStatus === null || tripStatus.predicted === false || tripStatus.distanceAlongTrip === 0) {
+			if(tripStatus === null || tripStatus.predicted === false) {
 				return false;
 			}
 			

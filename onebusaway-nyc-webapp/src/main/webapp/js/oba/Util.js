@@ -97,7 +97,7 @@ OBA.Util = (function() {
 				
 				if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
 					var ratio = distanceAlongTrip / totalDistanceAlongTrip;
-					if(ratio > 0.80) {
+					if(ratio > 0.80 || ratio < .20) {
 						s += " (at terminal)";						
 					}					
 				}

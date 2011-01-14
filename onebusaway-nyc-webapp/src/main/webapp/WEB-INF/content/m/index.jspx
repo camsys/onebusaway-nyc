@@ -91,7 +91,7 @@ under the License.
 		<!--  table of contents -->
 		<s:if test="%{toc.size!=0}">
 			<div>
-				<p><strong>Shortcuts To...</strong></p>
+				<p><strong>Shortcut To...</strong></p>
 
 				<s:iterator value="toc">
 					<s:if test="%{type.equals('route')}">

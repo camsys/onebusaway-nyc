@@ -97,7 +97,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 			
 			if(distanceAlongTrip != null && totalDistanceAlongTrip != null) {
 				Double ratio = distanceAlongTrip / totalDistanceAlongTrip;				
-				if(ratio > .80) {
+				if(ratio > .80 || ratio < .20) {
 					r += " (at terminal)";
 				}
 			}

@@ -415,11 +415,12 @@ public class NycSearchServiceImpl implements NycSearchService {
         String stopId = stopBean.getId();
         List<DistanceAway> distances = stopIdToDistanceAways.get(stopId);
 
+        if(distances == null)
+          distances = Collections.emptyList();
+
         // if there is more than one vehicle stopping at this stop, sort the
         // vehicles by distance away from this stop
-        if (distances != null && distances.size() > 0) {
-          Collections.sort(distances);
-        }
+        Collections.sort(distances);
 
         StopItem stopItem = new StopItem(stopBean, distances);
         stopItemsList.add(stopItem);
@@ -451,7 +452,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     // don't show non-realtime trips (row 8)
     if (statusBean == null 
     	|| statusBean.isPredicted() == false
-        || Double.isNaN(statusBean.getDistanceAlongTrip()) || statusBean.getDistanceAlongTrip() == 0) {    
+        || Double.isNaN(statusBean.getDistanceAlongTrip())) {    
     	return false;
     }
     
