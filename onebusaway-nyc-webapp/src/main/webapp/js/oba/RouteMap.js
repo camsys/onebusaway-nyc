@@ -46,174 +46,151 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 	var routeIds = {};
 	var routeIdToShapes = {};
 	var routeIdsToVehicleMarkers = {};
+	var vehicleMarkers = {};
 	var stopMarkers = {};
 	var numberOfRoutes = 0;
-	var vehicleMarkers = {};
 	var isVehiclePolling = false;
 	var vehicleTimerId = null;
 
 	var fluster = new Fluster2(map, false, stopMarkers);
 	fluster.initialize();            
 
-	var requestRoutes = function(routeIds) {
-		var routesToRequest;
-
-		if (typeof routeIds === "undefined") {
-			// to be more efficient we can store the list of all route ids
-			// separately in memory, yagni now
-			routesToRequest = [];
-		
-			for (var routeId in routeIdToShapes) {
-				var directionIdMap = routeIdToShapes[routeId];
-				var directions = [];				
-				for (var directionId in directionIdMap) {					
-					directions.push(directionId);
-				}
-				routesToRequest.push([routeId, directions]);                  
+	var requestRoutes = function() {
+		jQuery.each(routeIds, function(routeId, directionIds) {
+			if(typeof directionIds !== 'object') {
+				directionIds = [directionIds];
 			}
-		} else {
-			routesToRequest = routeIds;
-		}
-
-		// we'll be serializing the requests to be one at a time, so this is the base case
-		if (routesToRequest.length === 0) {
-			return;
-		}
-		
-		var routeToRequest = routesToRequest[0];
-		var routeId = routeToRequest[0];
-		var remainingRouteIds = routesToRequest.slice(1);
-
-		var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";
-		var tripDetailsList, tripReferencesList = null;
-		jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey, includeStatus: true}, function(json) {
-			var directionIds = routeToRequest[1];		
-
-			try {
-				tripDetailsList = json.data.list;
-				tripReferencesList = json.data.references.trips;
-			} catch (typeError) {
-				OBA.Util.log("unknown server vehicles response");
-				OBA.Util.log(json);
+			
+			if (directionIds.length === 0) {
 				return;
 			}
-
-			// keep track of the vehicles that are added for this direction
-			// this is will be a set of vehicleIds
-			var vehiclesAdded = {};
-
-			// helper function to add an element to a map where values are lists
-			var addVehicleMarkerToRouteMap = function(routeId, directionId, vehicleMarker) {
-				var directionIdMap = routeIdsToVehicleMarkers[routeId];
-
-				if (directionIdMap) {
-					var vehicles = directionIdMap[directionId];
-
-					if (vehicles) {
-						var alreadyThere = false;
-						var markerId = vehicleMarker.getId();
-
-						jQuery.each(vehicles, function(i, vehicle) {
-							if (vehicle.getId() === markerId) {
-								alreadyThere = true;
-							}
-						});
-
-						if (!alreadyThere) {
-							vehicles.push(vehicleMarker);
-						}
-					} else {
-						directionIdMap[directionId] = [vehicleMarker];
-					}
-				} else {
-					var directionIdMap = {};
-					directionIdMap[directionId] = [vehicleMarker];
-					routeIdsToVehicleMarkers[routeId] = directionIdMap;
-				}
-
-				// keep track of all vehicles that have been added
-				// so we know which we should remove from the list
-				vehiclesAdded[vehicleMarker.getId()] = true;
-			};
-
-			jQuery.each(tripDetailsList, function(i, tripDetails) {
-				var status = tripDetails.status;
-				var vehicleId = status.vehicleId;
-
-				if(vehicleId === null || status === null || 
-						OBA.Config.vehicleFilterFunction("vehicle", status) === false) {
+		
+			var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";
+			var tripDetailsList, tripReferencesList = null;
+			jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey, includeStatus: true}, function(json) {
+				try {
+					tripDetailsList = json.data.list;
+					tripReferencesList = json.data.references.trips;
+				} catch (typeError) {
+					OBA.Util.log("unknown server vehicles response");
+					OBA.Util.log(json);
 					return;
 				}
-				
-				// check to make sure that the bus is headed in the right direction
-				var directionId = null;
-				var vehicleTripId = tripDetails.tripId;
-				for (var i = 0; i < tripReferencesList.length; i++) {
-					var tripReference = tripReferencesList[i];
-					var vehicleDirectionId = tripReference.directionId;
-					
-					if (tripReference.id === vehicleTripId) {
-						directionId = null;
-						for(var z = 0; z < directionIds.length; z++) {
-							if(vehicleDirectionId === directionIds[z]) {
-								directionId = vehicleDirectionId;
-								break;
+
+				// keep track of the vehicles that are added for this direction
+				// this is will be a set of vehicleIds
+				var vehiclesAdded = {};
+
+				// helper function to add an element to a map where values are lists
+				var addVehicleMarkerToRouteMap = function(routeId, directionId, vehicleMarker) {
+					var directionIdMap = routeIdsToVehicleMarkers[routeId];
+
+					if (directionIdMap) {
+						var vehicles = directionIdMap[directionId];
+
+						if (vehicles) {
+							var alreadyThere = false;
+							var markerId = vehicleMarker.getId();
+
+							jQuery.each(vehicles, function(i, vehicle) {
+								if (vehicle.getId() === markerId) {
+									alreadyThere = true;
+									return;
+								}
+							});
+
+							if (!alreadyThere) {
+								vehicles.push(vehicleMarker);
 							}
-						}
-						if(directionId !== null) {
-							break;
 						} else {
-							return;
+							directionIdMap[directionId] = [vehicleMarker];
 						}
-					}
-				}
-
-				var latLng = [status.position.lat, status.position.lon];
-				var vehicleMarker = vehicleMarkers[vehicleId];
-
-				if (vehicleMarker) {
-					var latlng = new google.maps.LatLng(latLng[0], latLng[1]);
-
-					vehicleMarker.updatePosition(latlng);
-					vehicleMarker.updateOrientation(status.orientation);
-
-					if (!vehicleMarker.isDisplayed()) {
-						vehicleMarker.addMarker();
+					} else {
+						var directionIdMap = {};
+						directionIdMap[directionId] = [vehicleMarker];
+						routeIdsToVehicleMarkers[routeId] = directionIdMap;
 					}
 
-					addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);
-				} else {
-					vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, status.orientation, map, { map: map });
-					vehicleMarkers[vehicleId] = vehicleMarker;
+					// keep track of all vehicles that have been added
+					// so we know which we should remove from the list
+					vehiclesAdded[vehicleMarker.getId()] = true;
+				};
 
-					addVehicleMarkerToRouteMap(routeId, directionId, vehicleMarker);
-				}
-			}); // each tripDetail
+				jQuery.each(tripDetailsList, function(i, tripDetails) {
+					var status = tripDetails.status;
+					var vehicleId = status.vehicleId;
 
-			// remove vehicle markers that haven't been listed in this recent update
-			var directionIdMap = routeIdsToVehicleMarkers[routeId];
-			if (directionIdMap) {
-				jQuery.each(directionIdMap, function(directionId, vehicles) {
-					if (vehicles) {
-						var vehiclesToKeep = [];
-						for (var i = 0; i < vehicles.length; i++) {
-							var vehicle = vehicles[i];
-							if (vehicle.getId() in vehiclesAdded) {
-								vehiclesToKeep.push(vehicle);
-							} else {
-								vehicle.removeMarker();
+					if(vehicleId === null || status === null || 
+							OBA.Config.vehicleFilterFunction("vehicle", status) === false) {
+						return;
+					}
+				
+					// check to make sure that the bus is headed in the right direction
+					var vehicleDirectionId = null;
+					var vehicleTripId = tripDetails.tripId;
+					for (var i = 0; i < tripReferencesList.length; i++) {
+						var tripReference = tripReferencesList[i];					
+						if (tripReference.id === vehicleTripId) {
+							var tripReferenceDirectionId = tripReference.directionId;
+							jQuery.each(directionIds, function(requestDirectionId, _) {
+								if(tripReferenceDirectionId === requestDirectionId) {
+									vehicleDirectionId = tripReferenceDirectionId;
+									return;
+								}
+							});
+
+							break;
+						}						
+					}
+
+					// this vehicle is not on a trip in the proper direction; skip
+					if(vehicleDirectionId === null) {
+						return;
+					}					
+					// if we're here, we're adding this vehicle to the map...
+
+					var latLng = [status.position.lat, status.position.lon];
+					var vehicleMarker = vehicleMarkers[vehicleId];
+
+					if (vehicleMarker) {
+						var latlng = new google.maps.LatLng(latLng[0], latLng[1]);
+
+						vehicleMarker.updatePosition(latlng);
+						vehicleMarker.updateOrientation(status.orientation);
+
+						if (!vehicleMarker.isDisplayed()) {
+							vehicleMarker.addMarker();
+						}
+
+						addVehicleMarkerToRouteMap(routeId, vehicleDirectionId, vehicleMarker);
+					} else {
+						vehicleMarker = OBA.VehicleMarker(vehicleId, latLng, status.orientation, map, { map: map });
+						vehicleMarkers[vehicleId] = vehicleMarker;
+
+						addVehicleMarkerToRouteMap(routeId, vehicleDirectionId, vehicleMarker);
+					}
+					
+					// remove vehicle markers that haven't been listed in this recent update
+					var directionIdMap = routeIdsToVehicleMarkers[routeId];
+					if (directionIdMap) {
+						vehicles = directionIdMap[vehicleDirectionId];
+						if (vehicles) {
+							var vehiclesToKeep = [];
+							for (var i = 0; i < vehicles.length; i++) {
+								var vehicle = vehicles[i];
+								if (vehicle.getId() in vehiclesAdded) {
+									vehiclesToKeep.push(vehicle);
+								} else {
+									vehicle.removeMarker();
+								}
 							}
+							routeIdsToVehicleMarkers[routeId][vehicleDirectionId] = vehiclesToKeep;
 						}
-						routeIdsToVehicleMarkers[routeId][directionId] = vehiclesToKeep;
 					}
-				});
-			}
-
-			// handle the remaining route ids
-			// this is done in this way to serialize the requests to the server
-			requestRoutes(remainingRouteIds);
-		}); // getJSON
-	}; // requestRoutes
+				}); // each tripDetail
+			}); // getJSON
+		}); // each routeIdsToRequest
+	};
 
 	var vehiclePollingTask = function() {
 		if (!isVehiclePolling) {
@@ -331,128 +308,138 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			}
 		},
 
-		addRoute: function(routeId, directionId, successFn) {
-			if (containsRoute(routeId, directionId)) {
-				return;
+		addRoute: function(routeId, directionIds, successFn) {
+			if(typeof directionIds !== 'object') {
+				directionIds = [directionIds];
 			}
 			
 			var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";
-
 			jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
-				var shape;
-				var stopGroupings = json.data.entry.stopGroupings;
-				var directionStopGrouping = null;
-				jQuery.each(stopGroupings, function(_, stopGrouping) {
-					if (stopGrouping.type === "direction") {
-						directionStopGrouping = stopGrouping;
+				jQuery.each(directionIds, function(_, directionId) {
+					if (containsRoute(routeId, directionId)) {
+						return;
 					}
-				});
-				if (directionStopGrouping === null) {
-					OBA.Util.log("Could not find direction stop grouping");
-					OBA.Util.log(json);
-					return;
-				}
-				var stopGroups = directionStopGrouping.stopGroups;
-				shape = null;
-				for ( var i = 0; i < stopGroups.length; i++) {
-					var stopGroup = stopGroups[i];
-					if (stopGroup.id === directionId) {
-						shape = stopGroup.polylines;
-						break;
+			
+					var shape;
+					var stopGroupings = json.data.entry.stopGroupings;
+					var directionStopGrouping = null;
+					jQuery.each(stopGroupings, function(_, stopGrouping) {
+						if (stopGrouping.type === "direction") {
+							directionStopGrouping = stopGrouping;
+						}
+					});
+					if (directionStopGrouping === null) {
+						OBA.Util.log("Could not find direction stop grouping");
+						OBA.Util.log(json);
+						return;
 					}
-				}
-				if (shape === null) {
-					OBA.Util.log("Could not find shape for route direction: " + directionId);
-					OBA.Util.log(json);
-					return;
-				}
+					var stopGroups = directionStopGrouping.stopGroups;
+					shape = null;
+					for ( var i = 0; i < stopGroups.length; i++) {
+						var stopGroup = stopGroups[i];
+						if (stopGroup.id === directionId) {
+							shape = stopGroup.polylines;
+							break;
+						}
+					}
+					if (shape === null) {
+						OBA.Util.log("Could not find shape for route direction: " + directionId);
+						OBA.Util.log(json);
+						return;
+					}
 
-				// polylines is a list of encoded polylines from the server
-				// here we decode them and put them into one list of lat lngs
-				var polylines = [];
-				jQuery.each(shape, function(_, encodedPolyline) {
-					var latlngs = OBA.Util.decodePolyline(encodedPolyline.points);
-					var googleLatLngs = jQuery.map(latlngs, function(latlng) {
-						return new google.maps.LatLng(latlng[0], latlng[1]);
+					// polylines is a list of encoded polylines from the server
+					// here we decode them and put them into one list of lat lngs
+					var polylines = [];
+					jQuery.each(shape, function(_, encodedPolyline) {
+						var latlngs = OBA.Util.decodePolyline(encodedPolyline.points);
+						var googleLatLngs = jQuery.map(latlngs, function(latlng) {
+							return new google.maps.LatLng(latlng[0], latlng[1]);
+						});
+
+						var polyline = new google.maps.Polyline({
+							path: googleLatLngs,
+							strokeColor: "#0000FF",
+							strokeOpacity: 0.5,
+							strokeWeight: 5,
+							zIndex: 50
+						});
+
+						polyline.setMap(map);
+						polylines.push(polyline);
 					});
 
-					var polyline = new google.maps.Polyline({
-						path: googleLatLngs,
-						strokeColor: "#0000FF",
-						strokeOpacity: 0.5,
-						strokeWeight: 5,
-						zIndex: 50
+					var directionIdToShapes = routeIdToShapes[routeId];
+					if (!directionIdToShapes) {
+						directionIdToShapes = {};
+						routeIdToShapes[routeId] = directionIdToShapes;
+					}
+					directionIdToShapes[directionId] = polylines;
+					numberOfRoutes += 1;
+
+					// update the timer task
+					if (!isVehiclePolling) {
+						isVehiclePolling = true;
+						vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
+					}
+
+					var directionIdMap = routeIds[routeId];
+					if (!directionIdMap) {
+						directionIdMap = {};
+						routeIds[routeId] = directionIdMap;
+					}
+					directionIdMap[directionId] = 1;
+
+					if(typeof successFn === 'function') {
+						successFn(routeId, directionId);
+					}
+				}); // each directionId
+				
+				requestRoutes();
+			}); // getJSON
+		},
+
+		removeRoute: function(routeId, directionIds) {
+			var directionIdMap = routeIdToShapes[routeId] || {};
+
+			if(typeof directionIds !== 'object') {
+				directionIds = [directionIds];
+			}
+			
+			jQuery.each(directionIds, function(_, directionId) {
+				var polylines = directionIdMap[directionId];
+
+				if (polylines) {
+					delete directionIdMap[directionId];
+					numberOfRoutes -= 1;
+					jQuery.each(polylines, function(_, polyline) {
+						polyline.setMap(null);
+					});
+				}
+
+				var vehicleDirectionMap = routeIdsToVehicleMarkers[routeId] || {};
+				var vehicles = vehicleDirectionMap[directionId];
+
+				if (vehicles) {
+					jQuery.each(vehicles, function(i, vehicleMarker) {
+						vehicleMarker.removeMarker();
 					});
 
-					polyline.setMap(map);
-					polylines.push(polyline);
-				});
-
-				var directionIdToShapes = routeIdToShapes[routeId];
-				if (!directionIdToShapes) {
-					directionIdToShapes = {};
-					routeIdToShapes[routeId] = directionIdToShapes;
+					delete vehicleDirectionMap[directionId];
 				}
-				directionIdToShapes[directionId] = polylines;
 
-				numberOfRoutes += 1;
-
-				// always make an initial request just for this route
-				requestRoutes([[routeId, [directionId]]]);
-
-				// update the timer task
-				if (!isVehiclePolling) {
-					isVehiclePolling = true;
-					vehicleTimerId = setTimeout(vehiclePollingTask, OBA.Config.pollingInterval);
+				if (numberOfRoutes <= 0) {
+					isVehiclePolling = false;
+					if (vehicleTimerId) {
+						clearTimeout(vehicleTimerId);
+					}
 				}
 
 				var directionIdMap = routeIds[routeId];
-				if (!directionIdMap) {
-					directionIdMap = {};
-					routeIds[routeId] = directionIdMap;
-				}
-				directionIdMap[directionId] = 1;
-
-				if(typeof successFn === 'function') {
-					successFn(routeId, directionId);
+				if (directionIdMap) {
+					delete directionIdMap[directionId];
 				}
 			});
-		},
-
-		removeRoute: function(routeId, directionId) {
-			var directionIdMap = routeIdToShapes[routeId] || {};
-			var polylines = directionIdMap[directionId];
-
-			if (polylines) {
-				delete directionIdMap[directionId];
-				numberOfRoutes -= 1;
-				jQuery.each(polylines, function(_, polyline) {
-					polyline.setMap(null);
-				});
-			}
-
-			var vehicleDirectionMap = routeIdsToVehicleMarkers[routeId] || {};
-			var vehicles = vehicleDirectionMap[directionId];
-
-			if (vehicles) {
-				jQuery.each(vehicles, function(i, vehicleMarker) {
-					vehicleMarker.removeMarker();
-				});
-
-				delete vehicleDirectionMap[directionId];
-			}
-
-			if (numberOfRoutes <= 0) {
-				isVehiclePolling = false;
-				if (vehicleTimerId) {
-					clearTimeout(vehicleTimerId);
-				}
-			}
-
-			var directionIdMap = routeIds[routeId];
-			if (directionIdMap) {
-				delete directionIdMap[directionId];
-			}
 		},
 
 		getCount: function() {

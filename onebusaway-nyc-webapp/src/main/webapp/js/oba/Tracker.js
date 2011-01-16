@@ -211,8 +211,7 @@ OBA.Tracker = function() {
 			addResizeBehavior();
 
 			// add default/pilot routes to the map
-			routeMap.addRoute(OBA.Config.agencyId + "_B63", "1", null);	
-			routeMap.addRoute(OBA.Config.agencyId + "_B63", "0", null);	
+			routeMap.addRoute(OBA.Config.agencyId + "_B63", ["1", "0"], null);	
 			
 			// load any deeplink identified search results
 			google.maps.event.addListener(map, 'projection_changed', function() {
