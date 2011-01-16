@@ -118,6 +118,7 @@ a:hover {
 #content #text {
     position: relative;
 	padding: 15px;
+	line-height: 120%;
 }
 
 #content.sidebar #text {
@@ -128,10 +129,12 @@ a:hover {
 
 #content.sidebar #sidebar .wrapper {
 	padding: 15px;
+	line-height: 150%;
 }
 
-#content.sidebar #sidebar .wrapper ul {
-	padding-bottom: 10px;	
+#content.sidebar #sidebar .wrapper ul li ul {
+	padding-left: 15px;
+	padding-bottom: 5px;	
 } 
 
 #content #text p {
@@ -159,8 +162,8 @@ a:hover {
 #content #text h2 {
 	font-weight: normal;
 	font-size: 22px;
-	padding-bottom: 10px;
 	padding-top: 30px;
+	padding-bottom: 5px;
 }
 
 #content #text h1:first-child,

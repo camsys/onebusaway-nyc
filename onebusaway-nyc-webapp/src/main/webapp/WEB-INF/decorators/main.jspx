@@ -72,7 +72,7 @@ under the License.
       	<s:url var="url" namespace="/wiki" action="About"></s:url>
         <li><a href="${url}">About</a></li>
 
-      	<s:url var="url" namespace="/wiki" action="ForDevelopers"></s:url>
+      	<s:url var="url" namespace="/wiki/Developers" action="Index"></s:url>
         <li><a href="${url}">For Developers</a></li>
 
 		<s:if test="adminUser">
@@ -102,7 +102,7 @@ under the License.
     	    </li>
     	</s:if>
     	    
-		<s:url var="url" namespace="/wiki" action="HelpIndex"/>
+		<s:url var="url" namespace="/wiki/Help" action="Index"/>
         <li><a href="${url}">Help</a></li>	
       </ul>
     </div>

@@ -1,12 +1,12 @@
 package org.onebusaway.nyc.webapp.actions.wiki;
 
+import java.util.Map;
+
 import javax.servlet.jsp.JspException;
 
-import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Result;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.wiki.api.WikiDocumentService;
-import org.onebusaway.wiki.api.WikiPage;
 import org.onebusaway.wiki.api.WikiRenderingService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,7 +15,6 @@ import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
 
 @Result(location = "/WEB-INF/content/wiki/index.jspx")
-@Namespace("/wiki/*")
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
 	private static final long serialVersionUID = 1L;
@@ -26,12 +25,14 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	@Autowired
 	private WikiRenderingService _wikiRenderingService;
 
-	protected String namespace = "Main";
+	protected String namespace;
 	protected String name;
+
 	protected String content;
 	protected String toc;
-	protected String editLink;
 	protected boolean hasToc = false;
+
+	protected String editLink;
 	
 	public boolean isAdmin() {
 		return _currentUserService.isCurrentUserAdmin();
@@ -41,12 +42,14 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		return hasToc;
 	}
 	
+	// FIXME: should replace namespace at the service level?
 	public String getEditLink() {
-		return editLink;
+		return editLink.replace("%{namespace}", namespace);
 	}
 
+	// FIXME: should replace namespace at the service level?
 	public String getContent() {
-		return content;
+		return content.replace("%{namespace}", namespace);
 	}
 
 	public String getToc() {
@@ -56,42 +59,35 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	public String getName() {
 		return name;
 	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 	
-	/*
-	 * Returns the first word of a camel-cased phrase with "TOC" appended to the end.
-	 */
-	private String getTocPageName(String name) {
-		if(name == null)
-			return null;
-		
-        StringBuffer sb = new StringBuffer(name.length());
-
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-
-            if (Character.isUpperCase(c) && i > 0)
-            	break;
-            else 
-            	sb.append(c);
-        }
-        
-        return sb.toString() + "TOC";
+	public String getNamespace() {
+		return namespace;
+	}
+	
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
 	}
 	
 	@Override
-	public String execute() throws Exception {
-	    ActionContext context = ActionContext.getContext();
-	    ActionInvocation invocation = context.getActionInvocation();
-	    ActionProxy proxy = invocation.getProxy();
-
-	    name = proxy.getActionName();
+	public String execute() throws Exception {		
+		if(namespace == null) {
+			namespace = "Main";
+		}
+		
+		if(name == null) {
+			name = "Index";
+		}
 		
 		if (namespace != null && name != null) {
-			// try to get TOC page for this section
+			// try to get TOC page for this namespace
 			try {
-				WikiPage page = _wikiDocumentService.getWikiPage(namespace, this.getTocPageName(name), false);
+				WikiPageWrapper page = new WikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "TOC", false));
 
-				if (page != null) {
+				if(page.pageExists()) {
 					toc = _wikiRenderingService.renderPage(page);	
 					hasToc = true;
 				} else {
@@ -104,9 +100,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
 			// content for page
 			try {
-				WikiPage page = _wikiDocumentService.getWikiPage(namespace, name, false);
+				WikiPageWrapper page = new WikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, name, false));
 
-				if (page != null) {
+				if(page.pageExists()) {
 					content = _wikiRenderingService.renderPage(page);	
 				    editLink = _wikiRenderingService.getEditLink(page);
 				} else {
