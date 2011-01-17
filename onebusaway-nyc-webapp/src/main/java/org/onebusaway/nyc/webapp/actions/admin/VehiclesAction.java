@@ -263,8 +263,12 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       if (trip == null) {
     	  if(mostRecentDSCIsOutOfService)
     		  return mostRecentDestinationSignCode + ": Not In Service";
-    	  else 	   	  
-    		  return "Unknown<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
+    	  else
+    		  if(mostRecentDestinationSignCode != null) {
+    			  return "Unknown<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
+    		  } else {
+    			  return "Unknown";    			  
+    		  }
       }
       
       if(nycVehicleStatusBean.getPhase().equals(EVehiclePhase.DEADHEAD_AFTER.toLabel()) ||

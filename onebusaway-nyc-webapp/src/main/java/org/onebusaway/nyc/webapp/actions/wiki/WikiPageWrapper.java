@@ -6,6 +6,10 @@ import java.util.regex.Pattern;
 
 import org.onebusaway.wiki.api.WikiPage;
 
+/*
+ * This class wraps an WikiPageImpl and fixes up the lack of page namespace handling in the 
+ * existing WikiPageImpl class. 
+ */
 public class WikiPageWrapper implements WikiPage {
 	private static final long serialVersionUID = 2L;
 
@@ -43,6 +47,7 @@ public class WikiPageWrapper implements WikiPage {
 		if(content == null) 
 			return null;
 		
+		// replace a "." with a "/" in a Wiki markup link
 		Matcher m = linkPattern.matcher(content);
 		while (m.find()) {
 			String match = m.group();

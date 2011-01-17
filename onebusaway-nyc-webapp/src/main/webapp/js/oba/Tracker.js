@@ -31,7 +31,6 @@ OBA.Tracker = function() {
 		var loseFocus = function() {
 			if(searchInput.val() === "" || searchInput.val() === "Intersection along a route or stop ID") {
 				searchInput.val("Intersection along a route or stop ID");
-				noResults.hide();
 				searchInput.addClass("inactive");
 			}
 		};

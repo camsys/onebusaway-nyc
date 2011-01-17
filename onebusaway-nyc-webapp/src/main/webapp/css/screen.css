@@ -14,7 +14,7 @@
 
 html, body {
 	font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;
-	font-size: 14px;
+	font-size: 12px;
 	
 	background-color: #999999;
 }
@@ -110,9 +110,7 @@ a:hover {
 
 #content #sidebar {
     float: left;
-
-    height: 100%;
-    width: 325px;
+    width: 250px;
 }
 
 #content #text {
@@ -122,19 +120,37 @@ a:hover {
 }
 
 #content.sidebar #text {
-	border-left: 1px solid #ACACAC;
-	margin-left: 325px;
-	min-height: 500px;
+	margin-left: 250px;
 }
 
 #content.sidebar #sidebar .wrapper {
-	padding: 15px;
-	line-height: 150%;
+	padding: 10px;
+	padding-right: 0px;
+	padding-bottom: 150px;
+	line-height: 140%;	
 }
 
-#content.sidebar #sidebar .wrapper ul li ul {
-	padding-left: 15px;
+#content.sidebar #sidebar .wrapper .toc {
+	padding: 10px;
+	background-color: #EFEFEF;
+	border: 1px solid #C0C0C0;
+}
+
+#content.sidebar #sidebar .wrapper .toc a.active {
+	font-weight: bold;
+}
+
+#content.sidebar #sidebar .wrapper .toc .header {
+	padding-bottom: 5px;
+	font-weight: bold;
+	color: #666666;	
+}
+
+#content.sidebar #sidebar .wrapper .toc ul li ul {
+	padding: 0px;
+	padding-left: 10px;
 	padding-bottom: 5px;	
+	border: none;
 } 
 
 #content #text p {
@@ -197,8 +213,15 @@ a:hover {
 	color: red;
 }
 
-#content #text .edit {
-	padding-top: 15px;	
+#content #text .meta {
+	border-top: 1px solid #EFEFEF;
+	margin-top: 15px;
+	padding-top: 5px;	
+	color: #C0C0C0;
+}
+
+#content #text .meta a {
+	margin-left: 10px;
 }
 
 #content.sidebar #text ul {
@@ -210,8 +233,8 @@ a:hover {
 
 #content.sidebar #text ul li {
 	list-style-type: disc;
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 
 #footer {

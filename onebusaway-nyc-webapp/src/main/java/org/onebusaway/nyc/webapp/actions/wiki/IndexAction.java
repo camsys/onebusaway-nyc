@@ -1,6 +1,9 @@
 package org.onebusaway.nyc.webapp.actions.wiki;
 
-import java.util.Map;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.jsp.JspException;
 
@@ -28,11 +31,13 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	protected String namespace;
 	protected String name;
 
-	protected String content;
-	protected String toc;
-	protected boolean hasToc = false;
-
-	protected String editLink;
+	private String content;
+	private Date lastModifiedTimestamp;
+	private String editLink;
+	
+	private String toc;
+	private boolean hasToc = false;
+	private static final Pattern tocLinkPattern = Pattern.compile("<a[^>]?href=\"([^\"]*)\"[^>]?>[^<]*</a>");
 	
 	public boolean isAdmin() {
 		return _currentUserService.isCurrentUserAdmin();
@@ -53,7 +58,29 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	}
 
 	public String getToc() {
-		return toc;
+	  // find all links in the TOC; add class="active" to the one that points to 
+	  // the page we're viewing now.
+	  Matcher m = tocLinkPattern.matcher(toc);
+	  while (m.find()) {
+		String match = m.group();
+		String matchLinkUrl = m.group(1);		
+		if(matchLinkUrl != null) {
+			String urlEnd = this.namespace + "/" + this.name;
+			if(matchLinkUrl.endsWith(urlEnd)) {
+				String newMatch = match.replace("href=", "class=\"active\" href=");
+				return toc.replace(match, newMatch);
+			}
+		}
+	  }
+	  return toc;
+	}
+	
+	public String getLastModifiedTimestamp() {
+		if(lastModifiedTimestamp == null)
+			return "Unknown";
+		
+		return DateFormat.getDateInstance().format(lastModifiedTimestamp) + " at " + 
+				DateFormat.getTimeInstance().format(lastModifiedTimestamp);
 	}
 	
 	public String getName() {
@@ -74,11 +101,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	
 	@Override
 	public String execute() throws Exception {		
-		if(namespace == null) {
+		if(namespace == null || namespace.isEmpty()) {
 			namespace = "Main";
 		}
 		
-		if(name == null) {
+		if(name == null || name.isEmpty()) {
 			name = "Index";
 		}
 		
@@ -105,9 +132,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 				if(page.pageExists()) {
 					content = _wikiRenderingService.renderPage(page);	
 				    editLink = _wikiRenderingService.getEditLink(page);
+				    lastModifiedTimestamp = page.getLastModified();
 				} else {
 					content = null;
 					editLink = null;
+					lastModifiedTimestamp = null;
 					
 					return "NotFound";
 				}

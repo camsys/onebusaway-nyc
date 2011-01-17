@@ -26,16 +26,29 @@ under the License.
 	<div id="content" class="sidebar">
 		<div id="sidebar">
 			<div class="wrapper">
-				<s:property value="toc" escape="false"/>
+				<div class="toc">
+					<p class="header">
+						Table of Contents
+					</p>
+					
+					<s:property value="toc" escape="false"/>
+				</div>
 			</div>
 		</div>
 
 		<div id="text">
 			<s:property value="content" escape="false"/>
 
-			<s:if test="admin">
-			  <p class="edit"><s:a href="%{editLink}">Edit This Page</s:a></p>
-			</s:if>
+		  	<p class="meta">
+				<span>
+					Last Updated: 
+					<s:property value="lastModifiedTimestamp"/>
+				</span>
+
+				<s:if test="admin">
+				  	<s:a href="%{editLink}">Edit This Page</s:a>
+				</s:if>
+			</p>
 		</div>
 	</div>
 </s:if>
@@ -44,9 +57,16 @@ under the License.
 		<div id="text">
 			<s:property value="content" escape="false"/>
 
-			<s:if test="admin">
-			  <p class="edit"><s:a href="%{editLink}">Edit This Page</s:a></p>
-			</s:if>
+		  	<p class="meta">
+				<span>
+					Last Updated: 
+					<s:property value="lastModifiedTimestamp"/>
+				</span>
+
+				<s:if test="admin">
+				  	<s:a href="%{editLink}">Edit This Page</s:a>
+				</s:if>
+			</p>
 		</div>
 	</div>
 </s:else>
