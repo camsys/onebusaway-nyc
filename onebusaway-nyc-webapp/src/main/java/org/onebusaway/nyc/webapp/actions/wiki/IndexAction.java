@@ -13,10 +13,6 @@ import org.onebusaway.wiki.api.WikiDocumentService;
 import org.onebusaway.wiki.api.WikiRenderingService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionInvocation;
-import com.opensymphony.xwork2.ActionProxy;
-
 @Result(location = "/WEB-INF/content/wiki/index.jspx")
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
