@@ -44,25 +44,6 @@ public class DistanceAway implements Comparable<DistanceAway> {
     return feetAway;
   }
 
-  private String addModifiers(String s) {
-	StringBuilder b = new StringBuilder(s);
-    
-	if(new Date().getTime() - timestamp.getTime() > 1000 * this.staleTimeoutSeconds) {
-		switch(currentMode) {
-			case SMS:			
-				b.insert(0, "~");
-				break;
-			case MOBILE_WEB:
-				b.append(" (location data is old)");
-				break;
-			default:
-				break;
-		}
-	}
-
-	return b.toString();
-  }
-
   public String getPresentableDistance() {
 	String r = "";
 	
@@ -104,7 +85,12 @@ public class DistanceAway implements Comparable<DistanceAway> {
 		}
 	}
 	
-	return this.addModifiers(r);
+	// old/stale data
+	if(new Date().getTime() - timestamp.getTime() > 1000 * this.staleTimeoutSeconds) {
+		r += " (old data)";
+	}
+	
+	return r;
   }
   
   @Override
