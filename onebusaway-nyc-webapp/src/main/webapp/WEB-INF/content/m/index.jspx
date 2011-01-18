@@ -128,7 +128,7 @@ under the License.
 							<a href="${url}#${directionId}"><s:property value="headsign" /></a><br />
 		
 							<s:if test="%{distanceAways.size==0}">
-								Next bus not en-route to your location. Check back shortly for an update.
+								OneBusAway NYC is not tracking any buses en-route to your location. Please check back shortly for an update.
 							</s:if>
 							<s:else>
 								<s:iterator value="distanceAways">

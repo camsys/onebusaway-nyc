@@ -253,7 +253,7 @@ OBA.StopPopup = function(stopId, map) {
 				service += '</li>';
 				
 				if(vehicleInfos.length === 0) {
-					service += '<li>Next bus not en-route to your location. Check back shortly for an update.</li>';
+					service += '<li>OneBusAway NYC is not tracking any buses en-route to your location. Please check back shortly for an update.</li>';
 				} else {
 					// sort based on distance
 					vehicleInfos.sort(function(a, b) { return a.feet - b.feet; });
