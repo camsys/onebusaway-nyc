@@ -74,7 +74,7 @@ under the License.
 
 			<div id="no-results">
 				<p>
-					<s:url var="url" namespace="/wiki" action="HelpIndex"/>
+					<s:url var="url" namespace="/wiki/Help" action="DesktopOverview"/>
 					No results found for your query. View <a href="${url}">search tips</a> or<br/>
 					try these example searches:					
 					<ul class="examples">			

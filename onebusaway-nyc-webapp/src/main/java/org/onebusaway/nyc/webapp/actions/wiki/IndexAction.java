@@ -7,13 +7,11 @@ import java.util.regex.Pattern;
 
 import javax.servlet.jsp.JspException;
 
-import org.apache.struts2.convention.annotation.Result;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.wiki.api.WikiDocumentService;
 import org.onebusaway.wiki.api.WikiRenderingService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Result(location = "/WEB-INF/content/wiki/index.jspx")
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
 	private static final long serialVersionUID = 1L;

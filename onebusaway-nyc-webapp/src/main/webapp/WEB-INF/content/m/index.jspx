@@ -48,16 +48,11 @@ under the License.
 		<s:if test="!queryIsEmpty">
 			<div>
 				<p>
-					<s:url var="url" namespace="/wiki" action="HelpIndex"/>
+					<s:url var="url" namespace="/wiki/Help" action="MobileOverview"/>
 					No results found for your query. <a href="${url}">Search Tips</a>
 				</p>
 			</div>
 		</s:if>
-		<s:else>
-			<div class="homeAlert">
-				<wiki:wiki name="HomeAlert"/>
-			</div>
-		</s:else>
 
 		<div>
 			<p>Try these example searches:</p>
@@ -78,12 +73,19 @@ under the License.
 				<li>Stop ID: <a href="${url}">305394</a></li>	
 			</ul>
 		</div>
+
+		<s:if test="queryIsEmpty=true">
+			<div class="homeAlert">
+				<wiki:wiki name="HomeAlert"/>
+			</div>
+		</s:if>
 	</s:if>
 	<s:else>
 		<a name="top"></a>
 		<div class="refresh">
 			<s:url var="url" namespace="/m" action="index">				
 				<s:param name="q"><s:property value="q" /></s:param>
+				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 			</s:url>
 	    	<a href="${url}#top">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>
@@ -189,6 +191,7 @@ under the License.
 		<div class="refresh">
 			<s:url var="url" namespace="/m" action="index">				
 				<s:param name="q"><s:property value="q" /></s:param>
+				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 			</s:url>
 	    	<a href="${url}#bottom">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>

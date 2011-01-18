@@ -61,6 +61,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	  return tocList;	  
   }
   
+  public String getCacheBreaker() {
+	  return (int)Math.ceil((Math.random() * 100000)) + "";
+  }
+  
   public String getLastUpdateTime() {
 	Date lastUpdated = null;
 	for(SearchResult _result : searchResults) {
@@ -88,7 +92,8 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	if(lastUpdated != null) {
 		return DateFormat.getTimeInstance().format(lastUpdated);
 	} else {
-		return "(unknown)";
+		// no realtime data
+		return DateFormat.getTimeInstance().format(new Date());
 	}
   }  
   
