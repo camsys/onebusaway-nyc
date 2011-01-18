@@ -141,11 +141,14 @@ a:hover {
 }
 
 #content.sidebar #sidebar .wrapper .toc .header {
-	padding-bottom: 5px;
 	font-weight: bold;
 	color: #666666;	
 }
 
+#content.sidebar #sidebar .wrapper .toc ul {
+	padding-top: 5px;
+}
+	
 #content.sidebar #sidebar .wrapper .toc ul li ul {
 	padding: 0px;
 	padding-left: 10px;

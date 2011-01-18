@@ -19,7 +19,7 @@ under the License.
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>OneBusAway NYC: <s:property value="name" /></title>
+<title>OneBusAway NYC: <s:property value="title" /></title>
 </head>
 <body>
 <s:if test="hasToc">

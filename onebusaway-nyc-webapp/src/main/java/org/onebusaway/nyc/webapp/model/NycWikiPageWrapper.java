@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.wiki;
+package org.onebusaway.nyc.webapp.model;
 
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -10,14 +10,14 @@ import org.onebusaway.wiki.api.WikiPage;
  * This class wraps an WikiPageImpl and fixes up the lack of page namespace handling in the 
  * existing WikiPageImpl class. 
  */
-public class WikiPageWrapper implements WikiPage {
+public class NycWikiPageWrapper implements WikiPage {
 	private static final long serialVersionUID = 2L;
 
 	private static final Pattern linkPattern = Pattern.compile("([^\\[|\\>]*)]]");
 	
 	private WikiPage page;
 	
-	public WikiPageWrapper(WikiPage realPage) {
+	public NycWikiPageWrapper(WikiPage realPage) {
 		this.page = realPage;
 	}
 
@@ -53,6 +53,7 @@ public class WikiPageWrapper implements WikiPage {
 			String match = m.group();
 			content = content.replace(match, match.replace(".", "/"));
 		}
+
 		return content;
 	}
 }

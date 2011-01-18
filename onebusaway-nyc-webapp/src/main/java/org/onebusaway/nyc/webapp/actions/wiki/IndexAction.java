@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import javax.servlet.jsp.JspException;
 
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.nyc.webapp.model.NycWikiPageWrapper;
 import org.onebusaway.wiki.api.WikiDocumentService;
 import org.onebusaway.wiki.api.WikiRenderingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,12 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	protected String name;
 
 	private String content;
-	private Date lastModifiedTimestamp;
+	private String title;
 	private String editLink;
+	private Date lastModifiedTimestamp;
 	
 	private String toc;
+	private String adminToc;
 	private boolean hasToc = false;
 	private static final Pattern tocLinkPattern = Pattern.compile("<a[^>]?href=\"([^\"]*)\"[^>]?>[^<]*</a>");
 	
@@ -51,10 +54,18 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		return content.replace("%{namespace}", namespace);
 	}
 
+	public String getTitle() {
+		return title;
+	}
+
 	public String getToc() {
+	  String tocContent = toc;
+	  if(adminToc != null)
+		  tocContent += adminToc;
+	  
 	  // find all links in the TOC; add class="active" to the one that points to 
 	  // the page we're viewing now.
-	  Matcher m = tocLinkPattern.matcher(toc);
+	  Matcher m = tocLinkPattern.matcher(tocContent);
 	  while (m.find()) {
 		String match = m.group();
 		String matchLinkUrl = m.group(1);		
@@ -62,11 +73,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 			String urlEnd = this.namespace + "/" + this.name;
 			if(matchLinkUrl.endsWith(urlEnd)) {
 				String newMatch = match.replace("href=", "class=\"active\" href=");
-				return toc.replace(match, newMatch);
+				return tocContent.replace(match, newMatch);
 			}
 		}
 	  }
-	  return toc;
+	  return tocContent;
 	}
 	
 	public String getLastModifiedTimestamp() {
@@ -94,7 +105,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	}
 	
 	@Override
-	public String execute() throws Exception {		
+	public String execute() throws Exception {
 		if(namespace == null || namespace.isEmpty()) {
 			namespace = "Main";
 		}
@@ -106,7 +117,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		if (namespace != null && name != null) {
 			// try to get TOC page for this namespace
 			try {
-				WikiPageWrapper page = new WikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "TOC", false));
+				NycWikiPageWrapper page = new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "TOC", false));
 
 				if(page.pageExists()) {
 					toc = _wikiRenderingService.renderPage(page);	
@@ -116,20 +127,40 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 					hasToc = false;
 				}
 			} catch (Exception ex) {
+				toc = null;
 				hasToc = false;
 			}
 
+			if(this.isAdmin()) {
+				// try to get admin TOC page for this namespace
+				try {
+					NycWikiPageWrapper adminPage = new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "AdminTOC", false));
+
+					if(adminPage.pageExists()) {
+						adminToc = _wikiRenderingService.renderPage(adminPage);	
+						hasToc = true;
+					} else {
+						adminToc = null;
+					}
+				} catch(Exception ex) {
+					adminToc = null;
+				}
+			} else {
+				adminToc = null;
+			}
+			
 			// content for page
 			try {
-				WikiPageWrapper page = new WikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, name, false));
-
+				NycWikiPageWrapper page = new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, name, false));
 				if(page.pageExists()) {
 					content = _wikiRenderingService.renderPage(page);	
 				    editLink = _wikiRenderingService.getEditLink(page);
+					title = page.getTitle();
 				    lastModifiedTimestamp = page.getLastModified();
 				} else {
 					content = null;
 					editLink = null;
+					title = null;
 					lastModifiedTimestamp = null;
 					
 					return "NotFound";
