@@ -30,6 +30,10 @@
 	padding: 0px;
 }
 
+#content #text p.error {
+	padding-top: 10px;
+}
+
 #content #text div.submit {
 	padding-top: 20px;
 }

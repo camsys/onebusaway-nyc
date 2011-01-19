@@ -60,7 +60,8 @@ public class NycSearchServiceImpl implements NycSearchService {
   private final static Pattern routePattern = Pattern.compile(
       "(?:[BMQS]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
 
-  private boolean debug = true;
+  // print vehicle display logic debugging messages to console?
+  private boolean debug = false;
   
   // when querying for stops from a lat/lng, use this distance in meters
   private double distanceToStops = 100;

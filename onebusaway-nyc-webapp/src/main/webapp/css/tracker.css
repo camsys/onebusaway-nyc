@@ -77,7 +77,7 @@
 	position: absolute;
 	top: 10px;
 	right: 10px;
-	width: 355px;
+	width: 395px;
 	
 	border: 1px solid #a0a0a0;
 	background-color: #efefef;
@@ -103,7 +103,7 @@
 #share_link .content input {
 	font-size: 16px;
 	font-family: inherit;
-	width: 330px;
+	width: 370px;
 	display: inline;
 	margin-top: 5px;
 }

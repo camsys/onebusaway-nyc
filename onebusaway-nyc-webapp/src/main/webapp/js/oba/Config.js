@@ -15,7 +15,7 @@
 var OBA = window.OBA || {};
 
 OBA.Config = {
-		debug: true,
+		debug: false,
 
 		// urls to fetch various data
 		searchUrl: "search.action",
