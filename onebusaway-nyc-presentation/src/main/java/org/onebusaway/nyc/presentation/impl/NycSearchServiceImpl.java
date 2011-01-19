@@ -60,6 +60,8 @@ public class NycSearchServiceImpl implements NycSearchService {
   private final static Pattern routePattern = Pattern.compile(
       "(?:[BMQS]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
 
+  private boolean debug = true;
+  
   // when querying for stops from a lat/lng, use this distance in meters
   private double distanceToStops = 100;
   
@@ -559,11 +561,14 @@ public class NycSearchServiceImpl implements NycSearchService {
     	  continue;
       }
       
-      System.out.println("A-D FOR STOP: VID=" + tripStatusBean.getVehicleId());
+      if(debug)
+    	  System.out.println("A-D FOR STOP: VID=" + tripStatusBean.getVehicleId());
       
       // hide buses that left the stop recently
       if (arrivalAndDepartureBean.getDistanceFromStop() < 0) {
-    	  System.out.println("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrivalAndDepartureBean.getDistanceFromStop() + ")");
+    	  if(debug)
+    		  System.out.println("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrivalAndDepartureBean.getDistanceFromStop() + ")");
+
     	  continue;
       }
       
@@ -578,7 +583,9 @@ public class NycSearchServiceImpl implements NycSearchService {
     				  !phase.toLowerCase().equals("layover_before") &&
     				  !phase.toLowerCase().equals("layover_during")) {
     			  
-    			  System.out.println("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
+    			  if(debug)
+    				  System.out.println("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
+    			  
     			  continue;
     		  }
     	  }
@@ -586,7 +593,9 @@ public class NycSearchServiceImpl implements NycSearchService {
       
       // should we display this vehicle on the UI specified by "m"?
       if(! shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m)) {
-    	  System.out.println("   --- HIDING BECAUSE OF FILTER FUNCTION");
+    	  if(debug)
+    		  System.out.println("   --- HIDING BECAUSE OF FILTER FUNCTION");
+    	  
     	  continue;
       }
       
@@ -594,7 +603,8 @@ public class NycSearchServiceImpl implements NycSearchService {
       int distanceFromStopInFeet = (int) this.metersToFeet(distanceFromStopInMeters);
       int numberOfStopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
         
-      System.out.println("   +++ ADDING TO ARRIVAL LIST");      
+      if(debug)
+    	  System.out.println("   +++ ADDING TO ARRIVAL LIST");      
 
       DistanceAway distanceAway = new DistanceAway(numberOfStopsAway,
           distanceFromStopInFeet, 

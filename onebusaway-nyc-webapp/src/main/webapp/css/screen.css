@@ -82,13 +82,10 @@ a:hover {
 
 #header ul li {
 	float: left;
-
-	height: 34px;
-	padding: 7px;
+	border-right: 1px solid #ACACAC;
+	padding-top: 8px;
 	padding-left: 15px;
 	padding-right: 15px;
-
-	border-right: 1px solid #ACACAC;
 }
 
 #header ul li.right {
@@ -104,7 +101,6 @@ a:hover {
 #header ul li a {
 	text-decoration: none;
 	font-size: 12px;
-	
 	color: #444444;
 }
 
