@@ -339,13 +339,19 @@ class SimulatorTask implements Runnable, EntityHandler {
   @Override
   public void handleEntity(Object bean) {
     if (bean instanceof NycVehicleLocationRecord) {
+
       NycVehicleLocationRecord vlr = (NycVehicleLocationRecord) bean;
+
+      long t = RecordLibrary.getBestTimestamp(vlr.getTime(),
+          vlr.getTimeReceived());
+
       NycTestLocationRecord record = new NycTestLocationRecord();
       record.setDsc(vlr.getDestinationSignCode());
       record.setLat(vlr.getLatitude());
       record.setLon(vlr.getLongitude());
-      record.setTimestamp(vlr.getTimeReceived());
+      record.setTimestamp(t);
       record.setVehicleId(vlr.getVehicleId().getId());
+
       bean = record;
     }
     NycTestLocationRecord record = (NycTestLocationRecord) bean;

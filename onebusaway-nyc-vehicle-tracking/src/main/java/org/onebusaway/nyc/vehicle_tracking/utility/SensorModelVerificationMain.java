@@ -275,8 +275,8 @@ public class SensorModelVerificationMain {
         || _dscService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)
         || _dscService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
-    return new Observation(r, lastValidDestinationSignCode, atBase, atTerminal,
-        outOfService, prevObs);
+    return new Observation(record.getTimestamp(), r,
+        lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs);
   }
 
   private VehicleState getRecordAsVehicleState(NycTestLocationRecord record,

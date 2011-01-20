@@ -82,14 +82,16 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
 
         EntityHandler handler = _entityHandlersByVehicleId.get(vehicleId);
 
-        if (prev == null || prev.getTime() + _maxOffset < record.getTime()
+        long time = getTimeForRecord(record);
+
+        if (prev == null || getTimeForRecord(prev) + _maxOffset < time
             || handler == null) {
 
           Writer writer = _writersByVehicleId.get(vehicleId);
           if (writer != null)
             writer.close();
 
-          String timeString = _format.format(new Date(record.getTime()));
+          String timeString = _format.format(new Date(time));
           String fileName = vehicleId.getId() + "-" + timeString + ".txt";
           File outputFile = new File(_outputDirectory, fileName);
           writer = new FileWriter(outputFile);
@@ -110,5 +112,11 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
       for (Writer writer : _writersByVehicleId.values())
         writer.close();
     }
+
+    private long getTimeForRecord(NycVehicleLocationRecord record) {
+      // This is more reliable, for grouping at least, than the actual device time
+      return record.getTimeReceived();
+    }
+
   }
 }

@@ -142,8 +142,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   @Override
-  public BlockState advanceState(Observation observation, BlockState blockState,
-      double minDistanceToTravel, double maxDistanceToTravel) {
+  public BlockState advanceState(Observation observation,
+      BlockState blockState, double minDistanceToTravel,
+      double maxDistanceToTravel) {
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
     double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
@@ -211,8 +212,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   private void computePotentialBlocksFromDestinationSignCode(
       Observation observation, Set<BlockInstance> potentialBlocks) {
 
-    NycVehicleLocationRecord record = observation.getRecord();
-    long time = record.getTime();
+    long time = observation.getTime();
 
     /**
      * We use the last valid DSC, which will be the current DSC if it's not 0000
@@ -269,7 +269,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       Set<BlockInstance> potentialBlocks) {
 
     NycVehicleLocationRecord record = observation.getRecord();
-    long time = record.getTime();
+    long time = observation.getTime();
 
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);

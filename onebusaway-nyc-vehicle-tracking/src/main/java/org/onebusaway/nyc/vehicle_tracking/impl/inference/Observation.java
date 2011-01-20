@@ -7,6 +7,8 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
 public class Observation {
 
+  private final long _timestamp;
+
   private final NycVehicleLocationRecord _record;
 
   private final ProjectedPoint _point;
@@ -21,9 +23,10 @@ public class Observation {
 
   private Observation _previousObservation;
 
-  public Observation(NycVehicleLocationRecord record,
+  public Observation(long timestamp, NycVehicleLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, Observation previousObservation) {
+    _timestamp = timestamp;
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
         record.getLongitude());
@@ -35,7 +38,7 @@ public class Observation {
   }
 
   public long getTime() {
-    return _record.getTime();
+    return _timestamp;
   }
 
   public NycVehicleLocationRecord getRecord() {

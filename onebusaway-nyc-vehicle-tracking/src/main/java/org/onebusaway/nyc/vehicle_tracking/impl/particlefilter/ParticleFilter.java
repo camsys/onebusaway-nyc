@@ -100,12 +100,12 @@ public class ParticleFilter<OBS> {
    * This is the major method that will be called repeatedly by an outside
    * client in order to drive the filter. Each call runs a single timestep.
    */
-  public void updateFilter(double timestamp, double timeReceived,
-      OBS observation) throws ParticleFilterException {
+  public void updateFilter(double timestamp, OBS observation)
+      throws ParticleFilterException {
 
-    boolean firstTime = checkFirst(timestamp, timeReceived, observation);
+    boolean firstTime = checkFirst(timestamp, observation);
     runSingleTimeStep(timestamp, observation, !firstTime);
-    _timeOfLastUpdate = timeReceived;
+    _timeOfLastUpdate = timestamp;
   }
 
   /***************************************************************************
@@ -129,13 +129,12 @@ public class ParticleFilter<OBS> {
   /**
    * @return true if this is the initial entry for these particles
    */
-  private boolean checkFirst(double timestamp, double timeReceived,
-      OBS observation) {
+  private boolean checkFirst(double timestamp, OBS observation) {
 
     if (!_seenFirst) {
       _particles = createInitialParticlesFromObservation(timestamp, observation);
       _seenFirst = true;
-      _timeOfLastUpdate = timeReceived;
+      _timeOfLastUpdate = timestamp;
       return true;
     }
 
@@ -232,7 +231,7 @@ public class ParticleFilter<OBS> {
 
       particle.setWeight(likelihood);
       particle.setResult(result);
-      
+
       cdf.put(likelihood, particle);
 
     }

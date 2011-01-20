@@ -120,16 +120,45 @@ public class VehicleInferenceInstance {
    */
   public synchronized boolean handleUpdate(NycVehicleLocationRecord record) {
 
-    // If this record occurs BEFORE the most recent update, we ignore it
-    if (record.getTimeReceived() < _particleFilter.getTimeOfLastUpdated())
-      return false;
+    /**
+     * Choose the best timestamp based on device timestamp and received
+     * timestamp
+     */
+    long timestamp = RecordLibrary.getBestTimestamp(record.getTime(),
+        record.getTimeReceived());
+
+    /**
+     * If this record occurs BEFORE the most recent update, we take special
+     * action
+     */
+    if (timestamp < _particleFilter.getTimeOfLastUpdated()) {
+
+      long backInTime = (long) (_particleFilter.getTimeOfLastUpdated() - timestamp);
+
+      /**
+       * If the difference is large, we reset the particle filter. Othwerise, we
+       * simply ignore the out-of-order record
+       */
+      if (backInTime > 5 * 60 * 1000) {
+        _previousObservation = null;
+        _particleFilter.reset();
+      } else {
+        return false;
+      }
+    }
 
     /**
      * If it's been a while since we've last seen a record, reset the particle
      * filter and forget the previous observation
      */
     if (_previousObservation != null) {
-      long delta = record.getTime() - _previousObservation.getTime();
+
+      /**
+       * We use an absolute value here, since we also want to reset if we go
+       * back in time as well
+       */
+      long delta = Math.abs(timestamp - _previousObservation.getTime());
+
       boolean dscChange = !ObjectUtils.equals(
           _previousObservation.getRecord().getDestinationSignCode(),
           record.getDestinationSignCode());
@@ -192,22 +221,21 @@ public class VehicleInferenceInstance {
         || _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)
         || _destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
-    Observation observation = new Observation(record,
-        lastValidDestinationSignCode, atBase, atTerminal, outOfService,
-        _previousObservation);
+    Observation observation = new Observation(timestamp,
+        record, lastValidDestinationSignCode, atBase, atTerminal,
+        outOfService, _previousObservation);
 
     if (_previousObservation != null)
       _previousObservation.clearPreviousObservation();
     _previousObservation = observation;
     _vehicleLocationRecord = null;
     _nycTestLocationRecord = null;
-    _lastUpdateTime = record.getTimeReceived();
+    _lastUpdateTime = timestamp;
     if (!latlonMissing)
-      _lastGpsTime = record.getTimeReceived();
+      _lastGpsTime = timestamp;
 
     try {
-      _particleFilter.updateFilter(record.getTime(), record.getTimeReceived(),
-          observation);
+      _particleFilter.updateFilter(timestamp, observation);
     } catch (ZeroProbabilityParticleFilterException ex) {
       /**
        * If the particle filter hangs, we try one hard reset to see if that will
@@ -222,8 +250,7 @@ public class VehicleInferenceInstance {
 
       _particleFilter.reset();
       try {
-        _particleFilter.updateFilter(record.getTime(),
-            record.getTimeReceived(), observation);
+        _particleFilter.updateFilter(timestamp, observation);
       } catch (ParticleFilterException ex2) {
         _log.warn("particle filter crashed again: time=" + record.getTime()
             + " timeReceived=" + record.getTimeReceived() + " vehicleId="

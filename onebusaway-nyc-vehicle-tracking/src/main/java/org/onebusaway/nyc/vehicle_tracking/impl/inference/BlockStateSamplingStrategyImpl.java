@@ -187,7 +187,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     int scheduledTime = blockLocation.getScheduledTime();
 
     long time = serviceDate + scheduledTime * 1000;
-    long recordTime = observation.getRecord().getTime();
+    long recordTime = observation.getTime();
 
     long timeDelta = Math.abs(time - recordTime) / 1000;
     double prob2 = _scheduleDeviationSigma.probability(timeDelta);
