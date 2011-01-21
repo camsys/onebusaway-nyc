@@ -69,10 +69,30 @@ OBA.Util = (function() {
 		},
 		displayDistance: function(feetAway, stopsAway, context, tripStatus) {
 			var s = "";
+
+			// we're "at terminal" if vehicle is currently in layover at the end or start terminal
+			// on the previous or current trip
+			var atTerminal = false;
+			if(tripStatus !== null && 
+					(tripStatus.phase.toLowerCase() === 'layover_during' ||
+					 tripStatus.phase.toLowerCase() === 'layover_before')) {
+			
+				var distanceAlongTrip = tripStatus.distanceAlongTrip;
+				var totalDistanceAlongTrip = tripStatus.totalDistanceAlongTrip;				
+				if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
+					var ratio = distanceAlongTrip / totalDistanceAlongTrip;
+					if(ratio > 0.80 || ratio < .20) {
+						atTerminal = true;					
+					}					
+				}
+			}
+			
 			var milesAway = feetAway / 5280;
 			if(feetAway <= OBA.Config.atStopThresholdInFeet) {
 				s = "at stop";
-			} else if(feetAway <= OBA.Config.arrivingThresholdInFeet && stopsAway <= OBA.Config.arrivingThresholdInStops) {
+			} else if(atTerminal === false && 
+					feetAway <= OBA.Config.arrivingThresholdInFeet && stopsAway <= OBA.Config.arrivingThresholdInStops) {
+
 				s = "approaching";
 			} else {
 				if(stopsAway <= OBA.Config.showDistanceInStopsThresholdInStops) {
@@ -86,21 +106,9 @@ OBA.Util = (function() {
 				}
 			}
 			
-			// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover at the end terminal
-			// on the previous trip
-			if(context === "stop" && tripStatus !== null && 
-					(tripStatus.phase.toLowerCase() === 'layover_during' ||
-					 tripStatus.phase.toLowerCase() === 'layover_before')) {
-			
-				var distanceAlongTrip = tripStatus.distanceAlongTrip;
-				var totalDistanceAlongTrip = tripStatus.totalDistanceAlongTrip;
-				
-				if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
-					var ratio = distanceAlongTrip / totalDistanceAlongTrip;
-					if(ratio > 0.80 || ratio < .20) {
-						s += " (at terminal)";						
-					}					
-				}
+			// if we're formatting a stop bubble, add "at terminal" if vehicle is currently at terminal.
+			if(context === "stop" && atTerminal === true) {
+				s += " (at terminal)";						
 			}
 			
 			return s;

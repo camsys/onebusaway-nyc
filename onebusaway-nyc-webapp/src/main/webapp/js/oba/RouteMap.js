@@ -69,8 +69,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			var tripDetailsList, tripReferencesList = null;
 			var params = {version: 2, key: OBA.Config.apiKey, includeStatus: true};
 			
-			if( OBA.Config.time )
+			if(typeof OBA.Config.time !== 'undefined' && OBA.Config.time !== null) {
 				params.time = OBA.Config.time * 1000;
+			}
 			
 			jQuery.getJSON(url, params, function(json) {
 				try {
@@ -286,8 +287,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 						minutesAfter: OBA.Config.arrivalsMinutesAfter};
 				
-				if( OBA.Config.time )
+				if(typeof OBA.Config.time !== 'undefined' && OBA.Config.time !== null) {
 					params.time = OBA.Config.time * 1000;
+				}
 				
 				jQuery.getJSON(url, params, function(json) {
 					var stop = null;

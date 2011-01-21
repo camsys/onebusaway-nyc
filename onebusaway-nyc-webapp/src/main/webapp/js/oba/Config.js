@@ -15,6 +15,7 @@
 var OBA = window.OBA || {};
 
 OBA.Config = {
+		// print debug messages to firebug console?
 		debug: false,
 
 		// urls to fetch various data
@@ -24,13 +25,13 @@ OBA.Config = {
 		stopUrl: "/onebusaway-api-webapp/api/where/arrivals-and-departures-for-stop",
 		vehiclesUrl:"/onebusaway-api-webapp/api/where/trips-for-route",
 		vehicleUrl: "/onebusaway-api-webapp/api/where/trip-for-vehicle",
-		
+
+		// default agency ID
 		agencyId: "MTA NYCT",
 		
 		// a parameter that allows us to "go back in time" by locking all API
 		// requests to a certain time, making it possible to recreate the state
 		// of the system at a particular moment in time
-		
 		//time: 1295479980,
 
 		// milliseconds to wait in-between polls for bus locations
@@ -92,9 +93,9 @@ OBA.Config = {
 			}
 			
 			var now = new Date().getTime();
-			
-			if( OBA.Config.time )
+			if(typeof OBA.Config.time !== 'undefined' && OBA.Config.time !== null) {
 				now = OBA.Config.time * 1000;
+			}
 			
 			// hide data >= hideTimeout seconds old (row 5)
 			if(typeof tripStatus.lastUpdateTime !== 'undefined' 

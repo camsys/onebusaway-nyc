@@ -17,12 +17,14 @@ public class DistanceAway implements Comparable<DistanceAway> {
   private final int feetAway;
   private final int staleTimeoutSeconds;
   private final Date timestamp;
+  @SuppressWarnings("unused") // leaving in currentMode in case formatting rules depend on interface type in the future.
   private Mode currentMode;
   private FormattingContext displayContext;
   private TripStatusBean statusBean;
   
   public DistanceAway(int stopsAway, int feetAway, Date timestamp, Mode m, 
 		  int staleTimeoutSeconds, FormattingContext displayContext, TripStatusBean statusBean) {
+	  
     this.stopsAway = stopsAway;
     this.feetAway = feetAway;
     this.timestamp = timestamp;
@@ -47,9 +49,31 @@ public class DistanceAway implements Comparable<DistanceAway> {
   public String getPresentableDistance() {
 	String r = "";
 	
+	// we're "at terminal" if vehicle is currently in layover at the end or start terminal
+	// on the previous or current trip
+	boolean atTerminal = false;
+	if(statusBean != null) {
+		String phase = statusBean.getPhase();
+	
+		if (phase != null && 
+				(phase.toLowerCase().equals("layover_during") || phase.toLowerCase().equals("layover_before"))) {
+
+			Double distanceAlongTrip = statusBean.getDistanceAlongTrip();
+			Double totalDistanceAlongTrip = statusBean.getTotalDistanceAlongTrip();			
+			if(distanceAlongTrip != null && totalDistanceAlongTrip != null) {
+				Double ratio = distanceAlongTrip / totalDistanceAlongTrip;				
+				if(ratio > .80 || ratio < .20) {
+					atTerminal = true;
+				}
+			}
+		}
+	}
+	
 	if(feetAway <= atStopThresholdInFeet)
 		r = "at stop";		
-	else if(feetAway <= arrivingThresholdInFeet && stopsAway <= arrivingThresholdInStops)
+	else if(atTerminal == false 
+			&& feetAway <= arrivingThresholdInFeet && stopsAway <= arrivingThresholdInStops)
+
 		r = "approaching";
 	else {
 		if(stopsAway <= showDistanceInStopsThresholdInStops) {
@@ -65,24 +89,9 @@ public class DistanceAway implements Comparable<DistanceAway> {
 		}
 	}
 
-	// if we're formatting a stop bubble, add "at terminal" if vehicle is currently in layover at the end terminal
-	// on the previous trip
-	if(statusBean != null) {
-		String phase = statusBean.getPhase();
-	
-		if (displayContext == FormattingContext.STOP && phase != null && 
-				(phase.toLowerCase().equals("layover_during") || phase.toLowerCase().equals("layover_before"))) {
-
-			Double distanceAlongTrip = statusBean.getDistanceAlongTrip();
-			Double totalDistanceAlongTrip = statusBean.getTotalDistanceAlongTrip();
-			
-			if(distanceAlongTrip != null && totalDistanceAlongTrip != null) {
-				Double ratio = distanceAlongTrip / totalDistanceAlongTrip;				
-				if(ratio > .80 || ratio < .20) {
-					r += " (at terminal)";
-				}
-			}
-		}
+	// if we're formatting a stop bubble, add "at terminal" if vehicle is currently at terminal.
+	if (displayContext == FormattingContext.STOP && atTerminal == true) {
+		r += " (at terminal)";
 	}
 	
 	// old/stale data
