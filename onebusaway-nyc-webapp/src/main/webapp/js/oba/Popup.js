@@ -280,6 +280,9 @@ OBA.StopPopup = function(stopId, map) {
 	var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 			minutesAfter: OBA.Config.arrivalsMinutesAfter};
 	
+	if( OBA.Config.time )
+		params.time = OBA.Config.time * 1000;
+	
 	return OBA.Popup(
 			map,
 			makeJsonFetcher(url, params),
@@ -330,7 +333,8 @@ OBA.VehiclePopup = function(vehicleId, map) {
 
 		// find how far along the trip we are given our current vehicle distance
 		var distanceAlongTrip = tripStatus.distanceAlongTrip;
-		var vehicleDistanceIdx = 0;
+		var vehicleDistanceIdx = -1;
+		
 		for (var i = 0; i < stops.length; i++) {
 			var stop = stops[i];
 			var stopDistance = stop.scheduledDistance;
@@ -366,7 +370,19 @@ OBA.VehiclePopup = function(vehicleId, map) {
 		notices += '</ul>';
 
 		// next stops
-		var nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
+		var nextStops = null;
+		
+		// Was our current trip distance beyond the last scheduled stop in the trip?
+		if( vehicleDistanceIdx == -1) {
+			if( tripStatus.nextStop != null) {
+				var nextStop = stopIdsToStops[tripStatus.nextStop];
+				if( nextStop )
+					nextStops = [nextStop];
+			}
+		}
+		else {
+			nextStops = stops.slice(vehicleDistanceIdx, vehicleDistanceIdx + 3);
+		}
 
 		var nextStopsMarkup = '';
 		if (nextStops !== null && nextStops.length > 0 && 
@@ -397,8 +413,13 @@ OBA.VehiclePopup = function(vehicleId, map) {
 	};
 
 	var url = OBA.Config.vehicleUrl + "/" + vehicleId + ".json";
+	var params = {key: OBA.Config.apiKey, version: 2, includeSchedule: true, includeTrip: true};
+	
+	if( OBA.Config.time )
+		params.time = OBA.Config.time * 1000;
+
 	return OBA.Popup(
 			map,
-			makeJsonFetcher(url, {key: OBA.Config.apiKey, version: 2, includeSchedule: true, includeTrip: true}),
+			makeJsonFetcher(url, params),
 			generateVehicleMarkup);
 };

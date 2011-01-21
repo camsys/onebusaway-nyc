@@ -26,6 +26,12 @@ OBA.Config = {
 		vehicleUrl: "/onebusaway-api-webapp/api/where/trip-for-vehicle",
 		
 		agencyId: "MTA NYCT",
+		
+		// a parameter that allows us to "go back in time" by locking all API
+		// requests to a certain time, making it possible to recreate the state
+		// of the system at a particular moment in time
+		
+		//time: 1295479980,
 
 		// milliseconds to wait in-between polls for bus locations
 		pollingInterval: 5000,
@@ -85,9 +91,14 @@ OBA.Config = {
 				return false;
 			}
 			
+			var now = new Date().getTime();
+			
+			if( OBA.Config.time )
+				now = OBA.Config.time * 1000;
+			
 			// hide data >= hideTimeout seconds old (row 5)
 			if(typeof tripStatus.lastUpdateTime !== 'undefined' 
-				&& new Date().getTime() - tripStatus.lastUpdateTime >= 1000 * OBA.Config.hideTimeout) {
+				&& now - tripStatus.lastUpdateTime >= 1000 * OBA.Config.hideTimeout) {
 				return false;
 			}
 
