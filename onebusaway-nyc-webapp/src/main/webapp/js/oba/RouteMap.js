@@ -40,6 +40,20 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 	var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
 	var map = new google.maps.Map(mapNode, options);
 
+	// hide any open popups if user drags the owning marker outside of map viewport
+	google.maps.event.addListener(map, 'dragend', function() {
+		if(OBA.popupMarker !== null) {
+			var mapBounds = map.getBounds();
+			var markerPosition = OBA.popupMarker.getPosition();
+			if(markerPosition !== null && !mapBounds.contains(markerPosition)) {
+				var markerPopup = OBA.popupMarker.getPopup();			
+				if(markerPopup !== null) {
+					markerPopup.hide();
+				}
+			}
+		}
+	}); 
+
 	map.mapTypes.set('transit',transitMapType);
 
 	// state used for the map
@@ -175,25 +189,27 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 						addVehicleMarkerToRouteMap(routeId, vehicleDirectionId, vehicleMarker);
 					}
-					
-					// remove vehicle markers that haven't been listed in this recent update
-					var directionIdMap = routeIdsToVehicleMarkers[routeId];
-					if (directionIdMap) {
-						vehicles = directionIdMap[vehicleDirectionId];
-						if (vehicles) {
-							var vehiclesToKeep = [];
-							for (var i = 0; i < vehicles.length; i++) {
-								var vehicle = vehicles[i];
-								if (vehicle.getId() in vehiclesAdded) {
-									vehiclesToKeep.push(vehicle);
-								} else {
-									vehicle.removeMarker();
-								}
-							}
-							routeIdsToVehicleMarkers[routeId][vehicleDirectionId] = vehiclesToKeep;
-						}
-					}
 				}); // each tripDetail
+				
+				// remove vehicle markers on this route that haven't been listed in this recent update
+				var directionIdMap = routeIdsToVehicleMarkers[routeId];
+				if (directionIdMap) {
+					jQuery.each(directionIdMap, function(directionId, vehicles) {
+						if(vehicles === null) {
+							return;
+						}						
+						var newVehicleList = [];
+						for (var i = 0; i < vehicles.length; i++) {
+							var vehicle = vehicles[i];
+							if (!(vehicle.getId() in vehiclesAdded)) {
+								vehicle.removeMarker();
+							} else {
+								newVehicleList.push(vehicle);
+							}
+						}									
+						routeIdsToVehicleMarkers[routeId][directionId] = newVehicleList;
+					});
+				}				
 			}); // getJSON
 		}); // each routeIdsToRequest
 	};
