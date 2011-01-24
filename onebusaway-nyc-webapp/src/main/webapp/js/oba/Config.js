@@ -29,6 +29,9 @@ OBA.Config = {
 		// default agency ID
 		agencyId: "MTA NYCT",
 		
+		// google analytics reporting ID
+		googleAnalyticsId: 'UA-XXXXXXXX-X',
+		
 		// a parameter that allows us to "go back in time" by locking all API
 		// requests to a certain time, making it possible to recreate the state
 		// of the system at a particular moment in time
@@ -122,5 +125,9 @@ OBA.Config = {
 			html += '</div>';
 			
 			return html;
+		},
+		
+		analyticsFunction: function(type, value) {
+			_gaq.push(['_trackEvent', "Desktop Web", type, value]);
 		}
 };

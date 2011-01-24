@@ -1,10 +1,14 @@
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.struts2.ServletActionContext;
 import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.RouteItem;
@@ -17,7 +21,9 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
-
+  private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
+  private static final String GA_PIXEL = "/ga";
+	  
   private static final long serialVersionUID = 1L;
   
   @Autowired
@@ -38,10 +44,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return searchResults;
   }
 
-  public boolean getQueryIsEmpty() {
-	  return q.isEmpty();
-  }
-  
   public String getQ() {
     return q;
   }
@@ -50,6 +52,44 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     this.q = q;
   }
 
+  // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
+  // Contents of this method "Copyright 2009 Google Inc. All Rights Reserved."
+  public String getGoogleAnalyticsTrackingUrl() {
+	  try {
+	      StringBuilder url = new StringBuilder();
+	      url.append(GA_PIXEL + "?");
+	      url.append("utmac=").append(GA_ACCOUNT);
+	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
+	
+	      HttpServletRequest request = ServletActionContext.getRequest();      
+	      String referer = request.getHeader("referer");
+	      String query = request.getQueryString();
+	      String path = request.getRequestURI();
+	
+	      if (referer == null || "".equals(referer)) {
+	        referer = "-";
+	      }
+	      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
+	
+	      if (path != null) {
+	        if (query != null) {
+	          path += "?" + query;
+	        }
+	        url.append("&utmp=").append(URLEncoder.encode(path, "UTF-8"));
+	      }
+
+	      url.append("&guid=ON");
+
+	      return url.toString().replace("&", "&amp;"); 
+	  } catch(Exception e) {
+		  return null;
+	  }
+  }
+
+  public boolean getQueryIsEmpty() {
+	  return q.isEmpty();
+  }
+  
   public List<SearchResult>getToc() {
 	  List<SearchResult> tocList = new ArrayList<SearchResult>();
 	  

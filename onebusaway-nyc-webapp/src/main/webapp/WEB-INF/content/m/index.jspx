@@ -203,5 +203,7 @@ under the License.
     	<p><a href="${aboutUrl}">About</a> | <a href="${desktopUrl}">Desktop Version</a></p>
 	    <p id="credit">&amp;copy; 2010, A City Transit Agency</p>
 	</div>
+	
+	<img src="${googleAnalyticsTrackingUrl}" alt="Google Tracking Pixel"/>
 </body>
 </html>

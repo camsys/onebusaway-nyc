@@ -125,7 +125,10 @@ OBA.StopMarker = function(stopId, latlng, direction, map, opts) {
 	
 	var popup = OBA.StopPopup(stopId, map);
 	var marker = OBA.Marker(stopId, latlng, map, popup, opts);
-	var showPopup = function() { popup.show(marker); };
+	var showPopup = function() { 
+		OBA.Config.analyticsFunction("Stop Marker Click", stopId);
+		popup.show(marker); 
+	};
 	
 	marker.showPopup = showPopup;
 	google.maps.event.addListener(marker.getRawMarker(), "click", showPopup);
@@ -147,7 +150,10 @@ OBA.VehicleMarker = function(vehicleId, latlng, orientation, map, opts) {
 	
 	var popup = OBA.VehiclePopup(vehicleId, map);
 	var marker = OBA.Marker(vehicleId, latlng, map, popup, opts);
-	var showPopup = function() { popup.show(marker); };
+	var showPopup = function() { 
+		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleId);
+		popup.show(marker); 
+	};
 
 	marker.showPopup = showPopup;
 	google.maps.event.addListener(marker.getRawMarker(), "click", showPopup);

@@ -49,6 +49,9 @@ OBA.Tracker = function() {
 		searchForm.submit(function(e) {
 			noResults.hide();
 			doSearch(searchInput.val());
+
+			OBA.Config.analyticsFunction("Search", searchInput.val());
+
 			return false;
 		});
 	
@@ -77,6 +80,8 @@ OBA.Tracker = function() {
 		jQuery("#header ul li.link a").click(function() {
 			shareLinkDiv.show();			
 		
+			OBA.Config.analyticsFunction("Grab Share Link", null);
+
 			var shareLinkUrl= jQuery("#share_link .content input");
 			var searchInput = jQuery("#search input[type=text]");
 
@@ -152,7 +157,7 @@ OBA.Tracker = function() {
 		}
 	}
 	
-	function doSearch(q) {	
+	function doSearch(q) {
 		jQuery.getJSON(OBA.Config.searchUrl, {q: q}, function(json) { 
 			var noResults = jQuery("#no-results");
 			
@@ -222,6 +227,8 @@ OBA.Tracker = function() {
 	            		var searchInput = jQuery("#search input[type=text]");
 	            		searchInput.val(hash).removeClass("inactive");
 	            		doSearch(hash);
+	            		
+	            		OBA.Config.analyticsFunction("Deep Link", hash);
 	            	}
 	            });				
 			}); 
