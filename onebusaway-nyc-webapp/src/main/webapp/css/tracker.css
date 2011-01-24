@@ -203,29 +203,32 @@
 }
 
 #popup .header {
+	padding-left: 35px;
+}
+
+#popup .header.stop {
+	background-image: url("img/header_stop.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+
+#popup .header.vehicle {
+	background-image: url("img/header_bus.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+
+#popup .header .title {
     font-size: 16px;
     font-weight: bold;
 }
 
-#popup .type.stop {
+#popup .header .type {
 	height: 16px;
-	padding-left: 19px;
 	font-weight: bold;	
-	background: url("img/header_stop.png");
-	background-position: left top;
-	background-repeat: no-repeat;
 }
 
-#popup .type.vehicle {
-	height: 16px;
-	padding-left: 19px;
-	font-weight: bold;	
-	background: url("img/header_bus.png");
-	background-position: left top;
-	background-repeat: no-repeat;
-}
-
-#popup .updated {
+#popup .header .updated {
 	height: 16px;
 	color: #666666;
 	padding-left: 4px;
@@ -233,7 +236,7 @@
 	border-left: 1px solid #bebebe;
 }
 
-#popup .updated.stale {
+#popup .header .updated.stale {
     color: #d12020;
 }
 
@@ -296,6 +299,7 @@
 }
 
 #popup .footer .header {
+	padding: 0px;
 	font-size: 12px;
 	font-weight: bold;
 	font-style: italic;	

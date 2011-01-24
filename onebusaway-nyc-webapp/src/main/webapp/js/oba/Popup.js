@@ -34,7 +34,7 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 			.appendTo("#map");
 		
 		wrappedContent = wrappedContent
-							.css("width", 325)
+							.css("width", 375)
 							.css("height", wrappedContent.height());
 
 		return wrappedContent.get(0);
@@ -46,6 +46,7 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 				infoWindow.close();
 				infoWindow = null;
 			}
+			OBA.popupMarker = null;
 		},
 		
 		refresh: function() {
@@ -53,6 +54,16 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 				return;
 			}
 
+			// move map to make sure popup + marker is visible
+			if(OBA.popupMarker !== null) {
+				var mapBounds = map.getBounds();
+				var markerPosition = OBA.popupMarker.getPosition();
+				if(! mapBounds.contains(markerPosition)) {
+					map.panTo(markerPosition);
+				}
+			}
+			
+			// refresh popup content
 			fetchFn(function(json) {            
 				if(infoWindow !== null) {
 					infoWindow.setContent(createWrapper(bubbleNodeFn(json)));     
@@ -63,7 +74,6 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 		show: function(marker) {    
 			if(OBA.popupMarker !== null) {
 				var popup = OBA.popupMarker.getPopup();
-				
 				if(popup) {
 					popup.hide();
 				}
@@ -217,14 +227,16 @@ OBA.StopPopup = function(stopId, map) {
 		}
 
 		// header
-		var header = '<p class="header">' + name + '</p>' +
+		var header = '<div class="header stop">' + 
+						'<p class="title">' + name + '</p>' +
 						'<p>' + 
-							'<span class="type stop">Stop #' + OBA.Util.parseEntityId(stopId) + '</span> ' + 
+							'<span class="type">Stop #' + OBA.Util.parseEntityId(stopId) + '</span> ' + 
 							(lastUpdateDate !== null ? 
 									'<span class="updated" epoch="' + lastUpdateDate.getTime() + '">' + 
 										'Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
 									'</span>' : '') + 
-						'</p>';
+						'</p>' + 
+					  '</div>';
 
 		// service notices
 		var notices = '<ul class="notices">';
@@ -347,13 +359,15 @@ OBA.VehiclePopup = function(vehicleId, map) {
 		var isStaleData = (new Date().getTime() - lastUpdateDate.getTime() >= 1000 * OBA.Config.staleDataTimeout);
 
 		// header
-		var header = '<p class="header">' + headsign + '</p>' +
+		var header = '<div class="header vehicle">' + 
+						'<p class="title">' + headsign + '</p>' +
 						'<p>' + 
-							'<span class="type vehicle">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span> ' +
+							'<span class="type">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span> ' +
 							'<span epoch="' + lastUpdateDate.getTime() + '" class="updated' + ((isStaleData === true) ? " stale" : "") +'">' + 
 								'Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
 							'</span>' + 
-						'</p>';
+						'</p>' + 
+					  '</div>';
 
 		// service notices
 		var notices = '<ul class="notices">';

@@ -78,16 +78,6 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 		
 		refreshPopup: function() {
 			popup.refresh();
-
-			// make sure marker is in view if popup window is open and if we're a vehicle
-			if(typeof options.type !== 'undefined' && options.type === 'vehicle') {
-				var mapBounds = map.getBounds();
-				var markerPosition = marker.getPosition();
-			
-				if(! mapBounds.contains(markerPosition)) {
-					map.panTo(markerPosition);				
-				}
-			}
 		},
 		
 		isDisplayed: function() {

@@ -34,14 +34,15 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
 		center: new google.maps.LatLng(40.65182926199445,-74.0065026164856),
 		streetViewControl: false,		
-		mapTypeId: 'transit'
+		mapTypeId: 'transit',
+		scrollwheel: false
 	};
 
 	var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
 	var map = new google.maps.Map(mapNode, options);
 
-	// hide any open popups if user drags the owning marker outside of map viewport
-	google.maps.event.addListener(map, 'dragend', function() {
+	// hide any open popups if user drags/zooms the owning marker outside of map viewport
+	var dismissPopups = function() {
 		if(OBA.popupMarker !== null) {
 			var mapBounds = map.getBounds();
 			var markerPosition = OBA.popupMarker.getPosition();
@@ -52,7 +53,9 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				}
 			}
 		}
-	}); 
+	};
+	google.maps.event.addListener(map, 'dragend', dismissPopups); 
+	google.maps.event.addListener(map, 'zoom_changed', dismissPopups); 
 
 	map.mapTypes.set('transit',transitMapType);
 
