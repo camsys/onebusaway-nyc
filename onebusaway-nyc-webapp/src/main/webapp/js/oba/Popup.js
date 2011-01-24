@@ -233,7 +233,7 @@ OBA.StopPopup = function(stopId, map) {
 							'<span class="type">Stop #' + OBA.Util.parseEntityId(stopId) + '</span> ' + 
 							(lastUpdateDate !== null ? 
 									'<span class="updated" epoch="' + lastUpdateDate.getTime() + '">' + 
-										'Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
+										' Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
 									'</span>' : '') + 
 						'</p>' + 
 					  '</div>';
@@ -364,7 +364,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 						'<p>' + 
 							'<span class="type">Bus #' + OBA.Util.parseEntityId(vehicleId) + '</span> ' +
 							'<span epoch="' + lastUpdateDate.getTime() + '" class="updated' + ((isStaleData === true) ? " stale" : "") +'">' + 
-								'Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
+								' Last updated ' + OBA.Util.displayTime(lastUpdateDate) + 
 							'</span>' + 
 						'</p>' + 
 					  '</div>';
