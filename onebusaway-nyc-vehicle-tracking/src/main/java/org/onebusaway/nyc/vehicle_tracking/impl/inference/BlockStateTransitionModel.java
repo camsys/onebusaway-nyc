@@ -144,7 +144,15 @@ public class BlockStateTransitionModel {
     CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
     if (!cdf.canSample())
       return null;
-    return cdf.sample();
+    
+    BlockState updatedBlockState = cdf.sample();
+    
+    if (EVehiclePhase.isLayover(parentPhase) || obs.isAtTerminal()) {
+      updatedBlockState = _blocksFromObservationService.advanceLayoverState(
+          obs.getTime(), updatedBlockState);
+    }
+    
+    return updatedBlockState;
   }
 
   public BlockState getClosestBlockState(BlockState blockState, Observation obs) {
@@ -231,9 +239,9 @@ public class BlockStateTransitionModel {
     BlockState updatedBlockState = _blocksFromObservationService.advanceState(
         obs, blockState, 0, distanceToTravel);
 
-    if (EVehiclePhase.isLayover(phase)) {
+    if (EVehiclePhase.isLayover(phase) || obs.isAtTerminal()) {
       updatedBlockState = _blocksFromObservationService.advanceLayoverState(
-          obs.getTime(), blockState);
+          obs.getTime(), updatedBlockState);
     }
 
     return updatedBlockState;

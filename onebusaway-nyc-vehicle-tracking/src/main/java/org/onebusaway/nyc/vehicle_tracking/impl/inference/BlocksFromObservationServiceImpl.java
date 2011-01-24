@@ -159,38 +159,59 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   public BlockState advanceLayoverState(long timestamp, BlockState blockState) {
 
     BlockInstance instance = blockState.getBlockInstance();
-    int effectiveTime = (int) ((timestamp - instance.getServiceDate()) / 1000);
+
+    /**
+     * The targetScheduleTime is the schedule time we SHOULD be at
+     */
+    int targetScheduleTime = (int) ((timestamp - instance.getServiceDate()) / 1000);
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
     int scheduledTime = blockLocation.getScheduledTime();
 
     /**
-     * We only advance in a layover if we are behind schedule, not ahead of
-     * schedule
+     * First, we must actually be in a layover location
      */
-    if (effectiveTime <= scheduledTime)
-      return blockState;
-
     BlockStopTimeEntry layoverSpot = _vehicleStateLibrary.getPotentialLayoverSpot(blockLocation);
 
     if (layoverSpot == null)
       return blockState;
 
     /**
-     * The layover spot is the first stop of the next trip starting after the
-     * layover
+     * The layover spot is the location between the last stop in the previous
+     * trip and the first stop of the next trip
      */
     StopTimeEntry stopTime = layoverSpot.getStopTime();
 
     /**
-     * We only advance if our schedule time is less than the layover departure
-     * time
+     * We only adjust our layover schedule time if our current location is
+     * within the range of the layover bounds.
      */
-    if (scheduledTime >= stopTime.getDepartureTime())
+    if (scheduledTime > stopTime.getDepartureTime())
       return blockState;
 
-    return _blockStateService.getScheduledTimeAsState(instance, effectiveTime);
+    /**
+     * We won't advance the vehicle out of the layover, so we put an upper bound
+     * on our target schedule time
+     */
+    targetScheduleTime = Math.min(targetScheduleTime,
+        stopTime.getDepartureTime());
+
+    if (layoverSpot.getBlockSequence() > 0) {
+      BlockConfigurationEntry blockConfig = instance.getBlock();
+      int minArrivalTime = blockConfig.getArrivalTimeForIndex(layoverSpot.getBlockSequence() - 1);
+      if (scheduledTime + 5 * 60 < minArrivalTime)
+        return blockState;
+
+      /**
+       * We won't advance the vehicle out of the layover, so we put a lower
+       * bound on our target schedule time
+       */
+      targetScheduleTime = Math.max(targetScheduleTime, minArrivalTime);
+    }
+
+    return _blockStateService.getScheduledTimeAsState(instance,
+        targetScheduleTime);
   }
 
   /**
