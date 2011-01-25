@@ -24,7 +24,14 @@ import org.junit.runners.Suite;
     Trace_7560_20101127T003153_IntegrationTest.class,
     Trace_7560_20101127T232847_IntegrationTest.class,
     Trace_7560_20101129T011744_IntegrationTest.class,
-    Trace_7560_20101129T233021_IntegrationTest.class})
+    Trace_7560_20101129T233021_IntegrationTest.class,
+    Trace_7561_20101209T124755_IntegrationTest.class,
+    Trace_7563_20101209T124732_IntegrationTest.class,
+    Trace_7564_20101129T041335_IntegrationTest.class,
+    Trace_7564_20101201T010042_IntegrationTest.class,
+    Trace_7564_20101202T034055_IntegrationTest.class,
+    Trace_7564_20101202T114909_IntegrationTest.class,
+    Trace_7564_20101206T005551_IntegrationTest.class})
 public class TraceSuite {
 
 }

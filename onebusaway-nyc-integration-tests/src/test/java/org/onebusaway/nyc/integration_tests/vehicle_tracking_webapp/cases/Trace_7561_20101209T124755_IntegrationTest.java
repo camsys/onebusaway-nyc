@@ -37,9 +37,9 @@ package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
  * 
  * @author bdferris
  */
-public class Trace_7561_20101209T124755 extends AbstractTraceRunner {
+public class Trace_7561_20101209T124755_IntegrationTest extends AbstractTraceRunner {
 
-  public Trace_7561_20101209T124755() {
+  public Trace_7561_20101209T124755_IntegrationTest() {
     super("7561-2010-12-09T12-47-55.csv.gz");
   }
 }
