@@ -36,8 +36,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL },
 		center: new google.maps.LatLng(40.65182926199445,-74.0065026164856),
 		streetViewControl: false,		
-		mapTypeId: 'transit',
-		scrollwheel: false
+		mapTypeId: 'transit'
 	};
 
 	var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});

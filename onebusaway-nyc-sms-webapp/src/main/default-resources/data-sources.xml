@@ -22,18 +22,15 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
     <bean id="serviceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
-<!--        <property name="serviceUrl" value="http://dev.oba.openplans.org:9090/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />-->
+        <property name="serviceUrl" value="http://localhost/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
-    
+
     <bean id="configServiceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://dev.oba.openplans.org/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management" />
-<!--        <property name="serviceUrl" value="http://localhost:9000/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management" />-->
+        <property name="serviceUrl" value="http://localhost/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/>
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
 
-<!--     Database Connection Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
@@ -63,16 +60,7 @@
 		</property>
 	</bean>
 
-    <bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.FixedGeocoderImpl">
-        <property name="lat" value="40.7092062847316" />
-        <property name="lon" value="-73.9595317722168" />
-        <property name="city" value="Brooklyn" />
-        <property name="state" value="NY" />
-        <property name="postalCode" value="10013" />
-    </bean>
-
-<!--need to move the google geocoder into the presentation module first -->
-<!--	<bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.GoogleGeocoderImpl" />-->
+    <bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.GoogleGeocoderImpl" />
 
     <bean id="serviceArea" class="org.onebusaway.presentation.impl.DefaultServiceAreaServiceImpl">
         <property name="defaultBounds">
@@ -92,13 +80,4 @@
             </props>
         </property>
     </bean>
-
-<!--    <bean id="smsAbbreviationsFactory" class="org.onebusaway.presentation.impl.text.XmlTextModificationsFactory">-->
-<!--        <property name="resource" value="classpath:sms-destination-abbreviations.xml" />-->
-<!--    </bean>-->
-<!---->
-<!--    <bean id="smsAbbreviations" factory-bean="smsAbbreviationsFactory" factory-method="create">-->
-<!--        <qualifier value="smsDestinationAbbreviations" />-->
-<!--    </bean>-->
-
 </beans>

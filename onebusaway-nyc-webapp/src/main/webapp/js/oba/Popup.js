@@ -189,17 +189,28 @@ OBA.StopPopup = function(stopId, map) {
 				return;
 			}
 
-			// hide arrivals that are not on the vehicle's current trip yet, except when in layover before or during state.
-			if(arrival.tripStatus !== null && arrival.tripStatus.activeTripId !== arrival.tripId) {
+			// let in-layover buses filter through if they are on the arrival's current trip or the previous trip
+			// /and/ over 50% complete in previous trip progress. Otherwise, filter out.
+			if(arrival.tripStatus !== null) {
 				var phase = ((typeof arrival.tripStatus.phase !== 'undefined' && arrival.tripStatus.phase !== '') 
 						? arrival.tripStatus.phase : null);
 
 				if(phase !== null
-					&& phase.toLowerCase() !== 'layover_before' 
-					&& phase.toLowerCase() !== 'layover_during') {	
+						&& phase.toLowerCase() !== 'layover_before' 
+						&& phase.toLowerCase() !== 'layover_during') {	
+
+					var distanceAlongTrip = arrival.tripStatus.distanceAlongTrip;
+					var totalDistanceAlongTrip = arrival.tripStatus.totalDistanceAlongTrip;
+					if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
+						var ratio = distanceAlongTrip / totalDistanceAlongTrip;
+
+						if(arrival.tripStatus.activeTripId !== arrival.tripId 
+								&& ((arrival.blockTripSequence - 1) !== arrival.tripStatus.blockTripSequence && ratio > 0.50)) {
 					
-					OBA.Util.log("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
-					return;
+							OBA.Util.log("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
+							return;
+						}
+					}
 				}	
 			}
 

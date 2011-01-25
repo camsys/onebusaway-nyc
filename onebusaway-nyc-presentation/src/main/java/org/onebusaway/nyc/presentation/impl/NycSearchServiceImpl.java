@@ -588,23 +588,32 @@ public class NycSearchServiceImpl implements NycSearchService {
     	  continue;
       }
       
-      // hide arrivals are not the vehicle's current trip yet, except when in layover before or during state.
+	  // let in-layover buses filter through if they are on the arrival's current trip or the previous trip
+	  // /and/ over 50% complete in previous trip progress. Otherwise, filter out.
       if(tripBean != null && tripStatusBean != null) {
-		  TripBean currentTrip = tripStatusBean.getActiveTrip();
-    	  
-    	  if(currentTrip != null && !currentTrip.getId().equals(tripBean.getId())) {
-    		  String phase = tripStatusBean.getPhase();
-    		  
-    		  if(phase != null && 
-    				  !phase.toLowerCase().equals("layover_before") &&
-    				  !phase.toLowerCase().equals("layover_during")) {
-    			  
-    			  if(debug)
-    				  System.out.println("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
-    			  
-    			  continue;
-    		  }
-    	  }
+		  String phase = tripStatusBean.getPhase();
+		  
+		  if(phase != null && 
+				  !phase.toLowerCase().equals("layover_before") &&
+				  !phase.toLowerCase().equals("layover_during")) {
+
+			  double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
+			  double totalDistanceAlongTrip = tripStatusBean.getTotalDistanceAlongTrip();			  
+			  if(Double.isNaN(distanceAlongTrip) != true && Double.isNaN(totalDistanceAlongTrip) != true) {
+				  double ratio = distanceAlongTrip / totalDistanceAlongTrip;
+
+				  TripBean activeTrip = tripStatusBean.getActiveTrip();				  
+				  if(activeTrip != null &&
+					 !tripBean.getId().equals(activeTrip.getId()) && 
+					 ((arrivalAndDepartureBean.getBlockTripSequence() - 1) != tripStatusBean.getBlockTripSequence() && ratio > 0.50)) {
+
+					  if(debug)
+						  System.out.println("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
+					  
+					  continue;
+				  }
+			  }
+		  }
       }
       
       // should we display this vehicle on the UI specified by "m"?

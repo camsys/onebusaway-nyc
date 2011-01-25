@@ -72,21 +72,13 @@ OBA.Util = (function() {
 		displayDistance: function(feetAway, stopsAway, context, tripStatus) {
 			var s = "";
 
-			// we're "at terminal" if vehicle is currently in layover at the end or start terminal
-			// on the previous or current trip
+			// we're "at terminal" if vehicle is currently in layover--we filter out layover buses
+			// we don't want to display in Popup.js, as appropriate.
 			var atTerminal = false;
 			if(tripStatus !== null && 
-					(tripStatus.phase.toLowerCase() === 'layover_during' ||
-					 tripStatus.phase.toLowerCase() === 'layover_before')) {
-			
-				var distanceAlongTrip = tripStatus.distanceAlongTrip;
-				var totalDistanceAlongTrip = tripStatus.totalDistanceAlongTrip;				
-				if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
-					var ratio = distanceAlongTrip / totalDistanceAlongTrip;
-					if(ratio > 0.80 || ratio < .20) {
-						atTerminal = true;					
-					}					
-				}
+				(tripStatus.phase.toLowerCase() === 'layover_during' ||
+				 tripStatus.phase.toLowerCase() === 'layover_before')) {
+				atTerminal = true;					
 			}
 			
 			var milesAway = feetAway / 5280;

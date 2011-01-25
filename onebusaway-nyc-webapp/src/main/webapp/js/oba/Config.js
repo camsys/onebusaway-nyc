@@ -71,6 +71,9 @@ OBA.Config = {
 		apiKey: "TEST",
 
 		vehicleFilterFunction: function(type, tripStatus) {
+		    // UI states here:
+		    // https://spreadsheets.google.com/ccc?key=0Al2nqv1nCD71dGt5SkpHajRQZmdLaVZScnhoYVhiZWc&hl=en#gid=0
+			
 			// don't show non-realtime trips (row 8)
 			if(tripStatus === null || tripStatus.predicted === false) {
 				return false;

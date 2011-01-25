@@ -64,23 +64,16 @@ public class DistanceAway implements Comparable<DistanceAway> {
   public String getPresentableDistance() {
 	String r = "";
 	
-	// we're "at terminal" if vehicle is currently in layover at the end or start terminal
-	// on the previous or current trip
+	// we're "at terminal" if vehicle is currently in layover--we filter out layover buses
+	// we don't want to display in NycSearchServiceImpl.java, as appropriate.
 	boolean atTerminal = false;
 	if(statusBean != null) {
 		String phase = statusBean.getPhase();
 	
 		if (phase != null && 
-				(phase.toLowerCase().equals("layover_during") || phase.toLowerCase().equals("layover_before"))) {
-
-			Double distanceAlongTrip = statusBean.getDistanceAlongTrip();
-			Double totalDistanceAlongTrip = statusBean.getTotalDistanceAlongTrip();			
-			if(distanceAlongTrip != null && totalDistanceAlongTrip != null) {
-				Double ratio = distanceAlongTrip / totalDistanceAlongTrip;				
-				if(ratio > .80 || ratio < .20) {
-					atTerminal = true;
-				}
-			}
+			(phase.toLowerCase().equals("layover_during") || 
+			 phase.toLowerCase().equals("layover_before"))) {
+			atTerminal = true;
 		}
 	}
 	
