@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
-    xmlns:form="http://www.springframework.org/tags/form">
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>Vehicles</title>
