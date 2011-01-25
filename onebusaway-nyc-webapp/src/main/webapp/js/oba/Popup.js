@@ -189,29 +189,33 @@ OBA.StopPopup = function(stopId, map) {
 				return;
 			}
 
-			// let in-layover buses filter through if they are on the arrival's current trip or the previous trip
-			// /and/ over 50% complete in previous trip progress. Otherwise, filter out.
+			// if a vehicle is in progress, it has to be on the A-D's current trip to show up in bubble.
+			// If a vehicle is in layover, bus should show if it's on A-D's current trip or the previous trip
+			// /and/ over 50% complete in previous trip progress.
 			if(arrival.tripStatus !== null) {
 				var phase = ((typeof arrival.tripStatus.phase !== 'undefined' && arrival.tripStatus.phase !== '') 
 						? arrival.tripStatus.phase : null);
 
 				if(phase !== null
-						&& phase.toLowerCase() !== 'layover_before' 
-						&& phase.toLowerCase() !== 'layover_during') {	
+							&& (phase.toLowerCase() === 'layover_before' || phase.toLowerCase() === 'layover_during')) {	
 
 					var distanceAlongTrip = arrival.tripStatus.distanceAlongTrip;
 					var totalDistanceAlongTrip = arrival.tripStatus.totalDistanceAlongTrip;
 					if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
 						var ratio = distanceAlongTrip / totalDistanceAlongTrip;
-
 						if(arrival.tripStatus.activeTripId !== arrival.tripId 
 								&& ((arrival.blockTripSequence - 1) !== arrival.tripStatus.blockTripSequence && ratio > 0.50)) {
 					
-							OBA.Util.log("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
+							OBA.Util.log("   --- HIDING LAYOVER VEHICLE: IS NOT ON PROPER TRIP (RATIO=" + ratio + ").");
 							return;
 						}
 					}
-				}	
+				} else {
+					if(arrival.tripStatus.activeTripId !== arrival.tripId) {
+						OBA.Util.log("   --- HIDING NON-LAYOVER VEHICLE: IS NOT ON A-D'S TRIP.");
+						return;						
+					} 
+				}
 			}
 
 			if(arrival.tripStatus === null || OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {

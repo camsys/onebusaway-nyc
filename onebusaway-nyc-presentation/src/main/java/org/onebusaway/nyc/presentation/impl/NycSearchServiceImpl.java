@@ -588,30 +588,36 @@ public class NycSearchServiceImpl implements NycSearchService {
     	  continue;
       }
       
-	  // let in-layover buses filter through if they are on the arrival's current trip or the previous trip
-	  // /and/ over 50% complete in previous trip progress. Otherwise, filter out.
+	  // if a vehicle is in progress, it has to be on the A-D's current trip to show up in bubble.
+	  // If a vehicle is in layover, bus should show if it's on A-D's current trip or the previous trip
+      // /and/ over 50% complete in previous trip progress.
       if(tripBean != null && tripStatusBean != null) {
 		  String phase = tripStatusBean.getPhase();
+		  TripBean activeTrip = tripStatusBean.getActiveTrip();				  
 		  
 		  if(phase != null && 
-				  !phase.toLowerCase().equals("layover_before") &&
-				  !phase.toLowerCase().equals("layover_during")) {
+				  (phase.toLowerCase().equals("layover_before") || phase.toLowerCase().equals("layover_during"))) {
 
 			  double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
 			  double totalDistanceAlongTrip = tripStatusBean.getTotalDistanceAlongTrip();			  
 			  if(Double.isNaN(distanceAlongTrip) != true && Double.isNaN(totalDistanceAlongTrip) != true) {
 				  double ratio = distanceAlongTrip / totalDistanceAlongTrip;
-
-				  TripBean activeTrip = tripStatusBean.getActiveTrip();				  
 				  if(activeTrip != null &&
 					 !tripBean.getId().equals(activeTrip.getId()) && 
 					 ((arrivalAndDepartureBean.getBlockTripSequence() - 1) != tripStatusBean.getBlockTripSequence() && ratio > 0.50)) {
 
 					  if(debug)
-						  System.out.println("   --- HIDING BECAUSE OF PHASE (" + phase + ")");
+						  System.out.println("   --- HIDING LAYOVER VEHICLE: IS NOT ON PROPER TRIP (RATIO=" + ratio + ").");
 					  
 					  continue;
 				  }
+			  }
+		  } else {
+			  if(activeTrip != null && !tripBean.getId().equals(activeTrip.getId())) {
+				  if(debug)
+					  System.out.println("   --- HIDING NON-LAYOVER VEHICLE: IS NOT ON A-D'S TRIP.");
+						  
+				  continue;
 			  }
 		  }
       }
