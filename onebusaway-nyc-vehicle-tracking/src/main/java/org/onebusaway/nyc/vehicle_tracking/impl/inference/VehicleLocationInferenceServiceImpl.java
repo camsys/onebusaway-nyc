@@ -106,7 +106,8 @@ public class VehicleLocationInferenceServiceImpl implements
     if (instance == null)
       return null;
     NycTestLocationRecord record = instance.getCurrentState();
-    record.setVehicleId(vid.getId());
+    if( record != null)
+      record.setVehicleId(vid.getId());
     return record;
   }
 
