@@ -54,7 +54,7 @@ public class SmsDisplayerTest {
     SmsDisplayer sms = new SmsDisplayer(searchResults);
     sms.singleStopResponse();
     String actual = sms.toString();
-    String exp = "routeid: 1 stop, 0.06 mi\n" + "routeid: 2 stops, 0.17 mi\n";
+    String exp = "routeid: 1 stop away\n" + "routeid: 2 stops away\n";
     assertEquals(exp, actual);
   }
 
@@ -75,12 +75,13 @@ public class SmsDisplayerTest {
     SmsDisplayer sms = new SmsDisplayer(searchResults);
     sms.singleStopResponse();
     String actual = sms.toString();
-    String exp = "routeid: 1 stop, 0.02 mi\n" +
-                 "routeid: 2 stops, 0.04 mi\n" +
-                 "routeid: 3 stops, 0.06 mi\n" +
-                 "routeid: 4 stops, 0.08 mi\n" +
-                 "routeid: 5 stops, 0.09 mi\n" +
-                 "routeid: 6 stops, 0.11 mi\n";
+    String exp = "routeid: at stop\n" +
+                 "routeid: 2 stops away\n" +
+                 "routeid: 3 stops away\n" +
+                 "routeid: 0.1 mi. away\n" +
+                 "routeid: 0.1 mi. away\n" +
+                 "routeid: 0.1 mi. away\n" +
+                 "routeid: 0.1 mi. away\n";
     assertEquals(exp, actual);
   }
 
@@ -115,9 +116,9 @@ public class SmsDisplayerTest {
     sms.twoStopResponse();
     
     String actual = sms.toString();
-    String exp = "N-bound:\n" +
+    String exp = "N-bound (123456):\n" +
                  "routeid: No upcoming arrivals\n" +
-                 "S-bound:\n" +
+                 "S-bound (123456):\n" +
                  "routeid: No upcoming arrivals\n";
     assertEquals(exp, actual);
   }
@@ -141,12 +142,12 @@ public class SmsDisplayerTest {
     sms.twoStopResponse();
     
     String actual = sms.toString();
-    String exp = "N-bound:\n" +
-                 "routeid: 1 stop, 0.02 mi\n" +
-                 "routeid: 2 stops, 0.04 mi\n" +
-                 "S-bound:\n" +
-                 "routeid: 1 stop, 0.02 mi\n" +
-                 "routeid: 2 stops, 0.04 mi\n";
+    String exp = "N-bound (123456):\n" +
+                 "routeid: at stop\n" +
+                 "routeid: 2 stops away\n" +
+                 "S-bound (123456):\n" +
+                 "routeid: at stop\n" +
+                 "routeid: 2 stops away\n";
     assertEquals(exp, actual);
   }
   
@@ -171,12 +172,14 @@ public class SmsDisplayerTest {
     sms.twoStopResponse();
     
     String actual = sms.toString();
-    String exp = "N-bound:\n" +
-                 "routeid: 1 stop, 0.02 mi\n" +
-                 "routeid: 2 stops, 0.04 mi\n" +
-                 "S-bound:\n" +
-                 "routeid: 1 stop, 0.02 mi\n" +
-                 "routeid: 2 stops, 0.04 mi\n";
+    String exp = "N-bound (123456):\n" +
+                 "routeid: at stop\n" +
+                 "routeid: 2 stops away\n" +
+                 "routeid: 3 stops away\n" +
+                 "S-bound (123456):\n" +
+                 "routeid: at stop\n" +
+                 "routeid: 2 stops away\n" +
+                 "routeid: 3 stops away\n";
     assertEquals(exp, actual);
   }
 
@@ -216,7 +219,7 @@ public class SmsDisplayerTest {
     sms.singleStopResponse();
     
     String actual = sms.toString();
-    String exp = "No routes available\n";
+    String exp = "No upcoming service at this stop\n";
     assertEquals(exp, actual);
   }
 
