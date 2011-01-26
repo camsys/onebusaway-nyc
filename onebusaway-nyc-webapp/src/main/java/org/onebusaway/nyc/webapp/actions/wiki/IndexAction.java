@@ -40,6 +40,8 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
 	protected String namespace;
 	protected String name;
+	
+	private boolean forceRefresh = false;
 
 	private String content;
 	private String title;
@@ -49,7 +51,13 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	private String toc;
 	private String adminToc;
 	private boolean hasToc = false;
+
+  
 	private static final Pattern tocLinkPattern = Pattern.compile("<a[^>]?href=\"([^\"]*)\"[^>]?>[^<]*</a>");
+	
+	public void setForceRefresh(boolean forceRefresh){
+	  this.forceRefresh = forceRefresh;
+	}
 	
 	public boolean isAdmin() {
 		return _currentUserService.isCurrentUserAdmin();
@@ -132,7 +140,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		if (namespace != null && name != null) {
 			// try to get TOC page for this namespace
 			try {
-				NycWikiPageWrapper page = new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "TOC", false));
+				NycWikiPageWrapper page = new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "TOC", forceRefresh));
 
 				if(page.pageExists()) {
 					toc = _wikiRenderingService.renderPage(page);	
@@ -149,7 +157,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 			if(this.isAdmin()) {
 				// try to get admin TOC page for this namespace
 				try {
-					NycWikiPageWrapper adminPage = new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "AdminTOC", false));
+					NycWikiPageWrapper adminPage = new NycWikiPageWrapper(_wikiDocumentService.getWikiPage(namespace, "AdminTOC", forceRefresh));
 
 					if(adminPage.pageExists()) {
 						adminToc = _wikiRenderingService.renderPage(adminPage);	
