@@ -18,8 +18,10 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd 
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
 
     <bean id="serviceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="http://localhost/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
@@ -97,5 +99,40 @@
          <constructor-arg value="/tmp/configuration-service.properties" />
        </bean>
      </property>
-   </bean>    
+   </bean>
+
+   <aop:config>
+		<aop:pointcut id="wikiCachingPointcut"
+			expression="execution(* org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl.getWikiPage(..))" />
+		<aop:aspect id="wikiCachingAspect" ref="cacheableMethodManager">
+			<aop:around pointcut-ref="wikiCachingPointcut" method="evaluate" />
+		</aop:aspect>
+   </aop:config>
+
+   <bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="cacheableMethodKeyFactoryManager" />
+		<property name="targetMethod"
+			value="putCacheRefreshIndicatorArgumentIndexForMethodSignature" />
+		<property name="arguments">
+			<list>
+				<value>org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl.getWikiPage</value>
+				<value>2</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="wikiPageCache"
+		class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="cacheName"
+			value="org.onebusaway.wiki.api.WikiDocumentService.getWikiPage" />
+		<property name="maxElementsInMemory" value="25" />
+		<property name="eternal" value="false" />
+		<property name="timeToLive" value="3600" />
+		<property name="timeToIdle" value="3600" />
+		<property name="overflowToDisk" value="true" />
+		<property name="diskPersistent" value="false" />
+	</bean>   
+
 </beans>
