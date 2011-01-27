@@ -60,6 +60,10 @@ public class AbstractTraceRunner {
 
   private Map<EVehiclePhase, Double> _minAccuracyRatiosByPhase = new HashMap<EVehiclePhase, Double>();
 
+  private double _median = 10.0;
+
+  private double _standardDeviation = 20.0;
+
   private boolean _saveResultsOnAssertionError = true;
 
   public AbstractTraceRunner(String trace) {
@@ -81,6 +85,14 @@ public class AbstractTraceRunner {
   public void setMinAccuracyRatioForPhase(EVehiclePhase phase,
       double minAccuracyRatio) {
     _minAccuracyRatiosByPhase.put(phase, minAccuracyRatio);
+  }
+
+  public void setMedian(double median) {
+    _median = median;
+  }
+
+  public void setStandardDeviation(double standardDeviation) {
+    _standardDeviation = standardDeviation;
   }
 
   @Test
@@ -239,9 +251,9 @@ public class AbstractTraceRunner {
       System.out.println("mean=" + mean);
       System.out.println("stdDev=" + stdDev);
 
-      assertTrue("median=" + median, median < 10.0);
+      assertTrue("median=" + median, median < _median);
       assertTrue("mean=" + mean, mean < 10.0);
-      assertTrue("stdDev" + stdDev, stdDev < 20.0);
+      assertTrue("stdDev" + stdDev, stdDev < _standardDeviation);
     }
   }
 
