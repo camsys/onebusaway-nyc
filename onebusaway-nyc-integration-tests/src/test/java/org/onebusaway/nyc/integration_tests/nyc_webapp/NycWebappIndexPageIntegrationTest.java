@@ -30,10 +30,12 @@ public class NycWebappIndexPageIntegrationTest extends NycWebappTestSupport {
     // verify that the header is coming through
     String header = "A City Transit Agency";
     assertTrue(isTextPresent(header));
-    assertEquals(header, getText("xpath=//div[@id='header']/h1"));
+    assertEquals(header, getText("xpath=//div[@class='title']/h2"));
     
     // verify that the default search stub text appears on the page
-    String findText = getAttribute("xpath=//form[@action='search.action']/fieldset/input[2]@value");
-    assertEquals("Find",findText);
+    System.out.println(getText("xpath=//form[@id='search']"));
+    
+    String findText = getAttribute("xpath=//form[@id='search']/input[@type='submit']@value");
+    assertEquals("Find Stop",findText);
   }
 }
