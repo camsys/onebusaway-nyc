@@ -39,12 +39,12 @@
 		Wiki pages.
 	-->	
     <rule>
-        <from>^/wiki/(.*)/(.*)/?$</from>
-        <to last="true">/wiki/index.action?namespace=$1&amp;name=$2</to>
+        <from>^(/onebusaway-nyc-webapp){0,1}/wiki/(.*)/(.*)/?$</from>
+        <to last="true">$1/wiki/index.action?namespace=$2&amp;name=$3</to>
     </rule>
     <rule>
-        <from>^/wiki/(.*)/?$</from>
-        <to last="true">/wiki/index.action?name=$1</to>
+        <from>^(/onebusaway-nyc-webapp){0,1}/wiki/(.*)/?$</from>
+        <to last="true">$1/wiki/index.action?name=$2</to>
     </rule>
         
 	<!--
@@ -53,9 +53,9 @@
     <rule>
         <condition type="request-uri" operator="notequal">^.*_login$</condition>
         <condition type="request-uri" operator="notequal">^.*\.ico$</condition>
-        <condition type="request-uri" operator="notequal">^/img/.*$</condition>
-        <condition type="request-uri" operator="notequal">^/css/.*$</condition>
-        <condition type="request-uri" operator="notequal">^/js/.*$</condition>
+        <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/img/.*$</condition>
+        <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/css/.*$</condition>
+        <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/js/.*$</condition>
         <condition type="request-uri" operator="notequal">^.*\.action$</condition>
         <from>^(.*)$</from>
         <to last="true">$1.action</to>
@@ -63,9 +63,9 @@
     <rule>
         <condition type="request-uri" operator="notequal">^.*_login$</condition>
         <condition type="request-uri" operator="notequal">^.*\.ico$</condition>
-        <condition type="request-uri" operator="notequal">^/img/.*$</condition>
-        <condition type="request-uri" operator="notequal">^/css/.*$</condition>
-        <condition type="request-uri" operator="notequal">^/js/.*$</condition>
+        <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/img/.*$</condition>
+        <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/css/.*$</condition>
+        <condition type="request-uri" operator="notequal">^(/onebusaway-nyc-webapp){0,1}/js/.*$</condition>
         <condition type="request-uri" operator="notequal">^.*\.action\?(.*)$</condition>
         <from>^(.*)\?(.*)$</from>
         <to last="true">$1.action?$2</to>

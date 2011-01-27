@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,7 +22,9 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
@@ -54,6 +56,10 @@ public class AbstractTraceRunner {
 
   private double _minPhaseRatioForConsideration = 0.05;
 
+  private double _minAccuracyRatio = 0.95;
+
+  private Map<EVehiclePhase, Double> _minAccuracyRatiosByPhase = new HashMap<EVehiclePhase, Double>();
+
   private boolean _saveResultsOnAssertionError = true;
 
   public AbstractTraceRunner(String trace) {
@@ -66,6 +72,15 @@ public class AbstractTraceRunner {
 
   public void setLoops(int loops) {
     _loops = loops;
+  }
+
+  public void setMinAccuracyRatio(double minAccuracyRatio) {
+    _minAccuracyRatio = minAccuracyRatio;
+  }
+
+  public void setMinAccuracyRatioForPhase(EVehiclePhase phase,
+      double minAccuracyRatio) {
+    _minAccuracyRatiosByPhase.put(phase, minAccuracyRatio);
   }
 
   @Test
@@ -194,8 +209,17 @@ public class AbstractTraceRunner {
 
       double relativeRatio = actPhaseCounts.getCount(phase) / expectedCount;
 
-      assertTrue("phase ratio " + phase + "=" + relativeRatio,
-          relativeRatio > 0.95);
+      double minAccuracyRatio = _minAccuracyRatio;
+
+      if (_minAccuracyRatiosByPhase.containsKey(phase))
+        minAccuracyRatio = _minAccuracyRatiosByPhase.get(phase);
+
+      String label = "phase ratio " + phase + "=" + relativeRatio
+          + " vs min of " + minAccuracyRatio;
+
+      System.out.println(label);
+
+      assertTrue(label, relativeRatio > minAccuracyRatio);
 
     }
 

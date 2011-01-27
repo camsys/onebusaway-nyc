@@ -33,8 +33,6 @@ public class NycWebappIndexPageIntegrationTest extends NycWebappTestSupport {
     assertEquals(header, getText("xpath=//div[@class='title']/h2"));
     
     // verify that the default search stub text appears on the page
-    System.out.println(getText("xpath=//form[@id='search']"));
-    
     String findText = getAttribute("xpath=//form[@id='search']/input[@type='submit']@value");
     assertEquals("Find Stop",findText);
   }

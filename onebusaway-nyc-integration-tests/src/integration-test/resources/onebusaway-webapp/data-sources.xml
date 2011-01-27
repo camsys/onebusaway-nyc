@@ -17,4 +17,11 @@
         </property>
     </bean>
 
+    <!-- Create a default admin user -->
+    <bean class="org.onebusaway.users.impl.CreateUserAction">
+        <property name="username" value="admin" />
+        <property name="password" value="admin" />
+        <property name="admin" value="true" />
+    </bean>
+    
 </beans>
