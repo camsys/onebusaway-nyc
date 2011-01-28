@@ -66,6 +66,8 @@ public class StifTripLoaderSupport {
         return ServiceCode.WEEKDAY_SCHOOL_OPEN;
       case 'D':
         return ServiceCode.SUNDAY;
+      case 'H':
+        return ServiceCode.HOLIDAY;
       default:
         return null;
     }

@@ -19,7 +19,8 @@ public enum ServiceCode {
 	WEEKDAY_SCHOOL_OPEN(1),
 	WEEKDAY_SCHOOL_CLOSED(11),
 	SATURDAY(2),
-	SUNDAY(3);
+  SUNDAY(3), 
+  HOLIDAY(12);
 	
 	private int code;
 
@@ -41,6 +42,8 @@ public enum ServiceCode {
 				return SATURDAY;
 			case 3: 
 				return SUNDAY;
+      case 12:
+        return HOLIDAY;
 		}
 		return null;
 	}

@@ -156,7 +156,7 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
             /*
              * Service codes are of the form 20100627CA Only the last two
              * characters are important. They have the meaning: A = sat B =
-             * weekday closed C = weekday open D = sun
+             * weekday closed C/E = weekday open D = sun H = holday
              * 
              * The first character is for trips on that day's STIF schedule,
              * while the second character is for trips on the next day's STIF

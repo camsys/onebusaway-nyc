@@ -34,7 +34,14 @@ public class TimetableRecordFactory extends StifRecordFactory<TimetableRecord> {
 			public void setField(TimetableRecord record) {record.setServiceCode(ServiceCode.valueOf(getInteger()));}}),
 		new FieldDef(41-17, "depot description", null),
 		new FieldDef(65-41, "route description", null),
-		new FieldDef(73-65, "schedule number", null),
+		new FieldDef(73-65, "schedule number", new TimetableFieldSetter() {
+        public void setField(TimetableRecord record) {
+          String scheduleNumber = getStringData();
+          // hack for holiday schedules
+          if (scheduleNumber.contains("H"))
+            record.setServiceCode(ServiceCode.HOLIDAY);
+        }
+      }),
 		new FieldDef(77-73, "version number", null),
 		new FieldDef(79-78, "stif type code", null),
 		new FieldDef(80-79, "empty", null),
