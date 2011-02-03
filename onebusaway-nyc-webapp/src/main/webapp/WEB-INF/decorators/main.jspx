@@ -77,8 +77,10 @@
 	  </div>
 
       <ul>
+		<li><a href="http://www.example.com">ACTA Home</a></li>
+
       	<s:url var="url" value="/"></s:url>
-        <li><a href="${url}">Home</a></li>
+        <li><a href="${url}">OneBusAway NYC Home</a></li>
 
       	<s:url var="url" namespace="/wiki" action="About"></s:url>
         <li><a href="${url}">About</a></li>
@@ -127,8 +129,6 @@
 
 			<s:url var="url" namespace="/m" action="index"/>
 			<li><a href="${url}">Text Only/Mobile Version</a></li>
-
-			<li><a href="http://www.example.com">ACTA Home</a></li>
 		</ul>
 
 		<p>&amp;copy; 2011, A City Transit Agency</p>
