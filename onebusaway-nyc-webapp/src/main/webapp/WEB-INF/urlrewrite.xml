@@ -39,11 +39,11 @@
 		Wiki pages.
 	-->	
     <rule>
-        <from>^(/onebusaway-nyc-webapp){0,1}/wiki/(.*)/(.*)/?$</from>
+        <from>^(/onebusaway-nyc-webapp){0,1}/wiki/([0-9A-Za-z]*)/([0-9A-Za-z]*)/?$</from>
         <to last="true">$1/wiki/index.action?namespace=$2&amp;name=$3</to>
     </rule>
     <rule>
-        <from>^(/onebusaway-nyc-webapp){0,1}/wiki/(.*)/?$</from>
+        <from>^(/onebusaway-nyc-webapp){0,1}/wiki/([0-9A-Za-z]*)/?$</from>
         <to last="true">$1/wiki/index.action?name=$2</to>
     </rule>
         
