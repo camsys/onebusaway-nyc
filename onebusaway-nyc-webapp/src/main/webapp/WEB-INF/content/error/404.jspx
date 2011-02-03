@@ -28,9 +28,7 @@
 	<div id="text">
 		<h1>404 Not Found</h1>
 	
-		<p>
-			The resource you requested could not be found.
-		</p>
+		<wiki:wiki name="Error404"/>
 	</div>
 </div>
 

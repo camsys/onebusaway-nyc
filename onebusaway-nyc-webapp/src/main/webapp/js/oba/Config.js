@@ -16,6 +16,11 @@
 
 var OBA = window.OBA || {};
 
+/*
+ * This is mostly for IE7, to make sure AJAX/JSON calls are not cached. 
+ */
+$.ajaxSetup({ cache: false });
+
 OBA.Config = {
 		// print debug messages to firebug console?
 		debug: false,

@@ -29,12 +29,17 @@
 
   	<s:url var="url" value="/css/mobile.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+
+  	<s:url var="url" value="/css/mobile-branding.css"></s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 </head>
 
 <body>
 	<div id="branding">
-    	A City Transit Agency
-	    <h1>OneBusAway NYC</h1>
+		<h2>A City Transit Agency</h2>
+
+	    <s:url var="url" namespace="/m" action="index"></s:url>
+	    <h1><a href="${url}">OneBusAway NYC</a></h1>
 	</div>
 	<div>
 		<s:form namespace="/m" action="index" method="GET">
@@ -199,10 +204,17 @@
 	</s:else>
 
 	<div id="footer">
-		<s:url var="aboutUrl" namespace="/wiki" action="About"/>	
-		<s:url var="desktopUrl" namespace="/" action="index"/>	
-    	<p><a href="${aboutUrl}">About</a> | <a href="${desktopUrl}">Desktop Version</a></p>
-	    <p id="credit">&amp;copy; 2010, A City Transit Agency</p>
+    	<p>
+			<s:url var="aboutUrl" namespace="/wiki" action="About"/>	
+    		<a href="${aboutUrl}">About</a> | 
+    		
+			<s:url var="desktopUrl" namespace="/" action="index"/>	
+    		<a href="${desktopUrl}">Desktop Version</a> |
+
+			<a href="http://www.example.com">ACTA Home</a>
+		</p>
+
+	    <p id="credit">&amp;copy; 2011, A City Transit Agency</p>
 	</div>
 	
 	<img src="${googleAnalyticsTrackingUrl}" alt="Google Tracking Pixel"/>

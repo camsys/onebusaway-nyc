@@ -37,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
   private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
-  private static final String GA_PIXEL = "/ga";
 	  
   private static final long serialVersionUID = 1L;
   
@@ -68,33 +67,52 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
-  // Contents of this method "Copyright 2009 Google Inc. All Rights Reserved."
   public String getGoogleAnalyticsTrackingUrl() {
 	  try {
 	      StringBuilder url = new StringBuilder();
-	      url.append(GA_PIXEL + "?");
+	      url.append("/ga?");
 	      url.append("utmac=").append(GA_ACCOUNT);
 	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
-	
+
+	      // referer
 	      HttpServletRequest request = ServletActionContext.getRequest();      
 	      String referer = request.getHeader("referer");
-	      String query = request.getQueryString();
-	      String path = request.getRequestURI();
 	
 	      if (referer == null || "".equals(referer)) {
 	        referer = "-";
 	      }
 	      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
-	
-	      if (path != null) {
-	        if (query != null) {
-	          path += "?" + query;
-	        }
-	        url.append("&utmp=").append(URLEncoder.encode(path, "UTF-8"));
+
+	      // event tracking
+	      String label = getQ();	      
+	      if(label == null) {
+	    	  label = "";
 	      }
-
+	      
+	      String action = new String("Unknown");
+	      if(searchResults != null && !searchResults.isEmpty()) {
+	    	  SearchResult firstResult = searchResults.get(0);	    	  
+	    	  if(firstResult.getType().equals("route")) {
+	    		  action = "Route";
+	    	  } else if(firstResult.getType().equals("stop")) {
+	    		  if(searchResults.size() > 1) {
+	    			  action = "Intersection";
+	    		  } else {
+	    			  action = "Stop";
+	    		  }
+	    	  }	    	  
+	      }	else {
+	    	  if(getQueryIsEmpty()) {
+	    		  action = "Home";
+	    	  } else {
+	    		  action = "No Results";	    		  
+	    	  }
+	      }
+	      url.append("&utme=5(Mobile Web*" + action + "*" + label + ")");
+	      
+	      // misc.
 	      url.append("&guid=ON");
-
+	      
 	      return url.toString().replace("&", "&amp;"); 
 	  } catch(Exception e) {
 		  return null;
@@ -102,7 +120,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public boolean getQueryIsEmpty() {
-	  return q.isEmpty();
+	  if(q == null) {
+		  return true;
+	  } else {
+		  return q.isEmpty();
+	  }
   }
   
   public List<SearchResult>getToc() {
@@ -111,6 +133,8 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	  for(SearchResult _result : searchResults) {
 			if(_result.getType().equals("route"))
 				tocList.add(_result);
+			else // if we find a non-route, there won't be any routes in the results.
+				break;
 	  }
 	  
 	  return tocList;	  

@@ -114,10 +114,17 @@ OBA.Util = (function() {
 			var secondsAgo = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
 			
 			if(secondsAgo < 60) {
-				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s" + " ago");
+				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s") + " ago";
 			} else {
-				secondsAgo = Math.floor(secondsAgo / 60);
-				return secondsAgo + " minute" + ((secondsAgo === 1) ? "" : "s" + " ago");				
+				minutesAgo = Math.floor(secondsAgo / 60);
+				secondsAgo = secondsAgo - (minutesAgo * 60);
+				
+				var s = minutesAgo + " minute" + ((minutesAgo === 1) ? "" : "s") 
+				if(secondsAgo > 0) {
+					s += ", " + secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s");
+				}
+				s += " ago";
+				return s;
 			}
 		}
 	};

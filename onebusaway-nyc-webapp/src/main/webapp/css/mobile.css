@@ -102,9 +102,17 @@ a:active {
     border-bottom: 0.6em solid #010199;
     padding: 0.6em 1.2em;
 }
+#branding a {
+	color: #ffffff;
+	text-decoration: none;
+}
 h1 {
     color: #fff;
 }
+h2 {
+	font-size: 100%;
+}
+
 div {
     margin: 0.4em;
     padding: 1.2em;
