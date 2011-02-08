@@ -55,9 +55,9 @@ OBA.Marker = function(entityId, latlng, map, popup, options) {
 			}
 
 			var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType,
-					OBA.Config.vehicleIconSize,
+					new google.maps.Size(OBA.Config.vehicleIconSize, OBA.Config.vehicleIconSize),
 					new google.maps.Point(0,0),
-					OBA.Config.vehicleIconCenter);
+					new google.maps.Point(OBA.Config.vehicleIconCenter, OBA.Config.vehicleIconCenter));
 
 			marker.setIcon(icon);
 		},
@@ -107,9 +107,9 @@ OBA.StopMarker = function(stopId, latlng, direction, map, opts) {
 		}
 	
 		var icon = new google.maps.MarkerImage(iconPath,
-					OBA.Config.stopIconSize,
+					new google.maps.Size(OBA.Config.stopIconSize, OBA.Config.stopIconSize),
 					new google.maps.Point(0,0),
-					OBA.Config.stopIconCenter);
+					new google.maps.Point(OBA.Config.stopIconCenter, OBA.Config.stopIconCenter));
 
 		opts.icon = icon;
 	}
@@ -132,9 +132,9 @@ OBA.VehicleMarker = function(vehicleId, latlng, orientation, map, opts) {
 
 	if(typeof opts.icon === 'undefined') {
 		var icon = new google.maps.MarkerImage(OBA.Config.vehicleIconFilePrefix + '-unknown.' + OBA.Config.vehicleIconFileType,
-						OBA.Config.vehicleIconSize,
+						new google.maps.Size(OBA.Config.vehicleIconSize, OBA.Config.vehicleIconSize),
 						new google.maps.Point(0,0),
-						OBA.Config.vehicleIconCenter);
+						new google.maps.Point(OBA.Config.vehicleIconCenter, OBA.Config.vehicleIconCenter));
 
 		opts.icon = icon;
 	}

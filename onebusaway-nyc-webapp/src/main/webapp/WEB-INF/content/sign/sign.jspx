@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
+<jsp:directive.page contentType="text/html" />
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+	<title>A City Transit Agency | OneBusAway NYC Sign</title>
+
+  	<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon"/>
+
+  	<s:url var="url" value="/css/sign.css"></s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+
+	<s:url var="url" value="/css/sign-branding.css"></s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+    
+	<s:url var="url" value="/js/jquery.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/jquery.jsonp.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+  	<s:url var="url" value="/js/oba/Config.js"/>
+  	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/oba/Util.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/oba/Sign.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+</head>
+<body>
+
+<div id="branding" class="selfclear">
+    <h1><span id="logo">A City Transit Agency |</span> OneBusAway NYC</h1>
+</div>
+
+<div id="error"><!-- //prevent jspx minimization --></div>
+
+<div id="arrivals">
+    <table>
+        <thead>
+            <tr>
+                <th colspan="2">
+                	No stops are configured for display.
+                </th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<p id="footer"><small>&amp;copy; 2011, A City Transit Agency</small></p>
+
+</body>
+</html>

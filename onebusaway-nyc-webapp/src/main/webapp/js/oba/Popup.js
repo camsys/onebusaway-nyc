@@ -91,9 +91,9 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 				var pixelOffset = null;
 				var markerType = marker.getType();
 				if(markerType === "stop") {
-					pixelOffset = new google.maps.Size(0, OBA.Config.stopIconCenter.y);
+					pixelOffset = new google.maps.Size(0, OBA.Config.stopIconCenter);
 				} else if(markerType === "vehicle") {
-					pixelOffset = new google.maps.Size(0, OBA.Config.vehicleIconCenter.y);
+					pixelOffset = new google.maps.Size(0, OBA.Config.vehicleIconCenter);
 				}
 
 				infoWindow.setOptions({ zIndex: 100, pixelOffset: pixelOffset });

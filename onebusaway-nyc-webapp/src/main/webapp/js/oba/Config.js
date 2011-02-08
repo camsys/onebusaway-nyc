@@ -63,14 +63,14 @@ OBA.Config = {
 		// (the path below needs to be absolute!)
 		vehicleIconFilePrefix: "/img/vehicle/vehicle",
 		vehicleIconFileType: "png",
-		vehicleIconSize: new google.maps.Size(51,51),
-		vehicleIconCenter: new google.maps.Point(25,25),
+		vehicleIconSize: 51,
+		vehicleIconCenter: 25,
 
 		// (the path below needs to be absolute!)
 		stopIconFilePrefix: "/img/stop/stop",
 		stopIconFileType: "png",
-		stopIconSize: new google.maps.Size(21,21),
-		stopIconCenter: new google.maps.Point(10,10),
+		stopIconSize: 21,
+		stopIconCenter: 10,
 
 		// api key used for webapp
 		apiKey: "TEST",

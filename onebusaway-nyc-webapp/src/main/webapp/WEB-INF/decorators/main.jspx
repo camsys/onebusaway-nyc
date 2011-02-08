@@ -55,8 +55,6 @@
   <s:url var="url" value="/css/branding.css"></s:url>
   <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-  <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"><!-- //prevent jspx minimization --></script>
-
   <s:url var="url" value="/js/jquery.js"/>
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
     

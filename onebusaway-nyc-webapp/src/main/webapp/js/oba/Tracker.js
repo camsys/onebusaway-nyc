@@ -217,7 +217,12 @@ OBA.Tracker = function() {
 			addResizeBehavior();
 
 			// add default/pilot routes to the map
-			routeMap.addRoute(OBA.Config.agencyId + "_B63", ["1", "0"], null);	
+			routeMap.addRoute(OBA.Config.agencyId + "_B63", ["1", "0"], function(routeId, directionId) {
+				var bounds = routeMap.getBounds(routeId, directionId);
+				if(bounds !== null) {
+					map.fitBounds(bounds);
+				}
+			});	
 			
 			// load any deeplink identified search results
 			google.maps.event.addListener(map, 'projection_changed', function() {

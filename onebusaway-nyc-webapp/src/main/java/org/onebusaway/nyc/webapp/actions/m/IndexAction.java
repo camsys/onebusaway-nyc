@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
   private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
-	  
+  
   private static final long serialVersionUID = 1L;
   
   @Autowired
@@ -74,6 +74,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      url.append("utmac=").append(GA_ACCOUNT);
 	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
 
+	      // page path
+	      url.append("&utmp=/m");
+	      
 	      // referer
 	      HttpServletRequest request = ServletActionContext.getRequest();      
 	      String referer = request.getHeader("referer");

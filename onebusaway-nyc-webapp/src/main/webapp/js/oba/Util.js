@@ -119,7 +119,7 @@ OBA.Util = (function() {
 				minutesAgo = Math.floor(secondsAgo / 60);
 				secondsAgo = secondsAgo - (minutesAgo * 60);
 				
-				var s = minutesAgo + " minute" + ((minutesAgo === 1) ? "" : "s") 
+				var s = minutesAgo + " minute" + ((minutesAgo === 1) ? "" : "s");
 				if(secondsAgo > 0) {
 					s += ", " + secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s");
 				}

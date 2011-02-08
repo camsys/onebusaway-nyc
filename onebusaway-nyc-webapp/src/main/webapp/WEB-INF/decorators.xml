@@ -22,6 +22,7 @@
 		<pattern>/m/*</pattern>
 		<pattern>/css/*</pattern>
 		<pattern>/js/*</pattern>
+		<pattern>/sign/sign*</pattern>
 	</excludes>
 
 	<decorator name="main" page="main.jspx">

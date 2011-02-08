@@ -38,9 +38,9 @@ function Fluster2ClusterMarker(_fluster, _cluster)
 	this.setMap(this.map);
 	this.setPosition(this.position);
 	this.setIcon(new google.maps.MarkerImage(OBA.Config.stopIconFilePrefix + "." + OBA.Config.stopIconFileType,
-			OBA.Config.stopIconSize,
+			new google.maps.Size(OBA.Config.stopIconSize, OBA.Config.stopIconSize),
 			new google.maps.Point(0,0),
-			OBA.Config.stopIconCenter));
+			new google.maps.Point(OBA.Config.stopIconCenter, OBA.Config.stopIconCenter)));
 
 	google.maps.event.addDomListener(this, 'click', function() {
 		this.map.setCenter(this.position);
