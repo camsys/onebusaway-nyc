@@ -341,12 +341,11 @@ OBA.Sign = function() {
 					} catch(e) {}
 
 					showError("An error occured while updating arrival information&mdash;please check back later.");
-				},
-				complete: function(xOptions, text) {
-			        setTimeout(update, refreshInterval * 1000);
 				}
 			}); // get JSON
 		});
+
+        setTimeout(update, refreshInterval * 1000);
 	}
 	
 	return {
