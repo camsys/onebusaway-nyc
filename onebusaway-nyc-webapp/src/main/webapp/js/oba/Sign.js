@@ -19,7 +19,8 @@ var OBA = window.OBA || {};
 OBA.Sign = function() {
 	var refreshInterval = 5;
 	var configurableMessageHtml = null;
-	var stopIdsToRequest = [];
+	var stopIdsToRequest = null;
+	var vehiclesPerStop = 3;
 	
 	function getParameterByName(name, defaultValue) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -34,39 +35,21 @@ OBA.Sign = function() {
 	}
 
 	function detectSize() {
-		var h = jQuery(window).height();
 		var w = jQuery(window).width();
-		if(h > w) {
-			// portrait mode
-			if (h < 800) {
-				jQuery('body').removeClass().addClass('portrait');
-			} else if (h >= 1800) {
-				jQuery('body').removeClass().addClass('portrait portrait-1800');
-			} else if (h >= 1500) {
-				jQuery('body').removeClass().addClass('portrait portrait-1500');
-			} else if (h >= 1300) {
-				jQuery('body').removeClass().addClass('portrait portrait-1300');
-			} else if (h >= 1000) {
-				jQuery('body').removeClass().addClass('portrait portrait-1000');
-			} else if (h >= 800) {
-				jQuery('body').removeClass().addClass('portrait portrait-800');
-			}
-		} else {
-			// landscape mode
-			if (w < 800) {
-				jQuery('body').removeClass();
-			} else if (w >= 1800) {
-				jQuery('body').removeClass().addClass('landscape-1800');
-			} else if (w >= 1500) {
-				jQuery('body').removeClass().addClass('landscape-1500');
-			} else if (w >= 1200) {
-				jQuery('body').removeClass().addClass('landscape-1200');
-			} else if (w >= 1000) {
-				jQuery('body').removeClass().addClass('landscape-1000');
-			} else if (w >= 800) {
-				jQuery('body').removeClass().addClass('landscape-800');
-			}
-		} 
+
+		if (w < 800) {
+			jQuery('body').removeClass();
+		} else if (w >= 1800) {
+			jQuery('body').removeClass().addClass('landscape-1800');
+		} else if (w >= 1500) {
+			jQuery('body').removeClass().addClass('landscape-1500');
+		} else if (w >= 1200) {
+			jQuery('body').removeClass().addClass('landscape-1200');
+		} else if (w >= 1000) {
+			jQuery('body').removeClass().addClass('landscape-1000');
+		} else if (w >= 800) {
+			jQuery('body').removeClass().addClass('landscape-800');
+		}
 	}
 	
 	function setupUI() {
@@ -80,12 +63,20 @@ OBA.Sign = function() {
 
 			jQuery("<p></p>")
 					.attr("id", "message")
-					.html(configurableMessageHtml)
+					.text(configurableMessageHtml)
 					.appendTo(header);
 		}
 
-		var stopIds = getParameterByName("stopIds", "");
-		stopIdsToRequest = stopIds.split(",");
+		var stopIds = getParameterByName("stopIds", null);
+		
+		if(stopIds !== null) {
+			stopIdsToRequest = [];
+			jQuery.each(stopIds.split(","), function(_, o) {
+				stopIdsToRequest.push(OBA.Config.agencyId + "_" + o);
+			});
+		} else {
+			showError("No stops are configured for display.");
+		}
 
 		// add event handlers
 		detectSize();
@@ -93,31 +84,28 @@ OBA.Sign = function() {
 		
 		jQuery("#arrivals").empty();
 	}
-	
+
 	function getNewTableForStop(stopId, name) {
 		var table = jQuery("<table></table>")
 						.addClass("stop" + stopId);
 		
 		jQuery('<thead>' + 
 					'<tr>' + 
-						'<th colspan="2">' + 
+						'<th class="stop">' + 
 							name + 
 							' <span class="stop-id">Stop #' + stopId + '</span>' + 
 						'</th>' + 
+						'<th class="instructions">' + 
+							OBA.Config.infoBubbleFooterFunction("sign", stopId) +
+						'</th>' +
+						'<th class="qr">' + 
+							'<img src="http://transit.frumin.net/mta/qrcode/qr.bustime/' + stopId + '.png" alt="QR Code"/>' + 
+						'</th>' +
 					'</tr>' + 
 				 '</thead>')
 				 .appendTo(table);
 
 		jQuery("<tbody></tbody>")
-				 .appendTo(table);
-		
-		jQuery('<tfoot>' + 
-					'<tr>' + 
-						'<td colspan="2" class="instructions">' + 
-							'Text "MTA ' + stopId + '" to 41411 or check this stop on your smartphone!' + 
-						'</td>' + 
-					'</tr>' + 
-				 '</tfoot>')
 				 .appendTo(table);
 		
 		return table;
@@ -140,7 +128,7 @@ OBA.Sign = function() {
 							.addClass("alert")
 							.text(situation);
 			
-			tableHeader.append(alert);
+			stopTable.find("thead tr th.stop").append(alert);
 		});
 		
 		// arrivals
@@ -148,8 +136,8 @@ OBA.Sign = function() {
 			var headsign = routeToHeadsign[routeId];
 			
 			if(distanceAways.length === 0) {
-				jQuery('<tr>' + 
-						'<td>' + 
+				jQuery('<tr class="last">' + 
+						'<td colspan="3">' + 
 							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
 						'</td>' +
 					   '</tr>')
@@ -159,24 +147,28 @@ OBA.Sign = function() {
 				distanceAways.sort(function(a, b) { return a.feet - b.feet; });
 			
 				jQuery.each(distanceAways, function(_, distanceAway) {
-					if(_ > 2) {
+					if((_ + 1) > vehiclesPerStop) {
 						return;
 					}
 						
 					var row = jQuery("<tr></tr>");
 
+					if((_ + 1) === vehiclesPerStop || (_ + 1) === distanceAways.length) {
+						row.addClass("last");
+					}
+					
 					// name cell
 					var vehicleIdSpan = jQuery("<span></span>")
 											.addClass("bus-id")
 											.text(" Bus #" + OBA.Util.parseEntityId(distanceAway.tripStatus.vehicleId));
 	
-					jQuery("<td></td>")
+					jQuery('<td></td>')
 						.text(headsign)
 						.append(vehicleIdSpan)
 						.appendTo(row);
 				
 					// distance cell
-					jQuery("<td></td>")
+					jQuery('<td colspan="2"></td>')
 						.addClass("distance")
 						.text(OBA.Util.displayDistance(distanceAway.feet, distanceAway.stops, "stop", distanceAway.tripStatus))
 						.appendTo(row);
@@ -204,11 +196,17 @@ OBA.Sign = function() {
 	function update() {
 		var arrivalsDiv = jQuery("#arrivals");
 		
+		if(stopIdsToRequest === null) {
+			return;
+		}
+		
+		stopIdsToRequest.sort();
+		
 		jQuery.each(stopIdsToRequest, function(_, stopId) {
 			if(stopId === null || stopId === "") {
 				return;
 			}
-			
+
 			var url = OBA.Config.stopUrl + "/" + stopId + ".json?callback=?";
 			var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 					minutesAfter: OBA.Config.arrivalsMinutesAfter};

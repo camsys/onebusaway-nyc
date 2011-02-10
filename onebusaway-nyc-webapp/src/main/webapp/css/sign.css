@@ -13,17 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-/* "License"); you may not use this file except in compliance */
-/* with the License.  You may obtain a copy of the License at */
-/*  */
-/* http://www.apache.org/licenses/LICENSE-2.0 */
-/*  */
-/* Unless required by applicable law or agreed to in writing, */
-/* software distributed under the License is distributed on an */
-/* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY */
-/* KIND, either express or implied.  See the License for the */
-/* specific language governing permissions and limitations */
-/* under the License. */
 
 /* =Reset default browser CSS
 -------------------------------------------------------------- */
@@ -124,6 +113,7 @@ body, input, textarea {
     font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
     font-size: 1em;
     line-height: 2em;
+    overflow: hidden;
 }
 body {
     background-color: #999;
@@ -180,12 +170,17 @@ small {
     background: #1919be url(img/gradient.png) bottom left repeat-x scroll;
     color: #eaeaea;
     padding: 1em;
+    position: relative;
 }
 h1 {
     color: #fff;
     font-size: 2em;
-    line-height: 60px;
     float: left;
+}
+h2 {
+	color: #c0c0c0;
+	font-size: 1em;	
+	line-height: 1.5em;
 }
 p#message {
     float: right;
@@ -208,6 +203,7 @@ p#message {
     color: #ccc;
     padding: 0.5em;
     font-size: 0.7em;
+    width: 100%;
 }
 
 
@@ -232,38 +228,52 @@ table {
 caption {
     text-align: left;
 }
-tr {
-    border-bottom: 0.1em solid #999;
+tr.last td {
+	border-bottom: 10px solid #999;
 }
 th {
     vertical-align: middle;
     background-color: #fff;
-    padding: 0.9em 0.9em;
-    font-size: 1.2em;
+	padding: .5em;
+    padding-left: 1em;
+    font-size: 1.3em;
+    line-height: 1.1em;
+    width: 60%;
+}
+th.instructions {
+	width: 40%;
+	font-style: italic;
+	font-weight: normal;
+	font-size: 0.9em;
     line-height: 1.1em;
 }
-.stop-id {
-    font-size: 0.8em;
-    font-weight: normal;
-    color: #666;
+th.qr {
+	width: 10%;
+	text-align: right;	
 }
-tfoot td.instructions {
-    background-color: #999;
-    font-weight: bold;
-    color: #fff;
+th.qr img {
+	float: right;
+	width: 100px;
+	height: 100px;
 }
 td {
     vertical-align: middle;
     background-color: #eee;
     padding: 0.9em 1em;
-    font-size: 0.8em;
+    font-size: 0.9em;
     font-weight: bold;
     line-height: 1.1em;
+    border-top: 2px solid #999;
 }
 span.bus-id {
     font-size: 0.8em;
     font-weight: normal;
     color: #333;
+}
+span.stop-id {
+    font-size: 0.8em;
+    font-weight: normal;
+    color: #666;
 }
 td.distance {
     text-align: right;
@@ -271,18 +281,14 @@ td.distance {
     white-space: nowrap;
     padding: 0.2em 1em 0.2em 0;
 }
-span.meta-sep {
-    font-weight: normal;
-    color: #777;
-}
 p.alert {
+	display: block;
     color: #cc0000;
     font-size: 0.7em;
     font-weight: normal;
     position: relative; 
     line-height: 1.2em;
 }
-
 
 /* =Media Queries
     Target Sizes (Portrait & Landscape): 1920 x 1080, 1368 x 768
@@ -291,70 +297,24 @@ p.alert {
 /* landscape */
 body.landscape-800, 
 body.landscape-800 input, 
-body.landscape-800 textarea { font-size: 1.2em; }
-body.landscape-800 h1 { line-height: 80px; }
+body.landscape-800 textarea { font-size: 1.0em; }
 
 body.landscape-1000, 
 body.landscape-1000 input, 
-body.landscape-1000 textarea { font-size: 1.5em; }
-body.landscape-1000 h1 { line-height: 100px; }
+body.landscape-1000 textarea { font-size: 1.2em; }
 body.landscape-1000 #branding { background-image: url(img/gradient-100.png); }
 
 body.landscape-1200, 
 body.landscape-1200 input, 
-body.landscape-1200 textarea { font-size: 1.8em; }
-body.landscape-1200 h1 { line-height: 130px; }
+body.landscape-1200 textarea { font-size: 1.2em; }
 body.landscape-1200 #branding { background-image: url(img/gradient-130.png); }
 
 body.landscape-1500, 
 body.landscape-1500 input, 
-body.landscape-1500 textarea { font-size: 2.3em; }
-body.landscape-1500 h1 { line-height: 160px; }
+body.landscape-1500 textarea { font-size: 1.5em; }
 body.landscape-1500 #branding { background-image: url(img/gradient-160.png); }
 
 body.landscape-1800, 
 body.landscape-1800 input, 
-body.landscape-1800 textarea { font-size: 2.7em; }
-body.landscape-1800 h1 { line-height: 200px; }
-body.landscape-1800 #branding { background-image: url(img/gradient-200.png); }
-
-/* portrait */
-body.portrait, 
-body.portrait input, 
-body.portrait textarea { font-size: 1.1em; }
-body.portrait h1 { margin: 0 auto; float: none; width: 9em; text-align: left; }
-body.portrait #branding { padding-top: 2em; padding-bottom: 2em; text-align: center; }
-body.portrait p#message { float: none; width: auto;}
-body.portrait th, td { padding: 1.5em; }
-body.portrait span.bus-id { display: block; }
-body.portrait .stop-id { display: block; }
-body.portrait tfoot td { text-align: center; }
-
-body.portrait-800, 
-body.portrait-800 input, 
-body.portrait-800 textarea { font-size: 1.3em; }
-body.portrait-800 h1 { line-height: 80px; margin: 0 auto; float: none; width: 9em; text-align: left; }
-
-body.portrait-1000, 
-body.portrait-1000 input, 
-body.portrait-1000 textarea { font-size: 1.5em; }
-body.portrait-1000 h1 { line-height: 100px; }
-body.portrait-1000 #branding { background-image: url(img/gradient-100.png); }
-
-body.portrait-1300, 
-body.portrait-1300 input, 
-body.portrait-1300 textarea { font-size: 1.9em; }
-body.portrait-1300 h1 { line-height: 130px; }
-body.portrait-1300 #branding { background-image: url(img/gradient-130.png); }
-
-body.portrait-1500, 
-body.portrait-1500 input, 
-body.portrait-1500 textarea { font-size: 2.2em; }
-body.portrait-1500 h1 { line-height: 160px; }
-body.portrait-1500 #branding { background-image: url(img/gradient-160.png); }
-
-body.portrait-1800, 
-body.portrait-1800 input, 
-body.portrait-1800 textarea { font-size: 2.6em; }
-body.portrait-1800 h1 { line-height: 200px; margin: 0 auto; float: none; width: 9em; text-align: left; }
-body.portrait-1800 #branding { background-image: url(img/gradient-200.png); }
+body.landscape-1800 textarea { font-size: 1.7em; }
+body.landscape-1800 #branding { background-image: url(img/gradient-160.png); }

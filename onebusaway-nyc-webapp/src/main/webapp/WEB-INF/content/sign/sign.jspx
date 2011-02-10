@@ -50,22 +50,13 @@
 <body>
 
 <div id="branding" class="selfclear">
-    <h1><span id="logo">A City Transit Agency |</span> OneBusAway NYC</h1>
+	<h2>A City Transit Agency</h2> 
+    <h1>OneBusAway NYC</h1>
 </div>
 
 <div id="error"><!-- //prevent jspx minimization --></div>
 
-<div id="arrivals">
-    <table>
-        <thead>
-            <tr>
-                <th colspan="2">
-                	No stops are configured for display.
-                </th>
-            </tr>
-        </thead>
-    </table>
-</div>
+<div id="arrivals"><!-- //prevent jspx minimization --></div>
 
 <p id="footer"><small>&amp;copy; 2011, A City Transit Agency</small></p>
 

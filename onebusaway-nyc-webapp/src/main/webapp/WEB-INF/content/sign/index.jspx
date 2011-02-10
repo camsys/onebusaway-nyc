@@ -26,6 +26,9 @@
 	<s:url var="url" value="/css/sign-config.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 	
+	<s:url var="url" value="/js/oba/Util.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 	<s:url var="url" value="/js/oba/SignConfig.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
@@ -37,7 +40,9 @@
 			</div>
 		
 			<form>
-				<h2>Sign URL Generation Tool</h2>
+				<h2>Create a DIY Sign</h2>
+				
+				<ul id="error"><!-- //prevent jspx minimization --></ul>
 				
 				<fieldset>
 					<label>Choose A Route:</label>
@@ -59,7 +64,7 @@
 						<option value="">Choose A Route and Direction First</option>
 					</select>					
 
-					<input type="button" value="Add Stop" class="addStopId"></input>
+					<input type="button" value="Add Stop To Sign" class="addStopId"></input>
 				</fieldset>
 
 				<ul id="stop_id_collection">
@@ -67,7 +72,7 @@
 				</ul>
 
 				<fieldset>
-					<label>Enter an Optional Message:</label>
+					<label>Enter an Optional Message (no HTML):</label>
 					<textarea id="message">
 					<!-- avoid jspx minimization -->
 					</textarea>
@@ -90,7 +95,7 @@
 				</fieldset>	
 				
 				<fieldset>
-					<input type="submit" value="Generate Your Sign!"/>
+					<input type="submit" value="Create My DIY Sign!"/>
 				</fieldset>
 			</form>					
 		</div>

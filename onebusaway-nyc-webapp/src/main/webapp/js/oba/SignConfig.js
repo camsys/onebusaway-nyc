@@ -17,17 +17,28 @@
 var OBA = window.OBA || {};
 
 OBA.SignConfig = function() {
+	function hideError() {
+		jQuery("#error")
+			.empty();
+	}
+	
+	function showError(message) {
+		jQuery("<li></li>")
+			.text(message)
+			.appendTo("#error");
+	}
+	
 	function generateSignUrl() {
 		var url = window.location.href + "sign?";
 		
 		var routeId = jQuery("#route option:selected").val();
-		url += "routeId=" + routeId + "&";
+		url += "routeId=" + OBA.Util.parseEntityId(routeId) + "&";
 
 		var refreshInterval = jQuery("#refresh option:selected").val();
 		url += "refresh=" + refreshInterval + "&";
 
 		var message = jQuery("#message").val();
-		url += "message=" + message + "&";
+		url += "message=" + jQuery('<div>' + message + '</div>').text() + "&";
 
 		var stopIdCollection = jQuery("#stop_id_collection");
 		var stopIds = "";
@@ -39,10 +50,15 @@ OBA.SignConfig = function() {
 			}
 			
 			if(stopId !== null && stopId !== "") {
-				stopIds += stopId;
+				stopIds += OBA.Util.parseEntityId(stopId);
 			}
 		});
 		url += "stopIds=" + stopIds;
+		
+		if(stopIds === "") {
+			showError("You must select at least one stop to display on your sign.");
+			return;
+		}
 		
 		window.location.href = url;
 	}
@@ -157,6 +173,8 @@ OBA.SignConfig = function() {
 		
 		// add stop Id button
 		jQuery("input.addStopId").click(function() {
+			hideError();
+			
 			var stopIdCollection = jQuery("#stop_id_collection");
 			var stopIdSelectedItem = jQuery("#stop_id option:selected");
 			var stopId = stopIdSelectedItem.val();
