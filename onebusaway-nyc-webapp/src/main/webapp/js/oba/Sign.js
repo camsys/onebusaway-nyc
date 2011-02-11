@@ -88,7 +88,7 @@ OBA.Sign = function() {
 	function getNewTableForStop(stopId, name) {
 		var table = jQuery("<table></table>")
 						.addClass("stop" + stopId);
-		
+
 		jQuery('<thead>' + 
 					'<tr>' + 
 						'<th class="stop">' + 
@@ -99,7 +99,7 @@ OBA.Sign = function() {
 							OBA.Config.infoBubbleFooterFunction("sign", stopId) +
 						'</th>' +
 						'<th class="qr">' + 
-							'<img src="http://' + window.location.hostname + ((window.location.port !== 80) ? ':8080' : '') + '/img/qr/' + stopId + '.png" alt="QR Code"/>' + 
+							'<img src="http://' + window.location.hostname + ((window.location.port !== 80) ? ':' + window.location.port : '') + '/img/qr/' + stopId + '.png" alt="QR Code"/>' + 
 						'</th>' +
 					'</tr>' + 
 				 '</thead>')
