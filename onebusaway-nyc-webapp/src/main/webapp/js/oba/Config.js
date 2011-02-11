@@ -127,7 +127,7 @@ OBA.Config = {
 				html += '<span class="header">At the bus stop... </strong></span>';
 				
 				html += 'Text <strong>MTA ' + query + '</strong> to <strong>41411</strong> ';
-				html += 'or check <a href="http://' + window.location.hostname + '/m/' + query + '">this stop</a> on your smartphone!';
+				html += 'or check <a href="http://' + window.location.hostname + ((window.location.port !== 80) ? ':8080' : '') + '/m/?q=' + query + '">this stop</a> on your smartphone!';
 
 				html += '</div>';
 				
@@ -135,13 +135,13 @@ OBA.Config = {
 				html += '<div class="footer">';
 				html += '<span class="header">At the bus stop... </strong></span>';
 
-				html += 'Check <a href="http://' + window.location.hostname + '/m/' + query + '">this route</a> on your smartphone!';
+				html += 'Check <a href="http://' + window.location.hostname + ((window.location.port !== 80) ? ':8080' : '') + '/m/?q=' + query + '">this route</a> on your smartphone!';
 
 				html += '</div>';				
 
 			} else if(type === "sign") {
 				html += 'Text <strong>MTA ' + query + '</strong> to <strong>41411</strong> ';
-				html += 'or check this stop on your smartphone at <strong>http://' + window.location.hostname + '/m/' + query + '</strong>';
+				html += 'or check this stop on your smartphone at <strong>http://' + window.location.hostname + ((window.location.port !== 80) ? ':8080' : '') + '/m/?q=' + query + '</strong>';
 			}
 			
 			return html;

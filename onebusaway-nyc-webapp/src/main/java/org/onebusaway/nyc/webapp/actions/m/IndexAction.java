@@ -111,7 +111,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	    		  action = "No Results";	    		  
 	    	  }
 	      }
-	      url.append("&utme=5(Mobile Web*" + action + "*" + label + ")");
+	      url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");
 	      
 	      // misc.
 	      url.append("&guid=ON");
