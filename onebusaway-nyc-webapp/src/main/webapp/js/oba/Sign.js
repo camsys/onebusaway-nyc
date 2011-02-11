@@ -99,7 +99,7 @@ OBA.Sign = function() {
 							OBA.Config.infoBubbleFooterFunction("sign", stopId) +
 						'</th>' +
 						'<th class="qr">' + 
-							'<img src="http://' + window.location.hostname + ((window.location.port !== 80) ? ':' + window.location.port : '') + '/img/qr/' + stopId + '.png" alt="QR Code"/>' + 
+							'<img src="http://' + window.location.hostname + ((window.location.port !== '') ? ':' + window.location.port : '') + '/img/qr/' + stopId + '.png" alt="QR Code"/>' + 
 						'</th>' +
 					'</tr>' + 
 				 '</thead>')

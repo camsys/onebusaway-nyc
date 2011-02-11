@@ -259,7 +259,7 @@ td {
     vertical-align: middle;
     background-color: #eee;
     padding: 0.9em 1em;
-    font-size: 0.9em;
+    font-size: 1.0em;
     font-weight: bold;
     line-height: 1.1em;
     border-top: 2px solid #999;
@@ -276,7 +276,7 @@ span.stop-id {
 }
 td.distance {
     text-align: right;
-    font-size: 1.1em;
+    font-size: 1.2em;
     white-space: nowrap;
     padding: 0.2em 1em 0.2em 0;
 }
