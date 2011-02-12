@@ -191,7 +191,7 @@ public class GaAction extends OneBusAwayNYCActionSupport {
     } else {
       documentPath = URLDecoder.decode(documentPath, "UTF-8");
     }
-
+    
     String account = request.getParameter("utmac");
     String userAgent = request.getHeader("User-Agent");
     if (isEmpty(userAgent)) {
@@ -231,6 +231,14 @@ public class GaAction extends OneBusAwayNYCActionSupport {
         "&utmcc=__utma%3D999.999.999.999.999.1%3B" +
         "&utmvid=" + visitorId +
         "&utmip=" + getIP(request.getRemoteAddr());
+
+    // event tracking
+    String type = request.getParameter("utmt");
+    String event = request.getParameter("utme");
+    if (!isEmpty(type) && !isEmpty(event)) {
+    	utmUrl += "&utmt=" + URLEncoder.encode(type, "UTF-8");
+    	utmUrl += "&utme=" + URLEncoder.encode(event, "UTF-8");
+    }
 
     sendRequestToGoogleAnalytics(utmUrl, request);
 
