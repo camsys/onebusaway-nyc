@@ -200,6 +200,9 @@ OBA.Sign = function() {
 			return;
 		}
 		
+		// (this is a keep-alive mechanism for a MTA TIS watchdog process that ensures sign apps stay running)
+		window.name = "BusTime";
+		
 		stopIdsToRequest.sort();
 		
 		jQuery.each(stopIdsToRequest, function(_, stopId) {
