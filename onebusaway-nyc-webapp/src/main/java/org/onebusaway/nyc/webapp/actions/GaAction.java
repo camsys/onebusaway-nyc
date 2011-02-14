@@ -20,10 +20,10 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
@@ -218,12 +218,15 @@ public class GaAction extends OneBusAwayNYCActionSupport {
     newCookie.setPath(COOKIE_PATH);
     response.addCookie(newCookie);
 
+    String utmGifLocation = "http://www.google-analytics.com/__utm.gif";
+
     // Construct the gif hit url.
-    String utmUrl = "utmwv=" + version +
+    String utmUrl = utmGifLocation + "?" +
+        "utmwv=" + version +
         "&utmn=" + getRandomNumber() +
-        "&utmhn=" + domainName +
-        "&utmr=" + documentReferer +
-        "&utmp=" + documentPath +
+        "&utmhn=" + URLEncoder.encode(domainName, "UTF-8") +
+        "&utmr=" + URLEncoder.encode(documentReferer, "UTF-8") +
+        "&utmp=" + URLEncoder.encode(documentPath, "UTF-8") +
         "&utmac=" + account +
         "&utmcc=__utma%3D999.999.999.999.999.1%3B" +
         "&utmvid=" + visitorId +
@@ -233,18 +236,20 @@ public class GaAction extends OneBusAwayNYCActionSupport {
     String type = request.getParameter("utmt");
     String event = request.getParameter("utme");
     if (!isEmpty(type) && !isEmpty(event)) {
-    	utmUrl += "&utmt=" + URLDecoder.decode(type, "UTF-8");
-    	utmUrl += "&utme=" + URLDecoder.decode(event, "UTF-8");
+    	type = URLDecoder.decode(type, "UTF-8");
+    	event = URLDecoder.decode(event, "UTF-8");
+    	
+    	/* (I couldn't get URLEncoder.encode() or java.net.URI to do this properly--look into this more. FIXME) */
+    	utmUrl += "&utme=" + URLEncoder.encode(event, "UTF-8").replace("+", "%20");
+    	utmUrl += "&utmt=" + URLEncoder.encode(type, "UTF-8");
     }
 
-    URI utfGifLocationUri = new URI("http", null, "www.google-analytics.com", 80, "/__utm.gif", utmUrl, null);
-    
-    sendRequestToGoogleAnalytics(utfGifLocationUri.toString(), request);
+    sendRequestToGoogleAnalytics(utmUrl, request);
 
     // If the debug parameter is on, add a header to the response that contains
     // the url that was used to contact Google Analytics.
     if (request.getParameter("utmdebug") != null) {
-      response.setHeader("X-GA-MOBILE-URL", utfGifLocationUri.toString());
+      response.setHeader("X-GA-MOBILE-URL", utmUrl);
     }
     
     // write 1x1 pixel tracking gif to output stream

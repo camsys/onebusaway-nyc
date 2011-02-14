@@ -75,7 +75,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
 
 	      // page path
-	      url.append("&utmp=/m");
+	      url.append("&utmp=/m/index");
 	      
 	      // referer
 	      HttpServletRequest request = ServletActionContext.getRequest();      
