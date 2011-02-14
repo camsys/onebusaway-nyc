@@ -239,12 +239,12 @@ public class GaAction extends OneBusAwayNYCActionSupport {
 
     URI utfGifLocationUri = new URI("http", null, "www.google-analytics.com", 80, "/__utm.gif", utmUrl, null);
     
-    sendRequestToGoogleAnalytics(utfGifLocationUri.toASCIIString(), request);
+    sendRequestToGoogleAnalytics(utfGifLocationUri.toString(), request);
 
     // If the debug parameter is on, add a header to the response that contains
     // the url that was used to contact Google Analytics.
     if (request.getParameter("utmdebug") != null) {
-      response.setHeader("X-GA-MOBILE-URL", utfGifLocationUri.toASCIIString());
+      response.setHeader("X-GA-MOBILE-URL", utfGifLocationUri.toString());
     }
     
     // write 1x1 pixel tracking gif to output stream
