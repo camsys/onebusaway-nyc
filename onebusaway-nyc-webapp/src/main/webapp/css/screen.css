@@ -33,14 +33,11 @@ a:hover {
 	
 #page {
     position: relative;
-    
     width: 90%; 
-
     margin: 0 auto;  
-           
 	border: 1px solid #666666;
 	border-top: none;
-    
+    min-width: 960px;
 	background-color: #FFFFFF;
 }
 
@@ -122,6 +119,7 @@ a:hover {
     position: relative;
 	padding: 15px;
 	line-height: 120%;
+	overflow: hidden;
 }
 
 #content.sidebar #text {
