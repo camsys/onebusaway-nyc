@@ -74,9 +74,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      url.append("utmac=").append(GA_ACCOUNT);
 	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
 
-	      // page path
-	      url.append("&utmp=/m/index");
-	      
 	      // referer
 	      HttpServletRequest request = ServletActionContext.getRequest();      
 	      String referer = request.getHeader("referer");
@@ -111,7 +108,13 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	    		  action = "No Results";	    		  
 	    	  }
 	      }
-	      url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");
+	      
+	      // page view on homepage hit, "event" for everything else.
+	      if(action.equals("Home")) {
+    	      url.append("&utmp=/m/index");
+	      } else {
+    	      url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");	    	  
+	      }
 	      
 	      // misc.
 	      url.append("&guid=ON");
