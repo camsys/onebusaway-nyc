@@ -200,9 +200,6 @@ OBA.Sign = function() {
 			return;
 		}
 		
-		// (this is a keep-alive mechanism for a MTA TIS watchdog process that ensures sign apps stay running)
-		window.name = "BusTime";
-		
 		stopIdsToRequest.sort();
 		
 		jQuery.each(stopIdsToRequest, function(_, stopId) {
@@ -346,6 +343,17 @@ OBA.Sign = function() {
 			}); // get JSON
 		});
 
+		// (this is a keep-alive mechanism for a MTA TIS watchdog process that ensures sign apps stay running)
+		window.name = "BusTime";
+		
+		jQuery("#lastupdated")
+			.remove();
+		
+		jQuery("<span></span>")
+			.attr("id", "lastupdated")
+			.text("Last updated " + new Date().format("mmm d, yyyy h:MM:ss TT"))
+			.appendTo("#footer");
+		
         setTimeout(update, refreshInterval * 1000);
 	}
 	

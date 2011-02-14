@@ -41,6 +41,9 @@
   	<s:url var="url" value="/js/oba/Config.js"/>
   	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+	<s:url  var="url" value="/js/dateFormat.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 	<s:url var="url" value="/js/oba/Util.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
@@ -58,7 +61,7 @@
 
 <div id="arrivals"><!-- //prevent jspx minimization --></div>
 
-<p id="footer"><small>&amp;copy; 2011, A City Transit Agency</small></p>
+<p id="footer"><span>&amp;copy; 2011, A City Transit Agency</span></p>
 
 </body>
 </html>

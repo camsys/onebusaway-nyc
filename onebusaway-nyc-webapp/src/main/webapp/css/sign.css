@@ -110,7 +110,7 @@ html {
     overflow: hidden;
 }
 body, input, textarea {
-    font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+    font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
     font-size: 1em;
     line-height: 2em;
     overflow: hidden;
@@ -201,9 +201,19 @@ p#message {
     right: 0;
     background: #02029a url(img/gradient.png) top left repeat-x scroll;
     color: #ccc;
-    padding: 0.5em;
     font-size: 0.7em;
     width: 100%;
+}
+
+#footer span {
+	float: left;
+	line-height: 1.25em;
+	font-size: 0.75em;
+    padding: 0.5em;
+}
+
+#footer #lastupdated {
+	float: right;	
 }
 
 
