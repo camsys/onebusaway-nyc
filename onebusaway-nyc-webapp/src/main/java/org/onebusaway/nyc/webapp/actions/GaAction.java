@@ -244,7 +244,7 @@ public class GaAction extends OneBusAwayNYCActionSupport {
     // If the debug parameter is on, add a header to the response that contains
     // the url that was used to contact Google Analytics.
     if (request.getParameter("utmdebug") != null) {
-      response.setHeader("X-GA-MOBILE-URL", utmUrl);
+      response.setHeader("X-GA-MOBILE-URL", utfGifLocationUri.toASCIIString());
     }
     
     // write 1x1 pixel tracking gif to output stream
