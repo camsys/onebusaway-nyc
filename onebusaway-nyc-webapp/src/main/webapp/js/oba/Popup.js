@@ -46,6 +46,10 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 		hide: function() {
 			if(infoWindow !== null) {
 				infoWindow.close();
+				if(wrappedContent !== null) {
+					jQuery(wrappedContent).remove();
+					wrappedContent = null;
+				}
 				infoWindow = null;
 			}
 			OBA.popupMarker = null;
@@ -79,6 +83,7 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 				if(popup) {
 					popup.hide();
 				}
+				OBA.popupMarker = null;
 			}
 
 			var shareLinkDiv = jQuery("#share_link");
@@ -100,7 +105,7 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 				infoWindow.open(map, marker.getRawMarker());
 
 				var updateTime = function() {
-					if(infoWindow !== null) {
+					if(infoWindow !== null && OBA.popupMarker !== null) {
 						try {
 							var updatedSpan = jQuery(infoWindow.content).find(".updated");
 							var timestampEpoch = parseInt(updatedSpan.attr("epoch"), 10);
@@ -115,6 +120,10 @@ OBA.Popup = function(map, fetchFn, bubbleNodeFn) {
 				updateTime();
 
 				google.maps.event.addListenerOnce(infoWindow, 'closeclick', function() {
+					if(wrappedContent !== null) {
+						jQuery(wrappedContent).remove();
+						wrappedContent = null;
+					}
 					OBA.popupMarker = null;
 				});
 			});

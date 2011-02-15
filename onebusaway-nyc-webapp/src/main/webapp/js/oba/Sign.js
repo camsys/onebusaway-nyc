@@ -18,7 +18,7 @@ var OBA = window.OBA || {};
 
 OBA.Sign = function() {
 	var refreshInterval = 30;
-	var timeout = 15;
+	var timeout = 30;
 	var configurableMessageHtml = null;
 	var stopIdsToRequest = null;
 	var vehiclesPerStop = 3;
@@ -89,8 +89,9 @@ OBA.Sign = function() {
 			"cache": false
 		});
 
-		jQuery("#arrivals").empty();
-		update();
+		jQuery("#arrivals").html("").empty();
+		update();		
+		setInterval(update, refreshInterval * 1000);
 	}
 
 	function getNewTableForStop(stopId, name) {
@@ -125,10 +126,10 @@ OBA.Sign = function() {
 		}
 		
 		var tableBody = stopTable.find("tbody");
-		tableBody.empty();
+		tableBody.html("").empty();
 
 		var tableHeader = stopTable.find("thead tr th");
-		tableHeader.find("p.alert").remove();
+		tableHeader.find("p.alert").html("").remove();
 		
 		// situations
 		jQuery.each(applicableSituations, function(_, situation) {
@@ -194,11 +195,11 @@ OBA.Sign = function() {
 						.html("An error occured while updating arrival information&mdash;please check back later.");
 
 		jQuery("#error").append(error);
-		jQuery("#arrivals").empty();
+		jQuery("#arrivals").html("").empty();
 	}
 	
 	function hideError() {
-		jQuery("#error").children().remove();
+		jQuery("#error").children().html("").remove();
 	}
 	
 	function update() {
@@ -218,10 +219,10 @@ OBA.Sign = function() {
 			var url = OBA.Config.stopUrl + "/" + stopId + ".json";
 			var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 					minutesAfter: OBA.Config.arrivalsMinutesAfter};
-			
-			jQuery.getJSON(url, params, function(json, status, xhr) {	
+
+			jQuery.getJSON(url, params, function(json) {	
 				hideError();
-				
+
 				var stop, arrivals, refs = null;
 				try {
 					stop = json.data.references.stops[0];
@@ -314,7 +315,7 @@ OBA.Sign = function() {
 							tripStatus: arrival.tripStatus};
 
 					OBA.Util.log("   +++ ADDING TO ARRIVAL LIST");
-					routeToVehicleInfo[routeId].push(vehicleInfo);				
+					routeToVehicleInfo[routeId].push(vehicleInfo);	
 				}); // each arrival
 
 				// build array of applicable situations
@@ -342,14 +343,13 @@ OBA.Sign = function() {
 		window.name = "BusTime";
 	
 		jQuery("#lastupdated")
+			.html("")
 			.remove();
 	
 		jQuery("<span></span>")
 			.attr("id", "lastupdated")
 			.text("Last updated " + new Date().format("mmm d, yyyy h:MM:ss TT"))
 			.appendTo("#footer");
-	
-		setTimeout(update, refreshInterval * 1000);
 	}
 	
 	return {
