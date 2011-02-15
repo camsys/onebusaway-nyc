@@ -17,7 +17,8 @@
 var OBA = window.OBA || {};
 
 OBA.Sign = function() {
-	var refreshInterval = 5;
+	var refreshInterval = 30;
+	var timeout = 15;
 	var configurableMessageHtml = null;
 	var stopIdsToRequest = null;
 	var vehiclesPerStop = 3;
@@ -55,9 +56,9 @@ OBA.Sign = function() {
 	function setupUI() {
 		// configure interface with URL params
 		refreshInterval = getParameterByName("refresh", refreshInterval);
-
+		timeout = refreshInterval;
+			
 		configurableMessageHtml = getParameterByName("message", null);
-
 		if(configurableMessageHtml !== null) {
 			var header = jQuery("#branding");
 
@@ -67,8 +68,7 @@ OBA.Sign = function() {
 					.appendTo(header);
 		}
 
-		var stopIds = getParameterByName("stopIds", null);
-		
+		var stopIds = getParameterByName("stopIds", null);		
 		if(stopIds !== null) {
 			stopIdsToRequest = [];
 			jQuery.each(stopIds.split(","), function(_, o) {
@@ -77,12 +77,20 @@ OBA.Sign = function() {
 		} else {
 			showError("No stops are configured for display.");
 		}
-
+		
 		// add event handlers
 		detectSize();
 		jQuery.event.add(window, "resize", detectSize);
 		
+		// setup error handling/timeout
+		jQuery.ajaxSetup({
+			"error": showError,
+			"timeout": timeout * 1000000,
+			"cache": false
+		});
+
 		jQuery("#arrivals").empty();
+		update();
 	}
 
 	function getNewTableForStop(stopId, name) {
@@ -179,11 +187,11 @@ OBA.Sign = function() {
 		});
 	}
 	
-	function showError(message) {
+	function showError() {
 		hideError();
 		
 		var error = jQuery("<p></p>")
-						.html(message);
+						.html("An error occured while updating arrival information&mdash;please check back later.");
 
 		jQuery("#error").append(error);
 		jQuery("#arrivals").empty();
@@ -207,160 +215,146 @@ OBA.Sign = function() {
 				return;
 			}
 
-			var url = OBA.Config.stopUrl + "/" + stopId + ".json?callback=?";
+			var url = OBA.Config.stopUrl + "/" + stopId + ".json";
 			var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 					minutesAfter: OBA.Config.arrivalsMinutesAfter};
 			
-			jQuery.jsonp({
-				url: url,
-				data: params,
-				cache: false,
-				timeout: (refreshInterval * 1000000),
-				success: function(json, status) {	
-					hideError();
-					
-					var stop, arrivals, refs = null;
-					try {
-						stop = json.data.references.stops[0];
-						arrivals = json.data.entry.arrivalsAndDepartures;
-						refs = json.data.references;
-					} catch (typeError) {
-						OBA.Util.log("invalid stop response from server");
-						OBA.Util.log(json);
+			jQuery.getJSON(url, params, function(json, status, xhr) {	
+				hideError();
+				
+				var stop, arrivals, refs = null;
+				try {
+					stop = json.data.references.stops[0];
+					arrivals = json.data.entry.arrivalsAndDepartures;
+					refs = json.data.references;
+				} catch (typeError) {
+					OBA.Util.log("invalid stop response from server");
+					OBA.Util.log(json);
+					return;
+				}
+
+				var applicableSituationIds = {};
+				var routeToHeadsign = {};
+				var routeToVehicleInfo = {};
+				jQuery.each(arrivals, function(_, arrival) {
+					var routeId = arrival.routeId;
+					var arrivalStopId = arrival.stopId;
+					var headsign = arrival.tripHeadsign;
+
+					if (arrivalStopId !== stopId || routeId === null || headsign === null) {
 						return;
 					}
 
-					var applicableSituationIds = {};
-					var routeToHeadsign = {};
-					var routeToVehicleInfo = {};
-					jQuery.each(arrivals, function(_, arrival) {
-						var routeId = arrival.routeId;
-						var arrivalStopId = arrival.stopId;
-						var headsign = arrival.tripHeadsign;
-
-						if (arrivalStopId !== stopId || routeId === null || headsign === null) {
-							return;
-						}
-
-						if (! routeToVehicleInfo[routeId]) {
-							routeToVehicleInfo[routeId] = [];
-						}
-
-						// most common headsign? FIXME
-						routeToHeadsign[routeId] = headsign;
-
-						// build map of situation IDs applicable to this stop
-						jQuery.each(arrival.situationIds, function(_, situationId) {
-							applicableSituationIds[situationId] = situationId;
-						});			
-
-						// hide non-realtime observations (they are used above to build a picture of what
-						// stops at this stop usually).
-						if(arrival.predicted === false || arrival.vehicleId === null || arrival.vehicleId === "") {
-							return;
-						}
-
-						OBA.Util.log("A-D FOR STOP: VID=" + arrival.vehicleId);			
-
-						// hide arrivals that just left the stop 
-						if(arrival.distanceFromStop < 0) {
-							OBA.Util.log("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrival.distanceFromStop + ")");
-							return;
-						}
-
-						// if a vehicle is in progress, it has to be on the A-D's current trip to show up in bubble.
-						// If a vehicle is in layover, bus should show if it's on A-D's current trip or the previous trip
-						// /and/ over 50% complete in previous trip progress.
-						if(arrival.tripStatus !== null) {
-							var phase = ((typeof arrival.tripStatus.phase !== 'undefined' && arrival.tripStatus.phase !== '') 
-									? arrival.tripStatus.phase : null);
-
-							if(phase !== null
-									&& (phase.toLowerCase() === 'layover_before' || phase.toLowerCase() === 'layover_during')) {	
-
-								var distanceAlongTrip = arrival.tripStatus.distanceAlongTrip;
-								var totalDistanceAlongTrip = arrival.tripStatus.totalDistanceAlongTrip;
-								if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
-									var ratio = distanceAlongTrip / totalDistanceAlongTrip;
-									if(arrival.tripStatus.activeTripId !== arrival.tripId 
-											&& ((arrival.blockTripSequence - 1) !== arrival.tripStatus.blockTripSequence && ratio > 0.50)) {
-
-										OBA.Util.log("   --- HIDING LAYOVER VEHICLE: IS NOT ON PROPER TRIP (RATIO=" + ratio + ").");
-										return;
-									}
-								}
-							} else {
-								if(arrival.tripStatus.activeTripId !== arrival.tripId) {
-									OBA.Util.log("   --- HIDING NON-LAYOVER VEHICLE: IS NOT ON A-D'S TRIP.");
-									return;						
-								} 
-							}
-						}
-
-						if(arrival.tripStatus === null || OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {
-							OBA.Util.log("   --- HIDING BECAUSE OF FILTER FUNCTION");
-							return;          
-						}
-
-						var meters = arrival.distanceFromStop;
-						var feet = OBA.Util.metersToFeet(meters);
-						var stops = arrival.numberOfStopsAway;
-
-						var vehicleInfo = {stops: stops,
-								feet: feet,
-								tripStatus: arrival.tripStatus};
-
-						OBA.Util.log("   +++ ADDING TO ARRIVAL LIST");
-						routeToVehicleInfo[routeId].push(vehicleInfo);				
-					}); // each arrival
-
-					// build array of applicable situations
-					var applicableSituations = [];
-					jQuery.each(refs.situations, function(_, situation) {
-						var situationId = situation.id;
-						if(situationId in applicableSituationIds) {
-							applicableSituations.push(situation.description.value);
-						}
-					});
-
-					// update table for this stop ID
-					var stopTable = jQuery("table.stop" + OBA.Util.parseEntityId(stopId));
-
-					if(stopTable.length <= 0) {
-						stopTable = getNewTableForStop(OBA.Util.parseEntityId(stopId), stop.name);
-						arrivalsDiv.append(stopTable);
+					if (! routeToVehicleInfo[routeId]) {
+						routeToVehicleInfo[routeId] = [];
 					}
 
-					updateTableForStop(stopTable, applicableSituations, routeToHeadsign, routeToVehicleInfo);
-				},
-				error: function(xOptions, text) {
-					try {
-						xOptions.abort();
-					} catch(e) {}
+					// most common headsign? FIXME
+					routeToHeadsign[routeId] = headsign;
 
-					showError("An error occured while updating arrival information&mdash;please check back later.");
+					// build map of situation IDs applicable to this stop
+					jQuery.each(arrival.situationIds, function(_, situationId) {
+						applicableSituationIds[situationId] = situationId;
+					});			
+
+					// hide non-realtime observations (they are used above to build a picture of what
+					// stops at this stop usually).
+					if(arrival.predicted === false || arrival.vehicleId === null || arrival.vehicleId === "") {
+						return;
+					}
+
+					OBA.Util.log("A-D FOR STOP: VID=" + arrival.vehicleId);			
+
+					// hide arrivals that just left the stop 
+					if(arrival.distanceFromStop < 0) {
+						OBA.Util.log("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrival.distanceFromStop + ")");
+						return;
+					}
+
+					// if a vehicle is in progress, it has to be on the A-D's current trip to show up in bubble.
+					// If a vehicle is in layover, bus should show if it's on A-D's current trip or the previous trip
+					// /and/ over 50% complete in previous trip progress.
+					if(arrival.tripStatus !== null) {
+						var phase = ((typeof arrival.tripStatus.phase !== 'undefined' && arrival.tripStatus.phase !== '') 
+								? arrival.tripStatus.phase : null);
+
+						if(phase !== null
+								&& (phase.toLowerCase() === 'layover_before' || phase.toLowerCase() === 'layover_during')) {	
+
+							var distanceAlongTrip = arrival.tripStatus.distanceAlongTrip;
+							var totalDistanceAlongTrip = arrival.tripStatus.totalDistanceAlongTrip;
+							if(distanceAlongTrip !== null && totalDistanceAlongTrip !== null) {
+								var ratio = distanceAlongTrip / totalDistanceAlongTrip;
+								if(arrival.tripStatus.activeTripId !== arrival.tripId 
+										&& ((arrival.blockTripSequence - 1) !== arrival.tripStatus.blockTripSequence && ratio > 0.50)) {
+
+									OBA.Util.log("   --- HIDING LAYOVER VEHICLE: IS NOT ON PROPER TRIP (RATIO=" + ratio + ").");
+									return;
+								}
+							}
+						} else {
+							if(arrival.tripStatus.activeTripId !== arrival.tripId) {
+								OBA.Util.log("   --- HIDING NON-LAYOVER VEHICLE: IS NOT ON A-D'S TRIP.");
+								return;						
+							} 
+						}
+					}
+
+					if(arrival.tripStatus === null || OBA.Config.vehicleFilterFunction("stop", arrival.tripStatus) === false) {
+						OBA.Util.log("   --- HIDING BECAUSE OF FILTER FUNCTION");
+						return;          
+					}
+
+					var meters = arrival.distanceFromStop;
+					var feet = OBA.Util.metersToFeet(meters);
+					var stops = arrival.numberOfStopsAway;
+
+					var vehicleInfo = {stops: stops,
+							feet: feet,
+							tripStatus: arrival.tripStatus};
+
+					OBA.Util.log("   +++ ADDING TO ARRIVAL LIST");
+					routeToVehicleInfo[routeId].push(vehicleInfo);				
+				}); // each arrival
+
+				// build array of applicable situations
+				var applicableSituations = [];
+				jQuery.each(refs.situations, function(_, situation) {
+					var situationId = situation.id;
+					if(situationId in applicableSituationIds) {
+						applicableSituations.push(situation.description.value);
+					}
+				});
+
+				// update table for this stop ID
+				var stopTable = jQuery("table.stop" + OBA.Util.parseEntityId(stopId));
+
+				if(stopTable.length <= 0) {
+					stopTable = getNewTableForStop(OBA.Util.parseEntityId(stopId), stop.name);
+					arrivalsDiv.append(stopTable);
 				}
-			}); // get JSON
-		});
+
+				updateTableForStop(stopTable, applicableSituations, routeToHeadsign, routeToVehicleInfo);
+			}); // ajax()
+		}); // each()
 
 		// (this is a keep-alive mechanism for a MTA TIS watchdog process that ensures sign apps stay running)
 		window.name = "BusTime";
-		
+	
 		jQuery("#lastupdated")
 			.remove();
-		
+	
 		jQuery("<span></span>")
 			.attr("id", "lastupdated")
 			.text("Last updated " + new Date().format("mmm d, yyyy h:MM:ss TT"))
 			.appendTo("#footer");
-		
-        setTimeout(update, refreshInterval * 1000);
+	
+		setTimeout(update, refreshInterval * 1000);
 	}
 	
 	return {
 		initialize: function() {			
 			setupUI();			
-			update();
 		}
 	};
 };

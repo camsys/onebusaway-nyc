@@ -87,10 +87,10 @@
 				<fieldset>
 					<label>Refresh Interval:</label>
 					<select id="refresh">
-						<option value="5">5 seconds</option>
 						<option value="15">15 seconds</option>
-						<option value="30">30 seconds</option>
+						<option value="30" selected="true">30 seconds</option>
 						<option value="60">60 seconds</option>
+						<option value="120">120 seconds</option>
 					</select>			
 				</fieldset>	
 				

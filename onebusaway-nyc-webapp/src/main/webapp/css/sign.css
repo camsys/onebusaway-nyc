@@ -247,14 +247,15 @@ th {
 	padding: .5em;
     font-size: 1.3em;
     line-height: 1.1em;
-    width: 60%;
+    width: 70%;
 }
 th.instructions {
-	width: 40%;
+	width: 30%;
 	font-style: italic;
 	font-weight: normal;
 	font-size: 0.9em;
-    line-height: 1.1em;
+    line-height: 1.2em;
+    color: #808080;
 }
 th.qr {
 	width: 10%;
