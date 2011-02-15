@@ -93,19 +93,19 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      if(searchResults != null && !searchResults.isEmpty()) {
 	    	  SearchResult firstResult = searchResults.get(0);	    	  
 	    	  if(firstResult.getType().equals("route")) {
-	    		  action = "Route";
+	    		  action = "Route Search";
 	    	  } else if(firstResult.getType().equals("stop")) {
 	    		  if(searchResults.size() > 1) {
-	    			  action = "Intersection";
+	    			  action = "Intersection Search";
 	    		  } else {
-	    			  action = "Stop";
+	    			  action = "Stop Search";
 	    		  }
 	    	  }	    	  
 	      }	else {
 	    	  if(getQueryIsEmpty()) {
 	    		  action = "Home";
 	    	  } else {
-	    		  action = "No Results";	    		  
+	    		  action = "No Search Results";	    		  
 	    	  }
 	      }
 	      
