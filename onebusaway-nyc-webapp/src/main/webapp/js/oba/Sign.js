@@ -82,21 +82,16 @@ OBA.Sign = function() {
 		detectSize();
 		jQuery.event.add(window, "resize", detectSize);
 		
-		var arrivalsDiv = jQuery("#arrivals")
-							.html("")
-							.empty();
-
-		jQuery.each(stopIdsToRequest, function(_, stopId) {			
-			var stopTable = getNewTableForStop(OBA.Util.parseEntityId(stopId));
-			arrivalsDiv.append(stopTable);
-		});
-
 		// setup error handling/timeout
 		jQuery.ajaxSetup({
 			"error": showError,
 			"timeout": timeout * 1000000,
 			"cache": false
 		});
+
+		jQuery("#arrivals")
+				.html("")
+				.empty();
 
 		update();
 		setInterval(update, refreshInterval * 1000);
@@ -235,6 +230,12 @@ OBA.Sign = function() {
 				return;
 			}
 
+			var stopTable = jQuery("table.stop" + OBA.Util.parseEntityId(stopId));
+			if(stopTable.length === 0) {
+				var stopTable = getNewTableForStop(OBA.Util.parseEntityId(stopId));
+				arrivalsDiv.append(stopTable);
+			}
+						
 			var url = OBA.Config.stopUrl + "/" + stopId + ".json";
 			var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 					minutesAfter: OBA.Config.arrivalsMinutesAfter};
