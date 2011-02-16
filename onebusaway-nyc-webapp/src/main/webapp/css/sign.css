@@ -301,26 +301,30 @@ p.alert {
     line-height: 1.2em;
 }
 
+body.size-500, 
+body.size-500 input, 
+body.size-500 textarea { font-size: 1.2em; }
+
 body.size-800, 
 body.size-800 input, 
-body.size-800 textarea { font-size: 1.3em; }
+body.size-800 textarea { font-size: 1.35em; }
 
 body.size-1000, 
 body.size-1000 input, 
-body.size-1000 textarea { font-size: 1.7em; }
+body.size-1000 textarea { font-size: 1.5em; }
 body.size-1000 #branding { background-image: url(img/gradient-100.png); }
 
 body.size-1200, 
 body.size-1200 input, 
-body.size-1200 textarea { font-size: 1.9em; }
+body.size-1200 textarea { font-size: 1.65em; }
 body.size-1200 #branding { background-image: url(img/gradient-130.png); }
 
 body.size-1500, 
 body.size-1500 input, 
-body.size-1500 textarea { font-size: 2.1em; }
+body.size-1500 textarea { font-size: 1.7em; }
 body.size-1500 #branding { background-image: url(img/gradient-160.png); }
 
 body.size-1800, 
 body.size-1800 input,
-body.size-1800 textarea { font-size: 2.5em; }
+body.size-1800 textarea { font-size: 1.85em; }
 body.size-1800 #branding { background-image: url(img/gradient-160.png); }

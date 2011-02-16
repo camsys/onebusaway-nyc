@@ -47,6 +47,8 @@ OBA.Sign = function() {
 			jQuery('body').removeClass().addClass('size-1000');
 		} else if(h >= 800) {
 			jQuery('body').removeClass().addClass('size-800');			
+		} else if(h >= 500) {
+			jQuery('body').removeClass().addClass('size-500');			
 		} else {
 			jQuery('body').removeClass();			
 		}
