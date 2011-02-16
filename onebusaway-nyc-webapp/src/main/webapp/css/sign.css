@@ -111,7 +111,7 @@ html {
 }
 body, input, textarea {
     font-family: Helvetica,Arial,sans-serif;
-    font-size: 1em;
+    font-size: 1.25em;
     line-height: 2em;
     overflow: hidden;
 }
@@ -245,15 +245,15 @@ th {
     vertical-align: middle;
     background-color: #fff;
 	padding: .5em;
-    font-size: 1.3em;
+    font-size: 1.4em;
     line-height: 1.1em;
-    width: 70%;
+    width: 75%;
 }
 th.instructions {
-	width: 30%;
+	width: 25%;
 	font-style: italic;
 	font-weight: normal;
-	font-size: 0.9em;
+	font-size: 0.8em;
     line-height: 1.2em;
     color: #808080;
 }
@@ -263,13 +263,13 @@ th.qr {
 }
 th.qr img {
 	float: right;
-	width: 100px;
-	height: 100px;
+	width: 80px;
+	height: 80px;
 }
 td {
     vertical-align: middle;
     background-color: #eee;
-    padding: 0.9em 1em;
+    padding: 0.9em 1.5em;
     font-size: 1.0em;
     font-weight: bold;
     line-height: 1.1em;

@@ -56,6 +56,7 @@ OBA.Sign = function() {
 	function setupUI() {
 		// configure interface with URL params
 		refreshInterval = getParameterByName("refresh", refreshInterval);
+
 		timeout = refreshInterval;
 			
 		configurableMessageHtml = getParameterByName("message", null);
@@ -82,6 +83,15 @@ OBA.Sign = function() {
 		detectSize();
 		jQuery.event.add(window, "resize", detectSize);
 		
+		var arrivalsDiv = jQuery("#arrivals")
+							.html("")
+							.empty();
+
+		jQuery.each(stopIdsToRequest, function(_, stopId) {			
+			var stopTable = getNewTableForStop(OBA.Util.parseEntityId(stopId));
+			arrivalsDiv.append(stopTable);
+		});
+
 		// setup error handling/timeout
 		jQuery.ajaxSetup({
 			"error": showError,
@@ -89,19 +99,18 @@ OBA.Sign = function() {
 			"cache": false
 		});
 
-		jQuery("#arrivals").html("").empty();
-		update();		
+		update();
 		setInterval(update, refreshInterval * 1000);
 	}
 
-	function getNewTableForStop(stopId, name) {
+	function getNewTableForStop(stopId) {
 		var table = jQuery("<table></table>")
 						.addClass("stop" + stopId);
 
 		jQuery('<thead>' + 
 					'<tr>' + 
 						'<th class="stop">' + 
-							name + 
+							'<span class="name">Loading...</span>' + 
 							' <span class="stop-id">Stop #' + stopId + '</span>' + 
 						'</th>' + 
 						'<th class="instructions">' + 
@@ -120,16 +129,24 @@ OBA.Sign = function() {
 		return table;
 	}
 	
-	function updateTableForStop(stopTable, applicableSituations, routeToHeadsign, routeToVehicleInfo) {
+	function updateTableForStop(stopTable, stopName, applicableSituations, routeToHeadsign, routeToVehicleInfo) {
 		if(stopTable === null) {
 			return;
 		}
 		
 		var tableBody = stopTable.find("tbody");
-		tableBody.html("").empty();
+		tableBody
+			.html("")
+			.empty();
 
 		var tableHeader = stopTable.find("thead tr th");
-		tableHeader.find("p.alert").html("").remove();
+		tableHeader
+			.find("p.alert")
+			.html("")
+			.remove();
+
+		tableHeader.find("span.name")
+			.text(stopName);
 		
 		// situations
 		jQuery.each(applicableSituations, function(_, situation) {
@@ -191,25 +208,28 @@ OBA.Sign = function() {
 	function showError() {
 		hideError();
 		
-		var error = jQuery("<p></p>")
-						.html("An error occured while updating arrival information&mdash;please check back later.");
+		jQuery("<p></p>")
+				.html("An error occured while updating arrival information&mdash;please check back later.")
+				.appendTo("#error");
 
-		jQuery("#error").append(error);
-		jQuery("#arrivals").html("").empty();
+		jQuery("#arrivals")
+			.html("")
+			.empty();
 	}
 	
 	function hideError() {
-		jQuery("#error").children().html("").remove();
+		jQuery("#error")
+			.children()
+			.html("")
+			.remove();
 	}
 	
 	function update() {
-		var arrivalsDiv = jQuery("#arrivals");
-		
 		if(stopIdsToRequest === null) {
 			return;
 		}
-		
-		stopIdsToRequest.sort();
+
+		var arrivalsDiv = jQuery("#arrivals");
 		
 		jQuery.each(stopIdsToRequest, function(_, stopId) {
 			if(stopId === null || stopId === "") {
@@ -330,12 +350,7 @@ OBA.Sign = function() {
 				// update table for this stop ID
 				var stopTable = jQuery("table.stop" + OBA.Util.parseEntityId(stopId));
 
-				if(stopTable.length <= 0) {
-					stopTable = getNewTableForStop(OBA.Util.parseEntityId(stopId), stop.name);
-					arrivalsDiv.append(stopTable);
-				}
-
-				updateTableForStop(stopTable, applicableSituations, routeToHeadsign, routeToVehicleInfo);
+				updateTableForStop(stopTable, stop.name, applicableSituations, routeToHeadsign, routeToVehicleInfo);
 			}); // ajax()
 		}); // each()
 
