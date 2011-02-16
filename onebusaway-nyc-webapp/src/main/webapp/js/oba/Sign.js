@@ -36,20 +36,19 @@ OBA.Sign = function() {
 	}
 
 	function detectSize() {
-		var w = jQuery(window).width();
-
-		if (w < 800) {
-			jQuery('body').removeClass();
-		} else if (w >= 1800) {
-			jQuery('body').removeClass().addClass('landscape-1800');
-		} else if (w >= 1500) {
-			jQuery('body').removeClass().addClass('landscape-1500');
-		} else if (w >= 1200) {
-			jQuery('body').removeClass().addClass('landscape-1200');
-		} else if (w >= 1000) {
-			jQuery('body').removeClass().addClass('landscape-1000');
-		} else if (w >= 800) {
-			jQuery('body').removeClass().addClass('landscape-800');
+		var h = jQuery(window).height();
+		if (h >= 1800) {
+			jQuery('body').removeClass().addClass('size-1800');
+		} else if (h >= 1500) {
+			jQuery('body').removeClass().addClass('size-1500');
+		} else if (h >= 1200) {
+			jQuery('body').removeClass().addClass('size-1200');
+		} else if (h >= 1000) {
+			jQuery('body').removeClass().addClass('size-1000');
+		} else if(h >= 800) {
+			jQuery('body').removeClass().addClass('size-800');			
+		} else {
+			jQuery('body').removeClass();			
 		}
 	}
 	

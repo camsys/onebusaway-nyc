@@ -107,11 +107,10 @@ a img { border: none; }
 html {
     position: relative; 
     height: 100%;
-    overflow: hidden;
 }
 body, input, textarea {
     font-family: Helvetica,Arial,sans-serif;
-    font-size: 1.25em;
+    font-size: 1.0em;
     line-height: 2em;
     overflow: hidden;
 }
@@ -221,8 +220,9 @@ p#message {
 -------------------------------------------------------------- */
 
 #error {
+	font-size: 1.5em;
 	background-color: #eaff7f;
-   	border-bottom: 0.1em solid #999;
+   	border-top: 2px solid #999;
 }
 
 #error p {
@@ -247,10 +247,11 @@ th {
 	padding: .5em;
     font-size: 1.4em;
     line-height: 1.1em;
-    width: 75%;
+    width: 65%;
+    border-bottom: 2px solid #999;
 }
 th.instructions {
-	width: 25%;
+	width: 35%;
 	font-style: italic;
 	font-weight: normal;
 	font-size: 0.8em;
@@ -300,31 +301,26 @@ p.alert {
     line-height: 1.2em;
 }
 
-/* =Media Queries
-    Target Sizes (Portrait & Landscape): 1920 x 1080, 1368 x 768
--------------------------------------------------------------- */
+body.size-800, 
+body.size-800 input, 
+body.size-800 textarea { font-size: 1.3em; }
 
-/* landscape */
-body.landscape-800, 
-body.landscape-800 input, 
-body.landscape-800 textarea { font-size: 1.0em; }
+body.size-1000, 
+body.size-1000 input, 
+body.size-1000 textarea { font-size: 1.7em; }
+body.size-1000 #branding { background-image: url(img/gradient-100.png); }
 
-body.landscape-1000, 
-body.landscape-1000 input, 
-body.landscape-1000 textarea { font-size: 1.2em; }
-body.landscape-1000 #branding { background-image: url(img/gradient-100.png); }
+body.size-1200, 
+body.size-1200 input, 
+body.size-1200 textarea { font-size: 1.9em; }
+body.size-1200 #branding { background-image: url(img/gradient-130.png); }
 
-body.landscape-1200, 
-body.landscape-1200 input, 
-body.landscape-1200 textarea { font-size: 1.2em; }
-body.landscape-1200 #branding { background-image: url(img/gradient-130.png); }
+body.size-1500, 
+body.size-1500 input, 
+body.size-1500 textarea { font-size: 2.1em; }
+body.size-1500 #branding { background-image: url(img/gradient-160.png); }
 
-body.landscape-1500, 
-body.landscape-1500 input, 
-body.landscape-1500 textarea { font-size: 1.5em; }
-body.landscape-1500 #branding { background-image: url(img/gradient-160.png); }
-
-body.landscape-1800, 
-body.landscape-1800 input, 
-body.landscape-1800 textarea { font-size: 1.7em; }
-body.landscape-1800 #branding { background-image: url(img/gradient-160.png); }
+body.size-1800, 
+body.size-1800 input,
+body.size-1800 textarea { font-size: 2.5em; }
+body.size-1800 #branding { background-image: url(img/gradient-160.png); }
