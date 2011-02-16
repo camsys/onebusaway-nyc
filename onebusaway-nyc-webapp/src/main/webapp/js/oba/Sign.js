@@ -155,21 +155,7 @@ OBA.Sign = function() {
 		jQuery.each(routeToVehicleInfo, function(routeId, distanceAways) {
 			var headsign = routeToHeadsign[routeId];
 			
-			if(1 || distanceAways.length === 0) {
-				jQuery('<tr>' + 
-						'<td colspan="3">' + 
-							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
-						'</td>' +
-					   '</tr>')
-					   .appendTo(tableBody);
-
-				jQuery('<tr>' + 
-						'<td colspan="3">' + 
-							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
-						'</td>' +
-					   '</tr>')
-					   .appendTo(tableBody);
-
+			if(distanceAways.length === 0) {
 				jQuery('<tr class="last">' + 
 						'<td colspan="3">' + 
 							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
