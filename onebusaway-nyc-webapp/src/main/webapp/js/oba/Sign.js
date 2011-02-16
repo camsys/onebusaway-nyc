@@ -37,18 +37,16 @@ OBA.Sign = function() {
 
 	function detectSize() {
 		var h = jQuery(window).height();
-		if (h >= 1800) {
+		if(h >= 1800) {
 			jQuery('body').removeClass().addClass('size-1800');
-		} else if (h >= 1500) {
+		} else if(h >= 1500) {
 			jQuery('body').removeClass().addClass('size-1500');
-		} else if (h >= 1200) {
+		} else if(h >= 1150) {
 			jQuery('body').removeClass().addClass('size-1200');
-		} else if (h >= 1000) {
+		} else if(h >= 1000) {
 			jQuery('body').removeClass().addClass('size-1000');
-		} else if(h >= 800) {
-			jQuery('body').removeClass().addClass('size-800');			
-		} else if(h >= 500) {
-			jQuery('body').removeClass().addClass('size-500');			
+		} else if(h >= 700) {
+			jQuery('body').removeClass().addClass('size-700');			
 		} else {
 			jQuery('body').removeClass();			
 		}
@@ -157,13 +155,28 @@ OBA.Sign = function() {
 		jQuery.each(routeToVehicleInfo, function(routeId, distanceAways) {
 			var headsign = routeToHeadsign[routeId];
 			
-			if(distanceAways.length === 0) {
+			if(1 || distanceAways.length === 0) {
+				jQuery('<tr>' + 
+						'<td colspan="3">' + 
+							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
+						'</td>' +
+					   '</tr>')
+					   .appendTo(tableBody);
+
+				jQuery('<tr>' + 
+						'<td colspan="3">' + 
+							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
+						'</td>' +
+					   '</tr>')
+					   .appendTo(tableBody);
+
 				jQuery('<tr class="last">' + 
 						'<td colspan="3">' + 
 							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
 						'</td>' +
 					   '</tr>')
 					   .appendTo(tableBody);
+
 			} else {			
 				// sort based on distance
 				distanceAways.sort(function(a, b) { return a.feet - b.feet; });
@@ -235,7 +248,7 @@ OBA.Sign = function() {
 			var stopTable = jQuery("table.stop" + OBA.Util.parseEntityId(stopId));
 			if(stopTable.length === 0) {
 				var stopTable = getNewTableForStop(OBA.Util.parseEntityId(stopId));
-				arrivalsDiv.append(stopTable);
+				arrivalsDiv.append(stopTable.hide());
 			}
 						
 			var url = OBA.Config.stopUrl + "/" + stopId + ".json";
@@ -350,7 +363,7 @@ OBA.Sign = function() {
 				});
 
 				// update table for this stop ID
-				var stopTable = jQuery("table.stop" + OBA.Util.parseEntityId(stopId));
+				var stopTable = jQuery("table.stop" + OBA.Util.parseEntityId(stopId)).show();
 
 				updateTableForStop(stopTable, stop.name, applicableSituations, routeToHeadsign, routeToVehicleInfo);
 			}); // ajax()
