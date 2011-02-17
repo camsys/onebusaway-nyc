@@ -301,26 +301,38 @@ p.alert {
     line-height: 1.2em;
 }
 
-body.size-700, 
-body.size-700 input, 
-body.size-700 textarea { font-size: 1.18em; }
+/* landscape configurations */
+body.landscape.size700, 
+body.landscape.size700 input, 
+body.landscape.size700 textarea { font-size: 1.25em; }
 
-body.size-1000, 
-body.size-1000 input, 
-body.size-1000 textarea { font-size: 1.50em; }
-body.size-1000 #branding { background-image: url(img/gradient-100.png); }
+body.landscape.size1000, 
+body.landscape.size1000 input, 
+body.landscape.size1000 textarea { font-size: 1.60em; }
+body.landscape.size1000 #branding { background-image: url(img/gradient-100.png); }
 
-body.size-1200, 
-body.size-1200 input, 
-body.size-1200 textarea { font-size: 1.86em; }
-body.size-1200 #branding { background-image: url(img/gradient-130.png); }
+body.landscape.size1200, 
+body.landscape.size1200 input, 
+body.landscape.size1200 textarea { font-size: 2.2em; }
+body.landscape.size1200 #branding { background-image: url(img/gradient-130.png); }
 
-body.size-1500, 
-body.size-1500 input, 
-body.size-1500 textarea { font-size: 2.1em; }
-body.size-1500 #branding { background-image: url(img/gradient-160.png); }
+/* portrait configurations */
+body.portrait.size1000, 
+body.portrait.size1000 input, 
+body.portrait.size1000 textarea { font-size: 0.9em; }
+body.portrait.size1000 #branding { background-image: url(img/gradient-100.png); }
 
-body.size-1800, 
-body.size-1800 input,
-body.size-1800 textarea { font-size: 2.5em; }
-body.size-1800 #branding { background-image: url(img/gradient-160.png); }
+body.portrait.size1200, 
+body.portrait.size1200 input, 
+body.portrait.size1200 textarea { font-size: 1.3em; }
+body.portrait.size1200 #branding { background-image: url(img/gradient-100.png); }
+
+body.portrait.size1600, 
+body.portrait.size1600 input, 
+body.portrait.size1600 textarea { font-size: 1.5em; }
+body.portrait.size1600 #branding { background-image: url(img/gradient-100.png); }
+
+body.portrait.size1900, 
+body.portrait.size1900 input, 
+body.portrait.size1900 textarea { font-size: 1.7em; }
+body.portrait.size1900 #branding { background-image: url(img/gradient-100.png); }

@@ -21,7 +21,7 @@ OBA.Sign = function() {
 	var timeout = 30;
 	var configurableMessageHtml = null;
 	var stopIdsToRequest = null;
-	var vehiclesPerStop = 3;
+	var vehiclesPerStop = null;
 	
 	function getParameterByName(name, defaultValue) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -37,18 +37,33 @@ OBA.Sign = function() {
 
 	function detectSize() {
 		var h = jQuery(window).height();
-		if(h >= 1800) {
-			jQuery('body').removeClass().addClass('size-1800');
-		} else if(h >= 1500) {
-			jQuery('body').removeClass().addClass('size-1500');
-		} else if(h >= 1150) {
-			jQuery('body').removeClass().addClass('size-1200');
-		} else if(h >= 1000) {
-			jQuery('body').removeClass().addClass('size-1000');
-		} else if(h >= 700) {
-			jQuery('body').removeClass().addClass('size-700');			
+		var w = jQuery(window).width();
+		if(w > h) {
+			vehiclesPerStop = 3;
+			if(h >= 1150) {
+				jQuery('body').removeClass().addClass('landscape').addClass('size1200');
+			} else if(h >= 1000) {
+				jQuery('body').removeClass().addClass('landscape').addClass('size1000');
+			} else if(h >= 700) {
+				jQuery('body').removeClass().addClass('landscape').addClass('size700');			
+			} else {
+				jQuery('body').removeClass().addClass('landscape');			
+			}			
 		} else {
-			jQuery('body').removeClass();			
+			vehiclesPerStop = 6;
+			if(h >= 1900) {
+				jQuery('body').removeClass().addClass('portrait').addClass('size1900');
+			} else if(h >= 1500) {
+				jQuery('body').removeClass().addClass('portrait').addClass('size1600');
+			} else if(h >= 1200) {
+				jQuery('body').removeClass().addClass('portrait').addClass('size1200');
+			} else if(h >= 1000) {
+				jQuery('body').removeClass().addClass('portrait').addClass('size1000');
+			} else if(h >= 700) {
+				jQuery('body').removeClass().addClass('portrait').addClass('size700');			
+			} else {
+				jQuery('body').removeClass().addClass('portrait');			
+			}			
 		}
 	}
 	
