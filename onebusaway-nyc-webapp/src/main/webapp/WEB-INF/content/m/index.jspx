@@ -89,11 +89,11 @@
 	<s:else>
 		<a name="top"></a>
 		<div class="refresh">
-			<s:url var="url" namespace="/m" action="index">				
+			<s:url var="url" namespace="/m" action="index" anchor="top">				
 				<s:param name="q"><s:property value="q" /></s:param>
 				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 			</s:url>
-	    	<a href="${url}#top">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>
 
 		<!--  table of contents -->
@@ -103,10 +103,7 @@
 
 				<s:iterator value="toc">
 					<s:if test="%{type.equals('route')}">
-                        <s:url var="url" namespace="/m" action="index" anchor="%{directionId}">
-                            <s:param name="q"><s:property value="q" /></s:param>
-                        	<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
-                        </s:url>
+                        <s:url var="url" value="" anchor="%{directionId}"></s:url>
 						<a href="${url}"><s:property value="tripHeadsign" /></a>
 						<br/>
 					</s:if>
@@ -134,7 +131,6 @@
 						<s:iterator value="routesAvailable">
 							<s:url var="url" namespace="/m" action="index" anchor="%{directionId}">
 								<s:param name="q"><s:property value="routeId" /></s:param>
-								<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 							</s:url>
 							<a href="${url}"><s:property value="headsign" /></a><br />
 		
@@ -200,11 +196,11 @@
 
 		<a name="bottom"></a>
 		<div class="refresh">
-			<s:url var="url" namespace="/m" action="index">				
+			<s:url var="url" namespace="/m" action="index" anchor="bottom">				
 				<s:param name="q"><s:property value="q" /></s:param>
 				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 			</s:url>
-	    	<a href="${url}#bottom">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>
 	</s:else>
 
