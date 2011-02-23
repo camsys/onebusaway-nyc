@@ -20,6 +20,7 @@ import java.util.List;
 import org.hibernate.SessionFactory;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.DestinationSignCodeRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.UtsRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -73,5 +74,25 @@ public class VehicleTrackingDaoImpl implements VehicleTrackingDao {
     return _template.findByNamedQueryAndNamedParam(
         "anyDestinationSignCodeRecordsForDestinationSignCode",
         "destinationSignCode", destinationSignCode);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public UtsRecord getScheduledTripUTSRecordForVehicle(String vehicleId) throws Exception {
+	String vehicleIdWithoutAgency = vehicleId.substring(vehicleId.indexOf("_") + 1); 
+		
+	List<UtsRecord> records = _template.findByNamedQueryAndNamedParam(
+		"scheduledTripUtsRecordForVehicle",
+	    "vehicleId", vehicleIdWithoutAgency);
+
+	if(records.isEmpty()) {
+		return null;
+	} else { 
+		if(records.size() != 1) {
+			throw new Exception("UTS query returned more than one scheduled trip for vehicle ID.");
+		} else {
+			return records.get(0);
+		}
+	}
   }
 }

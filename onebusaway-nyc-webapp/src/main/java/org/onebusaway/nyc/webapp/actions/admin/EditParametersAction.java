@@ -53,6 +53,7 @@ public class EditParametersAction extends OneBusAwayNYCActionSupport implements
   }
 
   @Validations(requiredFields = {
+	  @RequiredFieldValidator(fieldName = "gpsTimeSkew", message = "gpsTimeSkew not set"),
       @RequiredFieldValidator(fieldName = "noProgressTimeout", message = "noProgressTimeout not set"),
       @RequiredFieldValidator(fieldName = "offRouteDistance", message = "offRouteDistance not set"),
       @RequiredFieldValidator(fieldName = "staleDataTimeout", message = "staleDataTimeout not set"),

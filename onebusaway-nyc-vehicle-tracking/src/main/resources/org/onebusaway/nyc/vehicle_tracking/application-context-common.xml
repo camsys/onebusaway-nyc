@@ -35,6 +35,7 @@
         <property name="values">
             <list>
                 <value>org.onebusaway.nyc.vehicle_tracking.model.DestinationSignCodeRecord</value>
+                <value>org.onebusaway.nyc.vehicle_tracking.model.UtsRecord</value>
             </list>
         </property>
     </bean>

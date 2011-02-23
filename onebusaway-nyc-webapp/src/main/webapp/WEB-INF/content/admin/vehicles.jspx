@@ -64,6 +64,8 @@
 				<th><a href="#">Vehicle ID</a></th>
 				<th><a href="#">Last Valid GPS</a></th>
 				<th><a href="#">Last Update Time</a></th>
+				<th><a href="#">Actual Pull-Out</a></th>
+				<th><a href="#">Scheduled Pull-In</a></th>
 				<th><a href="#">Headsign</a></th>
 				<th><a href="#">Inferred State</a></th>
 				<th><a href="#">Position</a></th>
@@ -92,6 +94,12 @@
 					</td>
 					<td sortKey="${lastUpdateTimeEpoch}">
 						<s:property value="lastUpdateTime" />
+					</td>
+					<td sortKey="${actualPullOutEpoch}">
+						<s:property value="actualPullOut" escape="false"/>
+					</td>
+					<td sortKey="${scheduledPullInEpoch}">
+						<s:property value="scheduledPullIn" escape="false"/>
 					</td>
 					<td>
 						<s:property value="headsign" escape="false"/>

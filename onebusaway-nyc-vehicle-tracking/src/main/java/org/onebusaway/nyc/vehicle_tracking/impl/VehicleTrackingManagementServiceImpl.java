@@ -26,10 +26,13 @@ import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
+import org.onebusaway.nyc.transit_data.model.UtsRecordBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.vehicle_tracking.model.UtsRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingDao;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
@@ -57,6 +60,13 @@ class VehicleTrackingManagementServiceImpl implements
   
   private File _configPath;
 
+  private VehicleTrackingDao _dao;
+
+  @Autowired
+  public void setDao(VehicleTrackingDao dao) {
+    _dao = dao;
+  }
+  
   @Autowired
   public void setVehicleLocationService(
       VehicleLocationService vehicleLocationService) {
@@ -182,6 +192,36 @@ class VehicleTrackingManagementServiceImpl implements
 	  return _dscService.isUnknownDestinationSignCode(destinationSignCode);	  
   }
   
+  @Override
+  public UtsRecordBean getScheduledTripForVehicle(String vehicleId) {
+	  try {
+		  UtsRecord record = _dao.getScheduledTripUTSRecordForVehicle(vehicleId);
+		  if(record == null)
+			  return null;
+
+		  UtsRecordBean bean = new UtsRecordBean();
+		  bean.setId(record.getId());
+		  bean.setRoute(record.getRoute());
+		  bean.setDepot(record.getDepot());
+		  bean.setRunNumber(record.getRunNumber());
+		  bean.setDate(record.getDate());
+		  bean.setScheduledPullOut(record.getScheduledPullOut());
+		  bean.setActualPullOut(record.getActualPullOut());
+		  bean.setScheduledPullIn(record.getScheduledPullIn());
+		  bean.setActualPullIn(record.getActualPullIn());
+		  bean.setBusNumber(record.getBusNumber());
+		  bean.setBusMileage(record.getBusMileage());
+		  bean.setEmployeeLastName(record.getEmployeeLastName());
+		  bean.setEmployeeFirstName(record.getEmployeeFirstName());
+		  bean.setEmployeePassNumber(record.getEmployeePassNumber());
+		  bean.setEmployeeAuthId(record.getEmployeeAuthId());
+		  return bean;
+	  } catch(Exception e) {
+		  _log.warn("UTS fetch error:" + e.getMessage());
+		  return null;
+	  }
+  }
+  
   /****
    * Private Methods
    ****/
@@ -205,5 +245,6 @@ class VehicleTrackingManagementServiceImpl implements
     bean.setInferredDestinationSignCode(record.getInferredDestinationSignCode());
     return bean;
   }
+
 
 }

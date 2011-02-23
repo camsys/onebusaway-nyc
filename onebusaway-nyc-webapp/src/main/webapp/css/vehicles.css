@@ -59,6 +59,10 @@
 	background-color: orange;	
 }
 
+#content #text .status.grey {
+	background-color: grey;	
+}
+
 #content #text .position img {
 	float: left;
 }

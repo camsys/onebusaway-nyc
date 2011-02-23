@@ -20,6 +20,7 @@ import java.util.List;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.DestinationSignCodeRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.UtsRecord;
 
 /**
  * Methods for persisting and querying raw nyc vehicle location records from a
@@ -59,4 +60,11 @@ public interface VehicleTrackingDao {
    */
   public List<DestinationSignCodeRecord> getAnyDestinationSignCodeRecordsForDestinationSignCode(
       String destinationSignCode);
+
+  /**
+   * 
+   * @param vehicleId
+   * @return a UTS record for the given vehicleId that represents its currently scheduled trip, if any.
+   */
+  public UtsRecord getScheduledTripUTSRecordForVehicle(String vehicleId) throws Exception;
 }

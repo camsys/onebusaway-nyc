@@ -34,6 +34,7 @@ import org.onebusaway.nyc.presentation.impl.WebappIdParser;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
 import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
+import org.onebusaway.nyc.transit_data.model.UtsRecordBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -153,6 +154,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     private VehicleStatusBean vehicleStatusBean;
     private ConfigurationBean configuration;
     private VehicleTrackingManagementService vehicleTrackingManagementService;
+    private UtsRecordBean utsRecord;
     
     public VehicleBag(NycVehicleStatusBean nycVehicleStatusBean,
         VehicleStatusBean vehicleStatusBean, ConfigurationBean configuration,
@@ -161,6 +163,9 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       this.vehicleStatusBean = vehicleStatusBean;
       this.configuration = configuration;
       this.vehicleTrackingManagementService = vehicleTrackingManagementService;
+      if(nycVehicleStatusBean != null)
+    	  this.utsRecord = 
+    		  vehicleTrackingManagementService.getScheduledTripForVehicle(nycVehicleStatusBean.getVehicleId());
     }
 
     @SuppressWarnings("unused")
@@ -180,44 +185,91 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     public String getStatusClass() {
       if (vehicleStatusBean == null)
         return "status red";
+
       String phase = nycVehicleStatusBean.getPhase();
       TripBean tripBean = vehicleStatusBean.getTrip();
       if (tripBean == null)
         return "status red";
-      String tripHeadsign = tripBean.getTripHeadsign();
+      
       long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
       long lastGpsTime = nycVehicleStatusBean.getLastGpsTime();
       long now = System.currentTimeMillis();
       long updateTimeDiff = now - lastUpdateTime;
       long gpsTimeDiff = now - lastGpsTime;
-      long redMillisThreshold = configuration.getNoProgressTimeout() * 1000;
-      long orangeMillisThreshold = configuration.getHideTimeout() * 1000;
-      if (updateTimeDiff > redMillisThreshold
-          || gpsTimeDiff > redMillisThreshold)
-        return "status red";
-      if (updateTimeDiff > orangeMillisThreshold
-          || gpsTimeDiff > orangeMillisThreshold)
+
+      long staleDataThreshold = configuration.getNoProgressTimeout() * 1000;
+      long hideDataThreshold = configuration.getHideTimeout() * 1000;
+      long gpsTimeSkewThreshold = configuration.getGpsTimeSkew();
+
+      if(updateTimeDiff < staleDataThreshold 
+    	&& gpsTimeDiff < staleDataThreshold + gpsTimeSkewThreshold)
+        return "status green";
+      if(updateTimeDiff < hideDataThreshold
+        && gpsTimeDiff < hideDataThreshold + gpsTimeSkewThreshold)
         return "status orange";
-      if (phase == null || !phase.equals(EVehiclePhase.IN_PROGRESS.toLabel()))
-        return "status orange";
-      return "status green";
+      if(utsRecord != null 
+        && (updateTimeDiff > hideDataThreshold
+        || gpsTimeDiff > hideDataThreshold + gpsTimeSkewThreshold))
+    	return "status grey";
+
+      return "status red";
     }
 
     public String formatTimeInterval(long seconds) {
     	if (seconds < 60) {
            return seconds == 1 ? "1 second" : seconds + " seconds";
     	} else {    	
-            long minutes = seconds / 60;
-            long days = minutes / (60 * 24);
+           long minutes = seconds / 60;
+           long days = minutes / (60 * 24);
             
-            if(days < 1) {
-            	return minutes == 1 ? "1 minute" : minutes + " minutes";
-            } else {
-            	return days == 1 ? "1 day" : String.format("%1.2f", days) + " days";
-            }
+           if(days < 1) {
+        	   return minutes == 1 ? "1 minute" : minutes + " minutes";
+           } else {
+               return days == 1 ? "1 day" : String.format("%1.2f", days) + " days";
+           }
     	}
     }
     
+    @SuppressWarnings("unused")
+    public String getActualPullOut() {
+    	if(utsRecord == null) {
+    		return "Unknown";
+    	} else {
+    		return DateFormat.getDateInstance().format(utsRecord.getActualPullOut()) + "<br/>" + 
+    			   DateFormat.getTimeInstance().format(utsRecord.getActualPullOut());
+    	}
+    }
+
+    // key for sorting on client-side
+    @SuppressWarnings("unused")
+    public long getActualPullOutEpoch() {
+    	if(utsRecord == null) {
+    		return -1;
+    	} else {
+    		return utsRecord.getActualPullOut().getTime();
+    	}
+    }
+    	
+    @SuppressWarnings("unused")
+    public String getScheduledPullIn() {
+    	if(utsRecord == null) {
+    		return "Unknown";
+    	} else {
+    		return DateFormat.getDateInstance().format(utsRecord.getScheduledPullIn()) + "<br/>" + 
+    			   DateFormat.getTimeInstance().format(utsRecord.getScheduledPullIn());
+    	}
+    }
+
+    // key for sorting on client-side
+    @SuppressWarnings("unused")
+    public long getScheduledPullInEpoch() {
+    	if(utsRecord == null) {
+    		return -1;
+    	} else {
+    		return utsRecord.getScheduledPullIn().getTime();
+    	}
+    }
+
     @SuppressWarnings("unused")
     public String getLastUpdateTime() {
       long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
@@ -273,7 +325,8 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       
       TripBean trip = vehicleStatusBean.getTrip();
       String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
-      boolean mostRecentDSCIsOutOfService = vehicleTrackingManagementService.isOutOfServiceDestinationSignCode(mostRecentDestinationSignCode);
+      boolean mostRecentDSCIsOutOfService = 
+    	  vehicleTrackingManagementService.isOutOfServiceDestinationSignCode(mostRecentDestinationSignCode);
 
       if (trip == null) {
     	  if(mostRecentDSCIsOutOfService)
@@ -309,7 +362,6 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     	  if(i>0) result.append(" ");      
     	  result.append(Character.toUpperCase(words[i].charAt(0)))
     	        .append(words[i].substring(1));
-
     	}
     	return result.toString();
     }
