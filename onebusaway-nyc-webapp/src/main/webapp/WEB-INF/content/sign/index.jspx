@@ -33,7 +33,7 @@
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
 <body>
-	<div id="content">
+	<div id="content" class="sidebar right">
 		<div id="text">		
 			<div id="instructions">
 				<wiki:wiki name="DIYSignHome"/>

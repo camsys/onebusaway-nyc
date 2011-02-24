@@ -126,6 +126,10 @@ a:hover {
 	margin-left: 250px;
 }
 
+#content.sidebar.right #text {
+	margin-left: 0px;
+}
+
 #content.sidebar #sidebar .wrapper {
 	padding: 10px;
 	padding-right: 0px;
