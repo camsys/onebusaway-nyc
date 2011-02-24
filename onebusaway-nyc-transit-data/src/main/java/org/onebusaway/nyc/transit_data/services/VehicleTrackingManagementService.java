@@ -23,8 +23,8 @@ import org.onebusaway.nyc.transit_data.model.UtsRecordBean;
 public interface VehicleTrackingManagementService {
   
   public String getDefaultAgencyId();
-
-  public UtsRecordBean getScheduledTripForVehicle(String vehicleId);
+  
+  public List<UtsRecordBean> getCurrentUTSRecordsForDepot(String depotId);
   
   public void setVehicleStatus(String vehicleId, boolean status);
   

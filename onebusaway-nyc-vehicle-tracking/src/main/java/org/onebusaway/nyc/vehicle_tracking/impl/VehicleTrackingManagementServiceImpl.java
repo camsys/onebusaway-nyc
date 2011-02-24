@@ -193,11 +193,13 @@ class VehicleTrackingManagementServiceImpl implements
   }
   
   @Override
-  public UtsRecordBean getScheduledTripForVehicle(String vehicleId) {
-	  try {
-		  UtsRecord record = _dao.getScheduledTripUTSRecordForVehicle(vehicleId);
+  public List<UtsRecordBean> getCurrentUTSRecordsForDepot(String depotId) {
+	  List<UtsRecord> records = _dao.getCurrentUTSRecordsForDepot(depotId);
+
+	  ArrayList<UtsRecordBean> list = new ArrayList<UtsRecordBean>();
+	  for(UtsRecord record : records) {
 		  if(record == null)
-			  return null;
+			  continue;
 
 		  UtsRecordBean bean = new UtsRecordBean();
 		  bean.setId(record.getId());
@@ -215,11 +217,9 @@ class VehicleTrackingManagementServiceImpl implements
 		  bean.setEmployeeFirstName(record.getEmployeeFirstName());
 		  bean.setEmployeePassNumber(record.getEmployeePassNumber());
 		  bean.setEmployeeAuthId(record.getEmployeeAuthId());
-		  return bean;
-	  } catch(Exception e) {
-		  _log.warn("UTS fetch error:" + e.getMessage());
-		  return null;
+		  list.add(bean);
 	  }
+	  return list;
   }
   
   /****
@@ -245,6 +245,5 @@ class VehicleTrackingManagementServiceImpl implements
     bean.setInferredDestinationSignCode(record.getInferredDestinationSignCode());
     return bean;
   }
-
 
 }

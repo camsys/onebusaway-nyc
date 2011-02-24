@@ -78,21 +78,10 @@ public class VehicleTrackingDaoImpl implements VehicleTrackingDao {
 
   @SuppressWarnings("unchecked")
   @Override
-  public UtsRecord getScheduledTripUTSRecordForVehicle(String vehicleId) throws Exception {
-	String vehicleIdWithoutAgency = vehicleId.substring(vehicleId.indexOf("_") + 1); 
-		
-	List<UtsRecord> records = _template.findByNamedQueryAndNamedParam(
-		"scheduledTripUtsRecordForVehicle",
-	    "vehicleId", vehicleIdWithoutAgency);
-
-	if(records.isEmpty()) {
-		return null;
-	} else { 
-		if(records.size() != 1) {
-			throw new Exception("UTS query returned more than one scheduled trip for vehicle ID.");
-		} else {
-			return records.get(0);
-		}
-	}
+  public List<UtsRecord> getCurrentUTSRecordsForDepot(String depotId) {
+	return _template.findByNamedQueryAndNamedParam(
+		"currentUtsRecordsForDepot",
+		"depotId", depotId);
   }
+
 }

@@ -30,17 +30,16 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.apache.struts2.interceptor.ServletRequestAware;
-import org.onebusaway.nyc.presentation.impl.WebappIdParser;
-import org.onebusaway.nyc.presentation.service.ConfigurationBean;
 import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
 import org.onebusaway.nyc.transit_data.model.UtsRecordBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.nyc.webapp.actions.admin.model.MonitoredVehicleBean;
+import org.onebusaway.nyc.webapp.actions.admin.model.MonitoredVehicle;
+import org.onebusaway.nyc.webapp.actions.admin.model.UtsVehicleBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,15 +50,13 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
 
   private static final long serialVersionUID = 1L;
 
-  private static final WebappIdParser idParser = new WebappIdParser();
-
   @Autowired
   private TransitDataService transitService;
 
   @Autowired
   private VehicleTrackingManagementService vehicleTrackingManagementService;
 
-  private List<VehicleBag> vehicles = new ArrayList<VehicleBag>();
+  private List<MonitoredVehicle> vehicles = new ArrayList<MonitoredVehicle>();
 
   private HttpServletRequest request;
 
@@ -85,8 +82,11 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
         agencyId, System.currentTimeMillis());
     List<VehicleStatusBean> vehicleStatusBeans = vehiclesForAgencyListBean.getList();
     List<NycVehicleStatusBean> nycVehicleStatuses = vehicleTrackingManagementService.getAllVehicleStatuses();
+    List<UtsRecordBean> utsRecords = vehicleTrackingManagementService.getCurrentUTSRecordsForDepot("JGLT"); // FIXME
+
     Map<String, VehicleStatusBean> vehicleMap = new HashMap<String, VehicleStatusBean>();
     Map<String, NycVehicleStatusBean> nycVehicleMap = new HashMap<String, NycVehicleStatusBean>();
+    Map<String, UtsRecordBean> utsRecordMap = new HashMap<String, UtsRecordBean>();
     for (VehicleStatusBean vehicleStatusBean : vehicleStatusBeans) {
       String vehicleId = vehicleStatusBean.getVehicleId();
       vehicleMap.put(vehicleId, vehicleStatusBean);
@@ -94,6 +94,10 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     for (NycVehicleStatusBean nycVehicleStatusBean : nycVehicleStatuses) {
       String vehicleId = nycVehicleStatusBean.getVehicleId();
       nycVehicleMap.put(vehicleId, nycVehicleStatusBean);
+    }
+    for (UtsRecordBean utsRecordBean : utsRecords) {
+      String vehicleId = vehicleTrackingManagementService.getDefaultAgencyId() + "_" + utsRecordBean.getBusNumber();
+      utsRecordMap.put(vehicleId, utsRecordBean);
     }
 
     String method = request.getMethod().toUpperCase();
@@ -137,297 +141,30 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
     for (NycVehicleStatusBean nycVehicleStatusBean : nycVehicleStatuses) {
       String vehicleId = nycVehicleStatusBean.getVehicleId();
       VehicleStatusBean vehicleStatusBean = vehicleMap.get(vehicleId);
-      VehicleBag vehicleBag = new VehicleBag(nycVehicleStatusBean,
-          vehicleStatusBean, configurationService.getConfiguration(), vehicleTrackingManagementService);
+      UtsRecordBean utsRecordBean = utsRecordMap.get(vehicleId);
+      MonitoredVehicle vehicleBag = new MonitoredVehicleBean(nycVehicleStatusBean,
+          vehicleStatusBean, configurationService.getConfiguration(), 
+          vehicleTrackingManagementService, utsRecordBean);
       vehicles.add(vehicleBag);
     }
+
+    // add buses to the list that UTS says should be out, but are not present in
+    // the list of managed/tracked buses (never sent data to the CIS or were reset).
+    for(UtsRecordBean utsRecordBean : utsRecordMap.values()) {
+      String vehicleId = vehicleTrackingManagementService.getDefaultAgencyId() 
+      						+ "_" + utsRecordBean.getBusNumber();
+      
+      if(vehicleMap.containsKey(vehicleId))
+    	continue;
+      
+      UtsVehicleBean vehicleBag = new UtsVehicleBean(utsRecordBean);
+      vehicles.add(vehicleBag);
+    }
+    
     return SUCCESS;
   }
 
-  public List<VehicleBag> getVehicles() {
+  public List<MonitoredVehicle> getVehicles() {
     return vehicles;
-  }
-
-  // vehicle data bag suitable for use in vehicles jsp
-  private static class VehicleBag {
-    private NycVehicleStatusBean nycVehicleStatusBean;
-    private VehicleStatusBean vehicleStatusBean;
-    private ConfigurationBean configuration;
-    private VehicleTrackingManagementService vehicleTrackingManagementService;
-    private UtsRecordBean utsRecord;
-    
-    public VehicleBag(NycVehicleStatusBean nycVehicleStatusBean,
-        VehicleStatusBean vehicleStatusBean, ConfigurationBean configuration,
-        VehicleTrackingManagementService vehicleTrackingManagementService) {
-      this.nycVehicleStatusBean = nycVehicleStatusBean;
-      this.vehicleStatusBean = vehicleStatusBean;
-      this.configuration = configuration;
-      this.vehicleTrackingManagementService = vehicleTrackingManagementService;
-      if(nycVehicleStatusBean != null)
-    	  this.utsRecord = 
-    		  vehicleTrackingManagementService.getScheduledTripForVehicle(nycVehicleStatusBean.getVehicleId());
-    }
-
-    @SuppressWarnings("unused")
-    public String getVehicleIdWithoutAgency() {
-      String vehicleIdWithAgency = nycVehicleStatusBean.getVehicleId();
-      String idWithoutAgency = idParser.parseIdWithoutAgency(vehicleIdWithAgency);
-      return idWithoutAgency;
-    }
-
-    @SuppressWarnings("unused")
-    public String getVehicleId() {
-      String vehicleIdWithAgency = nycVehicleStatusBean.getVehicleId();
-      return vehicleIdWithAgency;
-    }
-    
-    @SuppressWarnings("unused")
-    public String getStatusClass() {
-      if (vehicleStatusBean == null)
-        return "status red";
-
-      String phase = nycVehicleStatusBean.getPhase();
-      TripBean tripBean = vehicleStatusBean.getTrip();
-      if (tripBean == null)
-        return "status red";
-      
-      long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
-      long lastGpsTime = nycVehicleStatusBean.getLastGpsTime();
-      long now = System.currentTimeMillis();
-      long updateTimeDiff = now - lastUpdateTime;
-      long gpsTimeDiff = now - lastGpsTime;
-
-      long staleDataThreshold = configuration.getNoProgressTimeout() * 1000;
-      long hideDataThreshold = configuration.getHideTimeout() * 1000;
-      long gpsTimeSkewThreshold = configuration.getGpsTimeSkew();
-
-      if(updateTimeDiff < staleDataThreshold 
-    	&& gpsTimeDiff < staleDataThreshold + gpsTimeSkewThreshold)
-        return "status green";
-      if(updateTimeDiff < hideDataThreshold
-        && gpsTimeDiff < hideDataThreshold + gpsTimeSkewThreshold)
-        return "status orange";
-      if(utsRecord != null 
-        && (updateTimeDiff > hideDataThreshold
-        || gpsTimeDiff > hideDataThreshold + gpsTimeSkewThreshold))
-    	return "status grey";
-
-      return "status red";
-    }
-
-    public String formatTimeInterval(long seconds) {
-    	if (seconds < 60) {
-           return seconds == 1 ? "1 second" : seconds + " seconds";
-    	} else {    	
-           long minutes = seconds / 60;
-           long days = minutes / (60 * 24);
-            
-           if(days < 1) {
-        	   return minutes == 1 ? "1 minute" : minutes + " minutes";
-           } else {
-               return days == 1 ? "1 day" : String.format("%1.2f", days) + " days";
-           }
-    	}
-    }
-    
-    @SuppressWarnings("unused")
-    public String getActualPullOut() {
-    	if(utsRecord == null) {
-    		return "Unknown";
-    	} else {
-    		return DateFormat.getDateInstance().format(utsRecord.getActualPullOut()) + "<br/>" + 
-    			   DateFormat.getTimeInstance().format(utsRecord.getActualPullOut());
-    	}
-    }
-
-    // key for sorting on client-side
-    @SuppressWarnings("unused")
-    public long getActualPullOutEpoch() {
-    	if(utsRecord == null) {
-    		return -1;
-    	} else {
-    		return utsRecord.getActualPullOut().getTime();
-    	}
-    }
-    	
-    @SuppressWarnings("unused")
-    public String getScheduledPullIn() {
-    	if(utsRecord == null) {
-    		return "Unknown";
-    	} else {
-    		return DateFormat.getDateInstance().format(utsRecord.getScheduledPullIn()) + "<br/>" + 
-    			   DateFormat.getTimeInstance().format(utsRecord.getScheduledPullIn());
-    	}
-    }
-
-    // key for sorting on client-side
-    @SuppressWarnings("unused")
-    public long getScheduledPullInEpoch() {
-    	if(utsRecord == null) {
-    		return -1;
-    	} else {
-    		return utsRecord.getScheduledPullIn().getTime();
-    	}
-    }
-
-    @SuppressWarnings("unused")
-    public String getLastUpdateTime() {
-      long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
-
-      if(lastUpdateTime <= 0)
-    	  return "Not Available";
-
-      long now = System.currentTimeMillis();
-      long timeDiff = now - lastUpdateTime;
-      long seconds = timeDiff / 1000;
-      return formatTimeInterval(seconds);      
-    }
-    
-    // key for sorting on client-side
-    @SuppressWarnings("unused")
-    public long getLastUpdateTimeEpoch() {
-        long lastUpdateTime = nycVehicleStatusBean.getLastUpdateTime();
-        
-        if(lastUpdateTime <= 0)
-      	  return -1;
-        else
-          return lastUpdateTime;
-    }
-    
-    @SuppressWarnings("unused")
-    public String getLastCommTime() {
-      long lastUpdateTime = nycVehicleStatusBean.getLastGpsTime();
-      
-      if(lastUpdateTime <= 0)
-    	  return "Not Available";
-      
-      long now = System.currentTimeMillis();
-      long timeDiff = now - lastUpdateTime;
-      long seconds = timeDiff / 1000;
-      return formatTimeInterval(seconds);      
-    }
-
-    // key for sorting on client-side
-    @SuppressWarnings("unused")
-    public long getLastCommTimeEpoch() {
-        long lastUpdateTime = nycVehicleStatusBean.getLastGpsTime();
-        
-        if(lastUpdateTime <= 0)
-      	  return -1;
-        else
-          return lastUpdateTime;
-    }
-    
-    @SuppressWarnings("unused")
-    public String getHeadsign() {
-      if (vehicleStatusBean == null)
-        return "Not Available";
-      
-      TripBean trip = vehicleStatusBean.getTrip();
-      String mostRecentDestinationSignCode = nycVehicleStatusBean.getMostRecentDestinationSignCode();
-      boolean mostRecentDSCIsOutOfService = 
-    	  vehicleTrackingManagementService.isOutOfServiceDestinationSignCode(mostRecentDestinationSignCode);
-
-      if (trip == null) {
-    	  if(mostRecentDSCIsOutOfService)
-    		  return mostRecentDestinationSignCode + ": Not In Service";
-    	  else
-    		  if(mostRecentDestinationSignCode != null) {
-    			  return "Unknown<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
-    		  } else {
-    			  return "Unknown";    			  
-    		  }
-      }
-      
-      if(nycVehicleStatusBean.getPhase().equals(EVehiclePhase.DEADHEAD_AFTER.toLabel()) ||
-    	  nycVehicleStatusBean.getPhase().equals(EVehiclePhase.DEADHEAD_BEFORE.toLabel()) ||
-    	  nycVehicleStatusBean.getPhase().equals(EVehiclePhase.DEADHEAD_DURING.toLabel())) {
-    	  return "Not Applicable<br/>(bus sent " + mostRecentDestinationSignCode + ")";    	  
-      }
-      
-	  String tripHeadsign = trip.getTripHeadsign();
-      String inferredDestinationSignCode = nycVehicleStatusBean.getInferredDestinationSignCode();
-      if (inferredDestinationSignCode.equals(mostRecentDestinationSignCode)) {
-        return inferredDestinationSignCode + ": " + tripHeadsign;
-      } else {
-        return inferredDestinationSignCode + ": " + tripHeadsign
-            + "<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
-      }
-    }
-
-    private String upperCaseWords(String s) {
-    	StringBuilder result = new StringBuilder(s.length());
-    	String[] words = s.split("\\s|_");
-    	for(int i=0,l=words.length;i<l;++i) {
-    	  if(i>0) result.append(" ");      
-    	  result.append(Character.toUpperCase(words[i].charAt(0)))
-    	        .append(words[i].substring(1));
-    	}
-    	return result.toString();
-    }
-    
-    @SuppressWarnings("unused")
-    public String getInferredState() {
-      if(vehicleStatusBean == null)
-    	  return "Not Available";
-    	
-      if (!nycVehicleStatusBean.isEnabled())
-        return "Disabled";
-
-      TripBean trip = vehicleStatusBean.getTrip();
-      if (trip == null)
-        return "No Trip";
-      
-      String status = nycVehicleStatusBean.getStatus();
-      String phase = nycVehicleStatusBean.getPhase();
-      StringBuilder sb = new StringBuilder();
-      
-      if(phase != null)
-    	  sb.append("Phase: " + this.upperCaseWords(phase));
-      else
-    	  sb.append("Phase: None");
-    	  
-      if(sb.length() > 0)
-    	  sb.append("<br/>");
-      
-      if(status != null)
-    	  sb.append("Status: " + this.upperCaseWords(status));
-      else
-    	  sb.append("Status: None");
-      
-      return sb.toString();
-    }
-
-    @SuppressWarnings("unused")
-    public String getLocation() {
-      double lat = nycVehicleStatusBean.getLastGpsLat();
-      double lon = nycVehicleStatusBean.getLastGpsLon();
-      
-      if(Double.isNaN(lat) || Double.isNaN(lon))
-    	  return "Not Available";
-      
-      return lat + "," + lon;
-    }
-    
-    @SuppressWarnings("unused")
-    public String getOrientation() {
-    	String orientationKey = "unknown";
-    	
-    	try {
-    	  double orientationDeg = vehicleStatusBean.getTripStatus().getOrientation();
-      
-    	  if(Double.isNaN(orientationDeg))
-    		  return "Unknown";
-    	  else
-    		  return "" + Math.floor(orientationDeg / 5) * 5;
-      } catch(Exception e) {
-    	  return "Unknown";
-      }
-    }    
-
-    @SuppressWarnings("unused")
-    public boolean isDisabled() {
-      return !nycVehicleStatusBean.isEnabled();
-    }
   }
 }

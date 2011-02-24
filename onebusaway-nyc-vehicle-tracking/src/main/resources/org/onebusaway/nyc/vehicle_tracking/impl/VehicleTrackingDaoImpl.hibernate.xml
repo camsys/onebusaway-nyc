@@ -30,7 +30,7 @@
     <query name="anyDestinationSignCodeRecordsForDestinationSignCode" read-only="true">
       SELECT r FROM DestinationSignCodeRecord r WHERE destinationSignCode = :destinationSignCode
     </query>
-    <query name="scheduledTripUtsRecordForVehicle" read-only="true">
-      SELECT r FROM UtsRecord r WHERE bus_number = :vehicleId AND NOW() &gt; actual_po AND NOW() &lt; sched_pi
+    <query name="currentUtsRecordsForDepot" read-only="true">
+      SELECT r FROM UtsRecord r WHERE depot = :depotId AND NOW() &gt; actual_po AND NOW() &lt; sched_pi
     </query>
 </hibernate-mapping>

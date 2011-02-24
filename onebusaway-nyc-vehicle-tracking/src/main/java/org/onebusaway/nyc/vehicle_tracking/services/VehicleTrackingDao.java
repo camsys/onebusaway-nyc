@@ -63,8 +63,8 @@ public interface VehicleTrackingDao {
 
   /**
    * 
-   * @param vehicleId
-   * @return a UTS record for the given vehicleId that represents its currently scheduled trip, if any.
+   * @param depotId
+   * @return a list of UTS records representing buses from the named depot that are scheduled to be out now.
    */
-  public UtsRecord getScheduledTripUTSRecordForVehicle(String vehicleId) throws Exception;
+  public List<UtsRecord> getCurrentUTSRecordsForDepot(String depotId);
 }
