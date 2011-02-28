@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.webapp.actions;
 
+import java.util.Date;
+
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
 import org.onebusaway.nyc.presentation.service.NycConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
@@ -31,12 +33,17 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   private NycConfigurationService configurationService;
 
   public int getHideTimeout() {
-	    ConfigurationBean config = configurationService.getConfiguration();
-	    return config.getHideTimeout();
+	  ConfigurationBean config = configurationService.getConfiguration();
+	  return config.getHideTimeout();
   }
 
   public int getStaleDataTimeout() {
-	    ConfigurationBean config = configurationService.getConfiguration();
-	    return config.getStaleDataTimeout();
+	  ConfigurationBean config = configurationService.getConfiguration();
+	  return config.getStaleDataTimeout();
   }
+
+  public long getEpoch() {
+	  return new Date().getTime();
+  }
+
 }

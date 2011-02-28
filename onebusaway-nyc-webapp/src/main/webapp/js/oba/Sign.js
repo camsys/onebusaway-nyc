@@ -379,7 +379,7 @@ OBA.Sign = function() {
 	
 		jQuery("<span></span>")
 			.attr("id", "lastupdated")
-			.text("Last updated " + new Date().format("mmm d, yyyy h:MM:ss TT"))
+			.text("Last updated " + new Date(OBA.Util.getTime()).format("mmm d, yyyy h:MM:ss TT"))
 			.appendTo("#footer");
 	}
 	

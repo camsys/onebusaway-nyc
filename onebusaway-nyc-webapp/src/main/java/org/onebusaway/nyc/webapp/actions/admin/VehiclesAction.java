@@ -154,7 +154,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       String vehicleId = vehicleTrackingManagementService.getDefaultAgencyId() 
       						+ "_" + utsRecordBean.getBusNumber();
       
-      if(vehicleMap.containsKey(vehicleId))
+      if(nycVehicleMap.containsKey(vehicleId))
     	continue;
       
       UtsVehicleBean vehicleBag = new UtsVehicleBean(utsRecordBean);

@@ -18,6 +18,10 @@ var OBA = window.OBA || {};
 
 OBA.Util = (function() {
 	return {
+		getTime: function() {
+			var now = new Date();
+			return now.getTime() - OBA.Config.clockSkew;
+		},
 		log: function(s) {
 			if(OBA.Config.debug === true && typeof console !== 'undefined' && typeof console.log !== 'undefined') {
 				console.log(s);
@@ -111,7 +115,7 @@ OBA.Util = (function() {
 			if(dateObj === null) {
 				return null;
 			}
-			var secondsAgo = Math.floor((new Date().getTime() - dateObj.getTime()) / 1000);
+			var secondsAgo = Math.floor((OBA.Util.getTime() - dateObj.getTime()) / 1000);
 			
 			if(secondsAgo < 60) {
 				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s") + " ago";

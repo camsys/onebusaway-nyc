@@ -382,7 +382,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 		});
 
 		var lastUpdateDate = new Date(tripStatus.lastUpdateTime);
-		var isStaleData = (new Date().getTime() - lastUpdateDate.getTime() >= 1000 * OBA.Config.staleDataTimeout);
+		var isStaleData = (OBA.Util.getTime() - lastUpdateDate.getTime() >= 1000 * OBA.Config.staleDataTimeout);
 
 		// header
 		var header = '<div class="header vehicle">' + 

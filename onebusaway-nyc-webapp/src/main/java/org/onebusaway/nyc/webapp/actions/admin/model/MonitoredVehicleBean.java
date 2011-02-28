@@ -25,6 +25,7 @@ import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 public class MonitoredVehicleBean implements MonitoredVehicle {
 	private static final WebappIdParser idParser = new WebappIdParser();
@@ -67,7 +68,7 @@ public class MonitoredVehicleBean implements MonitoredVehicle {
 
 		long staleDataThreshold = configuration.getNoProgressTimeout() * 1000;
 		long hideDataThreshold = configuration.getHideTimeout() * 1000;
-		long gpsTimeSkewThreshold = configuration.getGpsTimeSkew();
+		long gpsTimeSkewThreshold = configuration.getGpsTimeSkewThreshold() * 1000;
 
 		if(updateTimeDiff < staleDataThreshold 
 				&& gpsTimeDiff < staleDataThreshold + gpsTimeSkewThreshold)
@@ -269,7 +270,15 @@ public class MonitoredVehicleBean implements MonitoredVehicle {
 	}
 
 	public String getOrientation() {
-		double orientationDeg = vehicleStatusBean.getTripStatus().getOrientation();
+		if(vehicleStatusBean == null)
+			return "Unknown";
+		
+		TripStatusBean tripStatus = vehicleStatusBean.getTripStatus();
+		
+		if(tripStatus == null) 
+			return "Unknown";
+		
+		double orientationDeg = tripStatus.getOrientation();
 
 		if(Double.isNaN(orientationDeg))
 			return "Unknown";

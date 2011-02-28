@@ -22,5 +22,8 @@
 if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.staleDataTimeout=<s:property value="staleDataTimeout" />;
 	OBA.Config.hideTimeout=<s:property value="hideTimeout" />;
+
+	var now = new Date();
+	OBA.Config.clockSkew=(now.getTime() - <s:property value="epoch" />);
 }
 </jsp:root>

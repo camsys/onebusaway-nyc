@@ -46,6 +46,15 @@ OBA.Config = {
 
 		// milliseconds to wait in-between polls for bus locations
 		pollingInterval: 5000,
+
+		// these are both overridden by server-side configuration via
+		// client-side code (from /config)--these are just reasonable defaults.
+		staleDataTimeout: 120,
+		hideTimeout: 300,
+		
+		// clock skew between server and client--overridden by client-side
+		// code upon page load (from /config)
+		clockSkew: 0,
 		
 		// Time, in minutes, that we'll look into the past for a scheduled
 		// arrival at a stop.  If a bus is running more than X minutes
@@ -105,7 +114,7 @@ OBA.Config = {
 				return false;
 			}
 			
-			var now = new Date().getTime();
+			var now = OBA.Util.getTime();
 			if(typeof OBA.Config.time !== 'undefined' && OBA.Config.time !== null) {
 				now = OBA.Config.time * 1000;
 			}

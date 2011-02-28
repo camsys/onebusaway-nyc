@@ -25,7 +25,7 @@ public class ConfigurationBean {
 
   private int hideTimeout = 300;
 
-  private int gpsTimeSkew = 15 * 60;
+  private int gpsTimeSkewThreshold = 15 * 60;
   
   public ConfigurationBean() {
   }
@@ -39,15 +39,15 @@ public class ConfigurationBean {
     this.offRouteDistance = bean.offRouteDistance;
     this.staleDataTimeout = bean.staleDataTimeout;
     this.hideTimeout = bean.hideTimeout;
-    this.gpsTimeSkew = bean.gpsTimeSkew;
+    this.gpsTimeSkewThreshold = bean.gpsTimeSkewThreshold;
   }
 
-  public int getGpsTimeSkew() {
-	return gpsTimeSkew;
+  public int getGpsTimeSkewThreshold() {
+	return gpsTimeSkewThreshold;
   }
 
-  public void setGpsTimeSkew(int skew) {
-	this.gpsTimeSkew = skew;
+  public void setGpsTimeSkewThreshold(int skew) {
+	this.gpsTimeSkewThreshold = skew;
   }
 
   public int getNoProgressTimeout() {
