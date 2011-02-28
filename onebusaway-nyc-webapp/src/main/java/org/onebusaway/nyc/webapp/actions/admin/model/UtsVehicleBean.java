@@ -90,7 +90,7 @@ public class UtsVehicleBean implements MonitoredVehicle {
 	}
 
 	public String getHeadsign() {
-		return "(" + utsRecord.getRoute() + " in unknown direction)";
+		return "Not Available";
 	}
 
 	public String getInferredState() {
