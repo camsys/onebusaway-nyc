@@ -59,10 +59,15 @@
 	font-size: 12px;
 }
 
+#content #text form #stop_id_collection {
+	padding-left: 0px;
+}
+
 #content #text form #stop_id_collection li {
 	width: 350px;
 	padding-top: 5px;
 	padding-bottom: 5px;
+	list-style-type: none;
 }
 
 #content #text form #stop_id_collection li a {
