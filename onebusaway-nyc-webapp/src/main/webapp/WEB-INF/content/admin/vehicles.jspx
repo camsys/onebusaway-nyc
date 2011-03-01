@@ -36,6 +36,9 @@
 <s:url var="url" value="/js/oba/Config.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<s:url var="url" value="/js/oba/Util.js"/>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 <s:url  var="url" value="/js/oba/VehiclesAdmin.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
@@ -110,10 +113,12 @@
 								<s:property value="inferredState" escape="false"/>
 							</p>
 							<p>
-								<s:url var="resetUrl" namespace="/admin" action="reset-vehicle">
+								<s:if test="%{vehicleId!=null}">
+									<s:url var="resetUrl" namespace="/admin" action="reset-vehicle">
 										<s:param name="vehicleId"><s:property value="vehicleId" /></s:param>
-								</s:url>
-								<a class="reset" href="${resetUrl}">Reset</a>
+									</s:url>
+									<a class="reset" href="${resetUrl}">Reset</a>
+								</s:if>
 							</p>
 						</div>
 					</td>

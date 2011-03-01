@@ -32,7 +32,7 @@ public class UtsVehicleBean implements MonitoredVehicle {
 	}
 
 	public String getVehicleId() {
-		return utsRecord.getBusNumber();
+		return null;
 	}
 
 	public String getStatusClass() {
