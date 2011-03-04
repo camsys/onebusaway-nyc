@@ -75,6 +75,8 @@ public class VehicleInferenceInstance {
   private boolean _enabled = true;
 
   private Observation _previousObservation = null;
+  
+  private String _lastValidDestinationSignCode = null;
 
   private VehicleLocationRecord _vehicleLocationRecord;
 
@@ -227,7 +229,7 @@ public class VehicleInferenceInstance {
         && !_destinationSignCodeService.isMissingDestinationSignCode(dsc)) {
       lastValidDestinationSignCode = dsc;
     } else if (_previousObservation != null) {
-      lastValidDestinationSignCode = _previousObservation.getLastValidDestinationSignCode();
+      lastValidDestinationSignCode = _lastValidDestinationSignCode;
     }
 
     boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
@@ -246,6 +248,8 @@ public class VehicleInferenceInstance {
     _vehicleLocationRecord = null;
     _nycTestLocationRecord = null;
     _lastUpdateTime = timestamp;
+    _lastValidDestinationSignCode = lastValidDestinationSignCode;
+    
     if (!latlonMissing)
       _lastGpsTime = timestamp;
 
