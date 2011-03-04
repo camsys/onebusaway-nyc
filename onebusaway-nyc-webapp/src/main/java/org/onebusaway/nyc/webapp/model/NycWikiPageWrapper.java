@@ -28,6 +28,8 @@ import org.onebusaway.wiki.api.WikiPage;
 public class NycWikiPageWrapper implements WikiPage {
 	private static final long serialVersionUID = 2L;
 
+	private static final Pattern externalLinkPattern = Pattern.compile("https?://.*]");
+
 	private static final Pattern linkPattern = Pattern.compile("([^\\[|\\>]*)]]");
 	
 	private WikiPage page;
@@ -60,12 +62,18 @@ public class NycWikiPageWrapper implements WikiPage {
 		String content = this.page.getContent();
 
 		if(content == null) 
-			return null;
+			return content;
 		
 		// replace a "." with a "/" in a Wiki markup link
 		Matcher m = linkPattern.matcher(content);
 		while (m.find()) {
 			String match = m.group();
+
+			Matcher e = externalLinkPattern.matcher(match);
+
+			if(e.find()) 
+				continue;
+			
 			content = content.replace(match, match.replace(".", "/"));
 		}
 
