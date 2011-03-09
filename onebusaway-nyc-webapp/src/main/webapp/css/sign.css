@@ -104,10 +104,6 @@ a img { border: none; }
 /* =Global Elements
 -------------------------------------------------------------- */
 
-html {
-    position: relative; 
-    height: 100%;
-}
 body, input, textarea {
     font-family: Helvetica,Arial,sans-serif;
     font-size: 0.9em;
@@ -247,11 +243,11 @@ th {
 	padding: .5em;
     font-size: 1.4em;
     line-height: 1.1em;
-    width: 65%;
+    width: 60%;
     border-bottom: 2px solid #999;
 }
 th.instructions {
-	width: 35%;
+	width: 40%;
 	font-style: italic;
 	font-weight: normal;
 	font-size: 0.8em;
@@ -302,6 +298,10 @@ p.alert {
 }
 
 /* landscape configurations */
+body.landscape.sizeTIS, 
+body.landscape.sizeTIS input, 
+body.landscape.sizeTIS textarea { font-size: 2.0em; }
+
 body.landscape.size700, 
 body.landscape.size700 input, 
 body.landscape.size700 textarea { font-size: 1.25em; }

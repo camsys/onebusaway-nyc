@@ -22,7 +22,8 @@ OBA.Sign = function() {
 	var configurableMessageHtml = null;
 	var stopIdsToRequest = null;
 	var vehiclesPerStop = null;
-	
+	var tisMode = null;
+
 	function getParameterByName(name, defaultValue) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
 		var regexS = "[\\?&]"+name+"=([^&#]*)";
@@ -38,6 +39,14 @@ OBA.Sign = function() {
 	function detectSize() {
 		var h = jQuery(window).height();
 		var w = jQuery(window).width();
+
+		// special mode for MTA TIS display
+		if(tisMode === "true") {
+			vehiclesPerStop = 3;
+			jQuery('body').removeClass().addClass('landscape').addClass('sizeTIS');
+			return;
+		}
+		
 		if(w > h) {
 			vehiclesPerStop = 3;
 			if(h >= 1150) {
@@ -69,6 +78,8 @@ OBA.Sign = function() {
 	
 	function setupUI() {
 		// configure interface with URL params
+		tisMode = getParameterByName("tisMode", false);
+		
 		refreshInterval = getParameterByName("refresh", refreshInterval);
 
 		timeout = refreshInterval;
@@ -177,7 +188,6 @@ OBA.Sign = function() {
 						'</td>' +
 					   '</tr>')
 					   .appendTo(tableBody);
-
 			} else {			
 				// sort based on distance
 				distanceAways.sort(function(a, b) { return a.feet - b.feet; });
