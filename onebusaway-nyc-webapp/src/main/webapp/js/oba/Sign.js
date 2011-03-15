@@ -78,13 +78,13 @@ OBA.Sign = function() {
 	
 	function setupUI() {
 		// configure interface with URL params
-		tisMode = getParameterByName("tisMode", false);
+		tisMode = getParameterByName("tisMode", tisMode);
 		
 		refreshInterval = getParameterByName("refresh", refreshInterval);
 
 		timeout = refreshInterval;
 			
-		configurableMessageHtml = getParameterByName("message", null);
+		configurableMessageHtml = getParameterByName("message", configurableMessageHtml);
 		if(configurableMessageHtml !== null) {
 			var header = jQuery("#branding");
 
@@ -137,7 +137,8 @@ OBA.Sign = function() {
 							OBA.Config.infoBubbleFooterFunction("sign", stopId) +
 						'</th>' +
 						'<th class="qr">' + 
-							'<img src="http://' + window.location.hostname + ((window.location.port !== '') ? ':' + window.location.port : '') + '/img/qr/' + stopId + '.png" alt="QR Code"/>' + 
+							'<img src="http://' + window.location.hostname + ((window.location.port !== '') ? ':' + window.location.port : '') 
+								+ '/img/qr/' + stopId + '.png" alt="QR Code"/>' + 
 						'</th>' +
 					'</tr>' + 
 				 '</thead>')
@@ -223,9 +224,26 @@ OBA.Sign = function() {
 				});
 			}
 		});
+		
+		// (this is a keep-alive mechanism for a MTA TIS watchdog process that ensures sign apps stay running)
+		if(tisMode === "true") {
+			window.name = "BusTime";
+		}
+	}
+	
+	function updateTimestamp() {
+		jQuery("#lastupdated")
+			.html("")
+			.remove();
+	
+		jQuery("<span></span>")
+			.attr("id", "lastupdated")
+			.text("Last updated " + new Date(OBA.Util.getTime()).format("mmm d, yyyy h:MM:ss TT"))
+			.appendTo("#footer");
 	}
 	
 	function showError() {
+		updateTimestamp();
 		hideError();
 		
 		jQuery("<p></p>")
@@ -237,12 +255,14 @@ OBA.Sign = function() {
 			.empty();
 	}
 	
+	
 	function hideError() {
 		jQuery("#error")
 			.children()
 			.html("")
 			.remove();
 	}
+
 	
 	function update() {
 		if(stopIdsToRequest === null) {
@@ -267,6 +287,7 @@ OBA.Sign = function() {
 					minutesAfter: OBA.Config.arrivalsMinutesAfter};
 
 			jQuery.getJSON(url, params, function(json) {	
+				updateTimestamp();
 				hideError();
 
 				var stop, arrivals, refs = null;
@@ -379,18 +400,6 @@ OBA.Sign = function() {
 				updateTableForStop(stopTable, stop.name, applicableSituations, routeToHeadsign, routeToVehicleInfo);
 			}); // ajax()
 		}); // each()
-
-		// (this is a keep-alive mechanism for a MTA TIS watchdog process that ensures sign apps stay running)
-		window.name = "BusTime";
-	
-		jQuery("#lastupdated")
-			.html("")
-			.remove();
-	
-		jQuery("<span></span>")
-			.attr("id", "lastupdated")
-			.text("Last updated " + new Date(OBA.Util.getTime()).format("mmm d, yyyy h:MM:ss TT"))
-			.appendTo("#footer");
 	}
 	
 	return {

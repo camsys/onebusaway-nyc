@@ -24,6 +24,7 @@
 #content #text th {
 	text-align: left;	
 	padding-right: 20px;
+	white-space: nowrap;
 }
 
 #content #text p {

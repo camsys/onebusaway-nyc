@@ -125,12 +125,15 @@ public class MonitoredVehicleBean implements MonitoredVehicle {
 			return seconds == 1 ? "1 second" : seconds + " seconds";
 		} else {    	
 			long minutes = seconds / 60;
-			long days = minutes / (60 * 24);
+			float hours = (float)minutes / 60f;
+			float days = hours / 24f;
 
-			if(days < 1) {
+			if(hours < 1) {
 				return minutes == 1 ? "1 minute" : minutes + " minutes";
+			} else if(days < 1) {
+				return hours == 1 ? "1 hour" : String.format("%.1f", hours) + " hours";
 			} else {
-				return days == 1 ? "1 day" : String.format("%1.2f", days) + " days";
+				return days == 1 ? "1 day" : String.format("%.1f", days) + " days";
 			}
 		}
 	}
