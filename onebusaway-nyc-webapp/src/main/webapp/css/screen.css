@@ -248,14 +248,14 @@ a:hover {
 	margin-left: 10px;
 }
 
-#content.sidebar #text ul {
+#content #text ul {
 	padding: 15px;
 	padding-left: 30px;
 	padding-top: 0px;
 	padding-bottom: 0px;
 }
 
-#content.sidebar #text ul li {
+#content #text ul li {
 	list-style-type: disc;
 	padding-top: 2px;
 	padding-bottom: 2px;
