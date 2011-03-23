@@ -144,6 +144,8 @@ public class VehicleInferenceInstance {
     long timestamp = RecordLibrary.getBestTimestamp(record.getTime(),
         record.getTimeReceived());
 
+    _lastUpdateTime = timestamp;
+
     /**
      * If this record occurs BEFORE the most recent update, we take special
      * action
@@ -247,7 +249,6 @@ public class VehicleInferenceInstance {
     _previousObservation = observation;
     _vehicleLocationRecord = null;
     _nycTestLocationRecord = null;
-    _lastUpdateTime = timestamp;
     _lastValidDestinationSignCode = lastValidDestinationSignCode;
     
     if (!latlonMissing)
