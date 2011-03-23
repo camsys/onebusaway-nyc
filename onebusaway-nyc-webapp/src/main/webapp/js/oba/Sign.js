@@ -147,6 +147,8 @@ OBA.Sign = function() {
 		jQuery("<tbody></tbody>")
 				 .appendTo(table);
 		
+		_gaq.push(['_trackEvent', "DIY Sign", "Add Stop", stopId]);
+		
 		return table;
 	}
 	
