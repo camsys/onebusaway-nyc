@@ -43,6 +43,7 @@ import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.StopItem;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
 import org.onebusaway.nyc.presentation.service.NycConfigurationService;
+import org.onebusaway.presentation.model.ArrivalDepartureBeanListFilter;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
@@ -94,6 +95,9 @@ public class NycSearchServiceImpl implements NycSearchService {
   
   @Autowired
   private ServiceAreaService serviceArea;
+
+  @Autowired
+  private ArrivalDepartureBeanListFilter adbeanFilter;
 
   private static final SearchResultComparator searchResultComparator = new SearchResultComparator();
 
@@ -545,6 +549,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = 
     	transitService.getStopWithArrivalsAndDepartures(stopId, query);
     List<ArrivalAndDepartureBean> arrivalsAndDepartures = stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
+    arrivalsAndDepartures = adbeanFilter.filter(arrivalsAndDepartures);
 
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
       TripBean tripBean = arrivalAndDepartureBean.getTrip();
@@ -553,81 +558,37 @@ public class NycSearchServiceImpl implements NycSearchService {
       String routeId = tripBean.getRoute().getId();
       String directionId = tripBean.getDirectionId();
       
-      if(routeId == null || headsign == null || directionId == null) {
-    	  continue;
-      }
-      
       // FIXME: most common headsign?
       routeIdToHeadsign.put(routeId, headsign);
       headsignToDirectionId.put(headsign, directionId);
       
+      boolean routeIsOnDetour = false;
       // add service alerts to our list of service alerts for all routes at this stop
+      // and check if route is on detour
       if(arrivalAndDepartureBean.getSituations() != null) {
     	  for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
     		  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToServiceAlerts.get(situationBean.getId());
       	
     		  if(serviceAlert == null)
     			  serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
+
+          String miscelleanousReason = situationBean.getMiscellaneousReason();
+
+          if (miscelleanousReason != null
+              && miscelleanousReason.compareTo("detour") == 0) {
+            routeIsOnDetour = true;
+            break;
+          }
     	  }
       }
-
-      // hide non-realtime arrivals and departures
-      if(tripStatusBean == null || tripStatusBean.isPredicted() == false 
-    		  || tripStatusBean.getVehicleId() == null || tripStatusBean.getVehicleId().equals("")) {
-    	  continue;
-      }
       
-      if(debug)
-    	  System.out.println("A-D FOR STOP: VID=" + tripStatusBean.getVehicleId());
-      
-      // hide buses that left the stop recently
-      if (arrivalAndDepartureBean.getDistanceFromStop() < 0) {
-    	  if(debug)
-    		  System.out.println("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrivalAndDepartureBean.getDistanceFromStop() + ")");
-
-    	  continue;
-      }
-      
-	  // if a vehicle is in progress, it has to be on the A-D's current trip to show up in bubble.
-	  // If a vehicle is in layover, bus should show if it's on A-D's current trip or the previous trip
-      // /and/ over 50% complete in previous trip progress.
-      if(tripBean != null && tripStatusBean != null) {
-		  String phase = tripStatusBean.getPhase();
-		  TripBean activeTrip = tripStatusBean.getActiveTrip();				  
-		  
-		  if(phase != null && 
-				  (phase.toLowerCase().equals("layover_before") || phase.toLowerCase().equals("layover_during"))) {
-
-			  double distanceAlongTrip = tripStatusBean.getDistanceAlongTrip();
-			  double totalDistanceAlongTrip = tripStatusBean.getTotalDistanceAlongTrip();			  
-			  if(Double.isNaN(distanceAlongTrip) != true && Double.isNaN(totalDistanceAlongTrip) != true) {
-				  double ratio = distanceAlongTrip / totalDistanceAlongTrip;
-				  if(activeTrip != null &&
-					 !tripBean.getId().equals(activeTrip.getId()) && 
-					 ((arrivalAndDepartureBean.getBlockTripSequence() - 1) != tripStatusBean.getBlockTripSequence() && ratio > 0.50)) {
-
-					  if(debug)
-						  System.out.println("   --- HIDING LAYOVER VEHICLE: IS NOT ON PROPER TRIP (RATIO=" + ratio + ").");
-					  
-					  continue;
-				  }
-			  }
-		  } else {
-			  if(activeTrip != null && !tripBean.getId().equals(activeTrip.getId())) {
-				  if(debug)
-					  System.out.println("   --- HIDING NON-LAYOVER VEHICLE: IS NOT ON A-D'S TRIP.");
-						  
-				  continue;
-			  }
-		  }
-      }
-      
-      // should we display this vehicle on the UI specified by "m"?
-      if(! shouldDisplayTripForUIMode(arrivalAndDepartureBean.getTripStatus(), m)) {
-    	  if(debug)
-    		  System.out.println("   --- HIDING BECAUSE OF FILTER FUNCTION");
-    	  
-    	  continue;
+      // hide deviated vehicles from mobile web + sms interfaces (row 4)
+      if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
+        String status = tripStatusBean.getStatus();
+        if ((status != null && status.toLowerCase().compareTo("deviated") == 0)
+            && !routeIsOnDetour) {
+          continue;
+        }
       }
       
       double distanceFromStopInMeters = arrivalAndDepartureBean.getDistanceFromStop();
