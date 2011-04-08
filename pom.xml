@@ -72,6 +72,7 @@
     <module>onebusaway-nyc-presentation</module>
     <module>onebusaway-nyc-sms-webapp</module>
     <module>onebusaway-nyc-transit-data</module>
+    <module>onebusaway-nyc-api-webapp</module>
   </modules>
 
   <build>
