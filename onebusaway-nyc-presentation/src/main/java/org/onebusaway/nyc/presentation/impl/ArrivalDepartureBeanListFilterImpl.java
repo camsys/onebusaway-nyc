@@ -55,12 +55,23 @@ public class ArrivalDepartureBeanListFilterImpl implements
       // hide buses that left the stop recently
       if (arrivalAndDepartureBean.getDistanceFromStop() < 0) {
         if (debug) {
-          System.out.println("skip buses that just left this stop)"
+          System.out.println("skip buses that just left this stop "
               + arrivalAndDepartureBean.getVehicleId());
         }
         continue;
+      } else {
+      // or ones that are farther away than the entire route's length
+		if(tripStatusBean != null) {
+			if(arrivalAndDepartureBean.getDistanceFromStop() > tripStatusBean.getDistanceAlongTrip()) {
+		        if (debug) {
+		            System.out.println("skip buses that are farther away than the entire route "
+		                + arrivalAndDepartureBean.getVehicleId());
+		        }
+				continue;
+			}
+		}    	  
       }
-
+      
       if (tripBean != null && tripStatusBean != null) {
         String phase = tripStatusBean.getPhase();
         TripBean activeTrip = tripStatusBean.getActiveTrip();

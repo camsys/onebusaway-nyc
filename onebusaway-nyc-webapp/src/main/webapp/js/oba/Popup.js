@@ -196,8 +196,16 @@ OBA.StopPopup = function(stopId, map) {
 			if(arrival.distanceFromStop < 0) {
 				OBA.Util.log("   --- HIDING BECAUSE OF DIST. FROM STOP (" + arrival.distanceFromStop + ")");
 				return;
-			}
-
+			} else {
+			// or ones that are farther away than the entire route's length
+				if(arrival.tripStatus !== null) {
+					if(arrival.distanceFromStop > arrival.tripStatus.totalDistanceAlongTrip) {
+						OBA.Util.log("   --- HIDING BECAUSE DIST. FROM STOP IS MORE THAN TOTAL ROUTE LENGTH.");
+						return;
+					}
+				}
+			}			
+			
 			// if a vehicle is in progress, it has to be on the A-D's current trip to show up in bubble.
 			// If a vehicle is in layover, bus should show if it's on A-D's current trip or the previous trip
 			// /and/ over 50% complete in previous trip progress.
