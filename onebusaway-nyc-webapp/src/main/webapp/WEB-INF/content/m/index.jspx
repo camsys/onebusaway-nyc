@@ -125,7 +125,7 @@
 					</strong><br/>
 		
 					<s:if test="%{routesAvailable.size==0}">
-						<p>OneBusAway NYC is not tracking any buses en-route to your location. Please check back shortly for an update.</p>
+						<p>No upcoming service is available at this stop.</p>
 					</s:if>
 					<s:else>
 						<s:iterator value="routesAvailable">
