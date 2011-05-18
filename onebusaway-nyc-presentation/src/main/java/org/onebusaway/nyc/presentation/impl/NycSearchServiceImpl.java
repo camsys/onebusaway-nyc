@@ -538,6 +538,7 @@ public class NycSearchServiceImpl implements NycSearchService {
     Map<String, List<DistanceAway>> routeIdToDistanceAways = new HashMap<String, List<DistanceAway>>();
     Map<String, String> headsignToDirectionId = new HashMap<String, String>();
     Map<String, String> routeIdToHeadsign = new HashMap<String, String>();
+    Map<String, Boolean> routeIdToDetouredFlag = new HashMap<String, Boolean>();
     List<RouteItem> availableRoutes = new ArrayList<RouteItem>();
     Map<String, NaturalLanguageStringBean> serviceAlertIdsToServiceAlerts = new HashMap<String, NaturalLanguageStringBean>();
 
@@ -548,12 +549,13 @@ public class NycSearchServiceImpl implements NycSearchService {
     
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures = 
     	transitService.getStopWithArrivalsAndDepartures(stopId, query);
-    List<ArrivalAndDepartureBean> arrivalsAndDepartures = stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
-    arrivalsAndDepartures = adbeanFilter.filter(arrivalsAndDepartures);
 
+    // this process uses unfiltered routes so that the interfaces show routes that
+    // typically stop at a given stop, even if there are no "live"/tracked vehicles currently 
+    // serving that route right now.
+    List<ArrivalAndDepartureBean> arrivalsAndDepartures = stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
       TripBean tripBean = arrivalAndDepartureBean.getTrip();
-      TripStatusBean tripStatusBean = arrivalAndDepartureBean.getTripStatus();      
       String headsign = tripBean.getTripHeadsign();
       String routeId = tripBean.getRoute().getId();
       String directionId = tripBean.getDirectionId();
@@ -562,27 +564,34 @@ public class NycSearchServiceImpl implements NycSearchService {
       routeIdToHeadsign.put(routeId, headsign);
       headsignToDirectionId.put(headsign, directionId);
       
-      boolean routeIsOnDetour = false;
       // add service alerts to our list of service alerts for all routes at this stop
       // and check if route is on detour
       if(arrivalAndDepartureBean.getSituations() != null) {
-    	  for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
-    		  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToServiceAlerts.get(situationBean.getId());
-      	
-    		  if(serviceAlert == null)
-    			  serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
+  	    for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
+  		  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToServiceAlerts.get(situationBean.getId());
+    	
+  		  if(serviceAlert == null)
+  			  serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
 
           String miscelleanousReason = situationBean.getMiscellaneousReason();
-
-          if (miscelleanousReason != null
-              && miscelleanousReason.compareTo("detour") == 0) {
-            routeIsOnDetour = true;
+          if (miscelleanousReason != null && miscelleanousReason.equals("detour")) {
+        	routeIdToDetouredFlag.put(routeId, true);
             break;
           }
-    	  }
+  	    }
       }
-      
+    }
+
+    // ...since this is data used for display of realtime data only, we use the filtered bean list here:
+    List<ArrivalAndDepartureBean> filteredArrivalsAndDepartures = adbeanFilter.filter(arrivalsAndDepartures);
+    for (ArrivalAndDepartureBean arrivalAndDepartureBean : filteredArrivalsAndDepartures) {
+      TripBean tripBean = arrivalAndDepartureBean.getTrip();
+      TripStatusBean tripStatusBean = arrivalAndDepartureBean.getTripStatus();      
+      String routeId = tripBean.getRoute().getId();
+
       // hide deviated vehicles from mobile web + sms interfaces (row 4)
+      Boolean routeIsOnDetour = routeIdToDetouredFlag.get(routeId);
+      
       if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
         String status = tripStatusBean.getStatus();
         if ((status != null && status.toLowerCase().compareTo("deviated") == 0)
