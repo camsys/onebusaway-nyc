@@ -62,7 +62,7 @@ public class ArrivalDepartureBeanListFilterImpl implements
       } else {
       // or ones that are farther away than the entire route's length
 		if(tripStatusBean != null) {
-			if(arrivalAndDepartureBean.getDistanceFromStop() > tripStatusBean.getDistanceAlongTrip()) {
+			if(arrivalAndDepartureBean.getDistanceFromStop() > tripStatusBean.getTotalDistanceAlongTrip()) {
 		        if (debug) {
 		            System.out.println("skip buses that are farther away than the entire route "
 		                + arrivalAndDepartureBean.getVehicleId());
@@ -71,7 +71,7 @@ public class ArrivalDepartureBeanListFilterImpl implements
 			}
 		}    	  
       }
-      
+
       if (tripBean != null && tripStatusBean != null) {
         String phase = tripStatusBean.getPhase();
         TripBean activeTrip = tripStatusBean.getActiveTrip();

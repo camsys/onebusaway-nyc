@@ -65,8 +65,10 @@ public class NycVehicleLocationRecord {
   private String deviceId;
 
   /** raw GPS sentences */
+  @CsvField(optional = true)
   private String gga;
 
+  @CsvField(optional = true)
   private String rmc;
 
   @Embedded
@@ -77,7 +79,7 @@ public class NycVehicleLocationRecord {
   private AgencyAndId vehicleId;
 
   @Column(name = "rawData", length = 3000)
-  @CsvField(name = "rawdata")
+  @CsvField(name = "rawdata", optional = true)
   private String rawData;
 
   public void setId(long id) {
