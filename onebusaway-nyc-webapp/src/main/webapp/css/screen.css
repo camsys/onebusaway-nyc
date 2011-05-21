@@ -17,14 +17,13 @@
 html, body {
 	font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;
 	font-size: 12px;
-	
 	background-color: #999999;
 }
 
 a,
 a:visited,
 a:hover {
-	color: blue;
+	color: #0358B6;
 }
 
 a:hover {
@@ -42,9 +41,6 @@ a:hover {
 }
 
 #header {
-	background-image: url('img/topbar_background.png');
-	background-repeat: repeat-x;
-
 	height: 100px;
 	position: relative;
 }
@@ -58,20 +54,22 @@ a:hover {
 #header h1,
 #header h2 {
 	font-size: 18px;
-	color: #FFFFFF;
+	color: #c0c0c0;
 	float: left;
+    font-weight: normal;
 }
 
 #header h1 a,
 #header h2 a {
 	text-decoration: none;
-	color: #FFFFFF;	
+	color: #666666;	
 }
 
 #header h1 {
 	border-left: 1px solid #C0C0C0;
 	padding-left: 10px;
 	margin-left: 10px;
+	font-weight: bold;
 }
 
 #header ul {
@@ -107,7 +105,8 @@ a:hover {
 #header ul li a {
 	text-decoration: none;
 	font-size: 12px;
-	color: #444444;
+	color: #ffffff;
+	font-weight: bold;
 }
 
 #content #sidebar {
@@ -267,7 +266,7 @@ a:hover {
     clear: both;
 	font-size: 11px;
 	border-top: 1px solid #ACACAC;
-	background-color: #EFEFEF;
+	background-color: #FFFFFF;
 	color: #333333;
 }
 

@@ -162,14 +162,15 @@ small {
 -------------------------------------------------------------- */
 
 #branding {
-    background: #1919be url(img/gradient.png) bottom left repeat-x scroll;
-    color: #eaeaea;
+	background-color: #ffffff;
+    color: #666666;
     padding: 1em;
     position: relative;
 }
 h1 {
-    color: #fff;
+    color: #666666;
     font-size: 2em;
+    font-weight: bold;
     float: left;
 }
 h2 {
@@ -194,8 +195,8 @@ p#message {
     bottom: 0;
     left: 0;
     right: 0;
-    background: #02029a url(img/gradient.png) top left repeat-x scroll;
-    color: #ccc;
+    background-color: #ffffff;
+    color: #333333;
     font-size: 0.7em;
     width: 100%;
 }
@@ -309,30 +310,24 @@ body.landscape.size700 textarea { font-size: 1.25em; }
 body.landscape.size1000, 
 body.landscape.size1000 input, 
 body.landscape.size1000 textarea { font-size: 1.60em; }
-body.landscape.size1000 #branding { background-image: url(img/gradient-100.png); }
 
 body.landscape.size1200, 
 body.landscape.size1200 input, 
 body.landscape.size1200 textarea { font-size: 2.2em; }
-body.landscape.size1200 #branding { background-image: url(img/gradient-130.png); }
 
 /* portrait configurations */
 body.portrait.size1000, 
 body.portrait.size1000 input, 
 body.portrait.size1000 textarea { font-size: 0.9em; }
-body.portrait.size1000 #branding { background-image: url(img/gradient-100.png); }
 
 body.portrait.size1200, 
 body.portrait.size1200 input, 
 body.portrait.size1200 textarea { font-size: 1.3em; }
-body.portrait.size1200 #branding { background-image: url(img/gradient-100.png); }
 
 body.portrait.size1600, 
 body.portrait.size1600 input, 
 body.portrait.size1600 textarea { font-size: 1.5em; }
-body.portrait.size1600 #branding { background-image: url(img/gradient-100.png); }
 
 body.portrait.size1900, 
 body.portrait.size1900 input, 
 body.portrait.size1900 textarea { font-size: 1.7em; }
-body.portrait.size1900 #branding { background-image: url(img/gradient-100.png); }
