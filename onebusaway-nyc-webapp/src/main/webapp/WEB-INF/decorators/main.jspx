@@ -68,7 +68,7 @@
   <div id="page">
     <div id="header">
       <div class="title">
-      	<h2>A City Transit Agency</h2>
+      	<h2><a href="http://www.example.com">A City Transit Agency</a></h2>
 
       	<s:url var="url" value="/"></s:url>
 	  	<h1><a href="${url}">OneBusAway NYC</a></h1>
