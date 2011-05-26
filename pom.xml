@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
   <packaging>pom</packaging>
   <name>onebusaway-nyc</name>
 
@@ -58,9 +58,9 @@
   </pluginRepositories>
 
   <scm>
-    <connection>scm:svn:http://onebusaway.googlecode.com/svn/onebusaway-nyc/trunk</connection>
-    <developerConnection>scm:svn:https://onebusaway.googlecode.com/svn/onebusaway-nyc/trunk </developerConnection>
-    <url>http://code.google.com/p/onebusaway/source/browse/#svn/onebusaway-nyc/trunk</url>
+    <connection>scm:svn:http://onebusaway.googlecode.com/svn/onebusaway-nyc/tags/onebusaway-nyc-1.0.3</connection>
+    <developerConnection>scm:svn:https://onebusaway.googlecode.com/svn/onebusaway-nyc/tags/onebusaway-nyc-1.0.3 </developerConnection>
+    <url>http://code.google.com/p/onebusaway/source/browse/#svn/onebusaway-nyc/tags/onebusaway-nyc-1.0.3</url>
   </scm>
 
   <modules>
