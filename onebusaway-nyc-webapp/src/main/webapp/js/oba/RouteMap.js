@@ -174,6 +174,13 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 					// if we're here, we're adding this vehicle to the map...
 
 					var latLng = [status.position.lat, status.position.lon];
+					
+					// if this bus is deviated from the route, show its actual location, not the 
+					// one snapped to the route
+					if(status.status === 'deviated') {
+						latLng = [status.lastKnownLocation.lat, status.lastKnownLocation.lon];
+					}
+					
 					var vehicleMarker = vehicleMarkers[vehicleId];
 
 					if (vehicleMarker) {
