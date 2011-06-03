@@ -8,12 +8,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc</artifactId>
-  <version>1.0.5-SNAPSHOT</version>
+  <version>1.0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>onebusaway-nyc</name>
 
   <properties>
-  	<onebusaway.version>0.0.3</onebusaway.version>
+  	<onebusaway.version>0.0.4</onebusaway.version>
   	<onebusaway.gtfs.version>1.1.9</onebusaway.gtfs.version>
   	<onebusaway.siri.version>0.0.3</onebusaway.siri.version>
   	<struts.version>2.1.8.1</struts.version>
