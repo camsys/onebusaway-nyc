@@ -563,7 +563,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       // FIXME: most common headsign?
       routeIdToHeadsign.put(routeId, headsign);
       headsignToDirectionId.put(headsign, directionId);
-      
+
       // add service alerts to our list of service alerts for all routes at this stop
       // and check if route is on detour
       if(arrivalAndDepartureBean.getSituations() != null) {
@@ -595,7 +595,7 @@ public class NycSearchServiceImpl implements NycSearchService {
       if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
         String status = tripStatusBean.getStatus();
         if ((status != null && status.toLowerCase().compareTo("deviated") == 0)
-            && !routeIsOnDetour) {
+            && (routeIsOnDetour == null || routeIsOnDetour == false)) {
           continue;
         }
       }
