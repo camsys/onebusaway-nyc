@@ -31,6 +31,9 @@
 
 	<s:url var="url" value="/css/sign-branding.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+
+	<s:url var="url" value="/config.action"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
     
 	<s:url var="url" value="/js/jquery.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
