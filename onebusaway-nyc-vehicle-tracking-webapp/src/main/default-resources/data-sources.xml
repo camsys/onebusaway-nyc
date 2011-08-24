@@ -30,14 +30,14 @@
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
         <property name="username" value="postgres" />
-        <property name="password" value="" />
+        <property name="password" value="changeme" />
     </bean>
 
     <bean id="mutableDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
         <property name="username" value="postgres" />
-        <property name="password" value="" />
+        <property name="password" value="changeme" />
     </bean>
 
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
@@ -58,13 +58,11 @@
         </property>
     </bean>
 
-
-
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">/opt/onebusaway-nyc/bundles/current</prop>
+                <prop key="bundlePath">/Users/jmaki/Documents/workspace-oba/oba-bundle</prop>
             </props>
         </property>
     </bean>

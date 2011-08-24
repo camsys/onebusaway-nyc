@@ -24,12 +24,12 @@
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
 
     <bean id="serviceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
 
     <bean id="configServiceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/>
+        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/>
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
 
@@ -37,7 +37,7 @@
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
         <property name="username" value="postgres" />
-        <property name="password" value="" />
+        <property name="password" value="changeme" />
     </bean>
 
 	<bean id="webappHibernateProperties"
@@ -84,13 +84,13 @@
     </bean>
     
     <bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl">
-        <property name="xwikiUrl" value="http://localhost/xwiki" />
+        <property name="xwikiUrl" value="http://bustime.mta.info/xwiki" />
     </bean>
 
     <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl">
         <property name="wikiDocumentViewUrl" value="/wiki/%{documentName}" />
-        <property name="wikiDocumentEditUrl" value="http://localhost/xwiki/bin/edit/%{namespace}/%{documentName}" />
-        <property name="wikiAttachmentUrl" value="http://localhost/xwiki/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
+        <property name="wikiDocumentEditUrl" value="http://bustime.mta.info/xwiki/bin/edit/%{namespace}/%{documentName}" />
+        <property name="wikiAttachmentUrl" value="http://bustime.mta.info/xwiki/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
     </bean>
 
     <bean id="nycConfigurationServiceImpl" class="org.onebusaway.nyc.presentation.impl.NycConfigurationServiceImpl">
@@ -100,40 +100,4 @@
        </bean>
      </property>
    </bean>
-
-<!--   wiki content cache -->
-<!--   <aop:config>-->
-<!--		<aop:pointcut id="wikiCachingPointcut"-->
-<!--			expression="execution(* org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl.getWikiPage(..))" />-->
-<!--		<aop:aspect id="wikiCachingAspect" ref="cacheableMethodManager">-->
-<!--			<aop:around pointcut-ref="wikiCachingPointcut" method="evaluate" />-->
-<!--		</aop:aspect>-->
-<!--   </aop:config>-->
-<!---->
-<!--   <bean-->
-<!--		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">-->
-<!--		<property name="targetObject" ref="cacheableMethodKeyFactoryManager" />-->
-<!--		<property name="targetMethod"-->
-<!--			value="putCacheRefreshIndicatorArgumentIndexForMethodSignature" />-->
-<!--		<property name="arguments">-->
-<!--			<list>-->
-<!--				<value>org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl.getWikiPage</value>-->
-<!--				<value>2</value>-->
-<!--			</list>-->
-<!--		</property>-->
-<!--	</bean>-->
-<!---->
-<!--	<bean id="wikiPageCache"-->
-<!--		class="org.onebusaway.container.spring.ehcache.EhCacheFactoryBean">-->
-<!--		<property name="cacheManager" ref="cacheManager" />-->
-<!--		<property name="cacheName"-->
-<!--			value="org.onebusaway.wiki.api.WikiDocumentService.getWikiPage" />-->
-<!--		<property name="maxElementsInMemory" value="25" />-->
-<!--		<property name="eternal" value="false" />-->
-<!--		<property name="timeToLive" value="3600" />-->
-<!--		<property name="timeToIdle" value="3600" />-->
-<!--		<property name="overflowToDisk" value="true" />-->
-<!--		<property name="diskPersistent" value="false" />-->
-<!--	</bean>   -->
-
 </beans>

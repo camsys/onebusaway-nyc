@@ -142,7 +142,7 @@ OBA.VehiclesAdmin = (function() {
 				var marker = jQuery("<img></img>")
 									.addClass("marker")
 									.appendTo(mapDivWrapper)
-									.attr("src", "http://dev.oba.openplans.org/" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType);
+									.attr("src", "../" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType);
 	
 				el.find("p").hide();
 				el.append(mapDivWrapper);	

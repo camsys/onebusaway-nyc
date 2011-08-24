@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+    <!-- Specify our transit data source -->
+    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+    </bean>
+
+    <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl"/>
+
+    <!-- common data sources -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.postgresql.Driver" />
+        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
+        <property name="username" value="postgres" />
+        <property name="password" value="changeme" />
+    </bean>
+
+    <bean id="webappHibernateProperties"
+          class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernateProperties" />
+        <property name="properties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+                <prop key="hibernate.connection.autocommit">false</prop>
+            </props>
+        </property>
+    </bean>
+  
+    <bean id="webappMutableHibernateProperties"
+          class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernatePropertiesMutable" />
+        <property name="properties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+                <prop key="hibernate.connection.autocommit">false</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="cacheManager.cacheManagerName">org.onebusaway.api_webapp.cacheManager</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="adbeanFilter" class="org.onebusaway.nyc.presentation.impl.ArrivalDepartureBeanListFilterImpl" />
+
+    <bean id="nycConfigurationServiceImpl" class="org.onebusaway.nyc.presentation.impl.NycConfigurationServiceImpl">
+     <property name="path">
+       <bean class="java.io.File">
+         <constructor-arg value="/tmp/configuration-service.properties" />
+       </bean>
+     </property>
+   </bean>
+
+    <bean id="configServiceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/>
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
+    </bean>
+
+</beans>
