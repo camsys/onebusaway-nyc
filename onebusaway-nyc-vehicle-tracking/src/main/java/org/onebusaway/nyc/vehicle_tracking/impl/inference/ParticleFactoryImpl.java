@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -115,7 +114,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
       MotionState motionState = _motionModel.updateMotionState(obs);
 
-      VehicleState state = determineJourneyState(null, motionState,
+      VehicleState state = determineJourneyState(motionState,
           obs.getLocation(), atStartCdf, inProgresCdf, obs);
 
       Particle p = new Particle(timestamp);
@@ -126,10 +125,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
-  public VehicleState determineJourneyState(EdgeState edgeState,
-      MotionState motionState, CoordinatePoint locationOnEdge,
-      CDFMap<BlockState> atStartCdf, CDFMap<BlockState> inProgressCdf,
-      Observation obs) {
+  public VehicleState determineJourneyState(MotionState motionState, 
+      CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf, 
+      CDFMap<BlockState> inProgressCdf, Observation obs) {
 
     // If we're at a base to start, we favor that over all other possibilities
     if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
@@ -139,7 +137,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       if (!atStartCdf.isEmpty())
         blockState = atStartCdf.sample();
 
-      return vehicleState(edgeState, motionState, blockState,
+      return vehicleState(motionState, blockState,
           JourneyState.atBase(), obs);
     }
 
@@ -149,33 +147,33 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
       // No blocks? Jump to the deadhead-before state
       if (inProgressCdf.isEmpty())
-        return vehicleState(edgeState, motionState, null,
+        return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
 
       BlockState blockState = inProgressCdf.sample();
-      return vehicleState(edgeState, motionState, blockState,
+      return vehicleState(motionState, blockState,
           JourneyState.inProgress(), obs);
     } else {
 
       // No blocks? Jump to the deadhead-before state
       if (atStartCdf.isEmpty())
-        return vehicleState(edgeState, motionState, null,
+        return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
 
       BlockState blockState = atStartCdf.sample();
-      return vehicleState(edgeState, motionState, blockState,
+      return vehicleState(motionState, blockState,
           JourneyState.deadheadBefore(locationOnEdge), obs);
     }
   }
 
-  private VehicleState vehicleState(EdgeState edgeState,
-      MotionState motionState, BlockState blockState,
-      JourneyState journeyState, Observation obs) {
+  private VehicleState vehicleState(MotionState motionState, 
+	  BlockState blockState, JourneyState journeyState, 
+	  Observation obs) {
 
     List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
         null, blockState, journeyState, obs);
 
-    return new VehicleState(edgeState, motionState, blockState, journeyState,
+    return new VehicleState(motionState, blockState, journeyState,
         summaries, obs);
   }
 }

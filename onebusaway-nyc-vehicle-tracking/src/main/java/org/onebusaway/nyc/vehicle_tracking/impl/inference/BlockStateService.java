@@ -48,6 +48,7 @@ public class BlockStateService {
   /**
    * This will sound weird, but DON'T REMOVE THIS
    */
+  @SuppressWarnings("unused")
   private Logger _log = LoggerFactory.getLogger(BlockStateService.class);
 
   private ObservationCache _observationCache;

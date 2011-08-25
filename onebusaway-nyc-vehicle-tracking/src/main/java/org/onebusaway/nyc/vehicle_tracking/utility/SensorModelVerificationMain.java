@@ -45,7 +45,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -297,8 +296,6 @@ public class SensorModelVerificationMain {
   private VehicleState getRecordAsVehicleState(NycTestLocationRecord record,
       VehicleState prevState, Observation obs) {
 
-    EdgeState edgeState = null;
-
     MotionState motionState = createMotionState(prevState, obs);
 
     BlockState blockState = createBlockState(record, prevState, obs);
@@ -308,7 +305,7 @@ public class SensorModelVerificationMain {
     List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
         prevState, blockState, journeyState, obs);
 
-    return new VehicleState(edgeState, motionState, blockState, journeyState,
+    return new VehicleState(motionState, blockState, journeyState,
         summaries, obs);
   }
 

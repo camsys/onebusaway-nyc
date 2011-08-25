@@ -47,8 +47,8 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-api-webapp</artifactId>
-            <version>${onebusaway.version}</version>
+            <artifactId>onebusaway-nyc-api-webapp</artifactId>
+            <version>${project.version}</version>
             <type>war</type>
         </dependency>
         <dependency>

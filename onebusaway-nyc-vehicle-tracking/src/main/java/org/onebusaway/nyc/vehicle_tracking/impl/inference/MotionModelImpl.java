@@ -20,12 +20,10 @@ import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,50 +55,15 @@ public class MotionModelImpl implements MotionModel<Observation> {
       Observation obs, List<Particle> results) {
 
     VehicleState parentState = parent.getData();
-
-    /**
-     * Snap the observation to an edge on the street network
-     */
-    EdgeState edgeState = determineEdgeState(obs, parentState);
-
+    
     MotionState motionState = updateMotionState(parentState, obs);
 
     List<VehicleState> vehicleStates = new ArrayList<VehicleState>();
-    _journeyMotionModel.move(parentState, edgeState, motionState, obs,
+    _journeyMotionModel.move(parentState, motionState, obs,
         vehicleStates);
 
     for (VehicleState vs : vehicleStates)
       results.add(new Particle(timestamp, parent, 1.0, vs));
-  }
-
-  private EdgeState determineEdgeState(Observation obs, VehicleState parentState) {
-
-    EdgeState edgeState = parentState.getEdgeState();
-
-    /**
-     * We only let the street network edge change if the GPS has changed. This
-     * helps us avoid oscilation between potential states when the bus isn't
-     * moving.
-     */
-    if (gpsHasChanged(obs)) {
-
-      /**
-       * We can cache the edge CDF for an observation
-       */
-      /*
-       * CDFMap<EdgeState> edges = _observationCache.getValueForObservation(obs,
-       * EObservationCacheKey.STREET_NETWORK_EDGES);
-       * 
-       * if (edges == null) { edges =
-       * _edgeStateLibrary.calculatePotentialEdgeStates(obs.getPoint());
-       * _observationCache.putValueForObservation(obs,
-       * EObservationCacheKey.STREET_NETWORK_EDGES, edges); }
-       * 
-       * edgeState = edges.sample();
-       */
-    }
-
-    return edgeState;
   }
 
   public MotionState updateMotionState(Observation obs) {
@@ -126,17 +89,5 @@ public class MotionModelImpl implements MotionModel<Observation> {
     }
 
     return new MotionState(lastInMotionTime, lastInMotionLocation);
-  }
-
-  private boolean gpsHasChanged(Observation obs) {
-
-    NycVehicleLocationRecord record = obs.getRecord();
-    NycVehicleLocationRecord prevRecord = obs.getPreviousRecord();
-
-    if (prevRecord == null)
-      return true;
-
-    return prevRecord.getLatitude() != record.getLatitude()
-        || prevRecord.getLongitude() != record.getLongitude();
   }
 }

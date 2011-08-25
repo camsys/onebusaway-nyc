@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.EdgeState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -46,13 +45,13 @@ public class JourneyStateTransitionModel {
    * 
    ****/
 
-  public void move(VehicleState parentState, EdgeState edgeState,
-      MotionState motionState, Observation obs, List<VehicleState> results) {
+  public void move(VehicleState parentState, MotionState motionState, 
+		  Observation obs, List<VehicleState> results) {
 
     List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
         obs);
 
-    generateVehicleStates(parentState, edgeState, motionState, journeyStates,
+    generateVehicleStates(parentState, motionState, journeyStates,
         obs, results);
   }
 
@@ -81,9 +80,8 @@ public class JourneyStateTransitionModel {
   }
 
   private void generateVehicleStates(VehicleState parentState,
-      EdgeState edgeState, MotionState motionState,
-      List<JourneyState> journeyStates, Observation obs,
-      List<VehicleState> results) {
+      MotionState motionState, List<JourneyState> journeyStates, 
+      Observation obs, List<VehicleState> results) {
 
     for (JourneyState journeyState : journeyStates) {
 
@@ -93,7 +91,7 @@ public class JourneyStateTransitionModel {
       List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
           parentState, blockState, journeyState, obs);
 
-      VehicleState vehicleState = new VehicleState(edgeState, motionState,
+      VehicleState vehicleState = new VehicleState(motionState,
           blockState, journeyState, summaries, obs);
 
       results.add(vehicleState);

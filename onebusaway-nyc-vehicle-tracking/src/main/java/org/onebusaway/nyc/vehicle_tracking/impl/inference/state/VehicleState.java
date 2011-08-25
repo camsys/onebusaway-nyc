@@ -28,11 +28,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
  */
 public final class VehicleState {
 
-  /**
-   * Our location on an edge in the street graph
-   */
-  private final EdgeState edgeState;
-
   private final MotionState motionState;
 
   private final BlockState blockState;
@@ -44,7 +39,6 @@ public final class VehicleState {
   private final Observation observation;
 
   public VehicleState(VehicleState state) {
-    this.edgeState = state.edgeState;
     this.motionState = state.motionState;
     this.blockState = state.blockState;
     this.journeyState = state.journeyState;
@@ -52,7 +46,7 @@ public final class VehicleState {
     this.observation = state.observation;
   }
 
-  public VehicleState(EdgeState edgeState, MotionState motionState,
+  public VehicleState(MotionState motionState,
       BlockState blockState, JourneyState journeyState,
       List<JourneyPhaseSummary> journeySummaries, Observation observation) {
     if (motionState == null)
@@ -61,16 +55,11 @@ public final class VehicleState {
       throw new IllegalArgumentException("journeyPhase cannot be null");
     if (observation == null)
       throw new IllegalArgumentException("observation cannot be null");
-    this.edgeState = edgeState;
     this.motionState = motionState;
     this.blockState = blockState;
     this.journeyState = journeyState;
     this.journeySummaries = journeySummaries;
     this.observation = observation;
-  }
-
-  public EdgeState getEdgeState() {
-    return edgeState;
   }
 
   public MotionState getMotionState() {
