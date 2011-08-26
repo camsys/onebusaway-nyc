@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.onebusaway</groupId>
         <artifactId>onebusaway-nyc</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-api-webapp</artifactId>
@@ -15,19 +15,20 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-transit-data</artifactId>
-            <version>${onebusaway.version}</version>
-        </dependency>
-
-        <!-- We need this for CsvEntityReader, NOT for any of the gtfs classes (I wish it was separate) -->
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-gtfs</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-presentation</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <!-- We need this for CsvEntityReader, NOT for any of the gtfs classes (I wish it was separate) -->
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-gtfs</artifactId>
+            <version>${onebusaway.gtfs.version}</version>
         </dependency>
 
         <dependency>
@@ -37,8 +38,8 @@
         </dependency>
 
         <dependency>
-        	<groupId>postgresql</groupId>
-        	<artifactId>postgresql</artifactId>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
 
         <!-- RMI-like service for wiring up services between VMs -->
