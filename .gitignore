@@ -3,5 +3,6 @@
 .settings
 */src/main/resources/data-sources.xml
 */target/*
-bin/*
+*/bin/*
 *~
+*/local-hsqldb-db/*
