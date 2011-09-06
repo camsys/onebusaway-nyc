@@ -28,7 +28,6 @@ import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleTrackingMutableDao;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.MonitoredVehicleJourney;
@@ -49,8 +48,6 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   private VehicleLocationListener _vehicleLocationListener;
 
-  private VehicleTrackingMutableDao _recordDao;
-
   private String _agencyId = "MTA NYCT";
 
   @Autowired
@@ -63,11 +60,6 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
   public void setVehicleLocationListener(
       VehicleLocationListener vehicleLocationListener) {
     _vehicleLocationListener = vehicleLocationListener;
-  }
-
-  @Autowired
-  public void setRecordDao(VehicleTrackingMutableDao recordDao) {
-    _recordDao = recordDao;
   }
 
   public void setAgencyId(String agencyId) {
@@ -238,7 +230,6 @@ class VehicleLocationServiceImpl implements VehicleLocationService {
 
   private void handleRecord(NycVehicleLocationRecord record, boolean saveResult) {
     _vehicleLocationInferenceService.handleNycVehicleLocationRecord(record);
-    _recordDao.saveOrUpdateVehicleLocationRecord(record);
   }
 
   private VehicleLocationDetails findParticle(VehicleLocationDetails details,
