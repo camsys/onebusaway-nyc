@@ -33,7 +33,7 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.library.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

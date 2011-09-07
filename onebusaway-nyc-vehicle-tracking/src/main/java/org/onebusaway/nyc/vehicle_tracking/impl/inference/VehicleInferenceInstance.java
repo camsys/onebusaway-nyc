@@ -43,9 +43,9 @@ import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.library.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;

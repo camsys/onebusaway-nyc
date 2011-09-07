@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 3.1//EN"
+        "http://tuckey.org/res/dtds/urlrewrite3.1.dtd">
 <!--
 
     Copyright (c) 2011 Metropolitan Transportation Authority
@@ -16,8 +18,6 @@
     the License.
 
 -->
-<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 3.1//EN"
-        "http://tuckey.org/res/dtds/urlrewrite3.1.dtd">
 <!--
 
     Configuration file for UrlRewriteFilter

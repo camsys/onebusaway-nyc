@@ -54,11 +54,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
+import org.onebusaway.transit_data_federation.services.library.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
