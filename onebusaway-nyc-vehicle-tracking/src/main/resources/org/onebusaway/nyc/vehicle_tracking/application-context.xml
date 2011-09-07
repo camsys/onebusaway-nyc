@@ -48,8 +48,6 @@
     <property name="model" ref="particleFilterModel" />
   </bean>
 
-  <bean id="shapePointsLibrary" class="org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary">
-    <property name="localMinimumThreshold" value="125" />
-  </bean>
+  <bean id="configurationService" class="org.onebusaway.transit_data_federation.impl.tdm.ConfigurationServiceImpl"/>
 
 </beans>
