@@ -17,6 +17,7 @@
   	<onebusaway.siri.version>0.0.3</onebusaway.siri.version>
   	<struts.version>2.1.8.1</struts.version>
     <spring.version>3.0.3.RELEASE</spring.version>
+    <onebusaway.app-modules.version>2.0.3-SNAPSHOT</onebusaway.app-modules.version>
   </properties>
 
   <repositories>

@@ -5,7 +5,6 @@
         <artifactId>onebusaway-nyc</artifactId>
         <version>2.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-api-webapp</artifactId>
     <packaging>war</packaging>
 
@@ -15,7 +14,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-transit-data</artifactId>
-            <version>${project.version}</version>
+            <version>${onebusaway.app-modules.version}</version>
         </dependency>
 
         <dependency>
