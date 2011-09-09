@@ -48,6 +48,4 @@
     <property name="model" ref="particleFilterModel" />
   </bean>
 
-  <bean id="configurationService" class="org.onebusaway.transit_data_federation.impl.tdm.ConfigurationServiceImpl"/>
-
 </beans>
