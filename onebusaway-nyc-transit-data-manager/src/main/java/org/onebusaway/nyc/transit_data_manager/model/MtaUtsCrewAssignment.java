@@ -44,7 +44,6 @@ public class MtaUtsCrewAssignment
 	}
 	public void setRunNumberField(String runNumberField) {
 		this.runNumberField = runNumberField;
-		setRunNumber(this.runNumberField);
 	}
 	public void setServIdField(String servIdField) {
 		this.servIdField = servIdField;
@@ -60,8 +59,7 @@ public class MtaUtsCrewAssignment
 	
     private String passNumberLeadingLetters = ""; // Operator Pass #
     private Long   passNumberNumericPortion; // Operator Pass #
-    private Long   runNumberLong;
-    private Boolean runNumberContainsLetters;
+    //private Boolean runNumberContainsLetters;
 //    /* servId:
 //     * 1 Weekday/School Open (DOB)
 //     * 2 Weekday/School-Closed (DOB only)
@@ -141,21 +139,10 @@ public class MtaUtsCrewAssignment
     	}
     }
     
-    public void setRunNumber (String value) { 
-    	runNumberContainsLetters = false;
-    	try {
-    		runNumberLong = Long.parseLong(value);
-    	} catch (NumberFormatException nfe) {
-    		runNumberLong = new Long(-1);
-    		runNumberContainsLetters = true;
-    	}
-    }
-    
     public String getAuthId () { return authIdField; }
     public GregorianCalendar getDate() { return date; }
     public String getDepot () { return depotField; }
     public String getRunNumber () {return runNumberField;}
-    public Long   getRunNumberLong () {return runNumberLong;}
     public String getRoute () { return routeField; }
     public Long   getPassNumberNumericPortion () { return passNumberNumericPortion; }
     public GregorianCalendar getTimestamp() { return timestamp; }

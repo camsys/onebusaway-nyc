@@ -86,6 +86,13 @@ public class CrewConverterCL {
                 	e.printStackTrace();
                 }
                 
+                try {
+                	outputFileWriter.close();
+                } catch (IOException e){
+                	e.printStackTrace();
+                }
+                
+                
                 System.out.println("done!");
                 
             }
