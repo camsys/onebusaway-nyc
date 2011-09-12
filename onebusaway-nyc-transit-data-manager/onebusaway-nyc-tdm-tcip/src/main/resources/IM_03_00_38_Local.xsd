@@ -1,0 +1,2107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Output of XML portions of the registry data into file: IM-Local-Draft-03-00-38.xsd -->
+<!-- Run on Mini-Edit [Version 2.0.410] -->
+<!-- From node D:-75-0649-5535 Created on 5/30/2006 at 9:05:04 PM  -->
+<!-- Source DB File: ieee_combined_r39.ITS rendered into namespace: IM-Local  -->
+<!-- Edit namespaces to reflect the schema releases you will be using. -->
+<!-- Place at: www.YourSite.xxx/ITSschemas/IM-03-00-38/im-local-draft-03-00-38.xsd  -->
+<!-- Local copy saved to: D:/Documents and Settings/sboarman/My Documents/APTA TCIP/3.0.0/IEEE IM BUILD/ITSschemas/IM-03-00-38/im-local-draft-03-00-38.xsd -->
+<!-- Production releases of ITS schemas can be found at: http://www.ITSware.net/XML/readme.htm -->
+<!--  -->
+<xs:schema xmlns="http://www.im-03-00-38-local" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.im-03-00-38-local" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="DRAFT">
+	<xs:annotation>
+		<xs:documentation>
+      Exported on: 09:05:04 PM Tuesday, May 30, 2006 From file: ieee_combined_r39.ITS [By: Mini-Edit Rev 2.0.410] 
+   </xs:documentation>
+	</xs:annotation>
+	<!-- Descriptive Name: DE_Accidents-and-Incidents-Local -->
+	<xs:simpleType name="AccidentsAndIncidents">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_ADAAccess-Local -->
+	<xs:simpleType name="ADA-Access">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Instructions-Mandatory-Local -->
+	<xs:simpleType name="AdviceInstructionsMandatory">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Instructions-Recommendations-Local -->
+	<xs:simpleType name="AdviceInstructionsRecommendations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_AirlineTravelInformation-Local -->
+	<xs:complexType name="AirlineTravelInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Alternate-Route-Local -->
+	<xs:simpleType name="AlternateRoute">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_AmenitiesList-Local -->
+	<xs:simpleType name="AmenitiesList">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- inserted, not created automatically by mini edit-->
+	<xs:simpleType name="CenterTypeNational">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="CoordinationRoles">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DangerList">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DeploymentStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EmergencyFacilityCapability">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EquipmentList">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Evacuation-Cause-National">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="FireSize">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="FireType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ICS-Activity">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ICS-Level">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ICS-Role">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ICS-Title">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ICSCommandType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LocationInVehicle">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PointOfContactRoles">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PremiseHistory">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="QualificationsList">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ResponderCautions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RoleInEvent">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RoleStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SubMessage">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TimeEvent">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TrackStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TrappedList">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- end of manual insertions -->
+	<!-- Descriptive Name: DF_AssetDescription-Local -->
+	<xs:complexType name="AssetDescription">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Asset-Status-Local -->
+	<xs:simpleType name="AssetStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_Available-for-hand-off-AHO-Local -->
+	<xs:complexType name="AvailableForHandOff">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Basics-Local -->
+	<xs:complexType name="Basics">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_BroadcastCycleTimes-Local -->
+	<xs:complexType name="BcastCycle">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_CargoDocs-Local -->
+	<xs:complexType name="CargoDocs">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_CargoUnits-Local -->
+	<xs:complexType name="CargoUnits">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_CargoVehicle-Local -->
+	<xs:complexType name="CargoVehicle">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_CautionsForResponders-Local -->
+	<xs:complexType name="CautionsForResponders">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Center-Plans-Local -->
+	<xs:complexType name="CenterPlans">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_CenterType-Local -->
+	<xs:complexType name="CenterType">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Change-center-properties-CCP-Local -->
+	<xs:complexType name="ChangeCenterProperties">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_ClearOrRepairPlan-Local -->
+	<xs:complexType name="ClearOrRepairPlan">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Close-incident-event-CIE-Local -->
+	<xs:complexType name="CloseIncidentEvent">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Closures-Road-and-Lane-Local -->
+	<xs:simpleType name="Closures">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_ComplexCost-Local -->
+	<xs:complexType name="ComplexCost">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Delays,-Status,-And-Cancellations-Local -->
+	<xs:simpleType name="DelayStatusCancellation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_Description-Local -->
+	<xs:complexType name="Description">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Device-And-Equipment-Status-Local -->
+	<xs:simpleType name="DeviceStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_Differential_GPS_Corrections-Local -->
+	<xs:complexType name="DifferentialGPSCorrections">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Disable-center-on-line-DCO-Local -->
+	<xs:complexType name="DisableCenterOnLine">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Disasters-Local -->
+	<xs:simpleType name="Disasters">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_Distribution-Local -->
+	<xs:complexType name="Distribution">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Disturbances-Local -->
+	<xs:simpleType name="Disturbances">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_EquipmentClass-Local -->
+	<xs:simpleType name="EquipmentClass">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_ERROR_NotificationCode_code-Local -->
+	<xs:simpleType name="Error-NotificationCode">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_Establish-center-on-line-ECO-Local -->
+	<xs:complexType name="EstablishCenterOnLine">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Establish-center-properties-ECP-Local -->
+	<xs:complexType name="EstablishCenterProperties">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Evacuation-data-Local -->
+	<xs:complexType name="EvacuationData">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_Evacuation-Local -->
+	<xs:complexType name="Evacuation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_EventInformation-Local -->
+	<xs:complexType name="EventInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_INFORMATIONREQUEST_EventTypes_code-Local -->
+	<xs:simpleType name="EventTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_Facilities-Local -->
+	<xs:complexType name="Facilities">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_File-Transfer-Local -->
+	<xs:complexType name="FileTransfer">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_INFORMATIONREQUEST_FlightTypes_code-Local -->
+	<xs:simpleType name="FlightTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_FullPositionVector-Local -->
+	<xs:complexType name="FullPositionVector">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Generic-Locations-Local -->
+	<xs:simpleType name="GenericLocations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_Grant-hand-off-GHO-Local -->
+	<xs:complexType name="GrantHandOff">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Header-Local -->
+	<xs:complexType name="Header">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_Wrapper-Local -->
+	<xs:complexType name="IDX-Wrapper">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_ImmediateSiteEvacuation-Local -->
+	<xs:complexType name="ImmediateSiteEvacuation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_Impact-Local -->
+	<xs:complexType name="Impact">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_IM_Wrapper-Local -->
+	<xs:complexType name="IMWrapper">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Incident-description-IDX-Local -->
+	<xs:complexType name="IncidentDescription">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IncidentInformation-Local -->
+	<xs:complexType name="IncidentInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Incident-Response-Equipment-Local -->
+	<xs:simpleType name="IncidentResponseEquipment">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Incident-Response-Status-Local -->
+	<xs:simpleType name="IncidentResponseStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_TravelerInformationRequest-Local -->
+	<xs:complexType name="InformationRequest">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_INFORMATIONREQUEST_Type_code-Local -->
+	<xs:complexType name="InformationRequestType">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_InfrastructureReport-Local -->
+	<xs:complexType name="InfrastructureReport">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_InjuryData-Local -->
+	<xs:complexType name="InjuryData">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Issue-stamp-Local -->
+	<xs:complexType name="IssueStamp">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Lane-Roadway-Descriptions-Local -->
+	<xs:simpleType name="LaneRoadway">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_LinkDataSet-Local -->
+	<xs:complexType name="LinkDataSet">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_LinkTrafficInformation-Local -->
+	<xs:complexType name="LinkTrafficInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_GeoLocation-Local -->
+	<xs:complexType name="GeoLocation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_ManageCommandStructure-Local -->
+	<xs:complexType name="ManageCommandStructure">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_ManeuverInstruction-Local -->
+	<xs:complexType name="ManeuverInstruction">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_ManeuverLocationType-Local -->
+	<xs:simpleType name="ManeuverLocationType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_MaterialRelease-Local -->
+	<xs:complexType name="MaterialRelease">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Mayday-data-set-Local -->
+	<xs:complexType name="Mayday-Data-Set">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Merge-incident-event-MIE-Local -->
+	<xs:complexType name="MergeIncidentEvent">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Mobile-Situation-Local -->
+	<xs:simpleType name="MobileSituation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_NeedEMS-Local -->
+	<xs:complexType name="NeedEMS">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_NeedFireSuppression-Local -->
+	<xs:complexType name="NeedFireSuppression">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_NeedLawEnforcement-Local -->
+	<xs:complexType name="NeedLawEnforcement">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_NeedOtherServices-Local -->
+	<xs:complexType name="NeedOtherServices">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_NeedRescueServices-Local -->
+	<xs:complexType name="NeedRescueServices">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_NetworkConditions-Local -->
+	<xs:complexType name="NetworkConditions">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_New-incident-event-NIE-Local -->
+	<xs:complexType name="NewIncidentEvent">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Objects-Local -->
+	<xs:simpleType name="Objects">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Obstructions-Local -->
+	<xs:simpleType name="Obstruction">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_OrganizationPosition-Local -->
+	<xs:complexType name="OrganizationPosition">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Parking-Information-Local -->
+	<xs:simpleType name="ParkingInformation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_Parking-Instructions-Local -->
+	<xs:complexType name="ParkingInstructions">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_ParkingLotInformation-Local -->
+	<xs:complexType name="ParkingLotInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_ParkingSpaceKind-Local -->
+	<xs:simpleType name="ParkingSpaceKind">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_INFORMATIONREQUEST_ParkingTypes_code-Local -->
+	<xs:simpleType name="ParkingTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Pavement-Conditions-Local -->
+	<xs:simpleType name="PavementConditions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_Pedigree-list-Local -->
+	<xs:complexType name="PedigreeList">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_PersonInformation-Local -->
+	<xs:complexType name="PersonInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_PhysicalAssetStatus-Local -->
+	<xs:complexType name="PhysicalAssetStatus">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_Placards-Labels-Signage-Local -->
+	<xs:complexType name="PlacardsLabelsSignage">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_PointRole-Local -->
+	<xs:simpleType name="PointRole">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_Poll-for-hand-off-PHO-Local -->
+	<xs:complexType name="PollForHandOff">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_PositionFix-Local -->
+	<xs:complexType name="PositionFix">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Precipitation-Local -->
+	<xs:simpleType name="Precipitation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_PreemptionUserData-Local -->
+	<xs:complexType name="PreemptionUserData">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_PRICE_DayType_code-Local -->
+	<xs:simpleType name="Price-DayType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_Public-incident-description-PID-Local -->
+	<xs:complexType name="PublicIncidentDescription">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Qualifiers-Local -->
+	<xs:simpleType name="Qualifiers">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_RequestForExternalInformation-Local -->
+	<xs:complexType name="RequestForExternalInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Request_Handoff-RHO-Local -->
+	<xs:complexType name="RequestHandOff">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_RequestImmediateAssistance-Local -->
+	<xs:complexType name="RequestImmediateAssistance">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_Request-information-RIN-Local -->
+	<xs:complexType name="RequestInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RequestNetworkConditions-Local -->
+	<xs:complexType name="RequestNetworkConditions">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RequestPhysicalAsset-Local -->
+	<xs:complexType name="RequestPhysicalAsset">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RequestPhysicalAssetStatus-Local -->
+	<xs:complexType name="RequestPhysicalAssetStatus">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RequestPreemptionUserData-Local -->
+	<xs:complexType name="RequestPreemptionUserData">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RequestRouteAdvice-Local -->
+	<xs:complexType name="RequestRouteAdvice">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_RequestStatus-Local -->
+	<xs:complexType name="RequestStatus">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RequestTrafficCntrlPlan-Local -->
+	<xs:complexType name="RequestTrafficControlPlan">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RequestWorkZoneData-Local -->
+	<xs:complexType name="RequestWorkZoneData">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_ResourceAssignment-Local -->
+	<xs:complexType name="ResourceAssignment">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Responder-Group-Affected-Local -->
+	<xs:simpleType name="ResponderGroupAffected">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_ResponseGroup-Local -->
+	<xs:complexType name="ResponseGroup">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_Response-Local -->
+	<xs:complexType name="Response">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Restrictions-Local -->
+	<xs:simpleType name="RestrictionClass">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Roadside-Assets-Local -->
+	<xs:simpleType name="RoadsideAssets">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_INFORMATIONREQUEST_RoadTypes_code-Local -->
+	<xs:simpleType name="RoadTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Roadwork-Local -->
+	<xs:simpleType name="Roadwork">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_RouteAdvice-Local -->
+	<xs:complexType name="RouteAdvice">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Route-Local -->
+	<xs:complexType name="Route">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_RouteRequest-Local -->
+	<xs:complexType name="RouteRequest">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_RouteSets-Local -->
+	<xs:complexType name="RouteSet">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_RouteStatus-Local -->
+	<xs:complexType name="RouteStatus">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_INFORMATIONREQUEST_RouteTypes_code-Local -->
+	<xs:simpleType name="RouteTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_Scene-staging-Local -->
+	<xs:complexType name="SceneStaging">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Segment-Local -->
+	<xs:complexType name="Segment">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_ServerStatus-Local -->
+	<xs:complexType name="ServerStatus">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_Severity-Local -->
+	<xs:complexType name="Severity">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_ShippingEntry-Local -->
+	<xs:complexType name="ShippingEntry">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_SomeOtherList-Local -->
+	<xs:simpleType name="SomeOtherList">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Special-Events-Local -->
+	<xs:simpleType name="SpecialEvents">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_Split-incident-event-SIE-Local -->
+	<xs:complexType name="SplitIncidentEvent">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Sporting-Events-Local -->
+	<xs:simpleType name="SportingEvents">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_Staging-areas-Local -->
+	<xs:complexType name="StagingArea">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_StatusBlock-Local -->
+	<xs:complexType name="StatusBlock">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_SubRoute-Local -->
+	<xs:complexType name="SubRoute">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Suggestion-Advice-Local -->
+	<xs:simpleType name="SuggestionAdvice">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Information-System-Local -->
+	<xs:simpleType name="SystemInformation">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Temperature-Local -->
+	<xs:simpleType name="Temperature">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_TimeMarks-Local -->
+	<xs:complexType name="TimeMarks">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_TrackInvolvedPerson-Local -->
+	<xs:complexType name="TrackInvolvedPerson">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_TrackInvolvedVehicle-Local -->
+	<xs:complexType name="TrackInvolvedVehicle">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_TrackResponsePersonnel-Local -->
+	<xs:complexType name="TrackResponsePersonnel">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_TrackSpecialCircumstances-Local -->
+	<xs:complexType name="TrackSpecialCircumstances">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Traffic-Conditions-Local -->
+	<xs:simpleType name="TrafficConditions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_TrafficCntrlPlan-Local -->
+	<xs:complexType name="TrafficControlPlan">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_TranmissionPoint,-Local -->
+	<xs:complexType name="TranmissionPoint">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_TransitEventSource-Local -->
+	<xs:complexType name="TransitEventSource">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_TransitInformation-Local -->
+	<xs:complexType name="TransitInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Transit-Mode-Local -->
+	<xs:simpleType name="TransitMode">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Transit-Operations-Local -->
+	<xs:simpleType name="TransitOperations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_INFORMATIONREQUEST_TransitTypes_code-Local -->
+	<xs:simpleType name="TransitTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_TransitVehicleInvolved-Local -->
+	<xs:complexType name="TransitVehicleInvolved">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_TravelerClass-Local -->
+	<xs:simpleType name="TravelerClass">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Traveler-Group-Affected-Local -->
+	<xs:simpleType name="TravelerGroupAffected">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_TurnType-Local -->
+	<xs:simpleType name="TurnType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Unit-Values-Local -->
+	<xs:simpleType name="Units">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Unusual-Driving-Local -->
+	<xs:simpleType name="UnusualDriving">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_VehicleData-Local -->
+	<xs:complexType name="VehicleData">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Vehicle-Groups-Affected-Local -->
+	<xs:simpleType name="VehicleGroupAffected">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_IDX_VehicleMAYDAY-Local -->
+	<xs:complexType name="VehMAYDAY">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Visibility-andamp-Air-Quality-Local -->
+	<xs:simpleType name="VisibilityAndAirQuality">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Warning-Advice-Local -->
+	<xs:simpleType name="WarningAdvice">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: MSG_WatchFor-Local -->
+	<xs:complexType name="WatchFor">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_WatchForResponse-Local -->
+	<xs:complexType name="WatchForResponse">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_Weather-Conditions-Local -->
+	<xs:simpleType name="WeatherConditions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_WeatherInformation-Local -->
+	<xs:complexType name="WeatherInformation">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DE_INFORMATIONREQUEST_WeatherTypes_code-Local -->
+	<xs:simpleType name="WeatherTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Winds-Local -->
+	<xs:simpleType name="Winds">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Winter-Driving-Index-Local -->
+	<xs:simpleType name="WinterDrivingIndex">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DE_Winter-Driving-Restrictions-and-Recommendations-Local -->
+	<xs:simpleType name="WinterDrivingRestrictions">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="insert-local-values-here"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- Descriptive Name: DF_WitnessIdenty,-Local -->
+	<xs:complexType name="WitnessIdenty">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_Witness-list-Local -->
+	<xs:complexType name="WitnessList">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: DF_IDX_WitnessStatement-Local -->
+	<xs:complexType name="WitnessStatement">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- Descriptive Name: MSG_WorkZoneData-Local -->
+	<xs:complexType name="WorkZoneData">
+		<xs:sequence>
+			<xs:element name="yourName" minOccurs="0">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<!-- Insert instance name and Type of each elements here, 
+           and any restrictions that are needed. -->
+		</xs:sequence>
+	</xs:complexType>
+	<!-- END of the output -->
+</xs:schema>

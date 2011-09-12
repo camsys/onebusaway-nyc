@@ -13,87 +13,10 @@
 	<version>2.0.1-SNAPSHOT</version>
 	<name>onebusaway-nyc-transit-data-manager</name>
 	<description>Import and management of MTA-specific transit data</description>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.opencsv</groupId>
-			<artifactId>opencsv</artifactId>
-			<version>2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.1.8</version>
-		</dependency>
-		
-	</dependencies>
-
-	<build>
-
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<!--  Note that we decided to temporily store the jaxb generated classes 
-								from Tony L in this folder to bypass some initial difficulties with generating them
-								and to allow development. These will soon be removed. The expectation is that we will soon
-								move these classes and the auto generation by jaxb into its own module. Sheldon is taking
-								a look at this as it was beyond me! -Scott C. -->
-								<source>src/main/generated</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<executions>
-					<!-- This is commented out because we have not yet begun autogenerating the classes. See the note above for more info - Scott C -->
-					<!--  
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution> 
-					 -->
-					
-				</executions>
-				<configuration>
-					<generateDirectory>src/main/generated</generateDirectory>
-				</configuration>
-			</plugin>
-			<plugin>
-				<inherited>true</inherited>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
+	<modules>
+	  <module>onebusaway-nyc-tdm-tcip</module>
+	  <module>onebusaway-nyc-tdm-adapters</module>
+	</modules>
 </project>

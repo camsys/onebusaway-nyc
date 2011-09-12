@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class NycWebappIndexPageIntegrationTest extends NycWebappTestSupport {
-  @Test
+    //@Test
   public void test() {
 
     // Open the webpage in selenium
