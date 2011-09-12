@@ -41,18 +41,26 @@ public class RunServiceImpl implements RunService {
 
   @Override
   public String getInitialRunForTrip(AgencyAndId trip) {
-    return runDataByTrip.get(trip).initialRun;
+    RunData runData = runDataByTrip.get(trip);
+    if (runData == null) {
+    	return null;
+    }
+	return runData.initialRun;
   }
 
   @Override
   public String getReliefRunForTrip(AgencyAndId trip) {
-    return runDataByTrip.get(trip).reliefRun;
+	  RunData runData = runDataByTrip.get(trip);
+	    if (runData == null) {
+	    	return null;
+	    }
+    return runData.reliefRun;
   }
 
   @Override
   public int getReliefTimeForTrip(AgencyAndId trip) {
     RunData runData = runDataByTrip.get(trip);
-    return runData.reliefRun == null ? 0 : runData.reliefTime;
+    return (runData == null || runData.reliefRun == null) ? 0 : runData.reliefTime;
   }
 
 }
