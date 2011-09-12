@@ -14,6 +14,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.importers.PushOperatorAssignsGenerator;
 
 import tcip_final_3_0_5_1.ObjectFactory;
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
