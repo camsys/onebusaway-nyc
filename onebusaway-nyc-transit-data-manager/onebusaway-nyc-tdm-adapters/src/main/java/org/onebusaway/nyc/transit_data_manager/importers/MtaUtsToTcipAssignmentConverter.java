@@ -55,7 +55,11 @@ public class MtaUtsToTcipAssignmentConverter {
 		outputAssignment.setOperator(operator);
 		
 		SCHRunIden run = new SCHRunIden();
-		run.setRunId(inputAssignment.getRunNumberLong());
+		// Changed with an update to the UTS Crew Assignments page on the wiki.
+		// I had asked about run-ids with numbers in them and it turns out that we will just hardcode this field.
+		// Simultaneously removing getRunNumberLong from MtaUtsCrewAssignment, so find it in the git history if you need it!
+		//run.setRunId(inputAssignment.getRunNumberLong());
+		run.setRunId(new Long(0));
 		run.setDesignator(inputAssignment.getRunDesignator());
 		outputAssignment.setRun(run);
 		
