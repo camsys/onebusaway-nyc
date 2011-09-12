@@ -17,7 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.transit_data_federation.impl.shapes.ProjectedPointFactory;
+import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
 public class Observation {

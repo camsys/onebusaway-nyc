@@ -18,7 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.model;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
-import org.onebusaway.transit_data_federation.services.library.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 public class RecordLibrary {
 

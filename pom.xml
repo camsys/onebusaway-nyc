@@ -15,9 +15,10 @@
   <properties>
   	<onebusaway.gtfs.version>1.1.9</onebusaway.gtfs.version>
   	<onebusaway.siri.version>0.0.3</onebusaway.siri.version>
+    <onebusaway.csv-entities.version>1.0.2-SNAPSHOT</onebusaway.csv-entities.version>
   	<struts.version>2.1.8.1</struts.version>
     <spring.version>3.0.3.RELEASE</spring.version>
-    <onebusaway.app-modules.version>2.0.3-SNAPSHOT</onebusaway.app-modules.version>
+    <onebusaway.app-modules.version>2.0.4-SNAPSHOT</onebusaway.app-modules.version>
     <onebusaway.nyc-tdm-tcip.version>0.0.1-SNAPSHOT</onebusaway.nyc-tdm-tcip.version>
   </properties>
 
@@ -104,6 +105,7 @@
     <module>onebusaway-nyc-sms-webapp</module>
     <module>onebusaway-nyc-transit-data</module>
     <module>onebusaway-nyc-transit-data-manager</module>
+    <module>onebusaway-nyc-transit-data-federation</module>
     <module>onebusaway-nyc-api-webapp</module>
   </modules>
 
@@ -271,7 +273,35 @@
       <dependency>
         <groupId>org.onebusaway</groupId>
         <artifactId>onebusaway-collections</artifactId>
-        <version>1.0.4</version>
+        <version>1.1.2-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-csv-entities</artifactId>
+        <version>${onebusaway.csv-entities.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-gtfs</artifactId>
+        <version>${onebusaway.gtfs.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-gtfs-hibernate</artifactId>
+        <version>${onebusaway.gtfs.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-gtfs-transformer</artifactId>
+        <version>${onebusaway.gtfs.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-presentation</artifactId>
+        <version>${onebusaway.app-modules.version}</version>
       </dependency>
 
       <!-- Spring Framework -->

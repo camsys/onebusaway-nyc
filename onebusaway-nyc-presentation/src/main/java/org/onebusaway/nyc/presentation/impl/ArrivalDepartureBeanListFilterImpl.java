@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.presentation.impl;
 
+import org.onebusaway.nyc.presentation.service.ArrivalDepartureBeanListFilter;
 import org.onebusaway.nyc.presentation.service.ConfigurationBean;
 import org.onebusaway.nyc.presentation.service.NycConfigurationService;
-import org.onebusaway.presentation.model.ArrivalDepartureBeanListFilter;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;

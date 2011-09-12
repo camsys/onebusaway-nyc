@@ -13,7 +13,6 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-presentation</artifactId>
-            <version>${onebusaway.app-modules.version}</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
