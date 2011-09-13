@@ -1,23 +1,12 @@
 package org.onebusaway.nyc.transit_data_manager.importers.tools;
 
-import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
-import org.joda.time.DurationFieldType;
 import org.joda.time.MutableDateTime;
 import org.joda.time.ReadableDateTime;
-import org.joda.time.DateTime.Property;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -45,15 +34,16 @@ public class UtsMappingTool {
 		
 		return agencyId;
 	}
-
-    public String dateToDateString(Calendar cal) {
-	SimpleDateFormat sdf = new SimpleDateFormat(UTS_DATE_FIELD_DATEFORMAT);
-	return sdf.format(cal.getTime(), new StringBuffer(), new FieldPosition(0)).toString();
+	
+    // These methods use the Joda DateTime class
+    public String dateDateTimeToDateString (DateTime dt) {
+    	DateTimeFormatter dtf = DateTimeFormat.forPattern(UTS_DATE_FIELD_DATEFORMAT);
+    	return dtf.print(dt);
     }
-
-    public String timestampToDateString(Calendar cal) {
-	SimpleDateFormat sdf = new SimpleDateFormat(UTS_TIMESTAMP_FIELD_DATEFORMAT);
-	return sdf.format(cal.getTime(), new StringBuffer(), new FieldPosition(0)).toString();
+    
+    public String timestampDateTimeToDateString (DateTime dt) {
+    	DateTimeFormatter dtf = DateTimeFormat.forPattern(UTS_TIMESTAMP_FIELD_DATEFORMAT);
+    	return dtf.print(dt);
     }
     
     public ReadableDateTime parseUtsDateToDateTime(String dateStr, String formatStr) {
@@ -86,7 +76,7 @@ public class UtsMappingTool {
      * 
      * @param baseDate The reference date that the time suffix refers to.
      * @param suffixedTime A time in the format 02:53Z, where Z is a suffix representing one of four possible half days.
-     * @return A Calendar with the date incorporating the suffix, or null if the suffixedTime string didn't match the input format.
+     * @return A DateTime with the date incorporating the suffix, or null if the suffixedTime string didn't match the input format.
      */
     public DateTime calculatePullInOutDateFromDateUtsSuffixedTime (DateTime baseDate, String suffixedTime) {
     	DateTime result = null;
@@ -107,7 +97,7 @@ public class UtsMappingTool {
     		modDate.setHourOfDay(hours);
     		modDate.setMinuteOfHour(minutes);
     		
-    		if ("A".equals(suffix)) { // suffixedTime is the day before the baseDate
+    		if ("B".equals(suffix)) { // suffixedTime is the day before the baseDate
     			modDate.addDays(-1);
     		} else if ("X".equals(suffix)) { // suffixedTime is the day after the basedate
     			modDate.addDays(1);

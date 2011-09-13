@@ -4,7 +4,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -12,6 +11,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data_manager.importers.CSVCrewAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.importers.CrewAssignmentsOutputConverter;
 import org.onebusaway.nyc.transit_data_manager.importers.CrewAssignsInputConverter;
@@ -23,6 +23,13 @@ import tcip_final_3_0_5_1.ObjectFactory;
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 import tcip_final_3_0_5_1.SchPushOperatorAssignments;
 
+/***
+ * Initially designed as a command line tool to open two files and run the conversion logic
+ * to map input UTS Crew data (initially in CSV format) to TCIP XML.
+ * 
+ * @author sclark
+ *
+ */
 public class CrewConverter {
 	
 	private FileReader inputFileReader = null;
@@ -69,7 +76,7 @@ public class CrewConverter {
         CrewAssignmentsOutputConverter converter = new TCIPCrewAssignmentsOutputConverter(crewAssignments);
         List<SCHOperatorAssignment> opAssignments = converter.convertAssignments();
         
-        GregorianCalendar nowCal = new GregorianCalendar();
+        DateTime nowCal = new DateTime();
         PushOperatorAssignsGenerator opAssignsGen = new PushOperatorAssignsGenerator(nowCal);
         SchPushOperatorAssignments opAssignsPush = opAssignsGen.generateFromOpAssignList(opAssignments);
         

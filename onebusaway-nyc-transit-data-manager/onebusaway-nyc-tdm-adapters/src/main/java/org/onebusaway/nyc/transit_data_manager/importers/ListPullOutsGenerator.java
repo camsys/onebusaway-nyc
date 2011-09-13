@@ -15,12 +15,10 @@ import tcip_final_3_0_5_1.SchPullOutList;
 public class ListPullOutsGenerator {
 
 	private DateTime headerTime;
-	private UtsMappingTool mappingTool = null;
 	
 	public ListPullOutsGenerator(DateTime headerTime) {
 		super();
 		this.headerTime = headerTime;
-		this.mappingTool = new UtsMappingTool();
 	}
 	
 	public SchPullOutList generateFromVehAssignList (List<SCHPullInOutInfo> vehAssignList) {

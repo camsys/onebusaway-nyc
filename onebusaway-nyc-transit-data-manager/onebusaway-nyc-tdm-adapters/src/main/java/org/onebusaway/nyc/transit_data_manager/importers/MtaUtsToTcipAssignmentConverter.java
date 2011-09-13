@@ -1,9 +1,5 @@
 package org.onebusaway.nyc.transit_data_manager.importers;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
 import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
 
@@ -34,13 +30,6 @@ public class MtaUtsToTcipAssignmentConverter {
 	 * @return
 	 */
 	public SCHOperatorAssignment ConvertToOutput (MtaUtsCrewAssignment inputAssignment) {
-		DatatypeFactory df = null;
-		
-		try {
-			df = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			e.printStackTrace();
-		}
 		
 		mappingTool = new UtsMappingTool();
 		
@@ -82,10 +71,10 @@ public class MtaUtsToTcipAssignmentConverter {
 		
 		CPTRowMetaData metaData = new CPTRowMetaData();
 		
-		XMLGregorianCalendar updateDate = df.newXMLGregorianCalendar(inputAssignment.getTimestamp());
-		metaData.setUpdated(mappingTool.timestampToDateString(inputAssignment.getTimestamp()));
-		XMLGregorianCalendar effectiveDate = df.newXMLGregorianCalendar(inputAssignment.getDate());
-		metaData.setEffective(mappingTool.dateToDateString(inputAssignment.getDate()));
+		
+		metaData.setUpdated(mappingTool.timestampDateTimeToDateString(inputAssignment.getTimestamp()));
+		
+		metaData.setEffective(mappingTool.dateDateTimeToDateString(inputAssignment.getDate()));
 		
 		outputAssignment.setMetadata(metaData);
 		
