@@ -43,10 +43,10 @@ public enum ServiceCode {
 	static HashMap<ServiceCode, String> idForServiceCode = new HashMap<ServiceCode, String>();
 
 	static {
-		mapServiceCode("0", WEEKDAY_SCHOOL_OPEN);
+		mapServiceCode("1", WEEKDAY_SCHOOL_OPEN);
 		mapServiceCode("11", WEEKDAY_SCHOOL_CLOSED);
-		mapServiceCode("1", SATURDAY);
-		mapServiceCode("2", SUNDAY);
+		mapServiceCode("2", SATURDAY);
+		mapServiceCode("3", SUNDAY);
 		mapServiceCode("H", MLK);
 		mapServiceCode("I", PRESIDENTS_DAY);
 		mapServiceCode("J", GOOD_FRIDAY);
