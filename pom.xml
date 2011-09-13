@@ -19,7 +19,7 @@
   	<struts.version>2.1.8.1</struts.version>
 	<jetty.version>6.1.26</jetty.version>
 	<spring.version>3.0.3.RELEASE</spring.version>
-	<onebusaway.app-modules.version>2.0.4-SNAPSHOT</onebusaway.app-modules.version>
+	<onebusaway.app-modules.version>2.0.5-SNAPSHOT</onebusaway.app-modules.version>
 	<onebusaway.nyc-tdm-tcip.version>0.0.1-SNAPSHOT</onebusaway.nyc-tdm-tcip.version>
   </properties>
 
