@@ -144,6 +144,7 @@
 	    <plugin>
 	      <groupId>org.mortbay.jetty</groupId>
 	      <artifactId>maven-jetty-plugin</artifactId>
+	      <version>${jetty.version}</version>
 	    </plugin>
         </plugins>
         <resources>
