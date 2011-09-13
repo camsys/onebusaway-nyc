@@ -3,17 +3,12 @@ package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Map.Entry;
 
-import org.onebusaway.nyc.transit_data_federation.impl.tdm.model.ConfigurationItem;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -23,8 +18,6 @@ public class DataFetcherLibrary {
 	private static final String _tdmHostname = "ec2-50-17-46-3.compute-1.amazonaws.com";
 
 	private static final String _apiEndpointPath = "/api/";
-
-	private static Gson _gson = new Gson();
 
 	private static URL buildUrl(String baseObject, String... params) throws Exception {
 		String url = _apiEndpointPath;
@@ -46,21 +39,9 @@ public class DataFetcherLibrary {
 		
 		return new URI("http", _tdmHostname, url, null).toURL();		
 	}	
-
-	private static Serializable responseItemFactory(String type, JsonElement item) {
-		
-		if(type.equals("config")) {
-			return _gson.fromJson(item, ConfigurationItem.class);
-		}
-		
-		return null;
-	}
 	
-	public static ArrayList<? extends Serializable> 
-			getItemsForRequest(String baseObject, String... params) throws Exception {
+	public static ArrayList<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {
 		
-		ArrayList<Serializable> output = new ArrayList<Serializable>();
-
 		URL requestUrl = buildUrl(baseObject, params);
 		URLConnection conn = requestUrl.openConnection();
 		
@@ -76,6 +57,8 @@ public class DataFetcherLibrary {
 	    } else
     		throw new Exception("Invalid response: no status element was found.");
 
+	    ArrayList<JsonObject> output = new ArrayList<JsonObject>();
+
 	    // find "content" in the response
 	    for(Entry<String,JsonElement> item : response.entrySet()) {
 	    	String type = item.getKey();
@@ -84,10 +67,13 @@ public class DataFetcherLibrary {
 	    	if(type.equals("status"))
 	    		continue;
 	    	
-	    	// our response "body" is always an array of things
-	    	JsonArray responseItems = responseItemWrapper.getAsJsonArray();
-	    	for(JsonElement responseItem : responseItems) {
-	    		output.add(responseItemFactory(type, responseItem));	    		
+	    	// our response "body" is always one array of things
+	    	try {
+	    		for(JsonElement arrayElement : responseItemWrapper.getAsJsonArray()) {
+	    			output.add(arrayElement.getAsJsonObject());
+	    		}
+	    	} catch (Exception e) {
+	    		continue;
 	    	}
 	    }
 	    

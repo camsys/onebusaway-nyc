@@ -12,10 +12,10 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 public interface VehicleDepotAssignmentService {
 
   /**
-   * Get a list of vehicles assigned to the named depot..
+   * Get a list of vehicles assigned to the named depot.
    * 
    * @param depotIdentifier The depot identifier to request vehicles for.
    */
-  public ArrayList<AgencyAndId> getVehiclesForDepot(String depotIdentifier);
+  public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotIdentifier);
 
 }

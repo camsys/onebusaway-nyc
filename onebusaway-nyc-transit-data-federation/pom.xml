@@ -13,18 +13,19 @@
   <name>onebusaway-nyc-transit-data-federation</name>
 
   <dependencies>
-
+  
     <!-- OneBusAway Dependencies -->
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-transit-data-federation</artifactId>
       <version>${onebusaway.app-modules.version}</version>
     </dependency>
+  
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-csv-entities</artifactId>
     </dependency>
-
+  
     <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>

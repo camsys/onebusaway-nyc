@@ -9,9 +9,8 @@
   <groupId>org.onebusaway</groupId>
   <artifactId>onebusaway-nyc-queue-subscriber</artifactId>
   <packaging>war</packaging>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>onebusaway-nyc-queue-http-proxy</name>
-  <url>http://maven.apache.org</url>
+  <version>2.0.1-SNAPSHOT</version>
+  <name>onebusaway-nyc-queue-subscriber</name>
   <dependencies>
     <dependency>
       <groupId>org.zeromq</groupId>
