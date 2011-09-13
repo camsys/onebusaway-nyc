@@ -21,8 +21,8 @@
 	<dependencies>
 	  <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-tdm-tcip</artifactId>
-            <version>${onebusaway.nyc-tdm-tcip.version}</version>
+            <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+            <version>${onebusaway.nyc-tcip.version}</version>
 	  </dependency>
 		<dependency>
 			<groupId>junit</groupId>
