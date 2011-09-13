@@ -1,7 +1,5 @@
 package org.onebusaway.nyc.transit_data_manager.importers;
 
-import java.util.GregorianCalendar;
-
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
