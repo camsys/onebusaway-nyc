@@ -7,9 +7,9 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.model.RunData;
 import org.onebusaway.nyc.vehicle_tracking.services.RunService;
-import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
-import org.onebusaway.transit_data_federation.model.RunData;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +19,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RunServiceImpl implements RunService {
   private Logger _log = LoggerFactory.getLogger(RunServiceImpl.class);
-  private FederatedTransitDataBundle _bundle;
+
+  private NycFederatedTransitDataBundle _bundle;
+  
   Map<AgencyAndId, RunData> runDataByTrip;
 
   @Autowired
-  public void setBundle(FederatedTransitDataBundle bundle) {
+  public void setBundle(NycFederatedTransitDataBundle bundle) {
     _bundle = bundle;
   }
 
@@ -39,18 +41,26 @@ public class RunServiceImpl implements RunService {
 
   @Override
   public String getInitialRunForTrip(AgencyAndId trip) {
-    return runDataByTrip.get(trip).initialRun;
+    RunData runData = runDataByTrip.get(trip);
+    if (runData == null) {
+    	return null;
+    }
+	return runData.initialRun;
   }
 
   @Override
   public String getReliefRunForTrip(AgencyAndId trip) {
-    return runDataByTrip.get(trip).reliefRun;
+	  RunData runData = runDataByTrip.get(trip);
+	    if (runData == null) {
+	    	return null;
+	    }
+    return runData.reliefRun;
   }
 
   @Override
   public int getReliefTimeForTrip(AgencyAndId trip) {
     RunData runData = runDataByTrip.get(trip);
-    return runData.reliefRun == null ? 0 : runData.reliefTime;
+    return (runData == null || runData.reliefRun == null) ? 0 : runData.reliefTime;
   }
 
 }

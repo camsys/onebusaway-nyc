@@ -22,8 +22,8 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data-federation</artifactId>
-            <version>${onebusaway.app-modules.version}</version>
+            <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
