@@ -55,21 +55,8 @@ public class StifTripLoaderSupport {
     this.gtfsDao = dao;
   }
 
-  public static ServiceCode scheduleIdForGtfsDayCode(char dayCode) {
-    switch (dayCode) {
-      case 'A':
-        return ServiceCode.SATURDAY;
-      case 'C':
-        return ServiceCode.WEEKDAY_SCHOOL_CLOSED;
-      case 'E':
-        return ServiceCode.WEEKDAY_SCHOOL_OPEN;
-      case 'D':
-        return ServiceCode.SUNDAY;
-      case 'H':
-        return ServiceCode.HOLIDAY;
-      default:
-        return null;
-    }
+  public static ServiceCode scheduleIdForGtfsDayCode(String dayCode) {
+    return ServiceCode.getServiceCodeForId(dayCode);
   }
 
   public int getTotalTripCount() {
