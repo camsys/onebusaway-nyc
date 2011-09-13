@@ -98,6 +98,7 @@
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>maven-jetty-plugin</artifactId>
+				<version>${jetty.version}</version>
 				<!-- TODO This configuration needs to be under a profile for local operation -->
 				<configuration>
 					<connectors>
