@@ -19,11 +19,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-nyc-tdm-tcip</artifactId>
-			<version>${onebusaway.nyc-tdm-tcip.version}</version>
-		</dependency>
+	  <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+            <version>${onebusaway.nyc-tcip.version}</version>
+	  </dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
