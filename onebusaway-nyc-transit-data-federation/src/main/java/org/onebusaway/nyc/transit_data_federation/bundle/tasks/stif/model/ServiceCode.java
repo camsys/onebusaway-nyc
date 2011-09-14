@@ -47,6 +47,10 @@ public enum ServiceCode {
 		mapServiceCode("11", WEEKDAY_SCHOOL_CLOSED);
 		mapServiceCode("2", SATURDAY);
 		mapServiceCode("3", SUNDAY);
+		mapServiceCode("E", WEEKDAY_SCHOOL_OPEN);
+		mapServiceCode("C", WEEKDAY_SCHOOL_CLOSED);
+		mapServiceCode("A", SATURDAY);
+		mapServiceCode("D", SUNDAY);
 		mapServiceCode("H", MLK);
 		mapServiceCode("I", PRESIDENTS_DAY);
 		mapServiceCode("J", GOOD_FRIDAY);
