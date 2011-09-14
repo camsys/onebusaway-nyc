@@ -39,8 +39,7 @@ public enum ServiceCode {
 	NEW_YEARS_DAY, 
 	NEW_YEARS_DAY_OBSERVED;
 
-	static HashMap<String, ServiceCode> serviceCodeForId = new HashMap<String, ServiceCode>();
-	static HashMap<ServiceCode, String> idForServiceCode = new HashMap<ServiceCode, String>();
+	static HashMap<String, ServiceCode> serviceCodeForGtfsId = new HashMap<String, ServiceCode>();
 
 	static {
 		mapServiceCode("1", WEEKDAY_SCHOOL_OPEN);
@@ -71,17 +70,12 @@ public enum ServiceCode {
 	
 
 	public static ServiceCode getServiceCodeForId(String id) {
-		return serviceCodeForId.get(id);
-	}
-
-	public static String getServiceCodeForId(ServiceCode code) {
-		return idForServiceCode.get(code);
+		return serviceCodeForGtfsId.get(id);
 	}
 
 	private static void mapServiceCode(String string,
 			ServiceCode serviceCode) {
-		serviceCodeForId.put(string, serviceCode);
-		idForServiceCode.put(serviceCode, string);
+		serviceCodeForGtfsId.put(string, serviceCode);
 	}
 
 }
