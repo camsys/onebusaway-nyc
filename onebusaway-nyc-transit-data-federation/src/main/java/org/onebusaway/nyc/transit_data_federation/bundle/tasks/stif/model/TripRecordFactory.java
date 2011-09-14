@@ -70,7 +70,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(71 - 65, "relief run route", null),
       new FieldDef(79 - 71, "relief time", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setReliefTime(getIntegerSafe());
+          record.setReliefTime(getTimeFromCentiminutesSafe());
         }
       }),
       new FieldDef(83 - 79, "relief location", null),
