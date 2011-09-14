@@ -13,21 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.services;
+package org.onebusaway.nyc.vehicle_tracking.model.simulator;
 
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 
 public class VehicleLocationSimulationSummary {
 
   private int id;
 
-  private String vehicleId;
+  private AgencyAndId vehicleId;
 
   private int numberOfRecordsProcessed;
 
   private int numberOfRecordsTotal;
 
-  private NycTestLocationRecord mostRecentRecord;
+  private NycInferredLocationRecord mostRecentRecord;
 
   private boolean paused = false;
 
@@ -44,11 +45,11 @@ public class VehicleLocationSimulationSummary {
     this.id = id;
   }
 
-  public String getVehicleId() {
+  public AgencyAndId getVehicleId() {
     return vehicleId;
   }
 
-  public void setVehicleId(String vehicleId) {
+  public void setVehicleId(AgencyAndId vehicleId) {
     this.vehicleId = vehicleId;
   }
 
@@ -68,11 +69,11 @@ public class VehicleLocationSimulationSummary {
     this.numberOfRecordsTotal = numberOfRecordsTotal;
   }
 
-  public NycTestLocationRecord getMostRecentRecord() {
+  public NycInferredLocationRecord getMostRecentRecord() {
     return mostRecentRecord;
   }
 
-  public void setMostRecentRecord(NycTestLocationRecord mostRecentRecord) {
+  public void setMostRecentRecord(NycInferredLocationRecord mostRecentRecord) {
     this.mostRecentRecord = mostRecentRecord;
   }
 

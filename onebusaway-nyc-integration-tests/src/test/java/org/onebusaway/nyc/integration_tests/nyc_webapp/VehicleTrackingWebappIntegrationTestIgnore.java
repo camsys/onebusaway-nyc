@@ -40,7 +40,7 @@ import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
 import org.onebusaway.nyc.integration_tests.DataTestSupport;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.siri.model.FramedVehicleJourneyRef;
 import org.onebusaway.siri.model.MonitoredVehicleJourney;
 import org.onebusaway.siri.model.ServiceDelivery;
@@ -61,7 +61,7 @@ public class VehicleTrackingWebappIntegrationTestIgnore {
 
   private int _recordCount = 0;
 
-  private NycTestLocationRecord _previousRecord;
+  private NycInferredLocationRecord _previousRecord;
 
   @Before
   public void setup() {
@@ -92,7 +92,7 @@ public class VehicleTrackingWebappIntegrationTestIgnore {
 
     InputStream in = DataTestSupport.getTestDataAsInputStream();
     assertNotNull(in);
-    reader.readEntities(NycTestLocationRecord.class, in);
+    reader.readEntities(NycInferredLocationRecord.class, in);
 
     /*
      * todo: check the API so that we can see that the data came in. In the
@@ -101,7 +101,7 @@ public class VehicleTrackingWebappIntegrationTestIgnore {
 
   }
 
-  private void handleRecord(NycTestLocationRecord record) throws Exception {
+  private void handleRecord(NycInferredLocationRecord record) throws Exception {
 
     if (_recordCount > 20)
       return;
@@ -143,7 +143,7 @@ public class VehicleTrackingWebappIntegrationTestIgnore {
 
   }
 
-  private String getRecordAsSerializedSiri(NycTestLocationRecord record) {
+  private String getRecordAsSerializedSiri(NycInferredLocationRecord record) {
     Siri siri = new Siri();
     siri.ServiceDelivery = new ServiceDelivery();
     Calendar calendar = Calendar.getInstance();
@@ -174,7 +174,7 @@ public class VehicleTrackingWebappIntegrationTestIgnore {
   private class RequestSender implements EntityHandler {
     @Override
     public void handleEntity(Object bean) {
-      NycTestLocationRecord record = (NycTestLocationRecord) bean;
+      NycInferredLocationRecord record = (NycInferredLocationRecord) bean;
       try {
         handleRecord(record);
       } catch (Exception e) {

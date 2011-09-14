@@ -33,7 +33,6 @@
 
     <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.webapp.controllers" />
 
-
     <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/jsp/" />
     </bean>

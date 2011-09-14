@@ -15,34 +15,84 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.AnnotationIntrospector;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.zeromq.ZMQ;
 
+import tcip_final_3_0_5_1.CPTVehicleIden;
+import tcip_final_3_0_5_1.CcLocationReport;
+
 @Component
 public class PartitionedInputQueueListener {
 
 	private static Logger _log = LoggerFactory.getLogger(PartitionedInputQueueListener.class);
 	
+	private static String depotPartitionKey = "JG";
+		
 	private ExecutorService _executorService = null;
+	
+	@Autowired
+	private VehicleLocationInferenceService _vehicleLocationService;
+	
+	@Autowired 
+	private VehicleAssignmentService _vehicleAssignmentService;
 	
 	@Autowired
 	private ConfigurationService _configurationService;
 		
-	private boolean alreadyInitialized = false;
+	private boolean initialized = false;
 	
-	private static void processMessage(String address, String contents) {
-		System.out.println("MSG RECEIVED!");
+	private void processMessage(CcLocationReport message) {
+	    _vehicleLocationService.handleCcLocationReportRecord(message);
+	}
+	
+	// listen for messages directed to us (in our partition) and process them
+	private void filterMessages(String address, String contents) {
+	
+		ArrayList<AgencyAndId> vehicleList = 
+				_vehicleAssignmentService.getAssignedVehicleIdsForDepot(depotPartitionKey);
+
+		CcLocationReport message = null;
+		try {
+			ObjectMapper mapper = new ObjectMapper();		
+		    AnnotationIntrospector secondary = new JaxbAnnotationIntrospector();
+			mapper.getDeserializationConfig().setAnnotationIntrospector(secondary);
+			
+			JsonNode wrappedMessage = mapper.readValue(contents, JsonNode.class);
+			String ccLocationReportString = wrappedMessage.get("CcLocationReport").toString();
+			
+			message = mapper.readValue(ccLocationReportString, CcLocationReport.class);
+		} catch(Exception e) {
+			_log.warn("Received corrupted message from queue; discarding");
+			return;
+		}			
+
+	    CPTVehicleIden vehicleIdent = message.getVehicle();
+	    AgencyAndId vehicleId = 
+				new AgencyAndId(vehicleIdent.getAgencydesignator(), vehicleIdent.getVehicleId() + "");
+
+		if(!vehicleList.contains(vehicleId))
+			return;
+
+		processMessage(message);
 	}	
 	
 	private class ReadThread implements Runnable {
@@ -64,11 +114,12 @@ public class PartitionedInputQueueListener {
 					String address = new String(_zmqSocket.recv(0));
 					String contents = new String(_zmqSocket.recv(0));
 
-			    	processMessage(address, contents);		    	
+			    	filterMessages(address, contents);		    	
 				}
 		    }	    
 		}
 	}
+	
 	
 	@PostConstruct
 	public void setup() {
@@ -76,19 +127,19 @@ public class PartitionedInputQueueListener {
 		startListenerThread();
 	}
 	
+	
 	@PreDestroy 
 	public void destroy() {
 		_executorService.shutdownNow();
 	}
 	
+	
 	@Refreshable(dependsOn = {"inference-engine.inputQueueHost", "inference-engine.inputQueuePort"})
 	public void startListenerThread() {
-		if(alreadyInitialized == true) {
-			_log.warn("Configuration service tried to reconfigure queue read pool; this service is not reconfigurable.");
+		if(initialized == true) {
+			_log.warn("Configuration service tried to reconfigure queue reader; this service is not reconfigurable once started.");
 			return;
 		}
-		
-		alreadyInitialized = true;
 		
 		String host = _configurationService.getConfigurationValueAsString("inference-engine.inputQueueHost", null);
 	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.inputQueuePort", 5563);
@@ -112,5 +163,6 @@ public class PartitionedInputQueueListener {
 	    _executorService.execute(new ReadThread(socket, poller));
 
 		_log.debug("Input queue is listening on " + bind);
+		initialized = true;
 	}	
 }

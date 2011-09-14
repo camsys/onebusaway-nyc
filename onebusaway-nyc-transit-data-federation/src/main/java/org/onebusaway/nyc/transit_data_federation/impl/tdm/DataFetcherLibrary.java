@@ -15,7 +15,7 @@ import com.google.gson.JsonParser;
 
 public class DataFetcherLibrary {
 
-	private static final String _tdmHostname = "ec2-50-17-46-3.compute-1.amazonaws.com";
+	private static final String _tdmHostname = "tdm.staging.obanyc.com";
 
 	private static final String _apiEndpointPath = "/api/";
 

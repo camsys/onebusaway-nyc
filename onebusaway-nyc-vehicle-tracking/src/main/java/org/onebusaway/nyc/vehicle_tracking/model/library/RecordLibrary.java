@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.model;
+package org.onebusaway.nyc.vehicle_tracking.model.library;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -37,14 +38,14 @@ public class RecordLibrary {
     return timeDevice;
   }
 
-  public static NycTestLocationRecord getVehicleLocationRecordAsNycTestLocationRecord(
+  public static NycInferredLocationRecord getVehicleLocationRecordAsNycTestLocationRecord(
       VehicleLocationRecord record) {
-    NycTestLocationRecord r = new NycTestLocationRecord();
+    NycInferredLocationRecord r = new NycInferredLocationRecord();
     return r;
   }
 
   public static VehicleLocationRecord getNycTestLocationRecordAsVehicleLocationRecord(
-      NycTestLocationRecord record) {
+      NycInferredLocationRecord record) {
 
     VehicleLocationRecord vlr = new VehicleLocationRecord();
     vlr.setTimeOfRecord(record.getTimestamp());
@@ -57,19 +58,20 @@ public class RecordLibrary {
     vlr.setCurrentLocationLon(record.getLon());
     vlr.setPhase(EVehiclePhase.valueOf(record.getInferredPhase()));
     vlr.setStatus(record.getInferredStatus());
+    vlr.setVehicleId(record.getVehicleId());
     return vlr;
   }
 
-  public static NycVehicleLocationRecord getNycTestLocationRecordAsNycVehicleLocationRecord(
-      NycTestLocationRecord record, String agencyId) {
+  public static NycRawLocationRecord getNycTestLocationRecordAsNycVehicleLocationRecord(
+      NycInferredLocationRecord record) {
 
-    NycVehicleLocationRecord vlr = new NycVehicleLocationRecord();
+    NycRawLocationRecord vlr = new NycRawLocationRecord();
     vlr.setDestinationSignCode(record.getDsc());
     vlr.setLatitude(record.getLat());
     vlr.setLongitude(record.getLon());
     vlr.setTime(record.getTimestamp());
     vlr.setTimeReceived(record.getTimestamp());
-    vlr.setVehicleId(new AgencyAndId(agencyId, record.getVehicleId()));
+    vlr.setVehicleId(record.getVehicleId());
     return vlr;
   }
 }

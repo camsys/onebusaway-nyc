@@ -87,9 +87,15 @@
 
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-xc</artifactId>
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>1.5.6</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.zeromq</groupId>
 			<artifactId>jzmq</artifactId>

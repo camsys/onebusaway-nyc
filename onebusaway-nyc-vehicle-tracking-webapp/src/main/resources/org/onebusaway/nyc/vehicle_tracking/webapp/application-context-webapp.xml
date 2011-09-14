@@ -27,8 +27,10 @@
 
     <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/application-context.xml" />
 
-    <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl"/>
+    <!-- This turns on automatic annotation configuration for Jackson -->
+    <context:annotation-config />
     
+    <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl"/>
     <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.webapp.controllers"/>
 
 </beans>

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.impl;
+package org.onebusaway.nyc.vehicle_tracking.model.csv;
 
 import org.onebusaway.gtfs.csv.CsvEntityContext;
 import org.onebusaway.gtfs.csv.schema.BeanWrapper;

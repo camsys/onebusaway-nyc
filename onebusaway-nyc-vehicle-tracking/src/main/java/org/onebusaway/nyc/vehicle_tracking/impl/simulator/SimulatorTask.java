@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.impl;
+package org.onebusaway.nyc.vehicle_tracking.impl.simulator;
 
 import java.text.DateFormat;
 import java.util.ArrayDeque;
@@ -28,34 +28,36 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.onebusaway.gtfs.csv.EntityHandler;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.RecordLibrary;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.ParticleComparator;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SimulatorTask implements Runnable, EntityHandler {
+public class SimulatorTask implements Runnable, EntityHandler {
 
   private static Logger _log = LoggerFactory.getLogger(SimulatorTask.class);
 
   private static DateFormat _format = DateFormat.getTimeInstance(DateFormat.SHORT);
 
-  private List<NycTestLocationRecord> _records = new ArrayList<NycTestLocationRecord>();
+  private List<NycInferredLocationRecord> _records = new ArrayList<NycInferredLocationRecord>();
 
-  private List<NycTestLocationRecord> _results = new ArrayList<NycTestLocationRecord>();
+  private List<NycInferredLocationRecord> _results = new ArrayList<NycInferredLocationRecord>();
 
   private Deque<VehicleLocationDetails> _details = new ArrayDeque<VehicleLocationDetails>();
 
   private AtomicInteger _recordsProcessed = new AtomicInteger();
 
-  private NycTestLocationRecord _mostRecentRecord = null;
+  private NycInferredLocationRecord _mostRecentRecord = null;
 
-  private VehicleLocationService _vehicleLocationService;
+  private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   private int _id;
 
@@ -85,19 +87,18 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   private Set<Object> _tags = new HashSet<Object>();
 
-  private String _vehicleId = null;
+  private AgencyAndId _vehicleId = null;
 
   private boolean _complete = false;
 
   private boolean _loop;
 
   public SimulatorTask() {
-
   }
 
   public void setVehicleLocationService(
-      VehicleLocationService vehicleLocationService) {
-    _vehicleLocationService = vehicleLocationService;
+      VehicleLocationInferenceService vehicleLocationService) {
+    _vehicleLocationInferenceService = vehicleLocationService;
   }
 
   public void setId(int id) {
@@ -152,7 +153,7 @@ class SimulatorTask implements Runnable, EntityHandler {
     return _tags;
   }
 
-  public void addRecord(NycTestLocationRecord record) {
+  public void addRecord(NycInferredLocationRecord record) {
     if (_shiftStartTime) {
       if (_records.isEmpty())
         _startTimeOffset = System.currentTimeMillis() - record.getTimestamp();
@@ -161,7 +162,7 @@ class SimulatorTask implements Runnable, EntityHandler {
 
     // Should we prune a record that comes too close behind a previous record?
     if (!_records.isEmpty()) {
-      NycTestLocationRecord previous = _records.get(_records.size() - 1);
+      NycInferredLocationRecord previous = _records.get(_records.size() - 1);
       if ((record.getTimestamp() - previous.getTimestamp()) / 1000 < _minimumRecordInterval)
         return;
     }
@@ -172,7 +173,7 @@ class SimulatorTask implements Runnable, EntityHandler {
     }
 
     _records.add(record);
-    String vid = record.getVehicleId();
+    AgencyAndId vid = record.getVehicleId();
     if (_vehicleId != null) {
       if (!_vehicleId.equals(vid))
         throw new IllegalArgumentException(
@@ -183,7 +184,7 @@ class SimulatorTask implements Runnable, EntityHandler {
     }
   }
 
-  public List<NycTestLocationRecord> getRecords() {
+  public List<NycInferredLocationRecord> getRecords() {
     return _records;
   }
 
@@ -242,9 +243,8 @@ class SimulatorTask implements Runnable, EntityHandler {
   public VehicleLocationDetails getParticleDetails(int particleId) {
     VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
-    details.setLastObservation(RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(
-        _mostRecentRecord, _vehicleLocationService.getDefaultVehicleAgencyId()));
-    List<Particle> particles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
+    details.setLastObservation(RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(_mostRecentRecord));
+    List<Particle> particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);
     if (particles != null) {
       for (Particle p : particles) {
         if (p.getIndex() == particleId) {
@@ -262,20 +262,20 @@ class SimulatorTask implements Runnable, EntityHandler {
     return details;
   }
 
-  public List<NycTestLocationRecord> getResults() {
+  public List<NycInferredLocationRecord> getResults() {
     synchronized (_results) {
-      return new ArrayList<NycTestLocationRecord>(_results);
+      return new ArrayList<NycInferredLocationRecord>(_results);
     }
   }
 
   public void resetAllVehiclesAppearingInRecordData() {
-    Set<String> vehicleIds = new HashSet<String>();
+    Set<AgencyAndId> vehicleIds = new HashSet<AgencyAndId>();
 
-    for (NycTestLocationRecord record : _records)
+    for (NycInferredLocationRecord record : _records)
       vehicleIds.add(record.getVehicleId());
 
-    for (String vehicleId : vehicleIds)
-      _vehicleLocationService.resetVehicleLocation(vehicleId);
+    for (AgencyAndId vehicleId : vehicleIds)
+      _vehicleLocationInferenceService.resetVehicleLocation(vehicleId);
   }
 
   /****
@@ -323,7 +323,7 @@ class SimulatorTask implements Runnable, EntityHandler {
         nextRecordIndex = getNextRecordIndex();
       }
 
-      NycTestLocationRecord record = _records.get(nextRecordIndex);
+      NycInferredLocationRecord record = _records.get(nextRecordIndex);
 
       if (shouldExitAfterSimulatedWait(record))
         return;
@@ -332,11 +332,11 @@ class SimulatorTask implements Runnable, EntityHandler {
           + _format.format(record.getTimestampAsDate()));
 
       if (_bypassInference) {
-        _vehicleLocationService.handleNycTestLocationRecord(record);
+        _vehicleLocationInferenceService.handleNycInferredLocationRecord(record);
       } else {
-        _vehicleLocationService.handleVehicleLocation(record.getTimestamp(),
-            record.getVehicleId(), record.getLat(), record.getLon(),
-            record.getDsc(), true);
+    	NycRawLocationRecord vlr = 
+    			RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(record);
+    	_vehicleLocationInferenceService.handleNycRawLocationRecord(vlr);
       }
 
       if (shouledExitAfterWaitingForInferenceToComplete(record))
@@ -353,27 +353,27 @@ class SimulatorTask implements Runnable, EntityHandler {
 
   @Override
   public void handleEntity(Object bean) {
-    if (bean instanceof NycVehicleLocationRecord) {
+    if (bean instanceof NycRawLocationRecord) {
 
-      NycVehicleLocationRecord vlr = (NycVehicleLocationRecord) bean;
+      NycRawLocationRecord vlr = (NycRawLocationRecord) bean;
 
       long t = RecordLibrary.getBestTimestamp(vlr.getTime(),
           vlr.getTimeReceived());
 
-      NycTestLocationRecord record = new NycTestLocationRecord();
+      NycInferredLocationRecord record = new NycInferredLocationRecord();
       record.setDsc(vlr.getDestinationSignCode());
       record.setLat(vlr.getLatitude());
       record.setLon(vlr.getLongitude());
       record.setTimestamp(t);
-      record.setVehicleId(vlr.getVehicleId().getId());
+      record.setVehicleId(vlr.getVehicleId());
 
       bean = record;
     }
-    NycTestLocationRecord record = (NycTestLocationRecord) bean;
+    NycInferredLocationRecord record = (NycInferredLocationRecord) bean;
     addRecord(record);
   }
 
-  private boolean shouldExitAfterSimulatedWait(NycTestLocationRecord record) {
+  private boolean shouldExitAfterSimulatedWait(NycInferredLocationRecord record) {
 
     if (_runInRealtime && _mostRecentRecord != null) {
 
@@ -428,7 +428,7 @@ class SimulatorTask implements Runnable, EntityHandler {
   }
 
   private boolean shouledExitAfterWaitingForInferenceToComplete(
-      NycTestLocationRecord record) {
+      NycInferredLocationRecord record) {
 
     for (int i = 0; i < 20; i++) {
 
@@ -446,9 +446,9 @@ class SimulatorTask implements Runnable, EntityHandler {
     return true;
   }
 
-  private boolean processResultRecord(NycTestLocationRecord record) {
+  private boolean processResultRecord(NycInferredLocationRecord record) {
 
-    NycTestLocationRecord rr = _vehicleLocationService.getVehicleLocationForVehicle(record.getVehicleId());
+    NycInferredLocationRecord rr = _vehicleLocationInferenceService.getVehicleLocationForVehicle(record.getVehicleId());
 
     if (rr == null || rr.getTimestamp() < record.getTimestamp())
       return false;
@@ -480,21 +480,21 @@ class SimulatorTask implements Runnable, EntityHandler {
     details.setId(_id);
     details.setVehicleId(_vehicleId);
     details.setLastObservation(RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(
-        record, _vehicleLocationService.getDefaultVehicleAgencyId()));
+        record));
 
-    List<Particle> weightedParticles = _vehicleLocationService.getCurrentParticlesForVehicleId(_vehicleId);
+    List<Particle> weightedParticles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);
     if (weightedParticles != null) {
       Collections.sort(weightedParticles, ParticleComparator.INSTANCE);
       details.setParticles(weightedParticles);
     }
 
-    List<Particle> sampledParticles = _vehicleLocationService.getCurrentSampledParticlesForVehicleId(_vehicleId);
+    List<Particle> sampledParticles = _vehicleLocationInferenceService.getCurrentSampledParticlesForVehicleId(_vehicleId);
     if (sampledParticles != null) {
       Collections.sort(sampledParticles, ParticleComparator.INSTANCE);
       details.setSampledParticles(sampledParticles);
     }
 
-    List<JourneyPhaseSummary> summaries = _vehicleLocationService.getCurrentJourneySummariesForVehicleId(_vehicleId);
+    List<JourneyPhaseSummary> summaries = _vehicleLocationInferenceService.getCurrentJourneySummariesForVehicleId(_vehicleId);
     details.setSummaries(summaries);
 
     _details.add(details);

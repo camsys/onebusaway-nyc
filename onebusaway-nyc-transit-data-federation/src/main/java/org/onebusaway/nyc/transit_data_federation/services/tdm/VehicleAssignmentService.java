@@ -9,7 +9,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
  * 
  * @author jmaki
  */
-public interface VehicleDepotAssignmentService {
+public interface VehicleAssignmentService {
 
   /**
    * Get a list of vehicles assigned to the named depot.

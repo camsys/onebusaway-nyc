@@ -39,10 +39,10 @@ import javax.servlet.http.HttpSession;
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
@@ -237,7 +237,7 @@ public class VehicleLocationSimulationController {
   public void taskRecords(@RequestParam() int taskId,
       HttpServletResponse response) throws IOException {
 
-    List<NycTestLocationRecord> records = _vehicleLocationSimulationService.getSimulationRecords(taskId);
+    List<NycInferredLocationRecord> records = _vehicleLocationSimulationService.getSimulationRecords(taskId);
     writeRecordsToOutput(response, records);
   }
 
@@ -245,7 +245,7 @@ public class VehicleLocationSimulationController {
   public void taskParticles(@RequestParam() int taskId,
       HttpServletResponse response) throws IOException {
 
-    List<NycTestLocationRecord> records = _vehicleLocationSimulationService.getResultRecords(taskId);
+    List<NycInferredLocationRecord> records = _vehicleLocationSimulationService.getResultRecords(taskId);
     writeRecordsToOutput(response, records);
   }
 
@@ -321,19 +321,19 @@ public class VehicleLocationSimulationController {
    ****/
 
   private void writeRecordsToOutput(HttpServletResponse response,
-      List<NycTestLocationRecord> records) throws IOException {
+      List<NycInferredLocationRecord> records) throws IOException {
 
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
     OutputStreamWriter writer = new OutputStreamWriter(
         response.getOutputStream());
 
-    EntityHandler handler = factory.createWriter(NycTestLocationRecord.class,
+    EntityHandler handler = factory.createWriter(NycInferredLocationRecord.class,
         writer);
 
     if (records == null)
       records = Collections.emptyList();
 
-    for (NycTestLocationRecord record : records)
+    for (NycInferredLocationRecord record : records)
       handler.handleEntity(record);
 
     writer.close();

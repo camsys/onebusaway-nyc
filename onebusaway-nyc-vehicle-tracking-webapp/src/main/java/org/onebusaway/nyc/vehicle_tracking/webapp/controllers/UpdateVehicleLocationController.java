@@ -20,7 +20,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,11 +39,11 @@ public class UpdateVehicleLocationController {
     _format.setTimeZone(TimeZone.getTimeZone("America/New_York"));
   }
 
-  private VehicleLocationService _vehicleLocationService;
+  private VehicleLocationInferenceService _vehicleLocationService;
 
   @Autowired
   public void setVehicleLocationService(
-      VehicleLocationService vehicleLocationService) {
+		  VehicleLocationInferenceService vehicleLocationService) {
     _vehicleLocationService = vehicleLocationService;
   }
 
@@ -62,8 +64,13 @@ public class UpdateVehicleLocationController {
       t = date.getTime();
     }
 
-    _vehicleLocationService.handleVehicleLocation(t, vehicleId, lat, lon, dsc,
-        saveResults);
+    NycRawLocationRecord vlr = new NycRawLocationRecord();
+    vlr.setTime(t);
+    vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(vehicleId));
+    vlr.setLatitude(lat);
+    vlr.setLongitude(lon);
+    vlr.setDestinationSignCode(dsc);
+    _vehicleLocationService.handleNycRawLocationRecord(vlr);
 
     return new ModelAndView("update-vehicle-location.jspx");
   }

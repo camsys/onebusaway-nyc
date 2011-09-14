@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleDepotAssignmentService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import com.google.gson.JsonObject;
 
 @Component
-public class VehicleAssignmentServiceImpl implements VehicleDepotAssignmentService {
+public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
 	private static Logger _log = LoggerFactory.getLogger(VehicleAssignmentServiceImpl.class);
 
@@ -39,8 +39,8 @@ public class VehicleAssignmentServiceImpl implements VehicleDepotAssignmentServi
 			ArrayList<AgencyAndId> vehiclesForThisDepot = new ArrayList<AgencyAndId>();
 			for(JsonObject depotVehicleAssignment : vehicleAssignments) {
 				vehiclesForThisDepot.add(new AgencyAndId(
-					depotVehicleAssignment.get("agencyId").getAsString(), 
-					depotVehicleAssignment.get("vehicleId").getAsString()));
+					depotVehicleAssignment.get("agency-id").getAsString(), 
+					depotVehicleAssignment.get("vehicle-id").getAsString()));
 			}
 	
 			return vehiclesForThisDepot;

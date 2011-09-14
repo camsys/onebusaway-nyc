@@ -16,7 +16,7 @@
 /**
  * 
  */
-package org.onebusaway.nyc.vehicle_tracking.model;
+package org.onebusaway.nyc.vehicle_tracking.model.csv;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

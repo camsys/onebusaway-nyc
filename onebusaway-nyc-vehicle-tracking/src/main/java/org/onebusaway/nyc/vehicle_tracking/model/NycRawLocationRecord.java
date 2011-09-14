@@ -17,34 +17,12 @@ package org.onebusaway.nyc.vehicle_tracking.model;
 
 import java.util.Date;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.AgencyIdFieldMappingFactory;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyIdFieldMappingFactory;
 
-/**
- * Raw vehicle location record to be persisted to the database
- * 
- * @author bdferris
- */
-@Entity
-@Table(name = "oba_nyc_raw_location")
-@org.hibernate.annotations.Entity(mutable = false)
-@Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
-public class NycVehicleLocationRecord {
+public class NycRawLocationRecord {
 
-  @Id
-  @GeneratedValue
   private long id;
 
   private long time;
@@ -71,14 +49,9 @@ public class NycVehicleLocationRecord {
   @CsvField(optional = true)
   private String rmc;
 
-  @Embedded
-  @AttributeOverrides({
-      @AttributeOverride(name = "agencyId", column = @Column(name = "vehicle_agencyId", length = 50)),
-      @AttributeOverride(name = "id", column = @Column(name = "vehicle_id"))})
   @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
   private AgencyAndId vehicleId;
 
-  @Column(name = "rawData", length = 3000)
   @CsvField(name = "rawdata", optional = true)
   private String rawData;
 

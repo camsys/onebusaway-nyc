@@ -30,8 +30,8 @@ import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.TabTokenizerStrategy;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
 
 public class SplitNycVehicleLocationReportIntoTracesMain {
   public static void main(String[] args) throws CsvEntityIOException,
@@ -55,7 +55,7 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
 
     for (int i = 0; i < args.length - 1; i++) {
       FileReader reader = new FileReader(args[0]);
-      csvReader.readEntities(NycVehicleLocationRecord.class, reader);
+      csvReader.readEntities(NycRawLocationRecord.class, reader);
       reader.close();
     }
 
@@ -65,7 +65,7 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
 
   private static class EntityHandlerImpl implements EntityHandler {
 
-    private Map<AgencyAndId, NycVehicleLocationRecord> _lastRecordsByVehicleId = new HashMap<AgencyAndId, NycVehicleLocationRecord>();
+    private Map<AgencyAndId, NycRawLocationRecord> _lastRecordsByVehicleId = new HashMap<AgencyAndId, NycRawLocationRecord>();
 
     private Map<AgencyAndId, EntityHandler> _entityHandlersByVehicleId = new HashMap<AgencyAndId, EntityHandler>();
 
@@ -89,10 +89,10 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
     public void handleEntity(Object bean) {
 
       try {
-        NycVehicleLocationRecord record = (NycVehicleLocationRecord) bean;
+        NycRawLocationRecord record = (NycRawLocationRecord) bean;
         AgencyAndId vehicleId = record.getVehicleId();
 
-        NycVehicleLocationRecord prev = _lastRecordsByVehicleId.put(vehicleId,
+        NycRawLocationRecord prev = _lastRecordsByVehicleId.put(vehicleId,
             record);
 
         EntityHandler handler = _entityHandlersByVehicleId.get(vehicleId);
@@ -111,7 +111,7 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
           File outputFile = new File(_outputDirectory, fileName);
           writer = new FileWriter(outputFile);
 
-          handler = _factory.createWriter(NycVehicleLocationRecord.class,
+          handler = _factory.createWriter(NycRawLocationRecord.class,
               writer);
           _entityHandlersByVehicleId.put(vehicleId, handler);
           _writersByVehicleId.put(vehicleId, writer);
@@ -128,7 +128,7 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
         writer.close();
     }
 
-    private long getTimeForRecord(NycVehicleLocationRecord record) {
+    private long getTimeForRecord(NycRawLocationRecord record) {
       // This is more reliable, for grouping at least, than the actual device time
       return record.getTimeReceived();
     }

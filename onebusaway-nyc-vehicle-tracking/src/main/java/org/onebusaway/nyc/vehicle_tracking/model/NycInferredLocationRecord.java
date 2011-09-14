@@ -20,11 +20,12 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
-import org.onebusaway.gtfs.csv.schema.annotations.CsvFields;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyIdFieldMappingFactory;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
-@CsvFields(filename = "ivn-dsc.csv")
-public class NycTestLocationRecord implements Serializable {
+public class NycInferredLocationRecord implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -34,14 +35,14 @@ public class NycTestLocationRecord implements Serializable {
    * Raw Observation Values
    ****/
 
-  @CsvField(name = "vid")
-  private String vehicleId;
+  @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
+  private AgencyAndId vehicleId;
 
   private double lat;
 
   private double lon;
 
-  @CsvField(name = "dt", mapping = DateTimeFieldMappingFactory.class)
+  @CsvField(name = "timestamp", mapping = DateTimeFieldMappingFactory.class)
   private long timestamp;
 
   @CsvField(optional = true)
@@ -50,7 +51,6 @@ public class NycTestLocationRecord implements Serializable {
   /****
    * Inferred Values
    ****/
-
   @CsvField(optional = true)
   private String inferredBlockId;
 
@@ -90,7 +90,6 @@ public class NycTestLocationRecord implements Serializable {
   /****
    * Ground Truth Information
    ****/
-
   @CsvField(optional = true)
   private String actualBlockId;
 
@@ -127,11 +126,11 @@ public class NycTestLocationRecord implements Serializable {
   @CsvField(optional = true)
   private String actualStatus = null;
 
-  public void setVehicleId(String vehicleId) {
+  public void setVehicleId(AgencyAndId vehicleId) {
     this.vehicleId = vehicleId;
   }
 
-  public String getVehicleId() {
+  public AgencyAndId getVehicleId() {
     return vehicleId;
   }
 
@@ -174,7 +173,6 @@ public class NycTestLocationRecord implements Serializable {
   /****
    * Inferred Values
    ****/
-
   public String getInferredBlockId() {
     return inferredBlockId;
   }
@@ -318,7 +316,6 @@ public class NycTestLocationRecord implements Serializable {
   /****
    * Ground Truth Data
    ****/
-
   public String getActualBlockId() {
     return actualBlockId;
   }
@@ -444,7 +441,7 @@ public class NycTestLocationRecord implements Serializable {
   }
 
   public static InputStream getTestData() {
-    return NycTestLocationRecord.class.getResourceAsStream("ivn-dsc.csv");
+    return NycInferredLocationRecord.class.getResourceAsStream("ivn-dsc.csv");
   }
 
   /**

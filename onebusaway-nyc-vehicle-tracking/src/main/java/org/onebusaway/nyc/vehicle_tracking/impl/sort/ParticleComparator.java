@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.impl;
+package org.onebusaway.nyc.vehicle_tracking.impl.sort;
 
 import java.util.Comparator;
 

@@ -13,21 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.services;
+package org.onebusaway.nyc.vehicle_tracking.model.simulator;
 
 import java.util.List;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 
 public class VehicleLocationDetails {
 
   private int id;
 
-  private String vehicleId;
+  private AgencyAndId vehicleId;
 
-  private NycVehicleLocationRecord lastObservation;
+  private NycRawLocationRecord lastObservation;
 
   /**
    * True if the list of particles is a history of a specific particles, as
@@ -59,19 +60,19 @@ public class VehicleLocationDetails {
     this.id = id;
   }
 
-  public String getVehicleId() {
+  public AgencyAndId getVehicleId() {
     return vehicleId;
   }
 
-  public void setVehicleId(String vehicleId) {
+  public void setVehicleId(AgencyAndId vehicleId) {
     this.vehicleId = vehicleId;
   }
 
-  public NycVehicleLocationRecord getLastObservation() {
+  public NycRawLocationRecord getLastObservation() {
     return lastObservation;
   }
 
-  public void setLastObservation(NycVehicleLocationRecord lastObservation) {
+  public void setLastObservation(NycRawLocationRecord lastObservation) {
     this.lastObservation = lastObservation;
   }
 

@@ -26,7 +26,7 @@ import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.csv.ListEntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 
 public class CompileTestTracesMain {
 
@@ -38,8 +38,8 @@ public class CompileTestTracesMain {
       System.exit(-1);
     }
 
-    List<NycTestLocationRecord> rawRecords = readRecords(new File(args[0]));
-    List<NycTestLocationRecord> labeledRecords = readRecords(new File(args[1]));
+    List<NycInferredLocationRecord> rawRecords = readRecords(new File(args[0]));
+    List<NycInferredLocationRecord> labeledRecords = readRecords(new File(args[1]));
 
     if (rawRecords.size() != labeledRecords.size()) {
       throw new IllegalStateException("expected record counts to match: raw="
@@ -48,12 +48,12 @@ public class CompileTestTracesMain {
 
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
     FileWriter out = new FileWriter(args[2]);
-    EntityHandler handler = factory.createWriter(NycTestLocationRecord.class,
+    EntityHandler handler = factory.createWriter(NycInferredLocationRecord.class,
         out);
 
     for (int i = 0; i < rawRecords.size(); i++) {
-      NycTestLocationRecord rawRecord = rawRecords.get(i);
-      NycTestLocationRecord labeledRecord = labeledRecords.get(i);
+      NycInferredLocationRecord rawRecord = rawRecords.get(i);
+      NycInferredLocationRecord labeledRecord = labeledRecords.get(i);
       rawRecord.setActualBlockId(labeledRecord.getActualBlockId());
       rawRecord.setActualDistanceAlongBlock(labeledRecord.getActualDistanceAlongBlock());
       rawRecord.setActualDsc(labeledRecord.getActualDsc());
@@ -68,15 +68,15 @@ public class CompileTestTracesMain {
     out.close();
   }
 
-  private static List<NycTestLocationRecord> readRecords(File path)
+  private static List<NycInferredLocationRecord> readRecords(File path)
       throws CsvEntityIOException, IOException {
 
     CsvEntityReader reader = new CsvEntityReader();
 
-    ListEntityHandler<NycTestLocationRecord> handler = new ListEntityHandler<NycTestLocationRecord>();
+    ListEntityHandler<NycInferredLocationRecord> handler = new ListEntityHandler<NycInferredLocationRecord>();
     reader.addEntityHandler(handler);
 
-    reader.readEntities(NycTestLocationRecord.class, new FileReader(path));
+    reader.readEntities(NycInferredLocationRecord.class, new FileReader(path));
 
     return handler.getValues();
   }

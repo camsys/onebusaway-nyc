@@ -18,5 +18,10 @@
 <html>
 <body>
 <h2>onebusaway-nyc-vehicle-tracking-webapp</h2>
+
+<ul>
+	<li><a href="vehicle-locations.do">Current Vehicle Particles/Status</a></li>
+	<li><a href="vehicle-location-simulation.do">Vehicle Simulator</a></li>
+</ul>
 </body>
 </html>

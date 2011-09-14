@@ -27,7 +27,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -215,7 +215,7 @@ public class BlockStateTransitionModel {
       }
     }
 
-    NycVehicleLocationRecord record = obs.getRecord();
+    NycRawLocationRecord record = obs.getRecord();
     String dsc = record.getDestinationSignCode();
 
     boolean unknownDSC = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
@@ -297,11 +297,11 @@ public class BlockStateTransitionModel {
       Observation obs) {
 
     String previouslyObservedDsc = null;
-    NycVehicleLocationRecord previousRecord = obs.getPreviousRecord();
+    NycRawLocationRecord previousRecord = obs.getPreviousRecord();
     if (previousRecord != null)
       previouslyObservedDsc = previousRecord.getDestinationSignCode();
 
-    NycVehicleLocationRecord record = obs.getRecord();
+    NycRawLocationRecord record = obs.getRecord();
     String observedDsc = record.getDestinationSignCode();
 
     return !ObjectUtils.equals(previouslyObservedDsc, observedDsc);

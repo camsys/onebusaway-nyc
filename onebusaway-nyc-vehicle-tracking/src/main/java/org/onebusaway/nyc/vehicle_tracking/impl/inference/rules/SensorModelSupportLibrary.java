@@ -29,7 +29,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel2;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -157,7 +157,7 @@ public class SensorModelSupportLibrary {
     JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
 
-    NycVehicleLocationRecord record = obs.getRecord();
+    NycRawLocationRecord record = obs.getRecord();
     String observedDsc = record.getDestinationSignCode();
 
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
@@ -623,7 +623,7 @@ public class SensorModelSupportLibrary {
     if (blockLocation.getDistanceAlongBlock() > 200)
       return 0.0;
 
-    NycVehicleLocationRecord prev = obs.getPreviousRecord();
+    NycRawLocationRecord prev = obs.getPreviousRecord();
     CoordinatePoint prevLocation = new CoordinatePoint(prev.getLatitude(),
         prev.getLongitude());
 
@@ -648,7 +648,7 @@ public class SensorModelSupportLibrary {
   public double computeDeadheadDestinationSignCodeProbability(
       BlockState blockState, Observation observation) {
 
-    NycVehicleLocationRecord record = observation.getRecord();
+    NycRawLocationRecord record = observation.getRecord();
     String observedDsc = record.getDestinationSignCode();
 
     // If the driver hasn't set an in-service DSC yet, we can't punish too much
@@ -750,7 +750,7 @@ public class SensorModelSupportLibrary {
 
   public double computeOutOfServiceProbability(Observation observation) {
 
-    NycVehicleLocationRecord record = observation.getRecord();
+    NycRawLocationRecord record = observation.getRecord();
     String dsc = record.getDestinationSignCode();
     boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
 
@@ -773,7 +773,7 @@ public class SensorModelSupportLibrary {
    */
   public boolean isOutOfServiceDestinationSignCode(Observation obs) {
 
-    NycVehicleLocationRecord record = obs.getRecord();
+    NycRawLocationRecord record = obs.getRecord();
     String observedDsc = record.getDestinationSignCode();
 
     return _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
