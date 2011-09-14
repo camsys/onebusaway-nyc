@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- The local codes for the ITIS Revsion 3.0 schema -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.www.itis-local-for-im" targetNamespace="http://www.itis-local-for-im" elementFormDefault="unqualified">
-	<xs:simpleType name="ResponderGroupAffected">
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="insert-here"/>
-		</xs:restriction>
-	</xs:simpleType>
-</xs:schema>
