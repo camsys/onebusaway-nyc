@@ -5,7 +5,7 @@ import org.zeromq.ZMQ;
 public class Subscriber {
     public static final String HOST_KEY = "mq.host";
     public static final String PORT_KEY = "mq.port";
-    private static final String DEFAULT_HOST = "mq.dev.obanyc.org";
+    private static final String DEFAULT_HOST = "queue.staging.obanyc.com";
     private static final int DEFAULT_PORT = 5563;
 
     public static void main(String[] args) {
