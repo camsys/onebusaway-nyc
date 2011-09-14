@@ -171,8 +171,8 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
              */
 
             String serviceId = trip.getServiceId().getId();
-            Character dayCode1 = serviceId.charAt(serviceId.length() - 2);
-            Character dayCode2 = serviceId.charAt(serviceId.length() - 1);
+            char dayCode1 = serviceId.charAt(serviceId.length() - 2);
+            char dayCode2 = serviceId.charAt(serviceId.length() - 1);
 
             // schedule runs on on days where a dayCode1 is followed by a
             // dayCode2;
@@ -183,14 +183,14 @@ public class StifBlockGtfsTransformerStrategy implements GtfsTransformStrategy {
 
             if (tripRecord.getOriginTime() < 0) {
               /* possible trip records are those containing the previous day */
-              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2.toString()) == serviceCode) {
+              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2) == serviceCode) {
                 filtered.add(trip);
                 trip.setBlockId(blockId);
                 dao.updateEntity(trip);
                 _tripsWithBlockCount++;
               }
             } else {
-              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1.toString()) == serviceCode) {
+              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1) == serviceCode) {
                 filtered.add(trip);
                 trip.setBlockId(blockId);
                 dao.updateEntity(trip);
