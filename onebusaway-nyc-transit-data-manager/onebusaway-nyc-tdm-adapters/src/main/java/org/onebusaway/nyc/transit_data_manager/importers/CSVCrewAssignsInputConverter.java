@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.transit_data_manager.importers;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;

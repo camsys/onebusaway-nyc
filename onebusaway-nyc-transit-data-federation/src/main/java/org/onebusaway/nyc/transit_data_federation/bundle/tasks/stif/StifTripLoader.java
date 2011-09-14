@@ -157,8 +157,8 @@ public class StifTripLoader {
              */
 
             String serviceId = trip.getServiceId().getId();
-            char dayCode1 = serviceId.charAt(serviceId.length() - 2);
-            char dayCode2 = serviceId.charAt(serviceId.length() - 1);
+            Character dayCode1 = serviceId.charAt(serviceId.length() - 2);
+            Character dayCode2 = serviceId.charAt(serviceId.length() - 1);
             
             // schedule runs on on days where a dayCode1 is followed by a
             // dayCode2;
@@ -167,11 +167,11 @@ public class StifTripLoader {
 
             if (tripRecord.getOriginTime() < 0) {
               /* possible trip records are those containing the previous day */
-              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2) != serviceCode) {
+              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2.toString()) != serviceCode) {
                 trip = null;
               }
             } else {
-              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1) != serviceCode) {
+              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1.toString()) != serviceCode) {
                 trip = null;
               }
             }
