@@ -1,28 +1,11 @@
-/**
- * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.onebusaway.api.actions.api;
 
 import java.util.Map;
 
-import org.onebusaway.api.ResponseCodes;
 import org.onebusaway.api.model.ResponseBean;
 import org.onebusaway.exceptions.NoSuchRouteServiceException;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.exceptions.NoSuchTripServiceException;
-import org.onebusaway.exceptions.OutOfServiceAreaServiceException;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
@@ -56,30 +39,12 @@ public class ExceptionInterceptor extends AbstractInterceptor {
       return invocation.invoke();
     } catch (Exception ex) {
       ActionProxy proxy = invocation.getProxy();
-      ResponseBean response = getExceptionAsResponseBean(invocation, ex);
+      String url = getActionAsUrl(invocation);
+      _log.warn("exception for action: url=" + url, ex);
+      ResponseBean response = getExceptionAsResponseBean(ex);
       DefaultHttpHeaders methodResult = new DefaultHttpHeaders().withStatus(response.getCode());
       return _handlerSelector.handleResult(proxy.getConfig(), methodResult,
           response);
-    }
-  }
-
-
-  protected ResponseBean getExceptionAsResponseBean(ActionInvocation invocation, Exception ex) {
-    if (ex instanceof NoSuchStopServiceException
-        || ex instanceof NoSuchTripServiceException
-        || ex instanceof NoSuchRouteServiceException) {
-      return new ResponseBean(V1, ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND,
-          ex.getMessage(), null);
-    }
-    else if( ex instanceof OutOfServiceAreaServiceException) {
-      return new ResponseBean(V1, ResponseCodes.RESPONSE_OUT_OF_SERVICE_AREA,
-          ex.getMessage(), null);
-    }
-    else {
-      String url = getActionAsUrl(invocation);
-      _log.warn("exception for action: url=" + url, ex);
-      return new ResponseBean(V1, ResponseCodes.RESPONSE_SERVICE_EXCEPTION,
-          ex.getMessage(), null);
     }
   }
 
@@ -123,4 +88,16 @@ public class ExceptionInterceptor extends AbstractInterceptor {
 
     return b.toString();
   }
+
+  protected ResponseBean getExceptionAsResponseBean(Exception ex) {
+    if (ex instanceof NoSuchStopServiceException
+        || ex instanceof NoSuchTripServiceException
+        || ex instanceof NoSuchRouteServiceException)
+      return new ResponseBean(V1, ResponseCodes.RESPONSE_RESOURCE_NOT_FOUND,
+          ex.getMessage(), null);
+    else
+      return new ResponseBean(V1, ResponseCodes.RESPONSE_SERVICE_EXCEPTION,
+          ex.getMessage(), null);
+  }
+
 }

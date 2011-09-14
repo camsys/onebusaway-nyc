@@ -61,7 +61,7 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
-import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.service_alerts.SituationBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
@@ -363,15 +363,11 @@ public class NycSearchServiceImpl implements NycSearchService {
       }
 
       if(tripStatusBean.getSituations() != null) {
-    	  for(ServiceAlertBean situationBean : tripStatusBean.getSituations()) {
+    	  for(SituationBean situationBean : tripStatusBean.getSituations()) {
     		  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToNaturalLanguageStringBeans.get(situationBean.getId());
     	  
     		  if (serviceAlert == null) {
-    			  List<NaturalLanguageStringBean> descriptions = situationBean.getDescriptions();
-    			  if(descriptions.size() <= 0)
-    				  continue;
-    			  
-    			  serviceAlertIdsToNaturalLanguageStringBeans.put(situationBean.getId(), descriptions.get(0));
+    			  serviceAlertIdsToNaturalLanguageStringBeans.put(situationBean.getId(), situationBean.getDescription());
     		  }
     	  }     
       }
@@ -502,13 +498,13 @@ public class NycSearchServiceImpl implements NycSearchService {
     if (m == Mode.MOBILE_WEB || m == Mode.SMS) {
       boolean routeIsOnDetour = false;
       
-      List<ServiceAlertBean> situations = statusBean.getSituations();
+      List<SituationBean> situations = statusBean.getSituations();
       if (situations != null) {
-        for (ServiceAlertBean situationBean : situations) {
-          String miscelleanousReason = situationBean.getReason();
+        for (SituationBean situationBean : situations) {
+          String miscelleanousReason = situationBean.getMiscellaneousReason();
     		  
           if (miscelleanousReason != null 
-        	  && miscelleanousReason.compareTo("Detour") == 0) {
+        	  && miscelleanousReason.compareTo("detour") == 0) {
             routeIsOnDetour = true;
             break;
           }
@@ -571,18 +567,14 @@ public class NycSearchServiceImpl implements NycSearchService {
       // add service alerts to our list of service alerts for all routes at this stop
       // and check if route is on detour
       if(arrivalAndDepartureBean.getSituations() != null) {
-  	    for(ServiceAlertBean situationBean : arrivalAndDepartureBean.getSituations()) {
+  	    for(SituationBean situationBean : arrivalAndDepartureBean.getSituations()) {
   		  NaturalLanguageStringBean serviceAlert = serviceAlertIdsToServiceAlerts.get(situationBean.getId());
     	
-  		  if(serviceAlert == null) {
-  			  List<NaturalLanguageStringBean> descriptions = situationBean.getDescriptions();
-  			  if(descriptions.size() <= 0)
-  				  continue;
-  			  serviceAlertIdsToServiceAlerts.put(situationBean.getId(), descriptions.get(0));  			  
-  		  }
+  		  if(serviceAlert == null)
+  			  serviceAlertIdsToServiceAlerts.put(situationBean.getId(), situationBean.getDescription());
 
-          String miscelleanousReason = situationBean.getReason();
-          if (miscelleanousReason != null && miscelleanousReason.equals("Detour")) {
+          String miscelleanousReason = situationBean.getMiscellaneousReason();
+          if (miscelleanousReason != null && miscelleanousReason.equals("detour")) {
         	routeIdToDetouredFlag.put(routeId, true);
             break;
           }

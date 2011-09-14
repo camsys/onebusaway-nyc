@@ -18,7 +18,7 @@
     <onebusaway.csv-entities.version>1.0.2-SNAPSHOT</onebusaway.csv-entities.version>
   	<struts.version>2.1.8.1</struts.version>
     <spring.version>3.0.3.RELEASE</spring.version>
-    <onebusaway.app-modules.version>0.2.0-SNAPSHOT</onebusaway.app-modules.version>
+    <onebusaway.app-modules.version>2.0.4-SNAPSHOT</onebusaway.app-modules.version>
     <onebusaway.nyc-tdm-tcip.version>0.0.1-SNAPSHOT</onebusaway.nyc-tdm-tcip.version>
   </properties>
 
