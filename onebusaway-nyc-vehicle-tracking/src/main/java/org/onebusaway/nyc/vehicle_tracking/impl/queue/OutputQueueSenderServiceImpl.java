@@ -31,7 +31,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.OutputQueueSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +46,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 		
 	private ExecutorService _executorService = null;
 
-	private ArrayBlockingQueue<String> _outputBuffer = 
-			new ArrayBlockingQueue<String>(100);
+	private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
 	
 	private boolean initialized = false;
 
@@ -82,7 +81,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 		    	Thread.yield();
 
 				if(processedCount > 50) {
-					_log.info("Output queue: processed 50 messages in " 
+					_log.info("Inference output queue: processed 50 messages in " 
 							+ (new Date().getTime() - markTimestamp.getTime()) / 1000 + 
 							" seconds; current queue length is " + _outputBuffer.size());
 					
@@ -130,16 +129,16 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 			"inference-engine.outputQueuePort", "inference-engine.outputQueueName"})
 	public void startListenerThread() {
 		if(initialized == true) {
-			_log.warn("Configuration service tried to reconfigure queue sending service; this service is not reconfigurable once started.");
+			_log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
 			return;
 		}
 		
 		String host = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueHost", null);
 		String queueName = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueName", null);
-	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.outputQueuePort", 5563);
+	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.outputQueuePort", 5566);
 
 	    if(host == null) {
-	    	_log.info("Output queue is not attached; output hostname was not available via configuration service.");
+	    	_log.info("Inference output queue is not attached; output hostname was not available via configuration service.");
 	    	return;
 	    }
 
@@ -152,7 +151,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 	    _executorService.execute(new SendThread(socket, queueName));
 
-		_log.debug("Output queue is sending to " + bind);
+		_log.debug("Inference output queue is sending to " + bind);
 		initialized = true;
 	}	
 }

@@ -125,7 +125,7 @@ public class PartitionedInputQueueListenerTask {
 				}
 				
 				if(processedCount > 50) {
-					_log.info("Input queue: processed 50 messages in " 
+					_log.info("Inference input queue: processed 50 messages in " 
 							+ (new Date().getTime() - markTimestamp.getTime()) / 1000 + " seconds.");
 					
 					markTimestamp = new Date();
@@ -161,7 +161,7 @@ public class PartitionedInputQueueListenerTask {
 	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.inputQueuePort", 5563);
 
 	    if(host == null) {
-	    	_log.info("Input queue is not attached; input hostname was not available via configuration service.");
+	    	_log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
 	    	return;
 	    }
 
@@ -178,7 +178,7 @@ public class PartitionedInputQueueListenerTask {
 
 	    _executorService.execute(new ReadThread(socket, poller));
 
-		_log.debug("Input queue is listening on " + bind);
+		_log.debug("Inference input queue is listening on " + bind);
 		initialized = true;
 	}	
 }

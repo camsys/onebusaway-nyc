@@ -19,7 +19,7 @@ import java.util.Date;
 
 import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyIdFieldMappingFactory;
+import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
 
 public class NycRawLocationRecord {
 

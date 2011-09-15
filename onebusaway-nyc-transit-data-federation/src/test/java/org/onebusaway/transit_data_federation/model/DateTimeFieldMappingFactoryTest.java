@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.model;
+package org.onebusaway.transit_data_federation.model;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,7 +25,8 @@ import org.junit.Test;
 import org.onebusaway.gtfs.csv.schema.BeanWrapper;
 import org.onebusaway.gtfs.csv.schema.BeanWrapperFactory;
 import org.onebusaway.gtfs.csv.schema.FieldMapping;
-import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.csv.DateTimeFieldMappingFactory;
 
 public class DateTimeFieldMappingFactoryTest {
   

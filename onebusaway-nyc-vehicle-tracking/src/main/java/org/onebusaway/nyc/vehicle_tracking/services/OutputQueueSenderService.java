@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.services;
 
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 
 public interface OutputQueueSenderService {
 
