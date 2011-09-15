@@ -82,7 +82,7 @@ public class DepotAssignments {
 
     FleetSubsetsGenerator fleetSSGen = new FleetSubsetsGenerator();
     CptFleetSubsets fleetSubsets = fleetSSGen.generateFromSubsetGroups(fleetSSGroups);
-    
+
     String xmlResult;
     try {
       xmlResult = generateXml(fleetSubsets);

@@ -12,7 +12,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
