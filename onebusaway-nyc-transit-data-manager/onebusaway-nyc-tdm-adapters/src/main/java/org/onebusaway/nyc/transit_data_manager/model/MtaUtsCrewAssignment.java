@@ -1,15 +1,13 @@
 package org.onebusaway.nyc.transit_data_manager.model;
 
-import java.io.Console;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.joda.time.DateMidnight;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
 
 public class MtaUtsCrewAssignment
@@ -74,47 +72,30 @@ public class MtaUtsCrewAssignment
 //     * A Other Holiday Service
 //     * B Other Holiday Service
 //     */	
-    private GregorianCalendar date; // Service Date
-    private GregorianCalendar timestamp; // Assignment Timestamp
+    private DateTime date; // Service Date
+    private DateTime timestamp; // Assignment Timestamp
     
     
     public void setTimestamp (String value) { 
-    	Date parsedDate = null;
+    	DateTime parsedDate = null;
     	
-    	DateFormat df = new SimpleDateFormat(mappingTool.UTS_TIMESTAMP_FIELD_DATEFORMAT);
+    	DateTimeFormatter dtf = DateTimeFormat.forPattern(UtsMappingTool.UTS_TIMESTAMP_FIELD_DATEFORMAT);
     	
-    	try {
-    		parsedDate = df.parse(value);
-    	} catch (ParseException e) {
-    		parsedDate = new Date();
-    	}
+    	parsedDate = dtf.parseDateTime(value);
     	
-    	GregorianCalendar timestampCal = new GregorianCalendar();
-    	timestampCal.setTime(parsedDate);
-    	
-    	timestamp = timestampCal;
+    	timestamp = parsedDate;
     }
     
     public void setDate (String value) { 
-    	Date parsedDate = null;
+    	DateTime parsedDate = null;
     	
-    	DateFormat df = new SimpleDateFormat(mappingTool.UTS_DATE_FIELD_DATEFORMAT);
+    	DateTimeFormatter dtf = DateTimeFormat.forPattern(UtsMappingTool.UTS_DATE_FIELD_DATEFORMAT);
     	
-    	try {
-    		parsedDate = df.parse(value);
-		} catch (ParseException e) {
-			parsedDate = new Date();
-		}
+    	parsedDate = dtf.parseDateTime(value);
     	
-    	GregorianCalendar serviceDateCal = new GregorianCalendar();
-    	serviceDateCal.setTime(parsedDate);
+    	DateMidnight dm = new DateMidnight(parsedDate);
     	
-    	serviceDateCal.set(Calendar.HOUR, 0);
-    	serviceDateCal.set(Calendar.MINUTE, 0);
-    	serviceDateCal.set(Calendar.SECOND, 0);
-    	serviceDateCal.set(Calendar.MILLISECOND, 0);
-    	
-    	date = serviceDateCal;
+    	date = new DateTime(dm);
     }
     
     public void setPassNumber (String value) { 
@@ -140,12 +121,12 @@ public class MtaUtsCrewAssignment
     }
     
     public String getAuthId () { return authIdField; }
-    public GregorianCalendar getDate() { return date; }
+    public DateTime getDate() { return date; }
     public String getDepot () { return depotField; }
     public String getRunNumber () {return runNumberField;}
     public String getRoute () { return routeField; }
     public Long   getPassNumberNumericPortion () { return passNumberNumericPortion; }
-    public GregorianCalendar getTimestamp() { return timestamp; }
+    public DateTime getTimestamp() { return timestamp; }
     
     public String getOperatorDesignator () { return authIdField + passNumberField; }
     public String getRunDesignator () { return routeField + "-" + runNumberField; }

@@ -15,19 +15,15 @@ public interface ConfigurationService {
    * @param defaultValue The value to return if a value for the configurationItemKey 
    * 		  is not found.
    */
-  public String getConfigurationElementAsString(
+  public String getConfigurationValueAsString(
       String configurationItemKey,
       String defaultValue);
 
-  /**
-   * Get a value for the given configuration key as a float.
-   * 
-   * @param configurationItemKey The configuration item key.
-   * @param defaultValue The value to return if a value for the configurationItemKey 
-   * 		  is not found.
-   */
-  public Float getConfigurationElementAsFloat(
+  public Float getConfigurationValueAsFloat(
       String configurationItemKey,
       Float defaultValue);
   
+  public Integer getConfigurationValueAsInteger(
+	      String configurationItemKey,
+	      Integer defaultValue);
 }

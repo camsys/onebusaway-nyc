@@ -24,16 +24,13 @@ import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 
-import org.onebusaway.container.cache.Cacheable;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
 import org.onebusaway.nyc.transit_data.model.UtsRecordBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
-import org.onebusaway.transit_data.model.AgencyBean;
-import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
-import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +47,7 @@ class VehicleTrackingManagementServiceImpl implements
 
   private int _vehicleStalledTimeThreshold = 2 * 60;
 
-  private VehicleLocationService _vehicleLocationService;
-
-  private TransitDataService _transitDataService;
+  private VehicleLocationInferenceService _vehicleLocationService;
 
   private DestinationSignCodeService _dscService;
   
@@ -60,18 +55,13 @@ class VehicleTrackingManagementServiceImpl implements
 
   @Autowired
   public void setVehicleLocationService(
-      VehicleLocationService vehicleLocationService) {
+      VehicleLocationInferenceService vehicleLocationService) {
     _vehicleLocationService = vehicleLocationService;
   }
 
   @Autowired
   public void setDestinationSignCodeService(DestinationSignCodeService dscService) {
 	  _dscService = dscService;
-  }
-  
-  @Autowired
-  public void setTransitDataService(TransitDataService transitDataService) {
-    _transitDataService = transitDataService;
   }
 
   public void setConfigPath(File configPath) {
@@ -106,23 +96,10 @@ class VehicleTrackingManagementServiceImpl implements
    * {@link VehicleTrackingManagementService} Interface
    ****/
 
+  // FIXME: PILOT HACK
   @Override
-  @Cacheable
   public String getDefaultAgencyId() {
-
-    List<AgencyWithCoverageBean> agenciesWithCoverage = _transitDataService.getAgenciesWithCoverage();
-
-    if (agenciesWithCoverage.isEmpty())
-      throw new IllegalStateException("No agencies found!");
-
-    for (AgencyWithCoverageBean awc : agenciesWithCoverage) {
-      AgencyBean agency = awc.getAgency();
-      if (agency.getName().contains("MTA"))
-        return agency.getId();
-    }
-
-    AgencyWithCoverageBean awc = agenciesWithCoverage.get(0);
-    return awc.getAgency().getId();
+	return "MTA NYCT";
   }
 
   @Override
@@ -148,12 +125,14 @@ class VehicleTrackingManagementServiceImpl implements
 
   @Override
   public void setVehicleStatus(String vehicleId, boolean status) {
-    _vehicleLocationService.setVehicleStatus(vehicleId, status);
+	AgencyAndId vid = new AgencyAndId(getDefaultAgencyId(), vehicleId);
+    _vehicleLocationService.setVehicleStatus(vid, status);
   }
 
   @Override
   public void resetVehicleTrackingForVehicleId(String vehicleId) {
-    _vehicleLocationService.resetVehicleLocation(vehicleId);
+	AgencyAndId vid = new AgencyAndId(getDefaultAgencyId(), vehicleId);
+    _vehicleLocationService.resetVehicleLocation(vid);
   }
 
   @Override
@@ -167,7 +146,9 @@ class VehicleTrackingManagementServiceImpl implements
 
   @Override
   public NycVehicleStatusBean getVehicleStatusForVehicleId(String vehicleId) {
-    VehicleLocationManagementRecord record = _vehicleLocationService.getVehicleLocationManagementRecordForVehicle(vehicleId);
+	AgencyAndId vid = new AgencyAndId(getDefaultAgencyId(), vehicleId);
+    VehicleLocationManagementRecord record = 
+    		_vehicleLocationService.getVehicleLocationManagementRecordForVehicle(vid);
     if (record == null)
       return null;
     return getManagementRecordAsStatus(record);
@@ -183,7 +164,7 @@ class VehicleTrackingManagementServiceImpl implements
 	  return _dscService.isUnknownDestinationSignCode(destinationSignCode);	  
   }
   
-  // FIXME
+  // FIXME: PILOT HACK
   @Override
   public List<UtsRecordBean> getCurrentUTSRecordsForDepot(String depotId) {
 	  return new ArrayList<UtsRecordBean>();

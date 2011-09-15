@@ -16,7 +16,6 @@
 	<packaging>pom</packaging>
 
 	<modules>
-	  <module>onebusaway-nyc-tdm-tcip</module>
 	  <module>onebusaway-nyc-tdm-adapters</module>
 	</modules>
 </project>

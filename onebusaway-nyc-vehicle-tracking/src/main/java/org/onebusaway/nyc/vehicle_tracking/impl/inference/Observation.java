@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
@@ -24,7 +24,7 @@ public class Observation {
 
   private final long _timestamp;
 
-  private final NycVehicleLocationRecord _record;
+  private final NycRawLocationRecord _record;
 
   private final ProjectedPoint _point;
 
@@ -38,7 +38,7 @@ public class Observation {
 
   private Observation _previousObservation;
 
-  public Observation(long timestamp, NycVehicleLocationRecord record,
+  public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, Observation previousObservation) {
     _timestamp = timestamp;
@@ -56,7 +56,7 @@ public class Observation {
     return _timestamp;
   }
 
-  public NycVehicleLocationRecord getRecord() {
+  public NycRawLocationRecord getRecord() {
     return _record;
   }
 
@@ -88,7 +88,7 @@ public class Observation {
     return _previousObservation;
   }
 
-  public NycVehicleLocationRecord getPreviousRecord() {
+  public NycRawLocationRecord getPreviousRecord() {
     if (_previousObservation == null)
       return null;
     return _previousObservation.getRecord();

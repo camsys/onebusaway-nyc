@@ -29,11 +29,11 @@ public abstract class StifFieldSetter<T extends StifRecord> {
 	public String getStringData() {
 		return new String(bytes, start, end - start).trim();
 	}
-	
-	public int getInteger() {
-		return Integer.parseInt(getStringData());
-	}
-	
+
+  public int getInteger() {
+    return Integer.parseInt(getStringData());
+  }
+
   public int getIntegerSafe() {
     String data = getStringData();
     try {
@@ -42,11 +42,19 @@ public abstract class StifFieldSetter<T extends StifRecord> {
       return -1;
     }
   }
-  
-	public int getTimeFromCentiminutes() {
-		int centiminutes = getInteger();
-		return (centiminutes * 60) / 100;
-	}
+
+  public int getTimeFromCentiminutes() {
+    int centiminutes = getInteger();
+    return (centiminutes * 60) / 100;
+  }
+
+  public int getTimeFromCentiminutesSafe() {
+    int centiminutes = getIntegerSafe();
+    if (centiminutes == -1) {
+      return -1;
+    }
+    return (centiminutes * 60) / 100;
+  }
 	
 	public float getDecimalFixedPoint(int digits) {
 		while(bytes[start] == ' ') {

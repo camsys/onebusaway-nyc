@@ -20,48 +20,52 @@ import java.util.List;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
-import org.onebusaway.realtime.api.VehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+
+import tcip_final_3_0_5_1.CcLocationReport;
 
 public interface VehicleLocationInferenceService {
+  public void handleNycRawLocationRecord(NycRawLocationRecord record);
 
-  public void handleNycVehicleLocationRecord(NycVehicleLocationRecord record);
+  public void handleNycInferredLocationRecord(NycInferredLocationRecord record);
 
-  public void handleVehicleLocationRecord(VehicleLocationRecord record);
-
-  public void handleNycTestLocationRecord(AgencyAndId vehicleId,
-      NycTestLocationRecord record);
+  public void handleCcLocationReportRecord(CcLocationReport message);
+  
 
   public void resetVehicleLocation(AgencyAndId vid);
 
-  public NycTestLocationRecord getVehicleLocationForVehicle(AgencyAndId vid);
+  public void setVehicleStatus(AgencyAndId vid, boolean enabled);
 
-  public List<NycTestLocationRecord> getLatestProcessedVehicleLocationRecords();
+  
+  public NycInferredLocationRecord getVehicleLocationForVehicle(AgencyAndId vid);
+
+  public List<NycInferredLocationRecord> getLatestProcessedVehicleLocationRecords();
 
   public VehicleLocationManagementRecord getVehicleLocationManagementRecordForVehicle(
       AgencyAndId vid);
 
   public List<VehicleLocationManagementRecord> getVehicleLocationManagementRecords();
 
-  public void setVehicleStatus(AgencyAndId vid, boolean enabled);
 
   /**
-   * This is primarily here for debugging
-   * 
-   * @param vehicleId
-   * @return the most recent list of particles for the specified vehicle
+   * These are primarily here for debugging 
    */
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
 
   public List<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId);
 
+  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
+	  AgencyAndId agencyAndId);
+
   public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId);
 
-  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
-      AgencyAndId agencyAndId);
-
+  public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId, int particleId);
+		  
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId);
+
+  public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId, int particleId);
 }

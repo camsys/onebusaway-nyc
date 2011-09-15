@@ -96,6 +96,8 @@ public class StifTask implements Runnable {
     for (File path : _stifPaths) {
       loadStif(path, loader);
     }
+
+    //set computed block ids for trips
     Map<Trip, BlockAndRuns> BlockAndRunsByTrip = loader.getBlockAndRunsByTrip();
     DisjointSet<String> tripGroups = loader.getTripGroups();
     for (Map.Entry<Trip, BlockAndRuns> entry : BlockAndRunsByTrip.entrySet()) {
@@ -109,16 +111,17 @@ public class StifTask implements Runnable {
     }
 
     Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
+    //store trip-run mapping in bundle
     try {
       ObjectSerializationLibrary.writeObject(_bundle.getTripRunDataPath(),
           runsForTrip);
     } catch (IOException e) {
           throw new IllegalStateException(e);
     }
-        
+
     Map<String, List<AgencyAndId>> dscToTripMap = loader.getTripMapping();
     Map<AgencyAndId, String> tripToDscMap = new HashMap<AgencyAndId, String>();
-    		
+
     Set<String> inServiceDscs = new HashSet<String>();
 
     for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {

@@ -13,18 +13,23 @@
   <name>onebusaway-nyc-transit-data-federation</name>
 
   <dependencies>
-
+  
     <!-- OneBusAway Dependencies -->
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-transit-data-federation</artifactId>
       <version>${onebusaway.app-modules.version}</version>
     </dependency>
+  	<dependency>
+           <groupId>org.onebusaway</groupId>
+           <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+           <version>${onebusaway.nyc-tcip.version}</version>
+  	</dependency>
     <dependency>
       <groupId>org.onebusaway</groupId>
       <artifactId>onebusaway-csv-entities</artifactId>
     </dependency>
-
+  
     <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
@@ -32,7 +37,19 @@
         <type>jar</type>
     	<scope>compile</scope>
     </dependency>
-
+	<dependency>
+		<groupId>org.zeromq</groupId>
+		<artifactId>jzmq</artifactId>
+		<version>053c2d7</version>
+		<type>jar</type>
+		<scope>compile</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.codehaus.jackson</groupId>
+		<artifactId>jackson-xc</artifactId>
+		<version>1.5.6</version>
+	</dependency>
+		
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,7 +39,7 @@ public class ObservationCache {
 
   @SuppressWarnings("unchecked")
   public <T> T getValueForObservation(Observation observation, EObservationCacheKey key) {
-    NycVehicleLocationRecord record = observation.getRecord();
+    NycRawLocationRecord record = observation.getRecord();
 
     ObservationContents contents = _contentsByVehicleId.get(record.getVehicleId());
     if (contents == null || contents.getObservation() != observation)
@@ -49,7 +49,7 @@ public class ObservationCache {
 
   public void putValueForObservation(Observation observation, EObservationCacheKey key,
       Object value) {
-    NycVehicleLocationRecord record = observation.getRecord();
+    NycRawLocationRecord record = observation.getRecord();
     /**
      * This doesn't need to be thread-safe in the strict sense since we should
      * never get concurrent operations for the same vehicle
