@@ -29,9 +29,7 @@ public class DummyOutputQueueSenderServiceImpl implements OutputQueueSenderServi
 
 	@Override
 	public void enqueue(NycInferredLocationRecord r) {
-//		synchronized(_vehicleLocationListener) {
-			VehicleLocationRecord vlr = RecordLibrary.getNycTestLocationRecordAsVehicleLocationRecord(r);
-			_vehicleLocationListener.handleVehicleLocationRecord(vlr);
-//		}
+		VehicleLocationRecord vlr = RecordLibrary.getNycTestLocationRecordAsVehicleLocationRecord(r);
+		_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 	}
 }
