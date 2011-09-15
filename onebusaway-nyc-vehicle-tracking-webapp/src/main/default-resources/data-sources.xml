@@ -69,7 +69,7 @@
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
-                <prop key="blockLocationServiceImpl.persistBlockLocationRecords">true</prop>
+                <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
             </props>
         </property>
     </bean>
