@@ -51,10 +51,11 @@ public class SimpleBroker {
     public void run() {
 	// Prepare our context and subscriber
 	ZMQ.Context context = ZMQ.context(1); // 1 = number of threads
+
 	ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
 	String inBind = "tcp://*:" + inPort;
 	System.out.println("subscribing to queue \"" + inTopic + "\" at " + inBind);
-	subscriber.connect(inBind);
+	subscriber.bind(inBind);
 	subscriber.subscribe(inTopic.getBytes());
 	
 	ZMQ.Socket publisher = context.socket(ZMQ.PUB);
