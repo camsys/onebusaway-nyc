@@ -14,6 +14,8 @@ public class UtsMappingTool {
 	public static String UTS_DATE_FIELD_DATEFORMAT = "yyyy-MM-dd";
 	public static String UTS_TIMESTAMP_FIELD_DATEFORMAT = "yyyy-MM-dd HH:mm:ss";
 	
+	public static String TIMEFORMAT_HHMMSS = "HH:mm:ss";
+	
 	public static String BUS_DESIGNATOR = "MTA NYCT";
 	
 	private static long NYCT_AGENCY_ID = new Long(2008);
@@ -21,6 +23,10 @@ public class UtsMappingTool {
 	
 	public UtsMappingTool () {
 		super();
+	}
+	
+	public Long getAgencyIdFromDepotAssignAgency (int value) {
+	  return MTA_AGENCY_ID;
 	}
 	
 	public Long getAgencyIdFromUtsAuthId (String authId) {
