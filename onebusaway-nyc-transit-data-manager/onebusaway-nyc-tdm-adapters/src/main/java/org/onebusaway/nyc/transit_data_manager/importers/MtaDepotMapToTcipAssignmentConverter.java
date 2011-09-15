@@ -57,7 +57,7 @@ public class MtaDepotMapToTcipAssignmentConverter {
 
       bus.setAgencyId(bdAssignment.getAgencyId());
       bus.setVehicleId(bdAssignment.getBusNumber());
-      bus.setName("Mercedes Benz");
+      //bus.setName("Mercedes Benz");
 
       gMembers.getGroupMember().add(bus);
     }
