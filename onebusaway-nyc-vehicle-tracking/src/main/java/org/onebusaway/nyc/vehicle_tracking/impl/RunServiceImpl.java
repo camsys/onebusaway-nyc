@@ -24,6 +24,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraph;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ public class RunServiceImpl implements RunService {
 
   private Map<AgencyAndId, RunData> runDataByTrip;
 
-  private TransitGraph transitGraph;
+  private TransitGraphDao transitGraph;
 
   private HashMap<String, List<RunTripEntry>> entriesByRun;
 
@@ -55,7 +56,7 @@ public class RunServiceImpl implements RunService {
   }
 
   @Autowired
-  public void setTransitGraph(TransitGraph graph) {
+  public void setTransitGraph(TransitGraphDao graph) {
     this.transitGraph = graph;
   }
 
@@ -88,15 +89,19 @@ public class RunServiceImpl implements RunService {
 
     for (Map.Entry<AgencyAndId, RunData> entry : runDataByTrip.entrySet()) {
       TripEntry trip = transitGraph.getTripEntryForId(entry.getKey());
-      RunData runData = entry.getValue();
-
-      ReliefState initialReliefState = runData.hasRelief()
-          ? ReliefState.BEFORE_RELIEF : ReliefState.NO_RELIEF;
-      processTripEntry(trip, runData.initialRun, runData.reliefTime,
-          initialReliefState);
-      if (runData.hasRelief()) {
-        processTripEntry(trip, runData.reliefRun, runData.reliefTime,
-            ReliefState.AFTER_RELIEF);
+      if (trip != null) {
+	      RunData runData = entry.getValue();
+	
+	      ReliefState initialReliefState = runData.hasRelief()
+	          ? ReliefState.BEFORE_RELIEF : ReliefState.NO_RELIEF;
+	      processTripEntry(trip, runData.initialRun, runData.reliefTime,
+	          initialReliefState);
+	      if (runData.hasRelief()) {
+	        processTripEntry(trip, runData.reliefRun, runData.reliefTime,
+	            ReliefState.AFTER_RELIEF);
+	      }
+      } else {
+    	  _log.warn("null trip found for entry=" + entry.toString());
       }
     }
     // sort RTEs by time

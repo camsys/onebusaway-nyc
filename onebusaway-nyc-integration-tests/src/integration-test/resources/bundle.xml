@@ -47,7 +47,7 @@
         <property name="path" value="${onebusaway_prefix}/src/integration-test/resources/mta.osm.gz" />
     </bean>
 
-    <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/application-context-common.xml" />
+    <import resource="classpath:org/onebusaway/nyc/transit_data_federation/application-context.xml" />
 
     <bean class="org.onebusaway.container.spring.QualifierConfigurer">
         <property name="target" value="sessionFactory" />
@@ -61,7 +61,7 @@
         <property name="task" ref="stifLoaderTask" />
     </bean>
 
-    <bean id="stifLoaderTask" class="org.onebusaway.nyc.vehicle_tracking.impl.StifTask">
+    <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
         <property name="stifPath"
             value="${onebusaway_prefix}/src/integration-test/resources/stifs/JG-B63-Winter" />
 	    <property name="notInServiceDscPath"
