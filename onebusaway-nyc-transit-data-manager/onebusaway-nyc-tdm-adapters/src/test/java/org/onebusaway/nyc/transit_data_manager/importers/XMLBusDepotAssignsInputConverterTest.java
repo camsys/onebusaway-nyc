@@ -13,24 +13,24 @@ import org.onebusaway.nyc.transit_data_manager.model.MtaBusDepotAssignment;
 
 public class XMLBusDepotAssignsInputConverterTest {
 
-	BusDepotAssignsInputConverter inConverter = null;
-	
-	@Before
-	public void setup () {
-		ClassLoader classLoader = XMLBusDepotAssignsInputConverterTest.class.getClassLoader();
-	    InputStream in = classLoader.getResourceAsStream("BusDepotAssignXMLExample.xml");
-		
-	    Reader csvInputReader = new InputStreamReader(in);
-	    
-		inConverter = new XMLBusDepotAssignsInputConverter(csvInputReader);
-	}
-	
-	@Test
-	public void testGetBusDepotAssignments() {
-				
-		List<MtaBusDepotAssignment> assignments = inConverter.getBusDepotAssignments();
-		
-		// Test that we get four results.
-		assertEquals(3, assignments.size());
-	}
+  BusDepotAssignsInputConverter inConverter = null;
+
+  @Before
+  public void setup() {
+    ClassLoader classLoader = XMLBusDepotAssignsInputConverterTest.class.getClassLoader();
+    InputStream in = classLoader.getResourceAsStream("BusDepotAssignXMLExample.xml");
+
+    Reader csvInputReader = new InputStreamReader(in);
+
+    inConverter = new XMLBusDepotAssignsInputConverter(csvInputReader);
+  }
+
+  @Test
+  public void testGetBusDepotAssignments() {
+
+    List<MtaBusDepotAssignment> assignments = inConverter.getBusDepotAssignments();
+
+    // Test that we get four results.
+    assertEquals(3, assignments.size());
+  }
 }
