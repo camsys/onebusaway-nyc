@@ -36,10 +36,8 @@ import org.onebusaway.nyc.vehicle_tracking.services.OutputQueueSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.zeromq.ZMQ;
 
-@Component
 public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 	private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);

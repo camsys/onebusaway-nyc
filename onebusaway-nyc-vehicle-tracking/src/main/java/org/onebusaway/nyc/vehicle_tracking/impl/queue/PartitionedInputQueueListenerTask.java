@@ -35,13 +35,11 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceServ
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.zeromq.ZMQ;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
-@Component
 public class PartitionedInputQueueListenerTask {
 
 	private static Logger _log = LoggerFactory.getLogger(PartitionedInputQueueListenerTask.class);

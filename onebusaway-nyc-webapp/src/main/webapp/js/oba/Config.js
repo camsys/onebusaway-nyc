@@ -33,11 +33,11 @@ OBA.Config = {
 		searchUrl: "search.action",
 		
 		// TODO These are the URLs for the pilot bustime.mta.info server
-		routeShapeUrl: "/onebusaway-api-webapp/api/where/stops-for-route",
-		stopsUrl: "/onebusaway-api-webapp/api/where/stops-for-location.json",
-		stopUrl: "/onebusaway-api-webapp/api/where/arrivals-and-departures-for-stop",
-		vehiclesUrl:"/onebusaway-api-webapp/api/where/trips-for-route",
-		vehicleUrl: "/onebusaway-api-webapp/api/where/trip-for-vehicle",
+		routeShapeUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-route",
+		stopsUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-location.json",
+		stopUrl: "/onebusaway-nyc-api-webapp/api/where/arrivals-and-departures-for-stop",
+		vehiclesUrl:"/onebusaway-nyc-api-webapp/api/where/trips-for-route",
+		vehicleUrl: "/onebusaway-nyc-api-webapp/api/where/trip-for-vehicle",
 //		routeShapeUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-route",
 //		stopsUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-location.json",
 //		stopUrl: "/onebusaway-nyc-api-webapp/api/where/arrivals-and-departures-for-stop",

@@ -412,19 +412,18 @@ public class VehicleInferenceInstance {
     Particle particle = _particleFilter.getMostLikelyParticle();
 
     VehicleState state = particle.getData();
-    // EdgeState edgeState = state.getEdgeState();
     MotionState motionState = state.getMotionState();
     JourneyState journeyState = state.getJourneyState();
     BlockState blockState = state.getBlockState();
     Observation obs = state.getObservation();
 
     CoordinatePoint location = obs.getLocation();
-    NycRawLocationRecord nycRecord = obs.getRecord();
-
+    NycRawLocationRecord nycRecord = obs.getRecord();    
+    
     NycInferredLocationRecord record = new NycInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
-
+    
     record.setTimestamp((long) particle.getTimestamp());
     record.setDsc(nycRecord.getDestinationSignCode());
 

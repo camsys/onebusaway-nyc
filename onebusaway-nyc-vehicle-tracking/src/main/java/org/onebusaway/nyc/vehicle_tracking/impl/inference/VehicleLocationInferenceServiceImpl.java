@@ -351,6 +351,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
         if (passOnRecord) {
           NycInferredLocationRecord record = existing.getCurrentState();
+          record.setVehicleId(_vehicleId);
+          
           _outputQueueSenderService.enqueue(record);
         }
       } catch (ProjectionException e) {

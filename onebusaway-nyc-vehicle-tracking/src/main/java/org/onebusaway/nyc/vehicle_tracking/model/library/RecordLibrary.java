@@ -59,6 +59,7 @@ public class RecordLibrary {
     vlr.setPhase(EVehiclePhase.valueOf(record.getInferredPhase()));
     vlr.setStatus(record.getInferredStatus());
     vlr.setVehicleId(record.getVehicleId());
+    
     return vlr;
   }
 
