@@ -24,29 +24,21 @@
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
 
     <bean id="serviceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+        <property name="serviceUrl" value="http://${service.tds.host}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
 
     <bean id="configServiceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/>
+        <property name="serviceUrl" value="http://${service.vehicle-tracking.host}/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/>
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
 
-<!--     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
-        <property name="username" value="postgres" />
-        <property name="password" value="changeme" />
-    </bean>
- -->
- 
       <!-- TODO We may want the location of this db to beat the top of the project, not in this module. -->
       <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true" />
-        <property name="username" value="sa" />
-        <property name="password" value="" />
+        <property name="driverClassName" value="${db.driverClassName}" />
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
     </bean>
  
 	<bean id="webappHibernateProperties"
@@ -54,9 +46,8 @@
 		<property name="target" value="hibernateProperties" />
 		<property name="properties">
 			<props>
-<!-- 				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop> -->
-				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-				<prop key="hibernate.connection.autocommit">false</prop>
+				<prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
+				<prop key="hibernate.connection.autocommit">${db.hibernate.connection.autocommit}</prop>
 			</props>
 		</property>
 	</bean>
@@ -66,9 +57,8 @@
 		<property name="target" value="hibernatePropertiesMutable" />
 		<property name="properties">
 			<props>
-<!-- 				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop> -->
-				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-				<prop key="hibernate.connection.autocommit">false</prop>
+                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
+                <prop key="hibernate.connection.autocommit">${db.hibernate.connection.autocommit}</prop>
 			</props>
 		</property>
 	</bean>
@@ -94,21 +84,27 @@
         </property>
     </bean>
     
+    <!-- TODO Should these service references also be modified under profile for running locally? -->
     <bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl">
-        <property name="xwikiUrl" value="http://bustime.mta.info/xwiki" />
+        <property name="xwikiUrl" value="http://${service.wikihost}/xwiki" />
     </bean>
 
     <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl">
         <property name="wikiDocumentViewUrl" value="/wiki/%{documentName}" />
-        <property name="wikiDocumentEditUrl" value="http://bustime.mta.info/xwiki/bin/edit/%{namespace}/%{documentName}" />
-        <property name="wikiAttachmentUrl" value="http://bustime.mta.info/xwiki/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
+        <property name="wikiDocumentEditUrl" value="http://${service.wikihost}/xwiki/bin/edit/%{namespace}/%{documentName}" />
+        <property name="wikiAttachmentUrl" value="http://${service.wikihost}/xwiki/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
     </bean>
 
-    <bean id="nycConfigurationServiceImpl" class="org.onebusaway.nyc.presentation.impl.NycConfigurationServiceImpl">
+     <bean id="nycConfigurationServiceImpl" class="org.onebusaway.nyc.presentation.impl.NycConfigurationServiceImpl">
      <property name="path">
        <bean class="java.io.File">
          <constructor-arg value="/tmp/configuration-service.properties" />
        </bean>
+     </property>
+     <property name="configuration">
+        <bean class="org.onebusaway.nyc.presentation.service.ConfigurationBean">
+            <property name="apiUrl" value="http://${service.tds.host}"/>
+        </bean>
      </property>
    </bean>
 </beans>

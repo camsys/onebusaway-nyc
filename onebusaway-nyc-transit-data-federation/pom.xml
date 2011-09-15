@@ -62,4 +62,39 @@
     </dependency>
 
   </dependencies>
+  
+    <build>
+        <plugins>
+            <!-- Build a graph bundle (currently, 
+                a reduced set of MTA data) -->
+            <!-- TODO This is SERIOUSLY hacky at the moment. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <configuration>
+                    <dependency>
+                        <groupId>org.onebusaway</groupId>
+                        <artifactId>onebusaway-transit-data-federation</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Xmx1500m</argument>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>-Donebusaway_prefix=${basedir}</argument>
+                        <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                        <argument>-onlyIfDoesNotExist</argument>
+                        <argument>-additionalResourcesDirectory</argument>
+                        <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                        <argument>${basedir}/src/bundle-building-sample/bundle-hsqldb.xml</argument>
+                        <!-- <argument>${basedir}/src/integration-test/resources/bundle.xml</argument> -->
+                        <argument>${project.build.directory}/transit-data-bundle</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+  
 </project>

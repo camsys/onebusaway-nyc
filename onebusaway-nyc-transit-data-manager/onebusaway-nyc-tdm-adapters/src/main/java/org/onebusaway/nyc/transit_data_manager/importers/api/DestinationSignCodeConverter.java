@@ -19,9 +19,9 @@ import org.onebusaway.nyc.transit_data_manager.importers.CSVCcAnnouncementInfoCo
 
 /**
  * Command line tool for converting CSV destination sign code data to TCIP.
- *
- * TCIP expected format is:
- * ROUTE,DEST. SIGN CODE, DESTINATION SIGN CODE MESSAGE, DIR, DEPOT
+ * 
+ * TCIP expected format is: ROUTE,DEST. SIGN CODE, DESTINATION SIGN CODE
+ * MESSAGE, DIR, DEPOT
  */
 public class DestinationSignCodeConverter {
 
@@ -64,6 +64,20 @@ public class DestinationSignCodeConverter {
 	}
 	outputFileWriter.close();
     }
+  }
+
+  public DestinationSignCodeConverter(String inputFilePath,
+      String outputFilePath) throws IOException {
+    inputFileReader = new FileReader(inputFilePath);
+    outputFileWriter = new FileWriter(outputFilePath);
+  }
+
+  public void convertAndWrite() throws IOException {
+    CcAnnouncementInfoConverter inConv = new CSVCcAnnouncementInfoConverter(
+        inputFileReader);
+    CcAnnouncementInfo.Destinations destinations = inConv.getDestinations();
+    inputFileReader.close();
+  }
 
     private String generateXml(CcAnnouncementInfo inputElement) throws JAXBException {
 	String outputStr = null;
