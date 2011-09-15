@@ -19,11 +19,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestLocationRecordDestinationSignCodeComparator;
-import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestLocationRecordVehicleComparator;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordDestinationSignCodeComparator;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordVehicleComparator;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,20 +35,20 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class VehicleLocationsController {
 
-  private VehicleLocationService _vehicleLocationService;
+  private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   @Autowired
   public void setVehicleLocationService(
-      VehicleLocationService vehicleLocationService) {
-    _vehicleLocationService = vehicleLocationService;
+		  VehicleLocationInferenceService vehicleLocationService) {
+    _vehicleLocationInferenceService = vehicleLocationService;
   }
 
   @RequestMapping("/vehicle-locations.do")
   public ModelAndView index(@RequestParam(required = false) String sort) {
 
-    List<NycTestLocationRecord> records = _vehicleLocationService.getLatestProcessedVehicleLocationRecords();
+    List<NycInferredLocationRecord> records = _vehicleLocationInferenceService.getLatestProcessedVehicleLocationRecords();
 
-    Comparator<NycTestLocationRecord> comparator = getComparatorForSortString(sort);
+    Comparator<NycInferredLocationRecord> comparator = getComparatorForSortString(sort);
     Collections.sort(records, comparator);
 
     ModelAndView mv = new ModelAndView("vehicle-locations.jspx");
@@ -56,20 +58,20 @@ public class VehicleLocationsController {
 
   @RequestMapping("/vehicle-location.do")
   public ModelAndView vehicleLocation(@RequestParam() String vehicleId) {
-    NycTestLocationRecord record = _vehicleLocationService.getVehicleLocationForVehicle(vehicleId);
+    NycInferredLocationRecord record = _vehicleLocationInferenceService.getVehicleLocationForVehicle(AgencyAndIdLibrary.convertFromString(vehicleId));
     return new ModelAndView("json", "record", record);
   }
 
   @RequestMapping("/vehicle-location!reset.do")
   public ModelAndView resetVehicleLocation(@RequestParam() String vehicleId) {
-    _vehicleLocationService.resetVehicleLocation(vehicleId);
+    _vehicleLocationInferenceService.resetVehicleLocation(AgencyAndIdLibrary.convertFromString(vehicleId));
     return new ModelAndView("redirect:/vehicle-locations.do");
   }
 
   @RequestMapping("/vehicle-location!particles.do")
   public ModelAndView particles(@RequestParam() String vehicleId) {
 
-    VehicleLocationDetails details = _vehicleLocationService.getDetailsForVehicleId(vehicleId);
+    VehicleLocationDetails details = _vehicleLocationInferenceService.getDetailsForVehicleId(AgencyAndIdLibrary.convertFromString(vehicleId));
 
     ModelAndView mv = new ModelAndView("vehicle-location-particles.jspx");
     mv.addObject("details", details);
@@ -80,8 +82,8 @@ public class VehicleLocationsController {
   public ModelAndView particleDetails(@RequestParam() String vehicleId,
       @RequestParam() int particleId) {
 
-    VehicleLocationDetails details = _vehicleLocationService.getDetailsForVehicleId(
-        vehicleId, particleId);
+    VehicleLocationDetails details = _vehicleLocationInferenceService.getDetailsForVehicleId(
+    	AgencyAndIdLibrary.convertFromString(vehicleId), particleId);
 
     return new ModelAndView("vehicle-location-particles.jspx", "details",
         details);
@@ -90,18 +92,18 @@ public class VehicleLocationsController {
   @RequestMapping("/vehicle-location!bad-particles.do")
   public ModelAndView badParticles(@RequestParam() String vehicleId) {
 
-    VehicleLocationDetails details = _vehicleLocationService.getBadDetailsForVehicleId(vehicleId);
+    VehicleLocationDetails details = _vehicleLocationInferenceService.getBadDetailsForVehicleId(AgencyAndIdLibrary.convertFromString(vehicleId));
 
     return new ModelAndView("vehicle-location-particles.jspx", "details",
         details);
   }
 
   @RequestMapping(value = "/vehicle-location!bad-particle-details.do")
-  public ModelAndView badParticleDetails(@RequestParam() String vehicleId,
+  public ModelAndView badParticleDetails(@RequestParam() AgencyAndId vehicleId,
       @RequestParam() int particleId) {
 
-    VehicleLocationDetails details = _vehicleLocationService.getBadDetailsForVehicleId(
-        vehicleId, particleId);
+    VehicleLocationDetails details = _vehicleLocationInferenceService.getBadDetailsForVehicleId(
+    	vehicleId, particleId);
 
     return new ModelAndView("vehicle-location-particles.jspx", "details",
         details);
@@ -111,8 +113,8 @@ public class VehicleLocationsController {
   public ModelAndView particles(@RequestParam() String vehicleId,
       @RequestParam() int particleId) {
 
-    VehicleLocationDetails details = _vehicleLocationService.getDetailsForVehicleId(
-        vehicleId, particleId);
+    VehicleLocationDetails details = _vehicleLocationInferenceService.getDetailsForVehicleId(
+    	AgencyAndIdLibrary.convertFromString(vehicleId), particleId);
 
     ModelAndView mv = new ModelAndView("vehicle-location-particles.jspx");
     mv.addObject("details", details);
@@ -122,17 +124,16 @@ public class VehicleLocationsController {
   /****
    * 
    ****/
-
-  private Comparator<NycTestLocationRecord> getComparatorForSortString(
+  private Comparator<NycInferredLocationRecord> getComparatorForSortString(
       String sort) {
     if (sort == null)
-      return new NycTestLocationRecordVehicleComparator();
+      return new NycInferredLocationRecordVehicleComparator();
 
     sort = sort.toLowerCase().trim();
 
     if (sort.equals("dsc"))
-      return new NycTestLocationRecordDestinationSignCodeComparator();
+      return new NycInferredLocationRecordDestinationSignCodeComparator();
 
-    return new NycTestLocationRecordVehicleComparator();
+    return new NycInferredLocationRecordVehicleComparator();
   }
 }

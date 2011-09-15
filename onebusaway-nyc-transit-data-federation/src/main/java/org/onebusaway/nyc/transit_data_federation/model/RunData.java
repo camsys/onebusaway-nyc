@@ -7,11 +7,19 @@ public class RunData implements Serializable {
 
   public String initialRun;
   public String reliefRun;
-  public int reliefTime;
-  
+  public int reliefTime = -1;
+
   public RunData(String run1, String run2, int reliefTime) {
     this.initialRun = run1;
     this.reliefRun = run2;
     this.reliefTime = reliefTime;
+  }
+
+  public boolean hasRelief() {
+    return reliefTime != -1;
+  }
+
+  public String toString() {
+    return "RunData(" + initialRun + ", " + reliefRun + ", " + reliefTime + ")";
   }
 }

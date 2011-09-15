@@ -98,7 +98,6 @@
 
   <modules>
     <module>onebusaway-nyc-integration-tests</module>
-    <module>onebusaway-nyc-stif-loader</module>
     <module>onebusaway-nyc-vehicle-tracking</module>
     <module>onebusaway-nyc-vehicle-tracking-webapp</module>
     <module>onebusaway-nyc-webapp</module>

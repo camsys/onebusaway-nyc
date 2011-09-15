@@ -24,7 +24,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -304,7 +304,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   private void computeNearbyBlocks(Observation observation,
       Set<BlockInstance> potentialBlocks) {
 
-    NycVehicleLocationRecord record = observation.getRecord();
+    NycRawLocationRecord record = observation.getRecord();
     long time = observation.getTime();
 
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(

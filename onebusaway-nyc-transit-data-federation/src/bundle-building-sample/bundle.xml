@@ -41,11 +41,7 @@
     </bean>
 
     <bean id="gtfs" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
-        <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/gtfs-stif.zip" />
-    </bean>
-
-    <bean id="osmProvider" class="org.opentripplanner.graph_builder.impl.osm.FileBasedOpenStreetMapProviderImpl">
-        <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/osm.gz" />
+        <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/gtfs.zip" />
     </bean>
 
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">

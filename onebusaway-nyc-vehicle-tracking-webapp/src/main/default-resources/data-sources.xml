@@ -23,7 +23,6 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/webapp/application-context-webapp.xml" />
-    <import resource="classpath:org/onebusaway/transit_data_federation/application-context.xml" />
 
     <!-- Database Connection Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

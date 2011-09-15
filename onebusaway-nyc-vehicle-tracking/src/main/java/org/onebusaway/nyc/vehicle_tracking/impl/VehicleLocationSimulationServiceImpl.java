@@ -41,12 +41,14 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationService;
+import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSummary;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -79,7 +81,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private ExecutorService _executor;
 
-  private VehicleLocationService _vehicleLocationService;
+  private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
 
@@ -95,8 +97,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Autowired
   public void setVehicleLocationService(
-      VehicleLocationService vehicleLocationService) {
-    _vehicleLocationService = vehicleLocationService;
+	VehicleLocationInferenceService vehicleLocationService) {
+    _vehicleLocationInferenceService = vehicleLocationService;
   }
 
   @Autowired
@@ -149,11 +151,11 @@ public class VehicleLocationSimulationServiceImpl implements
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
 
-    if (traceType.equals("NycVehicleLocationRecord")) {
+    if (traceType.equals("NycRawLocationRecord")) {
       reader.setTokenizerStrategy(new TabTokenizerStrategy());
-      reader.readEntities(NycVehicleLocationRecord.class, traceInputStream);
-    } else if (traceType.equals("NycTestLocationRecord")) {
-      reader.readEntities(NycTestLocationRecord.class, traceInputStream);
+      reader.readEntities(NycRawLocationRecord.class, traceInputStream);
+    } else if (traceType.equals("NycInferredLocationRecord")) {
+      reader.readEntities(NycInferredLocationRecord.class, traceInputStream);
     }
     traceInputStream.close();
 
@@ -198,7 +200,7 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public List<NycTestLocationRecord> getResultRecords(int taskId) {
+  public List<NycInferredLocationRecord> getResultRecords(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getResults();
@@ -206,7 +208,7 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public List<NycTestLocationRecord> getSimulationRecords(int taskId) {
+  public List<NycInferredLocationRecord> getSimulationRecords(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getRecords();
@@ -311,7 +313,7 @@ public class VehicleLocationSimulationServiceImpl implements
     int scheduleTime = (int) ((actualTime - serviceDate) / 1000);
 
     int shiftStartTime = getShiftStartTimeProperty(properties);
-    String vehicleId = getVehicleIdProperty(random, properties);
+    AgencyAndId vehicleId = getVehicleIdProperty(random, properties, blockId.getAgencyId());
     double locationSigma = getLocationSigma(properties);
     SortedMap<Double, Integer> scheduleDeviations = getScheduleDeviations(properties);
 
@@ -360,7 +362,7 @@ public class VehicleLocationSimulationServiceImpl implements
       CoordinatePoint p = applyLocationNoise(location.getLat(),
           location.getLon(), locationSigma, random);
 
-      NycTestLocationRecord record = new NycTestLocationRecord();
+      NycInferredLocationRecord record = new NycInferredLocationRecord();
       record.setDsc(dsc);
       record.setLat(p.getLat());
       record.setLon(p.getLon());
@@ -390,7 +392,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private int addTask(SimulatorTask task) {
     task.setId(_taskIndex.incrementAndGet());
-    task.setVehicleLocationService(_vehicleLocationService);
+    task.setVehicleLocationService(_vehicleLocationInferenceService);
     _tasks.put(task.getId(), task);
     for (Object tag : task.getTags()) {
       List<SimulatorTask> tasks = getTasksForTag(tag, true);
@@ -431,16 +433,16 @@ public class VehicleLocationSimulationServiceImpl implements
     return shiftStartTime;
   }
 
-  private String getVehicleIdProperty(Random random, Properties properties) {
+  private AgencyAndId getVehicleIdProperty(Random random, Properties properties, String agencyId) {
 
-    String vehicleId = null;
+    AgencyAndId vehicleId = null;
 
     if (properties.containsKey(ARG_VEHICLE_ID))
-      vehicleId = properties.getProperty(ARG_VEHICLE_ID);
+      vehicleId = AgencyAndIdLibrary.convertFromString(properties.getProperty(ARG_VEHICLE_ID));
 
     if (vehicleId == null) {
       int vid = random.nextInt(9999);
-      vehicleId = Integer.toString(vid);
+      vehicleId = new AgencyAndId(agencyId, vid + "");
     }
     return vehicleId;
   }

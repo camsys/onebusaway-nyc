@@ -53,8 +53,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -189,14 +189,14 @@ public class SensorModelVerificationMain {
 
         System.out.println(trace);
 
-        List<NycTestLocationRecord> records = readRecords(trace);
+        List<NycInferredLocationRecord> records = readRecords(trace);
 
         VehicleState prevState = null;
         Observation prevObs = null;
 
         int index = 1;
 
-        for (NycTestLocationRecord record : records) {
+        for (NycInferredLocationRecord record : records) {
           try {
             Observation obs = getRecordAsObservation(record, prevObs);
             VehicleState state = getRecordAsVehicleState(record, prevState, obs);
@@ -240,7 +240,7 @@ public class SensorModelVerificationMain {
     }
   }
 
-  private List<NycTestLocationRecord> readRecords(File path)
+  private List<NycInferredLocationRecord> readRecords(File path)
       throws CsvEntityIOException, IOException {
 
     InputStream in = new FileInputStream(path);
@@ -249,17 +249,17 @@ public class SensorModelVerificationMain {
 
     CsvEntityReader reader = new CsvEntityReader();
 
-    ListEntityHandler<NycTestLocationRecord> handler = new ListEntityHandler<NycTestLocationRecord>();
+    ListEntityHandler<NycInferredLocationRecord> handler = new ListEntityHandler<NycInferredLocationRecord>();
     reader.addEntityHandler(handler);
 
-    reader.readEntities(NycTestLocationRecord.class, in);
+    reader.readEntities(NycInferredLocationRecord.class, in);
 
     in.close();
 
     return handler.getValues();
   }
 
-  private Observation getRecordAsObservation(NycTestLocationRecord record,
+  private Observation getRecordAsObservation(NycInferredLocationRecord record,
       Observation prevObs) {
 
     String dsc = record.getDsc();
@@ -271,14 +271,14 @@ public class SensorModelVerificationMain {
       lastValidDestinationSignCode = prevObs.getLastValidDestinationSignCode();
     }
 
-    NycVehicleLocationRecord r = new NycVehicleLocationRecord();
+    NycRawLocationRecord r = new NycRawLocationRecord();
     r.setBearing(0);
     r.setDestinationSignCode(record.getDsc());
     r.setLatitude(record.getLat());
     r.setLongitude(record.getLon());
     r.setTime(record.getTimestamp());
     r.setTimeReceived(record.getTimestamp());
-    r.setVehicleId(new AgencyAndId("2008", record.getVehicleId()));
+    r.setVehicleId(record.getVehicleId());
 
     CoordinatePoint location = new CoordinatePoint(record.getLat(),
         record.getLon());
@@ -293,7 +293,7 @@ public class SensorModelVerificationMain {
         lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs);
   }
 
-  private VehicleState getRecordAsVehicleState(NycTestLocationRecord record,
+  private VehicleState getRecordAsVehicleState(NycInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
 
     MotionState motionState = createMotionState(prevState, obs);
@@ -315,7 +315,7 @@ public class SensorModelVerificationMain {
     return _motionModel.updateMotionState(prevState, obs);
   }
 
-  private BlockState createBlockState(NycTestLocationRecord record,
+  private BlockState createBlockState(NycInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
 
     String blockId = record.getActualBlockId();
@@ -342,7 +342,7 @@ public class SensorModelVerificationMain {
         obs.getLastValidDestinationSignCode());
   }
 
-  private JourneyState createJourneyState(NycTestLocationRecord record,
+  private JourneyState createJourneyState(NycInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
     String phase = record.getActualPhase();
     JourneyState journeyState = getTransitionJourneyStates(prevState, obs,

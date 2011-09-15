@@ -25,9 +25,9 @@ import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.vehicle_tracking.impl.ParticleComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -38,11 +38,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ZeroProbabilityParticleFilterException;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.RecordLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.ParticleComparator;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -84,7 +84,7 @@ public class VehicleInferenceInstance {
 
   private long _lastGpsTime = 0;
 
-  private NycTestLocationRecord _nycTestLocationRecord;
+  private NycInferredLocationRecord _nycInferredLocationRecord;
 
   private List<Particle> _badParticles;
 
@@ -135,7 +135,7 @@ public class VehicleInferenceInstance {
    * @return true if the resulting inferred location record should be passed on,
    *         otherwise false
    */
-  public synchronized boolean handleUpdate(NycVehicleLocationRecord record) {
+  public synchronized boolean handleUpdate(NycRawLocationRecord record) {
 
     /**
      * Choose the best timestamp based on device timestamp and received
@@ -207,7 +207,7 @@ public class VehicleInferenceInstance {
       if (_previousObservation == null)
         return false;
 
-      NycVehicleLocationRecord previousRecord = _previousObservation.getRecord();
+      NycRawLocationRecord previousRecord = _previousObservation.getRecord();
       record.setLatitude(previousRecord.getLatitude());
       record.setLongitude(previousRecord.getLongitude());
     }
@@ -248,7 +248,7 @@ public class VehicleInferenceInstance {
       _previousObservation.clearPreviousObservation();
     _previousObservation = observation;
     _vehicleLocationRecord = null;
-    _nycTestLocationRecord = null;
+    _nycInferredLocationRecord = null;
     _lastValidDestinationSignCode = lastValidDestinationSignCode;
     
     if (!latlonMissing)
@@ -284,27 +284,10 @@ public class VehicleInferenceInstance {
     return _enabled;
   }
 
-  /**
-   * Her
-   * 
-   * @param record
-   * @return
-   */
-  public synchronized boolean handleBypassUpdate(VehicleLocationRecord record) {
-    _previousObservation = null;
-    _vehicleLocationRecord = record;
-    _nycTestLocationRecord = null;
-    _lastUpdateTime = record.getTimeOfRecord();
-    if (record.isCurrentLocationSet())
-      _lastGpsTime = record.getTimeOfRecord();
-
-    return _enabled;
-  }
-
-  public synchronized boolean handleBypassUpdate(NycTestLocationRecord record) {
+  public synchronized boolean handleBypassUpdate(NycInferredLocationRecord record) {
     _previousObservation = null;
     _vehicleLocationRecord = null;
-    _nycTestLocationRecord = record;
+    _nycInferredLocationRecord = record;
     _lastUpdateTime = record.getTimestamp();
     if (!record.locationDataIsMissing())
       _lastGpsTime = record.getTimestamp();
@@ -312,13 +295,13 @@ public class VehicleInferenceInstance {
     return _enabled;
   }
 
-  public synchronized NycTestLocationRecord getCurrentState() {
+  public synchronized NycInferredLocationRecord getCurrentState() {
     if (_previousObservation != null)
-      return getMostRecentParticleAsNycTestLocationRecord();
+      return getMostRecentParticleAsNycInferredLocationRecord();
     else if (_vehicleLocationRecord != null)
       return RecordLibrary.getVehicleLocationRecordAsNycTestLocationRecord(_vehicleLocationRecord);
-    else if (_nycTestLocationRecord != null)
-      return _nycTestLocationRecord;
+    else if (_nycInferredLocationRecord != null)
+      return _nycInferredLocationRecord;
     else
       return null;
   }
@@ -365,7 +348,7 @@ public class VehicleInferenceInstance {
 
     if (_previousObservation != null) {
 
-      NycVehicleLocationRecord r = _previousObservation.getRecord();
+      NycRawLocationRecord r = _previousObservation.getRecord();
       record.setMostRecentDestinationSignCode(r.getDestinationSignCode());
       record.setLastGpsLat(r.getLatitude());
       record.setLastGpsLon(r.getLongitude());
@@ -383,12 +366,12 @@ public class VehicleInferenceInstance {
 
       record.setVehicleId(_vehicleLocationRecord.getVehicleId());
 
-    } else if (_nycTestLocationRecord != null) {
-      record.setMostRecentDestinationSignCode(_nycTestLocationRecord.getDsc());
-      record.setInferredDestinationSignCode(_nycTestLocationRecord.getActualDsc());
+    } else if (_nycInferredLocationRecord != null) {
+      record.setMostRecentDestinationSignCode(_nycInferredLocationRecord.getDsc());
+      record.setInferredDestinationSignCode(_nycInferredLocationRecord.getActualDsc());
     }
 
-    NycTestLocationRecord state = getCurrentState();
+    NycInferredLocationRecord state = getCurrentState();
     if (state != null) {
       if (state.getInferredPhase() != null)
         record.setPhase(EVehiclePhase.valueOf(state.getInferredPhase()));
@@ -425,8 +408,7 @@ public class VehicleInferenceInstance {
   /****
    * Private Methods
    ****/
-
-  private NycTestLocationRecord getMostRecentParticleAsNycTestLocationRecord() {
+  private NycInferredLocationRecord getMostRecentParticleAsNycInferredLocationRecord() {
     Particle particle = _particleFilter.getMostLikelyParticle();
 
     VehicleState state = particle.getData();
@@ -437,9 +419,9 @@ public class VehicleInferenceInstance {
     Observation obs = state.getObservation();
 
     CoordinatePoint location = obs.getLocation();
-    NycVehicleLocationRecord nycRecord = obs.getRecord();
+    NycRawLocationRecord nycRecord = obs.getRecord();
 
-    NycTestLocationRecord record = new NycTestLocationRecord();
+    NycInferredLocationRecord record = new NycInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
 
@@ -508,19 +490,19 @@ public class VehicleInferenceInstance {
   }
 
   private void setLastRecordForDetails(VehicleLocationDetails details) {
-    NycVehicleLocationRecord lastRecord = null;
+    NycRawLocationRecord lastRecord = null;
     if (_previousObservation != null)
       lastRecord = _previousObservation.getRecord();
 
-    if (lastRecord == null && _nycTestLocationRecord != null) {
-      lastRecord = new NycVehicleLocationRecord();
-      lastRecord.setDestinationSignCode(_nycTestLocationRecord.getDsc());
-      lastRecord.setTime(_nycTestLocationRecord.getTimestamp());
-      lastRecord.setTimeReceived(_nycTestLocationRecord.getTimestamp());
-      lastRecord.setLatitude(_nycTestLocationRecord.getLat());
-      lastRecord.setLongitude(_nycTestLocationRecord.getLon());
+    if (lastRecord == null && _nycInferredLocationRecord != null) {
+      lastRecord = new NycRawLocationRecord();
+      lastRecord.setDestinationSignCode(_nycInferredLocationRecord.getDsc());
+      lastRecord.setTime(_nycInferredLocationRecord.getTimestamp());
+      lastRecord.setTimeReceived(_nycInferredLocationRecord.getTimestamp());
+      lastRecord.setLatitude(_nycInferredLocationRecord.getLat());
+      lastRecord.setLongitude(_nycInferredLocationRecord.getLon());
     } else if (lastRecord == null && _vehicleLocationRecord != null) {
-      lastRecord = new NycVehicleLocationRecord();
+      lastRecord = new NycRawLocationRecord();
       lastRecord.setDestinationSignCode(null);
       lastRecord.setTime(_vehicleLocationRecord.getTimeOfRecord());
       lastRecord.setTimeReceived(_vehicleLocationRecord.getTimeOfRecord());

@@ -25,8 +25,8 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
-import org.onebusaway.nyc.vehicle_tracking.impl.TabTokenizerStrategy;
-import org.onebusaway.nyc.vehicle_tracking.model.NycVehicleLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
 
 /**
  * This utility examines vehicle trace data to identify all layover locations
@@ -66,14 +66,14 @@ public class FindLayoverLocationsInTracesMain {
         return;
 
       FileReader reader = new FileReader(path);
-      csvReader.readEntities(NycVehicleLocationRecord.class, reader);
+      csvReader.readEntities(NycRawLocationRecord.class, reader);
       reader.close();
     }
   }
 
   private static class EntityHandlerImpl implements EntityHandler {
 
-    private NycVehicleLocationRecord _previousRecord;
+    private NycRawLocationRecord _previousRecord;
 
     private CoordinatePoint _dwellLocation;
 
@@ -82,7 +82,7 @@ public class FindLayoverLocationsInTracesMain {
     @Override
     public void handleEntity(Object bean) {
 
-      NycVehicleLocationRecord record = (NycVehicleLocationRecord) bean;
+      NycRawLocationRecord record = (NycRawLocationRecord) bean;
 
       if (record.locationDataIsMissing()) {
 
@@ -110,7 +110,7 @@ public class FindLayoverLocationsInTracesMain {
       _previousRecord = record;
     }
 
-    private boolean isConsecutiveRecord(NycVehicleLocationRecord record) {
+    private boolean isConsecutiveRecord(NycRawLocationRecord record) {
 
       if (_previousRecord == null || _dwellLocation == null)
         return false;

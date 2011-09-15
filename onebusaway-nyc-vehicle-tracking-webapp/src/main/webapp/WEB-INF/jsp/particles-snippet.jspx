@@ -50,7 +50,6 @@
 
             <c:forEach var="p" items="${details.particles}">
                 <tr>
-                    <c:set var="edgeState" value="${p.data.edgeState}" />
                     <c:set var="motionState"
                         value="${p.data.motionState}" />
                     <c:set var="journeyState"
