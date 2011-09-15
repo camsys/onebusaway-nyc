@@ -136,33 +136,36 @@ public class PartitionedInputQueueListener {
 	
 	@Refreshable(dependsOn = {"inference-engine.inputQueueHost", "inference-engine.inputQueuePort"})
 	public void startListenerThread() {
-		if(initialized == true) {
-			_log.warn("Configuration service tried to reconfigure queue reader; this service is not reconfigurable once started.");
-			return;
-		}
 		
-		String host = _configurationService.getConfigurationValueAsString("inference-engine.inputQueueHost", null);
-	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.inputQueuePort", 5563);
-
-	    if(host == null) {
-	    	_log.info("Input queue is not attached; input hostname was not available via configuration service.");
-	    	return;
-	    }
-
-	    String bind = "tcp://" + host + ":" + port;
-
-		ZMQ.Context context = ZMQ.context(1);
-
-		ZMQ.Socket socket = context.socket(ZMQ.SUB);	    	
-	    ZMQ.Poller poller = context.poller(2);
-	    poller.register(socket, ZMQ.Poller.POLLIN);
-	    
-	    socket.connect(bind);
-	    socket.subscribe("bhs_queue".getBytes());
-
-	    _executorService.execute(new ReadThread(socket, poller));
-
-		_log.debug("Input queue is listening on " + bind);
-		initialized = true;
+		
+		// FIXME stop this crazy thing.  for the time being...
+//		if(initialized == true) {
+//			_log.warn("Configuration service tried to reconfigure queue reader; this service is not reconfigurable once started.");
+//			return;
+//		}
+//		
+//		String host = _configurationService.getConfigurationValueAsString("inference-engine.inputQueueHost", null);
+//	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.inputQueuePort", 5563);
+//
+//	    if(host == null) {
+//	    	_log.info("Input queue is not attached; input hostname was not available via configuration service.");
+//	    	return;
+//	    }
+//
+//	    String bind = "tcp://" + host + ":" + port;
+//
+//		ZMQ.Context context = ZMQ.context(1);
+//
+//		ZMQ.Socket socket = context.socket(ZMQ.SUB);	    	
+//	    ZMQ.Poller poller = context.poller(2);
+//	    poller.register(socket, ZMQ.Poller.POLLIN);
+//	    
+//	    socket.connect(bind);
+//	    socket.subscribe("bhs_queue".getBytes());
+//
+//	    _executorService.execute(new ReadThread(socket, poller));
+//
+//		_log.debug("Input queue is listening on " + bind);
+//		initialized = true;
 	}	
 }

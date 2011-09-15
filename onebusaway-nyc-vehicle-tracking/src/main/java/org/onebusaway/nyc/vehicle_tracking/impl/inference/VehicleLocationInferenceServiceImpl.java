@@ -357,6 +357,7 @@ public class VehicleLocationInferenceServiceImpl implements
         if (passOnRecord) {
           NycInferredLocationRecord record = existing.getCurrentState();
           VehicleLocationRecord vlr = RecordLibrary.getNycTestLocationRecordAsVehicleLocationRecord(record);          
+          vlr.setVehicleId(_vehicleId);
           _vehicleLocationListener.handleVehicleLocationRecord(vlr);
         }
 

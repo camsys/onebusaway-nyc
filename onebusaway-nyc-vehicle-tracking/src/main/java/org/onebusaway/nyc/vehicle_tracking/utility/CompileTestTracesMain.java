@@ -54,6 +54,7 @@ public class CompileTestTracesMain {
     for (int i = 0; i < rawRecords.size(); i++) {
       NycInferredLocationRecord rawRecord = rawRecords.get(i);
       NycInferredLocationRecord labeledRecord = labeledRecords.get(i);
+      rawRecord.setActualRunId(labeledRecord.getActualRunId());
       rawRecord.setActualBlockId(labeledRecord.getActualBlockId());
       rawRecord.setActualDistanceAlongBlock(labeledRecord.getActualDistanceAlongBlock());
       rawRecord.setActualDsc(labeledRecord.getActualDsc());
