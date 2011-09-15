@@ -83,7 +83,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				return;
 			}
 		
-			var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";
+			var url = OBA.Util.createApiUrl(OBA.Config.vehiclesUrl) + "/" + routeId + ".json";
 			var tripDetailsList, tripReferencesList = null;
 			var params = {version: 2, key: OBA.Config.apiKey, includeStatus: true};
 			
@@ -247,7 +247,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		var latSpan = Math.abs(centerLatLng.lat() - minLatLng.lat()) * 2;
 		var lonSpan = Math.abs(centerLatLng.lng() - minLatLng.lng()) * 2;
 
-		jQuery.getJSON(OBA.Config.stopsUrl, {version: 2, key: OBA.Config.apiKey, maxCount: 250,
+		jQuery.getJSON(OBA.Util.createApiUrl(OBA.Config.stopsUrl), {version: 2, key: OBA.Config.apiKey, maxCount: 250,
 			lat: centerLatLng.lat(), lon: centerLatLng.lng(), latSpan: latSpan, lonSpan: lonSpan},
 				function(json) {
 					var stops;
@@ -310,7 +310,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 				marker.showPopup();
 			} else {
-				var url = OBA.Config.stopUrl + "/" + stopId + ".json";
+				var url = OBA.Util.createApiUrl(OBA.Config.stopUrl) + "/" + stopId + ".json";
 				var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 						minutesAfter: OBA.Config.arrivalsMinutesAfter};
 				
@@ -350,7 +350,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 				directionIds = [directionIds];
 			}
 			
-			var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";
+			var url = OBA.Util.createApiUrl(OBA.Config.routeShapeUrl + "/" + routeId + ".json");
 			jQuery.getJSON(url, {version: 2, key: OBA.Config.apiKey}, function(json) {
 				jQuery.each(directionIds, function(_, directionId) {
 					if (containsRoute(routeId, directionId)) {

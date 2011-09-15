@@ -38,8 +38,13 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   }
 
   public int getStaleDataTimeout() {
-	  ConfigurationBean config = configurationService.getConfiguration();
-	  return config.getStaleDataTimeout();
+      ConfigurationBean config = configurationService.getConfiguration();
+      return config.getStaleDataTimeout();
+  }
+
+  public String getApiUrl() {
+      ConfigurationBean config = configurationService.getConfiguration();
+      return config.getApiUrl();
   }
 
   public long getEpoch() {

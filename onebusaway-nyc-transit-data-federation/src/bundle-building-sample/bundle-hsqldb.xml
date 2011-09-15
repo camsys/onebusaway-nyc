@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+    <!-- Provides support for specifying "${some.java.system.property}" for bean values -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
+
+    <bean id="bundle" class="org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle">
+      <property name="path" value="${bundlePath}" />
+    </bean>
+
+    <bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle">
+      <property name="path" value="${bundlePath}" />
+    </bean>
+
+      <!-- TODO We may want the location of this db to be at the top of the project, not in this module. -->
+      <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+        <property name="url" value="jdbc:hsqldb:local-hsqldb-db/org_onebusaway_nyc;shutdown=true" />
+        <property name="username" value="sa" />
+        <property name="password" value="" />
+    </bean>
+
+    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernateProperties" />
+        <property name="properties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop> 
+            </props> 
+        </property> 
+    </bean> 
+
+    <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
+        <property name="bundles">
+            <list>
+                <ref bean="gtfs" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="gtfs" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="path" value="../onebusaway-nyc-integration-tests/src/integration-test/resources/mta-gtfs.zip" />
+    </bean>
+
+    <bean id="osmProvider" class="org.opentripplanner.graph_builder.impl.osm.FileBasedOpenStreetMapProviderImpl">
+        <property name="path" value="../onebusaway-nyc-integration-tests/src/integration-test/resources/mta.osm.gz" />
+    </bean>
+
+    <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
+        <property name="stifPath" value="../onebusaway-nyc-integration-tests/src/integration-test/resources/stifs/" />
+        <property name="notInServiceDscPath" value="../onebusaway-nyc-integration-tests/src/integration-test/resources/NotInServiceDSCs.txt"/>
+    </bean>
+
+    <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+        <property name="taskName" value="stif" />
+        <property name="afterTaskName" value="gtfs" />
+ 	    <property name="beforeTaskName" value="transit_graph" />
+        <property name="task" ref="stifLoaderTask" />
+    </bean>
+</beans>

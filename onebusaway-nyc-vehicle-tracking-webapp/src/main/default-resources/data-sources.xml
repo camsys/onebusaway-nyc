@@ -26,7 +26,7 @@
     <import resource="classpath:org/onebusaway/transit_data_federation/application-context.xml" />
 
     <!-- Database Connection Configuration -->
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+<!--     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
         <property name="username" value="postgres" />
@@ -57,12 +57,52 @@
             </props>
         </property>
     </bean>
+ -->
+      <!-- TODO We may want the location of this db to beat the top of the project, not in this module. -->
+      <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+        <property name="url" value="jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true" />
+        <property name="username" value="sa" />
+        <property name="password" value="" />
+    </bean>
+ 
+      <bean id="mutableDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+        <property name="url" value="jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true" />
+        <property name="username" value="sa" />
+        <property name="password" value="" />
+    </bean>
+ 
+	<bean id="webappHibernateProperties"
+		class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+		<property name="target" value="hibernateProperties" />
+		<property name="properties">
+			<props>
+<!-- 				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop> -->
+				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+				<prop key="hibernate.connection.autocommit">false</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="webappMutableHibernateProperties"
+		class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+		<property name="target" value="hibernatePropertiesMutable" />
+		<property name="properties">
+			<props>
+<!-- 				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop> -->
+				<prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+				<prop key="hibernate.connection.autocommit">false</prop>
+			</props>
+		</property>
+	</bean>
+
 
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">/Users/jmaki/Documents/workspace-oba/oba-bundle</prop>
+                <prop key="bundlePath">${project.build.directory}/oba-bundle</prop>
             </props>
         </property>
     </bean>

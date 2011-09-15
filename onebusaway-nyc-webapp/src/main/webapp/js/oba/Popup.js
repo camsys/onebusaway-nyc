@@ -322,7 +322,7 @@ OBA.StopPopup = function(stopId, map) {
 		return jQuery(header + notices + service + footer);
 	};
 
-	var url = OBA.Config.stopUrl + "/" + stopId + ".json";
+	var url = OBA.Util.createApiUrl(OBA.Config.stopUrl) + "/" + stopId + ".json";
 	var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 			minutesAfter: OBA.Config.arrivalsMinutesAfter};
 	
@@ -447,7 +447,7 @@ OBA.VehiclePopup = function(vehicleId, map) {
 		return jQuery(header + notices + nextStopsMarkup + footer);
 	};
 
-	var url = OBA.Config.vehicleUrl + "/" + vehicleId + ".json";
+	var url = OBA.Util.createApiUrl(OBA.Config.vehicleUrl) + "/" + vehicleId + ".json";
 	var params = {key: OBA.Config.apiKey, version: 2, includeSchedule: true, includeTrip: true};
 	
 	if(typeof OBA.Config.time !== 'undefined' && OBA.Config.time !== null) {
