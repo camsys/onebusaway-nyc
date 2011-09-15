@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,9 +42,9 @@ import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
 @Component
-public class PartitionedInputQueueListener {
+public class PartitionedInputQueueListenerTask {
 
-	private static Logger _log = LoggerFactory.getLogger(PartitionedInputQueueListener.class);
+	private static Logger _log = LoggerFactory.getLogger(PartitionedInputQueueListenerTask.class);
 	
 	private static String depotPartitionKey = "JG";
 		
@@ -73,8 +74,8 @@ public class PartitionedInputQueueListener {
 		CcLocationReport message = null;
 		try {
 			ObjectMapper mapper = new ObjectMapper();		
-		    AnnotationIntrospector secondary = new JaxbAnnotationIntrospector();
-			mapper.getDeserializationConfig().setAnnotationIntrospector(secondary);
+		    AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
+			mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
 			
 			JsonNode wrappedMessage = mapper.readValue(contents, JsonNode.class);
 			String ccLocationReportString = wrappedMessage.get("CcLocationReport").toString();
@@ -97,6 +98,10 @@ public class PartitionedInputQueueListener {
 	
 	private class ReadThread implements Runnable {
 
+		int processedCount = 0;
+		
+		Date markTimestamp = new Date();
+		
 		private ZMQ.Socket _zmqSocket = null;
 
 		private ZMQ.Poller _zmqPoller = null;
@@ -108,18 +113,29 @@ public class PartitionedInputQueueListener {
 
 		@Override
 		public void run() {
-		    while (true) {
+		    while(true) {
 				_zmqPoller.poll();
 				if(_zmqPoller.pollin(0)) {
 					String address = new String(_zmqSocket.recv(0));
 					String contents = new String(_zmqSocket.recv(0));
 
 			    	filterMessages(address, contents);		    	
+
+			    	Thread.yield();
 				}
+				
+				if(processedCount > 50) {
+					_log.info("Input queue: processed 50 messages in " 
+							+ (new Date().getTime() - markTimestamp.getTime()) / 1000 + " seconds.");
+					
+					markTimestamp = new Date();
+					processedCount = 0;
+				}
+				
+				processedCount++;
 		    }	    
 		}
 	}
-	
 	
 	@PostConstruct
 	public void setup() {
@@ -127,14 +143,13 @@ public class PartitionedInputQueueListener {
 		startListenerThread();
 	}
 	
-	
 	@PreDestroy 
 	public void destroy() {
 		_executorService.shutdownNow();
 	}
 	
-	
-	@Refreshable(dependsOn = {"inference-engine.inputQueueHost", "inference-engine.inputQueuePort"})
+	@Refreshable(dependsOn = {"inference-engine.inputQueueHost", 
+			"inference-engine.inputQueuePort", "inference-engine.inputQueueName"})
 	public void startListenerThread() {
 		if(initialized == true) {
 			_log.warn("Configuration service tried to reconfigure queue reader; this service is not reconfigurable once started.");
@@ -142,6 +157,7 @@ public class PartitionedInputQueueListener {
 		}
 		
 		String host = _configurationService.getConfigurationValueAsString("inference-engine.inputQueueHost", null);
+		String queueName = _configurationService.getConfigurationValueAsString("inference-engine.inputQueueName", null);
 	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.inputQueuePort", 5563);
 
 	    if(host == null) {
@@ -158,7 +174,7 @@ public class PartitionedInputQueueListener {
 	    poller.register(socket, ZMQ.Poller.POLLIN);
 	    
 	    socket.connect(bind);
-	    socket.subscribe("bhs_queue".getBytes());
+	    socket.subscribe(queueName.getBytes());
 
 	    _executorService.execute(new ReadThread(socket, poller));
 

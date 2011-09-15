@@ -23,7 +23,7 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraph;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class RunServiceImpl implements RunService {
 
   private Map<AgencyAndId, RunData> runDataByTrip;
 
-  private TransitGraph transitGraph;
+  private TransitGraphDao transitGraph;
 
   private HashMap<String, List<RunTripEntry>> entriesByRun;
 
@@ -55,7 +55,7 @@ public class RunServiceImpl implements RunService {
   }
 
   @Autowired
-  public void setTransitGraph(TransitGraph graph) {
+  public void setTransitGraph(TransitGraphDao graph) {
     this.transitGraph = graph;
   }
 

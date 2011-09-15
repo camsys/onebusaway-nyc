@@ -271,7 +271,6 @@ public class BlockStateTransitionModel {
     Observation prevObs = obs.getPreviousObservation();
 
     if (prevObs != null) {
-
       distanceToTravel = Math.max(
           distanceToTravel,
           SphericalGeometryLibrary.distance(obs.getLocation(),
