@@ -20,7 +20,6 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraph;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 public class RunServiceImplTest {

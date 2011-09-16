@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.model;
+package org.onebusaway.nyc.transit_data_federation.model;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -21,9 +21,9 @@ import java.util.Date;
 
 import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
-import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyIdFieldMappingFactory;
-import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
+import org.onebusaway.nyc.transit_data_federation.model.csv.DateTimeFieldMappingFactory;
 
 public class NycInferredLocationRecord implements Serializable {
 
@@ -34,7 +34,6 @@ public class NycInferredLocationRecord implements Serializable {
   /****
    * Raw Observation Values
    ****/
-
   @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
   private AgencyAndId vehicleId;
 

@@ -39,7 +39,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 
 public class TraceSupport {
 

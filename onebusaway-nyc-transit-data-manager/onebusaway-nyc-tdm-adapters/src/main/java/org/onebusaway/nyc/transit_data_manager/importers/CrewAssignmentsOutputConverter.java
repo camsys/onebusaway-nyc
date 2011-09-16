@@ -6,5 +6,5 @@ import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
 public interface CrewAssignmentsOutputConverter {
 
-	public List<SCHOperatorAssignment> convertAssignments ();
+  public List<SCHOperatorAssignment> convertAssignments();
 }

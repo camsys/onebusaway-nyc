@@ -25,13 +25,24 @@ OBA.Config = {
 		// print debug messages to firebug console?
 		debug: false,
 
+		// Despite its name, it's the prefix of the url, usually the host and port (e.g. "http://bustime.mta.info:8080").
+		// If omitted, will use same host & port as the UI webapp.
+		apiUrl: "http://bustime.mta.info",
+		
 		// urls to fetch various data
 		searchUrl: "search.action",
+		
+		// TODO These are the URLs for the pilot bustime.mta.info server
 		routeShapeUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-route",
 		stopsUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-location.json",
 		stopUrl: "/onebusaway-nyc-api-webapp/api/where/arrivals-and-departures-for-stop",
 		vehiclesUrl:"/onebusaway-nyc-api-webapp/api/where/trips-for-route",
 		vehicleUrl: "/onebusaway-nyc-api-webapp/api/where/trip-for-vehicle",
+//		routeShapeUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-route",
+//		stopsUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-location.json",
+//		stopUrl: "/onebusaway-nyc-api-webapp/api/where/arrivals-and-departures-for-stop",
+//		vehiclesUrl:"/onebusaway-nyc-api-webapp/api/where/trips-for-route",
+//		vehicleUrl: "/onebusaway-nyc-api-webapp/api/where/trip-for-vehicle",
 
 		// default agency ID
 		agencyId: "MTA NYCT",

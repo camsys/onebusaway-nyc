@@ -66,7 +66,7 @@ OBA.SignConfig = function() {
 	function setupUI() {
 		jQuery("#route").change(function() {			
 			var routeId = jQuery(this).val();
-			var url = OBA.Config.vehiclesUrl + "/" + routeId + ".json";			
+			var url = OBA.Util.createApiUrl(OBA.Config.vehiclesUrl) + "/" + routeId + ".json";			
 			var params = {version: 2, key: OBA.Config.apiKey};			
 			
 			jQuery.getJSON(url, params, function(json) {
@@ -127,7 +127,7 @@ OBA.SignConfig = function() {
 				return;
 			}
 
-			var url = OBA.Config.routeShapeUrl + "/" + routeId + ".json";			
+			var url = OBA.Util.createApiUrl(OBA.Config.routeShapeUrl) + "/" + routeId + ".json";			
 			var params = {version: 2, key: OBA.Config.apiKey};			
 
 			jQuery.getJSON(url, params, function(json) {				

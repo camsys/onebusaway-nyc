@@ -32,10 +32,15 @@
 
   <import resource="classpath:org/onebusaway/nyc/transit_data_federation/application-context.xml" />
 
+  <!-- This turns on automatic annotation configuration for Jackson -->
+  <context:annotation-config />  
+
   <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl" />
 
   <bean id="particleFactory" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl" />
+
   <bean id="motionModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl" />
+
   <bean id="sensorModel" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.SensorModelImpl" />
 
   <bean id="particleFilterModel" class="org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel">
@@ -45,8 +50,9 @@
   </bean>
 
   <!-- Note the scope="prototype". That means a new instance of this bean will be returned every time it's requested. -->
-  <bean id="vehicleInferenceInstance" class="org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance"
-    scope="prototype">
+  <bean id="vehicleInferenceInstance" 
+  	class="org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance"
+    scope="prototype">    
     <property name="model" ref="particleFilterModel" />
   </bean>
 

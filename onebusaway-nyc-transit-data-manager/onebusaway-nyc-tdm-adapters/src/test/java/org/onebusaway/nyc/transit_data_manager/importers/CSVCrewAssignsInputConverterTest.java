@@ -15,25 +15,25 @@ import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
 
 public class CSVCrewAssignsInputConverterTest {
 
-	CrewAssignsInputConverter inConverter = null;
-	
-	@Before
-	public void setup () {
-		ClassLoader classLoader = CSVCrewAssignsInputConverterTest.class.getClassLoader();
-	    InputStream in = classLoader.getResourceAsStream("CrewAssignCSVSampleForTests.csv");
-		
-	    Reader csvInputReader = new InputStreamReader(in);
-	    
-		inConverter = new CSVCrewAssignsInputConverter(csvInputReader);
-	}
-	
-	@Test
-	public void testGetCrewAssignments() {
-				
-		List<MtaUtsCrewAssignment> crewAssignments = inConverter.getCrewAssignments();
-		
-		// Test that we get four results.
-		assertEquals(4, crewAssignments.size());
-	}
+  CrewAssignsInputConverter inConverter = null;
+
+  @Before
+  public void setup() {
+    ClassLoader classLoader = CSVCrewAssignsInputConverterTest.class.getClassLoader();
+    InputStream in = classLoader.getResourceAsStream("CrewAssignCSVSampleForTests.csv");
+
+    Reader csvInputReader = new InputStreamReader(in);
+
+    inConverter = new CSVCrewAssignsInputConverter(csvInputReader);
+  }
+
+  @Test
+  public void testGetCrewAssignments() {
+
+    List<MtaUtsCrewAssignment> crewAssignments = inConverter.getCrewAssignments();
+
+    // Test that we get four results.
+    assertEquals(4, crewAssignments.size());
+  }
 
 }

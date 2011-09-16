@@ -27,6 +27,8 @@ public class ConfigurationBean {
 
   private int gpsTimeSkewThreshold = 15 * 60;
   
+  private String apiUrl = "default";
+  
   public ConfigurationBean() {
   }
 
@@ -40,6 +42,7 @@ public class ConfigurationBean {
     this.staleDataTimeout = bean.staleDataTimeout;
     this.hideTimeout = bean.hideTimeout;
     this.gpsTimeSkewThreshold = bean.gpsTimeSkewThreshold;
+    this.apiUrl = bean.apiUrl;
   }
 
   public int getGpsTimeSkewThreshold() {
@@ -81,4 +84,12 @@ public class ConfigurationBean {
   public void setHideTimeout(int hideTimeout) {
     this.hideTimeout = hideTimeout;
   }
+
+public String getApiUrl() {
+    return this.apiUrl;
+}
+
+public void setApiUrl(String apiUrl) {
+    this.apiUrl = apiUrl;
+}
 }

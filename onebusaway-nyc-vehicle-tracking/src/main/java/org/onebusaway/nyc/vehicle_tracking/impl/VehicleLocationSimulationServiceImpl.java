@@ -43,7 +43,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;

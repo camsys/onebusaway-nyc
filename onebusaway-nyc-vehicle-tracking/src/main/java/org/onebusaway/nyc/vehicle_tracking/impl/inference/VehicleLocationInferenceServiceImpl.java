@@ -35,19 +35,19 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.services.OutputQueueSenderService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
-import org.onebusaway.realtime.api.VehicleLocationListener;
-import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+
+import com.jhlabs.map.proj.ProjectionException;
 
 import tcip_3_0_5_local.NMEA;
 import tcip_final_3_0_5_1.CcLocationReport;
@@ -60,21 +60,16 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis();
 
+  //@Autowired
+  //private OutputQueueSenderService _outputQueueSenderService;
+  
   private ExecutorService _executorService;
-
-  private VehicleLocationListener _vehicleLocationListener;
 
   private int _numberOfProcessingThreads = 10;
 
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
-
-  @Autowired
-  public void setVehicleLocationListener(
-      VehicleLocationListener vehicleLocationListener) {
-    _vehicleLocationListener = vehicleLocationListener;
-  }
 
   /**
    * Usually, we shoudn't ever have a reference to ApplicationContext, but we
@@ -356,13 +351,14 @@ public class VehicleLocationInferenceServiceImpl implements
 
         if (passOnRecord) {
           NycInferredLocationRecord record = existing.getCurrentState();
-          VehicleLocationRecord vlr = RecordLibrary.getNycTestLocationRecordAsVehicleLocationRecord(record);          
-          vlr.setVehicleId(_vehicleId);
-          _vehicleLocationListener.handleVehicleLocationRecord(vlr);
+          record.setVehicleId(_vehicleId);
+          
+          //_outputQueueSenderService.enqueue(record);
         }
-
+      } catch (ProjectionException e) {
+    	  // discard
       } catch (Throwable ex) {
-        _log.error("error processing new location record for inference", ex);
+        _log.error("Error processing new location record for inference: ", ex);
       }
     }
 
