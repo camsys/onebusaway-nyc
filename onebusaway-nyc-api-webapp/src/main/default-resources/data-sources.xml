@@ -5,15 +5,18 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
-    <!-- Specify our transit data source -->
+
+    <!-- Transit Data Service -->
+
+	<!-- This should be a vehicle tracking webapp if developing locally, or a transit data federation webapp -->
     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
 
-    <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl"/>
 
-    <!-- common data sources -->
+
+    <!-- Database Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
@@ -32,16 +35,10 @@
         </property>
     </bean>
   
-    <bean id="webappMutableHibernateProperties"
-          class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernatePropertiesMutable" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
-                <prop key="hibernate.connection.autocommit">false</prop>
-            </props>
-        </property>
-    </bean>
+    <alias name="dataSource" alias="mutableDataSource" />
+  
+
+	<!-- Other Stuff: -->
 
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
@@ -51,7 +48,10 @@
         </property>
     </bean>
 
+	<!-- This is a class to filter arrival and departure beans for NYC. We need to fix this - it's a hack -->
     <bean id="adbeanFilter" class="org.onebusaway.nyc.presentation.impl.ArrivalDepartureBeanListFilterImpl" />
+
+    <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl"/>
 
     <bean id="nycConfigurationServiceImpl" class="org.onebusaway.nyc.presentation.impl.NycConfigurationServiceImpl">
      <property name="path">
@@ -59,7 +59,7 @@
          <constructor-arg value="/tmp/configuration-service.properties" />
        </bean>
      </property>
-   </bean>
+   	</bean>
 
     <bean id="configServiceRegistry" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/>

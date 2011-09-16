@@ -25,13 +25,13 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.transit_data_federation.model.NycQueuedInferredLocationRecord;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
-import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.services.OutputQueueSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,14 +95,14 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 	@Override
 	public void enqueue(NycInferredLocationRecord r) {
 		try {
+			NycQueuedInferredLocationRecord qlr 
+				= RecordLibrary.getNycInferredLocationRecordAsNycQueuedInferredLocationRecord(r);
+			
 			ObjectMapper mapper = new ObjectMapper();		
-		    AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-			mapper.getSerializationConfig().setAnnotationIntrospector(jaxb);
-
 		    StringWriter sw = new StringWriter();
 		    MappingJsonFactory jsonFactory = new MappingJsonFactory();
 		    JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-		    mapper.writeValue(jsonGenerator, r);
+		    mapper.writeValue(jsonGenerator, qlr);
 		    sw.close();			
 			
 			_outputBuffer.put(sw.toString());

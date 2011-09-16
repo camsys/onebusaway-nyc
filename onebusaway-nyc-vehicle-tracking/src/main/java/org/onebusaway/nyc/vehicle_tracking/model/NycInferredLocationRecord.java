@@ -13,9 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.transit_data_federation.model;
+package org.onebusaway.nyc.vehicle_tracking.model;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -23,7 +22,7 @@ import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
-import org.onebusaway.nyc.transit_data_federation.model.csv.DateTimeFieldMappingFactory;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
 public class NycInferredLocationRecord implements Serializable {
 
@@ -41,9 +40,19 @@ public class NycInferredLocationRecord implements Serializable {
 
   private double lon;
 
+  /**
+   * Time record was received by us.
+   */
   @CsvField(name = "timestamp", mapping = DateTimeFieldMappingFactory.class)
   private long timestamp;
 
+  /**
+   * Time on bus when record was sent to us.
+   */
+  @CsvField(optional = true, name = "locationUpdateTimestamp", 
+		  mapping = DateTimeFieldMappingFactory.class)
+  private long locationUpdateTimestamp;
+  
   @CsvField(optional = true)
   private String dsc;
 
@@ -67,12 +76,6 @@ public class NycInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private String inferredDsc;
-
-  @CsvField(optional = true)
-  private double inferredLat = Double.NaN;
-
-  @CsvField(optional = true)
-  private double inferredLon = Double.NaN;
 
   @CsvField(optional = true)
   private double inferredBlockLat = Double.NaN;
@@ -108,12 +111,6 @@ public class NycInferredLocationRecord implements Serializable {
   private String actualDsc;
 
   @CsvField(optional = true)
-  private double actualLat = Double.NaN;
-
-  @CsvField(optional = true)
-  private double actualLon = Double.NaN;
-
-  @CsvField(optional = true)
   private double actualBlockLat = Double.NaN;
 
   @CsvField(optional = true)
@@ -124,6 +121,8 @@ public class NycInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private String actualStatus = null;
+
+  //**************
 
   public void setVehicleId(AgencyAndId vehicleId) {
     this.vehicleId = vehicleId;
@@ -158,7 +157,15 @@ public class NycInferredLocationRecord implements Serializable {
   }
 
   public Date getTimestampAsDate() {
-    return new Date(timestamp);
+	return new Date(timestamp);
+  }
+
+  public void setLocationUpdateTimestamp(long timestamp) {
+	this.locationUpdateTimestamp = timestamp;
+  }
+
+  public long getLocationUpdateTimestamp() {
+	return locationUpdateTimestamp;
   }
 
   public void setDsc(String dsc) {
@@ -232,30 +239,6 @@ public class NycInferredLocationRecord implements Serializable {
     this.inferredDsc = inferredDsc;
   }
 
-  public boolean isInferredLatSet() {
-    return !Double.isNaN(inferredLat);
-  }
-
-  public double getInferredLat() {
-    return inferredLat;
-  }
-
-  public void setInferredLat(double inferredLat) {
-    this.inferredLat = inferredLat;
-  }
-
-  public boolean isInferredLonSet() {
-    return !Double.isNaN(inferredLon);
-  }
-
-  public double getInferredLon() {
-    return inferredLon;
-  }
-
-  public void setInferredLon(double inferredLon) {
-    this.inferredLon = inferredLon;
-  }
-
   public boolean isInferredBlockLatSet() {
     return !Double.isNaN(inferredBlockLat);
   }
@@ -301,15 +284,12 @@ public class NycInferredLocationRecord implements Serializable {
     inferredBlockLat = Double.NaN;
     inferredBlockLon = Double.NaN;
     inferredDistanceAlongBlock = Double.NaN;
-    inferredDsc = null;
-    inferredLat = Double.NaN;
-    inferredLon = Double.NaN;    
+    inferredDsc = null;  
     inferredPhase = null;
     inferredScheduleTime = MISSING_VALUE;
     inferredServiceDate = 0;
     inferredStatus = null;
     inferredTripId = null;
-    
   }
 
   /****
@@ -374,31 +354,7 @@ public class NycInferredLocationRecord implements Serializable {
   public void setActualDsc(String actualDsc) {
     this.actualDsc = actualDsc;
   }
-
-  public boolean isActualLatSet() {
-    return !Double.isNaN(actualLat);
-  }
-
-  public double getActualLat() {
-    return actualLat;
-  }
-
-  public void setActualLat(double actualLat) {
-    this.actualLat = actualLat;
-  }
-
-  public boolean isActualLonSet() {
-    return !Double.isNaN(actualLon);
-  }
-
-  public double getActualLon() {
-    return actualLon;
-  }
-
-  public void setActualLon(double actualLon) {
-    this.actualLon = actualLon;
-  }
-
+  
   public boolean isActualBlockLatSet() {
     return !Double.isNaN(actualBlockLat);
   }
@@ -437,10 +393,6 @@ public class NycInferredLocationRecord implements Serializable {
 
   public void setActualStatus(String actualStatus) {
     this.actualStatus = actualStatus;
-  }
-
-  public static InputStream getTestData() {
-    return NycInferredLocationRecord.class.getResourceAsStream("ivn-dsc.csv");
   }
 
   /**

@@ -26,7 +26,7 @@ import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycQueuedInferredLocationRecord;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
@@ -77,20 +77,20 @@ public class InferenceInputQueueListenerTask {
 					String contents = new String(_zmqSocket.recv(0));
 
 					try {
-						NycInferredLocationRecord inferredResult = 
-								_mapper.readValue(contents, NycInferredLocationRecord.class);
+						NycQueuedInferredLocationRecord inferredResult = 
+								_mapper.readValue(contents, NycQueuedInferredLocationRecord.class);
 	
 					    VehicleLocationRecord vlr = new VehicleLocationRecord();
-					    vlr.setTimeOfRecord(inferredResult.getTimestamp());
-					    vlr.setTimeOfLocationUpdate(inferredResult.getTimestamp());
-					    vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getInferredBlockId()));
-					    vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getInferredTripId()));
-					    vlr.setServiceDate(inferredResult.getInferredServiceDate());
-					    vlr.setDistanceAlongBlock(inferredResult.getInferredDistanceAlongBlock());
-					    vlr.setCurrentLocationLat(inferredResult.getLat());
-					    vlr.setCurrentLocationLon(inferredResult.getLon());
-					    vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getInferredPhase()));
-					    vlr.setStatus(inferredResult.getInferredStatus());
+					    vlr.setTimeOfRecord(inferredResult.getRecordTimestamp());
+					    vlr.setTimeOfLocationUpdate(inferredResult.getLocationUpdateTimestamp());
+					    vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
+					    vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getTripId()));
+					    vlr.setServiceDate(inferredResult.getServiceDate());
+					    vlr.setDistanceAlongBlock(inferredResult.getDistanceAlongBlock());
+					    vlr.setCurrentLocationLat(inferredResult.getInferredLatitude());
+					    vlr.setCurrentLocationLon(inferredResult.getInferredLongitude());
+					    vlr.setPhase(EVehiclePhase.valueOf(inferredResult.getPhase()));
+					    vlr.setStatus(inferredResult.getStatus());
 						
 						_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 					} catch(Exception e) {
@@ -156,7 +156,7 @@ public class InferenceInputQueueListenerTask {
 	    socket.subscribe(queueName.getBytes());
 
 	    _executorService.execute(new ReadThread(socket, poller));
-
+	    	    
 		_log.debug("TDS input queue is listening on " + bind);
 		initialized = true;
 	}	
