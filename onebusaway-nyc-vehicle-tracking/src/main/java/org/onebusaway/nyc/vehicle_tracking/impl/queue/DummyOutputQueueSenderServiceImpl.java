@@ -15,9 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
-import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
-import org.onebusaway.nyc.vehicle_tracking.services.OutputQueueSenderService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class DummyOutputQueueSenderServiceImpl implements OutputQueueSenderServi
 
 	@Override
 	public void enqueue(NycInferredLocationRecord r) {
-		VehicleLocationRecord vlr = RecordLibrary.getNycTestLocationRecordAsVehicleLocationRecord(r);
+		VehicleLocationRecord vlr = RecordLibrary.getNycInferredLocationRecordAsVehicleLocationRecord(r);
 		_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 	}
 }

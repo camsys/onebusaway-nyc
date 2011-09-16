@@ -21,13 +21,13 @@
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
     
-    <bean name="/vehicle-location-listener" class="org.springframework.remoting.caucho.HessianServiceExporter">
-        <property name="service" ref="vehicleStatusServiceImpl" />
-        <property name="serviceInterface" value="org.onebusaway.realtime.api.VehicleLocationListener" />
+    <bean name="/vehicle-tracking-management-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+        <property name="service" ref="vehicleTrackingManagementServiceImpl" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
-    
-<!--     <bean name="/vehicle-tracking-management" class="org.springframework.remoting.caucho.HessianServiceExporter"> -->
-<!--         <property name="service" ref="vehicleTrackingManagementServiceImpl" /> -->
-<!--         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" /> -->
-<!--     </bean> -->
+
+    <bean name="/configuration-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+        <property name="service" ref="configurationService" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
+    </bean>
 </beans>

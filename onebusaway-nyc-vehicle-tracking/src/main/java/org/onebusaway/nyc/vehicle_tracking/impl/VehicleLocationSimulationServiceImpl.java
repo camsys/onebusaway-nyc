@@ -42,13 +42,13 @@ import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
-import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -374,8 +374,6 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       record.setActualScheduleTime(blockLocation.getScheduledTime());
       record.setActualDsc(dsc);
-      record.setActualLat(location.getLat());
-      record.setActualLon(location.getLon());
       record.setActualPhase(EVehiclePhase.IN_PROGRESS.toString());
 
       task.addRecord(record);

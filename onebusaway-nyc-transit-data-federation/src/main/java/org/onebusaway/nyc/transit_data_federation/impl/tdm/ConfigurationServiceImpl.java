@@ -8,15 +8,13 @@ import java.util.TimerTask;
 import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.RefreshService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.google.gson.JsonObject;
 
-@Component
 public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private static Logger _log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);

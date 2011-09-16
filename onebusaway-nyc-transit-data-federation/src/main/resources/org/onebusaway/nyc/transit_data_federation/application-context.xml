@@ -31,5 +31,7 @@
     	<property name="path" value="${bundlePath}" />
   	</bean>
 
+  	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl"/>
+  	
     <context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.impl"/>
 </beans>

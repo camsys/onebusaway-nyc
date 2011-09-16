@@ -26,7 +26,7 @@ import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.csv.ListEntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
-import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 
 public class CompileTestTracesMain {
 
@@ -56,9 +56,6 @@ public class CompileTestTracesMain {
       NycInferredLocationRecord labeledRecord = labeledRecords.get(i);
       rawRecord.setActualBlockId(labeledRecord.getActualBlockId());
       rawRecord.setActualDistanceAlongBlock(labeledRecord.getActualDistanceAlongBlock());
-      rawRecord.setActualDsc(labeledRecord.getActualDsc());
-      rawRecord.setActualLat(labeledRecord.getLat());
-      rawRecord.setActualLon(labeledRecord.getLon());
       rawRecord.setActualPhase(labeledRecord.getActualPhase());
       rawRecord.setActualServiceDate(labeledRecord.getActualServiceDate());
 

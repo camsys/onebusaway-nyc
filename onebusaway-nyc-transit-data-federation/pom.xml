@@ -20,6 +20,11 @@
       <artifactId>onebusaway-transit-data-federation</artifactId>
       <version>${onebusaway.app-modules.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-transit-data</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   	<dependency>
            <groupId>org.onebusaway</groupId>
            <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
