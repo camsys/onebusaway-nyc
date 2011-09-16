@@ -24,7 +24,8 @@ import java.util.Set;
 import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -40,7 +41,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ZeroProbabilityPa
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.ParticleComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -61,8 +61,9 @@ public class VehicleInferenceInstance {
 
   private ParticleFilter<Observation> _particleFilter;
 
-  private VehicleTrackingManagementService _managementService;
-
+  @Autowired
+  private ConfigurationService _configurationService;
+  
   private DestinationSignCodeService _destinationSignCodeService;
 
   private BaseLocationService _baseLocationService;
@@ -87,12 +88,6 @@ public class VehicleInferenceInstance {
 
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
-  }
-
-  @Autowired
-  public void setVehicleTrackingConfigurationService(
-      VehicleTrackingManagementService managementService) {
-    _managementService = managementService;
   }
 
   @Autowired
@@ -337,33 +332,24 @@ public class VehicleInferenceInstance {
     VehicleLocationManagementRecord record = new VehicleLocationManagementRecord();
     record.setEnabled(_enabled);
     record.setLastUpdateTime(_lastUpdateTime);
-    record.setLastGpsTime(_lastGpsTime);
+    record.setLastGpsUpdateTime(_lastGpsTime);
 
     if (_previousObservation != null) {
       NycRawLocationRecord r = _previousObservation.getRecord();
-      record.setMostRecentDestinationSignCode(r.getDestinationSignCode());
+      record.setMostRecentObservedDestinationSignCode(r.getDestinationSignCode());
       record.setLastGpsLat(r.getLatitude());
       record.setLastGpsLon(r.getLongitude());
 
       Particle particle = _particleFilter.getMostLikelyParticle();
-
       if (particle != null) {
         VehicleState state = particle.getData();
         BlockState blockState = state.getBlockState();
         if (blockState != null)
           record.setInferredDestinationSignCode(blockState.getDestinationSignCode());
-
       }
     } else if (_nycInferredLocationRecord != null) {
-      record.setMostRecentDestinationSignCode(_nycInferredLocationRecord.getDsc());
+      record.setMostRecentObservedDestinationSignCode(_nycInferredLocationRecord.getDsc());
       record.setInferredDestinationSignCode(_nycInferredLocationRecord.getActualDsc());
-    }
-
-    NycInferredLocationRecord state = getCurrentState();
-    if (state != null) {
-      if (state.getInferredPhase() != null)
-        record.setPhase(EVehiclePhase.valueOf(state.getInferredPhase()));
-      record.setStatus(state.getInferredStatus());
     }
 
     return record;
@@ -450,16 +436,15 @@ public class VehicleInferenceInstance {
       }
 
       if (EVehiclePhase.IN_PROGRESS.equals(phase)) {
-        double d = SphericalGeometryLibrary.distance(location,
-            blockLocation.getLocation());
-        if (d > _managementService.getVehicleOffRouteDistanceThreshold())
+        double d = SphericalGeometryLibrary.distance(location,blockLocation.getLocation());
+        if (d > (double)_configurationService.getConfigurationValueAsInteger("display.offRouteDistance", 500))
           statusFields.add("deviated");
 
         int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState.getLastInMotionTime()) / 1000);
-        if (secondsSinceLastMotion > _managementService.getVehicleStalledTimeThreshold())
+        if (secondsSinceLastMotion > 
+          	_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       }
-
     }
 
     // Set the status field

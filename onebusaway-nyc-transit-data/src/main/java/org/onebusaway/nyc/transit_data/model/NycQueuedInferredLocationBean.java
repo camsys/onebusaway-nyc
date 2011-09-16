@@ -1,8 +1,8 @@
-package org.onebusaway.nyc.transit_data_federation.model;
+package org.onebusaway.nyc.transit_data.model;
 
 import java.io.Serializable;
 
-public class NycQueuedInferredLocationRecord implements Serializable {
+public class NycQueuedInferredLocationBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 		
@@ -39,8 +39,8 @@ public class NycQueuedInferredLocationRecord implements Serializable {
 	private String status;
 	
 	private boolean inferenceIsFormal;
-	
-	public NycQueuedInferredLocationRecord() {}
+		
+	public NycQueuedInferredLocationBean() {}
 
 	public Long getRecordTimestamp() {
 		return recordTimestamp;

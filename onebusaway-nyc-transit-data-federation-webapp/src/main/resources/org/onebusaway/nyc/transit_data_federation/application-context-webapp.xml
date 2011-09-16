@@ -22,5 +22,5 @@
   <context:annotation-config />  
 
   <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl" />
-        
+                
 </beans>

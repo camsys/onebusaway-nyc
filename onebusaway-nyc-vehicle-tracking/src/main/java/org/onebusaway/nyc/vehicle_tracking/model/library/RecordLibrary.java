@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.library;
 
-import org.onebusaway.nyc.transit_data_federation.model.NycQueuedInferredLocationRecord;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -39,10 +39,10 @@ public class RecordLibrary {
     return timeDevice;
   }
 
-  public static NycQueuedInferredLocationRecord 
+  public static NycQueuedInferredLocationBean 
   	getNycInferredLocationRecordAsNycQueuedInferredLocationRecord(NycInferredLocationRecord record) {
 	
-	NycQueuedInferredLocationRecord qlr = new NycQueuedInferredLocationRecord();
+	NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
 
 	qlr.setRecordTimestamp(record.getTimestamp());	
 	qlr.setLocationUpdateTimestamp(record.getLocationUpdateTimestamp());

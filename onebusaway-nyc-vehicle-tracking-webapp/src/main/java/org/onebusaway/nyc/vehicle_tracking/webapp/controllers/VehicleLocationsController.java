@@ -24,7 +24,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordDe
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordVehicleComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

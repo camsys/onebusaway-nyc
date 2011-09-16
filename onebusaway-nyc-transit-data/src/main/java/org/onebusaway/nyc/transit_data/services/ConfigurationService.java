@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_federation.services.tdm;
+package org.onebusaway.nyc.transit_data.services;
 
 /**
  * Service interface for getting configuration parameters from a centrally-distributed

@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -28,11 +29,11 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.transit_data_federation.model.NycQueuedInferredLocationRecord;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
-import org.onebusaway.nyc.vehicle_tracking.services.OutputQueueSenderService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +96,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 	@Override
 	public void enqueue(NycInferredLocationRecord r) {
 		try {
-			NycQueuedInferredLocationRecord qlr 
+			NycQueuedInferredLocationBean qlr 
 				= RecordLibrary.getNycInferredLocationRecordAsNycQueuedInferredLocationRecord(r);
 			
 			ObjectMapper mapper = new ObjectMapper();		
@@ -106,7 +107,9 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 		    sw.close();			
 			
 			_outputBuffer.put(sw.toString());
-		} catch(Exception e) {
+		} catch(IOException e) {
+			_log.info("Could not serialize inferred location record: " + e.getMessage()); 
+		} catch(InterruptedException e) {
 			// discard if thread is interrupted or serialization fails
 			return;
 		}

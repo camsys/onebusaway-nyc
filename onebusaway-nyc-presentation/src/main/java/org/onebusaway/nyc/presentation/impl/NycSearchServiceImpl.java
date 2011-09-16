@@ -42,8 +42,7 @@ import org.onebusaway.nyc.presentation.model.DistanceAway;
 import org.onebusaway.nyc.presentation.model.Mode;
 import org.onebusaway.nyc.presentation.model.StopItem;
 import org.onebusaway.nyc.presentation.service.ArrivalDepartureBeanListFilter;
-import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.NycConfigurationService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
@@ -91,7 +90,7 @@ public class NycSearchServiceImpl implements NycSearchService {
   private GeocoderService geocoderService;
 
   @Autowired
-  private NycConfigurationService configurationService;
+  private ConfigurationService configurationService;
   
   @Autowired
   private ServiceAreaService serviceArea;
@@ -297,8 +296,9 @@ public class NycSearchServiceImpl implements NycSearchService {
   }
 
   private List<RouteSearchResult> makeRouteSearchResult(RouteBean routeBean, Mode m) {
-    ConfigurationBean config = configurationService.getConfiguration();  
-
+    int staleDataTimeout = 
+    		configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+    
     List<RouteSearchResult> results = new ArrayList<RouteSearchResult>();
 
     String routeId = routeBean.getId();
@@ -401,7 +401,7 @@ public class NycSearchServiceImpl implements NycSearchService {
             distanceAwayFromClosestStopInFeet, 
             new Date(tripStatusBean.getLastUpdateTime()), 
             m, 
-            config.getStaleDataTimeout(),
+            staleDataTimeout,
             FormattingContext.ROUTE,
             tripStatusBean);
 
@@ -518,9 +518,9 @@ public class NycSearchServiceImpl implements NycSearchService {
     }
 
     // hide data >= (hide timeout) minutes old (row 5)
-    ConfigurationBean config = configurationService.getConfiguration();
-    
-    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout()) {
+    int hideTimeout = 
+    		configurationService.getConfigurationValueAsInteger("display.hideTimeout", 300);    
+    if (new Date().getTime() - statusBean.getLastUpdateTime() >= 1000 * hideTimeout) {
        	return false;
     }
     
@@ -528,8 +528,9 @@ public class NycSearchServiceImpl implements NycSearchService {
   }
 
   private StopSearchResult makeStopSearchResult(StopBean stopBean, Mode m) {
-    ConfigurationBean config = configurationService.getConfiguration();
-
+	int staleDataTimeout = 
+		configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+	
 	String stopId = stopBean.getId();
     String stopName = stopBean.getName();
     String stopDirection = stopBean.getDirection();
@@ -611,7 +612,7 @@ public class NycSearchServiceImpl implements NycSearchService {
           distanceFromStopInFeet, 
           new Date(arrivalAndDepartureBean.getTripStatus().getLastUpdateTime()), 
           m, 
-          config.getStaleDataTimeout(),
+          staleDataTimeout,
           FormattingContext.STOP,
           tripStatusBean);
 

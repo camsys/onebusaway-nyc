@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,8 +27,9 @@ import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.transit_data_federation.model.NycQueuedInferredLocationRecord;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -47,7 +49,10 @@ public class InferenceInputQueueListenerTask {
 	
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
-	
+
+	@Autowired
+	private VehicleTrackingManagementService _vehicleTrackingManagementService;
+
 	@Autowired
 	private ConfigurationService _configurationService;
 		
@@ -77,10 +82,11 @@ public class InferenceInputQueueListenerTask {
 					String contents = new String(_zmqSocket.recv(0));
 
 					try {
-						NycQueuedInferredLocationRecord inferredResult = 
-								_mapper.readValue(contents, NycQueuedInferredLocationRecord.class);
+						NycQueuedInferredLocationBean inferredResult = 
+								_mapper.readValue(contents, NycQueuedInferredLocationBean.class);
 	
 					    VehicleLocationRecord vlr = new VehicleLocationRecord();
+					    vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(inferredResult.getVehicleId()));
 					    vlr.setTimeOfRecord(inferredResult.getRecordTimestamp());
 					    vlr.setTimeOfLocationUpdate(inferredResult.getLocationUpdateTimestamp());
 					    vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
@@ -93,7 +99,9 @@ public class InferenceInputQueueListenerTask {
 					    vlr.setStatus(inferredResult.getStatus());
 						
 						_vehicleLocationListener.handleVehicleLocationRecord(vlr);
-					} catch(Exception e) {
+						_vehicleTrackingManagementService.updateInternalStateWithRecord(inferredResult);
+					} catch(IOException e) {
+						_log.info("Could not de-serialize inferred location record: " + e.getMessage()); 
 						continue;
 					}
 

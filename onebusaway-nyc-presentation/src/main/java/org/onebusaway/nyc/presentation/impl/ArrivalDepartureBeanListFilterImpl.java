@@ -1,8 +1,7 @@
 package org.onebusaway.nyc.presentation.impl;
 
 import org.onebusaway.nyc.presentation.service.ArrivalDepartureBeanListFilter;
-import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.NycConfigurationService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
@@ -19,7 +18,7 @@ public class ArrivalDepartureBeanListFilterImpl implements
   private boolean debug = false;
 
   @Autowired
-  private NycConfigurationService configurationService;
+  private ConfigurationService configurationService;
 
   @Override
   public List<ArrivalAndDepartureBean> filter(
@@ -142,9 +141,9 @@ public class ArrivalDepartureBeanListFilterImpl implements
       }
 
       // hide data >= (hide timeout) minutes old (row 5)
-      ConfigurationBean config = configurationService.getConfiguration();
-
-      if (new Date().getTime() - tripStatusBean.getLastUpdateTime() >= 1000 * config.getHideTimeout()) {
+      int hideTimeout = 
+      		configurationService.getConfigurationValueAsInteger("display.hideTimeout", 300);    
+      if (new Date().getTime() - tripStatusBean.getLastUpdateTime() >= 1000 * hideTimeout) {
         if (debug) {
           System.out.println("the bus has passed the timeout"
               + arrivalAndDepartureBean.getVehicleId());

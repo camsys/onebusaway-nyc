@@ -17,8 +17,7 @@ package org.onebusaway.nyc.webapp.actions;
 
 import java.util.Date;
 
-import org.onebusaway.nyc.presentation.service.ConfigurationBean;
-import org.onebusaway.nyc.presentation.service.NycConfigurationService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,21 +29,18 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
-  private NycConfigurationService configurationService;
+  private ConfigurationService configurationService;
 
   public int getHideTimeout() {
-	  ConfigurationBean config = configurationService.getConfiguration();
-	  return config.getHideTimeout();
+	  return configurationService.getConfigurationValueAsInteger("display.hideTimeout", 300);      
   }
 
   public int getStaleDataTimeout() {
-      ConfigurationBean config = configurationService.getConfiguration();
-      return config.getStaleDataTimeout();
+	  return configurationService.getConfigurationValueAsInteger("display.hideTimeout", 300);      
   }
 
   public String getApiUrl() {
-      ConfigurationBean config = configurationService.getConfiguration();
-      return config.getApiUrl();
+	  return "FIXME!";
   }
 
   public long getEpoch() {

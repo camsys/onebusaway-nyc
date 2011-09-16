@@ -13,10 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.model;
+package org.onebusaway.nyc.transit_data_federation.model;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.realtime.api.EVehiclePhase;
 
 public class VehicleLocationManagementRecord {
 
@@ -26,17 +25,13 @@ public class VehicleLocationManagementRecord {
 
   private long lastUpdateTime;
 
-  private long lastGpsTime;
+  private long lastGpsUpdateTime;
 
   private double lastGpsLat = Double.NaN;
 
   private double lastGpsLon = Double.NaN;
 
-  private EVehiclePhase phase;
-
-  private String status;
-
-  private String mostRecentDestinationSignCode;
+  private String mostRecentObservedDestinationSignCode;
 
   private String inferredDestinationSignCode;
 
@@ -64,12 +59,12 @@ public class VehicleLocationManagementRecord {
     this.lastUpdateTime = lastUpdateTime;
   }
 
-  public long getLastGpsTime() {
-    return lastGpsTime;
+  public long getLastGpsUpdateTime() {
+    return lastGpsUpdateTime;
   }
 
-  public void setLastGpsTime(long lastGpsTime) {
-    this.lastGpsTime = lastGpsTime;
+  public void setLastGpsUpdateTime(long lastGpsTime) {
+    this.lastGpsUpdateTime = lastGpsTime;
   }
 
   public double getLastGpsLat() {
@@ -88,29 +83,13 @@ public class VehicleLocationManagementRecord {
     this.lastGpsLon = lastGpsLon;
   }
 
-  public EVehiclePhase getPhase() {
-    return phase;
+  public String getMostRecentObservedDestinationSignCode() {
+    return mostRecentObservedDestinationSignCode;
   }
 
-  public void setPhase(EVehiclePhase phase) {
-    this.phase = phase;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
-  public String getMostRecentDestinationSignCode() {
-    return mostRecentDestinationSignCode;
-  }
-
-  public void setMostRecentDestinationSignCode(
-      String mostRecentDestinationSignCode) {
-    this.mostRecentDestinationSignCode = mostRecentDestinationSignCode;
+  public void setMostRecentObservedDestinationSignCode(
+      String mostRecentObservedDestinationSignCode) {
+    this.mostRecentObservedDestinationSignCode = mostRecentObservedDestinationSignCode;
   }
 
   public String getInferredDestinationSignCode() {
