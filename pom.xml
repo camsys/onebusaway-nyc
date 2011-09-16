@@ -107,6 +107,7 @@
     <module>onebusaway-nyc-transit-data</module>
     <module>onebusaway-nyc-transit-data-manager</module>
     <module>onebusaway-nyc-transit-data-federation</module>
+    <module>onebusaway-nyc-transit-data-federation-webapp</module>
     <module>onebusaway-nyc-api-webapp</module>
   </modules>
 

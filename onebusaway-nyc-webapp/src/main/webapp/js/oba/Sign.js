@@ -284,7 +284,7 @@ OBA.Sign = function() {
 				arrivalsDiv.append(stopTable.hide());
 			}
 						
-			var url = OBA.Config.stopUrl + "/" + stopId + ".json";
+			var url = OBA.Util.createApiUrl(OBA.Config.stopUrl) + "/" + stopId + ".json";
 			var params = {version: 2, key: OBA.Config.apiKey, minutesBefore: OBA.Config.arrivalsMinutesBefore, 
 					minutesAfter: OBA.Config.arrivalsMinutesAfter};
 

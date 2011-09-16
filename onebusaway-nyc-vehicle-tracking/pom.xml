@@ -25,11 +25,6 @@
             <artifactId>onebusaway-siri-api</artifactId>
             <version>${onebusaway.siri.version}</version>
         </dependency>
-	  	<dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
-            <version>${onebusaway.nyc-tcip.version}</version>
-	  	</dependency>
 
 		<dependency>
 			<groupId>joda-time</groupId>

@@ -20,13 +20,13 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraph;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 public class RunServiceImplTest {
 
   private RunServiceImpl _service;
 
-  private TransitGraph _transitGraph;
+  private TransitGraphDao _transitGraph;
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
 
@@ -74,7 +74,7 @@ public class RunServiceImplTest {
 
     _service.setRunDataByTrip(runDataByTrip);
 
-    _transitGraph = mock(TransitGraph.class);
+    _transitGraph = mock(TransitGraphDao.class);
     _service.setTransitGraph(_transitGraph);
 
     _scheduledBlockLocationService = mock(ScheduledBlockLocationService.class);

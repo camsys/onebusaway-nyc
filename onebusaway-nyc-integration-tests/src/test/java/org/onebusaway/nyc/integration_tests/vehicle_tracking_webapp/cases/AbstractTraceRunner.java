@@ -31,7 +31,7 @@ import org.onebusaway.collections.Counter;
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.TraceSupport;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

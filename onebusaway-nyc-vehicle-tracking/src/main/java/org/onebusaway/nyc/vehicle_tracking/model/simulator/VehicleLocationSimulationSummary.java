@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.model.simulator;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 
 public class VehicleLocationSimulationSummary {
 

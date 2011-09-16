@@ -25,6 +25,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -38,7 +39,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterExc
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ZeroProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.ParticleComparator;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
@@ -412,19 +412,18 @@ public class VehicleInferenceInstance {
     Particle particle = _particleFilter.getMostLikelyParticle();
 
     VehicleState state = particle.getData();
-    // EdgeState edgeState = state.getEdgeState();
     MotionState motionState = state.getMotionState();
     JourneyState journeyState = state.getJourneyState();
     BlockState blockState = state.getBlockState();
     Observation obs = state.getObservation();
 
     CoordinatePoint location = obs.getLocation();
-    NycRawLocationRecord nycRecord = obs.getRecord();
-
+    NycRawLocationRecord nycRecord = obs.getRecord();    
+    
     NycInferredLocationRecord record = new NycInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
-
+    
     record.setTimestamp((long) particle.getTimestamp());
     record.setDsc(nycRecord.getDestinationSignCode());
 

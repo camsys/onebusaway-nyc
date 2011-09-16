@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.library;
 
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -59,6 +59,7 @@ public class RecordLibrary {
     vlr.setPhase(EVehiclePhase.valueOf(record.getInferredPhase()));
     vlr.setStatus(record.getInferredStatus());
     vlr.setVehicleId(record.getVehicleId());
+    
     return vlr;
   }
 
