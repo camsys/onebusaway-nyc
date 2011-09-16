@@ -25,8 +25,14 @@ public class NycRawLocationRecord {
 
   private long id;
 
+  /**
+   * The time on the bus when record was sent to us.
+   */
   private long time;
 
+  /**
+   * The time on the server when we received this record.
+   */
   @CsvField(name = "timereceived")
   private long timeReceived;
 
@@ -42,7 +48,7 @@ public class NycRawLocationRecord {
   @CsvField(name = "deviceid")
   private String deviceId;
 
-  /** raw GPS sentences */
+  /* raw GPS sentences */
   @CsvField(optional = true)
   private String gga;
 
@@ -115,15 +121,6 @@ public class NycRawLocationRecord {
     this.vehicleId = vehicleId;
   }
 
-  /**
-   * Location data is considered missing if the values are NaN or if both are
-   * zero
-   */
-  public boolean locationDataIsMissing() {
-    return (Double.isNaN(this.latitude) || Double.isNaN(this.longitude))
-        || (this.latitude == 0.0 && this.longitude == 0.0);
-  }
-
   public void setGga(String gga) {
     this.gga = gga;
   }
@@ -162,6 +159,15 @@ public class NycRawLocationRecord {
 
   public String getRawData() {
     return rawData;
+  }
+  
+  /**
+   * Location data is considered missing if the values are NaN or if both are
+   * zero
+   */
+  public boolean locationDataIsMissing() {
+    return (Double.isNaN(this.latitude) || Double.isNaN(this.longitude))
+        || (this.latitude == 0.0 && this.longitude == 0.0);
   }
   
   @Override

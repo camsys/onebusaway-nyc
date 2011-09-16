@@ -15,7 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.library;
 
-import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -38,16 +39,34 @@ public class RecordLibrary {
     return timeDevice;
   }
 
-  public static NycInferredLocationRecord getVehicleLocationRecordAsNycTestLocationRecord(
-      VehicleLocationRecord record) {
-    NycInferredLocationRecord r = new NycInferredLocationRecord();
-    return r;
-  }
+  public static NycQueuedInferredLocationBean 
+  	getNycInferredLocationRecordAsNycQueuedInferredLocationRecord(NycInferredLocationRecord record) {
+	
+	NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
 
-  public static VehicleLocationRecord getNycTestLocationRecordAsVehicleLocationRecord(
+	qlr.setRecordTimestamp(record.getTimestamp());	
+	qlr.setLocationUpdateTimestamp(record.getLocationUpdateTimestamp());
+	qlr.setVehicleId(record.getVehicleId().toString());
+	qlr.setDestinationSignCode(record.getDsc());
+	qlr.setServiceDate(record.getInferredServiceDate());
+	qlr.setBlockId(record.getInferredBlockId());
+	qlr.setTripId(record.getInferredTripId());
+	qlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
+	qlr.setInferredLatitude(record.getInferredBlockLat());
+	qlr.setInferredLongitude(record.getInferredBlockLon());
+	qlr.setRawLatitude(record.getLat());
+	qlr.setRawLongitude(record.getLon());
+	qlr.setPhase(record.getInferredPhase());	
+	qlr.setStatus(record.getInferredStatus());
+	
+	return qlr;
+  }
+  
+  public static VehicleLocationRecord getNycInferredLocationRecordAsVehicleLocationRecord(
       NycInferredLocationRecord record) {
 
     VehicleLocationRecord vlr = new VehicleLocationRecord();
+    
     vlr.setTimeOfRecord(record.getTimestamp());
     vlr.setTimeOfLocationUpdate(record.getTimestamp());
     vlr.setRunId(AgencyAndIdLibrary.convertFromString(record.getInferredRunId()));
@@ -64,16 +83,18 @@ public class RecordLibrary {
     return vlr;
   }
 
-  public static NycRawLocationRecord getNycTestLocationRecordAsNycVehicleLocationRecord(
+  public static NycRawLocationRecord getNycInferredLocationRecordAsNycRawLocationRecord(
       NycInferredLocationRecord record) {
 
     NycRawLocationRecord vlr = new NycRawLocationRecord();
+    
     vlr.setDestinationSignCode(record.getDsc());
     vlr.setLatitude(record.getLat());
     vlr.setLongitude(record.getLon());
     vlr.setTime(record.getTimestamp());
     vlr.setTimeReceived(record.getTimestamp());
     vlr.setVehicleId(record.getVehicleId());
+    
     return vlr;
   }
 }

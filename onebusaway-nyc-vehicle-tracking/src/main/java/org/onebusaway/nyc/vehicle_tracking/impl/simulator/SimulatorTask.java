@@ -32,12 +32,12 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.ParticleComparator;
-import org.onebusaway.nyc.transit_data_federation.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -243,7 +243,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
   public VehicleLocationDetails getParticleDetails(int particleId) {
     VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
-    details.setLastObservation(RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(_mostRecentRecord));
+    details.setLastObservation(RecordLibrary.getNycInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
     List<Particle> particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);
     if (particles != null) {
       for (Particle p : particles) {
@@ -335,7 +335,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
         _vehicleLocationInferenceService.handleNycInferredLocationRecord(record);
       } else {
     	NycRawLocationRecord vlr = 
-    			RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(record);
+    			RecordLibrary.getNycInferredLocationRecordAsNycRawLocationRecord(record);
     	_vehicleLocationInferenceService.handleNycRawLocationRecord(vlr);
       }
 
@@ -464,8 +464,6 @@ public class SimulatorTask implements Runnable, EntityHandler {
       rr.setActualDistanceAlongBlock(rr.getInferredDistanceAlongBlock());
       rr.setActualScheduleTime(rr.getInferredScheduleTime());
       rr.setActualDsc(rr.getInferredDsc());
-      rr.setActualLat(rr.getInferredLat());
-      rr.setActualLon(rr.getInferredLon());
       rr.setActualPhase(rr.getInferredPhase());
       rr.setActualServiceDate(rr.getInferredServiceDate());
       rr.setActualStatus(rr.getInferredStatus());
@@ -480,7 +478,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
     details.setVehicleId(_vehicleId);
-    details.setLastObservation(RecordLibrary.getNycTestLocationRecordAsNycVehicleLocationRecord(
+    details.setLastObservation(RecordLibrary.getNycInferredLocationRecordAsNycRawLocationRecord(
         record));
 
     List<Particle> weightedParticles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);

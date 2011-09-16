@@ -9,8 +9,8 @@ import java.util.TimerTask;
 import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.model.OperatorAssignmentItem;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

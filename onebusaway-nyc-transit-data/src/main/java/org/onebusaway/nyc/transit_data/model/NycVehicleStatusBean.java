@@ -27,17 +27,13 @@ public final class NycVehicleStatusBean implements Serializable {
 
   private long lastUpdateTime;
 
-  private long lastGpsTime;
+  private long lastGpsUpdateTime;
 
   private double lastGpsLat = Double.NaN;
 
   private double lastGpsLon = Double.NaN;
 
-  private String phase;
-
-  private String status;
-
-  private String mostRecentDestinationSignCode;
+  private String mostRecentObservedDestinationSignCode;
 
   private String inferredDestinationSignCode;
 
@@ -66,11 +62,11 @@ public final class NycVehicleStatusBean implements Serializable {
   }
 
   public long getLastGpsTime() {
-    return lastGpsTime;
+    return lastGpsUpdateTime;
   }
 
   public void setLastGpsTime(long lastGpsTime) {
-    this.lastGpsTime = lastGpsTime;
+    this.lastGpsUpdateTime = lastGpsTime;
   }
 
   public double getLastGpsLat() {
@@ -89,29 +85,13 @@ public final class NycVehicleStatusBean implements Serializable {
     this.lastGpsLon = lastGpsLon;
   }
 
-  public String getPhase() {
-    return phase;
-  }
-
-  public void setPhase(String phase) {
-    this.phase = phase;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
   public String getMostRecentDestinationSignCode() {
-    return mostRecentDestinationSignCode;
+    return mostRecentObservedDestinationSignCode;
   }
 
-  public void setMostRecentDestinationSignCode(
+  public void setMostRecentObservedDestinationSignCode(
       String mostRecentDestinationSignCode) {
-    this.mostRecentDestinationSignCode = mostRecentDestinationSignCode;
+    this.mostRecentObservedDestinationSignCode = mostRecentDestinationSignCode;
   }
 
   public String getInferredDestinationSignCode() {
