@@ -180,6 +180,10 @@ public class RunServiceImpl implements RunService {
 
         BlockTripEntry trip = blockLocation.getActiveTrip();
         List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip());
+        
+        if (bothTrips == null || bothTrips.isEmpty())
+        	continue;
+        
         RunTripEntry firstTrip = bothTrips.get(0);
         if (bothTrips.size() == 1) {
           return firstTrip;
@@ -209,7 +213,12 @@ public class RunServiceImpl implements RunService {
           blockConfig, scheduleTime);
 
       BlockTripEntry trip = blockLocation.getActiveTrip();
-      out.addAll(entriesByTrip.get(trip.getTrip()));
+      List<RunTripEntry> rtes = entriesByTrip.get(trip.getTrip());
+
+      if (rtes == null)
+        continue;
+
+      out.addAll(rtes);
     }
 
     return out;

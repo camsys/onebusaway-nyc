@@ -303,6 +303,20 @@ public class VehicleLocationSimulationServiceImpl implements
     return summaries;
   }
 
+  private int getRunTripLastTime(RunTripEntry runTrip) {
+	  
+    // this run could end before the last stop
+    int lastTime = _runService.getReliefTimeForTrip(runTrip.getTripEntry().getId());
+
+    if (lastTime <= 0) {
+      List<StopTimeEntry> stopTimes = runTrip.getTripEntry().getStopTimes();
+      StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
+      lastTime = lastStopTime.getDepartureTime();
+    }
+  
+    return lastTime;
+  }
+  
   public void generateRunSim(Random random, 
       SimulatorTask task, 
       RunTripEntry runTrip, 
@@ -315,16 +329,15 @@ public class VehicleLocationSimulationServiceImpl implements
 
     String agencyId = runTrip.getTripEntry().getId().getAgencyId();
     
-    int firstTime = runTrip.getStartTime();
-    RunTripEntry lastRunTrip = rtes.get(rtes.size()-1);
-    int lastTime = _runService.getReliefTimeForTrip(lastRunTrip.getTripEntry().getId());
 
-    if (lastTime == 0) {
-      List<StopTimeEntry> stopTimes = lastRunTrip.getTripEntry().getStopTimes();
-      StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
-      lastTime = lastStopTime.getDepartureTime();
-    }
+    int firstTime = runTrip.getStartTime();
+
+    RunTripEntry lastRunTrip = rtes.get(rtes.size()-1);
     
+    int lastTime = getRunTripLastTime(lastRunTrip);
+    
+    // this is the last time of the current run-trip
+    int runningLastTime = 0;
 
     /*
      *  We could go by run trip entry sequence or perturbed schedule-time
@@ -334,21 +347,39 @@ public class VehicleLocationSimulationServiceImpl implements
 
       NycInferredLocationRecord record = new NycInferredLocationRecord();
 
-      RunTripEntry rte = _runService.getRunTripEntryForRunAndTime(agencyId, runTrip.getRun(), scheduleTime);
+      long unperturbedTimestamp = serviceDate + (scheduleTime + shiftStartTime) * 1000;
 
-      TripEntry trip = rte.getTripEntry();
+      // FIXME use combination of serviceDate and scheduleTime?  either way, use this...
+      //RunTripEntry rte = _runService.getRunTripEntryForRunAndTime(agencyId, runTrip.getRun(), unperturbedTimestamp);
+      
+      if (scheduleTime >= runningLastTime) {
+	      runTrip = _runService.getNextEntry(runTrip);
+	      runningLastTime = getRunTripLastTime(runTrip);
+      }
+
+      if (runTrip == null)
+    	  break;
+      
+      TripEntry trip = runTrip.getTripEntry();
+      
+      
       AgencyAndId tripId = trip.getId();
 
-
-      // TODO deadhead to next trip if changed?
-
+      record.setActualTripId(AgencyAndIdLibrary.convertToString(tripId));
+      
       // TODO simulate run changes
 
-      // TODO set block info?
-      
       String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(tripId);
       if (dsc == null)
         dsc = "0";
+      
+      // FIXME straighten these out...
+      if (scheduleTime < runTrip.getStartTime()) {
+	      record.setActualPhase(EVehiclePhase.DEADHEAD_BEFORE.toString());
+	      dsc = "0";
+      } else {
+	      record.setActualPhase(EVehiclePhase.IN_PROGRESS.toString());
+      }
 
       int scheduleDeviation = 0;
 
@@ -359,18 +390,31 @@ public class VehicleLocationSimulationServiceImpl implements
             scheduleDeviations, ratio, EOutOfRangeStrategy.LAST_VALUE);
       }
 
-      long timestamp = serviceDate
-          + (scheduleTime + shiftStartTime + scheduleDeviation) * 1000;
+      long perterbedTimestamp = unperturbedTimestamp + scheduleDeviation * 1000;
 
-      // TODO is this level of indirection necessary for just the location?
+      // FIXME is this level of indirection necessary for just the location?
+      // we should use the geometry to make a TRULY run-based sim?
       BlockEntry blockEntry = trip.getBlock();
+
       // especially here, where we're just selecting the first configuration to
       // get a location.
-      BlockConfigurationEntry block =  blockEntry.getConfigurations().get(0);
-      ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-          block, scheduleTime);
+      ScheduledBlockLocation blockLocation = null;
+      for (BlockConfigurationEntry block : blockEntry.getConfigurations()) {
+    	  
+	      blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+	          block, scheduleTime);
+	      
+	      if (blockLocation != null)
+	    	  break;
+      }
+      
+      if (blockLocation == null)
+    	  break;
 
       CoordinatePoint location = blockLocation.getLocation();
+      
+      record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockEntry.getId()));
+      record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       
       CoordinatePoint p = applyLocationNoise(location.getLat(),
           location.getLon(), locationSigma, random);
@@ -378,7 +422,7 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setDsc(dsc);
       record.setLat(p.getLat());
       record.setLon(p.getLon());
-      record.setTimestamp(timestamp);
+      record.setTimestamp(perterbedTimestamp);
       record.setVehicleId(vehicleId);
 
       record.setActualServiceDate(serviceDate);
@@ -388,13 +432,14 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualScheduleTime(actualScheduleTime);
       
       record.setActualDsc(dsc);
-      record.setLat(location.getLat());
-      record.setLon(location.getLon());
-      record.setActualPhase(EVehiclePhase.IN_PROGRESS.toString());
+      record.setActualBlockLat(location.getLat());
+      record.setActualBlockLon(location.getLon());
+      // TODO setActualStatus?
 
       task.addRecord(record);
 
-      scheduleTime += 60 + random.nextGaussian() * 10;
+      // TODO confirm that this is reasonable for vehicle update intervals
+      scheduleTime += 30 + random.nextGaussian() * 10;
     }
       
 
@@ -451,7 +496,34 @@ public class VehicleLocationSimulationServiceImpl implements
 
       String runId = _runService.getInitialRunForTrip(tripId);
 
-      RunTripEntry runTrip = _runService.getRunTripEntryForRunAndTime(tripId.getAgencyId(), runId, scheduleTime);
+      long nowTime = System.currentTimeMillis();
+	  
+      long timestamp = serviceDate + (scheduleTime + shiftStartTime) * 1000;
+
+      RunTripEntry runTrip = _runService.getRunTripEntryForRunAndTime(tripId.getAgencyId(), runId, timestamp);
+      
+      // FIXME if no scheduled run trip, take first available
+      if (runTrip == null) {
+        List<RunTripEntry> runTripEntries = _runService.getRunTripEntriesForTime(
+        		tripId.getAgencyId(), timestamp);
+
+        boolean resetTime = false;
+        
+        // so the time lookup has failed us.  start at a different time 
+        if (runTripEntries == null || runTripEntries.isEmpty()) {
+          runTripEntries = _runService.getRunTripEntriesForRun(runId);
+          resetTime = true;
+        }
+        
+
+        if (runTripEntries == null || runTripEntries.isEmpty())
+          return -1;
+
+        runTrip = runTripEntries.get(0);
+        
+        if(resetTime)
+		    scheduleTime = runTrip.getStartTime();
+      }
 
       // TODO pass these along to run-simulation method
       //List<Double> transitionParams = getRunTransitionParams(properties);
@@ -460,7 +532,7 @@ public class VehicleLocationSimulationServiceImpl implements
           scheduleTime, shiftStartTime, scheduleDeviations, 
           locationSigma, vehicleId);
 
-      return 0;
+	    return addTask(task);
     }
 
 
