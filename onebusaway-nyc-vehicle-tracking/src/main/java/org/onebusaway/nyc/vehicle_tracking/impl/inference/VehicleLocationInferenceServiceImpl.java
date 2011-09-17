@@ -60,8 +60,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis();
 
-  //@Autowired
-  //private OutputQueueSenderService _outputQueueSenderService;
+  @Autowired
+  private OutputQueueSenderService _outputQueueSenderService;
   
   private ExecutorService _executorService;
 
@@ -353,7 +353,7 @@ public class VehicleLocationInferenceServiceImpl implements
           NycInferredLocationRecord record = existing.getCurrentState();
           record.setVehicleId(_vehicleId);
           
-          //_outputQueueSenderService.enqueue(record);
+          _outputQueueSenderService.enqueue(record);
         }
       } catch (ProjectionException e) {
     	  // discard

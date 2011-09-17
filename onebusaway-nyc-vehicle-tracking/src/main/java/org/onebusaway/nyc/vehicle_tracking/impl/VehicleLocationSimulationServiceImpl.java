@@ -49,7 +49,6 @@ import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.RunService;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -389,8 +388,8 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualScheduleTime(actualScheduleTime);
       
       record.setActualDsc(dsc);
-      record.setActualLat(location.getLat());
-      record.setActualLon(location.getLon());
+      record.setLat(location.getLat());
+      record.setLon(location.getLon());
       record.setActualPhase(EVehiclePhase.IN_PROGRESS.toString());
 
       task.addRecord(record);

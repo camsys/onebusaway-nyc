@@ -69,7 +69,6 @@ public class RecordLibrary {
     
     vlr.setTimeOfRecord(record.getTimestamp());
     vlr.setTimeOfLocationUpdate(record.getTimestamp());
-    vlr.setRunId(AgencyAndIdLibrary.convertFromString(record.getInferredRunId()));
     vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getInferredBlockId()));
     vlr.setTripId(AgencyAndIdLibrary.convertFromString(record.getInferredTripId()));
     vlr.setServiceDate(record.getInferredServiceDate());
