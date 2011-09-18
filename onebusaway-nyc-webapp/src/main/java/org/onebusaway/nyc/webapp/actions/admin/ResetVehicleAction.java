@@ -38,7 +38,6 @@ public class ResetVehicleAction extends OneBusAwayNYCActionSupport {
 
   @Override
   public String execute() throws Exception {
-
     vehicleTrackingManagementService.resetVehicleTrackingForVehicleId(_vehicleId);
 
     return "redirect";

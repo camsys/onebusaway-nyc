@@ -26,9 +26,9 @@ import org.onebusaway.wiki.api.WikiPage;
  * existing WikiPageImpl class. 
  */
 public class NycWikiPageWrapper implements WikiPage {
-	private static final long serialVersionUID = 2L;
 
-	private static final Pattern externalLinkPattern = Pattern.compile("\\b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|]");
+	private static final Pattern externalLinkPattern = 
+			Pattern.compile("\\b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|]");
 
 	private static final Pattern linkPattern = Pattern.compile("([^\\[|\\>]*)]]");
 	

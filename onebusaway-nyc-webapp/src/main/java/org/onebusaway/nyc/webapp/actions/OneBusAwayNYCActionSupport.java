@@ -51,7 +51,7 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
   }
 
   public boolean isAdminUser() {
-	    return _currentUserService.isCurrentUserAdmin();
+	return _currentUserService.isCurrentUserAdmin();
   }
   
   public boolean isAnonymousUser() {

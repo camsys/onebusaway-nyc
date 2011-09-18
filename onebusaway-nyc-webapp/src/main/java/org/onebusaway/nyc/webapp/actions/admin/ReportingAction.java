@@ -43,12 +43,14 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
   private static final ExecutorService executorService = Executors.newCachedThreadPool();
   
   private static final byte[] columnDelimiter = "\t".getBytes();
+  
   private static final byte[] newline = "\n".getBytes();
   
   @Autowired
   private SessionFactory sessionFactory;
   
   private String query;
+  
   private String reportError;
 
   private InputStream inputStream;
@@ -76,7 +78,6 @@ public class ReportingAction extends OneBusAwayNYCActionSupport {
     return SUCCESS;
   }
   
-  // isolate deprecation warning to this method
   @SuppressWarnings("deprecation")
   private Connection getConnectionFromSession(Session session) {
     return session.connection();

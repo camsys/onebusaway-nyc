@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.webapp.actions.admin;
 
+import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.admin.model.ConfigurationModel;
@@ -40,13 +41,15 @@ public class EditParametersAction extends OneBusAwayNYCActionSupport implements
   }
 
   @Override
+  @SkipValidation
   public String execute() {
 	_model.setHideTimeout(_configurationService.getConfigurationValueAsInteger("display.hideTimeout", null));
 	_model.setNoProgressTimeout(_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", null));
 	_model.setOffRouteDistance(_configurationService.getConfigurationValueAsInteger("display.offRouteDistance", null));
 	_model.setStaleDataTimeout(_configurationService.getConfigurationValueAsInteger("display.staleTimeout", null));
 	_model.setGpsTimeSkewThreshold(_configurationService.getConfigurationValueAsInteger("data.gpsTimeSkewThreshold", null));
-    return SUCCESS;
+
+	return SUCCESS;
   }
 
   @Validations(requiredFields = {
@@ -61,6 +64,7 @@ public class EditParametersAction extends OneBusAwayNYCActionSupport implements
 	_configurationService.setConfigurationValue("display.offRouteDistance", _model.getOffRouteDistance().toString());
 	_configurationService.setConfigurationValue("display.staleTimeout", _model.getStaleDataTimeout().toString());
 	_configurationService.setConfigurationValue("data.gpsTimeSkewThreshold", _model.getGpsTimeSkewThreshold().toString());
-    return SUCCESS;
+
+	return SUCCESS;
   }
 }

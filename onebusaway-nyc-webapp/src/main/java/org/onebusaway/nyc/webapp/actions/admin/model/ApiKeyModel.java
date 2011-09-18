@@ -16,10 +16,12 @@
 /**
  * 
  */
-package org.onebusaway.nyc.webapp.model;
+package org.onebusaway.nyc.webapp.actions.admin.model;
 
 public class ApiKeyModel {
+	
   private String apiKey;
+
   private Long minApiRequestInterval;
 
   public String getApiKey() {

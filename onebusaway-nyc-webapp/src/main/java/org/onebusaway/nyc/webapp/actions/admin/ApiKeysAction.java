@@ -29,7 +29,7 @@ import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.model.ApiKeyModel;
+import org.onebusaway.nyc.webapp.actions.admin.model.ApiKeyModel;
 
 import com.opensymphony.xwork2.ModelDriven;
 import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
@@ -64,13 +64,15 @@ public class ApiKeysAction extends OneBusAwayNYCActionSupport implements
   @SkipValidation
   public String execute() {	  
 	_apiKeys = new ArrayList<ApiKeyModel>();
-    List<String> apiKeys = _userService.getUserIndexKeyValuesForKeyType(UserIndexTypes.API_KEY);
+
+	List<String> apiKeys = _userService.getUserIndexKeyValuesForKeyType(UserIndexTypes.API_KEY);
     for(String key : apiKeys) {
     	ApiKeyModel m = new ApiKeyModel();
     	m.setApiKey(key);
     	m.setMinApiRequestInterval(_userService.getMinApiRequestIntervalForKey(key, true));
     	_apiKeys.add(m);
     }
+    
     return SUCCESS;
   }
 
@@ -80,7 +82,8 @@ public class ApiKeysAction extends OneBusAwayNYCActionSupport implements
 		_model.setMinApiRequestInterval(0L);
 	  
 	saveOrUpdateKey(_model.getApiKey(), _model.getMinApiRequestInterval());
-    return "list";
+
+	return "list";
   }
 
   @Validations(requiredStrings = {@RequiredStringValidator(fieldName = "model.apiKey", message = "Error")})

@@ -72,7 +72,8 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
   @Override
   public String execute() throws Exception {
 
-	ListBean<VehicleStatusBean> vehiclesForAgencyListBean = transitService.getAllVehiclesForAgency("MTA NYCT", System.currentTimeMillis());
+	ListBean<VehicleStatusBean> vehiclesForAgencyListBean = 
+			transitService.getAllVehiclesForAgency("MTA NYCT", System.currentTimeMillis()); // FIXME
 
 	Map<String, VehicleStatusBean> vehicleMap = new HashMap<String, VehicleStatusBean>();
     for (VehicleStatusBean vehicleStatusBean : vehiclesForAgencyListBean.getList()) {
@@ -80,7 +81,8 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
         vehicleMap.put(vehicleId, vehicleStatusBean);
     }	
 	
-	List<NycVehicleManagementStatusBean> nycVehicleStatusBeans = _vehicleTrackingManagementService.getAllVehicleManagementStatusBeans();
+	List<NycVehicleManagementStatusBean> nycVehicleStatusBeans = 
+			_vehicleTrackingManagementService.getAllVehicleManagementStatusBeans();
 
 	String method = request.getMethod().toUpperCase();
 
@@ -99,20 +101,16 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements Servle
 
 		for(NycVehicleManagementStatusBean vehicle : nycVehicleStatusBeans) {
 			String vehicleId = vehicle.getVehicleId();
-			if(disabledVehicles.contains(vehicleId)) {
-		          _vehicleTrackingManagementService.setVehicleStatus(vehicleId, false);
-			} else {
-		          _vehicleTrackingManagementService.setVehicleStatus(vehicleId, true);
-			}
+			_vehicleTrackingManagementService.setVehicleStatus(vehicleId, !disabledVehicles.contains(vehicleId));
 		}
 
 		return "redirect";
     }
 
 	for(NycVehicleManagementStatusBean vehicleBean : nycVehicleStatusBeans) {
-		VehicleModel v = new VehicleModel(vehicleBean, 
-										vehicleMap.get(vehicleBean.getVehicleId()),
-										_configurationService);
+		VehicleModel v = 
+				new VehicleModel(vehicleBean, vehicleMap.get(vehicleBean.getVehicleId()), _configurationService);
+
 		vehicles.add(v);
 	}
     

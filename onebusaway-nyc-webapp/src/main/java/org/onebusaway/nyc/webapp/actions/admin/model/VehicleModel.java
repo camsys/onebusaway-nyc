@@ -43,8 +43,12 @@ public class VehicleModel {
 	}
 
 	public String getVehicleId() {
-		// (OGNL doesn't allow form field names with spaces--so we use a placeholder)
-		return _nycVehicleStatusBean.getVehicleId().replace(" ", "^");
+		return _nycVehicleStatusBean.getVehicleId();
+	}
+
+	// (OGNL doesn't allow form field names with spaces--so we use a placeholder) FIXME
+	public String getVehicleIdAsFormFieldName() {
+		return _nycVehicleStatusBean.getVehicleId().split("_")[1];
 	}
 
 	public String getStatusClass() {

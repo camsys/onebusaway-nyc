@@ -12,8 +12,6 @@ public class ConfigurationModel {
 
   private Integer gpsTimeSkewThreshold;
   
-  public ConfigurationModel() {}
-
   public Integer getNoProgressTimeout() {
     return noProgressTimeout;
   }

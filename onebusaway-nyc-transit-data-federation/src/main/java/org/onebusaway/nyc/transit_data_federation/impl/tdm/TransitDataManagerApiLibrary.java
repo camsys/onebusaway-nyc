@@ -26,9 +26,8 @@ public class TransitDataManagerApiLibrary {
 		 _restApiLibrary.executeApiMethodWithNoResult(baseObject, params);
 	}
 
-	public static ArrayList<JsonObject> getItemsForRequest(String baseObject, String... params) 
-			throws Exception {
-		
+	public static ArrayList<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
+
 		URL requestUrl = _restApiLibrary.buildUrl(baseObject, params);
 		URLConnection conn = requestUrl.openConnection();
 		
@@ -67,6 +66,6 @@ public class TransitDataManagerApiLibrary {
 	    br.close();
 		inStream.close();
 		
-		return null;
+		return output;
 	}
 }
