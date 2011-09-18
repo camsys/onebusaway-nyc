@@ -85,7 +85,7 @@
     <tr>
         <td>Trace Type</td>
         <td><select name="traceType">
-            <option value="NycInferredLocationRecord" selected="true">NycInferredLocationRecord (Tab delimited; previously-generated inference output)</option>
+            <option value="NycTestInferredLocationRecord" selected="true">NycTestInferredLocationRecord (Tab delimited; previously-generated inference output)</option>
             <option value="NycRawLocationRecord">NycRawLocationRecord (Tab delimited; input as it would come from a bus)</option>
         </select></td>
     </tr>

@@ -168,7 +168,7 @@ public class VehicleLocationSimulationServiceImpl implements
     if (traceType.equals("NycRawLocationRecord")) {
       reader.setTokenizerStrategy(new TabTokenizerStrategy());
       reader.readEntities(NycRawLocationRecord.class, traceInputStream);
-    } else if (traceType.equals("NycInferredLocationRecord")) {
+    } else if (traceType.equals("NycTestInferredLocationRecord")) {
       reader.readEntities(NycTestInferredLocationRecord.class, traceInputStream);
     }
     traceInputStream.close();

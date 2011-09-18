@@ -20,7 +20,7 @@ import java.util.Comparator;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
-public class NycInferredLocationRecordDestinationSignCodeComparator implements
+public class NycTestInferredLocationRecordDestinationSignCodeComparator implements
     Comparator<NycTestInferredLocationRecord> {
 
   @Override

@@ -304,7 +304,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
     private NycRawLocationRecord _inferenceRecord;
 
-    private NycTestInferredLocationRecord _nycInferredLocationRecord;
+    private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
     public ProcessingTask(NycRawLocationRecord record) {
       _vehicleId = record.getVehicleId();
@@ -313,7 +313,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
     public ProcessingTask(NycTestInferredLocationRecord record) {
       _vehicleId = record.getVehicleId();
-      _nycInferredLocationRecord = record;
+      _nycTestInferredLocationRecord = record;
     }
 
     @Override
@@ -344,8 +344,8 @@ public class VehicleLocationInferenceServiceImpl implements
     private boolean sendRecord(VehicleInferenceInstance existing) {
       if (_inferenceRecord != null) {
         return existing.handleUpdate(_inferenceRecord);
-      } else if (_nycInferredLocationRecord != null) {
-        return existing.handleBypassUpdate(_nycInferredLocationRecord);
+      } else if (_nycTestInferredLocationRecord != null) {
+        return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
       }
       return false;
     }

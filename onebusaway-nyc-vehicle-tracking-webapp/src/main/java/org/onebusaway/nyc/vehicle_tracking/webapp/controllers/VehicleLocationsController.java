@@ -20,8 +20,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordDestinationSignCodeComparator;
-import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordVehicleComparator;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordDestinationSignCodeComparator;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordVehicleComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
@@ -127,13 +127,13 @@ public class VehicleLocationsController {
   private Comparator<NycTestInferredLocationRecord> getComparatorForSortString(
       String sort) {
     if (sort == null)
-      return new NycInferredLocationRecordVehicleComparator();
+      return new NycTestInferredLocationRecordVehicleComparator();
 
     sort = sort.toLowerCase().trim();
 
     if (sort.equals("dsc"))
-      return new NycInferredLocationRecordDestinationSignCodeComparator();
+      return new NycTestInferredLocationRecordDestinationSignCodeComparator();
 
-    return new NycInferredLocationRecordVehicleComparator();
+    return new NycTestInferredLocationRecordVehicleComparator();
   }
 }
