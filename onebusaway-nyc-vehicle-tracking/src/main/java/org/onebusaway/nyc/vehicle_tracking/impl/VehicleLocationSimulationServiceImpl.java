@@ -303,19 +303,6 @@ public class VehicleLocationSimulationServiceImpl implements
     return summaries;
   }
 
-  private int getRunTripLastTime(RunTripEntry runTrip) {
-	  
-    // this run could end before the last stop
-    int lastTime = _runService.getReliefTimeForTrip(runTrip.getTripEntry().getId());
-
-    if (lastTime <= 0) {
-      List<StopTimeEntry> stopTimes = runTrip.getTripEntry().getStopTimes();
-      StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
-      lastTime = lastStopTime.getDepartureTime();
-    }
-  
-    return lastTime;
-  }
   
   public void generateRunSim(Random random, 
       SimulatorTask task, 
@@ -334,7 +321,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
     RunTripEntry lastRunTrip = rtes.get(rtes.size()-1);
     
-    int lastTime = getRunTripLastTime(lastRunTrip);
+    int lastTime = lastRunTrip.getStopTime();
     
     // this is the last time of the current run-trip
     int runningLastTime = 0;
@@ -354,7 +341,7 @@ public class VehicleLocationSimulationServiceImpl implements
       
       if (scheduleTime >= runningLastTime) {
 	      runTrip = _runService.getNextEntry(runTrip);
-	      runningLastTime = getRunTripLastTime(runTrip);
+	      runningLastTime = runTrip.getStopTime();
       }
 
       if (runTrip == null)
@@ -496,7 +483,13 @@ public class VehicleLocationSimulationServiceImpl implements
 
       String runId = _runService.getInitialRunForTrip(tripId);
 
-      long nowTime = System.currentTimeMillis();
+      int reliefTime = _runService.getReliefTimeForTrip(tripId);
+      
+      // if there is a relief and our schedule time is past the relief
+      // then use that run
+      if (reliefTime > 0 && reliefTime <= scheduleTime)
+        runId = _runService.getReliefRunForTrip(tripId);
+
 	  
       long timestamp = serviceDate + (scheduleTime + shiftStartTime) * 1000;
 

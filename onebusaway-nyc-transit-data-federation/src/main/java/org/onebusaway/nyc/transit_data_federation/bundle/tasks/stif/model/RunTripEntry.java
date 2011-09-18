@@ -1,5 +1,8 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
+import java.util.List;
+
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 /**
@@ -36,6 +39,20 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
       // but I don't think it will break anything.
       return entry.getStopTimes().get(0).getArrivalTime();
     }
+  }
+
+  public int getStopTime() {
+	  
+    // this run could end before the last stop
+    int lastTime = reliefTime;
+
+    if (lastTime <= 0) {
+      List<StopTimeEntry> stopTimes = entry.getStopTimes();
+      StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
+      lastTime = lastStopTime.getDepartureTime();
+    }
+  
+    return lastTime;
   }
 
   @Override
