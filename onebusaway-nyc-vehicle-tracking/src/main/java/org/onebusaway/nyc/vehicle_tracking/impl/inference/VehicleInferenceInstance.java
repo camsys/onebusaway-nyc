@@ -361,9 +361,6 @@ public class VehicleInferenceInstance {
     record.setLastLocationUpdateTime(_lastLocationUpdateTime);
 
     record.setInferenceIsFormal(false); // FIXME
-    record.setInferenceEngineIsPrimary(true); //FIXME
-    record.setInferenceEngineApiUrl("http://ie.staging.obanyc.com"); // FIXME
-    record.setActiveBundleId("FIX_THIS_VALUE_TO_BE_REALS"); // FIXME
 	
     if (_previousObservation != null) {
       NycRawLocationRecord r = _previousObservation.getRecord();

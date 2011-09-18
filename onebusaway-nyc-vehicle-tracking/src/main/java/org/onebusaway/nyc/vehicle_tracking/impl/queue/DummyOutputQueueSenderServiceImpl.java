@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class DummyOutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
+	public boolean isPrimaryInferenceInstance = true;
+	
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
 
@@ -40,13 +42,11 @@ public class DummyOutputQueueSenderServiceImpl implements OutputQueueSenderServi
 
 	@Override
 	public void setIsPrimaryInferenceInstance(boolean isPrimary) {
-		// TODO Auto-generated method stub
-		
+		isPrimaryInferenceInstance = isPrimary;		
 	}
 
 	@Override
 	public boolean getIsPrimaryInferenceInstance() {
-		// TODO Auto-generated method stub
-		return false;
+		return isPrimaryInferenceInstance;
 	}
 }

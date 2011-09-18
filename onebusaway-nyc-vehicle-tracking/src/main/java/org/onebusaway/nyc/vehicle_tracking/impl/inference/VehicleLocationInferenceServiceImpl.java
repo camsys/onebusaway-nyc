@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -327,10 +328,15 @@ public class VehicleLocationInferenceServiceImpl implements
         if (passOnRecord) {
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
         	managementRecord.setVehicleId(_vehicleId.toString());
-        	
+        	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+          	managementRecord.setActiveBundleId("FIX_THIS_VALUE_TO_BE_REALS"); // FIXME
+
+          	InetAddress localhost = InetAddress.getLocalHost();
+        	managementRecord.setInferenceEngineHostname(localhost.getHostName());
+      	
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());
-        	record.setManagementRecord(managementRecord);
+          	record.setManagementRecord(managementRecord);
         	
         	_outputQueueSenderService.enqueue(record);
         }

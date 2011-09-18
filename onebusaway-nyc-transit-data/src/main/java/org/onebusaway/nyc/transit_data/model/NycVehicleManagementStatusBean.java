@@ -44,7 +44,7 @@ public final class NycVehicleManagementStatusBean implements Serializable {
 
   private String lastInferredDestinationSignCode;
 
-  private String inferenceEngineApiUrl;
+  private String inferenceEngineHostname;
   
   private boolean inferenceEngineIsPrimary;
   
@@ -127,12 +127,12 @@ public final class NycVehicleManagementStatusBean implements Serializable {
 	this.inferenceIsFormal = inferenceIsFormal;
   }
 
-public String getInferenceEngineApiUrl() {
-	return inferenceEngineApiUrl;
+public String getInferenceEngineHostname() {
+	return inferenceEngineHostname;
 }
 
-public void setInferenceEngineApiUrl(String inferenceEngineApiUrl) {
-	this.inferenceEngineApiUrl = inferenceEngineApiUrl;
+public void setInferenceEngineHostname(String inferenceEngineHostname) {
+	this.inferenceEngineHostname = inferenceEngineHostname;
 }
 
 public boolean isInferenceEngineIsPrimary() {

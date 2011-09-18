@@ -47,6 +47,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 	
 	private boolean initialized = false;
 
+	public boolean isPrimaryInferenceInstance = true;
+
 	@Autowired
 	private ConfigurationService _configurationService;
 
@@ -153,13 +155,11 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 	@Override
 	public void setIsPrimaryInferenceInstance(boolean isPrimary) {
-		// TODO Auto-generated method stub
-		
+		isPrimaryInferenceInstance = isPrimary;		
 	}
 
 	@Override
 	public boolean getIsPrimaryInferenceInstance() {
-		// TODO Auto-generated method stub
-		return false;
+		return isPrimaryInferenceInstance;
 	}	
 }
