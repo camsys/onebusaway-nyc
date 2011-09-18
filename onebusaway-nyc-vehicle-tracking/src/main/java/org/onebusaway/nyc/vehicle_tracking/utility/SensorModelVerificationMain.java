@@ -53,7 +53,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -189,14 +189,14 @@ public class SensorModelVerificationMain {
 
         System.out.println(trace);
 
-        List<NycInferredLocationRecord> records = readRecords(trace);
+        List<NycTestInferredLocationRecord> records = readRecords(trace);
 
         VehicleState prevState = null;
         Observation prevObs = null;
 
         int index = 1;
 
-        for (NycInferredLocationRecord record : records) {
+        for (NycTestInferredLocationRecord record : records) {
           try {
             Observation obs = getRecordAsObservation(record, prevObs);
             VehicleState state = getRecordAsVehicleState(record, prevState, obs);
@@ -240,7 +240,7 @@ public class SensorModelVerificationMain {
     }
   }
 
-  private List<NycInferredLocationRecord> readRecords(File path)
+  private List<NycTestInferredLocationRecord> readRecords(File path)
       throws CsvEntityIOException, IOException {
 
     InputStream in = new FileInputStream(path);
@@ -249,17 +249,17 @@ public class SensorModelVerificationMain {
 
     CsvEntityReader reader = new CsvEntityReader();
 
-    ListEntityHandler<NycInferredLocationRecord> handler = new ListEntityHandler<NycInferredLocationRecord>();
+    ListEntityHandler<NycTestInferredLocationRecord> handler = new ListEntityHandler<NycTestInferredLocationRecord>();
     reader.addEntityHandler(handler);
 
-    reader.readEntities(NycInferredLocationRecord.class, in);
+    reader.readEntities(NycTestInferredLocationRecord.class, in);
 
     in.close();
 
     return handler.getValues();
   }
 
-  private Observation getRecordAsObservation(NycInferredLocationRecord record,
+  private Observation getRecordAsObservation(NycTestInferredLocationRecord record,
       Observation prevObs) {
 
     String dsc = record.getDsc();
@@ -293,7 +293,7 @@ public class SensorModelVerificationMain {
         lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs);
   }
 
-  private VehicleState getRecordAsVehicleState(NycInferredLocationRecord record,
+  private VehicleState getRecordAsVehicleState(NycTestInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
 
     MotionState motionState = createMotionState(prevState, obs);
@@ -315,7 +315,7 @@ public class SensorModelVerificationMain {
     return _motionModel.updateMotionState(prevState, obs);
   }
 
-  private BlockState createBlockState(NycInferredLocationRecord record,
+  private BlockState createBlockState(NycTestInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
 
     String blockId = record.getActualBlockId();
@@ -342,7 +342,7 @@ public class SensorModelVerificationMain {
         obs.getLastValidDestinationSignCode());
   }
 
-  private JourneyState createJourneyState(NycInferredLocationRecord record,
+  private JourneyState createJourneyState(NycTestInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
     String phase = record.getActualPhase();
     JourneyState journeyState = getTransitionJourneyStates(prevState, obs,

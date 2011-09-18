@@ -31,8 +31,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,16 +92,13 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 	}	
 	
 	@Override
-	public void enqueue(NycInferredLocationRecord r) {
+	public void enqueue(NycQueuedInferredLocationBean r) {
 		try {
-			NycQueuedInferredLocationBean qlr 
-				= RecordLibrary.getNycInferredLocationRecordAsNycQueuedInferredLocationRecord(r);
-			
 			ObjectMapper mapper = new ObjectMapper();		
 		    StringWriter sw = new StringWriter();
 		    MappingJsonFactory jsonFactory = new MappingJsonFactory();
 		    JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-		    mapper.writeValue(jsonGenerator, qlr);
+		    mapper.writeValue(jsonGenerator, r);
 		    sw.close();			
 			
 			_outputBuffer.put(sw.toString());
@@ -138,7 +133,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 		String queueName = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueName", null);
 	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.outputQueuePort", 5566);
 
-	    if(host == null) {
+	    if(host == null || queueName == null || port == null) {
 	    	_log.info("Inference output queue is not attached; output hostname was not available via configuration service.");
 	    	return;
 	    }

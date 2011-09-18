@@ -88,7 +88,7 @@ public class InferenceInputQueueListenerTask {
 					    VehicleLocationRecord vlr = new VehicleLocationRecord();
 					    vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(inferredResult.getVehicleId()));
 					    vlr.setTimeOfRecord(inferredResult.getRecordTimestamp());
-					    vlr.setTimeOfLocationUpdate(inferredResult.getLocationUpdateTimestamp());
+					    vlr.setTimeOfLocationUpdate(inferredResult.getRecordTimestamp());
 					    vlr.setBlockId(AgencyAndIdLibrary.convertFromString(inferredResult.getBlockId()));
 					    vlr.setTripId(AgencyAndIdLibrary.convertFromString(inferredResult.getTripId()));
 					    vlr.setServiceDate(inferredResult.getServiceDate());
@@ -99,7 +99,7 @@ public class InferenceInputQueueListenerTask {
 					    vlr.setStatus(inferredResult.getStatus());
 						
 						_vehicleLocationListener.handleVehicleLocationRecord(vlr);
-						_vehicleTrackingManagementService.updateInternalStateWithRecord(inferredResult);
+						_vehicleTrackingManagementService.handleRecord(inferredResult);
 					} catch(IOException e) {
 						_log.info("Could not de-serialize inferred location record: " + e.getMessage()); 
 						continue;
@@ -123,7 +123,10 @@ public class InferenceInputQueueListenerTask {
 	
 	@PostConstruct
 	public void setup() {
-		_mapper = new ObjectMapper();		
+		_mapper = new ObjectMapper();	
+		
+		// use JAXB annotations so that we pick up anything from the auto-generated XML classes
+		// generated from XSDs
 	    AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
 		_mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
 
@@ -157,7 +160,7 @@ public class InferenceInputQueueListenerTask {
 		ZMQ.Context context = ZMQ.context(1);
 
 		ZMQ.Socket socket = context.socket(ZMQ.SUB);	    	
-	    ZMQ.Poller poller = context.poller(2);
+	    ZMQ.Poller poller = context.poller(1);
 	    poller.register(socket, ZMQ.Poller.POLLIN);
 	    
 	    socket.connect(bind);

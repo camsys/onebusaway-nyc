@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.model.library;
 
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
@@ -38,15 +38,13 @@ public class RecordLibrary {
       return timeReceived;
     return timeDevice;
   }
-
+  
   public static NycQueuedInferredLocationBean 
-  	getNycInferredLocationRecordAsNycQueuedInferredLocationRecord(NycInferredLocationRecord record) {
+  	getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(NycTestInferredLocationRecord record) {
 	
 	NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
 
 	qlr.setRecordTimestamp(record.getTimestamp());	
-	qlr.setLocationUpdateTimestamp(record.getLocationUpdateTimestamp());
-	qlr.setVehicleId(record.getVehicleId().toString());
 	qlr.setDestinationSignCode(record.getDsc());
 	qlr.setServiceDate(record.getInferredServiceDate());
 	qlr.setBlockId(record.getInferredBlockId());
@@ -54,36 +52,36 @@ public class RecordLibrary {
 	qlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
 	qlr.setInferredLatitude(record.getInferredBlockLat());
 	qlr.setInferredLongitude(record.getInferredBlockLon());
-	qlr.setRawLatitude(record.getLat());
-	qlr.setRawLongitude(record.getLon());
+	qlr.setObservedLatitude(record.getLat());
+	qlr.setObservedLongitude(record.getLon());
 	qlr.setPhase(record.getInferredPhase());	
 	qlr.setStatus(record.getInferredStatus());
 	
 	return qlr;
   }
   
-  public static VehicleLocationRecord getNycInferredLocationRecordAsVehicleLocationRecord(
-      NycInferredLocationRecord record) {
+  public static VehicleLocationRecord getNycQueuedInferredLocationBeanAsVehicleLocationRecord(
+	  NycQueuedInferredLocationBean record) {
 
     VehicleLocationRecord vlr = new VehicleLocationRecord();
     
-    vlr.setTimeOfRecord(record.getTimestamp());
-    vlr.setTimeOfLocationUpdate(record.getTimestamp());
-    vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getInferredBlockId()));
-    vlr.setTripId(AgencyAndIdLibrary.convertFromString(record.getInferredTripId()));
-    vlr.setServiceDate(record.getInferredServiceDate());
-    vlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
-    vlr.setCurrentLocationLat(record.getLat());
-    vlr.setCurrentLocationLon(record.getLon());
-    vlr.setPhase(EVehiclePhase.valueOf(record.getInferredPhase()));
-    vlr.setStatus(record.getInferredStatus());
-    vlr.setVehicleId(record.getVehicleId());
+    vlr.setTimeOfRecord(record.getRecordTimestamp());
+    vlr.setTimeOfLocationUpdate(record.getRecordTimestamp());
+    vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getBlockId()));
+    vlr.setTripId(AgencyAndIdLibrary.convertFromString(record.getTripId()));
+    vlr.setServiceDate(record.getServiceDate());
+    vlr.setDistanceAlongBlock(record.getDistanceAlongBlock());
+    vlr.setCurrentLocationLat(record.getInferredLatitude());
+    vlr.setCurrentLocationLon(record.getInferredLongitude());
+    vlr.setPhase(EVehiclePhase.valueOf(record.getPhase()));
+    vlr.setStatus(record.getStatus());
+    vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(record.getVehicleId()));
     
     return vlr;
   }
 
-  public static NycRawLocationRecord getNycInferredLocationRecordAsNycRawLocationRecord(
-      NycInferredLocationRecord record) {
+  public static NycRawLocationRecord getNycTestInferredLocationRecordAsNycRawLocationRecord(
+      NycTestInferredLocationRecord record) {
 
     NycRawLocationRecord vlr = new NycRawLocationRecord();
     

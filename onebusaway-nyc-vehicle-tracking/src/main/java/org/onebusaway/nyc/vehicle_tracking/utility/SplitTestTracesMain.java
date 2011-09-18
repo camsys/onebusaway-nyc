@@ -26,7 +26,7 @@ import java.util.TimeZone;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class SplitTestTracesMain {
 
@@ -48,7 +48,7 @@ public class SplitTestTracesMain {
     reader.addEntityHandler(handler);
 
     for (int i = 0; i < args.length - 1; i++)
-      reader.readEntities(NycInferredLocationRecord.class, new FileReader(args[i]));
+      reader.readEntities(NycTestInferredLocationRecord.class, new FileReader(args[i]));
 
     handler.close();
   }
@@ -63,7 +63,7 @@ public class SplitTestTracesMain {
 
     private EntityHandler _entityWriter = null;
 
-    private NycInferredLocationRecord _prevRecord = null;
+    private NycTestInferredLocationRecord _prevRecord = null;
 
     public OutputHandler(File outputDir) {
       _outputDir = outputDir;
@@ -81,7 +81,7 @@ public class SplitTestTracesMain {
     public void handleEntity(Object bean) {
 
       try {
-        NycInferredLocationRecord record = (NycInferredLocationRecord) bean;
+        NycTestInferredLocationRecord record = (NycTestInferredLocationRecord) bean;
 
         if (outputNeedsRefresh(record)) {
 
@@ -92,7 +92,7 @@ public class SplitTestTracesMain {
           _outputWriter = new FileWriter(outputFile);
 
           CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
-          _entityWriter = factory.createWriter(NycInferredLocationRecord.class,
+          _entityWriter = factory.createWriter(NycTestInferredLocationRecord.class,
               _outputWriter);
         }
 
@@ -105,13 +105,13 @@ public class SplitTestTracesMain {
       }
     }
 
-    private boolean outputNeedsRefresh(NycInferredLocationRecord record) {
+    private boolean outputNeedsRefresh(NycTestInferredLocationRecord record) {
       return _entityWriter == null
           || _prevRecord == null
           || (record.getTimestamp() - _prevRecord.getTimestamp()) > 30 * 60 * 1000;
     }
 
-    private File getOutputFile(NycInferredLocationRecord record) {
+    private File getOutputFile(NycTestInferredLocationRecord record) {
       return new File(_outputDir, record.getVehicleId() + "-"
           + _format.format(new Date(record.getTimestamp())) + ".csv");
     }

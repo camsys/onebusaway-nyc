@@ -2,21 +2,26 @@ package org.onebusaway.nyc.transit_data.model;
 
 import java.io.Serializable;
 
+/**
+ * An "over the wire", queued inferred location result--gets passed between the inference
+ * engine and the TDF/TDS running on all front-end notes.
+ * 
+ * @author jmaki
+ *
+ */
 public class NycQueuedInferredLocationBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-		
+
 	private Long recordTimestamp;
 	
-	private Long locationUpdateTimestamp;
-
 	private String vehicleId;
 
 	private String destinationSignCode;
 	
 	private Long serviceDate;
 	
-	private Long scheduleDeviation;
+	private Integer scheduleDeviation;
 	
 	private String blockId;
 
@@ -30,16 +35,16 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	
 	private Double inferredLongitude;
 
-	private Double rawLatitude;
+	private Double observedLatitude;
 	
-	private Double rawLongitude;
+	private Double observedLongitude;
 
 	private String phase;
 	
 	private String status;
 	
-	private boolean inferenceIsFormal;
-		
+	private NycVehicleManagementStatusBean managementRecord;
+	
 	public NycQueuedInferredLocationBean() {}
 
 	public Long getRecordTimestamp() {
@@ -48,14 +53,6 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	public void setRecordTimestamp(Long recordTimestamp) {
 		this.recordTimestamp = recordTimestamp;
-	}
-
-	public Long getLocationUpdateTimestamp() {
-		return locationUpdateTimestamp;
-	}
-
-	public void setLocationUpdateTimestamp(Long locationUpdateTimestamp) {
-		this.locationUpdateTimestamp = locationUpdateTimestamp;
 	}
 
 	public String getVehicleId() {
@@ -82,11 +79,11 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		this.serviceDate = serviceDate;
 	}
 
-	public Long getScheduleDeviation() {
+	public Integer getScheduleDeviation() {
 		return scheduleDeviation;
 	}
 
-	public void setScheduleDeviation(Long scheduleDeviation) {
+	public void setScheduleDeviation(Integer scheduleDeviation) {
 		this.scheduleDeviation = scheduleDeviation;
 	}
 
@@ -138,20 +135,20 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		this.inferredLongitude = inferredLongitude;
 	}
 
-	public Double getRawLatitude() {
-		return rawLatitude;
+	public Double getObservedLatitude() {
+		return observedLatitude;
 	}
 
-	public void setRawLatitude(Double rawLatitude) {
-		this.rawLatitude = rawLatitude;
+	public void setObservedLatitude(Double observedLatitude) {
+		this.observedLatitude = observedLatitude;
 	}
 
-	public Double getRawLongitude() {
-		return rawLongitude;
+	public Double getObservedLongitude() {
+		return observedLongitude;
 	}
 
-	public void setRawLongitude(Double rawLongitude) {
-		this.rawLongitude = rawLongitude;
+	public void setObservedLongitude(Double observedLongitude) {
+		this.observedLongitude = observedLongitude;
 	}
 
 	public String getPhase() {
@@ -170,15 +167,13 @@ public class NycQueuedInferredLocationBean implements Serializable {
 		this.status = status;
 	}
 
-	public boolean isInferenceIsFormal() {
-		return inferenceIsFormal;
+	public NycVehicleManagementStatusBean getManagementRecord() {
+		return managementRecord;
 	}
 
-	public void setInferenceIsFormal(boolean inferenceIsFormal) {
-		this.inferenceIsFormal = inferenceIsFormal;
+	public void setManagementRecord(NycVehicleManagementStatusBean managementRecord) {
+		this.managementRecord = managementRecord;
 	}
-
-
 }
 
 

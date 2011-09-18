@@ -33,10 +33,11 @@ import lrms_final_09_07.Angle;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_federation.model.VehicleLocationManagementRecord;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
@@ -104,8 +105,9 @@ public class VehicleLocationInferenceServiceImpl implements
     _executorService.execute(new ProcessingTask(record));
   }
 
+  /* BYPASSES INFERENCE!! */
   @Override
-  public void handleNycInferredLocationRecord(NycInferredLocationRecord record) {
+  public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record) {
     _executorService.execute(new ProcessingTask(record));
   }
 
@@ -154,26 +156,26 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public NycInferredLocationRecord getVehicleLocationForVehicle(AgencyAndId vid) {
+  public NycTestInferredLocationRecord getNycTestInferredLocationRecordForVehicle(AgencyAndId vid) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
     if (instance == null)
       return null;
-    NycInferredLocationRecord record = instance.getCurrentState();
-    if( record != null)
-      record.setVehicleId(vid);
+    NycTestInferredLocationRecord record = instance.getCurrentState();
+    if(record != null)
+    	record.setVehicleId(vid);
     return record;
   }
 
   @Override
-  public List<NycInferredLocationRecord> getLatestProcessedVehicleLocationRecords() {
+  public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords() {
 
-    List<NycInferredLocationRecord> records = new ArrayList<NycInferredLocationRecord>();
+    List<NycTestInferredLocationRecord> records = new ArrayList<NycTestInferredLocationRecord>();
 
     for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
       if (instance != null) {
-        NycInferredLocationRecord record = instance.getCurrentState();
+    	NycTestInferredLocationRecord record = instance.getCurrentState();
         if (record != null) {
           record.setVehicleId(vehicleId);
           records.add(record);
@@ -181,31 +183,6 @@ public class VehicleLocationInferenceServiceImpl implements
       } else {
         _log.warn("No VehicleInferenceInstance found: vid=" + vehicleId);
       }
-    }
-
-    return records;
-  }
-
-  @Override
-  public VehicleLocationManagementRecord getVehicleLocationManagementRecordForVehicle(
-      AgencyAndId vid) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
-    if (instance == null)
-      return null;
-    return instance.getCurrentManagementState();
-  }
-
-  @Override
-  public List<VehicleLocationManagementRecord> getVehicleLocationManagementRecords() {
-
-    List<VehicleLocationManagementRecord> records = new ArrayList<VehicleLocationManagementRecord>();
-
-    for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
-      AgencyAndId vehicleId = entry.getKey();
-      VehicleInferenceInstance instance = entry.getValue();
-      VehicleLocationManagementRecord record = instance.getCurrentManagementState();
-      record.setVehicleId(vehicleId);
-      records.add(record);
     }
 
     return records;
@@ -245,7 +222,6 @@ public class VehicleLocationInferenceServiceImpl implements
     return instance.getJourneySummaries();
   }
   
-
   @Override
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
@@ -255,7 +231,6 @@ public class VehicleLocationInferenceServiceImpl implements
     details.setVehicleId(vehicleId);
     return details;
   }
-  
   
   @Override
   public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId) {
@@ -329,14 +304,14 @@ public class VehicleLocationInferenceServiceImpl implements
 
     private NycRawLocationRecord _inferenceRecord;
 
-    private NycInferredLocationRecord _nycInferredLocationRecord;
+    private NycTestInferredLocationRecord _nycInferredLocationRecord;
 
     public ProcessingTask(NycRawLocationRecord record) {
       _vehicleId = record.getVehicleId();
       _inferenceRecord = record;
     }
 
-    public ProcessingTask(NycInferredLocationRecord record) {
+    public ProcessingTask(NycTestInferredLocationRecord record) {
       _vehicleId = record.getVehicleId();
       _nycInferredLocationRecord = record;
     }
@@ -350,10 +325,14 @@ public class VehicleLocationInferenceServiceImpl implements
         boolean passOnRecord = sendRecord(existing);
 
         if (passOnRecord) {
-          NycInferredLocationRecord record = existing.getCurrentState();
-          record.setVehicleId(_vehicleId);
-          
-          _outputQueueSenderService.enqueue(record);
+        	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
+        	managementRecord.setVehicleId(_vehicleId.toString());
+        	
+        	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
+        	record.setVehicleId(_vehicleId.toString());
+        	record.setManagementRecord(managementRecord);
+        	
+        	_outputQueueSenderService.enqueue(record);
         }
       } catch (ProjectionException e) {
     	  // discard
@@ -371,6 +350,4 @@ public class VehicleLocationInferenceServiceImpl implements
       return false;
     }
   }
-
-
 }

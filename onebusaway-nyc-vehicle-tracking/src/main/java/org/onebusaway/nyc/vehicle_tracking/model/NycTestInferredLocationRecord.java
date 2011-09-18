@@ -24,7 +24,7 @@ import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
-public class NycInferredLocationRecord implements Serializable {
+public class NycTestInferredLocationRecord implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -45,13 +45,6 @@ public class NycInferredLocationRecord implements Serializable {
    */
   @CsvField(name = "timestamp", mapping = DateTimeFieldMappingFactory.class)
   private long timestamp;
-
-  /**
-   * Time on bus when record was sent to us.
-   */
-  @CsvField(optional = true, name = "locationUpdateTimestamp", 
-		  mapping = DateTimeFieldMappingFactory.class)
-  private long locationUpdateTimestamp;
   
   @CsvField(optional = true)
   private String dsc;
@@ -158,14 +151,6 @@ public class NycInferredLocationRecord implements Serializable {
 
   public Date getTimestampAsDate() {
 	return new Date(timestamp);
-  }
-
-  public void setLocationUpdateTimestamp(long timestamp) {
-	this.locationUpdateTimestamp = timestamp;
-  }
-
-  public long getLocationUpdateTimestamp() {
-	return locationUpdateTimestamp;
   }
 
   public void setDsc(String dsc) {

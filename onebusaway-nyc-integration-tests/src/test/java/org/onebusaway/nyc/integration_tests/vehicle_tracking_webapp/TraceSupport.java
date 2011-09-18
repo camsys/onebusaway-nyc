@@ -39,7 +39,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class TraceSupport {
 
@@ -87,7 +87,7 @@ public class TraceSupport {
         + "/onebusaway-nyc-vehicle-tracking-webapp" + path;
   }
 
-  public List<NycInferredLocationRecord> getSimulationResults(String taskId)
+  public List<NycTestInferredLocationRecord> getSimulationResults(String taskId)
       throws IOException {
     try {
       URL url = new URL(
@@ -100,19 +100,19 @@ public class TraceSupport {
     }
   }
 
-  public List<NycInferredLocationRecord> readRecords(File trace) throws IOException {
+  public List<NycTestInferredLocationRecord> readRecords(File trace) throws IOException {
     InputStream is = new FileInputStream(trace);
     if (trace.getName().endsWith(".gz"))
       is = new GZIPInputStream(is);
     return readRecords(is);
   }
 
-  public String getRecordsAsString(List<NycInferredLocationRecord> actual) {
+  public String getRecordsAsString(List<NycTestInferredLocationRecord> actual) {
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
     StringWriter out = new StringWriter();
-    EntityHandler handler = factory.createWriter(NycInferredLocationRecord.class,
+    EntityHandler handler = factory.createWriter(NycTestInferredLocationRecord.class,
         out);
-    for (NycInferredLocationRecord record : actual)
+    for (NycTestInferredLocationRecord record : actual)
       handler.handleEntity(record);
     return out.toString();
   }
@@ -154,12 +154,12 @@ public class TraceSupport {
     }
   }
 
-  private List<NycInferredLocationRecord> readRecords(InputStream in)
+  private List<NycTestInferredLocationRecord> readRecords(InputStream in)
       throws IOException {
     CsvEntityReader reader = new CsvEntityReader();
-    EntityCollector<NycInferredLocationRecord> records = new EntityCollector<NycInferredLocationRecord>();
+    EntityCollector<NycTestInferredLocationRecord> records = new EntityCollector<NycTestInferredLocationRecord>();
     reader.addEntityHandler(records);
-    reader.readEntities(NycInferredLocationRecord.class, in);
+    reader.readEntities(NycTestInferredLocationRecord.class, in);
     return records.getValues();
   }
 

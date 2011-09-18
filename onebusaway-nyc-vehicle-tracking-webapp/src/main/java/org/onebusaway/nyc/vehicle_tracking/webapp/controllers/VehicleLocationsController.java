@@ -22,7 +22,7 @@ import java.util.List;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordDestinationSignCodeComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycInferredLocationRecordVehicleComparator;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -46,9 +46,9 @@ public class VehicleLocationsController {
   @RequestMapping("/vehicle-locations.do")
   public ModelAndView index(@RequestParam(required = false) String sort) {
 
-    List<NycInferredLocationRecord> records = _vehicleLocationInferenceService.getLatestProcessedVehicleLocationRecords();
+    List<NycTestInferredLocationRecord> records = _vehicleLocationInferenceService.getLatestProcessedVehicleLocationRecords();
 
-    Comparator<NycInferredLocationRecord> comparator = getComparatorForSortString(sort);
+    Comparator<NycTestInferredLocationRecord> comparator = getComparatorForSortString(sort);
     Collections.sort(records, comparator);
 
     ModelAndView mv = new ModelAndView("vehicle-locations.jspx");
@@ -58,7 +58,7 @@ public class VehicleLocationsController {
 
   @RequestMapping("/vehicle-location.do")
   public ModelAndView vehicleLocation(@RequestParam() String vehicleId) {
-    NycInferredLocationRecord record = _vehicleLocationInferenceService.getVehicleLocationForVehicle(AgencyAndIdLibrary.convertFromString(vehicleId));
+    NycTestInferredLocationRecord record = _vehicleLocationInferenceService.getNycTestInferredLocationRecordForVehicle(AgencyAndIdLibrary.convertFromString(vehicleId));
     return new ModelAndView("json", "record", record);
   }
 
@@ -124,7 +124,7 @@ public class VehicleLocationsController {
   /****
    * 
    ****/
-  private Comparator<NycInferredLocationRecord> getComparatorForSortString(
+  private Comparator<NycTestInferredLocationRecord> getComparatorForSortString(
       String sort) {
     if (sort == null)
       return new NycInferredLocationRecordVehicleComparator();

@@ -18,18 +18,25 @@ package org.onebusaway.nyc.transit_data.services;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
+/**
+ * Service to receive NycVehicleManagementStatusBeans and to interact with the inference engine
+ * infrastructure from the front-end (admin) console.
+ * 
+ * @author jmaki
+ *
+ */
 public interface VehicleTrackingManagementService {
     
-  public void setVehicleStatus(String vehicleId, boolean status);
+  public void setVehicleStatus(String vehicleId, boolean enabled) throws Exception ;
   
-  public void resetVehicleTrackingForVehicleId(String vehicleId);
+  public void resetVehicleTrackingForVehicleId(String vehicleId) throws Exception ;
 
-  public List<NycVehicleStatusBean> getAllVehicleStatuses();
+  public List<NycVehicleManagementStatusBean> getAllVehicleManagementStatusBeans();
 
-  public NycVehicleStatusBean getVehicleStatusForVehicleId(String vehicleId);
+  public NycVehicleManagementStatusBean getVehicleManagementStatusBeanForVehicleId(String vehicleId);
 
-  public void updateInternalStateWithRecord(NycQueuedInferredLocationBean record);
+  public void handleRecord(NycQueuedInferredLocationBean record);
 
 }

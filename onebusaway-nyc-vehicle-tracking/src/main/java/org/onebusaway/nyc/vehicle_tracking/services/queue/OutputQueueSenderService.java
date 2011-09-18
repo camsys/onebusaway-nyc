@@ -15,10 +15,10 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.services.queue;
 
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 public interface OutputQueueSenderService {
 
-	public void enqueue(NycInferredLocationRecord r);
+	public void enqueue(NycQueuedInferredLocationBean r);
 
 }

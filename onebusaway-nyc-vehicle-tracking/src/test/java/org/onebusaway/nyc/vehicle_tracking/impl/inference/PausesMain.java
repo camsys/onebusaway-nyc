@@ -25,7 +25,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class PausesMain {
   public static void main(String[] args) throws CsvEntityIOException,
@@ -35,7 +35,7 @@ public class PausesMain {
 
     CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(new Handler());
-    reader.readEntities(NycInferredLocationRecord.class, new FileInputStream(
+    reader.readEntities(NycTestInferredLocationRecord.class, new FileInputStream(
         args[0]));
 
   }
@@ -49,7 +49,7 @@ public class PausesMain {
     @Override
     public void handleEntity(Object bean) {
 
-      NycInferredLocationRecord record = (NycInferredLocationRecord) bean;
+      NycTestInferredLocationRecord record = (NycTestInferredLocationRecord) bean;
       CoordinatePoint p = new CoordinatePoint(record.getLat(), record.getLon());
 
       if (lastPoint == null) {

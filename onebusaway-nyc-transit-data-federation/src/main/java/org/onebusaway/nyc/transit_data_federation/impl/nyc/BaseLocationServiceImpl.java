@@ -65,7 +65,6 @@ class BaseLocationServiceImpl implements BaseLocationService {
   /****
    * {@link BaseLocationService} Interface
    ****/
-
   @Override
   public String getBaseNameForLocation(CoordinatePoint location) {
     return findNameForLocation(_baseLocationTree, location);
@@ -79,7 +78,6 @@ class BaseLocationServiceImpl implements BaseLocationService {
   /****
    * 
    ****/
-
   private STRtree readRecordsIntoTree(File path) throws IOException,
       FileNotFoundException {
 
@@ -90,13 +88,13 @@ class BaseLocationServiceImpl implements BaseLocationService {
 
     if (!path.exists())
     	return null;    
-//      throw new RuntimeException("Your bundle is missing " + path.getName());
 
     try {
       reader.readEntities(BaseLocationRecord.class, new FileReader(path));
     } catch (CsvEntityIOException e) {
       throw new RuntimeException("Error parsing CSV file " + path, e);
     }
+    
     List<BaseLocationRecord> values = records.getValues();
 
     STRtree baseLocationTree = new STRtree(values.size());

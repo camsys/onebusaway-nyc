@@ -23,6 +23,6 @@ public class RoutesAction extends OneBusAwayNYCActionSupport {
 
   @Override
   public String execute() throws Exception {
-	  return "OK";
+	  throw new Exception("Not implemented.");
   }
 }

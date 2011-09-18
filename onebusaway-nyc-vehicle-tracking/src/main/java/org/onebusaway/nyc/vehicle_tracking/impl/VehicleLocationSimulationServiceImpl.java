@@ -42,7 +42,7 @@ import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
@@ -155,7 +155,7 @@ public class VehicleLocationSimulationServiceImpl implements
       reader.setTokenizerStrategy(new TabTokenizerStrategy());
       reader.readEntities(NycRawLocationRecord.class, traceInputStream);
     } else if (traceType.equals("NycInferredLocationRecord")) {
-      reader.readEntities(NycInferredLocationRecord.class, traceInputStream);
+      reader.readEntities(NycTestInferredLocationRecord.class, traceInputStream);
     }
     traceInputStream.close();
 
@@ -200,7 +200,7 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public List<NycInferredLocationRecord> getResultRecords(int taskId) {
+  public List<NycTestInferredLocationRecord> getResultRecords(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getResults();
@@ -208,7 +208,7 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public List<NycInferredLocationRecord> getSimulationRecords(int taskId) {
+  public List<NycTestInferredLocationRecord> getSimulationRecords(int taskId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getRecords();
@@ -362,7 +362,7 @@ public class VehicleLocationSimulationServiceImpl implements
       CoordinatePoint p = applyLocationNoise(location.getLat(),
           location.getLon(), locationSigma, random);
 
-      NycInferredLocationRecord record = new NycInferredLocationRecord();
+      NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
       record.setDsc(dsc);
       record.setLat(p.getLat());
       record.setLon(p.getLon());

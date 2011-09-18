@@ -34,7 +34,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	private ArrayList<AgencyAndId> getVehicleListForDepot(String depotId) {
 		try {
 			ArrayList<JsonObject> vehicleAssignments = 
-					DataFetcherLibrary.getItemsForRequest("depot", depotId, "vehicles", "list");
+					TransitDataManagerApiLibrary.getItemsForRequest("depot", depotId, "vehicles", "list");
 
 			ArrayList<AgencyAndId> vehiclesForThisDepot = new ArrayList<AgencyAndId>();
 			for(JsonObject depotVehicleAssignment : vehicleAssignments) {

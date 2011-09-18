@@ -64,7 +64,7 @@
 		  <div class="configuration-parameter">
     		<h2>GPS Time Skew Threshold</h2>
     		<p>This is the acceptable amount of time GPS clock and server clock are allowed to deviate before the GPS data is subject to being considered stale.</p>
-    		<s:textfield name="%{gpsTimeSkewThreshold}" value="%{gpsTimeSkewThreshold}" label="GPS Time Skew Threshold" size="3"/>
+    		<s:textfield name="gpsTimeSkewThreshold" value="%{gpsTimeSkewThreshold}" label="GPS Time Skew Threshold" size="3"/>
     		<span>seconds</span>
   		  </div>
   		  <div class="configuration-parameter"></div>

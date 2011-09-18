@@ -17,8 +17,6 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,21 +48,21 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
 	if (dscToTripPath.exists()) {
 		_dscToTripMap = ObjectSerializationLibrary.readObject(dscToTripPath);
 	} else {
-		_dscToTripMap = new HashMap<String, List<AgencyAndId>>();
+		_dscToTripMap = null;
 	}
 
 	File tripToDscPath = _bundle.getTripsForDSCIndex();
 	if (tripToDscPath.exists()) {
 		_tripToDscMap = ObjectSerializationLibrary.readObject(tripToDscPath);
 	} else {
-		_tripToDscMap = new HashMap<AgencyAndId, String>();
+		_tripToDscMap = null;
 	}
 
 	File notInServiceDSCPath = _bundle.getNotInServiceDSCs();
 	if (notInServiceDSCPath.exists()) {
 		_notInServiceDscs = ObjectSerializationLibrary.readObject(notInServiceDSCPath);
 	} else {
-		_notInServiceDscs = new HashSet<String>();
+		_notInServiceDscs = null;
 	}
   }	
 	

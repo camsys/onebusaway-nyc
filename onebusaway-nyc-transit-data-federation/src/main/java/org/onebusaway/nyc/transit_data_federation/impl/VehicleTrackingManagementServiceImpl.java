@@ -15,13 +15,13 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleStatusBean;
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
-import org.onebusaway.nyc.transit_data_federation.model.VehicleLocationManagementRecord;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,50 +31,36 @@ class VehicleTrackingManagementServiceImpl implements VehicleTrackingManagementS
 
   private static Logger _log = LoggerFactory.getLogger(VehicleTrackingManagementServiceImpl.class);
 
-  /****
-   * {@link VehicleTrackingManagementService} Interface
-   ****/
+  HashMap<String, NycVehicleManagementStatusBean> _vehicleIdToVehicleStatusBeanMap = 
+		  new HashMap<String, NycVehicleManagementStatusBean>();
+  
   @Override
-  public void setVehicleStatus(String vehicleId, boolean status) {
+  public void setVehicleStatus(String vehicleId, boolean status) throws Exception {
+	  NycVehicleManagementStatusBean b = _vehicleIdToVehicleStatusBeanMap.get(vehicleId);
+	  _vehicleIdToVehicleStatusBeanMap.put(vehicleId, b);
+
+	  throw new Exception("Not implemented.");
   }
 
   @Override
-  public void resetVehicleTrackingForVehicleId(String vehicleId) {
+  public void resetVehicleTrackingForVehicleId(String vehicleId) throws Exception {
+	  _vehicleIdToVehicleStatusBeanMap.remove(vehicleId);
+
+	  throw new Exception("Not implemented.");
   }
 
   @Override
-  public List<NycVehicleStatusBean> getAllVehicleStatuses() {
-	  return null;
+  public List<NycVehicleManagementStatusBean> getAllVehicleManagementStatusBeans() {
+	  return new ArrayList<NycVehicleManagementStatusBean>(_vehicleIdToVehicleStatusBeanMap.values());
   }
 
   @Override
-  public NycVehicleStatusBean getVehicleStatusForVehicleId(String vehicleId) {
-	  return null;
+  public NycVehicleManagementStatusBean getVehicleManagementStatusBeanForVehicleId(String vehicleId) {
+	  return _vehicleIdToVehicleStatusBeanMap.get(vehicleId);
   }
   
-  public void updateInternalStateWithRecord(NycQueuedInferredLocationBean record) {
-	  // FIXME
+  public void handleRecord(NycQueuedInferredLocationBean record) {
+	  if(record != null)
+		  _vehicleIdToVehicleStatusBeanMap.put(record.getVehicleId(), record.getManagementRecord());  
   }
-  
-  /****
-   * Private Methods
-   ****/
-  private NycVehicleStatusBean getManagementRecordAsStatus(VehicleLocationManagementRecord record) {
-
-	if (record == null)
-      return null;
-    
-    NycVehicleStatusBean bean = new NycVehicleStatusBean();
-    bean.setVehicleId(AgencyAndIdLibrary.convertToString(record.getVehicleId()));
-    bean.setEnabled(record.isEnabled());
-    bean.setLastUpdateTime(record.getLastUpdateTime());
-    bean.setLastGpsTime(record.getLastGpsUpdateTime());
-    bean.setLastGpsLat(record.getLastGpsLat());
-    bean.setLastGpsLon(record.getLastGpsLon());
-    bean.setMostRecentObservedDestinationSignCode(record.getMostRecentObservedDestinationSignCode());
-    bean.setInferredDestinationSignCode(record.getInferredDestinationSignCode());
-
-    return bean;
-  }
-
 }

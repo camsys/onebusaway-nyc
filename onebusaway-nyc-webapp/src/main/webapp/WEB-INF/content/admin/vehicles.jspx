@@ -83,10 +83,10 @@
 					</td>
 					<td>
 						<s:if test="%{disabled}">
-							<input type="checkbox" name="disable_${vehicleIdWithoutAgency}" checked="true" />
+							<input type="checkbox" name="disable_${vehicleId}" checked="true" />
 						</s:if>
 						<s:else>
-							<input type="checkbox" name="disable_${vehicleIdWithoutAgency}"/>
+							<input type="checkbox" name="disable_${vehicleId}"/>
 						</s:else>
 					</td>
 					<td>

@@ -45,7 +45,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	private ArrayList<OperatorAssignmentItem> getOperatorListForServiceDate(String serviceDate) {
 		try {			
 			ArrayList<JsonObject> operatorAssignments = 
-				DataFetcherLibrary.getItemsForRequest("crew", serviceDate, "list");
+				TransitDataManagerApiLibrary.getItemsForRequest("crew", serviceDate, "list");
 
 			ArrayList<OperatorAssignmentItem> output = new ArrayList<OperatorAssignmentItem>();
 			for(JsonObject itemToAdd : operatorAssignments) {

@@ -26,25 +26,29 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private volatile HashMap<String, String> _configurationKeyToValueMap = new HashMap<String,String>();
 
+	private void updateConfigurationMap(String configKey, String configValue) {
+		String currentValue = _configurationKeyToValueMap.get(configKey);
+		
+		_configurationKeyToValueMap.put(configKey, configValue);
+
+		if(currentValue == null || !configValue.equals(currentValue)) {	
+			_log.info("Invoking refresh method for config key " + configKey);
+			_refreshService.refresh(configKey);
+		}
+	}
+	
 	private class UpdateThread extends TimerTask {
 		@Override
 		public void run() {			
 			try {				
 				synchronized(_configurationKeyToValueMap) {
-					ArrayList<JsonObject> configurationItems = DataFetcherLibrary.getItemsForRequest("config", "list");
+					ArrayList<JsonObject> configurationItems = TransitDataManagerApiLibrary.getItemsForRequest("config", "list");
 
 					for(JsonObject configItem : configurationItems) {
 						String configKey = configItem.get("key").getAsString();
-						String configValue = configItem.get("value").getAsString();
-						
-						String currentValue = _configurationKeyToValueMap.get(configKey);
-						
-						if(currentValue == null || !configValue.equals(currentValue)) {
-							_configurationKeyToValueMap.put(configKey, configValue);
-							
-							_log.info("Invoking refresh method for config key " + configKey);
-							_refreshService.refresh(configKey);
-						}
+						String configValue = configItem.get("value").getAsString();						
+
+						updateConfigurationMap(configKey, configValue);
 					}	
 				}
 			} catch(Exception e) {
@@ -97,5 +101,19 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		} catch(NumberFormatException ex) {
 			return defaultValue;
 		}
+	}
+
+	@Override
+	public synchronized void setConfigurationValue(String configurationItemKey, String value) throws Exception {
+		if(value == null || value.equals("null")) {
+			throw new Exception("Configuration values cannot be null (or 'null' as a string!).");
+		}
+		
+		String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
+		if(configurationItemKey != null && currentValue.equals(value))
+			return;
+		
+		TransitDataManagerApiLibrary.executeApiMethodWithNoResult("config", "set", configurationItemKey, value);
+		updateConfigurationMap(configurationItemKey, value);
 	}
 }

@@ -19,8 +19,7 @@ public class NycFederatedTransitDataBundle {
 	  _path = path;
   }
 
-  public NycFederatedTransitDataBundle() {
-  }
+  public NycFederatedTransitDataBundle() {}
 
   public void setPath(File path) {
     _path = path;

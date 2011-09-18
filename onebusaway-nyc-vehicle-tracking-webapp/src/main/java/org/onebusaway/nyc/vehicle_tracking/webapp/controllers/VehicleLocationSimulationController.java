@@ -39,7 +39,7 @@ import javax.servlet.http.HttpSession;
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
@@ -237,7 +237,7 @@ public class VehicleLocationSimulationController {
   public void taskRecords(@RequestParam() int taskId,
       HttpServletResponse response) throws IOException {
 
-    List<NycInferredLocationRecord> records = _vehicleLocationSimulationService.getSimulationRecords(taskId);
+    List<NycTestInferredLocationRecord> records = _vehicleLocationSimulationService.getSimulationRecords(taskId);
     writeRecordsToOutput(response, records);
   }
 
@@ -245,7 +245,7 @@ public class VehicleLocationSimulationController {
   public void taskParticles(@RequestParam() int taskId,
       HttpServletResponse response) throws IOException {
 
-    List<NycInferredLocationRecord> records = _vehicleLocationSimulationService.getResultRecords(taskId);
+    List<NycTestInferredLocationRecord> records = _vehicleLocationSimulationService.getResultRecords(taskId);
     writeRecordsToOutput(response, records);
   }
 
@@ -321,19 +321,19 @@ public class VehicleLocationSimulationController {
    ****/
 
   private void writeRecordsToOutput(HttpServletResponse response,
-      List<NycInferredLocationRecord> records) throws IOException {
+      List<NycTestInferredLocationRecord> records) throws IOException {
 
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
     OutputStreamWriter writer = new OutputStreamWriter(
         response.getOutputStream());
 
-    EntityHandler handler = factory.createWriter(NycInferredLocationRecord.class,
+    EntityHandler handler = factory.createWriter(NycTestInferredLocationRecord.class,
         writer);
 
     if (records == null)
       records = Collections.emptyList();
 
-    for (NycInferredLocationRecord record : records)
+    for (NycTestInferredLocationRecord record : records)
       handler.handleEntity(record);
 
     writer.close();

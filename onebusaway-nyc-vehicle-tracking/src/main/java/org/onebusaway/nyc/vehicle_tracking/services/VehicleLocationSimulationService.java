@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 
@@ -43,9 +43,9 @@ public interface VehicleLocationSimulationService {
   public VehicleLocationDetails getParticleDetails(int taskId,
       int particleId);
   
-  public List<NycInferredLocationRecord> getSimulationRecords(int taskId);
+  public List<NycTestInferredLocationRecord> getSimulationRecords(int taskId);
 
-  public List<NycInferredLocationRecord> getResultRecords(int taskId);
+  public List<NycTestInferredLocationRecord> getResultRecords(int taskId);
 
   public void toggleSimulation(int taskId);
 

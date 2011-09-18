@@ -18,10 +18,9 @@ package org.onebusaway.nyc.vehicle_tracking.services.inference;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_federation.model.VehicleLocationManagementRecord;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 
@@ -31,36 +30,28 @@ public interface VehicleLocationInferenceService {
 	
   public void handleNycRawLocationRecord(NycRawLocationRecord record);
 
-  public void handleNycInferredLocationRecord(NycInferredLocationRecord record);
+  public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record);
 
   public void handleCcLocationReportRecord(CcLocationReport message);
-  
 
+  
   public void resetVehicleLocation(AgencyAndId vid);
 
   public void setVehicleStatus(AgencyAndId vid, boolean enabled);
 
   
-  public NycInferredLocationRecord getVehicleLocationForVehicle(AgencyAndId vid);
+  public NycTestInferredLocationRecord getNycTestInferredLocationRecordForVehicle(AgencyAndId vid);
 
-  public List<NycInferredLocationRecord> getLatestProcessedVehicleLocationRecords();
-
-  public VehicleLocationManagementRecord getVehicleLocationManagementRecordForVehicle(
-      AgencyAndId vid);
-
-  public List<VehicleLocationManagementRecord> getVehicleLocationManagementRecords();
-
+  public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords();
 
   /**
    * These are primarily here for debugging 
    */
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
 
-  public List<Particle> getCurrentSampledParticlesForVehicleId(
-      AgencyAndId vehicleId);
+  public List<Particle> getCurrentSampledParticlesForVehicleId(AgencyAndId vehicleId);
 
-  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
-	  AgencyAndId agencyAndId);
+  public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(AgencyAndId agencyAndId);
 
   public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId);
 

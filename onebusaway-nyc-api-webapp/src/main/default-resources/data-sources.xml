@@ -8,7 +8,7 @@
 
     <!-- Transit Data Service -->
     
-	<!-- This should be a vehicle tracking webapp if developing locally, or a transit data federation webapp -->
+	<!-- Transit data federation webapp: production/staging config -->
     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
@@ -19,6 +19,16 @@
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
     </bean>
 
+	<!-- Vehicle tracking webapp: development config -->
+<!--     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean"> -->
+<!--         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" /> -->
+<!--         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" /> -->
+<!--     </bean> -->
+
+<!--     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean"> -->
+<!--         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/configuration-service"/> -->
+<!--         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" /> -->
+<!--     </bean> -->
 
     <!-- Database Configuration -->
     

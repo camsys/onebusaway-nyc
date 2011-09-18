@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.model.simulator;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class VehicleLocationSimulationSummary {
 
@@ -28,7 +28,7 @@ public class VehicleLocationSimulationSummary {
 
   private int numberOfRecordsTotal;
 
-  private NycInferredLocationRecord mostRecentRecord;
+  private NycTestInferredLocationRecord mostRecentRecord;
 
   private boolean paused = false;
 
@@ -69,11 +69,11 @@ public class VehicleLocationSimulationSummary {
     this.numberOfRecordsTotal = numberOfRecordsTotal;
   }
 
-  public NycInferredLocationRecord getMostRecentRecord() {
+  public NycTestInferredLocationRecord getMostRecentRecord() {
     return mostRecentRecord;
   }
 
-  public void setMostRecentRecord(NycInferredLocationRecord mostRecentRecord) {
+  public void setMostRecentRecord(NycTestInferredLocationRecord mostRecentRecord) {
     this.mostRecentRecord = mostRecentRecord;
   }
 

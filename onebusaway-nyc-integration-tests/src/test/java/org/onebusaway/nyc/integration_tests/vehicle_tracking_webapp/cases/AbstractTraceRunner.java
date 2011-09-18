@@ -31,7 +31,7 @@ import org.onebusaway.collections.Counter;
 import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
 import org.onebusaway.gtfs.csv.EntityHandler;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.TraceSupport;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +99,7 @@ public class AbstractTraceRunner {
   public void test() throws Throwable {
 
     File trace = new File("src/integration-test/resources/traces/" + _trace);
-    List<NycInferredLocationRecord> expected = _traceSupport.readRecords(trace);
+    List<NycTestInferredLocationRecord> expected = _traceSupport.readRecords(trace);
 
     int successfulIterations = 0;
 
@@ -114,7 +114,7 @@ public class AbstractTraceRunner {
 
       while (true) {
 
-        List<NycInferredLocationRecord> actual = _traceSupport.getSimulationResults(taskId);
+        List<NycTestInferredLocationRecord> actual = _traceSupport.getSimulationResults(taskId);
 
         String asString = _traceSupport.getRecordsAsString(actual);
         _log.debug("actual records:\n" + asString);
@@ -163,8 +163,8 @@ public class AbstractTraceRunner {
    * Protected Methods
    ****/
 
-  protected void validateRecords(List<NycInferredLocationRecord> expected,
-      List<NycInferredLocationRecord> actual) {
+  protected void validateRecords(List<NycTestInferredLocationRecord> expected,
+      List<NycTestInferredLocationRecord> actual) {
 
     Counter<EVehiclePhase> expPhaseCounts = new Counter<EVehiclePhase>();
     Counter<EVehiclePhase> actPhaseCounts = new Counter<EVehiclePhase>();
@@ -176,8 +176,8 @@ public class AbstractTraceRunner {
 
     for (int i = 0; i < expected.size(); i++) {
 
-      NycInferredLocationRecord expRecord = expected.get(i);
-      NycInferredLocationRecord actRecord = actual.get(i);
+      NycTestInferredLocationRecord expRecord = expected.get(i);
+      NycTestInferredLocationRecord actRecord = actual.get(i);
 
       EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
       EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getInferredPhase());
@@ -257,16 +257,16 @@ public class AbstractTraceRunner {
     }
   }
 
-  protected void writeResultsOnAssertionError(List<NycInferredLocationRecord> actual) {
+  protected void writeResultsOnAssertionError(List<NycTestInferredLocationRecord> actual) {
     try {
       File outputFile = File.createTempFile(getClass().getName() + "-",
           "-results.csv");
       CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
       Writer out = new FileWriter(outputFile);
-      EntityHandler handler = factory.createWriter(NycInferredLocationRecord.class,
+      EntityHandler handler = factory.createWriter(NycTestInferredLocationRecord.class,
           out);
 
-      for (NycInferredLocationRecord record : actual)
+      for (NycTestInferredLocationRecord record : actual)
         handler.handleEntity(record);
 
       out.close();

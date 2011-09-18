@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.onebusaway.gtfs.csv.schema.BeanWrapper;
 import org.onebusaway.gtfs.csv.schema.BeanWrapperFactory;
 import org.onebusaway.gtfs.csv.schema.FieldMapping;
-import org.onebusaway.nyc.vehicle_tracking.model.NycInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
 public class DateTimeFieldMappingFactoryTest {
@@ -35,9 +35,9 @@ public class DateTimeFieldMappingFactoryTest {
 
     DateTimeFieldMappingFactory factory = new DateTimeFieldMappingFactory();
     FieldMapping mapping = factory.createFieldMapping(null,
-        NycInferredLocationRecord.class, "dt", "timestamp", Long.class, true);
+        NycTestInferredLocationRecord.class, "dt", "timestamp", Long.class, true);
 
-    NycInferredLocationRecord record = new NycInferredLocationRecord();
+    NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setTimestamp(1284377940000L);
     BeanWrapper obj = BeanWrapperFactory.wrap(record);
     Map<String, Object> csvValues = new HashMap<String, Object>();

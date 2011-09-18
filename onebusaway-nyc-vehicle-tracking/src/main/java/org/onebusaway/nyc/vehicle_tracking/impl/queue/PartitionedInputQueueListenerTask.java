@@ -158,7 +158,7 @@ public class PartitionedInputQueueListenerTask {
 		String queueName = _configurationService.getConfigurationValueAsString("inference-engine.inputQueueName", null);
 	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.inputQueuePort", 5563);
 
-	    if(host == null) {
+	    if(host == null || queueName == null || port == null) {
 	    	_log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
 	    	return;
 	    }
