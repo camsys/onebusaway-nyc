@@ -70,16 +70,21 @@
 
 	<!-- Input Queue Configuration -->
 
-  	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask" />
+  	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask">
+		<property name="depotPartitionKey" value="JG"/>
+  	</bean>
 
 	<!-- Output Queue Configuration -->
 
 	<!-- This option sends inference output to a TDM configured queue for pickup by an external TDF/TDS -->
-<!--   	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.OutputQueueSenderServiceImpl" /> -->
+<!--    	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.OutputQueueSenderServiceImpl"> -->
+<!--    	  	<property name="isPrimaryInferenceInstance" value="true"/> -->
+<!--    	</bean> -->
 
 	<!-- This option sends inference output to a local running TDF/TDS -->
-  	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl" />
-
+  	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
+  		<property name="isPrimaryInferenceInstance" value="true"/>
+	</bean>
 
 
 	<!-- Other Stuff: -->

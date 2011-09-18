@@ -340,7 +340,8 @@ public class VehicleInferenceInstance {
     if (blockState != null) {
         // sched. dev.
         ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-        int deviation = (int) ((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
+        int deviation = 
+        		(int)((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
         record.setScheduleDeviation(deviation);
     
         // distance along trip
@@ -352,9 +353,7 @@ public class VehicleInferenceInstance {
 	return record;
   }
   
-  
   public synchronized NycVehicleManagementStatusBean getCurrentManagementState() {
-
 	NycVehicleManagementStatusBean record = new NycVehicleManagementStatusBean();
     
 	record.setInferenceIsEnabled(_enabled);
@@ -397,7 +396,6 @@ public class VehicleInferenceInstance {
     return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
   }
 
-  
   public synchronized List<Particle> getCurrentParticles() {
     return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
   }

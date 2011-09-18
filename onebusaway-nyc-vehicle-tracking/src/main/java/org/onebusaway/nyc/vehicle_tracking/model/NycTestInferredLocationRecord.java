@@ -53,6 +53,9 @@ public class NycTestInferredLocationRecord implements Serializable {
    * Inferred Values
    ****/
   @CsvField(optional = true)
+  private String inferredRunId;
+
+  @CsvField(optional = true)
   private String inferredBlockId;
 
   @CsvField(optional = true)
@@ -85,6 +88,9 @@ public class NycTestInferredLocationRecord implements Serializable {
   /****
    * Ground Truth Information
    ****/
+  @CsvField(optional = true)
+  private String actualRunId;
+
   @CsvField(optional = true)
   private String actualBlockId;
 
@@ -164,6 +170,14 @@ public class NycTestInferredLocationRecord implements Serializable {
   /****
    * Inferred Values
    ****/
+  public String getInferredRunId() {
+    return inferredRunId;
+  }
+
+  public void setInferredRunId(String inferredRunId) {
+    this.inferredRunId = inferredRunId;
+  }
+
   public String getInferredBlockId() {
     return inferredBlockId;
   }
@@ -265,6 +279,7 @@ public class NycTestInferredLocationRecord implements Serializable {
   }
 
   public void clearInferredValues() {
+    inferredRunId = null;
     inferredBlockId = null;
     inferredBlockLat = Double.NaN;
     inferredBlockLon = Double.NaN;
@@ -280,6 +295,14 @@ public class NycTestInferredLocationRecord implements Serializable {
   /****
    * Ground Truth Data
    ****/
+  public String getActualRunId() {
+    return actualRunId;
+  }
+
+  public void setActualRunId(String actualRunId) {
+    this.actualRunId = actualRunId;
+  }
+
   public String getActualBlockId() {
     return actualBlockId;
   }

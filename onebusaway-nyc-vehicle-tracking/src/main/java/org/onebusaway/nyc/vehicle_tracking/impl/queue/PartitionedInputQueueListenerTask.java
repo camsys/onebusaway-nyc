@@ -44,7 +44,7 @@ public class PartitionedInputQueueListenerTask {
 
 	private static Logger _log = LoggerFactory.getLogger(PartitionedInputQueueListenerTask.class);
 	
-	private static String depotPartitionKey = "JG";
+	private String _depotPartitionKey = null;
 		
 	private ExecutorService _executorService = null;
 	
@@ -67,7 +67,7 @@ public class PartitionedInputQueueListenerTask {
 	private void filterMessages(String address, String contents) {
 	
 		ArrayList<AgencyAndId> vehicleList = 
-				_vehicleAssignmentService.getAssignedVehicleIdsForDepot(depotPartitionKey);
+				_vehicleAssignmentService.getAssignedVehicleIdsForDepot(_depotPartitionKey);
 
 		CcLocationReport message = null;
 		try {
@@ -150,7 +150,7 @@ public class PartitionedInputQueueListenerTask {
 			"inference-engine.inputQueuePort", "inference-engine.inputQueueName"})
 	public void startListenerThread() {
 		if(initialized == true) {
-			_log.warn("Configuration service tried to reconfigure queue reader; this service is not reconfigurable once started.");
+			_log.warn("Configuration service tried to reconfigure inference input queue service; this service is not reconfigurable once started.");
 			return;
 		}
 		
@@ -178,5 +178,13 @@ public class PartitionedInputQueueListenerTask {
 
 		_log.debug("Inference input queue is listening on " + bind);
 		initialized = true;
+	}
+
+	public String getDepotPartitionKey() {
+		return _depotPartitionKey;
+	}
+
+	public void setDepotPartitionKey(String depotPartitionKey) {
+		_depotPartitionKey = depotPartitionKey;
 	}	
 }

@@ -37,4 +37,16 @@ public class DummyOutputQueueSenderServiceImpl implements OutputQueueSenderServi
 		_vehicleLocationListener.handleVehicleLocationRecord(vlr);
 		_vehicleTrackingManagementService.handleRecord(r);
 	}
+
+	@Override
+	public void setIsPrimaryInferenceInstance(boolean isPrimary) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean getIsPrimaryInferenceInstance() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

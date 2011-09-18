@@ -44,6 +44,16 @@
             <scope>test</scope>
         </dependency>
 
+        <!--
+        <dependency>
+          <groupId>ssj</groupId>
+          <artifactId>ssj</artifactId>
+          <scope>runtime</scope>
+          <version>2.4</version>
+        </dependency>
+        -->
+
+
         <dependency>
         	<groupId>commons-lang</groupId>
         	<artifactId>commons-lang</artifactId>

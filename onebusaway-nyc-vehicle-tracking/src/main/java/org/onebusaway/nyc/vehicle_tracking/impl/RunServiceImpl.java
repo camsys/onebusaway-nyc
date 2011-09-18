@@ -88,15 +88,19 @@ public class RunServiceImpl implements RunService {
 
     for (Map.Entry<AgencyAndId, RunData> entry : runDataByTrip.entrySet()) {
       TripEntry trip = transitGraph.getTripEntryForId(entry.getKey());
-      RunData runData = entry.getValue();
-
-      ReliefState initialReliefState = runData.hasRelief()
-          ? ReliefState.BEFORE_RELIEF : ReliefState.NO_RELIEF;
-      processTripEntry(trip, runData.initialRun, runData.reliefTime,
-          initialReliefState);
-      if (runData.hasRelief()) {
-        processTripEntry(trip, runData.reliefRun, runData.reliefTime,
-            ReliefState.AFTER_RELIEF);
+      if (trip != null) {
+	      RunData runData = entry.getValue();
+	
+	      ReliefState initialReliefState = runData.hasRelief()
+	          ? ReliefState.BEFORE_RELIEF : ReliefState.NO_RELIEF;
+	      processTripEntry(trip, runData.initialRun, runData.reliefTime,
+	          initialReliefState);
+	      if (runData.hasRelief()) {
+	        processTripEntry(trip, runData.reliefRun, runData.reliefTime,
+	            ReliefState.AFTER_RELIEF);
+	      }
+      } else {
+    	  _log.warn("null trip found for entry=" + entry.toString());
       }
     }
     // sort RTEs by time
@@ -176,6 +180,10 @@ public class RunServiceImpl implements RunService {
 
         BlockTripEntry trip = blockLocation.getActiveTrip();
         List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip());
+        
+        if (bothTrips == null || bothTrips.isEmpty())
+        	continue;
+        
         RunTripEntry firstTrip = bothTrips.get(0);
         if (bothTrips.size() == 1) {
           return firstTrip;
@@ -205,7 +213,12 @@ public class RunServiceImpl implements RunService {
           blockConfig, scheduleTime);
 
       BlockTripEntry trip = blockLocation.getActiveTrip();
-      out.addAll(entriesByTrip.get(trip.getTrip()));
+      List<RunTripEntry> rtes = entriesByTrip.get(trip.getTrip());
+
+      if (rtes == null)
+        continue;
+
+      out.addAll(rtes);
     }
 
     return out;

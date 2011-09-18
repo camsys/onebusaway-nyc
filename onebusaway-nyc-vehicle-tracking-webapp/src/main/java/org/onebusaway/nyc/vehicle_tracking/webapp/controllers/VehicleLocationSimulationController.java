@@ -295,6 +295,7 @@ public class VehicleLocationSimulationController {
       @RequestParam String blockId,
       @RequestParam long serviceDate,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
+      @RequestParam(required = false, defaultValue = "false") boolean isRunDriven,
       @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
       @RequestParam String properties) throws IOException {
 
@@ -306,7 +307,7 @@ public class VehicleLocationSimulationController {
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(blockId);
 
     _vehicleLocationSimulationService.addSimulationForBlockInstance(id,
-        serviceDate, time.getTime(), bypassInference, fillActualProperties,
+        serviceDate, time.getTime(), bypassInference, isRunDriven, fillActualProperties,
         props);
 
     Map<String, Object> model = new HashMap<String, Object>();

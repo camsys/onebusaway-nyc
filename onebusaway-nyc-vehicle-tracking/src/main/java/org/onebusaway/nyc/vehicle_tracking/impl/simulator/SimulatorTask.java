@@ -456,6 +456,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     rr.setVehicleId(_vehicleId);
 
     if (_fillActualProperties) {
+      rr.setActualRunId(rr.getInferredRunId());
       rr.setActualBlockId(rr.getInferredBlockId());
       rr.setActualTripId(rr.getInferredTripId());
       rr.setActualBlockLat(rr.getInferredBlockLat());

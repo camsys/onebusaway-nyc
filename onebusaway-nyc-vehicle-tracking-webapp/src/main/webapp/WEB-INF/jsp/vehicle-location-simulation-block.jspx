@@ -46,6 +46,13 @@ Location Simulation Console</a></p>
         </td>
     </tr>
     <tr>
+        <td>Run-driven Simulation:</td>
+        <td>
+        <p><input type="checkbox" name="isRunDriven" /> -
+        Set this simulation to be driven by a run selected from the chosen block.</p>
+        </td>
+    </tr>
+    <tr>
         <td>Parameters:</td>
         <td><textarea name="properties" rows="10" cols="40"><jsp:text></jsp:text></textarea></td>
     </tr>

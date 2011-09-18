@@ -39,7 +39,9 @@ public interface VehicleLocationInferenceService {
 
   public void setVehicleStatus(AgencyAndId vid, boolean enabled);
 
-  
+  /**
+   * Used by the simulator
+   */
   public NycTestInferredLocationRecord getNycTestInferredLocationRecordForVehicle(AgencyAndId vid);
 
   public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords();

@@ -42,6 +42,7 @@ table td {
             <td>Location</td>
             <td><a href="vehicle-locations.do?sort=dsc">DSC</a></td>
             <td>Phase</td>
+            <td>RunId</td>
             <td>BlockId</td>
             <td>TripId</td>
             <td>ServiceDate</td>
@@ -65,6 +66,7 @@ table td {
                 <td><c:out value="${vp.lat}" />,<c:out value="${vp.lon}" /></td>
                 <td><c:out value="${vp.dsc}" /></td>
                 <td><c:out value="${vp.inferredPhase}" /></td>
+                <td><c:out value="${vp.inferredRunId}" /></td>
                 <td><c:out value="${vp.inferredBlockId}" /></td>
                 <td><c:out value="${vp.inferredTripId}" /></td>
                 <td><c:out value="${vp.inferredServiceDate}" /></td>

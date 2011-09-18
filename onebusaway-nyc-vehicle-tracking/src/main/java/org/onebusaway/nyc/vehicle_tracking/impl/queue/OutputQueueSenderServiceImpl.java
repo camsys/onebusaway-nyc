@@ -149,5 +149,17 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 		_log.debug("Inference output queue is sending to " + bind);
 		initialized = true;
+	}
+
+	@Override
+	public void setIsPrimaryInferenceInstance(boolean isPrimary) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean getIsPrimaryInferenceInstance() {
+		// TODO Auto-generated method stub
+		return false;
 	}	
 }

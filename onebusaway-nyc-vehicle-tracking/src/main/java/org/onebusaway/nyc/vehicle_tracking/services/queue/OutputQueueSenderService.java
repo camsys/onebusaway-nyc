@@ -21,4 +21,8 @@ public interface OutputQueueSenderService {
 
 	public void enqueue(NycQueuedInferredLocationBean r);
 
+	public void setIsPrimaryInferenceInstance(boolean isPrimary);
+
+	public boolean getIsPrimaryInferenceInstance();
+	
 }
