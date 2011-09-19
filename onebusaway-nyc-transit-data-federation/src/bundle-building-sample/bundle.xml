@@ -19,13 +19,18 @@
     <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
         <property name="bundles">
             <list>
-                <ref bean="gtfs" />
+                <ref bean="gtfs-si" />
+                <ref bean="gtfs-b63" />
             </list>
         </property>
     </bean>
 
-    <bean id="gtfs" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
-        <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/gtfs.zip" />
+    <bean id="gtfs-si" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/gtfs-si.zip" />
+    </bean>
+
+    <bean id="gtfs-b63" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+        <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/gtfs-b63.zip" />
     </bean>
 
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">

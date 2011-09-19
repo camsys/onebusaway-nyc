@@ -23,8 +23,10 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycRefreshableResources;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,7 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   private NycFederatedTransitDataBundle _bundle;
   
   @PostConstruct
+  @Refreshable(dependsOn = NycRefreshableResources.DESTINATION_SIGN_CODE_DATA)
   public void setup() throws IOException, ClassNotFoundException {
 	File dscToTripPath = _bundle.getDSCForTripIndex();
 	if (dscToTripPath.exists()) {
