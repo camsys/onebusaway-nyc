@@ -43,6 +43,7 @@
 <!--     </bean> -->
 
 
+
 	<!-- Vehicle tracking webapp: development config -->
     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
@@ -58,20 +59,14 @@
         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/configuration-service"/>
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
     </bean>
+    
 
 
     <!-- Database Configuration -->
     
-<!--     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
-<!--         <property name="driverClassName" value="org.hsqldb.jdbcDriver" /> -->
-<!--         <property name="url" value="jdbc:hsqldb:file:${bundlePath}/org_onebusaway_database" /> -->
-<!--         <property name="username" value="sa" /> -->
-<!--         <property name="password" value="" /> -->
-<!--     </bean> -->
-
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
+        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc2" />
         <property name="username" value="postgres" />
         <property name="password" value="changeme" />
     </bean>
@@ -80,7 +75,6 @@
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-<!--                 <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop> -->
                 <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
             </props> 
         </property> 
@@ -89,11 +83,12 @@
     <alias name="dataSource" alias="mutableDataSource" />
   
 
+
 	<!-- Other Stuff: -->
 
 	<bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.GoogleGeocoderImpl" />
     
-    <bean id="serviceArea" class="org.onebusaway.presentation.impl.DefaultServiceAreaServiceImpl">
+    <bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
         <property name="defaultBounds">
             <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
                 <property name="minLat" value="40.57963926492829" />
@@ -102,6 +97,7 @@
                 <property name="maxLon" value="-73.69785546072389" />
             </bean>
         </property>
+		<property name="calculateDefaultBoundsFromAgencyCoverage" value="false"/>        
     </bean>
         
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
