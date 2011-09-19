@@ -26,7 +26,7 @@
 
     <!-- Transit Data Service -->
     
-	<!-- Transit data federation webapp: production/staging config -->
+	<!-- Transit data federation webapp as TDS: production/staging config -->
 <!--     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean"> -->
 <!--         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp/remoting/transit-data-service" /> -->
 <!--         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" /> -->
@@ -42,9 +42,7 @@
 <!--         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" /> -->
 <!--     </bean> -->
 
-
-
-	<!-- Vehicle tracking webapp: development config -->
+	<!-- Vehicle tracking webapp as TDS: development config -->
     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
@@ -66,7 +64,7 @@
     
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc2" />
+        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
         <property name="username" value="postgres" />
         <property name="password" value="changeme" />
     </bean>

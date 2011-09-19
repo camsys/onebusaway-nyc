@@ -16,22 +16,6 @@
       <property name="path" value="${bundlePath}" />
     </bean>
 
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:file:${bundlePath}/org_onebusaway_database" />
-        <property name="username" value="sa" />
-        <property name="password" value="" />
-    </bean>
-
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-            </props> 
-        </property> 
-    </bean> 
-
     <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
         <property name="bundles">
             <list>
