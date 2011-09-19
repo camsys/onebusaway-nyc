@@ -168,8 +168,10 @@ public class RunServiceImpl implements RunService {
     for (RunTripEntry entry : entriesByRun.get(runId)) {
       // all the trips for this run
       BlockEntry block = entry.getTripEntry().getBlock();
+      long timeFrom = time - 30 * 60 * 1000;
+      long timeTo = time + 30 * 60 * 1000;
       List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocks(
-          block.getId(), time, time);
+          block.getId(), timeFrom, timeTo);
       for (BlockInstance blockInstance : activeBlocks) {
         long serviceDate = blockInstance.getServiceDate();
         int scheduleTime = (int) ((time - serviceDate) / 1000);
@@ -179,11 +181,10 @@ public class RunServiceImpl implements RunService {
             blockConfig, scheduleTime);
 
         BlockTripEntry trip = blockLocation.getActiveTrip();
-        List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip());
+        List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip().getId());
         
         if (bothTrips == null || bothTrips.isEmpty())
         	continue;
-        
         RunTripEntry firstTrip = bothTrips.get(0);
         if (bothTrips.size() == 1) {
           return firstTrip;
@@ -213,7 +214,7 @@ public class RunServiceImpl implements RunService {
           blockConfig, scheduleTime);
 
       BlockTripEntry trip = blockLocation.getActiveTrip();
-      List<RunTripEntry> rtes = entriesByTrip.get(trip.getTrip());
+      List<RunTripEntry> rtes = entriesByTrip.get(trip.getTrip().getId());
 
       if (rtes == null)
         continue;
