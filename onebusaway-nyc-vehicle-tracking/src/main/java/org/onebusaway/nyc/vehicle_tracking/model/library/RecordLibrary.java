@@ -45,7 +45,6 @@ public class RecordLibrary {
 	NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
 
 	qlr.setRecordTimestamp(record.getTimestamp());	
-	qlr.setDestinationSignCode(record.getDsc());
 	qlr.setServiceDate(record.getInferredServiceDate());
 	qlr.setBlockId(record.getInferredBlockId());
 	qlr.setTripId(record.getInferredTripId());
@@ -71,8 +70,8 @@ public class RecordLibrary {
     vlr.setTripId(AgencyAndIdLibrary.convertFromString(record.getTripId()));
     vlr.setServiceDate(record.getServiceDate());
     vlr.setDistanceAlongBlock(record.getDistanceAlongBlock());
-    vlr.setCurrentLocationLat(record.getInferredLatitude());
-    vlr.setCurrentLocationLon(record.getInferredLongitude());
+    vlr.setCurrentLocationLat(record.getObservedLatitude());
+    vlr.setCurrentLocationLon(record.getObservedLongitude());
     vlr.setPhase(EVehiclePhase.valueOf(record.getPhase()));
     vlr.setStatus(record.getStatus());
     vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(record.getVehicleId()));

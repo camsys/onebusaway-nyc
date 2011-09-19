@@ -53,6 +53,7 @@ import com.jhlabs.map.proj.ProjectionException;
 
 import tcip_3_0_5_local.NMEA;
 import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 
 @Component
 public class VehicleLocationInferenceServiceImpl implements
@@ -106,7 +107,6 @@ public class VehicleLocationInferenceServiceImpl implements
     _executorService.execute(new ProcessingTask(record));
   }
 
-  /* BYPASSES INFERENCE!! */
   @Override
   public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record) {
     _executorService.execute(new ProcessingTask(record));
@@ -131,11 +131,21 @@ public class VehicleLocationInferenceServiceImpl implements
 	  r.setDestinationSignCode(message.getDestSignCode().toString());
 	  r.setDeviceId(message.getManufacturerData());
 	  
-	  AgencyAndId vid = new AgencyAndId(
+	  AgencyAndId vehicleId = new AgencyAndId(
 			  message.getVehicle().getAgencydesignator(), 
-			  message.getVehicle().getVehicleId() + "");
-	  r.setVehicleId(vid);
+			  Long.toString(message.getVehicle().getVehicleId()));
+	  r.setVehicleId(vehicleId);
 
+	  r.setOperatorId(message.getOperatorID().getDesignator());
+	  r.setRunId(message.getRunID().getDesignator());
+	  r.setRunRouteId(message.getRouteID().getRouteDesignator());
+
+	  EmergencyCodes emergencyCodes = message.getEmergencyCodes();
+	  if(emergencyCodes != null)
+		  r.setEmergencyFlag(true);
+	  else
+		  r.setEmergencyFlag(false);
+	  
 	  tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
 	  if(gpsData != null) {
 		  NMEA nemaSentences = gpsData.getNMEA();

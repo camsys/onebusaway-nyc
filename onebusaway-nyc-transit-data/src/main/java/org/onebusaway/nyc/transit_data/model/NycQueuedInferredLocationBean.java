@@ -16,8 +16,6 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	private Long recordTimestamp;
 	
 	private String vehicleId;
-
-	private String destinationSignCode;
 	
 	private Long serviceDate;
 	
@@ -61,14 +59,6 @@ public class NycQueuedInferredLocationBean implements Serializable {
 
 	public void setVehicleId(String vehicleId) {
 		this.vehicleId = vehicleId;
-	}
-
-	public String getDestinationSignCode() {
-		return destinationSignCode;
-	}
-
-	public void setDestinationSignCode(String destinationSignCode) {
-		this.destinationSignCode = destinationSignCode;
 	}
 
 	public Long getServiceDate() {

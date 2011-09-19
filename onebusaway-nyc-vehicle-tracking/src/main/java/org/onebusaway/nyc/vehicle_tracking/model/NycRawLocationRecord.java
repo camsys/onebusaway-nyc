@@ -26,7 +26,7 @@ public class NycRawLocationRecord {
   private long id;
 
   /**
-   * The time on the bus when record was sent to us.
+   * The time on the bus when this record was sent to us.
    */
   private long time;
 
@@ -45,6 +45,21 @@ public class NycRawLocationRecord {
   @CsvField(name = "destinationsigncode")
   private String destinationSignCode;
 
+  @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
+  private AgencyAndId vehicleId;
+
+  @CsvField(name = "operator")
+  private String operatorId;
+
+  @CsvField(name = "run")
+  private String runId;
+
+  @CsvField(name = "runroute")
+  private String runRouteId;
+
+  @CsvField(name = "emergency", optional = true)
+  private boolean emergencyFlag;
+  
   @CsvField(name = "deviceid")
   private String deviceId;
 
@@ -55,9 +70,7 @@ public class NycRawLocationRecord {
   @CsvField(optional = true)
   private String rmc;
 
-  @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
-  private AgencyAndId vehicleId;
-
+  /* raw data as received from bus hardware */
   @CsvField(name = "rawdata", optional = true)
   private String rawData;
 
@@ -118,11 +131,43 @@ public class NycRawLocationRecord {
   }
 
   public void setVehicleId(AgencyAndId vehicleId) {
-    this.vehicleId = vehicleId;
+	  this.vehicleId = vehicleId;
+  }
+
+  public String getOperatorId() {
+	  return operatorId;
+  }
+
+  public void setOperatorId(String operatorId) {
+	  this.operatorId = operatorId;
+  }
+
+  public String getRunId() {
+	  return runId;
+  }
+
+  public void setRunId(String runId) {
+	  this.runId = runId;
+  }
+
+  public String getRunRouteId() {
+	  return runRouteId;
+  }
+
+  public void setRunRouteId(String runRouteId) {
+	  this.runRouteId = runRouteId;
+  }
+
+  public boolean isEmergencyFlag() {
+	  return emergencyFlag;
+  }
+
+  public void setEmergencyFlag(boolean emergencyFlag) {
+	  this.emergencyFlag = emergencyFlag;
   }
 
   public void setGga(String gga) {
-    this.gga = gga;
+	  this.gga = gga;
   }
 
   public String getGga() {
