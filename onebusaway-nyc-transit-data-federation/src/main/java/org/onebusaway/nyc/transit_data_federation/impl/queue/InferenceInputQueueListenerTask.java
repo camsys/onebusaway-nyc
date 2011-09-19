@@ -45,7 +45,7 @@ public class InferenceInputQueueListenerTask {
 	
 	private ExecutorService _executorService = null;
 	
-	private ObjectMapper _mapper;
+	private ObjectMapper _mapper = new ObjectMapper();
 	
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
@@ -56,7 +56,7 @@ public class InferenceInputQueueListenerTask {
 	@Autowired
 	private ConfigurationService _configurationService;
 		
-	private boolean initialized = false;	
+	private boolean _initialized = false;	
 	
 	private class ReadThread implements Runnable {
 
@@ -123,8 +123,6 @@ public class InferenceInputQueueListenerTask {
 	
 	@PostConstruct
 	public void setup() {
-		_mapper = new ObjectMapper();	
-		
 		// use JAXB annotations so that we pick up anything from the auto-generated XML classes
 		// generated from XSDs
 	    AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
@@ -141,7 +139,7 @@ public class InferenceInputQueueListenerTask {
 	
 	@Refreshable(dependsOn = {"tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
 	public void startListenerThread() {
-		if(initialized == true) {
+		if(_initialized == true) {
 			_log.warn("Configuration service tried to reconfigure TDS input queue reader; this service is not reconfigurable once started.");
 			return;
 		}
@@ -169,6 +167,6 @@ public class InferenceInputQueueListenerTask {
 	    _executorService.execute(new ReadThread(socket, poller));
 	    	    
 		_log.debug("TDS input queue is listening on " + bind);
-		initialized = true;
+		_initialized = true;
 	}	
 }

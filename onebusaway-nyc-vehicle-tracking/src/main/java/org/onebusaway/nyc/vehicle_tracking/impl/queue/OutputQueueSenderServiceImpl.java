@@ -45,9 +45,11 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 	private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
 	
-	private boolean initialized = false;
+	private boolean _initialized = false;
 
-	public boolean isPrimaryInferenceInstance = true;
+	public boolean _isPrimaryInferenceInstance = true;
+
+	private ObjectMapper _mapper = new ObjectMapper();		
 
 	@Autowired
 	private ConfigurationService _configurationService;
@@ -96,11 +98,10 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 	@Override
 	public void enqueue(NycQueuedInferredLocationBean r) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();		
 		    StringWriter sw = new StringWriter();
 		    MappingJsonFactory jsonFactory = new MappingJsonFactory();
 		    JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-		    mapper.writeValue(jsonGenerator, r);
+		    _mapper.writeValue(jsonGenerator, r);
 		    sw.close();			
 			
 			_outputBuffer.put(sw.toString());
@@ -126,7 +127,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 	@Refreshable(dependsOn = {"inference-engine.outputQueueHost", 
 			"inference-engine.outputQueuePort", "inference-engine.outputQueueName"})
 	public void startListenerThread() {
-		if(initialized == true) {
+		if(_initialized == true) {
 			_log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
 			return;
 		}
@@ -150,16 +151,16 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 	    _executorService.execute(new SendThread(socket, queueName));
 
 		_log.debug("Inference output queue is sending to " + bind);
-		initialized = true;
+		_initialized = true;
 	}
 
 	@Override
 	public void setIsPrimaryInferenceInstance(boolean isPrimary) {
-		isPrimaryInferenceInstance = isPrimary;		
+		_isPrimaryInferenceInstance = isPrimary;		
 	}
 
 	@Override
 	public boolean getIsPrimaryInferenceInstance() {
-		return isPrimaryInferenceInstance;
+		return _isPrimaryInferenceInstance;
 	}	
 }
