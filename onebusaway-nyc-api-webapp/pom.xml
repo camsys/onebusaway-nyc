@@ -1,86 +1,92 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.onebusaway</groupId>
-        <artifactId>onebusaway-nyc</artifactId>
-        <version>2.0.1-SNAPSHOT</version>
-    </parent>
-    <artifactId>onebusaway-nyc-api-webapp</artifactId>
-    <packaging>war</packaging>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.onebusaway</groupId>
+		<artifactId>onebusaway-nyc</artifactId>
+		<version>2.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>onebusaway-nyc-api-webapp</artifactId>
+	<packaging>war</packaging>
 
-    <name>onebusaway-nyc-api-webapp</name>
+	<name>onebusaway-nyc-api-webapp</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data</artifactId>
-            <version>${onebusaway.app-modules.version}</version>
-        </dependency>
+	<dependencies>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-transit-data</artifactId>
+			<version>${onebusaway.app-modules.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-api-core</artifactId>
+			<version>${onebusaway.app-modules.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-nyc-presentation</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-presentation</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-siri-api</artifactId>
+			<version>${onebusaway.siri.version}</version>
+		</dependency>
 
-        <!-- We need this for CsvEntityReader, NOT for any of the gtfs classes (I wish it was separate) -->
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-gtfs</artifactId>
-            <version>${onebusaway.gtfs.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-siri-api</artifactId>
-            <version>${onebusaway.siri.version}</version>
-        </dependency>
+		<!-- RMI-like service for wiring up services between VMs -->
+		<dependency>
+			<groupId>com.caucho</groupId>
+			<artifactId>resin-hessian</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>
-        
-        <!-- RMI-like service for wiring up services between VMs -->
-        <dependency>
-            <groupId>com.caucho</groupId>
-            <artifactId>resin-hessian</artifactId>
-        </dependency>
+		<!-- Struts 2 -->
+		<dependency>
+			<groupId>org.apache.struts</groupId>
+			<artifactId>struts2-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.struts</groupId>
+			<artifactId>struts2-spring-plugin</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.struts</groupId>
+			<artifactId>struts2-convention-plugin</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.struts</groupId>
+			<artifactId>struts2-rest-plugin</artifactId>
+		</dependency>
 
-        <!-- Struts 2 -->
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-spring-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-convention-plugin</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-rest-plugin</artifactId>
-        </dependency>
+		<!-- We use HttpServletRequest in XmlResult -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jsp-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
-        <!-- We use HttpServletRequest in XmlResult -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jsp-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
+		<!-- For iPhone app notifications -->
+		<dependency>
+			<groupId>com.notnoop.apns</groupId>
+			<artifactId>apns</artifactId>
+			<version>0.1.6</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

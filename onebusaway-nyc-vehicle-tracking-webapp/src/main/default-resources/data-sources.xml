@@ -47,6 +47,15 @@
 <!--         <property name="password" value="" /> -->
 <!--     </bean> -->
 
+<!--     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor"> -->
+<!--         <property name="target" value="hibernateProperties" /> -->
+<!--         <property name="properties"> -->
+<!--             <props> -->
+<!--                 <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop> -->
+<!--             </props>  -->
+<!--         </property>  -->
+<!--     </bean>  -->
+
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
@@ -58,7 +67,6 @@
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-<!--                 <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop> -->
                 <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
             </props> 
         </property> 

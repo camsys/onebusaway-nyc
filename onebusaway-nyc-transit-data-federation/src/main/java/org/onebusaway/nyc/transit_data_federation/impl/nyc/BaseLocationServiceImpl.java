@@ -23,11 +23,13 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.csv.ListEntityHandler;
 import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycRefreshableResources;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.model.BaseLocationRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ class BaseLocationServiceImpl implements BaseLocationService {
   }
 
   @PostConstruct
+  @Refreshable(dependsOn = NycRefreshableResources.TERMINAL_DATA)
   public void setup() throws CsvEntityIOException, IOException {
     _baseLocationTree = readRecordsIntoTree(_bundle.getBaseLocationsPath());
     _terminalLocationTree = readRecordsIntoTree(_bundle.getTerminalLocationsPath());
