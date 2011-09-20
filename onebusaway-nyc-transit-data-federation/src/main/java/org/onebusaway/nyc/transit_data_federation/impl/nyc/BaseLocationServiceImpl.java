@@ -117,6 +117,9 @@ class BaseLocationServiceImpl implements BaseLocationService {
     Envelope env = new Envelope(new Coordinate(location.getLon(),
         location.getLat()));
 
+    if(tree == null)
+    	return null;
+    
     @SuppressWarnings("unchecked")
     List<BaseLocationRecord> values = tree.query(env);
 
