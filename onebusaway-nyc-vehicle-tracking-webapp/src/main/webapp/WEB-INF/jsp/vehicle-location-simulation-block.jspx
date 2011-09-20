@@ -40,7 +40,7 @@ Location Simulation Console</a></p>
         <td>Bypass Inference:</td>
         <td>
         <p><input type="checkbox" name="bypassInference" /> -
-        Bypass inference engine and pass vehile location records
+        Bypass inference engine and pass vehicle location records
         directly to the transit data federation. Assumes "actual"
         ground-truth info is set in the trace.</p>
         </td>
@@ -51,6 +51,11 @@ Location Simulation Console</a></p>
         <p><input type="checkbox" name="isRunDriven" /> -
         Set this simulation to be driven by a run selected from the chosen block.</p>
         </td>
+    </tr>
+    <tr>
+        <td>Run in real-time:</td>
+        <td><input type="checkbox" name="realtime" /> - 
+        If not set to real-time, all simulator messages will be processed asap.</td>
     </tr>
     <tr>
         <td>Parameters:</td>

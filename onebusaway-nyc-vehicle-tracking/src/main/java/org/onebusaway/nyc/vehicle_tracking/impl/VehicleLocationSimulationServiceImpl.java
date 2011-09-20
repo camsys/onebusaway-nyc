@@ -337,17 +337,14 @@ public class VehicleLocationSimulationServiceImpl implements
       long unperturbedTimestamp = serviceDate
           + (scheduleTime + shiftStartTime) * 1000;
 
-      // FIXME use combination of serviceDate and scheduleTime? either
-      // way, use this...
-      // RunTripEntry rte =
-      // _runService.getRunTripEntryForRunAndTime(agencyId,
-      // runTrip.getRun(), unperturbedTimestamp);
 
       if (scheduleTime >= runningLastTime) {
         runTrip = _runService.getNextEntry(runTrip);
         runningLastTime = runTrip.getStopTime();
       }
 
+      // This could mean that the run has ended.  We could reassign the driver?
+      // For now we'll terminate the simulation
       if (runTrip == null)
         break;
 
@@ -385,12 +382,12 @@ public class VehicleLocationSimulationServiceImpl implements
       long perterbedTimestamp = unperturbedTimestamp + scheduleDeviation
           * 1000;
 
-      // FIXME is this level of indirection necessary for just the
+      // FIXME Is this level of indirection necessary for just the
       // location?
-      // we should use the geometry to make a TRULY run-based sim?
+      // We should use the geometry to make a TRULY run-based sim?
       BlockEntry blockEntry = trip.getBlock();
 
-      // especially here, where we're just selecting the first
+      // Especially here, where we're just selecting the first
       // configuration to get a location.
       ScheduledBlockLocation blockLocation = null;
       for (BlockConfigurationEntry block : blockEntry.getConfigurations()) {
@@ -450,7 +447,7 @@ public class VehicleLocationSimulationServiceImpl implements
   @Override
   public int addSimulationForBlockInstance(AgencyAndId blockId,
       long serviceDate, long actualTime, boolean bypassInference, 
-      boolean isRunBased, boolean fillActualProperties,
+      boolean isRunBased, boolean realtime, boolean fillActualProperties,
       Properties properties) {
 
     Random random = new Random();
@@ -461,7 +458,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.addTag(tag);
 
     task.setPauseOnStart(false);
-    task.setRunInRealtime(true);
+    task.setRunInRealtime(realtime);
     task.setBypassInference(bypassInference);
     task.setFillActualProperties(fillActualProperties);
 
