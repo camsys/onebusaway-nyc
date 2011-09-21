@@ -3,6 +3,7 @@ package org.onebusaway.nyc.transit_data_manager.importers;
 import java.util.Iterator;
 import java.util.List;
 
+import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
 
@@ -12,12 +13,14 @@ import tcip_final_3_0_5_1.SchPushOperatorAssignments;
 
 public class PushOperatorAssignsGenerator {
 
-  private DateTime headerCal;
+  private DateTime nowDateTime;
+  private DateMidnight headerEffectiveDate;
   private UtsMappingTool mappingTool = null;
 
-  public PushOperatorAssignsGenerator(DateTime headerCal) {
+  public PushOperatorAssignsGenerator(DateMidnight headerEffectiveDate) {
     super();
-    this.headerCal = headerCal;
+    this.nowDateTime = new DateTime();
+    this.headerEffectiveDate = headerEffectiveDate;
     this.mappingTool = new UtsMappingTool();
   }
 
@@ -36,11 +39,11 @@ public class PushOperatorAssignsGenerator {
     CPTPushHeader ph = new CPTPushHeader();
 
     ph.setFileType("operator-assignments-file");
-    ph.setEffective(mappingTool.dateDateTimeToDateString(headerCal));
+    ph.setEffective(mappingTool.dateTimeToXmlDatetimeFormat(headerEffectiveDate));
     ph.setSource(0);
     ph.setUpdatesOnly(false);
-    ph.setUpdatesThru(mappingTool.dateDateTimeToDateString(headerCal));
-    ph.setTimeSent(mappingTool.timestampDateTimeToDateString(headerCal));
+    ph.setUpdatesThru(mappingTool.dateTimeToXmlDatetimeFormat(nowDateTime));
+    ph.setTimeSent(mappingTool.dateTimeToXmlDatetimeFormat(nowDateTime));
 
     return ph;
   }

@@ -7,9 +7,9 @@ import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
 import org.onebusaway.nyc.transit_data_manager.model.MtaBusDepotAssignment;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
-import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup.GroupMembers;
 import tcip_final_3_0_5_1.CPTTransitFacilityIden;
+import tcip_final_3_0_5_1.CPTVehicleIden;
 
 public class MtaDepotMapToTcipAssignmentConverter {
 
@@ -57,7 +57,7 @@ public class MtaDepotMapToTcipAssignmentConverter {
 
       bus.setAgencyId(bdAssignment.getAgencyId());
       bus.setVehicleId(bdAssignment.getBusNumber());
-      //bus.setName("Mercedes Benz");
+      // bus.setName("Mercedes Benz");
 
       gMembers.getGroupMember().add(bus);
     }

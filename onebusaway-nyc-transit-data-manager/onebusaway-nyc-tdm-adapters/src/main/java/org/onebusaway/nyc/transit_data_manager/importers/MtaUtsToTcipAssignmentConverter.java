@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.importers;
 
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
 import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
 
@@ -74,9 +76,11 @@ public class MtaUtsToTcipAssignmentConverter {
 
     CPTRowMetaData metaData = new CPTRowMetaData();
 
-    metaData.setUpdated(mappingTool.timestampDateTimeToDateString(inputAssignment.getTimestamp()));
+    DateTimeFormatter xmlDTF = ISODateTimeFormat.dateTimeNoMillis();
 
-    metaData.setEffective(mappingTool.dateDateTimeToDateString(inputAssignment.getDate()));
+    metaData.setUpdated(xmlDTF.print(inputAssignment.getTimestamp()));
+
+    metaData.setEffective(xmlDTF.print(inputAssignment.getDate()));
 
     outputAssignment.setMetadata(metaData);
 

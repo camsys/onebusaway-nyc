@@ -7,8 +7,10 @@ import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.MutableDateTime;
 import org.joda.time.ReadableDateTime;
+import org.joda.time.ReadableInstant;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 public class UtsMappingTool {
   public static String UTS_DATE_FIELD_DATEFORMAT = "yyyy-MM-dd";
@@ -121,6 +123,21 @@ public class UtsMappingTool {
     }
 
     return result;
+  }
+
+  public String getJsonModelAgencyIdByTcipId(Long tcipId) {
+    return "MTA NYCT"; // Hard coded for now.
+  }
+
+  public String cutRunNumberFromTcipRunDesignator(String input) {
+    int dashIdx = input.indexOf("-") + 1;
+
+    return input.substring(dashIdx);
+  }
+
+  public String dateTimeToXmlDatetimeFormat(ReadableInstant input) {
+    DateTimeFormatter xmlDTF = ISODateTimeFormat.dateTimeNoMillis();
+    return xmlDTF.print(input);
   }
 
 }
