@@ -3,6 +3,7 @@ package org.onebusaway.nyc.transit_data_manager.importers;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
 import org.onebusaway.nyc.transit_data_manager.model.MtaUtsVehiclePullInPullOut;
 
@@ -84,7 +85,7 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
 
     // set time to be the scheduled pull in or pull out time, based on isPullIn
     DateTime adjMoveTime = isPullIn ? pullInTime : pullOutTime;
-    DateTimeFormatter fmt = DateTimeFormat.forPattern(UtsMappingTool.UTS_TIMESTAMP_FIELD_DATEFORMAT);
+    DateTimeFormatter fmt = ISODateTimeFormat.dateTimeNoMillis();
     outputAssignment.setTime(fmt.print(adjMoveTime));
 
     // Set the value of pullIn equal to isPullIn
