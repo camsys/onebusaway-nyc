@@ -13,15 +13,15 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.ImporterOperatorAssignmentData;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.CrewAssignmentsOutputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPCrewAssignmentsOutputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CSVCrewAssignsInputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CrewAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.ServiceDateOperatorAssignments;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.ListServiceDateOperatorAssignmentsMessage;
-import org.onebusaway.nyc.transit_data_manager.importers.CSVCrewAssignsInputConverter;
-import org.onebusaway.nyc.transit_data_manager.importers.CrewAssignmentsOutputConverter;
-import org.onebusaway.nyc.transit_data_manager.importers.CrewAssignsInputConverter;
-import org.onebusaway.nyc.transit_data_manager.importers.TCIPCrewAssignmentsOutputConverter;
-import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 

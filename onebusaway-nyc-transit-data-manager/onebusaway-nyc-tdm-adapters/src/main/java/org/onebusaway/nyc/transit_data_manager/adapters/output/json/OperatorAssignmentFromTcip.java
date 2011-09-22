@@ -6,7 +6,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
-import org.onebusaway.nyc.transit_data_manager.importers.tools.UtsMappingTool;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 

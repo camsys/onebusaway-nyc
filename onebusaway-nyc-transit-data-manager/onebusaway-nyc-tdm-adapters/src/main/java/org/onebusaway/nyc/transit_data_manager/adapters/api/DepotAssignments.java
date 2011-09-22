@@ -1,8 +1,8 @@
-package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
+package org.onebusaway.nyc.transit_data_manager.adapters.api;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +25,40 @@ import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 import tcip_final_3_0_5_1.CptFleetSubsets;
 import tcip_final_3_0_5_1.ObjectFactory;
 
-public class MtaBusDepotsToTcipXmlProcess extends FileToFileConverterProcess {
+public class DepotAssignments {
+  private FileReader inputFileReader = null;
+  private FileWriter outputFileWriter = null;
 
-  public MtaBusDepotsToTcipXmlProcess(File inputFile, File outputFile) {
-    super(inputFile, outputFile);
+  public static void main(String[] args) {
+    if (2 != args.length) {
+      System.out.println("Please add the input and output files as arguments");
+    } else {
+      DepotAssignments ex = null;
+
+      try {
+        // This is where the good stuff happens.
+        ex = new DepotAssignments(args[0], args[1]);
+        ex.convertAndWrite();
+        System.out.println("done!");
+      } catch (IOException e) {
+        System.out.println("Could not deal with input and/or output files, please double check.");
+        e.printStackTrace();
+      }
+    }
   }
 
-  public void executeProcess() throws FileNotFoundException {
+  public DepotAssignments(String inputFilePath, String outputFilePath)
+      throws IOException {
+    // Try opening the input file for reading
+    System.out.println("opening " + inputFilePath);
+    inputFileReader = new FileReader(inputFilePath);
 
-    FileReader inputFileReader = new FileReader(inputFile);
+    // Try opening the output file for writing
+    System.out.println("Opening " + outputFilePath + " for writing.");
+    outputFileWriter = new FileWriter(outputFilePath);
+  }
+
+  public void convertAndWrite() throws IOException {
 
     BusDepotAssignsInputConverter inConv = new XMLBusDepotAssignsInputConverter(
         inputFileReader);
@@ -58,12 +83,16 @@ public class MtaBusDepotsToTcipXmlProcess extends FileToFileConverterProcess {
     FleetSubsetsGenerator fleetSSGen = new FleetSubsetsGenerator();
     CptFleetSubsets fleetSubsets = fleetSSGen.generateFromSubsetGroups(fleetSSGroups);
 
+    String xmlResult;
     try {
-      output = generateXml(fleetSubsets);
+      xmlResult = generateXml(fleetSubsets);
+      writeXmlToOutputFile(xmlResult);
     } catch (JAXBException e) {
+      xmlResult = "";
       e.printStackTrace();
     }
 
+    outputFileWriter.close();
   }
 
   private String generateXml(CptFleetSubsets inputElement) throws JAXBException {
@@ -81,6 +110,10 @@ public class MtaBusDepotsToTcipXmlProcess extends FileToFileConverterProcess {
     outputStr = wrtr.toString();
 
     return outputStr;
+  }
+
+  private void writeXmlToOutputFile(String inputXml) throws IOException {
+    outputFileWriter.write(inputXml);
   }
 
 }

@@ -9,7 +9,9 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CSVCrewAssignsInputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CrewAssignsInputConverter;
 
 public class CSVCrewAssignsInputConverterTest {
 
