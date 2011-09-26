@@ -33,7 +33,7 @@ public class CcLocationReport implements Serializable {
   @Column(nullable = false)
   private Integer requestId;
   @Column(nullable = false)
-  private Integer vehicleVehicleId;
+  private Integer vehicleId;
   @Column(nullable = false)
   private Integer vehicleAgencyId;
   @Column(nullable = false)
@@ -87,12 +87,12 @@ public class CcLocationReport implements Serializable {
     this.requestId = requestId;
   }
 
-  public Integer getVehicleVehicleId() {
-    return vehicleVehicleId;
+  public Integer getVehicleId() {
+    return vehicleId;
   }
 
-  public void setVehicleVehicleId(Integer vehicleVehicleId) {
-    this.vehicleVehicleId = vehicleVehicleId;
+  public void setVehicleId(Integer vehicleId) {
+    this.vehicleId = vehicleId;
   }
 
   public Integer getVehicleAgencyId() {
