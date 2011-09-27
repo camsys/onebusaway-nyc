@@ -40,7 +40,14 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   }
 
   public String getApiUrl() {
-	  return "FIXME!";
+      return configurationService.getConfigurationValueAsString("deploy.apiUrl", "NOT SET");      
+//	  return "FIXME!";
+  }
+
+  public String getUrlPrefix() {
+      return configurationService.getConfigurationValueAsString("deploy.urlPrefix", "NOT SET");      
+//      ConfigurationBean config = configurationService.getConfiguration();
+//      return config.getUrlPrefix();
   }
 
   public long getEpoch() {

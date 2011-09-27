@@ -11,7 +11,11 @@ public class ConfigurationModel {
   private Integer hideTimeout;
 
   private Integer gpsTimeSkewThreshold;
-  
+
+  private String apiUrl = "default";
+  // TODO Default this to something better?
+  private String urlPrefix = "default";
+
   public Integer getNoProgressTimeout() {
     return noProgressTimeout;
   }
@@ -51,5 +55,21 @@ public class ConfigurationModel {
   public void setGpsTimeSkewThreshold(Integer t) {
 	  this.gpsTimeSkewThreshold = t;
   }
+
+public String getApiUrl() {
+    return apiUrl;
+}
+
+public void setApiUrl(String apiUrl) {
+    this.apiUrl = apiUrl;
+}
+
+public String getUrlPrefix() {
+    return urlPrefix;
+}
+
+public void setUrlPrefix(String urlPrefix) {
+    this.urlPrefix = urlPrefix;
+}
 
 }

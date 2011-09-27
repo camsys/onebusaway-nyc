@@ -124,6 +124,9 @@
 		<profile>
         <!-- DB profiles -->
 			<id>db-hsqldb-local</id>
+			<activation>
+			     <activeByDefault>true</activeByDefault>
+			</activation>
 			<properties>
 				<db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
 				<db.url>jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true</db.url>
@@ -135,12 +138,40 @@
 		</profile>
 		
 		<!-- Services profiles -->
-		<profile>
+        <profile>
             <id>services-local</id>
+            <activation>
+                 <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <service.wikihost>localhost:8080</service.wikihost>
+                <service.tds.host>localhost:8080</service.tds.host>
+                <service.tds.path>onebusaway-nyc-transit-data-federation-webapp</service.tds.path>
+                <service.vehicle-tracking.host>localhost:8080</service.vehicle-tracking.host>
+                <service.vehicle-tracking.service-name>configuration-service</service.vehicle-tracking.service-name>
+                <urlPrefix>/onebusaway-nyc-api-webapp</urlPrefix>
+            </properties>
+        </profile>
+        <profile>
+            <id>services-local-multiport</id>
             <properties>
                 <service.wikihost>localhost:8080</service.wikihost>
                 <service.tds.host>localhost:8081</service.tds.host>
+                <service.tds.path>onebusaway-nyc-transit-data-federation-webapp</service.tds.path>
                 <service.vehicle-tracking.host>localhost:8081</service.vehicle-tracking.host>
+                <service.vehicle-tracking.service-name>configuration-service</service.vehicle-tracking.service-name>
+                <urlPrefix>/onebusaway-nyc-api-webapp</urlPrefix>
+            </properties>
+        </profile>
+        <profile>
+            <id>services-local-and-staging</id>
+            <properties>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO -->
+                <service.tds.host>app.staging.obanyc.com:8080</service.tds.host>
+                <service.tds.path>onebusaway-nyc-transit-data-federation-webapp</service.tds.path>
+                <service.vehicle-tracking.host>app.staging.obanyc.com:8080</service.vehicle-tracking.host>
+                <service.vehicle-tracking.service-name>configuration-service</service.vehicle-tracking.service-name>
+                <urlPrefix>/onebusaway-nyc-api-webapp</urlPrefix>
             </properties>
         </profile>
         <profile>
@@ -148,9 +179,12 @@
             <properties>
                 <service.wikihost>localhost:8080</service.wikihost>
                 <service.tds.host>bustime.mta.info</service.tds.host>
+                <service.tds.path>onebusaway-nyc-vehicle-tracking-webapp</service.tds.path>
                 <service.vehicle-tracking.host>bustime.mta.info</service.vehicle-tracking.host>
+                <service.vehicle-tracking.service-name>vehicle-tracking-management</service.vehicle-tracking.service-name>
+                <urlPrefix>/onebusaway-api-webapp</urlPrefix>
             </properties>
-		</profile>
+        </profile>
 	</profiles>
 
 	<build>

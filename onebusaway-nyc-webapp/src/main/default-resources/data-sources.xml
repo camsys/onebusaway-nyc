@@ -22,6 +22,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd 
         http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
+<<<<<<< HEAD
 
 
     <!-- Transit Data Service -->
@@ -50,6 +51,19 @@
     
     <bean id="vehicleTrackingManagementService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service" />
+=======
+<!-- id was serviceRegistry -->
+    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="http://${service.tds.host}/${service.tds.path}/remoting/transit-data-service" />
+<!--         <property name="serviceUrl" value="http://${service.tds.host}/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" /> -->
+        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+    </bean>
+
+<!-- id was configServiceRegistry -->
+    <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="http://${service.vehicle-tracking.host}/${service.tds.path}/remoting/${service.vehicle-tracking.service-name}"/>
+<!--         <property name="serviceUrl" value="http://${service.vehicle-tracking.host}/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management"/> -->
+>>>>>>> Parameterize what's needed in nyc-webapp's pom.xml via profiles.
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
     
@@ -116,4 +130,20 @@
         <property name="wikiAttachmentUrl" value="http://bustime.mta.info/xwiki/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
     </bean>
 
+<<<<<<< HEAD
+=======
+     <bean id="nycConfigurationServiceImpl" class="org.onebusaway.nyc.presentation.impl.NycConfigurationServiceImpl">
+     <property name="path">
+       <bean class="java.io.File">
+         <constructor-arg value="/tmp/configuration-service.properties" />
+       </bean>
+     </property>
+     <property name="configuration">
+        <bean class="org.onebusaway.nyc.presentation.service.ConfigurationBean">
+            <property name="apiUrl" value="http://${service.tds.host}"/>
+            <property name="urlPrefix" value="${urlPrefix}"/>
+        </bean>
+     </property>
+   </bean>
+>>>>>>> Parameterize what's needed in nyc-webapp's pom.xml via profiles.
 </beans>

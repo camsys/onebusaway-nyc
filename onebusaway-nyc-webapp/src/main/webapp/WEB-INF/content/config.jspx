@@ -22,7 +22,14 @@
 if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 	OBA.Config.staleDataTimeout=<s:property value="staleDataTimeout" />;
 	OBA.Config.hideTimeout=<s:property value="hideTimeout" />;
-	OBA.Config.apiUrl='<s:property value="apiUrl" />'; 
+    OBA.Config.apiUrl='<s:property value="apiUrl" />'; 
+    OBA.Config.urlPrefix=('<s:property value="urlPrefix" />' == '' ? OBA.Config.urlPrefix : '<s:property value="urlPrefix" />'); 
+
+    OBA.Config.routeShapeUrl = OBA.Config.urlPrefix + OBA.Config.routeShapeUrl;  
+    OBA.Config.stopsUrl = OBA.Config.urlPrefix + OBA.Config.stopsUrl; 
+    OBA.Config.stopUrl = OBA.Config.urlPrefix + OBA.Config.stopUrl; 
+    OBA.Config.vehiclesUrl = OBA.Config.urlPrefix + OBA.Config.vehiclesUrl; 
+    OBA.Config.vehicleUrl = OBA.Config.urlPrefix + OBA.Config.vehicleUrl; 
 
 	var now = new Date();
 	OBA.Config.clockSkew=(now.getTime() - <s:property value="epoch" />);

@@ -32,12 +32,26 @@ OBA.Config = {
 		// urls to fetch various data
 		searchUrl: "search.action",
 		
+<<<<<<< HEAD
 		// TODO These are the URLs for the pilot bustime.mta.info server
 		routeShapeUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-route",
 		stopsUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-location.json",
 		stopUrl: "/onebusaway-nyc-api-webapp/api/where/arrivals-and-departures-for-stop",
 		vehiclesUrl:"/onebusaway-nyc-api-webapp/api/where/trips-for-route",
 		vehicleUrl: "/onebusaway-nyc-api-webapp/api/where/trip-for-vehicle",
+=======
+		// Pilot does NOT have nyc in the path
+		urlPrefix: "/onebusaway-nyc-api-webapp",
+		
+		// These are the right-most part of the service URLs.  The first part of the path
+		// gets prefixed in config.jspx, so typically something like /api/where/stops-for-route
+		// will become /onebusaway-nyc-api-webapp/api/where/stops-for-route.
+		routeShapeUrl: "/api/where/stops-for-route",
+		stopsUrl: "/api/where/stops-for-location.json",
+		stopUrl: "/api/where/arrivals-and-departures-for-stop",
+		vehiclesUrl:"/api/where/trips-for-route",
+		vehicleUrl: "/api/where/trip-for-vehicle",
+>>>>>>> Parameterize what's needed in nyc-webapp's pom.xml via profiles.
 //		routeShapeUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-route",
 //		stopsUrl: "/onebusaway-nyc-api-webapp/api/where/stops-for-location.json",
 //		stopUrl: "/onebusaway-nyc-api-webapp/api/where/arrivals-and-departures-for-stop",
