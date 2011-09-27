@@ -58,7 +58,7 @@ public class InferenceInputQueueListenerTask {
 		
 	private boolean _initialized = false;	
 	
-	private class ReadThread implements Runnable {
+	public class ReadThread implements Runnable {
 
 		int processedCount = 0;
 		

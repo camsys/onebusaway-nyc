@@ -112,6 +112,7 @@
     <module>onebusaway-nyc-queue-broker</module>
     <module>onebusaway-nyc-queue-http-proxy</module>
     <module>onebusaway-nyc-queue-subscriber</module>
+    <module>onebusaway-nyc-report-archive</module>
   </modules>
 
   <build>
