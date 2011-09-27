@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.onebusaway</groupId>
     <artifactId>onebusaway-nyc-queue-subscriber</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <version>2.0.1-SNAPSHOT</version>
     <name>onebusaway-nyc-queue-subscriber</name>
     <dependencies>
