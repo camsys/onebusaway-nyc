@@ -109,6 +109,9 @@
     <module>onebusaway-nyc-transit-data-federation</module>
     <module>onebusaway-nyc-transit-data-federation-webapp</module>
     <module>onebusaway-nyc-api-webapp</module>
+    <module>onebusaway-nyc-queue-broker</module>
+    <module>onebusaway-nyc-queue-http-proxy</module>
+    <module>onebusaway-nyc-queue-subscriber</module>
   </modules>
 
   <build>

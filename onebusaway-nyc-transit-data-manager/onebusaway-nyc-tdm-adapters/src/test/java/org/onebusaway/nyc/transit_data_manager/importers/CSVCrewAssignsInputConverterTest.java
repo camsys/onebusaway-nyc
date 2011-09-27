@@ -1,9 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.importers;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -11,7 +9,9 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CSVCrewAssignsInputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CrewAssignsInputConverter;
 
 public class CSVCrewAssignsInputConverterTest {
 

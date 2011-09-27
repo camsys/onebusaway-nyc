@@ -12,7 +12,9 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.onebusaway.nyc.transit_data_manager.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.CSVCcAnnouncementInfoConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.CcAnnouncementInfoConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
 
 public class CSVCcAnnouncementInfoConverterTest {
 
