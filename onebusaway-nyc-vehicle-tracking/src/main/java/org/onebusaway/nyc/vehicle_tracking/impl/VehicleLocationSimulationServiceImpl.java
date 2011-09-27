@@ -41,6 +41,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.csv.CsvEntityReader;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
@@ -69,6 +70,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import umontreal.iro.lecuyer.rng.*;
+import umontreal.iro.lecuyer.randvar.*;
+import umontreal.iro.lecuyer.probdist.*;
+import umontreal.iro.lecuyer.randvarmulti.*;
+import umontreal.iro.lecuyer.probdistmulti.*; 
 
 @Component
 public class VehicleLocationSimulationServiceImpl implements
@@ -107,6 +115,10 @@ public class VehicleLocationSimulationServiceImpl implements
   private AtomicInteger _taskIndex = new AtomicInteger();
 
   private BlockCalendarService _blockCalendarService;
+  
+  private RandomStream streamArr = new MRG32k3a();
+  
+  private UniformGen ung = new UniformGen(streamArr);
 
   @Autowired
   public void setRunService(RunService runService) {
@@ -354,10 +366,11 @@ public class VehicleLocationSimulationServiceImpl implements
 
       record.setActualTripId(AgencyAndIdLibrary.convertToString(tripId));
 
-      // TODO simulate run changes
 
+      // TODO dsc changes for new block/run?
       String dsc = _destinationSignCodeService
           .getDestinationSignCodeForTripId(tripId);
+      
       if (dsc == null)
         dsc = "0";
 
@@ -385,10 +398,21 @@ public class VehicleLocationSimulationServiceImpl implements
       // FIXME Is this level of indirection necessary for just the
       // location?
       // We should use the geometry to make a TRULY run-based sim?
-      BlockEntry blockEntry = trip.getBlock();
-
       // Especially here, where we're just selecting the first
       // configuration to get a location.
+      BlockEntry blockEntry = trip.getBlock();
+      
+      // TODO might want to ensure sane transfers...
+      List<BlockInstance> activeBlocks = 
+    		  _blockCalendarService.getClosestActiveBlocks(blockEntry.getId(), unperturbedTimestamp);
+      
+      BlockInstance currentBlockInstance = _blockCalendarService.getBlockInstance(blockEntry.getId(), serviceDate);
+      BlockInstance newBlock = sampleNearbyBlocks(currentBlockInstance, activeBlocks);
+      
+      if (newBlock != null) {
+    	  blockEntry = newBlock.getBlock().getBlock();
+      }
+      
       ScheduledBlockLocation blockLocation = null;
       for (BlockConfigurationEntry block : blockEntry.getConfigurations()) {
 
@@ -403,8 +427,23 @@ public class VehicleLocationSimulationServiceImpl implements
       if (blockLocation == null)
         break;
 
+      if (newBlock != null) {
+	      BlockTripEntry btrip = blockLocation.getActiveTrip();
+	
+	      AgencyAndId newTripId = btrip.getTrip().getId();
+	
+	      String runId = _runService.getInitialRunForTrip(newTripId);
+	      RunTripEntry newRunTrip = 
+	    		  _runService.getRunTripEntryForRunAndTime(btrip.getTrip().getId().getAgencyId(), runId, unperturbedTimestamp);
+	      
+	      if (newRunTrip != null)
+	    	  runTrip = newRunTrip;
+      }
+
       CoordinatePoint location = blockLocation.getLocation();
 
+      record.setActualRunId(runTrip.getRun());
+      
       record.setActualBlockId(AgencyAndIdLibrary
           .convertToString(blockEntry.getId()));
       record.setActualDistanceAlongBlock(blockLocation
@@ -437,7 +476,49 @@ public class VehicleLocationSimulationServiceImpl implements
 
   }
 
-  /*
+
+  private BlockInstance sampleNearbyBlocks(BlockInstance currentBlock,
+      List<BlockInstance> activeBlocks) {
+
+    int currentIdx = activeBlocks.lastIndexOf(currentBlock);
+
+    if (currentIdx < 0) {
+
+      activeBlocks.add(currentBlock);
+      currentIdx = activeBlocks.lastIndexOf(currentBlock);
+
+    }
+
+    int bsize = activeBlocks.size();
+
+    double[] tmpd = new double[bsize];
+    double[] obs = new double[bsize];
+    for (int i = 0; i < bsize; ++i) {
+      if (i == currentIdx) {
+        // TODO Make this configurable, and explain
+        tmpd[i] = 5;
+      } else {
+        tmpd[i] = 1;
+      }
+      obs[i] = i;
+    }
+    DirichletGen rdg = new DirichletGen(streamArr, tmpd);
+
+    double[] probs = new double[bsize];
+    rdg.nextPoint(probs);
+    DiscreteDistribution emd = new DiscreteDistribution(obs, probs, bsize);
+
+    _log.info(emd.toString());
+
+    double u = ung.nextDouble();
+    double newRunIdx = emd.inverseF(u);
+
+    _log.info(u + ": sampled runIdx=" + newRunIdx);
+
+    return activeBlocks.get((int) newRunIdx);
+  }
+
+/*
    * We make the distinction between whether a block or a run is driving
    * this simulation.  However, we always initialize the simulation by a run that
    * is active for the "initialization" block, and thus trip, we were passed. 
