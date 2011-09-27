@@ -204,6 +204,10 @@
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
+			<resource>
+				<directory>src/main/default-resources</directory>
+				<filtering>true</filtering>
+			</resource>
 		</resources>
 	</build>
 
