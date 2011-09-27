@@ -515,7 +515,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
     _log.info(u + ": sampled runIdx=" + newRunIdx);
 
-    return activeBlocks.get((int) newRunIdx);
+    return (int)newRunIdx != currentIdx ? activeBlocks.get((int)newRunIdx) : null;
   }
 
 /*
