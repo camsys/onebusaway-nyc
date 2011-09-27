@@ -43,6 +43,6 @@
         <property name="jdbc.batch_size">0</property>
 
         <!-- List all the mapping documents we're using -->
-		<mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReport"/>
+		<mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReportRecord"/>
     </session-factory>
 </hibernate-configuration>

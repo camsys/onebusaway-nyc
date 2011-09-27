@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.report_archive.impl;
 
-import org.onebusaway.nyc.report_archive.model.CcLocationReport;
+import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 
 import org.hibernate.HibernateException;
@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+public
 class CcLocationReportDaoImpl implements CcLocationReportDao {
 
   private HibernateTemplate _template;
@@ -34,15 +35,15 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
   // TODO Remove transactional?
   @Transactional
   @Override
-  public void saveOrUpdateReport(CcLocationReport report) {
+  public void saveOrUpdateReport(CcLocationReportRecord report) {
     _template.saveOrUpdate(report);
   }
 
   @Override
-  public void saveOrUpdateReports(CcLocationReport... reports) {
-    List<CcLocationReport> list = new ArrayList<CcLocationReport>(
+  public void saveOrUpdateReports(CcLocationReportRecord... reports) {
+    List<CcLocationReportRecord> list = new ArrayList<CcLocationReportRecord>(
         reports.length);
-    for (CcLocationReport report : reports)
+    for (CcLocationReportRecord report : reports)
       list.add(report);
     _template.saveOrUpdateAll(list);
   }

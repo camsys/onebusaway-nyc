@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.report_archive.services;
 
-import org.onebusaway.nyc.report_archive.model.CcLocationReport;
+import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 
 public interface CcLocationReportDao {
 
-  void saveOrUpdateReport(CcLocationReport report);
+  void saveOrUpdateReport(CcLocationReportRecord report);
 
-  void saveOrUpdateReports(CcLocationReport... reports);
+  void saveOrUpdateReports(CcLocationReportRecord... reports);
 
 }

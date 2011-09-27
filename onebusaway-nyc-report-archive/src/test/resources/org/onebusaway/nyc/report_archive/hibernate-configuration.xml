@@ -49,7 +49,7 @@
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">create</property>
 
-        <mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReport"/>
+        <mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReportRecord"/>
 
 <!--         <mapping resource="org/onebusaway/users/impl/UserDaoImpl.hibernate.xml" />
  -->

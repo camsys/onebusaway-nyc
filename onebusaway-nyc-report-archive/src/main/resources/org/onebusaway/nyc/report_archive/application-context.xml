@@ -14,7 +14,7 @@
         <property name="target" value="hibernateAnnotatedClasses" />
         <property name="values">
             <list>
-                <value>org.onebusaway.nyc.report_archive.model.CcLocationReport</value>
+                <value>org.onebusaway.nyc.report_archive.model.CcLocationReportRecord</value>
             </list>
         </property>
     </bean>
