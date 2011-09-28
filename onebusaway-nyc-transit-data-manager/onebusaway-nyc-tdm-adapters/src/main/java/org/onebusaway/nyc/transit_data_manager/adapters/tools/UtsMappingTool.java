@@ -140,4 +140,17 @@ public class UtsMappingTool {
     return xmlDTF.print(input);
   }
 
+  public String parseRunNumFromBlockDesignator(String blockDes) {
+    // Example Block designator (blockDes)
+    // -> CSLT_S56_001_06012011_0459
+    // where the values are depot, run route, run number, service date,
+    // scheduled pull-out time
+
+    int firstBar = blockDes.indexOf("_");
+
+    int secondBar = blockDes.indexOf("_", firstBar + 1);
+
+    return blockDes.substring(firstBar, secondBar);
+  }
+
 }
