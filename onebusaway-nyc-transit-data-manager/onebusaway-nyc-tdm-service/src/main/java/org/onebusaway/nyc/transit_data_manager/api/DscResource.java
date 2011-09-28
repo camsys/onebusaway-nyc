@@ -33,8 +33,8 @@ public class DscResource {
   public String getDisplayForCode(@PathParam("code")
   Long dscCode) {
 
-    File inputFile = new File(System.getProperty("dataPath")
-        + System.getProperty("dscFilename"));
+    File inputFile = new File(System.getProperty("tdm.dataPath")
+        + System.getProperty("tdm.dscFilename"));
 
     // Need to create a data object to be our interface to the TCIP sign code
     // data.
@@ -62,7 +62,7 @@ public class DscResource {
 
     // Then I need to write it as json output.
     Gson gson = null;
-    if (Boolean.parseBoolean(System.getProperty("prettyPrintOutput"))) {
+    if (Boolean.parseBoolean(System.getProperty("tdm.prettyPrintOutput"))) {
       gson = new GsonBuilder().setFieldNamingPolicy(
           FieldNamingPolicy.LOWER_CASE_WITH_DASHES).setPrettyPrinting().create();
     } else {

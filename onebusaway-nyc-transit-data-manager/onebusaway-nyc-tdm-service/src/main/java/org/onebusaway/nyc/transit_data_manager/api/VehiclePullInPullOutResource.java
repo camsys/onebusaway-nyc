@@ -34,8 +34,8 @@ public class VehiclePullInPullOutResource {
     DateMidnight serviceDate = new DateMidnight(
         dateDTF.parseDateTime(inputDateStr));
 
-    File inputFile = new File(System.getProperty("datapath")
-        + System.getProperty("pipoFilename"));
+    File inputFile = new File(System.getProperty("tdm.datapath")
+        + System.getProperty("tdm.pipoFilename"));
 
     PulloutData data = null;
 

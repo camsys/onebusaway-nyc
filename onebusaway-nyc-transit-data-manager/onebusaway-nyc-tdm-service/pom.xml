@@ -53,6 +53,36 @@
 			<version>2.0.5-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>scott-local</id>
+			<properties>
+				<tdm.dataPath>d:\</tdm.dataPath>
+				<tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
+				<tdm.dscFilename>dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+			</properties>
+		</profile>
+		<profile>
+			<id>tdm-staging</id>
+			<activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+			
+			<properties>
+				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>/depot_assigns/DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+			</properties>
+		</profile>
+	</profiles>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -76,5 +106,18 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/default-resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		
+		</resources>
+		
 	</build>
 </project>

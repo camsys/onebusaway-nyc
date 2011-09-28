@@ -44,8 +44,8 @@ public class CrewResource {
     DateMidnight serviceDate = new DateMidnight(
         dateDTF.parseDateTime(inputDateStr));
 
-    File inputFile = new File(System.getProperty("dataPath")
-        + System.getProperty("crewAssignFilename"));
+    File inputFile = new File(System.getProperty("tdm.dataPath")
+        + System.getProperty("tdm.crewAssignFilename"));
 
     OperatorAssignmentData data = null;
 
@@ -76,7 +76,7 @@ public class CrewResource {
 
     // Then I need to write it as json output.
     Gson gson = null;
-    if (Boolean.parseBoolean(System.getProperty("prettyPrintOutput"))) {
+    if (Boolean.parseBoolean(System.getProperty("tdm.prettyPrintOutput"))) {
       gson = new GsonBuilder().setFieldNamingPolicy(
           FieldNamingPolicy.LOWER_CASE_WITH_DASHES).setPrettyPrinting().create();
     } else {

@@ -36,8 +36,8 @@ public class DepotResource {
   public String getDepotAssignments(@PathParam("depotName")
   String depotName) {
 
-    File inputFile = new File(System.getProperty("dataPath")
-        + System.getProperty("depotAssignFilename"));
+    File inputFile = new File(System.getProperty("tdm.dataPath")
+        + System.getProperty("tdm.depotAssignFilename"));
 
     VehicleDepotData data = null;
 
@@ -74,7 +74,7 @@ public class DepotResource {
 
     // Then I need to write it as json output.
     Gson gson = null;
-    if (Boolean.parseBoolean(System.getProperty("prettyPrintOutput"))) {
+    if (Boolean.parseBoolean(System.getProperty("tdm.prettyPrintOutput"))) {
       gson = new GsonBuilder().setFieldNamingPolicy(
           FieldNamingPolicy.LOWER_CASE_WITH_DASHES).setPrettyPrinting().create();
     } else {
