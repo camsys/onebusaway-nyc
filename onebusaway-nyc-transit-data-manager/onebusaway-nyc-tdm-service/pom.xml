@@ -56,7 +56,7 @@
 	
 	<profiles>
 		<profile>
-			<id>scott-local</id>
+			<id>local</id>
 			<properties>
 				<tdm.dataPath>d:\</tdm.dataPath>
 				<tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
@@ -78,7 +78,7 @@
 				<tdm.depotAssignFilename>/depot_assigns/DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
 				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
 				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
-				<tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
 			</properties>
 		</profile>
 	</profiles>
