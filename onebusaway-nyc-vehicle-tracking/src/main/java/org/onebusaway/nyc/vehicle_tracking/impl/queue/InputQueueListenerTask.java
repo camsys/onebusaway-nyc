@@ -50,6 +50,19 @@ public abstract class InputQueueListenerTask {
 
   public abstract void processMessage(String address, String contents);
 
+  public CcLocationReport deserializeMessage(String contents) {
+    CcLocationReport message = null;
+    try {
+      JsonNode wrappedMessage = _mapper.readValue(contents, JsonNode.class);
+      String ccLocationReportString = wrappedMessage.get("CcLocationReport").toString();
+
+      message = _mapper.readValue(ccLocationReportString, CcLocationReport.class);
+    } catch (Exception e) {
+      _log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
+    }
+    return message;
+  }
+  
   private class ReadThread implements Runnable {
 
     int processedCount = 0;
@@ -106,8 +119,8 @@ public abstract class InputQueueListenerTask {
     _executorService.shutdownNow();
   }
 
-  @Refreshable(dependsOn = {"inference-engine.inputQueueHost", 
-      "inference-engine.inputQueuePort", "inference-engine.inputQueueName"})
+  @Refreshable(dependsOn = {"inference-engine.inputQueueHost", "inference-engine.inputQueuePort", 
+      "inference-engine.inputQueueName"})
   public void startListenerThread() {
     if(_initialized == true) {
       _log.warn("Configuration service tried to reconfigure inference input queue service; this service is not reconfigurable once started.");
@@ -140,17 +153,4 @@ public abstract class InputQueueListenerTask {
     _initialized = true;
   }
 
-  public CcLocationReport deserializeMessage(String contents) {
-    CcLocationReport message = null;
-    try {
-      JsonNode wrappedMessage = _mapper.readValue(contents, JsonNode.class);
-      String ccLocationReportString = wrappedMessage.get("CcLocationReport").toString();
-
-      message = _mapper.readValue(ccLocationReportString,
-          CcLocationReport.class);
-    } catch (Exception e) {
-      _log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
-    }
-    return message;
-  }
 }
