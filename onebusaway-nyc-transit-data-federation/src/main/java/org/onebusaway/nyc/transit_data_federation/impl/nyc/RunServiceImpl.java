@@ -81,15 +81,12 @@ public class RunServiceImpl implements RunService {
       _log.info("loading trip run data");
       runDataByTrip = ObjectSerializationLibrary.readObject(path);
     } else
-      runDataByTrip = null;
+      return;
 
     transformRunData();
   }
 
   public void transformRunData() {
-	if(runDataByTrip == null)
-		return;
-	  
     entriesByRun = new HashMap<String, List<RunTripEntry>>();
     entriesByTrip = new HashMap<AgencyAndId, List<RunTripEntry>>();
 

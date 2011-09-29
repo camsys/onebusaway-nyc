@@ -16,56 +16,58 @@ import com.google.gson.JsonParser;
 
 public class TransitDataManagerApiLibrary {
 
-	private static final String _tdmHostname = "tdm.staging.obanyc.com";
+  private static final String _tdmHostname = "tdm.staging.obanyc.com";
 
-	private static final String _apiEndpointPath = "/api/";
+  private static final Integer _tdmPort = 80;
 
-	private static final RestApiLibrary _restApiLibrary = new RestApiLibrary(_tdmHostname, _apiEndpointPath);
+  private static final String _apiEndpointPath = "/api/";
 
-	public static void executeApiMethodWithNoResult(String baseObject, String... params) throws Exception {
-		 _restApiLibrary.executeApiMethodWithNoResult(baseObject, params);
-	}
+  private static final RestApiLibrary _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
 
-	public static ArrayList<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
+  public static void executeApiMethodWithNoResult(String baseObject, String... params) throws Exception {
+    _restApiLibrary.executeApiMethodWithNoResult(baseObject, params);
+  }
 
-		URL requestUrl = _restApiLibrary.buildUrl(baseObject, params);
-		URLConnection conn = requestUrl.openConnection();
-		
-		InputStream inStream = conn.getInputStream();
-		BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
-		JsonParser parser = new JsonParser();
-	    JsonObject response = (JsonObject)parser.parse(br);
+  public static ArrayList<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
 
-	    // check status
-	    if(response.has("status")) {
-	    	if(!response.get("status").getAsString().equals("OK"))
-	    		throw new Exception("Response error: status was not OK");
-	    } else
-    		throw new Exception("Invalid response: no status element was found.");
+    URL requestUrl = _restApiLibrary.buildUrl(baseObject, params);
+    URLConnection conn = requestUrl.openConnection();
 
-	    ArrayList<JsonObject> output = new ArrayList<JsonObject>();
+    InputStream inStream = conn.getInputStream();
+    BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
+    JsonParser parser = new JsonParser();
+    JsonObject response = (JsonObject)parser.parse(br);
 
-	    // find "content" in the response
-	    for(Entry<String,JsonElement> item : response.entrySet()) {
-	    	String type = item.getKey();
-	    	JsonElement responseItemWrapper = item.getValue();
+    // check status
+    if(response.has("status")) {
+      if(!response.get("status").getAsString().equals("OK"))
+        throw new Exception("Response error: status was not OK");
+    } else
+      throw new Exception("Invalid response: no status element was found.");
 
-	    	if(type.equals("status"))
-	    		continue;
+    ArrayList<JsonObject> output = new ArrayList<JsonObject>();
 
-	    	// our response "body" is always one array of things
-	    	try {
-	    		for(JsonElement arrayElement : responseItemWrapper.getAsJsonArray()) {
-	    			output.add(arrayElement.getAsJsonObject());
-	    		}
-	    	} catch (Exception e) {
-	    		continue;
-	    	}
-	    }
-	    
-	    br.close();
-		inStream.close();
-		
-		return output;
-	}
+    // find "content" in the response
+    for(Entry<String,JsonElement> item : response.entrySet()) {
+      String type = item.getKey();
+      JsonElement responseItemWrapper = item.getValue();
+
+      if(type.equals("status"))
+        continue;
+
+      // our response "body" is always one array of things
+      try {
+        for(JsonElement arrayElement : responseItemWrapper.getAsJsonArray()) {
+          output.add(arrayElement.getAsJsonObject());
+        }
+      } catch (Exception e) {
+        continue;
+      }
+    }
+
+    br.close();
+    inStream.close();
+
+    return output;
+  }
 }
