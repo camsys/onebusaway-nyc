@@ -80,7 +80,7 @@
 
   	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask">
 		<!-- (JG = Jackie Gleason depot from the pilot project) -->
-		<property name="depotPartitionKey" value="JG"/>
+		<property name="depotPartitionKey" value="JG,CA,MA,MH,YU"/>
   	</bean>
 
 
