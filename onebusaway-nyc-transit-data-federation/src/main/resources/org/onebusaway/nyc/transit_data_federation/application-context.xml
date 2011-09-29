@@ -27,13 +27,17 @@
 
 
 	<!-- These are initialized empty to start; the bundle management service will set the paths appropriately. -->
-  	<bean id="bundle" class="org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle"/>
+  	<bean id="bundle" class="org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle">
+		<property name="path" value="${bundlePath}" />
+  	</bean>
 
-  	<bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle"/>
+  	<bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle">
+		<property name="path" value="${bundlePath}" />
+  	</bean>
 
-	<bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-    	<property name="bundleRootPath" value="${bundleStoreRoot}" />	
-	</bean>
+<!-- 	<bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl"> -->
+<!--     	<property name="bundleStoreRoot" value="${bundleStoreRoot}" />	 -->
+<!-- 	</bean> -->
 
   	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl"/>
   	
@@ -58,14 +62,14 @@
 <!--   </bean> -->
 
 <!--   Override the default ehcache diskstore path -->
-<!--   <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer"> -->
-<!--     <property name="properties"> -->
-<!--       <props> -->
-<!--         <prop key="ehCacheConfiguration.diskStorePath">${bundlePath}/cache</prop> -->
-<!--       </props> -->
-<!--     </property> -->
-<!--     <property name="order" value="0" /> -->
-<!--   </bean> -->
+  <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+    <property name="properties">
+      <props>
+        <prop key="ehCacheConfiguration.diskStorePath">${bundlePath}/cache</prop>
+      </props>
+    </property>
+    <property name="order" value="0" />
+  </bean>
 
   	<!-- Common Services -->
   	<bean id="shapePointsLibrary" class="org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary" />
