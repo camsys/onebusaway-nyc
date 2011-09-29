@@ -19,7 +19,7 @@ var OBA = window.OBA || {};
 OBA.Util = (function() {
 	return {
 		createApiUrl: function(url) {
-			return url;
+			return OBA.Config.apiUrl + url;
 		},
 		getTime: function() {
 			var now = new Date();

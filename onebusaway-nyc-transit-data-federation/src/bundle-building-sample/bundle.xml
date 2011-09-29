@@ -20,13 +20,14 @@
         <property name="bundles">
             <list>
                 <ref bean="gtfs-si" />
-                <ref bean="gtfs-b63" />
+<!--                 <ref bean="gtfs-b63" /> -->
             </list>
         </property>
     </bean>
 
     <bean id="gtfs-si" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
-        <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/gtfs-si.zip" />
+<!--         <property name="path" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/gtfs-si.zip" /> -->
+        <property name="path" value="src/bundle-building-sample/google_transit_staten_island.zip" />
     </bean>
 
     <bean id="gtfs-b63" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
@@ -34,8 +35,8 @@
     </bean>
 
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
-        <property name="stifPath" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/current/stif/" />
-        <property name="notInServiceDscPath" value="/Users/jmaki/Documents/workspace-oba/bundle-building/data/NotInServiceDSCs.txt"/>
+        <property name="stifPath" value="src/bundle-building-sample/stifs/" />
+        <property name="notInServiceDscPath" value="src/bundle-building-sample/data/NotInServiceDSCs.txt"/>
     </bean>
 
     <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">

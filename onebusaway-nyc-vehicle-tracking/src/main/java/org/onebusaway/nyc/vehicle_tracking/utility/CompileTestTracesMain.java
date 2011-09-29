@@ -21,11 +21,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import org.onebusaway.gtfs.csv.CsvEntityReader;
-import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
-import org.onebusaway.gtfs.csv.EntityHandler;
-import org.onebusaway.gtfs.csv.ListEntityHandler;
-import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.csv_entities.ListEntityHandler;
+import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class CompileTestTracesMain {

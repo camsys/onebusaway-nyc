@@ -31,43 +31,27 @@
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">/Users/jmaki/Documents/workspace-oba/oba-bundle</prop>
+                <prop key="bundlePath">/tmp/oba-bundle</prop>
             </props>
         </property>
     </bean>
 
+    <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
 
-
-    <!-- Database Connection Configuration -->
+    <!-- Database Configuration -->
     
-<!--     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
-<!--         <property name="driverClassName" value="org.hsqldb.jdbcDriver" /> -->
-<!--         <property name="url" value="jdbc:hsqldb:file:${bundlePath}/org_onebusaway_database" /> -->
-<!--         <property name="username" value="sa" /> -->
-<!--         <property name="password" value="" /> -->
-<!--     </bean> -->
-
-<!--     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor"> -->
-<!--         <property name="target" value="hibernateProperties" /> -->
-<!--         <property name="properties"> -->
-<!--             <props> -->
-<!--                 <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop> -->
-<!--             </props>  -->
-<!--         </property>  -->
-<!--     </bean>  -->
-
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
-        <property name="username" value="postgres" />
-        <property name="password" value="changeme" />
+        <property name="driverClassName" value="${db.driverClassName}" />
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
     </bean>
     
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
             </props> 
         </property> 
     </bean> 

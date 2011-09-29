@@ -28,8 +28,8 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
-import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
-import org.onebusaway.gtfs.csv.EntityHandler;
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.TraceSupport;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;

@@ -22,9 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.onebusaway.gtfs.csv.schema.BeanWrapper;
-import org.onebusaway.gtfs.csv.schema.BeanWrapperFactory;
-import org.onebusaway.gtfs.csv.schema.FieldMapping;
+
+import org.onebusaway.csv_entities.schema.BeanWrapper;
+import org.onebusaway.csv_entities.schema.BeanWrapperFactory;
+import org.onebusaway.csv_entities.schema.FieldMapping;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 

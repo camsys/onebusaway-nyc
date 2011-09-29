@@ -36,9 +36,10 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.onebusaway.gtfs.csv.CsvEntityReader;
-import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
-import org.onebusaway.gtfs.csv.EntityHandler;
+
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class TraceSupport {

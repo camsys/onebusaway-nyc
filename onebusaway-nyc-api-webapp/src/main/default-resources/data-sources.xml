@@ -8,44 +8,31 @@
 
     <!-- Transit Data Service -->
     
-	<!-- Transit data federation webapp as TDS: production/staging config -->
-<!--     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean"> -->
-<!--         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp/remoting/transit-data-service" /> -->
-<!--         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" /> -->
-<!--     </bean> -->
-
-<!--     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean"> -->
-<!--         <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp/remoting/configuration-service"/> -->
-<!--         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" /> -->
-<!--     </bean> -->
-
-	<!-- Vehicle tracking webapp as TDS: development config -->
+    <!-- Transit Data Service -->
     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service" />
+        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
-
+    
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/configuration-service"/>
+        <property name="serviceUrl" value="${config.path}/remoting/configuration-service"/>
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
     </bean>
-
-
 
     <!-- Database Configuration -->
     
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="url" value="jdbc:postgresql://localhost/org_onebusaway_nyc" />
-        <property name="username" value="postgres" />
-        <property name="password" value="changeme" />
+        <property name="driverClassName" value="${db.driverClassName}" />
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
     </bean>
     
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
             </props> 
         </property> 
     </bean> 
@@ -55,6 +42,9 @@
 
 
 	<!-- Other Stuff: -->
+    
+    <!-- This will get expanded out to a bean entry if configured so -->
+    ${dummy.permissions}
 
 	<!-- This is a class to filter arrival and departure beans for NYC. We need to fix this - it's a hack -->
     <bean id="adbeanFilter" class="org.onebusaway.nyc.presentation.impl.ArrivalDepartureBeanListFilterImpl" />

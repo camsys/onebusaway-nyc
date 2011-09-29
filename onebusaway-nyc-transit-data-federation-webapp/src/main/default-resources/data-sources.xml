@@ -29,7 +29,8 @@
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">/Users/jmaki/Documents/workspace-oba/oba-bundle</prop>
+<!--                 <prop key="bundlePath">/Users/jmaki/Documents/workspace-oba/oba-bundle</prop> -->
+                <prop key="bundlePath">example-bundle</prop>
             </props>
         </property>
     </bean>

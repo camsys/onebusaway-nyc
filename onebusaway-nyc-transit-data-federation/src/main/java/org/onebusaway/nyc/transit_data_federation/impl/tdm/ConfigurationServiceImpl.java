@@ -61,6 +61,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@SuppressWarnings("unused")
 	@PostConstruct
 	private void startUpdateProcess() {
+	  _log.info("ConfigurationServiceImpl: startUpdateProcess");
 		_updateTimer = new Timer();
 		_updateTimer.schedule(new UpdateThread(), 0, 30 * 1000); // 30s	
 	}
