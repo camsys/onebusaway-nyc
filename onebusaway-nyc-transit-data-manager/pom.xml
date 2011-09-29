@@ -16,6 +16,8 @@
 	<packaging>pom</packaging>
 
 	<modules>
-	  <module>onebusaway-nyc-tdm-adapters</module>
+		<module>onebusaway-nyc-tdm-adapters</module>
+		<module>onebusaway-nyc-tdm-service</module>
 	</modules>
+
 </project>

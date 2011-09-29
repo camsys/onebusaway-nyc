@@ -13,23 +13,29 @@ import tcip_final_3_0_5_1.CcLocationReport;
 
 public class PartitionedInputQueueListenerTask extends InputQueueListenerTask {
 
-  private String _depotPartitionKey = null;
+  private String[] _depotPartitionKeys = null;
+
   @Autowired
   private VehicleLocationInferenceService _vehicleLocationService;
+  
   @Autowired
   private VehicleAssignmentService _vehicleAssignmentService;
 
   @Override
   public void processMessage(String address, String contents) {
     CcLocationReport message = deserializeMessage(contents);
+
     if (acceptMessage(message)) {
       _vehicleLocationService.handleCcLocationReportRecord(message);
     }
   }
 
   private boolean acceptMessage(CcLocationReport message) {
-    ArrayList<AgencyAndId> vehicleList = _vehicleAssignmentService.getAssignedVehicleIdsForDepot(_depotPartitionKey);
-
+    ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
+    for(String key : _depotPartitionKeys) {
+      vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
+    }
+    
     CPTVehicleIden vehicleIdent = message.getVehicle();
     AgencyAndId vehicleId = new AgencyAndId(vehicleIdent.getAgencydesignator(),
         vehicleIdent.getVehicleId() + "");
@@ -38,11 +44,20 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask {
   }
 
   public String getDepotPartitionKey() {
-    return _depotPartitionKey;
+    StringBuilder sb = new StringBuilder();
+    for(String key : _depotPartitionKeys) {
+      if(sb.length() > 0)
+        sb.append(",");
+      sb.append(key);
+    }
+    return sb.toString();
   }
 
   public void setDepotPartitionKey(String depotPartitionKey) {
-    _depotPartitionKey = depotPartitionKey;
+    if(depotPartitionKey != null)
+      _depotPartitionKeys = depotPartitionKey.split(",");
+    else
+      _depotPartitionKeys = null;
   }
 
 }

@@ -60,7 +60,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
 
-  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis();
+  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
   @Autowired
   private OutputQueueSenderService _outputQueueSenderService;
