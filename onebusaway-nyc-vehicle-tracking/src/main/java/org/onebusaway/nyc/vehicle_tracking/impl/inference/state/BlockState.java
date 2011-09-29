@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
@@ -23,6 +24,8 @@ public final class BlockState {
   /**
    * Our current block instance
    */
+  private final RunTripEntry runTrip;
+  
   private final BlockInstance blockInstance;
 
   private final ScheduledBlockLocation blockLocation;
@@ -40,8 +43,16 @@ public final class BlockState {
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;
+    
+    
+    // FIXME TODO magic goes here!
+    this.runTrip = null;
   }
 
+  public RunTripEntry getRunTripEntry() {
+    return runTrip;
+  }
+  
   public BlockInstance getBlockInstance() {
     return blockInstance;
   }
@@ -57,6 +68,11 @@ public final class BlockState {
   @Override
   public String toString() {
     return blockInstance + " location=" + blockLocation + " dsc="
-        + destinationSignCode;
+        + destinationSignCode + " runTrip=" + runTrip;
+  }
+
+  public String getRunId() {
+    // TODO agencyId?
+    return runTrip.getRun();
   }
 }

@@ -55,6 +55,7 @@ import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInf
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
@@ -76,7 +77,7 @@ import umontreal.iro.lecuyer.rng.*;
 import umontreal.iro.lecuyer.randvar.*;
 import umontreal.iro.lecuyer.probdist.*;
 import umontreal.iro.lecuyer.randvarmulti.*;
-import umontreal.iro.lecuyer.probdistmulti.*; 
+import umontreal.iro.lecuyer.probdistmulti.*;
 
 @Component
 public class VehicleLocationSimulationServiceImpl implements
@@ -87,7 +88,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private static final String ARG_VEHICLE_ID = "vehicle_id";
 
   private static final String ARG_RUN_TRANSITION_PARAMS = "run_transition_params";
-  
+
   private static final String ARG_SHIFT_START_TIME = "shift_start_time";
 
   private static final String ARG_LOCATION_SIGMA = "location_sigma";
@@ -103,7 +104,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
-  
+
   private RunService _runService;
 
   private DestinationSignCodeService _destinationSignCodeService;
@@ -115,19 +116,28 @@ public class VehicleLocationSimulationServiceImpl implements
   private AtomicInteger _taskIndex = new AtomicInteger();
 
   private BlockCalendarService _blockCalendarService;
-  
+
   private RandomStream streamArr = new MRG32k3a();
-  
+
+  // TODO consistent?
   private UniformGen ung = new UniformGen(streamArr);
+
+  private BlockGeospatialService _blockGeospatialService;
+
+  @Autowired
+  public void setBlockGeospatiaalService(
+      BlockGeospatialService blockGeospatialService) {
+    _blockGeospatialService = blockGeospatialService;
+  }
 
   @Autowired
   public void setRunService(RunService runService) {
     _runService = runService;
   }
-  
+
   @Autowired
   public void setVehicleLocationService(
-  VehicleLocationInferenceService vehicleLocationService) {
+      VehicleLocationInferenceService vehicleLocationService) {
     _vehicleLocationInferenceService = vehicleLocationService;
   }
 
@@ -185,7 +195,8 @@ public class VehicleLocationSimulationServiceImpl implements
       reader.setTokenizerStrategy(new TabTokenizerStrategy());
       reader.readEntities(NycRawLocationRecord.class, traceInputStream);
     } else if (traceType.equals("NycTestInferredLocationRecord")) {
-      reader.readEntities(NycTestInferredLocationRecord.class, traceInputStream);
+      reader
+          .readEntities(NycTestInferredLocationRecord.class, traceInputStream);
     }
     traceInputStream.close();
 
@@ -221,8 +232,7 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public VehicleLocationDetails getParticleDetails(int taskId,
-      int particleId) {
+  public VehicleLocationDetails getParticleDetails(int taskId, int particleId) {
     SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getParticleDetails(particleId);
@@ -319,16 +329,16 @@ public class VehicleLocationSimulationServiceImpl implements
     return summaries;
   }
 
-  
   public void generateRunSim(Random random, SimulatorTask task,
       RunTripEntry runTrip, long serviceDate, int scheduleTime,
-      int shiftStartTime, int trueTimeOffset, SortedMap<Double, 
-      Integer> scheduleDeviations, double locationSigma, AgencyAndId vehicleId) {
+      int shiftStartTime, int trueTimeOffset,
+      SortedMap<Double, Integer> scheduleDeviations, double locationSigma,
+      AgencyAndId vehicleId) {
 
     List<RunTripEntry> rtes = _runService.getRunTripEntriesForRun(runTrip
         .getRun());
 
-    //String agencyId = runTrip.getTripEntry().getId().getAgencyId();
+    // String agencyId = runTrip.getTripEntry().getId().getAgencyId();
 
     int firstTime = runTrip.getStartTime();
 
@@ -339,23 +349,23 @@ public class VehicleLocationSimulationServiceImpl implements
     // this is the last time of the current run-trip
     int runningLastTime = 0;
 
-    
+    ScheduledBlockLocation lastBlockLocation = null;
+
     // We could go by run trip entry sequence or perturbed schedule-time
     // evolution. The latter is chosen, for now.
     while (scheduleTime <= lastTime) {
 
       NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
 
-      long unperturbedTimestamp = serviceDate
-          + (scheduleTime + shiftStartTime) * 1000;
-
+      long unperturbedTimestamp = serviceDate + (scheduleTime + shiftStartTime)
+          * 1000;
 
       if (scheduleTime >= runningLastTime) {
         runTrip = _runService.getNextEntry(runTrip);
         runningLastTime = runTrip.getStopTime();
       }
 
-      // This could mean that the run has ended.  We could reassign the driver?
+      // This could mean that the run has ended. We could reassign the driver?
       // For now we'll terminate the simulation
       if (runTrip == null)
         break;
@@ -366,11 +376,10 @@ public class VehicleLocationSimulationServiceImpl implements
 
       record.setActualTripId(AgencyAndIdLibrary.convertToString(tripId));
 
-
       // TODO dsc changes for new block/run?
       String dsc = _destinationSignCodeService
           .getDestinationSignCodeForTripId(tripId);
-      
+
       if (dsc == null)
         dsc = "0";
 
@@ -388,12 +397,10 @@ public class VehicleLocationSimulationServiceImpl implements
         double ratio = (scheduleTime - firstTime)
             / ((double) (lastTime - firstTime));
         scheduleDeviation = (int) InterpolationLibrary.interpolate(
-            scheduleDeviations, ratio,
-            EOutOfRangeStrategy.LAST_VALUE);
+            scheduleDeviations, ratio, EOutOfRangeStrategy.LAST_VALUE);
       }
 
-      long perterbedTimestamp = unperturbedTimestamp + scheduleDeviation
-          * 1000;
+      long perterbedTimestamp = unperturbedTimestamp + scheduleDeviation * 1000;
 
       // FIXME Is this level of indirection necessary for just the
       // location?
@@ -401,53 +408,70 @@ public class VehicleLocationSimulationServiceImpl implements
       // Especially here, where we're just selecting the first
       // configuration to get a location.
       BlockEntry blockEntry = trip.getBlock();
-      
-      // TODO might want to ensure sane transfers...
-      List<BlockInstance> activeBlocks = 
-    		  _blockCalendarService.getClosestActiveBlocks(blockEntry.getId(), unperturbedTimestamp);
-      
-      BlockInstance currentBlockInstance = _blockCalendarService.getBlockInstance(blockEntry.getId(), serviceDate);
-      BlockInstance newBlock = sampleNearbyBlocks(currentBlockInstance, activeBlocks);
-      
-      if (newBlock != null) {
-    	  blockEntry = newBlock.getBlock().getBlock();
+      BlockInstance newBlock = null;
+      if (lastBlockLocation != null) {
+
+        CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
+            lastBlockLocation.getClosestStop().getStopTime().getStop()
+                .getStopLat(), lastBlockLocation.getClosestStop().getStopTime()
+                .getStop().getStopLon(), 100);
+
+        // TODO might want to ensure sane transfers...
+        List<BlockInstance> activeBlocks = _blockGeospatialService
+            .getActiveScheduledBlocksPassingThroughBounds(bounds,
+                unperturbedTimestamp - 1 * 60 * 1000,
+                unperturbedTimestamp + 1 * 60 * 1000);
+        BlockInstance currentBlockInstance = _blockCalendarService
+            .getBlockInstance(blockEntry.getId(), serviceDate);
+        newBlock = sampleNearbyBlocks(currentBlockInstance, activeBlocks);
       }
-      
+
+      if (newBlock != null) {
+        blockEntry = newBlock.getBlock().getBlock();
+      }
+
       ScheduledBlockLocation blockLocation = null;
       for (BlockConfigurationEntry block : blockEntry.getConfigurations()) {
 
         blockLocation = _scheduledBlockLocationService
-            .getScheduledBlockLocationFromScheduledTime(block,
-                scheduleTime);
+            .getScheduledBlockLocationFromScheduledTime(block, scheduleTime);
 
-        if (blockLocation != null)
-          break;
+        if (blockLocation != null) {
+          BlockTripEntry btrip = blockLocation.getActiveTrip();
+
+          AgencyAndId newTripId = btrip.getTrip().getId();
+
+          String runId = _runService.getInitialRunForTrip(newTripId);
+          String reliefRunId = _runService.getReliefRunForTrip(newTripId);
+
+          _log.info(scheduleTime + ":" + blockLocation.toString() + ", "
+              + runId + "-" + reliefRunId);
+
+          if (newBlock != null) {
+            RunTripEntry newRunTrip = _runService.getRunTripEntryForRunAndTime(
+                btrip.getTrip().getId().getAgencyId(), runId,
+                unperturbedTimestamp);
+
+            if (newRunTrip != null && newRunTrip.getRun() != runTrip.getRun()) {
+              _log.info(scheduleTime + ":" + runTrip + " -> " + newRunTrip);
+              runTrip = newRunTrip;
+            }
+          }
+        }
       }
 
       if (blockLocation == null)
         break;
 
-      if (newBlock != null) {
-	      BlockTripEntry btrip = blockLocation.getActiveTrip();
-	
-	      AgencyAndId newTripId = btrip.getTrip().getId();
-	
-	      String runId = _runService.getInitialRunForTrip(newTripId);
-	      RunTripEntry newRunTrip = 
-	    		  _runService.getRunTripEntryForRunAndTime(btrip.getTrip().getId().getAgencyId(), runId, unperturbedTimestamp);
-	      
-	      if (newRunTrip != null)
-	    	  runTrip = newRunTrip;
-      }
-
+      lastBlockLocation = blockLocation;
+      _log.info("sim blockLocation: " + blockLocation.toString());
       CoordinatePoint location = blockLocation.getLocation();
 
       record.setActualRunId(runTrip.getRun());
-      
-      record.setActualBlockId(AgencyAndIdLibrary
-          .convertToString(blockEntry.getId()));
-      record.setActualDistanceAlongBlock(blockLocation
-          .getDistanceAlongBlock());
+
+      record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockEntry
+          .getId()));
+      record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
 
       CoordinatePoint p = applyLocationNoise(location.getLat(),
           location.getLon(), locationSigma, random);
@@ -470,15 +494,25 @@ public class VehicleLocationSimulationServiceImpl implements
 
       task.addRecord(record);
 
-      // TODO confirm that this is reasonable for vehicle update intervals
-      scheduleTime += 30 + random.nextGaussian() * 10;
+      scheduleTime += 30 + random.nextGaussian() * 2;
     }
 
   }
 
-
   private BlockInstance sampleNearbyBlocks(BlockInstance currentBlock,
       List<BlockInstance> activeBlocks) {
+
+    int bsize = activeBlocks.size();
+
+    if (bsize < 1) {
+      _log.warn("sampler: not enough blocks to sample");
+      return null;
+    }
+
+    if (currentBlock == null) {
+      _log.warn("sampler: current block is null");
+      return null;
+    }
 
     int currentIdx = activeBlocks.lastIndexOf(currentBlock);
 
@@ -488,8 +522,6 @@ public class VehicleLocationSimulationServiceImpl implements
       currentIdx = activeBlocks.lastIndexOf(currentBlock);
 
     }
-
-    int bsize = activeBlocks.size();
 
     double[] tmpd = new double[bsize];
     double[] obs = new double[bsize];
@@ -501,6 +533,9 @@ public class VehicleLocationSimulationServiceImpl implements
         tmpd[i] = 1;
       }
       obs[i] = i;
+
+      if (bsize > 1)
+        _log.info(i + ": " + activeBlocks.get(i).getBlock().getBlock().getId());
     }
     DirichletGen rdg = new DirichletGen(streamArr, tmpd);
 
@@ -508,26 +543,24 @@ public class VehicleLocationSimulationServiceImpl implements
     rdg.nextPoint(probs);
     DiscreteDistribution emd = new DiscreteDistribution(obs, probs, bsize);
 
-    _log.info(emd.toString());
-
     double u = ung.nextDouble();
-    double newRunIdx = emd.inverseF(u);
+    double newIdx = emd.inverseF(u);
 
-    _log.info(u + ": sampled runIdx=" + newRunIdx);
+    if (newIdx != currentIdx)
+      _log.info(u + ": sampled new idx=" + newIdx);
 
-    return (int)newRunIdx != currentIdx ? activeBlocks.get((int)newRunIdx) : null;
+    return (int) newIdx != currentIdx ? activeBlocks.get((int) newIdx) : null;
   }
 
-/*
-   * We make the distinction between whether a block or a run is driving
-   * this simulation.  However, we always initialize the simulation by a run that
-   * is active for the "initialization" block, and thus trip, we were passed. 
+  /*
+   * We make the distinction between whether a block or a run is driving this
+   * simulation. However, we always initialize the simulation by a run that is
+   * active for the "initialization" block, and thus trip, we were passed.
    * Really, what we have is block-inspired run simulations...
-   * 
    */
   @Override
   public int addSimulationForBlockInstance(AgencyAndId blockId,
-      long serviceDate, long actualTime, boolean bypassInference, 
+      long serviceDate, long actualTime, boolean bypassInference,
       boolean isRunBased, boolean realtime, boolean fillActualProperties,
       Properties properties) {
 
@@ -560,8 +593,7 @@ public class VehicleLocationSimulationServiceImpl implements
     if (isRunBased) {
 
       ScheduledBlockLocation blockLocation = _scheduledBlockLocationService
-          .getScheduledBlockLocationFromScheduledTime(block,
-              scheduleTime);
+          .getScheduledBlockLocationFromScheduledTime(block, scheduleTime);
 
       BlockTripEntry trip = blockLocation.getActiveTrip();
 
@@ -576,8 +608,7 @@ public class VehicleLocationSimulationServiceImpl implements
       if (reliefTime > 0 && reliefTime <= scheduleTime)
         runId = _runService.getReliefRunForTrip(tripId);
 
-      long timestamp = serviceDate + (scheduleTime + shiftStartTime)
-          * 1000;
+      long timestamp = serviceDate + (scheduleTime + shiftStartTime) * 1000;
 
       RunTripEntry runTrip = _runService.getRunTripEntryForRunAndTime(
           tripId.getAgencyId(), runId, timestamp);
@@ -587,15 +618,14 @@ public class VehicleLocationSimulationServiceImpl implements
       // FIXME if no scheduled run trip, take first available
       if (runTrip == null) {
         List<RunTripEntry> runTripEntries = _runService
-            .getRunTripEntriesForTime(tripId.getAgencyId(),
-                timestamp);
+            .getRunTripEntriesForTime(tripId.getAgencyId(), timestamp);
 
         boolean resetTime = false;
 
         // so the time lookup has failed us. start at a different time
         if (runTripEntries == null || runTripEntries.isEmpty()) {
-          _log.warn("Couldn't get a run for time=" + timestamp + 
-              ".  Taking a run for this block and shifting the time...");
+          _log.warn("Couldn't get a run for time=" + timestamp
+              + ".  Taking a run for this block and shifting the time...");
           runTripEntries = _runService.getRunTripEntriesForRun(runId);
           resetTime = true;
         }
@@ -607,9 +637,9 @@ public class VehicleLocationSimulationServiceImpl implements
         runTrip = runTripEntries.get(0);
 
         if (resetTime) {
-          // we'll use this later to make our run appear as scheduled 
+          // we'll use this later to make our run appear as scheduled
           // for the time we wanted
-          trueTimeOffset = scheduleTime - runTrip.getStartTime();  
+          trueTimeOffset = scheduleTime - runTrip.getStartTime();
           scheduleTime = runTrip.getStartTime();
         }
 
@@ -645,8 +675,7 @@ public class VehicleLocationSimulationServiceImpl implements
       NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
 
       ScheduledBlockLocation blockLocation = _scheduledBlockLocationService
-          .getScheduledBlockLocationFromScheduledTime(block,
-              scheduleTime);
+          .getScheduledBlockLocationFromScheduledTime(block, scheduleTime);
 
       BlockTripEntry trip = blockLocation.getActiveTrip();
 
@@ -660,8 +689,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
       CoordinatePoint location = blockLocation.getLocation();
       record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockId));
-      record.setActualDistanceAlongBlock(blockLocation
-          .getDistanceAlongBlock());
+      record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       int actualScheduleTime = blockLocation.getScheduledTime();
 
       String dsc = _destinationSignCodeService
@@ -675,13 +703,11 @@ public class VehicleLocationSimulationServiceImpl implements
         double ratio = (scheduleTime - firstTime)
             / ((double) (lastTime - firstTime));
         scheduleDeviation = (int) InterpolationLibrary.interpolate(
-            scheduleDeviations, ratio,
-            EOutOfRangeStrategy.LAST_VALUE);
+            scheduleDeviations, ratio, EOutOfRangeStrategy.LAST_VALUE);
       }
 
       long timestamp = serviceDate
-          + (scheduleTime + shiftStartTime + scheduleDeviation)
-          * 1000;
+          + (scheduleTime + shiftStartTime + scheduleDeviation) * 1000;
 
       CoordinatePoint p = applyLocationNoise(location.getLat(),
           location.getLon(), locationSigma, random);
@@ -744,7 +770,7 @@ public class VehicleLocationSimulationServiceImpl implements
    * Simulation Property Methods
    ****/
   /*
-   *  These correspond to the centrality of the current run.
+   * These correspond to the centrality of the current run.
    */
   private List<Double> getRunTransitionParams(Properties properties) {
 
@@ -757,8 +783,8 @@ public class VehicleLocationSimulationServiceImpl implements
       String[] kvp = token.split("=");
 
       if (kvp.length != 1)
-        throw new IllegalArgumentException(
-            "invalid run-transition params: " + raw);
+        throw new IllegalArgumentException("invalid run-transition params: "
+            + raw);
 
       double param = Double.parseDouble(kvp[0]);
 
@@ -771,16 +797,19 @@ public class VehicleLocationSimulationServiceImpl implements
   private int getShiftStartTimeProperty(Properties properties) {
     int shiftStartTime = 0;
     if (properties.containsKey(ARG_SHIFT_START_TIME))
-      shiftStartTime = Integer.parseInt(properties.getProperty(ARG_SHIFT_START_TIME)) * 60;
+      shiftStartTime = Integer.parseInt(properties
+          .getProperty(ARG_SHIFT_START_TIME)) * 60;
     return shiftStartTime;
   }
 
-  private AgencyAndId getVehicleIdProperty(Random random, Properties properties, String agencyId) {
+  private AgencyAndId getVehicleIdProperty(Random random,
+      Properties properties, String agencyId) {
 
     AgencyAndId vehicleId = null;
 
     if (properties.containsKey(ARG_VEHICLE_ID))
-      vehicleId = AgencyAndIdLibrary.convertFromString(properties.getProperty(ARG_VEHICLE_ID));
+      vehicleId = AgencyAndIdLibrary.convertFromString(properties
+          .getProperty(ARG_VEHICLE_ID));
 
     if (vehicleId == null) {
       int vid = random.nextInt(9999);
@@ -792,7 +821,8 @@ public class VehicleLocationSimulationServiceImpl implements
   private double getLocationSigma(Properties properties) {
     double locationSigma = 0.0;
     if (properties.containsKey(ARG_LOCATION_SIGMA))
-      locationSigma = Double.parseDouble(properties.getProperty(ARG_LOCATION_SIGMA));
+      locationSigma = Double.parseDouble(properties
+          .getProperty(ARG_LOCATION_SIGMA));
     return locationSigma;
   }
 

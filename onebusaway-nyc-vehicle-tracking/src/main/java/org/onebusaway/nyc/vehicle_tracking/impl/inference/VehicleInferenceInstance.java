@@ -33,6 +33,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.RunState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
@@ -440,6 +441,10 @@ public class VehicleInferenceInstance {
 	Set<String> statusFields = new HashSet<String>();
 
 	if (blockState != null) {
+	  // TODO set inferred runId!
+	  
+	  record.setInferredRunId(blockState.getRunId());
+	  
 		BlockInstance blockInstance = blockState.getBlockInstance();
 		BlockConfigurationEntry blockConfig = blockInstance.getBlock();
 		BlockEntry block = blockConfig.getBlock();

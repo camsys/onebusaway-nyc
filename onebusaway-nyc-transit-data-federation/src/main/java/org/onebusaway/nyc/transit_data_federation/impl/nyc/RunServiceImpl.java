@@ -187,6 +187,9 @@ public class RunServiceImpl implements RunService {
         ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
             blockConfig, scheduleTime);
 
+        if (blockLocation == null)
+        	continue;
+        
         BlockTripEntry trip = blockLocation.getActiveTrip();
         List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip().getId());
         
