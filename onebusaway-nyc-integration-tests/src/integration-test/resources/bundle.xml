@@ -8,21 +8,13 @@
     <!-- Provides support for specifying "${some.java.system.property}" for bean values -->
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" />
 
-    <!-- Database Connection Configuration -->
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:file:${onebusaway_prefix}/target/org_onebusaway_database" />
-        <property name="username" value="sa" />
-        <property name="password" value="" />
+
+   <bean id="bundle" class="org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle">
+      <property name="path" value="${bundlePath}" />
     </bean>
 
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-            </props>
-        </property>
+    <bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle">
+      <property name="path" value="${bundlePath}" />
     </bean>
 
     <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
@@ -34,7 +26,8 @@
     </bean>
 
     <bean id="gtfs_mta" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
-        <property name="path" value="${onebusaway_prefix}/src/integration-test/resources/mta-gtfs.zip" />
+        <property name="path" 
+        	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/mta-gtfs.zip" />
         <property name="defaultAgencyId" value="2008" />
         <property name="agencyIdMappings">
             <map>
@@ -43,29 +36,17 @@
         </property>
     </bean>
 
-    <bean id="osmProvider" class="org.opentripplanner.graph_builder.impl.osm.FileBasedOpenStreetMapProviderImpl">
-        <property name="path" value="${onebusaway_prefix}/src/integration-test/resources/mta.osm.gz" />
-    </bean>
-
-    <import resource="classpath:org/onebusaway/nyc/transit_data_federation/application-context.xml" />
-
-    <bean class="org.onebusaway.container.spring.QualifierConfigurer">
-        <property name="target" value="sessionFactory" />
-        <property name="value" value="mutable" />
+    <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
+        <property name="stifPath"
+            value="${onebusaway_prefix}/src/integration-test/resources/bundle/stifs/JG-B63-Winter" />
+	    <property name="notInServiceDscPath"
+            value="${onebusaway_prefix}/src/integration-test/resources/bundle/NotInServiceDSCs.txt" />
     </bean>
 
     <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
         <property name="taskName" value="stif" />
         <property name="afterTaskName" value="gtfs" />
-        <property name="beforeTaskName" value="transit_graph" />
+ 	    <property name="beforeTaskName" value="transit_graph" />
         <property name="task" ref="stifLoaderTask" />
     </bean>
-
-    <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">
-        <property name="stifPath"
-            value="${onebusaway_prefix}/src/integration-test/resources/stifs/JG-B63-Winter" />
-	    <property name="notInServiceDscPath"
-            value="${onebusaway_prefix}/src/integration-test/resources/out-of-service-dscs.txt" />
-    </bean>
-
 </beans>

@@ -41,6 +41,18 @@
         </property>
     </bean>
 
+
+	<!-- This option is a "dummy" input queue listener: it does nothing. -->
+  	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyPartitionedInputQueueListenerTask">
+		<property name="depotPartitionKey" value="XXX"/>
+  	</bean>
+
+	<!-- This option sends inference output to a local running TDF/TDS -->
+  	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
+  		<property name="isPrimaryInferenceInstance" value="true"/>
+	</bean>
+
+
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>

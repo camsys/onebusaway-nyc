@@ -58,6 +58,7 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
         serviceDelivery.ResponseTimestamp.getTimeInMillis());
 
     List<StopMonitoringDelivery> deliveries = serviceDelivery.stopMonitoringDeliveries;
+    
     /* there's only one stop requested */
     assertTrue(deliveries.size() == 1);
     StopMonitoringDelivery delivery = deliveries.get(0);

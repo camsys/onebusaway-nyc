@@ -20,8 +20,8 @@ import java.util.Date;
 
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
 public class NycTestInferredLocationRecord implements Serializable {
@@ -33,7 +33,7 @@ public class NycTestInferredLocationRecord implements Serializable {
   /****
    * Raw Observation Values
    ****/
-  @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
+  @CsvField(name = "vid", mapping = AgencyAndIdFieldMappingFactory.class)
   private AgencyAndId vehicleId;
 
   private double lat;
