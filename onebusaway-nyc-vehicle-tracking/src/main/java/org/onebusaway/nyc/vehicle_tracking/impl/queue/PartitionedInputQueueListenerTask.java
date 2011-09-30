@@ -72,6 +72,5 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask {
   public void destroy() {
     super.destroy();
   }
-
-
+  
 }
