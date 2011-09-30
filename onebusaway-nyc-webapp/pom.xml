@@ -122,21 +122,10 @@
     <profiles>
         <!-- DB profiles -->
         <profile>
-            <id>db-hsqldb-local</id>
+            <id>db-postgres-local</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-            <properties>
-                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
-                <db.url>jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true</db.url>
-                <db.username>sa</db.username>
-                <db.password></db.password>
-                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
-                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
-            </properties>
-        </profile>
-        <profile>
-            <id>db-postgres-local</id>
             <properties>
                 <db.driverClassName>org.postgresql.Driver</db.driverClassName>
                 <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
@@ -144,6 +133,17 @@
                 <db.password>changeme</db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
                 <!-- TODO Note sure about autocommit for postgres -->
+                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-hsqldb-local</id>
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
             </properties>
         </profile>
