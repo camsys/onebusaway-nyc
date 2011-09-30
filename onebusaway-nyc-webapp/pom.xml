@@ -158,6 +158,7 @@
                 <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url></webapp.api.url>
             </properties>
         </profile>
         <profile>
@@ -171,16 +172,18 @@
                 <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
                 <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8080</webapp.api.url>
             </properties>
         </profile>
         <profile>
             <id>services-vtw-as-tds-multiport</id> <!-- multi port, also for development -->
-            <!-- assumes we're running on 8080, so vtw is on a different port -->
+            <!-- assumes we're running on 8080, and vtw and api are on different ports -->
             <properties>
                 <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
                 <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
                 <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8082</webapp.api.url>
             </properties>
         </profile>
 

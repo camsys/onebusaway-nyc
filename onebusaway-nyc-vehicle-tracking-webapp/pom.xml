@@ -122,6 +122,17 @@
             </properties>
         </profile>
         <!-- TODO MySQL -->
+        
+        <!--  bundle location profiles -->
+        <profile>
+            <id>bundle-tmp</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <bundle.location>/tmp/oba-bundle</bundle.location>
+            </properties>
+        </profile>
     </profiles>
 
     <build>

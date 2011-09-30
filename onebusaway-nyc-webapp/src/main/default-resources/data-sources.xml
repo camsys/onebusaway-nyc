@@ -70,7 +70,7 @@
      <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="properties">
             <props>
-                <prop key="webapp.api.url">http://localhost:8082</prop>
+                <prop key="webapp.api.url">${webapp.api.url}</prop>
             </props>
         </property>
     </bean>
