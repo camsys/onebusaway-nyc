@@ -31,7 +31,7 @@
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">/tmp/oba-bundle</prop>
+                <prop key="bundlePath">/Users/jmaki/Documents/workspace-oba/oba-bundle</prop>
             </props>
         </property>
     </bean>
@@ -63,7 +63,6 @@
 	<!-- Input Queue Configuration -->
 
   	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask">
-		<!-- (JG = Jackie Gleason depot from the pilot project) -->
 		<property name="depotPartitionKey" value="JG,CA,MA,MH,YU"/>
   	</bean>
 
