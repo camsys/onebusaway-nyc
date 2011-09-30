@@ -31,7 +31,7 @@
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">/Users/jmaki/Documents/workspace-oba/oba-bundle</prop>
+                <prop key="bundlePath">${bundle.location}</prop>
             </props>
         </property>
     </bean>
