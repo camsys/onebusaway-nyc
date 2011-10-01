@@ -63,13 +63,8 @@
 	<!-- Input Queue Configuration -->
 
 	<!-- This option listens to the queue with pilot and SI data on it. -->
-<!--   	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask"> -->
-<!-- 		<property name="depotPartitionKey" value="JG,CA,MA,MH,YU"/> -->
-<!--   	</bean> -->
-
-	<!-- This option is a "dummy" input queue listener: it does nothing. -->
-  	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyPartitionedInputQueueListenerTask">
-		<property name="depotPartitionKey" value="XXX"/>
+  	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask">
+		<property name="depotPartitionKey" value="JG,CA,MA,MH,YU"/>
   	</bean>
 
 

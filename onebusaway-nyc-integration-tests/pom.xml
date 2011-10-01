@@ -12,7 +12,7 @@
 
     <properties>
         <tomcat-version>5.5.29</tomcat-version>
-        <cargo.jvmargs>-Xmx1G -XX:MaxPermSize=256m -Djava.library.path=/usr/lib</cargo.jvmargs>
+        <cargo.jvmargs>-Xmx1G -XX:MaxPermSize=256m</cargo.jvmargs>
         <hsqldb.port>9930</hsqldb.port>
         <pauseDuringIntegrationTest>false</pauseDuringIntegrationTest>
 
@@ -106,6 +106,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
+<!--                         	<debugForkedProcess>true</debugForkedProcess> -->
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>
@@ -256,7 +257,7 @@
                             <configuration>
                                 <home>${project.build.directory}/tomcat5x/webapp</home>
                                 <properties>
-                                    <cargo.jvmargs>${cargo.jvmargs} -Dapp_name=onebusaway-webapp</cargo.jvmargs>
+                                    <cargo.jvmargs>${cargo.jvmargs}</cargo.jvmargs>
                                     <cargo.servlet.port>${org.onebusaway.webapp.port}</cargo.servlet.port>
                                     <cargo.tomcat.ajp.port>${org.onebusaway.webapp.ajp_port}</cargo.tomcat.ajp.port>
                                     <cargo.rmi.port>${org.onebusaway.webapp.rmi_port}</cargo.rmi.port>

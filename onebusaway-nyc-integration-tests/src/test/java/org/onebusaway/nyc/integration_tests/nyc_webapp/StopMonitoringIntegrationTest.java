@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.commons.httpclient.HttpException;
 import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.siri.model.DistanceExtensions;
 import org.onebusaway.siri.model.MonitoredCall;
@@ -66,7 +67,7 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     assertEquals(_time.getTime(),delivery.ResponseTimestamp.getTimeInMillis());
     
     // We shouldn't actually have any results
-    assertNull(delivery.visits);
+    assertNull(delivery.visits  );
   }
 
   @Test
@@ -86,6 +87,8 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     record.setCurrentLocationLat(40.65266509229019);
     record.setCurrentLocationLon(-74.00245398573307);
     record.setDistanceAlongBlock(53097.667367660964);
+    record.setPhase(EVehiclePhase.IN_PROGRESS);
+    record.setStatus("default");
     record.setServiceDate(1291698000000L);
     record.setTimeOfRecord(time.getTime());
     record.setVehicleId(_vehicleId);
