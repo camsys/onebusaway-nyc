@@ -331,7 +331,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
   public void generateRunSim(Random random, SimulatorTask task,
       RunTripEntry runTrip, long serviceDate, int scheduleTime,
-      int shiftStartTime, int trueTimeOffset,
+      int shiftStartTime, int trueTimeOffset, boolean reportsOperatorId, 
+      boolean reportsRunId,
       SortedMap<Double, Integer> scheduleDeviations, double locationSigma,
       AgencyAndId vehicleId) {
 
@@ -444,16 +445,16 @@ public class VehicleLocationSimulationServiceImpl implements
           String runId = _runService.getInitialRunForTrip(newTripId);
           String reliefRunId = _runService.getReliefRunForTrip(newTripId);
 
-          _log.info(scheduleTime + ":" + blockLocation.toString() + ", "
+          _log.debug(scheduleTime + ":" + blockLocation.toString() + ", "
               + runId + "-" + reliefRunId);
 
           if (newBlock != null) {
             RunTripEntry newRunTrip = _runService.getRunTripEntryForRunAndTime(
-                btrip.getTrip().getId().getAgencyId(), runId,
+                new AgencyAndId(btrip.getTrip().getId().getAgencyId(), runId),
                 unperturbedTimestamp);
 
             if (newRunTrip != null && newRunTrip.getRun() != runTrip.getRun()) {
-              _log.info(scheduleTime + ":" + runTrip + " -> " + newRunTrip);
+              _log.debug(scheduleTime + ":" + runTrip + " -> " + newRunTrip);
               runTrip = newRunTrip;
             }
           }
@@ -481,6 +482,12 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setLon(p.getLon());
       record.setTimestamp(perterbedTimestamp + trueTimeOffset);
       record.setVehicleId(vehicleId);
+      // TODO options for whether these are reported or not?
+      if (reportsOperatorId)
+        record.setOperatorId("0000");
+      
+      if (reportsRunId)
+        record.setReportedRunId(runTrip.getRun());
 
       record.setActualServiceDate(serviceDate);
 
@@ -562,6 +569,7 @@ public class VehicleLocationSimulationServiceImpl implements
   public int addSimulationForBlockInstance(AgencyAndId blockId,
       long serviceDate, long actualTime, boolean bypassInference,
       boolean isRunBased, boolean realtime, boolean fillActualProperties,
+      boolean reportsOperatorId, boolean reportsRunId,
       Properties properties) {
 
     Random random = new Random();
@@ -592,58 +600,14 @@ public class VehicleLocationSimulationServiceImpl implements
 
     if (isRunBased) {
 
-      ScheduledBlockLocation blockLocation = _scheduledBlockLocationService
-          .getScheduledBlockLocationFromScheduledTime(block, scheduleTime);
-
-      BlockTripEntry trip = blockLocation.getActiveTrip();
-
-      AgencyAndId tripId = trip.getTrip().getId();
-
-      String runId = _runService.getInitialRunForTrip(tripId);
-
-      int reliefTime = _runService.getReliefTimeForTrip(tripId);
-
-      // if there is a relief and our schedule time is past the relief
-      // then use that run
-      if (reliefTime > 0 && reliefTime <= scheduleTime)
-        runId = _runService.getReliefRunForTrip(tripId);
-
-      long timestamp = serviceDate + (scheduleTime + shiftStartTime) * 1000;
-
-      RunTripEntry runTrip = _runService.getRunTripEntryForRunAndTime(
-          tripId.getAgencyId(), runId, timestamp);
-
-      int trueTimeOffset = 0;
-
-      // FIXME if no scheduled run trip, take first available
+      RunTripEntry runTrip = _runService.getRunTripEntryForBlockInstance(blockInstance, scheduleTime);
+      
       if (runTrip == null) {
-        List<RunTripEntry> runTripEntries = _runService
-            .getRunTripEntriesForTime(tripId.getAgencyId(), timestamp);
-
-        boolean resetTime = false;
-
-        // so the time lookup has failed us. start at a different time
-        if (runTripEntries == null || runTripEntries.isEmpty()) {
-          _log.warn("Couldn't get a run for time=" + timestamp
-              + ".  Taking a run for this block and shifting the time...");
-          runTripEntries = _runService.getRunTripEntriesForRun(runId);
-          resetTime = true;
-        }
-
-        if (runTripEntries == null || runTripEntries.isEmpty())
-          return -1;
-
-        // we could find a runTrip nearby in time...
-        runTrip = runTripEntries.get(0);
-
-        if (resetTime) {
-          // we'll use this later to make our run appear as scheduled
-          // for the time we wanted
-          trueTimeOffset = scheduleTime - runTrip.getStartTime();
-          scheduleTime = runTrip.getStartTime();
-        }
-
+        _log.warn("no runTrip for blockInstance=" + blockInstance + " and scheduleTime=" + scheduleTime);
+        return -1;
       }
+      
+      int trueTimeOffset = 0;
 
       _log.info("Using runTrip=" + runTrip.toString());
 
@@ -651,8 +615,10 @@ public class VehicleLocationSimulationServiceImpl implements
       // List<Double> transitionParams =
       // getRunTransitionParams(properties);
 
+      // TODO create "config" object to hold this mess?
       generateRunSim(random, task, runTrip, serviceDate, scheduleTime,
-          shiftStartTime, trueTimeOffset, scheduleDeviations, locationSigma,
+          shiftStartTime, trueTimeOffset, reportsOperatorId, reportsRunId, 
+          scheduleDeviations, locationSigma,
           vehicleId);
 
       return addTask(task);

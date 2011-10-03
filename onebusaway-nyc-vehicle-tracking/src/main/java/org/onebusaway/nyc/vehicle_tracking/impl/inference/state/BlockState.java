@@ -32,23 +32,30 @@ public final class BlockState {
 
   private final String destinationSignCode;
 
+  private boolean isUTSassigned;
+  private boolean isRunReported;
+  private boolean isRunReportedUTSMismatch;
+
   public BlockState(BlockInstance blockInstance,
-      ScheduledBlockLocation blockLocation, String destinationSignCode) {
+      ScheduledBlockLocation blockLocation, RunTripEntry runTrip, String destinationSignCode) {
     if (blockInstance == null)
       throw new IllegalArgumentException("blockInstance is null");
     if (blockLocation == null)
       throw new IllegalArgumentException("blockLocation is null");
     if (destinationSignCode == null)
       throw new IllegalArgumentException("dsc is null");
+    if (runTrip == null)
+      throw new IllegalArgumentException("runTrip is null");
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;
-    
-    
-    // FIXME TODO magic goes here!
-    this.runTrip = null;
+    this.isUTSassigned = false;
+    this.isRunReported = false;
+    this.isRunReportedUTSMismatch = false;
+    this.runTrip = runTrip;
   }
 
+  
   public RunTripEntry getRunTripEntry() {
     return runTrip;
   }
@@ -67,12 +74,40 @@ public final class BlockState {
 
   @Override
   public String toString() {
-    return blockInstance + " location=" + blockLocation + " dsc="
-        + destinationSignCode + " runTrip=" + runTrip;
+    return "[" + blockInstance + ", location=" + blockLocation + ", dsc="
+        + destinationSignCode + ", runTrip=" + runTrip 
+        + ", isUTSassigned=" + isUTSassigned + ", isRunReported=" 
+        + isRunReported + ", isRunReportedUTSMismatch=" + isRunReportedUTSMismatch
+        + "]";
   }
 
   public String getRunId() {
     // TODO agencyId?
-    return runTrip.getRun();
+    return runTrip == null?null:runTrip.getRun();
+  }
+
+  public boolean isRunReported() {
+    return isRunReported;
+  }
+
+  public void setRunReported(boolean isRunReported) {
+    this.isRunReported = isRunReported;
+  }
+
+
+  public boolean isUTSassigned() {
+    return isUTSassigned;
+  }
+
+  public void setUTSassigned(boolean isUTSassigned) {
+    this.isUTSassigned = isUTSassigned;
+  }
+
+  public boolean isRunReportedUTSMismatch() {
+    return isRunReportedUTSMismatch;
+  }
+
+  public void setRunReportedUTSMismatch(boolean isRunReportedUTSMismatch) {
+    this.isRunReportedUTSMismatch = isRunReportedUTSMismatch;
   }
 }

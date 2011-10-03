@@ -19,4 +19,7 @@ public interface OperatorAssignmentService {
    */
   public ArrayList<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate);
 
+  public OperatorAssignmentItem getOperatorAssignmentItem(Date today,
+      String operatorId);
+
 }

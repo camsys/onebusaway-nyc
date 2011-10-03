@@ -185,7 +185,7 @@ public class VehicleLocationInferenceServiceImpl implements
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
       if (instance != null) {
-    	NycTestInferredLocationRecord record = instance.getCurrentState();
+      	NycTestInferredLocationRecord record = instance.getCurrentState();
         if (record != null) {
           record.setVehicleId(vehicleId);
           records.add(record);

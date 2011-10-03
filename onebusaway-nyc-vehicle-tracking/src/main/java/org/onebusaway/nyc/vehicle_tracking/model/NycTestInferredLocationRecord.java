@@ -36,10 +36,18 @@ public class NycTestInferredLocationRecord implements Serializable {
   @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
   private AgencyAndId vehicleId;
 
+  @CsvField(optional = true)
   private double lat;
 
+  @CsvField(optional = true)
   private double lon;
 
+  @CsvField(optional = true)
+  private String operatorId;
+  
+  @CsvField(optional = true)
+  private String reportedRunId;
+  
   /**
    * Time record was received by us.
    */
@@ -129,6 +137,10 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public AgencyAndId getVehicleId() {
     return vehicleId;
+  }
+  
+  public String getOperatorId() {
+    return operatorId;
   }
 
   public void setLat(double lat) {
@@ -410,5 +422,18 @@ public class NycTestInferredLocationRecord implements Serializable {
   public boolean locationDataIsMissing() {
     return (Double.isNaN(this.lat) || Double.isNaN(this.lon))
         || (this.lat == 0.0 && this.lon == 0.0);
+  }
+
+  public void setOperatorId(String operatorId) {
+    this.operatorId = operatorId;
+    
+  }
+
+  public String getReportedRunId() {
+    return reportedRunId;
+  }
+
+  public void setReportedRunId(String reportedRunId) {
+    this.reportedRunId = reportedRunId;
   }
 }
