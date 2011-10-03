@@ -208,7 +208,6 @@ public class RunServiceImpl implements RunService {
           if (secondTrip.getStartTime() < scheduleTime) {
             return secondTrip;
           }
-          return firstTrip;
         }
       }
     }
