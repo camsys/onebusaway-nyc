@@ -111,7 +111,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         _initialNumberOfParticles);
 
     if (atStartCdf.isEmpty() && inProgresCdf.isEmpty())
-      _log.warn("no blocks to sample!");
+      _log.warn("no blocks to sample for obs=" + obs);
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
@@ -128,7 +128,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
-  // TODO fix this hackish atStart/inProgress stuff
+  // FIXME TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState, 
       CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf, 
       CDFMap<BlockState> inProgressCdf, Observation obs) {
