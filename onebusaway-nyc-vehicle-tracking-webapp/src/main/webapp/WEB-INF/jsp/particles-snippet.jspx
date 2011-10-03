@@ -38,9 +38,10 @@
                 <td>Time</td>
                 <td>P</td>
                 <td>Phase</td>
-                <td>BlockId</td>
                 <td>FromReportedRun</td>
                 <td>FromUTSAssignment</td>
+                <td>RunId</td>
+                <td>BlockId</td>
                 <td>TripId</td>
                 <td>BlockLocation</td>
                 <td>DistanceAlongBlock</td>
@@ -71,8 +72,9 @@
                         <a href="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"><c:out value="${p.weight}"/></a>
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>
-                    <td><c:out value="${blockState.isRunReported}" /></td>
-                    <td><c:out value="${blockState.isUTSassigned}" /></td>
+                    <td><c:out value="${blockState.runReported}" /></td>
+                    <td><c:out value="${blockState.UTSassigned}" /></td>
+                    <td><c:out value="${blockState.runTripEntry.run}" /></td>
                     <td><a
                         href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
                         value="${blockState.blockInstance.block.block.id}" /></a></td>
