@@ -40,17 +40,37 @@ Location Simulation Console</a></p>
         <td>Bypass Inference:</td>
         <td>
         <p><input type="checkbox" name="bypassInference" /> -
-        Bypass inference engine and pass vehile location records
+        Bypass inference engine and pass vehicle location records
         directly to the transit data federation. Assumes "actual"
         ground-truth info is set in the trace.</p>
         </td>
     </tr>
     <tr>
+        <td>Fill Actual Properties:</td>
+        <td><input type="checkbox" name="fillActual" /> - 
+        Fill true values in the "actual" fields of the resulting records.</td>
+    </tr>
+    <tr>
         <td>Run-driven Simulation:</td>
         <td>
         <p><input type="checkbox" name="isRunDriven" /> -
-        Set this simulation to be driven by a run selected from the chosen block.</p>
+        Set this simulation to be driven by a run determined by the chosen block.</p>
         </td>
+    </tr>
+    <tr>
+        <td>Real-time Simulation:</td>
+        <td><input type="checkbox" name="realtime" /> - 
+        If set, all simulator messages will be processed according to their simulated times.</td>
+    </tr>
+    <tr>
+        <td>Report Operator Id:</td>
+        <td><input type="checkbox" name="reportsOperatorId" /> - 
+        A mock operator id that is associated with the chosen run is produced and reported in the generated data.</td>
+    </tr>
+    <tr>
+        <td>Report Run Id:</td>
+        <td><input type="checkbox" name="reportsRunId" /> - 
+        The chosen run is reported in the generated data</td>
     </tr>
     <tr>
         <td>Parameters:</td>

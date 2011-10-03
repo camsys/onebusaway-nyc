@@ -16,9 +16,15 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.impl.tdm.model.OperatorAssignmentItem;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -27,6 +33,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,12 +63,15 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
+  
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
   private VehicleStateLibrary _vehicleStateLibrary;
+  
 
   private MotionModelImpl _motionModel;
-
+  
+  
   @Autowired
   public void setBlockStateSamplingStrategy(
       BlockStateSamplingStrategy blockStateSamplingStrategy) {
@@ -100,6 +111,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // CDFMap<EdgeState> cdf =
     // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
+    
     CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
 
     CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
@@ -125,16 +137,17 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
+  // TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState, 
       CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf, 
       CDFMap<BlockState> inProgressCdf, Observation obs) {
 
+    BlockState blockState = null;
+    
     // If we're at a base to start, we favor that over all other possibilities
     if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
 
-      BlockState blockState = null;
-
-      if (!atStartCdf.isEmpty())
+      if (blockState == null && !atStartCdf.isEmpty())
         blockState = atStartCdf.sample();
 
       return vehicleState(motionState, blockState,
@@ -149,8 +162,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       if (inProgressCdf.isEmpty())
         return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
-
-      BlockState blockState = inProgressCdf.sample();
+      if (blockState == null)
+        blockState = inProgressCdf.sample();
       return vehicleState(motionState, blockState,
           JourneyState.inProgress(), obs);
     } else {
@@ -160,7 +173,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
 
-      BlockState blockState = atStartCdf.sample();
+      if (blockState == null)
+        blockState = atStartCdf.sample();
       return vehicleState(motionState, blockState,
           JourneyState.deadheadBefore(locationOnEdge), obs);
     }

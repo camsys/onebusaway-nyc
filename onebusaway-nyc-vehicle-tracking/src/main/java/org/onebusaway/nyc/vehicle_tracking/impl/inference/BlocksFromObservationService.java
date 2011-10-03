@@ -31,4 +31,10 @@ public interface BlocksFromObservationService {
   public BlockState advanceLayoverState(long timestamp, BlockState blockState);
 
   public BlockState bestState(Observation observation, BlockState blockState);
+
+  public Set<BlockState> determinePotentialBlockStatesForObservation(
+      Observation observation, boolean bestBlockLocation);
+
+  Set<BlockState> getReportedBlockStates(Observation observation,
+      boolean bestBlockLocation);
 }

@@ -34,6 +34,7 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+// TODO FIXME update for runs!
 @Component
 public class BlockStateTransitionModel {
 
@@ -199,6 +200,7 @@ public class BlockStateTransitionModel {
    * Private Methods
    ****/
 
+  // FIXME TODO this should include run info...
   private boolean allowBlockTransition(VehicleState parentState,
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
