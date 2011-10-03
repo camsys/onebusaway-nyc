@@ -280,7 +280,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         utsReported = false;
 
       } else if (!StringUtils.equals(utsRunId, reportedRunId)) {
-        _log.warn("UTS assigned run (" + utsRunId + " and reported run ("
+        _log.warn("UTS assigned run " + utsRunId + " and reported run "
             + reportedRunId + " don't match.  defaulting to UTS run.");
 
         // TODO which to use? for now, uts...
