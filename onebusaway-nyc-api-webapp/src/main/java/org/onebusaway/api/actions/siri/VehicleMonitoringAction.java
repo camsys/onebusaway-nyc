@@ -1,21 +1,18 @@
-/**
- * Copyright (C) 2011 Brian Ferris <bdferris@onebusaway.org>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+/*
+ * Copyright 2010, OpenPlans Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.onebusaway.api.actions.siri;
 
-import org.onebusaway.api.actions.OneBusAwayApiActionSupport;
 import org.onebusaway.siri.model.MonitoredVehicleJourney;
 import org.onebusaway.siri.model.ServiceDelivery;
 import org.onebusaway.siri.model.Siri;
@@ -31,7 +28,6 @@ import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-
 import com.opensymphony.xwork2.ModelDriven;
 import com.opensymphony.xwork2.conversion.annotations.TypeConversion;
 
@@ -51,15 +47,13 @@ import javax.servlet.http.HttpServletRequest;
  * For a given vehicle or set of vehicles, returns the location. Can select
  * vehicles by id, trip, or route.
  */
-public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
-    implements ModelDriven<Object>, ServletRequestAware {
-
-  private static final long serialVersionUID = 1L;
+public class VehicleMonitoringAction implements ModelDriven<Object>,
+    ServletRequestAware {
 
   private Object _response;
   private HttpServletRequest _request;
-
-  @Autowired
+  
+  @Autowired  
   private TransitDataService _transitDataService;
 
   private Date _time;
@@ -77,7 +71,7 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
    * @throws IOException
    */
   public DefaultHttpHeaders index() throws IOException {
-
+    
     String agencyId = _request.getParameter("OperatorRef");
 
     if (_time == null)
@@ -98,11 +92,11 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
           vehicleIdWithAgency, _time.getTime());
       ArrayList<VehicleActivity> activities = new ArrayList<VehicleActivity>();
       if (vehicle != null) {
-        if (!(vehicle.getPhase().equals("DEADHEAD_AFTER")
-            || vehicle.getPhase().equals("DEADHEAD_BEFORE") || vehicle.getPhase().equals(
-            "DEADHEAD_DURING"))) {
-          activities.add(createActivity(vehicle, onwardCalls));
-        }
+          if(!(vehicle.getPhase().equals("DEADHEAD_AFTER") ||
+              vehicle.getPhase().equals("DEADHEAD_BEFORE") ||
+              vehicle.getPhase().equals("DEADHEAD_DURING"))) {
+            activities.add(createActivity(vehicle, onwardCalls));
+          }
       }
       _response = generateSiriResponse(_time, activities);
       return new DefaultHttpHeaders();
@@ -181,10 +175,10 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
 
   private VehicleActivity createActivity(VehicleStatusBean vehicleStatus,
       boolean onwardCalls) {
-
-    if (vehicleStatus.getPhase().equals("DEADHEAD_AFTER")
-        || vehicleStatus.getPhase().equals("DEADHEAD_BEFORE")
-        || vehicleStatus.getPhase().equals("DEADHEAD_DURING")) {
+    
+    if (vehicleStatus.getPhase().equals("DEADHEAD_AFTER") ||
+        vehicleStatus.getPhase().equals("DEADHEAD_BEFORE") ||
+        vehicleStatus.getPhase().equals("DEADHEAD_DURING")) {
       return null;
     }
     VehicleActivity activity = new VehicleActivity();
@@ -207,8 +201,10 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
           tripDetails, new Date(tripStatus.getServiceDate()),
           vehicleStatus.getVehicleId());
 
-      if (onwardCalls) {
+      boolean deviated = tripStatus.getStatus().toLowerCase().equals("deviated");
 
+      if (onwardCalls && !deviated) {
+    	  
         List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
 
         long serviceDateMillis = tripStatus.getServiceDate();
@@ -226,7 +222,7 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
 
     activity.MonitoredVehicleJourney.VehicleRef = vehicleStatus.getVehicleId();
 
-    activity.MonitoredVehicleJourney.ProgressRate = SiriUtils.getProgressRateForStatus(vehicleStatus.getStatus());
+    activity.MonitoredVehicleJourney.ProgressRate = SiriUtils.getProgressRateForStatus(vehicleStatus.getStatus(), vehicleStatus.getPhase());
 
     VehicleLocation location = new VehicleLocation();
     location.Latitude = vehicleStatus.getLocation().getLat();
@@ -247,10 +243,9 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
 
     siri.ServiceDelivery.VehicleMonitoringDelivery = new VehicleMonitoringDelivery();
     siri.ServiceDelivery.VehicleMonitoringDelivery.ResponseTimestamp = siri.ServiceDelivery.ResponseTimestamp;
-
+    
     siri.ServiceDelivery.VehicleMonitoringDelivery.ValidUntil = (Calendar) calendar.clone();
-    siri.ServiceDelivery.VehicleMonitoringDelivery.ValidUntil.add(
-        Calendar.MINUTE, 1);
+    siri.ServiceDelivery.VehicleMonitoringDelivery.ValidUntil.add(Calendar.MINUTE, 1);
 
     siri.ServiceDelivery.VehicleMonitoringDelivery.deliveries = activities;
     return siri;
@@ -268,10 +263,12 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
         || status.getPhase().equals("DEADHEAD_DURING")) {
       return null;
     }
+    
+    boolean deviated = status.getStatus().toLowerCase().equals("deviated");
 
     Calendar time = Calendar.getInstance();
     time.setTime(new Date(status.getLastUpdateTime()));
-
+    
     activity.RecordedAtTime = time;
 
     activity.MonitoredVehicleJourney = SiriUtils.getMonitoredVehicleJourney(
@@ -284,12 +281,12 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
     VehicleLocation location = new VehicleLocation();
     location.Latitude = status.getLocation().getLat();
     location.Longitude = status.getLocation().getLon();
-
+    
     activity.MonitoredVehicleJourney.VehicleLocation = location;
-
-    if (onwardCalls) {
+    
+    if (onwardCalls && !deviated) {
       List<TripStopTimeBean> stopTimes = trip.getSchedule().getStopTimes();
-
+      
       long serviceDateMillis = status.getServiceDate();
       double distance = status.getDistanceAlongTrip();
       if (Double.isNaN(distance)) {
@@ -298,7 +295,7 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
       activity.MonitoredVehicleJourney.OnwardCalls = SiriUtils.getOnwardCalls(
           stopTimes, serviceDateMillis, distance, status.getNextStop());
     }
-
+    
     return activity;
   }
 
@@ -312,9 +309,11 @@ public class VehicleMonitoringAction extends OneBusAwayApiActionSupport
     this._request = request;
   }
 
+
   public void setService(TransitDataService service) {
     this._transitDataService = service;
   }
+
 
   public TransitDataService getService() {
     return _transitDataService;

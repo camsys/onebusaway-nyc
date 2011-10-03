@@ -72,7 +72,7 @@ public class SiriIntegrationTestBase {
   
     HttpClient client = new HttpClient();
     String port = System.getProperty("org.onebusaway.webapp.port", "9000");
-    String url = "http://localhost:" + port + "/onebusaway-api-webapp/siri/"
+    String url = "http://localhost:" + port + "/onebusaway-nyc-api-webapp/siri/"
         + query;
     GetMethod get = new GetMethod(url);
     client.executeMethod(get);

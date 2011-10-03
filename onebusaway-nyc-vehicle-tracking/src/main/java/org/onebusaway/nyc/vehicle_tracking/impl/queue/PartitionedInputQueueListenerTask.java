@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
@@ -59,5 +62,15 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask {
     else
       _depotPartitionKeys = null;
   }
-
+  
+  @PostConstruct
+  public void setup() {
+    super.setup();
+  }
+  
+  @PreDestroy 
+  public void destroy() {
+    super.destroy();
+  }
+  
 }

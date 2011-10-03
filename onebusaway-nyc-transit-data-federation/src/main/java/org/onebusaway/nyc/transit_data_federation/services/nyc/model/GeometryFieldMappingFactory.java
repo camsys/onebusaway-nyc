@@ -17,13 +17,9 @@ package org.onebusaway.nyc.transit_data_federation.services.nyc.model;
 
 import java.util.Map;
 
-import org.onebusaway.gtfs.csv.CsvEntityContext;
-import org.onebusaway.gtfs.csv.exceptions.CsvEntityException;
-import org.onebusaway.gtfs.csv.schema.AbstractFieldMapping;
-import org.onebusaway.gtfs.csv.schema.BeanWrapper;
-import org.onebusaway.gtfs.csv.schema.EntitySchemaFactory;
-import org.onebusaway.gtfs.csv.schema.FieldMapping;
-import org.onebusaway.gtfs.csv.schema.FieldMappingFactory;
+import org.onebusaway.csv_entities.*;
+import org.onebusaway.csv_entities.exceptions.CsvEntityException;
+import org.onebusaway.csv_entities.schema.BeanWrapper;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -31,23 +27,23 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
-public class GeometryFieldMappingFactory implements FieldMappingFactory {
+public class GeometryFieldMappingFactory implements org.onebusaway.csv_entities.schema.FieldMappingFactory {
 
-  public FieldMapping createFieldMapping(EntitySchemaFactory schemaFactory,
+  public org.onebusaway.csv_entities.schema.FieldMapping createFieldMapping(org.onebusaway.csv_entities.schema.EntitySchemaFactory schemaFactory,
       Class<?> entityType, String csvFieldName, String objFieldName,
       Class<?> objFieldType, boolean required) {
     return new FieldMappingImpl(entityType, csvFieldName, objFieldName);
   }
 
-  private static class FieldMappingImpl extends AbstractFieldMapping {
+  private static class FieldMappingImpl extends org.onebusaway.csv_entities.schema.AbstractFieldMapping {
 
     public FieldMappingImpl(Class<?> entityType, String csvFieldName,
         String objFieldName) {
       super(entityType, csvFieldName, objFieldName, true);
     }
 
-    public void translateFromCSVToObject(CsvEntityContext context,
-        Map<String, Object> csvValues, BeanWrapper object) {
+    public void translateFromCSVToObject(org.onebusaway.csv_entities.CsvEntityContext context,
+        Map<String, Object> csvValues, org.onebusaway.csv_entities.schema.BeanWrapper object) {
 
       if (isMissingAndOptional(csvValues))
         return;

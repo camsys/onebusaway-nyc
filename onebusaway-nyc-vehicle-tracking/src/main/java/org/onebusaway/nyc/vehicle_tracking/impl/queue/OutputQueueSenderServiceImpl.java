@@ -39,128 +39,128 @@ import org.zeromq.ZMQ;
 
 public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
-	private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
-		
-	private ExecutorService _executorService = null;
+  private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
 
-	private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
-	
-	private boolean _initialized = false;
+  private ExecutorService _executorService = null;
 
-	public boolean _isPrimaryInferenceInstance = true;
+  private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
 
-	private ObjectMapper _mapper = new ObjectMapper();		
+  private boolean _initialized = false;
 
-	@Autowired
-	private ConfigurationService _configurationService;
+  public boolean _isPrimaryInferenceInstance = true;
 
-	private class SendThread implements Runnable {
+  private ObjectMapper _mapper = new ObjectMapper();		
 
-		int processedCount = 0;
-		
-		Date markTimestamp = new Date();
-		
-		private ZMQ.Socket _zmqSocket = null;
+  @Autowired
+  private ConfigurationService _configurationService;
 
-		private byte[] _topicName = null;
-		
-		public SendThread(ZMQ.Socket socket, String topicName) {
-			_zmqSocket = socket;
-			_topicName = topicName.getBytes();
-		}
+  private class SendThread implements Runnable {
 
-		@Override
-		public void run() {
-		    while(true) {		    	
-	    		String r = _outputBuffer.poll();
-	    		if(r == null)
-	    			continue;
-	    		
-	    		_zmqSocket.send(_topicName, ZMQ.SNDMORE);
-	    		_zmqSocket.send(r.getBytes(), 0);
+    int processedCount = 0;
 
-		    	Thread.yield();
+    Date markTimestamp = new Date();
 
-				if(processedCount > 50) {
-					_log.info("Inference output queue: processed 50 messages in " 
-							+ (new Date().getTime() - markTimestamp.getTime()) / 1000 + 
-							" seconds; current queue length is " + _outputBuffer.size());
-					
-					markTimestamp = new Date();
-					processedCount = 0;
-				}
-				
-				processedCount++;		    	
-	    	}
-		}
-	}	
-	
-	@Override
-	public void enqueue(NycQueuedInferredLocationBean r) {
-		try {
-		    StringWriter sw = new StringWriter();
-		    MappingJsonFactory jsonFactory = new MappingJsonFactory();
-		    JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-		    _mapper.writeValue(jsonGenerator, r);
-		    sw.close();			
-			
-			_outputBuffer.put(sw.toString());
-		} catch(IOException e) {
-			_log.info("Could not serialize inferred location record: " + e.getMessage()); 
-		} catch(InterruptedException e) {
-			// discard if thread is interrupted or serialization fails
-			return;
-		}
-	}
+    private ZMQ.Socket _zmqSocket = null;
 
-	@PostConstruct
-	public void setup() {
-		_executorService = Executors.newFixedThreadPool(1);
-		startListenerThread();
-	}
-	
-	@PreDestroy 
-	public void destroy() {
-		_executorService.shutdownNow();
-	}
-	
-	@Refreshable(dependsOn = {"inference-engine.outputQueueHost", 
-			"inference-engine.outputQueuePort", "inference-engine.outputQueueName"})
-	public void startListenerThread() {
-		if(_initialized == true) {
-			_log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
-			return;
-		}
-		
-		String host = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueHost", null);
-		String queueName = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueName", null);
-	    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.outputQueuePort", 5566);
+    private byte[] _topicName = null;
 
-	    if(host == null || queueName == null || port == null) {
-	    	_log.info("Inference output queue is not attached; output hostname was not available via configuration service.");
-	    	return;
-	    }
+    public SendThread(ZMQ.Socket socket, String topicName) {
+      _zmqSocket = socket;
+      _topicName = topicName.getBytes();
+    }
 
-	    String bind = "tcp://" + host + ":" + port;
+    @Override
+    public void run() {
+      while(true) {		    	
+        String r = _outputBuffer.poll();
+        if(r == null)
+          continue;
 
-		ZMQ.Context context = ZMQ.context(1);
-		ZMQ.Socket socket = context.socket(ZMQ.PUB);	    	
-	    
-	    socket.connect(bind);
+        _zmqSocket.send(_topicName, ZMQ.SNDMORE);
+        _zmqSocket.send(r.getBytes(), 0);
 
-	    _executorService.execute(new SendThread(socket, queueName));
+        Thread.yield();
 
-		_log.debug("Inference output queue is sending to " + bind);
-		_initialized = true;
-	}
+        if(processedCount > 50) {
+          _log.info("Inference output queue: processed 50 messages in " 
+              + (new Date().getTime() - markTimestamp.getTime()) / 1000 + 
+              " seconds; current queue length is " + _outputBuffer.size());
 
-	@Override
-	public void setIsPrimaryInferenceInstance(boolean isPrimary) {
-		_isPrimaryInferenceInstance = isPrimary;		
-	}
+          markTimestamp = new Date();
+          processedCount = 0;
+        }
 
-	@Override
-	public boolean getIsPrimaryInferenceInstance() {
-		return _isPrimaryInferenceInstance;
-	}	
+        processedCount++;		    	
+      }
+    }
+  }	
+
+  @Override
+  public void enqueue(NycQueuedInferredLocationBean r) {
+    try {
+      StringWriter sw = new StringWriter();
+      MappingJsonFactory jsonFactory = new MappingJsonFactory();
+      JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
+      _mapper.writeValue(jsonGenerator, r);
+      sw.close();			
+
+      _outputBuffer.put(sw.toString());
+    } catch(IOException e) {
+      _log.info("Could not serialize inferred location record: " + e.getMessage()); 
+    } catch(InterruptedException e) {
+      // discard if thread is interrupted or serialization fails
+      return;
+    }
+  }
+
+  @PostConstruct
+  public void setup() {
+    _executorService = Executors.newFixedThreadPool(1);
+    startListenerThread();
+  }
+
+  @PreDestroy 
+  public void destroy() {
+    _executorService.shutdownNow();
+  }
+
+  @Refreshable(dependsOn = {"inference-engine.outputQueueHost", 
+      "inference-engine.outputQueuePort", "inference-engine.outputQueueName"})
+  public void startListenerThread() {
+    if(_initialized == true) {
+      _log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
+      return;
+    }
+
+    String host = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueHost", null);
+    String queueName = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueName", null);
+    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.outputQueuePort", 5566);
+
+    if(host == null || queueName == null || port == null) {
+      _log.info("Inference output queue is not attached; output hostname was not available via configuration service.");
+      return;
+    }
+
+    String bind = "tcp://" + host + ":" + port;
+
+    ZMQ.Context context = ZMQ.context(1);
+    ZMQ.Socket socket = context.socket(ZMQ.PUB);	    	
+
+    socket.connect(bind);
+
+    _executorService.execute(new SendThread(socket, queueName));
+
+    _log.debug("Inference output queue is sending to " + bind);
+    _initialized = true;
+  }
+
+  @Override
+  public void setIsPrimaryInferenceInstance(boolean isPrimary) {
+    _isPrimaryInferenceInstance = isPrimary;		
+  }
+
+  @Override
+  public boolean getIsPrimaryInferenceInstance() {
+    return _isPrimaryInferenceInstance;
+  }	
 }

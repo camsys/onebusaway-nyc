@@ -1,92 +1,195 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.onebusaway</groupId>
-		<artifactId>onebusaway-nyc</artifactId>
-		<version>2.0.1-SNAPSHOT</version>
-	</parent>
-	<artifactId>onebusaway-nyc-api-webapp</artifactId>
-	<packaging>war</packaging>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.onebusaway</groupId>
+        <artifactId>onebusaway-nyc</artifactId>
+        <version>2.0.3-SNAPSHOT</version>
+    </parent>
+    <artifactId>onebusaway-nyc-api-webapp</artifactId>
+    <packaging>war</packaging>
 
-	<name>onebusaway-nyc-api-webapp</name>
+    <name>onebusaway-nyc-api-webapp</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-transit-data</artifactId>
-			<version>${onebusaway.app-modules.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-api-core</artifactId>
-			<version>${onebusaway.app-modules.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-nyc-presentation</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-api-core</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-presentation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.onebusaway</groupId>
-			<artifactId>onebusaway-siri-api</artifactId>
-			<version>${onebusaway.siri.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-siri-api</artifactId>
+            <version>${onebusaway.siri.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
 
-		<!-- RMI-like service for wiring up services between VMs -->
-		<dependency>
-			<groupId>com.caucho</groupId>
-			<artifactId>resin-hessian</artifactId>
-		</dependency>
+        <!-- RMI-like service for wiring up services between VMs -->
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>resin-hessian</artifactId>
+        </dependency>
 
-		<!-- Struts 2 -->
-		<dependency>
-			<groupId>org.apache.struts</groupId>
-			<artifactId>struts2-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.struts</groupId>
-			<artifactId>struts2-spring-plugin</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.struts</groupId>
-			<artifactId>struts2-convention-plugin</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.struts</groupId>
-			<artifactId>struts2-rest-plugin</artifactId>
-		</dependency>
+        <!-- Struts 2 -->
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-spring-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-convention-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-rest-plugin</artifactId>
+        </dependency>
 
-		<!-- We use HttpServletRequest in XmlResult -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>jsp-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <!-- We use HttpServletRequest in XmlResult -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jsp-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-		<!-- For iPhone app notifications -->
-		<dependency>
-			<groupId>com.notnoop.apns</groupId>
-			<artifactId>apns</artifactId>
-			<version>0.1.6</version>
-		</dependency>
+        <!-- For iPhone app notifications -->
+        <dependency>
+            <groupId>com.notnoop.apns</groupId>
+            <artifactId>apns</artifactId>
+            <version>0.1.6</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- TODO This is an exact duplicate of what's in onebusaway-nyc-webapp. Should extract out to a common profiles.xml -->
+    <profiles>
+        <!-- DB profiles -->
+        <profile>
+            <id>db-postgres-local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <db.driverClassName>org.postgresql.Driver</db.driverClassName>
+                <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
+                <db.username>postgres</db.username>
+                <db.password>changeme</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
+                <!-- TODO Note sure about autocommit for postgres -->
+                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-hsqldb-local</id>
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
+                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+            </properties>
+        </profile>
+        <!-- TODO MySQL -->
+
+        <!-- Services profiles -->
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-tdf-as-tds</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <dummy.permissions></dummy.permissions>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Vehicle tracking webapp offers the TDS -->
+            <id>services-vtw-as-tds</id> <!-- single port, aka development -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <dummy.permissions></dummy.permissions>
+            </properties>
+        </profile>
+        <profile>
+            <id>services-vtw-as-tds-multiport</id> <!-- multi port, also for development -->
+            <!-- assumes we're running on 8082, so vtw is on a different port -->
+            <properties>
+                <jetty.port>8082</jetty.port>
+                <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <dummy.permissions>    &lt;bean id="apiKeyService" class="org.onebusaway.api.services.DummyApiKeyPermissionService" primary="true"/&gt;    
+                </dummy.permissions>
+            </properties>
+        </profile>
+
+    </profiles>
+
+
+    <build>
+        <finalName>onebusaway-nyc-api-webapp</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <connectors>
+                        <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                            <port>${jetty.port}</port>
+                        </connector>
+                    </connectors>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/default-resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
 </project>

@@ -28,6 +28,11 @@
             <includes>
                 <include>org.onebusaway:onebusaway-nyc-vehicle-tracking-webapp</include>
             </includes>
+        	<unpackOptions>
+            	<excludes>
+                	<exclude>**/data-sources.xml</exclude>
+            	</excludes>
+        	</unpackOptions>
             <unpack>true</unpack>
             <scope>runtime</scope>
         </dependencySet>

@@ -29,6 +29,11 @@
                 <include>org.onebusaway:onebusaway-nyc-webapp</include>
             </includes>
             <unpack>true</unpack>
+        	<unpackOptions>
+            	<excludes>
+                	<exclude>**/data-sources.xml</exclude>
+            	</excludes>
+        	</unpackOptions>
             <scope>runtime</scope>
         </dependencySet>
         <dependencySet>

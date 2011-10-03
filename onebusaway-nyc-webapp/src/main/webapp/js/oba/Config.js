@@ -27,7 +27,7 @@ OBA.Config = {
 
 		// Despite its name, it's the prefix of the url, usually the host and port (e.g. "http://bustime.mta.info:8080").
 		// If omitted, will use same host & port as the UI webapp.
-		apiUrl: "http://bustime.mta.info",
+		apiUrl: "",
 		
 		// urls to fetch various data
 		searchUrl: "search.action",

@@ -47,26 +47,26 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   @PostConstruct
   @Refreshable(dependsOn = NycRefreshableResources.DESTINATION_SIGN_CODE_DATA)
   public void setup() throws IOException, ClassNotFoundException {
-	File dscToTripPath = _bundle.getDSCForTripIndex();
-	if (dscToTripPath.exists()) {
-		_dscToTripMap = ObjectSerializationLibrary.readObject(dscToTripPath);
-	} else {
-		_dscToTripMap = null;
-	}
-
-	File tripToDscPath = _bundle.getTripsForDSCIndex();
-	if (tripToDscPath.exists()) {
-		_tripToDscMap = ObjectSerializationLibrary.readObject(tripToDscPath);
-	} else {
-		_tripToDscMap = null;
-	}
-
-	File notInServiceDSCPath = _bundle.getNotInServiceDSCs();
-	if (notInServiceDSCPath.exists()) {
-		_notInServiceDscs = ObjectSerializationLibrary.readObject(notInServiceDSCPath);
-	} else {
-		_notInServiceDscs = null;
-	}
+  	File dscToTripPath = _bundle.getDSCForTripIndex();
+  	if (dscToTripPath.exists()) {
+  		_dscToTripMap = ObjectSerializationLibrary.readObject(dscToTripPath);
+  	} else {
+  		_dscToTripMap = null;
+  	}
+  
+  	File tripToDscPath = _bundle.getTripsForDSCIndex();
+  	if (tripToDscPath.exists()) {
+  		_tripToDscMap = ObjectSerializationLibrary.readObject(tripToDscPath);
+  	} else {
+  		_tripToDscMap = null;
+  	}
+  
+  	File notInServiceDSCPath = _bundle.getNotInServiceDSCs();
+  	if (notInServiceDSCPath.exists()) {
+  		_notInServiceDscs = ObjectSerializationLibrary.readObject(notInServiceDSCPath);
+  	} else {
+  		_notInServiceDscs = null;
+  	}
   }	
 	
   @Override

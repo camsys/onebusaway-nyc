@@ -17,7 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.model;
 
 import java.util.Date;
 
-import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
+import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
 

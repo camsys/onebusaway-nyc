@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.transit_data_federation.services.nyc.model;
 
-import org.onebusaway.gtfs.csv.schema.annotations.CsvField;
+import org.onebusaway.csv_entities.schema.annotations.CsvField;
 
 import com.vividsolutions.jts.geom.Geometry;
 

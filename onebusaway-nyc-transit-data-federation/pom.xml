@@ -1,88 +1,84 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-      <artifactId>onebusaway-nyc</artifactId>
-      <groupId>org.onebusaway</groupId>
-      <version>2.0.1-SNAPSHOT</version>
-  </parent>
-  <groupId>org.onebusaway</groupId>
-  <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-  <packaging>jar</packaging>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>onebusaway-nyc</artifactId>
+        <groupId>org.onebusaway</groupId>
+        <version>2.0.3-SNAPSHOT</version>
+    </parent>
+    <groupId>org.onebusaway</groupId>
+    <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+    <packaging>jar</packaging>
 
-  <name>onebusaway-nyc-transit-data-federation</name>
+    <name>onebusaway-nyc-transit-data-federation</name>
 
-  <dependencies>
-  
-    <!-- OneBusAway Dependencies -->
-    <dependency>
-      <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-transit-data-federation</artifactId>
-      <version>${onebusaway.app-modules.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-nyc-transit-data</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  	<dependency>
-           <groupId>org.onebusaway</groupId>
-           <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
-           <version>${onebusaway.nyc-tcip.version}</version>
-  	</dependency>
-    <dependency>
-      <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-csv-entities</artifactId>
-    </dependency>
-  
-    <dependency>
-        <groupId>com.google.code.gson</groupId>
-        <artifactId>gson</artifactId>
-        <version>1.7.1</version>
-        <type>jar</type>
-    	<scope>compile</scope>
-    </dependency>
-	<dependency>
-		<groupId>org.zeromq</groupId>
-		<artifactId>jzmq</artifactId>
-		<version>053c2d7</version>
-		<type>jar</type>
-		<scope>compile</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.codehaus.jackson</groupId>
-		<artifactId>jackson-xc</artifactId>
-		<version>1.5.6</version>
-	</dependency>
-		
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
+    <dependencies>
 
-  </dependencies>
-  
+        <!-- OneBusAway Dependencies -->
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data-federation</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-transit-data</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+            <version>${onebusaway.nyc-tcip.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-csv-entities</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>1.7.1</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.zeromq</groupId>
+            <artifactId>jzmq</artifactId>
+            <version>053c2d7</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-xc</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
     <build>
         <plugins>
-            <!-- Build a graph bundle (currently, 
-                a reduced set of MTA data) -->
+            <!-- Build a graph bundle (currently, a reduced set of MTA data) -->
             <!-- TODO This is SERIOUSLY hacky at the moment. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1.1</version>
+                <version>1.2.1</version>
                 <configuration>
-                    <dependency>
-                        <groupId>org.onebusaway</groupId>
-                        <artifactId>onebusaway-transit-data-federation</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
+                    <includeProjectDependencies>false</includeProjectDependencies>
+                    <includePluginDependencies>true</includePluginDependencies>
                     <executable>java</executable>
                     <arguments>
                         <argument>-Xmx1500m</argument>
@@ -93,13 +89,35 @@
                         <argument>-onlyIfDoesNotExist</argument>
                         <argument>-additionalResourcesDirectory</argument>
                         <argument>${basedir}/src/integration-test/resources/bundle</argument>
-                        <argument>${basedir}/src/bundle-building-sample/bundle-hsqldb.xml</argument>
+                        <argument>${basedir}/src/bundle-building-sample/bundle.xml</argument>
                         <!-- <argument>${basedir}/src/integration-test/resources/bundle.xml</argument> -->
                         <argument>${project.build.directory}/transit-data-bundle</argument>
                     </arguments>
                 </configuration>
+                <dependencies>
+<!--                     <dependency>
+                        <groupId>org.onebusaway</groupId>
+                        <artifactId>onebusaway-transit-data-federation</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+ -->                    <dependency>
+                        <groupId>org.onebusaway</groupId>
+                        <artifactId>onebusaway-gtfs</artifactId>
+                        <version>1.2.4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.onebusaway</groupId>
+                        <artifactId>onebusaway-gtfs-hibernate</artifactId>
+                        <version>1.2.4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.onebusaway</groupId>
+                        <artifactId>onebusaway-gtfs-transformer</artifactId>
+                        <version>1.2.4</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
-  
+
 </project>
