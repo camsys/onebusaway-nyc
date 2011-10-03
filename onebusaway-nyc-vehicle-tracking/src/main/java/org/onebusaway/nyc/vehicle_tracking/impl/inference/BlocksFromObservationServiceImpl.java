@@ -255,11 +255,10 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       // FIXME TODO use new model stuff
 
     } else {
-      OperatorAssignmentItem oai = _operatorAssignmentService
-          .getOperatorAssignmentItem(obsDate, operatorId);
+      OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItem(obsDate, operatorId);
       if (oai != null) {
-        utsRunId = oai.runId;
-        serviceDate = oai.serviceDate;
+        utsRunId = oai.getRunId();
+        serviceDate = oai.getServiceDate();
       }
     }
 
