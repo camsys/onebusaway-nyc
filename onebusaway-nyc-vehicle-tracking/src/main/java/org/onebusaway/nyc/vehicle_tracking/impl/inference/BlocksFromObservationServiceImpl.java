@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -249,7 +250,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     String operatorId = observation.getRecord().getOperatorId();
     Date serviceDate = null;
 
-    if (operatorId == null) {
+    if (StringUtils.isEmpty(operatorId)) {
 
       _log.warn("no operator id reported");
       // FIXME TODO use new model stuff
@@ -265,9 +266,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     String reportedRunId = observation.getRecord().getRunId();
 
-    if (utsRunId != null || reportedRunId != null) {
+    if (StringUtils.isNotEmpty(utsRunId) || StringUtils.isNotEmpty(reportedRunId)) {
 
-      String runId = utsRunId != null ? utsRunId : reportedRunId;
+      String runId = StringUtils.isNotEmpty(utsRunId)? utsRunId : reportedRunId;
 
       // TODO change to ReportedRunState enum
       boolean utsReported = true;
@@ -279,7 +280,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         runId = reportedRunId;
         utsReported = false;
 
-      } else if (!utsRunId.equals(reportedRunId)) {
+      } else if (!StringUtils.equals(utsRunId, reportedRunId)) {
         _log.warn("UTS assigned run (" + utsRunId + " and reported run ("
             + reportedRunId + " don't match.  defaulting to UTS run.");
 

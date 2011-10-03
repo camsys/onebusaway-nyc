@@ -158,7 +158,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
         double p = 1.0;
         
-        if (!state.isUTSassigned() || !state.isRunReported()) {
+        if (!state.isUTSassigned() && !state.isRunReported()) {
            p = scoreState(state, observation);
         }
 
