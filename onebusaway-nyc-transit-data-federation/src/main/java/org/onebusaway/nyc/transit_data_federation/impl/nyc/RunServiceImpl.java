@@ -170,40 +170,43 @@ public class RunServiceImpl implements RunService {
       long time) {
 
     String runId = runAgencyAndId.getId();
-    for (RunTripEntry entry : entriesByRun.get(runId)) {
-      // all the trips for this run
-      BlockEntry block = entry.getTripEntry().getBlock();
-      long timeFrom = time - 30 * 60 * 1000;
-      long timeTo = time + 30 * 60 * 1000;
-      List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocks(
-          block.getId(), timeFrom, timeTo);
-      for (BlockInstance blockInstance : activeBlocks) {
-        long serviceDate = blockInstance.getServiceDate();
-        int scheduleTime = (int) ((time - serviceDate) / 1000);
-        BlockConfigurationEntry blockConfig = blockInstance.getBlock();
-
-        ScheduledBlockLocation blockLocation = scheduledBlockLocationService
-            .getScheduledBlockLocationFromScheduledTime(blockConfig,
-                scheduleTime);
-
-        if (blockLocation == null)
-          continue;
-
-        BlockTripEntry trip = blockLocation.getActiveTrip();
-        List<RunTripEntry> bothTrips = entriesByTrip
-            .get(trip.getTrip().getId());
-
-        if (bothTrips == null || bothTrips.isEmpty())
-          continue;
-        RunTripEntry firstTrip = bothTrips.get(0);
-        if (bothTrips.size() == 1) {
-          return firstTrip;
-        } else {
-          RunTripEntry secondTrip = bothTrips.get(1);
-          if (secondTrip.getStartTime() < scheduleTime) {
-            return secondTrip;
+    List<RunTripEntry> entries = entriesByRun.get(runId);
+    if (entries != null && !entries.isEmpty()) {
+      for (RunTripEntry entry : entries) {
+        // all the trips for this run
+        BlockEntry block = entry.getTripEntry().getBlock();
+        long timeFrom = time - 30 * 60 * 1000;
+        long timeTo = time + 30 * 60 * 1000;
+        List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocks(
+            block.getId(), timeFrom, timeTo);
+        for (BlockInstance blockInstance : activeBlocks) {
+          long serviceDate = blockInstance.getServiceDate();
+          int scheduleTime = (int) ((time - serviceDate) / 1000);
+          BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+  
+          ScheduledBlockLocation blockLocation = scheduledBlockLocationService
+              .getScheduledBlockLocationFromScheduledTime(blockConfig,
+                  scheduleTime);
+  
+          if (blockLocation == null)
+            continue;
+  
+          BlockTripEntry trip = blockLocation.getActiveTrip();
+          List<RunTripEntry> bothTrips = entriesByTrip
+              .get(trip.getTrip().getId());
+  
+          if (bothTrips == null || bothTrips.isEmpty())
+            continue;
+          RunTripEntry firstTrip = bothTrips.get(0);
+          if (bothTrips.size() == 1) {
+            return firstTrip;
+          } else {
+            RunTripEntry secondTrip = bothTrips.get(1);
+            if (secondTrip.getStartTime() < scheduleTime) {
+              return secondTrip;
+            }
+            return firstTrip;
           }
-          return firstTrip;
         }
       }
     }
