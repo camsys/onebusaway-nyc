@@ -183,19 +183,20 @@ public class VehicleInferenceInstance {
             + " seconds since the previous update");
         _previousObservation = null;
         _particleFilter.reset();
-      }
+      } else {
       
-      /**
-       * If we observe that either operatorId or runId has changed, then
-       * we need to resample.  Especially for the case in which we obtain
-       * more reliable run info (e.g. reported runId + UTS match).
-       */
-      NycRawLocationRecord lastRecord = _previousObservation.getRecord();
-      if (lastRecord.getOperatorId() != record.getOperatorId()
-          || lastRecord.getRunId() != record.getRunId()) {
-        // TODO what to do when we lose information?  e.g. "signal"
-        // drops and op/run/UTS info hasn't really changed/been re-entered
-        _particleFilter.reset();
+        /**
+         * If we observe that either operatorId or runId has changed, then
+         * we need to resample.  Especially for the case in which we obtain
+         * more reliable run info (e.g. reported runId + UTS match).
+         */
+        NycRawLocationRecord lastRecord = _previousObservation.getRecord();
+        if (lastRecord.getOperatorId() != record.getOperatorId()
+            || lastRecord.getRunId() != record.getRunId()) {
+          // TODO what to do when we lose information?  e.g. "signal"
+          // drops and op/run/UTS info hasn't really changed/been re-entered
+          _particleFilter.reset();
+        }
       }
     }
 

@@ -44,8 +44,9 @@ public final class BlockState {
       throw new IllegalArgumentException("blockLocation is null");
     if (destinationSignCode == null)
       throw new IllegalArgumentException("dsc is null");
-    if (runTrip == null)
-      throw new IllegalArgumentException("runTrip is null");
+    // TODO should we every allow null runTrips here?
+//    if (runTrip == null)
+//      throw new IllegalArgumentException("runTrip is null");
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;
