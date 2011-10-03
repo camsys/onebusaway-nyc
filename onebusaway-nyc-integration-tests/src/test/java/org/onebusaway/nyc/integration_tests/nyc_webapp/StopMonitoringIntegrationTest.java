@@ -73,34 +73,30 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
   @Test
   public void test() throws HttpException, IOException, ParseException {
     
-    String timeString = "2010-12-07T11:29:25-08:00";
-    Date time = DateLibrary.getIso8601StringAsTime(timeString);
-
     /**
      * Let's inject a location record
      */
     
     //2179,40.7372545433,-73.9557642325,2010-07-07 11:29:38,4430,2008_12023519,1278475200000,43753.36285532166,4430,40.7372545433,-73.9557642325,IN_PROGRESS
-
     VehicleLocationRecord record = new VehicleLocationRecord();
-    record.setBlockId(new AgencyAndId("2008", "12888410"));
-    record.setCurrentLocationLat(40.65266509229019);
-    record.setCurrentLocationLon(-74.00245398573307);
-    record.setDistanceAlongBlock(53097.667367660964);
+    record.setBlockId(new AgencyAndId("2008", "12023519"));
+    record.setCurrentLocationLat(40.7372545433);
+    record.setCurrentLocationLon(-73.9557642325);
+    record.setDistanceAlongBlock(43753.3628553216);
     record.setPhase(EVehiclePhase.IN_PROGRESS);
     record.setStatus("default");
-    record.setServiceDate(1291698000000L);
-    record.setTimeOfRecord(time.getTime());
+    record.setServiceDate(1278475200000L);
+    record.setTimeOfRecord(_time.getTime());
     record.setVehicleId(_vehicleId);
     
     // Reset any existing data first
     _vehicleLocationListener.resetVehicleLocation(record.getVehicleId());
     _vehicleLocationListener.handleVehicleLocationRecord(record);
 
-    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305364&OperatorRef=2008&time=" + timeString);
+    Siri siri = getResponse("stop-monitoring.xml?key=TEST&MonitoringRef=305364&OperatorRef=2008&time=" + DateLibrary.getTimeAsIso8601String(_time));
     
     ServiceDelivery serviceDelivery = siri.ServiceDelivery;
-    assertEquals(time.getTime(),
+    assertEquals(_time.getTime(),
         serviceDelivery.ResponseTimestamp.getTimeInMillis());
 
     List<StopMonitoringDelivery> deliveries = serviceDelivery.stopMonitoringDeliveries;
@@ -108,7 +104,7 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     assertTrue(deliveries.size() == 1);
     StopMonitoringDelivery delivery = deliveries.get(0);
 
-    assertEquals(time.getTime(),delivery.ResponseTimestamp.getTimeInMillis());
+    assertEquals(_time.getTime(),delivery.ResponseTimestamp.getTimeInMillis());
 
     assertNotNull(delivery.visits);
     assertEquals(1,delivery.visits.size());
