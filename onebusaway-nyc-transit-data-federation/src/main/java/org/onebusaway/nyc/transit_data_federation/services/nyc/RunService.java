@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
 public interface RunService {
   String getInitialRunForTrip(AgencyAndId trip);
@@ -14,7 +16,7 @@ public interface RunService {
 
   List<RunTripEntry> getRunTripEntriesForRun(String runId);
 
-  RunTripEntry getRunTripEntryForRunAndTime(String agencyId, String runId,
+  RunTripEntry getRunTripEntryForRunAndTime(AgencyAndId runAgencyAndId,
       long time);
 
   List<RunTripEntry> getRunTripEntriesForTime(String agencyId, long time);
@@ -22,5 +24,13 @@ public interface RunService {
   RunTripEntry getPreviousEntry(RunTripEntry entry);
 
   RunTripEntry getNextEntry(RunTripEntry entry);
+
+  RunTripEntry getRunTripEntryForBlockInstance(BlockInstance blockInstance, int scheduleTime);
+
+  List<ScheduledBlockLocation> getSchedBlockLocsForRunTripEntryAndTime(
+      RunTripEntry runTrip, long timestamp);
+
+  List<BlockInstance> getBlockInstancesForRunTripEntry(RunTripEntry rte,
+      long timestamp);
 
 }

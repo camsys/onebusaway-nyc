@@ -33,6 +33,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
  * @author bdferris
  * 
  */
+// TODO re-institute this for run transitions?
 // @Component
 public class BlockSwitchRule implements SensorModelRule {
 

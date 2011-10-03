@@ -54,6 +54,8 @@ public class UpdateVehicleLocationController {
       @RequestParam() double lat,
       @RequestParam() double lon,
       @RequestParam() String dsc,
+      @RequestParam(required = false, defaultValue = "null") String operatorId,
+      @RequestParam(required = false, defaultValue = "null") String runId,
       @RequestParam(required = false, defaultValue = "false") boolean saveResults)
       throws ParseException {
 
@@ -70,6 +72,8 @@ public class UpdateVehicleLocationController {
     vlr.setLatitude(lat);
     vlr.setLongitude(lon);
     vlr.setDestinationSignCode(dsc);
+    vlr.setOperatorId(operatorId);
+    vlr.setRunId(runId);
     _vehicleLocationService.handleNycRawLocationRecord(vlr);
 
     return new ModelAndView("update-vehicle-location.jspx");

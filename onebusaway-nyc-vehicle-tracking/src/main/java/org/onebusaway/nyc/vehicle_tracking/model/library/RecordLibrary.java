@@ -39,24 +39,25 @@ public class RecordLibrary {
     return timeDevice;
   }
   
-  public static NycQueuedInferredLocationBean 
-  	getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(NycTestInferredLocationRecord record) {
-	
-	NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
+  public static NycQueuedInferredLocationBean getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(
+      NycTestInferredLocationRecord record) {
 
-	qlr.setRecordTimestamp(record.getTimestamp());	
-	qlr.setServiceDate(record.getInferredServiceDate());
-	qlr.setBlockId(record.getInferredBlockId());
-	qlr.setTripId(record.getInferredTripId());
-	qlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
-	qlr.setInferredLatitude(record.getInferredBlockLat());
-	qlr.setInferredLongitude(record.getInferredBlockLon());
-	qlr.setObservedLatitude(record.getLat());
-	qlr.setObservedLongitude(record.getLon());
-	qlr.setPhase(record.getInferredPhase());	
-	qlr.setStatus(record.getInferredStatus());
-	
-	return qlr;
+    NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
+
+    qlr.setRecordTimestamp(record.getTimestamp());
+    qlr.setServiceDate(record.getInferredServiceDate());
+    qlr.setBlockId(record.getInferredBlockId());
+    qlr.setTripId(record.getInferredTripId());
+    qlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
+    qlr.setInferredLatitude(record.getInferredBlockLat());
+    qlr.setInferredLongitude(record.getInferredBlockLon());
+    qlr.setObservedLatitude(record.getLat());
+    qlr.setObservedLongitude(record.getLon());
+    qlr.setPhase(record.getInferredPhase());
+    qlr.setStatus(record.getInferredStatus());
+    // TODO add operator, run?
+
+    return qlr;
   }
   
   public static VehicleLocationRecord getNycQueuedInferredLocationBeanAsVehicleLocationRecord(
@@ -75,6 +76,7 @@ public class RecordLibrary {
     vlr.setPhase(EVehiclePhase.valueOf(record.getPhase()));
     vlr.setStatus(record.getStatus());
     vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(record.getVehicleId()));
+  	// TODO add operator, run?
     
     return vlr;
   }
@@ -90,6 +92,8 @@ public class RecordLibrary {
     vlr.setTime(record.getTimestamp());
     vlr.setTimeReceived(record.getTimestamp());
     vlr.setVehicleId(record.getVehicleId());
+    vlr.setOperatorId(record.getOperatorId());
+    vlr.setRunId(record.getReportedRunId());
     
     return vlr;
   }

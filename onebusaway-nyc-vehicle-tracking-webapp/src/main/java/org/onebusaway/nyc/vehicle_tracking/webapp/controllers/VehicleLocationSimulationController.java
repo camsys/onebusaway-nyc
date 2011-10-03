@@ -295,8 +295,11 @@ public class VehicleLocationSimulationController {
       @RequestParam String blockId,
       @RequestParam long serviceDate,
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
-      @RequestParam(required = false, defaultValue = "false") boolean isRunDriven,
-      @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
+      @RequestParam(value = "isRunDriven", required = false, defaultValue = "false") boolean isRunDriven,
+      @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
+      @RequestParam(value = "reportsOperatorId", required = false, defaultValue = "false") boolean reportsOperatorId,
+      @RequestParam(value = "reportsRunId", required = false, defaultValue = "false") boolean reportsRunId,
+      @RequestParam(value = "fillActual", required = false, defaultValue = "true") boolean fillActualProperties,
       @RequestParam String properties) throws IOException {
 
     Date time = getTime(session, null);
@@ -307,8 +310,8 @@ public class VehicleLocationSimulationController {
     AgencyAndId id = AgencyAndIdLibrary.convertFromString(blockId);
 
     _vehicleLocationSimulationService.addSimulationForBlockInstance(id,
-        serviceDate, time.getTime(), bypassInference, isRunDriven, fillActualProperties,
-        props);
+        serviceDate, time.getTime(), bypassInference, isRunDriven, 
+        realtime, fillActualProperties, reportsOperatorId, reportsRunId, props);
 
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("blockId", blockId);

@@ -339,7 +339,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     	_vehicleLocationInferenceService.handleNycRawLocationRecord(vlr);
       }
 
-      if (shouledExitAfterWaitingForInferenceToComplete(record))
+      if (shouldExitAfterWaitingForInferenceToComplete(record))
         return;
 
       _mostRecentRecord = record;
@@ -427,7 +427,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     }
   }
 
-  private boolean shouledExitAfterWaitingForInferenceToComplete(
+  private boolean shouldExitAfterWaitingForInferenceToComplete(
       NycTestInferredLocationRecord record) {
 
     for (int i = 0; i < 20; i++) {

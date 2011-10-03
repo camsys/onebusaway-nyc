@@ -110,4 +110,11 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 		}
 		return list;
 	}
+
+  @Override
+  public OperatorAssignmentItem getOperatorAssignmentItem(Date today,
+      String operatorId) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }
