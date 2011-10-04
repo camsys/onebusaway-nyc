@@ -21,6 +21,7 @@ import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItemsMessage;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.Message;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.SingleConfigItem;
+import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.WarningMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -118,6 +119,8 @@ public class ConfigResource {
   String component, @PathParam("key")
   String key) throws JsonParseException, JsonMappingException, IOException {
 
+    boolean giveUnsupportedValueTypeWarning = false;
+    
     // Start by mapping the input, which has an enclosing element, to a
     // SingleConfigItem
     SingleConfigItem configItem = mapper.readValue(configStr,
@@ -126,6 +129,10 @@ public class ConfigResource {
     // Now Grab grab the input config item from the input
     ConfigItem inputConfigItem = configItem.getConfig();
 
+    if(!"string".equalsIgnoreCase(inputConfigItem.getValueType())) {
+      giveUnsupportedValueTypeWarning = true;
+    }
+    
     // Now selectively take some values from the input and create a new
     // configitem
     // We do this to ensure that the key and component names are identical to
@@ -136,12 +143,21 @@ public class ConfigResource {
     configToSet.setUpdated(new DateTime());
     configToSet.setDescription(inputConfigItem.getDescription());
     configToSet.setValue(inputConfigItem.getValue());
-    configToSet.setValueType(inputConfigItem.getValueType());
+    configToSet.setValueType("String"); // Right now all we do is store things as strings.
 
     datastore.setConfigItemByComponentKey(component, key, configToSet);
 
-    Message statusMessage = new Message();
-    statusMessage.setStatus("OK");
+    Message statusMessage = null;
+    
+    if (giveUnsupportedValueTypeWarning) {
+      statusMessage = new WarningMessage();
+      statusMessage.setStatus("WARNING");
+      ((WarningMessage) statusMessage).setWarningMessage("valueTypes other than string are unsupported at this time. Value will be stored as a string.");
+    } else {
+      statusMessage = new Message();
+      statusMessage.setStatus("OK");
+    }
+    
     
     return mapper.writeValueAsString(statusMessage);
 
