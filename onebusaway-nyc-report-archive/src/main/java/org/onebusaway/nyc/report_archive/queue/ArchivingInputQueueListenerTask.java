@@ -31,7 +31,13 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 	    _dao.saveOrUpdateReport(record);
 	}
     } catch (Throwable t) {
-	_log.error("Exception process contents= " + contents, t);
+	_log.error("Exception processing contents= " + contents, t);
+	try {
+	    _dao.handleException(contents, t);
+	} catch (Throwable tt) {
+	    // we tried
+	    _log.error("Exception handling exception= " + tt);
+	}
     }
   }
   
