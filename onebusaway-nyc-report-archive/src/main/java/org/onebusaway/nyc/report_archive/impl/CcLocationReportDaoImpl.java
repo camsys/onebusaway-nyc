@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.report_archive.impl;
 
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report_archive.model.InvalidLocationRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 
 import org.hibernate.HibernateException;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
@@ -32,11 +34,12 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
     return _template;
   }
 
-  // TODO Remove transactional?
-  @Transactional
+  @Transactional(rollbackFor=Throwable.class)
   @Override
   public void saveOrUpdateReport(CcLocationReportRecord report) {
     _template.saveOrUpdate(report);
+    // clear from level one cache
+    _template.evict(report);
   }
 
   @Override
@@ -61,4 +64,13 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
     });
     return count.intValue();
   }
+
+  @Transactional(rollbackFor=Throwable.class, propagation=Propagation.REQUIRES_NEW)
+  public void handleException(String content, Throwable error) {
+     InvalidLocationRecord ilr = new InvalidLocationRecord(content, error);
+    _template.saveOrUpdate(ilr);
+    // clear from level one cache
+    _template.evict(ilr);
+  }
+
 }
