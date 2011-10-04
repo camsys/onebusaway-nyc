@@ -28,6 +28,10 @@ public class CDFMap<T> {
 
   private List<T> _entries = new ArrayList<T>();
 
+  public List<T> getSupport() {
+    return new ArrayList<T>(_entries);
+  }
+  
   public void put(double prob, T object) {
 
     if (_cumulativeProbabilities.length <= _entries.size()) {

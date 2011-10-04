@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -33,13 +35,15 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.onebusaway.container.ContainerLibrary;
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.ListEntityHandler;
+import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.gtfs.csv.CsvEntityReader;
-import org.onebusaway.gtfs.csv.ListEntityHandler;
-import org.onebusaway.gtfs.csv.exceptions.CsvEntityIOException;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyPhaseSummaryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
@@ -88,6 +92,13 @@ public class SensorModelVerificationMain {
 
   private BaseLocationService _baseLocationService;
 
+  private RunService _runService;
+
+  @Autowired
+  public void setRunService(RunService runService) {
+    _runService = runService;
+  }
+  
   @Autowired
   public void setMotionModel(MotionModelImpl motionModel) {
     _motionModel = motionModel;
@@ -279,6 +290,8 @@ public class SensorModelVerificationMain {
     r.setTime(record.getTimestamp());
     r.setTimeReceived(record.getTimestamp());
     r.setVehicleId(record.getVehicleId());
+    r.setOperatorId(record.getOperatorId());
+    r.setRunId(record.getReportedRunId());
 
     CoordinatePoint location = new CoordinatePoint(record.getLat(),
         record.getLon());
@@ -337,9 +350,14 @@ public class SensorModelVerificationMain {
 
     ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
         blockInstance.getBlock(), d);
-
-    return new BlockState(blockInstance, location,
-        obs.getLastValidDestinationSignCode());
+    
+    Date today = new Date();
+    Calendar cal = Calendar.getInstance(); 
+    cal.setTime(today);
+    cal.set(Calendar.DATE, 0);
+    int scheduleTime = (int)cal.getTimeInMillis();
+    RunTripEntry rte = _runService.getRunTripEntryForBlockInstance(blockInstance, scheduleTime);
+    return new BlockState(blockInstance, location, rte, obs.getLastValidDestinationSignCode());
   }
 
   private JourneyState createJourneyState(NycTestInferredLocationRecord record,

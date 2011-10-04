@@ -23,9 +23,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.onebusaway.gtfs.csv.CsvEntityReader;
-import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
-import org.onebusaway.gtfs.csv.EntityHandler;
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class SplitTestTracesMain {

@@ -58,9 +58,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
   private VehicleStateLibrary _vehicleStateLibrary;
+  
 
   private MotionModelImpl _motionModel;
-
+  
+  
   @Autowired
   public void setBlockStateSamplingStrategy(
       BlockStateSamplingStrategy blockStateSamplingStrategy) {
@@ -100,6 +102,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // CDFMap<EdgeState> cdf =
     // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
+    
     CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
 
     CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
@@ -108,7 +111,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         _initialNumberOfParticles);
 
     if (atStartCdf.isEmpty() && inProgresCdf.isEmpty())
-      _log.warn("no blocks to sample!");
+      _log.warn("no blocks to sample for obs=" + obs);
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
@@ -125,16 +128,17 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
+  // FIXME TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState, 
       CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf, 
       CDFMap<BlockState> inProgressCdf, Observation obs) {
 
+    BlockState blockState = null;
+    
     // If we're at a base to start, we favor that over all other possibilities
     if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
 
-      BlockState blockState = null;
-
-      if (!atStartCdf.isEmpty())
+      if (blockState == null && !atStartCdf.isEmpty())
         blockState = atStartCdf.sample();
 
       return vehicleState(motionState, blockState,
@@ -149,8 +153,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       if (inProgressCdf.isEmpty())
         return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
-
-      BlockState blockState = inProgressCdf.sample();
+      if (blockState == null)
+        blockState = inProgressCdf.sample();
       return vehicleState(motionState, blockState,
           JourneyState.inProgress(), obs);
     } else {
@@ -160,7 +164,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
 
-      BlockState blockState = atStartCdf.sample();
+      if (blockState == null)
+        blockState = atStartCdf.sample();
       return vehicleState(motionState, blockState,
           JourneyState.deadheadBefore(locationOnEdge), obs);
     }

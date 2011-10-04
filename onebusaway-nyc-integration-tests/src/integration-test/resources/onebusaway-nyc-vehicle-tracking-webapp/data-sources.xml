@@ -41,6 +41,10 @@
         </property>
     </bean>
 
+  	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
+  		<property name="isPrimaryInferenceInstance" value="true"/>
+	</bean>
+
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>

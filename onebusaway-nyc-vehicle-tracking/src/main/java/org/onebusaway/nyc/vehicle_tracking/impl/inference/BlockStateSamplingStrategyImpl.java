@@ -35,7 +35,8 @@ import org.springframework.stereotype.Component;
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
-  private static Logger _log = LoggerFactory.getLogger(BlockStateSamplingStrategyImpl.class);
+  private static Logger _log = LoggerFactory
+      .getLogger(BlockStateSamplingStrategyImpl.class);
 
   private DestinationSignCodeService _destinationSignCodeService;
 
@@ -46,27 +47,17 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private DeviationModel _scheduleDeviationSigma = new DeviationModel(32 * 60);
 
-  private BlockStateService _blockStateService;
-
   private BlocksFromObservationService _blocksFromObservationService;
 
   private ObservationCache _observationCache;
 
-  /****
-   * Public Methods
-   ****/
 
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
   }
-
-  @Autowired
-  public void setBlockStateService(BlockStateService blockStateService) {
-    _blockStateService = blockStateService;
-  }
-
+  
   @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
@@ -80,7 +71,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   /**
    * 
-   * @param scheduleDeviationSigma time, in seconds
+   * @param scheduleDeviationSigma
+   *          time, in seconds
    */
   public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
     _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
@@ -94,7 +86,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     if (cdf == null) {
 
-      Set<BlockInstance> potentialBlocks = _blocksFromObservationService.determinePotentialBlocksForObservation(observation);
+      Set<BlockState> potentialBlocks = _blocksFromObservationService
+            .determinePotentialBlockStatesForObservation(observation, false);
 
       cdf = new CDFMap<BlockState>();
 
@@ -105,19 +98,20 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         b.append("potential blocks found: ").append(potentialBlocks.size());
       }
 
-      for (BlockInstance blockInstance : potentialBlocks) {
+      for (BlockState state: potentialBlocks) {
 
-        // Start at the beginning of the block
-        BlockState state = _blockStateService.getAsState(blockInstance, 0.0);
-
-        double p = scoreJourneyStartState(state, observation);
+        double p = 1.0;
+        
+        if (!state.isUTSassigned() || !state.isRunReported()) {
+           p = scoreJourneyStartState(state, observation);
+        }
 
         cdf.put(p, state);
 
         if (_log.isDebugEnabled()) {
           b.append("\n" + state.getBlockLocation().getDistanceAlongBlock()
               + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-              + "\t" + blockInstance);
+              + "\t" + state.getBlockInstance());
 
         }
       }
@@ -139,7 +133,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     if (cdf == null) {
 
-      Set<BlockInstance> potentialBlocks = _blocksFromObservationService.determinePotentialBlocksForObservation(observation);
+      Set<BlockState> potentialBlocks = _blocksFromObservationService
+          .determinePotentialBlockStatesForObservation(observation, true);
 
       cdf = new CDFMap<BlockState>();
 
@@ -149,19 +144,20 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         b.append("potential blocks found: " + potentialBlocks.size());
       }
 
-      for (BlockInstance blockInstance : potentialBlocks) {
+      for (BlockState state: potentialBlocks) {
 
-        BlockState state = _blockStateService.getBestBlockLocation(observation,
-            blockInstance, 0, Double.POSITIVE_INFINITY);
-
-        double p = scoreState(state, observation);
+        double p = 1.0;
+        
+        if (!state.isUTSassigned() && !state.isRunReported()) {
+           p = scoreState(state, observation);
+        }
 
         cdf.put(p, state);
 
         if (_log.isDebugEnabled()) {
           b.append("\n" + state.getBlockLocation().getDistanceAlongBlock()
               + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-              + "\t" + blockInstance);
+              + "\t" + state.getBlockInstance());
         }
       }
 
@@ -215,7 +211,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     String observedDsc = observation.getLastValidDestinationSignCode();
 
-    boolean observedOutOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
+    boolean observedOutOfService = _destinationSignCodeService
+        .isOutOfServiceDestinationSignCode(observedDsc);
 
     // If we have an out-of-service DSC, then we favor it equally
     if (observedOutOfService) {

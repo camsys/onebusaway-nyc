@@ -36,9 +36,10 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.onebusaway.gtfs.csv.CsvEntityReader;
-import org.onebusaway.gtfs.csv.CsvEntityWriterFactory;
-import org.onebusaway.gtfs.csv.EntityHandler;
+
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class TraceSupport {
@@ -60,10 +61,8 @@ public class TraceSupport {
       ByteArrayPartSource source = getResourceAsPartSource(fileName, in);
       FilePart filePart = new FilePart("file", source);
       StringPart returnIdParam = new StringPart("returnId", "true");
-      StringPart shiftStartTimeParam = new StringPart("shiftStartTime", ""
-          + shiftStartTime);
-      StringPart traceTypeParam = new StringPart("traceType",
-          "NycTestLocationRecord");
+      StringPart shiftStartTimeParam = new StringPart("shiftStartTime", "" + shiftStartTime);
+      StringPart traceTypeParam = new StringPart("traceType", "NycTestInferredLocationRecord");
 
       post.setRequestEntity(new MultipartRequestEntity(new Part[] {
           filePart, returnIdParam, shiftStartTimeParam, traceTypeParam},

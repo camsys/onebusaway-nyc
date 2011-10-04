@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.onebusaway.gtfs.csv.EntityHandler;
+import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
@@ -339,7 +339,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     	_vehicleLocationInferenceService.handleNycRawLocationRecord(vlr);
       }
 
-      if (shouledExitAfterWaitingForInferenceToComplete(record))
+      if (shouldExitAfterWaitingForInferenceToComplete(record))
         return;
 
       _mostRecentRecord = record;
@@ -427,7 +427,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     }
   }
 
-  private boolean shouledExitAfterWaitingForInferenceToComplete(
+  private boolean shouldExitAfterWaitingForInferenceToComplete(
       NycTestInferredLocationRecord record) {
 
     for (int i = 0; i < 20; i++) {

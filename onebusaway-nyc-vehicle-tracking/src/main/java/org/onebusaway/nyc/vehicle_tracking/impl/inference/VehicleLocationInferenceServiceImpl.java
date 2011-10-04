@@ -60,7 +60,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
 
-  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeNoMillis();
+  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
   @Autowired
   private OutputQueueSenderService _outputQueueSenderService;
@@ -185,7 +185,7 @@ public class VehicleLocationInferenceServiceImpl implements
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
       if (instance != null) {
-    	NycTestInferredLocationRecord record = instance.getCurrentState();
+      	NycTestInferredLocationRecord record = instance.getCurrentState();
         if (record != null) {
           record.setVehicleId(vehicleId);
           records.add(record);

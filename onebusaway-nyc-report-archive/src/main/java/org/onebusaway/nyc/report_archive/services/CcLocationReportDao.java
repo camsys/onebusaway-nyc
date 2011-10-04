@@ -8,4 +8,6 @@ public interface CcLocationReportDao {
 
   void saveOrUpdateReports(CcLocationReportRecord... reports);
 
+  void handleException(String content, Throwable error);
+
 }

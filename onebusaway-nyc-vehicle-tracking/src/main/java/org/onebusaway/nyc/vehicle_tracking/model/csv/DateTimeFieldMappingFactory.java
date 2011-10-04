@@ -18,19 +18,19 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.csv;
 
+import org.onebusaway.csv_entities.CsvEntityContext;
+import org.onebusaway.csv_entities.exceptions.CsvEntityException;
+import org.onebusaway.csv_entities.schema.AbstractFieldMapping;
+import org.onebusaway.csv_entities.schema.BeanWrapper;
+import org.onebusaway.csv_entities.schema.EntitySchemaFactory;
+import org.onebusaway.csv_entities.schema.FieldMapping;
+import org.onebusaway.csv_entities.schema.FieldMappingFactory;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
-
-import org.onebusaway.gtfs.csv.CsvEntityContext;
-import org.onebusaway.gtfs.csv.exceptions.CsvEntityException;
-import org.onebusaway.gtfs.csv.schema.AbstractFieldMapping;
-import org.onebusaway.gtfs.csv.schema.BeanWrapper;
-import org.onebusaway.gtfs.csv.schema.EntitySchemaFactory;
-import org.onebusaway.gtfs.csv.schema.FieldMapping;
-import org.onebusaway.gtfs.csv.schema.FieldMappingFactory;
 
 public class DateTimeFieldMappingFactory implements FieldMappingFactory {
 

@@ -15,10 +15,10 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.csv;
 
+import org.onebusaway.csv_entities.TokenizerStrategy;
+
 import java.util.Arrays;
 import java.util.List;
-
-import org.onebusaway.gtfs.csv.TokenizerStrategy;
 
 public class TabTokenizerStrategy implements TokenizerStrategy {
   @Override
