@@ -37,6 +37,8 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
   @Override
   public void saveOrUpdateReport(CcLocationReportRecord report) {
     _template.saveOrUpdate(report);
+    // clear from level one cache
+    _template.evict(report);
   }
 
   @Override
