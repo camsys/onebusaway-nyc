@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -182,13 +183,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      * First source of trips: UTS/op determined run, reported run
      */
     if (!potentialBlocks.isEmpty()) {
-
-      // FIXME should be debug
-      // if (_log.isDebugEnabled())
-      for (BlockState reportedState : potentialBlocks)
-        _log.info("reported block=" + reportedState + " for operator="
-            + observation.getRecord().getOperatorId() + " run="
-            + observation.getRecord().getRunId());
+      if (_log.isDebugEnabled()) {
+        for (BlockState reportedState : potentialBlocks) {
+          _log.debug("vehicle=" + observation.getRecord().getVehicleId()
+              + " reported block=" + reportedState + " for operator="
+              + observation.getRecord().getOperatorId() + " run="
+              + observation.getRecord().getRunId());
+        }
+      }
 
       // TODO when should we just make sure we have the reported run/block in
       // the support, // compared to making it the only block. when there is
@@ -251,12 +253,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     Date serviceDate = null;
 
     if (StringUtils.isEmpty(operatorId)) {
-
       _log.warn("no operator id reported");
       // FIXME TODO use new model stuff
-
     } else {
-      OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItem(obsDate, operatorId);
+      OperatorAssignmentItem oai = _operatorAssignmentService
+          .getOperatorAssignmentItem(obsDate, operatorId);
       if (oai != null) {
         utsRunId = oai.getRunId();
         serviceDate = oai.getServiceDate();
@@ -264,11 +265,15 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     }
 
     String reportedRunId = observation.getRecord().getRunId();
+    Set<String> runIdsToTry = new LinkedHashSet<String>();
 
-    if (StringUtils.isNotEmpty(utsRunId) || StringUtils.isNotEmpty(reportedRunId)) {
-
-      String runId = StringUtils.isNotEmpty(utsRunId)? utsRunId : reportedRunId;
-
+    if (StringUtils.isNotEmpty(utsRunId)) {
+      runIdsToTry.add(utsRunId);
+    }
+    if (StringUtils.isNotEmpty(reportedRunId)) {
+      runIdsToTry.add(reportedRunId);
+    }
+    if (!runIdsToTry.isEmpty()) {
       // TODO change to ReportedRunState enum
       boolean utsReported = true;
       boolean runReported = true;
@@ -276,13 +281,10 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
       if (utsRunId == null) {
         _log.warn("no UTS assigned run found for operator=" + operatorId);
-        runId = reportedRunId;
         utsReported = false;
-
       } else if (!StringUtils.equals(utsRunId, reportedRunId)) {
         _log.warn("UTS assigned run " + utsRunId + " and reported run "
             + reportedRunId + " don't match.  defaulting to UTS run.");
-
         // TODO which to use? for now, uts...
         utsReportedRunMismatch = true;
       } else {
@@ -290,14 +292,20 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       }
 
       String agencyId = observation.getRecord().getVehicleId().getAgencyId();
-      RunTripEntry rte = _runService.getRunTripEntryForRunAndTime(
-          new AgencyAndId(agencyId, runId), obsDate.getTime());
-
-      if (rte == null) {
-        _log.error("couldn't find runTripEntry for runId=" + runId + ", time="
-            + obsDate.getTime() + ", agency=" + agencyId);
-        return blockStates;
+      RunTripEntry rte = null;
+      for (String runId : runIdsToTry) {
+        rte = _runService.getRunTripEntryForRunAndTime(new AgencyAndId(
+            agencyId, runId), obsDate.getTime());
+        if (rte == null) {
+          _log.warn("couldn't find runTripEntry for runId=" + runId + ", time="
+              + obsDate.getTime() + ", agency=" + agencyId);
+        } else {
+          break;
+        }
       }
+
+      if (rte == null)
+        return blockStates;
 
       List<BlockInstance> blockInstances = new ArrayList<BlockInstance>();
       BlockEntry blockEntry = rte.getTripEntry().getBlock();

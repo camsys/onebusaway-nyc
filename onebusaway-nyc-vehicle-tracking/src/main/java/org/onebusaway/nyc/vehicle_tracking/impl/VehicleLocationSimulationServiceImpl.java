@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
@@ -71,12 +72,10 @@ import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import umontreal.iro.lecuyer.rng.*;
 import umontreal.iro.lecuyer.randvar.*;
 import umontreal.iro.lecuyer.probdist.*;
 import umontreal.iro.lecuyer.randvarmulti.*;
-import umontreal.iro.lecuyer.probdistmulti.*;
 
 @Component
 public class VehicleLocationSimulationServiceImpl implements
@@ -380,7 +379,7 @@ public class VehicleLocationSimulationServiceImpl implements
       String dsc = _destinationSignCodeService
           .getDestinationSignCodeForTripId(tripId);
 
-      if (dsc == null)
+      if (StringUtils.isEmpty(dsc))
         dsc = "0";
 
       // FIXME straighten these out...
@@ -416,11 +415,11 @@ public class VehicleLocationSimulationServiceImpl implements
                 .getStopLat(), lastBlockLocation.getClosestStop().getStopTime()
                 .getStop().getStopLon(), 100);
 
-        // TODO might want to ensure sane transfers...
+        // FIXME find a good way to sample/transfer runs
         List<BlockInstance> activeBlocks = _blockGeospatialService
             .getActiveScheduledBlocksPassingThroughBounds(bounds,
-                unperturbedTimestamp - 1 * 60 * 1000,
-                unperturbedTimestamp + 1 * 60 * 1000);
+                unperturbedTimestamp - 15 * 60 * 1000,
+                unperturbedTimestamp + 15 * 60 * 1000);
         BlockInstance currentBlockInstance = _blockCalendarService
             .getBlockInstance(blockEntry.getId(), serviceDate);
         newBlock = sampleNearbyBlocks(currentBlockInstance, activeBlocks);
@@ -452,8 +451,8 @@ public class VehicleLocationSimulationServiceImpl implements
                 new AgencyAndId(btrip.getTrip().getId().getAgencyId(), runId),
                 unperturbedTimestamp);
 
-            if (newRunTrip != null && newRunTrip.getRun() != runTrip.getRun()) {
-              _log.debug(scheduleTime + ":" + runTrip + " -> " + newRunTrip);
+            if (!StringUtils.equals(newRunTrip.getRun(), runTrip.getRun())) {
+              _log.info(scheduleTime + ":" + runTrip + " -> " + newRunTrip);
               runTrip = newRunTrip;
             }
           }
@@ -567,7 +566,7 @@ public class VehicleLocationSimulationServiceImpl implements
   @Override
   public int addSimulationForBlockInstance(AgencyAndId blockId,
       long serviceDate, long actualTime, boolean bypassInference,
-      boolean isRunBased, boolean realtime, boolean fillActualProperties,
+      boolean isRunBased, boolean realtime, boolean fillActual,
       boolean reportsOperatorId, boolean reportsRunId,
       Properties properties) {
 
@@ -581,7 +580,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setPauseOnStart(false);
     task.setRunInRealtime(realtime);
     task.setBypassInference(bypassInference);
-    task.setFillActualProperties(fillActualProperties);
+    task.setFillActualProperties(fillActual);
 
     BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
         blockId, serviceDate);

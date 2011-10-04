@@ -40,6 +40,9 @@ table td {
     <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
     <li>location:<jsp:text> </jsp:text><c:out value="${obs.latitude}"/><jsp:text> </jsp:text><c:out value="${obs.longitude}"/></li>
     <li><jsp:text>dsc: </jsp:text><c:out value="${obs.destinationSignCode}"/></li>
+    <li><jsp:text>operatorId: </jsp:text><c:out value="${obs.operatorId}"/></li>
+    <li><jsp:text>reportedRunId: </jsp:text><c:out value="${obs.runId}"/></li>
+    <li><jsp:text>reportedRunRouteId: </jsp:text><c:out value="${obs.runRouteId}"/></li>
 </ul>
 
 <h2>Particles</h2>
