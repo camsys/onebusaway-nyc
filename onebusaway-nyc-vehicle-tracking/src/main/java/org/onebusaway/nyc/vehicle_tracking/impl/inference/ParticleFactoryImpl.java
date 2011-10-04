@@ -16,15 +16,9 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.impl.tdm.model.OperatorAssignmentItem;
-import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -33,8 +27,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
-import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +55,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
-  
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
   private VehicleStateLibrary _vehicleStateLibrary;
@@ -120,7 +111,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         _initialNumberOfParticles);
 
     if (atStartCdf.isEmpty() && inProgresCdf.isEmpty())
-      _log.warn("no blocks to sample!");
+      _log.warn("no blocks to sample for obs=" + obs);
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
@@ -137,7 +128,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
-  // TODO fix this hackish atStart/inProgress stuff
+  // FIXME TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState, 
       CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf, 
       CDFMap<BlockState> inProgressCdf, Observation obs) {

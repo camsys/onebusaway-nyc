@@ -170,6 +170,11 @@ public class RunServiceImpl implements RunService {
       long time) {
 
     String runId = runAgencyAndId.getId();
+    if(!entriesByRun.containsKey(runId)) {
+      _log.debug("Run id " + runId + " was not found.");
+      return null;
+    }
+    
     for (RunTripEntry entry : entriesByRun.get(runId)) {
       // all the trips for this run
       BlockEntry block = entry.getTripEntry().getBlock();
@@ -203,7 +208,6 @@ public class RunServiceImpl implements RunService {
           if (secondTrip.getStartTime() < scheduleTime) {
             return secondTrip;
           }
-          return firstTrip;
         }
       }
     }
