@@ -52,6 +52,16 @@
 			<artifactId>onebusaway-container</artifactId>
 			<version>2.0.5-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.8.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+			<version>1.8.5</version>
+		</dependency>
 	</dependencies>
 	
 	<profiles>
@@ -75,7 +85,7 @@
 			<properties>
 				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
 				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-				<tdm.depotAssignFilename>/depot_assigns/DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
 				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
 				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
 				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
