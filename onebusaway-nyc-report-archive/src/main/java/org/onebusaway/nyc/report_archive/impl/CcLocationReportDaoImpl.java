@@ -32,8 +32,7 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
     return _template;
   }
 
-  // TODO Remove transactional?
-  @Transactional
+  @Transactional(rollbackFor=Throwable.class)
   @Override
   public void saveOrUpdateReport(CcLocationReportRecord report) {
     _template.saveOrUpdate(report);
