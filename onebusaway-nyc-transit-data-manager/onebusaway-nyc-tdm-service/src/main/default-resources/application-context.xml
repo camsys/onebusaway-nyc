@@ -23,7 +23,7 @@
 	<bean class="org.onebusaway.nyc.transit_data_manager.config.XMLConfigurationDatastore">
 		<!--  <constructor-arg value="testconfigfile.xml" />   -->
 		<property name="configFilePath">
-			<value>d:\shared\testconfigfile.xml</value>
+			<value>${tdm.config.configXmlFile}</value>
 		</property>
 	</bean>
 	

@@ -74,6 +74,7 @@
 				<tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
 				<tdm.dscFilename>dsc.csv</tdm.dscFilename>
 				<tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
 			</properties>
 		</profile>
 		<profile>
@@ -89,6 +90,7 @@
 				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
 				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
 				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>/opt/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
 			</properties>
 		</profile>
 	</profiles>
