@@ -192,10 +192,13 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         }
       }
 
-      // TODO when should we just make sure we have the reported run/block in
-      // the support, // compared to making it the only block. when there is
-      // no UTS match yet a valid reported run/block?
-      return potentialBlocks;
+      /*
+       * These vehicle/UTS reported runs->blocks are now guaranteed to be present in
+       * the particle set.
+       */
+      // TODO weight these by "how" they were reported
+      //return potentialBlocks;
+      
     }
 
     Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(observation);
