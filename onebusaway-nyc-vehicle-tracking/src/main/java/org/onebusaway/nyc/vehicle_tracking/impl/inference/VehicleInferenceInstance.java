@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -191,8 +192,8 @@ public class VehicleInferenceInstance {
          * more reliable run info (e.g. reported runId + UTS match).
          */
         NycRawLocationRecord lastRecord = _previousObservation.getRecord();
-        if (lastRecord.getOperatorId() != record.getOperatorId()
-            || lastRecord.getRunId() != record.getRunId()) {
+        if (!StringUtils.equals(lastRecord.getOperatorId(), record.getOperatorId())
+            || !StringUtils.equals(lastRecord.getRunId(), record.getRunId())) {
           // TODO what to do when we lose information?  e.g. "signal"
           // drops and op/run/UTS info hasn't really changed/been re-entered
           _particleFilter.reset();
