@@ -101,9 +101,9 @@
   </pluginRepositories>
 
   <scm>
-    <connection>scm:svn:http://onebusaway.googlecode.com/svn/onebusaway-nyc/trunk</connection>
-    <developerConnection>scm:svn:https://onebusaway.googlecode.com/svn/onebusaway-nyc/trunk </developerConnection>
-    <url>http://code.google.com/p/onebusaway/source/browse/#svn/onebusaway-nyc/trunk</url>
+    <connection>scm:git:github.com/camsys/onebusaway-nyc/</connection>
+    <developerConnection>scm:git:github.com/camsys/onebusaway-nyc/</developerConnection>
+    <url>https://github.com/camsys/onebusaway-nyc/</url>
   </scm>
 
   <modules>

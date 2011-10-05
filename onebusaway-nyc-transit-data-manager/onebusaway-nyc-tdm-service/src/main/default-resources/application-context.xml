@@ -5,6 +5,7 @@
    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 	<context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.api" />
 	
+	
 	<bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="order" value="-2" />
         <property name="properties">
@@ -18,6 +19,12 @@
             </props>
         </property>
     </bean>
-
+	
+	<bean class="org.onebusaway.nyc.transit_data_manager.config.XMLConfigurationDatastore">
+		<!--  <constructor-arg value="testconfigfile.xml" />   -->
+		<property name="configFilePath">
+			<value>${tdm.config.configXmlFile}</value>
+		</property>
+	</bean>
 	
 </beans>

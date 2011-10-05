@@ -7,6 +7,7 @@ import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
+import tcip_3_0_5_local.CPTFileIdentifier;
 import tcip_final_3_0_5_1.CPTPushHeader;
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 import tcip_final_3_0_5_1.SchPushOperatorAssignments;
@@ -32,13 +33,20 @@ public class PushOperatorAssignsGenerator {
     resultOpAssigns.setPushHeader(generatePushHeader());
     resultOpAssigns.setAssignments(generateAssignments(opAssignList));
 
+//    resultOpAssigns.setCreated(value);
+//    resultOpAssigns.setSchVersion(value);
+//    resultOpAssigns.setSourceapp(value);
+//    resultOpAssigns.setSourceip(value);
+//    resultOpAssigns.setSourceport(value);
+//    resultOpAssigns.setNoNameSpaceSchemaLocation(value);
+    
     return resultOpAssigns;
   }
 
   private CPTPushHeader generatePushHeader() {
     CPTPushHeader ph = new CPTPushHeader();
 
-    ph.setFileType("operator-assignments-file");
+    ph.setFileType("3");
     ph.setEffective(mappingTool.dateTimeToXmlDatetimeFormat(headerEffectiveDate));
     ph.setSource(0);
     ph.setUpdatesOnly(false);
