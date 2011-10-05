@@ -1,15 +1,17 @@
 package org.onebusaway.nyc.transit_data_manager.config.model.jaxb;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.ext.JodaSerializers.DateTimeSerializer;
 import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
+import org.onebusaway.nyc.transit_data_manager.config.DateTimeXmlAdapter;
 import org.onebusaway.nyc.transit_data_manager.config.TdmIsoDateTimeNoMillisSerializer;
 
 public class ConfigItem {
   private String component;
   private String key;
   private String value;
+  private String units;
   private String valueType;
   private String description;
   private DateTime updated;
@@ -30,10 +32,19 @@ public class ConfigItem {
     return description;
   }
   
+  @XmlJavaTypeAdapter(type=DateTime.class, value=DateTimeXmlAdapter.class)
   @JsonSerialize(using=TdmIsoDateTimeNoMillisSerializer.class)
   public DateTime getUpdated() {
     return updated;
   }
+  
+  public String getUnits() {
+    return units;
+  }
+  public void setUnits(String units) {
+    this.units = units;
+  }
+  
   public void setComponent(String component) {
     this.component = component;
   }

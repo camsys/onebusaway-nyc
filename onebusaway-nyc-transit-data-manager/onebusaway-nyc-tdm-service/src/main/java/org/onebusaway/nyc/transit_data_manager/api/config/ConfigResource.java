@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.api.config;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -15,6 +15,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ser.StdSerializerProvider;
 import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
@@ -37,7 +38,7 @@ public class ConfigResource {
   private ObjectMapper mapper;
 
   public ConfigResource() {
-    mapper = new ObjectMapper();
+    mapper = getObjectMapper();
   }
 
   @Autowired
@@ -98,15 +99,8 @@ public class ConfigResource {
 
     String resultStr = null;
 
-    // Check to see if we have any data saved for this component,key
-
-    if (datastore.getComponentHasKey(component, key)) { // we do have a value
-                                                        // for this key.
-      ConfigItem item = datastore.getConfigItemByComponentKey(component, key);
-      resultStr = mapper.writeValueAsString(item);
-    } else { // we do not have a value for this key.
-      resultStr = "";
-    }
+    ConfigItem item = datastore.getConfigItemByComponentKey(component, key);
+    resultStr = mapper.writeValueAsString(item);
 
     return resultStr;
   }
@@ -120,7 +114,8 @@ public class ConfigResource {
   String key) throws JsonParseException, JsonMappingException, IOException {
 
     boolean giveUnsupportedValueTypeWarning = false;
-    
+    boolean giveNoValueError = false;
+
     // Start by mapping the input, which has an enclosing element, to a
     // SingleConfigItem
     SingleConfigItem configItem = mapper.readValue(configStr,
@@ -129,10 +124,14 @@ public class ConfigResource {
     // Now Grab grab the input config item from the input
     ConfigItem inputConfigItem = configItem.getConfig();
 
-    if(!"string".equalsIgnoreCase(inputConfigItem.getValueType())) {
+    if (!"string".equalsIgnoreCase(inputConfigItem.getValueType())) {
       giveUnsupportedValueTypeWarning = true;
     }
     
+    if (inputConfigItem.getValue() == null) {
+      giveNoValueError = true;
+    }
+
     // Now selectively take some values from the input and create a new
     // configitem
     // We do this to ensure that the key and component names are identical to
@@ -143,13 +142,19 @@ public class ConfigResource {
     configToSet.setUpdated(new DateTime());
     configToSet.setDescription(inputConfigItem.getDescription());
     configToSet.setValue(inputConfigItem.getValue());
-    configToSet.setValueType("String"); // Right now all we do is store things as strings.
+    configToSet.setUnits(inputConfigItem.getUnits());
+    configToSet.setValueType("String"); // Right now all we do is store things
+                                        // as strings.
 
-    datastore.setConfigItemByComponentKey(component, key, configToSet);
+    if (!giveNoValueError) datastore.setConfigItemByComponentKey(component, key, configToSet);
 
     Message statusMessage = null;
-    
-    if (giveUnsupportedValueTypeWarning) {
+
+    if (giveNoValueError){
+      statusMessage = new WarningMessage();
+      statusMessage.setStatus("ERROR");
+      ((WarningMessage) statusMessage).setWarningMessage("No Value entered. Nothing saved.");
+    } else if (giveUnsupportedValueTypeWarning) {
       statusMessage = new WarningMessage();
       statusMessage.setStatus("WARNING");
       ((WarningMessage) statusMessage).setWarningMessage("valueTypes other than string are unsupported at this time. Value will be stored as a string.");
@@ -157,9 +162,31 @@ public class ConfigResource {
       statusMessage = new Message();
       statusMessage.setStatus("OK");
     }
-    
-    
+
     return mapper.writeValueAsString(statusMessage);
 
+  }
+
+  /**
+   * Get the object mapper. This function does any setup necessary, such
+   * as adding a null value serializer
+   * string.
+   * 
+   * @return
+   */
+  private ObjectMapper getObjectMapper() {
+    // this code was taken from
+    // http://wiki.fasterxml.com/JacksonHowToCustomSerializers
+    // Basically it sets up a serializer for null values, so that they are
+    // mapped to an empty string.
+
+    StdSerializerProvider sp = new StdSerializerProvider();
+    //sp.setNullValueSerializer(new NullSerializer()); // Turns out for now I do not want to serialize null as "".
+    
+    
+    ObjectMapper m = new ObjectMapper();
+    m.setSerializerProvider(sp);
+
+    return m;
   }
 }
