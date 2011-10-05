@@ -506,8 +506,9 @@ public class VehicleInferenceInstance {
             "display.offRouteDistance", 500))
           statusFields.add("deviated");
 
-        int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState
-            .getLastInMotionTime()) / 1000);
+        int secondsSinceLastMotion = (int)((particle.getTimestamp() - 
+            motionState.getLastInMotionTime()) / 1000);
+
         if (secondsSinceLastMotion > _configurationService
             .getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
