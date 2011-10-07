@@ -350,9 +350,9 @@ public class BlockStateService {
       double distanceAlongBlock) {
 
     // FIXME this is a poor hack
-    if (rte == null) {
-      return getAsState(blockInstance, distanceAlongBlock);
-    }
+//    if (rte == null) {
+//      return getAsState(blockInstance, distanceAlongBlock);
+//    }
 
     BlockConfigurationEntry block = blockInstance.getBlock();
 

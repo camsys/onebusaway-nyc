@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
@@ -95,9 +97,22 @@ public class AbstractTraceRunner {
     _standardDeviation = standardDeviation;
   }
 
-  @Test
-  public void test() throws Throwable {
+  public void setBundle(String bundleId) throws Exception {
+    String port = System.getProperty("org.onebusaway.transit_data_federation_webapp.port", "9905");
+    String url = "http://localhost:" + port + 
+        "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId=" + bundleId;
 
+    HttpClient client = new HttpClient();
+    GetMethod get = new GetMethod(url);
+    client.executeMethod(get);
+
+    String response = get.getResponseBodyAsString(); 
+    if(!response.equals("OK"))
+      throw new Exception("Bundle switch failed!");
+  }
+  
+  @Test
+  public void test() throws Throwable {        
     File trace = new File("src/integration-test/resources/traces/" + _trace);
     List<NycTestInferredLocationRecord> expected = _traceSupport.readRecords(trace);
 
@@ -108,7 +123,6 @@ public class AbstractTraceRunner {
       String taskId = _traceSupport.uploadTraceForSimulation(trace);
 
       // Wait for the task to complete
-
       long t = System.currentTimeMillis();
       int prevRecordCount = -1;
 
@@ -169,9 +183,6 @@ public class AbstractTraceRunner {
     Counter<EVehiclePhase> expPhaseCounts = new Counter<EVehiclePhase>();
     Counter<EVehiclePhase> actPhaseCounts = new Counter<EVehiclePhase>();
 
-    int totalBlockComparisons = 0;
-    int totalCorrectBlockComparisons = 0;
-
     DoubleArrayList distanceAlongBlockDeviations = new DoubleArrayList();
 
     for (int i = 0; i < expected.size(); i++) {
@@ -192,12 +203,7 @@ public class AbstractTraceRunner {
         String expectedBlockId = expRecord.getActualBlockId();
         String actualBlockId = actRecord.getInferredBlockId();
 
-        totalBlockComparisons++;
-
         if (expectedBlockId.equals(actualBlockId)) {
-
-          totalCorrectBlockComparisons++;
-
           double expectedDistanceAlongBlock = expRecord.getActualDistanceAlongBlock();
           double actualDistanceAlongBlock = actRecord.getInferredDistanceAlongBlock();
           double delta = Math.abs(expectedDistanceAlongBlock
@@ -276,4 +282,5 @@ public class AbstractTraceRunner {
       _log.error("error writing results on assertion error", ex);
     }
   }
+
 }

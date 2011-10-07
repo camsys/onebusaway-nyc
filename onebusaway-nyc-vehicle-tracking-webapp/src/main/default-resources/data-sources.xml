@@ -26,7 +26,6 @@
 
 
     <!-- Bundle Configuration -->
-
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="order" value="-2" />
         <property name="properties">
@@ -36,10 +35,9 @@
         </property>
     </bean>
 
-    <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
 
+    <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
     <!-- Database Configuration -->
-    
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${db.driverClassName}" />
         <property name="url" value="${db.url}" />
@@ -59,18 +57,14 @@
     <alias name="dataSource" alias="mutableDataSource" />
 
 
-
 	<!-- Input Queue Configuration -->
-
 	<!-- This option listens to the queue with pilot and SI data on it. -->
   	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask">
 		<property name="depotPartitionKey" value="JG,CA,MA,MH,YU"/>
   	</bean>
 
 
-
 	<!-- Output Queue Configuration -->
-
 	<!-- This option sends inference output to a TDM configured queue for pickup by an external TDF/TDS -->
 <!--    	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.OutputQueueSenderServiceImpl"> -->
 <!--    	  	<property name="isPrimaryInferenceInstance" value="true"/> -->
@@ -82,9 +76,7 @@
 	</bean>
 
 
-
 	<!-- Other Stuff: -->
-
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>

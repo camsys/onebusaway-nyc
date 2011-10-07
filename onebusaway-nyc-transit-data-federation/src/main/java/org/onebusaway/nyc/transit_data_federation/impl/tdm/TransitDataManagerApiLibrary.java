@@ -24,6 +24,10 @@ public class TransitDataManagerApiLibrary {
 
   private static final RestApiLibrary _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
 
+  public URL buildUrl(String baseObject, String... params) throws Exception {
+    return _restApiLibrary.buildUrl(baseObject, params);
+  }
+  
   public static void executeApiMethodWithNoResult(String baseObject, String... params) throws Exception {
     _restApiLibrary.executeApiMethodWithNoResult(baseObject, params);
   }

@@ -106,7 +106,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-<!--                         	<debugForkedProcess>true</debugForkedProcess> -->
+                        	<debugForkedProcess>true</debugForkedProcess>
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>
@@ -151,7 +151,7 @@
                 <version>1.1.1</version>
                 <executions>
                     <execution>
-                        <id>graph-builder-execution</id>
+                        <id>graph-builder-execution-b63</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -167,11 +167,33 @@
                                 <argument>-onlyIfDoesNotExist</argument>
                                 <argument>-additionalResourcesDirectory</argument>
                                 <argument>${basedir}/src/integration-test/resources/bundle</argument>
-                                <argument>${basedir}/src/integration-test/resources/bundle.xml</argument>
-                                <argument>${project.build.directory}/transit-data-bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-b63.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/b63</argument>
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>graph-builder-execution-s54</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Xmx1500m</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>-Donebusaway_prefix=${basedir}</argument>
+                                <argument>org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreatorMain</argument>
+                                <argument>-onlyIfDoesNotExist</argument>
+                                <argument>-additionalResourcesDirectory</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle</argument>
+                                <argument>${basedir}/src/integration-test/resources/bundle-s54.xml</argument>
+                                <argument>${project.build.directory}/transit-data-bundle/s54</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>                
                 </executions>
             </plugin>
             <!-- Start up an embedded database for sharing the user database between webapps -->

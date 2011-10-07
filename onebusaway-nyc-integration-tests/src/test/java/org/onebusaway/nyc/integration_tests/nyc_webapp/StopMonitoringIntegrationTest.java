@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpException;
@@ -39,7 +38,6 @@ import org.onebusaway.siri.model.ServiceDelivery;
 import org.onebusaway.siri.model.Siri;
 import org.onebusaway.siri.model.StopMonitoringDelivery;
 import org.onebusaway.utility.DateLibrary;
-
 
 public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
   
@@ -70,7 +68,7 @@ public class StopMonitoringIntegrationTest extends SiriIntegrationTestBase {
     assertNull(delivery.visits  );
   }
 
-  @Test
+  //@Test
   public void test() throws HttpException, IOException, ParseException {
     
     /**
