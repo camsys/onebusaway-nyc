@@ -46,8 +46,45 @@
             <version>1.9.0-rc1</version>
         </dependency>
     </dependencies>
-
+    <profiles>
+      <profile>
+	<id>db-postgres-local</id>
+	<activation>
+	  <activeByDefault>true</activeByDefault>
+	</activation>
+	<properties>
+	  <db.driverClassName>org.postgresql.Driver</db.driverClassName>
+	  <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
+	  <db.username>postgres</db.username>
+	  <db.password>changeme</db.password>
+	  <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
+	  <!-- TODO Note sure about autocommit for postgres -->
+	  <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+	</properties>
+      </profile>
+      <profile>
+	<id>db-mysql-local</id>
+	<properties>
+	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+	  <db.url>jdbc:mysql://localhost:3306/onebusaway_nyc</db.url>
+	  <db.username>root</db.username>
+	  <db.password></db.password>
+	  <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
+	</properties>
+      </profile>
+      <profile>
+	<id>db-production</id>
+	<properties>
+	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+	  <db.url>jdbc:mysql://db.staging.obanyc.com:3306/onebusaway_nyc</db.url>
+	  <db.username>root</db.username>
+	  <db.password></db.password>
+	  <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
+	</properties>
+      </profile>
+    </profiles>
     <build>
+      <finalName>onebusaway-nyc-report-archive</finalName>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
