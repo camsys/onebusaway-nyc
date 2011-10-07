@@ -114,6 +114,7 @@ public class CcLocationReportRecord implements Serializable {
 
   public CcLocationReportRecord(CcLocationReport message, String contents) {
     super();
+    if (message == null) return; // deserialization failure, abort
     setRequestId((int) message.getRequestId());
     setDestSignCode(message.getDestSignCode().intValue());
     setDirectionDeg(message.getDirection().getDeg());
@@ -122,7 +123,6 @@ public class CcLocationReportRecord implements Serializable {
     setManufacturerData(message.getManufacturerData());
     setOperatorId((int) message.getOperatorID().getOperatorId());
     setOperatorIdDesignator(message.getOperatorID().getDesignator());
-    setRequestId((int) message.getRequestId());
     setRouteId((int) message.getRouteID().getRouteId());
     setRouteIdDesignator(message.getRouteID().getRouteDesignator());
     setRunId((int) message.getRunID().getRunId());
@@ -134,6 +134,8 @@ public class CcLocationReportRecord implements Serializable {
     setVehicleAgencydesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());
     setVehicleId((int) message.getVehicle().getVehicleId());
+    setNmeaSentenceGPGGA(message.getLocalCcLocationReport().getNMEA().getSentence().get(0));
+    setNmeaSentenceGPRMC(message.getLocalCcLocationReport().getNMEA().getSentence().get(1));
     setRawMessage(contents);
   }
 
