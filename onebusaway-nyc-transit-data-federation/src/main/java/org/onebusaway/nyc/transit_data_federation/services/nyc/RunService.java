@@ -22,9 +22,9 @@ public interface RunService {
 
   List<RunTripEntry> getRunTripEntriesForTime(String agencyId, long time);
 
-  RunTripEntry getPreviousEntry(RunTripEntry entry);
+  RunTripEntry getPreviousEntry(RunTripEntry entry, long date);
 
-  RunTripEntry getNextEntry(RunTripEntry entry);
+  RunTripEntry getNextEntry(RunTripEntry entry, long date);
 
   RunTripEntry getRunTripEntryForBlockInstance(BlockInstance blockInstance, int scheduleTime);
 
