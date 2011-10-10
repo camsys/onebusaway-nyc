@@ -110,6 +110,8 @@ public class StifTask implements Runnable {
       _gtfsMutableRelationalDao.updateEntity(trip);
     }
 
+    warnOnMissingTrips();
+
     Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
     //store trip-run mapping in bundle
     try {
@@ -162,6 +164,15 @@ public class StifTask implements Runnable {
         throw new IllegalStateException(
             "error serializing DSC/STIF data", e);
       }    
+  }
+
+  private void warnOnMissingTrips() {
+    for (Trip t : _gtfsMutableRelationalDao.getAllTrips()) {
+      String blockId = t.getBlockId();
+      if (blockId == null || blockId.equals("")) {
+         _log.warn("When matching GTFS to STIF, failed to find block in STIF for " + t.getId());
+      }
+    }
   }
 
   public void loadStif(File path, StifTripLoader loader) {
