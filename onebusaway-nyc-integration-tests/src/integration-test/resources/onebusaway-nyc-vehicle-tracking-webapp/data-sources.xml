@@ -40,6 +40,7 @@
         </property>
     </bean>
 
+	<!-- Turn off TDM fetching for integration tests -->
     <bean id="bundleManagementServiceProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="bundleManagementService" />
         <property name="properties">

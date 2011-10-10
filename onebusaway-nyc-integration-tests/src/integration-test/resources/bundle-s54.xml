@@ -27,12 +27,6 @@
     <bean id="gtfs_s54" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
         <property name="path" 
         	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-s54.zip" />
-        <property name="defaultAgencyId" value="2008" />
-        <property name="agencyIdMappings">
-            <map>
-                <entry key="MTA NYCT" value="2008" />
-            </map>
-        </property>
     </bean>
 
     <bean id="stifLoaderTask" class="org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask">

@@ -28,6 +28,8 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.impl.bundle.model.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -88,7 +90,7 @@ public class VehicleInferenceInstance {
   private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
   private List<Particle> _badParticles;
-
+    
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
@@ -442,8 +444,11 @@ public class VehicleInferenceInstance {
    * Private Methods
    ****/
   private NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
-    Particle particle = _particleFilter.getMostLikelyParticle();
 
+    Particle particle = _particleFilter.getMostLikelyParticle();
+    if(particle == null)
+      return null;
+    
     VehicleState state = particle.getData();
     MotionState motionState = state.getMotionState();
     JourneyState journeyState = state.getJourneyState();

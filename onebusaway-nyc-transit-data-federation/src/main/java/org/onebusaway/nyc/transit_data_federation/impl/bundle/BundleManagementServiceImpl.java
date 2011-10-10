@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,12 +43,22 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
   private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
-  private HashMap<String, BundleItem> _bundles = new HashMap<String, BundleItem>();
   
+  // all bundles present in the local disk store
+  private HashMap<String, BundleItem> _allBundles = new HashMap<String, BundleItem>();
+
+  // bundles that are active now (defined in _today)
+  private HashMap<String, BundleItem> _validBundles = new HashMap<String, BundleItem>();
+
+  // the currently loaded bundle ID
   private String _currentBundleId = null;
 
+  
+  // time to use when comparing bundles for applicability to "today"
+  private Date _today = new Date();
+  
   // does this bundle manager exist without a TDM attached?
-  private boolean _standaloneMode = false;
+  private boolean _standaloneMode = true;
 
   // where should we store our bundle data?
   private String _bundleRootPath = null;
@@ -55,10 +66,12 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   // number of times to retry downloading a file from the TDM, if present.
   private static final int _fileDownloadRetries = 2;
 
+  
   private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
 	private static TransitDataManagerApiLibrary _tdmLibrary = new TransitDataManagerApiLibrary();
-		
+	
+	
 	@Autowired
 	private NycFederatedTransitDataBundle _nycBundle;
 	
@@ -82,6 +95,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	   this._bundleRootPath = path;
 	}
 
+	public void setTime(Date time) {
+	  _today = time;
+  }
+
 	public void setStandaloneMode(boolean standalone) {
 	  _standaloneMode = standalone;
 	}
@@ -89,6 +106,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	public boolean getStandaloneMode() {
 	  return _standaloneMode;
 	}
+	
 	
 	// discover bundles from those on disk locally
 	private ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
@@ -263,12 +281,13 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  }
 	}
 	
+	
 	private void discoverBundles() throws Exception {
 	  // if there's no TDM present, we just use what we already have locally.
 	  if(_standaloneMode) {
 	    ArrayList<BundleItem> localBundles = getBundleListFromLocalStore();
 	    for(BundleItem localBundle: localBundles) {
-	      _bundles.put(localBundle.getId(), localBundle);
+	      _allBundles.put(localBundle.getId(), localBundle);
 	    }
 	    return;
 	  }
@@ -324,7 +343,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	    } // for each file
 
       if(bundleIsValid) {
-        _bundles.put(bundle.getId(), bundle);
+        _allBundles.put(bundle.getId(), bundle);
         _log.info("Bundle " + bundle.getId() + " is valid; added to list of local bundles.");
       } else {
         _log.info("Bundle " + bundle.getId() + " is NOT valid; skipped.");
@@ -332,46 +351,51 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  } // for each bundle
 	}
 	
+	public void refreshValidBundleList() {
+    _validBundles.clear();
+
+    // sort bundles by preference 
+    // (bundles with longer active service times and that are active now are preferred)
+    for(BundleItem bundle : _allBundles.values()) {
+      if(bundle.getServiceDateFrom().before(_today) && bundle.getServiceDateTo().after(_today))
+        _validBundles.put(bundle.getId(), bundle);
+    }
+	}
+	
 	@PostConstruct
 	public void setup() throws Exception {
-	  discoverBundles();
-	  
-	  // sort bundles by preference 
-	  // (bundles with longer active service times and that are active now are preferred)
-	  List<BundleItem> goodBundles = new ArrayList<BundleItem>(_bundles.values());
-	  Collections.sort(goodBundles);
-	  
-	  BundleItem bestBundle = goodBundles.get(goodBundles.size() - 1);
-	  changeBundle(bestBundle.getId());
+	  discoverBundles();  
+	  refreshValidBundleList();
+
+    ArrayList<BundleItem> bestBundleCandidates = new ArrayList<BundleItem>(_validBundles.values());
+    Collections.sort(bestBundleCandidates, new BundleComparator(_today));
+    BundleItem bestBundle = bestBundleCandidates.get(bestBundleCandidates.size() - 1);
+    changeBundle(bestBundle.getId());
 	}
 	
 	@Override
 	public BundleItem getBundleMetadataForBundleWithId(String bundleId) {
-	  return _bundles.get(bundleId);
+	  return _validBundles.get(bundleId);
 	}
 	
   @Override
   public BundleItem getCurrentBundleMetadata() {
-    return _bundles.get(_currentBundleId);
+    return _validBundles.get(_currentBundleId);
   }
 
   @Override
 	public boolean bundleWithIdExists(String bundleId) {
-	  return _bundles.containsKey(bundleId);
+	  return _validBundles.containsKey(bundleId);
 	}
 	
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
-	  if(bundleId == null || bundleId.equals(_currentBundleId))
+	  if(bundleId == null || bundleId.equals(_currentBundleId) || !_validBundles.containsKey(bundleId))
 	    return;
 	  
 	  File path = new File(_bundleRootPath, bundleId);
-		if(!path.exists()) {
-			_log.error("Bundle path " + path + " does not exist; not switching bundle.");
-			return;
-		}
-		
-		_log.info("Switching to bundle " + bundleId + "...");
+
+	  _log.info("Switching to bundle " + bundleId + "...");
 		
 		_bundle.setPath(path);
 		_refreshService.refresh(RefreshableResources.CALENDAR_DATA);
@@ -387,8 +411,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     _refreshService.refresh(RefreshableResources.STOP_GEOSPATIAL_INDEX);
 		_refreshService.refresh(RefreshableResources.TRANSFER_PATTERNS);
 		_refreshService.refresh(RefreshableResources.NARRATIVE_DATA);
-
-		_nycBundle.setPath(path);
+		
+    _nycBundle.setPath(path);
 		_refreshService.refresh(NycRefreshableResources.DESTINATION_SIGN_CODE_DATA);
 		_refreshService.refresh(NycRefreshableResources.TERMINAL_DATA);
 		_refreshService.refresh(NycRefreshableResources.RUN_DATA);
@@ -405,4 +429,27 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     _currentBundleId = bundleId;
 		return;
 	}
+	
+	// pick the bundle with the most applicability into the future
+	public class BundleComparator implements Comparator<BundleItem>{
+	  
+	  Date _epoch = null;
+	  
+	  public BundleComparator() {
+	    _epoch = new Date();
+	  }
+	  
+	  public BundleComparator(Date epoch) {
+	    _epoch = epoch;
+	  }
+	  
+    @Override
+    public int compare(BundleItem o1, BundleItem o2) {
+      Long epoch = _epoch.getTime();
+      Long interval1 = o1.getServiceDateTo().getTime() - epoch;
+      Long interval2 = o2.getServiceDateTo().getTime() - epoch;
+    
+      return interval1.compareTo(interval2);
+    }
+}
 }

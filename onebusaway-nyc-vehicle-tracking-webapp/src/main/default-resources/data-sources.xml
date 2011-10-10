@@ -30,7 +30,7 @@
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">${bundle.location}</prop>
+                <prop key="bundleStoreRoot">${bundle.location}</prop>
             </props>
         </property>
     </bean>

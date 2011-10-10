@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class BundleItem implements Serializable, Comparable<BundleItem> {
+public class BundleItem implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -48,16 +48,6 @@ public class BundleItem implements Serializable, Comparable<BundleItem> {
 
   public void setFiles(ArrayList<BundleFileItem> files) {
     this.files = files;
-  }
-
-  @Override
-  public int compareTo(BundleItem otherBundle) {    
-    Long effectiveLength1 = this.getServiceDateTo().getTime() 
-        - this.getServiceDateFrom().getTime();
-    Long effectiveLength2 = otherBundle.getServiceDateTo().getTime() 
-        - otherBundle.getServiceDateFrom().getTime();
-
-    return effectiveLength1.compareTo(effectiveLength2);
   }
 
 }
