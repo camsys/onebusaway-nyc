@@ -14,6 +14,7 @@ public class Vehicle {
 
   private String agencyId;
   private String vehicleId;
+  private String depotId;
 
   public void setAgencyId(String agencyId) {
     this.agencyId = agencyId;
@@ -21,6 +22,10 @@ public class Vehicle {
 
   public void setVehicleId(String vehicleId) {
     this.vehicleId = vehicleId;
+  }
+
+  public void setDepotId(String depot) {
+    this.depotId = depot;
   }
 
 }

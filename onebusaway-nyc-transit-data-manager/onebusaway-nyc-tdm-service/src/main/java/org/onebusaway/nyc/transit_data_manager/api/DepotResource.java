@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +36,7 @@ public class DepotResource {
   @GET
   @Produces("application/json")
   public String getDepotAssignments(@PathParam("depotName")
-  String depotName) {
+  String depotName) throws FileNotFoundException {
 
     File inputFile = new File(System.getProperty("tdm.dataPath")
         + System.getProperty("tdm.depotAssignFilename"));
@@ -42,8 +44,8 @@ public class DepotResource {
     VehicleDepotData data = null;
 
     // First I need to create a VehicleDepotData object from the input file.
-    MtaBusDepotFileToDataCreator process = new MtaBusDepotFileToDataCreator(
-        inputFile);
+    MtaBusDepotFileToDataCreator process = new MtaBusDepotFileToDataCreator();
+    process.setReader(new FileReader(inputFile));
 
     try {
       data = process.generateDataObject();
