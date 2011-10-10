@@ -341,7 +341,6 @@ public class VehicleLocationInferenceServiceImpl implements
 
         if (passOnRecord) {
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-        	managementRecord.setVehicleId(_vehicleId.toString());
         	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
 

@@ -28,8 +28,6 @@ public class NycVehicleManagementStatusBean implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private String vehicleId;
-
   private boolean inferenceIsEnabled;
 
   private Long lastUpdateTime;
@@ -54,14 +52,6 @@ public class NycVehicleManagementStatusBean implements Serializable {
 
   private String depotId;
   
-  public String getVehicleId() {
-    return vehicleId;
-  }
-
-  public void setVehicleId(String vehicleId) {
-    this.vehicleId = vehicleId;
-  }
-
   public boolean isInferenceIsEnabled() {
     return inferenceIsEnabled;
   }
