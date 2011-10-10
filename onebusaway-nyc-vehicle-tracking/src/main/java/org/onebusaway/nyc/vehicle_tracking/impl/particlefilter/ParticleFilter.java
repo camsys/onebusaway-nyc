@@ -181,7 +181,7 @@ public class ParticleFilter<OBS> {
     }
 
     /**
-     * 2. apply the sensor model to each particle
+     * 2. apply the sensor model(likelihood) to each particle
      */
     CDFMap<Particle> cdf = applySensorModel(particles, obs);
 

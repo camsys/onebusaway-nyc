@@ -100,11 +100,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state: potentialBlocks) {
 
-        double p = 1.0;
-        
-        if (!state.isUTSassigned() || !state.isRunReported()) {
-           p = scoreJourneyStartState(state, observation);
-        }
+        double p = scoreJourneyStartState(state, observation);
 
         cdf.put(p, state);
 
@@ -146,11 +142,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state: potentialBlocks) {
 
-        double p = 1.0;
-        
-        if (!state.isUTSassigned() && !state.isRunReported()) {
-           p = scoreState(state, observation);
-        }
+        double p = scoreState(state, observation);
 
         cdf.put(p, state);
 

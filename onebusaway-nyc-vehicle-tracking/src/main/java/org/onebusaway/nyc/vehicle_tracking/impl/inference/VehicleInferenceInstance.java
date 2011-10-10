@@ -196,6 +196,8 @@ public class VehicleInferenceInstance {
             || !StringUtils.equals(lastRecord.getRunId(), record.getRunId())) {
           // TODO what to do when we lose information?  e.g. "signal"
           // drops and op/run/UTS info hasn't really changed/been re-entered
+          _log.info("resetting inference for vid=" + record.getVehicleId()
+              + ": operatorId or reported runId has changed");
           _particleFilter.reset();
         }
       }

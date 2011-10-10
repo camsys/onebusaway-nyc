@@ -253,7 +253,6 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     Date obsDate = observation.getRecord().getTimeAsDate();
     String utsRunId = null;
     String operatorId = observation.getRecord().getOperatorId();
-    Date serviceDate = null;
 
     if (StringUtils.isEmpty(operatorId)) {
       _log.warn("no operator id reported");
@@ -263,7 +262,6 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
           .getOperatorAssignmentItem(obsDate, operatorId);
       if (oai != null) {
         utsRunId = oai.getRunId();
-        serviceDate = oai.getServiceDate();
       }
     }
 
@@ -310,56 +308,29 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       if (rte == null)
         return blockStates;
 
-      List<BlockInstance> blockInstances = new ArrayList<BlockInstance>();
       BlockEntry blockEntry = rte.getTripEntry().getBlock();
 
-      if (serviceDate == null) {
-        blockInstances.addAll(_runService.getBlockInstancesForRunTripEntry(rte,
-            obsDate.getTime()));
-      } else {
+      BlockInstance blockInstance = _runService.getBlockInstanceForRunTripEntry(rte,
+          obsDate);
 
-        // TODO turn this into a helper method?
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(serviceDate);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        long serviceDateMs = cal.getTimeInMillis();
-
-        BlockInstance bInst = _blockCalendarService.getBlockInstance(
-            blockEntry.getId(), serviceDateMs);
-
-        if (bInst == null) {
-          _log.error("couldn't find blockInstance for UTS serviceDate ="
-              + serviceDate);
-          blockInstances.addAll(_runService.getBlockInstancesForRunTripEntry(
-              rte, obsDate.getTime()));
-        } else {
-          blockInstances.add(bInst);
-        }
-      }
-
-      if (blockInstances.isEmpty()) {
-        _log.error("couldn't find block instances for blockEntry=" + blockEntry
-            + ", serviceDate=" + serviceDate);
+      if (blockInstance == null) {
+        _log.error("couldn't find block instance for blockEntry=" + blockEntry
+            + ", time=" + obsDate.getTime());
         return blockStates;
       } else {
-
-        for (BlockInstance blockInst : blockInstances) {
-          BlockState state = null;
-          if (bestBlockLocation) {
-            state = _blockStateService.getBestBlockLocation(observation,
-                blockInst, rte, 0, Double.POSITIVE_INFINITY);
-          } else {
-            state = _blockStateService.getAsState(blockInst, rte, 0.0);
-          }
-
-          state.setRunReported(runReported);
-          state.setUTSassigned(utsReported);
-          state.setRunReportedUTSMismatch(utsReportedRunMismatch);
-          blockStates.add(state);
+        
+        BlockState state = null;
+        if (bestBlockLocation) {
+          state = _blockStateService.getBestBlockLocation(observation,
+              blockInstance, 0, Double.POSITIVE_INFINITY);
+        } else {
+          state = _blockStateService.getAsState(blockInstance, 0.0);
         }
+
+        state.setRunReported(runReported);
+        state.setUTSassigned(utsReported);
+        state.setRunReportedUTSMismatch(utsReportedRunMismatch);
+        blockStates.add(state);
         return blockStates;
       }
 
