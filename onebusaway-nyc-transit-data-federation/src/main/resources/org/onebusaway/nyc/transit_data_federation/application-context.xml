@@ -31,19 +31,6 @@
 	<context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.impl" />
 
 
-
-    <bean id="cacheableKeyFactoriesProperties" class="org.onebusaway.container.spring.ListBeanPostProcessor">
-        <property name="target" value="cacheableKeyFactories" />
-        <property name="values">
-            <list>
-            	<value>org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleDependentCacheableMethodKeyFactory</value>
-            </list>
-        </property>
-    </bean>
-
-
-
-
 	<!-- The beans below used to be imported by adding org/onebusaway/transit_data_federation/application-context.xml -->
 	<!-- to our resource list; we need more control over the initialization of the TDF application container, so we -->
 	<!-- brought the directives from that file into this one and control them here in an NYC specific way. -->
@@ -59,7 +46,6 @@
 		</property>
 		<property name="order" value="-1" />
 	</bean>
-
 
 	<!-- Common Services -->
 	<bean id="shapePointsLibrary" class="org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary" />

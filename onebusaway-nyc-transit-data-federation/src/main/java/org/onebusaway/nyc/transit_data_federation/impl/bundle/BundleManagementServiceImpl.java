@@ -14,9 +14,11 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
@@ -33,11 +35,10 @@ import org.onebusaway.utility.ObjectSerializationLibrary;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import net.sf.ehcache.CacheManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 public class BundleManagementServiceImpl implements BundleManagementService {
 
@@ -71,6 +72,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	private static TransitDataManagerApiLibrary _tdmLibrary = new TransitDataManagerApiLibrary();
 	
+	@Autowired
+  private ApplicationContext _applicationContext;
 	
 	@Autowired
 	private NycFederatedTransitDataBundle _nycBundle;
@@ -85,6 +88,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	public String getBundleStoreRoot() {
 		return _bundleRootPath;
 	}
+	
 
 	public void setBundleStoreRoot(String path) throws Exception {
 	  // does this path exist? if not, it'll cause problems later on.
@@ -95,21 +99,24 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	   this._bundleRootPath = path;
 	}
 
-	public void setTime(Date time) {
+	
+  public void setTime(Date time) {
 	  _today = time;
   }
 
-	public void setStandaloneMode(boolean standalone) {
+	
+  public void setStandaloneMode(boolean standalone) {
 	  _standaloneMode = standalone;
 	}
 
-	public boolean getStandaloneMode() {
+	
+  public boolean getStandaloneMode() {
 	  return _standaloneMode;
 	}
 	
-	
-	// discover bundles from those on disk locally
-	private ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
+		// discover bundles from those on disk locally
+
+  private ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
     ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 
     File bundleRoot = new File(_bundleRootPath);
@@ -166,7 +173,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 	
 	// discover bundles by asking the TDM for a list
-	private ArrayList<BundleItem> getBundleListFromTDM() throws Exception {
+	
+  private ArrayList<BundleItem> getBundleListFromTDM() throws Exception {
 	  _log.info("Getting current bundle list from TDM...");
 	  
 	  ArrayList<JsonObject> bundles = 
@@ -199,7 +207,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  return output;
 	}
 
-	private String getMd5HashForFile(File filename) throws Exception {
+	
+  private String getMd5HashForFile(File filename) throws Exception {
     MessageDigest md5Hasher = MessageDigest.getInstance("MD5");
 
     FileInputStream in = new FileInputStream(filename.getPath());
@@ -223,7 +232,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     return hexString.toString();
 	}
 	
-	private void downloadUrlToLocalPath(URL url, File destFilename, String expectedMd5) throws Exception {
+	
+  private void downloadUrlToLocalPath(URL url, File destFilename, String expectedMd5) throws Exception {
 	  try {
 	    _log.info("Downloading bundle item from " + url + "...");
 	    
@@ -351,6 +361,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  } // for each bundle
 	}
 	
+	
 	public void refreshValidBundleList() {
     _validBundles.clear();
 
@@ -361,6 +372,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
         _validBundles.put(bundle.getId(), bundle);
     }
 	}
+	
 	
 	@PostConstruct
 	public void setup() throws Exception {
@@ -373,20 +385,24 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     changeBundle(bestBundle.getId());
 	}
 	
+	
 	@Override
 	public BundleItem getBundleMetadataForBundleWithId(String bundleId) {
 	  return _validBundles.get(bundleId);
 	}
 	
+	
   @Override
   public BundleItem getCurrentBundleMetadata() {
     return _validBundles.get(_currentBundleId);
   }
+  
 
   @Override
 	public boolean bundleWithIdExists(String bundleId) {
 	  return _validBundles.containsKey(bundleId);
 	}
+  
 	
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
@@ -421,12 +437,17 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		System.gc();
 		System.gc();
 
-		// clear ehcaches FIXME?
-		for(CacheManager cacheManager : CacheManager.ALL_CACHE_MANAGERS) {
-		  cacheManager.clearAll();
+		// set cache name prefix HACK--can we avoid the ref. to app context? and or use brian's
+		// cacheable key pluggable architecture to do this?
+		Map<String, CacheableMethodManager> cacheMethodBeans 
+		    = _applicationContext.getBeansOfType(CacheableMethodManager.class);
+		
+		for(String beanId : cacheMethodBeans.keySet()) {
+		  CacheableMethodManager bean = cacheMethodBeans.get(beanId);
+		  bean.setCacheNamePrefix(bundleId);
 		}
 
-    _currentBundleId = bundleId;
+		_currentBundleId = bundleId;
 		return;
 	}
 	
