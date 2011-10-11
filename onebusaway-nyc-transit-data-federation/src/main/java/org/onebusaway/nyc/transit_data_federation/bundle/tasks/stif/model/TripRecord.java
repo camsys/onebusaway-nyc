@@ -18,7 +18,6 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 public class TripRecord implements StifRecord {
   private String signCode;
   private String blockNumber;
-  private String route;
   private int originTime;
   private int tripType;
   private int destinationTime;
@@ -28,6 +27,8 @@ public class TripRecord implements StifRecord {
   private String run;
   private String previousRun;
   private int reliefTime;
+  private String reliefRunRoute;
+  private String runRoute;
 
   public void setSignCode(String signCode) {
     this.signCode = signCode;
@@ -43,14 +44,6 @@ public class TripRecord implements StifRecord {
 
   public String getBlockNumber() {
     return blockNumber;
-  }
-
-  public void setRoute(String route) {
-    this.route = route;
-  }
-
-  public String getRoute() {
-    return route;
   }
 
   public void setOriginTime(int seconds) {
@@ -129,5 +122,29 @@ public class TripRecord implements StifRecord {
   
   public int getReliefTime() {
     return reliefTime;
+  }
+
+  public String getRunRoute() {
+    return runRoute;
+  }
+
+  public String getReliefRunRoute() {
+    return reliefRunRoute;
+  }
+
+  public String getRunId() {
+    return getRun() + "_" + getRunRoute();
+  }
+
+  public String getReliefRunId() {
+    return getReliefRun() + "_" + getReliefRunRoute();
+  }
+
+  public void setReliefRunRoute(String reliefRunRoute) {
+    this.reliefRunRoute = reliefRunRoute;
+  }
+
+  public void setRunRoute(String runRoute) {
+    this.runRoute = runRoute;
   }
 }
