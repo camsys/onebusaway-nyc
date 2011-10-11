@@ -35,6 +35,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -64,7 +65,10 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Autowired
   private OutputQueueSenderService _outputQueueSenderService;
-  
+
+  @Autowired
+  public VehicleAssignmentService _vehicleAssignmentService;
+
   private ExecutorService _executorService;
 
   private int _numberOfProcessingThreads = 10;
@@ -72,6 +76,7 @@ public class VehicleLocationInferenceServiceImpl implements
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
+
 
   /**
    * Usually, we shoudn't ever have a reference to ApplicationContext, but we
@@ -308,7 +313,7 @@ public class VehicleLocationInferenceServiceImpl implements
     return instance;
   }
 
-  private class ProcessingTask implements Runnable {
+  public class ProcessingTask implements Runnable {
 
     private AgencyAndId _vehicleId;
 
@@ -336,12 +341,12 @@ public class VehicleLocationInferenceServiceImpl implements
 
         if (passOnRecord) {
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-        	managementRecord.setVehicleId(_vehicleId.toString());
+        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
 
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());
-          	record.setManagementRecord(managementRecord);
+          record.setManagementRecord(managementRecord);
         	
         	_outputQueueSenderService.enqueue(record);
         }

@@ -70,7 +70,7 @@ public class StifTripLoaderSupport {
   public TripIdentifier getIdentifierForTripRecord(TripRecord tripRecord) {
     String routeName = tripRecord.getSignCodeRoute();
     if (routeName == null || routeName.trim().length() == 0)
-      routeName = tripRecord.getRoute();
+      routeName = tripRecord.getRunRoute();
     String startStop = getStopIdForLocation(tripRecord.getOriginLocation());
     int startTime = tripRecord.getOriginTime();
     if (startTime < 0) {

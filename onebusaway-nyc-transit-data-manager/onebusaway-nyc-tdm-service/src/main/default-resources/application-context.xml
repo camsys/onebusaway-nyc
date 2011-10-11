@@ -26,5 +26,8 @@
 			<value>${tdm.config.configXmlFile}</value>
 		</property>
 	</bean>
+    
+    <bean class="org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepotFileToDataCreator">
+    </bean>
 	
 </beans>
