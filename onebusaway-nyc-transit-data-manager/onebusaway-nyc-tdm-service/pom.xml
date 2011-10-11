@@ -100,7 +100,6 @@
 	</profiles>
 	
 	<build>
-	  <finalName>onebusaway-nyc-tdm-service</finalName>	
 		<plugins>
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
