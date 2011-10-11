@@ -9,10 +9,12 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +28,12 @@ import javax.ws.rs.Produces;
 @Scope("request")
 public class VehicleResource {
 
-  @Autowired
-  private MtaBusDepotFileToDataCreator dataCreator;
-
   @GET
   @Produces("application/json")
   public String getVehicles() throws IOException {
 
-    List<MtaBusDepotAssignment> assignments = getDataCreator().loadDepotAssignments();
+    MtaBusDepotFileToDataCreator process = getDataCreator();
+    List<MtaBusDepotAssignment> assignments = process.loadDepotAssignments();
 
     List<Vehicle> vehicles = new ArrayList<Vehicle>();
     
@@ -65,11 +65,14 @@ public class VehicleResource {
 
   }
 
-  public MtaBusDepotFileToDataCreator getDataCreator() {
-    return dataCreator;
+  public MtaBusDepotFileToDataCreator getDataCreator()
+      throws FileNotFoundException {
+    File inputFile = new File(System.getProperty("tdm.dataPath")
+        + System.getProperty("tdm.depotAssignFilename"));
+
+    MtaBusDepotFileToDataCreator process = new MtaBusDepotFileToDataCreator();
+    process.setReader(new FileReader(inputFile));
+    return process;
   }
 
-  public void setDataCreator(MtaBusDepotFileToDataCreator process) {
-    this.dataCreator = process;
-  }
 }
