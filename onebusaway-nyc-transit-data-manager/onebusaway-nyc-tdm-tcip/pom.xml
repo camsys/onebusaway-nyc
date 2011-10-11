@@ -16,9 +16,8 @@
     <repository>
       <id>java.net</id>
       <name>java.net Maven Repository</name>
-      <!-- <url>https://maven-repository.dev.java.net/nonav/repository</url> -->
-      <url>http://download.java.net/maven/2/</url>
-      <!-- <layout>legacy</layout> -->
+      <url>https://maven-repository.dev.java.net/nonav/repository</url>
+      <layout>legacy</layout>
     </repository>
   </repositories>
   <dependencies>
