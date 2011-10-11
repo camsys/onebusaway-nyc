@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.api.barcode;
 
 import java.awt.Image;
-import java.awt.image.BufferedImage;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,7 +12,6 @@ import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverter;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverterImpl;
 import org.onebusaway.nyc.transit_data_manager.barcode.GoogleChartBarcodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
-import org.onebusaway.nyc.transit_data_manager.barcode.StringToImageBarcodeGenerator;
 import org.springframework.stereotype.Component;
 
 @Path("/barcode")
