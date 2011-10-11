@@ -27,7 +27,7 @@
 
     <!-- Bundle Configuration -->
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
-        <property name="order" value="-2" />
+        <property name="order" value="-4" />
         <property name="properties">
             <props>
                 <prop key="bundleStoreRoot">${bundle.location}</prop>

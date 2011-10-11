@@ -89,7 +89,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		return _bundleRootPath;
 	}
 	
-
 	public void setBundleStoreRoot(String path) throws Exception {
 	  // does this path exist? if not, it'll cause problems later on.
 		File bundleRootPath = new File(path);
@@ -98,24 +97,20 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
 	   this._bundleRootPath = path;
 	}
-
 	
   public void setTime(Date time) {
 	  _today = time;
   }
-
 	
   public void setStandaloneMode(boolean standalone) {
 	  _standaloneMode = standalone;
 	}
-
 	
   public boolean getStandaloneMode() {
 	  return _standaloneMode;
 	}
 	
-		// discover bundles from those on disk locally
-
+  // discover bundles from those on disk locally
   private ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
     ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 
@@ -173,7 +168,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 	
 	// discover bundles by asking the TDM for a list
-	
   private ArrayList<BundleItem> getBundleListFromTDM() throws Exception {
 	  _log.info("Getting current bundle list from TDM...");
 	  
@@ -206,7 +200,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  
 	  return output;
 	}
-
 	
   private String getMd5HashForFile(File filename) throws Exception {
     MessageDigest md5Hasher = MessageDigest.getInstance("MD5");
@@ -231,7 +224,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     
     return hexString.toString();
 	}
-	
 	
   private void downloadUrlToLocalPath(URL url, File destFilename, String expectedMd5) throws Exception {
 	  try {
@@ -290,7 +282,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	    throw e;
 	  }
 	}
-	
 	
 	private void discoverBundles() throws Exception {
 	  // if there's no TDM present, we just use what we already have locally.
@@ -361,7 +352,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  } // for each bundle
 	}
 	
-	
 	public void refreshValidBundleList() {
     _validBundles.clear();
 
@@ -372,7 +362,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
         _validBundles.put(bundle.getId(), bundle);
     }
 	}
-	
 	
 	@PostConstruct
 	public void setup() throws Exception {
@@ -385,24 +374,20 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     changeBundle(bestBundle.getId());
 	}
 	
-	
 	@Override
 	public BundleItem getBundleMetadataForBundleWithId(String bundleId) {
 	  return _validBundles.get(bundleId);
 	}
 	
-	
   @Override
   public BundleItem getCurrentBundleMetadata() {
     return _validBundles.get(_currentBundleId);
   }
-  
 
   @Override
 	public boolean bundleWithIdExists(String bundleId) {
 	  return _validBundles.containsKey(bundleId);
-	}
-  
+	}  
 	
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
@@ -472,5 +457,5 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     
       return interval1.compareTo(interval2);
     }
-}
+  }
 }
