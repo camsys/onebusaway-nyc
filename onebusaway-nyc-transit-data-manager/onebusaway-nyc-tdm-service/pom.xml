@@ -57,7 +57,6 @@
 			<version>1.8.5</version>
 		</dependency>
 	</dependencies>
-	
 	<profiles>
 		<profile>
 			<id>local</id>
@@ -72,11 +71,10 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>tdm-staging</id>
-			<activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-			
+		  <id>tdm-staging</id>
+		  <activation>
+		    <activeByDefault>true</activeByDefault>
+		  </activation>
 			<properties>
 				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
 				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
@@ -84,12 +82,13 @@
 				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
 				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
 				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
-				<tdm.config.configXmlFile>/opt/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
 			</properties>
 		</profile>
 	</profiles>
 	
 	<build>
+	  <finalName>onebusaway-nyc-tdm-service</finalName>	
 		<plugins>
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
