@@ -24,6 +24,7 @@
 
 	<bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
 		<property name="bundleStoreRoot" value="${bundleStoreRoot}" />
+		<property name="standaloneMode" value="${standaloneMode}" />
 	</bean>
 
 	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl" />

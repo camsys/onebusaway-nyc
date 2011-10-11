@@ -112,7 +112,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	}
 
 	@Override
-	public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) {
+	public synchronized Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) {
 		String serviceDateKey = getServiceDateKey(serviceDate);		
 		if(serviceDateKey == null) 
 			return null;
@@ -126,7 +126,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	}
 
   @Override
-  public OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) {
+  public synchronized OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) {
     String serviceDateKey = getServiceDateKey(serviceDate);   
     if(serviceDateKey == null) 
       return null;

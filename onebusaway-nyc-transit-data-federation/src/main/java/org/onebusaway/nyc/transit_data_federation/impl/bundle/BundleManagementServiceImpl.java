@@ -59,7 +59,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   private Date _today = new Date();
   
   // does this bundle manager exist without a TDM attached?
-  private boolean _standaloneMode = true;
+  private boolean _standaloneMode = false;
 
   // where should we store our bundle data?
   private String _bundleRootPath = null;
@@ -422,7 +422,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		System.gc();
 		System.gc();
 
-		// set cache name prefix HACK--can we avoid the ref. to app context? and or use brian's
+		// set cache name prefix FIXME--can we avoid the ref. to app context? and or use brian's
 		// cacheable key pluggable architecture to do this?
 		Map<String, CacheableMethodManager> cacheMethodBeans 
 		    = _applicationContext.getBeansOfType(CacheableMethodManager.class);

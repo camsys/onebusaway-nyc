@@ -30,17 +30,20 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	private ConfigurationService _configurationService;
 
 	private volatile HashMap<String, ArrayList<AgencyAndId>> _depotToVehicleListMap = 
-			new HashMap<String, ArrayList<AgencyAndId>>();
+	    new HashMap<String, ArrayList<AgencyAndId>>();
 
   private volatile Map<AgencyAndId, String> _vehicleToDepotMap = new HashMap<AgencyAndId, String>();
 
-  @Autowired
-  private TransitDataManagerApiLibrary apiLibrary = new TransitDataManagerApiLibrary();
-  
+  private TransitDataManagerApiLibrary _apiLibrary = new TransitDataManagerApiLibrary();
+
+  public void setApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
+    this._apiLibrary = apiLibrary;
+  }
+
 	private ArrayList<AgencyAndId> getVehicleListForDepot(String depotId) {
 		try {
       List<Map<String, String>> vehicleAssignments = 
-          apiLibrary.getItems("depot", depotId, "vehicles", "list");
+          _apiLibrary.getItems("depot", depotId, "vehicles", "list");
 
 			ArrayList<AgencyAndId> vehiclesForThisDepot = new ArrayList<AgencyAndId>();
 			for(Map<String, String> depotVehicleAssignment : vehicleAssignments) {
@@ -58,14 +61,15 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private Map<AgencyAndId, String> getVehicleDepots() throws Exception {
     Map<AgencyAndId, String> vehicleDepots = new HashMap<AgencyAndId, String>();
-    List<Map<String, String>> apiVehicleDepots = 
-        apiLibrary.getItems("vehicles", "list");
+    List<Map<String, String>> apiVehicleDepots = _apiLibrary.getItems("vehicles", "list");
+    
     for (Map<String, String> vehicleDepot: apiVehicleDepots) {
       String vehicleId = vehicleDepot.get("vehicle-id");
       String agencyId = vehicleDepot.get("agency-id");
       String depotId = vehicleDepot.get("depot-id");
       vehicleDepots.put(new AgencyAndId(agencyId, vehicleId), depotId);
     }
+    
     return vehicleDepots;
   }
 
@@ -79,6 +83,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 						_depotToVehicleListMap.put(depotId, list);
 				}
 			}
+
+      synchronized(_vehicleToDepotMap) {
+        try {
+          _vehicleToDepotMap = getVehicleDepots();
+        } catch(Exception e) {
+          _log.error("Error updating vehicle to depot map: " + e.getMessage());
+        }
+      }
 		}		
 	}
 
@@ -86,6 +98,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	public void configChanged() {
 		Integer updateInterval = 
 				_configurationService.getConfigurationValueAsInteger("tdm.vehicleAssignmentRefreshInterval", null);
+
 		if(updateInterval != null)
 			setUpdateFrequency(updateInterval);
 	}
@@ -106,8 +119,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	}
 	
 	@Override
-	public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotId) {
-	  // TODO Shouldn't reference to _depotToVehicleListMap be synchronized?
+	public synchronized ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotId) {
 		ArrayList<AgencyAndId> list = _depotToVehicleListMap.get(depotId);
 		if(list == null) {
 			list = getVehicleListForDepot(depotId);
@@ -117,16 +129,12 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	}
 
   @Override
-  public String getAssignedDepotForVehicle(AgencyAndId vehicle) throws Exception {
+  public synchronized String getAssignedDepotForVehicle(AgencyAndId vehicle) throws Exception {
     String depotId = _vehicleToDepotMap.get(vehicle);
     if(depotId == null) {
       _vehicleToDepotMap = getVehicleDepots();
     }
     return _vehicleToDepotMap.get(vehicle);
-  }
-
-  public void setApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
-    this.apiLibrary = apiLibrary;
   }
 
 }

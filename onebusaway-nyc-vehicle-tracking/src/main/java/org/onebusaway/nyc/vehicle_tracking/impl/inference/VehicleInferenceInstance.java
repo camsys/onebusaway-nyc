@@ -28,8 +28,6 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.model.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -125,7 +123,7 @@ public class VehicleInferenceInstance {
   public void setAutomaticResetWindow(long automaticResetWindow) {
     _automaticResetWindow = automaticResetWindow;
   }
-
+  
   /**
    * 
    * @param record
