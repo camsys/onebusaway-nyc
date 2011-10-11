@@ -3,10 +3,12 @@ package org.onebusaway.nyc.vehicle_tracking.impl;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.stop;
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.stopTime;
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.trip;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +21,10 @@ import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.RunData;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
+import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
+import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 public class RunServiceImplTest {
@@ -84,6 +88,12 @@ public class RunServiceImplTest {
     _blockCalendarService = mock(BlockCalendarService.class);
     _service.setBlockCalendarService(_blockCalendarService);
 
+    ExtendedCalendarService _extendedCalendarService = mock(ExtendedCalendarService.class);
+    when(
+        _extendedCalendarService.areServiceIdsActiveOnServiceDate(
+            any(ServiceIdActivation.class), any(Date.class))).thenReturn(true);
+    _service.setExtendedCalendarService(_extendedCalendarService);
+
     when(_transitGraph.getTripEntryForId(tripA.getId())).thenReturn(tripA);
     when(_transitGraph.getTripEntryForId(tripB.getId())).thenReturn(tripB);
     when(_transitGraph.getTripEntryForId(tripC.getId())).thenReturn(tripC);
@@ -107,10 +117,10 @@ public class RunServiceImplTest {
     RunTripEntry rte1 = entities.get(1);
     RunTripEntry rte2 = entities.get(2);
 
-    assertEquals(null, _service.getPreviousEntry(rte0));
-    assertEquals(rte0, _service.getPreviousEntry(rte1));
-    assertEquals(rte2, _service.getNextEntry(rte1));
-    assertEquals(null, _service.getNextEntry(rte2));
+    assertEquals(rte2, _service.getPreviousEntry(rte0, 0));
+    assertEquals(rte0, _service.getPreviousEntry(rte1, 0));
+    assertEquals(rte2, _service.getNextEntry(rte1, 0));
+    assertEquals(rte0, _service.getNextEntry(rte2, 0));
 
     entities = _service.getRunTripEntriesForRun("run2");
     assertEquals(2, entities.size());

@@ -71,6 +71,8 @@ import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.datex2.schema._1_0._1_0.Date;
+
 import java.util.Arrays;
 import umontreal.iro.lecuyer.rng.*;
 import umontreal.iro.lecuyer.randvar.*;
@@ -361,7 +363,7 @@ public class VehicleLocationSimulationServiceImpl implements
           * 1000;
 
       if (scheduleTime >= runningLastTime) {
-        runTrip = _runService.getNextEntry(runTrip);
+        runTrip = _runService.getNextEntry(runTrip, serviceDate);
         runningLastTime = runTrip.getStopTime();
       }
 

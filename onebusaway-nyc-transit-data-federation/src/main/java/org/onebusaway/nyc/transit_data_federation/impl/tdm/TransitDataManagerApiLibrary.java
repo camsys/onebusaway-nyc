@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
@@ -74,4 +77,28 @@ public class TransitDataManagerApiLibrary {
 
     return output;
   }
+  
+  /**
+   * Convenience method.  (a) Is not static so can be mocked. (b) Does not leak implementation (e.g. JSON).
+   * 
+   * Note this assumes all values coming back from the service are strings.
+   *  
+   * @param baseObject
+   * @param params
+   * @return
+   * @throws Exception
+   */
+  public List<Map<String, String>> getItems(String baseObject, String... params) throws Exception {
+    List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+    ArrayList<JsonObject> items = TransitDataManagerApiLibrary.getItemsForRequest(baseObject, params);
+    for(JsonObject item: items) {
+      Map<String, String> m = new HashMap<String, String>();
+      result.add(m);
+      for (Map.Entry<String, JsonElement> entry: item.entrySet()) {
+        m.put(entry.getKey(), entry.getValue().getAsString());
+      }
+    }
+    return result;
+  }
+
 }

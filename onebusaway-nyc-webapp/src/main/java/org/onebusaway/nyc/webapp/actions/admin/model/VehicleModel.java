@@ -39,16 +39,16 @@ public class VehicleModel {
 	}
 
 	public String getVehicleIdWithoutAgency() {
-		return _nycVehicleStatusBean.getVehicleId().split("_")[1];
+		return _vehicleStatusBean.getVehicleId().split("_")[1];
 	}
 
 	public String getVehicleId() {
-		return _nycVehicleStatusBean.getVehicleId();
+		return _vehicleStatusBean.getVehicleId();
 	}
 
 	// (OGNL doesn't allow form field names with spaces--so we use a placeholder) FIXME
 	public String getVehicleIdAsFormFieldName() {
-		return _nycVehicleStatusBean.getVehicleId().split("_")[1];
+		return _vehicleStatusBean.getVehicleId().split("_")[1];
 	}
 
 	public String getStatusClass() {

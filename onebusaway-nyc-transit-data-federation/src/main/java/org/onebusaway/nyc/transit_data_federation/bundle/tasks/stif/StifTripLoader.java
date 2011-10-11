@@ -179,8 +179,8 @@ public class StifTripLoader {
 
               String blockId = tripRecord.getBlockNumber();
               String run0 = tripRecord.getPreviousRun();
-              String run1 = tripRecord.getRun();
-              String run2 = tripRecord.getReliefRun();
+              String run1 = tripRecord.getRunId();
+              String run2 = tripRecord.getReliefRunId();
               int reliefTime = tripRecord.getReliefTime();
               BlockAndRuns blockAndRuns = new BlockAndRuns(blockId, run1, run2);
               
