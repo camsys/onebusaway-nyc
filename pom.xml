@@ -20,7 +20,7 @@
 	<jetty.version>6.1.26</jetty.version>
 	<spring.version>3.0.3.RELEASE</spring.version>
 	<onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
-	<onebusaway.app-modules.version>2.0.6-SNAPSHOT</onebusaway.app-modules.version>
+	<onebusaway.app-modules.version>2.0.7-SNAPSHOT</onebusaway.app-modules.version>
   </properties>
 
   <repositories>
