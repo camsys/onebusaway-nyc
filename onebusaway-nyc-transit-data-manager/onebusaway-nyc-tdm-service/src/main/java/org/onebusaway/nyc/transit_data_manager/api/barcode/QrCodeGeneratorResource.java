@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverter;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverterImpl;
 import org.onebusaway.nyc.transit_data_manager.barcode.GoogleChartBarcodeGenerator;
+import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.StringToImageBarcodeGenerator;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class QrCodeGeneratorResource {
 
-  private String mbtaSubwayBaseUrl = "http://www.mbta.com/schedules_and_maps/subway/lines/stations/";
-  private String mbtaStopIdParam = "stopId=";
+  private String shortenedBustimeBarcodeUrl = "http://bt.mta.info";
   
   @Path("/getByStopId/{stopId}")
   @GET
@@ -28,9 +28,8 @@ public class QrCodeGeneratorResource {
   public Response getBadQrCodeForBusStopId (@PathParam("stopId") int stopId) {
     StringBuilder contents = new StringBuilder();
     
-    contents.append(mbtaSubwayBaseUrl);
-    contents.append("?");
-    contents.append(mbtaStopIdParam);
+    contents.append(shortenedBustimeBarcodeUrl);
+    contents.append("/");
     contents.append(String.valueOf(stopId));
     
     BarcodeContentsConverter contentConv = new BarcodeContentsConverterImpl();
@@ -41,9 +40,9 @@ public class QrCodeGeneratorResource {
     try {
       String barcodeContents = contentConv.contentsForUrl(contents.toString());
       
-      StringToImageBarcodeGenerator barcodeGen = new GoogleChartBarcodeGenerator();
+      QrCodeGenerator barcodeGen = new GoogleChartBarcodeGenerator();
       
-      responseImg = barcodeGen.generateBarcode(100, 100, barcodeContents);
+      responseImg = barcodeGen.generateV2Code(400, 400, barcodeContents);
       imgMimeType = barcodeGen.getResultMimetype();
     } catch (Exception e) {
       e.printStackTrace();
