@@ -113,8 +113,13 @@ public class VehicleLocationInferenceServiceImpl implements
    */
   private boolean bundleHasChanged() {
     BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+    
     boolean result = false;
 
+    // active bundle was removed from BMS list of active bundles
+    if(currentBundle == null)
+      return true;
+    
     if(_lastBundle != null) {
       result = !_lastBundle.getId().equals(currentBundle.getId());
     }

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp;
+package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

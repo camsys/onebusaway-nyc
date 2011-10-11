@@ -36,6 +36,6 @@ public class Trace_7564_20101129T041335_IntegrationTest extends AbstractTraceRun
 
   public Trace_7564_20101129T041335_IntegrationTest() throws Exception {
     super("7564-2010-11-29T04-13-35.csv.gz");
-    setBundle("B63");
+    setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
   }
 }

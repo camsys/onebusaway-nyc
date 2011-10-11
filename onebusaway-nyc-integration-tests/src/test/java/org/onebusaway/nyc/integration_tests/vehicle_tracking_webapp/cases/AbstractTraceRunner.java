@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +33,10 @@ import org.junit.Test;
 import org.onebusaway.collections.Counter;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.TraceSupport;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.utility.DateLibrary;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,11 +99,16 @@ public class AbstractTraceRunner {
     _standardDeviation = standardDeviation;
   }
 
-  public void setBundle(String bundleId) throws Exception {
+  public void setBundle(String bundleId, String date) throws Exception {
+    setBundle(bundleId, DateLibrary.getIso8601StringAsTime(date));
+  }
+  
+  public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty("org.onebusaway.transit_data_federation_webapp.port", "9905");
     String url = "http://localhost:" + port + 
-        "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId=" + bundleId;
-
+        "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId=" + bundleId 
+        + "&time=" + DateLibrary.getTimeAsIso8601String(date);
+    
     HttpClient client = new HttpClient();
     GetMethod get = new GetMethod(url);
     client.executeMethod(get);

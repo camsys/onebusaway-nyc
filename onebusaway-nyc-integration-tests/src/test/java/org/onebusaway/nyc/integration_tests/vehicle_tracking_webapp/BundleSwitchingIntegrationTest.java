@@ -17,8 +17,7 @@ package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp;
 
 import static org.junit.Assert.assertEquals;
 
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7560_20101127T232847_IntegrationTest;
-import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.Trace_7564_20101202T034055_IntegrationTest;
+import org.onebusaway.utility.DateLibrary;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -26,13 +25,20 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 
+import java.util.Date;
+
 public class BundleSwitchingIntegrationTest {
-   
-  public void setBundle(String bundleId) throws Exception {
+
+  public void setBundle(String bundleId, String date) throws Exception {
+    setBundle(bundleId, DateLibrary.getIso8601StringAsTime(date));
+  }
+  
+  public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty("org.onebusaway.transit_data_federation_webapp.port", "9905");
     String url = "http://localhost:" + port + 
-        "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId=" + bundleId;
-
+        "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId=" + bundleId 
+        + "&time=" + DateLibrary.getTimeAsIso8601String(date);
+    
     HttpClient client = new HttpClient();
     GetMethod get = new GetMethod(url);
     client.executeMethod(get);
@@ -44,10 +50,10 @@ public class BundleSwitchingIntegrationTest {
   
   @Test
   public void wrongBundleTest() throws Throwable {
-    setBundle("s54");
+    setBundle("s54", "2011-10-10T00:00:00EDT");
 
-    Result result = JUnitCore.runClasses(Trace_7564_20101202T034055_IntegrationTest.class,
-        Trace_7560_20101127T232847_IntegrationTest.class);
+    Result result = JUnitCore.runClasses(BundleSwitchingIntegrationTest_TestTrace1.class,
+        BundleSwitchingIntegrationTest_TestTrace2.class);
 
     // all tests should fail!
     assertEquals(result.getFailureCount(), result.getRunCount());
@@ -55,11 +61,11 @@ public class BundleSwitchingIntegrationTest {
 
   @Test
   public void correctBundleButAfterAtLeastOneSwitchTest() throws Throwable {
-    setBundle("s54");
-    setBundle("b63");
+    setBundle("s54", "2011-10-10T00:00:00EDT");
+    setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
 
-    Result result = JUnitCore.runClasses(Trace_7564_20101202T034055_IntegrationTest.class,
-        Trace_7560_20101127T232847_IntegrationTest.class);
+    Result result = JUnitCore.runClasses(BundleSwitchingIntegrationTest_TestTrace1.class,
+        BundleSwitchingIntegrationTest_TestTrace2.class);
     
     // all tests should pass!
     assertEquals(result.getFailureCount(), 0);

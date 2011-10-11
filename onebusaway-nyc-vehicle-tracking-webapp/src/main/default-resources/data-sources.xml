@@ -27,12 +27,19 @@
 
     <!-- Bundle Manager Configuration -->
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
-        <property name="order" value="-4" />
+        <property name="order" value="-2" />
         <property name="properties">
             <props>
 				<!-- Set this to a path where you want to store your bundles. -->
                 <prop key="bundleStoreRoot">${bundle.location}</prop>
+            </props>
+        </property>
+    </bean>
 
+    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
+        <property name="order" value="-2" />
+        <property name="properties">
+            <props>
 				<!-- true = DO NOT automatically download bundles from the TDM -->
                 <prop key="standaloneMode">true</prop>
             </props>

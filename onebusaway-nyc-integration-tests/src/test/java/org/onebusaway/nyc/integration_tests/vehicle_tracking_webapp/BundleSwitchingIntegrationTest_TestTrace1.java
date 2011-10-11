@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
+package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp;
 
-public class Trace_5318_20101202T172138_IntegrationTest extends AbstractTraceRunner {
+import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.AbstractTraceRunner;
 
-  public Trace_5318_20101202T172138_IntegrationTest() throws Exception {
-    super("5318-2010-12-02T17-21-38.csv.gz");
-    setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
-    setLoops(20);
-    setMedian(100.0);
+public class BundleSwitchingIntegrationTest_TestTrace1 extends AbstractTraceRunner {
+
+  public BundleSwitchingIntegrationTest_TestTrace1() throws Exception {
+    super("7564-2010-12-02T03-40-55.csv.gz");
   }
 }

@@ -40,16 +40,14 @@
         </property>
     </bean>
 
-	<!-- Turn off TDM fetching for integration tests -->
-    <bean id="bundleManagementServiceProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="bundleManagementService" />
+    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
+        <property name="order" value="-2" />
         <property name="properties">
             <props>
                 <prop key="standaloneMode">true</prop>
             </props>
         </property>
     </bean>
-
 
   	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
   		<property name="isPrimaryInferenceInstance" value="true"/>

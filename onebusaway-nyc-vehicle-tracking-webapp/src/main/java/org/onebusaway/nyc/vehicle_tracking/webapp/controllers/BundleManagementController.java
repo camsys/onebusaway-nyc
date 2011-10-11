@@ -15,7 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
-import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
+import org.onebusaway.utility.DateLibrary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,12 +29,18 @@ import org.springframework.web.servlet.ModelAndView;
 public class BundleManagementController {
 
   @Autowired
-  private BundleManagementService _bundleManager;
+  private BundleManagementServiceImpl _bundleManager;
 
   @RequestMapping(value = "/change-bundle.do", method = RequestMethod.GET)
-  public ModelAndView index(@RequestParam String bundleId) throws Exception {
+  public ModelAndView index(@RequestParam String bundleId, 
+      @RequestParam(required=false) String time) throws Exception {
+
+    if(time != null && !time.equals("")) {
+	    _bundleManager.setTime(DateLibrary.getIso8601StringAsTime(time));
+	  }
+
 	  _bundleManager.changeBundle(bundleId);
-	  
+
 	  return new ModelAndView("change-bundle.jspx");
   }
 

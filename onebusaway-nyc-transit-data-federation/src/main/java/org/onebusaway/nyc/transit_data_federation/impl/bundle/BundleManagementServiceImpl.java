@@ -59,7 +59,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   private Date _today = new Date();
   
   // does this bundle manager exist without a TDM attached?
-  private boolean _standaloneMode = false;
+  private boolean _standaloneMode = true;
 
   // where should we store our bundle data?
   private String _bundleRootPath = null;
@@ -100,6 +100,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	
   public void setTime(Date time) {
 	  _today = time;
+	  
+	  refreshValidBundleList();
   }
 	
   public void setStandaloneMode(boolean standalone) {
@@ -345,29 +347,39 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
       if(bundleIsValid) {
         _allBundles.put(bundle.getId(), bundle);
-        _log.info("Bundle " + bundle.getId() + " is valid; added to list of local bundles.");
+        _log.info("Bundle " + bundle.getId() + " files pass checksums; added to list of local bundles.");
       } else {
-        _log.info("Bundle " + bundle.getId() + " is NOT valid; skipped.");
+        _log.info("Bundle " + bundle.getId() + " files do NOT pass checksums; skipped.");
       }
 	  } // for each bundle
 	}
 	
 	public void refreshValidBundleList() {
-    _validBundles.clear();
+	  HashMap<String, BundleItem> newValidBundles = new HashMap<String, BundleItem>();
 
-    // sort bundles by preference 
-    // (bundles with longer active service times and that are active now are preferred)
     for(BundleItem bundle : _allBundles.values()) {
-      if(bundle.getServiceDateFrom().before(_today) && bundle.getServiceDateTo().after(_today))
-        _validBundles.put(bundle.getId(), bundle);
+      if(bundle.getServiceDateFrom().before(_today) && bundle.getServiceDateTo().after(_today)) {
+        _log.info("Bundle " + bundle.getId() + " is active for today; adding to list of active bundles...");
+        newValidBundles.put(bundle.getId(), bundle);
+      }
     }
+    
+    _validBundles = newValidBundles;
 	}
 	
 	@PostConstruct
 	public void setup() throws Exception {
 	  discoverBundles();  
+	  
 	  refreshValidBundleList();
 
+	  if(_validBundles.size() == 0) {
+	    _log.error("No valid and active bundles found!");
+	    return;
+	  }
+	  
+    // sort bundles by preference 
+    // (bundles with longer active service times and that are active now are preferred)
     ArrayList<BundleItem> bestBundleCandidates = new ArrayList<BundleItem>(_validBundles.values());
     Collections.sort(bestBundleCandidates, new BundleComparator(_today));
     BundleItem bestBundle = bestBundleCandidates.get(bestBundleCandidates.size() - 1);
@@ -375,23 +387,26 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 	
 	@Override
-	public BundleItem getBundleMetadataForBundleWithId(String bundleId) {
+	public synchronized BundleItem getBundleMetadataForBundleWithId(String bundleId) {
 	  return _validBundles.get(bundleId);
 	}
 	
   @Override
-  public BundleItem getCurrentBundleMetadata() {
+  public synchronized BundleItem getCurrentBundleMetadata() {
     return _validBundles.get(_currentBundleId);
   }
 
   @Override
-	public boolean bundleWithIdExists(String bundleId) {
+	public synchronized boolean bundleWithIdExists(String bundleId) {
 	  return _validBundles.containsKey(bundleId);
 	}  
 	
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
-	  if(bundleId == null || bundleId.equals(_currentBundleId) || !_validBundles.containsKey(bundleId))
+	  if(bundleId == null || !_validBundles.containsKey(bundleId))
+	    throw new Exception("Bundle " + bundleId + " does not exist or is not valid.");
+
+	  if(bundleId.equals(_currentBundleId))
 	    return;
 	  
 	  File path = new File(_bundleRootPath, bundleId);
