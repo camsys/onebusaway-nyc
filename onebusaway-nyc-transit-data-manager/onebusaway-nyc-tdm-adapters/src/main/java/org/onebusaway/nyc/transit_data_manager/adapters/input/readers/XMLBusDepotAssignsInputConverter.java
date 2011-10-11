@@ -41,18 +41,15 @@ public class XMLBusDepotAssignsInputConverter implements
     XMLStreamReader reader = null;
     try {
       reader = xmlInputFact.createXMLStreamReader(inputReader);
-    } catch (XMLStreamException e1) {
-      // TODO Auto-generated catch block
-      e1.printStackTrace();
-      return null;
+    } catch (XMLStreamException e) {
+      throw new RuntimeException(e);
     }
 
     if (reader != null) {
       try {
         enclosingXml = unmarshall(NewDataSet.class, reader);
       } catch (JAXBException e) {
-        e.printStackTrace();
-        return null;
+        throw new RuntimeException(e);
       }
 
       assignments = new ArrayList<MtaBusDepotAssignment>();
