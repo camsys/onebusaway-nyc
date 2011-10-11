@@ -59,18 +59,30 @@
 	</dependencies>
 	
 	<profiles>
-		<profile>
-			<id>local</id>
-			<properties>
-				<tdm.dataPath>d:\</tdm.dataPath>
-				<tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
-				<tdm.depotAssignFilename>DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
-				<tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
-				<tdm.dscFilename>dsc.csv</tdm.dscFilename>
-				<tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
-				<tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
-			</properties>
-		</profile>
+        <profile>
+            <id>local</id>
+            <properties>
+                <tdm.dataPath>target/test-classes/</tdm.dataPath>
+                <tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
+                <tdm.depotAssignFilename>DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
+                <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
+                <tdm.dscFilename>dsc.csv</tdm.dscFilename>
+                <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+                <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>local-windows</id>
+            <properties>
+                <tdm.dataPath>d:\</tdm.dataPath>
+                <tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
+                <tdm.depotAssignFilename>DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
+                <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
+                <tdm.dscFilename>dsc.csv</tdm.dscFilename>
+                <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+                <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
+            </properties>
+        </profile>
 		<profile>
 			<id>tdm-staging</id>
 			<activation>

@@ -24,11 +24,9 @@ import java.io.Serializable;
  * @author jmaki
  *
  */
-public final class NycVehicleManagementStatusBean implements Serializable {
+public class NycVehicleManagementStatusBean implements Serializable {
 
   private static final long serialVersionUID = 1L;
-
-  private String vehicleId;
 
   private boolean inferenceIsEnabled;
 
@@ -51,15 +49,9 @@ public final class NycVehicleManagementStatusBean implements Serializable {
   private String activeBundleId;
   
   private boolean inferenceIsFormal;
+
+  private String depotId;
   
-  public String getVehicleId() {
-    return vehicleId;
-  }
-
-  public void setVehicleId(String vehicleId) {
-    this.vehicleId = vehicleId;
-  }
-
   public boolean isInferenceIsEnabled() {
     return inferenceIsEnabled;
   }
@@ -127,27 +119,35 @@ public final class NycVehicleManagementStatusBean implements Serializable {
 	this.inferenceIsFormal = inferenceIsFormal;
   }
 
-public String getInferenceEngineHostname() {
-	return inferenceEngineHostname;
-}
+  public String getInferenceEngineHostname() {
+    return inferenceEngineHostname;
+  }
 
-public void setInferenceEngineHostname(String inferenceEngineHostname) {
-	this.inferenceEngineHostname = inferenceEngineHostname;
-}
+  public void setInferenceEngineHostname(String inferenceEngineHostname) {
+    this.inferenceEngineHostname = inferenceEngineHostname;
+  }
 
-public boolean isInferenceEngineIsPrimary() {
-	return inferenceEngineIsPrimary;
-}
+  public boolean isInferenceEngineIsPrimary() {
+    return inferenceEngineIsPrimary;
+  }
 
-public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
-	this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
-}
+  public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
+    this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
+  }
 
-public String getActiveBundleId() {
-	return activeBundleId;
-}
+  public String getActiveBundleId() {
+    return activeBundleId;
+  }
 
-public void setActiveBundleId(String activeBundleId) {
-	this.activeBundleId = activeBundleId;
-}
+  public void setActiveBundleId(String activeBundleId) {
+    this.activeBundleId = activeBundleId;
+  }
+
+  public void setDepotId(String depotId) {
+    this.depotId = depotId;
+  }
+
+  public String getDepotId() {
+    return depotId;
+  }
 }

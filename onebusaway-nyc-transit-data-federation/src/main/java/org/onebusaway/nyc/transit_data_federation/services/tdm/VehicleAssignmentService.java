@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import org.onebusaway.gtfs.model.AgencyAndId;
 
 /**
- * Service interface for getting which vehicles are assigned to a depot.
+ * Service interface for getting which vehicles are assigned to a depot and vice-versa.
  * 
  * @author jmaki
+ * @author dhaskin
  */
 public interface VehicleAssignmentService {
 
@@ -17,5 +18,13 @@ public interface VehicleAssignmentService {
    * @param depotIdentifier The depot identifier to request vehicles for.
    */
   public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotIdentifier);
+
+  /**
+   * Get depot for the given vehicleId
+   * 
+   * @param vehicleId The vehicle identifier to request depot for.
+   * @throws Exception 
+   */
+  public String getAssignedDepotForVehicle(AgencyAndId vehicle) throws Exception;
 
 }
