@@ -61,13 +61,13 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@SuppressWarnings("unused")
 	@PostConstruct
 	private void startUpdateProcess() {
-	  _log.info("ConfigurationServiceImpl: startUpdateProcess");
+	  _log.info("Starting update process...");
 		_updateTimer = new Timer();
 		_updateTimer.schedule(new UpdateThread(), 0, 30 * 1000); // 30s	
 	}
 	
 	@Override
-	public String getConfigurationValueAsString(String configurationItemKey,
+	public synchronized String getConfigurationValueAsString(String configurationItemKey,
 			String defaultValue) {
 
 		String value = _configurationKeyToValueMap.get(configurationItemKey);
@@ -79,7 +79,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	@Override
-	public Float getConfigurationValueAsFloat(String configurationItemKey,
+	public synchronized Float getConfigurationValueAsFloat(String configurationItemKey,
 			Float defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
@@ -92,7 +92,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	@Override
-	public Integer getConfigurationValueAsInteger(String configurationItemKey,
+	public synchronized Integer getConfigurationValueAsInteger(String configurationItemKey,
 			Integer defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);

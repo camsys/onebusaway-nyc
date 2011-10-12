@@ -29,8 +29,9 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 public class Trace_7563_20101209T124732_IntegrationTest extends
     AbstractTraceRunner {
 
-  public Trace_7563_20101209T124732_IntegrationTest() {
+  public Trace_7563_20101209T124732_IntegrationTest() throws Exception {
     super("7563-2010-12-09T12-47-32.csv.gz");
+    setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
 
     // This test is noisy
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.75);

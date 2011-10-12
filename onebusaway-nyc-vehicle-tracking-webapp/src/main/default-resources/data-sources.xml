@@ -25,21 +25,30 @@
     <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/webapp/application-context-webapp.xml" />
 
 
-    <!-- Bundle Configuration -->
+    <!-- Bundle Manager Configuration -->
+    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
+        <property name="order" value="-2" />
+        <property name="properties">
+            <props>
+				<!-- Set this to a path where you want to store your bundles. -->
+                <prop key="bundleStoreRoot">${bundle.location}</prop>
+            </props>
+        </property>
+    </bean>
 
     <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundlePath">${bundle.location}</prop>
+				<!-- true = DO NOT automatically download bundles from the TDM -->
+                <prop key="standaloneMode">true</prop>
             </props>
         </property>
     </bean>
 
-    <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
 
+    <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
     <!-- Database Configuration -->
-    
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${db.driverClassName}" />
         <property name="url" value="${db.url}" />
@@ -59,18 +68,14 @@
     <alias name="dataSource" alias="mutableDataSource" />
 
 
-
 	<!-- Input Queue Configuration -->
-
 	<!-- This option listens to the queue with pilot and SI data on it. -->
 <!--   	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.PartitionedInputQueueListenerTask"> -->
 <!-- 		<property name="depotPartitionKey" value="JG,CA,MA,MH,YU"/> -->
 <!--   	</bean> -->
 
 
-
 	<!-- Output Queue Configuration -->
-
 	<!-- This option sends inference output to a TDM configured queue for pickup by an external TDF/TDS -->
 <!--    	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.OutputQueueSenderServiceImpl"> -->
 <!--    	  	<property name="isPrimaryInferenceInstance" value="true"/> -->
@@ -82,20 +87,11 @@
 	</bean>
 
 
-
 	<!-- Other Stuff: -->
-
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
                 <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
-            </props>
-        </property>
-    </bean>
-
-    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
-        <property name="properties">
-            <props>
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
             </props>
         </property>

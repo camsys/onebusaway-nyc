@@ -60,13 +60,7 @@ public class MtaBusDepotFileToDataCreator {
     return assignments;
   }
 
-  public Reader getReader() throws FileNotFoundException {
-    if (reader != null) {
-      return reader;
-    }
-    File inputFile = new File(System.getProperty("tdm.dataPath")
-        + System.getProperty("tdm.depotAssignFilename"));
-    reader = new FileReader(inputFile);
+  public Reader getReader() throws IOException {
     return reader;
   }
 

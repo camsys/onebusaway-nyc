@@ -112,7 +112,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	}
 
 	@Override
-	public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) {
+	public synchronized Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) {
 		String serviceDateKey = getServiceDateKey(serviceDate);		
 		if(serviceDateKey == null) 
 			return null;
@@ -120,13 +120,15 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 		HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
 		if(list == null) {
 			list = getOperatorMapForServiceDate(serviceDateKey);
+			if(list == null)
+			  return null;
 			_serviceDateToOperatorListMap.put(serviceDateKey, list);
 		}
 		return list.values();
 	}
 
   @Override
-  public OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) {
+  public synchronized OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) {
     String serviceDateKey = getServiceDateKey(serviceDate);   
     if(serviceDateKey == null) 
       return null;
@@ -134,6 +136,8 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
     if(list == null) {
       list = getOperatorMapForServiceDate(serviceDateKey);
+      if(list == null)
+        return null;
       _serviceDateToOperatorListMap.put(serviceDateKey, list);
     }
     return list.get(operatorId);
