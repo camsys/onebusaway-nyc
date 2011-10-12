@@ -85,7 +85,7 @@ public final class BlockState {
 
   public String getRunId() {
     // TODO agencyId?
-    return runTrip == null ? null:runTrip.getRun();
+    return runTrip == null ? null:runTrip.getRunId();
   }
 
   public boolean isRunReported() {

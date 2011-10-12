@@ -32,18 +32,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Create initial particles from an initial observation.
+ * Create particles from an observation.
  * 
  * The general idea here is that we:
  * 
  * <ul>
- * <li>look for nearby street nodes</li>
+ * <li>check the vehicle reported operator+UTS/runId for assigned runs,
+ * which inform us of potential block locations</li>
+ * <li>look for nearby stops/blocks</li>
  * <li>snap to the edges connected to those nodes</li>
- * <li>sample particles from those edges, as weighted by their distance from our
- * start point</li>
+ * <li>sample particles from those edges, as weighted by their reported status, 
+ * and distance from our start point</li>
  * </ul>
  * 
- * @author bdferris
+ * @author bwillard, bdferris
  */
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
@@ -51,14 +53,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private int _initialNumberOfParticles = 50;
 
-  public double _distanceSamplingFactor = 1.0;
-
   private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
   private VehicleStateLibrary _vehicleStateLibrary;
-  
 
   private MotionModelImpl _motionModel;
   
@@ -81,18 +80,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   public void setInitialNumberOfParticles(int initialNumberOfParticles) {
     _initialNumberOfParticles = initialNumberOfParticles;
-  }
-
-  /**
-   * When we sample from potential nearby locations, this controls how likely we
-   * are to pick a location nearby versus one far-away. Make this number smaller
-   * to keep the samples closer to our start locations. A value of 1.0 is a
-   * reasonable start.
-   * 
-   * @param distanceSamplingFactor
-   */
-  public void setDistanceSamplingFactor(double distanceSamplingFactor) {
-    _distanceSamplingFactor = distanceSamplingFactor;
   }
 
   @Override

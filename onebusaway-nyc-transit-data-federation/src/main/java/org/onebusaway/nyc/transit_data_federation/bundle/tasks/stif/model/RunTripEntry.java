@@ -64,7 +64,7 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
     return entry;
   }
 
-  public String getRun() {
+  public String getRunId() {
     return run;
   }
 

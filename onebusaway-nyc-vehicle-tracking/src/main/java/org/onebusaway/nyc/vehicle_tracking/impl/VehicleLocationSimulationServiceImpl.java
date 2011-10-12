@@ -360,12 +360,12 @@ public class VehicleLocationSimulationServiceImpl implements
       SortedMap<Double, Integer> scheduleDeviations, double locationSigma,
       AgencyAndId vehicleId) {
 
-    String reportedRunId = runTrip.getRun();
+    String reportedRunId = runTrip.getRunId();
     String lastBlockId = null;
 
     List<RunTripEntry> rtes = new ArrayList<RunTripEntry>();
     for (RunTripEntry rte : _runService.getRunTripEntriesForRun(runTrip
-        .getRun())) {
+        .getRunId())) {
       if (_calendarService.isLocalizedServiceIdActiveOnDate(rte.getTripEntry()
           .getServiceId(), new Date(serviceDate)))
         rtes.add(rte);
@@ -493,7 +493,7 @@ public class VehicleLocationSimulationServiceImpl implements
       _log.debug("sim blockLocation: " + blockLocation.toString());
       CoordinatePoint location = blockLocation.getLocation();
 
-      record.setActualRunId(runTrip.getRun());
+      record.setActualRunId(runTrip.getRunId());
 
       String currentBlockId = AgencyAndIdLibrary.convertToString(blockEntry
           .getId());
@@ -527,8 +527,10 @@ public class VehicleLocationSimulationServiceImpl implements
       if (reportsOperatorId)
         record.setOperatorId("0000");
 
-      if (reportsRunId)
+      if (reportsRunId) {
         record.setReportedRunId(reportedRunId);
+      }
+      
 
       record.setActualServiceDate(serviceDate);
 
@@ -614,7 +616,9 @@ public class VehicleLocationSimulationServiceImpl implements
   public int addSimulationForBlockInstance(AgencyAndId blockId,
       long serviceDate, long actualTime, boolean bypassInference,
       boolean isRunBased, boolean realtime, boolean fillActual,
-      boolean reportsOperatorId, boolean reportsRunId, Properties properties) {
+      boolean reportsOperatorId, boolean reportsRunId, 
+      boolean allowRunTransitions,
+      Properties properties) {
 
     Random random = new Random();
 
@@ -659,7 +663,6 @@ public class VehicleLocationSimulationServiceImpl implements
       // List<Double> transitionParams =
       // getRunTransitionParams(properties);
 
-      boolean allowRunTransitions = false;
       // TODO create "config" object to hold this mess?
       generateRunSim(random, task, runTrip, serviceDate, scheduleTime,
           shiftStartTime, reportsOperatorId, reportsRunId, allowRunTransitions,
