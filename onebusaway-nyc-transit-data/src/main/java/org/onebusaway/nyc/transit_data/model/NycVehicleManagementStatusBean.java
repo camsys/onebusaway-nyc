@@ -58,10 +58,6 @@ public class NycVehicleManagementStatusBean implements Serializable {
 
   private String inferredRunId;
 
-  private String routeId;
-
-  private double bearing;
-
   public boolean isInferenceIsEnabled() {
     return inferenceIsEnabled;
   }
@@ -184,24 +180,5 @@ public class NycVehicleManagementStatusBean implements Serializable {
   public String getInferredRunId() {
     return inferredRunId;
   }
-
-  public void setRouteId(String routeId) {
-    this.routeId = routeId;
-  }
-  
-  public String getRouteId() {
-    return routeId;
-  }
-
-  public void setBearing(double bearing) {
-    this.bearing = bearing;
-  }
-  
-  public double getBearing() {
-    return bearing;
-  }
-
-
-
 
 }

@@ -20,8 +20,8 @@ import java.util.Map;
 @RunWith(MockitoJUnitRunner.class)
 public class VehicleAssignmentServiceImplTest {
 
-   @Mock
-   private TransitDataManagerApiLibrary mockApiLibrary;
+  @Mock
+  private TransitDataManagerApiLibrary mockApiLibrary;
 
   @InjectMocks
   private VehicleAssignmentServiceImpl service = new VehicleAssignmentServiceImpl();
@@ -42,8 +42,13 @@ public class VehicleAssignmentServiceImplTest {
     map2.put("vehicle-id", "45");
     map2.put("depot-id", "JG");
     value2.add(map2);
-    when(mockApiLibrary.getItems("vehicles", "list")).thenReturn(
-        value2);
+    when(mockApiLibrary.getItems("vehicles", "list")).thenReturn(value2);
+
+    // This call is just to prime the service; see the comment in
+    // VehicleAssignmentServiceImpl
+    @SuppressWarnings("unused")
+    ArrayList<AgencyAndId> vehicles = service.getAssignedVehicleIdsForDepot("JG");
+
   }
 
   @Test
@@ -59,7 +64,8 @@ public class VehicleAssignmentServiceImplTest {
 
   @Test
   public void testGetAssignedDepotForVehicleId() throws Exception {
-    String depot = service.getAssignedDepotForVehicle(new AgencyAndId("MTA", "45"));
+    String depot = service.getAssignedDepotForVehicle(new AgencyAndId("MTA",
+        "45"));
     assertEquals("JG", depot);
   }
 
