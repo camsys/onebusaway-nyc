@@ -393,7 +393,10 @@ public class VehicleInferenceInstance {
           .getDestinationSignCode());
       record.setLastObservedLatitude(r.getLatitude());
       record.setLastObservedLongitude(r.getLongitude());
-
+      record.setEmergencyFlag(r.isEmergencyFlag());
+      record.setRouteId(r.getRunRouteId());
+      record.setBearing(r.getBearing());
+      
       Particle particle = _particleFilter.getMostLikelyParticle();
       if (particle != null) {
         VehicleState state = particle.getData();
@@ -409,6 +412,8 @@ public class VehicleInferenceInstance {
               .getDsc());
       record.setLastInferredDestinationSignCode(_nycTestInferredLocationRecord
           .getActualDsc());
+      record.setLastInferredOperatorId(_nycTestInferredLocationRecord.getOperatorId());
+      record.setInferredRunId(_nycTestInferredLocationRecord.getInferredRunId());
     }
 
     return record;
