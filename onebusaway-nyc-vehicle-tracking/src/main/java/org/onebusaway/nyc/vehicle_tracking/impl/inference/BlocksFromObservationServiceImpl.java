@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -34,13 +35,22 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
+import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -61,9 +71,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   private DestinationSignCodeService _destinationSignCodeService;
 
-  private BlockGeospatialService _blockGeospatialService;
+  private BlockIndexFactoryService _blockIndexFactoryService;
 
   private BlockStateService _blockStateService;
+  
+  private BlockIndexService _blockIndexService;
 
   private VehicleStateLibrary _vehicleStateLibrary;
 
@@ -73,6 +85,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   private BlockCalendarService _blockCalendarService;
 
+  @Autowired
+  public void setBlockIndexService(BlockIndexService blockIndexService) {
+    _blockIndexService = blockIndexService;
+  }
+  
   @Autowired
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
     _blockCalendarService = blockCalendarService;
@@ -128,9 +145,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   @Autowired
-  public void setBlockGeospatialService(
-      BlockGeospatialService blockGeospatialService) {
-    _blockGeospatialService = blockGeospatialService;
+  public void setBlockIndexFactoryService(
+      BlockIndexFactoryService blockIndexFactoryService) {
+    _blockIndexFactoryService = blockIndexFactoryService;
   }
 
   @Autowired
@@ -499,8 +516,21 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
 
-    List<BlockInstance> blocks = _blockGeospatialService
-        .getActiveScheduledBlocksPassingThroughBounds(bounds, time, time);
-    potentialBlocks.addAll(blocks);
+    List<BlockLayoverIndex> layoverIndices = Collections.emptyList();
+    List<FrequencyBlockTripIndex> frequencyIndices = Collections.emptyList();
+    
+    Set<BlockTripIndex> blockindices = new HashSet<BlockTripIndex>();
+    
+    List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
+    for (StopEntry stop : stops) {
+      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop); 
+      for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
+        // TODO perhaps "fix" this use of blockIndexFactoryService.
+        blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
+      }
+    }
+    List<BlockInstance> nearbyBlocks = _blockCalendarService.getActiveBlocksInTimeRange(blockindices,
+        layoverIndices, frequencyIndices, time, time);
+    potentialBlocks.addAll(nearbyBlocks);
   }
 }

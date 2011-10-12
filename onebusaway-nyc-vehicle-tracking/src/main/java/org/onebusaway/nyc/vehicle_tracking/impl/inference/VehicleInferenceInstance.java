@@ -156,6 +156,7 @@ public class VehicleInferenceInstance {
       if (backInTime > 5 * 60 * 1000) {
         _previousObservation = null;
         _particleFilter.reset();
+        _log.info("resetting filter: time diff");
       } else {
         _log.info("out-of-order record.  skipping update.");
         return false;

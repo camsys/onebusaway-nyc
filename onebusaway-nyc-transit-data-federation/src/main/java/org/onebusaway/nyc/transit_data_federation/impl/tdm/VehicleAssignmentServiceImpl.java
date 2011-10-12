@@ -34,7 +34,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private volatile Map<AgencyAndId, String> _vehicleToDepotMap = new HashMap<AgencyAndId, String>();
 
-  @Autowired
+//  @Autowired
   private TransitDataManagerApiLibrary apiLibrary = new TransitDataManagerApiLibrary();
   
 	private ArrayList<AgencyAndId> getVehicleListForDepot(String depotId) {

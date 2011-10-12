@@ -338,6 +338,7 @@ public class VehicleLocationInferenceServiceImpl implements
         VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
 
         boolean passOnRecord = sendRecord(existing);
+        passOnRecord = true;
 
         if (passOnRecord) {
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();

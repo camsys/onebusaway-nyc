@@ -66,7 +66,7 @@ public class RunServiceImpl implements RunService {
 
   private Map<AgencyAndId, List<RunTripEntry>> entriesByTrip;
 
-  private ExtendedCalendarService calendarService;
+  private ExtendedCalendarService extCalendarService;
 
   @Autowired
   public void setCalendarService(CalendarService calendarService) {
@@ -287,7 +287,7 @@ public class RunServiceImpl implements RunService {
         TripEntry tripEntry = entry.getTripEntry();
         ServiceIdActivation serviceIds = new ServiceIdActivation(
             tripEntry.getServiceId());
-        if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+        if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
           return entry;
         }
       }
@@ -305,7 +305,7 @@ public class RunServiceImpl implements RunService {
       TripEntry tripEntry = entry.getTripEntry();
       ServiceIdActivation serviceIds = new ServiceIdActivation(
           tripEntry.getServiceId());
-      if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+      if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
         return entry;
       }
     }
@@ -324,7 +324,7 @@ public class RunServiceImpl implements RunService {
         TripEntry tripEntry = entry.getTripEntry();
         ServiceIdActivation serviceIds = new ServiceIdActivation(
             tripEntry.getServiceId());
-        if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+        if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
           return entry;
         }
       }
@@ -340,7 +340,7 @@ public class RunServiceImpl implements RunService {
       TripEntry tripEntry = entry.getTripEntry();
       ServiceIdActivation serviceIds = new ServiceIdActivation(
           tripEntry.getServiceId());
-      if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+      if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
         return entry;
       }
     }
@@ -439,12 +439,12 @@ public class RunServiceImpl implements RunService {
   }
 
   public ExtendedCalendarService getCalendarService() {
-    return calendarService;
+    return extCalendarService;
   }
 
   @Autowired
-  public void setExtendedCalendarService(ExtendedCalendarService calendarService) {
-    this.calendarService = calendarService;
+  public void setExtendedCalendarService(ExtendedCalendarService extCalendarService) {
+    this.extCalendarService = extCalendarService;
   }
 
 }
