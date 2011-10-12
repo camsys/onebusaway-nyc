@@ -106,7 +106,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-                        	<debugForkedProcess>true</debugForkedProcess>
+<!--                         	<debugForkedProcess>true</debugForkedProcess> -->
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>

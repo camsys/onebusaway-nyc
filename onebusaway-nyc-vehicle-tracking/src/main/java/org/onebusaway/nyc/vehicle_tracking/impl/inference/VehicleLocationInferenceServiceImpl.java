@@ -424,11 +424,11 @@ public class VehicleLocationInferenceServiceImpl implements
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
 
         	// don't let network IO problems stop inference completely.
-        	try {
-        	  managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
-        	} catch(Exception e) {
-        	  managementRecord.setDepotId(null);
-        	}
+//        	try {
+//        	  managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
+//        	} catch(Exception e) {
+//        	  managementRecord.setDepotId(null);
+//        	}
             
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());

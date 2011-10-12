@@ -120,6 +120,8 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 		HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
 		if(list == null) {
 			list = getOperatorMapForServiceDate(serviceDateKey);
+			if(list == null)
+			  return null;
 			_serviceDateToOperatorListMap.put(serviceDateKey, list);
 		}
 		return list.values();
@@ -134,6 +136,8 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
     if(list == null) {
       list = getOperatorMapForServiceDate(serviceDateKey);
+      if(list == null)
+        return null;
       _serviceDateToOperatorListMap.put(serviceDateKey, list);
     }
     return list.get(operatorId);
