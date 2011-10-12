@@ -48,6 +48,7 @@ public class RecordLibrary {
     qlr.setServiceDate(record.getInferredServiceDate());
     qlr.setBlockId(record.getInferredBlockId());
     qlr.setTripId(record.getInferredTripId());
+    qlr.setRunId(record.getInferredRunId());
     qlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
     qlr.setInferredLatitude(record.getInferredBlockLat());
     qlr.setInferredLongitude(record.getInferredBlockLon());

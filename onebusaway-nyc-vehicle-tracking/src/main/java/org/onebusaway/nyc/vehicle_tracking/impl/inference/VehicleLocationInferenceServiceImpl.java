@@ -211,6 +211,7 @@ public class VehicleLocationInferenceServiceImpl implements
 		  if(degrees != null)
 			  r.setBearing(degrees);
 	  }
+	  r.setSpeed(message.getSpeed());
 	  
 	  r.setDestinationSignCode(message.getDestSignCode().toString());
 	  r.setDeviceId(message.getManufacturerData());

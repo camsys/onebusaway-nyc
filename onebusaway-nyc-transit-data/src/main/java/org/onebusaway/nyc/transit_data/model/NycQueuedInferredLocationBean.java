@@ -42,6 +42,8 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	private String status;
 	
 	private NycVehicleManagementStatusBean managementRecord;
+
+  private String runId;
 	
 	public NycQueuedInferredLocationBean() {}
 
@@ -164,6 +166,16 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	public void setManagementRecord(NycVehicleManagementStatusBean managementRecord) {
 		this.managementRecord = managementRecord;
 	}
+
+  public void setRunId(String runId) {
+    this.runId = runId;
+  }
+  
+  public String getRunId() {
+    return runId;
+  }
+
+
 }
 
 
