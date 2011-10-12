@@ -71,14 +71,10 @@ import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.datex2.schema._1_0._1_0.Date;
-
-import java.util.Arrays;
 import umontreal.iro.lecuyer.rng.*;
 import umontreal.iro.lecuyer.randvar.*;
 import umontreal.iro.lecuyer.probdist.*;
 import umontreal.iro.lecuyer.randvarmulti.*;
-import umontreal.iro.lecuyer.probdistmulti.*;
 
 @Component
 public class VehicleLocationSimulationServiceImpl implements

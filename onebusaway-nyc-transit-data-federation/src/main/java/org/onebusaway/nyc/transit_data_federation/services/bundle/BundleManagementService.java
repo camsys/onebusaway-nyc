@@ -1,8 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.services.bundle;
 
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.model.BundleItem;
-
-import java.util.Date;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleItem;
 
 public interface BundleManagementService {
   

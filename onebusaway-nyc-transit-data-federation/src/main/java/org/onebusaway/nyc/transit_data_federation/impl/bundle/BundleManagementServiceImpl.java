@@ -24,10 +24,10 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.model.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.impl.bundle.model.BundleFileItem;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleFileItem;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleItem;
 import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.utility.ObjectSerializationLibrary;
@@ -162,7 +162,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
         output.add(validLocalBundle);
 
         _log.info("Found local bundle " + filename + " with service range (" + 
-             minServiceDate + "," + maxServiceDate + ").");
+            _serviceDateFormatter.format(minServiceDate) + "," + 
+            _serviceDateFormatter.format(maxServiceDate) + ").");
       }
     }
     
@@ -359,7 +360,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
     for(BundleItem bundle : _allBundles.values()) {
       if(bundle.getServiceDateFrom().before(_today) && bundle.getServiceDateTo().after(_today)) {
-        _log.info("Bundle " + bundle.getId() + " is active for today; adding to list of active bundles...");
+        _log.info("Bundle " + bundle.getId() + " is active for today; adding to list of active bundles.");
         newValidBundles.put(bundle.getId(), bundle);
       }
     }
