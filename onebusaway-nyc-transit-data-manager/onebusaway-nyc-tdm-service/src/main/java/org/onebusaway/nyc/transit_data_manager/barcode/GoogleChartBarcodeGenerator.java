@@ -75,6 +75,9 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
   private static String CHART_PARAMVALUE_TYPE_QR = "qr";
   private static String CHART_PARAMVALUE_SIZE_REPLACE = "__WWW__x__HHH__";
   private static String CHART_PARAMVALUE_EC_MARGN_REPLACE = "__EC__|__MM__";
+  
+  private static int CHART_PARAMVALUE_MARGN_DEFAULT = 4;
+  private static long CHART_MAX_PIXELS = 300000;
 
   // My max character arrays, two columns. first digit maxes then alphanum maxes. in LMQH order.
   private static int[][] v2MaxCharsArray = new int[][] {{77, 63, 48, 34}, {47, 38, 29, 20}};
@@ -85,6 +88,10 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
   
   private Image generateBarcode(int width, int height, String text)
       throws Exception {
+    if (checkRequestImageSizeIsTooLarge(width, height)) {
+      throw new Exception("Requested Image size exceeds Google Chart maximum of 300000 pixels.");
+    }
+    
     Image resultImage = null;
 
     String url = "";
@@ -100,7 +107,7 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
       urlBldr.append("&");
       urlBldr.append(CHART_PARAMNAME_TYPE + CHART_PARAMVALUE_TYPE_QR);
       urlBldr.append("&");
-      urlBldr.append(CHART_PARAMNAME_EC_MARGN + getEcLevelMarginParamValue(ecLevel, 0));
+      urlBldr.append(CHART_PARAMNAME_EC_MARGN + getEcLevelMarginParamValue(ecLevel, CHART_PARAMVALUE_MARGN_DEFAULT));
       urlBldr.append("&");
       urlBldr.append(CHART_PARAMNAME_DATA);
       
@@ -210,5 +217,15 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
     }
     
     return hasTooManyChars;
+  }
+  
+  private boolean checkRequestImageSizeIsTooLarge(int width, int height) {
+    boolean isTooLarge = false;
+    
+    long totalPixels = width * height;
+    
+    if (totalPixels > CHART_MAX_PIXELS) isTooLarge = true;
+    
+    return isTooLarge;
   }
 }

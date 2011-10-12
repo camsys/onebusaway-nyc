@@ -41,7 +41,7 @@
         <property name="properties">
             <props>
 				<!-- true = DO NOT automatically download bundles from the TDM -->
-                <prop key="standaloneMode">true</prop>
+                <prop key="standaloneMode">${bundle.mode.standalone}</prop>
             </props>
         </property>
     </bean>

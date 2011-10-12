@@ -71,6 +71,7 @@
         <property name="properties">
             <props>
                 <prop key="webapp.api.url">${webapp.api.url}</prop>
+                <prop key="tdm.host">${tdm.host}</prop>
             </props>
         </property>
     </bean>

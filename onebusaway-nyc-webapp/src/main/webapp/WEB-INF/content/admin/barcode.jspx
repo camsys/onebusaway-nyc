@@ -1,0 +1,65 @@
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
+	xmlns:wiki="/oba-wiki-tags">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>OneBusAway NYC: QR Barcode Generator</title>
+
+</head>
+<body>
+
+<div id="content">
+<div id="text">
+	<h1>QR Barcode Generator</h1>
+	
+	<p>Generate Quick Response Codes</p>
+	
+	<s:form action="barcode!genBusStopCode" method="post">
+	
+	<h3>Bus Stops</h3>
+	<div >Generate a QR code for bus stop number:
+	<s:textfield name="busStopId" value="%{busStopId}" label="Bus Stop Id" size="8" />  </div>
+	
+	<div >with edge dimension(s) of:
+	<s:textfield name="edgeDimension" value="%{edgeDimension}" label="Edge dimension" size="3" /> </div>
+	
+	
+	
+	<s:submit name="submit" value="Generate" />
+	
+	<div class="resultDiv">
+	
+	<s:if test='%{!"".equals(qrResourceUrl)}'> 
+		<div>Barcode generated for bus stop id <s:property value="busStopId" />:</div> 
+	
+	
+		<img src='${qrResourceUrl}' alt="Bad Image Url. Check source."/>
+	</s:if>		
+	
+	 
+	
+	</div>
+	
+	</s:form>
+</div>
+</div>
+
+</body>
+</html>
