@@ -156,6 +156,7 @@ public class VehicleInferenceInstance {
       if (backInTime > 5 * 60 * 1000) {
         _previousObservation = null;
         _particleFilter.reset();
+        _log.info("resetting filter: time diff");
       } else {
         _log.info("out-of-order record.  skipping update.");
         return false;
@@ -193,9 +194,11 @@ public class VehicleInferenceInstance {
          */
         NycRawLocationRecord lastRecord = _previousObservation.getRecord();
         if (!StringUtils.equals(lastRecord.getOperatorId(), record.getOperatorId())
-            || !StringUtils.equals(lastRecord.getRunId(), record.getRunId())) {
+            || !StringUtils.equals(lastRecord.getRunNumber(), record.getRunNumber())) {
           // TODO what to do when we lose information?  e.g. "signal"
           // drops and op/run/UTS info hasn't really changed/been re-entered
+          _log.info("resetting inference for vid=" + record.getVehicleId()
+              + ": operatorId or reported runId has changed");
           _particleFilter.reset();
         }
       }
@@ -465,6 +468,8 @@ public class VehicleInferenceInstance {
     NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
+    record.setReportedRunId(nycRecord.getRunNumber());
+    record.setOperatorId(nycRecord.getOperatorId());
 
     record.setTimestamp((long) particle.getTimestamp());
     record.setDsc(nycRecord.getDestinationSignCode());

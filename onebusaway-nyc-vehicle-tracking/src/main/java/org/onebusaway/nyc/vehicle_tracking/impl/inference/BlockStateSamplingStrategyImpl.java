@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -100,11 +101,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state: potentialBlocks) {
 
-        double p = 1.0;
-        
-        if (!state.isUTSassigned() || !state.isRunReported()) {
-           p = scoreJourneyStartState(state, observation);
-        }
+        double p = scoreJourneyStartState(state, observation);
 
         cdf.put(p, state);
 
@@ -146,11 +143,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state: potentialBlocks) {
 
-        double p = 1.0;
-        
-        if (!state.isUTSassigned() && !state.isRunReported()) {
-           p = scoreState(state, observation);
-        }
+        double p = scoreState(state, observation);
 
         cdf.put(p, state);
 
@@ -220,7 +213,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     } else {
       // Favor blocks that match the correct DSC
       String dsc = state.getDestinationSignCode();
-      if (observedDsc.equals(dsc))
+      if (StringUtils.equals(observedDsc, dsc))
         return 0.95;
       else
         return 0.25;

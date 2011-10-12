@@ -2,6 +2,8 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -14,8 +16,12 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.joda.time.DateMidnight;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ReliefState;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
@@ -30,6 +36,7 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -53,11 +60,18 @@ public class RunServiceImpl implements RunService {
 
   private BlockCalendarService blockCalendarService;
 
+  private CalendarService calendarService;
+
   private ScheduledBlockLocationService scheduledBlockLocationService;
 
   private Map<AgencyAndId, List<RunTripEntry>> entriesByTrip;
 
-  private ExtendedCalendarService calendarService;
+  private ExtendedCalendarService extCalendarService;
+
+  @Autowired
+  public void setCalendarService(CalendarService calendarService) {
+    this.calendarService = calendarService;
+  }
 
   @Autowired
   public void setBundle(NycFederatedTransitDataBundle bundle) {
@@ -183,39 +197,51 @@ public class RunServiceImpl implements RunService {
       return null;
     }
 
+    Calendar cd = Calendar.getInstance();
+    cd.setTimeInMillis(time);
+    cd.setTimeZone(calendarService.getTimeZoneForAgencyId(runAgencyAndId
+        .getAgencyId()));
+
     for (RunTripEntry entry : entriesByRun.get(runId)) {
-      // all the trips for this run
-      BlockEntry block = entry.getTripEntry().getBlock();
-      long timeFrom = time - 30 * 60 * 1000;
-      long timeTo = time + 30 * 60 * 1000;
-      List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocks(
-          block.getId(), timeFrom, timeTo);
-      for (BlockInstance blockInstance : activeBlocks) {
-        long serviceDate = blockInstance.getServiceDate();
-        int scheduleTime = (int) ((time - serviceDate) / 1000);
-        BlockConfigurationEntry blockConfig = blockInstance.getBlock();
-
-        ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-            blockConfig, scheduleTime);
-
-        if (blockLocation == null)
-          continue;
-
-        BlockTripEntry trip = blockLocation.getActiveTrip();
-        List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip().getId());
-
-        if (bothTrips == null || bothTrips.isEmpty())
-          continue;
-        RunTripEntry firstTrip = bothTrips.get(0);
-        if (bothTrips.size() == 1) {
-          return firstTrip;
-        } else {
-          RunTripEntry secondTrip = bothTrips.get(1);
-          if (secondTrip.getStartTime() < scheduleTime) {
-            return secondTrip;
-          }
-        }
-      }
+      BlockInstance bi = getBlockInstanceForRunTripEntry(entry, cd.getTime());
+      if (bi != null)
+        return entry;
+      // // all the trips for this run
+      // BlockEntry block = entry.getTripEntry().getBlock();
+      // long timeFrom = time - 30 * 60 * 1000;
+      // long timeTo = time + 30 * 60 * 1000;
+      // // TODO FIXME use closestActiveBlocks?
+      // List<BlockInstance> activeBlocks =
+      // blockCalendarService.getActiveBlocks(
+      // block.getId(), timeFrom, timeTo);
+      // for (BlockInstance blockInstance : activeBlocks) {
+      // long serviceDate = blockInstance.getServiceDate();
+      // int scheduleTime = (int) ((time - serviceDate) / 1000);
+      // BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+      //
+      // ScheduledBlockLocation blockLocation = scheduledBlockLocationService
+      // .getScheduledBlockLocationFromScheduledTime(blockConfig,
+      // scheduleTime);
+      //
+      // if (blockLocation == null)
+      // continue;
+      //
+      // BlockTripEntry trip = blockLocation.getActiveTrip();
+      // List<RunTripEntry> bothTrips = entriesByTrip
+      // .get(trip.getTrip().getId());
+      //
+      // if (bothTrips == null || bothTrips.isEmpty())
+      // continue;
+      // RunTripEntry firstTrip = bothTrips.get(0);
+      // if (bothTrips.size() == 1) {
+      // return firstTrip;
+      // } else {
+      // RunTripEntry secondTrip = bothTrips.get(1);
+      // if (secondTrip.getStartTime() < scheduleTime) {
+      // return secondTrip;
+      // }
+      // }
+      // }
     }
     return null;
   }
@@ -233,13 +259,13 @@ public class RunServiceImpl implements RunService {
       ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
           blockConfig, scheduleTime);
 
-      BlockTripEntry trip = blockLocation.getActiveTrip();
-      List<RunTripEntry> rtes = entriesByTrip.get(trip.getTrip().getId());
+      if (blockLocation != null) {
+        BlockTripEntry trip = blockLocation.getActiveTrip();
+        List<RunTripEntry> rtes = entriesByTrip.get(trip.getTrip().getId());
 
-      if (rtes == null)
-        continue;
-
-      out.addAll(rtes);
+        if (rtes != null)
+          out.addAll(rtes);
+      }
     }
 
     return out;
@@ -261,7 +287,7 @@ public class RunServiceImpl implements RunService {
         TripEntry tripEntry = entry.getTripEntry();
         ServiceIdActivation serviceIds = new ServiceIdActivation(
             tripEntry.getServiceId());
-        if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+        if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
           return entry;
         }
       }
@@ -279,7 +305,7 @@ public class RunServiceImpl implements RunService {
       TripEntry tripEntry = entry.getTripEntry();
       ServiceIdActivation serviceIds = new ServiceIdActivation(
           tripEntry.getServiceId());
-      if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+      if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
         return entry;
       }
     }
@@ -298,7 +324,7 @@ public class RunServiceImpl implements RunService {
         TripEntry tripEntry = entry.getTripEntry();
         ServiceIdActivation serviceIds = new ServiceIdActivation(
             tripEntry.getServiceId());
-        if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+        if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
           return entry;
         }
       }
@@ -314,7 +340,7 @@ public class RunServiceImpl implements RunService {
       TripEntry tripEntry = entry.getTripEntry();
       ServiceIdActivation serviceIds = new ServiceIdActivation(
           tripEntry.getServiceId());
-      if (calendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
+      if (extCalendarService.areServiceIdsActiveOnServiceDate(serviceIds, date)) {
         return entry;
       }
     }
@@ -331,8 +357,9 @@ public class RunServiceImpl implements RunService {
 
     long serviceDate = blockInstance.getServiceDate();
 
-    ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-        blockInstance.getBlock(), scheduleTime);
+    ScheduledBlockLocation blockLocation = scheduledBlockLocationService
+        .getScheduledBlockLocationFromScheduledTime(blockInstance.getBlock(),
+            scheduleTime);
 
     if (blockLocation == null) {
       _log.error("no scheduled block location for block=" + blockInstance
@@ -342,96 +369,82 @@ public class RunServiceImpl implements RunService {
 
     BlockTripEntry trip = blockLocation.getActiveTrip();
 
-    AgencyAndId tripId = trip.getTrip().getId();
+    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip().getId());
 
-    String runId = getInitialRunForTrip(tripId);
+    if (bothTrips != null && !bothTrips.isEmpty()) {
 
-    int reliefTime = getReliefTimeForTrip(tripId);
+      RunTripEntry firstTrip = bothTrips.get(0);
+      if (bothTrips.size() == 1) {
+        return firstTrip;
+      } else {
+        RunTripEntry secondTrip = bothTrips.get(1);
+        if (secondTrip.getStartTime() < scheduleTime)
+          return secondTrip;
+      }
+      return firstTrip;
+    }
 
-    // if there is a relief and our schedule time is past the relief
-    // then use that run
-    if (reliefTime > 0 && reliefTime <= scheduleTime)
-      runId = getReliefRunForTrip(tripId);
+    return null;
+  }
 
-    long timestamp = serviceDate + scheduleTime * 1000;
-
-    RunTripEntry runTrip = getRunTripEntryForRunAndTime(
-        new AgencyAndId(tripId.getAgencyId(), runId), timestamp);
-
-    return runTrip;
+  private Date getTimestampAsDate(String agencyId, long timestamp) {
+    Calendar cd = Calendar.getInstance();
+    cd.setTimeInMillis(timestamp);
+    cd.set(Calendar.HOUR_OF_DAY, 0);
+    cd.set(Calendar.MINUTE, 0);
+    cd.set(Calendar.SECOND, 0);
+    cd.set(Calendar.MILLISECOND, 0);
+    cd.setTimeZone(calendarService.getTimeZoneForAgencyId(agencyId));
+    return cd.getTime();
   }
 
   // TODO FIXME these methods don't require this much effort. they can
   // be pre-computed in setup(), or earlier.
   @Override
-  public List<ScheduledBlockLocation> getSchedBlockLocsForRunTripEntryAndTime(
+  public ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
       RunTripEntry runTrip, long timestamp) {
 
-    BlockEntry block = runTrip.getTripEntry().getBlock();
-    long timeFrom = timestamp - 30 * 60 * 1000;
-    long timeTo = timestamp + 30 * 60 * 1000;
-    List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocks(
-        block.getId(), timeFrom, timeTo);
-    /*
-     * currently, we add any matching schedBlockLocs, but there should only be
-     * one for a given timestamp
-     */
-    List<ScheduledBlockLocation> matchingSchedBlockLocs = new ArrayList<ScheduledBlockLocation>();
-    for (BlockInstance blockInstance : activeBlocks) {
-      long serviceDate = blockInstance.getServiceDate();
-      int scheduleTime = (int) ((timestamp - serviceDate) / 1000);
-      BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+    Date serviceDate = getTimestampAsDate(runTrip.getTripEntry().getId()
+        .getAgencyId(), timestamp);
+    BlockInstance activeBlock = getBlockInstanceForRunTripEntry(runTrip,
+        serviceDate);
+    int scheduleTime = (int) ((timestamp - serviceDate.getTime()) / 1000);
+    BlockTripEntry bte = blockCalendarService.getTargetBlockTrip(activeBlock,
+        runTrip.getTripEntry());
+    ScheduledBlockLocation sbl = scheduledBlockLocationService
+        .getScheduledBlockLocationFromScheduledTime(
+            bte.getBlockConfiguration(), scheduleTime);
 
-      ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-          blockConfig, scheduleTime);
-
-      if (blockLocation == null)
-        continue;
-
-      BlockTripEntry trip = blockLocation.getActiveTrip();
-      List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip().getId());
-
-      if (bothTrips == null || bothTrips.isEmpty())
-        continue;
-      RunTripEntry firstTrip = bothTrips.get(0);
-      if (bothTrips.size() == 1) {
-        if (firstTrip.equals(runTrip))
-          matchingSchedBlockLocs.add(blockLocation);
-      } else {
-        RunTripEntry secondTrip = bothTrips.get(1);
-        if (secondTrip.getStartTime() < scheduleTime) {
-          if (secondTrip.equals(runTrip))
-            matchingSchedBlockLocs.add(blockLocation);
-        }
-
-        if (firstTrip.equals(runTrip))
-          matchingSchedBlockLocs.add(blockLocation);
-      }
-    }
-
-    return matchingSchedBlockLocs;
+    return sbl;
 
   }
 
   @Override
-  public List<BlockInstance> getBlockInstancesForRunTripEntry(RunTripEntry rte,
-      long timestamp) {
-    // TODO Auto-generated method stub
-    BlockEntry block = rte.getTripEntry().getBlock();
-    long timeFrom = timestamp - 30 * 60 * 1000;
-    long timeTo = timestamp + 30 * 60 * 1000;
-    List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocks(
-        block.getId(), timeFrom, timeTo);
-    return activeBlocks;
+  public BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
+      Date serviceDate) {
+    Calendar cd = Calendar.getInstance();
+    cd.setTime(serviceDate);
+    cd.setTimeZone(calendarService.getTimeZoneForAgencyId(rte.getTripEntry()
+        .getId().getAgencyId()));
+    AgencyAndId blockId = rte.getTripEntry().getBlock().getId();
+    BlockInstance bli = blockCalendarService.getBlockInstance(blockId,
+        cd.getTimeInMillis());
+    if (bli == null) {
+      // FIXME just a hack, mostly for time issues
+      List<BlockInstance> tmpBli = blockCalendarService.getActiveBlocks(blockId, serviceDate.getTime(), serviceDate.getTime());
+      if (tmpBli != null && !tmpBli.isEmpty())
+        return tmpBli.get(0);
+    }
+    return bli;
   }
 
   public ExtendedCalendarService getCalendarService() {
-    return calendarService;
+    return extCalendarService;
   }
 
   @Autowired
-  public void setExtendedCalendarService(ExtendedCalendarService calendarService) {
-    this.calendarService = calendarService;
+  public void setExtendedCalendarService(ExtendedCalendarService extCalendarService) {
+    this.extCalendarService = extCalendarService;
   }
 
 }

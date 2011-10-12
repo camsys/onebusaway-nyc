@@ -299,7 +299,7 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
       @RequestParam(value = "reportsOperatorId", required = false, defaultValue = "false") boolean reportsOperatorId,
       @RequestParam(value = "reportsRunId", required = false, defaultValue = "false") boolean reportsRunId,
-      @RequestParam(value = "fillActual", required = false, defaultValue = "true") boolean fillActualProperties,
+      @RequestParam(value = "fillActual", required = false, defaultValue = "false") boolean fillActualProperties,
       @RequestParam String properties) throws IOException {
 
     Date time = getTime(session, null);
