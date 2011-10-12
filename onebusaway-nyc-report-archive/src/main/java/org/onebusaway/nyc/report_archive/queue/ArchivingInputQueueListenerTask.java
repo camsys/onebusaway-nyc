@@ -19,6 +19,10 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   @Override
   public void processMessage(String address, String contents) {
     CcLocationReport message = deserializeMessage(contents);
+    
+    // message discarded, probably corrupted
+    if (message == null) return;
+
     CcLocationReportRecord record = new CcLocationReportRecord(message, contents);
     _dao.saveOrUpdateReport(record);
   }
