@@ -142,7 +142,7 @@ public class NycRawLocationRecord {
 	  this.operatorId = operatorId;
   }
 
-  public String getRunId() {
+  public String getRunNumber() {
 	  return runId;
   }
 

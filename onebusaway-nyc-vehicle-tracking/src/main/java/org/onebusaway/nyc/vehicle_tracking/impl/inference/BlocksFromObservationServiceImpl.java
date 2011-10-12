@@ -121,7 +121,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    */
   private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
 
-  private boolean _includeNearbyBlocks = false;
+  private boolean _includeNearbyBlocks = true;
 
   /****
    * Public Methods
@@ -205,7 +205,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
           _log.debug("vehicle=" + observation.getRecord().getVehicleId()
               + " reported block=" + reportedState + " for operator="
               + observation.getRecord().getOperatorId() + " run="
-              + observation.getRecord().getRunId());
+              + observation.getRecord().getRunNumber());
         }
       }
 
@@ -282,7 +282,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       }
     }
 
-    String reportedRunId = observation.getRecord().getRunId();
+    String reportedRunId = observation.getRecord().getRunNumber()
+        + observation.getRecord().getRunRouteId();
     Set<String> runIdsToTry = new LinkedHashSet<String>();
 
     if (StringUtils.isNotEmpty(utsRunId)) {

@@ -41,7 +41,7 @@ table td {
     <li>location:<jsp:text> </jsp:text><c:out value="${obs.latitude}"/><jsp:text> </jsp:text><c:out value="${obs.longitude}"/></li>
     <li><jsp:text>dsc: </jsp:text><c:out value="${obs.destinationSignCode}"/></li>
     <li><jsp:text>operatorId: </jsp:text><c:out value="${obs.operatorId}"/></li>
-    <li><jsp:text>reportedRunId: </jsp:text><c:out value="${obs.runId}"/></li>
+    <li><jsp:text>reportedRunNumber: </jsp:text><c:out value="${obs.runNumber}"/></li>
     <li><jsp:text>reportedRunRouteId: </jsp:text><c:out value="${obs.runRouteId}"/></li>
 </ul>
 

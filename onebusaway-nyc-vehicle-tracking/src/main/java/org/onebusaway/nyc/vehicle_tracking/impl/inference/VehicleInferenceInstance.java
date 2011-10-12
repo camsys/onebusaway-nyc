@@ -194,7 +194,7 @@ public class VehicleInferenceInstance {
          */
         NycRawLocationRecord lastRecord = _previousObservation.getRecord();
         if (!StringUtils.equals(lastRecord.getOperatorId(), record.getOperatorId())
-            || !StringUtils.equals(lastRecord.getRunId(), record.getRunId())) {
+            || !StringUtils.equals(lastRecord.getRunNumber(), record.getRunNumber())) {
           // TODO what to do when we lose information?  e.g. "signal"
           // drops and op/run/UTS info hasn't really changed/been re-entered
           _log.info("resetting inference for vid=" + record.getVehicleId()
@@ -463,6 +463,8 @@ public class VehicleInferenceInstance {
     NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
+    record.setReportedRunId(nycRecord.getRunNumber());
+    record.setOperatorId(nycRecord.getOperatorId());
 
     record.setTimestamp((long) particle.getTimestamp());
     record.setDsc(nycRecord.getDestinationSignCode());
