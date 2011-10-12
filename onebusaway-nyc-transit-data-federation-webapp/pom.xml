@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
-            <version>${project.version}</version>
+            <version>${onebusaway.nyc.version}</version>
         </dependency>
 
         <!-- RMI-like service for wiring up services between VMs -->

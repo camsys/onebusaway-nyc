@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 
@@ -22,20 +23,10 @@ import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 public class MtaBusDepotFileToDataCreator {
 
   private File inputFile;
-
-  public MtaBusDepotFileToDataCreator(File inputFile) {
-    this.inputFile = inputFile;
-  }
+  private Reader reader;
 
   public VehicleDepotData generateDataObject() throws IOException {
-    FileReader inputFileReader = new FileReader(inputFile);
-
-    BusDepotAssignsInputConverter inConv = new XMLBusDepotAssignsInputConverter(
-        inputFileReader);
-
-    List<MtaBusDepotAssignment> assignments = inConv.getBusDepotAssignments();
-
-    inputFileReader.close();
+    List<MtaBusDepotAssignment> assignments = loadDepotAssignments();
 
     // With Bus Depot Assignments we need to group MtaBusDepotAssignment s by
     // the depot field.
@@ -54,5 +45,26 @@ public class MtaBusDepotFileToDataCreator {
     VehicleDepotData data = new ImporterBusDepotData(fleetSSGroups);
 
     return data;
+  }
+
+  public List<MtaBusDepotAssignment> loadDepotAssignments()
+      throws FileNotFoundException, IOException {
+    Reader inputReader = getReader();
+
+    BusDepotAssignsInputConverter inConv = new XMLBusDepotAssignsInputConverter(
+        inputReader);
+
+    List<MtaBusDepotAssignment> assignments = inConv.getBusDepotAssignments();
+
+    inputReader.close();
+    return assignments;
+  }
+
+  public Reader getReader() throws IOException {
+    return reader;
+  }
+
+  public void setReader(Reader reader) {
+    this.reader = reader;
   }
 }

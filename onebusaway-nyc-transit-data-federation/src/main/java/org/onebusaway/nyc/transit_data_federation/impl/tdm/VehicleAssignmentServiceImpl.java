@@ -1,22 +1,23 @@
 package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.annotation.PostConstruct;
-
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.annotation.PostConstruct;
 
 @Component
 public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
@@ -29,18 +30,26 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	private ConfigurationService _configurationService;
 
 	private volatile HashMap<String, ArrayList<AgencyAndId>> _depotToVehicleListMap = 
-			new HashMap<String, ArrayList<AgencyAndId>>();
+	    new HashMap<String, ArrayList<AgencyAndId>>();
+
+  private volatile Map<AgencyAndId, String> _vehicleToDepotMap = new HashMap<AgencyAndId, String>();
+
+  private TransitDataManagerApiLibrary _apiLibrary = new TransitDataManagerApiLibrary();
+
+  public void setApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
+    this._apiLibrary = apiLibrary;
+  }
 
 	private ArrayList<AgencyAndId> getVehicleListForDepot(String depotId) {
 		try {
-			ArrayList<JsonObject> vehicleAssignments = 
-					TransitDataManagerApiLibrary.getItemsForRequest("depot", depotId, "vehicles", "list");
+      List<Map<String, String>> vehicleAssignments = 
+          _apiLibrary.getItems("depot", depotId, "vehicles", "list");
 
 			ArrayList<AgencyAndId> vehiclesForThisDepot = new ArrayList<AgencyAndId>();
-			for(JsonObject depotVehicleAssignment : vehicleAssignments) {
+			for(Map<String, String> depotVehicleAssignment : vehicleAssignments) {
 				vehiclesForThisDepot.add(new AgencyAndId(
-					depotVehicleAssignment.get("agency-id").getAsString(), 
-					depotVehicleAssignment.get("vehicle-id").getAsString()));
+					depotVehicleAssignment.get("agency-id"), 
+					depotVehicleAssignment.get("vehicle-id")));
 			}
 	
 			return vehiclesForThisDepot;
@@ -49,7 +58,21 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 			return null;
 		}		
 	}
-	
+
+  private Map<AgencyAndId, String> getVehicleDepots() throws Exception {
+    Map<AgencyAndId, String> vehicleDepots = new HashMap<AgencyAndId, String>();
+    List<Map<String, String>> apiVehicleDepots = _apiLibrary.getItems("vehicles", "list");
+    
+    for (Map<String, String> vehicleDepot: apiVehicleDepots) {
+      String vehicleId = vehicleDepot.get("vehicle-id");
+      String agencyId = vehicleDepot.get("agency-id");
+      String depotId = vehicleDepot.get("depot-id");
+      vehicleDepots.put(new AgencyAndId(agencyId, vehicleId), depotId);
+    }
+    
+    return vehicleDepots;
+  }
+
 	private class UpdateThread extends TimerTask {
 		@Override
 		public void run() {
@@ -60,6 +83,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 						_depotToVehicleListMap.put(depotId, list);
 				}
 			}
+
+      synchronized(_vehicleToDepotMap) {
+        try {
+          _vehicleToDepotMap = getVehicleDepots();
+        } catch(Exception e) {
+          _log.error("Error updating vehicle to depot map: " + e.getMessage());
+        }
+      }
 		}		
 	}
 
@@ -67,6 +98,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	public void configChanged() {
 		Integer updateInterval = 
 				_configurationService.getConfigurationValueAsInteger("tdm.vehicleAssignmentRefreshInterval", null);
+
 		if(updateInterval != null)
 			setUpdateFrequency(updateInterval);
 	}
@@ -87,7 +119,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 	}
 	
 	@Override
-	public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotId) {
+	public synchronized ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotId) {
 		ArrayList<AgencyAndId> list = _depotToVehicleListMap.get(depotId);
 		if(list == null) {
 			list = getVehicleListForDepot(depotId);
@@ -95,4 +127,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 		}
 		return list;
 	}
+
+  @Override
+  public synchronized String getAssignedDepotForVehicle(AgencyAndId vehicle) throws Exception {
+    String depotId = _vehicleToDepotMap.get(vehicle);
+    if(depotId == null) {
+      _vehicleToDepotMap = getVehicleDepots();
+    }
+    return _vehicleToDepotMap.get(vehicle);
+  }
+
 }

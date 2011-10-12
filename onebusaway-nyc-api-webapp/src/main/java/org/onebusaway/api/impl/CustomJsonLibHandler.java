@@ -63,6 +63,21 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
     if (req != null)
       callback = req.getParameter("callback");
 
+    fromObject(obj, resultCode, stream, callback);
+    
+    return null;
+  }
+
+  public String fromObject(Object obj, String resultCode, Writer stream, String callback)
+      throws IOException {
+
+    fromObject(obj, stream, callback);
+    
+    return null;
+  }
+
+  public void fromObject(Object obj, Writer stream, String callback)
+      throws IOException {
     String value = null;
 
     if (obj != null) {
@@ -81,8 +96,6 @@ public class CustomJsonLibHandler implements ContentTypeHandler {
       else
         stream.write(value);
     }
-    
-    return null;
   }
 
   private boolean isArray(Object obj) {

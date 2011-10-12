@@ -32,7 +32,7 @@ public class FleetSubsetsGenerator {
     // to a new CPTSubscriptionHeader.
     CPTSubscriptionHeader subHeader = new CPTSubscriptionHeader();
 
-    subHeader.setRequestedType("Periodic"); // 2 = Periodic
+    subHeader.setRequestedType("2"); // 2 = Periodic
 
     // Set the expiration date/time
     DateTime tomorrow = now.plusDays(1);

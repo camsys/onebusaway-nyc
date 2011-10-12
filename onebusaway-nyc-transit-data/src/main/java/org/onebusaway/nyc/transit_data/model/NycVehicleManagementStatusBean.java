@@ -24,11 +24,9 @@ import java.io.Serializable;
  * @author jmaki
  *
  */
-public final class NycVehicleManagementStatusBean implements Serializable {
+public class NycVehicleManagementStatusBean implements Serializable {
 
   private static final long serialVersionUID = 1L;
-
-  private String vehicleId;
 
   private boolean inferenceIsEnabled;
 
@@ -51,14 +49,18 @@ public final class NycVehicleManagementStatusBean implements Serializable {
   private String activeBundleId;
   
   private boolean inferenceIsFormal;
-  
-  public String getVehicleId() {
-    return vehicleId;
-  }
 
-  public void setVehicleId(String vehicleId) {
-    this.vehicleId = vehicleId;
-  }
+  private String depotId;
+
+  private boolean emergencyFlag;
+
+  private String lastInferredOperatorId;
+
+  private String inferredRunId;
+
+  private String routeId;
+
+  private double bearing;
 
   public boolean isInferenceIsEnabled() {
     return inferenceIsEnabled;
@@ -127,27 +129,79 @@ public final class NycVehicleManagementStatusBean implements Serializable {
 	this.inferenceIsFormal = inferenceIsFormal;
   }
 
-public String getInferenceEngineHostname() {
-	return inferenceEngineHostname;
-}
+  public String getInferenceEngineHostname() {
+    return inferenceEngineHostname;
+  }
 
-public void setInferenceEngineHostname(String inferenceEngineHostname) {
-	this.inferenceEngineHostname = inferenceEngineHostname;
-}
+  public void setInferenceEngineHostname(String inferenceEngineHostname) {
+    this.inferenceEngineHostname = inferenceEngineHostname;
+  }
 
-public boolean isInferenceEngineIsPrimary() {
-	return inferenceEngineIsPrimary;
-}
+  public boolean isInferenceEngineIsPrimary() {
+    return inferenceEngineIsPrimary;
+  }
 
-public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
-	this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
-}
+  public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
+    this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
+  }
 
-public String getActiveBundleId() {
-	return activeBundleId;
-}
+  public String getActiveBundleId() {
+    return activeBundleId;
+  }
 
-public void setActiveBundleId(String activeBundleId) {
-	this.activeBundleId = activeBundleId;
-}
+  public void setActiveBundleId(String activeBundleId) {
+    this.activeBundleId = activeBundleId;
+  }
+
+  public void setDepotId(String depotId) {
+    this.depotId = depotId;
+  }
+
+  public String getDepotId() {
+    return depotId;
+  }
+
+  public boolean isEmergencyFlag() {
+    return emergencyFlag;
+  }
+
+  public void setEmergencyFlag(boolean emergencyFlag) {
+    this.emergencyFlag = emergencyFlag;
+  }
+
+  public void setLastInferredOperatorId(String operatorId) {
+    this.lastInferredOperatorId = operatorId;
+  }
+
+  public String getLastInferredOperatorId() {
+    return lastInferredOperatorId;
+  }
+
+  public void setInferredRunId(String inferredRunId) {
+    this.inferredRunId = inferredRunId;
+  }
+
+  public String getInferredRunId() {
+    return inferredRunId;
+  }
+
+  public void setRouteId(String routeId) {
+    this.routeId = routeId;
+  }
+  
+  public String getRouteId() {
+    return routeId;
+  }
+
+  public void setBearing(double bearing) {
+    this.bearing = bearing;
+  }
+  
+  public double getBearing() {
+    return bearing;
+  }
+
+
+
+
 }

@@ -46,5 +46,6 @@
 	<mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReportRecord"/>
 	<mapping class="org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord"/>
 	<mapping class="org.onebusaway.nyc.report_archive.model.NycVehicleManagementStatusRecord"/>
+	<mapping class="org.onebusaway.nyc.report_archive.model.InvalidLocationRecord"/>
     </session-factory>
 </hibernate-configuration>

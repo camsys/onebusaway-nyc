@@ -35,6 +35,9 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
@@ -42,6 +45,10 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
+import org.onebusaway.transit_data.model.blocks.BlockBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.services.TransitDataService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +71,17 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Autowired
   private OutputQueueSenderService _outputQueueSenderService;
+
+  @Autowired
+  private VehicleAssignmentService _vehicleAssignmentService;
+
+  @Autowired
+  private BundleManagementService _bundleManagementService;
+  
+  @Autowired
+  private TransitDataService _transitDataService;
+  
+  private BundleItem _lastBundle = null;
   
   private ExecutorService _executorService;
 
@@ -88,6 +106,67 @@ public class VehicleLocationInferenceServiceImpl implements
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
 
+  /**
+   * Has the bundle changed since the last time we returned a result?
+   *
+   * @return boolean: bundle changed or not
+   */
+  private boolean bundleHasChanged() {
+    BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+    
+    boolean result = false;
+
+    // active bundle was removed from BMS list of active bundles
+    if(currentBundle == null)
+      return true;
+    
+    if(_lastBundle != null) {
+      result = !_lastBundle.getId().equals(currentBundle.getId());
+    }
+    
+    _lastBundle = currentBundle;
+    return result;
+  }
+  
+  /**
+   * If the bundle has changed, verify that all vehicle results are present in the current bundle.
+   * If not, reset the inference to map them to the current reference data (bundle).
+   * 
+   */
+  private synchronized void verifyVehicleResultMappingToCurrentBundle() {
+    if(!bundleHasChanged())
+      return;
+    
+    for(AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
+      VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
+      NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
+
+      // no state
+      if(state == null) {
+        _log.info("Vehicle " + vehicleId + " reset on bundle change: no state available.");
+        this.resetVehicleLocation(vehicleId);
+        continue;
+      }
+      
+      // no match to any trip
+      if(state.getInferredBlockId() == null || state.getInferredTripId() == null) {
+        _log.info("Vehicle " + vehicleId + " reset on bundle change: no matched trip/block.");
+        this.resetVehicleLocation(vehicleId);
+        continue;
+      }
+        
+      // trip or block matched have disappeared!
+      TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
+      BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
+
+      if(trip == null || block == null) {
+        _log.info("Vehicle " + vehicleId + " reset on bundle change: trip/block is no longer present.");
+        this.resetVehicleLocation(vehicleId);
+        continue;
+      }
+    }
+  }
+  
   @PostConstruct
   public void start() {
     if (_numberOfProcessingThreads <= 0)
@@ -103,16 +182,22 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Override
   public void handleNycRawLocationRecord(NycRawLocationRecord record) {
+    verifyVehicleResultMappingToCurrentBundle();
+
     _executorService.execute(new ProcessingTask(record));
   }
 
   @Override
   public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record) {
+    verifyVehicleResultMappingToCurrentBundle();
+
     _executorService.execute(new ProcessingTask(record));
   }
 
   public void handleCcLocationReportRecord(CcLocationReport message) {
-	  NycRawLocationRecord r = new NycRawLocationRecord();
+    verifyVehicleResultMappingToCurrentBundle();
+
+    NycRawLocationRecord r = new NycRawLocationRecord();
 
 	  r.setTime(XML_DATE_TIME_FORMAT.parseMillis(message.getTimeReported()));
 	  r.setTimeReceived(new Date().getTime());
@@ -126,6 +211,7 @@ public class VehicleLocationInferenceServiceImpl implements
 		  if(degrees != null)
 			  r.setBearing(degrees);
 	  }
+	  r.setSpeed(message.getSpeed());
 	  
 	  r.setDestinationSignCode(message.getDestSignCode().toString());
 	  r.setDeviceId(message.getManufacturerData());
@@ -308,7 +394,7 @@ public class VehicleLocationInferenceServiceImpl implements
     return instance;
   }
 
-  private class ProcessingTask implements Runnable {
+  public class ProcessingTask implements Runnable {
 
     private AgencyAndId _vehicleId;
 
@@ -336,12 +422,18 @@ public class VehicleLocationInferenceServiceImpl implements
 
         if (passOnRecord) {
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-        	managementRecord.setVehicleId(_vehicleId.toString());
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
 
+        	// don't let network IO problems stop inference completely.
+//        	try {
+//        	  managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
+//        	} catch(Exception e) {
+//        	  managementRecord.setDepotId(null);
+//        	}
+            
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());
-          	record.setManagementRecord(managementRecord);
+          record.setManagementRecord(managementRecord);
         	
         	_outputQueueSenderService.enqueue(record);
         }

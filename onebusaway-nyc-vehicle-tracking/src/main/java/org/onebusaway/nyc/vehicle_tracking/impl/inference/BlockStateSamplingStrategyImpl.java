@@ -17,17 +17,15 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.slf4j.Logger;
@@ -50,8 +48,6 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private DeviationModel _scheduleDeviationSigma = new DeviationModel(32 * 60);
 
-  private BlockStateService _blockStateService;
-
   private BlocksFromObservationService _blocksFromObservationService;
 
   private ObservationCache _observationCache;
@@ -62,12 +58,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
   }
-
-  @Autowired
-  public void setBlockStateService(BlockStateService blockStateService) {
-    _blockStateService = blockStateService;
-  }
-
+  
   @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
@@ -110,11 +101,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state: potentialBlocks) {
 
-        double p = 1.0;
-        
-        if (!state.isUTSassigned() || !state.isRunReported()) {
-           p = scoreJourneyStartState(state, observation);
-        }
+        double p = scoreJourneyStartState(state, observation);
 
         cdf.put(p, state);
 
@@ -156,11 +143,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state: potentialBlocks) {
 
-        double p = 1.0;
-        
-        if (!state.isUTSassigned() || !state.isRunReported()) {
-           p = scoreState(state, observation);
-        }
+        double p = scoreState(state, observation);
 
         cdf.put(p, state);
 
@@ -230,7 +213,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     } else {
       // Favor blocks that match the correct DSC
       String dsc = state.getDestinationSignCode();
-      if (observedDsc.equals(dsc))
+      if (StringUtils.equals(observedDsc, dsc))
         return 0.95;
       else
         return 0.25;

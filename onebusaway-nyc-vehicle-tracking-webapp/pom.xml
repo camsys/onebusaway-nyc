@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
-            <version>${project.version}</version>
+            <version>${onebusaway.nyc.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet.jsp</groupId>
@@ -144,6 +144,24 @@
                 <bundle.location>/tmp/oba-bundle</bundle.location>
             </properties>
         </profile>
+        
+        <!--  bundle mode profiles -->
+        <profile>
+            <id>bundle-mode-standalone</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+            </properties>
+        </profile>
+        <profile>
+            <id>bundle-mode-download</id>
+            <properties>
+                <bundle.mode.standalone>false</bundle.mode.standalone>
+            </properties>
+        </profile>
+
     </profiles>
 
     <build>

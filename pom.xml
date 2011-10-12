@@ -20,7 +20,8 @@
 	<jetty.version>6.1.26</jetty.version>
 	<spring.version>3.0.3.RELEASE</spring.version>
 	<onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
-	<onebusaway.app-modules.version>2.0.6-SNAPSHOT</onebusaway.app-modules.version>
+	<onebusaway.app-modules.version>2.0.8-SNAPSHOT</onebusaway.app-modules.version>
+        <onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
   </properties>
 
   <repositories>
@@ -101,9 +102,9 @@
   </pluginRepositories>
 
   <scm>
-    <connection>scm:svn:http://onebusaway.googlecode.com/svn/onebusaway-nyc/trunk</connection>
-    <developerConnection>scm:svn:https://onebusaway.googlecode.com/svn/onebusaway-nyc/trunk </developerConnection>
-    <url>http://code.google.com/p/onebusaway/source/browse/#svn/onebusaway-nyc/trunk</url>
+    <connection>scm:git:github.com/camsys/onebusaway-nyc/</connection>
+    <developerConnection>scm:git:github.com/camsys/onebusaway-nyc/</developerConnection>
+    <url>https://github.com/camsys/onebusaway-nyc/</url>
   </scm>
 
   <modules>
@@ -113,7 +114,6 @@
     <module>onebusaway-nyc-webapp</module>
     <module>onebusaway-nyc-presentation</module>
     <module>onebusaway-nyc-sms-webapp</module>
-    <module>onebusaway-nyc-tcip</module>
     <module>onebusaway-nyc-transit-data</module>
     <module>onebusaway-nyc-transit-data-manager</module>
     <module>onebusaway-nyc-transit-data-federation</module>
@@ -222,6 +222,31 @@
               </configuration>
             </execution>
           </executions>
+        </plugin>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+            <groupId>org.eclipse.m2e</groupId>
+            <artifactId>lifecycle-mapping</artifactId>
+            <version>1.0.0</version>
+            <configuration>
+                <lifecycleMappingMetadata>
+                    <pluginExecutions>
+                        <pluginExecution>
+                            <pluginExecutionFilter>
+                                <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
+                                <artifactId>maven-svn-revision-number-plugin</artifactId>
+                                <versionRange>[1.5,)</versionRange>
+                                <goals>
+                                    <goal>revision</goal>
+                                </goals>
+                            </pluginExecutionFilter>
+                            <action>
+                                <ignore></ignore>
+                            </action>
+                        </pluginExecution>
+                    </pluginExecutions>
+                </lifecycleMappingMetadata>
+            </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -437,8 +462,8 @@
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>1.8.0</version>
+        <artifactId>mockito-all</artifactId>
+        <version>1.9.0-rc1</version>
         <scope>test</scope>
       </dependency>
 

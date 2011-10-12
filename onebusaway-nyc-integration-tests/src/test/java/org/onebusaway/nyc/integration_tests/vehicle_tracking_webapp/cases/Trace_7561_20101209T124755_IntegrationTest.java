@@ -54,7 +54,8 @@ package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
  */
 public class Trace_7561_20101209T124755_IntegrationTest extends AbstractTraceRunner {
 
-  public Trace_7561_20101209T124755_IntegrationTest() {
+  public Trace_7561_20101209T124755_IntegrationTest() throws Exception {
     super("7561-2010-12-09T12-47-55.csv.gz");
+    setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
   }
 }

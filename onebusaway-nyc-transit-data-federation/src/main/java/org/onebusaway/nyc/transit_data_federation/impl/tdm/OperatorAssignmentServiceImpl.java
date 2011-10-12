@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
@@ -12,12 +14,14 @@ import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.model.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
+
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 @Component
@@ -26,30 +30,41 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	private static Logger _log = LoggerFactory.getLogger(VehicleAssignmentServiceImpl.class);
 
 	private Timer _updateTimer = null;
-
-	private static Gson _gson = new Gson();
 	
+	private static final DateTimeFormatter _updatedDateFormatter = ISODateTimeFormat.dateTimeNoMillis();
+
+  private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+
 	@Autowired
 	private ConfigurationService _configurationService;
 	
-	private volatile HashMap<String, ArrayList<OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
-			new HashMap<String, ArrayList<OperatorAssignmentItem>>();
+	// map structure: service date -> (operator pass ID->operator assignment item)
+	private volatile HashMap<String, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
+			new HashMap<String, HashMap<String, OperatorAssignmentItem>>();
 
 	private String getServiceDateKey(Date date) {
 		if(date != null)
-			return String.format("%Y-%m-%d", date);
+		  return _serviceDateFormatter.format(date);
 		else
 			return null;
 	}
 	
-	private ArrayList<OperatorAssignmentItem> getOperatorListForServiceDate(String serviceDate) {
+	private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(String serviceDate) {
 		try {			
 			ArrayList<JsonObject> operatorAssignments = 
 				TransitDataManagerApiLibrary.getItemsForRequest("crew", serviceDate, "list");
 
-			ArrayList<OperatorAssignmentItem> output = new ArrayList<OperatorAssignmentItem>();
+			HashMap<String, OperatorAssignmentItem> output = new HashMap<String, OperatorAssignmentItem>();
 			for(JsonObject itemToAdd : operatorAssignments) {
-				output.add(_gson.fromJson(itemToAdd, OperatorAssignmentItem.class));
+			  OperatorAssignmentItem item = new OperatorAssignmentItem();
+			  item.setAgencyId(itemToAdd.get("agency-id").getAsString());
+        item.setPassId(itemToAdd.get("pass-id").getAsString());
+        item.setRunId(itemToAdd.get("run-id").getAsString());
+        item.setRunRoute(itemToAdd.get("run-route").getAsString());
+        item.setServiceDate(_serviceDateFormatter.parse(itemToAdd.get("service-date").getAsString()));
+        item.setUpdated(_updatedDateFormatter.parseDateTime(itemToAdd.get("updated").getAsString()));
+			  
+			  output.put(item.getPassId(), item);
 			}
 			
 			return output;
@@ -64,9 +79,9 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 		public void run() {
 			synchronized(_serviceDateToOperatorListMap) {
 				for(String serviceDate : _serviceDateToOperatorListMap.keySet()) {
-					ArrayList<OperatorAssignmentItem> list = getOperatorListForServiceDate(serviceDate);
-					if(list != null)
-						_serviceDateToOperatorListMap.put(serviceDate, list);
+					HashMap<String, OperatorAssignmentItem> operatorIdToAssignmentItemMap = getOperatorMapForServiceDate(serviceDate);
+					if(operatorIdToAssignmentItemMap != null)
+						_serviceDateToOperatorListMap.put(serviceDate, operatorIdToAssignmentItemMap);
 				}
 			}
 		}		
@@ -97,24 +112,34 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	}
 
 	@Override
-	public ArrayList<OperatorAssignmentItem> getOperatorsForServiceDate(
-			Date serviceDate) {
+	public synchronized Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) {
 		String serviceDateKey = getServiceDateKey(serviceDate);		
 		if(serviceDateKey == null) 
 			return null;
 		
-		ArrayList<OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
+		HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
 		if(list == null) {
-			list = getOperatorListForServiceDate(serviceDateKey);
+			list = getOperatorMapForServiceDate(serviceDateKey);
+			if(list == null)
+			  return null;
 			_serviceDateToOperatorListMap.put(serviceDateKey, list);
 		}
-		return list;
+		return list.values();
 	}
 
   @Override
-  public OperatorAssignmentItem getOperatorAssignmentItem(Date today,
-      String operatorId) {
-    // TODO Auto-generated method stub
-    return null;
+  public synchronized OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) {
+    String serviceDateKey = getServiceDateKey(serviceDate);   
+    if(serviceDateKey == null) 
+      return null;
+    
+    HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
+    if(list == null) {
+      list = getOperatorMapForServiceDate(serviceDateKey);
+      if(list == null)
+        return null;
+      _serviceDateToOperatorListMap.put(serviceDateKey, list);
+    }
+    return list.get(operatorId);
   }
 }

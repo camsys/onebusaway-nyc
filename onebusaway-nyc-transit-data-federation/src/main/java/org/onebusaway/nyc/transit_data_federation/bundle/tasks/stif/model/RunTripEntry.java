@@ -46,7 +46,7 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
     // this run could end before the last stop
     int lastTime = reliefTime;
 
-    if (lastTime <= 0) {
+    if (lastTime < 0) {
       List<StopTimeEntry> stopTimes = entry.getStopTimes();
       StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
       lastTime = lastStopTime.getDepartureTime();

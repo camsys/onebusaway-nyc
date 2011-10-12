@@ -48,5 +48,4 @@ import org.junit.runners.Suite;
     Trace_7564_20101202T114909_IntegrationTest.class,
     Trace_7564_20101206T005551_IntegrationTest.class})
 public class TraceSuite {
-
 }

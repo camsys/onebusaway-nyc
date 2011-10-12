@@ -74,6 +74,9 @@ public class NycRawLocationRecord {
   @CsvField(name = "rawdata", optional = true)
   private String rawData;
 
+  @CsvField(name = "speed")
+  private short speed;
+
   public void setId(long id) {
     this.id = id;
   }
@@ -142,7 +145,7 @@ public class NycRawLocationRecord {
 	  this.operatorId = operatorId;
   }
 
-  public String getRunId() {
+  public String getRunNumber() {
 	  return runId;
   }
 
@@ -218,5 +221,13 @@ public class NycRawLocationRecord {
   @Override
   public String toString() {
     return latitude + " " + longitude + " " + destinationSignCode + " " + timeReceived;
+  }
+
+  public void setSpeed(short speed) {
+    this.speed = speed;
+  }
+
+  public short getSpeed() {
+    return speed;
   }
 }

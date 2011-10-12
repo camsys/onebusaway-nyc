@@ -33,7 +33,9 @@ public final class BlockState {
   private final String destinationSignCode;
 
   private boolean isUTSassigned;
+
   private boolean isRunReported;
+  
   private boolean isRunReportedUTSMismatch;
 
   public BlockState(BlockInstance blockInstance,
@@ -55,7 +57,6 @@ public final class BlockState {
     this.isRunReportedUTSMismatch = false;
     this.runTrip = runTrip;
   }
-
   
   public RunTripEntry getRunTripEntry() {
     return runTrip;
@@ -84,7 +85,7 @@ public final class BlockState {
 
   public String getRunId() {
     // TODO agencyId?
-    return runTrip == null?null:runTrip.getRun();
+    return runTrip == null ? null:runTrip.getRun();
   }
 
   public boolean isRunReported() {
@@ -94,7 +95,6 @@ public final class BlockState {
   public void setRunReported(boolean isRunReported) {
     this.isRunReported = isRunReported;
   }
-
 
   public boolean isUTSassigned() {
     return isUTSassigned;

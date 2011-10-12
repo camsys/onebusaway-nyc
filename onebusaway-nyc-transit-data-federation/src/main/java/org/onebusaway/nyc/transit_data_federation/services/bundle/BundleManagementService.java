@@ -1,7 +1,16 @@
 package org.onebusaway.nyc.transit_data_federation.services.bundle;
 
-public interface BundleManagementService {
+import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleItem;
 
-	public void changeBundle(String bundleId) throws Exception;
+public interface BundleManagementService {
+  
+  public void changeBundle(String bundleId) throws Exception;
+
+  public boolean bundleWithIdExists(String bundleId);
+
+  public BundleItem getBundleMetadataForBundleWithId(String bundleId);
+
+  public BundleItem getCurrentBundleMetadata();
+
 }
 

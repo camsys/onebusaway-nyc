@@ -73,7 +73,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NycSearchServiceImpl implements NycSearchService {
   private final static Pattern routePattern = Pattern.compile(
-      "(?:[BMQS]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
+      "(?:[BMQSX]|BX)[0-9]+", Pattern.CASE_INSENSITIVE);
 
   // print vehicle display logic debugging messages to console?
   private boolean debug = false;
