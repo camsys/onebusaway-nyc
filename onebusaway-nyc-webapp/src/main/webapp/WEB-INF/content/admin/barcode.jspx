@@ -22,8 +22,6 @@
 <head>
 <title>OneBusAway NYC: QR Barcode Generator</title>
 
-<s:url var="url" value="/css/barcode.css"></s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 </head>
 <body>
 
