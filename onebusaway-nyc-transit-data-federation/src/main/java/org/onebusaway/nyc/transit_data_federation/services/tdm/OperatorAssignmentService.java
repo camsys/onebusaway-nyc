@@ -3,7 +3,7 @@ package org.onebusaway.nyc.transit_data_federation.services.tdm;
 import java.util.Collection;
 import java.util.Date;
 
-import org.onebusaway.nyc.transit_data_federation.impl.tdm.model.OperatorAssignmentItem;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.model.OperatorAssignmentItem;
 
 /**
  * Service interface for getting which operators are scheduled to be on the job.
