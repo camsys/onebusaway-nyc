@@ -45,6 +45,12 @@
 	</p>
 	
 	<p>
+		<s:url var="url" namespace="/admin" action="barcode"></s:url>
+		<a title="barcode" href="${url}">QR Code Generation</a>
+		<br/>Generate QR Barcodes.
+	</p>
+	
+	<p>
 		<s:url var="url" namespace="/admin" action="reporting"></s:url>
 		<a title="reporting" href="${url}">Reporting</a>
 		<br/>Generate tab-delimited reports for analysis in third-party applications.

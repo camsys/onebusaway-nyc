@@ -282,8 +282,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       }
     }
 
-    String reportedRunId = observation.getRecord().getRunNumber()
-        + observation.getRecord().getRunRouteId();
+    String reportedRunId = observation.getRecord().getRunId();
     Set<String> runIdsToTry = new LinkedHashSet<String>();
 
     if (StringUtils.isNotEmpty(utsRunId)) {

@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -74,6 +75,13 @@ public class UpdateVehicleLocationController {
     vlr.setDestinationSignCode(dsc);
     vlr.setOperatorId(operatorId);
     vlr.setRunId(runId);
+    String[] runInfo = StringUtils.splitByWholeSeparator(runId, "_");
+    if (runInfo != null && runInfo.length > 0) {
+      vlr.setRunNumber(runInfo[0]);
+      if (runInfo.length > 1)
+        vlr.setRunRouteId(runInfo[1]);
+    }
+    
     _vehicleLocationService.handleNycRawLocationRecord(vlr);
 
     return new ModelAndView("update-vehicle-location.jspx");

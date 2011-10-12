@@ -74,7 +74,7 @@
                     <td><c:out value="${journeyState.phase}" /></td>
                     <td><c:out value="${blockState.runReported}" /></td>
                     <td><c:out value="${blockState.UTSassigned}" /></td>
-                    <td><c:out value="${blockState.runTripEntry.run}" /></td>
+                    <td><c:out value="${blockState.runTripEntry.runId}" /></td>
                     <td><a
                         href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
                         value="${blockState.blockInstance.block.block.id}" /></a></td>
