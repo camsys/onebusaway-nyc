@@ -113,7 +113,6 @@
     <module>onebusaway-nyc-webapp</module>
     <module>onebusaway-nyc-presentation</module>
     <module>onebusaway-nyc-sms-webapp</module>
-    <module>onebusaway-nyc-tcip</module>
     <module>onebusaway-nyc-transit-data</module>
     <module>onebusaway-nyc-transit-data-manager</module>
     <module>onebusaway-nyc-transit-data-federation</module>

@@ -84,7 +84,6 @@
       </profile>
     </profiles>
     <build>
-      <finalName>onebusaway-nyc-report-archive</finalName>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
