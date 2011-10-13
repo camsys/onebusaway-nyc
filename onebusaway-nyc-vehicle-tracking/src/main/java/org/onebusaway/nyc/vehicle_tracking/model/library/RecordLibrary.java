@@ -98,9 +98,9 @@ public class RecordLibrary {
     vlr.setRunId(record.getReportedRunId());
     String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "_");
     if (runInfo != null && runInfo.length > 0) {
-      vlr.setRunNumber(runInfo[0]);
+      vlr.setRunRouteId(runInfo[0]);
       if (runInfo.length > 1)
-        vlr.setRunRouteId(runInfo[1]);
+        vlr.setRunNumber(runInfo[1]);
     }
     
     return vlr;

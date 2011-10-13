@@ -24,8 +24,8 @@ public class TripRecord implements StifRecord {
   private String originLocation;
   private String signCodeRoute;
   private String reliefRun;
-  private String run;
-  private String previousRun;
+  private String runNumber;
+  private String previousRunNumber;
   private int reliefTime;
   private String reliefRunRoute;
   private String runRoute;
@@ -86,34 +86,34 @@ public class TripRecord implements StifRecord {
     this.signCodeRoute = signCodeRoute;
   }
 
-  public String getReliefRun() {
+  public String getReliefRunNumber() {
     if (reliefRun == null) {
-      return run;
+      return runNumber;
     }
     return reliefRun;
   }
 
-  public void setReliefRun(String run) {
+  public void setReliefRunNumber(String run) {
     this.reliefRun = run;
   }
 
-  public String getRun() {
-    return run;
+  public String getRunNumber() {
+    return runNumber;
   }
 
-  public void setRun(String run) {
-    this.run = run;
+  public void setRunNumber(String run) {
+    this.runNumber = run;
   }
 
-  public String getPreviousRun() {
-    if (previousRun == null) {
-      return run;
+  public String getPreviousRunNumber() {
+    if (previousRunNumber == null) {
+      return runNumber;
     }
-    return previousRun;
+    return previousRunNumber;
   }
 
   public void setPreviousRun(String previousRun) {
-    this.previousRun = previousRun;
+    this.previousRunNumber = previousRun;
   }
 
   public void setReliefTime(int reliefTime) {
@@ -133,11 +133,11 @@ public class TripRecord implements StifRecord {
   }
 
   public String getRunId() {
-    return getRun() + "_" + getRunRoute();
+    return getRunNumber() + "-" + getRunRoute();
   }
 
   public String getReliefRunId() {
-    return getReliefRun() + "_" + getReliefRunRoute();
+    return getReliefRunNumber() + "-" + getReliefRunRoute();
   }
 
   public void setReliefRunRoute(String reliefRunRoute) {

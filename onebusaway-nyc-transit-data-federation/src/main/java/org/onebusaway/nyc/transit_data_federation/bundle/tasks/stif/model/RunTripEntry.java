@@ -13,7 +13,9 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
  */
 public class RunTripEntry implements Comparable<RunTripEntry> {
   private TripEntry entry;
-  private String run;
+  private String runId;
+  private String runRoute;
+  private String runNumber;
   /**
    * For trips that switch runs mid way through, this is the time of the switch.
    * If this is -1, then this trip has no relief
@@ -21,10 +23,12 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
   private int reliefTime = -1;
   private ReliefState relief;
 
-  public RunTripEntry(TripEntry entry, String run, int reliefTime,
-      ReliefState relief) {
+  public RunTripEntry(TripEntry entry, String runNumber, String runRoute,
+      int reliefTime, ReliefState relief) {
     this.entry = entry;
-    this.run = run;
+    this.runNumber = runNumber;
+    this.runRoute = runRoute;
+    this.runId = runRoute + "-" + runNumber;
     this.reliefTime = reliefTime;
     this.relief = relief;
   }
@@ -42,7 +46,7 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
   }
 
   public int getStopTime() {
-	  
+
     // this run could end before the last stop
     int lastTime = reliefTime;
 
@@ -51,7 +55,7 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
       StopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
       lastTime = lastStopTime.getDepartureTime();
     }
-  
+
     return lastTime;
   }
 
@@ -65,7 +69,15 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
   }
 
   public String getRunId() {
-    return run;
+    return runId;
+  }
+  
+  public String getRunNumber() {
+    return runNumber;
+  }
+  
+  public String getRunRoute() {
+    return runRoute;
   }
 
   public ReliefState getRelief() {
@@ -77,6 +89,6 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
   }
 
   public String toString() {
-    return "RunTripEntry(" + entry + "," + run + ")";
+    return "RunTripEntry(" + entry + "," + runId + ")";
   }
 }

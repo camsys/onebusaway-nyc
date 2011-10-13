@@ -360,7 +360,29 @@ public class VehicleLocationSimulationServiceImpl implements
       SortedMap<Double, Integer> scheduleDeviations, double locationSigma,
       AgencyAndId vehicleId) {
 
+    /*
+     * here we format the runId to have a run-route
+     * that looks similar to what an operator would
+     * enter.
+     */
     String reportedRunId = runTrip.getRunId();
+    String[] runInfo = StringUtils.splitByWholeSeparator(reportedRunId, "-");
+    String runNumber = null;
+    String runRoute= null;
+    // TODO FIXME we should be using RunID objects
+    if (runInfo != null && runInfo.length > 0) {
+      runRoute = runInfo[0];
+      if (runInfo.length > 1) {
+        runNumber = runInfo[1];
+      }
+    } 
+    runRoute = StringUtils.substring(runRoute, 1, 3);
+    reportedRunId = runRoute + "-" + runNumber;
+    if (reportsRunId)
+      _log.info("using reported runId=" + reportedRunId);
+    
+    
+    
     String lastBlockId = null;
 
     List<RunTripEntry> rtes = new ArrayList<RunTripEntry>();

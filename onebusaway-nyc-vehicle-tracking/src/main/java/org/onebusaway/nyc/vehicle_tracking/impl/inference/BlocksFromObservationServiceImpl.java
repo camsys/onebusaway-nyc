@@ -22,7 +22,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -33,6 +35,7 @@ import org.onebusaway.nyc.transit_data_federation.impl.tdm.model.OperatorAssignm
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
@@ -78,6 +81,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   private BlockIndexService _blockIndexService;
 
   private VehicleStateLibrary _vehicleStateLibrary;
+  
+  private VehicleAssignmentService _vehicleAssignmentService;
 
   private OperatorAssignmentService _operatorAssignmentService;
 
@@ -158,6 +163,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   @Autowired
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
+  }
+  
+  @Autowired
+  public void setVehicleAssignmentService(VehicleAssignmentService vehicleAssignmentService) {
+    _vehicleAssignmentService = vehicleAssignmentService;
   }
 
   /**
@@ -282,81 +292,107 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       }
     }
 
+    Set<RunTripEntry> runEntriesToTry = new HashSet<RunTripEntry>();
+    
     String reportedRunId = observation.getRecord().getRunId();
-    Set<String> runIdsToTry = new LinkedHashSet<String>();
+    String agencyId = observation.getRecord().getVehicleId().getAgencyId();
 
+    RunTripEntry utsRunTrip = null;
     if (StringUtils.isNotEmpty(utsRunId)) {
-      runIdsToTry.add(utsRunId);
-    }
-    if (StringUtils.isNotEmpty(reportedRunId)) {
-      runIdsToTry.add(reportedRunId);
-    }
-    if (!runIdsToTry.isEmpty()) {
-      // TODO change to ReportedRunState enum
-      boolean utsReported = true;
-      boolean runReported = true;
-      boolean utsReportedRunMismatch = false;
-
-      if (utsRunId == null) {
-        _log.warn("no UTS assigned run found for operator=" + operatorId);
-        utsReported = false;
-      } else if (!StringUtils.equals(utsRunId, reportedRunId)) {
-        _log.warn("UTS assigned run " + utsRunId + " and reported run "
-            + reportedRunId + " don't match.  defaulting to UTS run.");
-        // TODO which to use? for now, uts...
-        utsReportedRunMismatch = true;
+      utsRunTrip = _runService.getRunTripEntryForRunAndTime(new AgencyAndId(
+            agencyId, utsRunId), obsDate.getTime());
+      if (utsRunTrip == null) {
+        _log.warn("couldn't find UTS runTripEntry for runId=" + utsRunId + ", time="
+            + obsDate.getTime() + ", agency=" + agencyId);
       } else {
-        runReported = false;
+        runEntriesToTry.add(utsRunTrip);
       }
-
-      String agencyId = observation.getRecord().getVehicleId().getAgencyId();
-      RunTripEntry rte = null;
-      for (String runId : runIdsToTry) {
-        rte = _runService.getRunTripEntryForRunAndTime(new AgencyAndId(
-            agencyId, runId), obsDate.getTime());
-        if (rte == null) {
-          _log.warn("couldn't find runTripEntry for runId=" + runId + ", time="
-              + obsDate.getTime() + ", agency=" + agencyId);
-        } else {
-          break;
-        }
-      }
-
-      if (rte == null)
-        return blockStates;
-
-      BlockEntry blockEntry = rte.getTripEntry().getBlock();
-
-      BlockInstance blockInstance = _runService.getBlockInstanceForRunTripEntry(rte,
-          obsDate);
-
-      if (blockInstance == null) {
-        _log.error("couldn't find block instance for blockEntry=" + blockEntry
-            + ", time=" + obsDate.getTime());
-        return blockStates;
-      } else {
-        
-        BlockState state = null;
-        if (bestBlockLocation) {
-          state = _blockStateService.getBestBlockLocation(observation,
-              blockInstance, 0, Double.POSITIVE_INFINITY);
-        } else {
-          state = _blockStateService.getAsState(blockInstance, 0.0);
-        }
-
-        state.setRunReported(runReported);
-        state.setUTSassigned(utsReported);
-        state.setRunReportedUTSMismatch(utsReportedRunMismatch);
-        blockStates.add(state);
-        return blockStates;
-      }
-
     } else {
-
-      _log.warn("no operator id or run reported");
-
-      return blockStates;
+      _log.warn("no UTS assigned run found for operator=" + operatorId);
     }
+    
+    List<RunTripEntry> reportedRtes = new ArrayList<RunTripEntry>();
+    boolean utsReportedRunMismatch = false;
+    
+    if (StringUtils.isNotEmpty(reportedRunId)) {
+      /*
+       * these conversions are a way to remove leading 0's
+       * and whatever else the operators might have in there
+       */
+      double runRouteTmp = Double.parseDouble(observation.getRecord().getRunRouteId());
+      String runRoute = Double.toString(runRouteTmp);
+      double runNumberTmp = Double.parseDouble(observation.getRecord().getRunNumber());
+      String runNumber= Double.toString(runNumberTmp);
+      
+      reportedRunId = runRoute + "-" + runNumber;
+      
+      List<String> depotCodes = new ArrayList<String>();
+      try {
+        depotCodes.add(_vehicleAssignmentService.getAssignedDepotForVehicle(observation.getRecord().getVehicleId()));
+      } catch (Exception e) {
+        _log.error("couldn't get depot for vehicle" + observation.getRecord().getVehicleId());
+      }
+      
+      TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService.
+          getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId, reportedRunId), depotCodes, obsDate.getTime());
+      
+      if (fuzzyReportedMatches == null || fuzzyReportedMatches.isEmpty()) {
+        _log.warn("couldn't find a fuzzy match for reported runId=" + reportedRunId);
+      } else {
+        /*
+         * FIXME this is a bit of a hack, but it helps for now
+         */
+        int bestDist = fuzzyReportedMatches.firstKey();
+        
+        if (utsRunTrip != null && !fuzzyReportedMatches.get(bestDist).contains(utsRunTrip)){
+          _log.warn("UTS assigned runTrip=" + utsRunId + " not found among reported-run matches");
+          utsReportedRunMismatch = true;
+        }
+        
+        // FIXME don't keep this reportedRtes set around just for matching later
+        reportedRtes.addAll(fuzzyReportedMatches.get(bestDist));
+        runEntriesToTry.addAll(reportedRtes);
+      } 
+    }
+      
+    
+    if (!runEntriesToTry.isEmpty()) {
+      for (RunTripEntry rte : runEntriesToTry) {
+        
+        // TODO change to ReportedRunState enum
+        boolean utsReported = StringUtils.equals(utsRunId, rte.getRunId());
+        boolean runReported = (reportedRtes != null && reportedRtes.contains(rte));
+  
+        BlockEntry blockEntry = rte.getTripEntry().getBlock();
+  
+        BlockInstance blockInstance = _runService.getBlockInstanceForRunTripEntry(rte,
+            obsDate);
+  
+        if (blockInstance == null) {
+          _log.error("couldn't find block instance for blockEntry=" + blockEntry
+              + ", time=" + obsDate.getTime());
+          return blockStates;
+        } else {
+          
+          BlockState state = null;
+          if (bestBlockLocation) {
+            state = _blockStateService.getBestBlockLocation(observation,
+                blockInstance, 0, Double.POSITIVE_INFINITY);
+          } else {
+            state = _blockStateService.getAsState(blockInstance, 0.0);
+          }
+  
+          state.setRunReported(runReported);
+          state.setUTSassigned(utsReported);
+          state.setRunReportedUTSMismatch(utsReportedRunMismatch);
+          blockStates.add(state);
+        }
+      }
+    } else {
+      _log.warn("no operator id or run reported");
+    }
+    
+    return blockStates;
   }
 
   @Override

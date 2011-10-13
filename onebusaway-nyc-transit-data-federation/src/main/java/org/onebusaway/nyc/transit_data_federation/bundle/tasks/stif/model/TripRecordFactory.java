@@ -53,7 +53,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(35 - 31, "pick code", null),
       new FieldDef(41 - 35, "primary run number", new TripFieldSetter() {
           public void setField(TripRecord record) {
-              record.setRun(getStringData());
+              record.setRunNumber(getStringData());
             }
           }),
       new FieldDef(53 - 41, "path code", null),
@@ -64,7 +64,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       }),
       new FieldDef(65 - 59, "relief run number", new TripFieldSetter() {
           public void setField(TripRecord record) {
-              record.setReliefRun(getStringData());
+              record.setReliefRunNumber(getStringData());
             }
           }),
       new FieldDef(71 - 65, "relief run route", new TripFieldSetter() {

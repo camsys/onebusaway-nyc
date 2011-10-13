@@ -224,7 +224,7 @@ public class VehicleLocationInferenceServiceImpl implements
 	  r.setOperatorId(message.getOperatorID().getDesignator());
 	  r.setRunNumber(message.getRunID().getDesignator());
 	  r.setRunRouteId(message.getRouteID().getRouteDesignator());
-	  r.setRunId(r.getRunNumber() + "_" + r.getRunRouteId());
+	  r.setRunId(r.getRunRouteId() + "-" + r.getRunNumber());
 
 	  EmergencyCodes emergencyCodes = message.getEmergencyCodes();
 	  if(emergencyCodes != null)

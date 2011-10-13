@@ -295,9 +295,9 @@ public class SensorModelVerificationMain {
     r.setRunId(record.getReportedRunId());
     String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "_");
     if (runInfo != null && runInfo.length > 0) {
-      r.setRunNumber(runInfo[0]);
+      r.setRunRouteId(runInfo[0]);
       if (runInfo.length > 1)
-        r.setRunRouteId(runInfo[1]);
+        r.setRunNumber(runInfo[1]);
     }
     
     CoordinatePoint location = new CoordinatePoint(record.getLat(),

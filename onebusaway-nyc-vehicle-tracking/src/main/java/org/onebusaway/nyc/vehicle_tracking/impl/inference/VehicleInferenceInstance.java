@@ -468,7 +468,7 @@ public class VehicleInferenceInstance {
     NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
-    record.setReportedRunId(nycRecord.getRunNumber() + "_" + nycRecord.getRunRouteId());
+    record.setReportedRunId(nycRecord.getRunRouteId() + "-" + nycRecord.getRunNumber());
     record.setOperatorId(nycRecord.getOperatorId());
 
     record.setTimestamp((long) particle.getTimestamp());
@@ -560,9 +560,9 @@ public class VehicleInferenceInstance {
       lastRecord.setRunId(_nycTestInferredLocationRecord.getReportedRunId());
       String[] runInfo = StringUtils.splitByWholeSeparator(_nycTestInferredLocationRecord.getReportedRunId(), "_");
       if (runInfo != null && runInfo.length > 0) {
-        lastRecord.setRunNumber(runInfo[0]);
+        lastRecord.setRunRouteId(runInfo[0]);
         if (runInfo.length > 1)
-          lastRecord.setRunRouteId(runInfo[1]);
+          lastRecord.setRunNumber(runInfo[1]);
       }
     }
 
