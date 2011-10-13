@@ -29,6 +29,8 @@
 
 	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl" />
 
+	<bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
+
 	<context:component-scan base-package="org.onebusaway.nyc.transit_data_federation.impl" />
 
 
@@ -74,6 +76,4 @@
 	<bean id="extendedCalendarServiceImpl" class="org.onebusaway.transit_data_federation.impl.ExtendedCalendarServiceImpl">
 <!-- 		<property name="serviceDateRangeCache" ref="extendedCalendarServiceServiceDateRangeCache" /> -->
 	</bean>
-
-	<bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" />
 </beans>

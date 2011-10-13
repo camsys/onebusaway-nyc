@@ -9,12 +9,16 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.annotation.PostConstruct;
 
@@ -39,22 +43,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.TriggerContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 public class BundleManagementServiceImpl implements BundleManagementService {
 
   private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
+  private Timer _updateTimer = null;
   
-  // all bundles present in the local disk store
+  // all bundles present in the local disk store (from TDM or otherwise)
   private HashMap<String, BundleItem> _allBundles = new HashMap<String, BundleItem>();
 
-  // bundles that are active now (defined in _today)
+  // bundles that are active now (as defined in _today)
   private HashMap<String, BundleItem> _validBundles = new HashMap<String, BundleItem>();
 
   // the currently loaded bundle ID
   private String _currentBundleId = null;
 
-  
   // time to use when comparing bundles for applicability to "today"
   private Date _today = new Date();
   
@@ -63,11 +70,9 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
   // where should we store our bundle data?
   private String _bundleRootPath = null;
-  
-  // number of times to retry downloading a file from the TDM, if present.
+
   private static final int _fileDownloadRetries = 2;
 
-  
   private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
 	private static TransitDataManagerApiLibrary _tdmLibrary = new TransitDataManagerApiLibrary();
@@ -80,11 +85,16 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	
 	@Autowired
 	private FederatedTransitDataBundle _bundle;
+
+	@Autowired
+	private ThreadPoolTaskScheduler _taskScheduler;
 	
 	@Autowired
 	private RefreshService _refreshService;
-		
-	// bean setup methods
+
+	/******
+	 * Getters / Setters
+	 ******/
 	public String getBundleStoreRoot() {
 		return _bundleRootPath;
 	}
@@ -112,7 +122,9 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  return _standaloneMode;
 	}
 	
-  // discover bundles from those on disk locally
+  /******
+   * Helper methods for discovery of bundles
+   ******/
   private ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
     ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 
@@ -170,7 +182,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     return output;
 	}
 	
-	// discover bundles by asking the TDM for a list
   private ArrayList<BundleItem> getBundleListFromTDM() throws Exception {
 	  _log.info("Getting current bundle list from TDM...");
 	  
@@ -228,8 +239,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     return hexString.toString();
 	}
 	
-  private void downloadUrlToLocalPath(URL url, File destFilename, String expectedMd5) throws Exception {
-	  try {
+  private void downloadUrlToLocalPath(URL url, File destFilename, String expectedMd5) 
+      throws Exception {
+	  
+    try {
 	    _log.info("Downloading bundle item from " + url + "...");
 	    
 	    File containerPath = destFilename.getParentFile();
@@ -286,7 +299,14 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  }
 	}
 	
-	private void discoverBundles() throws Exception {
+  /**
+   * This method finds and makes ready all bundles available to us, via the TDM
+   * or locally if in "standalone mode". It downloads the files from the TDM if they
+   * are not already present in the local disk store.
+   * 
+   * @throws Exception
+   */
+  private void discoverBundles() throws Exception {
 	  // if there's no TDM present, we just use what we already have locally.
 	  if(_standaloneMode) {
 	    ArrayList<BundleItem> localBundles = getBundleListFromLocalStore();
@@ -355,23 +375,28 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  } // for each bundle
 	}
 	
-	public void refreshValidBundleList() {
-	  HashMap<String, BundleItem> newValidBundles = new HashMap<String, BundleItem>();
-
+  /**
+   * This method calculates which of the bundles available to us are valid for today,
+   * and updates the internal list appropriately. It does not switch any bundles.
+   */
+	public synchronized void refreshValidBundleList() {
+	  _validBundles.clear();
+	  
     for(BundleItem bundle : _allBundles.values()) {
       if(bundle.getServiceDateFrom().before(_today) && bundle.getServiceDateTo().after(_today)) {
         _log.info("Bundle " + bundle.getId() + " is active for today; adding to list of active bundles.");
-        newValidBundles.put(bundle.getId(), bundle);
+        _validBundles.put(bundle.getId(), bundle);
       }
     }
-    
-    _validBundles = newValidBundles;
 	}
 	
-	@PostConstruct
-	public void setup() throws Exception {
-	  discoverBundles();  
-	  
+	/**
+	 * Recalculate which of the bundles that are available and active for today we should be 
+	 * using. Switch to that bundle if not already active. 
+	 * 
+	 * @throws Exception
+	 */
+	public void reevaluateBundleAssignment() throws Exception {
 	  refreshValidBundleList();
 
 	  if(_validBundles.size() == 0) {
@@ -380,13 +405,33 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  }
 	  
     // sort bundles by preference 
-    // (bundles with longer active service times and that are active now are preferred)
     ArrayList<BundleItem> bestBundleCandidates = new ArrayList<BundleItem>(_validBundles.values());
     Collections.sort(bestBundleCandidates, new BundleComparator(_today));
     BundleItem bestBundle = bestBundleCandidates.get(bestBundleCandidates.size() - 1);
     changeBundle(bestBundle.getId());
 	}
 	
+  @SuppressWarnings("unused")
+  @PostConstruct
+  private void setup() throws Exception {
+    discoverBundles();
+    reevaluateBundleAssignment();    
+    
+    // this process updates the list of bundles every 30m.
+    _log.info("Starting bundle discovery update process...");    
+    long updateInterval = 30 * 60 * 1000; // 30m 
+    _updateTimer = new Timer();
+    _updateTimer.schedule(new BundleDiscoveryUpdateThread(), updateInterval, updateInterval); 
+    
+    // this process makes sure we're using the best bundle for the current 
+    // service date every hour on the hour.
+    BundleSwitchUpdateThread updateThread = new BundleSwitchUpdateThread();
+    _taskScheduler.schedule(updateThread, updateThread);
+  }	
+	
+  /******
+   * Service methods
+   ******/
 	@Override
 	public synchronized BundleItem getBundleMetadataForBundleWithId(String bundleId) {
 	  return _validBundles.get(bundleId);
@@ -405,10 +450,12 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
 	  if(bundleId == null || !_validBundles.containsKey(bundleId))
-	    throw new Exception("Bundle " + bundleId + " does not exist or is not valid.");
+	    throw new Exception("Bundle " + bundleId + " is not valid.");
 
-	  if(bundleId.equals(_currentBundleId))
+	  if(bundleId.equals(_currentBundleId)) {
+	    _log.info("Received command to change to " + bundleId + "; bundle is already active.");
 	    return;
+	  }
 	  
 	  File path = new File(_bundleRootPath, bundleId);
 
@@ -451,8 +498,54 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		_currentBundleId = bundleId;
 		return;
 	}
-	
-	// pick the bundle with the most applicability into the future
+
+	/*****
+	 * Private helper classes
+	 *****/
+  private class BundleSwitchUpdateThread extends TimerTask implements Trigger {
+    @Override
+    public void run() {     
+      try {       
+        reevaluateBundleAssignment();  
+      } catch(Exception e) {
+        _log.error("Error re-evaluating bundle assignment: " + e.getMessage());
+        e.printStackTrace();
+      }
+    }
+
+    @Override
+    public Date nextExecutionTime(TriggerContext arg0) {
+      Date lastTime = arg0.lastScheduledExecutionTime();
+      if(lastTime == null)
+        lastTime = new Date();
+
+      Calendar calendar = new GregorianCalendar();
+      calendar.setTime(lastTime);
+      calendar.set(Calendar.MILLISECOND, 0);
+      calendar.set(Calendar.SECOND, 0);
+      calendar.set(Calendar.MINUTE, 0);
+      
+      int hour = calendar.get(Calendar.HOUR);
+      calendar.set(Calendar.HOUR, hour + 1);
+      
+      return calendar.getTime();
+    }   
+  }
+  
+	private class BundleDiscoveryUpdateThread extends TimerTask {
+	  @Override
+	  public void run() {     
+	    try {       
+	      discoverBundles();  
+	    } catch(Exception e) {
+	      _log.error("Error updating bundle list: " + e.getMessage());
+	      e.printStackTrace();
+	    }
+	  }   
+	}
+
+	// pick the bundle with the most applicability into the future if 
+	// more than one is active for a given date
 	public class BundleComparator implements Comparator<BundleItem>{
 	  
 	  Date _epoch = null;
@@ -474,4 +567,5 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       return interval1.compareTo(interval2);
     }
   }
+	
 }
