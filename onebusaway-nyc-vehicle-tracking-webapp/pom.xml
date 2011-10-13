@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
-            <version>${project.version}</version>
+            <version>${onebusaway.nyc.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet.jsp</groupId>
@@ -108,6 +108,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
                 <!-- TODO Note sure about autocommit for postgres -->
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+		<ie.listener>DummyInputQueueListenerTask</ie.listener>
             </properties>
         </profile>
         <profile>
@@ -119,17 +120,18 @@
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+		<ie.listener>DummyInputQueueListenerTask</ie.listener>
             </properties>
         </profile>
         <profile>
             <id>db-hsqldb-local-server</id>
             <properties>
                 <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
-                <db.url>jdbc:hsqldb:hsql://localhost/onebusaway_nyc</db.url>
+                <db.url>jdbc:hsqldb:file:${bundleStoreRoot}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
-                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+		<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
             </properties>
         </profile>
         <!-- TODO MySQL -->
@@ -144,6 +146,24 @@
                 <bundle.location>/tmp/oba-bundle</bundle.location>
             </properties>
         </profile>
+        
+        <!--  bundle mode profiles -->
+        <profile>
+            <id>bundle-mode-standalone</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+            </properties>
+        </profile>
+        <profile>
+            <id>bundle-mode-download</id>
+            <properties>
+                <bundle.mode.standalone>false</bundle.mode.standalone>
+            </properties>
+        </profile>
+
     </profiles>
 
     <build>

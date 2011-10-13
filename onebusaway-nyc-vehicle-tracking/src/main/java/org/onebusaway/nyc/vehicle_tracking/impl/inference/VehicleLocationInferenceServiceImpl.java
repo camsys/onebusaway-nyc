@@ -214,6 +214,7 @@ public class VehicleLocationInferenceServiceImpl implements
 		  if(degrees != null)
 			  r.setBearing(degrees);
 	  }
+	  r.setSpeed(message.getSpeed());
 	  
 	  r.setDestinationSignCode(message.getDestSignCode().toString());
 	  r.setDeviceId(message.getManufacturerData());
@@ -224,8 +225,9 @@ public class VehicleLocationInferenceServiceImpl implements
 	  r.setVehicleId(vehicleId);
 
 	  r.setOperatorId(message.getOperatorID().getDesignator());
-	  r.setRunId(message.getRunID().getDesignator());
+	  r.setRunNumber(message.getRunID().getDesignator());
 	  r.setRunRouteId(message.getRouteID().getRouteDesignator());
+	  r.setRunId(r.getRunNumber() + "_" + r.getRunRouteId());
 
 	  EmergencyCodes emergencyCodes = message.getEmergencyCodes();
 	  if(emergencyCodes != null)
@@ -426,12 +428,7 @@ public class VehicleLocationInferenceServiceImpl implements
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
 
-        	// don't let network IO problems stop inference completely.
-//        	try {
-//        	  managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
-//        	} catch(Exception e) {
-//        	  managementRecord.setDepotId(null);
-//        	}
+        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
             
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());

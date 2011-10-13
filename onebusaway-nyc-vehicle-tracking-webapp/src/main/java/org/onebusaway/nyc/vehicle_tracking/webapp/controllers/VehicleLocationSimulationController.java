@@ -299,7 +299,8 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "realtime", required = false, defaultValue = "false") boolean realtime,
       @RequestParam(value = "reportsOperatorId", required = false, defaultValue = "false") boolean reportsOperatorId,
       @RequestParam(value = "reportsRunId", required = false, defaultValue = "false") boolean reportsRunId,
-      @RequestParam(value = "fillActual", required = false, defaultValue = "true") boolean fillActualProperties,
+      @RequestParam(value = "allowRunTransitions", required = false, defaultValue = "false") boolean allowRunTransitions,
+      @RequestParam(value = "fillActual", required = false, defaultValue = "false") boolean fillActualProperties,
       @RequestParam String properties) throws IOException {
 
     Date time = getTime(session, null);
@@ -311,7 +312,8 @@ public class VehicleLocationSimulationController {
 
     _vehicleLocationSimulationService.addSimulationForBlockInstance(id,
         serviceDate, time.getTime(), bypassInference, isRunDriven, 
-        realtime, fillActualProperties, reportsOperatorId, reportsRunId, props);
+        realtime, fillActualProperties, reportsOperatorId, reportsRunId, 
+        allowRunTransitions, props);
 
     Map<String, Object> model = new HashMap<String, Object>();
     model.put("blockId", blockId);

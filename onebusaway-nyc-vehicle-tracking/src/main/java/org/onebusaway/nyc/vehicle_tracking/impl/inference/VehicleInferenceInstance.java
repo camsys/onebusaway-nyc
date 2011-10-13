@@ -156,6 +156,7 @@ public class VehicleInferenceInstance {
       if (backInTime > 5 * 60 * 1000) {
         _previousObservation = null;
         _particleFilter.reset();
+        _log.info("resetting filter: time diff");
       } else {
         _log.info("out-of-order record.  skipping update.");
         return false;
@@ -193,9 +194,11 @@ public class VehicleInferenceInstance {
          */
         NycRawLocationRecord lastRecord = _previousObservation.getRecord();
         if (!StringUtils.equals(lastRecord.getOperatorId(), record.getOperatorId())
-            || !StringUtils.equals(lastRecord.getRunId(), record.getRunId())) {
+            || !StringUtils.equals(lastRecord.getRunNumber(), record.getRunNumber())) {
           // TODO what to do when we lose information?  e.g. "signal"
           // drops and op/run/UTS info hasn't really changed/been re-entered
+          _log.info("resetting inference for vid=" + record.getVehicleId()
+              + ": operatorId or reported runId has changed");
           _particleFilter.reset();
         }
       }
@@ -393,7 +396,8 @@ public class VehicleInferenceInstance {
           .getDestinationSignCode());
       record.setLastObservedLatitude(r.getLatitude());
       record.setLastObservedLongitude(r.getLongitude());
-
+      record.setEmergencyFlag(r.isEmergencyFlag());
+      
       Particle particle = _particleFilter.getMostLikelyParticle();
       if (particle != null) {
         VehicleState state = particle.getData();
@@ -409,6 +413,8 @@ public class VehicleInferenceInstance {
               .getDsc());
       record.setLastInferredDestinationSignCode(_nycTestInferredLocationRecord
           .getActualDsc());
+      record.setLastInferredOperatorId(_nycTestInferredLocationRecord.getOperatorId());
+      record.setInferredRunId(_nycTestInferredLocationRecord.getInferredRunId());
     }
 
     return record;
@@ -460,6 +466,8 @@ public class VehicleInferenceInstance {
     NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
+    record.setReportedRunId(nycRecord.getRunNumber() + "_" + nycRecord.getRunRouteId());
+    record.setOperatorId(nycRecord.getOperatorId());
 
     record.setTimestamp((long) particle.getTimestamp());
     record.setDsc(nycRecord.getDestinationSignCode());
@@ -548,6 +556,12 @@ public class VehicleInferenceInstance {
       lastRecord.setLongitude(_nycTestInferredLocationRecord.getLon());
       lastRecord.setOperatorId(_nycTestInferredLocationRecord.getOperatorId());
       lastRecord.setRunId(_nycTestInferredLocationRecord.getReportedRunId());
+      String[] runInfo = StringUtils.splitByWholeSeparator(_nycTestInferredLocationRecord.getReportedRunId(), "_");
+      if (runInfo != null && runInfo.length > 0) {
+        lastRecord.setRunNumber(runInfo[0]);
+        if (runInfo.length > 1)
+          lastRecord.setRunRouteId(runInfo[1]);
+      }
     }
 
     details.setLastObservation(lastRecord);

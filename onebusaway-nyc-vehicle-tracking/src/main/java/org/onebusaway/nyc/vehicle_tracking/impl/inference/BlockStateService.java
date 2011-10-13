@@ -114,13 +114,6 @@ public class BlockStateService {
   public BlockState getBestBlockLocation(Observation observation,
       BlockInstance blockInstance, double blockDistanceFrom,
       double blockDistanceTo) {
-    return getBestBlockLocation(observation, blockInstance, null,
-        blockDistanceFrom, blockDistanceTo);
-  }
-
-  public BlockState getBestBlockLocation(Observation observation,
-      BlockInstance blockInstance, RunTripEntry rte, double blockDistanceFrom,
-      double blockDistanceTo) {
 
     blockDistanceFrom = Math.floor(blockDistanceFrom / _threshold) * _threshold;
     blockDistanceTo = Math.ceil(blockDistanceTo / _threshold) * _threshold;
@@ -145,7 +138,7 @@ public class BlockStateService {
     if (blockState == null) {
       _cacheMissCount++;
       blockState = getUncachedBestBlockLocation(observation, blockInstance,
-          rte, blockDistanceFrom, blockDistanceTo);
+          blockDistanceFrom, blockDistanceTo);
       m.put(key, blockState);
     }
 
@@ -178,39 +171,12 @@ public class BlockStateService {
     return getScheduledTimeAsState(blockInstance, rte, scheduledTime);
   }
 
-  public BlockState getAsState(BlockInstance blockInstance,
-      double distanceAlongBlock) {
-
-    BlockConfigurationEntry block = blockInstance.getBlock();
-    List<BlockStopTimeEntry> stopTimes = block.getStopTimes();
-    int n = stopTimes.size();
-
-    int stopTimeIndex = GenericBinarySearch.search(block, n,
-        distanceAlongBlock, IndexAdapters.BLOCK_CONFIG_DISTANCE_INSTANCE);
-
-    // TODO FIXME check that this is doing what I think it is. we need to figure
-    // in
-    // relief runs and their times...
-    int estScheduleTime = 0;
-    if (stopTimeIndex > n - 1) {
-      BlockStopTimeEntry bste = stopTimes.get(n - 1);
-      estScheduleTime = bste.getStopTime().getDepartureTime();
-    } else {
-      BlockStopTimeEntry bste = stopTimes.get(stopTimeIndex);
-      estScheduleTime = bste.getStopTime().getDepartureTime();
-    }
-
-    RunTripEntry rte = _runService.getRunTripEntryForBlockInstance(
-        blockInstance, estScheduleTime);
-    return getAsState(blockInstance, rte, distanceAlongBlock);
-  }
-
   /****
    * Private Methods
    ****/
 
   private BlockState getUncachedBestBlockLocation(Observation observation,
-      BlockInstance blockInstance, RunTripEntry rte, double blockDistanceFrom,
+      BlockInstance blockInstance, double blockDistanceFrom,
       double blockDistanceTo) {
 
     long timestamp = observation.getTime();
@@ -262,10 +228,10 @@ public class BlockStateService {
             fromIndex, toIndex);
 
     if (assignments.size() == 0) {
-      return getAsState(blockInstance, rte, blockDistanceFrom);
+      return getAsState(blockInstance, blockDistanceFrom);
     } else if (assignments.size() == 1) {
       PointAndIndex pIndex = assignments.get(0);
-      return getAsState(blockInstance, rte, pIndex.distanceAlongShape);
+      return getAsState(blockInstance, pIndex.distanceAlongShape);
     }
 
     Min<PointAndIndex> best = new Min<PointAndIndex>();
@@ -292,7 +258,7 @@ public class BlockStateService {
     }
 
     PointAndIndex index = best.getMinElement();
-    return getAsState(blockInstance, rte, index.distanceAlongShape);
+    return getAsState(blockInstance, index.distanceAlongShape);
   }
 
   private static class BlockLocationKey {
@@ -346,13 +312,8 @@ public class BlockStateService {
 
   }
 
-  public BlockState getAsState(BlockInstance blockInstance, RunTripEntry rte,
+  public BlockState getAsState(BlockInstance blockInstance,
       double distanceAlongBlock) {
-
-    // FIXME this is a poor hack
-//    if (rte == null) {
-//      return getAsState(blockInstance, distanceAlongBlock);
-//    }
 
     BlockConfigurationEntry block = blockInstance.getBlock();
 
@@ -374,6 +335,11 @@ public class BlockStateService {
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService
         .getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
+    RunTripEntry rte = _runService.getRunTripEntryForBlockInstance(
+        blockInstance, blockLocation.getScheduledTime());
+    if (rte == null)
+      _log.error("runTrip null for blockInstance=" + blockInstance
+          + ", scheduleTime=" + blockLocation.getScheduledTime());
     return new BlockState(blockInstance, blockLocation, rte, dsc);
   }
 }

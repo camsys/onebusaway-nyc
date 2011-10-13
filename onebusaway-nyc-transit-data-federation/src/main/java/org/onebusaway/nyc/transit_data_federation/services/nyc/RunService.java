@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.services.nyc;
 
+import java.util.Date;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -27,10 +28,10 @@ public interface RunService {
 
   RunTripEntry getRunTripEntryForBlockInstance(BlockInstance blockInstance, int scheduleTime);
 
-  List<ScheduledBlockLocation> getSchedBlockLocsForRunTripEntryAndTime(
+  ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
       RunTripEntry runTrip, long timestamp);
 
-  List<BlockInstance> getBlockInstancesForRunTripEntry(RunTripEntry rte,
-      long timestamp);
+  BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
+      Date serviceDate);
 
 }

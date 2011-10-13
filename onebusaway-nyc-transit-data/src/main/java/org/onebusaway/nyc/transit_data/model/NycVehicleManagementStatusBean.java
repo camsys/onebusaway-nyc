@@ -51,7 +51,13 @@ public class NycVehicleManagementStatusBean implements Serializable {
   private boolean inferenceIsFormal;
 
   private String depotId;
-  
+
+  private boolean emergencyFlag;
+
+  private String lastInferredOperatorId;
+
+  private String inferredRunId;
+
   public boolean isInferenceIsEnabled() {
     return inferenceIsEnabled;
   }
@@ -150,4 +156,29 @@ public class NycVehicleManagementStatusBean implements Serializable {
   public String getDepotId() {
     return depotId;
   }
+
+  public boolean isEmergencyFlag() {
+    return emergencyFlag;
+  }
+
+  public void setEmergencyFlag(boolean emergencyFlag) {
+    this.emergencyFlag = emergencyFlag;
+  }
+
+  public void setLastInferredOperatorId(String operatorId) {
+    this.lastInferredOperatorId = operatorId;
+  }
+
+  public String getLastInferredOperatorId() {
+    return lastInferredOperatorId;
+  }
+
+  public void setInferredRunId(String inferredRunId) {
+    this.inferredRunId = inferredRunId;
+  }
+
+  public String getInferredRunId() {
+    return inferredRunId;
+  }
+
 }

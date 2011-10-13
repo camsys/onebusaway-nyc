@@ -17,8 +17,10 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -33,13 +35,22 @@ import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmen
 import org.onebusaway.nyc.transit_data_federation.services.tdm.model.OperatorAssignmentItem;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
+import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
+import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
+import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -60,9 +71,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   private DestinationSignCodeService _destinationSignCodeService;
 
-  private BlockGeospatialService _blockGeospatialService;
+  private BlockIndexFactoryService _blockIndexFactoryService;
 
   private BlockStateService _blockStateService;
+  
+  private BlockIndexService _blockIndexService;
 
   private VehicleStateLibrary _vehicleStateLibrary;
 
@@ -72,6 +85,11 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   private BlockCalendarService _blockCalendarService;
 
+  @Autowired
+  public void setBlockIndexService(BlockIndexService blockIndexService) {
+    _blockIndexService = blockIndexService;
+  }
+  
   @Autowired
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
     _blockCalendarService = blockCalendarService;
@@ -103,7 +121,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    */
   private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
 
-  private boolean _includeNearbyBlocks = false;
+  private boolean _includeNearbyBlocks = true;
 
   /****
    * Public Methods
@@ -127,9 +145,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   @Autowired
-  public void setBlockGeospatialService(
-      BlockGeospatialService blockGeospatialService) {
-    _blockGeospatialService = blockGeospatialService;
+  public void setBlockIndexFactoryService(
+      BlockIndexFactoryService blockIndexFactoryService) {
+    _blockIndexFactoryService = blockIndexFactoryService;
   }
 
   @Autowired
@@ -182,18 +200,22 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      * First source of trips: UTS/op determined run, reported run
      */
     if (!potentialBlocks.isEmpty()) {
+      if (_log.isDebugEnabled()) {
+        for (BlockState reportedState : potentialBlocks) {
+          _log.debug("vehicle=" + observation.getRecord().getVehicleId()
+              + " reported block=" + reportedState + " for operator="
+              + observation.getRecord().getOperatorId() + " run="
+              + observation.getRecord().getRunNumber());
+        }
+      }
 
-      // FIXME should be debug
-      // if (_log.isDebugEnabled())
-      for (BlockState reportedState : potentialBlocks)
-        _log.info("reported block=" + reportedState + " for operator="
-            + observation.getRecord().getOperatorId() + " run="
-            + observation.getRecord().getRunId());
-
-      // TODO when should we just make sure we have the reported run/block in
-      // the support, // compared to making it the only block. when there is
-      // no UTS match yet a valid reported run/block?
-      return potentialBlocks;
+      /*
+       * These vehicle/UTS reported runs->blocks are now guaranteed to be present in
+       * the particle set.
+       */
+      // TODO weight these by "how" they were reported
+      //return potentialBlocks;
+      
     }
 
     Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(observation);
@@ -248,27 +270,28 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     Date obsDate = observation.getRecord().getTimeAsDate();
     String utsRunId = null;
     String operatorId = observation.getRecord().getOperatorId();
-    Date serviceDate = null;
 
     if (StringUtils.isEmpty(operatorId)) {
-
       _log.warn("no operator id reported");
       // FIXME TODO use new model stuff
-
     } else {
-      OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItem(obsDate, operatorId);
+      OperatorAssignmentItem oai = _operatorAssignmentService
+          .getOperatorAssignmentItem(obsDate, operatorId);
       if (oai != null) {
         utsRunId = oai.getRunId();
-        serviceDate = oai.getServiceDate();
       }
     }
 
     String reportedRunId = observation.getRecord().getRunId();
+    Set<String> runIdsToTry = new LinkedHashSet<String>();
 
-    if (StringUtils.isNotEmpty(utsRunId) || StringUtils.isNotEmpty(reportedRunId)) {
-
-      String runId = StringUtils.isNotEmpty(utsRunId)? utsRunId : reportedRunId;
-
+    if (StringUtils.isNotEmpty(utsRunId)) {
+      runIdsToTry.add(utsRunId);
+    }
+    if (StringUtils.isNotEmpty(reportedRunId)) {
+      runIdsToTry.add(reportedRunId);
+    }
+    if (!runIdsToTry.isEmpty()) {
       // TODO change to ReportedRunState enum
       boolean utsReported = true;
       boolean runReported = true;
@@ -276,13 +299,10 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
       if (utsRunId == null) {
         _log.warn("no UTS assigned run found for operator=" + operatorId);
-        runId = reportedRunId;
         utsReported = false;
-
       } else if (!StringUtils.equals(utsRunId, reportedRunId)) {
         _log.warn("UTS assigned run " + utsRunId + " and reported run "
             + reportedRunId + " don't match.  defaulting to UTS run.");
-
         // TODO which to use? for now, uts...
         utsReportedRunMismatch = true;
       } else {
@@ -290,65 +310,44 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       }
 
       String agencyId = observation.getRecord().getVehicleId().getAgencyId();
-      RunTripEntry rte = _runService.getRunTripEntryForRunAndTime(
-          new AgencyAndId(agencyId, runId), obsDate.getTime());
-
-      if (rte == null) {
-        _log.error("couldn't find runTripEntry for runId=" + runId + ", time="
-            + obsDate.getTime() + ", agency=" + agencyId);
-        return blockStates;
+      RunTripEntry rte = null;
+      for (String runId : runIdsToTry) {
+        rte = _runService.getRunTripEntryForRunAndTime(new AgencyAndId(
+            agencyId, runId), obsDate.getTime());
+        if (rte == null) {
+          _log.warn("couldn't find runTripEntry for runId=" + runId + ", time="
+              + obsDate.getTime() + ", agency=" + agencyId);
+        } else {
+          break;
+        }
       }
 
-      List<BlockInstance> blockInstances = new ArrayList<BlockInstance>();
+      if (rte == null)
+        return blockStates;
+
       BlockEntry blockEntry = rte.getTripEntry().getBlock();
 
-      if (serviceDate == null) {
-        blockInstances.addAll(_runService.getBlockInstancesForRunTripEntry(rte,
-            obsDate.getTime()));
-      } else {
+      BlockInstance blockInstance = _runService.getBlockInstanceForRunTripEntry(rte,
+          obsDate);
 
-        // TODO turn this into a helper method?
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(serviceDate);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        long serviceDateMs = cal.getTimeInMillis();
-
-        BlockInstance bInst = _blockCalendarService.getBlockInstance(
-            blockEntry.getId(), serviceDateMs);
-
-        if (bInst == null) {
-          _log.error("couldn't find blockInstance for UTS serviceDate ="
-              + serviceDate);
-          blockInstances.addAll(_runService.getBlockInstancesForRunTripEntry(
-              rte, obsDate.getTime()));
-        } else {
-          blockInstances.add(bInst);
-        }
-      }
-
-      if (blockInstances.isEmpty()) {
-        _log.error("couldn't find block instances for blockEntry=" + blockEntry
-            + ", serviceDate=" + serviceDate);
+      if (blockInstance == null) {
+        _log.error("couldn't find block instance for blockEntry=" + blockEntry
+            + ", time=" + obsDate.getTime());
         return blockStates;
       } else {
-
-        for (BlockInstance blockInst : blockInstances) {
-          BlockState state = null;
-          if (bestBlockLocation) {
-            state = _blockStateService.getBestBlockLocation(observation,
-                blockInst, rte, 0, Double.POSITIVE_INFINITY);
-          } else {
-            state = _blockStateService.getAsState(blockInst, rte, 0.0);
-          }
-
-          state.setRunReported(runReported);
-          state.setUTSassigned(utsReported);
-          state.setRunReportedUTSMismatch(utsReportedRunMismatch);
-          blockStates.add(state);
+        
+        BlockState state = null;
+        if (bestBlockLocation) {
+          state = _blockStateService.getBestBlockLocation(observation,
+              blockInstance, 0, Double.POSITIVE_INFINITY);
+        } else {
+          state = _blockStateService.getAsState(blockInstance, 0.0);
         }
+
+        state.setRunReported(runReported);
+        state.setUTSassigned(utsReported);
+        state.setRunReportedUTSMismatch(utsReportedRunMismatch);
+        blockStates.add(state);
         return blockStates;
       }
 
@@ -517,8 +516,21 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
 
-    List<BlockInstance> blocks = _blockGeospatialService
-        .getActiveScheduledBlocksPassingThroughBounds(bounds, time, time);
-    potentialBlocks.addAll(blocks);
+    List<BlockLayoverIndex> layoverIndices = Collections.emptyList();
+    List<FrequencyBlockTripIndex> frequencyIndices = Collections.emptyList();
+    
+    Set<BlockTripIndex> blockindices = new HashSet<BlockTripIndex>();
+    
+    List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
+    for (StopEntry stop : stops) {
+      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop); 
+      for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
+        // TODO perhaps "fix" this use of blockIndexFactoryService.
+        blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
+      }
+    }
+    List<BlockInstance> nearbyBlocks = _blockCalendarService.getActiveBlocksInTimeRange(blockindices,
+        layoverIndices, frequencyIndices, time, time);
+    potentialBlocks.addAll(nearbyBlocks);
   }
 }

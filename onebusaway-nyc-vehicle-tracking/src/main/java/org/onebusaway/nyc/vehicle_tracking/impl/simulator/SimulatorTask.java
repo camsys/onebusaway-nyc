@@ -334,9 +334,9 @@ public class SimulatorTask implements Runnable, EntityHandler {
       if (_bypassInference) {
         _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
       } else {
-    	NycRawLocationRecord vlr = 
-    			RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
-    	_vehicleLocationInferenceService.handleNycRawLocationRecord(vlr);
+      	NycRawLocationRecord vlr = 
+      			RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
+      	_vehicleLocationInferenceService.handleNycRawLocationRecord(vlr);
       }
 
       if (shouldExitAfterWaitingForInferenceToComplete(record))
@@ -470,6 +470,18 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
       rr.clearInferredValues();
     }
+    
+    rr.setActualRunId(record.getActualRunId());
+    rr.setActualBlockId(record.getActualBlockId());
+    rr.setActualTripId(record.getActualTripId());
+    rr.setActualBlockLat(record.getActualBlockLat());
+    rr.setActualBlockLon(record.getActualBlockLon());
+    rr.setActualDistanceAlongBlock(record.getActualDistanceAlongBlock());
+    rr.setActualScheduleTime(record.getActualScheduleTime());
+    rr.setActualDsc(record.getActualDsc());
+    rr.setActualPhase(record.getActualPhase());
+    rr.setActualServiceDate(record.getActualServiceDate());
+    rr.setActualStatus(record.getActualStatus());
 
     synchronized (_results) {
       _results.add(rr);

@@ -28,8 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Motion model implementation for vehicle location inference.
+ * Determine if the vehicle is in motion, and propagate the particles'
+ * positions or states.
  * 
- * @author bdferris
+ * @author bdferris, bwillard
  */
 public class MotionModelImpl implements MotionModel<Observation> {
 

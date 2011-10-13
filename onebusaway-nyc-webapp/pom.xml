@@ -32,13 +32,13 @@
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-presentation</artifactId>
-            <version>${project.version}</version>
+            <version>${onebusaway.nyc.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data</artifactId>
-            <version>${project.version}</version>
+            <version>${onebusaway.nyc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
@@ -169,6 +169,7 @@
                 <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <webapp.api.url></webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -183,6 +184,7 @@
                 <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <webapp.api.url>http://localhost:8080</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -194,6 +196,7 @@
                 <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <webapp.api.url>http://localhost:8082</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
             </properties>
         </profile>
 

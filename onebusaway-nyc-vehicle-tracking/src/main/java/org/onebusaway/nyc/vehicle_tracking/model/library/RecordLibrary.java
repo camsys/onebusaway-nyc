@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.library;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
@@ -48,6 +49,7 @@ public class RecordLibrary {
     qlr.setServiceDate(record.getInferredServiceDate());
     qlr.setBlockId(record.getInferredBlockId());
     qlr.setTripId(record.getInferredTripId());
+    qlr.setRunId(record.getInferredRunId());
     qlr.setDistanceAlongBlock(record.getInferredDistanceAlongBlock());
     qlr.setInferredLatitude(record.getInferredBlockLat());
     qlr.setInferredLongitude(record.getInferredBlockLon());
@@ -94,6 +96,12 @@ public class RecordLibrary {
     vlr.setVehicleId(record.getVehicleId());
     vlr.setOperatorId(record.getOperatorId());
     vlr.setRunId(record.getReportedRunId());
+    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "_");
+    if (runInfo != null && runInfo.length > 0) {
+      vlr.setRunNumber(runInfo[0]);
+      if (runInfo.length > 1)
+        vlr.setRunRouteId(runInfo[1]);
+    }
     
     return vlr;
   }

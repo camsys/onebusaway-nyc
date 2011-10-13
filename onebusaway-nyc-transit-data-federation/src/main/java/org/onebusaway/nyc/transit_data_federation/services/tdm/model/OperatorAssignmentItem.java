@@ -20,6 +20,8 @@ public class OperatorAssignmentItem implements Serializable {
 	private Date serviceDate;
 
 	private DateTime updated;
+
+  private String runNumber;
 	
 	public OperatorAssignmentItem() {}
 
@@ -47,6 +49,10 @@ public class OperatorAssignmentItem implements Serializable {
     this.runRoute = runRoute;
   }
 
+  public String getRunNumber() {
+    return runNumber;
+  }
+  
   public String getRunId() {
     return runId;
   }
@@ -69,5 +75,9 @@ public class OperatorAssignmentItem implements Serializable {
 
   public void setUpdated(DateTime updated) {
     this.updated = updated;
+  }
+
+  public void setRunNumber(String runNumber) {
+    this.runNumber = runNumber;
   }
 }
