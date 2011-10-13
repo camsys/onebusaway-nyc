@@ -116,7 +116,7 @@ public class VehicleLocationInferenceServiceImpl implements
     
     boolean result = false;
 
-    // active bundle was removed from BMS list of active bundles
+    // active bundle was removed from BMS' list of active bundles
     if(currentBundle == null)
       return true;
     
@@ -131,7 +131,7 @@ public class VehicleLocationInferenceServiceImpl implements
   /**
    * If the bundle has changed, verify that all vehicle results are present in the current bundle.
    * If not, reset the inference to map them to the current reference data (bundle).
-   * 
+   * Also reset vehicles with no current match, as they may have a match in the new bundle.
    */
   private synchronized void verifyVehicleResultMappingToCurrentBundle() {
     if(!bundleHasChanged())
@@ -144,6 +144,7 @@ public class VehicleLocationInferenceServiceImpl implements
       // no state
       if(state == null) {
         _log.info("Vehicle " + vehicleId + " reset on bundle change: no state available.");
+
         this.resetVehicleLocation(vehicleId);
         continue;
       }
@@ -151,6 +152,7 @@ public class VehicleLocationInferenceServiceImpl implements
       // no match to any trip
       if(state.getInferredBlockId() == null || state.getInferredTripId() == null) {
         _log.info("Vehicle " + vehicleId + " reset on bundle change: no matched trip/block.");
+        
         this.resetVehicleLocation(vehicleId);
         continue;
       }
@@ -160,7 +162,8 @@ public class VehicleLocationInferenceServiceImpl implements
       BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
 
       if(trip == null || block == null) {
-        _log.info("Vehicle " + vehicleId + " reset on bundle change: trip/block is no longer present.");
+        _log.info("Vehicle " + vehicleId + " reset on bundle change: trip/block is no longer present in new bundle.");
+        
         this.resetVehicleLocation(vehicleId);
         continue;
       }
@@ -425,12 +428,7 @@ public class VehicleLocationInferenceServiceImpl implements
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
 
-        	// don't let network IO problems stop inference completely.
-//        	try {
-//        	  managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
-//        	} catch(Exception e) {
-//        	  managementRecord.setDepotId(null);
-//        	}
+        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
             
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());

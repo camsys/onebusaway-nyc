@@ -59,7 +59,7 @@ public class ProcessingTaskTest {
     ProcessingTask task = service.new ProcessingTask(infLocationRec);
     task.run();
 
-//    verify(mgmtStatus).setDepotId(DEPOT);
+    verify(mgmtStatus).setDepotId(DEPOT);
 
   }
 

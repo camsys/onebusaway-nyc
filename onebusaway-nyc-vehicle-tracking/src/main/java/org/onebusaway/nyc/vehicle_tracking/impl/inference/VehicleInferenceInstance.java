@@ -397,8 +397,6 @@ public class VehicleInferenceInstance {
       record.setLastObservedLatitude(r.getLatitude());
       record.setLastObservedLongitude(r.getLongitude());
       record.setEmergencyFlag(r.isEmergencyFlag());
-      record.setRouteId(r.getRunRouteId());
-      record.setBearing(r.getBearing());
       
       Particle particle = _particleFilter.getMostLikelyParticle();
       if (particle != null) {
