@@ -93,6 +93,12 @@
             <artifactId>mockito-all</artifactId>
             <version>1.9.0-rc1</version>
         </dependency>
+	<!-- for amazon deployment -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.17</version>
+        </dependency>
     </dependencies>
 
     <!-- TODO This is an exact duplicate of what's in onebusaway-nyc-webapp. Should extract out to a common profiles.xml -->
@@ -111,6 +117,26 @@
                 <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
                 <!-- TODO Note sure about autocommit for postgres -->
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-staging</id>
+            <properties>
+                <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+                <db.url>jdbc:mysql://db.staging.obanyc.com:3306/staging</db.url>
+                <db.username>obanyc</db.username>
+                <db.password>blueceilingbrick</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-prod</id>
+            <properties>
+                <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+                <db.url>jdbc:mysql://db.staging.obanyc.com:3306/prod</db.url>
+                <db.username>obanyc</db.username>
+                <db.password>blueceilingbrick</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
             </properties>
         </profile>
         <profile>
@@ -147,6 +173,30 @@
                 <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <dummy.permissions></dummy.permissions>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-staging</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <dummy.permissions></dummy.permissions>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-prod</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <dummy.permissions></dummy.permissions>
+                <tdm.host>http://tdm.prod.obanyc.com:8080</tdm.host>
             </properties>
         </profile>
         <profile>
