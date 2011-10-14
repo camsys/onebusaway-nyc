@@ -129,7 +129,7 @@
             <id>db-hsqldb-local-server</id>
             <properties>
                 <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
-                <db.url>jdbc:hsqldb:file:${bundleStoreRoot}/org_onebusaway_database</db.url>
+                <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
