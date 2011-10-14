@@ -29,7 +29,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data-federation</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
         <!-- Standard Java Webapp Libraries -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -102,7 +106,7 @@
             </activation>
             <properties>
                 <db.driverClassName>org.postgresql.Driver</db.driverClassName>
-                <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
+                <db.url>jdbc:postgresql://localhost/org_onebusaway_nycPROFILE</db.url>
                 <db.username>postgres</db.username>
                 <db.password>changeme</db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
@@ -129,7 +133,7 @@
             <id>db-hsqldb-local-server</id>
             <properties>
                 <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
-                <db.url>jdbc:hsqldb:file:${bundleStoreRoot}/org_onebusaway_database</db.url>
+                <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>

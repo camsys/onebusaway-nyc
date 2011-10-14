@@ -56,17 +56,6 @@
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>1.8.5</version>
 		</dependency>
-		<dependency>
-		    <groupId>org.onebusaway</groupId>
-		    <artifactId>onebusaway-nyc-transit-data-federation-webapp</artifactId>
-		    <version>2.0.3-SNAPSHOT</version>
-		    <type>war</type>
-		</dependency>
-		<dependency>
-		    <groupId>org.onebusaway</groupId>
-		    <artifactId>onebusaway-transit-data-federation</artifactId>
-                    <version>${onebusaway.app-modules.version}</version>
-		</dependency>
 	</dependencies>
 	<profiles>
         <profile>
