@@ -1,4 +1,5 @@
-package org.onebusaway.nyc.transit_data_federation.services.bundle.model;
+package org.onebusaway.nyc.transit_data_federation.model;
+
 
 
 import java.io.Serializable;
