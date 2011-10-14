@@ -30,17 +30,14 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCo
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.transit_data_federation.impl.blocks.IndexAdapters;
 import org.onebusaway.transit_data_federation.impl.shapes.PointAndIndex;
 import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
-import org.onebusaway.transit_data_federation.impl.time.GenericBinarySearch;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.shapes.ProjectedShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +50,6 @@ public class BlockStateService {
   /**
    * This will sound weird, but DON'T REMOVE THIS
    */
-  @SuppressWarnings("unused")
   private Logger _log = LoggerFactory.getLogger(BlockStateService.class);
 
   private ObservationCache _observationCache;
@@ -69,10 +65,6 @@ public class BlockStateService {
   private ProjectedShapePointService _projectedShapePointService;
 
   private double _threshold = 50;
-
-  private int _cacheAccessCount = 0;
-
-  private int _cacheMissCount = 0;
 
   @Autowired
   public void setRunService(RunService runService) {
@@ -133,10 +125,7 @@ public class BlockStateService {
 
     BlockState blockState = m.get(key);
 
-    _cacheAccessCount++;
-
     if (blockState == null) {
-      _cacheMissCount++;
       blockState = getUncachedBestBlockLocation(observation, blockInstance,
           blockDistanceFrom, blockDistanceTo);
       m.put(key, blockState);

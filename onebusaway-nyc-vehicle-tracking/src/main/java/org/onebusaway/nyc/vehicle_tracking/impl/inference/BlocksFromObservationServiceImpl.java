@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -35,9 +33,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -49,7 +45,6 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -282,7 +277,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
           utsRunId = oai.getRunId();
         }
       } catch (Exception e) {
-        // what do do if the OAS is temporarily unavailable?
+        // what do do if the OAS is temporarily unavailable? retry again?
       }
     }
 

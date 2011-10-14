@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,7 +15,9 @@ import javax.annotation.PreDestroy;
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
-public class PartitionedInputQueueListenerTask extends InputQueueListenerTask {
+public class PartitionedInputQueueListenerTask 
+  extends InputQueueListenerTask 
+  implements PartitionedInputQueueListener {
 
   private String[] _depotPartitionKeys = null;
 
@@ -28,7 +31,7 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask {
   public void processMessage(String address, String contents) {
     CcLocationReport message = deserializeMessage(contents);
 
-    if (acceptMessage(message)) {
+    if(acceptMessage(message)) {
       _vehicleLocationService.handleCcLocationReportRecord(message);
     }
   }
