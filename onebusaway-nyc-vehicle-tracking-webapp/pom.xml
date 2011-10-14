@@ -29,11 +29,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-transit-data-federation</artifactId>
-            <version>${onebusaway.app-modules.version}</version>
-        </dependency>
         <!-- Standard Java Webapp Libraries -->
         <dependency>
             <groupId>javax.servlet</groupId>
