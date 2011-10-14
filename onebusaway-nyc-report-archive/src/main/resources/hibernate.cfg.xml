@@ -20,10 +20,10 @@
         <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
         <!-- Database connection settings -->
-        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="connection.url">jdbc:mysql://localhost:3306/onebusaway_nyc</property>
-        <property name="connection.username">root</property>
-        <property name="connection.password"></property>
+        <property name="connection.driver_class">${db.driverClassName}</property>
+        <property name="connection.url">${db.url}</property>
+        <property name="connection.username">${db.username}</property>
+        <property name="connection.password">${db.password}</property>
 
         <!-- JDBC connection pool (use the built-in one) -->
         <property name="connection.pool_size">1</property>
@@ -37,7 +37,7 @@
         </property>
 
         <!-- Echo all executed SQL to stdout -->
-        <property name="show_sql">true</property>
+        <property name="show_sql">false</property>
 
         <!-- disable batching so HSQLDB will propagate errors correctly. -->
         <property name="jdbc.batch_size">0</property>

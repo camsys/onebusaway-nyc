@@ -108,9 +108,22 @@
 				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
 			</properties>
 		</profile>
+		<profile>
+		  <id>tdm-prod</id>
+			<properties>
+				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+			</properties>
+		</profile>
 	</profiles>
 	
 	<build>
+	  <finalName>onebusaway-nyc-tdm-service</finalName>	
 		<plugins>
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
