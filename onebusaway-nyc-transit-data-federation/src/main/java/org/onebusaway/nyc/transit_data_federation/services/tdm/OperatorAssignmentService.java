@@ -17,8 +17,8 @@ public interface OperatorAssignmentService {
    * 
    * @param serviceDate The service date to return scheduled operators for.
    */
-  public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate);
+  public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) throws Exception;
 
-  public OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId);
+  public OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) throws Exception;
 
 }

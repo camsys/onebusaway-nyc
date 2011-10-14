@@ -113,8 +113,10 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	}
 
 	@Override
-	public synchronized Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) {
-		String serviceDateKey = getServiceDateKey(serviceDate);		
+	public synchronized Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) 
+	    throws Exception {
+		
+	  String serviceDateKey = getServiceDateKey(serviceDate);		
 		if(serviceDateKey == null) 
 			return null;
 		
@@ -122,14 +124,16 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 		if(list == null) {
 			list = getOperatorMapForServiceDate(serviceDateKey);
 			if(list == null)
-			  return null;
+        throw new Exception("Operator service is temporarily not available.");
 			_serviceDateToOperatorListMap.put(serviceDateKey, list);
 		}
 		return list.values();
 	}
 
   @Override
-  public synchronized OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) {
+  public synchronized OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) 
+      throws Exception {
+    
     String serviceDateKey = getServiceDateKey(serviceDate);   
     if(serviceDateKey == null) 
       return null;
@@ -138,7 +142,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     if(list == null) {
       list = getOperatorMapForServiceDate(serviceDateKey);
       if(list == null)
-        return null;
+        throw new Exception("Operator service is temporarily not available.");
       _serviceDateToOperatorListMap.put(serviceDateKey, list);
     }
     return list.get(operatorId);

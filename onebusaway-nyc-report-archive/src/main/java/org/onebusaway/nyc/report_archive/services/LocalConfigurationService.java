@@ -19,6 +19,9 @@ public class LocalConfigurationService implements ConfigurationService {
     if (arg0.equalsIgnoreCase("inference-engine.inputQueuePort")) {
       return 5563;
     }
+    if (arg0.equalsIgnoreCase("inference-engine.outputQueuePort")) {
+      return 5567;
+    }
     throw new RuntimeException("Unknown config key requested: " + arg0);
   }
 
@@ -32,6 +35,15 @@ public class LocalConfigurationService implements ConfigurationService {
     }
     if (arg0.equalsIgnoreCase("inference-engine.inputQueuePort")) {
       return "5563";
+    }
+    if (arg0.equalsIgnoreCase("inference-engine.outputQueueHost")) {
+      return "queue.staging.obanyc.com";
+    }
+    if (arg0.equalsIgnoreCase("inference-engine.outputQueueName")) {
+      return "output_queue";
+    }
+    if (arg0.equalsIgnoreCase("inference-engine.outputQueuePort")) {
+      return "5567";
     }
     throw new RuntimeException("Unknown config key requested: " + arg0);
   }

@@ -275,10 +275,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       _log.warn("no operator id reported");
       // FIXME TODO use new model stuff
     } else {
-      OperatorAssignmentItem oai = _operatorAssignmentService
-          .getOperatorAssignmentItem(obsDate, operatorId);
-      if (oai != null) {
-        utsRunId = oai.getRunId();
+      try {
+        OperatorAssignmentItem oai = _operatorAssignmentService
+            .getOperatorAssignmentItem(obsDate, operatorId);
+        if (oai != null) {
+          utsRunId = oai.getRunId();
+        }
+      } catch (Exception e) {
+        // what do do if the OAS is temporarily unavailable?
       }
     }
 

@@ -5,7 +5,7 @@ import org.onebusaway.nyc.report_archive.model.InvalidLocationRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 
 import org.hibernate.HibernateException;
-import org.hibernate.SQLQuery;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,12 +55,10 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
   public int getNumberOfReports() {
     @SuppressWarnings("rawtypes")
     Long count = (Long) _template.execute(new HibernateCallback() {
-      public Object doInHibernate(Session session) throws HibernateException,
-          SQLException {
-        // TODO This is bad, has a hard-coded table name here... hmm...
-        SQLQuery query = session.createSQLQuery("select count(*) from obanyc_cclocationreport_archive");
-        long value = ((Number)query.uniqueResult()).longValue();
-        return Long.valueOf(value);      }
+	public Object doInHibernate(Session session) throws HibernateException {
+        Query query = session.createQuery("select count(*) from CcLocationReportRecord");
+	return (Long)query.uniqueResult();
+	}
     });
     return count.intValue();
   }

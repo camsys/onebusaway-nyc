@@ -43,11 +43,11 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	
 	private NycVehicleManagementStatusBean managementRecord;
 
-  private String runId;
-	
-  private String routeId;
+        private String runId;
 
-  private double bearing;
+        private String routeId;
+	
+        private Double bearing;
 
 	public NycQueuedInferredLocationBean() {}
 
