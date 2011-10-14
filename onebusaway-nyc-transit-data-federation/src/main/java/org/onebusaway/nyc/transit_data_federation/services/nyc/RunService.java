@@ -21,16 +21,16 @@ public interface RunService {
 
   List<RunTripEntry> getRunTripEntriesForRun(String runId);
 
-  RunTripEntry getRunTripEntryForRunAndTime(AgencyAndId runAgencyAndId,
+  RunTripEntry getActiveRunTripEntryForRunAndTime(AgencyAndId runAgencyAndId,
       long time);
 
-  List<RunTripEntry> getRunTripEntriesForTime(String agencyId, long time);
+  List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(String agencyId, long time);
 
   RunTripEntry getPreviousEntry(RunTripEntry entry, long date);
 
   RunTripEntry getNextEntry(RunTripEntry entry, long date);
 
-  RunTripEntry getRunTripEntryForBlockInstance(BlockInstance blockInstance, int scheduleTime);
+  RunTripEntry getActiveRunTripEntryForBlockInstance(BlockInstance blockInstance, int scheduleTime);
 
   ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
       RunTripEntry runTrip, long timestamp);
@@ -52,6 +52,6 @@ public interface RunService {
    * @return
    */
   TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(AgencyAndId runAgencyAndId,
-      List<String> depotCodes, long time);
+      Set<BlockInstance> nearbyBlocks, long time);
 
 }

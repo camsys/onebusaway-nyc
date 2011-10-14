@@ -2,6 +2,7 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
@@ -22,13 +23,20 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
    */
   private int reliefTime = -1;
   private ReliefState relief;
-
+  
+  static public String createId(String route, String number) {
+    if (StringUtils.isEmpty(number) || StringUtils.isEmpty(route))
+      return null;
+    String[] tmpRun = {route, number};
+    return StringUtils.join(tmpRun, "-");
+  }
+  
   public RunTripEntry(TripEntry entry, String runNumber, String runRoute,
       int reliefTime, ReliefState relief) {
     this.entry = entry;
     this.runNumber = runNumber;
     this.runRoute = runRoute;
-    this.runId = runRoute + "-" + runNumber;
+    this.runId = RunTripEntry.createId(runRoute, runNumber);
     this.reliefTime = reliefTime;
     this.relief = relief;
   }

@@ -15,6 +15,11 @@
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
 public class TripRecord implements StifRecord {
   private String signCode;
   private String blockNumber;
@@ -133,11 +138,11 @@ public class TripRecord implements StifRecord {
   }
 
   public String getRunId() {
-    return getRunNumber() + "-" + getRunRoute();
+    return RunTripEntry.createId(getRunRoute(), getRunNumber());
   }
 
   public String getReliefRunId() {
-    return getReliefRunNumber() + "-" + getReliefRunRoute();
+    return RunTripEntry.createId(getReliefRunRoute(), getReliefRunNumber());
   }
 
   public void setReliefRunRoute(String reliefRunRoute) {

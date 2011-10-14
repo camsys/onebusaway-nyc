@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.model.OperatorAssignmentItem;
 
@@ -61,7 +62,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         item.setPassId(itemToAdd.get("pass-id").getAsString());
         item.setRunNumber(itemToAdd.get("run-id").getAsString());
         item.setRunRoute(itemToAdd.get("run-route").getAsString());
-        item.setRunId(item.getRunRoute() + "-" +  item.getRunNumber());
+        item.setRunId(RunTripEntry.createId(item.getRunRoute(), item.getRunNumber()));
         item.setServiceDate(_serviceDateFormatter.parse(itemToAdd.get("service-date").getAsString()));
         item.setUpdated(_updatedDateFormatter.parseDateTime(itemToAdd.get("updated").getAsString()));
 			  
