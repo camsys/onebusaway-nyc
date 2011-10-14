@@ -20,6 +20,8 @@
             <list>
                 <value>org.onebusaway.nyc.report_archive.model.CcLocationReportRecord</value>
                 <value>org.onebusaway.nyc.report_archive.model.InvalidLocationRecord</value>
+                <value>org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord</value>
+                <value>org.onebusaway.nyc.report_archive.model.NycVehicleManagementStatusRecord</value>
             </list>
         </property>
     </bean>
