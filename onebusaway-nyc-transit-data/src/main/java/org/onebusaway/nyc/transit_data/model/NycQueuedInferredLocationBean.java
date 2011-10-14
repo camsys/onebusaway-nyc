@@ -178,7 +178,7 @@ public class NycQueuedInferredLocationBean implements Serializable {
   public String getRunId() {
     return runId;
   }
-
+  
   public void setRouteId(String routeId) {
     this.routeId = routeId;
   }
@@ -186,13 +186,14 @@ public class NycQueuedInferredLocationBean implements Serializable {
   public String getRouteId() {
     return routeId;
   }
+
   public void setBearing(double bearing) {
     this.bearing = bearing;
   }
   
   public double getBearing() {
     return bearing;
-  }
+  }  
 
 }
 

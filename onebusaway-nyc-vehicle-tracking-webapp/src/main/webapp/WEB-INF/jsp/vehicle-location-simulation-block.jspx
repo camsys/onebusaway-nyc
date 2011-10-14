@@ -73,6 +73,11 @@ Location Simulation Console</a></p>
         The chosen run is reported in the generated data</td>
     </tr>
     <tr>
+        <td>Allow Run Transitions:</td>
+        <td><input type="checkbox" name="allowRunTransitions" /> - 
+        Allow random switching between runs</td>
+    </tr>
+    <tr>
         <td>Parameters:</td>
         <td><textarea name="properties" rows="10" cols="40"><jsp:text></jsp:text></textarea></td>
     </tr>

@@ -54,6 +54,9 @@ public class NycRawLocationRecord {
   @CsvField(name = "run")
   private String runId;
 
+  @CsvField(name = "runnumber")
+  private String runNumber;
+  
   @CsvField(name = "runroute")
   private String runRouteId;
 
@@ -146,7 +149,7 @@ public class NycRawLocationRecord {
   }
 
   public String getRunNumber() {
-	  return runId;
+	  return runNumber;
   }
 
   public void setRunId(String runId) {
@@ -229,5 +232,13 @@ public class NycRawLocationRecord {
 
   public short getSpeed() {
     return speed;
+  }
+
+  public String getRunId() {
+    return runId;
+  }
+
+  public void setRunNumber(String runNumber) {
+    this.runNumber = runNumber;
   }
 }

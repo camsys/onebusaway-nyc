@@ -84,6 +84,7 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
 	  return _notInServiceDscs.contains(destinationSignCode);
   }
 
+  @Override
   public boolean isMissingDestinationSignCode(String destinationSignCode) {
     return "0000".equals(destinationSignCode);
   }

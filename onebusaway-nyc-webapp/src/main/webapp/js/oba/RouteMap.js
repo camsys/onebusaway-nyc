@@ -30,6 +30,32 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 		alt: ''
 	});
 
+	var mtaMapType = new google.maps.ImageMapType({
+		getTileUrl: function(coord, zoom) {
+			if(!(zoom >= this.minZoom && zoom <= this.maxZoom))
+				return null;
+			
+			var quad = ""; 
+		    for (var i = zoom; i > 0; i--){
+		        var mask = 1 << (i - 1); 
+		        var cell = 0; 
+		        if ((coord.x & mask) != 0) 
+		            cell++; 
+		        if ((coord.y & mask) != 0) 
+		            cell += 2; 
+		        quad += cell; 
+		    } 
+			return 'http://tripplanner.mta.info/maps/SystemRoutes_New/' + quad + '.png'; 
+		},
+		tileSize: new google.maps.Size(256, 256),
+		opacity:1.0,
+		maxZoom: 15,
+		minZoom: 14,
+		name: 'MTA Subway Map',
+		isPng: true,
+		alt: ''
+	});
+	
 	var defaultMapOptions = {
 		zoom: 12,
 		mapTypeControl: false,
@@ -58,6 +84,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 	google.maps.event.addListener(map, 'dragend', dismissPopups); 
 	google.maps.event.addListener(map, 'zoom_changed', dismissPopups); 
 
+	map.overlayMapTypes.insertAt(0, mtaMapType);
 	map.mapTypes.set('transit',transitMapType);
 
 	// state used for the map

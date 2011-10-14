@@ -34,6 +34,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.ContainerLibrary;
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.csv_entities.ListEntityHandler;
@@ -292,7 +293,13 @@ public class SensorModelVerificationMain {
     r.setVehicleId(record.getVehicleId());
     r.setOperatorId(record.getOperatorId());
     r.setRunId(record.getReportedRunId());
-
+    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "_");
+    if (runInfo != null && runInfo.length > 0) {
+      r.setRunNumber(runInfo[0]);
+      if (runInfo.length > 1)
+        r.setRunRouteId(runInfo[1]);
+    }
+    
     CoordinatePoint location = new CoordinatePoint(record.getLat(),
         record.getLon());
 

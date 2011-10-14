@@ -277,7 +277,7 @@ public class RunServiceImpl implements RunService {
     calendar.setTimeInMillis(serviceDate);
     Date date = calendar.getTime();
 
-    List<RunTripEntry> entries = entriesByRun.get(before.getRun());
+    List<RunTripEntry> entries = entriesByRun.get(before.getRunId());
     ListIterator<RunTripEntry> listIterator = entries.listIterator(entries.size());
 
     boolean found = false;
@@ -314,7 +314,7 @@ public class RunServiceImpl implements RunService {
 
   @Override
   public RunTripEntry getNextEntry(RunTripEntry after, long serviceDate) {
-    List<RunTripEntry> entries = entriesByRun.get(after.getRun());
+    List<RunTripEntry> entries = entriesByRun.get(after.getRunId());
     boolean found = false;
     GregorianCalendar calendar = new GregorianCalendar();
     calendar.setTimeInMillis(serviceDate);
