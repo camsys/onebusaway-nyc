@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_federation.model;
+package org.onebusaway.nyc.transit_data_federation.model.tdm;
 
 import org.joda.time.DateTime;
 

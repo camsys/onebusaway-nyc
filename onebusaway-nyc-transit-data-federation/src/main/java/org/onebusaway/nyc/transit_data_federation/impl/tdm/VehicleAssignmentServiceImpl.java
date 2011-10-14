@@ -50,7 +50,6 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
             depotVehicleAssignment.get("agency-id"),
             depotVehicleAssignment.get("vehicle-id"));
         vehiclesForThisDepot.add(vehicle);
-        _vehicleToDepotMap.put(vehicle, depotId);
       }
 
       return vehiclesForThisDepot;
@@ -66,11 +65,27 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
       synchronized (_depotToVehicleListMap) {
         for (String depotId : _depotToVehicleListMap.keySet()) {
           ArrayList<AgencyAndId> list = getVehicleListForDepot(depotId);
-          if (list != null)
+          if (list != null) {
             _depotToVehicleListMap.put(depotId, list);
-        }
-      }
 
+            // build reverse map of vehicleId->depotId for this depotId 
+            synchronized(_vehicleToDepotMap) {
+              // remove all vehicles assigned to the depot we're "refreshing"
+              for(AgencyAndId vehicleId : _vehicleToDepotMap.keySet()) {
+                String depotIdOfVehicle = _vehicleToDepotMap.get(vehicleId);
+                if(depotIdOfVehicle.equals(depotId)) {
+                  _vehicleToDepotMap.remove(vehicleId);
+                }
+              }
+
+              // add vehicles back that are (still) assigned to the depot
+              for(AgencyAndId vehicleId : list) {
+                _vehicleToDepotMap.put(vehicleId, depotId);
+              }
+            }
+          }
+        } // for
+      }
     }
   }
 
@@ -99,40 +114,26 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   }
 
   @Override
-  public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(
-      String depotId) {
+  public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotId) 
+      throws Exception {
+    
     synchronized (_depotToVehicleListMap) {
       ArrayList<AgencyAndId> list = _depotToVehicleListMap.get(depotId);
       if (list == null) {
         list = getVehicleListForDepot(depotId);
+        if(list == null) 
+          throw new Exception("Vehicle assignment service is temporarily unavailable.");
+
         _depotToVehicleListMap.put(depotId, list);
       }
       return list;
     }
   }
 
-  /**
-   * Get depot for vehicle.
-   * 
-   * Notes:
-   * 
-   * * we only populate the vehicle:depot map when a depot:vehicles call
-   * is made, so it is theoretically possible that this method could get called
-   * before the map is populated, or before it has been populated for a given
-   * depot. Jeff says that the way things work, that should never happen.
-   * 
-   * * we synch on _depotToVehicleListMap, even though we're looking up in
-   * _vehicleToDepotMap.  The former is basically used as a semaphore in this
-   * class, for all updates to either map.
-   * 
-   */
   @Override
-  public String getAssignedDepotForVehicle(AgencyAndId vehicle)
-      throws Exception {
-    synchronized (_depotToVehicleListMap) {
-      String depot = _vehicleToDepotMap.get(vehicle);
-      _log.info("getAssignedDepotForVehicle is returning depot " + depot + " for vehicle " + vehicle);
-      return depot;
+  public String getAssignedDepotForVehicleId(AgencyAndId vehicle) {
+    synchronized(_vehicleToDepotMap) {
+      return _vehicleToDepotMap.get(vehicle);
     }
   }
 

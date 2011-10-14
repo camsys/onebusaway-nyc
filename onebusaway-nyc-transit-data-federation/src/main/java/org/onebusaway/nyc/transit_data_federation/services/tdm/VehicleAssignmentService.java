@@ -17,14 +17,15 @@ public interface VehicleAssignmentService {
    * 
    * @param depotIdentifier The depot identifier to request vehicles for.
    */
-  public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotIdentifier);
+  public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotIdentifier)
+    throws Exception;
 
   /**
-   * Get depot for the given vehicleId
+   * Get depot for the given vehicleId, assuming the depot has been previously requested
+   * with getAssignedVehicleIdsForDepot().
    * 
    * @param vehicleId The vehicle identifier to request depot for.
-   * @throws Exception 
    */
-  public String getAssignedDepotForVehicle(AgencyAndId vehicle) throws Exception;
+  public String getAssignedDepotForVehicleId(AgencyAndId vehicle);
 
 }

@@ -39,10 +39,15 @@ public class PartitionedInputQueueListenerTask
   private boolean acceptMessage(CcLocationReport message) {
     if(message == null)
       return false;
-    
+
     ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
     for(String key : _depotPartitionKeys) {
-      vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
+      try {
+        vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
+      } catch(Exception e) {
+        _log.warn("Error fetching assigned vehicles for depot " + key + "; will retry.");
+        continue;
+      }
     }
     
     CPTVehicleIden vehicleIdent = message.getVehicle();

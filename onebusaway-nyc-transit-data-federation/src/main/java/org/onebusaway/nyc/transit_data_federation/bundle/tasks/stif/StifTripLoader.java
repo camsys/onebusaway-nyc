@@ -33,7 +33,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.Servic
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.StifRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TimetableRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TripRecord;
-import org.onebusaway.nyc.transit_data_federation.model.RunData;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 
 import org.opentripplanner.graph_builder.services.DisjointSet;
 import org.slf4j.Logger;

@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.model.RunData;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.transit_data_federation.impl.transit_graph.StopEntryImpl;
 import org.onebusaway.transit_data_federation.impl.transit_graph.TripEntryImpl;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;

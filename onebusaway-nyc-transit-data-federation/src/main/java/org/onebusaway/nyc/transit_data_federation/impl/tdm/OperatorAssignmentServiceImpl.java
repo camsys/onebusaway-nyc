@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
-import org.onebusaway.nyc.transit_data_federation.model.OperatorAssignmentItem;
+import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 
 import org.joda.time.format.DateTimeFormatter;
@@ -113,38 +113,44 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	}
 
 	@Override
-	public synchronized Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) 
+	public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) 
 	    throws Exception {
 		
 	  String serviceDateKey = getServiceDateKey(serviceDate);		
 		if(serviceDateKey == null) 
 			return null;
 		
-		HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
-		if(list == null) {
-			list = getOperatorMapForServiceDate(serviceDateKey);
-			if(list == null)
-        throw new Exception("Operator service is temporarily not available.");
-			_serviceDateToOperatorListMap.put(serviceDateKey, list);
-		}
-		return list.values();
+    synchronized(_serviceDateToOperatorListMap) {
+      HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
+      if(list == null) {
+        list = getOperatorMapForServiceDate(serviceDateKey);
+        if(list == null)
+          throw new Exception("Operator service is temporarily not available.");
+			
+        _serviceDateToOperatorListMap.put(serviceDateKey, list);
+      }
+      return list.values();
+    }
 	}
 
   @Override
-  public synchronized OperatorAssignmentItem getOperatorAssignmentItem(Date serviceDate, String operatorId) 
+  public OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(Date serviceDate, String operatorId) 
       throws Exception {
     
     String serviceDateKey = getServiceDateKey(serviceDate);   
     if(serviceDateKey == null) 
       return null;
     
-    HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
-    if(list == null) {
-      list = getOperatorMapForServiceDate(serviceDateKey);
-      if(list == null)
-        throw new Exception("Operator service is temporarily not available.");
-      _serviceDateToOperatorListMap.put(serviceDateKey, list);
+    synchronized(_serviceDateToOperatorListMap) {
+      HashMap<String, OperatorAssignmentItem> list = _serviceDateToOperatorListMap.get(serviceDateKey);
+      if(list == null) {
+        list = getOperatorMapForServiceDate(serviceDateKey);
+        if(list == null)
+          throw new Exception("Operator service is temporarily not available.");
+
+        _serviceDateToOperatorListMap.put(serviceDateKey, list);
+      }      
+      return list.get(operatorId);
     }
-    return list.get(operatorId);
   }
 }

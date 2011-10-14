@@ -27,7 +27,7 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.model.OperatorAssignmentItem;
+import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
@@ -272,7 +272,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     } else {
       try {
         OperatorAssignmentItem oai = _operatorAssignmentService
-            .getOperatorAssignmentItem(obsDate, operatorId);
+            .getOperatorAssignmentItemForServiceDate(obsDate, operatorId);
         if (oai != null) {
           utsRunId = oai.getRunId();
         }

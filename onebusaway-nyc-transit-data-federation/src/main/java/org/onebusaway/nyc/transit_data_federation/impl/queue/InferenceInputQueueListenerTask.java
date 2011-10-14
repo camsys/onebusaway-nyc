@@ -15,20 +15,15 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
-import java.io.IOException;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask {
-
-  private static Logger _log = LoggerFactory.getLogger(InferenceInputQueueListenerTask.class);
 
   @Autowired
   private VehicleLocationListener _vehicleLocationListener;

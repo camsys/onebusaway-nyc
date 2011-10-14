@@ -35,7 +35,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-import org.onebusaway.nyc.transit_data_federation.model.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
@@ -428,7 +428,7 @@ public class VehicleLocationInferenceServiceImpl implements
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
 
-        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
+        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
             
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());

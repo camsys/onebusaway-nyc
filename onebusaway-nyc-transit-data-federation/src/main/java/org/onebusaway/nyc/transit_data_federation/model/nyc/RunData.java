@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_federation.model;
+package org.onebusaway.nyc.transit_data_federation.model.nyc;
 
 import java.io.Serializable;
 
@@ -6,7 +6,9 @@ public class RunData implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public String initialRun;
+
   public String reliefRun;
+  
   public int reliefTime = -1;
 
   public RunData(String run1, String run2, int reliefTime) {

@@ -29,9 +29,6 @@ import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
-import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
-import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +69,7 @@ public abstract class InferenceQueueListenerTask {
       while(true) {
         _zmqPoller.poll();
         if(_zmqPoller.pollin(0)) {
+          @SuppressWarnings("unused")
           String address = new String(_zmqSocket.recv(0));
           String contents = new String(_zmqSocket.recv(0));
 
@@ -79,7 +77,7 @@ public abstract class InferenceQueueListenerTask {
             NycQueuedInferredLocationBean inferredResult = 
                 _mapper.readValue(contents, NycQueuedInferredLocationBean.class);
 
-	    processResult(inferredResult, contents);
+            processResult(inferredResult, contents);
 
           } catch(IOException e) {
             _log.info("Could not de-serialize inferred location record: " + e.getMessage()); 
@@ -133,7 +131,10 @@ public abstract class InferenceQueueListenerTask {
       _log.info("TDS input queue is not attached; input hostname was not available via configuration service.");
       return;
     }
+    
     initializeZmq(host, queueName, port);
+
+    _initialized = true;
   }	
 
   protected void initializeZmq(String host, String queueName, Integer port) {
@@ -151,6 +152,5 @@ public abstract class InferenceQueueListenerTask {
     _executorService.execute(new ReadThread(socket, poller));
 
     _log.debug("TDS input queue is listening on " + bind);
-    _initialized = true;
   }
 }

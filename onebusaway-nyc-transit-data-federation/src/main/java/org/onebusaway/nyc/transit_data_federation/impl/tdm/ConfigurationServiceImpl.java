@@ -67,20 +67,21 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 	
 	@Override
-	public synchronized String getConfigurationValueAsString(String configurationItemKey,
+	public String getConfigurationValueAsString(String configurationItemKey,
 			String defaultValue) {
 
-		String value = _configurationKeyToValueMap.get(configurationItemKey);
+    synchronized(_configurationKeyToValueMap) {
+      String value = _configurationKeyToValueMap.get(configurationItemKey);
 		
-		if(value == null)
-			return defaultValue;
-		else 
-			return value;
+      if(value == null)
+        return defaultValue;
+      else 
+        return value;
+    }
 	}
 
 	@Override
-	public synchronized Float getConfigurationValueAsFloat(String configurationItemKey,
-			Float defaultValue) {
+	public Float getConfigurationValueAsFloat(String configurationItemKey, Float defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
 			
@@ -92,8 +93,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	@Override
-	public synchronized Integer getConfigurationValueAsInteger(String configurationItemKey,
-			Integer defaultValue) {
+	public Integer getConfigurationValueAsInteger(String configurationItemKey, Integer defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
 			
@@ -105,16 +105,18 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	@Override
-	public synchronized void setConfigurationValue(String configurationItemKey, String value) throws Exception {
+	public void setConfigurationValue(String configurationItemKey, String value) throws Exception {
 		if(value == null || value.equals("null")) {
 			throw new Exception("Configuration values cannot be null (or 'null' as a string!).");
 		}
 		
-		String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
-		if(configurationItemKey != null && currentValue.equals(value))
-			return;
+		synchronized(_configurationKeyToValueMap) {
+		  String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
+		  if(configurationItemKey != null && currentValue.equals(value))
+		    return;
 		
-		TransitDataManagerApiLibrary.executeApiMethodWithNoResult("config", "set", configurationItemKey, value);
-		updateConfigurationMap(configurationItemKey, value);
+		  TransitDataManagerApiLibrary.executeApiMethodWithNoResult("config", "set", configurationItemKey, value);
+		  updateConfigurationMap(configurationItemKey, value);
+		}		 
 	}
 }

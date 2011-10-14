@@ -64,7 +64,7 @@ public class VehicleAssignmentServiceImplTest {
 
   @Test
   public void testGetAssignedDepotForVehicleId() throws Exception {
-    String depot = service.getAssignedDepotForVehicle(new AgencyAndId("MTA",
+    String depot = service.getAssignedDepotForVehicleId(new AgencyAndId("MTA",
         "45"));
     assertEquals("JG", depot);
   }
