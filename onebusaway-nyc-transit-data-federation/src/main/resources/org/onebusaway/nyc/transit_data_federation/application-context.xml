@@ -23,8 +23,8 @@
 	<bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle" />
 
 	<bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-		<property name="bundleStoreRoot" value="${bundleStoreRoot}" />
-		<property name="standaloneMode" value="${standaloneMode}" />
+		<property name="bundleStoreRoot" value="${bundle.location}" />
+		<property name="standaloneMode" value="${bundle.mode.standalone}" />
 	</bean>
 
 	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl" />
@@ -44,7 +44,7 @@
 	<bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
 		<property name="properties">
 			<props>
-				<prop key="ehCacheConfiguration.diskStorePath">${bundleStoreRoot}/caches</prop>
+				<prop key="ehCacheConfiguration.diskStorePath">/${bundle.location}/caches</prop>
 			</props>
 		</property>
 		<property name="order" value="-1" />

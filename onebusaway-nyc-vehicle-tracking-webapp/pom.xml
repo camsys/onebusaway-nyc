@@ -109,6 +109,7 @@
                 <!-- TODO Note sure about autocommit for postgres -->
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 		<ie.listener>DummyInputQueueListenerTask</ie.listener>
+		<ie.output.queue>PartitionedInputQueueListenerTask</ie.output.queue>
             </properties>
         </profile>
         <profile>
@@ -121,6 +122,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 		<ie.listener>DummyInputQueueListenerTask</ie.listener>
+		<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
             </properties>
         </profile>
         <profile>
@@ -132,6 +134,7 @@
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 		<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+		<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
             </properties>
         </profile>
         <!-- TODO MySQL -->
@@ -144,6 +147,12 @@
             </activation>
             <properties>
                 <bundle.location>/tmp/oba-bundle</bundle.location>
+            </properties>
+        </profile>
+        <profile>
+            <id>bundle-obanyc</id>
+            <properties>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
             </properties>
         </profile>
         
