@@ -555,7 +555,6 @@ public class VehicleInferenceInstance {
       lastRecord.setLatitude(_nycTestInferredLocationRecord.getLat());
       lastRecord.setLongitude(_nycTestInferredLocationRecord.getLon());
       lastRecord.setOperatorId(_nycTestInferredLocationRecord.getOperatorId());
-      lastRecord.setRunId(_nycTestInferredLocationRecord.getReportedRunId());
       String[] runInfo = StringUtils.splitByWholeSeparator(_nycTestInferredLocationRecord.getReportedRunId(), "_");
       if (runInfo != null && runInfo.length > 0) {
         lastRecord.setRunNumber(runInfo[0]);

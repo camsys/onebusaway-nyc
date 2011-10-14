@@ -29,9 +29,9 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   @Autowired
   private ConfigurationService _configurationService;
 
-  private volatile HashMap<String, ArrayList<AgencyAndId>> _depotToVehicleListMap = new HashMap<String, ArrayList<AgencyAndId>>();
+  private volatile HashMap<String, ArrayList<AgencyAndId>> _depotToVehicleIdListMap = new HashMap<String, ArrayList<AgencyAndId>>();
 
-  private volatile Map<AgencyAndId, String> _vehicleToDepotMap = new HashMap<AgencyAndId, String>();
+  private volatile Map<AgencyAndId, String> _vehicleIdToDepotMap = new HashMap<AgencyAndId, String>();
 
   private TransitDataManagerApiLibrary _apiLibrary = new TransitDataManagerApiLibrary();
 
@@ -51,7 +51,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
             depotVehicleAssignment.get("vehicle-id"));
         vehiclesForThisDepot.add(vehicle);
       }
-
+      
       return vehiclesForThisDepot;
     } catch (Exception e) {
       _log.error("Error getting vehicle list for depot with ID " + depotId);
@@ -62,25 +62,25 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   private class UpdateThread extends TimerTask {
     @Override
     public void run() {
-      synchronized (_depotToVehicleListMap) {
-        for (String depotId : _depotToVehicleListMap.keySet()) {
+      synchronized (_depotToVehicleIdListMap) {
+        for (String depotId : _depotToVehicleIdListMap.keySet()) {
           ArrayList<AgencyAndId> list = getVehicleListForDepot(depotId);
           if (list != null) {
-            _depotToVehicleListMap.put(depotId, list);
+            _depotToVehicleIdListMap.put(depotId, list);
 
             // build reverse map of vehicleId->depotId for this depotId 
-            synchronized(_vehicleToDepotMap) {
+            synchronized(_vehicleIdToDepotMap) {
               // remove all vehicles assigned to the depot we're "refreshing"
-              for(AgencyAndId vehicleId : _vehicleToDepotMap.keySet()) {
-                String depotIdOfVehicle = _vehicleToDepotMap.get(vehicleId);
+              for(AgencyAndId vehicleId : _vehicleIdToDepotMap.keySet()) {
+                String depotIdOfVehicle = _vehicleIdToDepotMap.get(vehicleId);
                 if(depotIdOfVehicle.equals(depotId)) {
-                  _vehicleToDepotMap.remove(vehicleId);
+                  _vehicleIdToDepotMap.remove(vehicleId);
                 }
               }
 
               // add vehicles back that are (still) assigned to the depot
               for(AgencyAndId vehicleId : list) {
-                _vehicleToDepotMap.put(vehicleId, depotId);
+                _vehicleIdToDepotMap.put(vehicleId, depotId);
               }
             }
           }
@@ -117,14 +117,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
   public ArrayList<AgencyAndId> getAssignedVehicleIdsForDepot(String depotId) 
       throws Exception {
     
-    synchronized (_depotToVehicleListMap) {
-      ArrayList<AgencyAndId> list = _depotToVehicleListMap.get(depotId);
+    synchronized (_depotToVehicleIdListMap) {
+      ArrayList<AgencyAndId> list = _depotToVehicleIdListMap.get(depotId);
       if (list == null) {
         list = getVehicleListForDepot(depotId);
         if(list == null) 
           throw new Exception("Vehicle assignment service is temporarily unavailable.");
 
-        _depotToVehicleListMap.put(depotId, list);
+        _depotToVehicleIdListMap.put(depotId, list);
       }
       return list;
     }
@@ -132,9 +132,8 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   @Override
   public String getAssignedDepotForVehicleId(AgencyAndId vehicle) {
-    synchronized(_vehicleToDepotMap) {
-      return _vehicleToDepotMap.get(vehicle);
+    synchronized(_vehicleIdToDepotMap) {
+      return _vehicleIdToDepotMap.get(vehicle);
     }
   }
-
 }

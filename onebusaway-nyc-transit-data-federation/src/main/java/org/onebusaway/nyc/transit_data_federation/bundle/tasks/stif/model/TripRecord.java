@@ -133,11 +133,11 @@ public class TripRecord implements StifRecord {
   }
 
   public String getRunId() {
-    return getRun() + "_" + getRunRoute();
+    return getRunRoute() + "_" + getRun();
   }
 
   public String getReliefRunId() {
-    return getReliefRun() + "_" + getReliefRunRoute();
+    return getReliefRunRoute() + "_" + getReliefRun();
   }
 
   public void setReliefRunRoute(String reliefRunRoute) {

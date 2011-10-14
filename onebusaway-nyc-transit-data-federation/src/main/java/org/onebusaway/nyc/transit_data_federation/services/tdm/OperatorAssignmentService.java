@@ -20,7 +20,7 @@ public interface OperatorAssignmentService {
   public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(Date serviceDate) 
       throws Exception;
 
-  public OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(Date serviceDate, String operatorId) 
-      throws Exception;
+  public OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(Date serviceDate, 
+      String operatorId) throws Exception;
 
 }

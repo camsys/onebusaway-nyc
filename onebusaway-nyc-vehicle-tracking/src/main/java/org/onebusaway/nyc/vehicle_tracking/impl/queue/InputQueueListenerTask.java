@@ -141,6 +141,7 @@ public abstract class InputQueueListenerTask {
     initializeZmq(host, queueName, port);
   }
 
+  // FIXME why is this broken out like this? 
   protected void initializeZmq(String host, String queueName, Integer port) {
     String bind = "tcp://" + host + ":" + port;
 

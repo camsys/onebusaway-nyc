@@ -51,9 +51,6 @@ public class NycRawLocationRecord {
   @CsvField(name = "operator")
   private String operatorId;
 
-  @CsvField(name = "run")
-  private String runId;
-
   @CsvField(name = "runnumber")
   private String runNumber;
   
@@ -152,10 +149,6 @@ public class NycRawLocationRecord {
 	  return runNumber;
   }
 
-  public void setRunId(String runId) {
-	  this.runId = runId;
-  }
-
   public String getRunRouteId() {
 	  return runRouteId;
   }
@@ -235,7 +228,7 @@ public class NycRawLocationRecord {
   }
 
   public String getRunId() {
-    return runId;
+    return runRouteId + "_" + runNumber;
   }
 
   public void setRunNumber(String runNumber) {
