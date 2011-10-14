@@ -106,7 +106,7 @@
             </activation>
             <properties>
                 <db.driverClassName>org.postgresql.Driver</db.driverClassName>
-                <db.url>jdbc:postgresql://localhost/org_onebusaway_nycPROFILE</db.url>
+                <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
                 <db.username>postgres</db.username>
                 <db.password>changeme</db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
