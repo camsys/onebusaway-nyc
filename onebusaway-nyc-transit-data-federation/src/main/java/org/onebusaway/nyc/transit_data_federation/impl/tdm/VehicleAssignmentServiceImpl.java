@@ -59,6 +59,22 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
     }
   }
 
+  private void updateVehicleIdToDepotMap(String depotId) {
+    // remove all vehicles assigned to the depot we're "refreshing"
+    for(AgencyAndId vehicleId : _vehicleIdToDepotMap.keySet()) {
+      String depotIdOfVehicle = _vehicleIdToDepotMap.get(vehicleId);
+      if(depotIdOfVehicle.equals(depotId)) {
+        _vehicleIdToDepotMap.remove(vehicleId);
+      }
+    }
+
+    // add vehicles back that are (still) assigned to the depot
+    ArrayList<AgencyAndId> list = getVehicleListForDepot(depotId);
+    for(AgencyAndId vehicleId : list) {
+      _vehicleIdToDepotMap.put(vehicleId, depotId);
+    }    
+  }
+  
   private class UpdateThread extends TimerTask {
     @Override
     public void run() {
@@ -68,20 +84,8 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
           if (list != null) {
             _depotToVehicleIdListMap.put(depotId, list);
 
-            // build reverse map of vehicleId->depotId for this depotId 
             synchronized(_vehicleIdToDepotMap) {
-              // remove all vehicles assigned to the depot we're "refreshing"
-              for(AgencyAndId vehicleId : _vehicleIdToDepotMap.keySet()) {
-                String depotIdOfVehicle = _vehicleIdToDepotMap.get(vehicleId);
-                if(depotIdOfVehicle.equals(depotId)) {
-                  _vehicleIdToDepotMap.remove(vehicleId);
-                }
-              }
-
-              // add vehicles back that are (still) assigned to the depot
-              for(AgencyAndId vehicleId : list) {
-                _vehicleIdToDepotMap.put(vehicleId, depotId);
-              }
+              updateVehicleIdToDepotMap(depotId);
             }
           }
         } // for
@@ -124,6 +128,10 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
         if(list == null) 
           throw new Exception("Vehicle assignment service is temporarily unavailable.");
 
+        synchronized(_vehicleIdToDepotMap) {
+          updateVehicleIdToDepotMap(depotId);
+        }
+        
         _depotToVehicleIdListMap.put(depotId, list);
       }
       return list;

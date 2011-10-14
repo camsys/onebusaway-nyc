@@ -74,7 +74,6 @@ public class UpdateVehicleLocationController {
     vlr.setLongitude(lon);
     vlr.setDestinationSignCode(dsc);
     vlr.setOperatorId(operatorId);
-    vlr.setRunId(runId);
     String[] runInfo = StringUtils.splitByWholeSeparator(runId, "_");
     if (runInfo != null && runInfo.length > 0) {
       vlr.setRunNumber(runInfo[0]);
