@@ -71,11 +71,11 @@ public class RunServiceImplTest {
     stopTime(8, stopC, tripD, 420, 420, 800);
 
     Map<AgencyAndId, RunData> runDataByTrip = new HashMap<AgencyAndId, RunData>();
-    runDataByTrip.put(tripA.getId(), new RunData("run1", null, -1));
-    runDataByTrip.put(tripB.getId(), new RunData("run1", "run2", 270));
-    runDataByTrip.put(tripC.getId(), new RunData("run1", null, -1));
+    runDataByTrip.put(tripA.getId(), new RunData("run-1", null, -1));
+    runDataByTrip.put(tripB.getId(), new RunData("run-1", "run-2", 270));
+    runDataByTrip.put(tripC.getId(), new RunData("run-1", null, -1));
     // don't ask how the driver of run2 gets to StopA
-    runDataByTrip.put(tripD.getId(), new RunData("run2", null, -1));
+    runDataByTrip.put(tripD.getId(), new RunData("run-2", null, -1));
 
     _service.setRunDataByTrip(runDataByTrip);
 
@@ -105,12 +105,12 @@ public class RunServiceImplTest {
 
   @Test
   public void testRunService() {
-    assertEquals("run1", _service.getInitialRunForTrip(tripA.getId()));
-    assertEquals("run1", _service.getInitialRunForTrip(tripB.getId()));
-    assertEquals("run2", _service.getReliefRunForTrip(tripB.getId()));
-    assertEquals("run2", _service.getInitialRunForTrip(tripD.getId()));
+    assertEquals("run-1", _service.getInitialRunForTrip(tripA.getId()));
+    assertEquals("run-1", _service.getInitialRunForTrip(tripB.getId()));
+    assertEquals("run-2", _service.getReliefRunForTrip(tripB.getId()));
+    assertEquals("run-2", _service.getInitialRunForTrip(tripD.getId()));
 
-    List<RunTripEntry> entities = _service.getRunTripEntriesForRun("run1");
+    List<RunTripEntry> entities = _service.getRunTripEntriesForRun("run-1");
     assertEquals(3, entities.size());
 
     RunTripEntry rte0 = entities.get(0);
@@ -122,7 +122,7 @@ public class RunServiceImplTest {
     assertEquals(rte2, _service.getNextEntry(rte1, 0));
     assertEquals(rte0, _service.getNextEntry(rte2, 0));
 
-    entities = _service.getRunTripEntriesForRun("run2");
+    entities = _service.getRunTripEntriesForRun("run-2");
     assertEquals(2, entities.size());
 
   }

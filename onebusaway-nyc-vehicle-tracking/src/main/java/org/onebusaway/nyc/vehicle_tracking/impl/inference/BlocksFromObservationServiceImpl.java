@@ -203,7 +203,13 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     Set<BlockState> potentialBlocks = new HashSet<BlockState>();
 
-    potentialBlocks.addAll(getReportedBlockStates(observation,
+    /*
+     * we compute the nearby blocks NOW, for any methods that 
+     * might use it as the support for a distribution.
+     */
+    Set<BlockInstance> nearbyBlocks = new HashSet<BlockInstance>();
+    computeNearbyBlocks(observation, nearbyBlocks);
+    potentialBlocks.addAll(getReportedBlockStates(observation, nearbyBlocks,
         bestBlockLocation));
 
     /**
@@ -228,7 +234,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       
     }
 
-    Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(observation);
+    Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(observation, nearbyBlocks);
     for (BlockInstance thisBIS : bisSet) {
       BlockState state = null;
       if (bestBlockLocation) {
@@ -250,7 +256,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
   @Override
   public Set<BlockInstance> determinePotentialBlocksForObservation(
-      Observation observation) {
+      Observation observation, Set<BlockInstance> nearbyBlocks) {
 
     Set<BlockInstance> potentialBlocks = new HashSet<BlockInstance>();
 
@@ -263,8 +269,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      * Third source of trips: trips nearby the current gps location Ok we're not
      * doing this for now
      */
-    if (_includeNearbyBlocks)
-      computeNearbyBlocks(observation, potentialBlocks);
+    if (_includeNearbyBlocks) {
+      potentialBlocks.addAll(nearbyBlocks);
+    }
 
     return potentialBlocks;
   }
@@ -273,7 +280,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    * {@link BlocksFromObservationService} Interface
    ****/
   @Override
-  public Set<BlockState> getReportedBlockStates(Observation observation,
+  public Set<BlockState> getReportedBlockStates(Observation observation, Set<BlockInstance> nearbyBlocks,
       boolean bestBlockLocation) {
 
     Set<BlockState> blockStates = new HashSet<BlockState>();
@@ -299,7 +306,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     RunTripEntry utsRunTrip = null;
     if (StringUtils.isNotEmpty(utsRunId)) {
-      utsRunTrip = _runService.getRunTripEntryForRunAndTime(new AgencyAndId(
+      utsRunTrip = _runService.getActiveRunTripEntryForRunAndTime(new AgencyAndId(
             agencyId, utsRunId), obsDate.getTime());
       if (utsRunTrip == null) {
         _log.warn("couldn't find UTS runTripEntry for runId=" + utsRunId + ", time="
@@ -315,26 +322,18 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     boolean utsReportedRunMismatch = false;
     
     if (StringUtils.isNotEmpty(reportedRunId)) {
+      
+      // TODO should we really match 000-000?
+      reportedRunId = observation.getRecord().getRunId();
+      
       /*
-       * these conversions are a way to remove leading 0's
-       * and whatever else the operators might have in there
+       * FIXME without "weighing" searching by nearby blocks
+       * is almost worthless in conjunction with nearby block
+       * searches alone, other than perhaps to confirm the UTS
+       * and reported runId match...
        */
-      double runRouteTmp = Double.parseDouble(observation.getRecord().getRunRouteId());
-      String runRoute = Double.toString(runRouteTmp);
-      double runNumberTmp = Double.parseDouble(observation.getRecord().getRunNumber());
-      String runNumber= Double.toString(runNumberTmp);
-      
-      reportedRunId = runRoute + "-" + runNumber;
-      
-      List<String> depotCodes = new ArrayList<String>();
-      try {
-        depotCodes.add(_vehicleAssignmentService.getAssignedDepotForVehicle(observation.getRecord().getVehicleId()));
-      } catch (Exception e) {
-        _log.error("couldn't get depot for vehicle" + observation.getRecord().getVehicleId());
-      }
-      
       TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService.
-          getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId, reportedRunId), depotCodes, obsDate.getTime());
+          getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId, reportedRunId), nearbyBlocks, obsDate.getTime());
       
       if (fuzzyReportedMatches == null || fuzzyReportedMatches.isEmpty()) {
         _log.warn("couldn't find a fuzzy match for reported runId=" + reportedRunId);
@@ -344,14 +343,22 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
          */
         int bestDist = fuzzyReportedMatches.firstKey();
         
-        if (utsRunTrip != null && !fuzzyReportedMatches.get(bestDist).contains(utsRunTrip)){
-          _log.warn("UTS assigned runTrip=" + utsRunId + " not found among reported-run matches");
-          utsReportedRunMismatch = true;
+        /*
+         * if there is no UTS runTrip, then use the fuzzy matches.
+         * otherwise, check that the fuzzy matches contain the
+         * UTS value, and, if so, use just that (implemented by not
+         * adding to the runEntriesToTry).
+         */
+        if (utsRunTrip != null) {
+          if(!fuzzyReportedMatches.get(bestDist).contains(utsRunTrip)){
+            _log.warn("UTS assigned runTrip=" + utsRunId + " not found among reported-run matches");
+            utsReportedRunMismatch = true;
+          }
+        } else {
+          // FIXME don't keep this reportedRtes set around just for matching later
+          reportedRtes.addAll(fuzzyReportedMatches.get(bestDist));
+          runEntriesToTry.addAll(reportedRtes);
         }
-        
-        // FIXME don't keep this reportedRtes set around just for matching later
-        reportedRtes.addAll(fuzzyReportedMatches.get(bestDist));
-        runEntriesToTry.addAll(reportedRtes);
       } 
     }
       

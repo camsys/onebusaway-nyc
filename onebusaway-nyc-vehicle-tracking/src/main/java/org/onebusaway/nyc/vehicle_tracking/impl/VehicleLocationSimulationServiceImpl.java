@@ -361,28 +361,30 @@ public class VehicleLocationSimulationServiceImpl implements
       AgencyAndId vehicleId) {
 
     /*
-     * here we format the runId to have a run-route
-     * that looks similar to what an operator would
-     * enter.
+     * here we format the runId to have a run-route that looks similar to what
+     * an operator would enter.
      */
     String reportedRunId = runTrip.getRunId();
     String[] runInfo = StringUtils.splitByWholeSeparator(reportedRunId, "-");
     String runNumber = null;
-    String runRoute= null;
+    String runRoute = null;
     // TODO FIXME we should be using RunID objects
     if (runInfo != null && runInfo.length > 0) {
       runRoute = runInfo[0];
       if (runInfo.length > 1) {
         runNumber = runInfo[1];
       }
-    } 
-    runRoute = StringUtils.substring(runRoute, 1, 3);
-    reportedRunId = runRoute + "-" + runNumber;
+    }
+    if (StringUtils.isAlpha(runRoute)) {
+      // only characters
+      runRoute = "000";
+    } else {
+      runRoute = StringUtils.substring(runRoute, 1, 3);
+    }
+    reportedRunId = RunTripEntry.createId(runRoute, runNumber);
     if (reportsRunId)
       _log.info("using reported runId=" + reportedRunId);
-    
-    
-    
+
     String lastBlockId = null;
 
     List<RunTripEntry> rtes = new ArrayList<RunTripEntry>();
@@ -552,7 +554,6 @@ public class VehicleLocationSimulationServiceImpl implements
       if (reportsRunId) {
         record.setReportedRunId(reportedRunId);
       }
-      
 
       record.setActualServiceDate(serviceDate);
 
@@ -581,7 +582,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private RunTripEntry sampleNearbyRunTrips(RunTripEntry currentRunTrip,
       long timestamp) {
 
-    List<RunTripEntry> activeRunTrips = _runService.getRunTripEntriesForTime(
+    List<RunTripEntry> activeRunTrips = _runService.getActiveRunTripEntriesForAgencyAndTime(
         currentRunTrip.getTripEntry().getId().getAgencyId(), timestamp);
 
     int bsize = activeRunTrips.size();
@@ -638,9 +639,8 @@ public class VehicleLocationSimulationServiceImpl implements
   public int addSimulationForBlockInstance(AgencyAndId blockId,
       long serviceDate, long actualTime, boolean bypassInference,
       boolean isRunBased, boolean realtime, boolean fillActual,
-      boolean reportsOperatorId, boolean reportsRunId, 
-      boolean allowRunTransitions,
-      Properties properties) {
+      boolean reportsOperatorId, boolean reportsRunId,
+      boolean allowRunTransitions, Properties properties) {
 
     Random random = new Random();
 
@@ -670,7 +670,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
     if (isRunBased) {
 
-      RunTripEntry runTrip = _runService.getRunTripEntryForBlockInstance(
+      RunTripEntry runTrip = _runService.getActiveRunTripEntryForBlockInstance(
           blockInstance, scheduleTime);
 
       if (runTrip == null) {

@@ -35,6 +35,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
@@ -227,7 +228,7 @@ public class VehicleLocationInferenceServiceImpl implements
 	  r.setOperatorId(message.getOperatorID().getDesignator());
 	  r.setRunNumber(message.getRunID().getDesignator());
 	  r.setRunRouteId(message.getRouteID().getRouteDesignator());
-	  r.setRunId(r.getRunRouteId() + "-" + r.getRunNumber());
+	  r.setRunId(RunTripEntry.createId(r.getRunRouteId(), r.getRunNumber()));
 
 	  EmergencyCodes emergencyCodes = message.getEmergencyCodes();
 	  if(emergencyCodes != null)

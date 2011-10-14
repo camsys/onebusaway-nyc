@@ -23,10 +23,11 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 public interface BlocksFromObservationService {
 
   public Set<BlockInstance> determinePotentialBlocksForObservation(
-      Observation observation);
+      Observation observation, Set<BlockInstance> nearbyBlocks);
 
-  public BlockState advanceState(Observation observation, BlockState blockState,
-      double minDistanceToTravel, double maxDistanceToTravel);
+  public BlockState advanceState(Observation observation,
+      BlockState blockState, double minDistanceToTravel,
+      double maxDistanceToTravel);
 
   public BlockState advanceLayoverState(long timestamp, BlockState blockState);
 
@@ -36,5 +37,5 @@ public interface BlocksFromObservationService {
       Observation observation, boolean bestBlockLocation);
 
   Set<BlockState> getReportedBlockStates(Observation observation,
-      boolean bestBlockLocation);
+      Set<BlockInstance> nearbyBlocks, boolean bestBlockLocation);
 }

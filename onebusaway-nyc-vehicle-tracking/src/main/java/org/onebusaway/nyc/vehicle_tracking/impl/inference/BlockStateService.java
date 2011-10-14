@@ -166,7 +166,7 @@ public class BlockStateService {
 
   public BlockState getScheduledTimeAsState(BlockInstance blockInstance,
       int scheduledTime) {
-    RunTripEntry rte = _runService.getRunTripEntryForBlockInstance(
+    RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(
         blockInstance, scheduledTime);
     return getScheduledTimeAsState(blockInstance, rte, scheduledTime);
   }
@@ -335,7 +335,7 @@ public class BlockStateService {
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService
         .getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
-    RunTripEntry rte = _runService.getRunTripEntryForBlockInstance(
+    RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(
         blockInstance, blockLocation.getScheduledTime());
     if (rte == null)
       _log.error("runTrip null for blockInstance=" + blockInstance

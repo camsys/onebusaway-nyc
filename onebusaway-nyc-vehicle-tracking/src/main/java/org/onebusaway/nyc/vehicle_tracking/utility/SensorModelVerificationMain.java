@@ -363,7 +363,7 @@ public class SensorModelVerificationMain {
     cal.setTime(today);
     cal.set(Calendar.DATE, 0);
     int scheduleTime = (int)cal.getTimeInMillis();
-    RunTripEntry rte = _runService.getRunTripEntryForBlockInstance(blockInstance, scheduleTime);
+    RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(blockInstance, scheduleTime);
     return new BlockState(blockInstance, location, rte, obs.getLastValidDestinationSignCode());
   }
 

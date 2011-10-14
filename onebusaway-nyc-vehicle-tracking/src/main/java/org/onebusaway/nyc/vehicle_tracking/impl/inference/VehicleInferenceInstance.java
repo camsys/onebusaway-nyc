@@ -28,6 +28,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -466,7 +467,7 @@ public class VehicleInferenceInstance {
     NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
-    record.setReportedRunId(nycRecord.getRunRouteId() + "-" + nycRecord.getRunNumber());
+    record.setReportedRunId(RunTripEntry.createId(nycRecord.getRunRouteId(), nycRecord.getRunNumber()));
     record.setOperatorId(nycRecord.getOperatorId());
 
     record.setTimestamp((long) particle.getTimestamp());
