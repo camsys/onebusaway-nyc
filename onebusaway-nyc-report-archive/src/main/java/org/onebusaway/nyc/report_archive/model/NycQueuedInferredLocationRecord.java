@@ -62,25 +62,25 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "service_date")
   private Long serviceDate;
   
-  @Column(nullable = false, name = "schedule_deviation")
+  @Column(nullable = true, name = "schedule_deviation")
   private Integer scheduleDeviation;
   
-  @Column(nullable = false, name = "block_id")
+  @Column(nullable = true, name = "block_id")
   private String blockId;
   
-  @Column(nullable = false, name = "trip_id")
+  @Column(nullable = true, name = "trip_id")
   private String tripId;
   
-  @Column(nullable = false, name = "distance_along_block")
+  @Column(nullable = true, name = "distance_along_block")
   private Double distanceAlongBlock;
   
-  @Column(nullable = false, name = "distance_along_trip")
+  @Column(nullable = true, name = "distance_along_trip")
   private Double distanceAlongTrip;
   
-  @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "inferred_latitude")
+  @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_latitude")
   private BigDecimal inferredLatitude;
   
-  @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "inferred_longitude")
+  @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_longitude")
   private BigDecimal inferredLongitude;
   
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "observed_latitude")
@@ -98,23 +98,51 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "raw_message", length = 1400)
   private String rawMessage;
 
+  @Column(nullable = true, name = "run_id")
+  private String runId;
+
+  @Column(nullable = true, name = "route_id")
+  private String routeId;
+
+  @Column(nullable = false, name = "bearing")
+  private Double bearing;
+
   public NycQueuedInferredLocationRecord() {
   }
 
   public NycQueuedInferredLocationRecord(NycQueuedInferredLocationBean message, String contents) {
     super();
+
+    Double possibleNaN;
+
     setRecordTimestamp(message.getRecordTimestamp());
     setVehicleId(message.getVehicleId());
     setServiceDate(message.getServiceDate());
     setScheduleDeviation(message.getScheduleDeviation());
-    setDistanceAlongBlock(message.getDistanceAlongBlock());
+
+    possibleNaN = message.getDistanceAlongBlock();
+    if (Double.isNaN(possibleNaN))
+      setDistanceAlongBlock(null);
+    else
+      setDistanceAlongBlock(possibleNaN);
+    
     setDistanceAlongTrip(message.getDistanceAlongTrip());
-    setInferredLatitude(new BigDecimal(message.getInferredLatitude()));
-    setInferredLongitude(new BigDecimal(message.getInferredLongitude()));
+
+    if (Double.isNaN(message.getInferredLatitude()))
+      setInferredLatitude(null);
+    else
+      setInferredLatitude(new BigDecimal(message.getInferredLatitude()));
+    if (Double.isNaN(message.getInferredLongitude()))
+      setInferredLongitude(null);
+    else
+      setInferredLongitude(new BigDecimal(message.getInferredLongitude()));
     setObservedLatitude(new BigDecimal(message.getObservedLatitude()));
     setObservedLongitude(new BigDecimal(message.getObservedLongitude()));
     setPhase(message.getPhase());
     setStatus(message.getStatus());
+    setRunId(message.getRunId());
+    setRouteId(message.getRouteId());
+    setBearing(message.getBearing());
     setRawMessage(contents);
   }
 
@@ -236,6 +264,30 @@ public class NycQueuedInferredLocationRecord implements Serializable {
 
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  public void setRunId(String runId) {
+    this.runId = runId;
+  }
+  
+  public String getRunId() {
+    return runId;
+  }
+
+  public void setRouteId(String routeId) {
+    this.routeId = routeId;
+  }
+  
+  public String getRouteId() {
+    return routeId;
+  }
+
+  public void setBearing(double bearing) {
+    this.bearing = bearing;
+  }
+  
+  public double getBearing() {
+    return bearing;
   }
 
   public String getRawMessage() {

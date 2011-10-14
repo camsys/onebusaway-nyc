@@ -71,7 +71,6 @@ public class  NycVehicleManagementStatusDaoImplTest {
   private NycVehicleManagementStatusRecord getTestRecord() {
     NycVehicleManagementStatusRecord record = new NycVehicleManagementStatusRecord();
 
-    record.setVehicleId("120");
     record.setActiveBundleId("1");
     record.setLastUpdateTime(20111010L);
     record.setLastLocationUpdateTime(20111010L);
@@ -83,6 +82,10 @@ public class  NycVehicleManagementStatusDaoImplTest {
     record.setInferenceIsEnabled(true);
     record.setInferenceEngineIsPrimary(true);
     record.setInferenceIsFormal(false);
+    record.setDepotId("123");
+    record.setEmergencyFlag(true);
+    record.setLastInferredOperatorId("6");
+    record.setInferredRunId("1");
 
     return record;
   }    

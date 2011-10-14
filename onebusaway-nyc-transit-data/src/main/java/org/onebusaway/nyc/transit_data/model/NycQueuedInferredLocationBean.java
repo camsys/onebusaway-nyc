@@ -43,8 +43,12 @@ public class NycQueuedInferredLocationBean implements Serializable {
 	
 	private NycVehicleManagementStatusBean managementRecord;
 
-  private String runId;
+        private String runId;
+
+        private String routeId;
 	
+        private Double bearing;
+
 	public NycQueuedInferredLocationBean() {}
 
 	public Long getRecordTimestamp() {
@@ -175,6 +179,20 @@ public class NycQueuedInferredLocationBean implements Serializable {
     return runId;
   }
 
+  public void setRouteId(String routeId) {
+    this.routeId = routeId;
+  }
+  
+  public String getRouteId() {
+    return routeId;
+  }
+  public void setBearing(double bearing) {
+    this.bearing = bearing;
+  }
+  
+  public double getBearing() {
+    return bearing;
+  }
 
 }
 

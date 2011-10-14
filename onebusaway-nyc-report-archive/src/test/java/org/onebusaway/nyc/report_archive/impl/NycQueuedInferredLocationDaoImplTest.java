@@ -88,6 +88,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
     record.setObservedLongitude(new BigDecimal("-101.10"));
     record.setPhase("phase");
     record.setStatus("status");
+    record.setBearing(180.0);
     record.setRawMessage("This is a standin for the raw message");
 
     return record;

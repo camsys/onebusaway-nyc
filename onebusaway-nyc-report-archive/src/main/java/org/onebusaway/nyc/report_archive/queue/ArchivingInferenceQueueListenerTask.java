@@ -48,18 +48,24 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   }
 
   @Override
+  // this method can't throw exceptions or it will stop the queue
+  // listening
   protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
-    NycQueuedInferredLocationRecord locationRecord = new NycQueuedInferredLocationRecord(inferredResult, contents);
+    try {
+      NycQueuedInferredLocationRecord locationRecord = new NycQueuedInferredLocationRecord(inferredResult, contents);
 
-    NycVehicleManagementStatusBean managementBean = inferredResult.getManagementRecord();
+      NycVehicleManagementStatusBean managementBean = inferredResult.getManagementRecord();
 
-    if (managementBean != null) {
-      NycVehicleManagementStatusRecord managementRecord =
-	new NycVehicleManagementStatusRecord(managementBean);
-      _statusDao.saveOrUpdateRecord(managementRecord);
-    }
+      if (managementBean != null) {
+	NycVehicleManagementStatusRecord managementRecord =
+	  new NycVehicleManagementStatusRecord(managementBean);
+	_statusDao.saveOrUpdateRecord(managementRecord);
+      }
     
-    _locationDao.saveOrUpdateRecord(locationRecord);
+      _locationDao.saveOrUpdateRecord(locationRecord);
+    } catch (Throwable t) {
+      _log.error("Exception processing contents= " + contents, t);
+    }
   }
  
   @PostConstruct

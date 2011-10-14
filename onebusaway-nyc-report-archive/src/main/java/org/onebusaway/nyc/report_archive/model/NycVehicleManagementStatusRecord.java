@@ -53,10 +53,7 @@ public class NycVehicleManagementStatusRecord implements Serializable {
   @AccessType("property")
   private Integer id;
 
-  @Column(nullable = false, name = "vehicle_id")
-  private String vehicleId;
-
-  @Column(nullable = false, name = "active_bundle_id")
+  @Column(nullable = true, name = "active_bundle_id")
   private String activeBundleId;
 
   @Column(nullable = false, name = "last_update_time")
@@ -74,10 +71,10 @@ public class NycVehicleManagementStatusRecord implements Serializable {
   @Column(nullable = false, name = "most_recent_observed_destination_sign_code")
   private String mostRecentObservedDestinationSignCode;
   
-  @Column(nullable = false, name = "last_inferred_destination_sign_code")
+  @Column(nullable = true, name = "last_inferred_destination_sign_code")
   private String lastInferredDestinationSignCode;
   
-  @Column(nullable = false, name = "inference_engine_hostname")
+  @Column(nullable = true, name = "inference_engine_hostname")
   private String inferenceEngineHostname;
 
   @Column(nullable = false, name = "inference_is_enabled")
@@ -89,12 +86,23 @@ public class NycVehicleManagementStatusRecord implements Serializable {
   @Column(nullable = false, name = "inference_is_formal")
   private boolean inferenceIsFormal;
 
+  @Column(nullable = false, name = "emergency_flag")
+  private boolean emergencyFlag;
+
+  @Column(nullable = false, name = "depot_id")
+  private String depotId;
+
+  @Column(nullable = true, name = "last_inferred_operator_id")
+  private String lastInferredOperatorId;
+
+  @Column(nullable = true, name = "inferred_run_id")
+  private String inferredRunId;
+
   public NycVehicleManagementStatusRecord() {
   }
 
   public NycVehicleManagementStatusRecord(NycVehicleManagementStatusBean message) {
     super();
-    setVehicleId(message.getVehicleId());
     setActiveBundleId(message.getActiveBundleId());
     setLastUpdateTime(message.getLastUpdateTime());
     setLastLocationUpdateTime(message.getLastLocationUpdateTime());
@@ -106,6 +114,10 @@ public class NycVehicleManagementStatusRecord implements Serializable {
     setInferenceIsEnabled(message.isInferenceIsEnabled());
     setInferenceEngineIsPrimary(message.isInferenceEngineIsPrimary());
     setInferenceIsFormal(message.isInferenceIsFormal());
+    setDepotId(message.getDepotId());
+    setEmergencyFlag(message.isEmergencyFlag());
+    setLastInferredOperatorId(message.getLastInferredOperatorId());
+    setInferredRunId(message.getInferredRunId());
   }
 
   public Integer getId() {
@@ -114,14 +126,6 @@ public class NycVehicleManagementStatusRecord implements Serializable {
 
   public void setId(Integer id) {
     this.id = id;
-  }
-
-  public String getVehicleId() {
-    return vehicleId;
-  }
-
-  public void setVehicleId(String vehicleId) {
-    this.vehicleId = vehicleId;
   }
 
   public String getActiveBundleId() {
@@ -211,6 +215,38 @@ public class NycVehicleManagementStatusRecord implements Serializable {
 
   public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
     this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
+  }
+
+  public void setDepotId(String depotId) {
+    this.depotId = depotId;
+  }
+
+  public String getDepotId() {
+    return depotId;
+  }
+
+  public boolean isEmergencyFlag() {
+    return emergencyFlag;
+  }
+
+  public void setEmergencyFlag(boolean emergencyFlag) {
+    this.emergencyFlag = emergencyFlag;
+  }
+
+  public void setLastInferredOperatorId(String operatorId) {
+    this.lastInferredOperatorId = operatorId;
+  }
+
+  public String getLastInferredOperatorId() {
+    return lastInferredOperatorId;
+  }
+
+  public void setInferredRunId(String inferredRunId) {
+    this.inferredRunId = inferredRunId;
+  }
+
+  public String getInferredRunId() {
+    return inferredRunId;
   }
 
 }
