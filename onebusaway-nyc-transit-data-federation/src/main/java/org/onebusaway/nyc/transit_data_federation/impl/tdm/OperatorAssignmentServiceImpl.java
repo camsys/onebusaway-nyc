@@ -35,9 +35,19 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 
   private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
-	@Autowired
-	private ConfigurationService _configurationService;
-	
+  private ConfigurationService _configurationService;
+
+  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = new TransitDataManagerApiLibrary();
+
+  @Autowired
+  public void setConfigurationService(ConfigurationService configurationService) {
+    this._configurationService = configurationService;
+  }
+
+  public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
+    this._transitDataManagerApiLibrary = apiLibrary;
+  }
+  	
 	// map structure: service date -> (operator pass ID->operator assignment item)
 	private volatile HashMap<String, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
 			new HashMap<String, HashMap<String, OperatorAssignmentItem>>();
@@ -52,7 +62,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(String serviceDate) {
 		try {			
 			ArrayList<JsonObject> operatorAssignments = 
-				TransitDataManagerApiLibrary.getItemsForRequest("crew", serviceDate, "list");
+			    _transitDataManagerApiLibrary.getItemsForRequest("crew", serviceDate, "list");
 
 			HashMap<String, OperatorAssignmentItem> output = new HashMap<String, OperatorAssignmentItem>();
 			for(JsonObject itemToAdd : operatorAssignments) {
@@ -70,26 +80,33 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 			
 			return output;
 		} catch(Exception e) {
-			_log.error("Error getting operator list for serviceDate=" + serviceDate);
+			_log.error("Error getting operator list for serviceDate=" + serviceDate + "; error was " + e.getMessage());
 			return null;
 		}		
+	}
+	
+	public void refreshData() {
+    synchronized(_serviceDateToOperatorListMap) {
+      for(String serviceDate : _serviceDateToOperatorListMap.keySet()) {
+        HashMap<String, OperatorAssignmentItem> operatorIdToAssignmentItemMap = 
+            getOperatorMapForServiceDate(serviceDate);
+        
+        if(operatorIdToAssignmentItemMap != null)
+          _serviceDateToOperatorListMap.put(serviceDate, operatorIdToAssignmentItemMap);
+      }
+    }	  
 	}
 	
 	private class UpdateThread extends TimerTask {
 		@Override
 		public void run() {
-			synchronized(_serviceDateToOperatorListMap) {
-				for(String serviceDate : _serviceDateToOperatorListMap.keySet()) {
-					HashMap<String, OperatorAssignmentItem> operatorIdToAssignmentItemMap = getOperatorMapForServiceDate(serviceDate);
-					if(operatorIdToAssignmentItemMap != null)
-						_serviceDateToOperatorListMap.put(serviceDate, operatorIdToAssignmentItemMap);
-				}
-			}
+		  refreshData();
 		}		
 	}
 
-	@Refreshable(dependsOn = "tdm.crewAssignmentRefreshInterval")
-	public void configChanged() {
+	@SuppressWarnings("unused")
+  @Refreshable(dependsOn = "tdm.crewAssignmentRefreshInterval")
+	private void configChanged() {
 		Integer updateInterval = 
 				_configurationService.getConfigurationValueAsInteger("tdm.crewAssignmentRefreshInterval", null);
 
@@ -97,7 +114,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 			setUpdateFrequency(updateInterval);
 	}
 	
-	public void setUpdateFrequency(int seconds) {
+	private void setUpdateFrequency(int seconds) {
 		if(_updateTimer != null) {
 			_updateTimer.cancel();
 		}

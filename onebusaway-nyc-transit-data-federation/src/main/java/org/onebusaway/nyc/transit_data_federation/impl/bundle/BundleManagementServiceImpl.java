@@ -75,7 +75,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
   private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
-	private static TransitDataManagerApiLibrary _tdmLibrary = new TransitDataManagerApiLibrary();
+  private TransitDataManagerApiLibrary _apiLibrary = new TransitDataManagerApiLibrary();
 	
 	@Autowired
   private ApplicationContext _applicationContext;
@@ -95,6 +95,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	/******
 	 * Getters / Setters
 	 ******/
+  public void setApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
+    this._apiLibrary = apiLibrary;
+  }
+  
 	public String getBundleStoreRoot() {
 		return _bundleRootPath;
 	}
@@ -186,7 +190,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  _log.info("Getting current bundle list from TDM...");
 	  
 	  ArrayList<JsonObject> bundles = 
-	      TransitDataManagerApiLibrary.getItemsForRequest("bundle", "list");
+	      _apiLibrary.getItemsForRequest("bundle", "list");
 
 	  ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 	  for(JsonObject itemToAdd : bundles) {
@@ -346,7 +350,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	      if(!fileInBundlePath.exists()) {
 	        int tries = _fileDownloadRetries;
 	        while(tries > 0) {
-            URL fileDownloadUrl = _tdmLibrary.buildUrl("bundle", bundle.getId(), "file", file.getFilename(), "get");
+            URL fileDownloadUrl = _apiLibrary.buildUrl("bundle", bundle.getId(), "file", file.getFilename(), "get");
             try {
 	            downloadUrlToLocalPath(fileDownloadUrl, fileInBundlePath, file.getMd5());
 	          } catch(Exception e) {

@@ -26,23 +26,27 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private Timer _updateTimer = null;
 
-  @Autowired
-  private ConfigurationService _configurationService;
-
   private volatile HashMap<String, ArrayList<AgencyAndId>> _depotToVehicleIdListMap = new HashMap<String, ArrayList<AgencyAndId>>();
 
   private volatile Map<AgencyAndId, String> _vehicleIdToDepotMap = new HashMap<AgencyAndId, String>();
 
-  private TransitDataManagerApiLibrary _apiLibrary = new TransitDataManagerApiLibrary();
+  private ConfigurationService _configurationService;
 
-  public void setApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
-    this._apiLibrary = apiLibrary;
+  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = new TransitDataManagerApiLibrary();
+
+  @Autowired
+  public void setConfigurationService(ConfigurationService configurationService) {
+    this._configurationService = configurationService;
+  }
+
+  public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
+    this._transitDataManagerApiLibrary = apiLibrary;
   }
 
   private ArrayList<AgencyAndId> getVehicleListForDepot(String depotId) {
     try {
-      List<Map<String, String>> vehicleAssignments = _apiLibrary.getItems(
-          "depot", depotId, "vehicles", "list");
+      List<Map<String, String>> vehicleAssignments = 
+          _transitDataManagerApiLibrary.getItems("depot", depotId, "vehicles", "list");
 
       ArrayList<AgencyAndId> vehiclesForThisDepot = new ArrayList<AgencyAndId>();
       for (Map<String, String> depotVehicleAssignment : vehicleAssignments) {
@@ -88,13 +92,14 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
               updateVehicleIdToDepotMap(depotId);
             }
           }
-        } // for
+        } // end for
       }
     }
   }
 
+  @SuppressWarnings("unused")
   @Refreshable(dependsOn = "tdm.vehicleAssignmentRefreshInterval")
-  public void configChanged() {
+  private void configChanged() {
     Integer updateInterval = _configurationService.getConfigurationValueAsInteger(
         "tdm.vehicleAssignmentRefreshInterval", null);
 
@@ -102,7 +107,7 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
       setUpdateFrequency(updateInterval);
   }
 
-  public void setUpdateFrequency(int seconds) {
+  private void setUpdateFrequency(int seconds) {
     if (_updateTimer != null) {
       _updateTimer.cancel();
     }
@@ -128,11 +133,11 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
         if(list == null) 
           throw new Exception("Vehicle assignment service is temporarily unavailable.");
 
+        _depotToVehicleIdListMap.put(depotId, list);
+
         synchronized(_vehicleIdToDepotMap) {
           updateVehicleIdToDepotMap(depotId);
-        }
-        
-        _depotToVehicleIdListMap.put(depotId, list);
+        }        
       }
       return list;
     }
