@@ -21,19 +21,30 @@ public class PartitionedInputQueueListenerTask
 
   private String[] _depotPartitionKeys = null;
 
-  @Autowired
   private VehicleLocationInferenceService _vehicleLocationService;
   
-  @Autowired
   private VehicleAssignmentService _vehicleAssignmentService;
 
+  @Autowired
+  public void setVehicleAssignmentService(VehicleAssignmentService vehicleAssignmentService) {
+    _vehicleAssignmentService = vehicleAssignmentService;
+  }
+
+  @Autowired
+  public void setVehicleLocationService(VehicleLocationInferenceService vehicleLocationService) {
+    _vehicleLocationService = vehicleLocationService;
+  }
+
   @Override
-  public void processMessage(String address, String contents) {
+  public boolean processMessage(String address, String contents) {
     CcLocationReport message = deserializeMessage(contents);
 
     if(acceptMessage(message)) {
       _vehicleLocationService.handleCcLocationReportRecord(message);
+      return true;
     }
+
+    return false;
   }
 
   private boolean acceptMessage(CcLocationReport message) {

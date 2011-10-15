@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.vehicle_tracking.impl;
+package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;

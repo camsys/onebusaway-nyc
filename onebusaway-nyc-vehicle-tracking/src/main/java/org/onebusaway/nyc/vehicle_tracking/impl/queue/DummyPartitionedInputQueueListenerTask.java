@@ -16,8 +16,8 @@ public class DummyPartitionedInputQueueListenerTask
 
   }
   
-  public void processMessage(String address, String contents) {
-  
+  public boolean processMessage(String address, String contents) {
+    return true;
   }
   
 }

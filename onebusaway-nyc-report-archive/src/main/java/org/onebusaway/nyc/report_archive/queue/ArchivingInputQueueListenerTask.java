@@ -23,26 +23,28 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   @Override
   // this method can't throw exceptions or it will stop the queue
   // listening
-  public void processMessage(String address, String contents) {
+  public boolean processMessage(String address, String contents) {
     try {    
-	CcLocationReport message = deserializeMessage(contents);
+      CcLocationReport message = deserializeMessage(contents);
 
-	// message discarded, probably corrupted
-	if (message == null) return;
+      // message discarded, probably corrupted
+      if (message == null) return false;
 
-	CcLocationReportRecord record = new CcLocationReportRecord(message, contents);
-	if (record != null) {
-	    _dao.saveOrUpdateReport(record);
-	}
+      CcLocationReportRecord record = new CcLocationReportRecord(message, contents);
+      if (record != null) {
+        _dao.saveOrUpdateReport(record);
+      }
     } catch (Throwable t) {
-	_log.error("Exception processing contents= " + contents, t);
-	try {
-	    _dao.handleException(contents, t);
-	} catch (Throwable tt) {
-	    // we tried
-	    _log.error("Exception handling exception= " + tt);
-	}
+      _log.error("Exception processing contents= " + contents, t);
+      try {
+        _dao.handleException(contents, t);
+      } catch (Throwable tt) {
+        // we tried
+        _log.error("Exception handling exception= " + tt);
+      }
     }
+
+    return true;
   }
   
   @PostConstruct

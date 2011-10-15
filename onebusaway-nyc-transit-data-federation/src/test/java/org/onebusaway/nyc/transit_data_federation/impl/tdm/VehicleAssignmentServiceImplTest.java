@@ -24,7 +24,7 @@ public class VehicleAssignmentServiceImplTest {
   private TransitDataManagerApiLibrary mockApiLibrary;
 
   @InjectMocks
-  private VehicleAssignmentServiceImpl service = new VehicleAssignmentServiceImpl();
+  private VehicleAssignmentServiceImpl service;
 
   @Before
   public void setupApiLibrary() throws Exception {

@@ -29,7 +29,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.StifRe
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TimetableRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TripRecord;
 
-public class TestStifRecordReader {
+public class TestStifRecordReaderTest {
 	@Test
 	public void testRecordReader() throws IOException {
 	      InputStream in = getClass().getResourceAsStream("stif.m_0014__.210186.sun");

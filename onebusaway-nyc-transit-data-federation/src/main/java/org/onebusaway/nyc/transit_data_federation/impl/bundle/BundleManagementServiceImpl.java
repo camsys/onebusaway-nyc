@@ -60,7 +60,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   private HashMap<String, BundleItem> _validBundles = new HashMap<String, BundleItem>();
 
   // the currently loaded bundle ID
-  private String _currentBundleId = null;
+  protected String _currentBundleId = null;
 
   // time to use when comparing bundles for applicability to "today"
   private Date _today = new Date();
@@ -92,13 +92,13 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	@Autowired
 	private RefreshService _refreshService;
 
-	/******
-	 * Getters / Setters
-	 ******/
-  public void setApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
+  public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
     this._apiLibrary = apiLibrary;
   }
-  
+
+  /******
+	 * Getters / Setters
+	 ******/
 	public String getBundleStoreRoot() {
 		return _bundleRootPath;
 	}
@@ -129,7 +129,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   /******
    * Helper methods for discovery of bundles
    ******/
-  private ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
+  protected ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
     ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 
     File bundleRoot = new File(_bundleRootPath);
@@ -400,7 +400,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	 * 
 	 * @throws Exception
 	 */
-	public void reevaluateBundleAssignment() throws Exception {
+	protected void reevaluateBundleAssignment() throws Exception {
 	  refreshValidBundleList();
 
 	  if(_validBundles.size() == 0) {
@@ -415,9 +415,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     changeBundle(bestBundle.getId());
 	}
 	
-  @SuppressWarnings("unused")
   @PostConstruct
-  private void setup() throws Exception {
+  protected void setup() throws Exception {
     discoverBundles();
     reevaluateBundleAssignment();    
     
@@ -429,8 +428,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     
     // this process makes sure we're using the best bundle for the current 
     // service date every hour on the hour.
-    BundleSwitchUpdateThread updateThread = new BundleSwitchUpdateThread();
-    _taskScheduler.schedule(updateThread, updateThread);
+    if(_taskScheduler != null) {
+      BundleSwitchUpdateThread updateThread = new BundleSwitchUpdateThread();
+      _taskScheduler.schedule(updateThread, updateThread);
+    }
   }	
 	
   /******

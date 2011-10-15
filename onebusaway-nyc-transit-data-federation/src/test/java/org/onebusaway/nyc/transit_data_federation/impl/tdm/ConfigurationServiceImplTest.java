@@ -29,7 +29,7 @@ public class ConfigurationServiceImplTest {
   private RestApiLibrary mockRestApiLibrary;
 
   @InjectMocks
-  private ConfigurationServiceImpl service = new ConfigurationServiceImpl();
+  private ConfigurationServiceImpl service;
 
   @Before
   public void setupApiLibrary() throws Exception {

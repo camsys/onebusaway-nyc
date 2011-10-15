@@ -32,7 +32,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.BlockAndRuns
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripLoader;
 import org.opentripplanner.graph_builder.services.DisjointSet;
 
-public class TestStifTripLoader {
+public class TestStifTripLoaderTest {
   @Test
   public void testLoader() throws IOException {
     InputStream in = getClass().getResourceAsStream("stif.m_0014__.210186.sun");

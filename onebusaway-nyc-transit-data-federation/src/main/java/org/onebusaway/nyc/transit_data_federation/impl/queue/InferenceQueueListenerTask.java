@@ -137,6 +137,7 @@ public abstract class InferenceQueueListenerTask {
     _initialized = true;
   }	
 
+  // FIXME why is this split out like this?
   protected void initializeZmq(String host, String queueName, Integer port) {
     String bind = "tcp://" + host + ":" + port;
 

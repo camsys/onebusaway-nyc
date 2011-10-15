@@ -228,7 +228,10 @@ public class NycRawLocationRecord {
   }
 
   public String getRunId() {
-    return runRouteId + "_" + runNumber;
+    if(runRouteId == null || runNumber == null)
+      return null;
+    else
+      return runRouteId + "_" + runNumber;
   }
 
   public void setRunNumber(String runNumber) {

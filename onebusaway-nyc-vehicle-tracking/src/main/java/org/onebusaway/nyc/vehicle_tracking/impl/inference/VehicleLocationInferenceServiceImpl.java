@@ -30,6 +30,7 @@ import javax.annotation.PreDestroy;
 
 import lrms_final_09_07.Angle;
 
+import org.apache.axis.utils.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -224,9 +225,14 @@ public class VehicleLocationInferenceServiceImpl implements
 			  Long.toString(message.getVehicle().getVehicleId()));
 	  r.setVehicleId(vehicleId);
 
-	  r.setOperatorId(message.getOperatorID().getDesignator());
-	  r.setRunNumber(message.getRunID().getDesignator());
-	  r.setRunRouteId(message.getRouteID().getRouteDesignator());
+	  if(!StringUtils.isEmpty(message.getOperatorID().getDesignator()))
+	    r.setOperatorId(message.getOperatorID().getDesignator());
+	  
+    if(!StringUtils.isEmpty(message.getRunID().getDesignator()))
+      r.setRunNumber(message.getRunID().getDesignator());
+
+    if(!StringUtils.isEmpty(message.getRouteID().getRouteDesignator()))
+      r.setRunRouteId(message.getRouteID().getRouteDesignator());
 
 	  EmergencyCodes emergencyCodes = message.getEmergencyCodes();
 	  if(emergencyCodes != null)

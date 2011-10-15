@@ -6,6 +6,13 @@ public interface PartitionedInputQueueListener {
 
   public void setDepotPartitionKey(String depotPartitionKey);
   
-  public void processMessage(String address, String contents);
+  /**
+   * Attempt to process a TCIP JSON message.
+   * 
+   * @param address
+   * @param contents
+   * @return whether the message was processed successfully or not.
+   */
+  public boolean processMessage(String address, String contents);
   
 }
