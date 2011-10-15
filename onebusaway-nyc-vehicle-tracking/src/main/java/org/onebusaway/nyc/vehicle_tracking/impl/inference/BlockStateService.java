@@ -131,8 +131,6 @@ public class BlockStateService {
       m.put(key, blockState);
     }
 
-    // _log.info("cache: " + _cacheMissCount + " / " + _cacheAccessCount);
-
     return blockState;
   }
 

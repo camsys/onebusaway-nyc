@@ -432,9 +432,12 @@ public class VehicleLocationInferenceServiceImpl implements
         if (passOnRecord) {
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
-
         	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
-            
+
+        	BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+        	if(currentBundle != null)
+            managementRecord.setActiveBundleId(currentBundle.getId());
+        	
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());
           record.setManagementRecord(managementRecord);

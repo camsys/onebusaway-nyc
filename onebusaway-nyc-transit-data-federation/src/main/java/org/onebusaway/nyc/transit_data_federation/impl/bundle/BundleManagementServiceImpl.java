@@ -92,10 +92,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	@Autowired
 	private RefreshService _refreshService;
 
-  public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
-    this._apiLibrary = apiLibrary;
-  }
-
   /******
 	 * Getters / Setters
 	 ******/
@@ -427,7 +423,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     _updateTimer.schedule(new BundleDiscoveryUpdateThread(), updateInterval, updateInterval); 
     
     // this process makes sure we're using the best bundle for the current 
-    // service date every hour on the hour.
+    // service date every hour, on the hour.
     if(_taskScheduler != null) {
       BundleSwitchUpdateThread updateThread = new BundleSwitchUpdateThread();
       _taskScheduler.schedule(updateThread, updateThread);
@@ -505,7 +501,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 
 	/*****
-	 * Private helper classes
+	 * Private helper things
 	 *****/
   private class BundleSwitchUpdateThread extends TimerTask implements Trigger {
     @Override

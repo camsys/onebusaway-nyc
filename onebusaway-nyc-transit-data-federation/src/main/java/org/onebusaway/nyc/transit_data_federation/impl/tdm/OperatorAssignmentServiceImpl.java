@@ -35,6 +35,10 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 
   private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
+  // map structure: service date -> (operator pass ID->operator assignment item)
+  private volatile HashMap<String, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
+      new HashMap<String, HashMap<String, OperatorAssignmentItem>>();
+
   private ConfigurationService _configurationService;
 
   private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = new TransitDataManagerApiLibrary();
@@ -48,10 +52,6 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     this._transitDataManagerApiLibrary = apiLibrary;
   }
   	
-	// map structure: service date -> (operator pass ID->operator assignment item)
-	private volatile HashMap<String, HashMap<String, OperatorAssignmentItem>> _serviceDateToOperatorListMap = 
-			new HashMap<String, HashMap<String, OperatorAssignmentItem>>();
-
 	private String getServiceDateKey(Date date) {
 		if(date != null)
 		  return _serviceDateFormatter.format(date);
