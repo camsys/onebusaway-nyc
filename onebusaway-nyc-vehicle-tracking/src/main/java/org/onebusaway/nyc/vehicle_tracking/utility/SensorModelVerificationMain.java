@@ -292,8 +292,7 @@ public class SensorModelVerificationMain {
     r.setTimeReceived(record.getTimestamp());
     r.setVehicleId(record.getVehicleId());
     r.setOperatorId(record.getOperatorId());
-    r.setRunId(record.getReportedRunId());
-    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "_");
+    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "-");
     if (runInfo != null && runInfo.length > 0) {
       r.setRunRouteId(runInfo[0]);
       if (runInfo.length > 1)

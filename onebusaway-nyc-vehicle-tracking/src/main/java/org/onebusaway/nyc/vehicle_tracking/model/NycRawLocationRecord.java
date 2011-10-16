@@ -20,6 +20,7 @@ import java.util.Date;
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 
 public class NycRawLocationRecord {
 
@@ -50,9 +51,6 @@ public class NycRawLocationRecord {
 
   @CsvField(name = "operator")
   private String operatorId;
-
-  @CsvField(name = "run")
-  private String runId;
 
   @CsvField(name = "runnumber")
   private String runNumber;
@@ -152,10 +150,6 @@ public class NycRawLocationRecord {
 	  return runNumber;
   }
 
-  public void setRunId(String runId) {
-	  this.runId = runId;
-  }
-
   public String getRunRouteId() {
 	  return runRouteId;
   }
@@ -235,7 +229,7 @@ public class NycRawLocationRecord {
   }
 
   public String getRunId() {
-    return runId;
+    return RunTripEntry.createId(runRouteId, runNumber);
   }
 
   public void setRunNumber(String runNumber) {

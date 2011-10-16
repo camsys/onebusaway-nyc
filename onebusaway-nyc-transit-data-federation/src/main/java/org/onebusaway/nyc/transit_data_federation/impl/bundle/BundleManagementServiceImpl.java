@@ -29,9 +29,9 @@ import org.onebusaway.gtfs.model.calendar.CalendarServiceData;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleFileItem;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleFileItem;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleItem;
 import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.utility.ObjectSerializationLibrary;
@@ -60,7 +60,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   private HashMap<String, BundleItem> _validBundles = new HashMap<String, BundleItem>();
 
   // the currently loaded bundle ID
-  private String _currentBundleId = null;
+  protected String _currentBundleId = null;
 
   // time to use when comparing bundles for applicability to "today"
   private Date _today = new Date();
@@ -75,7 +75,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
   private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
-	private static TransitDataManagerApiLibrary _tdmLibrary = new TransitDataManagerApiLibrary();
+  private TransitDataManagerApiLibrary _apiLibrary = new TransitDataManagerApiLibrary();
 	
 	@Autowired
   private ApplicationContext _applicationContext;
@@ -92,7 +92,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	@Autowired
 	private RefreshService _refreshService;
 
-	/******
+  /******
 	 * Getters / Setters
 	 ******/
 	public String getBundleStoreRoot() {
@@ -125,7 +125,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   /******
    * Helper methods for discovery of bundles
    ******/
-  private ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
+  protected ArrayList<BundleItem> getBundleListFromLocalStore() throws Exception {
     ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 
     File bundleRoot = new File(_bundleRootPath);
@@ -186,7 +186,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  _log.info("Getting current bundle list from TDM...");
 	  
 	  ArrayList<JsonObject> bundles = 
-	      TransitDataManagerApiLibrary.getItemsForRequest("bundle", "list");
+	      _apiLibrary.getItemsForRequest("bundle", "list");
 
 	  ArrayList<BundleItem> output = new ArrayList<BundleItem>();
 	  for(JsonObject itemToAdd : bundles) {
@@ -346,7 +346,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	      if(!fileInBundlePath.exists()) {
 	        int tries = _fileDownloadRetries;
 	        while(tries > 0) {
-            URL fileDownloadUrl = _tdmLibrary.buildUrl("bundle", bundle.getId(), "file", file.getFilename(), "get");
+            URL fileDownloadUrl = _apiLibrary.buildUrl("bundle", bundle.getId(), "file", file.getFilename(), "get");
             try {
 	            downloadUrlToLocalPath(fileDownloadUrl, fileInBundlePath, file.getMd5());
 	          } catch(Exception e) {
@@ -396,7 +396,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	 * 
 	 * @throws Exception
 	 */
-	public void reevaluateBundleAssignment() throws Exception {
+	protected void reevaluateBundleAssignment() throws Exception {
 	  refreshValidBundleList();
 
 	  if(_validBundles.size() == 0) {
@@ -411,9 +411,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     changeBundle(bestBundle.getId());
 	}
 	
-  @SuppressWarnings("unused")
   @PostConstruct
-  private void setup() throws Exception {
+  protected void setup() throws Exception {
     discoverBundles();
     reevaluateBundleAssignment();    
     
@@ -424,9 +423,11 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     _updateTimer.schedule(new BundleDiscoveryUpdateThread(), updateInterval, updateInterval); 
     
     // this process makes sure we're using the best bundle for the current 
-    // service date every hour on the hour.
-    BundleSwitchUpdateThread updateThread = new BundleSwitchUpdateThread();
-    _taskScheduler.schedule(updateThread, updateThread);
+    // service date every hour, on the hour.
+    if(_taskScheduler != null) {
+      BundleSwitchUpdateThread updateThread = new BundleSwitchUpdateThread();
+      _taskScheduler.schedule(updateThread, updateThread);
+    }
   }	
 	
   /******
@@ -500,7 +501,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	}
 
 	/*****
-	 * Private helper classes
+	 * Private helper things
 	 *****/
   private class BundleSwitchUpdateThread extends TimerTask implements Trigger {
     @Override

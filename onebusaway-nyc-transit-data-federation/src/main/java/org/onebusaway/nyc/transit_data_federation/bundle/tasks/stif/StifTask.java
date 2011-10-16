@@ -30,7 +30,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-import org.onebusaway.nyc.transit_data_federation.model.RunData;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.opentripplanner.graph_builder.services.DisjointSet;
 import org.slf4j.Logger;

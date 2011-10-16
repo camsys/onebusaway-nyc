@@ -108,8 +108,8 @@
                 <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
                 <!-- TODO Note sure about autocommit for postgres -->
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
-		<ie.listener>DummyInputQueueListenerTask</ie.listener>
-		<ie.output.queue>PartitionedInputQueueListenerTask</ie.output.queue>
+				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
             </properties>
         </profile>
         <profile>
@@ -121,20 +121,20 @@
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
-		<ie.listener>DummyInputQueueListenerTask</ie.listener>
-		<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+				<ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
+				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
             </properties>
         </profile>
         <profile>
             <id>db-hsqldb-local-server</id>
             <properties>
                 <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
-                <db.url>jdbc:hsqldb:file:${bundleStoreRoot}/org_onebusaway_database</db.url>
+                <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
                 <db.username>sa</db.username>
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
-		<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
-		<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
             </properties>
         </profile>
         <!-- TODO MySQL -->

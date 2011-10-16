@@ -364,24 +364,23 @@ public class VehicleLocationSimulationServiceImpl implements
      * here we format the runId to have a run-route that looks similar to what
      * an operator would enter.
      */
-    String reportedRunId = runTrip.getRunId();
-    String[] runInfo = StringUtils.splitByWholeSeparator(reportedRunId, "-");
-    String runNumber = null;
-    String runRoute = null;
-    // TODO FIXME we should be using RunID objects
-    if (runInfo != null && runInfo.length > 0) {
-      runRoute = runInfo[0];
-      if (runInfo.length > 1) {
-        runNumber = runInfo[1];
-      }
-    }
-    if (StringUtils.isAlpha(runRoute)) {
-      // only characters
+    String runNumber = runTrip.getRunNumber();
+    String runRoute = runTrip.getRunRoute();
+    
+    if (StringUtils.equals(runRoute, "MISC")) {
+      //runRoute = "0" + random.nextInt(9) + random.nextInt(9);
       runRoute = "000";
+    } else if (runRoute.length() >= 5) {
+      String firstPart = runRoute.substring(1, 3);
+      String lastPart = runRoute.substring(3);
+      runRoute = "0" + (random.nextBoolean() ? firstPart : lastPart);
     } else {
-      runRoute = StringUtils.substring(runRoute, 1, 3);
+      String firstPart = runRoute.substring(1, 3);
+      runRoute = "0" + firstPart; 
     }
-    reportedRunId = RunTripEntry.createId(runRoute, runNumber);
+    
+    String reportedRunId = RunTripEntry.createId(runRoute, runNumber);
+    
     if (reportsRunId)
       _log.info("using reported runId=" + reportedRunId);
 

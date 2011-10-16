@@ -50,6 +50,8 @@
         <property name="hbm2ddl.auto">create</property>
 
         <mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReportRecord"/>
+        <mapping class="org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord"/>
+        <mapping class="org.onebusaway.nyc.report_archive.model.NycVehicleManagementStatusRecord"/>
 
 <!--         <mapping resource="org/onebusaway/users/impl/UserDaoImpl.hibernate.xml" />
  -->

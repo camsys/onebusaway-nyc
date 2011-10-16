@@ -2,29 +2,21 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateMidnight;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
@@ -32,7 +24,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ReliefState;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycRefreshableResources;
-import org.onebusaway.nyc.transit_data_federation.model.RunData;
+import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -40,9 +32,7 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -79,6 +69,15 @@ public class RunServiceImpl implements RunService {
   @Autowired
   public void setCalendarService(CalendarService calendarService) {
     this.calendarService = calendarService;
+  }
+  
+  public ExtendedCalendarService getCalendarService() {
+    return extCalendarService;
+  }
+
+  @Autowired
+  public void setExtendedCalendarService(ExtendedCalendarService extCalendarService) {
+    this.extCalendarService = extCalendarService;
   }
 
   @Autowired
@@ -274,8 +273,9 @@ public class RunServiceImpl implements RunService {
       long serviceDate = binst.getServiceDate();
       int scheduleTime = (int) ((time - serviceDate) / 1000);
       RunTripEntry rte = getActiveRunTripEntryForBlockInstance(binst, scheduleTime);
-      String thisRunId = null;
-
+      if (rte == null)
+        continue;
+      
       /*
        * we check and setup for the following cases:
        * 1. misc: the operator entered values are nearly arbitrary
@@ -284,6 +284,7 @@ public class RunServiceImpl implements RunService {
        *  enter any two numbers from the numeric part of the actual id
        * 3. route id - borough == 2: expected case; simply get dist. 
        */
+      String thisRunId = null;
       if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
         // TODO check consistency of this
         thisRunId = RunTripEntry.createId("0" + getMinLevenshteinDist(cutRunRoute, "00", "11"), rte.getRunNumber());
@@ -447,8 +448,6 @@ public class RunServiceImpl implements RunService {
   public RunTripEntry getActiveRunTripEntryForBlockInstance(
       BlockInstance blockInstance, int scheduleTime) {
 
-    long serviceDate = blockInstance.getServiceDate();
-
     ScheduledBlockLocation blockLocation = scheduledBlockLocationService
         .getScheduledBlockLocationFromScheduledTime(blockInstance.getBlock(),
             scheduleTime);
@@ -531,16 +530,6 @@ public class RunServiceImpl implements RunService {
         return tmpBli.get(0);
     }
     return bli;
-  }
-
-  public ExtendedCalendarService getCalendarService() {
-    return extCalendarService;
-  }
-
-  @Autowired
-  public void setExtendedCalendarService(
-      ExtendedCalendarService extCalendarService) {
-    this.extCalendarService = extCalendarService;
   }
 
 }

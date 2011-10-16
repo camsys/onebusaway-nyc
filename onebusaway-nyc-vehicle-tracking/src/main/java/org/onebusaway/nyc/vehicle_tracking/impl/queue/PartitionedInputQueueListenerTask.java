@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,32 +15,50 @@ import javax.annotation.PreDestroy;
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
-public class PartitionedInputQueueListenerTask extends InputQueueListenerTask {
+public class PartitionedInputQueueListenerTask 
+  extends InputQueueListenerTask 
+  implements PartitionedInputQueueListener {
 
   private String[] _depotPartitionKeys = null;
 
-  @Autowired
   private VehicleLocationInferenceService _vehicleLocationService;
   
-  @Autowired
   private VehicleAssignmentService _vehicleAssignmentService;
 
+  @Autowired
+  public void setVehicleAssignmentService(VehicleAssignmentService vehicleAssignmentService) {
+    _vehicleAssignmentService = vehicleAssignmentService;
+  }
+
+  @Autowired
+  public void setVehicleLocationService(VehicleLocationInferenceService vehicleLocationService) {
+    _vehicleLocationService = vehicleLocationService;
+  }
+
   @Override
-  public void processMessage(String address, String contents) {
+  public boolean processMessage(String address, String contents) {
     CcLocationReport message = deserializeMessage(contents);
 
-    if (acceptMessage(message)) {
+    if(acceptMessage(message)) {
       _vehicleLocationService.handleCcLocationReportRecord(message);
+      return true;
     }
+
+    return false;
   }
 
   private boolean acceptMessage(CcLocationReport message) {
     if(message == null)
       return false;
-    
+
     ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
     for(String key : _depotPartitionKeys) {
-      vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
+      try {
+        vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
+      } catch(Exception e) {
+        _log.warn("Error fetching assigned vehicles for depot " + key + "; will retry.");
+        continue;
+      }
     }
     
     CPTVehicleIden vehicleIdent = message.getVehicle();

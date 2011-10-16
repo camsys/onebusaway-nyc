@@ -52,7 +52,7 @@ public class ProcessingTaskTest {
     AgencyAndId vehicleId = mock(AgencyAndId.class);
     when(infLocationRec.getVehicleId()).thenReturn(vehicleId);
 
-    when(_vehicleAssignmentService.getAssignedDepotForVehicle(vehicleId)).thenReturn(DEPOT);
+    when(_vehicleAssignmentService.getAssignedDepotForVehicleId(vehicleId)).thenReturn(DEPOT);
 
     service.setApplicationContext(appContext);
 

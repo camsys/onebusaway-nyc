@@ -24,7 +24,7 @@ public class VehicleAssignmentServiceImplTest {
   private TransitDataManagerApiLibrary mockApiLibrary;
 
   @InjectMocks
-  private VehicleAssignmentServiceImpl service = new VehicleAssignmentServiceImpl();
+  private VehicleAssignmentServiceImpl service;
 
   @Before
   public void setupApiLibrary() throws Exception {
@@ -64,7 +64,7 @@ public class VehicleAssignmentServiceImplTest {
 
   @Test
   public void testGetAssignedDepotForVehicleId() throws Exception {
-    String depot = service.getAssignedDepotForVehicle(new AgencyAndId("MTA",
+    String depot = service.getAssignedDepotForVehicleId(new AgencyAndId("MTA",
         "45"));
     assertEquals("JG", depot);
   }

@@ -2,8 +2,8 @@
 .classpath
 .settings
 */src/main/resources/data-sources.xml
-*/target/*
 */bin/*
 *~
 */local-hsqldb-db/*
 *.swp
+target

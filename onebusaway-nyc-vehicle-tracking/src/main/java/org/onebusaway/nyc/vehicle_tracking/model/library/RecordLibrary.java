@@ -95,8 +95,7 @@ public class RecordLibrary {
     vlr.setTimeReceived(record.getTimestamp());
     vlr.setVehicleId(record.getVehicleId());
     vlr.setOperatorId(record.getOperatorId());
-    vlr.setRunId(record.getReportedRunId());
-    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "_");
+    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "-");
     if (runInfo != null && runInfo.length > 0) {
       vlr.setRunRouteId(runInfo[0]);
       if (runInfo.length > 1)

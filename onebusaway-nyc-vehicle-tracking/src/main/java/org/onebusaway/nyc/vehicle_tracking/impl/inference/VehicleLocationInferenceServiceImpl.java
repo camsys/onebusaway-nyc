@@ -30,14 +30,15 @@ import javax.annotation.PreDestroy;
 
 import lrms_final_09_07.Angle;
 
+import org.apache.axis.utils.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.model.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
@@ -225,10 +226,14 @@ public class VehicleLocationInferenceServiceImpl implements
 			  Long.toString(message.getVehicle().getVehicleId()));
 	  r.setVehicleId(vehicleId);
 
-	  r.setOperatorId(message.getOperatorID().getDesignator());
-	  r.setRunNumber(message.getRunID().getDesignator());
-	  r.setRunRouteId(message.getRouteID().getRouteDesignator());
-	  r.setRunId(RunTripEntry.createId(r.getRunRouteId(), r.getRunNumber()));
+	  if(!StringUtils.isEmpty(message.getOperatorID().getDesignator()))
+	    r.setOperatorId(message.getOperatorID().getDesignator());
+	  
+    if(!StringUtils.isEmpty(message.getRunID().getDesignator()))
+      r.setRunNumber(message.getRunID().getDesignator());
+
+    if(!StringUtils.isEmpty(message.getRouteID().getRouteDesignator()))
+      r.setRunRouteId(message.getRouteID().getRouteDesignator());
 
 	  EmergencyCodes emergencyCodes = message.getEmergencyCodes();
 	  if(emergencyCodes != null)
@@ -428,9 +433,12 @@ public class VehicleLocationInferenceServiceImpl implements
         if (passOnRecord) {
         	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
         	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
 
-        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicle(_vehicleId));
-            
+        	BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+        	if(currentBundle != null)
+            managementRecord.setActiveBundleId(currentBundle.getId());
+        	
         	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
         	record.setVehicleId(_vehicleId.toString());
           record.setManagementRecord(managementRecord);

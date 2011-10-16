@@ -19,38 +19,53 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private static Logger _log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);
 
-	@Autowired
-	private RefreshService _refreshService;
+	private RefreshService _refreshService = null;
 		
+  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = new TransitDataManagerApiLibrary();
+
 	private Timer _updateTimer = null;
 
 	private volatile HashMap<String, String> _configurationKeyToValueMap = new HashMap<String,String>();
 
+  @Autowired
+  public void setRefreshService(RefreshService refreshService) {
+    this._refreshService = refreshService;
+  }
+  
+  public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
+    this._transitDataManagerApiLibrary = apiLibrary;
+  }
+  
 	private void updateConfigurationMap(String configKey, String configValue) {
-		String currentValue = _configurationKeyToValueMap.get(configKey);
+    synchronized(_configurationKeyToValueMap) {
+      String currentValue = _configurationKeyToValueMap.get(configKey);
 		
-		_configurationKeyToValueMap.put(configKey, configValue);
+      _configurationKeyToValueMap.put(configKey, configValue);
+      
+      if(currentValue == null || !configValue.equals(currentValue)) {	
+        _log.info("Invoking refresh method for config key " + configKey);
+        _refreshService.refresh(configKey);
+      }
+    }
+	}
+	
+	public void refreshConfiguration() throws Exception {
+	  ArrayList<JsonObject> configurationItems = 
+        _transitDataManagerApiLibrary.getItemsForRequest("config", "list");
 
-		if(currentValue == null || !configValue.equals(currentValue)) {	
-			_log.info("Invoking refresh method for config key " + configKey);
-			_refreshService.refresh(configKey);
-		}
+    for(JsonObject configItem : configurationItems) {
+      String configKey = configItem.get("key").getAsString();
+      String configValue = configItem.get("value").getAsString();           
+
+      updateConfigurationMap(configKey, configValue);
+    } 
 	}
 	
 	private class UpdateThread extends TimerTask {
 		@Override
 		public void run() {			
 			try {				
-				synchronized(_configurationKeyToValueMap) {
-					ArrayList<JsonObject> configurationItems = TransitDataManagerApiLibrary.getItemsForRequest("config", "list");
-
-					for(JsonObject configItem : configurationItems) {
-						String configKey = configItem.get("key").getAsString();
-						String configValue = configItem.get("value").getAsString();						
-
-						updateConfigurationMap(configKey, configValue);
-					}	
-				}
+			  refreshConfiguration();
 			} catch(Exception e) {
 				_log.error("Error updating configuration from TDM: " + e.getMessage());
 				e.printStackTrace();
@@ -59,28 +74,28 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 		
 	@SuppressWarnings("unused")
-	@PostConstruct
+  @PostConstruct
 	private void startUpdateProcess() {
-	  _log.info("Starting update process...");
 		_updateTimer = new Timer();
 		_updateTimer.schedule(new UpdateThread(), 0, 30 * 1000); // 30s	
 	}
 	
 	@Override
-	public synchronized String getConfigurationValueAsString(String configurationItemKey,
+	public String getConfigurationValueAsString(String configurationItemKey,
 			String defaultValue) {
 
-		String value = _configurationKeyToValueMap.get(configurationItemKey);
+    synchronized(_configurationKeyToValueMap) {
+      String value = _configurationKeyToValueMap.get(configurationItemKey);
 		
-		if(value == null)
-			return defaultValue;
-		else 
-			return value;
+      if(value == null)
+        return defaultValue;
+      else 
+        return value;
+    }
 	}
 
 	@Override
-	public synchronized Float getConfigurationValueAsFloat(String configurationItemKey,
-			Float defaultValue) {
+	public Float getConfigurationValueAsFloat(String configurationItemKey, Float defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
 			
@@ -92,8 +107,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	@Override
-	public synchronized Integer getConfigurationValueAsInteger(String configurationItemKey,
-			Integer defaultValue) {
+	public Integer getConfigurationValueAsInteger(String configurationItemKey, Integer defaultValue) {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
 			
@@ -105,16 +119,19 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	@Override
-	public synchronized void setConfigurationValue(String configurationItemKey, String value) throws Exception {
+	public void setConfigurationValue(String configurationItemKey, String value) throws Exception {
 		if(value == null || value.equals("null")) {
 			throw new Exception("Configuration values cannot be null (or 'null' as a string!).");
 		}
 		
-		String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
-		if(configurationItemKey != null && currentValue.equals(value))
-			return;
+		synchronized(_configurationKeyToValueMap) {
+		  String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
+		  if(configurationItemKey != null && (currentValue != null && currentValue.equals(value)))
+		    return;
 		
-		TransitDataManagerApiLibrary.executeApiMethodWithNoResult("config", "set", configurationItemKey, value);
-		updateConfigurationMap(configurationItemKey, value);
+		  _transitDataManagerApiLibrary
+		    .executeApiMethodWithNoResult("config", "set", configurationItemKey, value);
+		  updateConfigurationMap(configurationItemKey, value);
+		}		 
 	}
 }

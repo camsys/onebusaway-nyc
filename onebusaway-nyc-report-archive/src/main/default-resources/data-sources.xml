@@ -57,9 +57,11 @@
         </property> 
     </bean> 
 
-    <!-- Input Queue Configuration -->
+    <!-- Input and Inference Queue Configuration -->
 
     <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
+    </bean>
+    <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
     </bean>
     
 </beans>
