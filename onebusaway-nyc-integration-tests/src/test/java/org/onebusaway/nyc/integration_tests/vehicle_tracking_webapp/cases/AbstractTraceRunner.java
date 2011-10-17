@@ -128,7 +128,7 @@ public class AbstractTraceRunner {
   
   @SuppressWarnings("unused")
   @Before 
-  private void setup() throws Exception {
+  public void setup() throws Exception {
     String federationPort = System.getProperty("org.onebusaway.transit_data_federation_webapp.port","9905");
 
     HessianProxyFactory factory = new HessianProxyFactory();
@@ -216,7 +216,15 @@ public class AbstractTraceRunner {
       NycTestInferredLocationRecord expRecord = expected.get(i);
       NycTestInferredLocationRecord actRecord = actual.get(i);
 
-      assertTrue(StringUtils.isNotEmpty(expRecord.getInferredStatus()));
+      assertTrue(StringUtils.isNotEmpty(actRecord.getInferredStatus()));
+      
+      /*
+       * Check that we don't register a trip for an out-of-service DSC
+       */
+      String dsc = actRecord.getInferredDsc();
+      if (StringUtils.isNotBlank(actRecord.getInferredTripId())) {
+        assertTrue(!_vehicleTrackingManagementService.isOutOfServiceDestinationSignCode(dsc));
+      }
       
       EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
       
