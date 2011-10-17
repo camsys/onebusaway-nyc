@@ -334,37 +334,45 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
        * with nearby block searches alone, other than perhaps to confirm the UTS
        * and reported runId match...
        */
-      TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService
-          .getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId,
-              reportedRunId), nearbyBlocks, obsDate.getTime());
-
-      if (fuzzyReportedMatches == null || fuzzyReportedMatches.isEmpty()) {
-        _log.warn("couldn't find a fuzzy match for reported runId="
-            + reportedRunId);
-      } else {
-        /*
-         * FIXME this is a bit of a hack, but it helps for now
-         */
-        int bestDist = fuzzyReportedMatches.firstKey();
-
-        /*
-         * if there is no UTS runTrip, then use the fuzzy matches. otherwise,
-         * check that the fuzzy matches contain the UTS value, and, if so, use
-         * just that (implemented by not adding to the runEntriesToTry).
-         */
-        if (utsRunTrip != null) {
-          if (!fuzzyReportedMatches.get(bestDist).contains(utsRunTrip)) {
-            _log.warn("UTS assigned runTrip=" + utsRunId
-                + " not found among reported-run matches");
-            utsReportedRunMismatch = true;
-          }
+      try {
+        TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService
+            .getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId,
+                reportedRunId), nearbyBlocks, obsDate.getTime());
+        if (fuzzyReportedMatches.isEmpty()) {
+          _log.warn("couldn't find a fuzzy match for reported runId="
+              + reportedRunId);
         } else {
-          // FIXME don't keep this reportedRtes set around just for matching
-          // later
-          reportedRtes.addAll(fuzzyReportedMatches.get(bestDist));
-          runEntriesToTry.addAll(reportedRtes);
+          /*
+           * FIXME this is a bit of a hack, but it helps for now.
+           * essentially, we only deal with the best matches.  makes
+           * sense, but only if there is a good deal of consistency
+           * among the id's involved, and a fair ranking by using the
+           * Levenshtein distance.
+           */
+          int bestDist = fuzzyReportedMatches.firstKey();
+
+          /*
+           * if there is no UTS runTrip, then use the fuzzy matches. otherwise,
+           * check that the fuzzy matches contain the UTS value, and, if so, use
+           * just that (implemented by not adding to the runEntriesToTry).
+           */
+          if (utsRunTrip != null) {
+            if (!fuzzyReportedMatches.get(bestDist).contains(utsRunTrip)) {
+              _log.warn("UTS assigned runTrip=" + utsRunId
+                  + " not found among reported-run matches");
+              utsReportedRunMismatch = true;
+            }
+          } else {
+            // FIXME don't keep this reportedRtes set around just for matching
+            // later
+            reportedRtes.addAll(fuzzyReportedMatches.get(bestDist));
+            runEntriesToTry.addAll(reportedRtes);
+          }
         }
+      } catch (IllegalArgumentException ex) {
+        _log.warn(ex.getMessage());
       }
+
     }
 
     if (!runEntriesToTry.isEmpty()) {
@@ -381,8 +389,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
             .getBlockInstanceForRunTripEntry(rte, obsDate);
 
         if (blockInstance == null) {
-          _log.info("couldn't find block instance for blockEntry="
-              + blockEntry + ", time=" + obsDate.getTime());
+          _log.info("couldn't find block instance for blockEntry=" + blockEntry
+              + ", time=" + obsDate.getTime());
           return blockStates;
         } else {
 

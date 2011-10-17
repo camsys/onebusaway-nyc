@@ -13,6 +13,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -226,9 +228,13 @@ public class RunServiceImpl implements RunService {
     return (minPart == firstTry) ? try1 : try2;
   }
 
+  //private final Pattern realRunIdPattern = Pattern.compile("([a-zA-Z])(\\d*)-(\\d+)");
+  private final Pattern realRunRouteIdPattern = Pattern.compile("([a-zA-Z]+)(\\d*)");
+  private final Pattern reportedRunIdPattern = Pattern.compile("(\\d{1})(\\d{2})-(\\d+)");
+  
   @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
-      AgencyAndId runAgencyAndId, Set<BlockInstance> nearbyBlocks, long time) {
+      AgencyAndId runAgencyAndId, Set<BlockInstance> nearbyBlocks, long time) throws IllegalArgumentException {
 
     /*
      * FIXME TODO really need to cache these search results...
@@ -246,31 +252,20 @@ public class RunServiceImpl implements RunService {
       matchedRTEs.put(0, lrtes);
       return matchedRTEs;
     }
-
-    String[] runInfo = StringUtils.splitByWholeSeparator(
-        runAgencyAndId.getId(), "-");
-    String runNumber = null;
-    String runRoute = null;
-    // TODO FIXME we should be using RunID objects
-    // so we don't do all this string work
-    if (runInfo != null && runInfo.length > 0) {
-      runRoute = runInfo[0];
-      if (runRoute.length() != 3) {
-        throw new IllegalArgumentException(
-            "runRoute must be a three character numeric code: " + runRoute);
-      }
-      if (runInfo.length > 1) {
-        runNumber = runInfo[1];
-      }
+    
+    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId.getId());
+    
+    if (!reportedIdMatcher.matches()) {
+      throw new IllegalArgumentException("reported-id does not have required format");
     }
-
-    String cutRunRoute = runRoute.substring(1);
-    String fuzzyRunId = RunTripEntry.createId(runRoute, runNumber);
+    
+    String reportedRouteNumId = reportedIdMatcher.group(2);
 
     /*
      * 2. rank route id levenshtein distance for nearby runTrips FIXME this is
      * for EXACT schedule time
      */
+    String fuzzyRunId = runAgencyAndId.getId();
     for (BlockInstance binst : nearbyBlocks) {
       long serviceDate = binst.getServiceDate();
       int scheduleTime = (int) ((time - serviceDate) / 1000);
@@ -280,27 +275,51 @@ public class RunServiceImpl implements RunService {
         continue;
 
       /*
-       * we check and setup for the following cases: 1. misc: the operator
-       * entered values are nearly arbitrary except for the cases of 000 & 111,
-       * which states as "common". 2. route id - borough code > 2 characters:
-       * operator could enter any two numbers from the numeric part of the
-       * actual id 3. route id - borough == 2: expected case; simply get dist.
+       * in the following we strip the runEntry's id down
+       * to the format of the reported id's, as best we can.
        */
+      Matcher routeIdMatcher = realRunRouteIdPattern.matcher(rte.getRunRoute());
       String thisRunId = null;
-      if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
-        // TODO check consistency of this
-        thisRunId = RunTripEntry.createId(
-            "0" + getMinLevenshteinDist(cutRunRoute, "00", "11"),
-            rte.getRunNumber());
-      } else if (rte.getRunRoute().length() == 5) {
-        // FIXME this is a hack; it will favor 4 digit matches by default
-        String borId = rte.getRunRoute().substring(0, 1);
-        String firstPart = rte.getRunRoute().substring(1, 3);
-        String lastPart = rte.getRunRoute().substring(3);
-        String minRes = getMinLevenshteinDist(cutRunRoute, firstPart, lastPart);
-        thisRunId = RunTripEntry.createId(borId + minRes, rte.getRunNumber());
-      } else {
-        thisRunId = rte.getRunId();
+      if (routeIdMatcher.matches()) {
+        if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
+          /*
+           * create an id for this runEntry with a 0 for
+           * the borough code, so that we get less biased
+           * results for longer borough codes.  
+           * 
+           * also, when a runRouteNumber is greater than the
+           * two digits a reported run-id can match, we assume
+           * the operator could've entered the first or last
+           * two digits of the real runRouteNumber.
+           */
+          
+          String thisRunRouteNumber = routeIdMatcher.group(2);
+          if (thisRunRouteNumber.length() >= 3) {
+            // FIXME this is a hack; it will favor 4 digit matches by default
+            String firstPart = thisRunRouteNumber.substring(0, 2);
+            String lastPart = thisRunRouteNumber.substring(thisRunRouteNumber.length()-2);
+            String minRes = getMinLevenshteinDist(reportedRouteNumId, firstPart, lastPart);
+            thisRunId = RunTripEntry.createId("0" + minRes, rte.getRunNumber());
+          } else {
+            thisRunId = RunTripEntry.createId("0" + thisRunRouteNumber, rte.getRunNumber());
+          }
+        } else {
+          /*
+           * there is either no character part, or no numeric part.
+           * check for MISC value, or give up.
+           */
+          if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
+            // TODO check consistency of this
+            thisRunId = RunTripEntry.createId(
+                "0" + getMinLevenshteinDist(reportedRouteNumId, "00", "11"),
+                rte.getRunNumber());
+          } 
+        }
+      } 
+      
+      if (StringUtils.isEmpty(thisRunId)) {
+        _log.error("bundle-data runId does not have the required format:" + rte.getRunId());
+        continue;
       }
 
       int ldist = StringUtils.getLevenshteinDistance(fuzzyRunId, thisRunId);
