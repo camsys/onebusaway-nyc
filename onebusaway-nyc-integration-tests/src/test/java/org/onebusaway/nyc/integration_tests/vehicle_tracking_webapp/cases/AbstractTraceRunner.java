@@ -198,7 +198,7 @@ public class AbstractTraceRunner {
       NycTestInferredLocationRecord expRecord = expected.get(i);
       NycTestInferredLocationRecord actRecord = actual.get(i);
 
-      assertTrue(StringUtils.isNotEmpty(expRecord.getActualStatus()));
+      assertTrue(StringUtils.isNotEmpty(expRecord.getInferredStatus()));
       
       EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
       
