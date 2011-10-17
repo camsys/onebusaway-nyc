@@ -39,4 +39,12 @@ public interface VehicleTrackingManagementService {
 
   public void handleRecord(NycQueuedInferredLocationBean record);
 
+  /**
+   * DSC methods used in the vehicles admin screen and the integration tests
+   */
+  public boolean isOutOfServiceDestinationSignCode(String destinationSignCode);
+  
+  public boolean isMissingDestinationSignCode(String destinationSignCode);
+  
+  public boolean isUnknownDestinationSignCode(String destinationSignCode);
 }
