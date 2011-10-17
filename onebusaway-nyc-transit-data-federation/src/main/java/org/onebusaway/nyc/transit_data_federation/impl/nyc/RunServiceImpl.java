@@ -70,13 +70,14 @@ public class RunServiceImpl implements RunService {
   public void setCalendarService(CalendarService calendarService) {
     this.calendarService = calendarService;
   }
-  
+
   public ExtendedCalendarService getCalendarService() {
     return extCalendarService;
   }
 
   @Autowired
-  public void setExtendedCalendarService(ExtendedCalendarService extCalendarService) {
+  public void setExtendedCalendarService(
+      ExtendedCalendarService extCalendarService) {
     this.extCalendarService = extCalendarService;
   }
 
@@ -214,9 +215,9 @@ public class RunServiceImpl implements RunService {
   }
 
   /*
-   * Try the reference string against two other strings and return
-   * the first one with minimum Levenshtein distance.
-   * NOTE: returns second argument by default!
+   * Try the reference string against two other strings and return the first one
+   * with minimum Levenshtein distance. NOTE: returns second argument by
+   * default!
    */
   private String getMinLevenshteinDist(String ref, String try1, String try2) {
     int firstTry = StringUtils.getLevenshteinDistance(try1, ref);
@@ -224,7 +225,7 @@ public class RunServiceImpl implements RunService {
     int minPart = Math.min(firstTry, lastTry);
     return (minPart == firstTry) ? try1 : try2;
   }
-  
+
   @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
       AgencyAndId runAgencyAndId, Set<BlockInstance> nearbyBlocks, long time) {
@@ -237,7 +238,8 @@ public class RunServiceImpl implements RunService {
     /*
      * 1. check for exact match
      */
-    RunTripEntry exactMatch = getActiveRunTripEntryForRunAndTime(runAgencyAndId, time);
+    RunTripEntry exactMatch = getActiveRunTripEntryForRunAndTime(
+        runAgencyAndId, time);
     if (exactMatch != null) {
       List<RunTripEntry> lrtes = new ArrayList<RunTripEntry>();
       lrtes.add(exactMatch);
@@ -272,25 +274,27 @@ public class RunServiceImpl implements RunService {
     for (BlockInstance binst : nearbyBlocks) {
       long serviceDate = binst.getServiceDate();
       int scheduleTime = (int) ((time - serviceDate) / 1000);
-      RunTripEntry rte = getActiveRunTripEntryForBlockInstance(binst, scheduleTime);
-      if (rte == null)
+      RunTripEntry rte = getActiveRunTripEntryForBlockInstance(binst,
+          scheduleTime);
+      if (rte == null || StringUtils.isEmpty(rte.getRunId()))
         continue;
-      
+
       /*
-       * we check and setup for the following cases:
-       * 1. misc: the operator entered values are nearly arbitrary
-       *  except for the cases of 000 & 111, which states as "common".
-       * 2. route id - borough code > 2 characters: operator could
-       *  enter any two numbers from the numeric part of the actual id
-       * 3. route id - borough == 2: expected case; simply get dist. 
+       * we check and setup for the following cases: 1. misc: the operator
+       * entered values are nearly arbitrary except for the cases of 000 & 111,
+       * which states as "common". 2. route id - borough code > 2 characters:
+       * operator could enter any two numbers from the numeric part of the
+       * actual id 3. route id - borough == 2: expected case; simply get dist.
        */
       String thisRunId = null;
       if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
         // TODO check consistency of this
-        thisRunId = RunTripEntry.createId("0" + getMinLevenshteinDist(cutRunRoute, "00", "11"), rte.getRunNumber());
+        thisRunId = RunTripEntry.createId(
+            "0" + getMinLevenshteinDist(cutRunRoute, "00", "11"),
+            rte.getRunNumber());
       } else if (rte.getRunRoute().length() == 5) {
         // FIXME this is a hack; it will favor 4 digit matches by default
-        String borId = rte.getRunRoute().substring(0,1);
+        String borId = rte.getRunRoute().substring(0, 1);
         String firstPart = rte.getRunRoute().substring(1, 3);
         String lastPart = rte.getRunRoute().substring(3);
         String minRes = getMinLevenshteinDist(cutRunRoute, firstPart, lastPart);
@@ -315,8 +319,8 @@ public class RunServiceImpl implements RunService {
   }
 
   @Override
-  public RunTripEntry getActiveRunTripEntryForRunAndTime(AgencyAndId runAgencyAndId,
-      long time) {
+  public RunTripEntry getActiveRunTripEntryForRunAndTime(
+      AgencyAndId runAgencyAndId, long time) {
 
     String runId = runAgencyAndId.getId();
     if (!entriesByRun.containsKey(runId)) {
@@ -325,10 +329,11 @@ public class RunServiceImpl implements RunService {
     }
 
     Date serviceDate = getTimestampAsDate(runAgencyAndId.getAgencyId(), time);
-    int scheduleTime = (int)(time - serviceDate.getTime())/1000;
+    int scheduleTime = (int) (time - serviceDate.getTime()) / 1000;
 
     for (RunTripEntry entry : entriesByRun.get(runId)) {
-      if (calendarService.isLocalizedServiceIdActiveOnDate(entry.getTripEntry().getServiceId(), serviceDate)
+      if (calendarService.isLocalizedServiceIdActiveOnDate(entry.getTripEntry()
+          .getServiceId(), serviceDate)
           && scheduleTime >= entry.getStartTime()
           && scheduleTime < entry.getStopTime())
         return entry;
@@ -337,7 +342,8 @@ public class RunServiceImpl implements RunService {
   }
 
   @Override
-  public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(String agencyId, long time) {
+  public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(
+      String agencyId, long time) {
     ArrayList<RunTripEntry> out = new ArrayList<RunTripEntry>();
     List<BlockInstance> activeBlocks = blockCalendarService
         .getActiveBlocksForAgencyInTimeRange(agencyId, time, time);
@@ -453,7 +459,7 @@ public class RunServiceImpl implements RunService {
             scheduleTime);
 
     if (blockLocation == null) {
-      _log.error("no scheduled block location for block=" + blockInstance
+      _log.debug("no scheduled block location for block=" + blockInstance
           + ", scheduleTime=" + scheduleTime);
       return null;
     }

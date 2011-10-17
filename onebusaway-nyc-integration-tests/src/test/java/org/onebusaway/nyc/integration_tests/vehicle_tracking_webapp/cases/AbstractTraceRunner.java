@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
@@ -197,7 +198,12 @@ public class AbstractTraceRunner {
       NycTestInferredLocationRecord expRecord = expected.get(i);
       NycTestInferredLocationRecord actRecord = actual.get(i);
 
+      assertTrue(StringUtils.isNotEmpty(expRecord.getActualStatus()));
+      
       EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
+      
+      assertTrue(expPhase != null);
+      
       EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getInferredPhase());
 
       expPhaseCounts.increment(expPhase);
