@@ -154,4 +154,8 @@ public class StifTripLoaderSupport {
     return new TripIdentifier(routeName, startTime, startStop);
   }
 
+  public GtfsMutableRelationalDao getGtfsDao() {
+    return gtfsDao;
+  }
+
 }

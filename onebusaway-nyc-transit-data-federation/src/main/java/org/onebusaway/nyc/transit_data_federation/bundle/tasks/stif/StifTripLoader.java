@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +28,8 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.Stop;
+import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.GeographyRecord;
@@ -61,6 +65,8 @@ public class StifTripLoader {
   private Map<Trip, BlockAndRuns> blockAndRunsByTrip = new HashMap<Trip, BlockAndRuns>();
 
   private DisjointSet<String> tripGroups = new DisjointSet<String>();
+
+  private OutputStream outputStream;
   
   @Autowired
   public void setGtfsDao(GtfsMutableRelationalDao dao) {
@@ -184,6 +190,8 @@ public class StifTripLoader {
               String run2 = tripRecord.getReliefRunId();
               int reliefTime = tripRecord.getReliefTime();
               BlockAndRuns blockAndRuns = new BlockAndRuns(blockId, run1, run2);
+
+              logTrip(trip, blockId, run0, run1, run2, reliefTime);
               
               filtered.add(trip);
               blockAndRunsByTrip.put(trip, blockAndRuns);
@@ -208,6 +216,44 @@ public class StifTripLoader {
     }
   }
 
+  private void logTrip(Trip trip, String blockId, String run0, String run1,
+      String run2, int reliefTime) {
+
+    if (outputStream == null) {
+      return;
+    }
+
+    PrintStream printStream = new PrintStream(outputStream);
+    printStream.print(blockId);
+    printStream.print(",");
+
+    printStream.print(trip.getId().getId());
+    printStream.print(",");
+
+    GtfsMutableRelationalDao dao = support.getGtfsDao();
+    List<StopTime> stopTimesForTrip = dao.getStopTimesForTrip(trip);
+    StopTime firstStopTime = stopTimesForTrip.get(0);
+    Stop firstStop = firstStopTime.getStop();
+    printStream.print(firstStop.getId());
+    printStream.print(",");
+    printStream.print(firstStopTime.getDepartureTime());
+    printStream.print(",");
+
+    StopTime lastStopTime = stopTimesForTrip.get(stopTimesForTrip.size() - 1);
+    Stop lastStop = lastStopTime.getStop();
+    printStream.print(lastStop.getId());
+    printStream.print(",");
+    printStream.print(lastStopTime.getArrivalTime());
+    printStream.print(",");
+
+    printStream.print(run0);
+    printStream.print(",");
+    printStream.print(run1);
+    printStream.print(",");
+    printStream.print(run2);
+    printStream.print("\n");
+  }
+
   public Map<Trip, BlockAndRuns> getBlockAndRunsByTrip() {
     return blockAndRunsByTrip;
   }
@@ -218,5 +264,13 @@ public class StifTripLoader {
 
   public Map<AgencyAndId, RunData> getRunsForTrip() {
     return runsForTrip;
+  }
+
+  public OutputStream getOutputStream() {
+    return outputStream;
+  }
+
+  public void setOutputStream(OutputStream outputStream) {
+    this.outputStream = outputStream;
   }
 }
