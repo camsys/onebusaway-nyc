@@ -29,13 +29,18 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.utility.DateLibrary;
+
+import com.caucho.hessian.client.HessianProxyFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +54,8 @@ public class AbstractTraceRunner {
 
   private static TraceSupport _traceSupport = new TraceSupport();
 
+  private VehicleTrackingManagementService _vehicleTrackingManagementService;
+  
   private String _trace;
 
   private int _loops = 1;
@@ -116,6 +123,17 @@ public class AbstractTraceRunner {
     String response = get.getResponseBodyAsString(); 
     if(!response.equals("OK"))
       throw new Exception("Bundle switch failed!");
+  }
+  
+  @SuppressWarnings("unused")
+  @Before 
+  private void setup() throws Exception {
+    String federationPort = System.getProperty("org.onebusaway.transit_data_federation_webapp.port","9905");
+
+    HessianProxyFactory factory = new HessianProxyFactory();
+    
+    _vehicleTrackingManagementService = 
+        (VehicleTrackingManagementService)factory.create(VehicleTrackingManagementService.class, "http://localhost:" + federationPort + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service");
   }
   
   @Test
