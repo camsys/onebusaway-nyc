@@ -162,6 +162,16 @@
             </properties>
         </profile>
         <profile>
+            <id>db-qa</id>
+            <properties>
+                <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+                <db.url>jdbc:mysql://db.staging.obanyc.com:3306/qa</db.url>
+                <db.username>obanyc</db.username>
+                <db.password>blueceilingbrick</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
+            </properties>
+        </profile>
+        <profile>
             <id>db-hsqldb-local</id>
             <properties>
                 <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
@@ -219,6 +229,18 @@
                 <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <tdm.host>http://tdm.prod.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-qa</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.qa.obanyc.com:8080</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
         </profile>
