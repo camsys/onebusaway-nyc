@@ -22,8 +22,11 @@ import java.util.List;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,6 +34,9 @@ class VehicleTrackingManagementServiceImpl implements VehicleTrackingManagementS
 
   private static Logger _log = LoggerFactory.getLogger(VehicleTrackingManagementServiceImpl.class);
 
+  @Autowired
+  private DestinationSignCodeService _dscService;
+  
   HashMap<String, NycVehicleManagementStatusBean> _vehicleIdToVehicleStatusBeanMap = 
 		  new HashMap<String, NycVehicleManagementStatusBean>();
   
@@ -62,5 +68,20 @@ class VehicleTrackingManagementServiceImpl implements VehicleTrackingManagementS
   public void handleRecord(NycQueuedInferredLocationBean record) {
 	  if(record != null)
 		  _vehicleIdToVehicleStatusBeanMap.put(record.getVehicleId(), record.getManagementRecord());  
+  }
+
+  @Override
+  public boolean isOutOfServiceDestinationSignCode(String destinationSignCode) {
+    return _dscService.isOutOfServiceDestinationSignCode(destinationSignCode);
+  }
+
+  @Override
+  public boolean isMissingDestinationSignCode(String destinationSignCode) {
+    return _dscService.isMissingDestinationSignCode(destinationSignCode);
+  }
+
+  @Override
+  public boolean isUnknownDestinationSignCode(String destinationSignCode) {
+    return _dscService.isUnknownDestinationSignCode(destinationSignCode);
   }
 }
