@@ -17,6 +17,7 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.opentripplanner.graph_builder.services.DisjointSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.terracotta.agent.repkg.de.schlichtherle.io.FileOutputStream;
 
 /**
  * Load STIF data, including the mapping between destination sign codes and trip
@@ -58,7 +60,9 @@ public class StifTask implements Runnable {
 
   @Autowired 
   private NycFederatedTransitDataBundle _bundle;
-  
+
+  private String logPath;
+
   @Autowired
   public void setGtfsMutableRelationalDao(
       GtfsMutableRelationalDao gtfsMutableRelationalDao) {
@@ -88,11 +92,24 @@ public class StifTask implements Runnable {
     _notInServiceDscPath = notInServiceDscPath;
   }
 
+  public void setLogPath(String logPath) {
+    this.logPath = logPath;
+  }
+
   public void run() {
 
     StifTripLoader loader = new StifTripLoader();
     loader.setGtfsDao(_gtfsMutableRelationalDao);
 
+    FileOutputStream outputStream = null;
+    if (logPath != null) {
+      try {
+        outputStream = new FileOutputStream(new File(logPath));
+        loader.setOutputStream(outputStream);
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
     for (File path : _stifPaths) {
       loadStif(path, loader);
     }
@@ -163,7 +180,15 @@ public class StifTask implements Runnable {
     } catch (IOException e) {
         throw new IllegalStateException(
             "error serializing DSC/STIF data", e);
-      }    
+    }
+
+    if (outputStream != null) {
+      try {
+        outputStream.close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   private void warnOnMissingTrips() {
