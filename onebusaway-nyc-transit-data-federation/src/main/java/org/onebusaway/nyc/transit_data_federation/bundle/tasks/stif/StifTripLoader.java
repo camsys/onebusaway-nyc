@@ -62,9 +62,9 @@ public class StifTripLoader {
 
   private Map<AgencyAndId, RunData> runsForTrip = new HashMap<AgencyAndId, RunData>();
 
-  private Map<Trip, BlockAndRuns> blockAndRunsByTrip = new HashMap<Trip, BlockAndRuns>();
+  private Map<Trip, RawRunData> rawRunDataByTrip = new HashMap<Trip, RawRunData>();
 
-  private DisjointSet<String> tripGroups = new DisjointSet<String>();
+  private DisjointSet<String> blocks = new DisjointSet<String>();
 
   private OutputStream outputStream;
   
@@ -184,20 +184,27 @@ public class StifTripLoader {
             }
             if (trip != null) {
 
-              String blockId = tripRecord.getBlockNumber();
-              String run0 = tripRecord.getPreviousRunNumber();
+              String run0 = tripRecord.getPreviousRunId();
               String run1 = tripRecord.getRunId();
               String run2 = tripRecord.getReliefRunId();
+              String run3 = tripRecord.getNextTripOperatorRunId();
               int reliefTime = tripRecord.getReliefTime();
-              BlockAndRuns blockAndRuns = new BlockAndRuns(blockId, run1, run2);
+              RawRunData rawRunData = new RawRunData(run1, run2);
 
-              logTrip(trip, blockId, run0, run1, run2, reliefTime);
+              logTrip(trip, run0, run1, run2, reliefTime);
               
               filtered.add(trip);
-              blockAndRunsByTrip.put(trip, blockAndRuns);
+              rawRunDataByTrip.put(trip, rawRunData);
               runsForTrip.put(trip.getId(), new RunData(run1, run2, reliefTime));
-              tripGroups.union(run0, run1);
-              tripGroups.union(run1, run2);
+              if (run0 != null && run0.length() > 0) {
+                blocks.union(run0 + serviceCode, run1 + serviceCode);
+              }
+              if (run2 != null && run2.length() > 0) {
+                blocks.union(run1 + serviceCode, run2 + serviceCode);
+              }
+              if (run3 != null && run3.length() > 0) {
+                blocks.union(run1 + serviceCode, run3 + serviceCode);
+              }
             }
           }
 
@@ -216,16 +223,14 @@ public class StifTripLoader {
     }
   }
 
-  private void logTrip(Trip trip, String blockId, String run0, String run1,
-      String run2, int reliefTime) {
+  private void logTrip(Trip trip, String run0, String run1, String run2,
+      int reliefTime) {
 
     if (outputStream == null) {
       return;
     }
 
     PrintStream printStream = new PrintStream(outputStream);
-    printStream.print(blockId);
-    printStream.print(",");
 
     printStream.print(trip.getId().getId());
     printStream.print(",");
@@ -254,12 +259,12 @@ public class StifTripLoader {
     printStream.print("\n");
   }
 
-  public Map<Trip, BlockAndRuns> getBlockAndRunsByTrip() {
-    return blockAndRunsByTrip;
+  public Map<Trip, RawRunData> getRawRunDataByTrip() {
+    return rawRunDataByTrip;
   }
   
-  public DisjointSet<String> getTripGroups() {
-    return tripGroups;
+  public DisjointSet<String> getBlocks() {
+    return blocks;
   }
 
   public Map<AgencyAndId, RunData> getRunsForTrip() {
