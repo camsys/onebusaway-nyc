@@ -230,7 +230,7 @@ public class RunServiceImpl implements RunService {
 
   //private final Pattern realRunIdPattern = Pattern.compile("([a-zA-Z])(\\d*)-(\\d+)");
   private final Pattern realRunRouteIdPattern = Pattern.compile("([a-zA-Z]+)(\\d*)");
-  private final Pattern reportedRunIdPattern = Pattern.compile("(\\d{1})(\\d+)-(\\d+)");
+  private final Pattern reportedRunIdPattern = Pattern.compile("0*(\\d+-\\d+)");
   
   @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
@@ -259,13 +259,11 @@ public class RunServiceImpl implements RunService {
       throw new IllegalArgumentException("reported-id does not have required format");
     }
     
-    String reportedRouteNumId = reportedIdMatcher.group(2);
-
     /*
      * 2. rank route id levenshtein distance for nearby runTrips FIXME this is
      * for EXACT schedule time
      */
-    String fuzzyRunId = runAgencyAndId.getId();
+    String fuzzyRunId = reportedIdMatcher.group(1);
     for (BlockInstance binst : nearbyBlocks) {
       long serviceDate = binst.getServiceDate();
       int scheduleTime = (int) ((time - serviceDate) / 1000);
@@ -287,27 +285,16 @@ public class RunServiceImpl implements RunService {
            * the borough code, so that we get less biased
            * results for longer borough codes.  
            */
-          
           String thisRunRouteNumber = routeIdMatcher.group(2);
-//          if (thisRunRouteNumber.length() >= 3) {
-//             FIXME this is a hack; it will favor 4 digit matches by default
-//            String firstPart = thisRunRouteNumber.substring(0, 2);
-//            String lastPart = thisRunRouteNumber.substring(thisRunRouteNumber.length()-2);
-//            String minRes = getMinLevenshteinDist(reportedRouteNumId, firstPart, lastPart);
-//            thisRunId = RunTripEntry.createId("0" + minRes, rte.getRunNumber());
-//          } else {
-            thisRunId = RunTripEntry.createId("0" + thisRunRouteNumber, rte.getRunNumber());
-//          }
+          thisRunId = RunTripEntry.createId(thisRunRouteNumber, rte.getRunNumber());
         } else {
           /*
            * there is no numeric part to the routeId.
            * check for MISC value
            */
           if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
-            // TODO check consistency of this
-            thisRunId = RunTripEntry.createId(
-                "0" + getMinLevenshteinDist(reportedRouteNumId, "00", "11"),
-                rte.getRunNumber());
+            // TODO include more considerations than just this... 
+            thisRunId = RunTripEntry.createId("000", rte.getRunNumber());
           } 
         }
       } 
