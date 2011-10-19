@@ -7,7 +7,18 @@ import java.awt.Image;
  * @author sclark
  *
  */
-public interface QrCodeGenerator {
+public abstract class QrCodeGenerator {
+  
+  public QrCodeGenerator() {
+    super();
+    setDefaultErrorCorrectionLevel();
+  }
+
+  private char ecLevel;
+  
+  protected char getEcLevel () {
+    return ecLevel;
+  }
   
   /**
    * Set the error checking level for this generator.
@@ -17,9 +28,28 @@ public interface QrCodeGenerator {
    * Q - 25%
    * H - 30%
    * @param levelChar One of the above characters, representing an EC level.
-   * @throws Exception 
+   * @throws IllegalArgumentException when levelChar is not in the set [L,M,Q,H]
    */
-   void setErrorLevel(char levelChar) throws Exception;
+  public void setErrorLevel(char levelChar) throws IllegalArgumentException {
+    char level = Character.toUpperCase(levelChar);
+    
+    if ('L' == level) {
+      setECorrectionL();
+    } else if ('M' == level) {
+      setECorrectionM();
+    }  else if ('Q' == level) {
+      setECorrectionQ();
+    } else if ('H' == level) {
+      setECorrectionH();
+    } else {
+      throw new IllegalArgumentException("Invalid QR Code EC level. Must be one of L, M, Q, H.");
+    }
+  }
+  
+  protected void setECorrectionL() { ecLevel = 'L'; }
+  protected void setECorrectionM() { ecLevel = 'M'; }
+  protected void setECorrectionQ() { ecLevel = 'Q'; }
+  protected void setECorrectionH() { ecLevel = 'H'; }
   
   /**
    * Generate a version 2 QR code (25x25 modules) from input text. This 
@@ -35,11 +65,10 @@ public interface QrCodeGenerator {
    * @return
    * @throws Exception 
    */
-  Image generateV2Code(int width, int height, String bcText) throws Exception;
+  public abstract Image generateV2Code(int width, int height, String bcText) throws Exception;
   
-  /**
-   * Get the mimetime (as a string) of the returned qr code image.
-   * @return a string, such as "image/png"
-   */
-  String getResultMimetype();
+  private void setDefaultErrorCorrectionLevel() {
+    ecLevel = 'Q';
+    setECorrectionQ();
+  }
 }

@@ -14,6 +14,7 @@ import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverter;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverterImpl;
 import org.onebusaway.nyc.transit_data_manager.barcode.GoogleChartBarcodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
+import org.onebusaway.nyc.transit_data_manager.barcode.ZXingBarcodeGenerator;
 import org.springframework.stereotype.Component;
 
 @Path("/barcode")
@@ -47,10 +48,12 @@ public class QrCodeGeneratorResource {
       // Set to uppercase for more compact encoding.
       barcodeContents = barcodeContents.toUpperCase();
       
-      QrCodeGenerator barcodeGen = new GoogleChartBarcodeGenerator();
+      QrCodeGenerator barcodeGen = new ZXingBarcodeGenerator();
+      
+      barcodeGen.setErrorLevel('Q');
       
       responseImg = barcodeGen.generateV2Code(imgDimension, imgDimension, barcodeContents);
-      imgMimeType = barcodeGen.getResultMimetype();
+      
     } catch (Exception e) {
       e.printStackTrace();
     }

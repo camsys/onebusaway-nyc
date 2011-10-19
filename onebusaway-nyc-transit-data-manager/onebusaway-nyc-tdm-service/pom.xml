@@ -56,6 +56,16 @@
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>1.8.5</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>1.6-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>1.6-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<profiles>
         <profile>

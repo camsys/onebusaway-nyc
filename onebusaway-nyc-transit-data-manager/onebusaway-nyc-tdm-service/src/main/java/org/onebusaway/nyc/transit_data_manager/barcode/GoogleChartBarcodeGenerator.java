@@ -20,7 +20,11 @@ import javax.imageio.ImageIO;
  * @author sclark
  * 
  */
-public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
+public class GoogleChartBarcodeGenerator extends QrCodeGenerator {
+
+  public GoogleChartBarcodeGenerator() {
+    super();
+  }
 
   private static String URL_ENCODING_NAME = "UTF-8";
 
@@ -84,8 +88,6 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
   
   private static String CHART_IMAGE_MIMETYPE = "image/png";
 
-  private char ecLevel = 'Q';
-  
   private Image generateBarcode(int width, int height, String text)
       throws Exception {
     if (checkRequestImageSizeIsTooLarge(width, height)) {
@@ -107,7 +109,7 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
       urlBldr.append("&");
       urlBldr.append(CHART_PARAMNAME_TYPE + CHART_PARAMVALUE_TYPE_QR);
       urlBldr.append("&");
-      urlBldr.append(CHART_PARAMNAME_EC_MARGN + getEcLevelMarginParamValue(ecLevel, CHART_PARAMVALUE_MARGN_DEFAULT));
+      urlBldr.append(CHART_PARAMNAME_EC_MARGN + getEcLevelMarginParamValue(getEcLevel(), CHART_PARAMVALUE_MARGN_DEFAULT));
       urlBldr.append("&");
       urlBldr.append(CHART_PARAMNAME_DATA);
       
@@ -149,22 +151,6 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
   }
 
   @Override
-  public String getResultMimetype() {
-    return CHART_IMAGE_MIMETYPE;
-  }
-
-  @Override
-  public void setErrorLevel(char levelChar) throws Exception {
-    char level = Character.toUpperCase(levelChar);
-    
-    if ('L' == level || 'M' == level || 'Q' == level || 'H' == level) {
-      ecLevel = level;
-    } else {
-      throw new Exception("Invalid QR Code EC level. Must be one of L, M, Q, H.");
-    }
-  }
-
-  @Override
   public Image generateV2Code(int width, int height, String bcText) throws Exception {
     // First need to check that we don't have too many characters
     if (checkHasTooManyChars(v2MaxCharsArray, bcText)) {
@@ -199,13 +185,16 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
     int[] maxChars = isNumeric ? charLimitsArray[0] : charLimitsArray[1];
     
     int charMax = 0;
-    if (ecLevel == 'L') {
+    
+    char ec = getEcLevel();
+    
+    if (ec == 'L') {
       charMax = maxChars[0];
-    } else if (ecLevel == 'M') {
+    } else if (ec == 'M') {
       charMax = maxChars[1];
-    } else if (ecLevel == 'Q') {
+    } else if (ec == 'Q') {
       charMax = maxChars[2];
-    } else if (ecLevel == 'H') {
+    } else if (ec == 'H') {
       charMax = maxChars[3];
     }
     
