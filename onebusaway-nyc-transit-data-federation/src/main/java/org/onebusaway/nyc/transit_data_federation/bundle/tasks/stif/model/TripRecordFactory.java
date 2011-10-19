@@ -103,9 +103,17 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
         }
       }),
       new FieldDef(127 - 126, "empty", null),
-      new FieldDef(133 - 127, "next trip operator run number", null),
+      new FieldDef(133 - 127, "next trip operator run number", new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setNextTripOperatorRunNumber(getStringData());
+        }
+      }),
       new FieldDef(134 - 133, "empty", null),
-      new FieldDef(140 - 134, "next trip operator route", null),
+      new FieldDef(140 - 134, "next trip operator route", new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setNextTripOperatorRunRoute(getStringData());
+        }
+      }),
       new FieldDef(141 - 140, "empty", null),
       new FieldDef(149 - 141, "next trip origin time", null),
       new FieldDef(150 - 149, "empty", null),
@@ -119,11 +127,15 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
           }), new FieldDef(162 - 161, "empty", null),
       new FieldDef(168 - 162, "previous trip operator run number", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setPreviousRun(getStringData());
+          record.setPreviousRunNumber(getStringData());
         }
       }),
       new FieldDef(169 - 168, "empty", null),
-      new FieldDef(175 - 169, "previous trip operator route", null),
+      new FieldDef(175 - 169, "previous trip operator route", new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setPreviousRunRoute(getStringData());
+        }
+      }),
       new FieldDef(176 - 175, "empty", null),
       new FieldDef(183 - 176, "previous trip operator origin time", null),};
 

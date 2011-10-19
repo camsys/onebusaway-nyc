@@ -115,14 +115,13 @@ public class StifTask implements Runnable {
     }
 
     //set computed block ids for trips
-    Map<Trip, BlockAndRuns> BlockAndRunsByTrip = loader.getBlockAndRunsByTrip();
-    DisjointSet<String> tripGroups = loader.getTripGroups();
-    for (Map.Entry<Trip, BlockAndRuns> entry : BlockAndRunsByTrip.entrySet()) {
+    Map<Trip, RawRunData> BlockAndRunsByTrip = loader.getRawRunDataByTrip();
+    DisjointSet<String> tripGroups = loader.getBlocks();
+    for (Map.Entry<Trip, RawRunData> entry : BlockAndRunsByTrip.entrySet()) {
       Trip trip = entry.getKey();
-      BlockAndRuns data = entry.getValue();
+      RawRunData data = entry.getValue();
 
-      String newBlockId = data.getBlockId() + "_group_"
-          + tripGroups.find(data.getRun1());
+      String newBlockId = "computed_block_" + tripGroups.find(data.getRun1());
       trip.setBlockId(newBlockId);
       _gtfsMutableRelationalDao.updateEntity(trip);
     }

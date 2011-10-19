@@ -1,23 +1,13 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
-public class BlockAndRuns {
+public class RawRunData {
 
-	private String blockId;
 	private String run1;
 	private String run2;
 
-	public BlockAndRuns(String blockId, String run1, String run2) {
-		this.setBlockId(blockId);
+	public RawRunData(String blockId, String run1) {
 		this.setRun1(run1);
 		this.setRun2(run2);
-	}
-
-	public String getBlockId() {
-		return blockId;
-	}
-
-	public void setBlockId(String blockId) {
-		this.blockId = blockId;
 	}
 
 	public String getRun1() {

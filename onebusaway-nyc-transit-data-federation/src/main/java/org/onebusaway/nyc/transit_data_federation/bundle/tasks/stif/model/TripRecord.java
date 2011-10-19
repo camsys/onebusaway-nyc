@@ -15,11 +15,6 @@
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-
 public class TripRecord implements StifRecord {
   private String signCode;
   private String blockNumber;
@@ -34,6 +29,9 @@ public class TripRecord implements StifRecord {
   private int reliefTime;
   private String reliefRunRoute;
   private String runRoute;
+  private String nextTripOperatorRunNumber;
+  private String nextTripOperatorRunRoute;
+  private String previousRunRoute;
 
   public void setSignCode(String signCode) {
     this.signCode = signCode;
@@ -111,20 +109,25 @@ public class TripRecord implements StifRecord {
   }
 
   public String getPreviousRunNumber() {
-    if (previousRunNumber == null) {
-      return runNumber;
-    }
     return previousRunNumber;
   }
 
-  public void setPreviousRun(String previousRun) {
+  public String getPreviousRunRoute() {
+    return previousRunRoute;
+  }
+
+  public String getPreviousRunId() {
+    return RunTripEntry.createId(getPreviousRunRoute(), getPreviousRunNumber());
+  }
+
+  public void setPreviousRunNumber(String previousRun) {
     this.previousRunNumber = previousRun;
   }
 
   public void setReliefTime(int reliefTime) {
     this.reliefTime = reliefTime;
   }
-  
+
   public int getReliefTime() {
     return reliefTime;
   }
@@ -151,5 +154,30 @@ public class TripRecord implements StifRecord {
 
   public void setRunRoute(String runRoute) {
     this.runRoute = runRoute;
+  }
+
+  public void setNextTripOperatorRunNumber(String runNumbre) {
+    this.nextTripOperatorRunNumber = runNumber;
+  }
+
+  public String getNextTripOperatorRunId() {
+    return RunTripEntry.createId(getNextTripOperatorRunRoute(),
+        getNextTripOperatorRunNumber());
+  }
+
+  public String getNextTripOperatorRunNumber() {
+    return nextTripOperatorRunNumber;
+  }
+
+  public String getNextTripOperatorRunRoute() {
+    return nextTripOperatorRunRoute;
+  }
+
+  public void setNextTripOperatorRunRoute(String route) {
+    this.nextTripOperatorRunRoute = route;
+  }
+
+  public void setPreviousRunRoute(String route) {
+    this.previousRunRoute = route;
   }
 }

@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsReader;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.BlockAndRuns;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.RawRunData;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTripLoader;
 import org.opentripplanner.graph_builder.services.DisjointSet;
 
@@ -55,15 +56,17 @@ public class TestStifTripLoaderTest {
     assertEquals(new AgencyAndId("MTA NYCT",
         "20100627DA_003000_M14AD_0001_M14AD_1"), trip.getId());
 
+    Map<Trip, RawRunData> rawRunDataByTrip = loader.getRawRunDataByTrip();
     
-    Map<Trip, BlockAndRuns> blockAndRunsByTrip = loader.getBlockAndRunsByTrip();
-    BlockAndRuns blockAndRuns = blockAndRunsByTrip.get(trip);
-    
-    /* All runs in this STIF file must be part of the same group */
-    DisjointSet<String> groups = loader.getTripGroups();
-    int runGroup = groups.find(blockAndRuns.getRun1());
-    for (BlockAndRuns tripData : blockAndRunsByTrip.values()) {
-      assertEquals(runGroup, groups.find(tripData.getRun1()));      
-    }    
+    /* There are more than ten blocks in this gtfs file */
+    DisjointSet<String> blocks = loader.getBlocks();
+    HashSet<Integer> distinctBlocks = new HashSet<Integer>();
+    for (RawRunData tripData : rawRunDataByTrip.values()) {
+      distinctBlocks.add(blocks.find(tripData.getRun1()));
+      distinctBlocks.add(blocks.find(tripData.getRun2()));
+    }
+    assertTrue(distinctBlocks.size() > 10);
+    //but not one block per trip
+    assertTrue(distinctBlocks.size() < rawRunDataByTrip.size());
   }
 }
