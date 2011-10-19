@@ -280,11 +280,6 @@ public class RunServiceImpl implements RunService {
       String thisRunId = null;
       if (routeIdMatcher.matches()) {
         if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
-          /*
-           * create an id for this runEntry with a 0 for
-           * the borough code, so that we get less biased
-           * results for longer borough codes.  
-           */
           String thisRunRouteNumber = routeIdMatcher.group(2);
           thisRunId = RunTripEntry.createId(thisRunRouteNumber, rte.getRunNumber());
         } else {
