@@ -25,21 +25,22 @@ public final class BlockState {
    * Our current block instance
    */
   private final RunTripEntry runTrip;
-  
+
   private final BlockInstance blockInstance;
 
   private final ScheduledBlockLocation blockLocation;
 
   private final String destinationSignCode;
 
-  private boolean isUTSassigned;
+  private boolean isOpAssigned;
 
   private boolean isRunReported;
-  
-  private boolean isRunReportedUTSMismatch;
+
+  private boolean isRunReportedAssignedMismatch;
 
   public BlockState(BlockInstance blockInstance,
-      ScheduledBlockLocation blockLocation, RunTripEntry runTrip, String destinationSignCode) {
+      ScheduledBlockLocation blockLocation, RunTripEntry runTrip,
+      String destinationSignCode) {
     if (blockInstance == null)
       throw new IllegalArgumentException("blockInstance is null");
     if (blockLocation == null)
@@ -47,21 +48,21 @@ public final class BlockState {
     if (destinationSignCode == null)
       throw new IllegalArgumentException("dsc is null");
     // TODO should we every allow null runTrips here?
-//    if (runTrip == null)
-//      throw new IllegalArgumentException("runTrip is null");
+    // if (runTrip == null)
+    // throw new IllegalArgumentException("runTrip is null");
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;
-    this.isUTSassigned = false;
+    this.isOpAssigned = false;
     this.isRunReported = false;
-    this.isRunReportedUTSMismatch = false;
+    this.isRunReportedAssignedMismatch = false;
     this.runTrip = runTrip;
   }
-  
+
   public RunTripEntry getRunTripEntry() {
     return runTrip;
   }
-  
+
   public BlockInstance getBlockInstance() {
     return blockInstance;
   }
@@ -77,15 +78,15 @@ public final class BlockState {
   @Override
   public String toString() {
     return "[" + blockInstance + ", location=" + blockLocation + ", dsc="
-        + destinationSignCode + ", runTrip=" + runTrip 
-        + ", isUTSassigned=" + isUTSassigned + ", isRunReported=" 
-        + isRunReported + ", isRunReportedUTSMismatch=" + isRunReportedUTSMismatch
+        + destinationSignCode + ", runTrip=" + runTrip + ", isOpAssigned="
+        + isOpAssigned + ", isRunReported=" + isRunReported
+        + ", isRunReportedAssignedMismatch=" + isRunReportedAssignedMismatch
         + "]";
   }
 
   public String getRunId() {
     // TODO agencyId?
-    return runTrip == null ? null:runTrip.getRunId();
+    return runTrip == null ? null : runTrip.getRunId();
   }
 
   public boolean isRunReported() {
@@ -96,19 +97,19 @@ public final class BlockState {
     this.isRunReported = isRunReported;
   }
 
-  public boolean isUTSassigned() {
-    return isUTSassigned;
+  public boolean isOpAssigned() {
+    return isOpAssigned;
   }
 
-  public void setUTSassigned(boolean isUTSassigned) {
-    this.isUTSassigned = isUTSassigned;
+  public void setOpAssigned(boolean isUTSassigned) {
+    this.isOpAssigned = isUTSassigned;
   }
 
-  public boolean isRunReportedUTSMismatch() {
-    return isRunReportedUTSMismatch;
+  public boolean isRunReportedAssignedMismatch() {
+    return isRunReportedAssignedMismatch;
   }
 
-  public void setRunReportedUTSMismatch(boolean isRunReportedUTSMismatch) {
-    this.isRunReportedUTSMismatch = isRunReportedUTSMismatch;
+  public void setRunReportedAssignedMismatch(boolean isRunReportedUTSMismatch) {
+    this.isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
   }
 }

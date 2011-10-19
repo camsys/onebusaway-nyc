@@ -210,7 +210,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         bestBlockLocation));
 
     /**
-     * First source of trips: UTS/op determined run, reported run
+     * First source of trips: assigned and reported runs
      */
     if (!potentialBlocks.isEmpty()) {
       if (_log.isDebugEnabled()) {
@@ -223,8 +223,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       }
 
       /*
-       * These vehicle/UTS reported runs->blocks are now guaranteed to be
-       * present in the particle set.
+       * These reported/assigned runs -> blocks are now guaranteed to be present
+       * in the particle set.
        */
       // TODO weight these by "how" they were reported
       // return potentialBlocks;
@@ -283,7 +283,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     Set<BlockState> blockStates = new HashSet<BlockState>();
     Date obsDate = observation.getRecord().getTimeAsDate();
-    String utsRunId = null;
+    String opAssignedRunId = null;
     String operatorId = observation.getRecord().getOperatorId();
 
     if (StringUtils.isEmpty(operatorId)) {
@@ -294,7 +294,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         OperatorAssignmentItem oai = _operatorAssignmentService
             .getOperatorAssignmentItemForServiceDate(obsDate, operatorId);
         if (oai != null) {
-          utsRunId = oai.getRunId();
+          opAssignedRunId = oai.getRunId();
         }
       } catch (Exception e) {
         // what do do if the OAS is temporarily unavailable? retry again?
@@ -307,22 +307,23 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     String reportedRunId = observation.getRecord().getRunId();
     String agencyId = observation.getRecord().getVehicleId().getAgencyId();
 
-    RunTripEntry utsRunTrip = null;
-    if (StringUtils.isNotEmpty(utsRunId)) {
-      utsRunTrip = _runService.getActiveRunTripEntryForRunAndTime(
-          new AgencyAndId(agencyId, utsRunId), obsDate.getTime());
-      if (utsRunTrip == null) {
-        _log.warn("couldn't find UTS runTripEntry for runId=" + utsRunId
-            + ", time=" + obsDate.getTime() + ", agency=" + agencyId);
+    RunTripEntry opAssignedRunTrip = null;
+    if (StringUtils.isNotEmpty(opAssignedRunId)) {
+      opAssignedRunTrip = _runService.getActiveRunTripEntryForRunAndTime(
+          new AgencyAndId(agencyId, opAssignedRunId), obsDate.getTime());
+      if (opAssignedRunTrip == null) {
+        _log.warn("couldn't find operator's assigned runTripEntry for runId="
+            + opAssignedRunId + ", time=" + obsDate.getTime() + ", agency="
+            + agencyId);
       } else {
-        runEntriesToTry.add(utsRunTrip);
+        runEntriesToTry.add(opAssignedRunTrip);
       }
     } else {
-      _log.warn("no UTS assigned run found for operator=" + operatorId);
+      _log.warn("no assigned run found for operator=" + operatorId);
     }
 
     List<RunTripEntry> reportedRtes = new ArrayList<RunTripEntry>();
-    boolean utsReportedRunMismatch = false;
+    boolean assignedReportedRunMismatch = false;
 
     if (StringUtils.isNotEmpty(reportedRunId)) {
 
@@ -330,9 +331,10 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       reportedRunId = observation.getRecord().getRunId();
 
       /*
-       * FIXME without "weighing" searching by nearby blocks is in conjunction
-       * with nearby block searches alone, other than perhaps to confirm the UTS
-       * and reported runId match...
+       * FIXME without "weighing", searching by nearby blocks is, in conjunction
+       * with nearby block searches alone, not completely useful other than
+       * perhaps to confirm that the assigned and reported runId match, and/or
+       * narrow down the blocks to consider...
        */
       try {
         TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService
@@ -343,24 +345,24 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
               + reportedRunId);
         } else {
           /*
-           * FIXME this is a bit of a hack, but it helps for now.
-           * essentially, we only deal with the best matches.  makes
-           * sense, but only if there is a good deal of consistency
-           * among the id's involved, and a fair ranking by using the
-           * Levenshtein distance.
+           * FIXME this is a bit of a hack, but it helps for now. essentially,
+           * we only deal with the best matches. makes sense, but only if there
+           * is a good deal of consistency among the id's involved, and a fair
+           * ranking by using the Levenshtein distance.
            */
           int bestDist = fuzzyReportedMatches.firstKey();
 
           /*
-           * if there is no UTS runTrip, then use the fuzzy matches. otherwise,
-           * check that the fuzzy matches contain the UTS value, and, if so, use
-           * just that (implemented by not adding to the runEntriesToTry).
+           * if there is no assigned runTrip, then use the fuzzy matches.
+           * otherwise, check that the fuzzy matches contain the assigned
+           * run-id, and, if so, use just that (implemented by not adding to the
+           * runEntriesToTry).
            */
-          if (utsRunTrip != null) {
-            if (!fuzzyReportedMatches.get(bestDist).contains(utsRunTrip)) {
-              _log.warn("UTS assigned runTrip=" + utsRunId
-                  + " not found among reported-run matches");
-              utsReportedRunMismatch = true;
+          if (opAssignedRunTrip != null) {
+            if (!fuzzyReportedMatches.get(bestDist).contains(opAssignedRunTrip)) {
+              _log.warn("operator assigned runTrip=" + opAssignedRunId
+                  + " not found among best reported-run matches");
+              assignedReportedRunMismatch = true;
             }
           } else {
             // FIXME don't keep this reportedRtes set around just for matching
@@ -379,7 +381,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       for (RunTripEntry rte : runEntriesToTry) {
 
         // TODO change to ReportedRunState enum
-        boolean utsReported = StringUtils.equals(utsRunId, rte.getRunId());
+        boolean opAssigned = StringUtils
+            .equals(opAssignedRunId, rte.getRunId());
         boolean runReported = (reportedRtes != null && reportedRtes
             .contains(rte));
 
@@ -403,8 +406,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
           }
 
           state.setRunReported(runReported);
-          state.setUTSassigned(utsReported);
-          state.setRunReportedUTSMismatch(utsReportedRunMismatch);
+          state.setOpAssigned(opAssigned);
+          state.setRunReportedAssignedMismatch(assignedReportedRunMismatch);
           blockStates.add(state);
         }
       }
