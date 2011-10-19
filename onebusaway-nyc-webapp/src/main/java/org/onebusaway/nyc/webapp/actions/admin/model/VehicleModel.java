@@ -17,12 +17,15 @@ package org.onebusaway.nyc.webapp.actions.admin.model;
 
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 public class VehicleModel {
+
+  private VehicleTrackingManagementService _managementService;
 
 	private ConfigurationService _configurationService;
 	
@@ -32,9 +35,11 @@ public class VehicleModel {
 	
 	public VehicleModel(NycVehicleManagementStatusBean nycVehicleStatusBean, 
 						VehicleStatusBean vehicleStatusBean,
+						VehicleTrackingManagementService managementService,
 						ConfigurationService configurationService) {
 		_nycVehicleStatusBean = nycVehicleStatusBean;
 		_vehicleStatusBean = vehicleStatusBean;
+		_managementService = managementService;
 		_configurationService = configurationService;
 	}
 
@@ -172,14 +177,13 @@ public class VehicleModel {
 		String mostRecentDestinationSignCode = 
 				_nycVehicleStatusBean.getMostRecentObservedDestinationSignCode();
 
-// FIXME
-//		boolean mostRecentDSCIsOutOfService = 
-//				_vehicleTrackingManagementService.isOutOfServiceDestinationSignCode(mostRecentDestinationSignCode);
+		boolean mostRecentDSCIsOutOfService = 
+		    _managementService.isOutOfServiceDestinationSignCode(mostRecentDestinationSignCode);
 
 		if (trip == null) {
-//			if(mostRecentDSCIsOutOfService)
-//				return mostRecentDestinationSignCode + ": Not In Service";
-//			else
+			if(mostRecentDSCIsOutOfService)
+				return mostRecentDestinationSignCode + ": Not In Service";
+			else
 				if(mostRecentDestinationSignCode != null) {
 					return "Unknown<br/><span class='error'>(bus sent " + mostRecentDestinationSignCode + ")</span>";
 				} else {

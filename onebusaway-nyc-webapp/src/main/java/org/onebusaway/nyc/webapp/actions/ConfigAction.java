@@ -20,7 +20,6 @@ import java.util.Date;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Action for config variable page
@@ -32,10 +31,6 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private ConfigurationService configurationService;
 
-  // TODO Ideally this *would* be autowired but it seems overly convoluted to
-//  @Autowired
-//  @Value("${systemProperties.webappApiUrl}")
-//  @Value(value = "")
   private String apiUrl = System.getProperty("webapp.api.url", "");
 
   public int getHideTimeout() {

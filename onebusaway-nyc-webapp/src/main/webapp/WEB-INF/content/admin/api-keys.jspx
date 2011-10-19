@@ -22,7 +22,7 @@
 <head>
 <title>OneBusAway NYC: API Keys</title>
 
-<s:url var="url" value="/css/api-keys.css"></s:url>
+<s:url var="url" value="/css/admin/api-keys.css"></s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 </head>
 <body>

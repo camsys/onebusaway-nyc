@@ -40,7 +40,7 @@
   <s:url var="url" value="/css/screen.css"></s:url>
   <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-  <s:url var="url" value="/css/tracker.css"></s:url>
+  <s:url var="url" value="/css/branding.css"></s:url>
   <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
 <jsp:text>
@@ -52,10 +52,7 @@
 &lt;![endif]--&gt;
 </jsp:text>
 
-  <s:url var="url" value="/css/branding.css"></s:url>
-  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
-
-  <s:url var="url" value="/js/jquery.js"/>
+  <s:url var="url" value="/js/lib/jquery.js"/>
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
     
   <s:url var="url" value="/js/oba/Config.js"/>

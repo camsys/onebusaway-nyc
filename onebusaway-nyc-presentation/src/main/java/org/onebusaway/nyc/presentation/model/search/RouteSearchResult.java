@@ -15,36 +15,34 @@
  */
 package org.onebusaway.nyc.presentation.model.search;
 
+import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
+
 import java.util.List;
 
-import org.onebusaway.nyc.presentation.model.StopItem;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
-
 /**
- * Data transfer object for route search results
+ * Data transfer object used in the front-end interfaces to represent
+ * a route result.
+ * @author jmaki
+ *
  */
 public class RouteSearchResult implements SearchResult {
 
+  // e.g. MTA NYCT_B63
   private final String routeId;
-  private final String routeName;
-  private final String routeDescription;
-  private final String type;
-  private final String tripHeadsign;
-  private final String directionId;
-  private final List<StopItem> stopItems;
-  private final List<NaturalLanguageStringBean> serviceAlerts;
 
-  public RouteSearchResult(String routeId, String routeName,
-      String routeDescription, String tripHeadsign, String directionId, 
-      	List<StopItem> stopItems, List<NaturalLanguageStringBean> serviceAlerts) {
+  // e.g. 5TH AVENUE
+  private final String routeDescription;
+
+  private final List<RouteDestinationItem> routeDestinations;
+  
+  private static final WebappSupportLibrary idParser = new WebappSupportLibrary();
+
+  public RouteSearchResult(String routeId, String routeDescription, 
+      List<RouteDestinationItem> routeDestinations) {
         this.routeId = routeId;
-        this.routeName = routeName;
         this.routeDescription = routeDescription;
-        this.tripHeadsign = tripHeadsign;
-        this.directionId = directionId;
-        this.stopItems = stopItems;
-        this.serviceAlerts = serviceAlerts;
-        this.type = "route";
+        this.routeDestinations = routeDestinations;
   }
 
   public String getRouteId() {
@@ -52,7 +50,7 @@ public class RouteSearchResult implements SearchResult {
   }
 
   public String getName() {
-    return routeName;
+    return idParser.parseIdWithoutAgency(routeId);
   }
 
   public String getDescription() {
@@ -60,22 +58,10 @@ public class RouteSearchResult implements SearchResult {
   }
 
   public String getType() {
-    return type;
+    return "route";
   }
 
-  public String getTripHeadsign() {
-    return tripHeadsign;
-  }
-
-  public String getDirectionId() {
-    return directionId;
-  }
-
-  public List<StopItem> getStopItems() {
-    return stopItems;
-  }
-
-  public List<NaturalLanguageStringBean> getServiceAlerts() {
-	return serviceAlerts;
+  public List<RouteDestinationItem> getDestinations() {
+    return routeDestinations;
   }
 }

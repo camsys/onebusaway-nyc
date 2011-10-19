@@ -20,9 +20,10 @@ import java.util.List;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
-import org.onebusaway.nyc.presentation.model.Mode;
-import org.onebusaway.nyc.presentation.model.search.SearchResult;
+import org.onebusaway.nyc.presentation.model.EnumDisplayMedia;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -33,20 +34,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SearchAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
+
   private List<SearchResult> searchResults = new ArrayList<SearchResult>();
   
   @Autowired
   private NycSearchService searchService;
   
-  // from q variable in query string
   private String q;
+  
+  public void setQ(String query) {
+    this.q = query.trim();
+  }
   
   @Override
   public String execute() {
     if (q == null || q.isEmpty())
       return SUCCESS;
 
-    searchResults = searchService.search(q, Mode.DESKTOP_WEB);
+    searchResults = searchService.search(q, EnumDisplayMedia.DESKTOP_WEB);
 
     return SUCCESS;
   }
@@ -54,9 +59,4 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   public List<SearchResult> getSearchResults() {
     return searchResults;
   }
-  
-  public void setQ(String query) {
-    this.q = query.trim();
-  }
-  
 }

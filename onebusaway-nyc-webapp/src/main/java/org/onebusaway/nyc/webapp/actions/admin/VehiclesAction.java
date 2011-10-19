@@ -112,6 +112,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       VehicleModel v = new VehicleModel(
           _vehicleTrackingManagementService.getVehicleManagementStatusBeanForVehicleId(vehicleBean.getVehicleId()),
           vehicleBean,
+          _vehicleTrackingManagementService,
           _configurationService);
 
       vehicles.add(v);

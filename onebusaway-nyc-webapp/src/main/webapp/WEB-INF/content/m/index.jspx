@@ -27,10 +27,10 @@
 	
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
-  	<s:url var="url" value="/css/mobile.css"></s:url>
+  	<s:url var="url" value="/css/mobile/mobile.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 
-  	<s:url var="url" value="/css/mobile-branding.css"></s:url>
+  	<s:url var="url" value="/css/mobile/branding.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 </head>
 
@@ -96,28 +96,13 @@
 	    	<a href="${url}">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
 		</div>
 
-		<!--  table of contents -->
-		<s:if test="%{toc.size!=0}">
-			<div>
-				<p><strong>Shortcut To...</strong></p>
-
-				<s:iterator value="toc">
-					<s:if test="%{type.equals('route')}">
-                        <s:url var="url" value="" anchor="%{directionId}"></s:url>
-						<a href="${url}"><s:property value="tripHeadsign" /></a>
-						<br/>
-					</s:if>
-				</s:iterator>
-			</div>
-		</s:if>
-
-		<s:iterator value="searchResults">				
+		<s:iterator value="searchResults">
 			<s:if test="%{type.equals('stop')}">
 				<div>
 					<p>
 					<strong>				
 						<s:url var="url" namespace="/m" action="index">
-							<s:param name="q"><s:property value="stopIdNoAgency" /></s:param>
+							<s:param name="q"><s:property value="stopIdWithoutAgency" /></s:param>
 						</s:url>
 						<a href="${url}">
 							<s:property value="name" />
@@ -155,42 +140,69 @@
 					</p>
 				</div>
 			</s:if>
+
+			<s:elseif test="%{type.equals('location')}">
+			  <div>
+			    <p>
+				  <s:url var="url" namespace="/m" action="index">
+					<s:param name="q"><s:property value="name" /></s:param>
+				  </s:url>
+				  <a href="${url}">
+					<s:property value="name" />
+				  </a>
+				</p>
+			  </div>
+			</s:elseif>
+
 			<s:elseif test="%{type.equals('route')}">
+				<!--  table of contents -->
 				<div>
-					<p>
-					<a name="${directionId}"></a>
-					<strong><s:property value="tripHeadsign" /></strong>
-					<br />
-					
-					<ul>
-						<s:iterator value="serviceAlerts">
-							<li class="alert">
-								<s:property value="value" />				
-							</li>
-						</s:iterator>		
-					</ul>
-		
-					<ul>
-						<s:iterator value="stopItems">
-						<li>
-							<s:if test="%{distanceAways.size>0}">
-								<s:url var="url" namespace="/m" action="index">
-									<s:param name="q"><s:property value="id" /></s:param>
-								</s:url>				
-								<strong><a title="${name}" href="${url}"><s:property value="name" /></a></strong>
-								<s:property value="presentableDistances" />
-							</s:if>
-							<s:else>
-								<s:url var="url" namespace="/m" action="index">
-									<s:param name="q"><s:property value="id" /></s:param>
-								</s:url>				
-								<a title="${name}" href="${url}"><s:property value="name" /></a>
-							</s:else>
-						</li>
-						</s:iterator>
-					</ul>
-					</p>
+					<p><strong>Shortcut To...</strong></p>
+
+					<s:iterator value="destinations">
+                	  <s:url var="url" value="" anchor="%{directionId}"></s:url>
+					  <a href="${url}"><s:property value="headsign" /></a>
+					  <br/>
+					</s:iterator>
 				</div>
+			
+				<s:iterator value="destinations">
+					<div>
+						<p>
+						<a name="${directionId}"></a>
+						<strong><s:property value="headsign" /></strong>
+						<br />
+					
+						<ul>
+							<s:iterator value="serviceAlerts">
+								<li class="alert">
+									<s:property value="value" />				
+								</li>
+							</s:iterator>		
+						</ul>
+		
+						<ul>
+							<s:iterator value="stopItems">
+							<li>
+								<s:if test="%{distanceAways.size>0}">
+									<s:url var="url" namespace="/m" action="index">
+										<s:param name="q"><s:property value="id" /></s:param>
+									</s:url>				
+									<strong><a title="${name}" href="${url}"><s:property value="name" /></a></strong>
+									<s:property value="distanceAwaysAsString" />
+								</s:if>
+								<s:else>
+									<s:url var="url" namespace="/m" action="index">
+										<s:param name="q"><s:property value="id" /></s:param>
+									</s:url>				
+									<a title="${name}" href="${url}"><s:property value="name" /></a>
+								</s:else>
+							</li>
+							</s:iterator>
+						</ul>
+						</p>
+					</div>
+				</s:iterator>
 			</s:elseif>
 		</s:iterator>
 

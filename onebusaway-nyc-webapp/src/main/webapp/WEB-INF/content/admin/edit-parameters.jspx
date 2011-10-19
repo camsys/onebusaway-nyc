@@ -22,7 +22,7 @@
 <head>
 <title>OneBusAway NYC: Parameters</title>
 
-<s:url var="url" value="/css/parameters.css"></s:url>
+<s:url var="url" value="/css/admin/parameters.css"></s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 </head>
 <body>

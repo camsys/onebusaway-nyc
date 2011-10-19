@@ -53,7 +53,7 @@
 
     <!-- Other Stuff: -->
 
-    <bean id="externalGeocoderImpl" class="org.onebusaway.geocoder.impl.GoogleGeocoderImpl" />
+    <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl" />
 
     <bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
         <property name="defaultBounds">

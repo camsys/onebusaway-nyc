@@ -32,7 +32,7 @@ a:hover {
 	
 #page {
     position: relative;
-    width: 90%; 
+    width: 96%; 
     margin: 0 auto;  
 	border: 1px solid #666666;
 	border-top: none;
@@ -109,11 +109,6 @@ a:hover {
 	font-weight: bold;
 }
 
-#content #sidebar {
-    float: left;
-    width: 250px;
-}
-
 #content #text {
     position: relative;
 	padding: 15px;
@@ -121,8 +116,10 @@ a:hover {
 	overflow: hidden;
 }
 
+
 #content.sidebar #text {
 	margin-left: 250px;
+	font-size: 14px;
 }
 
 #content.sidebar.right #text {
@@ -160,7 +157,8 @@ a:hover {
 	padding-left: 10px;
 	padding-bottom: 5px;	
 	border: none;
-} 
+}
+
 
 #content #text p {
 	padding-top: 10px;
@@ -196,7 +194,7 @@ a:hover {
 	margin: 0px;
 	padding: 0px;
 	font-weight: bold;
-	font-size: 16px;
+	font-size: 18px;
 	padding-top: 10px;
 	padding-bottom: 5px;
 }

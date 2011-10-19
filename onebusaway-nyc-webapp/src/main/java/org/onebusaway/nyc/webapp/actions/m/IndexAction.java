@@ -17,6 +17,7 @@ package org.onebusaway.nyc.webapp.actions.m;
 
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,39 +25,33 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts2.ServletActionContext;
-import org.onebusaway.nyc.presentation.model.DistanceAway;
-import org.onebusaway.nyc.presentation.model.Mode;
-import org.onebusaway.nyc.presentation.model.RouteItem;
-import org.onebusaway.nyc.presentation.model.StopItem;
+import org.onebusaway.nyc.presentation.model.EnumDisplayMedia;
+import org.onebusaway.nyc.presentation.model.realtime_data.DistanceAway;
+import org.onebusaway.nyc.presentation.model.realtime_data.RouteItem;
+import org.onebusaway.nyc.presentation.model.realtime_data.StopItem;
+import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
-import org.onebusaway.nyc.presentation.model.search.SearchResult;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
 import org.onebusaway.nyc.presentation.service.NycSearchService;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.utility.DateLibrary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
-  private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
-  
   private static final long serialVersionUID = 1L;
   
-  @Autowired
-  private NycSearchService searchService;
+  private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
 
   private String q;
+  
+  private Date time = null;
 
   private List<SearchResult> searchResults = new ArrayList<SearchResult>();
   
-  @Override
-  public String execute() throws Exception {
-    if (q != null)
-      searchResults = searchService.search(q, Mode.MOBILE_WEB);
-    return SUCCESS;
-  }
-
-  public List<SearchResult> getSearchResults() {
-    return searchResults;
-  }
+  @Autowired
+  private NycSearchService searchService;
 
   public String getQ() {
     return q;
@@ -64,6 +59,30 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   public void setQ(String q) {
     this.q = q;
+  }
+
+  public void setTime(String time) throws ParseException {
+    if(time != null && !time.isEmpty())
+      this.time = DateLibrary.getIso8601StringAsTime(time);
+  }
+  
+  public Date getTime() {
+    if(time == null)
+      return new Date();
+    else
+      return time;
+  }
+  
+  public List<SearchResult> getSearchResults() {
+    return searchResults;
+  }
+  
+  public String execute() throws Exception {
+    if (q != null) {
+      searchService.setTime(getTime());        
+      searchResults = searchService.search(q, EnumDisplayMedia.MOBILE_WEB);
+    }
+    return SUCCESS;
   }
 
   // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
@@ -132,67 +151,57 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 		  return q.isEmpty();
 	  }
   }
-  
-  public List<SearchResult>getToc() {
-	  List<SearchResult> tocList = new ArrayList<SearchResult>();
-	  
-	  for(SearchResult _result : searchResults) {
-			if(_result.getType().equals("route"))
-				tocList.add(_result);
-			else // if we find a non-route, there won't be any routes in the results.
-				break;
-	  }
-	  
-	  return tocList;	  
-  }
-  
+    
   public String getCacheBreaker() {
 	  return (int)Math.ceil((Math.random() * 100000)) + "";
   }
   
+  // find latest time across all DistanceAways
   public String getLastUpdateTime() {
-	Date lastUpdated = null;
-	for(SearchResult _result : searchResults) {
-		if(_result.getType().equals("route")) {
-			RouteSearchResult result = (RouteSearchResult)_result;
-			for(StopItem stop : result.getStopItems()) {
-				for(DistanceAway distanceAway : stop.getDistanceAways()) {
-					if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
-						lastUpdated = distanceAway.getUpdateTimestamp();
-					}
-				}
-			}
-		} else if(_result.getType().equals("stop")) {
-			StopSearchResult result = (StopSearchResult)_result;
-			for(RouteItem route : result.getRoutesAvailable()) {
-				for(DistanceAway distanceAway : route.getDistanceAways()) {
-					if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
-						lastUpdated = distanceAway.getUpdateTimestamp();
-					}
-				}
-			}
-		}
-	}
+    Date lastUpdated = null;
+    for(SearchResult _result : searchResults) {
+      if(_result.getType().equals("route")) {
+        RouteSearchResult result = (RouteSearchResult)_result;
+        for(RouteDestinationItem destination : result.getDestinations()) {
+          for(StopItem stop : destination.getStopItems()) {
+            for(DistanceAway distanceAway : stop.getDistanceAways()) {
+              if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
+                lastUpdated = distanceAway.getUpdateTimestamp();
+              }
+            }
+          }
+        }
+      } else if(_result.getType().equals("stop")) {
+        StopSearchResult result = (StopSearchResult)_result;
+        for(RouteItem route : result.getRoutesAvailable()) {
+          for(DistanceAway distanceAway : route.getDistanceAways()) {
+            if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
+              lastUpdated = distanceAway.getUpdateTimestamp();
+            }
+          }
+        }
+      }
+    }
 
-	if(lastUpdated != null) {
-		return DateFormat.getTimeInstance().format(lastUpdated);
-	} else {
-		// no realtime data
-		return DateFormat.getTimeInstance().format(new Date());
-	}
+    if(lastUpdated != null) {
+      return DateFormat.getTimeInstance().format(lastUpdated);
+    } else {
+      // no realtime data
+      return DateFormat.getTimeInstance().format(new Date());
+    }
   }  
   
   public String getTitle() {
-	String title = this.q;
+    String title = this.q;
 	
-	if(searchResults.size() == 1) {
-	  SearchResult result = searchResults.get(0);
+    if(searchResults.size() == 1) {
+      SearchResult result = searchResults.get(0);
 	  
-	  if(result != null) {
-		title = result.getName() + " (" + title + ")";
-	  }
-	}
+      if(result != null) {
+        title = result.getName() + " (" + title + ")";
+      }
+    }
 	
-	return title;
+    return title;
   }
 }
