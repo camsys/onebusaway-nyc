@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,13 +116,13 @@ public class StifTask implements Runnable {
     }
 
     //set computed block ids for trips
-    Map<Trip, RawRunData> BlockAndRunsByTrip = loader.getRawRunDataByTrip();
-    DisjointSet<String> tripGroups = loader.getBlocks();
-    for (Map.Entry<Trip, RawRunData> entry : BlockAndRunsByTrip.entrySet()) {
+    Map<Trip, RawRunData> rawRunDataByTrip = loader.getRawRunDataByTrip();
+    DisjointSet<String> blocks = loader.getBlocks();
+    for (Map.Entry<Trip, RawRunData> entry : rawRunDataByTrip.entrySet()) {
       Trip trip = entry.getKey();
       RawRunData data = entry.getValue();
 
-      String newBlockId = "computed_block_" + tripGroups.find(data.getRun1());
+      String newBlockId = "computed_block_" + blocks.find(data.getRun1() + data.getServiceCode());
       trip.setBlockId(newBlockId);
       _gtfsMutableRelationalDao.updateEntity(trip);
     }
