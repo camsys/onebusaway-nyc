@@ -190,7 +190,7 @@ public class StifTripLoader {
               String run3 = tripRecord.getNextTripOperatorRunId();
 
               int reliefTime = tripRecord.getReliefTime();
-              RawRunData rawRunData = new RawRunData(run1, run2);
+              RawRunData rawRunData = new RawRunData(run1, run2, serviceId);
 
               logTrip(trip, run0, run1, run2, run3, reliefTime);
               
