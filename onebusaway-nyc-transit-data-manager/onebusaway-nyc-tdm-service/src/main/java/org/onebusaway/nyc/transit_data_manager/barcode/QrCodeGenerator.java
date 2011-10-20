@@ -7,18 +7,7 @@ import java.awt.Image;
  * @author sclark
  *
  */
-public abstract class QrCodeGenerator {
-  
-  public QrCodeGenerator() {
-    super();
-    setDefaultErrorCorrectionLevel();
-  }
-
-  private char ecLevel;
-  
-  protected char getEcLevel () {
-    return ecLevel;
-  }
+public interface QrCodeGenerator {
   
   /**
    * Set the error checking level for this generator.
@@ -28,28 +17,9 @@ public abstract class QrCodeGenerator {
    * Q - 25%
    * H - 30%
    * @param levelChar One of the above characters, representing an EC level.
-   * @throws IllegalArgumentException when levelChar is not in the set [L,M,Q,H]
+   * @throws Exception 
    */
-  public void setErrorLevel(char levelChar) throws IllegalArgumentException {
-    char level = Character.toUpperCase(levelChar);
-    
-    if ('L' == level) {
-      setECorrectionL();
-    } else if ('M' == level) {
-      setECorrectionM();
-    }  else if ('Q' == level) {
-      setECorrectionQ();
-    } else if ('H' == level) {
-      setECorrectionH();
-    } else {
-      throw new IllegalArgumentException("Invalid QR Code EC level. Must be one of L, M, Q, H.");
-    }
-  }
-  
-  protected void setECorrectionL() { ecLevel = 'L'; }
-  protected void setECorrectionM() { ecLevel = 'M'; }
-  protected void setECorrectionQ() { ecLevel = 'Q'; }
-  protected void setECorrectionH() { ecLevel = 'H'; }
+   void setErrorLevel(char levelChar) throws Exception;
   
   /**
    * Generate a version 2 QR code (25x25 modules) from input text. This 
@@ -65,10 +35,11 @@ public abstract class QrCodeGenerator {
    * @return
    * @throws Exception 
    */
-  public abstract Image generateV2Code(int width, int height, String bcText) throws Exception;
+  Image generateV2Code(int width, int height, String bcText) throws Exception;
   
-  private void setDefaultErrorCorrectionLevel() {
-    ecLevel = 'Q';
-    setECorrectionQ();
-  }
+  /**
+   * Get the mimetime (as a string) of the returned qr code image.
+   * @return a string, such as "image/png"
+   */
+  String getResultMimetype();
 }
