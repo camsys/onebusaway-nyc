@@ -15,8 +15,10 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.PropertyNamingStrategy;
 import org.codehaus.jackson.map.ser.StdSerializerProvider;
 import org.joda.time.DateTime;
+import org.onebusaway.nyc.transit_data_manager.config.AllLowerWithDashesNamingStrategy;
 import org.onebusaway.nyc.transit_data_manager.config.ConfigurationDatastoreInterface;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItemsMessage;
@@ -180,12 +182,13 @@ public class ConfigResource {
     // Basically it sets up a serializer for null values, so that they are
     // mapped to an empty string.
 
-    StdSerializerProvider sp = new StdSerializerProvider();
-    //sp.setNullValueSerializer(new NullSerializer()); // Turns out for now I do not want to serialize null as "".
-    
-    
     ObjectMapper m = new ObjectMapper();
+    
+    StdSerializerProvider sp = new StdSerializerProvider();
     m.setSerializerProvider(sp);
+    
+    PropertyNamingStrategy pns = new AllLowerWithDashesNamingStrategy();
+    m.setPropertyNamingStrategy(pns);
 
     return m;
   }

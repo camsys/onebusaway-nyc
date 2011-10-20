@@ -34,7 +34,7 @@ public class ConfigurationServiceImplTest {
   @Before
   public void setupApiLibrary() throws Exception {
     RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");    
-    String json = new String("{\"config\":[{\"value\":\"20\",\"key\":\"tdm.crewAssignmentRefreshInterval\",\"description\":null,\"valueType\":\"String\",\"units\":\"minutes\",\"component\":\"tdm\",\"updated\":null}],\"status\":\"OK\"}");
+    String json = new String("{\"config\":[{\"value\":\"20\",\"key\":\"tdm.crewAssignmentRefreshInterval\",\"description\":null,\"value-type\":\"String\",\"units\":\"minutes\",\"component\":\"tdm\",\"updated\":null}],\"status\":\"OK\"}");
     when(mockApiLibrary.getItemsForRequest("config", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
 
