@@ -40,6 +40,7 @@ public class GenericConverter {
   }
 
   /**
+   * Takes three arguments - a 'type' argument with one of the types above, the input file and the output file.
    * @param args
    */
   public static void main(String[] args) {

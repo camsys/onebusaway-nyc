@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.onebusaway.nyc.presentation.impl.WebappIdParser;
 import org.onebusaway.users.client.model.UserBean;
 import org.onebusaway.users.services.CurrentUserService;
 import org.onebusaway.presentation.impl.NextActionSupport;
@@ -44,10 +43,6 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
   
   protected List<Double> makeLatLng(double lat, double lng) {
     return Arrays.asList(new Double[] { lat, lng} );
-  }
-
-  protected String parseIdWithoutAgency(String id) {
-    return new WebappIdParser().parseIdWithoutAgency(id);
   }
 
   public boolean isAdminUser() {

@@ -16,21 +16,41 @@
 package org.onebusaway.nyc.sms.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+
+import org.onebusaway.nyc.presentation.model.EnumFormattingContext;
+import org.onebusaway.nyc.presentation.model.realtime_data.DistanceAway;
+import org.onebusaway.nyc.presentation.model.realtime_data.RouteItem;
+import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 
-import org.junit.Test;
-import org.onebusaway.nyc.presentation.model.FormattingContext;
-import org.onebusaway.nyc.presentation.model.RouteItem;
-import org.onebusaway.nyc.presentation.model.DistanceAway;
-import org.onebusaway.nyc.presentation.model.Mode;
-import org.onebusaway.nyc.presentation.model.search.SearchResult;
-import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
-
+@RunWith(MockitoJUnitRunner.class)
 public class SmsDisplayerTest {
+  
+  @Mock
+  private ConfigurationService configService;
+
+  private TripStatusBean tripStatusBean = new TripStatusBean();
+
+  @Before
+  public void setup() throws Exception {
+    when(configService.getConfigurationValueAsInteger("display.staleTimeout", 120))
+      .thenReturn(120);
+    
+    tripStatusBean.setLastLocationUpdateTime(new Date().getTime());
+  }
   
   private RouteItem makeAvailableRoute(List<DistanceAway> distanceAways) {
     // helper function to create available routes
@@ -42,7 +62,7 @@ public class SmsDisplayerTest {
 	  RouteItem availableRoute = makeAvailableRoute(new ArrayList<DistanceAway>());
     List<RouteItem> routes = new ArrayList<RouteItem>();
     routes.add(availableRoute);
-    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
+    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", 42.0, 74.0, "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
     searchResults.add(stopSearchResult);
     
@@ -54,15 +74,15 @@ public class SmsDisplayerTest {
 
   @Test
   public void testSingleStopResponseCoupleOfArrivals() {
-    DistanceAway distanceAway1 = new DistanceAway(1, 300, new Date(), Mode.SMS,300, FormattingContext.STOP, null);
-    DistanceAway distanceAway2 = new DistanceAway(2, 900, new Date(), Mode.SMS,300, FormattingContext.STOP, null);
+    DistanceAway distanceAway1 = new DistanceAway(1, 300, EnumFormattingContext.STOP, tripStatusBean, configService);
+    DistanceAway distanceAway2 = new DistanceAway(2, 900, EnumFormattingContext.STOP, tripStatusBean, configService);
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     distanceAways.add(distanceAway1);
     distanceAways.add(distanceAway2);
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
     List<RouteItem> routes = new ArrayList<RouteItem>();
     routes.add(availableRoute);
-    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
+    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", 42.0, 74.0, "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
     searchResults.add(stopSearchResult);
     
@@ -77,13 +97,13 @@ public class SmsDisplayerTest {
   public void testSingleStopResponseLotsOfArrivals() {
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     for (int i = 0; i < 20; i++) {
-      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(),  Mode.SMS,300, FormattingContext.STOP, null);
+      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, EnumFormattingContext.STOP, tripStatusBean, configService);
       distanceAways.add(distanceAway);
     }
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
     List<RouteItem> routes = new ArrayList<RouteItem>();
     routes.add(availableRoute);
-    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), "N", routes, null);
+    StopSearchResult stopSearchResult = new StopSearchResult("123456","foo bar", 42.0, 74.0, "N", routes, null);
     List<SearchResult> searchResults = new ArrayList<SearchResult>();
     searchResults.add(stopSearchResult);
     
@@ -110,7 +130,7 @@ public class SmsDisplayerTest {
   }
   
   private StopSearchResult makeStopSearchResult(List<RouteItem> routes, String stopDirection) {
-    StopSearchResult stopSearchResult = new StopSearchResult("AgencyId_123456","foo bar", Arrays.asList(new Double[] {42.0, 74.0}), stopDirection, routes, null);
+    StopSearchResult stopSearchResult = new StopSearchResult("AgencyId_123456","foo bar", 42.0, 74.0, stopDirection, routes, null);
     return stopSearchResult;
   }
   
@@ -142,8 +162,9 @@ public class SmsDisplayerTest {
   public void testTwoStopResponse() {
     List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300, FormattingContext.STOP, null));
-    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300, FormattingContext.STOP, null));
+    
+    distanceAways.add(new DistanceAway(1, 100, EnumFormattingContext.STOP, tripStatusBean, configService));
+    distanceAways.add(new DistanceAway(2, 200, EnumFormattingContext.STOP, tripStatusBean, configService));
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     
@@ -171,7 +192,7 @@ public class SmsDisplayerTest {
     List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
     for (int i = 0; i < 20; i++) {
-      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, new Date(), Mode.SMS,300, FormattingContext.STOP, null);
+      DistanceAway distanceAway = new DistanceAway(i+1, (i+1) * 100, EnumFormattingContext.STOP, tripStatusBean, configService);
       distanceAways.add(distanceAway);
     }
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
@@ -202,8 +223,8 @@ public class SmsDisplayerTest {
   public void testManyStopResponse() {
     List<RouteItem> routes = new ArrayList<RouteItem>();
     List<DistanceAway> distanceAways = new ArrayList<DistanceAway>();
-    distanceAways.add(new DistanceAway(1, 100, new Date(),  Mode.SMS,300, FormattingContext.STOP, null));
-    distanceAways.add(new DistanceAway(2, 200, new Date(),  Mode.SMS,300, FormattingContext.STOP, null));
+    distanceAways.add(new DistanceAway(1, 100, EnumFormattingContext.STOP, tripStatusBean, configService));
+    distanceAways.add(new DistanceAway(2, 200, EnumFormattingContext.STOP, tripStatusBean, configService));
     RouteItem availableRoute = makeAvailableRoute(distanceAways);
     routes.add(availableRoute);
     

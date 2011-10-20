@@ -28,12 +28,9 @@
     <!-- This turns on automatic annotation configuration -->
     <context:annotation-config />
 
-    <context:component-scan base-package="org.onebusaway.nyc.presentation.impl" />
-
-<!-- is users config needed?-->
-<!--    <import resource="classpath:org/onebusaway/users/application-context.xml" />-->
     <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
     <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
+    <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
 
     <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
         <property name="geocoderService" ref="externalGeocoderImpl" />

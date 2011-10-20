@@ -11,6 +11,7 @@ public interface GenericOptions {
   @Option(helpRequest = true)
   boolean getHelp();
 
+  // This specifies an option for the command line named type with a string value ie '$ <cmd> --type value'
   @Option
   String getType();
 

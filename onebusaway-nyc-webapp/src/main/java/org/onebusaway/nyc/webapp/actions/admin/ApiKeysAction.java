@@ -41,15 +41,15 @@ public class ApiKeysAction extends OneBusAwayNYCActionSupport implements
 
   private static final long serialVersionUID = 1L;
 
+  private List<ApiKeyModel> _apiKeys;
+
+  private ApiKeyModel _model = new ApiKeyModel();
+
   @Autowired
   private UserService _userService;
 
   @Autowired
   private UserPropertiesService _userPropertiesService;
-
-  private List<ApiKeyModel> _apiKeys;
-
-  private ApiKeyModel _model = new ApiKeyModel();
 
   @Override
   public ApiKeyModel getModel() {
@@ -78,12 +78,12 @@ public class ApiKeysAction extends OneBusAwayNYCActionSupport implements
 
   @Validations(requiredStrings = {@RequiredStringValidator(fieldName = "model.apiKey", message = "Error")})
   public String saveOrUpdate() {
-	if(_model.getMinApiRequestInterval() == null)
-		_model.setMinApiRequestInterval(0L);
-	  
-	saveOrUpdateKey(_model.getApiKey(), _model.getMinApiRequestInterval());
+    if(_model.getMinApiRequestInterval() == null)
+      _model.setMinApiRequestInterval(0L);
 
-	return "list";
+    saveOrUpdateKey(_model.getApiKey(), _model.getMinApiRequestInterval());
+
+    return "list";
   }
 
   @Validations(requiredStrings = {@RequiredStringValidator(fieldName = "model.apiKey", message = "Error")})

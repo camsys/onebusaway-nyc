@@ -21,39 +21,24 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 
+<s:url var="url" value="/css/map/map.css"></s:url>
+<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+
 <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/jquery.cookie.js"/>
+<s:url var="url" value="/js/lib/jquery.cookie.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/jquery.history.js"/>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/Fluster/Fluster2.js"/>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/Fluster/Fluster2Cluster.js"/>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/Fluster/Fluster2ClusterMarker.js"/>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/Fluster/Fluster2ProjectionOverlay.js"/>
+<s:url var="url" value="/js/lib/jquery.history.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/oba/Util.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/Popup.js"/>
+<s:url var="url" value="/js/oba/map/RouteMap.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/Marker.js"/>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/oba/RouteMap.js"/>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-<s:url var="url" value="/js/oba/Tracker.js"/>
+<s:url var="url" value="/js/oba/map/Sidebar.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/config.action"/>
@@ -61,51 +46,25 @@
 
 </head>
 <body>
-
 <div id="content" class="map">
-	<form action="search.action" id="search">
-		<div class="wrapper">
-			<input type="text" name="q" value=""/>	
-
-			<div id="no-results">
-				<p>
-					<s:url var="url" namespace="/wiki/Help" action="DesktopOverview"/>
-					No results found for your query. View <a href="${url}">search tips</a> or<br/>
-					try these example searches:					
-					<ul class="examples">			
-						<li>Intersection: <a href="#Atlantic Ave and Hoyt St">Atlantic Ave and Hoyt St</a></li>
-						<li>Stop ID: <a href="#305394">305394</a></li>
-					</ul>					
-				</p>
-			</div>
-		</div>
-		<input type="submit" value="Find Stop" class="submit"/>
-	</form>
-
-	<div id="share_link">
-		<a href="#" class="close"><em>Close</em></a>
-
-		<div class="content">
-			<p>
-			Use the following link in E-mail or IMs:
-			</p>
-			
-			<form>
-				<input type="text" id="url"/>
-			</form>
-		</div>
-	</div>
-	
-	<div id="welcome">
-		<a href="#" class="close"><em>Close</em></a>
-
-		<div class="content">
-			<wiki:wiki name="HomeAlert"/>
-		</div>
-	</div>
+    <div id="searchbar">
+       <form action="search.action" id="search">
+         <input type="text" name="q" value=""/>  
+         <input type="submit" value="Search" class="submit"/>
+       </form>
+       
+       <div id="results">
+       	 Did you mean...
+         <ul></ul>
+       </div>
+	            
+	   <div id="legend">
+		 Nearby routes:
+		 <ul></ul>
+	   </div>
+    </div>
 
 	<div id="map"></div>
 </div>
-
 </body>
 </html>

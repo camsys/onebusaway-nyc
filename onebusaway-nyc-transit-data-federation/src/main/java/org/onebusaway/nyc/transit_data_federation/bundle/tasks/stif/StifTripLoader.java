@@ -188,19 +188,17 @@ public class StifTripLoader {
               String run1 = tripRecord.getRunId();
               String run2 = tripRecord.getReliefRunId();
               String run3 = tripRecord.getNextTripOperatorRunId();
-              int reliefTime = tripRecord.getReliefTime();
-              RawRunData rawRunData = new RawRunData(run1, run2);
 
-              logTrip(trip, run0, run1, run2, reliefTime);
+              int reliefTime = tripRecord.getReliefTime();
+              RawRunData rawRunData = new RawRunData(run1, run2, serviceId);
+
+              logTrip(trip, run0, run1, run2, run3, reliefTime);
               
               filtered.add(trip);
               rawRunDataByTrip.put(trip, rawRunData);
               runsForTrip.put(trip.getId(), new RunData(run1, run2, reliefTime));
               if (run0 != null && run0.length() > 0) {
                 blocks.union(run0 + serviceCode, run1 + serviceCode);
-              }
-              if (run2 != null && run2.length() > 0) {
-                blocks.union(run1 + serviceCode, run2 + serviceCode);
               }
               if (run3 != null && run3.length() > 0) {
                 blocks.union(run1 + serviceCode, run3 + serviceCode);
@@ -223,7 +221,7 @@ public class StifTripLoader {
     }
   }
 
-  private void logTrip(Trip trip, String run0, String run1, String run2,
+  private void logTrip(Trip trip, String run0, String run1, String run2, String run3,
       int reliefTime) {
 
     if (outputStream == null) {
@@ -256,6 +254,8 @@ public class StifTripLoader {
     printStream.print(run1);
     printStream.print(",");
     printStream.print(run2);
+    printStream.print(",");
+    printStream.print(run3);
     printStream.print("\n");
   }
 

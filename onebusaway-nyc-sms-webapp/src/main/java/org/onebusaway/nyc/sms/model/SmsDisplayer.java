@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.onebusaway.nyc.presentation.model.RouteItem;
-import org.onebusaway.nyc.presentation.model.DistanceAway;
-import org.onebusaway.nyc.presentation.model.search.SearchResult;
+import org.onebusaway.nyc.presentation.model.realtime_data.DistanceAway;
+import org.onebusaway.nyc.presentation.model.realtime_data.RouteItem;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
 
 /**
  * Control logic for displaying search results within a sms character limit
@@ -97,7 +97,7 @@ public class SmsDisplayer {
     // helper function to help eliminate duplicate code
     StringBuilder result = new StringBuilder(SmsDisplayer.MAX_CHARS/2);
     String stopDirection = stopSearchResult.getStopDirection();
-    String stopIdNoAgency = stopSearchResult.getStopIdNoAgency();
+    String stopIdNoAgency = stopSearchResult.getStopIdWithoutAgency();
     result.append(stopDirection + "-bound (" + stopIdNoAgency + "):\n");
     return result;
   }
@@ -156,7 +156,7 @@ public class SmsDisplayer {
     addToResponse("Send:\n");
     for (SearchResult searchResult : searchResults) {
       StopSearchResult stopSearchResult = (StopSearchResult) searchResult;
-      String stopIdNoAgency = stopSearchResult.getStopIdNoAgency();
+      String stopIdNoAgency = stopSearchResult.getStopIdWithoutAgency();
       String stopDirection = stopSearchResult.getStopDirection();
       addToResponse(stopIdNoAgency + " for " + stopDirection + "-bound\n");
     }

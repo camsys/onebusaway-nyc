@@ -26,7 +26,7 @@ import com.opensymphony.xwork2.validator.annotations.RequiredFieldValidator;
 import com.opensymphony.xwork2.validator.annotations.Validations;
 
 public class EditParametersAction extends OneBusAwayNYCActionSupport implements
-    ModelDriven<ConfigurationModel> {
+ModelDriven<ConfigurationModel> {
 
   private static final long serialVersionUID = 1L;
 
@@ -43,28 +43,28 @@ public class EditParametersAction extends OneBusAwayNYCActionSupport implements
   @Override
   @SkipValidation
   public String execute() {
-	_model.setHideTimeout(_configurationService.getConfigurationValueAsInteger("display.hideTimeout", null));
-	_model.setNoProgressTimeout(_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", null));
-	_model.setOffRouteDistance(_configurationService.getConfigurationValueAsInteger("display.offRouteDistance", null));
-	_model.setStaleDataTimeout(_configurationService.getConfigurationValueAsInteger("display.staleTimeout", null));
-	_model.setGpsTimeSkewThreshold(_configurationService.getConfigurationValueAsInteger("data.gpsTimeSkewThreshold", null));
+    _model.setHideTimeout(_configurationService.getConfigurationValueAsInteger("display.hideTimeout", null));
+    _model.setNoProgressTimeout(_configurationService.getConfigurationValueAsInteger("display.stalledTimeout", null));
+    _model.setOffRouteDistance(_configurationService.getConfigurationValueAsInteger("display.offRouteDistance", null));
+    _model.setStaleDataTimeout(_configurationService.getConfigurationValueAsInteger("display.staleTimeout", null));
+    _model.setGpsTimeSkewThreshold(_configurationService.getConfigurationValueAsInteger("data.gpsTimeSkewThreshold", null));
 
-	return SUCCESS;
+    return SUCCESS;
   }
 
   @Validations(requiredFields = {
-		  @RequiredFieldValidator(fieldName = "gpsTimeSkewThreshold", message = "gpsTimeSkewThreshold not set"),
-	      @RequiredFieldValidator(fieldName = "noProgressTimeout", message = "noProgressTimeout not set"),
-	      @RequiredFieldValidator(fieldName = "offRouteDistance", message = "offRouteDistance not set"),
-	      @RequiredFieldValidator(fieldName = "staleDataTimeout", message = "staleDataTimeout not set"),
-	      @RequiredFieldValidator(fieldName = "hideTimeout", message = "hideTimeout not set")})
+      @RequiredFieldValidator(fieldName = "gpsTimeSkewThreshold", message = "gpsTimeSkewThreshold not set"),
+      @RequiredFieldValidator(fieldName = "noProgressTimeout", message = "noProgressTimeout not set"),
+      @RequiredFieldValidator(fieldName = "offRouteDistance", message = "offRouteDistance not set"),
+      @RequiredFieldValidator(fieldName = "staleDataTimeout", message = "staleDataTimeout not set"),
+      @RequiredFieldValidator(fieldName = "hideTimeout", message = "hideTimeout not set")})
   public String submit() throws Exception {	  
-	_configurationService.setConfigurationValue("display.hideTimeout", _model.getHideTimeout().toString());
-	_configurationService.setConfigurationValue("display.stalledTimeout", _model.getNoProgressTimeout().toString());
-	_configurationService.setConfigurationValue("display.offRouteDistance", _model.getOffRouteDistance().toString());
-	_configurationService.setConfigurationValue("display.staleTimeout", _model.getStaleDataTimeout().toString());
-	_configurationService.setConfigurationValue("data.gpsTimeSkewThreshold", _model.getGpsTimeSkewThreshold().toString());
+    _configurationService.setConfigurationValue("display.hideTimeout", _model.getHideTimeout().toString());
+    _configurationService.setConfigurationValue("display.stalledTimeout", _model.getNoProgressTimeout().toString());
+    _configurationService.setConfigurationValue("display.offRouteDistance", _model.getOffRouteDistance().toString());
+    _configurationService.setConfigurationValue("display.staleTimeout", _model.getStaleDataTimeout().toString());
+    _configurationService.setConfigurationValue("data.gpsTimeSkewThreshold", _model.getGpsTimeSkewThreshold().toString());
 
-	return SUCCESS;
+    return SUCCESS;
   }
 }

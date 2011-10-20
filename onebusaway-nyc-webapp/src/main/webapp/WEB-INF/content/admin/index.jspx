@@ -39,21 +39,9 @@
 	</p>
 	
 	<p>
-		<s:url var="url" namespace="/admin" action="routes"></s:url>
-		<a title="routes" href="${url}">Routes</a>
-		<br/>A list of all bus routes known to the system. You can enter service alerts or override off-route logic from this screen.
-	</p>
-	
-	<p>
 		<s:url var="url" namespace="/admin" action="barcode"></s:url>
 		<a title="barcode" href="${url}">QR Code Generation</a>
 		<br/>Generate QR Barcodes.
-	</p>
-	
-	<p>
-		<s:url var="url" namespace="/admin" action="reporting"></s:url>
-		<a title="reporting" href="${url}">Reporting</a>
-		<br/>Generate tab-delimited reports for analysis in third-party applications.
 	</p>
 	
 	<p>

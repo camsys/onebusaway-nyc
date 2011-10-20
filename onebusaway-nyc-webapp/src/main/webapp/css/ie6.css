@@ -34,13 +34,6 @@
     padding-right: 10px;
 }
 
-#welcome .content ul li {
-    border: medium none;
-    margin-left: 0px;
-    padding-left: 0px;
-	padding-right: 10px;
-}
-
 #content.sidebar #sidebar {
 	height: 100%;
 }

@@ -23,13 +23,13 @@
 <head>
 	<title>OneBusAway NYC: Sign Link Generator</title>
 	
-	<s:url var="url" value="/css/sign-config.css"></s:url>
+	<s:url var="url" value="/css/sign/config.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 	
 	<s:url var="url" value="/js/oba/Util.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-	<s:url var="url" value="/js/oba/SignConfig.js"/>
+	<s:url var="url" value="/js/oba/sign/SignConfig.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
 <body>

@@ -1,0 +1,196 @@
+/**
+ * Copyright (c) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+#content {
+	position: relative;
+}
+
+/* search/sidebar */
+
+#searchbar {
+	float: left;
+	width: 300px;
+	border-right: 1px solid #bebebe;
+}
+
+#results,
+#legend,
+#search {
+	padding: 10px;
+}
+
+#results,
+#legend {
+	display: none;
+	font-size: 12px;
+}
+
+#search input {
+	font-size: 16px;
+	font-family: inherit;
+	width: 185px;
+	display: inline;
+}
+
+#search input.submit {
+	background-color: #efefef;
+	border: 1px solid #a0a0a0;
+	color: #666666;
+	
+	font-family: inherit;
+	font-weight: bold;
+	font-size: 15px;
+	
+	width: 80px;
+	margin-left: 5px;
+	padding: 2px;
+}
+
+/* navigation */
+
+#header ul li.link {
+	border-left: none;
+}
+
+#header ul li.link a {
+	background-image: url("img/button_link.png");
+	background-repeat: no-repeat;
+	background-position: center center;
+	height: 16px;
+	width: 46px;	
+	display: block;
+}
+
+/* map/popup */
+
+#content #map {
+    position: relative;
+    height: 100%;
+    background-color: #EFEFEF;
+}
+
+#map #popup {
+    font-size: 12px;
+	color: #333333;
+}
+
+#popup p,
+#popup ul {
+    padding: 0;
+}
+
+#popup .header {
+	padding-left: 35px;
+}
+
+#popup .header.stop {
+	background-image: url("img/header_stop.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+
+#popup .header.vehicle {
+	background-image: url("img/header_bus.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+
+#popup .header .title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#popup .header .type {
+	height: 16px;
+	font-weight: bold;	
+}
+
+#popup .header .updated {
+	height: 16px;
+	color: #666666;
+	padding-left: 4px;
+	margin-left: 4px;
+	border-left: 1px solid #bebebe;
+}
+
+#popup .header .updated.stale {
+    color: #d12020;
+}
+
+#popup .service {
+	padding-top: 7px;
+	color: #666666;
+}
+
+#popup .meta.stale {
+  	color: #d12020;
+}
+
+#popup ul.notices li {
+    color: #d12020;
+	background-color: #efefef;
+	border: 1px solid #bebebe;
+	padding: 3px;
+	margin-top: 7px;
+}
+
+#popup ul li.route {
+	color: #000099;
+	font-weight: bold;
+}
+
+#popup ul li.arrival {
+	height: 16px;
+	font-weight: bold;
+	padding-left: 19px;
+	background: url("img/bullet_bus.png");
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
+#popup ul li.nextStop {
+	color: #000099;
+	height: 16px;
+	font-weight: bold;
+	padding-left: 19px;
+	background: url("img/bullet_stop.png");
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
+#popup ul li.nextStop span,
+#popup ul li.arrival span {
+	color: #333333;
+	padding-left: 0px;
+	margin-left: 4px;
+}
+
+#popup ul li.arrival span:first-child {
+	margin-left: 0px;
+}
+
+#popup .footer {
+	margin-top: 7px;	
+	padding-top: 7px;
+	border-top: 1px solid #bebebe;
+}
+
+#popup .footer .header {
+	padding: 0px;
+	font-size: 12px;
+	font-weight: bold;
+	font-style: italic;	
+}

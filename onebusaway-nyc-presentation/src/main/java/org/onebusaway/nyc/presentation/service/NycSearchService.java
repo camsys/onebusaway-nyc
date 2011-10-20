@@ -15,14 +15,12 @@
  */
 package org.onebusaway.nyc.presentation.service;
 
+import java.util.Date;
 import java.util.List;
 
-import org.onebusaway.nyc.presentation.model.Mode;
-import org.onebusaway.nyc.presentation.model.search.SearchResult;
+import org.onebusaway.nyc.presentation.model.EnumDisplayMedia;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
 
-/**
- * nyc specific search logic
- */
 public interface NycSearchService {
 
   /**
@@ -30,7 +28,7 @@ public interface NycSearchService {
    * @param q Query to search for
    * @return List of search results matching query according to nyc logic
    */
-  public List<SearchResult> search(String q, Mode m);
+  public List<SearchResult> search(String q, EnumDisplayMedia m);
   
   /**
    * Returns true if routeString can represent a route
@@ -46,4 +44,6 @@ public interface NycSearchService {
    */
   public boolean isStop(String stopString);
 
+  // for debugging
+  public void setTime(Date time);
 }

@@ -15,8 +15,8 @@ public class OperatorAssignment {
   private String agencyId;
   private String passId;
   private String runRoute;
-  private String runId;
-
+  //private String runId;
+  private String runNumber;
   private String serviceDate;
   private String updated;
 
@@ -32,8 +32,12 @@ public class OperatorAssignment {
     this.runRoute = runRoute;
   }
 
-  public void setRunId(String runId) {
-    this.runId = runId;
+//  public void setRunId(String runId) {
+//    this.runId = runId;
+//  }
+
+  public void setRunNumber(String runNumber) {
+    this.runNumber = runNumber;
   }
 
   public void setServiceDate(String serviceDate) {

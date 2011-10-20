@@ -38,7 +38,6 @@ import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.realtime.api.VehicleLocationListener;
 import org.onebusaway.utility.DateLibrary;
 
 import com.caucho.hessian.client.HessianProxyFactory;
