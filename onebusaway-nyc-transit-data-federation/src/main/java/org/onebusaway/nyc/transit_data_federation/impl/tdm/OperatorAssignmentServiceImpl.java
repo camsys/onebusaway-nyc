@@ -69,8 +69,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 			  OperatorAssignmentItem item = new OperatorAssignmentItem();
 			  item.setAgencyId(itemToAdd.get("agency-id").getAsString());
         item.setPassId(itemToAdd.get("pass-id").getAsString());
-        // FIXME: what comes back as run-id in the response is actually the run number!
-        item.setRunNumber(itemToAdd.get("run-id").getAsString()); 
+        item.setRunNumber(itemToAdd.get("run-number").getAsString()); 
         item.setRunRoute(itemToAdd.get("run-route").getAsString());
         item.setServiceDate(_serviceDateFormatter.parse(itemToAdd.get("service-date").getAsString()));
         item.setUpdated(_updatedDateFormatter.parseDateTime(itemToAdd.get("updated").getAsString()));
