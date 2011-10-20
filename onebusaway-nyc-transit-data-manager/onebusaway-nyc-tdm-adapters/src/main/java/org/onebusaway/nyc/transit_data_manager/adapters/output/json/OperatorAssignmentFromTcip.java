@@ -33,7 +33,8 @@ public class OperatorAssignmentFromTcip implements
     opAssign.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(input.getOperator().getAgencyId()));
     opAssign.setPassId(String.valueOf(input.getOperator().getOperatorId()));
     opAssign.setRunRoute(input.getLocalSCHOperatorAssignment().getRunRoute());
-    opAssign.setRunId(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
+    //opAssign.setRunId(input.getRun().getDesignator());
+    opAssign.setRunNumber(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
 
     DateTimeFormatter xmlDTF = ISODateTimeFormat.dateTimeNoMillis();
     DateTime serviceDate = xmlDTF.parseDateTime(input.getMetadata().getEffective());
