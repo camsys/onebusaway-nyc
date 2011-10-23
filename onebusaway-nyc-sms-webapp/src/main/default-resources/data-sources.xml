@@ -60,7 +60,9 @@
 		</property>
 	</bean>
 
-    <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl" />
+    <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
+    	<property name="administrativeAreaWhitelist" value="NY"/>        
+    </bean>
 
     <bean id="serviceArea" class="org.onebusaway.presentation.impl.DefaultServiceAreaServiceImpl">
         <property name="defaultBounds">
