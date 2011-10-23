@@ -35,7 +35,7 @@
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="bundleStoreRoot">${onebusaway_prefix}/target/transit-data-bundle</prop>
+                <prop key="bundle.location">${onebusaway_prefix}/target/transit-data-bundle</prop>
             </props>
         </property>
     </bean>
@@ -44,7 +44,7 @@
         <property name="order" value="-2" />
         <property name="properties">
             <props>
-                <prop key="standaloneMode">true</prop>
+                <prop key="bundle.mode.standalone">true</prop>
             </props>
         </property>
     </bean>
