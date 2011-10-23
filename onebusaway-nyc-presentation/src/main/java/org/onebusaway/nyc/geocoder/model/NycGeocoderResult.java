@@ -15,61 +15,91 @@
  */
 package org.onebusaway.nyc.geocoder.model;
 
+import org.onebusaway.geocoder.impl.GoogleAddressComponent;
 import org.onebusaway.geocoder.impl.GoogleGeocoderResult;
+import org.onebusaway.geospatial.model.CoordinateBounds;
 
 public class NycGeocoderResult extends GoogleGeocoderResult {
 
   private static final long serialVersionUID = 1L;
   
   private String formattedAddress;
-    
-  private Double northEastLatitude = null;
 
-  private Double northEastLongitude = null;
+  private String neighborhood;
 
-  private Double southWestLatitude = null;
+  private Double northeastLatitude = null;
 
-  private Double southWestLongitude = null;
+  private Double northeastLongitude = null;
+
+  private Double southwestLatitude = null;
+
+  private Double southwestLongitude = null;
 
   public void setFormattedAddress(String a) {
     formattedAddress = a;
   }
   
-  @Override
-  public String getAddress() {
+  public String getFormattedAddress() {
+    if(formattedAddress != null)
+      formattedAddress = formattedAddress.replace(", USA", "");
     return formattedAddress;
   }
 
-  public Double getNorthEastLatitude() {
-    return northEastLatitude;
+  public String getNeighborhood() {
+    return neighborhood;
   }
 
-  public void setNorthEastLatitude(Double northEastLatitude) {
-    this.northEastLatitude = northEastLatitude;
+  public Double getNortheastLatitude() {
+    return northeastLatitude;
   }
 
-  public Double getNorthEastLongitude() {
-    return northEastLongitude;
+  public void setNortheastLatitude(Double northeastLatitude) {
+    this.northeastLatitude = northeastLatitude;
   }
 
-  public void setNorthEastLongitude(Double northEastLongitude) {
-    this.northEastLongitude = northEastLongitude;
+  public Double getNortheastLongitude() {
+    return northeastLongitude;
   }
 
-  public Double getSouthWestLatitude() {
-    return southWestLatitude;
+  public void setNortheastLongitude(Double northeastLongitude) {
+    this.northeastLongitude = northeastLongitude;
   }
 
-  public void setSouthWestLatitude(Double southWestLatitude) {
-    this.southWestLatitude = southWestLatitude;
+  public Double getSouthwestLatitude() {
+    return southwestLatitude;
   }
 
-  public Double getSouthWestLongitude() {
-    return southWestLongitude;
+  public void setSouthwestLatitude(Double southwestLatitude) {
+    this.southwestLatitude = southwestLatitude;
   }
 
-  public void setSouthWestLongitude(Double southWestLongitude) {
-    this.southWestLongitude = southWestLongitude;
+  public Double getSouthwestLongitude() {
+    return southwestLongitude;
+  }
+
+  public void setSouthwestLongitude(Double southwestLongitude) {
+    this.southwestLongitude = southwestLongitude;
   }  
 
+  public CoordinateBounds getBounds() {
+    if(northeastLatitude != null && northeastLongitude != null 
+        && southwestLatitude != null && southwestLongitude != null) {
+      return new CoordinateBounds(northeastLatitude, northeastLongitude, 
+          southwestLatitude, southwestLongitude);
+    } else {
+      return null;
+    }    
+  }
+  
+  public boolean isRegion() {
+    return getBounds() != null;
+  }
+  
+  @Override
+  public void addAddressComponent(GoogleAddressComponent addressComponent) {
+    super.addAddressComponent(addressComponent);
+    
+    if(addressComponent.getTypes().contains("neighborhood"))
+      this.neighborhood = addressComponent.getLongName();
+  }
 }

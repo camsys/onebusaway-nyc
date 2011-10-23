@@ -17,8 +17,8 @@ public class SearchResultComparator implements Comparator<SearchResult> {
       return 1;
     else if ((o1 instanceof RouteSearchResult)
         && (o2 instanceof RouteSearchResult))
-      return ((RouteSearchResult) o1).getName().compareTo(
-          ((RouteSearchResult) o2).getName());
+      return ((RouteSearchResult) o1).getRouteId().compareTo(
+          ((RouteSearchResult) o2).getRouteId());
     else if ((o1 instanceof StopSearchResult)
         && (o2 instanceof StopSearchResult))
       return ((StopSearchResult) o1).getName().compareTo(

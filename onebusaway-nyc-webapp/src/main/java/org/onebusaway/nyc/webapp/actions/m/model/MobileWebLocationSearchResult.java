@@ -13,11 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.sms.actions;
+package org.onebusaway.nyc.webapp.actions.m.model;
 
-import com.opensymphony.xwork2.ActionSupport;
+import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.presentation.model.search.LocationSearchResult;
+import org.onebusaway.nyc.presentation.model.search.RouteItem;
 
-public abstract class AbstractNycSmsAction extends ActionSupport {
+import java.util.List;
 
-  private static final long serialVersionUID = 1L;
+public class MobileWebLocationSearchResult extends LocationSearchResult {
+  
+  private List<RouteItem> nearbyRoutes;
+  
+  public MobileWebLocationSearchResult(NycGeocoderResult result, List<RouteItem> nearbyRoutes) {
+    super(result);
+    this.nearbyRoutes = nearbyRoutes;
+  }
+
+  public List<RouteItem> getNearbyRoutes() {
+    return nearbyRoutes;
+  }
+
 }

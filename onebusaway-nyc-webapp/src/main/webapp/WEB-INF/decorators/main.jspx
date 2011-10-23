@@ -73,35 +73,15 @@
 
       <ul>
       	<s:url var="url" value="/"></s:url>
-        <li><a href="${url}">OneBusAway NYC Home</a></li>
+        <li><a href="${url}">Home</a></li>
 
-      	<s:url var="url" namespace="/wiki/Apps" action="Index"></s:url>
-        <li><a href="${url}">Apps</a></li>
+		<s:url var="url" namespace="/m" action="index"/>
+        <li><a href="${url}">Text/Mobile Version</a></li>
 
 		<s:if test="adminUser">
 	        <li>
 				<s:url var="url" namespace="/admin" action="index"/>
-        		<a href="${url}">Administration Console</a>
-
-				<ul class="sub">
-					<s:url var="url" namespace="/admin" action="vehicles"></s:url>
-	    		    <li><a href="${url}">Vehicles</a></li>
-
-					<s:url var="url" namespace="/admin" action="routes"></s:url>
-	    		    <li><a href="${url}">Routes</a></li>
-
-					<s:url var="url" namespace="/admin" action="reporting"></s:url>
-	    		    <li><a href="${url}">Reporting</a></li>
-
-					<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
-	    		    <li><a href="${url}">Parameters</a></li>
-
-					<s:url var="url" namespace="/admin" action="api-keys"></s:url>
-	    		    <li><a href="${url}">API Keys</a></li>
-
-					<s:url var="url" namespace="/" action="logout"/>
-    			    <li><a href="${url}">Logout</a></li>	
-    	    	</ul>    	    
+        		<a href="${url}">Administration Console</a>    
     	    </li>
     	</s:if>
     	    

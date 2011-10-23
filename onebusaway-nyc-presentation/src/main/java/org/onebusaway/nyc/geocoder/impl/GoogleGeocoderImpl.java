@@ -44,10 +44,29 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
   
   private boolean sensor = false;
   
+  private String administrativeAreaWhitelist = null;
+  
   public void setSensor(boolean sensor) {
     this.sensor = sensor;
   }
 
+  public void setAdministrativeAreaWhitelist(String aa) {
+    administrativeAreaWhitelist = aa;
+  }
+  
+  private List<NycGeocoderResult> filterResults(List<NycGeocoderResult> input) {
+    if(administrativeAreaWhitelist == null)
+      return input;
+    
+    List<NycGeocoderResult> output = new ArrayList<NycGeocoderResult>();
+    for(NycGeocoderResult result : input) {
+      if(result.getAdministrativeArea() != null 
+          && result.getAdministrativeArea().equals(administrativeAreaWhitelist))
+        output.add(result);
+    }
+    return output;
+  }
+  
   // (method to make legacy OBA components that use the geocoder happy...)
   public GeocoderResults geocode(String location) {
     GeocoderResults output = new GeocoderResults();
@@ -61,11 +80,9 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     StringBuilder b = new StringBuilder();
     b.append(BASE_URL);
     b.append("?");
-
     b.append("sensor=").append(sensor);
     
     CoordinateBounds bounds = _serviceArea.getServiceArea();
-
     if(bounds != null) {
       b.append("&bounds=").append(
           bounds.getMinLat() + "," + bounds.getMinLon() + "|" + 
@@ -102,13 +119,14 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
         try { inputStream.close(); } catch (Exception ex) {}
       }
     }
+    
+    results = filterResults(results);
+    
     return results;
   }
 
   private Digester createDigester() {
     Digester digester = new Digester();
-
-    Class<?>[] dType = {Double.class};
 
     digester.addObjectCreate("GeocodeResponse/result", NycGeocoderResult.class);
     digester.addObjectCreate("GeocodeResponse/result/address_component", GoogleAddressComponent.class);
@@ -118,6 +136,8 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     digester.addCallMethod("GeocodeResponse/result/address_component/type", "addType", 0);
     digester.addSetNext("GeocodeResponse/result/address_component", "addAddressComponent");
     
+    Class<?>[] dType = {Double.class};
+
     digester.addCallMethod("GeocodeResponse/result/formatted_address", "setFormattedAddress", 0);
     digester.addCallMethod("GeocodeResponse/result/geometry/location/lat", "setLatitude", 0, dType);
     digester.addCallMethod("GeocodeResponse/result/geometry/location/lng", "setLongitude", 0, dType);

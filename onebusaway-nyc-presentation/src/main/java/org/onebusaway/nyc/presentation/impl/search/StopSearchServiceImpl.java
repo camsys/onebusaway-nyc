@@ -15,56 +15,52 @@
  */
 package org.onebusaway.nyc.presentation.impl.search;
 
-import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.presentation.model.EnumDisplayMedia;
-import org.onebusaway.nyc.presentation.model.EnumFormattingContext;
-import org.onebusaway.nyc.presentation.model.realtime_data.DistanceAway;
-import org.onebusaway.nyc.presentation.model.realtime_data.RouteItem;
+import org.onebusaway.nyc.presentation.impl.DefaultModelFactory;
+import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
+import org.onebusaway.nyc.presentation.model.search.RouteItem;
 import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
+import org.onebusaway.nyc.presentation.service.ModelFactory;
+import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
-import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
+import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.StopGroupBean;
+import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsBean;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
-import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 @Component
-public class StopSearchServiceImpl {
+public class StopSearchServiceImpl implements StopSearchService {
   
   // when querying for stops from a lat/lng, use this distance in meters
   private double _distanceToStops = 100;
   
+  private ModelFactory _modelFactory = new DefaultModelFactory();
+  
   @Autowired
   private TransitDataService _transitDataService;
-  
+
   @Autowired
   private ServiceAreaService _serviceArea;
   
-  @Autowired
-  private SearchSupport _searchSupport;
-    
-  public void setTime(Date time) {
-    _searchSupport.setTime(time);
+  public void setModelFactory(ModelFactory factory) {
+    _modelFactory = factory;
   }
-  
-  public List<StopSearchResult> resultsForLocation(Double lat, Double lng, EnumDisplayMedia media) {
+
+  @Override
+  public List<StopSearchResult> resultsForLocation(Double lat, Double lng) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(lat, lng, _distanceToStops);
     
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -74,12 +70,13 @@ public class StopSearchServiceImpl {
     
     StopsBean stops = _transitDataService.getStops(queryBean);
 
-    List<StopSearchResult> results = stopsBeanToStopResults(stops, media);
+    List<StopSearchResult> results = stopsBeanToStopResults(stops);
 
     return results;
   }
 
-  public StopSearchResult makeResultFor(String stopId, EnumDisplayMedia media) {
+  @Override
+  public List<StopSearchResult> makeResultFor(String stopId) {
     SearchQueryBean queryBean = new SearchQueryBean();
     queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
     queryBean.setBounds(_serviceArea.getServiceArea());
@@ -88,118 +85,64 @@ public class StopSearchServiceImpl {
 
     StopsBean stops = _transitDataService.getStops(queryBean);
 
-    List<StopSearchResult> results = stopsBeanToStopResults(stops, media);
+    List<StopSearchResult> results = stopsBeanToStopResults(stops);
 
-    if(results.size() > 0) {
-      return results.get(0);
-    } else
-      return null;
-  }
-
-  private List<StopSearchResult> stopsBeanToStopResults(StopsBean stopsBean, EnumDisplayMedia media) {
-    ArrayList<StopSearchResult> results = new ArrayList<StopSearchResult>();
-    for(StopBean stopBean : stopsBean.getStops()) {
-      StopSearchResult stopSearchResult = makeStopSearchResult(stopBean, media);
-      results.add(stopSearchResult);
-    }
     return results;
   }
-  
-  private StopSearchResult makeStopSearchResult(StopBean stopBean, EnumDisplayMedia m) {
-    List<RouteItem> availableRoutes = getRouteItemsForStop(stopBean);
-    List<NaturalLanguageStringBean> serviceAlerts = getServiceAlertsForStop(stopBean);
+
+  private List<StopSearchResult> stopsBeanToStopResults(StopsBean stopsBean) {
+    ArrayList<StopSearchResult> results = new ArrayList<StopSearchResult>();
     
-    StopSearchResult stopSearchResult = new StopSearchResult(
-        stopBean.getId(), stopBean.getName(), stopBean.getLat(), stopBean.getLon(), stopBean.getDirection(), 
-        availableRoutes, serviceAlerts);
-
-    return stopSearchResult;    
-  }
-    
-  private List<RouteItem> getRouteItemsForStop(StopBean stopBean) {
-    List<RouteItem> output = new ArrayList<RouteItem>();
-    
-    for (RouteBean routeBean : stopBean.getRoutes()) {
-      String shortName = routeBean.getShortName();
-      String longName = routeBean.getLongName();
-
-      // iterate through headsigns that appear at this stop on the given route
-      for(String headsign : getHeadsignsForStopAndRoute(stopBean, routeBean)) {
-        String directionId = getDirectionIdForStopAndHeadsign(stopBean, headsign);
-
-        List<DistanceAway> distanceAways = _searchSupport.getDistanceAwaysForStopAndHeadsign(
-                                              stopBean, headsign, 
-                                              false, EnumFormattingContext.STOP);
-
-        if (distanceAways != null)
-          Collections.sort(distanceAways);
-
-        RouteItem availableRoute = new RouteItem(shortName, longName, headsign, 
-            directionId, distanceAways);
-
-        output.add(availableRoute);
+    for(StopBean stopBean : stopsBean.getStops()) {
+      List<RouteItem> routesAvailable = new ArrayList<RouteItem>();
+      for(RouteBean routeBean : stopBean.getRoutes()) {
+        List<RouteDestinationItem> destinations = getRouteDestinationItemsForRouteAndStop(routeBean, stopBean);      
+        routesAvailable.add(_modelFactory.getRouteItemModelFor(routeBean, destinations));      
       }
-    }    
-    
-    return output;
-  }    
-    
-  @Cacheable
-  private String getDirectionIdForStopAndHeadsign(StopBean stopBean, String headsign) {
-    List<ArrivalAndDepartureBean> arrivalsAndDepartures = 
-        _searchSupport.getArrivalsAndDeparturesForStop(stopBean);
-
-    for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
-      TripBean tripBean = arrivalAndDepartureBean.getTrip();
-      if(tripBean.getTripHeadsign().equals(headsign))
-        return tripBean.getDirectionId();
+   
+      results.add(_modelFactory.getSearchResultModelFor(stopBean, routesAvailable));
     }
     
-    return null;
+    return results;
   }
 
-  private List<String> getHeadsignsForStopAndRoute(StopBean stopBean, RouteBean routeBean) {
-    ArrayList<String> headsigns = new ArrayList<String>();
-    
-    List<ArrivalAndDepartureBean> arrivalsAndDepartures = 
-        _searchSupport.getArrivalsAndDeparturesForStop(stopBean);
+  // return route destination items for the given route + stop
+  private List<RouteDestinationItem> getRouteDestinationItemsForRouteAndStop(RouteBean routeBean, StopBean stopBean) {
+    List<RouteDestinationItem> destinations = new ArrayList<RouteDestinationItem>();
 
-    for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
-      TripBean tripBean = arrivalAndDepartureBean.getTrip();
-      if(tripBean.getRoute().equals(routeBean)) {
-        String headsign = tripBean.getTripHeadsign();
+    StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+    List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+    for (StopGroupingBean stopGroupingBean : stopGroupings) {
+      List<StopGroupBean> stopGroups = stopGroupingBean.getStopGroups();
+      for (StopGroupBean stopGroupBean : stopGroups) {
+        NameBean name = stopGroupBean.getName();
+        String type = name.getType();
+        if (!type.equals("destination"))
+          continue;
+     
+        List<String> stopIdsInGroup = stopGroupBean.getStopIds();
+        if(!stopIdsInGroup.contains(stopBean.getId()))
+          continue;
+        
+        List<String> headsigns = name.getNames();
+        String directionId = stopGroupBean.getId();
 
-        if(!headsigns.contains(headsign))
-          headsigns.add(headsign);
+        // polyline--seems to always just be one?
+        String polyline = null;
+        List<EncodedPolylineBean> polylines = stopGroupBean.getPolylines();
+        if(polylines.size() > 0)
+          polyline = polylines.get(0).getPoints();
+
+        // add data for all available headsigns
+        for(String headsign: headsigns) {
+          RouteDestinationItem routeDestination = 
+              _modelFactory.getRouteDestinationItemModelFor(headsign, directionId, polyline);
+
+          destinations.add(routeDestination);
+        }
       }
     }
-    
-    return headsigns;
-  }
-  
-  private List<NaturalLanguageStringBean> getServiceAlertsForStop(StopBean stopBean) {
-    HashMap<String, List<NaturalLanguageStringBean>> serviceAlertIdsToDescriptions = 
-        new HashMap<String, List<NaturalLanguageStringBean>>();
-    
-    List<ArrivalAndDepartureBean> arrivalsAndDepartures = 
-        _searchSupport.getArrivalsAndDeparturesForStop(stopBean);
-    
-    for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
-      TripStatusBean tripStatusBean = arrivalAndDepartureBean.getTripStatus();      
-      if(tripStatusBean == null || tripStatusBean.getSituations() == null)
-        continue;
-
-      for(ServiceAlertBean serviceAlert : tripStatusBean.getSituations()) {
-        serviceAlertIdsToDescriptions.put(serviceAlert.getId(), serviceAlert.getDescriptions());
-      }
-    }
-    
-    // merge lists from unique service alerts together
-    List<NaturalLanguageStringBean> output = new ArrayList<NaturalLanguageStringBean>();
-    for(Collection<NaturalLanguageStringBean> descriptions : serviceAlertIdsToDescriptions.values()) {
-      output.addAll(descriptions);
-    }
-
-    return output;
+      
+    return destinations;
   }
 }

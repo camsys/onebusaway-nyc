@@ -16,27 +16,16 @@
 package org.onebusaway.nyc.presentation.model.search;
 
 import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
-import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
 
-import java.util.List;
-
-public class StopSearchResult implements SearchResult {
+public class StopItem {
 
   private final StopBean stopBean;
 
-  private final List<RouteItem> routesAvailable;
-  
-  public StopSearchResult(StopBean stopBean, List<RouteItem> routesAvailable) {
+  public StopItem(StopBean stopBean) {
     this.stopBean = stopBean;
-    this.routesAvailable = routesAvailable;
   }
 
-  @Override
-  public String getType() {
-    return "stopResult";
-  }
-  
   public String getStopId() {
     return stopBean.getId();
   }
@@ -60,9 +49,5 @@ public class StopSearchResult implements SearchResult {
 
   public String getStopDirection() {
     return stopBean.getDirection();
-  }
-  
-  public List<RouteItem> getRoutesAvailable() {
-    return routesAvailable;
   }
 }

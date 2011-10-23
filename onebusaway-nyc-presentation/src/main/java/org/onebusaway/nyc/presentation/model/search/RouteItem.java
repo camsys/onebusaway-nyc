@@ -16,38 +16,27 @@
 package org.onebusaway.nyc.presentation.model.search;
 
 import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
-import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
 
 import java.util.List;
 
-public class RouteSearchResult implements SearchResult {
+public class RouteItem {
 
   private final RouteBean routeBean;
-
-  private final List<RouteDestinationItemWithStops> destinations;
+  
+  private final List<RouteDestinationItem> destinations;
 
   private static final WebappSupportLibrary idParser = new WebappSupportLibrary();
 
-  public RouteSearchResult(RouteBean routeBean, List<RouteDestinationItemWithStops> destinations) {
+  public RouteItem(RouteBean routeBean, List<RouteDestinationItem> destinations) {
     this.routeBean = routeBean;
     this.destinations = destinations;
   }
 
-  @Override
-  public String getType() {
-    return "routeResult";
-  }
-
-  @Override
-  public String getName() {
-    return getRouteIdWithoutAgency();
-  }
-  
   public String getRouteId() {
     return routeBean.getId();
-  }  
-  
+  }
+
   public String getRouteIdWithoutAgency() {
     return idParser.parseIdWithoutAgency(getRouteId());
   }
@@ -60,7 +49,7 @@ public class RouteSearchResult implements SearchResult {
     return routeBean.getColor();
   }
   
-  public List<RouteDestinationItemWithStops> getDestinations() {
+  public List<RouteDestinationItem> getDestinations() {
     return destinations;
   }
 }

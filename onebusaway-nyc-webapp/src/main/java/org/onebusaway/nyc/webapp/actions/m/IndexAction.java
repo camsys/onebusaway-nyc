@@ -15,81 +15,250 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
+import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
+import org.onebusaway.nyc.presentation.model.realtime.DistanceAway;
+import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
+import org.onebusaway.nyc.presentation.model.search.RouteDestinationItemWithStops;
+import org.onebusaway.nyc.presentation.model.search.RouteItem;
+import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
+import org.onebusaway.nyc.presentation.model.search.StopItem;
+import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
+import org.onebusaway.nyc.presentation.service.search.StopSearchService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.nyc.webapp.actions.m.model.MobileWebLocationSearchResult;
+import org.onebusaway.nyc.webapp.actions.m.model.MobileWebModelFactory;
+import org.onebusaway.nyc.webapp.actions.m.model.MobileWebRouteDestinationItem;
+import org.onebusaway.nyc.webapp.actions.m.model.MobileWebRouteItem;
+import org.onebusaway.nyc.webapp.actions.m.model.MobileWebStopItem;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+
+import org.apache.struts2.ServletActionContext;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.net.URLEncoder;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts2.ServletActionContext;
-import org.onebusaway.nyc.presentation.model.EnumDisplayMedia;
-import org.onebusaway.nyc.presentation.model.realtime_data.DistanceAway;
-import org.onebusaway.nyc.presentation.model.realtime_data.RouteItem;
-import org.onebusaway.nyc.presentation.model.realtime_data.StopItem;
-import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
-import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
-import org.onebusaway.nyc.presentation.model.search.StopSearchResult;
-import org.onebusaway.nyc.presentation.service.NycSearchService;
-import org.onebusaway.nyc.presentation.service.search.SearchResult;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.utility.DateLibrary;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 public class IndexAction extends OneBusAwayNYCActionSupport {
+
   private static final long serialVersionUID = 1L;
   
   private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
 
-  private String q;
-  
-  private Date time = null;
+  private List<SearchResult> _searchResults = new ArrayList<SearchResult>();
 
-  private List<SearchResult> searchResults = new ArrayList<SearchResult>();
-  
   @Autowired
-  private NycSearchService searchService;
+  private ConfigurationService _configurationService;
 
-  public String getQ() {
-    return q;
-  }
+  @Autowired
+  private RealtimeService _realtimeService;
+
+  @Autowired
+  private RouteSearchService _routeSearchService;
+
+  @Autowired
+  private StopSearchService _stopSearchService;
+
+  @Autowired
+  private NycGeocoderService _geocoderService;
+
+  private long _lastUpdateTime;
+  
+  private String _q;
 
   public void setQ(String q) {
-    this.q = q;
+    this._q = q.trim();
   }
 
-  public void setTime(String time) throws ParseException {
-    if(time != null && !time.isEmpty())
-      this.time = DateLibrary.getIso8601StringAsTime(time);
-  }
-  
-  public Date getTime() {
-    if(time == null)
-      return new Date();
+  public String getResultType() {
+    if(_searchResults.size() > 0)
+      return _searchResults.get(0).getType();
     else
-      return time;
+      return null;
   }
   
   public List<SearchResult> getSearchResults() {
-    return searchResults;
+    injectRealtimeData();
+    return _searchResults;
   }
   
   public String execute() throws Exception {
-    if (q != null) {
-      searchService.setTime(getTime());        
-      searchResults = searchService.search(q, EnumDisplayMedia.MOBILE_WEB);
+    if(_q == null)
+      return SUCCESS;
+
+    _q = _q.trim();
+    if(_q.isEmpty())
+      return SUCCESS;
+
+    MobileWebModelFactory factory = new MobileWebModelFactory();
+    _stopSearchService.setModelFactory(factory);
+    _routeSearchService.setModelFactory(factory);
+    
+    // try as stop ID
+    _searchResults.addAll(_stopSearchService.makeResultFor(_q));
+
+    // try as route ID
+    if(_searchResults.size() == 0) {
+      _searchResults.addAll(_routeSearchService.makeResultFor(_q));
     }
+
+    // nothing? geocode it!
+    if(_searchResults.size() == 0) {
+      _searchResults.addAll(generateResultsFromGeocode(_q));        
+    }
+
+    Collections.sort(_searchResults, new SearchResultComparator());
+
     return SUCCESS;
   }
 
+  private void injectRealtimeData() {
+    for(SearchResult result : _searchResults) {
+      // stop centric view
+      if(result.getType().equals("stopResult")) {
+        StopSearchResult stopSearchResult = (StopSearchResult)result;
+        for(RouteItem route : stopSearchResult.getRoutesAvailable()) {
+          for(RouteDestinationItem _destination : route.getDestinations()) {
+            MobileWebRouteDestinationItem destination = (MobileWebRouteDestinationItem)_destination;
+
+            // service alerts
+            List<NaturalLanguageStringBean> serviceAlerts = 
+                _realtimeService.getServiceAlertsForStop(stopSearchResult.getStopId());
+
+            destination.setServiceAlerts(serviceAlerts);
+
+            // distance aways
+            List<DistanceAway> distanceAways = 
+                _realtimeService.getDistanceAwaysForStopAndHeadsign(stopSearchResult.getStopId(), destination.getHeadsign());
+            
+            List<String> distanceAwayStrings = new ArrayList<String>();
+            for(DistanceAway distanceAway : distanceAways) {
+              distanceAwayStrings.add(getStringForDistanceAway(distanceAway, false));
+              _lastUpdateTime = Math.max(distanceAway.getUpdateTimestamp().getTime(), _lastUpdateTime);
+            }
+            
+            destination.setDistanceAways(distanceAwayStrings);
+          }
+        }
+        
+      // route centric view
+      } else if(result.getType().equals("routeResult")) {
+        RouteSearchResult routeSearchResult = (RouteSearchResult)result;
+        for(RouteDestinationItemWithStops destination : routeSearchResult.getDestinations()) {
+          for(StopItem _stop : destination.getStops()) {
+            MobileWebStopItem stop = (MobileWebStopItem)_stop;
+            
+            // service alerts
+            List<NaturalLanguageStringBean> serviceAlerts = 
+                _realtimeService.getServiceAlertsForStop(stop.getStopId());
+
+            stop.setServiceAlerts(serviceAlerts);
+
+            // distance aways
+            List<DistanceAway> distanceAways = 
+                _realtimeService.getDistanceAwaysForStopAndHeadsign(stop.getStopId(), destination.getHeadsign());
+
+            StringBuilder sb = new StringBuilder();
+            for(DistanceAway distanceAway : distanceAways) {
+              // hide arrivals that are further than 1 stop--those will appear as part of the next stop!
+              if(distanceAway.getStopsAway() > 0)
+                continue;
+              
+              if(sb.length() > 0)
+                sb.append(",");
+
+              sb.append(getStringForDistanceAway(distanceAway, true));
+              _lastUpdateTime = Math.max(distanceAway.getUpdateTimestamp().getTime(), _lastUpdateTime);
+            }
+
+            stop.setDistanceAwayString(sb.toString());
+          }
+        }
+        
+      }
+    }
+    
+  }
+  
+  private String getStringForDistanceAway(DistanceAway distanceAway, boolean routeCentricView) {
+    int staleDataTimeout = 
+        _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+
+    String s = distanceAway.getPresentableDistance();
+    String subpart = new String();
+
+    // at terminal
+    if(!routeCentricView && distanceAway.isAtTerminal()) {
+      subpart += "at terminal";
+    }
+
+    // old
+    if(new Date().getTime() - distanceAway.getUpdateTimestamp().getTime() > 1000 * staleDataTimeout) {
+      if(subpart.length() > 0)
+        subpart += ", ";
+
+      subpart += "old data";
+    }
+
+    if(subpart.length() > 0) {
+      s += " (" + subpart + ")";
+    }
+
+    return s;
+  }
+  
+  private List<SearchResult> generateResultsFromGeocode(String q) {
+    List<SearchResult> results = new ArrayList<SearchResult>();
+    List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(q);
+
+    // one location: if region, show routes, if point, show stops nearby
+    if(geocoderResults.size() == 1) {
+      NycGeocoderResult result = geocoderResults.get(0);
+
+      if(result.isRegion()) {
+        List<RouteItem> routeItems = _routeSearchService.itemsForLocation(result.getBounds());
+        for(RouteItem _routeItem : routeItems) {
+          MobileWebRouteItem routeItem = (MobileWebRouteItem)_routeItem;
+          results.add(routeItem);
+        }
+      } else {
+        results.addAll(_stopSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
+      }
+      
+      return results;
+
+    // location disambiguation w/ nearby routes
+    } else {
+      for(NycGeocoderResult result : geocoderResults) {
+        List<RouteItem> nearbyRoutes = null;
+        if(result.isRegion())
+          nearbyRoutes = _routeSearchService.itemsForLocation(result.getBounds());
+        else
+          nearbyRoutes = _routeSearchService.itemsForLocation(result.getLatitude(), result.getLongitude());
+        
+        results.add(new MobileWebLocationSearchResult(result, nearbyRoutes));
+      }
+    }
+
+    return results;
+  }  
+  
   // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
   public String getGoogleAnalyticsTrackingUrl() {
 	  try {
 	      StringBuilder url = new StringBuilder();
-	      url.append("/ga?");
+	      url.append("/m/ga?");
 	      url.append("utmac=").append(GA_ACCOUNT);
 	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
 
@@ -109,12 +278,12 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      }
 	      
 	      String action = new String("Unknown");
-	      if(searchResults != null && !searchResults.isEmpty()) {
-	    	  SearchResult firstResult = searchResults.get(0);	    	  
+	      if(_searchResults != null && !_searchResults.isEmpty()) {
+	    	  SearchResult firstResult = _searchResults.get(0);	    	  
 	    	  if(firstResult.getType().equals("route")) {
 	    		  action = "Route Search";
 	    	  } else if(firstResult.getType().equals("stop")) {
-	    		  if(searchResults.size() > 1) {
+	    		  if(_searchResults.size() > 1) {
 	    			  action = "Intersection Search";
 	    		  } else {
 	    			  action = "Stop Search";
@@ -145,57 +314,30 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
 
   public boolean getQueryIsEmpty() {
-	  if(q == null) {
+	  if(_q == null) {
 		  return true;
 	  } else {
-		  return q.isEmpty();
+		  return _q.isEmpty();
 	  }
   }
     
+  public String getQ() {
+    return _q;
+  }
+
   public String getCacheBreaker() {
-	  return (int)Math.ceil((Math.random() * 100000)) + "";
+	  return String.valueOf(Math.ceil((Math.random() * 100000)));
   }
   
-  // find latest time across all DistanceAways
   public String getLastUpdateTime() {
-    Date lastUpdated = null;
-    for(SearchResult _result : searchResults) {
-      if(_result.getType().equals("route")) {
-        RouteSearchResult result = (RouteSearchResult)_result;
-        for(RouteDestinationItem destination : result.getDestinations()) {
-          for(StopItem stop : destination.getStopItems()) {
-            for(DistanceAway distanceAway : stop.getDistanceAways()) {
-              if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
-                lastUpdated = distanceAway.getUpdateTimestamp();
-              }
-            }
-          }
-        }
-      } else if(_result.getType().equals("stop")) {
-        StopSearchResult result = (StopSearchResult)_result;
-        for(RouteItem route : result.getRoutesAvailable()) {
-          for(DistanceAway distanceAway : route.getDistanceAways()) {
-            if(lastUpdated == null || distanceAway.getUpdateTimestamp().getTime() < lastUpdated.getTime()) {
-              lastUpdated = distanceAway.getUpdateTimestamp();
-            }
-          }
-        }
-      }
-    }
-
-    if(lastUpdated != null) {
-      return DateFormat.getTimeInstance().format(lastUpdated);
-    } else {
-      // no realtime data
-      return DateFormat.getTimeInstance().format(new Date());
-    }
+    return DateFormat.getTimeInstance().format(_lastUpdateTime);
   }  
   
   public String getTitle() {
-    String title = this.q;
+    String title = this._q;
 	
-    if(searchResults.size() == 1) {
-      SearchResult result = searchResults.get(0);
+    if(_searchResults.size() == 1) {
+      SearchResult result = _searchResults.get(0);
 	  
       if(result != null) {
         title = result.getName() + " (" + title + ")";

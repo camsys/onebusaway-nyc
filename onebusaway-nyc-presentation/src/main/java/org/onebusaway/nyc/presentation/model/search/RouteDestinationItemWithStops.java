@@ -13,11 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.presentation.model;
+package org.onebusaway.nyc.presentation.model.search;
 
-public enum EnumDisplayMedia {
-     DESKTOP_WEB, 
-     MOBILE_WEB, 
-     SMS,
-     DIY_SIGN
+import java.util.List;
+
+public class RouteDestinationItemWithStops extends RouteDestinationItem {
+  
+  private final List<StopItem> stops;
+  
+  public RouteDestinationItemWithStops(RouteDestinationItem destination, List<StopItem> stops) {
+    super(destination.getHeadsign(), destination.getDirectionId(), destination.getPolyline());
+    this.stops = stops;
+  }
+
+  public List<StopItem> getStops() {
+    return stops;
+  }
 }

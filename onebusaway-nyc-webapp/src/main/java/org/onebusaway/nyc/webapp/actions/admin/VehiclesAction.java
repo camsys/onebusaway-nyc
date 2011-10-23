@@ -54,15 +54,15 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
   private VehicleTrackingManagementService _vehicleTrackingManagementService;
 
   @Autowired
-  private TransitDataService transitService;
+  private TransitDataService _transitService;
 
-  private List<VehicleModel> vehicles = new ArrayList<VehicleModel>();
+  private List<VehicleModel> _vehicles = new ArrayList<VehicleModel>();
 
-  private HttpServletRequest request;
+  private HttpServletRequest _request;
 
   @Override
   public void setServletRequest(HttpServletRequest request) {
-    this.request = request;
+    this._request = request;
   }
 
   public String getCurrentTimestamp() {
@@ -74,7 +74,7 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
   @Override
   public String execute() throws Exception {
 
-    ListBean<VehicleStatusBean> vehiclesForAgencyListBean = transitService.getAllVehiclesForAgency(
+    ListBean<VehicleStatusBean> vehiclesForAgencyListBean = _transitService.getAllVehiclesForAgency(
         "MTA NYCT", System.currentTimeMillis()); // FIXME
 
     Map<String, VehicleStatusBean> vehicleMap = new HashMap<String, VehicleStatusBean>();
@@ -83,13 +83,13 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
       vehicleMap.put(vehicleId, vehicleStatusBean);
     }
 
-    String method = request.getMethod().toUpperCase();
+    String method = _request.getMethod().toUpperCase();
 
     // disable vehicle form submitted
     if (method.equals("POST")) {
       Set<String> disabledVehicles = new HashSet<String>();
 
-      Enumeration<?> parameterNames = request.getParameterNames();
+      Enumeration<?> parameterNames = _request.getParameterNames();
       while (parameterNames.hasMoreElements()) {
         String key = parameterNames.nextElement().toString();
         if (key.startsWith("disable_")) {
@@ -115,13 +115,13 @@ public class VehiclesAction extends OneBusAwayNYCActionSupport implements
           _vehicleTrackingManagementService,
           _configurationService);
 
-      vehicles.add(v);
+      _vehicles.add(v);
     }
 
     return SUCCESS;
   }
 
   public List<VehicleModel> getVehicles() {
-    return vehicles;
+    return _vehicles;
   }
 }

@@ -10,7 +10,7 @@ public interface NycGeocoderService {
    * We have to rename this method to nycGeocode because naming it geocode
    * conflicts with the GeocoderService interface we must implement to make
    * other OBA components happy. The latter service uses a typed list bean, which
-   * we can't change to use NycGeocoderResults, so we've exposed a typed list here instead.
+   * we can't change to use NycGeocoderResults.
    */
   public List<NycGeocoderResult> nycGeocode(String location);
 

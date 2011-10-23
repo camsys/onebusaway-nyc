@@ -17,8 +17,8 @@ package org.onebusaway.nyc.presentation.service.search;
 
 public interface SearchResult {
 
-  public String getName();
-
   public String getType();
 
+  public String getName();
+  
 }

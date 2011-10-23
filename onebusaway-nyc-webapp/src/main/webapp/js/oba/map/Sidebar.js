@@ -20,9 +20,8 @@ OBA.Sidebar = function() {
 	// elements for the resize handler
 	var theWindow = null;
 	var headerDiv, footerDiv, contentDiv = null;
-
 	var mapNode = document.getElementById("map");
-	var routeMap = OBA.RouteMap(mapNode);
+	var routeMap = null;	
 	
 	function addSearchBehavior() {
 		var searchForm = jQuery("#search");
@@ -60,45 +59,53 @@ OBA.Sidebar = function() {
 		jQuery("body").css("overflow", "hidden");
 	}
 
+	// show user list of addresses
 	function disambiguate(locationResults) {
 
 	}
 	
+	// single route search result view
 	function showSingleRoute(routeResult) {
 		
 	}
 
+	// display (few enough) routes on map
 	function showRoutesOnMap(routeResults) {
-		
+		jQuery.each(routeResults, function(_, route) {
+			routeMap.showRoute(route);
+		});
 	}
 
+	// show a region's worth of routes--user chooses one, and 
+	// user is then shown single route search result view.
 	function showRoutePickerList(routeResults) {
-		
+		var target = jQuery("#results ul");
+		jQuery.each(routeResults, function(_, route) {
+			target.add("<li>" + route.name + "</li>");
+		});
 	}
 
+	// process search results
 	function doSearch(q) {
-		jQuery.getJSON(OBA.Config.searchUrl, {q: q, bounds: routeMap.getBounds().toUrlValue() }, function(json) { 
+		jQuery.getJSON(OBA.Config.searchUrl, {q: q }, function(json) { 
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0)
 				return;
-			
-			var resultType = json.searchResults[0].type;
-			
-			if(resultType === "location" || resultType === "stop") {
+
+			var resultType = json.searchResults[0].type;			
+			if(resultType === "locationResult" || resultType === "stopResult") {
 				if(resultCount > 1) {
 					disambiguate(json.searchResults);
+
+				// 1 stop or location--move map 
+				// (can never get > 1 stop from search method)
 				} else {
 					var result = json.searchResults[0];
 					routeMap.showLocation(result.latitude, result.longitude);					
 				}
-			} else if(resultType === "route") {
-				if(resultCount > 1) {
-					if(resultCount > 5) {
-						showRoutePickerList(json.searchResults);
-					} else {
-						showRoutesOnMap(json.searchResults);
-					}
-				} else {
+			} else if(resultType === "routeResult") {
+				// can never get > 1 route from the search method!
+				if(resultCount == 1) {
 					var result = json.searchResults[0];
 					showSingleRoute(result);
 				}
@@ -106,6 +113,31 @@ OBA.Sidebar = function() {
 		});		
 	}
 	
+	// constructor:
+	var mapMoveCallbackFn = function() {
+		jQuery.getJSON(OBA.Config.routesWithinBoundsUrl, { bounds: routeMap.getBounds().toUrlValue() }, 
+		function(json) {
+			var resultCount = json.searchResults.length;
+			if(resultCount === 0)
+				return;
+
+			if(resultCount > 5) {
+				showRoutePickerList(json.searchResults);
+			} else {
+				showRoutesOnMap(json.searchResults);
+			}			
+		});
+	};
+	
+	var markerClickFn = function(mouseEvent) {
+		var marker = this;
+		var stopId = marker.stopId;
+
+		alert(stopId);
+	};
+
+	routeMap = OBA.RouteMap(mapNode, mapMoveCallbackFn, markerClickFn);
+		
 	return {
 		initialize: function() {
 			addSearchBehavior();

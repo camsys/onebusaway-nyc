@@ -28,7 +28,7 @@ public class ResetVehicleAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
-  private VehicleTrackingManagementService vehicleTrackingManagementService;
+  private VehicleTrackingManagementService _vehicleTrackingManagementService;
 
   private String _vehicleId;
 
@@ -38,7 +38,7 @@ public class ResetVehicleAction extends OneBusAwayNYCActionSupport {
 
   @Override
   public String execute() throws Exception {
-    vehicleTrackingManagementService.resetVehicleTrackingForVehicleId(_vehicleId);
+    _vehicleTrackingManagementService.resetVehicleTrackingForVehicleId(_vehicleId);
 
     return "redirect";
   }

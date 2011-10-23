@@ -16,39 +16,41 @@
 package org.onebusaway.nyc.presentation.model.search;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 
-/**
- * Data transfer object used in the front-end interfaces to represent
- * a location result.
- * @author jmaki
- *
- */
 public class LocationSearchResult implements SearchResult {
 
   private final NycGeocoderResult result;
-    
+  
   public LocationSearchResult(NycGeocoderResult result) {
     this.result = result;
+  }
+  
+  @Override
+  public String getType() {
+    return "locationResult";    
   }
 
   @Override
   public String getName() {
-    return result.getAddress();
+    return getFormattedAddress();
   }
-
-  @Override
-  public String getType() {
-    return "location";    
+  
+  public String getFormattedAddress() {
+    return result.getFormattedAddress();
+  }
+  
+  public String getNeighborhood() {
+    return result.getNeighborhood();
   }
 
   public CoordinateBounds getBounds() {
-    Double neLat = result.getNorthEastLatitude();
-    Double neLng = result.getNorthEastLongitude();
-    Double swLat = result.getSouthWestLatitude();
-    Double swLng = result.getSouthWestLongitude();
+    Double neLat = result.getNortheastLatitude();
+    Double neLng = result.getNortheastLongitude();
+    Double swLat = result.getSouthwestLatitude();
+    Double swLng = result.getSouthwestLongitude();
+    
     if(neLat != null && neLng != null && swLat != null && swLng != null) {
       return new CoordinateBounds(neLat, neLng, swLat, swLng);
     } else {
@@ -56,8 +58,15 @@ public class LocationSearchResult implements SearchResult {
     }
   }
   
-  public CoordinatePoint getPoint() {
-    return new CoordinatePoint(result.getLatitude(), result.getLongitude());
+  public boolean isRegion() {
+    return result.isRegion();
   }
   
+  public Double getLatitude() {
+    return result.getLatitude();
+  }
+  
+  public Double getLongitude() {
+    return result.getLongitude();
+  }  
 }

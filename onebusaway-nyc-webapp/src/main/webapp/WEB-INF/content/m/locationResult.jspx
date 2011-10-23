@@ -1,0 +1,69 @@
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
+	xmlns:wiki="/oba-wiki-tags">
+
+<div>
+	<p>
+		<strong>
+			Did you mean...
+		</strong>
+	</p>
+	
+	<s:iterator value="searchResults" status="searchResultsStatus">
+		<p>
+			<s:url var="url" namespace="/m" action="index">
+				<s:param name="q">
+					<s:property value="formattedAddress" />
+				</s:param>
+			</s:url>
+
+			<c:out value="${searchResultsStatus.count}" />) 
+			<a href="${url}">
+				<s:property value="formattedAddress" />
+			</a> 
+			<br />
+
+			<c:if test="${!empty neighborhood}">
+				(<s:property value="neighborhood" />)
+			</c:if>
+
+			<s:if test="%{nearbyRoutes.size&gt;0}">
+				<p>
+					Nearby routes:
+					<s:iterator value="nearbyRoutes" status="nearbyRoutesStatus">
+						<c:if test="${nearbyRoutesStatus.index&gt;0}">, </c:if>
+
+						<s:url var="url" namespace="/m" action="index">
+							<s:param name="q">
+								<s:property value="routeIdWithoutAgency" />
+							</s:param>
+						</s:url>
+
+						<a href="${url}"> 
+							<s:property value="routeIdWithoutAgency" />
+						</a>
+					</s:iterator>
+				</p>
+			</s:if>
+		</p>
+	</s:iterator>
+</div>
+
+</html>

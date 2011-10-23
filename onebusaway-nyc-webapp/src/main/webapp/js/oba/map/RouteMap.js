@@ -16,7 +16,7 @@
 
 var OBA = window.OBA || {};
 
-OBA.RouteMap = function(mapNode, mapOptions) {
+OBA.RouteMap = function(mapNode, mapMoveCallbackFn, stopClickCallbackFn) {
 	var mtaMapType = new google.maps.ImageMapType({
 		getTileUrl: function(coord, zoom) {
 			if(!(zoom >= this.minZoom && zoom <= this.maxZoom))
@@ -146,17 +146,18 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			}
 	};
 
-	var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
-	var map = new google.maps.Map(mapNode, options);
+	var map = null;
+	var polylinesByRouteAndDirection = {};
+	var vehiclesByRouteAndDirection = {};
+	var stopsAddedForRoute = {};
+	var stopsById = {};
 
-	// mta custom tiles
-	map.overlayMapTypes.insertAt(0, mtaMapType);
-
-	// styled basemap
-	map.mapTypes.set('Transit', transitStyledMapType);
-	map.setMapTypeId('Transit');
+	function addPolyline(routeId, directionId, encodedPolyline, color) {
+		// already on map?
+		if(typeof polylinesByRouteAndDirection[routeId + "_" + directionId] !== 'undefined') {
+			return;
+		}
 	
-	function addPolyline(routeId, directionId, encodedPolyline) {
 		var points = OBA.Util.decodePolyline(encodedPolyline);
 		
 		var latlngs = jQuery.map(points, function(x) {
@@ -165,52 +166,86 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 	    var shape = new google.maps.Polyline({
 	    	path: latlngs,
-	        strokeColor: "#0000FF",
-	        strokeOpacity: 0.5,
+	        strokeColor: "#" + color,
+	        strokeOpacity: 1.0,
 	        strokeWeight: 5
 	    });
 	          
 		shape.setMap(map);		
+
+		polylinesByRouteAndDirection[routeId + "_" + directionId] = shape;
 	}
 
 	function addStops(routeId, directionId, stopItems) {
-		jQuery.each(stopItems, function(_, stopItem) {
+		// already on map?
+		if(typeof stopsAddedForRoute[routeId + "_" + directionId] !== 'undefined') {
+			return;
+		}
+
+		jQuery.each(stopItems, function(_, stop) {
+			if(typeof stopsById[stop.stopId] !== 'undefined') {
+				return;
+			}
 			
+			var icon = new google.maps.MarkerImage("img/stop/stop-" + stop.stopDirection + ".png",
+                new google.maps.Size(21, 21),
+                new google.maps.Point(0,0),
+                new google.maps.Point(16, 16));
+			
+			var markerOptions = {
+				position: new google.maps.LatLng(stop.latitude, stop.longitude),
+	            icon: icon,
+	            map: map,
+	            title: stop.name,
+	            stopId: stop.stopId
+			};
+
+	        var marker = new google.maps.Marker(markerOptions);
+	        
+	    	if(typeof stopClickCallbackFn === 'function') {
+	    		google.maps.event.addListener(marker, "click", stopClickCallbackFn);
+	    	}
+
+	        stopsById[stop.stopId] = marker;
 		});
 		
+		stopsAddedForRoute[routeId + "_" + directionId] = true;
 	}
-	
+
 	function updateVehicles(routeId, directionId, stopItems) {
-debugger;
 	}
 	
+	// constructor:
+	map = new google.maps.Map(mapNode, defaultMapOptions);
+
+	// mta custom tiles
+	map.overlayMapTypes.insertAt(0, mtaMapType);
+
+	// styled basemap
+	map.mapTypes.set('Transit', transitStyledMapType);
+	map.setMapTypeId('Transit');
+
+	// event handlers
+	if(typeof mapMoveCallbackFn === 'function') {
+		google.maps.event.addListener(map, "idle", mapMoveCallbackFn);
+	}
+
 	return {
+		// get map viewport
 		getBounds: function() {
 			return map.getBounds();
 		},
 		
-		showRoute: function(route, target) {
-			if(target !== null) {
-				var item = jQuery(
-				"<li>" + 
-					"<p>" + 
-						route.name + " " + route.description + 
-					"</p>" + 
-					"<p>" + 
-						route.destinations[0].headsign + " <> " + route.destinations[1].headsign + 
-					"</p>" + 
-				"</li>");
-				
-				target.append(item);
-			}
-
+		// add route, route's stops, and route's vehicles to map
+		showRoute: function(route) {
 			jQuery.each(route.destinations, function(_, destination) {
-				addPolyline(route.routeId, destination.directionId, destination.polyline);
-				addStops(route.routeId, destination.directionId, destination.stopItems);
-				updateVehicles(route.routeId, destination.directionId, destination.stopItems);
+				addPolyline(route.routeId, destination.directionId, destination.polyline, route.color);
+				addStops(route.routeId, destination.directionId, destination.stops);
+				updateVehicles(route.routeId, destination.directionId, destination.stops);
 			});
 		},
-		
+
+		// move map to given location
 		showLocation: function(lat, lng) {
 			var location = new google.maps.LatLng(lat, lng);
 			map.panTo(location);

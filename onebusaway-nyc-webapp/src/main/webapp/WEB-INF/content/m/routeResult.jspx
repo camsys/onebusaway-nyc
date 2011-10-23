@@ -1,0 +1,89 @@
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
+	xmlns:wiki="/oba-wiki-tags">
+
+<s:iterator value="searchResults">
+	<div>
+		<!--  table of contents -->
+		<p>
+			<strong>Shortcut To...</strong>
+		</p>
+
+		<s:iterator value="destinations">
+			<s:url var="url" value="" anchor="%{directionId}"></s:url>
+			<a href="${url}">
+				<s:property value="routeIdWithoutAgency" />&amp;nbsp;<s:property value="headsign" />
+			</a>
+			<br />
+		</s:iterator>
+	</div>
+
+	<s:iterator value="destinations">
+		<div>
+			<p>
+				<a name="${directionId}"></a>
+				<strong>
+					<s:property value="routeIdWithoutAgency" />&amp;nbsp;<s:property value="headsign" />
+				</strong> 
+				<br />
+			</p>
+
+			<ul>
+				<s:iterator value="serviceAlerts">
+					<li class="alert"><s:property value="value" /></li>
+				</s:iterator>
+			</ul>
+
+			<ul>
+				<s:iterator value="stops">
+					<li>
+						<c:choose>
+							<c:when test="${!empty distanceAwayString}">
+								<s:url var="url" namespace="/m" action="index">
+									<s:param name="q">
+										<s:property value="stopIdWithoutAgency" />
+									</s:param>
+								</s:url>
+								<strong>
+									<a title="${name}" href="${url}">
+										<s:property value="name" />
+									</a> 
+								</strong>
+								&amp;nbsp;<s:property value="distanceAwayString" />
+							</c:when>
+							<c:otherwise>
+								<s:url var="url" namespace="/m" action="index">
+									<s:param name="q">
+										<s:property value="stopIdWithoutAgency" />
+									</s:param>
+								</s:url>
+								<a title="${name}" href="${url}">
+									<s:property value="name" />
+								</a> 
+							</c:otherwise>
+						</c:choose>
+					</li>
+				</s:iterator>
+			</ul>
+		</div>
+	</s:iterator>
+</s:iterator>
+
+</html>
