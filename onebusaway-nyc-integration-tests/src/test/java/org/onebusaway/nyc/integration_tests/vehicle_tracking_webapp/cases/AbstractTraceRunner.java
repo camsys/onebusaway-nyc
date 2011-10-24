@@ -50,12 +50,13 @@ import cern.jet.stat.Descriptive;
 
 public class AbstractTraceRunner {
 
-  private static Logger _log = LoggerFactory.getLogger(AbstractTraceRunner.class);
+  private static Logger _log = LoggerFactory
+      .getLogger(AbstractTraceRunner.class);
 
   private static TraceSupport _traceSupport = new TraceSupport();
 
   private VehicleTrackingManagementService _vehicleTrackingManagementService;
-  
+
   private String _trace;
 
   private int _loops = 1;
@@ -109,37 +110,44 @@ public class AbstractTraceRunner {
   public void setBundle(String bundleId, String date) throws Exception {
     setBundle(bundleId, DateLibrary.getIso8601StringAsTime(date));
   }
-  
+
   public void setBundle(String bundleId, Date date) throws Exception {
-    String port = System.getProperty("org.onebusaway.transit_data_federation_webapp.port", "9905");
-    String url = "http://localhost:" + port + 
-        "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId=" + bundleId 
-        + "&time=" + DateLibrary.getTimeAsIso8601String(date);
-    
+    String port = System.getProperty(
+        "org.onebusaway.transit_data_federation_webapp.port", "9905");
+    String url = "http://localhost:" + port
+        + "/onebusaway-nyc-vehicle-tracking-webapp/change-bundle.do?bundleId="
+        + bundleId + "&time=" + DateLibrary.getTimeAsIso8601String(date);
+
     HttpClient client = new HttpClient();
     GetMethod get = new GetMethod(url);
     client.executeMethod(get);
 
-    String response = get.getResponseBodyAsString(); 
-    if(!response.equals("OK"))
+    String response = get.getResponseBodyAsString();
+    if (!response.equals("OK"))
       throw new Exception("Bundle switch failed!");
   }
-  
+
   @SuppressWarnings("unused")
-  @Before 
+  @Before
   public void setup() throws Exception {
-    String federationPort = System.getProperty("org.onebusaway.transit_data_federation_webapp.port","9905");
+    String federationPort = System.getProperty(
+        "org.onebusaway.transit_data_federation_webapp.port", "9905");
 
     HessianProxyFactory factory = new HessianProxyFactory();
-    
-    _vehicleTrackingManagementService = 
-        (VehicleTrackingManagementService)factory.create(VehicleTrackingManagementService.class, "http://localhost:" + federationPort + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service");
+
+    _vehicleTrackingManagementService = (VehicleTrackingManagementService) factory
+        .create(
+            VehicleTrackingManagementService.class,
+            "http://localhost:"
+                + federationPort
+                + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service");
   }
-  
+
   @Test
-  public void test() throws Throwable {        
+  public void test() throws Throwable {
     File trace = new File("src/integration-test/resources/traces/" + _trace);
-    List<NycTestInferredLocationRecord> expected = _traceSupport.readRecords(trace);
+    List<NycTestInferredLocationRecord> expected = _traceSupport
+        .readRecords(trace);
 
     int successfulIterations = 0;
 
@@ -153,7 +161,8 @@ public class AbstractTraceRunner {
 
       while (true) {
 
-        List<NycTestInferredLocationRecord> actual = _traceSupport.getSimulationResults(taskId);
+        List<NycTestInferredLocationRecord> actual = _traceSupport
+            .getSimulationResults(taskId);
 
         String asString = _traceSupport.getRecordsAsString(actual);
         _log.debug("actual records:\n" + asString);
@@ -195,7 +204,8 @@ public class AbstractTraceRunner {
     }
 
     if (_loops > 1)
-      System.out.println("success ratio=" + successfulIterations + "/" + _loops);
+      System.out
+          .println("success ratio=" + successfulIterations + "/" + _loops);
   }
 
   /****
@@ -216,20 +226,23 @@ public class AbstractTraceRunner {
       NycTestInferredLocationRecord actRecord = actual.get(i);
 
       assertTrue(StringUtils.isNotEmpty(actRecord.getInferredStatus()));
-      
+
       /*
        * Check that we don't register a trip for an out-of-service DSC
        */
       String dsc = actRecord.getInferredDsc();
       if (StringUtils.isNotBlank(actRecord.getInferredTripId())) {
-        assertTrue(!_vehicleTrackingManagementService.isOutOfServiceDestinationSignCode(dsc));
+        assertTrue(!_vehicleTrackingManagementService
+            .isOutOfServiceDestinationSignCode(dsc));
       }
-      
-      EVehiclePhase expPhase = EVehiclePhase.valueOf(expRecord.getActualPhase());
-      
+
+      EVehiclePhase expPhase = EVehiclePhase
+          .valueOf(expRecord.getActualPhase());
+
       assertTrue(expPhase != null);
-      
-      EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord.getInferredPhase());
+
+      EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord
+          .getInferredPhase());
 
       expPhaseCounts.increment(expPhase);
 
@@ -242,8 +255,10 @@ public class AbstractTraceRunner {
         String actualBlockId = actRecord.getInferredBlockId();
 
         if (expectedBlockId.equals(actualBlockId)) {
-          double expectedDistanceAlongBlock = expRecord.getActualDistanceAlongBlock();
-          double actualDistanceAlongBlock = actRecord.getInferredDistanceAlongBlock();
+          double expectedDistanceAlongBlock = expRecord
+              .getActualDistanceAlongBlock();
+          double actualDistanceAlongBlock = actRecord
+              .getInferredDistanceAlongBlock();
           double delta = Math.abs(expectedDistanceAlongBlock
               - actualDistanceAlongBlock);
           distanceAlongBlockDeviations.add(delta);
@@ -301,14 +316,15 @@ public class AbstractTraceRunner {
     }
   }
 
-  protected void writeResultsOnAssertionError(List<NycTestInferredLocationRecord> actual) {
+  protected void writeResultsOnAssertionError(
+      List<NycTestInferredLocationRecord> actual) {
     try {
       File outputFile = File.createTempFile(getClass().getName() + "-",
           "-results.csv");
       CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
       Writer out = new FileWriter(outputFile);
-      EntityHandler handler = factory.createWriter(NycTestInferredLocationRecord.class,
-          out);
+      EntityHandler handler = factory.createWriter(
+          NycTestInferredLocationRecord.class, out);
 
       for (NycTestInferredLocationRecord record : actual)
         handler.handleEntity(record);

@@ -39,7 +39,7 @@
                 <td>P</td>
                 <td>Phase</td>
                 <td>FromReportedRun</td>
-                <td>FromUTSAssignment</td>
+                <td>OperatorAssigned</td>
                 <td>RunId</td>
                 <td>BlockId</td>
                 <td>TripId</td>
@@ -73,7 +73,7 @@
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>
                     <td><c:out value="${blockState.runReported}" /></td>
-                    <td><c:out value="${blockState.UTSassigned}" /></td>
+                    <td><c:out value="${blockState.opAssigned}" /></td>
                     <td><c:out value="${blockState.runTripEntry.runId}" /></td>
                     <td><a
                         href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
