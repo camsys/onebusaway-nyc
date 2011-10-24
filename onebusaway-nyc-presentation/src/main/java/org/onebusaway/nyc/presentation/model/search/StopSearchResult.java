@@ -15,80 +15,54 @@
  */
 package org.onebusaway.nyc.presentation.model.search;
 
+import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
+import org.onebusaway.transit_data.model.StopBean;
+
 import java.util.List;
 
-import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
-import org.onebusaway.nyc.presentation.model.realtime_data.RouteItem;
-import org.onebusaway.nyc.presentation.service.search.SearchResult;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
-
-/**
- * Data transfer object used in the front-end interfaces to represent
- * a stop result.
- * @author jmaki
- *
- */
 public class StopSearchResult implements SearchResult {
 
-  private final String stopId;
+  private final StopBean stopBean;
 
-  private final String name;
-
-  private final String stopDirection;
-
-  private final Double latitude;
+  private final List<RouteItem> routesAvailable;
   
-  private final Double longitude;
-  
-  private final List<RouteItem> availableRoutes;
-
-  private final List<NaturalLanguageStringBean> serviceAlerts;
-
-  public StopSearchResult(String stopId, String name, Double latitude, Double longitude, String stopDirection, 
-      List<RouteItem> availableRoutes, List<NaturalLanguageStringBean> serviceAlerts) {
-    this.stopId = stopId;
-    this.name = name;
-    this.latitude = latitude;
-    this.longitude = longitude;
-    this.availableRoutes = availableRoutes;
-    this.serviceAlerts = serviceAlerts;
-    this.stopDirection = stopDirection;
+  public StopSearchResult(StopBean stopBean, List<RouteItem> routesAvailable) {
+    this.stopBean = stopBean;
+    this.routesAvailable = routesAvailable;
   }
 
+  @Override
+  public String getType() {
+    return "stopResult";
+  }
+  
   public String getStopId() {
-    return stopId;
+    return stopBean.getId();
   }
 
   public String getStopIdWithoutAgency() {
     WebappSupportLibrary webappIdParser = new WebappSupportLibrary();
-    return webappIdParser.parseIdWithoutAgency(stopId);
+    return webappIdParser.parseIdWithoutAgency(getStopId());
   }
 
   public String getName() {
-    return name;
+    return stopBean.getName();
   }
 
   public Double getLatitude() {
-    return latitude;
+    return stopBean.getLat();
   }
 
   public Double getLongitude() {
-    return longitude;
-  }
-
-  public String getType() {
-    return "stop";
+    return stopBean.getLon();
   }
 
   public String getStopDirection() {
-    return stopDirection;
+    return stopBean.getDirection();
   }
-
+  
   public List<RouteItem> getRoutesAvailable() {
-    return availableRoutes;
-  }
-
-  public List<NaturalLanguageStringBean> getServiceAlerts() {
-    return serviceAlerts;
+    return routesAvailable;
   }
 }

@@ -138,40 +138,6 @@
             </properties>
         </profile>
         <!-- TODO MySQL -->
-        
-        <!--  bundle location profiles -->
-        <profile>
-            <id>bundle-tmp</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <bundle.location>/tmp/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        <profile>
-            <id>bundle-obanyc</id>
-            <properties>
-                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
-            </properties>
-        </profile>
-        
-        <!--  bundle mode profiles -->
-        <profile>
-            <id>bundle-mode-standalone</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <bundle.mode.standalone>true</bundle.mode.standalone>
-            </properties>
-        </profile>
-        <profile>
-            <id>bundle-mode-download</id>
-            <properties>
-                <bundle.mode.standalone>false</bundle.mode.standalone>
-            </properties>
-        </profile>
 
     </profiles>
 
@@ -216,10 +182,6 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/default-resources</directory>
                 <filtering>true</filtering>
             </resource>
         </resources>

@@ -22,13 +22,12 @@ OBA.VehiclesAdmin = (function() {
 
 	function sortTableRows(rows, sortIndex, reverse) {
 		var keyFn = function(row) {
-            var row = jQuery(row).children().slice(sortIndex, sortIndex+1);
-            if(typeof row.attr("sortKey") !== 'undefined') {
-            	return row.attr("sortKey");
+            var rowSlice = jQuery(row).children().slice(sortIndex, sortIndex+1);
+            if(typeof rowSlice.attr("sortKey") !== 'undefined') {
+            	return rowSlice.attr("sortKey");
             } else {
-            	return row.text();
+            	return rowSlice.text();
             }            
-            return key;
         };
         rows = jQuery.makeArray(rows);
         rows.sort(function(a, b) {
@@ -71,10 +70,9 @@ OBA.VehiclesAdmin = (function() {
 	   		jQuery.ajax({
 	   			url: element.attr("href")
 	   		});
-	   		var row = element
-    					.parent().parent()
-    					.parent().parent()
-    					.fadeOut("fast");
+	   		element.parent().parent()
+    				.parent().parent()
+    				.fadeOut("fast");
     		return false;
 	    });
 	}
@@ -139,10 +137,10 @@ OBA.VehiclesAdmin = (function() {
 									.addClass("map-location")
 									.appendTo(mapDivWrapper);
 	
-				var marker = jQuery("<img></img>")
-									.addClass("marker")
-									.appendTo(mapDivWrapper)
-									.attr("src", "../" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType);
+				jQuery("<img></img>")
+					.addClass("marker")
+					.appendTo(mapDivWrapper)
+					.attr("src", "../" + OBA.Config.vehicleIconFilePrefix + '-' + orientation + '.' + OBA.Config.vehicleIconFileType);
 	
 				el.find("p").hide();
 				el.append(mapDivWrapper);	

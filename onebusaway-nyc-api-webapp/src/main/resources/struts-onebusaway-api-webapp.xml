@@ -71,9 +71,7 @@
                 </interceptor-ref>
                 <interceptor-ref name="rest" />
                 <interceptor-ref name="conversionError" />
-                <interceptor-ref name="validation">
-                    <!-- <param name="excludeMethods">input,back,cancel,browse,index,show,edit,editNew</param> -->
-                </interceptor-ref>
+                <interceptor-ref name="validation"/>
                 <interceptor-ref name="restWorkflow">
                     <param name="excludeMethods">input,back,cancel,browse,index,show,edit,editNew</param>
                 </interceptor-ref>

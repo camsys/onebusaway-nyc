@@ -25,28 +25,6 @@
     <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/webapp/application-context-webapp.xml" />
 
 
-    <!-- Bundle Manager Configuration -->
-    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
-        <property name="order" value="-2" />
-        <property name="properties">
-            <props>
-				<!-- Set this to a path where you want to store your bundles. -->
-                <prop key="bundleStoreRoot">${bundle.location}</prop>
-            </props>
-        </property>
-    </bean>
-
-    <bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
-        <property name="order" value="-2" />
-        <property name="properties">
-            <props>
-				<!-- true = DO NOT automatically download bundles from the TDM -->
-                <prop key="standaloneMode">${bundle.mode.standalone}</prop>
-            </props>
-        </property>
-    </bean>
-
-
     <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
     <!-- Database Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

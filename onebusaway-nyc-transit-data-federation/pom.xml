@@ -78,9 +78,6 @@
         <!--  bundle location profiles -->
         <profile>
             <id>bundle-tmp</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <bundle.location>/tmp/oba-bundle</bundle.location>
             </properties>
@@ -163,10 +160,6 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/default-resources</directory>
                 <filtering>true</filtering>
             </resource>
         </resources>

@@ -17,51 +17,50 @@ package org.onebusaway.nyc.presentation.model.search;
 
 import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
+import org.onebusaway.transit_data.model.RouteBean;
 
 import java.util.List;
 
-/**
- * Data transfer object used in the front-end interfaces to represent
- * a route result.
- * @author jmaki
- *
- */
 public class RouteSearchResult implements SearchResult {
 
-  // e.g. MTA NYCT_B63
-  private final String routeId;
+  private final RouteBean routeBean;
 
-  // e.g. 5TH AVENUE
-  private final String routeDescription;
+  private final List<RouteDestinationItemWithStops> destinations;
 
-  private final List<RouteDestinationItem> routeDestinations;
-  
   private static final WebappSupportLibrary idParser = new WebappSupportLibrary();
 
-  public RouteSearchResult(String routeId, String routeDescription, 
-      List<RouteDestinationItem> routeDestinations) {
-        this.routeId = routeId;
-        this.routeDescription = routeDescription;
-        this.routeDestinations = routeDestinations;
+  public RouteSearchResult(RouteBean routeBean, List<RouteDestinationItemWithStops> destinations) {
+    this.routeBean = routeBean;
+    this.destinations = destinations;
   }
 
-  public String getRouteId() {
-    return routeId;
+  @Override
+  public String getType() {
+    return "routeResult";
   }
 
+  @Override
   public String getName() {
-    return idParser.parseIdWithoutAgency(routeId);
+    return getRouteIdWithoutAgency();
+  }
+  
+  public String getRouteId() {
+    return routeBean.getId();
+  }  
+  
+  public String getRouteIdWithoutAgency() {
+    return idParser.parseIdWithoutAgency(getRouteId());
   }
 
   public String getDescription() {
-    return routeDescription;
+    return routeBean.getDescription();
   }
 
-  public String getType() {
-    return "route";
+  public String getColor() {
+    return routeBean.getColor();
   }
-
-  public List<RouteDestinationItem> getDestinations() {
-    return routeDestinations;
+  
+  public List<RouteDestinationItemWithStops> getDestinations() {
+    return destinations;
   }
 }

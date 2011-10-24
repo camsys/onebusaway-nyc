@@ -16,7 +16,7 @@
 
 var OBA = window.OBA || {};
 
-OBA.RouteMap = function(mapNode, mapOptions) {
+OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var mtaMapType = new google.maps.ImageMapType({
 		getTileUrl: function(coord, zoom) {
 			if(!(zoom >= this.minZoom && zoom <= this.maxZoom))
@@ -35,7 +35,7 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			return 'http://tripplanner.mta.info/maps/SystemRoutes_New/' + quad + '.png'; 
 		},
 		tileSize: new google.maps.Size(256, 256),
-		opacity:1.0,
+		opacity: 0.5,
 		maxZoom: 15,
 		minZoom: 14,
 		name: 'MTA Subway Map',
@@ -146,17 +146,100 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 			}
 	};
 
-	var options = jQuery.extend({}, defaultMapOptions, mapOptions || {});
-	var map = new google.maps.Map(mapNode, options);
-
-	// mta custom tiles
-	map.overlayMapTypes.insertAt(0, mtaMapType);
-
-	// styled basemap
-	map.mapTypes.set('Transit', transitStyledMapType);
-	map.setMapTypeId('Transit');
+	var map = null;
+	var vehiclesByRoute = {};
+	var vehiclesById = {};
+	var vehicleUpdateTimersByRoute = {};
+	var polylinesByRouteAndDirection = {};
+	var stopsAddedForRouteAndDirection = {};
+	var stopsById = {};
+	var infoWindow = null;
 	
-	function addPolyline(routeId, directionId, encodedPolyline) {
+	// create a popup with content from the named URL+params, from the contentFn specified.
+	// the bubble will refresh itself when the map is also refreshed.
+	function showPopupWithContentFromRequest(marker, url, params, contentFn) {
+		var popupOptions = {
+    		content: "Loading...",
+    		pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2))
+    	};
+    		
+		if(infoWindow !== null) {
+			infoWindow.close();
+		}
+		
+    	infoWindow = new google.maps.InfoWindow(popupOptions);    	
+    	infoWindow.open(map, marker);
+
+    	var refreshFn = function() {
+    		jQuery.getJSON(url, params, function(json) {
+    			infoWindow.setContent(contentFn(json));
+    		});
+    	};
+    	refreshFn();
+
+    	infoWindow.refreshFn = refreshFn;
+	}
+	
+	// return html for a SIRI VM response
+	function getVehicleContentForResponse(r) {
+		var age =  (r.ServiceDelivery.ResponseTimestamp - r.ServiceDelivery.VehicleMonitoringDelivery.deliveries[0].RecordedAtTime) / 1000;
+		var vehicleId = r.ServiceDelivery.VehicleMonitoringDelivery.deliveries[0].MonitoredVehicleJourney.VehicleRef;
+		var nextStops = r.ServiceDelivery.VehicleMonitoringDelivery.deliveries[0].MonitoredVehicleJourney.OnwardCalls;
+
+		var nextStopsListHtml = null;
+		if(nextStops.length === 0) {
+			nextStopsListHtml = "Next stops are not known for this vehicle.";
+		} else {
+			var nextStopsList = jQuery("<ul></ul>");		
+			jQuery.each(nextStops, function(_, stop) {
+				if(_ >= 3) {
+					return false;
+				}
+			
+				nextStopsList.append("<li>" + stop.StopPointName + " - " + 
+					stop.Extensions.Distances.StopsFromCall + "</li>");
+			});
+			nextStopsListHtml = nextStopsList.html();
+		}
+		
+		return "<p>" + age + "<br/>" + vehicleId + "<br/>" + nextStopsListHtml + "</p>";
+	}
+
+	// return html for a SIRI SM response
+	function getStopContentForResponse(r) {
+		var responseTimestamp = r.ServiceDelivery.ResponseTimestamp;
+		var latestVehicleUpdate = null;
+		
+		var visits = r.ServiceDelivery.stopMonitoringDeliveries[0].visits;
+
+		var nextVisitsListHtml = null;
+		if(visits.length === 0) {
+			nextVisitsListHtml = "No vehicles en-route to this stop.";
+		} else {
+			var nextVisitsList = jQuery("<ul></ul>");		
+			jQuery.each(visits, function(_, visit) {
+				if(visit.RecordedAtTime > latestVehicleUpdate) {
+					latestVehicleUpdate = visit.RecordedAtTime;
+				}
+				
+				nextVisitsList.append("<li>" + visit.MonitoredVehicleJourney.LineRef + " - " + 
+						visit.MonitoredVehicleJourney.PublishedLineName + 
+						" dist. away=" + 
+						visit.MonitoredVehicleJourney.MonitoredCall.Extensions.Distances.DistanceFromCall + 
+						"</li>");
+			});
+			nextVisitsListHtml = nextVisitsList.html();
+		}
+		
+		return "<p>" + ((responseTimestamp - latestVehicleUpdate) / 1000) + "<br/>" + nextVisitsListHtml + "</p>";
+	}
+
+	function addPolyline(routeId, directionId, encodedPolyline, color) {
+		// already on map?
+		if(typeof polylinesByRouteAndDirection[routeId + "_" + directionId] !== 'undefined') {
+			return;
+		}
+	
 		var points = OBA.Util.decodePolyline(encodedPolyline);
 		
 		var latlngs = jQuery.map(points, function(x) {
@@ -165,52 +248,181 @@ OBA.RouteMap = function(mapNode, mapOptions) {
 
 	    var shape = new google.maps.Polyline({
 	    	path: latlngs,
-	        strokeColor: "#0000FF",
-	        strokeOpacity: 0.5,
+	        strokeColor: "#" + color,
+	        strokeOpacity: 1.0,
 	        strokeWeight: 5
 	    });
 	          
 		shape.setMap(map);		
+
+		polylinesByRouteAndDirection[routeId + "_" + directionId] = shape;
 	}
 
 	function addStops(routeId, directionId, stopItems) {
-		jQuery.each(stopItems, function(_, stopItem) {
+		// already on map?
+		if(typeof stopsAddedForRouteAndDirection[routeId + "_" + directionId] !== 'undefined') {
+			return;
+		}
+
+		jQuery.each(stopItems, function(_, stop) {
+			if(typeof stopsById[stop.stopId] !== 'undefined') {
+				return;
+			}
 			
+			var icon = new google.maps.MarkerImage("img/stop/stop-" + stop.stopDirection + ".png",
+                new google.maps.Size(21, 21),
+                new google.maps.Point(0,0),
+                new google.maps.Point(10, 10));
+			
+			var markerOptions = {
+				position: new google.maps.LatLng(stop.latitude, stop.longitude),
+	            icon: icon,
+	            zIndex: 1,
+	            map: map,
+	            title: stop.name,
+	            stopId: stop.stopId
+			};
+
+	        var marker = new google.maps.Marker(markerOptions);
+	        
+	    	google.maps.event.addListener(marker, "click", function(mouseEvent) {
+	    		var marker = this;
+
+	    		var stopIdParts = marker.stopId.split("_");
+	    		var stopIdAgency = stopIdParts[0];
+	    		var stopIdWithoutAgency = stopIdParts[1];
+	    		
+	    		showPopupWithContentFromRequest(marker, OBA.Config.siriSMUrl, 
+	    			{ key: OBA.Config.apiKey, 
+	    			OperatorRef: stopIdAgency, 
+	    			MonitoringRef: stopIdWithoutAgency }, 
+	    			getStopContentForResponse);
+	    	});
+
+	        stopsById[stop.stopId] = marker;
 		});
 		
+		stopsAddedForRouteAndDirection[routeId + "_" + directionId] = true;
+	}
+
+	// update vehicles from SIRI VM call
+	function updateVehicles(_routeId) {
+		var routeIdParts = _routeId.split("_");
+		var agencyId = routeIdParts[0];
+		var routeId = routeIdParts[1];
+		
+		jQuery.getJSON(OBA.Config.siriVMUrl, { key: OBA.Config.apiKey, OperatorRef: agencyId, 
+			LineRef: routeId, VehicleMonitoringDetailLevel: "normal" }, 
+		function(json) { 
+			var vehicles = [];
+			jQuery.each(json.ServiceDelivery.VehicleMonitoringDelivery.deliveries, function(_, vehicle) {
+				var timestamp = vehicle.RecordedAtTime;
+				var headsign = vehicle.MonitoredVehicleJourney.PublishedLineName;
+				var vehicleId = vehicle.MonitoredVehicleJourney.VehicleRef;
+				var latitude = vehicle.MonitoredVehicleJourney.VehicleLocation.Latitude;
+				var longitude = vehicle.MonitoredVehicleJourney.VehicleLocation.Longitude;
+
+				// create marker if it doesn't exist, otherwise just move it
+				var existingMarker = vehiclesById[vehicleId];
+				if(typeof existingMarker === 'undefined' || existingMarker === null) {
+					var icon = new google.maps.MarkerImage("img/vehicle/vehicle-unknown.png",
+							new google.maps.Size(51, 51),
+							new google.maps.Point(0,0),
+							new google.maps.Point(25, 25));
+					
+					var markerOptions = {
+							position: new google.maps.LatLng(latitude, longitude),
+							icon: icon,
+				            zIndex: 2,
+							map: map,
+							title: vehicleId + ":" + headsign,
+							timestamp: timestamp,
+							headsign: headsign,
+							vehicleId: vehicleId
+					};
+
+					var marker = new google.maps.Marker(markerOptions);
+			        
+			    	google.maps.event.addListener(marker, "click", function(mouseEvent) {
+			    		var marker = this;
+
+			    		var vehicleIdParts = marker.vehicleId.split("_");
+			    		var vehicleIdAgency = vehicleIdParts[0];
+			    		var vehicleIdWithoutAgency = vehicleIdParts[1];
+
+			    		showPopupWithContentFromRequest(marker, OBA.Config.siriVMUrl, 
+			    			{ key: OBA.Config.apiKey, 
+			    			OperatorRef: vehicleIdAgency, 
+			    			VehicleRef: vehicleIdWithoutAgency,
+			    			VehicleMonitoringDetailLevel: "calls" }, 
+			    			getVehicleContentForResponse);
+			    	});
+				
+					vehiclesById[vehicleId] = marker;			    
+					vehicles.push(marker);
+				} else {
+					var position = new google.maps.LatLng(latitude, longitude);
+					existingMarker.setPosition(position);
+					
+					vehiclesById[vehicleId] = existingMarker; 
+				}
+			});
+			
+			vehiclesByRoute[_routeId] = vehicles;
+		});
 	}
 	
-	function updateVehicles(routeId, directionId, stopItems) {
-debugger;
+	// constructor:
+	map = new google.maps.Map(mapNode, defaultMapOptions);
+
+	// mta custom tiles
+	map.overlayMapTypes.insertAt(0, mtaMapType);
+
+	// styled basemap
+	map.mapTypes.set('Transit', transitStyledMapType);
+	map.setMapTypeId('Transit');
+
+	// request list of routes in viewport when user stops moving map
+	if(typeof mapMoveCallbackFn === 'function') {
+		google.maps.event.addListener(map, "idle", mapMoveCallbackFn);
 	}
-	
+
+	// popup refresh timer
+	setInterval(function() {
+		// update any open bubble
+		if(infoWindow !== null && typeof infoWindow.refreshFn === 'function') {
+			infoWindow.refreshFn();
+		}
+	}, 5000);
+
 	return {
+		// get map viewport
 		getBounds: function() {
 			return map.getBounds();
 		},
 		
-		showRoute: function(route, target) {
-			if(target !== null) {
-				var item = jQuery(
-				"<li>" + 
-					"<p>" + 
-						route.name + " " + route.description + 
-					"</p>" + 
-					"<p>" + 
-						route.destinations[0].headsign + " <> " + route.destinations[1].headsign + 
-					"</p>" + 
-				"</li>");
-				
-				target.append(item);
-			}
-
+		// add route, route's stops, and route's vehicles to map
+		showRoute: function(route) {
+			// add both destinations for route to map
 			jQuery.each(route.destinations, function(_, destination) {
-				addPolyline(route.routeId, destination.directionId, destination.polyline);
-				addStops(route.routeId, destination.directionId, destination.stopItems);
-				updateVehicles(route.routeId, destination.directionId, destination.stopItems);
+				addPolyline(route.routeId, destination.directionId, destination.polyline, route.color);
+				addStops(route.routeId, destination.directionId, destination.stops);
 			});
+
+			// update vehicles on map
+			updateVehicles(route.routeId);
+			
+			// setup update timer
+			if(typeof vehicleUpdateTimersByRoute[route.routeId] === 'undefined') {
+				var timer = setInterval(function() {
+					updateVehicles(route.routeId);
+				}, 5000);
+			
+				vehicleUpdateTimersByRoute[route.routeId] = timer;
+			}
 		},
-		
+
+		// move map to given location
 		showLocation: function(lat, lng) {
 			var location = new google.maps.LatLng(lat, lng);
 			map.panTo(location);

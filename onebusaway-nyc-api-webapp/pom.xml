@@ -71,6 +71,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-xc</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+        
         <!-- For iPhone app notifications -->
         <dependency>
             <groupId>com.notnoop.apns</groupId>
@@ -271,10 +277,6 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/default-resources</directory>
                 <filtering>true</filtering>
             </resource>
         </resources>

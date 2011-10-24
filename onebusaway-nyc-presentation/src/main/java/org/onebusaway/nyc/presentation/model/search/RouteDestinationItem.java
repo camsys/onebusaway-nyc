@@ -15,35 +15,18 @@
  */
 package org.onebusaway.nyc.presentation.model.search;
 
-import org.onebusaway.nyc.presentation.model.realtime_data.StopItem;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
-
-import java.util.List;
-
-/**
- * (Subitem of RouteSearchResult)
- * @author jmaki
- *
- */
 public class RouteDestinationItem {
-
+  
   private final String headsign;
-  
+
   private final String directionId;
-  
-  private final List<StopItem> stopItems;
 
   private final String polyline;
-
-  private final List<NaturalLanguageStringBean> serviceAlerts;
-
-  public RouteDestinationItem(String headsign, String directionId, List<StopItem> stopItems,
-      String polyline, List<NaturalLanguageStringBean> serviceAlerts) {
-    this.headsign = headsign;
+  
+  public RouteDestinationItem(String headsign, String directionId, String polyline) {
     this.directionId = directionId;
-    this.stopItems = stopItems;
+    this.headsign = headsign;
     this.polyline = polyline;
-    this.serviceAlerts = serviceAlerts;
   }
   
   public String getHeadsign() {
@@ -53,17 +36,8 @@ public class RouteDestinationItem {
   public String getDirectionId() {
     return directionId;
   }
-
-  public List<StopItem> getStopItems() {
-    return stopItems;
-  }
   
   public String getPolyline() {
     return polyline;
   }
-  
-  public List<NaturalLanguageStringBean> getServiceAlerts() {
-    return serviceAlerts;
-  }
-
 }

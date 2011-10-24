@@ -14,5 +14,17 @@ package org.onebusaway.nyc.transit_data_manager.barcode;
  *
  */
 public interface BarcodeContentsConverter {
-  String contentsForUrl(String url) throws Exception;
+  /**
+   * Returns an url is it should be encoded in a barcode.
+   * @param url the valid url to be put into a barcode
+   * @return The contents representing the url, or an empty string if the url is malformed. 
+   */
+  String contentsForUrl(String url) ;
+  
+  /**
+   * Checks if the contents will fit into a V2 barcode.
+   * @param contents The contents to check, typically the result of one of the other methods in this object
+   * @return boolean True if the contents will fit inside a V2 barcode.
+   */
+  public boolean fitsV2QrCode(QRErrorCorrectionLevel ecLevel, String contents);
 }
