@@ -25,6 +25,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverter;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverterImpl;
+import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeImageType;
 import org.onebusaway.nyc.transit_data_manager.barcode.GoogleChartBarcodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.QRErrorCorrectionLevel;
 import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
@@ -32,15 +33,12 @@ import org.springframework.stereotype.Component;
 
 @Path("/barcode")
 @Component
-@Produces("image/x-ms-bmp")
+@Produces("image/*")
 public class QrCodeGeneratorResource {
 
   public QrCodeGeneratorResource() {
     setContentConv(new BarcodeContentsConverterImpl());
   }
-
-  private static String MIME_TYPE_BITMAP = "image/x-ms-bmp";
-  private static String MIME_TYPE_PNG = "image/png";
 
   // Note that while i'm putting these in lower case, they will be made
   // uppercase before encoding into a barcode.
@@ -58,10 +56,19 @@ public class QrCodeGeneratorResource {
   public Response getQrCodeForStopUrlById(
       @PathParam("stopId") int stopId,
       @DefaultValue("300") @QueryParam("img-dimension") int imgDimension,
-      @DefaultValue("BMP") @QueryParam("img-type") String imgType) {
-
+      @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName) {
+    
     final RenderedImage responseImg;
-    String imgMimeType = MIME_TYPE_BITMAP;
+    final BarcodeImageType imageType;
+    
+    // determine the image type parameter.
+    if ("PNG".equals(imgFormatName)) {
+      imageType = BarcodeImageType.PNG;
+    } else if ("BMP".equals(imgFormatName)) {
+      imageType = BarcodeImageType.BMP;
+    }  else {
+      imageType = BarcodeImageType.BMP;
+    }
 
     String barcodeContents = contentConv.contentsForUrl(getStopUrl(stopId));
 
@@ -83,12 +90,12 @@ public class QrCodeGeneratorResource {
         public void write(OutputStream os) throws IOException,
             WebApplicationException {
           ImageOutputStream ios = ImageIO.createImageOutputStream(os);
-          ImageIO.write(responseImg, "BMP", ios);
+          ImageIO.write(responseImg, imageType.getFormatName(), ios);
           ios.close();
         }
       };
       
-      response = Response.ok(output, imgMimeType).build();
+      response = Response.ok(output, imageType.getMimeType()).build();
       
     } else {
 
