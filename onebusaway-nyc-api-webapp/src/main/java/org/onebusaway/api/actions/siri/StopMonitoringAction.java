@@ -66,6 +66,7 @@ public class StopMonitoringAction implements ModelDriven<Object>,
     ServletRequestAware {
 
   private Object _response;
+  
   private HttpServletRequest _request;
 
   @Autowired

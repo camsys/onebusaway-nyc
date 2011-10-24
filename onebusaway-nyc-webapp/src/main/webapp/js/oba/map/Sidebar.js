@@ -66,7 +66,7 @@ OBA.Sidebar = function() {
 	
 	// single route search result view
 	function showSingleRoute(routeResult) {
-		
+		routeMap.showRoute(routeResult);
 	}
 
 	// display (few enough) routes on map
@@ -128,15 +128,8 @@ OBA.Sidebar = function() {
 			}			
 		});
 	};
-	
-	var markerClickFn = function(mouseEvent) {
-		var marker = this;
-		var stopId = marker.stopId;
 
-		alert(stopId);
-	};
-
-	routeMap = OBA.RouteMap(mapNode, mapMoveCallbackFn, markerClickFn);
+	routeMap = OBA.RouteMap(mapNode, mapMoveCallbackFn);
 		
 	return {
 		initialize: function() {

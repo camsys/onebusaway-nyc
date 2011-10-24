@@ -17,6 +17,6 @@
 --%>
 <html>
 <body>
-<h2>onebusaway-api-webapp</h2>
+<h2>onebusaway-nyc-api-webapp</h2>
 </body>
 </html>

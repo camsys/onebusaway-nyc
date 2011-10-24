@@ -20,14 +20,14 @@
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 
-<s:if test="!queryIsEmpty">
+<c:if test="${!empty q}">
 	<div>
 		<p>
 			<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
 			No results found for your query. <a href="${url}">Search Tips</a>
 		</p>
 	</div>
-</s:if>
+</c:if>
 
 <div>
 	<p>Try these example searches:</p>

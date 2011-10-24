@@ -51,6 +51,7 @@ public class VehicleMonitoringAction implements ModelDriven<Object>,
     ServletRequestAware {
 
   private Object _response;
+  
   private HttpServletRequest _request;
   
   @Autowired  

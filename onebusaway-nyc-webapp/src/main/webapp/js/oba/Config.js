@@ -25,6 +25,8 @@ OBA.Config = {
 		searchUrl: "api/search",
 		routesWithinBoundsUrl: "api/routes-within-bounds",
 		
+		siriVMUrl: "../onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json",
+		siriSMUrl: "../onebusaway-nyc-api-webapp/siri/stop-monitoring.json",
 		apiKey: "TEST",
 
 		googleAnalyticsId: 'UA-XXXXXXXX-X',

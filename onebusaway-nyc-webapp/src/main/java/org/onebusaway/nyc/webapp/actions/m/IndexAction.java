@@ -290,7 +290,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	    		  }
 	    	  }	    	  
 	      }	else {
-	    	  if(getQueryIsEmpty()) {
+	    	  if(_q == null || _q.isEmpty()) {
 	    		  action = "Home";
 	    	  } else {
 	    		  action = "No Search Results";	    		  
@@ -310,14 +310,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      return url.toString().replace("&", "&amp;"); 
 	  } catch(Exception e) {
 		  return null;
-	  }
-  }
-
-  public boolean getQueryIsEmpty() {
-	  if(_q == null) {
-		  return true;
-	  } else {
-		  return _q.isEmpty();
 	  }
   }
     
