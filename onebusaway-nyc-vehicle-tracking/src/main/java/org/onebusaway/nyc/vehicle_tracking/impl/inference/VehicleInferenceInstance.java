@@ -533,7 +533,12 @@ public class VehicleInferenceInstance {
             .getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       }
-    }
+      
+      record.setInferredDsc(blockState.getDestinationSignCode());
+    } 
+    
+    if (StringUtils.isBlank(record.getInferredDsc()))
+      record.setInferredDsc("0000");
 
     // Set the status field
     if (!statusFields.isEmpty()) {
