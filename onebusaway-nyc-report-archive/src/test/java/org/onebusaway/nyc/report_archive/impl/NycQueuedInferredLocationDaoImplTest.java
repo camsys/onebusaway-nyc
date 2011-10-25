@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Date;
 
 public class  NycQueuedInferredLocationDaoImplTest {
 
@@ -74,9 +75,9 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
   private NycQueuedInferredLocationRecord getTestRecord() {
     NycQueuedInferredLocationRecord record = new NycQueuedInferredLocationRecord();
-    record.setRecordTimestamp(123456789L);
+    record.setRecordTimestamp(new Date(123456789L));
     record.setVehicleId("120");
-    record.setServiceDate(20111010L);
+    record.setServiceDate(new Date(20111010L));
     record.setScheduleDeviation(1);
     record.setBlockId("1");
     record.setTripId("2");
