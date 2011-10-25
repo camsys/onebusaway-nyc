@@ -110,7 +110,6 @@ public class AbstractTraceRunner {
   public void setBundle(String bundleId, String date) throws Exception {
     setBundle(bundleId, DateLibrary.getIso8601StringAsTime(date));
   }
-
   public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty(
         "org.onebusaway.transit_data_federation_webapp.port", "9905");
@@ -233,7 +232,9 @@ public class AbstractTraceRunner {
       String dsc = actRecord.getInferredDsc();
       if (StringUtils.isNotBlank(actRecord.getInferredTripId())) {
         assertTrue(!_vehicleTrackingManagementService
-            .isOutOfServiceDestinationSignCode(dsc));
+            .isOutOfServiceDestinationSignCode(dsc)
+            && !_vehicleTrackingManagementService
+                .isUnknownDestinationSignCode(dsc));
       }
 
       EVehiclePhase expPhase = EVehiclePhase
