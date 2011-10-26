@@ -10,6 +10,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 import org.joda.time.DateMidnight;
 import org.joda.time.format.DateTimeFormatter;
@@ -20,6 +22,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentD
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.OperatorAssignmentsMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -36,27 +40,41 @@ import com.sun.jersey.api.spring.Autowire;
 @Autowire
 public class CrewResource {
 
+  private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
+
   @GET
   @Produces("application/json")
-  public String getCrewAssignments(@PathParam("serviceDate")
-  String inputDateStr) {
+  public Response getCrewAssignments(
+      @PathParam("serviceDate") String inputDateStr) {
+
+    Response response = null;
+
     DateTimeFormatter dateDTF = ISODateTimeFormat.date();
-    DateMidnight serviceDate = new DateMidnight(
-        dateDTF.parseDateTime(inputDateStr));
+
+    DateMidnight serviceDate = null;
+
+    try {
+      serviceDate = new DateMidnight(dateDTF.parseDateTime(inputDateStr));
+    } catch (IllegalArgumentException e) {
+      _log.debug(e.getMessage());
+      throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
+    }
 
     File inputFile = new File(System.getProperty("tdm.dataPath")
         + System.getProperty("tdm.crewAssignFilename"));
-
-    OperatorAssignmentData data = null;
 
     // First create a OperatorAssignmentData object
     UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(
         inputFile);
 
+    OperatorAssignmentData data;
     try {
       data = process.generateDataObject();
-    } catch (IOException e) {
-      return e.getMessage();
+    } catch (IOException e1) {
+      _log.info("Exception loading data. Verify input file " + inputFile.toString());
+      _log.debug(e1.getMessage());
+      throw new WebApplicationException(e1,
+          Response.Status.INTERNAL_SERVER_ERROR);
     }
 
     List<OperatorAssignment> jsonOpAssigns = null;
@@ -66,7 +84,8 @@ public class CrewResource {
     jsonOpAssigns = listConvertOpAssignTcipToJson(tcipToJsonConverter,
         data.getOperatorAssignmentsByServiceDate(serviceDate)); // grab the
                                                                 // assigns for
-                                                                // this date and
+                                                                // this date
+                                                                // and
                                                                 // convert to
                                                                 // json
 
@@ -86,7 +105,9 @@ public class CrewResource {
 
     String output = gson.toJson(opAssignMessage);
 
-    return output;
+    response = Response.ok(output).build();
+
+    return response;
 
   }
 
