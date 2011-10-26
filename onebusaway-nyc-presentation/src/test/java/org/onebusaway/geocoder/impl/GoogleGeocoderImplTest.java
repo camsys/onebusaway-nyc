@@ -16,6 +16,7 @@
 package org.onebusaway.geocoder.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.onebusaway.geocoder.model.GeocoderResult;
 import org.onebusaway.geocoder.model.GeocoderResults;
@@ -27,11 +28,11 @@ import java.util.List;
 public class GoogleGeocoderImplTest {
 
   @Test
-  public void testGeocoder() {
+  public void testZipCodeSearch() {
 
     GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();
 
-    GeocoderResults results = geocoder.geocode("98105");
+    GeocoderResults results = geocoder.geocode("10009");
 
     List<GeocoderResult> records = results.getResults();
 
@@ -39,12 +40,68 @@ public class GoogleGeocoderImplTest {
 
     GeocoderResult result = records.get(0);
 
-    assertEquals(47.663355, result.getLatitude(), 0.1);
-    assertEquals(-122.298259, result.getLongitude(), 0.1);
+    assertEquals(40.7275043, result.getLatitude(), 0.1);
+    assertEquals(-73.9800645, result.getLongitude(), 0.1);
     assertEquals("",result.getAddress());
-    assertEquals("Seattle", result.getCity());
-    assertEquals("WA", result.getAdministrativeArea());
-    assertEquals("98105", result.getPostalCode());
+    assertEquals("New York", result.getCity());
+    assertEquals("NY", result.getAdministrativeArea());
+    assertEquals("10009", result.getPostalCode());
+    assertEquals("US", result.getCountry());
+  }
+  
+  @Test
+  public void testBoroughSearch() {
+
+    GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();
+
+    GeocoderResults results = geocoder.geocode("Staten Island");
+
+    List<GeocoderResult> records = results.getResults();
+
+    assertEquals(1, records.size());
+    
+    GeocoderResult result = records.get(0);
+
+    assertEquals(40.5795317, result.getLatitude(), 0.1);
+    assertEquals(-74.1502007, result.getLongitude(), 0.1);
+    assertEquals("",result.getAddress());
+    assertEquals("New York", result.getCity());
+    assertEquals("NY", result.getAdministrativeArea());
+    assertEquals(null, result.getPostalCode());
+    assertEquals("US", result.getCountry());
+  }
+  
+  @Test
+  public void testAmbiguousIntersectionSearch() {
+
+    GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();
+
+    GeocoderResults results = geocoder.geocode("Atlantic and Hoyt Street");
+
+    List<GeocoderResult> records = results.getResults();
+
+    assertTrue(records.size() > 1);
+  }
+  
+  @Test
+  public void testUnAmbiguousIntersectionSearch() {
+
+    GoogleGeocoderImpl geocoder = new GoogleGeocoderImpl();
+
+    GeocoderResults results = geocoder.geocode("Atlantic and Hoyt Street, Brooklyn, NY");
+
+    List<GeocoderResult> records = results.getResults();
+
+    assertEquals(1, records.size());
+    
+    GeocoderResult result = records.get(0);
+
+    assertEquals(40.6877758, result.getLatitude(), 0.1);
+    assertEquals(-73.9869853, result.getLongitude(), 0.1);
+    assertEquals("",result.getAddress());
+    assertEquals("New York", result.getCity());
+    assertEquals("NY", result.getAdministrativeArea());
+    assertEquals("11217", result.getPostalCode());
     assertEquals("US", result.getCountry());
   }
 }

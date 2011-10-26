@@ -10,7 +10,6 @@ import org.onebusaway.api.model.transit.EntryWithReferencesBean;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 

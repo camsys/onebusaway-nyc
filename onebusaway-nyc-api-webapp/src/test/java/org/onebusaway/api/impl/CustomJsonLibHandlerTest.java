@@ -1,10 +1,9 @@
 package org.onebusaway.api.impl;
 
+import static org.junit.Assert.assertEquals;
+
 import org.onebusaway.api.model.transit.ArrivalAndDepartureV2Bean;
 import org.onebusaway.api.model.transit.EntryWithReferencesBean;
-
-import net.sf.json.JSONObject;
-import net.sf.json.test.JSONAssert;
 
 import org.junit.Test;
 
@@ -22,9 +21,10 @@ public class CustomJsonLibHandlerTest extends CustomJsonLibHandler {
     Writer writer = new StringWriter();
     fromObject(response, "arg1", writer, null);
     writer.close();
+    assertEquals(expected, writer.toString());
 
-    JSONAssert.assertEquals(writer.toString(), JSONObject.fromObject(expected));
   }
 
-  private static final String expected = "{\"entry\":{\"status\":null,\"serviceDate\":0,\"vehicleId\":null,\"stopSequence\":0,\"blockTripSequence\":0,\"arrivalEnabled\":false,\"scheduledArrivalTime\":0,\"scheduledArrivalInterval\":null,\"predictedArrivalTime\":0,\"predictedArrivalInterval\":null,\"departureEnabled\":false,\"scheduledDepartureTime\":0,\"scheduledDepartureInterval\":null,\"predictedDepartureTime\":0,\"predictedDepartureInterval\":null,\"frequency\":null,\"predicted\":false,\"lastUpdateTime\":null,\"distanceFromStop\":0.0,\"numberOfStopsAway\":0,\"routeShortName\":null,\"tripHeadsign\":null,\"tripStatus\":null,\"routeId\":\"myRouteId\",\"tripId\":null,\"stopId\":\"myStopId\",\"routeLongName\":null,\"situationIds\":[\"situationId\"]},\"references\":{\"routes\":[{\"id\":\"myRouteId\",\"type\":0,\"description\":null,\"shortName\":null,\"longName\":null,\"url\":null,\"color\":null,\"textColor\":null,\"agencyId\":null}],\"situations\":[{\"id\":\"situationId\",\"description\":{\"value\":\"description\",\"lang\":\"en\"},\"allAffects\":[{\"directionId\":\"affectsDirectionId\",\"agencyId\":\"affectsAgencyId\",\"routeId\":\"affectsRouteId\",\"tripId\":\"affectsTripdId\",\"stopId\":\"myStopId\",\"applicationId\":\"myApplication\"}],\"consequences\":[{\"condition\":\"detour\",\"conditionDetails\":{\"diversionPath\":{\"length\":0,\"points\":\"detourPath\",\"levels\":null},\"diversionStopIds\":[\"detourStopId\"]}}],\"url\":{\"value\":\"url\",\"lang\":\"en\"},\"creationTime\":300000,\"activeWindows\":[{\"from\":0,\"to\":100000}],\"publicationWindows\":[{\"from\":100000,\"to\":200000}],\"reason\":\"reason\",\"severity\":\"severe\",\"summary\":{\"value\":\"summary\",\"lang\":\"en\"}}],\"stops\":[{\"name\":null,\"id\":\"myStopId\",\"lat\":0.0,\"lon\":0.0,\"direction\":null,\"code\":null,\"locationType\":0,\"routeIds\":[\"myRouteId\"]}],\"trips\":[{\"id\":null,\"timeZone\":null,\"routeShortName\":null,\"tripHeadsign\":null,\"tripShortName\":null,\"serviceId\":null,\"shapeId\":null,\"directionId\":null,\"blockId\":null,\"routeId\":\"myRouteId\"}],\"agencies\":[{\"name\":null,\"id\":null,\"timezone\":null,\"url\":null,\"lang\":null,\"phone\":null,\"disclaimer\":null,\"privateService\":false}]}}";
+  private static final String expected = "{\"references\":{\"stops\":[{\"id\":\"myStopId\",\"lon\":0,\"direction\":\"\",\"locationType\":0,\"name\":\"\",\"routeIds\":[\"myRouteId\"],\"code\":\"\",\"lat\":0}],\"situations\":[{\"id\":\"situationId\",\"summary\":{\"value\":\"summary\",\"lang\":\"en\"},\"consequences\":[{\"condition\":\"detour\",\"conditionDetails\":{\"diversionStopIds\":[\"detourStopId\"],\"diversionPath\":{\"levels\":\"\",\"length\":0,\"points\":\"detourPath\"}}}],\"activeWindows\":[{\"to\":100000,\"from\":0}],\"reason\":\"reason\",\"description\":{\"value\":\"description\",\"lang\":\"en\"},\"allAffects\":[{\"directionId\":\"affectsDirectionId\",\"stopId\":\"myStopId\",\"tripId\":\"affectsTripdId\",\"applicationId\":\"myApplication\",\"routeId\":\"affectsRouteId\",\"agencyId\":\"affectsAgencyId\"}],\"creationTime\":300000,\"severity\":\"severe\",\"publicationWindows\":[{\"to\":200000,\"from\":100000}],\"url\":{\"value\":\"url\",\"lang\":\"en\"}}],\"trips\":[{\"id\":\"\",\"shapeId\":\"\",\"tripShortName\":\"\",\"directionId\":\"\",\"serviceId\":\"\",\"blockId\":\"\",\"routeShortName\":\"\",\"tripHeadsign\":\"\",\"routeId\":\"myRouteId\",\"timeZone\":\"\"}],\"routes\":[{\"id\":\"myRouteId\",\"textColor\":\"\",\"color\":\"\",\"description\":\"\",\"longName\":\"\",\"shortName\":\"\",\"type\":0,\"agencyId\":\"\",\"url\":\"\"}],\"agencies\":[{\"id\":\"\",\"privateService\":false,\"phone\":\"\",\"timezone\":\"\",\"disclaimer\":\"\",\"name\":\"\",\"lang\":\"\",\"url\":\"\"}]},\"entry\":{\"vehicleId\":\"\",\"numberOfStopsAway\":0,\"serviceDate\":0,\"lastUpdateTime\":0,\"routeId\":\"myRouteId\",\"frequency\":null,\"stopSequence\":0,\"scheduledDepartureInterval\":null,\"routeShortName\":\"\",\"arrivalEnabled\":false,\"distanceFromStop\":0,\"scheduledArrivalTime\":0,\"status\":\"\",\"tripId\":\"\",\"routeLongName\":\"\",\"tripHeadsign\":\"\",\"predicted\":false,\"predictedArrivalTime\":0,\"departureEnabled\":false,\"scheduledArrivalInterval\":null,\"predictedDepartureTime\":0,\"situationIds\":[\"situationId\"],\"stopId\":\"myStopId\",\"tripStatus\":null,\"predictedDepartureInterval\":null,\"predictedArrivalInterval\":null,\"blockTripSequence\":0,\"scheduledDepartureTime\":0}}";
+
 }

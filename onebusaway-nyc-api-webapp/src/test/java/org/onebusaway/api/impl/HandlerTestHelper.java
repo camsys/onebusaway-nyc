@@ -19,7 +19,6 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
