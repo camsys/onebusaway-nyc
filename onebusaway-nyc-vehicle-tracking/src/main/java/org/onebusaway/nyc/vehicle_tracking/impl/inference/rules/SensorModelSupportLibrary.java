@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
+import java.util.Set;
+
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -316,39 +318,49 @@ public class SensorModelSupportLibrary {
      * The idea here is that we look for the absolute best block location given
      * our current oberservation, even if it means travelling backwards
      */
-    BlockState closestBlockState = _blockStateTransitionModel.getClosestBlockState(
+    Set<BlockState> closestBlockStates = _blockStateTransitionModel.getClosestBlockStates(
         blockState, obs);
-    ScheduledBlockLocation closestBlockLocation = closestBlockState.getBlockLocation();
-
+    
     /**
-     * We compare this against our best block location assuming a bus generally
-     * travels forward
+     * used to be that there was one block state returned: the best in
+     * terms of schedule deviation.  However, there are two criteria: location
+     * and schedule deviation.  Here we equally weigh both.
      */
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-
-    /**
-     * If we're just coming out of a layover, there is some chance that the
-     * block location was allowed to shift to the end of the layover to match
-     * the underlying schedule and may be slightly ahead of our current block
-     * location. We're ok with that.
-     */
-    if (parentState != null
-        && EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())) {
-      double delta = blockLocation.getDistanceAlongBlock()
-          - closestBlockLocation.getDistanceAlongBlock();
-
-      if (0 <= delta && delta < 300)
-        return 1.0;
+    double prob=0.0;
+    for (BlockState closestBlockState : closestBlockStates) {
+      ScheduledBlockLocation closestBlockLocation = closestBlockState.getBlockLocation();
+  
+      /**
+       * We compare this against our best block location assuming a bus generally
+       * travels forward
+       */
+      ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+  
+      /**
+       * If we're just coming out of a layover, there is some chance that the
+       * block location was allowed to shift to the end of the layover to match
+       * the underlying schedule and may be slightly ahead of our current block
+       * location. We're ok with that.
+       */
+      if (parentState != null
+          && EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())) {
+        double delta = blockLocation.getDistanceAlongBlock()
+            - closestBlockLocation.getDistanceAlongBlock();
+  
+        if (0 <= delta && delta < 300)
+          return 1.0;
+      }
+  
+      /**
+       * If the distance between the two points is high, that means that our block
+       * location isn't great and might suggest we've been assigned a block that
+       * is moving in the wrong direction
+       */
+      double blockLocationDelta = SphericalGeometryLibrary.distance(
+          closestBlockLocation.getLocation(), blockLocation.getLocation());
+      prob += _blockLocationDeviationModel.probability(blockLocationDelta)/closestBlockStates.size();
     }
-
-    /**
-     * If the distance between the two points is high, that means that our block
-     * location isn't great and might suggest we've been assigned a block that
-     * is moving in the wrong direction
-     */
-    double blockLocationDelta = SphericalGeometryLibrary.distance(
-        closestBlockLocation.getLocation(), blockLocation.getLocation());
-    return _blockLocationDeviationModel.probability(blockLocationDelta);
+    return prob;
   }
 
   public double computeScheduleDeviationProbability(VehicleState state,

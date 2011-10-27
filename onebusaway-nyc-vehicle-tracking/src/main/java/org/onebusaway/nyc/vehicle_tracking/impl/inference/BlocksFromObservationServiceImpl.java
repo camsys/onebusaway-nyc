@@ -232,14 +232,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(
         observation, nearbyBlocks);
     for (BlockInstance thisBIS : bisSet) {
-      BlockState state = null;
+      Set<BlockState> states = new HashSet<BlockState>();
       if (bestBlockLocation) {
-        state = _blockStateService.getBestBlockLocation(observation, thisBIS,
-            0, Double.POSITIVE_INFINITY);
+        states.addAll(_blockStateService.getBestBlockLocations(observation, thisBIS,
+            0, Double.POSITIVE_INFINITY));
       } else {
-        state = _blockStateService.getAsState(thisBIS, 0.0);
+        states.add(_blockStateService.getAsState(thisBIS, 0.0));
       }
-      potentialBlocks.add(state);
+      potentialBlocks.addAll(states);
     }
 
     return potentialBlocks;
@@ -259,7 +259,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     /**
      * Second source of trips: the destination sign code
      */
-    computePotentialBlocksFromDestinationSignCode(observation, potentialBlocks);
+    if (observation.getLastValidDestinationSignCode() != null) {
+      computePotentialBlocksFromDestinationSignCode(observation, potentialBlocks);
+    }
 
     /**
      * Third source of trips: trips nearby the current gps location Ok we're not
@@ -395,18 +397,21 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
           return blockStates;
         } else {
 
-          BlockState state = null;
+          Set<BlockState> states = null;
           if (bestBlockLocation) {
-            state = _blockStateService.getBestBlockLocation(observation,
+            states = _blockStateService.getBestBlockLocations(observation,
                 blockInstance, 0, Double.POSITIVE_INFINITY);
           } else {
-            state = _blockStateService.getAsState(blockInstance, 0.0);
+            states = new HashSet<BlockState>();
+            states.add(_blockStateService.getAsState(blockInstance, 0.0));
           }
 
-          state.setRunReported(runReported);
-          state.setOpAssigned(opAssigned);
-          state.setRunReportedAssignedMismatch(assignedReportedRunMismatch);
-          blockStates.add(state);
+          for (BlockState state : states) {
+            state.setRunReported(runReported);
+            state.setOpAssigned(opAssigned);
+            state.setRunReportedAssignedMismatch(assignedReportedRunMismatch);
+            blockStates.add(state);
+          }
         }
       }
     } else {
@@ -417,14 +422,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   @Override
-  public BlockState advanceState(Observation observation,
+  public Set<BlockState> advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel) {
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
     double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
 
-    return _blockStateService.getBestBlockLocation(observation,
+    return _blockStateService.getBestBlockLocations(observation,
         blockState.getBlockInstance(), currentDistanceAlongBlock
             + minDistanceToTravel, currentDistanceAlongBlock
             + maxDistanceToTravel);
@@ -492,14 +497,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   /**
-   * Finds the best block state assignment along the ENTIRE length of the block
+   * Finds the best block state assignments along the ENTIRE length of the block
    * (potentially expensive operation)
    */
-  public BlockState bestState(Observation observation, BlockState blockState) {
+  public Set<BlockState> bestStates(Observation observation, BlockState blockState) {
 
     BlockInstance blockInstance = blockState.getBlockInstance();
     BlockConfigurationEntry blockConfig = blockInstance.getBlock();
-    return _blockStateService.getBestBlockLocation(observation, blockInstance,
+    return _blockStateService.getBestBlockLocations(observation, blockInstance,
         0, blockConfig.getTotalBlockDistance());
   }
 

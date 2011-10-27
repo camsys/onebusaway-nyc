@@ -17,8 +17,10 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.onebusaway.collections.MappingLibrary;
 import org.onebusaway.collections.Min;
@@ -103,7 +105,7 @@ public class BlockStateService {
     _shapePointsLibrary.setLocalMinimumThreshold(localMinimumThreshold);
   }
 
-  public BlockState getBestBlockLocation(Observation observation,
+  public Set<BlockState> getBestBlockLocations(Observation observation,
       BlockInstance blockInstance, double blockDistanceFrom,
       double blockDistanceTo) {
 
@@ -113,25 +115,25 @@ public class BlockStateService {
     BlockLocationKey key = new BlockLocationKey(blockInstance,
         blockDistanceFrom, blockDistanceTo);
 
-    Map<BlockLocationKey, BlockState> m = _observationCache
+    Map<BlockLocationKey, Set<BlockState>> m = _observationCache
         .getValueForObservation(observation,
             EObservationCacheKey.BLOCK_LOCATION);
 
     if (m == null) {
-      m = new HashMap<BlockStateService.BlockLocationKey, BlockState>();
+      m = new HashMap<BlockStateService.BlockLocationKey, Set<BlockState>>();
       _observationCache.putValueForObservation(observation,
           EObservationCacheKey.BLOCK_LOCATION, m);
     }
 
-    BlockState blockState = m.get(key);
+    Set<BlockState> blockStates = m.get(key);
 
-    if (blockState == null) {
-      blockState = getUncachedBestBlockLocation(observation, blockInstance,
+    if (blockStates == null) {
+      blockStates = getUncachedBestBlockLocations(observation, blockInstance,
           blockDistanceFrom, blockDistanceTo);
-      m.put(key, blockState);
+      m.put(key, blockStates);
     }
 
-    return blockState;
+    return blockStates;
   }
 
   public BlockState getScheduledTimeAsState(BlockInstance blockInstance,
@@ -162,7 +164,7 @@ public class BlockStateService {
    * Private Methods
    ****/
 
-  private BlockState getUncachedBestBlockLocation(Observation observation,
+  private Set<BlockState> getUncachedBestBlockLocations(Observation observation,
       BlockInstance blockInstance, double blockDistanceFrom,
       double blockDistanceTo) {
 
@@ -214,17 +216,27 @@ public class BlockStateService {
         .computePotentialAssignments(projectedShapePoints, distances, xyPoint,
             fromIndex, toIndex);
 
+    Set<BlockState> bestStates = new HashSet<BlockState>();
     if (assignments.size() == 0) {
-      return getAsState(blockInstance, blockDistanceFrom);
+      bestStates.add(getAsState(blockInstance, blockDistanceFrom));
+      return bestStates;
     } else if (assignments.size() == 1) {
       PointAndIndex pIndex = assignments.get(0);
-      return getAsState(blockInstance, pIndex.distanceAlongShape);
+      bestStates.add(getAsState(blockInstance, pIndex.distanceAlongShape));
+      return bestStates;
     }
 
-    Min<PointAndIndex> best = new Min<PointAndIndex>();
+    Min<PointAndIndex> bestSchedDev = new Min<PointAndIndex>();
+    Min<PointAndIndex> bestLocDev = new Min<PointAndIndex>();
 
     for (PointAndIndex index : assignments) {
 
+      /*
+       * now we consider best distance from target blockStates
+       * AND best schedule time matched blockStates
+       */
+      bestLocDev.add(index.distanceFromTarget, index);
+      
       double distanceAlongBlock = index.distanceAlongShape;
 
       if (distanceAlongBlock > block.getTotalBlockDistance())
@@ -240,12 +252,16 @@ public class BlockStateService {
             * 1000;
 
         double delta = Math.abs(scheduleTimestamp - timestamp);
-        best.add(delta, index);
+        bestSchedDev.add(delta, index);
       }
     }
 
-    PointAndIndex index = best.getMinElement();
-    return getAsState(blockInstance, index.distanceAlongShape);
+    PointAndIndex indexSched = bestSchedDev.getMinElement();
+    bestStates.add(getAsState(blockInstance, indexSched.distanceAlongShape));
+    PointAndIndex indexLoc = bestLocDev.getMinElement();
+    bestStates.add(getAsState(blockInstance, indexLoc.distanceAlongShape));
+    
+    return bestStates;
   }
 
   private static class BlockLocationKey {
