@@ -22,11 +22,6 @@
 	
 	<bean id="nycBundle" class="org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle" />
 
-	<bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
-		<property name="bundleStoreRoot" value="${bundle.location}" />
-		<property name="standaloneMode" value="${bundle.mode.standalone}" />
-	</bean>
-
 	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl" />
 
 	<bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
