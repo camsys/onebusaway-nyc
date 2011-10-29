@@ -50,13 +50,13 @@
 						</a>
 						<br/>
 
-						<s:if test="%{distanceAways.size==0}">
+						<s:if test="%{distanceAwayStrings.size==0}">
 							OneBusAway NYC is not tracking any buses en-route to your location. Please check back shortly for an update.
 							<br/>
 						</s:if>
 						<s:else>
-							<c:forEach var="distanceAway" items="${distanceAways}">
-								<c:out value="${distanceAway}" />
+							<c:forEach var="distanceAwayString" items="${distanceAwayStrings}">
+								<c:out value="${distanceAwayString}" />
 								<br />
 							</c:forEach>
 						</s:else>

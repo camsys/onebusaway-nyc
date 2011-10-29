@@ -16,14 +16,35 @@
 package org.onebusaway.nyc.presentation.model.search;
 
 import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
 
-public class StopItem {
+import java.util.List;
 
-  private final StopBean stopBean;
+public class StopResult implements SearchResult {
 
-  public StopItem(StopBean stopBean) {
+  private StopBean stopBean;
+
+  private List<RouteResult> routesAvailable;
+
+  public StopResult() {}
+
+  public void setStopBean(StopBean stopBean) {
     this.stopBean = stopBean;
+  }
+  
+  public void setRoutesAvailable(List<RouteResult> routesAvailable) {
+    this.routesAvailable = routesAvailable;
+  }
+  
+  @Override
+  public String getType() {
+    return "stopResult";
+  }
+  
+  @Override
+  public String getName() {
+    return stopBean.getName();
   }
 
   public String getStopId() {
@@ -33,10 +54,6 @@ public class StopItem {
   public String getStopIdWithoutAgency() {
     WebappSupportLibrary webappIdParser = new WebappSupportLibrary();
     return webappIdParser.parseIdWithoutAgency(getStopId());
-  }
-
-  public String getName() {
-    return stopBean.getName();
   }
 
   public Double getLatitude() {
@@ -49,5 +66,9 @@ public class StopItem {
 
   public String getStopDirection() {
     return stopBean.getDirection();
+  }
+  
+  public List<RouteResult> getRoutesAvailable() {
+    return routesAvailable;
   }
 }

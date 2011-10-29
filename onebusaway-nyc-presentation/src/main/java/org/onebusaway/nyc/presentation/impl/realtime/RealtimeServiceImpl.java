@@ -1,8 +1,13 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
+import org.onebusaway.nyc.presentation.impl.DefaultRealtimeModelFactory;
 import org.onebusaway.nyc.presentation.model.realtime.DistanceAway;
+import org.onebusaway.nyc.presentation.model.realtime.VehicleResult;
+import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.service.ArrivalDepartureBeanListFilter;
+import org.onebusaway.nyc.presentation.service.RealtimeModelFactory;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
@@ -29,8 +34,13 @@ import java.util.List;
 @Component
 public class RealtimeServiceImpl implements RealtimeService {
   
+  private RealtimeModelFactory _modelFactory = new DefaultRealtimeModelFactory();
+
   @Autowired
   private TransitDataService _transitDataService;
+  
+  @Autowired
+  private ConfigurationService _configurationService;
   
   @Autowired
   private ArrivalDepartureBeanListFilter _adBeanListFilter;
@@ -50,12 +60,38 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
   
   @Override
-  public List<DistanceAway> getDistanceAwaysForStopAndHeadsign(String stopId, String headsign) {
+  public void setModelFactory(RealtimeModelFactory factory) {
+    _modelFactory = factory;
+  }
+  
+  @Override
+  public List<VehicleResult> getLocationsForVehiclesServingRoute(String routeId) {
+    List<VehicleResult> output = new ArrayList<VehicleResult>();
+    
+    for (TripDetailsBean tripDetailsBean : getAllTripsForRoute(routeId).getList()) {
+      TripBean tripBean = tripDetailsBean.getTrip();
+      if(tripBean == null)
+        continue;
+      
+      TripStatusBean statusBean = tripDetailsBean.getStatus();
+      if(statusBean == null || !statusBean.isPredicted())
+        continue;
+      
+      VehicleResult nextStopsForVehicle = _modelFactory.getVehicleLocationModel();
+      nextStopsForVehicle.setTripStatusBean(statusBean);
+
+      output.add(nextStopsForVehicle);
+    }
+
+    return output;
+  }
+  
+  @Override
+  public List<DistanceAway> getDistanceAwaysForStopAndDestination(String stopId, RouteDestinationItem destination) {
     
     List<DistanceAway> output = new ArrayList<DistanceAway>();
 
-    List<ArrivalAndDepartureBean> arrivalsAndDepartures = 
-        getArrivalsAndDeparturesForStop(stopId);
+    List<ArrivalAndDepartureBean> arrivalsAndDepartures = getArrivalsAndDeparturesForStop(stopId);
     
     // since this is data used for display of realtime data only, we use the bean filter
     List<ArrivalAndDepartureBean> filteredArrivalsAndDepartures = 
@@ -63,14 +99,19 @@ public class RealtimeServiceImpl implements RealtimeService {
     
     for (ArrivalAndDepartureBean arrivalAndDepartureBean : filteredArrivalsAndDepartures) {
       TripBean tripBean = arrivalAndDepartureBean.getTrip();
-      if(!tripBean.getTripHeadsign().equals(headsign))
+      if(!tripBean.getTripHeadsign().equals(destination.getHeadsign()))
         continue;
       
       TripStatusBean tripStatusBean = arrivalAndDepartureBean.getTripStatus();      
       Integer stopsAway = arrivalAndDepartureBean.getNumberOfStopsAway();
       Integer feetAway = (int)(arrivalAndDepartureBean.getDistanceFromStop() * 3.2808399);
       
-      DistanceAway distanceAway = new DistanceAway(stopsAway, feetAway, tripStatusBean);      
+      DistanceAway distanceAway = _modelFactory.getDistanceAwayModel();
+      distanceAway.setStopsAway(stopsAway);
+      distanceAway.setFeetAway(feetAway);
+      distanceAway.setStatusBean(tripStatusBean);
+      distanceAway.setConfigurationService(_configurationService);
+      
       output.add(distanceAway);
     }
     
@@ -157,4 +198,5 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
   }
+
 }
