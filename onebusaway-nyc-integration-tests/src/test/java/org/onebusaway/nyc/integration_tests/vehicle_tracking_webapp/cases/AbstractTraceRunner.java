@@ -80,9 +80,9 @@ public class AbstractTraceRunner {
   private boolean _saveResultsOnAssertionError = true;
 
   public AbstractTraceRunner() {
-    
+
   }
-  
+
   public AbstractTraceRunner(String trace) {
     _trace = trace;
   }
@@ -90,7 +90,7 @@ public class AbstractTraceRunner {
   public void setTrace(String trace) {
     _trace = trace;
   }
-  
+
   public void setMaxTimeout(long maxTimeout) {
     _maxTimeout = maxTimeout;
   }
@@ -119,6 +119,7 @@ public class AbstractTraceRunner {
   public void setBundle(String bundleId, String date) throws Exception {
     setBundle(bundleId, DateLibrary.getIso8601StringAsTime(date));
   }
+
   public void setBundle(String bundleId, Date date) throws Exception {
     String port = System.getProperty(
         "org.onebusaway.transit_data_federation_webapp.port", "9905");
@@ -154,81 +155,99 @@ public class AbstractTraceRunner {
   @Test
   public void test() throws Throwable {
     Map<EVehiclePhase, Double> results = runTest();
-    
-    for (Entry<EVehiclePhase, Double> result: results.entrySet()) {
+
+    for (Entry<EVehiclePhase, Double> result : results.entrySet()) {
       double relativeRatio = result.getValue();
-      
+
       String label = "phase ratio " + result.getKey() + "=" + relativeRatio
           + " vs min of " + _minAccuracyRatio;
+
+      double minAccuracyRatio = _minAccuracyRatio;
+
+      if (_minAccuracyRatiosByPhase.containsKey(result.getKey()))
+        minAccuracyRatio = _minAccuracyRatiosByPhase.get(result.getKey());
       
-      assertTrue(label, relativeRatio > _minAccuracyRatio);
+      assertTrue(label, relativeRatio > minAccuracyRatio);
     }
   }
-  
+
+  /**
+   * 
+   * @return map of phases to average acceptance ratios
+   * @throws Throwable
+   */
   public Map<EVehiclePhase, Double> runTest() throws Throwable {
     File trace = new File("src/integration-test/resources/traces/" + _trace);
     List<NycTestInferredLocationRecord> expected = _traceSupport
         .readRecords(trace);
 
     int successfulIterations = 0;
-    Map<EVehiclePhase, Double> phaseResults = null;
+    Map<EVehiclePhase, Double> phaseResults = new HashMap<EVehiclePhase, Double>();
 
-//    for (int i = 0; i < _loops; i++) {
+    for (int i = 0; i < _loops; i++) {
 
-    String taskId = _traceSupport.uploadTraceForSimulation(trace);
+      String taskId = _traceSupport.uploadTraceForSimulation(trace);
 
-    // Wait for the task to complete
-    long t = System.currentTimeMillis();
-    int prevRecordCount = -1;
+      // Wait for the task to complete
+      long t = System.currentTimeMillis();
+      int prevRecordCount = -1;
 
-    while (true) {
+      while (true) {
 
-      List<NycTestInferredLocationRecord> actual = _traceSupport
-          .getSimulationResults(taskId);
+        List<NycTestInferredLocationRecord> actual = _traceSupport
+            .getSimulationResults(taskId);
 
-      String asString = _traceSupport.getRecordsAsString(actual);
-      _log.debug("actual records:\n" + asString);
+        String asString = _traceSupport.getRecordsAsString(actual);
+        _log.debug("actual records:\n" + asString);
 
-      System.out.println("records=" + actual.size() + "/" + expected.size());
+        System.out.println("records=" + actual.size() + "/" + expected.size());
 
-      if (actual.size() < expected.size()) {
+        if (actual.size() < expected.size()) {
 
-        if (t + _maxTimeout < System.currentTimeMillis()) {
-          fail("waited but never received enough records: expected="
-              + expected.size() + " actual=" + actual.size());
+          if (t + _maxTimeout < System.currentTimeMillis()) {
+            fail("waited but never received enough records: expected="
+                + expected.size() + " actual=" + actual.size());
+          }
+
+          // We reset our timeout if the record count is growing
+          if (actual.size() > prevRecordCount) {
+            t = System.currentTimeMillis();
+            prevRecordCount = actual.size();
+          }
+
+          Thread.sleep(1000);
+          continue;
         }
 
-        // We reset our timeout if the record count is growing
-        if (actual.size() > prevRecordCount) {
-          t = System.currentTimeMillis();
-          prevRecordCount = actual.size();
+        try {
+          assertEquals(expected.size(), actual.size());
+
+          Map<EVehiclePhase, Double> theseResults = validateRecords(expected,
+              actual);
+
+          for (Entry<EVehiclePhase, Double> result : theseResults.entrySet()) {
+            double relativeRatio = result.getValue();
+            Double currentVal = phaseResults.get(result.getKey());
+            phaseResults.put(result.getKey(), (currentVal == null ? 0.0
+                : currentVal) * i / (i + 1) + relativeRatio / (i + 1));
+          }
+        } catch (Throwable ex) {
+          if (_saveResultsOnAssertionError)
+            writeResultsOnAssertionError(actual);
+          if (_loops == 1)
+            throw ex;
+          else
+            successfulIterations++;
         }
 
-        Thread.sleep(1000);
-        continue;
+        break;
       }
-
-      try {
-        assertEquals(expected.size(), actual.size());
-
-        phaseResults = validateRecords(expected, actual);
-      } catch (Throwable ex) {
-        if (_saveResultsOnAssertionError)
-          writeResultsOnAssertionError(actual);
-        if (_loops == 1)
-          throw ex;
-        else
-          successfulIterations++;
-      }
-
-      break;
     }
-//    }
 
     if (_loops > 1)
       System.out
           .println("success ratio=" + successfulIterations + "/" + _loops);
-    
+
     return phaseResults;
   }
 
@@ -236,14 +255,15 @@ public class AbstractTraceRunner {
    * Protected Methods
    ****/
 
-  protected Map<EVehiclePhase, Double> validateRecords(List<NycTestInferredLocationRecord> expected,
+  protected Map<EVehiclePhase, Double> validateRecords(
+      List<NycTestInferredLocationRecord> expected,
       List<NycTestInferredLocationRecord> actual) {
 
     Counter<EVehiclePhase> expPhaseCounts = new Counter<EVehiclePhase>();
     Counter<EVehiclePhase> actPhaseCounts = new Counter<EVehiclePhase>();
-    
+
     Map<EVehiclePhase, Double> phaseResults = new HashMap<EVehiclePhase, Double>();
-    
+
     DoubleArrayList distanceAlongBlockDeviations = new DoubleArrayList();
 
     for (int i = 0; i < expected.size(); i++) {
@@ -320,7 +340,6 @@ public class AbstractTraceRunner {
       System.out.println(label);
 
       phaseResults.put(phase, relativeRatio);
-      
 
     }
 
@@ -341,11 +360,11 @@ public class AbstractTraceRunner {
       System.out.println("stdDev=" + stdDev);
 
       // TODO make the an actual part of the tests
-//      assertTrue("median=" + median, median < _median);
-//      assertTrue("mean=" + mean, mean < 10.0);
-//      assertTrue("stdDev" + stdDev, stdDev < _standardDeviation);
+      // assertTrue("median=" + median, median < _median);
+      // assertTrue("mean=" + mean, mean < 10.0);
+      // assertTrue("stdDev" + stdDev, stdDev < _standardDeviation);
     }
-    
+
     return phaseResults;
   }
 
