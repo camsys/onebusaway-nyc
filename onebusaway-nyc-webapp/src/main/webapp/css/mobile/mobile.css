@@ -189,3 +189,13 @@ strong {
     color: #666666;
     font-size: 80%;
 }
+#toggleUI {
+	padding-bottom: 10px;	
+}
+#toggleUI a,
+.routeList a {
+	display: inline-block;
+	text-align: center;
+	width: 75px;
+	height: 25px;
+}

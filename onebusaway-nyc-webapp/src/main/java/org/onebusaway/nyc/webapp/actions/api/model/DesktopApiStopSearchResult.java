@@ -13,23 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.actions.m.model;
+package org.onebusaway.nyc.webapp.actions.api.model;
 
-import org.onebusaway.nyc.presentation.model.search.LocationResult;
-import org.onebusaway.nyc.presentation.model.search.RouteResult;
+import org.onebusaway.nyc.presentation.model.realtime.DistanceAway;
+import org.onebusaway.nyc.presentation.model.search.StopResult;
 
-import java.util.List;
+public class DesktopApiStopSearchResult extends StopResult {
 
-public class MobileWebLocationSearchResult extends LocationResult {
+  private DistanceAway distanceAway;
   
-  private List<RouteResult> nearbyRoutes;
-  
-  public void setNearbyRoutes(List<RouteResult> nearbyRoutes) {
-    this.nearbyRoutes = nearbyRoutes;
+  public DistanceAway getDistanceAway() {
+    return distanceAway;
   }
-  
-  public List<RouteResult> getNearbyRoutes() {
-    return nearbyRoutes;
+
+  public void setDistanceAway(DistanceAway distanceAway) {
+    this.distanceAway = distanceAway;
   }
 
 }

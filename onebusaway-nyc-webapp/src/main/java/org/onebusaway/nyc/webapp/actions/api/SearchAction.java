@@ -18,7 +18,7 @@ package org.onebusaway.nyc.webapp.actions.api;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
-import org.onebusaway.nyc.presentation.model.search.LocationSearchResult;
+import org.onebusaway.nyc.presentation.model.search.LocationResult;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
@@ -65,11 +65,11 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
       return SUCCESS;
 
     // try as stop ID
-    _searchResults.addAll(_stopSearchService.makeResultFor(_q));
+    _searchResults.addAll(_stopSearchService.resultsForQuery(_q));
 
     // try as route ID
     if(_searchResults.size() == 0) {
-      _searchResults.addAll(_routeSearchService.makeResultFor(_q));
+      _searchResults.addAll(_routeSearchService.resultsForQuery(_q));
     }
 
     // nothing? geocode it!
@@ -92,7 +92,10 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(q);
 
     for(NycGeocoderResult result : geocoderResults) {
-      results.add(new LocationSearchResult(result));
+      LocationResult searchResult = new LocationResult();
+      searchResult.setGeocoderResult(result);
+      
+      results.add(searchResult);
     }
 
     return results;

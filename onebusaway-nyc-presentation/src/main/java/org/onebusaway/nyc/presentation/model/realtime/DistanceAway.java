@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.presentation.model.realtime;
 
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import java.util.Date;
@@ -22,26 +23,40 @@ import java.util.Date;
 public class DistanceAway implements Comparable<DistanceAway> {
 
   // FIXME move to config service?
-  private int atStopThresholdInFeet = 100;
+  private final int atStopThresholdInFeet = 100;
 
   // FIXME move to config service?
-  private int arrivingThresholdInFeet = 500;
+  private final int arrivingThresholdInFeet = 500;
 
   // FIXME move to config service?
-  private int arrivingThresholdInStops = 0;
+  private final int arrivingThresholdInStops = 0;
 
   // FIXME move to config service?
-  private int showDistanceInStopsThresholdInStops = 3;
+  private final int showDistanceInStopsThresholdInStops = 3;
 
-  private final int stopsAway;
+  private int staleDataTimeout;      
 
-  private final int feetAway;
+  private int stopsAway;
 
-  private final TripStatusBean statusBean;
+  private int feetAway;
 
-  public DistanceAway(int stopsAway, int feetAway, TripStatusBean statusBean) {
+  private TripStatusBean statusBean;
+
+  public DistanceAway() {}
+
+  public void setConfigurationService(ConfigurationService configurationService) {
+    staleDataTimeout = configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+  }
+  
+  public void setStopsAway(int stopsAway) {
     this.stopsAway = stopsAway;
+  }
+
+  public void setFeetAway(int feetAway) {
     this.feetAway = feetAway;
+  }
+
+  public void setStatusBean(TripStatusBean statusBean) {
     this.statusBean = statusBean;
   }
 
@@ -53,13 +68,17 @@ public class DistanceAway implements Comparable<DistanceAway> {
     return feetAway;
   }
 
-  public Date getUpdateTimestamp() {
-    return new Date(statusBean.getLastLocationUpdateTime());
+  public long getUpdateTimestampReference() {
+    return new Date().getTime();
+  }
+  
+  public Long getUpdateTimestamp() {
+    return statusBean.getLastLocationUpdateTime();
   }
 
   // FIXME we're "at terminal" if vehicle is currently in layover--we filter out layover buses
   // we don't want to display in NycSearchServiceImpl.java, as appropriate.
-  public Boolean isAtTerminal() {
+  public Boolean getIsAtTerminal() {
     if(statusBean != null) {
       String phase = statusBean.getPhase();
 
@@ -79,7 +98,7 @@ public class DistanceAway implements Comparable<DistanceAway> {
 
     if(feetAway <= atStopThresholdInFeet)
       r = "at stop";		
-    else if(isAtTerminal() == false 
+    else if(getIsAtTerminal() == false 
         && feetAway <= arrivingThresholdInFeet && stopsAway <= arrivingThresholdInStops)
 
       r = "approaching";
@@ -103,6 +122,31 @@ public class DistanceAway implements Comparable<DistanceAway> {
       return r;
   }
 
+  @Override
+  public String toString() {
+    String s = getPresentableDistance();
+    String subpart = new String();
+
+    // at terminal
+    if(getIsAtTerminal()) {
+      subpart += "at terminal";
+    }
+
+    // old
+    if(new Date().getTime() - getUpdateTimestamp() > 1000 * staleDataTimeout) {
+      if(subpart.length() > 0)
+        subpart += ", ";
+
+      subpart += "old data";
+    }
+
+    if(subpart.length() > 0) {
+      s += " (" + subpart + ")";
+    }
+
+    return s;
+  }
+  
   @Override
   public int hashCode() {
     return 31*feetAway + 31*stopsAway;

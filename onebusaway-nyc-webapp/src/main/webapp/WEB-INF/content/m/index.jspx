@@ -33,6 +33,12 @@
 
   	<s:url var="url" value="/css/mobile/branding.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+
+	<s:url var="url" value="/js/lib/jquery.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/oba/m/Location.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
 
 <body>
@@ -42,11 +48,11 @@
 	    <s:url var="url" namespace="/m" action="index"></s:url>
 	    <h1><a href="${url}">OneBusAway NYC</a></h1>
 	</div>
-	<div>
+	<div id="searchPanel">
 		<s:form namespace="/m" action="index" method="GET">
 	        <label for="q">Search for: </label>
 			<input type="text" name="q" class="q" value="${q}"/>
-			<input type="submit" class="s" value="Find" />
+			<input type="submit" class="s" value="Find" id="submitButton"/>
 		</s:form>
 		<p><small><i>TIP: Enter a route, an intersection along a route, or a stop ID.</i></small></p>
 	</div>

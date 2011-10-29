@@ -24,11 +24,12 @@ $.ajaxSetup({ cache: false });
 OBA.Config = {		
 		searchUrl: "api/search",
 		routesWithinBoundsUrl: "api/routes-within-bounds",
+		vehicleLocationsForRouteId: "api/vehicle-locations-for-route-id",
+		vehicleLocationWithNextStopsForVehicleId: "api/vehicle-location-with-next-stops-for-vehicle-id",
+		searchResultForStopId: "api/search-result-for-stop-id",
 		
-		siriVMUrl: "../onebusaway-nyc-api-webapp/siri/vehicle-monitoring.json",
-		siriSMUrl: "../onebusaway-nyc-api-webapp/siri/stop-monitoring.json",
-		apiKey: "TEST",
-
+		refreshInterval: 5000,
+		
 		googleAnalyticsId: 'UA-XXXXXXXX-X',
 
 		analyticsFunction: function(type, value) {

@@ -13,20 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.presentation.model.search;
+package org.onebusaway.nyc.webapp.actions.api.model;
+
+import org.onebusaway.nyc.presentation.model.realtime.VehicleResult;
 
 import java.util.List;
 
-public class RouteDestinationItemWithStops extends RouteDestinationItem {
+public class DesktopApiVehicleLocation extends VehicleResult {
+
+  private List<DesktopApiStopSearchResult> nextStops;
   
-  private final List<StopItem> stops;
-  
-  public RouteDestinationItemWithStops(RouteDestinationItem destination, List<StopItem> stops) {
-    super(destination.getHeadsign(), destination.getDirectionId(), destination.getPolyline());
-    this.stops = stops;
+  public List<DesktopApiStopSearchResult> getNextStops() {
+    return nextStops;
   }
 
-  public List<StopItem> getStops() {
-    return stops;
+  public void setNextStops(List<DesktopApiStopSearchResult> nextStops) {
+    this.nextStops = nextStops;
   }
+
 }

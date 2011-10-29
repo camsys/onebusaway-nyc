@@ -24,12 +24,8 @@ public class MobileWebRouteDestinationItem extends RouteDestinationItem {
 
   private List<NaturalLanguageStringBean> serviceAlerts;
   
-  private List<String> distanceAways;
+  private List<String> distanceAwayStrings;
   
-  public MobileWebRouteDestinationItem(String headsign, String directionId, String polyline) {
-    super(headsign, directionId, polyline);
-  }
-
   public List<NaturalLanguageStringBean> getServiceAlerts() {
     return serviceAlerts;
   }
@@ -38,12 +34,12 @@ public class MobileWebRouteDestinationItem extends RouteDestinationItem {
     this.serviceAlerts = serviceAlerts;
   }
 
-  public List<String> getDistanceAways() {
-    return distanceAways;
+  public List<String> getDistanceAwayStrings() {
+    return distanceAwayStrings;
   }
 
-  public void setDistanceAways(List<String> distanceAways) {
-    this.distanceAways = distanceAways;
+  public void setDistanceAwayStrings(List<String> distanceAwayStrings) {
+    this.distanceAwayStrings = distanceAwayStrings;
   }
   
 }

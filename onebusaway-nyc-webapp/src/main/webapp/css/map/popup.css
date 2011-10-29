@@ -1,0 +1,117 @@
+#popup {
+    font-size: 12px;
+	color: #333333;
+	display: block;
+}
+
+#popup p,
+#popup ul {
+    padding: 0;
+}
+
+#popup .header {
+	padding-left: 35px;
+	white-space: nowrap;
+}
+
+#popup .header.stop {
+	background-image: url("img/header_stop.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+
+#popup .header.vehicle {
+	background-image: url("img/header_bus.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+}
+
+#popup .header .title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#popup .header .type {
+	height: 16px;
+	font-weight: bold;	
+}
+
+#popup .header .updated {
+	height: 16px;
+	color: #666666;
+	padding-left: 4px;
+	margin-left: 4px;
+	border-left: 1px solid #bebebe;
+}
+
+#popup .header .updated.stale {
+    color: #d12020;
+}
+
+#popup .service {
+	padding-top: 7px;
+	color: #666666;
+}
+
+#popup .meta.stale {
+  	color: #d12020;
+}
+
+#popup ul.notices li {
+    color: #d12020;
+	background-color: #efefef;
+	border: 1px solid #bebebe;
+	padding: 3px;
+	margin-top: 7px;
+}
+
+#popup ul li.route {
+	white-space: nowrap;
+	color: #000099;
+	font-weight: bold;
+}
+
+#popup ul li.arrival {
+	white-space: nowrap;
+	height: 16px;
+	font-weight: bold;
+	padding-left: 19px;
+	background: url("img/bullet_bus.png");
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
+#popup ul li.nextStop {
+	white-space: nowrap;
+	color: #000099;
+	height: 16px;
+	font-weight: bold;
+	padding-left: 19px;
+	background: url("img/bullet_stop.png");
+	background-position: left top;
+	background-repeat: no-repeat;
+}
+
+#popup ul li.nextStop span,
+#popup ul li.arrival span {
+	color: #333333;
+	padding-left: 0px;
+	margin-left: 4px;
+}
+
+#popup ul li.arrival span:first-child {
+	margin-left: 0px;
+}
+
+#popup .footer {
+	margin-top: 7px;	
+	padding-top: 7px;
+	border-top: 1px solid #bebebe;
+}
+
+#popup .footer .header {
+	padding: 0px;
+	font-size: 12px;
+	font-weight: bold;
+	font-style: italic;	
+}	

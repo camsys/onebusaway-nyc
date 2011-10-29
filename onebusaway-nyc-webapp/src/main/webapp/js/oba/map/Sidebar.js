@@ -74,11 +74,15 @@ OBA.Sidebar = function() {
 		jQuery.each(routeResults, function(_, route) {
 			routeMap.showRoute(route);
 		});
+		
+		//routeMap.removeRoutesNotInSet(routeResults);
 	}
 
 	// show a region's worth of routes--user chooses one, and 
 	// user is then shown single route search result view.
 	function showRoutePickerList(routeResults) {
+		//routeMap.removeAllRoutes();
+
 		var target = jQuery("#results ul");
 		jQuery.each(routeResults, function(_, route) {
 			target.add("<li>" + route.name + "</li>");

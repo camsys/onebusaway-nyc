@@ -15,27 +15,18 @@
  */
 package org.onebusaway.nyc.webapp.actions.m.model;
 
-import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
-import org.onebusaway.nyc.presentation.model.search.RouteItem;
-import org.onebusaway.nyc.presentation.service.search.SearchResult;
-import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.nyc.presentation.model.search.StopResult;
 
-import java.util.List;
+public class MobileWebStopSearchResult extends StopResult {
 
-public class MobileWebRouteItem extends RouteItem implements SearchResult {
+  private String distanceAwayString;
 
-  public MobileWebRouteItem(RouteBean routeBean, List<RouteDestinationItem> destinations) {
-    super(routeBean, destinations);
+  public String getDistanceAwayString() {
+    return distanceAwayString;
   }
 
-  @Override
-  public String getType() {
-    return "routeItem";
-  }
-
-  @Override
-  public String getName() {
-    return getRouteIdWithoutAgency();
+  public void setDistanceAwayString(String distanceAwayString) {
+    this.distanceAwayString = distanceAwayString;
   }
   
 }

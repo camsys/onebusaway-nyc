@@ -15,18 +15,34 @@
  */
 package org.onebusaway.nyc.presentation.model.search;
 
+import java.util.List;
+
 public class RouteDestinationItem {
   
-  private final String headsign;
+  private String headsign;
 
-  private final String directionId;
+  private String directionId;
 
-  private final String polyline;
+  private List<String> polylines;
   
-  public RouteDestinationItem(String headsign, String directionId, String polyline) {
-    this.directionId = directionId;
+  private List<StopResult> stops;
+
+  public RouteDestinationItem() {}
+
+  public void setHeadsign(String headsign) {
     this.headsign = headsign;
-    this.polyline = polyline;
+  }
+
+  public void setDirectionId(String directionId) {
+    this.directionId = directionId;
+  }
+
+  public void setPolylines(List<String> polylines) {
+    this.polylines = polylines;
+  }
+
+  public void setStops(List<StopResult> stops) {
+    this.stops = stops;
   }
   
   public String getHeadsign() {
@@ -37,7 +53,12 @@ public class RouteDestinationItem {
     return directionId;
   }
   
-  public String getPolyline() {
-    return polyline;
+  public List<String> getPolylines() {
+    return polylines;
   }
+  
+  public List<StopResult> getStops() {
+    return stops;
+  }
+
 }

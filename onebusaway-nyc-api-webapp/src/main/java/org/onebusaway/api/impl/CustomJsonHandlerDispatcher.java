@@ -12,7 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Choose between the new Jackson JOSN serializer (for SIRI) or the legacy one
  * for OBA API. The latter and its conventions are maintained for backwards compatability, 
- * but might (hopefully) be removed someday?
+ * but might (hopefully) be removed someday? This is a super hack, but don't want to break 
+ * existing OBA API conventions/apps.
  * 
  * @author jmaki
  *
