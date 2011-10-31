@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+
+    <!-- Transit Data Service -->
+    
+    <!-- Transit Data Service -->
+    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
+        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+    </bean>
+    
+    <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="${config.path}/remoting/configuration-service"/>
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
+    </bean>
+
+    <!-- Database Configuration -->
+    
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${db.driverClassName}" />
+        <property name="url" value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
+    </bean>
+    
+    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernateProperties" />
+        <property name="properties">
+            <props>
+                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
+            </props> 
+        </property> 
+    </bean> 
+
+    <alias name="dataSource" alias="mutableDataSource" />
+  
+
+
+	<!-- Other Stuff: -->
+    
+    <!-- This will get expanded out to a bean entry if configured so -->
+    ${dummy.permissions}
+
+	<!-- This is a class to filter arrival and departure beans for NYC. We need to fix this - it's a hack -->
+    <bean id="adbeanFilter" class="org.onebusaway.nyc.presentation.impl.ArrivalDepartureBeanListFilterImpl" />
+
+    <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl"/>
+
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="cacheManager.cacheManagerName">org.onebusaway.api_webapp.cacheManager</prop>
+            </props>
+        </property>
+    </bean>
+
+</beans>
