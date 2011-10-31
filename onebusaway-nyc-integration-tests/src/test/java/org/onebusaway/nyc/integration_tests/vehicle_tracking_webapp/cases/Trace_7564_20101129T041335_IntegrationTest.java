@@ -40,7 +40,7 @@ public class Trace_7564_20101129T041335_IntegrationTest extends AbstractTraceRun
     super("7564-2010-11-29T04-13-35.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
     
-    setLoops(10);
+    //setLoops(10);
     // This test is noisy
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.90);
   }

@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,8 +30,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
@@ -60,7 +63,7 @@ public class AbstractTraceRunner {
 
   private String _trace;
 
-  private int _loops = 1;
+  private int _loops = 2;
 
   /**
    * The max amount of time we should wait for a single record to process
@@ -151,7 +154,8 @@ public class AbstractTraceRunner {
                 + federationPort
                 + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service");
   }
-
+  
+  
   @Test
   public void test() throws Throwable {
     Map<EVehiclePhase, Double> results = runTest();
@@ -159,13 +163,16 @@ public class AbstractTraceRunner {
     for (Entry<EVehiclePhase, Double> result : results.entrySet()) {
       double relativeRatio = result.getValue();
 
-      String label = "phase ratio " + result.getKey() + "=" + relativeRatio
-          + " vs min of " + _minAccuracyRatio;
 
       double minAccuracyRatio = _minAccuracyRatio;
 
       if (_minAccuracyRatiosByPhase.containsKey(result.getKey()))
         minAccuracyRatio = _minAccuracyRatiosByPhase.get(result.getKey());
+      
+      String label = "average phase ratio " + result.getKey() + "=" + relativeRatio
+          + " vs min of " + minAccuracyRatio;
+      
+      System.out.println(label);
       
       assertTrue(label, relativeRatio > minAccuracyRatio);
     }

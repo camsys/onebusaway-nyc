@@ -39,6 +39,8 @@ import javax.servlet.http.HttpSession;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
@@ -126,6 +128,21 @@ public class VehicleLocationSimulationController {
       session.removeAttribute(CALENDAR_OFFSET_KEY);
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!set-seeds.do", method = RequestMethod.GET)
+  public ModelAndView setSeeds(HttpSession session,
+      @RequestParam(value = "cdfSeed", required = false, defaultValue = "0") long cdfSeed,
+      @RequestParam(value = "phaseSeed", required = false, defaultValue = "0") long phaseSeed) {
+    if (cdfSeed != 0) {
+      CDFMap.setSeed(cdfSeed);
+    }
+    
+    if (phaseSeed != 0) {
+      ParticleFactoryImpl.setSeed(phaseSeed);
+    }
+
+    return new ModelAndView("change-bundle.jspx");
+  }
 
   @RequestMapping(value = "/vehicle-location-simulation!upload-trace.do", method = RequestMethod.POST)
   public ModelAndView uploadTrace(
@@ -142,7 +159,7 @@ public class VehicleLocationSimulationController {
       throws IOException {
 
     int taskId = -1;
-
+    
     if (!file.isEmpty()) {
 
       String name = file.getOriginalFilename();

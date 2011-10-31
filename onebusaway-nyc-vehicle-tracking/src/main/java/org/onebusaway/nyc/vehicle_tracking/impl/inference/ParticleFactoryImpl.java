@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -61,7 +62,13 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private VehicleStateLibrary _vehicleStateLibrary;
 
   private MotionModelImpl _motionModel;
+  
+  static private Random rng = new Random();
 
+  static public void setSeed(long seed) {
+    rng.setSeed(seed);
+  }
+  
   @Autowired
   public void setBlockStateSamplingStrategy(
       BlockStateSamplingStrategy blockStateSamplingStrategy) {
@@ -134,7 +141,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     // At this point, we could be dead heading before a block or actually on a
     // block in progress. We slightly favor blocks already in progress
-    if (Math.random() < 0.75) {
+    if (rng.nextDouble() < 0.75) {
 
       // No blocks? Jump to the deadhead-before state
       if (!inProgressCdf.canSample())
