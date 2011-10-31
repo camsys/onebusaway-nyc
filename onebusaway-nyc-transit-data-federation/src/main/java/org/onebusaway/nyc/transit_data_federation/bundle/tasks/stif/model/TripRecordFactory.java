@@ -44,7 +44,11 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
           record.setTripType(getInteger());
         }
       }),
-      new FieldDef(23 - 19, "destination location", null),
+      new FieldDef(23 - 19, "destination location", new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setDestinationLocation(getStringData());
+        }
+      }),
       new FieldDef(31 - 23, "destination time", new TripFieldSetter() {
         public void setField(TripRecord record) {
           record.setDestinationTime(getInteger());
