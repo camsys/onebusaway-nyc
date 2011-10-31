@@ -15,22 +15,20 @@
  */
 package org.onebusaway.nyc.webapp.actions.m.model;
 
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
-import org.onebusaway.nyc.presentation.model.search.LocationSearchResult;
-import org.onebusaway.nyc.presentation.model.search.RouteItem;
+import org.onebusaway.nyc.presentation.model.search.LocationResult;
+import org.onebusaway.nyc.presentation.model.search.RouteResult;
 
 import java.util.List;
 
-public class MobileWebLocationSearchResult extends LocationSearchResult {
+public class MobileWebLocationSearchResult extends LocationResult {
   
-  private List<RouteItem> nearbyRoutes;
+  private List<RouteResult> nearbyRoutes;
   
-  public MobileWebLocationSearchResult(NycGeocoderResult result, List<RouteItem> nearbyRoutes) {
-    super(result);
+  public void setNearbyRoutes(List<RouteResult> nearbyRoutes) {
     this.nearbyRoutes = nearbyRoutes;
   }
-
-  public List<RouteItem> getNearbyRoutes() {
+  
+  public List<RouteResult> getNearbyRoutes() {
     return nearbyRoutes;
   }
 

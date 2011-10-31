@@ -16,8 +16,7 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.presentation.model.search.RouteItem;
-import org.onebusaway.nyc.presentation.model.search.RouteSearchResult;
+import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 
@@ -52,15 +51,15 @@ public class RoutesWithinBoundsAction extends OneBusAwayNYCActionSupport {
   @Override
   public String execute() {
     if(_bounds != null) {
-      List<RouteItem> routeItems = _routeSearchService.itemsForLocation(_bounds);
+      List<RouteResult> routeItems = _routeSearchService.resultsForLocation(_bounds);
       if(routeItems.size() > 5) {
         _routeResults = routeItems;
         return SUCCESS;
       }
 
-      List<RouteSearchResult> routeSearchResults = new ArrayList<RouteSearchResult>();        
-      for(RouteItem routeItem : routeItems) {
-        routeSearchResults.addAll(_routeSearchService.makeResultFor(routeItem.getRouteIdWithoutAgency()));
+      List<RouteResult> routeSearchResults = new ArrayList<RouteResult>();        
+      for(RouteResult routeItem : routeItems) {
+        routeSearchResults.addAll(_routeSearchService.resultsForQuery(routeItem.getRouteIdWithoutAgency()));
       }
       
       _routeResults = routeSearchResults;

@@ -377,7 +377,7 @@ public class VehicleInferenceInstance {
 
       // set sched. dev. if we have a match in UTS and are therefore comfortable
       // saying that this schedule deviation is a true match to the schedule.
-      if (blockState.isUTSassigned()) {
+      if (blockState.isOpAssigned()) {
         int deviation = (int) ((record.getRecordTimestamp() - record
             .getServiceDate()) / 1000 - blockLocation.getScheduledTime());
 
@@ -421,7 +421,7 @@ public class VehicleInferenceInstance {
       record.setLastInferredDestinationSignCode(blockState
           .getDestinationSignCode());
       record.setInferredRunId(blockState.getRunId());
-      record.setInferenceIsFormal(blockState.isUTSassigned());
+      record.setInferenceIsFormal(blockState.isOpAssigned());
     }
 
     return record;
@@ -533,7 +533,12 @@ public class VehicleInferenceInstance {
             .getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       }
-    }
+      
+      record.setInferredDsc(blockState.getDestinationSignCode());
+    } 
+    
+    if (StringUtils.isBlank(record.getInferredDsc()))
+      record.setInferredDsc("0000");
 
     // Set the status field
     if (!statusFields.isEmpty()) {

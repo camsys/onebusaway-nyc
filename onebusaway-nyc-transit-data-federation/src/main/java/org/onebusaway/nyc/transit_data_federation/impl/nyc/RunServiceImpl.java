@@ -228,13 +228,14 @@ public class RunServiceImpl implements RunService {
     return (minPart == firstTry) ? try1 : try2;
   }
 
-  //private final Pattern realRunIdPattern = Pattern.compile("([a-zA-Z])(\\d*)-(\\d+)");
-  private final Pattern realRunRouteIdPattern = Pattern.compile("([a-zA-Z]+)(\\d*)");
+  private final Pattern realRunRouteIdPattern = Pattern
+      .compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
   private final Pattern reportedRunIdPattern = Pattern.compile("0*(\\d+-\\d+)");
-  
+
   @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
-      AgencyAndId runAgencyAndId, Set<BlockInstance> nearbyBlocks, long time) throws IllegalArgumentException {
+      AgencyAndId runAgencyAndId, Set<BlockInstance> nearbyBlocks, long time)
+      throws IllegalArgumentException {
 
     /*
      * FIXME TODO really need to cache these search results...
@@ -252,13 +253,15 @@ public class RunServiceImpl implements RunService {
       matchedRTEs.put(0, lrtes);
       return matchedRTEs;
     }
-    
-    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId.getId());
-    
+
+    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId
+        .getId());
+
     if (!reportedIdMatcher.matches()) {
-      throw new IllegalArgumentException("reported-id does not have required format");
+      throw new IllegalArgumentException(
+          "reported-id does not have required format");
     }
-    
+
     /*
      * 2. rank route id levenshtein distance for nearby runTrips FIXME this is
      * for EXACT schedule time
@@ -273,29 +276,30 @@ public class RunServiceImpl implements RunService {
         continue;
 
       /*
-       * in the following we strip the runEntry's id down
-       * to the format of the reported id's, as best we can.
+       * in the following we strip the runEntry's id down to the format of the
+       * reported id's, as best we can.
        */
       Matcher routeIdMatcher = realRunRouteIdPattern.matcher(rte.getRunRoute());
       String thisRunId = null;
       if (routeIdMatcher.matches()) {
         if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
           String thisRunRouteNumber = routeIdMatcher.group(2);
-          thisRunId = RunTripEntry.createId(thisRunRouteNumber, rte.getRunNumber());
+          thisRunId = RunTripEntry.createId(thisRunRouteNumber,
+              rte.getRunNumber());
         } else {
           /*
-           * there is no numeric part to the routeId.
-           * check for MISC value
+           * there is no numeric part to the routeId. check for MISC value
            */
           if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
-            // TODO include more considerations than just this... 
+            // TODO include more considerations than just this...
             thisRunId = RunTripEntry.createId("000", rte.getRunNumber());
-          } 
+          }
         }
-      } 
-      
+      }
+
       if (StringUtils.isEmpty(thisRunId)) {
-        _log.error("bundle-data runId does not have the required format:" + rte.getRunId());
+        _log.error("bundle-data runId does not have the required format:"
+            + rte.getRunId());
         continue;
       }
 

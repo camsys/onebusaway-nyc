@@ -13,24 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.actions.m.model;
+package org.onebusaway.nyc.webapp.actions.api.model;
 
-import org.onebusaway.nyc.presentation.model.search.StopItem;
-import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.nyc.presentation.model.realtime.DistanceAway;
+import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 import java.util.List;
 
-public class MobileWebStopItem extends StopItem {
+public class DesktopApiRouteDestinationItem extends RouteDestinationItem {
 
   private List<NaturalLanguageStringBean> serviceAlerts;
   
-  private String distanceAwayString;
-  
-  public MobileWebStopItem(StopBean stopBean) {
-    super(stopBean);
-  }
-
+  private List<DistanceAway> distanceAways;
+    
   public List<NaturalLanguageStringBean> getServiceAlerts() {
     return serviceAlerts;
   }
@@ -39,11 +35,11 @@ public class MobileWebStopItem extends StopItem {
     this.serviceAlerts = serviceAlerts;
   }
 
-  public String getDistanceAwayString() {
-    return distanceAwayString;
+  public List<DistanceAway> getDistanceAways() {
+    return distanceAways;
   }
 
-  public void setDistanceAwayString(String distanceAwayString) {
-    this.distanceAwayString = distanceAwayString;
+  public void setDistanceAways(List<DistanceAway> distanceAways) {
+    this.distanceAways = distanceAways;
   }
 }

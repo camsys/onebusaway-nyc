@@ -25,13 +25,13 @@ public interface BlocksFromObservationService {
   public Set<BlockInstance> determinePotentialBlocksForObservation(
       Observation observation, Set<BlockInstance> nearbyBlocks);
 
-  public BlockState advanceState(Observation observation,
+  public Set<BlockState> advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel);
 
   public BlockState advanceLayoverState(long timestamp, BlockState blockState);
 
-  public BlockState bestState(Observation observation, BlockState blockState);
+  public Set<BlockState> bestStates(Observation observation, BlockState blockState);
 
   public Set<BlockState> determinePotentialBlockStatesForObservation(
       Observation observation, boolean bestBlockLocation);

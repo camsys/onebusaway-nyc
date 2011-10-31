@@ -19,11 +19,13 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 
-public class LocationSearchResult implements SearchResult {
+public class LocationResult implements SearchResult {
 
-  private final NycGeocoderResult result;
+  private NycGeocoderResult result;
+
+  public LocationResult() {}
   
-  public LocationSearchResult(NycGeocoderResult result) {
+  public void setGeocoderResult(NycGeocoderResult result) {
     this.result = result;
   }
   

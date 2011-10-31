@@ -88,4 +88,10 @@
             </props>
         </property>
     </bean>
+    
+    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
+                <property name="bundleStoreRoot" value="${bundle.location}" />
+                <property name="standaloneMode" value="${bundle.mode.standalone}" />
+    </bean>
+    
 </beans>

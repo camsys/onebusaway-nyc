@@ -21,34 +21,52 @@ import org.onebusaway.transit_data.model.RouteBean;
 
 import java.util.List;
 
-public class RouteSearchResult implements SearchResult {
+public class RouteResult implements SearchResult {
 
-  private final RouteBean routeBean;
+  private RouteBean routeBean;
+  
+  private List<? extends RouteDestinationItem> destinations;
 
-  private final List<RouteDestinationItemWithStops> destinations;
+  public RouteResult() {}
 
-  private static final WebappSupportLibrary idParser = new WebappSupportLibrary();
-
-  public RouteSearchResult(RouteBean routeBean, List<RouteDestinationItemWithStops> destinations) {
+  public void setRouteBean(RouteBean routeBean) {
     this.routeBean = routeBean;
+  }
+  
+  public void setDestinations(List<? extends RouteDestinationItem> destinations) {
     this.destinations = destinations;
   }
-
+  
   @Override
   public String getType() {
-    return "routeResult";
+    boolean hasStops = false;
+
+    if(destinations != null) {
+      for(RouteDestinationItem destination : destinations) {
+        if(destination.getStops() != null) {
+          hasStops = true;
+          break;
+        }
+      }
+    }
+    
+    if(hasStops)
+      return "routeResult";
+    else
+      return "routeItem";
   }
 
   @Override
   public String getName() {
     return getRouteIdWithoutAgency();
-  }
-  
+  }  
+
   public String getRouteId() {
     return routeBean.getId();
-  }  
-  
+  }
+
   public String getRouteIdWithoutAgency() {
+    WebappSupportLibrary idParser = new WebappSupportLibrary();
     return idParser.parseIdWithoutAgency(getRouteId());
   }
 
@@ -60,7 +78,8 @@ public class RouteSearchResult implements SearchResult {
     return routeBean.getColor();
   }
   
-  public List<RouteDestinationItemWithStops> getDestinations() {
+  public List<? extends RouteDestinationItem> getDestinations() {
     return destinations;
   }
+
 }

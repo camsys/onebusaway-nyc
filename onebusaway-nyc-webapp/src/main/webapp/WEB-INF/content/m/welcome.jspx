@@ -20,7 +20,7 @@
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 
-<c:if test="${!empty q}">
+<c:if test="${!queryIsEmpty}">
 	<div>
 		<p>
 			<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />

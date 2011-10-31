@@ -15,8 +15,12 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
 
 /**
  * All the trace tests in one suite so they can quickly be run from within
@@ -25,7 +29,7 @@ import org.junit.runners.Suite;
  * @author bdferris
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({
+@Suite.SuiteClasses({ Trace_7564_20101203T004633_IntegrationTest.class,
     Trace_0927_20101209T124742_IntegrationTest.class,
     Trace_1325_20101215T014845_IntegrationTest.class,
     Trace_1379_20101211T010025_IntegrationTest.class,
@@ -46,6 +50,29 @@ import org.junit.runners.Suite;
     Trace_7564_20101201T010042_IntegrationTest.class,
     Trace_7564_20101202T034055_IntegrationTest.class,
     Trace_7564_20101202T114909_IntegrationTest.class,
-    Trace_7564_20101206T005551_IntegrationTest.class})
+    Trace_7564_20101206T005551_IntegrationTest.class })
 public class TraceSuite {
+  
+  @BeforeClass
+  public static void runBeforeClass() throws Exception {
+    
+    String port = System.getProperty(
+        "org.onebusaway.transit_data_federation_webapp.port", "9905");
+    String phaseSeed = "34135";
+    String cdfSeed = "38497";
+    String urlStr = "http://localhost:" + port
+        + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!set-seeds.do?phaseSeed=" 
+        + phaseSeed + "&cdfSeed=" + cdfSeed;
+
+    HttpClient client = new HttpClient();
+    GetMethod get = new GetMethod(urlStr);
+    client.executeMethod(get);
+
+    String response = get.getResponseBodyAsString();
+    if (!response.equals("OK"))
+      throw new Exception("Failed trying to execute:" + urlStr);
+
+    System.out.println(urlStr);
+  }
+  
 }

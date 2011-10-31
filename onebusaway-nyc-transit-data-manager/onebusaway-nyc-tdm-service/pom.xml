@@ -56,6 +56,10 @@
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>1.8.5</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
 	</dependencies>
 	<profiles>
         <profile>

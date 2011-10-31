@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.onebusaway.realtime.api.EVehiclePhase;
+
 /**
  * Needs work - particle filter crash
  * 
@@ -26,5 +28,9 @@ public class Trace_7560_20101123T234515_IntegrationTest extends AbstractTraceRun
   public Trace_7560_20101123T234515_IntegrationTest() throws Exception {
     super("7560-2010-11-23T23-45-15.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
+    
+    // This test is noisy
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.85);
+    
   }
 }

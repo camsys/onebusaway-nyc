@@ -308,15 +308,18 @@ public class BundleManagementServiceImpl implements BundleManagementService {
    */
   private void discoverBundles() throws Exception {
 	  // if there's no TDM present, we just use what we already have locally.
+    _log.info("dicoverBundles(): _standaloneMode=" + _standaloneMode);
 	  if(_standaloneMode) {
 	    ArrayList<BundleItem> localBundles = getBundleListFromLocalStore();
 	    for(BundleItem localBundle: localBundles) {
 	      _allBundles.put(localBundle.getId(), localBundle);
 	    }
+	    _log.info("dicoverBundles(): standaloneMode, loaded " + _allBundles.size() + " bundles");
 	    return;
 	  }
 	  
     ArrayList<BundleItem> bundlesFromTdm = getBundleListFromTDM();
+    _log.debug("dicoverBundles(): bundle list from TDM has " + bundlesFromTdm.size() + " bundles");
 	  for(BundleItem bundle : bundlesFromTdm) {
 	    boolean bundleIsValid = true;
 
@@ -324,7 +327,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	    File bundleRoot = new File(_bundleRootPath, bundle.getId());
 	    if(!bundleRoot.exists())
 	      if(!bundleRoot.mkdirs()) 
-	        throw new Exception("Creation of bundle root for " + bundle.getId() + " failed.");
+	        throw new Exception("Creation of bundle root for " + bundle.getId() + " at " + bundleRoot + " failed.");
 
 	    // see if files already exist locally and match their MD5s
 	    for(BundleFileItem file : bundle.getFiles()) {
@@ -332,7 +335,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	      if(fileInBundlePath.exists()) {
 	        String hashOfExistingFile = getMd5HashForFile(fileInBundlePath);
 	        if(!hashOfExistingFile.equals(file.getMd5())) {
-	          _log.info("File " + fileInBundlePath + " is corrupted; removing.");
+	          _log.warn("File " + fileInBundlePath + " is corrupted; removing.");
 
 	          if(!fileInBundlePath.delete()) {
 	            _log.error("Could not remove corrupted file " + fileInBundlePath);
@@ -347,6 +350,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	        int tries = _fileDownloadRetries;
 	        while(tries > 0) {
             URL fileDownloadUrl = _apiLibrary.buildUrl("bundle", bundle.getId(), "file", file.getFilename(), "get");
+            _log.info("Attempting download of " + fileDownloadUrl);
             try {
 	            downloadUrlToLocalPath(fileDownloadUrl, fileInBundlePath, file.getMd5());
 	          } catch(Exception e) {
@@ -354,7 +358,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
               if(tries == 0)
                 bundleIsValid = false;
 
-              _log.info("Download of " + fileDownloadUrl + " failed (" + e.getMessage() + ");" + 
+              _log.warn("Download of " + fileDownloadUrl + " failed (" + e.getMessage() + ");" + 
                   " retrying (retries left=" + tries + ")");
 
               continue;
@@ -370,9 +374,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
         _allBundles.put(bundle.getId(), bundle);
         _log.info("Bundle " + bundle.getId() + " files pass checksums; added to list of local bundles.");
       } else {
-        _log.info("Bundle " + bundle.getId() + " files do NOT pass checksums; skipped.");
+        _log.warn("Bundle " + bundle.getId() + " files do NOT pass checksums; skipped.");
       }
 	  } // for each bundle
+    _log.info("dicoverBundles(): download mode, loaded " + _allBundles.size() + " bundles");
 	}
 	
   /**

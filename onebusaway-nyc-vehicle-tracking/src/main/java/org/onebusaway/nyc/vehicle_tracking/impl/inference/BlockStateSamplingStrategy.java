@@ -27,4 +27,6 @@ public interface BlockStateSamplingStrategy {
   public CDFMap<BlockState> cdfForJourneyAtStart(Observation observation);
 
   public CDFMap<BlockState> cdfForJourneyInProgress(Observation observation);
+
+  public double scoreState(BlockState state, Observation obs);
 }

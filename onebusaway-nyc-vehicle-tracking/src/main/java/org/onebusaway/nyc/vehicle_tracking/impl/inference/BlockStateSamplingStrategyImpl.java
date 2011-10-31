@@ -167,16 +167,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     return cdf;
   }
 
-  /****
-   * Private Methods
-   ****/
 
-  private double scoreJourneyStartState(BlockState state,
-      Observation observation) {
-    return scoreJourneyStartDestinationSignCode(state, observation);
-  }
-
-  private double scoreState(BlockState state, Observation observation) {
+  public double scoreState(BlockState state, Observation observation) {
 
     ScheduledBlockLocation blockLocation = state.getBlockLocation();
     CoordinatePoint p1 = blockLocation.getLocation();
@@ -199,6 +191,15 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     return prob1 * prob2;
   }
 
+  /****
+   * Private Methods
+   ****/
+
+  private double scoreJourneyStartState(BlockState state,
+      Observation observation) {
+    return scoreJourneyStartDestinationSignCode(state, observation);
+  }
+  
   private double scoreJourneyStartDestinationSignCode(BlockState state,
       Observation observation) {
 

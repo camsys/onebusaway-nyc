@@ -19,15 +19,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class CDFMap<T> {
 
   private double _cumulativeProb = 0.0;
 
+  static private Random rng = new Random();
+  
   private double[] _cumulativeProbabilities = new double[2];
 
   private List<T> _entries = new ArrayList<T>();
 
+  static public void setSeed(long seed) {
+    rng.setSeed(seed);
+  }
+  
   public List<T> getSupport() {
     return new ArrayList<T>(_entries);
   }
@@ -56,7 +63,7 @@ public class CDFMap<T> {
     if (_cumulativeProb == 0.0)
       throw new IllegalStateException("No cumulative probability in CDF");
 
-    double probability = Math.random() * _cumulativeProb;
+    double probability = rng.nextDouble() * _cumulativeProb;
 
     int index = Arrays.binarySearch(_cumulativeProbabilities, 0, _entries.size(), probability);
     if (index < 0)

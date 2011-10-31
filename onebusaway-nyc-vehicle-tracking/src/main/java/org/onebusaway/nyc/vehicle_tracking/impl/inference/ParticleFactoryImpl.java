@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -37,11 +38,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * The general idea here is that we:
  * 
  * <ul>
- * <li>check the vehicle reported operator+UTS/runId for assigned runs,
- * which inform us of potential block locations</li>
+ * <li>check the vehicle reported operator+UTS/runId for assigned runs, which
+ * inform us of potential block locations</li>
  * <li>look for nearby stops/blocks</li>
  * <li>snap to the edges connected to those nodes</li>
- * <li>sample particles from those edges, as weighted by their reported status, 
+ * <li>sample particles from those edges, as weighted by their reported status,
  * and distance from our start point</li>
  * </ul>
  * 
@@ -49,7 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
-  private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
+  private static Logger _log = LoggerFactory
+      .getLogger(ParticleFactoryImpl.class);
 
   private int _initialNumberOfParticles = 50;
 
@@ -61,6 +63,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private MotionModelImpl _motionModel;
   
+  static private Random rng = new Random();
+
+  static public void setSeed(long seed) {
+    rng.setSeed(seed);
+  }
   
   @Autowired
   public void setBlockStateSamplingStrategy(
@@ -89,10 +96,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // CDFMap<EdgeState> cdf =
     // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
-    
-    CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
+    CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy
+        .cdfForJourneyAtStart(obs);
 
-    CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+    CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy
+        .cdfForJourneyInProgress(obs);
 
     List<Particle> particles = new ArrayList<Particle>(
         _initialNumberOfParticles);
@@ -116,56 +124,57 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   // FIXME TODO fix this hackish atStart/inProgress stuff
-  public VehicleState determineJourneyState(MotionState motionState, 
-      CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf, 
+  public VehicleState determineJourneyState(MotionState motionState,
+      CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf,
       CDFMap<BlockState> inProgressCdf, Observation obs) {
 
     BlockState blockState = null;
-    
+
     // If we're at a base to start, we favor that over all other possibilities
     if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
 
-      if (blockState == null && !atStartCdf.isEmpty())
+      if (blockState == null && atStartCdf.canSample())
         blockState = atStartCdf.sample();
 
-      return vehicleState(motionState, blockState,
-          JourneyState.atBase(), obs);
+      return vehicleState(motionState, blockState, JourneyState.atBase(), obs);
     }
 
     // At this point, we could be dead heading before a block or actually on a
     // block in progress. We slightly favor blocks already in progress
-    if (Math.random() < 0.75) {
+    if (rng.nextDouble() < 0.75) {
 
       // No blocks? Jump to the deadhead-before state
-      if (inProgressCdf.isEmpty())
+      if (!inProgressCdf.canSample())
         return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
+      
       if (blockState == null)
         blockState = inProgressCdf.sample();
-      return vehicleState(motionState, blockState,
-          JourneyState.inProgress(), obs);
+      
+      return vehicleState(motionState, blockState, JourneyState.inProgress(),
+          obs);
     } else {
 
       // No blocks? Jump to the deadhead-before state
-      if (atStartCdf.isEmpty())
+      if (!atStartCdf.canSample())
         return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
 
       if (blockState == null)
         blockState = atStartCdf.sample();
+
       return vehicleState(motionState, blockState,
           JourneyState.deadheadBefore(locationOnEdge), obs);
     }
   }
 
-  private VehicleState vehicleState(MotionState motionState, 
-	  BlockState blockState, JourneyState journeyState, 
-	  Observation obs) {
+  private VehicleState vehicleState(MotionState motionState,
+      BlockState blockState, JourneyState journeyState, Observation obs) {
 
-    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
-        null, blockState, journeyState, obs);
+    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary
+        .extendSummaries(null, blockState, journeyState, obs);
 
-    return new VehicleState(motionState, blockState, journeyState,
-        summaries, obs);
+    return new VehicleState(motionState, blockState, journeyState, summaries,
+        obs);
   }
 }
