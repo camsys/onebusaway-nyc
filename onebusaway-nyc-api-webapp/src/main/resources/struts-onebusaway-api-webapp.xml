@@ -24,7 +24,7 @@
     <constant name="struts.multipart.maxSize" value="10485760" />
 
     <bean name="myXml" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomXStreamHandler" />
-    <bean name="myJson" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomJsonHandlerDispatcher" />
+    <bean name="myJson" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomJsonLibHandler" />
     <bean name="myCsv" type="org.apache.struts2.rest.handler.ContentTypeHandler" class="org.onebusaway.api.impl.CustomCsvHandler" />
     
     <constant name="struts.rest.handlerOverride.xml" value="myXml" />

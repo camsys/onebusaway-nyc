@@ -18,8 +18,9 @@ package org.onebusaway.nyc.webapp.actions.m;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriDistanceExtension;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
-import org.onebusaway.nyc.presentation.model.realtime.DistanceAway;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
@@ -37,11 +38,17 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.org.siri.siri.MonitoredCallStructure;
+import uk.org.siri.siri.MonitoredStopVisitStructure;
+import uk.org.siri.siri.VehicleActivityStructure;
+
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -140,21 +147,38 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
         MobileWebRouteDestinationItem destination = (MobileWebRouteDestinationItem)_destination;
 
         // service alerts
-        List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForStop(stopSearchResult.getStopId());
+        List<NaturalLanguageStringBean> serviceAlerts = 
+            _realtimeService.getServiceAlertsForStop(stopSearchResult.getStopId());
+
         destination.setServiceAlerts(serviceAlerts);
 
-        // distance aways
-        List<DistanceAway> distanceAways = _realtimeService.getDistanceAwaysForStopAndDestination(stopSearchResult.getStopId(), destination);
-
+        // stop visits
+        List<MonitoredStopVisitStructure> visits = 
+            _realtimeService.getMonitoredStopVisitsForStop(stopSearchResult.getStopId(), false);
+        
         List<String> distanceAwayStrings = new ArrayList<String>();
+        for(MonitoredStopVisitStructure visit : visits) {
+          String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
+          String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
 
-        for(DistanceAway distanceAway : distanceAways) {
-          Long thisLastUpdateTime = distanceAway.getUpdateTimestamp();
+          // (not for this route/direction)
+          if(!route.getRouteId().equals(routeId) || !destination.getDirectionId().equals(directionId))
+            continue;
+
+          // find latest update time across all realtime data
+          Long thisLastUpdateTime = visit.getRecordedAtTime().getTime();
           if(thisLastUpdateTime != null && thisLastUpdateTime > lastUpdateTime) {
             lastUpdateTime = thisLastUpdateTime;
           }
+          
+          MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
+          if(monitoredCall == null) 
+            continue;
 
-          distanceAwayStrings.add(distanceAway.toString());
+          SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
+          SiriDistanceExtension distanceExtension = wrapper.getDistances();
+
+          distanceAwayStrings.add(distanceExtension.getPresentableDistance());
         }
 
         destination.setDistanceAwayStrings(distanceAwayStrings);
@@ -169,29 +193,52 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       if(destination.getStops() == null)
         continue;
       
+      List<VehicleActivityStructure> journeyList = 
+          _realtimeService.getVehicleActivityForRoute(routeSearchResult.getRouteId(), null, false);
+      
+      // build map of stop IDs to list of distance strings
+      Map<String, ArrayList<String>> stopIdToDistanceStringMap = new HashMap<String, ArrayList<String>>();      
+      for(VehicleActivityStructure journey : journeyList) {
+        // find latest update time across all realtime data
+        Long thisLastUpdateTime = journey.getRecordedAtTime().getTime();
+        if(thisLastUpdateTime != null && thisLastUpdateTime > lastUpdateTime) {
+          lastUpdateTime = thisLastUpdateTime;
+        }
+
+        MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
+        if(monitoredCall == null) 
+          continue;
+        
+        SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
+        SiriDistanceExtension distanceExtension = wrapper.getDistances();
+        String stopId = monitoredCall.getStopPointRef().getValue();
+
+        ArrayList<String> distances = stopIdToDistanceStringMap.get(stopId);
+        if(distances == null) {
+          distances = new ArrayList<String>();
+        }
+        
+        distances.add(distanceExtension.getPresentableDistance());
+
+        stopIdToDistanceStringMap.put(stopId, distances);        
+      }
+      
+      // fold the list of distance strings into the stop list
       for(StopResult _stop : destination.getStops()) {
         MobileWebStopSearchResult stop = (MobileWebStopSearchResult)_stop;
 
-        List<DistanceAway> distanceAways = _realtimeService.getDistanceAwaysForStopAndDestination(stop.getStopId(), destination);
+        StringBuilder sb = new StringBuilder();        
 
-        StringBuilder sb = new StringBuilder();
-
-        for(DistanceAway distanceAway : distanceAways) {
-          // hide arrivals that are further than 1 stop--those will appear as part of the next stop!
-          if(distanceAway.getStopsAway() > 0)
-            continue;
-
-          Long thisLastUpdateTime = distanceAway.getUpdateTimestamp();
-          if(thisLastUpdateTime != null && thisLastUpdateTime > lastUpdateTime) {
-            lastUpdateTime = thisLastUpdateTime;
+        List<String> distancesForThisStop = stopIdToDistanceStringMap.get(stop.getStopId());
+        if(distancesForThisStop != null) {
+          for(String distance : distancesForThisStop) {
+            if(sb.length() > 0) {
+              sb.append(", ");
+            }
+            sb.append(distance);
           }
-
-          if(sb.length() > 0)
-            sb.append(", ");
-
-          sb.append(distanceAway.toString());
         }
-
+        
         stop.setDistanceAwayString(sb.toString());
       }
     }

@@ -51,7 +51,9 @@
 						<br/>
 
 						<s:if test="%{distanceAwayStrings.size==0}">
-							OneBusAway NYC is not tracking any buses en-route to your location. Please check back shortly for an update.
+							OneBusAway NYC is not tracking any buses en-route to your location.
+							<br/>
+							Please check back shortly for an update.
 							<br/>
 						</s:if>
 						<s:else>

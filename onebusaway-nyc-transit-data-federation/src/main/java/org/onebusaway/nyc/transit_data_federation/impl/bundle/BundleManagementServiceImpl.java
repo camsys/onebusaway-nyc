@@ -1,27 +1,5 @@
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.annotation.PostConstruct;
-
 import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -46,6 +24,28 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.annotation.PostConstruct;
 
 public class BundleManagementServiceImpl implements BundleManagementService {
 
@@ -468,12 +468,12 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  _log.info("Switching to bundle " + bundleId + "...");
 		
 		_bundle.setPath(path);
+    _refreshService.refresh(RefreshableResources.TRANSIT_GRAPH);
 		_refreshService.refresh(RefreshableResources.CALENDAR_DATA);
 		_refreshService.refresh(RefreshableResources.ROUTE_COLLECTIONS_DATA);
 		_refreshService.refresh(RefreshableResources.ROUTE_COLLECTION_SEARCH_DATA);
 		_refreshService.refresh(RefreshableResources.STOP_SEARCH_DATA);
 		_refreshService.refresh(RefreshableResources.WALK_PLANNER_GRAPH);
-		_refreshService.refresh(RefreshableResources.TRANSIT_GRAPH);
 		_refreshService.refresh(RefreshableResources.BLOCK_INDEX_DATA);
 		_refreshService.refresh(RefreshableResources.BLOCK_INDEX_SERVICE);
 		_refreshService.refresh(RefreshableResources.STOP_TRANSFER_DATA);

@@ -8,8 +8,6 @@
     <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-common.xml"/>
     <import resource="file:${onebusaway_prefix}/src/integration-test/resources/data-sources-users-common.xml" />
     
-    <bean id="adbeanFilter" class="org.onebusaway.nyc.presentation.impl.ArrivalDepartureBeanListFilterImpl" />
-
 	<bean id="apiKeyService" class="org.onebusaway.api.services.DummyApiKeyPermissionService" primary="true" />
 
 	<!-- Create default API key -->
