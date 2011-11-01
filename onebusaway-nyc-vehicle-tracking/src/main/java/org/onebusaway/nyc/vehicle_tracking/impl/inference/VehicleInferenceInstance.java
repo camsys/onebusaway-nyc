@@ -220,7 +220,8 @@ public class VehicleInferenceInstance {
        * to replace the missing values
        */
       if (_previousObservation == null) {
-        _log.info("missing previous observation and current lat/lon.  skipping update.");
+        _log.info("missing previous observation and current lat/lon:"
+            + record.getVehicleId() + ", skipping update.");
         return false;
       }
 
@@ -533,10 +534,10 @@ public class VehicleInferenceInstance {
             .getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       }
-      
+
       record.setInferredDsc(blockState.getDestinationSignCode());
-    } 
-    
+    }
+
     if (StringUtils.isBlank(record.getInferredDsc()))
       record.setInferredDsc("0000");
 
@@ -575,7 +576,7 @@ public class VehicleInferenceInstance {
         lastRecord.setRunRouteId(runInfo[0]);
         if (runInfo.length > 1)
           lastRecord.setRunNumber(runInfo[1]);
-      } 
+      }
     }
 
     details.setLastObservation(lastRecord);

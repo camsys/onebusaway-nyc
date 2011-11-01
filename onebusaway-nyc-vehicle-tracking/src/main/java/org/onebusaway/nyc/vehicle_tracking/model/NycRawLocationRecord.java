@@ -54,13 +54,13 @@ public class NycRawLocationRecord {
 
   @CsvField(name = "runnumber")
   private String runNumber;
-  
+
   @CsvField(name = "runroute")
   private String runRouteId;
 
   @CsvField(name = "emergency", optional = true)
   private boolean emergencyFlag;
-  
+
   @CsvField(name = "deviceid")
   private String deviceId;
 
@@ -93,7 +93,7 @@ public class NycRawLocationRecord {
   public long getTime() {
     return time;
   }
-  
+
   public Date getTimeAsDate() {
     return new Date(time);
   }
@@ -135,39 +135,39 @@ public class NycRawLocationRecord {
   }
 
   public void setVehicleId(AgencyAndId vehicleId) {
-	  this.vehicleId = vehicleId;
+    this.vehicleId = vehicleId;
   }
 
   public String getOperatorId() {
-	  return operatorId;
+    return operatorId;
   }
 
   public void setOperatorId(String operatorId) {
-	  this.operatorId = operatorId;
+    this.operatorId = operatorId;
   }
 
   public String getRunNumber() {
-	  return runNumber;
+    return runNumber;
   }
 
   public String getRunRouteId() {
-	  return runRouteId;
+    return runRouteId;
   }
 
   public void setRunRouteId(String runRouteId) {
-	  this.runRouteId = runRouteId;
+    this.runRouteId = runRouteId;
   }
 
   public boolean isEmergencyFlag() {
-	  return emergencyFlag;
+    return emergencyFlag;
   }
 
   public void setEmergencyFlag(boolean emergencyFlag) {
-	  this.emergencyFlag = emergencyFlag;
+    this.emergencyFlag = emergencyFlag;
   }
 
   public void setGga(String gga) {
-	  this.gga = gga;
+    this.gga = gga;
   }
 
   public String getGga() {
@@ -205,7 +205,7 @@ public class NycRawLocationRecord {
   public String getRawData() {
     return rawData;
   }
-  
+
   /**
    * Location data is considered missing if the values are NaN or if both are
    * zero
@@ -214,10 +214,11 @@ public class NycRawLocationRecord {
     return (Double.isNaN(this.latitude) || Double.isNaN(this.longitude))
         || (this.latitude == 0.0 && this.longitude == 0.0);
   }
-  
+
   @Override
   public String toString() {
-    return latitude + " " + longitude + " " + destinationSignCode + " " + timeReceived;
+    return vehicleId + ": (" + latitude + "," + longitude + "), "
+        + destinationSignCode + ", " + timeReceived;
   }
 
   public void setSpeed(short speed) {

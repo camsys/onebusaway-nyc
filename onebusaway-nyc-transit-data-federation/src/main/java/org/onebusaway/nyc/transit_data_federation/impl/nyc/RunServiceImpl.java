@@ -216,18 +216,6 @@ public class RunServiceImpl implements RunService {
     return entriesByRun.get(runId);
   }
 
-  /*
-   * Try the reference string against two other strings and return the first one
-   * with minimum Levenshtein distance. NOTE: returns second argument by
-   * default!
-   */
-  private String getMinLevenshteinDist(String ref, String try1, String try2) {
-    int firstTry = StringUtils.getLevenshteinDistance(try1, ref);
-    int lastTry = StringUtils.getLevenshteinDistance(try2, ref);
-    int minPart = Math.min(firstTry, lastTry);
-    return (minPart == firstTry) ? try1 : try2;
-  }
-
   private final Pattern realRunRouteIdPattern = Pattern
       .compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
   private final Pattern reportedRunIdPattern = Pattern.compile("0*(\\d+-\\d+)");
@@ -324,7 +312,7 @@ public class RunServiceImpl implements RunService {
 
     String runId = runAgencyAndId.getId();
     if (!entriesByRun.containsKey(runId)) {
-      _log.debug("Run id " + runId + " was not found.");
+      _log.warn("Run id " + runId + " was not found.");
       return null;
     }
 
@@ -450,6 +438,9 @@ public class RunServiceImpl implements RunService {
     this.runDataByTrip = runDataByTrip;
   }
 
+  /**
+   * This follows the same general contract of BlockTripEntry.getActiveTrip
+   */
   @Override
   public RunTripEntry getActiveRunTripEntryForBlockInstance(
       BlockInstance blockInstance, int scheduleTime) {
@@ -466,22 +457,7 @@ public class RunServiceImpl implements RunService {
 
     BlockTripEntry trip = blockLocation.getActiveTrip();
 
-    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getTrip().getId());
-
-    if (bothTrips != null && !bothTrips.isEmpty()) {
-
-      RunTripEntry firstTrip = bothTrips.get(0);
-      if (bothTrips.size() == 1) {
-        return firstTrip;
-      } else {
-        RunTripEntry secondTrip = bothTrips.get(1);
-        if (secondTrip.getStartTime() <= scheduleTime)
-          return secondTrip;
-      }
-      return firstTrip;
-    }
-
-    return null;
+    return getRunTripEntryForTripAndTime(trip.getTrip(), scheduleTime);
   }
 
   private Date getTimestampAsDate(String agencyId, long timestamp) {
@@ -536,6 +512,28 @@ public class RunServiceImpl implements RunService {
         return tmpBli.get(0);
     }
     return bli;
+  }
+
+  @Override
+  public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,
+      int scheduleTime) {
+
+    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
+
+    if (bothTrips != null && !bothTrips.isEmpty()) {
+
+      RunTripEntry firstTrip = bothTrips.get(0);
+      if (bothTrips.size() == 1) {
+        return firstTrip;
+      } else {
+        RunTripEntry secondTrip = bothTrips.get(1);
+        if (secondTrip.getStartTime() <= scheduleTime)
+          return secondTrip;
+      }
+      return firstTrip;
+    }
+
+    return null;
   }
 
 }
