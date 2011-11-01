@@ -19,21 +19,12 @@ var OBA = window.OBA || {};
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
 //		bounds: new google.maps.LatLngBounds(
-//				new google.maps.LatLng(40.92862373397717,-74.28397178649902),
-//				new google.maps.LatLng(40.48801936882241,-73.68182659149171)
-//		),
+//		new google.maps.LatLng(40.92862373397717,-74.28397178649902),
+//		new google.maps.LatLng(40.48801936882241,-73.68182659149171)
+//),
 		getTileUrl: function(coord, zoom) {
-			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
+			if(!(zoom >= this.minZoom && zoom <= this.maxZoom))
 				return null;
-			}
-
-		    //var projection = map.getProjection();
-            //var zoomFactor = Math.pow(2, zoom);
-            //var tileCenter = projection.fromPointToLatLng(new google.maps.Point(coord.x * 256 / zoomFactor, coord.y * 256 / zoomFactor));
-
-            //if(!this.bounds.contains(tileCenter)) {
-            //	return null;
-            //}
 			
 			var quad = ""; 
 		    for (var i = zoom; i > 0; i--){
@@ -45,7 +36,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		            cell += 2; 
 		        quad += cell; 
 		    } 
-
 			return 'http://tripplanner.mta.info/maps/SystemRoutes_New/' + quad + '.png'; 
 		},
 		tileSize: new google.maps.Size(256, 256),
@@ -142,6 +132,19 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 	var transitStyledMapType = 
 		new google.maps.StyledMapType(mutedTransitStylesArray, {name: "Transit"});
+	
+	// Make another map using the Google Transit base map (for comparison)
+	var GTransitMapType = new google.maps.ImageMapType({
+			getTileUrl: function(coord, zoom) {
+				return 'http://mt1.google.com/vt/lyrs=m@132,transit|vm:1&hl=en&opts=r&x=' + coord.x + '&y=' + coord.y + '&z=' + zoom + '&s=Galileo'; 
+			},
+			tileSize: new google.maps.Size(256, 256),
+			opacity:1.0,
+			maxZoom: 17,
+			minZoom: 11,
+			name: 'Google',
+			isPng: true,
+			alt: '' });
 
 	var defaultMapOptions = {
 			zoom: 11,
@@ -151,27 +154,36 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			zoomControlOptions: {
 				style: google.maps.ZoomControlStyle.LARGE
 			},
-			minZoom: 11, 
+			minZoom: 9, 
 			maxZoom: 19,
 			navigationControlOptions: { style: google.maps.NavigationControlStyle.DEFAULT },
 			center: new google.maps.LatLng(40.639228,-74.081154),
 			mapTypeControlOptions: {
-				mapTypeIds: [ google.maps.MapTypeId.ROADMAP, "Transit", "MTA Subway Map" ]
+				mapTypeIds: [ "Google", "Transit", "MTA Subway Map" ]
 			}
 	};
 
 	var map = null;
+	var markersArray = [];
 	var mgr = null;
-	var infoWindow = null;
 
 	var vehiclesByRoute = {};
 	var vehiclesById = {};
 	var polylinesByRouteAndDirection = {};
 	var stopsAddedForRouteAndDirection = {};
 	var stopsById = {};
-
-	// POPUPS
+	var infoWindow = new google.maps.InfoWindow({});
 	
+	// only one popup open at a time!
+	var closeFn = function() {
+		if(infoWindow !== null) {
+			infoWindow.close();
+		}
+	};
+	google.maps.event.addListener(infoWindow, "closeclick", closeFn);
+	
+
+	// POPUPS	
 	// create a popup with content from the named URL+params, from the contentFn specified.
 	// the bubble will refresh itself when the map is also refreshed.
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
@@ -179,31 +191,60 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
     		content: "Loading...",
     		pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2))
     	};
-
-		// only one open at a time!
-		var closeFn = function() {
-			if(infoWindow !== null) {
-				infoWindow.close();
-				infoWindow = null;
-			}
-		};
 		closeFn();
 		
-    	infoWindow = new google.maps.InfoWindow(popupOptions);    	
+		// called to refresh the bubble's content
+		google.maps.InfoWindow.prototype.refreshFn = function() {
+			jQuery.getJSON(url, params, function(json) {
+				infoWindow.setContent(contentFn(json, userData));
+			});
+		};
+		
+    	infoWindow.setContent(popupOptions);    	
     	infoWindow.open(map, marker);
-
-    	google.maps.event.addListener(infoWindow, "closeclick", closeFn);
     	
-    	// called to refresh the bubble's content
-    	var refreshFn = function() {
-    		jQuery.getJSON(url, params, function(json) {
-    			infoWindow.setContent(contentFn(json, userData));
-    		});
-    	};
-    	infoWindow.refreshFn = refreshFn;
     	refreshFn();
 	}
 	
+	// create a popup with location information, such as during disambiguation
+	function showPopupWithLocationInformation(marker) {    		
+		if (infoWindow !== null) {
+			infoWindow.close();
+		}
+		if (marker.popupContent) {
+			infoWindow.setContent(marker.popupContent);    	
+			infoWindow.open(map, marker);	
+		}
+	}
+	
+	// close any popups on the map
+	function closePopupsOnMap() {
+		if (infoWindow !== null) {
+			infoWindow.close();
+		}
+	}
+	
+	// clear all markers from map & delete references, except for passed in marker
+	function clearAllMarkersOnMap(marker) {
+		if (markersArray !== null) {
+			if (marker == null) {
+				for (i in markersArray) {
+					markersArray[i].setMap(null);
+					markersArray[i] = null;
+				}	
+				markersArray = [];
+			} else {
+				for (i in markersArray) {
+					if (marker !== markersArray[i] && markersArray[i] != null) {
+						markersArray[i].setMap(null);
+						markersArray[i] = null;
+					}
+				}	
+			}
+		}	
+	}
+	
+	// return html for a SIRI VM response
 	function getVehicleContentForResponse(r) {
 		var activity = r.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 
@@ -465,8 +506,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		jQuery.getJSON(OBA.Config.siriVMUrl, { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
 		function(json) {
+
 			var vehiclesByIdInResponse = {};
 			jQuery.each(json.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
+
 				var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
 				var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;
 				var orientation = activity.MonitoredVehicleJourney.Bearing;
@@ -590,15 +633,60 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 	// mta custom tiles
 	map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
+	
 
 	// styled basemap
+	map.mapTypes.set('Google', GTransitMapType);
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
+	
+	// Create Subway Tiles control
+	var subwayControlDiv = document.createElement('DIV');
+	var homeControl = new SubwayTilesControl(subwayControlDiv, map);
+	subwayControlDiv.index = 1;
+	map.controls[google.maps.ControlPosition.TOP_RIGHT].push(subwayControlDiv);
+	
+	// Adds a button control to toggle MTA Subway tiles
+	function SubwayTilesControl(controlDiv, map) {
+
+	  controlDiv.style.padding = '5px';
+	  
+	  var controlUI = document.createElement('DIV');
+	  controlUI.style.backgroundColor = 'white';
+	  controlUI.style.borderStyle = 'solid';
+	  controlUI.style.borderWidth = '1px';
+	  controlUI.style.cursor = 'pointer';
+	  controlUI.style.textAlign = 'center';
+	  controlUI.title = 'Click to toggle MTA Subway lines';
+	  controlDiv.appendChild(controlUI);
+
+	  var controlText = document.createElement('DIV');
+	  controlText.style.fontFamily = 'Arial,sans-serif';
+	  controlText.style.fontWeight = 'normal';
+	  controlText.style.fontSize = '12px';
+	  controlText.style.paddingLeft = '5px';
+	  controlText.style.paddingRight = '5px';
+	  controlText.style.paddingTop = '3px';
+	  controlText.style.paddingBottom = '3px';
+	  controlText.innerHTML = '<b>Subway</b>';
+	  controlUI.appendChild(controlText);
+
+	  function toggleSubway() {
+		  (map.overlayMapTypes.length == 1) ? 
+				  map.overlayMapTypes.removeAt(0, mtaSubwayMapType) : map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
+	  }
+	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
+
+	}
+	
 	
 	// request list of routes in viewport when user stops moving map
 	if(typeof mapMoveCallbackFn === 'function') {
 		google.maps.event.addListener(map, "idle", mapMoveCallbackFn);
 	}
+	
+	// Add popup content to marker
+	google.maps.Marker.prototype.popupContent = null;
 
 	// timer to update periodically
 	setInterval(function() {
@@ -606,7 +694,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			updateVehicles(routeId);
 		});
 
-		if(infoWindow !== null) {
+		if(infoWindow !== null && infoWindow.refreshFn != null) {
 			infoWindow.refreshFn();
 		}
 	}, OBA.Config.refreshInterval);
@@ -626,6 +714,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		// add route, route's stops, and route's vehicles to map
 		showRoute: function(route) {
 			// add both destinations for route to map
+
 			jQuery.each(route.destinations, function(_, destination) {
 				addPolylines(route.routeId, destination.directionId, destination.polylines, route.color);
 				addStops(route.routeId, destination.directionId, destination.stops);
@@ -639,6 +728,49 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			var location = new google.maps.LatLng(lat, lng);
 			map.panTo(location);
 			map.setZoom(16);
+		},
+		
+		// move map to given location given google.maps.LatLng
+		showLocationFromPoint: function(gLatlng) {
+			map.panTo(gLatlng);
+			map.setZoom(15);
+		},
+		
+		// create a marker using passed in options
+		createMarker: function(latlon, options) {
+			
+			var marker = new google.maps.Marker({
+		        position: latlon, 
+		        shadow: options.shadow,
+		        icon: options.icon,
+		        title: options.name, 
+		        map: map
+		    }); 
+			
+			if (options.popup) {	
+				marker.popupContent = options.popup;
+				
+				google.maps.event.addListener(marker, 'click', function() {
+					showPopupWithLocationInformation(marker);
+				});
+			}
+			
+			markersArray.push(marker);
+			
+			return marker;
+		},
+		
+		showPopup: function(marker) {
+			showPopupWithLocationInformation(marker);
+		},
+		
+		closePopup: function() {
+			closePopupsOnMap();
+		},
+		
+		// clear all markers except for passed in marker (can be null)
+		clearMarkers: function(marker) {
+			clearAllMarkersOnMap(marker);
 		}
 	};
 };
