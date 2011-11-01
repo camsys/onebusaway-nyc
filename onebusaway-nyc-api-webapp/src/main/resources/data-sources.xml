@@ -46,9 +46,6 @@
     <!-- This will get expanded out to a bean entry if configured so -->
     ${dummy.permissions}
 
-	<!-- This is a class to filter arrival and departure beans for NYC. We need to fix this - it's a hack -->
-    <bean id="adbeanFilter" class="org.onebusaway.nyc.presentation.impl.ArrivalDepartureBeanListFilterImpl" />
-
     <bean id="apiKeyValidationService" class="org.onebusaway.users.impl.validation.KeyValidationServiceImpl"/>
 
     <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
