@@ -27,13 +27,13 @@ import org.onebusaway.collections.Counter;
 import umontreal.iro.lecuyer.probdist.ChiDist;
 import umontreal.iro.lecuyer.probdist.ChiSquareDist;
 
-public class CDFMapTest {
+public class CategoricalDistTest {
 
-  private final int TRIES = 10000000;
+  
   @Test
   public void testSampleA() {
 
-    CDFMap<String> cdf = new CDFMap<String>();
+    CategoricalDist<String> cdf = new CategoricalDist<String>();
     cdf.put(0.1, "a");
     cdf.put(0.2, "b");
     cdf.put(0.3, "c");
@@ -53,7 +53,11 @@ public class CDFMapTest {
     assertEquals(c, 0.3 / 0.6, .05);
   }
 
-/*  @Test
+/*  
+  
+  private final int TRIES = 10000000;
+  
+  @Test
   public void testSamples() {
 
     CDFMap<String> cdf = new CDFMap<String>();

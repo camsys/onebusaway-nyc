@@ -183,7 +183,7 @@ public class ParticleFilter<OBS> {
     /**
      * 2. apply the sensor model(likelihood) to each particle
      */
-    CDFMap<Particle> cdf = applySensorModel(particles, obs);
+    CategoricalDist<Particle> cdf = applySensorModel(particles, obs);
 
     /**
      * 3. track the weighted particles (before resampling and normalization)
@@ -232,10 +232,10 @@ public class ParticleFilter<OBS> {
    * Applies the sensor model (as set by setSensorModel) to each particle in the
    * filter, according to the given observable.
    */
-  private CDFMap<Particle> applySensorModel(List<Particle> particles, OBS obs)
+  private CategoricalDist<Particle> applySensorModel(List<Particle> particles, OBS obs)
       throws ParticleFilterException {
 
-    CDFMap<Particle> cdf = new CDFMap<Particle>();
+    CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
 
     for (Particle particle : particles) {
       SensorModelResult result = getParticleLikelihood(particle, obs);

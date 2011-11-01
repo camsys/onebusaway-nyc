@@ -29,7 +29,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.primitives.Doubles;
 
-public class CDFMap<T> {
+public class CategoricalDist<T> {
 
   private double _cumulativeProb = 0.0;
 
