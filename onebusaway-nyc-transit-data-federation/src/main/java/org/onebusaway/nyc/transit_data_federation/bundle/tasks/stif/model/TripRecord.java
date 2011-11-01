@@ -33,6 +33,9 @@ public class TripRecord implements StifRecord {
   private String nextTripOperatorRunRoute;
   private String previousRunRoute;
   private String destinationLocation;
+  private int recoveryTime;
+  private boolean lastTripInSequence;
+  private boolean firstTripInSequence;
 
   public void setSignCode(String signCode) {
     this.signCode = signCode;
@@ -157,7 +160,7 @@ public class TripRecord implements StifRecord {
     this.runRoute = runRoute;
   }
 
-  public void setNextTripOperatorRunNumber(String runNumbre) {
+  public void setNextTripOperatorRunNumber(String runNumber) {
     this.nextTripOperatorRunNumber = runNumber;
   }
 
@@ -188,5 +191,29 @@ public class TripRecord implements StifRecord {
 
   public void setDestinationLocation(String destinationLocation) {
     this.destinationLocation = destinationLocation;
+  }
+
+  public int getRecoveryTime() {
+    return recoveryTime;
+  }
+
+  public void setRecoveryTime(int recoveryTime) {
+    this.recoveryTime = recoveryTime;
+  }
+
+  public void setLastTripInSequence(boolean last) {
+    this.lastTripInSequence = last;
+  }
+
+  public void setFirstTripInSequence(boolean first) {
+    this.firstTripInSequence = first;
+  }
+
+  public boolean isFirstTripInSequence() {
+    return firstTripInSequence;
+  }
+
+  public boolean isLastTripInSequence() {
+    return lastTripInSequence;
   }
 }
