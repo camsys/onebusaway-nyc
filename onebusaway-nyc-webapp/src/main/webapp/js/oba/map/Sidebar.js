@@ -115,53 +115,6 @@ OBA.Sidebar = function() {
 							popupDescription + '</div></div>';
 		
 		var marker = routeMap.createMarker(latlon, {shadow: shadow, icon: image, name: name, popup: popupString});
-		/*var bouncingMarker = null;
-
-		function setItemAsActive() {
-			item.css("color", "red");    // TODO change to active/inactive once CSS is defined
-		};
-		function setItemAsInactive() {
-			item.css("color", "blue");
-		};
-		function setMarkerAsMildlyActive() {
-			if (bouncingMarker !==null) { bouncingMarker.setAnimation(null); }		
-			marker.setIcon(activeIcon);
-			marker.setAnimation(google.maps.Animation.BOUNCE);
-			window.setTimeout(function() { marker.setAnimation(null); }, 1200);
-			bouncingMarker = marker;
-		}
-		function setMarkerAsActive() {
-			marker.setIcon(activeIcon);
-			//marker.setAnimation(google.maps.Animation.BOUNCE);  
-			routeMap.showPopup(marker);
-		}
-		function setMarkerAsInactive() {
-			marker.setIcon(normalIcon);
-			marker.setAnimation(null);
-			routeMap.closePopup(marker);
-		}
-		
-		// Add hover and click events to text in search panel
-		item.mouseenter( function() {
-			setItemAsActive();
-			setMarkerAsMildlyActive(); 
-		});
-		item.mouseout( function() {
-			setItemAsInactive();
-			setMarkerAsInactive();
-		});
-		item.click( function() {
-			setMarkerAsInactive();			
-			routeMap.showLocationFromPoint(latlon);
-			searchInput.val(name);
-			hideDidYouMean(marker);
-		});
-		
-		// Add hover event to map marker
-		google.maps.event.addListener(marker, 'mouseover', function() { setItemAsActive(); setMarkerAsActive(); }); 
-		google.maps.event.addListener(marker, 'mouseout', function() { setItemAsInactive(); setMarkerAsInactive(); });
-		google.maps.event.addListener(marker, 'click', function() { item.click(); });
-		*/
 	}
 	
 	/**

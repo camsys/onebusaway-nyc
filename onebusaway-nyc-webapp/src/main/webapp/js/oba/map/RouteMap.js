@@ -191,6 +191,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
     		content: "Loading...",
     		pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2))
     	};
+		
 		closeFn();
 		
 		// called to refresh the bubble's content
@@ -199,11 +200,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				infoWindow.setContent(contentFn(json, userData));
 			});
 		};
-		
-    	infoWindow.setContent(popupOptions);    	
+    	infoWindow.setOptions(popupOptions);
     	infoWindow.open(map, marker);
-    	
-    	refreshFn();
+    	infoWindow.refreshFn();	
 	}
 	
 	// create a popup with location information, such as during disambiguation
@@ -642,7 +641,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	
 	// Create Subway Tiles control
 	var subwayControlDiv = document.createElement('DIV');
-	var homeControl = new SubwayTilesControl(subwayControlDiv, map);
 	subwayControlDiv.index = 1;
 	map.controls[google.maps.ControlPosition.TOP_RIGHT].push(subwayControlDiv);
 	
@@ -677,8 +675,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	  }
 	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
 
-	}
-	
+	}	
+	var subwayTilesControl = new SubwayTilesControl(subwayControlDiv, map);
 	
 	// request list of routes in viewport when user stops moving map
 	if(typeof mapMoveCallbackFn === 'function') {
