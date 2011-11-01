@@ -19,21 +19,12 @@ var OBA = window.OBA || {};
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
 //		bounds: new google.maps.LatLngBounds(
-//				new google.maps.LatLng(40.92862373397717,-74.28397178649902),
-//				new google.maps.LatLng(40.48801936882241,-73.68182659149171)
-//		),
+//		new google.maps.LatLng(40.92862373397717,-74.28397178649902),
+//		new google.maps.LatLng(40.48801936882241,-73.68182659149171)
+//),
 		getTileUrl: function(coord, zoom) {
-			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
+			if(!(zoom >= this.minZoom && zoom <= this.maxZoom))
 				return null;
-			}
-
-		    //var projection = map.getProjection();
-            //var zoomFactor = Math.pow(2, zoom);
-            //var tileCenter = projection.fromPointToLatLng(new google.maps.Point(coord.x * 256 / zoomFactor, coord.y * 256 / zoomFactor));
-
-            //if(!this.bounds.contains(tileCenter)) {
-            //	return null;
-            //}
 			
 			var quad = ""; 
 		    for (var i = zoom; i > 0; i--){
@@ -45,7 +36,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		            cell += 2; 
 		        quad += cell; 
 		    } 
-
 			return 'http://tripplanner.mta.info/maps/SystemRoutes_New/' + quad + '.png'; 
 		},
 		tileSize: new google.maps.Size(256, 256),
@@ -169,7 +159,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			navigationControlOptions: { style: google.maps.NavigationControlStyle.DEFAULT },
 			center: new google.maps.LatLng(40.639228,-74.081154),
 			mapTypeControlOptions: {
-				mapTypeIds: [ google.maps.MapTypeId.ROADMAP, "Transit", "MTA Subway Map" ]
+				mapTypeIds: [ "Google", "Transit", "MTA Subway Map" ]
 			}
 	};
 
@@ -188,7 +178,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var closeFn = function() {
 		if(infoWindow !== null) {
 			infoWindow.close();
-			infoWindow = null;
 		}
 	};
 	google.maps.event.addListener(infoWindow, "closeclick", closeFn);
@@ -517,8 +506,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		jQuery.getJSON(OBA.Config.siriVMUrl, { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
 		function(json) {
+
 			var vehiclesByIdInResponse = {};
 			jQuery.each(json.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
+
 				var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
 				var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;
 				var orientation = activity.MonitoredVehicleJourney.Bearing;
@@ -642,11 +633,52 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 	// mta custom tiles
 	map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
+	
 
 	// styled basemap
 	map.mapTypes.set('Google', GTransitMapType);
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
+	
+	// Create Subway Tiles control
+	var subwayControlDiv = document.createElement('DIV');
+	var homeControl = new SubwayTilesControl(subwayControlDiv, map);
+	subwayControlDiv.index = 1;
+	map.controls[google.maps.ControlPosition.TOP_RIGHT].push(subwayControlDiv);
+	
+	// Adds a button control to toggle MTA Subway tiles
+	function SubwayTilesControl(controlDiv, map) {
+
+	  controlDiv.style.padding = '5px';
+	  
+	  var controlUI = document.createElement('DIV');
+	  controlUI.style.backgroundColor = 'white';
+	  controlUI.style.borderStyle = 'solid';
+	  controlUI.style.borderWidth = '1px';
+	  controlUI.style.cursor = 'pointer';
+	  controlUI.style.textAlign = 'center';
+	  controlUI.title = 'Click to toggle MTA Subway lines';
+	  controlDiv.appendChild(controlUI);
+
+	  var controlText = document.createElement('DIV');
+	  controlText.style.fontFamily = 'Arial,sans-serif';
+	  controlText.style.fontWeight = 'normal';
+	  controlText.style.fontSize = '12px';
+	  controlText.style.paddingLeft = '5px';
+	  controlText.style.paddingRight = '5px';
+	  controlText.style.paddingTop = '3px';
+	  controlText.style.paddingBottom = '3px';
+	  controlText.innerHTML = '<b>Subway</b>';
+	  controlUI.appendChild(controlText);
+
+	  function toggleSubway() {
+		  (map.overlayMapTypes.length == 1) ? 
+				  map.overlayMapTypes.removeAt(0, mtaSubwayMapType) : map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
+	  }
+	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
+
+	}
+	
 	
 	// request list of routes in viewport when user stops moving map
 	if(typeof mapMoveCallbackFn === 'function') {
