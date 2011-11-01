@@ -15,11 +15,6 @@
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
             <version>${onebusaway.nyc.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-siri-api</artifactId>
-            <version>${onebusaway.siri.version}</version>
-        </dependency>
 	  	
         <!-- This needs to be more than just test scope so we can use it run the bundle builder -->
         <dependency>

@@ -41,21 +41,17 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "obanyc_nycqueuedinferredlocation_archive")
+@Table(name = "obanyc_inferredlocation")
 @AccessType("field")
 @Cache(usage = CacheConcurrencyStrategy.NONE)
-public class NycQueuedInferredLocationRecord implements Serializable {
+public class InferredLocationRecord implements Serializable {
 
   private static final long serialVersionUID = 1L;
-
-  @Id
-  @GeneratedValue
-  @AccessType("property")
-  private Integer id;
 
   @Column(nullable = false, name = "record_timestamp")
   private Date recordTimestamp;
 
+  @Id
   @Column(nullable = false, name = "vehicle_id")
   private String vehicleId;
 
@@ -107,10 +103,10 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "bearing")
   private Double bearing;
 
-  public NycQueuedInferredLocationRecord() {
+  public InferredLocationRecord() {
   }
 
-  public NycQueuedInferredLocationRecord(NycQueuedInferredLocationBean message, String contents) {
+  public InferredLocationRecord(NycQueuedInferredLocationBean message, String contents) {
     super();
 
     Double possibleNaN;
@@ -152,14 +148,6 @@ public class NycQueuedInferredLocationRecord implements Serializable {
 
   public void setRecordTimestamp(Date recordTimestamp) {
     this.recordTimestamp = recordTimestamp;
-  }
-
-  public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
   }
 
   public String getVehicleId() {

@@ -24,9 +24,9 @@ $.ajaxSetup({ cache: false });
 OBA.Config = {		
 		searchUrl: "api/search",
 		routesWithinBoundsUrl: "api/routes-within-bounds",
-		vehicleLocationsForRouteId: "api/vehicle-locations-for-route-id",
-		vehicleLocationWithNextStopsForVehicleId: "api/vehicle-location-with-next-stops-for-vehicle-id",
-		searchResultForStopId: "api/search-result-for-stop-id",
+
+		siriSMUrl: "api/stop-monitoring",
+		siriVMUrl: "api/vehicle-monitoring",
 		
 		refreshInterval: 5000,
 		

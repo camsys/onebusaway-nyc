@@ -134,8 +134,19 @@ public class CcLocationReportRecord implements Serializable {
     setVehicleAgencydesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());
     setVehicleId((int) message.getVehicle().getVehicleId());
-    setNmeaSentenceGPGGA(message.getLocalCcLocationReport().getNMEA().getSentence().get(0));
-    setNmeaSentenceGPRMC(message.getLocalCcLocationReport().getNMEA().getSentence().get(1));
+
+    // Check for localCcLocationReport and extract sentences if available
+    String gpggaSentence = null;
+    String gprmcSentence = null;
+    
+    if ((message.getLocalCcLocationReport() != null) 
+	&& (message.getLocalCcLocationReport().getNMEA() != null)
+	&& (message.getLocalCcLocationReport().getNMEA().getSentence() != null)) {
+	gpggaSentence = message.getLocalCcLocationReport().getNMEA().getSentence().get(0);
+	gprmcSentence = message.getLocalCcLocationReport().getNMEA().getSentence().get(1);
+    }
+    setNmeaSentenceGPGGA(gpggaSentence);
+    setNmeaSentenceGPRMC(gprmcSentence);
     setRawMessage(contents);
   }
 

@@ -14,8 +14,8 @@
 
   <properties>
   	<onebusaway.gtfs.version>1.2.4</onebusaway.gtfs.version>
-  	<onebusaway.siri.version>0.0.3</onebusaway.siri.version>
-	<onebusaway.csv-entities.version>1.0.2-SNAPSHOT</onebusaway.csv-entities.version>
+  	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
+  	<onebusaway.csv-entities.version>1.0.2-SNAPSHOT</onebusaway.csv-entities.version>
   	<struts.version>2.1.8.1</struts.version>
 	<jetty.version>6.1.26</jetty.version>
 	<spring.version>3.0.3.RELEASE</spring.version>

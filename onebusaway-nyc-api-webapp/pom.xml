@@ -31,7 +31,7 @@
 
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-siri-api</artifactId>
+            <artifactId>onebusaway-siri-api-v13</artifactId>
             <version>${onebusaway.siri.version}</version>
         </dependency>
 
