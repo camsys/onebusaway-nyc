@@ -246,7 +246,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				markersArray = [];
 			} else {
 				for (i in markersArray) {
-					if (marker !== markersArray[i]) {
+					if (marker !== markersArray[i] && markersArray[i] != null) {
 						markersArray[i].setMap(null);
 						markersArray[i] = null;
 					}
