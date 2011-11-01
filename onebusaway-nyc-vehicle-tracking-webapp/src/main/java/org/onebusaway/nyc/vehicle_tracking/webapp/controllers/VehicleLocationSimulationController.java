@@ -45,6 +45,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
@@ -75,6 +76,8 @@ public class VehicleLocationSimulationController {
       + ".calendarOffset";
 
   private VehicleLocationSimulationService _vehicleLocationSimulationService;
+  
+  private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   private AgencyService _agencyService;
 
@@ -82,6 +85,12 @@ public class VehicleLocationSimulationController {
 
   private BlockStatusBeanService _blockStatusBeanService;
 
+  @Autowired
+  public void setVehicleLocationService(
+      VehicleLocationInferenceService vehicleLocationService) {
+    _vehicleLocationInferenceService = vehicleLocationService;
+  }
+  
   @Autowired
   public void setVehicleLocationSimulationService(
       VehicleLocationSimulationService service) {
@@ -134,11 +143,11 @@ public class VehicleLocationSimulationController {
       @RequestParam(value = "cdfSeed", required = false, defaultValue = "0") long cdfSeed,
       @RequestParam(value = "phaseSeed", required = false, defaultValue = "0") long phaseSeed) {
     if (cdfSeed != 0) {
-      CDFMap.setSeed(cdfSeed);
+      _vehicleLocationInferenceService.setCdfSeed(cdfSeed);
     }
     
     if (phaseSeed != 0) {
-      ParticleFactoryImpl.setSeed(phaseSeed);
+      _vehicleLocationInferenceService.setPhaseSeed(phaseSeed);
     }
 
     return new ModelAndView("change-bundle.jspx");

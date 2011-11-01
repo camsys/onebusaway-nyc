@@ -16,64 +16,88 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.TreeMap;
+
+import org.apache.commons.math.util.MathUtils;
+
+import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
+
+import com.google.common.collect.Ordering;
+import com.google.common.collect.TreeMultimap;
+import com.google.common.primitives.Doubles;
 
 public class CDFMap<T> {
 
   private double _cumulativeProb = 0.0;
 
-  static private Random rng = new Random();
-  
-  private double[] _cumulativeProbabilities = new double[2];
+  final static private Random rng = new Random();
 
-  private List<T> _entries = new ArrayList<T>();
+  private List<Double> _objIdx = new ArrayList<Double>();
+  TreeMap<T, Double> _probsToEntries = new TreeMap<T, Double>(Ordering.usingToString());
+  private List<T> _entries;
 
+  DiscreteDistribution emd;
+    
   static public void setSeed(long seed) {
     rng.setSeed(seed);
   }
-  
+
   public List<T> getSupport() {
-    return new ArrayList<T>(_entries);
+    return new ArrayList<T>(_probsToEntries.keySet());
   }
-  
+
   public void put(double prob, T object) {
 
-    if (_cumulativeProbabilities.length <= _entries.size()) {
-      int c = _cumulativeProbabilities.length << 1;
-      double[] cumulativeProbabilities = new double[c];
-      System.arraycopy(_cumulativeProbabilities, 0, cumulativeProbabilities, 0,
-          _cumulativeProbabilities.length);
-      _cumulativeProbabilities = cumulativeProbabilities;
-    }
-
     _cumulativeProb += prob;
-    _cumulativeProbabilities[_entries.size()] = _cumulativeProb;
-    _entries.add(object);
+    Double currentProb = _probsToEntries.get(object);
+    
+    if (currentProb == null) {
+      _probsToEntries.put(object, prob);
+      _objIdx.add((double)_objIdx.size());
+      _entries = getSupport(); 
+    } else {
+      /*
+       * allow duplicate entries' probability to compound
+       */
+      _probsToEntries.put(object, prob + currentProb);
+    }
+    
+    /*
+     * reset the underlying distribution for lazy reloading
+     */
+    emd = null;
 
   }
 
   public T sample() {
 
-    if (_entries.isEmpty())
+    if (_probsToEntries.isEmpty())
       throw new IllegalStateException("No entries in the CDF");
 
     if (_cumulativeProb == 0.0)
       throw new IllegalStateException("No cumulative probability in CDF");
 
-    double probability = rng.nextDouble() * _cumulativeProb;
-
-    int index = Arrays.binarySearch(_cumulativeProbabilities, 0, _entries.size(), probability);
-    if (index < 0)
-      index = -(index + 1);
-    return _entries.get(index);
+    if (_probsToEntries.size() == 1) {
+      return _probsToEntries.firstKey();
+    }
+    
+    if (emd == null) {
+      double[] probs = MathUtils.normalizeArray(Doubles.toArray(_probsToEntries.values()), 1.0);
+      emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs, _objIdx.size());
+    }
+    
+    double u = rng.nextDouble();
+    int newIdx = (int) emd.inverseF(u);
+    
+    return _entries.get(newIdx);
   }
 
   public List<T> sample(int samples) {
 
-    if (_entries.isEmpty())
+    if (_probsToEntries.isEmpty())
       throw new IllegalStateException("No entries in the CDF map");
 
     if (_cumulativeProb == 0.0)
@@ -84,46 +108,31 @@ public class CDFMap<T> {
 
     List<T> sampled = new ArrayList<T>(samples);
 
-    double step = _cumulativeProb / samples;
-    int index = 0;
-
-    for (double p = 0; p < _cumulativeProb && sampled.size() < samples; p += step) {
-      while (_cumulativeProbabilities[index] <= p)
-        index++;
-      sampled.add(_entries.get(index));
+    for (int i = 0; i < samples; ++i) {
+      sampled.add(sample());
     }
 
     return sampled;
   }
 
   public boolean isEmpty() {
-    return _entries.isEmpty();
+    return _probsToEntries.isEmpty();
   }
-  
+
   public boolean hasProbability() {
     return _cumulativeProb > 0.0;
   }
-  
+
   public boolean canSample() {
-    return ! _entries.isEmpty() && _cumulativeProb > 0.0;
+    return !_probsToEntries.isEmpty() && _cumulativeProb > 0.0;
   }
 
   public int size() {
-    return _entries.size();
+    return _probsToEntries.size();
   }
 
   @Override
   public String toString() {
-    StringBuilder b = new StringBuilder();
-    b.append("{");
-    for (int i = 0; i < _entries.size(); i++) {
-      if (i > 0)
-        b.append(", ");
-      b.append(_cumulativeProbabilities[i]);
-      b.append("=");
-      b.append(_entries.get(i));
-    }
-    b.append("}");
-    return b.toString();
+    return _probsToEntries.toString();
   }
 }

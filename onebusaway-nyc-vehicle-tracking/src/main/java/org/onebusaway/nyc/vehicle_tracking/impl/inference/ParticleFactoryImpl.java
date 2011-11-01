@@ -63,7 +63,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private MotionModelImpl _motionModel;
   
-  static private Random rng = new Random();
+  final static private Random rng = new Random();
 
   static public void setSeed(long seed) {
     rng.setSeed(seed);

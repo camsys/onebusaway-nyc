@@ -153,8 +153,30 @@ public class AbstractTraceRunner {
             "http://localhost:"
                 + federationPort
                 + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service");
+    
+    setSeeds();
   }
   
+  public void setSeeds() throws Exception {
+    
+    String port = System.getProperty(
+        "org.onebusaway.transit_data_federation_webapp.port", "9905");
+    String phaseSeed = "298763210";
+    String cdfSeed = "184970829";
+    String urlStr = "http://localhost:" + port
+        + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!set-seeds.do?phaseSeed=" 
+        + phaseSeed + "&cdfSeed=" + cdfSeed;
+
+    HttpClient client = new HttpClient();
+    GetMethod get = new GetMethod(urlStr);
+    client.executeMethod(get);
+
+    String response = get.getResponseBodyAsString();
+    if (!response.equals("OK"))
+      throw new Exception("Failed trying to execute:" + urlStr);
+
+    System.out.println("Successfully set seeds: phase=" + phaseSeed + ", cdf=" + cdfSeed);
+  }
   
   @Test
   public void test() throws Throwable {
