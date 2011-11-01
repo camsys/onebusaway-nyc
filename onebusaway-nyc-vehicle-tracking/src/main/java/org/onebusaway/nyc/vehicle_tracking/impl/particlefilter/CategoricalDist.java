@@ -26,7 +26,6 @@ import org.apache.commons.math.util.MathUtils;
 import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
 import com.google.common.collect.Ordering;
-import com.google.common.collect.TreeMultimap;
 import com.google.common.primitives.Doubles;
 
 public class CategoricalDist<T> {
