@@ -25,7 +25,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSumm
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private MotionModelImpl _motionModel;
   
-  static private Random rng = new Random();
+  final static private Random rng = new Random();
 
   static public void setSeed(long seed) {
     rng.setSeed(seed);
@@ -96,10 +96,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // CDFMap<EdgeState> cdf =
     // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
-    CDFMap<BlockState> atStartCdf = _blockStateSamplingStrategy
+    CategoricalDist<BlockState> atStartCdf = _blockStateSamplingStrategy
         .cdfForJourneyAtStart(obs);
 
-    CDFMap<BlockState> inProgresCdf = _blockStateSamplingStrategy
+    CategoricalDist<BlockState> inProgresCdf = _blockStateSamplingStrategy
         .cdfForJourneyInProgress(obs);
 
     List<Particle> particles = new ArrayList<Particle>(
@@ -125,8 +125,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   // FIXME TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState,
-      CoordinatePoint locationOnEdge, CDFMap<BlockState> atStartCdf,
-      CDFMap<BlockState> inProgressCdf, Observation obs) {
+      CoordinatePoint locationOnEdge, CategoricalDist<BlockState> atStartCdf,
+      CategoricalDist<BlockState> inProgressCdf, Observation obs) {
 
     BlockState blockState = null;
 

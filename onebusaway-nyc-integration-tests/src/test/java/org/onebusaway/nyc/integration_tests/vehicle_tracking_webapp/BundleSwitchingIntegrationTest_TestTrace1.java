@@ -21,5 +21,6 @@ public class BundleSwitchingIntegrationTest_TestTrace1 extends AbstractTraceRunn
 
   public BundleSwitchingIntegrationTest_TestTrace1() throws Exception {
     super("7564-2010-12-02T03-40-55.csv.gz");
+    setLoops(1);
   }
 }

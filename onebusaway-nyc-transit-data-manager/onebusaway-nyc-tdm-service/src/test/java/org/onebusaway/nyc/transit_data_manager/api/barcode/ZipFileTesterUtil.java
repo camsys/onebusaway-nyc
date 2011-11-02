@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_manager.api.barcode.util;
+package org.onebusaway.nyc.transit_data_manager.api.barcode;
 
 import java.io.File;
 import java.io.IOException;

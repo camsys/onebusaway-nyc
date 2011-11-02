@@ -28,7 +28,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -174,7 +174,7 @@ public class BlockStateTransitionModel {
        * Resample the potential blocks-in-progress when no "best" transitions are found
        * (why?)
        */
-      CDFMap<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+      CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
       if (!cdf.canSample())
         return null;
       
@@ -189,7 +189,7 @@ public class BlockStateTransitionModel {
        * Sample the "best" possible transitions
        * (best in terms of schedDev and locDev)
        */
-      CDFMap<BlockState> cdf = new CDFMap<BlockState>();
+      CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
       
       for (BlockState state: potentialTransStates) {
 

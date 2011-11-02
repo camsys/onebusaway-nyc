@@ -341,7 +341,7 @@ public class BlockStateService {
     RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(
         blockInstance, blockLocation.getScheduledTime());
     if (rte == null)
-      _log.error("runTrip null for blockInstance=" + blockInstance
+      _log.debug("runTrip null for blockInstance=" + blockInstance
           + ", scheduleTime=" + blockLocation.getScheduledTime());
     return new BlockState(blockInstance, blockLocation, rte, dsc);
   }

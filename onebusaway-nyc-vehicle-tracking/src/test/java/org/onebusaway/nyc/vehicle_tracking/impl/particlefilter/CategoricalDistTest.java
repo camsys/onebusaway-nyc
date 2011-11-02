@@ -16,18 +16,24 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.apache.commons.math.distribution.ChiSquaredDistributionImpl;
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
 
-public class CDFMapTest {
+import umontreal.iro.lecuyer.probdist.ChiDist;
+import umontreal.iro.lecuyer.probdist.ChiSquareDist;
 
+public class CategoricalDistTest {
+
+  
   @Test
   public void testSampleA() {
 
-    CDFMap<String> cdf = new CDFMap<String>();
+    CategoricalDist<String> cdf = new CategoricalDist<String>();
     cdf.put(0.1, "a");
     cdf.put(0.2, "b");
     cdf.put(0.3, "c");
@@ -47,6 +53,10 @@ public class CDFMapTest {
     assertEquals(c, 0.3 / 0.6, .05);
   }
 
+/*  
+  
+  private final int TRIES = 10000000;
+  
   @Test
   public void testSamples() {
 
@@ -55,13 +65,20 @@ public class CDFMapTest {
     cdf.put(0.2, "b");
     cdf.put(0.3, "c");
 
-    List<String> values = cdf.sample(12);
+    List<String> values = cdf.sample(TRIES);
     Counter<String> counter = new Counter<String>();
     for (String value : values)
       counter.increment(value);
 
-    assertEquals(2, counter.getCount("a"));
-    assertEquals(4, counter.getCount("b"));
-    assertEquals(6, counter.getCount("c"));
-  }
+    double expectedA = TRIES*0.1/0.6;
+    double expectedB = TRIES*0.2/0.6;
+    double expectedC = TRIES*0.3/0.6;
+    
+    double chi2 = Math.pow((double)counter.getCount("a") - expectedA, 2)/expectedA;
+    chi2 += Math.pow((double)counter.getCount("b") - expectedB, 2)/expectedB;
+    chi2 += Math.pow((double)counter.getCount("c") - expectedC, 2)/expectedC;
+    
+    double testStat = ChiSquareDist.barF(2, 6, chi2);
+    assertTrue(testStat > 0.05);
+  }*/
 }

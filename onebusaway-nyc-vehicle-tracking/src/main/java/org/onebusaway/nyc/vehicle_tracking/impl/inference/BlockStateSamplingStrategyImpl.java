@@ -23,7 +23,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -80,9 +80,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public CDFMap<BlockState> cdfForJourneyAtStart(Observation observation) {
+  public CategoricalDist<BlockState> cdfForJourneyAtStart(Observation observation) {
 
-    CDFMap<BlockState> cdf = _observationCache.getValueForObservation(
+    CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
         observation, EObservationCacheKey.JOURNEY_START_BLOCK_CDF);
 
     if (cdf == null) {
@@ -90,7 +90,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       Set<BlockState> potentialBlocks = _blocksFromObservationService
             .determinePotentialBlockStatesForObservation(observation, false);
 
-      cdf = new CDFMap<BlockState>();
+      cdf = new CategoricalDist<BlockState>();
 
       StringBuilder b = null;
 
@@ -123,9 +123,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public CDFMap<BlockState> cdfForJourneyInProgress(Observation observation) {
+  public CategoricalDist<BlockState> cdfForJourneyInProgress(Observation observation) {
 
-    CDFMap<BlockState> cdf = _observationCache.getValueForObservation(
+    CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
         observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK_CDF);
 
     if (cdf == null) {
@@ -133,7 +133,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       Set<BlockState> potentialBlocks = _blocksFromObservationService
           .determinePotentialBlockStatesForObservation(observation, true);
 
-      cdf = new CDFMap<BlockState>();
+      cdf = new CategoricalDist<BlockState>();
 
       StringBuilder b = null;
       if (_log.isDebugEnabled()) {

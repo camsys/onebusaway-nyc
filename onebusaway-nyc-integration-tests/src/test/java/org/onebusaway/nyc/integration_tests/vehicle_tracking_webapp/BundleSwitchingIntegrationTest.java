@@ -21,6 +21,7 @@ import org.onebusaway.utility.DateLibrary;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -47,6 +48,7 @@ public class BundleSwitchingIntegrationTest {
     if(!response.equals("OK"))
       throw new Exception("Bundle switch failed!");
   }
+  
   
   @Test
   public void wrongBundleTest() throws Throwable {

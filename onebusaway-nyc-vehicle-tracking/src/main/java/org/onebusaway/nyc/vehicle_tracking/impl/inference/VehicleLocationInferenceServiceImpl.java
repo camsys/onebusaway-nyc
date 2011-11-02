@@ -41,7 +41,7 @@ import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CDFMap;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
@@ -68,9 +68,11 @@ import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 public class VehicleLocationInferenceServiceImpl implements
     VehicleLocationInferenceService {
 
-  private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
+  private static Logger _log = LoggerFactory
+      .getLogger(VehicleLocationInferenceServiceImpl.class);
 
-  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
+  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat
+      .dateTimeParser();
 
   @Autowired
   private OutputQueueSenderService _outputQueueSenderService;
@@ -80,12 +82,12 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Autowired
   private BundleManagementService _bundleManagementService;
-  
+
   @Autowired
   private TransitDataService _transitDataService;
-  
+
   private BundleItem _lastBundle = null;
-  
+
   private ExecutorService _executorService;
 
   private int _numberOfProcessingThreads = 10;
@@ -111,68 +113,77 @@ public class VehicleLocationInferenceServiceImpl implements
 
   /**
    * Has the bundle changed since the last time we returned a result?
-   *
+   * 
    * @return boolean: bundle changed or not
    */
   private boolean bundleHasChanged() {
-    BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-    
+    BundleItem currentBundle = _bundleManagementService
+        .getCurrentBundleMetadata();
+
     boolean result = false;
 
     // active bundle was removed from BMS' list of active bundles
-    if(currentBundle == null)
+    if (currentBundle == null)
       return true;
-    
-    if(_lastBundle != null) {
+
+    if (_lastBundle != null) {
       result = !_lastBundle.getId().equals(currentBundle.getId());
     }
-    
+
     _lastBundle = currentBundle;
     return result;
   }
-  
+
   /**
-   * If the bundle has changed, verify that all vehicle results are present in the current bundle.
-   * If not, reset the inference to map them to the current reference data (bundle).
-   * Also reset vehicles with no current match, as they may have a match in the new bundle.
+   * If the bundle has changed, verify that all vehicle results are present in
+   * the current bundle. If not, reset the inference to map them to the current
+   * reference data (bundle). Also reset vehicles with no current match, as they
+   * may have a match in the new bundle.
    */
   private synchronized void verifyVehicleResultMappingToCurrentBundle() {
-    if(!bundleHasChanged())
+    if (!bundleHasChanged())
       return;
-    
-    for(AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
-      VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
+
+    for (AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
+      VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId
+          .get(vehicleId);
       NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
 
       // no state
-      if(state == null) {
-        _log.info("Vehicle " + vehicleId + " reset on bundle change: no state available.");
+      if (state == null) {
+        _log.info("Vehicle " + vehicleId
+            + " reset on bundle change: no state available.");
 
         this.resetVehicleLocation(vehicleId);
         continue;
       }
-      
+
       // no match to any trip
-      if(state.getInferredBlockId() == null || state.getInferredTripId() == null) {
-        _log.info("Vehicle " + vehicleId + " reset on bundle change: no matched trip/block.");
-        
+      if (state.getInferredBlockId() == null
+          || state.getInferredTripId() == null) {
+        _log.info("Vehicle " + vehicleId
+            + " reset on bundle change: no matched trip/block.");
+
         this.resetVehicleLocation(vehicleId);
         continue;
       }
-        
+
       // trip or block matched have disappeared!
       TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
-      BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
+      BlockBean block = _transitDataService.getBlockForId(state
+          .getInferredBlockId());
 
-      if(trip == null || block == null) {
-        _log.info("Vehicle " + vehicleId + " reset on bundle change: trip/block is no longer present in new bundle.");
-        
+      if (trip == null || block == null) {
+        _log.info("Vehicle "
+            + vehicleId
+            + " reset on bundle change: trip/block is no longer present in new bundle.");
+
         this.resetVehicleLocation(vehicleId);
         continue;
       }
     }
   }
-  
+
   @PostConstruct
   public void start() {
     if (_numberOfProcessingThreads <= 0)
@@ -194,7 +205,8 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record) {
+  public void handleNycTestInferredLocationRecord(
+      NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
 
     _executorService.execute(new ProcessingTask(record));
@@ -205,71 +217,83 @@ public class VehicleLocationInferenceServiceImpl implements
 
     NycRawLocationRecord r = new NycRawLocationRecord();
 
-	  r.setTime(XML_DATE_TIME_FORMAT.parseMillis(message.getTimeReported()));
-	  r.setTimeReceived(new Date().getTime());
-	
-	  r.setLatitude(message.getLatitude() / 1000000f);
-	  r.setLongitude(message.getLongitude() / 1000000f);
+    r.setTime(XML_DATE_TIME_FORMAT.parseMillis(message.getTimeReported()));
+    r.setTimeReceived(new Date().getTime());
 
-	  Angle bearing = message.getDirection();
-	  if(bearing != null) {
-		  Integer degrees = bearing.getCdeg();		  
-		  if(degrees != null)
-			  r.setBearing(degrees);
-	  }
-	  r.setSpeed(message.getSpeed());
-	  
-	  r.setDestinationSignCode(message.getDestSignCode().toString());
-	  r.setDeviceId(message.getManufacturerData());
-	  
-	  AgencyAndId vehicleId = new AgencyAndId(
-			  message.getVehicle().getAgencydesignator(), 
-			  Long.toString(message.getVehicle().getVehicleId()));
-	  r.setVehicleId(vehicleId);
+    r.setLatitude(message.getLatitude() / 1000000f);
+    r.setLongitude(message.getLongitude() / 1000000f);
 
-	  if(!StringUtils.isEmpty(message.getOperatorID().getDesignator()))
-	    r.setOperatorId(message.getOperatorID().getDesignator());
-	  
-    if(!StringUtils.isEmpty(message.getRunID().getDesignator()))
+    Angle bearing = message.getDirection();
+    if (bearing != null) {
+      Integer degrees = bearing.getCdeg();
+      if (degrees != null)
+        r.setBearing(degrees);
+    }
+    r.setSpeed(message.getSpeed());
+
+    r.setDestinationSignCode(message.getDestSignCode().toString());
+    r.setDeviceId(message.getManufacturerData());
+
+    AgencyAndId vehicleId = new AgencyAndId(message.getVehicle()
+        .getAgencydesignator(), Long.toString(message.getVehicle()
+        .getVehicleId()));
+    r.setVehicleId(vehicleId);
+
+    if (!StringUtils.isEmpty(message.getOperatorID().getDesignator()))
+      r.setOperatorId(message.getOperatorID().getDesignator());
+
+    if (!StringUtils.isEmpty(message.getRunID().getDesignator()))
       r.setRunNumber(message.getRunID().getDesignator());
 
-    if(!StringUtils.isEmpty(message.getRouteID().getRouteDesignator()))
+    if (!StringUtils.isEmpty(message.getRouteID().getRouteDesignator()))
       r.setRunRouteId(message.getRouteID().getRouteDesignator());
 
-	  EmergencyCodes emergencyCodes = message.getEmergencyCodes();
-	  if(emergencyCodes != null)
-		  r.setEmergencyFlag(true);
-	  else
-		  r.setEmergencyFlag(false);
-	  
-	  tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
-	  if(gpsData != null) {
-		  NMEA nemaSentences = gpsData.getNMEA();
-		  List<String> sentenceStrings = nemaSentences.getSentence();
-		  if(sentenceStrings.size() == 2) {
-			  String RMC = sentenceStrings.get(0);
-			  String GGA = sentenceStrings.get(1);
-			  r.setRmc(RMC);
-			  r.setGga(GGA);
-		  }
-	  }
-	  
-	  _executorService.execute(new ProcessingTask(r));
+    EmergencyCodes emergencyCodes = message.getEmergencyCodes();
+    if (emergencyCodes != null)
+      r.setEmergencyFlag(true);
+    else
+      r.setEmergencyFlag(false);
+
+    tcip_3_0_5_local.CcLocationReport gpsData = message
+        .getLocalCcLocationReport();
+    if (gpsData != null) {
+      NMEA nemaSentences = gpsData.getNMEA();
+      List<String> sentenceStrings = nemaSentences.getSentence();
+      if (sentenceStrings.size() == 2) {
+        String RMC = sentenceStrings.get(0);
+        String GGA = sentenceStrings.get(1);
+        r.setRmc(RMC);
+        r.setGga(GGA);
+      }
+    }
+
+    _executorService.execute(new ProcessingTask(r));
   }
-  
+
+  @Override
+  public void setPhaseSeed(long seed) {
+    ParticleFactoryImpl.setSeed(seed);
+  }
+
+  @Override
+  public void setCdfSeed(long seed) {
+    CategoricalDist.setSeed(seed);
+  }
+
   @Override
   public void resetVehicleLocation(AgencyAndId vid) {
     _vehicleInstancesByVehicleId.remove(vid);
   }
 
   @Override
-  public NycTestInferredLocationRecord getNycTestInferredLocationRecordForVehicle(AgencyAndId vid) {
+  public NycTestInferredLocationRecord getNycTestInferredLocationRecordForVehicle(
+      AgencyAndId vid) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
     if (instance == null)
       return null;
     NycTestInferredLocationRecord record = instance.getCurrentState();
-    if(record != null)
-    	record.setVehicleId(vid);
+    if (record != null)
+      record.setVehicleId(vid);
     return record;
   }
 
@@ -278,11 +302,12 @@ public class VehicleLocationInferenceServiceImpl implements
 
     List<NycTestInferredLocationRecord> records = new ArrayList<NycTestInferredLocationRecord>();
 
-    for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
+    for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId
+        .entrySet()) {
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
       if (instance != null) {
-      	NycTestInferredLocationRecord record = instance.getCurrentState();
+        NycTestInferredLocationRecord record = instance.getCurrentState();
         if (record != null) {
           record.setVehicleId(vehicleId);
           records.add(record);
@@ -305,7 +330,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Override
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
+        .get(vehicleId);
     if (instance == null)
       return null;
     return instance.getCurrentParticles();
@@ -314,7 +340,8 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public List<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
+        .get(vehicleId);
     if (instance == null)
       return null;
     return instance.getCurrentSampledParticles();
@@ -323,25 +350,28 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
       AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
+        .get(vehicleId);
     if (instance == null)
       return Collections.emptyList();
     return instance.getJourneySummaries();
   }
-  
+
   @Override
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
+        .get(vehicleId);
     if (instance == null)
       return null;
     VehicleLocationDetails details = instance.getDetails();
     details.setVehicleId(vehicleId);
     return details;
   }
-  
+
   @Override
   public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
+        .get(vehicleId);
     if (instance == null)
       return null;
     VehicleLocationDetails details = instance.getBadParticleDetails();
@@ -351,51 +381,54 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId,
-      int particleId) {	
-	    VehicleLocationDetails details = getBadDetailsForVehicleId(vehicleId);
-	    if (details == null)
-	      return null;
-	    return findParticle(details, particleId);
+  public VehicleLocationDetails getBadDetailsForVehicleId(
+      AgencyAndId vehicleId, int particleId) {
+    VehicleLocationDetails details = getBadDetailsForVehicleId(vehicleId);
+    if (details == null)
+      return null;
+    return findParticle(details, particleId);
   }
 
   @Override
-  public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId, 
-	  int particleId) {
-	    VehicleLocationDetails details = getDetailsForVehicleId(vehicleId);
-	    if (details == null)
-	      return null;
-	    return findParticle(details, particleId);
+  public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId,
+      int particleId) {
+    VehicleLocationDetails details = getDetailsForVehicleId(vehicleId);
+    if (details == null)
+      return null;
+    return findParticle(details, particleId);
   }
-  
+
   /****
    * Private Methods
    ****/
-  private VehicleLocationDetails findParticle(VehicleLocationDetails details, int particleId) {
-	  List<Particle> particles = details.getParticles();
-	  if (particles != null) {
-		  for (Particle p : particles) {
-			  if (p.getIndex() == particleId) {
-				  List<Particle> history = new ArrayList<Particle>();
-				  while (p != null) {
-					  history.add(p);
-					  p = p.getParent();
-				  }
-				  details.setParticles(history);
-				  details.setHistory(true);
-				  return details;
-			  }
-		  }
-	  }
-	  return null;
+  private VehicleLocationDetails findParticle(VehicleLocationDetails details,
+      int particleId) {
+    List<Particle> particles = details.getParticles();
+    if (particles != null) {
+      for (Particle p : particles) {
+        if (p.getIndex() == particleId) {
+          List<Particle> history = new ArrayList<Particle>();
+          while (p != null) {
+            history.add(p);
+            p = p.getParent();
+          }
+          details.setParticles(history);
+          details.setHistory(true);
+          return details;
+        }
+      }
+    }
+    return null;
   }
 
   private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
 
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
+        .get(vehicleId);
 
     if (instance == null) {
-      VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
+      VehicleInferenceInstance newInstance = _applicationContext
+          .getBean(VehicleInferenceInstance.class);
       instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId,
           newInstance);
       if (instance == null)
@@ -432,22 +465,28 @@ public class VehicleLocationInferenceServiceImpl implements
         boolean passOnRecord = sendRecord(existing);
 
         if (passOnRecord) {
-        	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-        	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
-        	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
+          NycVehicleManagementStatusBean managementRecord = existing
+              .getCurrentManagementState();
+          managementRecord
+              .setInferenceEngineIsPrimary(_outputQueueSenderService
+                  .getIsPrimaryInferenceInstance());
+          managementRecord.setDepotId(_vehicleAssignmentService
+              .getAssignedDepotForVehicleId(_vehicleId));
 
-        	BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-        	if(currentBundle != null)
+          BundleItem currentBundle = _bundleManagementService
+              .getCurrentBundleMetadata();
+          if (currentBundle != null)
             managementRecord.setActiveBundleId(currentBundle.getId());
-        	
-        	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
-        	record.setVehicleId(_vehicleId.toString());
+
+          NycQueuedInferredLocationBean record = existing
+              .getCurrentStateAsNycQueuedInferredLocationBean();
+          record.setVehicleId(_vehicleId.toString());
           record.setManagementRecord(managementRecord);
-        	
-        	_outputQueueSenderService.enqueue(record);
+
+          _outputQueueSenderService.enqueue(record);
         }
       } catch (ProjectionException e) {
-    	  // discard
+        // discard
       } catch (Throwable ex) {
         _log.error("Error processing new location record for inference: ", ex);
       }
