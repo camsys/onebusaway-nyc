@@ -18,10 +18,10 @@ var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
-//		bounds: new google.maps.LatLngBounds(
-//				new google.maps.LatLng(40.92862373397717,-74.28397178649902),
-//				new google.maps.LatLng(40.48801936882241,-73.68182659149171)
-//		),
+		//bounds: new google.maps.LatLngBounds(
+		//		new google.maps.LatLng(40.92862373397717,-74.28397178649902),
+		//		new google.maps.LatLng(40.48801936882241,-73.68182659149171)
+		//),
 		getTileUrl: function(coord, zoom) {
 			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
 				return null;
@@ -196,7 +196,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
     	
     	// called to refresh the bubble's content
     	var refreshFn = function() {
-    		jQuery.getJSON(url, params, function(json) {
+    		jQuery.getJSON(url + "?callback=?", params, function(json) {
     			infoWindow.setContent(contentFn(json, userData));
     		});
     	};
@@ -463,7 +463,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		var agencyId = routeIdParts[0];
 		var routeIdWithoutAgency = routeIdParts[1];
 		
-		jQuery.getJSON(OBA.Config.siriVMUrl, { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
+		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
 		function(json) {
 			var vehiclesByIdInResponse = {};
 			jQuery.each(json.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
