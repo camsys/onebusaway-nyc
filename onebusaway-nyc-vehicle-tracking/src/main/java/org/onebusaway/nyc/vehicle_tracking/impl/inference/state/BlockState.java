@@ -79,9 +79,9 @@ public final class BlockState {
   public String toString() {
     StringBuilder b = new StringBuilder();
     b.append("BlockState(");
-    b.append(blockInstance);
-    b.append(blockLocation);
-    b.append(runTrip);
+    b.append(blockInstance).append(",");
+    b.append(blockLocation).append(",");
+    b.append(runTrip).append(",");
     b.append(" {dsc=").append(destinationSignCode);
     b.append(", isOpAssigned=").append(isOpAssigned);
     b.append(", isRunReported=").append(isRunReported);

@@ -264,8 +264,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     }
 
     /**
-     * Third source of trips: trips nearby the current gps location Ok we're not
-     * doing this for now
+     * Third source of trips: trips nearby the current gps location 
      */
     if (_includeNearbyBlocks) {
       potentialBlocks.addAll(nearbyBlocks);

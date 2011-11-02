@@ -113,7 +113,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       MotionState motionState = _motionModel.updateMotionState(obs);
 
       VehicleState state = determineJourneyState(motionState,
-          obs.getLocation(), atStartCdf, inProgresCdf, obs);
+          atStartCdf, inProgresCdf, obs);
 
       Particle p = new Particle(timestamp);
       p.setData(state);
@@ -125,7 +125,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   // FIXME TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState,
-      CoordinatePoint locationOnEdge, CategoricalDist<BlockState> atStartCdf,
+      CategoricalDist<BlockState> atStartCdf,
       CategoricalDist<BlockState> inProgressCdf, Observation obs) {
 
     BlockState blockState = null;
@@ -164,7 +164,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         blockState = atStartCdf.sample();
 
       return vehicleState(motionState, blockState,
-          JourneyState.deadheadBefore(locationOnEdge), obs);
+          JourneyState.deadheadBefore(obs.getLocation()), obs);
     }
   }
 
