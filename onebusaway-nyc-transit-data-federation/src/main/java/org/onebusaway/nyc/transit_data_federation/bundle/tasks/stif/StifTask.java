@@ -326,18 +326,18 @@ public class StifTask implements Runnable {
       }
     }
 
-    boolean header = true;
-    for (Trip trip : _gtfsMutableRelationalDao.getAllTrips()) {
-      if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
-        if (header) {
-          printStream.println("Trips without blocks:");
-          header = false;
-        }
-        printStream.println(trip.getId().getId());
-      }
-    }
-
     if (outputStream != null) {
+      boolean header = true;
+      for (Trip trip : _gtfsMutableRelationalDao.getAllTrips()) {
+        if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
+          if (header) {
+            printStream.println("Trips without blocks:");
+            header = false;
+          }
+          printStream.println(trip.getId().getId());
+        }
+      }
+
       try {
         outputStream.close();
       } catch (IOException e) {
