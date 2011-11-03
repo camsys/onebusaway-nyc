@@ -37,14 +37,14 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
   private static final long serialVersionUID = 1L;
 
+  @Autowired  
+  private RealtimeService _realtimeService;
+
   private Siri _response;
   
   private HttpServletRequest _request;
   
   private Date _now = new Date();
-
-  @Autowired  
-  private RealtimeService _realtimeService;
 
   @Override
   public String execute() {  
@@ -72,6 +72,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
           String thisRouteId = journey.getLineRef().getValue();
           String thisDirectionId = journey.getDirectionRef().getValue();
           
+          // user filtering
           if(routeId != null && !thisRouteId.equals(routeId))
             visits.remove(visit);
           
@@ -109,7 +110,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   }
 
   public String getStopMonitoring() throws Exception {
-    return SiriJsonSerializer.getJson(_response);
+    return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
   }
 
   @Override
