@@ -279,7 +279,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		// update time
 		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
 		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
-		html += '   <span class="updated">Last updated ' + ((updateTimestampReference - updateTimestamp) / 1000) + ' seconds ago</span>'; 
+		html += '   <span class="updated">Last updated ' + OBA.Util.displayTime((updateTimestampReference - updateTimestamp) / 1000) + '</span>'; 
 		
 		// (end header)
 		html += '  </p>';
@@ -341,7 +341,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			}
 		});
 		if(age !== null) {
-			html += '   <span class="updated">Last updated ' + age + ' seconds ago</span>'; 
+			html += '   <span class="updated">Last updated ' + OBA.Util.displayTime(age) + '</span>'; 
 		}
 		
 		// (end header)

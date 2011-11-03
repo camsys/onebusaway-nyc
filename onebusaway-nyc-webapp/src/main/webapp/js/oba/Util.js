@@ -58,6 +58,21 @@ OBA.Util = (function() {
 			}
 
 			return array;
-		}
+		},
+		displayTime: function(secondsAgo) {
+			if(secondsAgo < 60) {
+				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s") + " ago";
+			} else {
+				minutesAgo = Math.floor(secondsAgo / 60);
+				secondsAgo = secondsAgo - (minutesAgo * 60);
+				
+				var s = minutesAgo + " minute" + ((minutesAgo === 1) ? "" : "s");
+				if(secondsAgo > 0) {
+					s += ", " + secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s");
+				}
+				s += " ago";
+				return s;
+			}
+		}		
 	};
 })();

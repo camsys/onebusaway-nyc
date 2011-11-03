@@ -259,8 +259,8 @@ public class SiriUtils {
     origin.setValue(stops.get(0).getStop().getId());
     monitoredVehicleJourney.setOriginRef(origin);
     
-    StopBean lastStop = stops.get(stops.size() - 1).getStop();
     DestinationRefStructure dest = new DestinationRefStructure();
+    StopBean lastStop = stops.get(stops.size() - 1).getStop();
     dest.setValue(lastStop.getId());
     monitoredVehicleJourney.setDestinationRef(dest);
 

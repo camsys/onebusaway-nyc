@@ -328,7 +328,6 @@ OBA.Sidebar = function() {
 	
 	// constructor:
 	var mapMoveCallbackFn = function() {
-						
 		jQuery.getJSON(OBA.Config.routesWithinBoundsUrl + "?callback=?", { bounds: routeMap.getBounds().toUrlValue() }, 
 		function(json) {
 			var resultCount = json.searchResults.length;
