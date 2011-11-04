@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
-
 public class SiriExtensionWrapper {
   
   private SiriDistanceExtension distances;

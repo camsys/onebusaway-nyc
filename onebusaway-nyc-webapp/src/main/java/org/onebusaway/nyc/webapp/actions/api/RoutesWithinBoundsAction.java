@@ -33,19 +33,23 @@ public class RoutesWithinBoundsAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
 
-  private List<?> _routeResults;
-  
   @Autowired
   private RouteSearchService _routeSearchService;
 
+  private List<?> _routeResults;
+  
   private CoordinateBounds _bounds = null;
 
   public void setBounds(String bounds) {
+    if(bounds == null)
+      _bounds = null;
+    
     String[] coordinates = bounds.split(",");
     if(coordinates.length == 4) {
       _bounds = new CoordinateBounds(Double.parseDouble(coordinates[0]), Double.parseDouble(coordinates[1]),
           Double.parseDouble(coordinates[2]), Double.parseDouble(coordinates[3]));
-    }
+    } else
+      _bounds = null;
   }
 
   @Override

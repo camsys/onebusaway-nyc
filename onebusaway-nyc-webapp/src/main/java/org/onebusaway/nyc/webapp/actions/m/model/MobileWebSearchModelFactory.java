@@ -13,4 +13,5 @@ public class MobileWebSearchModelFactory extends DefaultSearchModelFactory {
   public RouteDestinationItem getRouteDestinationItemModel() {
     return new MobileWebRouteDestinationItem();
   }
+
 }

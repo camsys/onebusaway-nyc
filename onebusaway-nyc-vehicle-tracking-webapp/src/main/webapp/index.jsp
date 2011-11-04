@@ -21,7 +21,7 @@
 
 <ul>
 	<li><a href="vehicle-locations.do">Current Vehicle Particles/Status</a></li>
-	<li><a href="vehicle-location-simulation.do">Vehicle Simulator</a></li>
+	<li><a href="vehicle-location-simulation.do">Vehicle Simulator/Logged Data Playback</a></li>
 </ul>
 </body>
 </html>

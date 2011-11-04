@@ -19,8 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +26,6 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.Stop;
-import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.GeographyRecord;
@@ -38,8 +34,6 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.StifRe
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TimetableRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TripRecord;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
-
-import org.opentripplanner.graph_builder.services.DisjointSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,9 +58,7 @@ public class StifTripLoader {
 
   private Map<Trip, RawRunData> rawRunDataByTrip = new HashMap<Trip, RawRunData>();
 
-  private DisjointSet<String> blocks = new DisjointSet<String>();
-
-  private OutputStream outputStream;
+  private Map<ServiceCode, List<RawTrip>> rawData = new HashMap<ServiceCode, List<RawTrip>>();
   
   @Autowired
   public void setGtfsDao(GtfsMutableRelationalDao dao) {
@@ -107,6 +99,7 @@ public class StifTripLoader {
     StifRecordReader reader;
 
     boolean warned = false;
+
     try {
       reader = new StifRecordReader(stream);
       ServiceCode serviceCode = null;
@@ -117,6 +110,9 @@ public class StifTripLoader {
         }
         if (record instanceof TimetableRecord) {
           serviceCode = ((TimetableRecord) record).getServiceCode();
+          if (!rawData.containsKey(serviceCode)) {
+            rawData.put(serviceCode, new ArrayList<RawTrip>());
+          }
         }
         if (record instanceof GeographyRecord) {
           GeographyRecord geographyRecord = ((GeographyRecord) record);
@@ -126,8 +122,27 @@ public class StifTripLoader {
         if (record instanceof TripRecord) {
           TripRecord tripRecord = (TripRecord) record;
           int tripType = tripRecord.getTripType();
+
+          String run1 = tripRecord.getRunId();
+          String run2 = tripRecord.getReliefRunId();
+          String run3 = tripRecord.getNextTripOperatorRunId();
+
+          RawTrip rawTrips = new RawTrip(tripRecord.getRunId(),
+              tripRecord.getReliefRunId(), tripRecord.getNextTripOperatorRunId(),
+              StifTripType.byValue(tripType));
+          rawTrips.serviceCode = serviceCode;
+          rawTrips.firstStopTime = tripRecord.getOriginTime();
+          rawTrips.lastStopTime = tripRecord.getDestinationTime();
+          rawTrips.firstStop = support.getStopIdForLocation(tripRecord.getOriginLocation());
+          rawTrips.lastStop = support.getStopIdForLocation(tripRecord.getDestinationLocation());
+          rawTrips.recoveryTime = tripRecord.getRecoveryTime();
+          rawTrips.firstTripInSequence = tripRecord.isFirstTripInSequence();
+          rawTrips.lastTripInSequence = tripRecord.isLastTripInSequence();
+          rawData.get(serviceCode).add(rawTrips);
+
           if (tripType == 2 || tripType == 3 || tripType == 4) {
-            continue; // deadhead or to/from depot
+            // deadhead or to/from depot
+            continue;
           }
           String code = tripRecord.getSignCode();
 
@@ -184,25 +199,14 @@ public class StifTripLoader {
             }
             if (trip != null) {
 
-              String run0 = tripRecord.getPreviousRunId();
-              String run1 = tripRecord.getRunId();
-              String run2 = tripRecord.getReliefRunId();
-              String run3 = tripRecord.getNextTripOperatorRunId();
+              rawTrips.addGtfsTrip(trip);
 
               int reliefTime = tripRecord.getReliefTime();
-              RawRunData rawRunData = new RawRunData(run1, run2, serviceId);
-
-              logTrip(trip, run0, run1, run2, run3, reliefTime);
+              RawRunData rawRunData = new RawRunData(run1, run2, run3, serviceId, serviceCode);
               
               filtered.add(trip);
               rawRunDataByTrip.put(trip, rawRunData);
               runsForTrip.put(trip.getId(), new RunData(run1, run2, reliefTime));
-              if (run0 != null && run0.length() > 0) {
-                blocks.union(run0 + serviceCode, run1 + serviceCode);
-              }
-              if (run3 != null && run3.length() > 0) {
-                blocks.union(run1 + serviceCode, run3 + serviceCode);
-              }
             }
           }
 
@@ -221,61 +225,15 @@ public class StifTripLoader {
     }
   }
 
-  private void logTrip(Trip trip, String run0, String run1, String run2, String run3,
-      int reliefTime) {
-
-    if (outputStream == null) {
-      return;
-    }
-
-    PrintStream printStream = new PrintStream(outputStream);
-
-    printStream.print(trip.getId().getId());
-    printStream.print(",");
-
-    GtfsMutableRelationalDao dao = support.getGtfsDao();
-    List<StopTime> stopTimesForTrip = dao.getStopTimesForTrip(trip);
-    StopTime firstStopTime = stopTimesForTrip.get(0);
-    Stop firstStop = firstStopTime.getStop();
-    printStream.print(firstStop.getId());
-    printStream.print(",");
-    printStream.print(firstStopTime.getDepartureTime());
-    printStream.print(",");
-
-    StopTime lastStopTime = stopTimesForTrip.get(stopTimesForTrip.size() - 1);
-    Stop lastStop = lastStopTime.getStop();
-    printStream.print(lastStop.getId());
-    printStream.print(",");
-    printStream.print(lastStopTime.getArrivalTime());
-    printStream.print(",");
-
-    printStream.print(run0);
-    printStream.print(",");
-    printStream.print(run1);
-    printStream.print(",");
-    printStream.print(run2);
-    printStream.print(",");
-    printStream.print(run3);
-    printStream.print("\n");
-  }
-
   public Map<Trip, RawRunData> getRawRunDataByTrip() {
     return rawRunDataByTrip;
-  }
-  
-  public DisjointSet<String> getBlocks() {
-    return blocks;
   }
 
   public Map<AgencyAndId, RunData> getRunsForTrip() {
     return runsForTrip;
   }
 
-  public OutputStream getOutputStream() {
-    return outputStream;
-  }
-
-  public void setOutputStream(OutputStream outputStream) {
-    this.outputStream = outputStream;
+  public Map<ServiceCode, List<RawTrip>> getRawStifData() {
+    return rawData;
   }
 }
