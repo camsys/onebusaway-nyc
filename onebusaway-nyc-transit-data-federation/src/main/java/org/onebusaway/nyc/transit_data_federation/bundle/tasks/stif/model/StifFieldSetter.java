@@ -67,11 +67,4 @@ public abstract class StifFieldSetter<T extends StifRecord> {
 		String afterPoint = new String(bytes, start + digits, (end - start) - digits).trim();
 		return Float.parseFloat(beforePoint + "." + afterPoint);
 	}
-
-	public boolean getBoolean() {
-	  while(bytes[start] == ' ') {
-	    start++;
-	  }
-	  return bytes[start] == 'Y';
-	}
 }

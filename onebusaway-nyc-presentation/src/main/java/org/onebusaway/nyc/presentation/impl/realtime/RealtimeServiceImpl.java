@@ -45,20 +45,13 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Autowired
   private TransitDataService _transitDataService;
 
-  private Date _now = null;
+  private Date _now = new Date();
   
   @Override
   public void setTime(Date time) {
     _now = time;
   }
 
-  public long getTime() {
-    if(_now != null)
-      return _now.getTime();
-    else
-      return System.currentTimeMillis();
-  }
-  
   @Override
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId, boolean includeNextStops) {
     List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
@@ -75,7 +68,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         continue;
         
       VehicleActivityStructure activity = new VehicleActivityStructure();
-      activity.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
+      activity.setRecordedAtTime(new Date(tripDetails.getStatus().getLastLocationUpdateTime()));
 
       MonitoredVehicleJourney journey = SiriUtils.getMonitoredVehicleJourney(tripDetails, 
           tripDetails.getStatus().getNextStop(), includeNextStops);
@@ -105,16 +98,10 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   @Override
   public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, boolean includeNextStops) {    
-
     TripForVehicleQueryBean query = new TripForVehicleQueryBean();
-    query.setTime(new Date(getTime()));
+    query.setTime(_now);
     query.setVehicleId(vehicleId);
-
-    TripDetailsInclusionBean inclusion = new TripDetailsInclusionBean();
-    inclusion.setIncludeTripStatus(true);
-    inclusion.setIncludeTripBean(true);
-    query.setInclusion(inclusion);
-
+    
     TripDetailsBean tripDetails = _transitDataService.getTripDetailsForVehicleAndTime(query);
     
     if (tripDetails != null) {
@@ -122,7 +109,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         return null;
       
       VehicleActivityStructure output = new VehicleActivityStructure();
-      output.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
+      output.setRecordedAtTime(new Date(tripDetails.getStatus().getLastLocationUpdateTime()));
 
       MonitoredVehicleJourney journey = SiriUtils.getMonitoredVehicleJourney(tripDetails, 
           tripDetails.getStatus().getNextStop(), includeNextStops);
@@ -152,7 +139,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       TripDetailsQueryBean query = new TripDetailsQueryBean();
       query.setServiceDate(statusBean.getServiceDate());
       query.setTripId(statusBean.getActiveTrip().getId());
-      query.setTime(getTime());
+      query.setTime(_now.getTime());
       query.setVehicleId(statusBean.getVehicleId());
       
       ListBean<TripDetailsBean> tripDetailBeans = _transitDataService.getTripDetails(query);      
@@ -165,7 +152,7 @@ public class RealtimeServiceImpl implements RealtimeService {
           continue;
         
         MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
-        stopVisit.setRecordedAtTime(new Date(statusBean.getLastUpdateTime()));
+        stopVisit.setRecordedAtTime(new Date(statusBean.getLastLocationUpdateTime()));
         
         MonitoredVehicleJourney journey = SiriUtils.getMonitoredVehicleJourney(tripDetails, 
             adBean.getStop(), includeNextStops);
@@ -250,8 +237,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   private ListBean<TripDetailsBean> getAllTripsForRoute(String routeId) {
     TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
     tripRouteQueryBean.setRouteId(routeId);
-    tripRouteQueryBean.setTime(getTime());
-    
+    tripRouteQueryBean.setTime(_now.getTime());
+
     TripDetailsInclusionBean inclusionBean = new TripDetailsInclusionBean();
     inclusionBean.setIncludeTripBean(true);
     inclusionBean.setIncludeTripStatus(true);
@@ -262,7 +249,7 @@ public class RealtimeServiceImpl implements RealtimeService {
   
   private List<ArrivalAndDepartureBean> getArrivalsAndDeparturesForStop(String stopId) {
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
-    query.setTime(getTime());
+    query.setTime(_now.getTime());
     query.setMinutesBefore(60);
     query.setMinutesAfter(90);
     
@@ -315,7 +302,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     int hideTimeout = 
         _configurationService.getConfigurationValueAsInteger("display.hideTimeout", 300);    
 
-    if (getTime() - statusBean.getLastUpdateTime() >= 1000 * hideTimeout) {
+    if (_now.getTime() - statusBean.getLastUpdateTime() >= 1000 * hideTimeout) {
       _log.debug("  " + statusBean.getVehicleId() + " filtered out because data is stale.");
       return false;
     }
@@ -356,16 +343,15 @@ public class RealtimeServiceImpl implements RealtimeService {
     TripBean tripBean = adBean.getTrip();
 
     // only consider buses that are in layover
-    if(phase != null && 
-        (phase.toUpperCase().equals("LAYOVER_BEFORE") 
-         || phase.toUpperCase().equals("LAYOVER_DURING"))) {
+    if(phase != null && (phase.toUpperCase().equals("LAYOVER_BEFORE") 
+        || phase.toUpperCase().equals("LAYOVER_DURING"))) {
 
       double distanceAlongTrip = status.getDistanceAlongTrip();
       double totalDistanceAlongTrip = status.getTotalDistanceAlongTrip();
       double ratio = distanceAlongTrip / totalDistanceAlongTrip;
       
       // if the bus isn't serving the trip this arrival and departure is for AND 
-      // the bus is NOT on the previous trip in the block, but at the end of that trip (ready to serve
+      // the bus is on the previous trip in the block, but at the end of that trip (ready to serve
       // the trip this arrival and departure is for), filter that out.
       if(activeTrip != null
             && !tripBean.getId().equals(activeTrip.getId())

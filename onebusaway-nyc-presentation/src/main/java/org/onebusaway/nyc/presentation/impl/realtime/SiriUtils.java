@@ -70,6 +70,7 @@ public class SiriUtils {
 
     HashMap<String, Integer> visitNumberForStop = new HashMap<String, Integer>();
     boolean afterStart = false;
+    boolean afterStop = (statusBean.getNextStop() == null);
     int i = 0;
     for (TripStopTimeBean stopTime : stopTimes) {
       StopBean stop = stopTime.getStop();
@@ -84,6 +85,10 @@ public class SiriUtils {
         i++;
 
         if (stop.getId().equals(monitoredCallStopBean.getId())) {
+          afterStop = true;
+        }
+
+        if(afterStop) {
           MonitoredCallStructure monitoredCall = new MonitoredCallStructure();
 
           StopPointRefStructure stopPointRef = new StopPointRefStructure();
@@ -99,11 +104,9 @@ public class SiriUtils {
           SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
           ExtensionsStructure distancesExtensions = new ExtensionsStructure();
           SiriDistanceExtension distances = new SiriDistanceExtension();
-          
           distances.setStopsFromCall(i - 1);
           distances.setCallDistanceAlongRoute(stopTime.getDistanceAlongTrip());
           distances.setDistanceFromCall(stopTime.getDistanceAlongTrip() - distance);
-
           wrapper.setDistances(distances);
           distancesExtensions.setAny(wrapper);
           monitoredCall.setExtensions(distancesExtensions);
@@ -164,11 +167,9 @@ public class SiriUtils {
           SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
           ExtensionsStructure distancesExtensions = new ExtensionsStructure();
           SiriDistanceExtension distances = new SiriDistanceExtension();
-
           distances.setStopsFromCall(i - 1);
           distances.setCallDistanceAlongRoute(stopTime.getDistanceAlongTrip());
           distances.setDistanceFromCall(stopTime.getDistanceAlongTrip());
-          
           wrapper.setDistances(distances);
           distancesExtensions.setAny(wrapper);
           onwardCall.setExtensions(distancesExtensions);
@@ -259,8 +260,8 @@ public class SiriUtils {
     origin.setValue(stops.get(0).getStop().getId());
     monitoredVehicleJourney.setOriginRef(origin);
     
-    DestinationRefStructure dest = new DestinationRefStructure();
     StopBean lastStop = stops.get(stops.size() - 1).getStop();
+    DestinationRefStructure dest = new DestinationRefStructure();
     dest.setValue(lastStop.getId());
     monitoredVehicleJourney.setDestinationRef(dest);
 
@@ -315,15 +316,15 @@ public class SiriUtils {
     return ProgressRateEnumeration.UNKNOWN;
   }
   
-  // NB: this means the vehicle is at *any* terminal in the block, not necessarily a terminal
+  // NB: this means the vehicle is at *any* terminal, not necessarily a terminal
   // that is the head of any trip.
   public static Boolean isAtTerminal(TripStatusBean statusBean) {
     if(statusBean != null) {
       String phase = statusBean.getPhase();
 
       if (phase != null &&
-          (phase.toUpperCase().equals("LAYOVER_DURING") 
-           || phase.toUpperCase().equals("LAYOVER_BEFORE"))) {
+          (phase.toUpperCase().equals("LAYOVER_DURING") ||
+              phase.toUpperCase().equals("LAYOVER_BEFORE"))) {
         return true;
       } else
         return false;

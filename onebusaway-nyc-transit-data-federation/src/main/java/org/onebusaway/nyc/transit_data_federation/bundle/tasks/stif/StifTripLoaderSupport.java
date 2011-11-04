@@ -117,7 +117,7 @@ public class StifTripLoaderSupport {
    * Private Methods
    ****/
 
-  public String getStopIdForLocation(String originLocation) {
+  private String getStopIdForLocation(String originLocation) {
     return stopIdsByLocation.get(originLocation);
   }
 

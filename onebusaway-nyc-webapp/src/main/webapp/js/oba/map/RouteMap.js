@@ -18,22 +18,13 @@ var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
-		//bounds: new google.maps.LatLngBounds(
-		//		new google.maps.LatLng(40.92862373397717,-74.28397178649902),
-		//		new google.maps.LatLng(40.48801936882241,-73.68182659149171)
-		//),
+//		bounds: new google.maps.LatLngBounds(
+//		new google.maps.LatLng(40.92862373397717,-74.28397178649902),
+//		new google.maps.LatLng(40.48801936882241,-73.68182659149171)
+//),
 		getTileUrl: function(coord, zoom) {
-			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
+			if(!(zoom >= this.minZoom && zoom <= this.maxZoom))
 				return null;
-			}
-
-		    //var projection = map.getProjection();
-            //var zoomFactor = Math.pow(2, zoom);
-            //var tileCenter = projection.fromPointToLatLng(new google.maps.Point(coord.x * 256 / zoomFactor, coord.y * 256 / zoomFactor));
-
-            //if(!this.bounds.contains(tileCenter)) {
-            //	return null;
-            //}
 			
 			var quad = ""; 
 		    for (var i = zoom; i > 0; i--){
@@ -173,9 +164,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	};
 
 	var map = null;
-	var mgr = null;
-
 	var markersArray = [];
+	var mgr = null;
 
 	var vehiclesByRoute = {};
 	var vehiclesById = {};
@@ -283,7 +273,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		// update time
 		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
 		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
-		html += '   <span class="updated">Last updated ' + OBA.Util.displayTime((updateTimestampReference - updateTimestamp) / 1000) + '</span>'; 
+		html += '   <span class="updated">Last updated ' + ((updateTimestampReference - updateTimestamp) / 1000) + ' seconds ago</span>'; 
 		
 		// (end header)
 		html += '  </p>';
@@ -345,7 +335,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			}
 		});
 		if(age !== null) {
-			html += '   <span class="updated">Last updated ' + OBA.Util.displayTime(age) + '</span>'; 
+			html += '   <span class="updated">Last updated ' + age + ' seconds ago</span>'; 
 		}
 		
 		// (end header)
@@ -525,7 +515,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		var agencyId = routeIdParts[0];
 		var routeIdWithoutAgency = routeIdParts[1];
 		
-		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
+		jQuery.getJSON(OBA.Config.siriVMUrl, { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
 		function(json) {
 
 			var vehiclesByIdInResponse = {};

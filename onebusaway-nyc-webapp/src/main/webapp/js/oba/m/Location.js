@@ -7,7 +7,6 @@ jQuery(document).ready(function() {
 	var lastLatitude = null;
 	var lastLongitude = null; 
 
-	// add location toggle UI to DOM
 	var addToggleUI = function() {
 		var searchPanelForm = jQuery("#searchPanel form");		
 
@@ -25,12 +24,10 @@ jQuery(document).ready(function() {
 			});
 		
 		toggleUI.append(turnOffButton);
-		toggleUI.append(turnOnButton);	
-		
+		toggleUI.append(turnOnButton);		
 		searchPanelForm.before(toggleUI);
 	};
 	
-	// remove location toggle UI from DOM
 	var removeToggleUI = function() {
 		turnOffGeolocation();
 		
@@ -38,70 +35,38 @@ jQuery(document).ready(function() {
 			.remove();
 	};
 	
-	// remove all instances of location being sent back to server
-	var removeLocationFields = function() {
-		if(locationField !== null) {
-			locationField.remove();
+	var updateLocationField = function() {
+		if(locationField === null) {
+			locationField = jQuery("<input></input>")
+				.attr("type", "hidden")
+				.attr("name", "l");
+
+			jQuery("#searchPanel form")
+				.append(locationField);
 		}
 		
-		// update links on this page to NOT include location
-		jQuery.each(jQuery.find("a"), function(_, _link) {
-			var link = jQuery(_link);
-			
-			var existingHref = link.attr("href");
-			if(typeof existingHref !== 'undefined' && existingHref.indexOf("&l=") > -1) {
-				var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "");
-				link.attr("href", newHref);
-			}
-		});
-
-	};
-	
-	// rewrite links to include location in query
-	var updateLocationFields = function() {
 		if(lastLatitude !== null && lastLongitude !== null) {
-			// add location field to form if not there already
-			if(locationField === null) {
-				locationField = jQuery("<input></input>")
-					.attr("type", "hidden")
-					.attr("name", "l");
-
-				jQuery("#searchPanel form")
-					.append(locationField);
-			}
-			
 			locationField.val(lastLatitude + "," + lastLongitude);
-
-			// update links on this page to include location
-			jQuery.each(jQuery.find("a"), function(_, _link) {
-				var link = jQuery(_link);
-				
-				var existingHref = link.attr("href");
-				if(typeof existingHref !== 'undefined' && existingHref.indexOf("&l=") > -1) {
-					var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "&l=" + lastLatitude + "%2C" + lastLongitude);
-					link.attr("href", newHref);
-				}
-			});
 		}
 	};
 
-	// event when user turns off location
 	var turnOffGeolocation = function() {
-		removeLocationFields();
-		
+		if(locationField !== null) { 
+			locationField.remove(); 
+			locationField = null;
+		}
+
 		turnOffButton.text("Is Off");
 		turnOnButton.text("Turn On");
 	};
 	
-	// event when user turns on location
 	var turnOnGeolocation = function() {
-		updateLocationFields();
+		updateLocationField();
 		
 		turnOffButton.text("Turn Off");
 		turnOnButton.text("Is On");
 	};
 		
-	// CONSTRUCTOR
 	if(navigator.geolocation) {
 		addToggleUI();
 
@@ -109,7 +74,7 @@ jQuery(document).ready(function() {
 			lastLatitude = location.coords.latitude;
 			lastLongitude = location.coords.longitude;
 
-			updateLocationFields();
+			updateLocationField();
 		}, removeToggleUI);
 		
 		turnOnGeolocation();

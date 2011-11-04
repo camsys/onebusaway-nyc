@@ -40,18 +40,18 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   private static final long serialVersionUID = 1L;
 
-  @Autowired  
-  private TransitDataService _transitDataService;
-
-  @Autowired  
-  private RealtimeService _realtimeService;
-
   private Siri _response;
   
   private HttpServletRequest _request;
   
   private Date _now = new Date();
   
+  @Autowired  
+  private TransitDataService _transitDataService;
+
+  @Autowired  
+  private RealtimeService _realtimeService;
+
   @Override
   public String execute() {  
     String agencyId = _request.getParameter("OperatorRef");
@@ -126,7 +126,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   }
 
   public String getVehicleMonitoring() throws Exception {
-    return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+    return SiriJsonSerializer.getJson(_response);
   }
 
   @Override

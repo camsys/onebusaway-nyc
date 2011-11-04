@@ -22,15 +22,10 @@
     <jsp:directive.page contentType="text/html" />
     <head>
     <title>Vehicle Location Simulations</title>
-	<style>
-	table.summaries td {
-   		border: 1px solid black;
-	}
-	</style>
     </head>
     <body>
 
-    <table class="summaries">
+    <table>
         <thead>
             <tr>
                 <td>task id</td>
@@ -45,7 +40,6 @@
                 <td>step_to</td>
                 <td>restart</td>
                 <td>cancel</td>
-                <td>show on map</td>
             </tr>
         </thead>
         <tbody>
@@ -79,8 +73,6 @@
                         href="vehicle-location-simulation!restart.do?taskId=${s.id}">restart</a></td>
                     <td><a
                         href="vehicle-location-simulation!cancel.do?taskId=${s.id}">cancel</a></td>
-                    <td><a
-                        href="vehicle-location-simulation!map.do?taskId=${s.id}">map</a></td>
                 </tr>
             </c:forEach>
         </tbody>

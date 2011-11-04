@@ -94,12 +94,8 @@ public class SiriJsonSerializer {
       context.addBeanSerializerModifier(new CustomBeanSerializerModifier());
     }
   }
-
-  public static String getJson(Siri siri) throws Exception {    
-    return getJson(siri, null);
-  }
   
-  public static String getJson(Siri siri, String callback) throws Exception {    
+  public static String getJson(Siri siri) throws Exception {    
     try {
       ObjectMapper mapper = new ObjectMapper();    
       mapper.setSerializationInclusion(Inclusion.NON_NULL);
@@ -114,17 +110,7 @@ public class SiriJsonSerializer {
 
       mapper.registerModule(new JacksonModule());
 
-      String output = "";
-      
-      if(callback != null)
-        output = callback + "(";
-      
-      output += mapper.writeValueAsString(siri);
-
-      if(callback != null)
-        output += ")";
-    
-      return output;
+      return mapper.writeValueAsString(siri);
     } catch(Exception e) {
       return e.getMessage();
     }
