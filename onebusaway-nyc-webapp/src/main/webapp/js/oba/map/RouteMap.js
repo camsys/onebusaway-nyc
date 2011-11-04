@@ -173,6 +173,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var stopsAddedForRouteAndDirection = {};
 	var stopsById = {};
 	var infoWindow = new google.maps.InfoWindow({});
+	var displayedRoutes = {};
+
 	
 	// only one popup open at a time!
 	var closeFn = function() {
@@ -192,7 +194,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
     		pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2))
     	};
 		
+		
 		closeFn();
+		
 		
 		// called to refresh the bubble's content
 		google.maps.InfoWindow.prototype.refreshFn = function() {
@@ -417,6 +421,14 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 		polylinesByRouteAndDirection[routeId + "|" + directionId] = polylines;
 	}
+	
+	function togglePolyline(polyline) {
+		if (polyline.getMap() !== null) {
+			polyline.setMap(map);
+		} else {
+			polyline.setMap(null);
+		}
+	}
 
 	// STOPS
 	function removeStops(routeId, directionId) {
@@ -599,6 +611,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	
 	// MISC
 	function removeRoutesNotInSet(routeResults) {
+		console.log("removeRoutesNotInSet: ");
+		console.log(routeResults);
 		// remove routes not shown anymore
 		for(key in polylinesByRouteAndDirection) {
 			if(key === null) {
@@ -624,6 +638,39 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				removeVehicles(routeAndAgencyId);
 			}
 		}		
+	}
+	
+	// check if route is currently displayed
+	function routeIsInCurrentSet(routeName) {
+		for(key in polylinesByRouteAndDirection) {
+			if(key === null) {
+				continue;
+			}
+			var keyParts = key.split("|");
+			var routeAndAgencyId = keyParts[0];
+			
+			if (routeAndAgencyId === routeName) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	// get route
+	function getPolylineForRoute(routeName) {
+		for(key in polylinesByRouteAndDirection) {
+			if(key === null) {
+				continue;
+			}
+			var keyParts = key.split("|");
+			var routeAndAgencyId = keyParts[0];
+			console.log(routeName);
+			
+			if (routeAndAgencyId === routeName) {
+				return true;
+			}
+		}
+		return false;
 	}
 		
 	//////////////////// CONSTRUCTOR /////////////////////
@@ -703,6 +750,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			return map.getBounds();
 		},
 		
+		routeInCurrentSet: function(routeName) {
+			return routeIsInCurrentSet(routeName);
+		},
+		
 		removeAllRoutes: function() {
 			removeRoutesNotInSet({});
 		},
@@ -769,6 +820,15 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		// clear all markers except for passed in marker (can be null)
 		clearMarkers: function(marker) {
 			clearAllMarkersOnMap(marker);
+		},
+		
+		toggleRoute: function(routeName) {
+			var line = routeIsInCurrentSet(routeName);
+			console.log("line");
+			console.log(line);
+			if (line !== null) {
+				togglePolyline(line);
+			}
 		}
 	};
 };
