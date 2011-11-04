@@ -27,7 +27,13 @@ OBA.Sidebar = function() {
 	var searchResultsDiv = $('#results');
 	var searchResultsUlDiv = $('#results ul');
 	var searchInput = jQuery("#search input[type=text]");
-
+	
+	// elements for interactive legend
+	var legendDiv = $('#legend');
+	var legendUlDiv = $('#legend ul');
+	
+	var displayedRoutes = {};
+	
 	
 	function addSearchBehavior() {
 		var searchForm = jQuery("#search");
@@ -46,6 +52,9 @@ OBA.Sidebar = function() {
 		footerDiv = jQuery("#footer");
 		contentDiv = jQuery("#content");
 		searchBarDiv = jQuery("#searchbar");
+		
+		// add overflow TODO until CSS styled
+		searchBarDiv.css("overflow", "auto");
 		
 		function resize() {
 			var h = theWindow.height() - footerDiv.height() - headerDiv.height();
@@ -210,6 +219,7 @@ OBA.Sidebar = function() {
 		google.maps.event.addListener(marker, 'click', function() { item.click(); });
 		
 	}
+	
 
 	// show user list of addresses
 	function disambiguate(locationResults) {
@@ -244,19 +254,116 @@ OBA.Sidebar = function() {
 		});
 		searchResultsDiv.show();
 	}
-	
-	// single route search result view
-	function showSingleRoute(routeResult) {
-		routeMap.showRoute(routeResult);
-	}
 
-	// display (few enough) routes on map
-	function showRoutesOnMap(routeResults) {
-		jQuery.each(routeResults, function(_, routeResult) {
-			routeMap.showRoute(routeResult);
+	
+	// single route search result view (displays a route on map and in legend)
+	function displayRoute(routeResult) {
+		var name = routeResult.name;
+		
+		// add to current set of routes  
+		if (displayedRoutes[name] != null) {
+			return;
+		}
+		displayedRoutes[name] = routeResult;
+
+		var color = routeResult.color;
+		var description = routeResult.description;
+		var destinations = routeResult.destinations;
+		
+		// Create a checked checkbox for the route
+		var routeCheckbox = $('<input type="checkbox" />').attr('id', 'checkbox_' + name);	
+		routeCheckbox.attr("checked", true);
+		routeCheckbox.click(function() {
+		    //routeMap.toggleRoute(name);
 		});
 		
+		var item = $('<li class="legend_item"></li>');
+		item.append(routeCheckbox);
+		item.append(' ' + name);
+		
+		// Style the route name based on route color
+		if (routeResult.color == null) {
+			color = "black";
+		} else {
+			color = routeResult.color;
+		}
+		item.css("color", color);
+		item.css("cursor", "pointer");
+		legendUlDiv.append(item);
+		
+		// Add route description if available
+		if (description !== null) {
+			item.append("<h4>" + description + "</h4>");  
+		}
+;	  
+		var headsign_list = $('<div class="accordion"></div>');
+		headsign_list.css("height", "100px");
+		
+		// Add destinations as drop-down lists
+		jQuery.each(destinations, function(_, destination) {			
+			var headsign = destination.headsign;			
+			if (headsign !== null) {
+				var headsign_item = $('<h5></h5>').append($('<a href="#">' + headsign + '</a>'));					
+					
+				// add stops
+				var stops = destination.stops;	
+				if (stops !== null) {
+					var innerStopList = $('<ul></ul>');
+					var visibleStops = stopsWithinBounds(stops);
+					
+					jQuery.each(visibleStops, function(_, visibleStop) {	
+						stopLink = $('<li>' + visibleStop.name + '</li>');
+						stopLink.css("color", color);
+						stopLink.css("cursor", "pointer");
+						stopLink.click(function() {
+						   // routeMap.highlightStop(stop.stopIdWithoutAgency);
+						});
+						innerStopList.append(stopLink);
+					});
+					headsign_list.append(headsign_item);
+					headsign_list.append($('<div></div>').append(innerStopList));
+				}
+			}
+		});
+	
+		item.append(headsign_list);	
+
+		// add route to map
+		routeMap.showRoute(routeResult);
+
+	}
+	
+	// return an array of points within the passed in bounds
+	function stopsWithinBounds(stops) {
+		var stopsInBounds = [];
+		var currentExtent = routeMap.getBounds();
+		
+		jQuery.each(stops, function(_, stop) {
+			var coordinate = new google.maps.LatLng(stop.latitude, stop.longitude);
+			if (currentExtent.contains(coordinate)) {
+				stopsInBounds.push(stop);
+			}
+		});
+		return stopsInBounds;
+	}
+
+	// display (few enough) routes on map and in legend
+	function showRoutesOnMap(routeResults) {
+		jQuery.each(routeResults, function(_, routeResult) {	
+			displayRoute(routeResult);
+		});
+		
+		// initialize accordion plugin with all panels closed
+		$('.accordion').accordion({ header: 'h5', collapsible: true, active: false, autoHeight: false });
+		
+		legendDiv.show();
 		//routeMap.removeRoutesNotInSet(routeResults);
+	}
+	
+	// single route search result view (shows ENTIRE route span)
+	function showSingleRoute(routeResult) {
+		routeMap.showRoute(routeResult);
+		legendDiv.show();
 	}
 
 	// show a region's worth of routes--user chooses one, and 
@@ -296,7 +403,7 @@ OBA.Sidebar = function() {
 		// remove any existing search results
 		removeSearchResults();
 		
-		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", {q: q }, function(json) { 
+		jQuery.getJSON(OBA.Config.searchUrl, {q: q }, function(json) { 
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0)
 				return;
@@ -329,7 +436,7 @@ OBA.Sidebar = function() {
 	// constructor:
 	var mapMoveCallbackFn = function() {
 						
-		jQuery.getJSON(OBA.Config.routesWithinBoundsUrl + "?callback=?", { bounds: routeMap.getBounds().toUrlValue() }, 
+		jQuery.getJSON(OBA.Config.routesWithinBoundsUrl, { bounds: routeMap.getBounds().toUrlValue() }, 
 		function(json) {
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0)

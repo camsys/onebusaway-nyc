@@ -343,16 +343,15 @@ public class RealtimeServiceImpl implements RealtimeService {
     TripBean tripBean = adBean.getTrip();
 
     // only consider buses that are in layover
-    if(phase != null && 
-        (phase.toUpperCase().equals("LAYOVER_BEFORE") 
-         || phase.toUpperCase().equals("LAYOVER_DURING"))) {
+    if(phase != null && (phase.toUpperCase().equals("LAYOVER_BEFORE") 
+        || phase.toUpperCase().equals("LAYOVER_DURING"))) {
 
       double distanceAlongTrip = status.getDistanceAlongTrip();
       double totalDistanceAlongTrip = status.getTotalDistanceAlongTrip();
       double ratio = distanceAlongTrip / totalDistanceAlongTrip;
       
       // if the bus isn't serving the trip this arrival and departure is for AND 
-      // the bus is NOT on the previous trip in the block, but at the end of that trip (ready to serve
+      // the bus is on the previous trip in the block, but at the end of that trip (ready to serve
       // the trip this arrival and departure is for), filter that out.
       if(activeTrip != null
             && !tripBean.getId().equals(activeTrip.getId())

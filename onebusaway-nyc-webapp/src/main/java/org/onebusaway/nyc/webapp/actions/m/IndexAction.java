@@ -20,7 +20,7 @@ import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriDistanceExtension;
 import org.onebusaway.nyc.presentation.impl.realtime.SiriExtensionWrapper;
-import org.onebusaway.nyc.presentation.impl.sort.LocationSensitiveSearchResultComparator;
+import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
@@ -54,11 +54,19 @@ import javax.servlet.http.HttpServletRequest;
 
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
-  private static final long serialVersionUID = 1L;
-
   private static final String currentLocationText = "(Current Location)";
   
+  private static final long serialVersionUID = 1L;
+  
   private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
+
+  private List<SearchResult> _searchResults = new ArrayList<SearchResult>();
+
+  private long lastUpdateTime = System.currentTimeMillis();
+  
+  private String _q;
+  
+  private CoordinatePoint _location;
 
   @Autowired
   private RealtimeService _realtimeService;
@@ -71,31 +79,19 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   @Autowired
   private NycGeocoderService _geocoderService;
-
-  private List<SearchResult> _searchResults = new ArrayList<SearchResult>();
-
-  private long lastUpdateTime = System.currentTimeMillis();
-  
-  private String _q;
-  
-  private CoordinatePoint _location;
   
   public void setQ(String q) {
-    if(q != null)
-      this._q = q.trim();
-    else
-      this._q = null;
+    this._q = q.trim();
   }
 
   public void setL(String location) {
     String[] locationParts = location.split(",");
     if(locationParts.length == 2) {
-      this._location = new CoordinatePoint(Double.parseDouble(locationParts[0]), 
-          Double.parseDouble(locationParts[1]));
-    } else
-      this._location = null;
+      _location = new CoordinatePoint(Double.parseDouble(locationParts[0]), 
+            Double.parseDouble(locationParts[1]));
+    }
   }
-
+  
   public String execute() throws Exception {
     if(_q == null)
       return SUCCESS;
@@ -104,6 +100,8 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     _stopSearchService.setModelFactory(factory);
     _routeSearchService.setModelFactory(factory);
     
+    _q = _q.trim();
+      
     // empty query with location means search for current location
     if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(currentLocationText)))) {
       _searchResults.addAll(_stopSearchService.resultsForLocation(_location.getLat(), _location.getLon()));        
@@ -128,7 +126,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
     injectRealtimeDataIntoResults(_searchResults);
       
-    Collections.sort(_searchResults, new LocationSensitiveSearchResultComparator(_location));
+    Collections.sort(_searchResults, new SearchResultComparator());
 
     return SUCCESS;
   }
@@ -344,19 +342,12 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
     
   public String getQ() {
-    if((_q == null || _q.isEmpty()) && _location != null)
+    if(_location != null)
       return currentLocationText;
     else
       return _q;
   }
-  
-  public String getL() {
-    if(_location != null) 
-      return _location.getLat() + "," + _location.getLon();
-    else
-      return null;
-  }
-  
+
   public String getCacheBreaker() {
 	  return String.valueOf(Math.ceil((Math.random() * 100000)));
   }

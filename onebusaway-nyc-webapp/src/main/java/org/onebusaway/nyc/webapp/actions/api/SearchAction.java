@@ -38,6 +38,8 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
 
+  private List<SearchResult> _searchResults = new ArrayList<SearchResult>();
+  
   @Autowired
   private RouteSearchService _routeSearchService;
 
@@ -47,20 +49,19 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private NycGeocoderService _geocoderService;
   
-  private List<SearchResult> _searchResults = new ArrayList<SearchResult>();
-  
   private String _q;
 
   public void setQ(String query) {
-    if(query != null)
-      _q = query.trim();
-    else
-      _q = null;
+    _q = query.trim();
   }
 
   @Override
   public String execute() {    
-    if(_q == null || _q.isEmpty())
+    if(_q == null)
+      return SUCCESS;
+
+    _q = _q.trim();
+    if(_q.isEmpty())
       return SUCCESS;
 
     // try as stop ID
