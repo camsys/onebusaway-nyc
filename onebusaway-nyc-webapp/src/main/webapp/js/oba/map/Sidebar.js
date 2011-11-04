@@ -403,7 +403,7 @@ OBA.Sidebar = function() {
 		// remove any existing search results
 		removeSearchResults();
 		
-		jQuery.getJSON(OBA.Config.searchUrl, {q: q }, function(json) { 
+		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", {q: q }, function(json) { 
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0)
 				return;
@@ -435,8 +435,7 @@ OBA.Sidebar = function() {
 	
 	// constructor:
 	var mapMoveCallbackFn = function() {
-						
-		jQuery.getJSON(OBA.Config.routesWithinBoundsUrl, { bounds: routeMap.getBounds().toUrlValue() }, 
+		jQuery.getJSON(OBA.Config.routesWithinBoundsUrl + "?callback=?", { bounds: routeMap.getBounds().toUrlValue() }, 
 		function(json) {
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0)
