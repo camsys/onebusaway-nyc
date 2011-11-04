@@ -67,7 +67,7 @@
 	<!-- Input Queue Configuration -->
 	<!-- This option listens to the queue with pilot and SI data on it. -->
    	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.${ie.listener}"> 
- 		<property name="depotPartitionKey" value="JG,CA,MA,MH,YU,100th,126,BPK,CAST,CHAR,CP,ECH,ENY,FLAT,FP,FRK,GH,GRAND,JAM,JFK,KB,LAG,MANVI,MJQ,NJL,QV,RVC,SPRCK,STF,ULPK,WF,YNK,YUK"/>
+ 		<property name="depotPartitionKey" value="100th,126,BPK,CAST,CHAR,CP,ECH,ENY,FLAT,FP,FRK,GH,GRAND,JAM,JFK,JG,KB,LAG,MA,MANVI,MJQ,NJL,QV,RVC,SPRCK,STG,ULPK,WF,YNK,YUK"/>
    	</bean>
 
 
