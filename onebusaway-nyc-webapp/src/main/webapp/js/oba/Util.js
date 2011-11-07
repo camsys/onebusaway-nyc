@@ -23,8 +23,6 @@ OBA.Util = (function() {
 				console.log(s);
 			}
 		},
-		
-		// This function is from Google's polyline utility.
 		decodePolyline: function(encoded) {
 			var len = encoded.length;
 			var index = 0;

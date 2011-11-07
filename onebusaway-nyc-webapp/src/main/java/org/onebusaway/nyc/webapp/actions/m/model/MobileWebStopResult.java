@@ -15,21 +15,19 @@
  */
 package org.onebusaway.nyc.webapp.actions.m.model;
 
-import org.onebusaway.nyc.presentation.model.search.LocationResult;
-import org.onebusaway.nyc.presentation.model.search.RouteResult;
+import org.onebusaway.nyc.presentation.model.search.StopResult;
 
-import java.util.List;
+// route-centric view model
+public class MobileWebStopResult extends StopResult {
 
-public class MobileWebLocationSearchResult extends LocationResult {
-  
-  private List<RouteResult> nearbyRoutes;
-  
-  public void setNearbyRoutes(List<RouteResult> nearbyRoutes) {
-    this.nearbyRoutes = nearbyRoutes;
-  }
-  
-  public List<RouteResult> getNearbyRoutes() {
-    return nearbyRoutes;
+  private String distanceAwayString;
+
+  public String getDistanceAwayString() {
+    return distanceAwayString;
   }
 
+  public void setDistanceAwayString(String distanceAwayString) {
+    this.distanceAwayString = distanceAwayString;
+  }
+  
 }

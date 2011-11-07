@@ -13,15 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.actions.m.model;
+package org.onebusaway.nyc.sms.actions.model;
 
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 import java.util.List;
 
-// stop-centric view model
-public class MobileWebRouteDestinationItem extends RouteDestinationItem {
+public class SmsRouteDestinationItem extends RouteDestinationItem {
 
   private List<NaturalLanguageStringBean> serviceAlerts;
   

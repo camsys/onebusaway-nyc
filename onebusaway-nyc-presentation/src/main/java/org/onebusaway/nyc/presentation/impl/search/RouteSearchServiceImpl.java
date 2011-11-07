@@ -72,13 +72,24 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     _modelFactory = factory;
   }
 
+  // this method returns stops on the route!
   @Override
   public List<RouteResult> resultsForLocation(Double latitude, Double longitude) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, _distanceToRoutes);
 
-    return resultsForLocation(bounds);
+    SearchQueryBean queryBean = new SearchQueryBean();
+    queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
+    queryBean.setBounds(bounds);
+    queryBean.setMaxCount(100);
+    
+    RoutesBean routes = _transitDataService.getRoutes(queryBean);
+
+    List<RouteResult> results = routesBeanToRouteSearchResults(routes);
+
+    return results;
   }    
   
+  // this method DOES NOT return stops on the route!
   @Override
   public List<RouteResult> resultsForLocation(CoordinateBounds bounds) {
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -93,6 +104,7 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     return results;
   }
 
+  // this method returns stops on the route!
   @Override
   public RouteResult makeResultForRouteId(String routeId) {
     RouteBean routeBean = _transitDataService.getRouteForId(routeId);
@@ -111,6 +123,7 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     return null;
   }
   
+  // this method returns stops on the route!
   @Override
   public List<RouteResult> resultsForQuery(String routeQuery) {
     SearchQueryBean queryBean = new SearchQueryBean();

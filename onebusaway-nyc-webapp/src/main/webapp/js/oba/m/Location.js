@@ -1,5 +1,6 @@
-jQuery(document).ready(function() {
+var OBA = window.OBA || {};
 
+OBA.Mobile = (function() {
 	var turnOffButton = null;
 	var turnOnButton = null;
 
@@ -101,18 +102,23 @@ jQuery(document).ready(function() {
 		turnOnButton.text("Is On");
 	};
 		
-	// CONSTRUCTOR
-	if(navigator.geolocation) {
-		addToggleUI();
+	return {
+		initialize: function() {
+			if(navigator.geolocation) {
+				addToggleUI();
 
-		navigator.geolocation.getCurrentPosition(function(location) {
-			lastLatitude = location.coords.latitude;
-			lastLongitude = location.coords.longitude;
+				navigator.geolocation.getCurrentPosition(function(location) {
+					lastLatitude = location.coords.latitude;
+					lastLongitude = location.coords.longitude;
 
-			updateLocationFields();
-		}, removeToggleUI);
-		
-		turnOnGeolocation();
-	}
-});
+					updateLocationFields();
+				}, removeToggleUI);
+				
+				turnOnGeolocation();
+			}			
+		}
+	};
+})();
+
+jQuery(document).ready(function() { OBA.Mobile.initialize(); });
 
