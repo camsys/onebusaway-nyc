@@ -256,9 +256,8 @@ public class StifTask implements Runnable {
       for (RawTrip pullout : pullouts) {
         blockNo ++;
         RawTrip lastTrip = pullout;
-        String blockId = null;
         int i = 0;
-
+        HashSet<String> blockIds = new HashSet<String>();
         while (lastTrip.type != StifTripType.PULLIN) {
           if (++i > 200) {
             _log.warn("We seem to be caught in an infinite loop; this is usually caused\n"
@@ -310,8 +309,9 @@ public class StifTask implements Runnable {
 
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
-            blockId = "block_" + blockNo + "_" + gtfsTrip.getServiceId().getId();
+            String blockId = "block_" + blockNo + "_" + gtfsTrip.getServiceId().getId();
             blockId = blockId.intern();
+            blockIds.add(blockId);
             gtfsTrip.setBlockId(blockId);
             _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
 
@@ -319,11 +319,15 @@ public class StifTask implements Runnable {
                 gtfsTrip.getId().getId(), blockId);
           }
           if (lastTrip.type == StifTripType.DEADHEAD) {
-            dumpBlockDataForTrip(printStream, pullout, "deadhead", blockId);
+            for (String blockId : blockIds) {
+              dumpBlockDataForTrip(printStream, lastTrip, "deadhead", blockId);
+            }
           }
         }
-        dumpBlockDataForTrip(printStream, pullout, "pullout", blockId);
-        dumpBlockDataForTrip(printStream, lastTrip, "pullin", blockId);
+        for (String blockId : blockIds) {
+          dumpBlockDataForTrip(printStream, pullout, "pullout", blockId);
+          dumpBlockDataForTrip(printStream, lastTrip, "pullin", blockId);
+        }
       }
     }
 
