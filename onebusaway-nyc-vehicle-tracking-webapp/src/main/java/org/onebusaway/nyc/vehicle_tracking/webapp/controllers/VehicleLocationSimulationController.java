@@ -15,6 +15,39 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.blocks.BlockBean;
+import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
+import org.onebusaway.transit_data.model.blocks.BlockStatusBean;
+import org.onebusaway.transit_data.model.blocks.BlockTripBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.AgencyService;
+import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
+import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -36,37 +69,6 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.onebusaway.csv_entities.CsvEntityWriterFactory;
-import org.onebusaway.csv_entities.EntityHandler;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.blocks.BlockBean;
-import org.onebusaway.transit_data.model.blocks.BlockStatusBean;
-import org.onebusaway.transit_data.model.blocks.BlockTripBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.transit_data_federation.services.AgencyService;
-import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
-import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-
 @Controller
 public class VehicleLocationSimulationController {
 
@@ -76,6 +78,8 @@ public class VehicleLocationSimulationController {
       + ".calendarOffset";
 
   private VehicleLocationSimulationService _vehicleLocationSimulationService;
+  
+  private TransitDataService _transitDataService;
   
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
@@ -90,7 +94,13 @@ public class VehicleLocationSimulationController {
       VehicleLocationInferenceService vehicleLocationService) {
     _vehicleLocationInferenceService = vehicleLocationService;
   }
-  
+
+  @Autowired
+  public void setTransitDataService(
+      TransitDataService transitDataService) {
+    _transitDataService = transitDataService;
+  }
+
   @Autowired
   public void setVehicleLocationSimulationService(
       VehicleLocationSimulationService service) {
@@ -227,13 +237,6 @@ public class VehicleLocationSimulationController {
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
 
-  @RequestMapping(value = "/vehicle-location-simulation!task-summary.do", method = RequestMethod.GET)
-  public ModelAndView taskData(@RequestParam() int taskId) {
-
-    VehicleLocationSimulationSummary summary = _vehicleLocationSimulationService.getSimulation(taskId);
-    return new ModelAndView("json", "summary", summary);
-  }
-
   @RequestMapping(value = "/vehicle-location-simulation!task-details.do", method = RequestMethod.GET)
   public ModelAndView taskDetails(
       @RequestParam() int taskId,
@@ -275,6 +278,13 @@ public class VehicleLocationSimulationController {
     writeRecordsToOutput(response, records);
   }
 
+  @RequestMapping(value = "/vehicle-location-simulation!task-result-records-json.do", method = RequestMethod.GET)
+  public ModelAndView taskRecordsJson(@RequestParam() int taskId) throws IOException {
+
+    List<NycTestInferredLocationRecord> records = _vehicleLocationSimulationService.getResultRecords(taskId);
+    return new ModelAndView("json", "records", records);
+  }
+  
   @RequestMapping(value = "/vehicle-location-simulation!active-blocks.do", method = RequestMethod.GET)
   public ModelAndView activeBlocks(HttpSession session,
       @RequestParam(required = false) Date time) {
@@ -298,6 +308,61 @@ public class VehicleLocationSimulationController {
     return new ModelAndView("vehicle-location-simulation-active-blocks.jspx", m);
   }
 
+  @RequestMapping(value = "/vehicle-location-simulation!active-routes-json.do", method = RequestMethod.GET)
+  public ModelAndView activeRoutesJson(HttpSession session,
+      @RequestParam(required = false) Date time) {
+
+    time = getTime(session, time);
+
+    List<String> routeList = new ArrayList<String>();    
+    for (String agencyId : _agencyService.getAllAgencyIds()) {
+      ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agencyId);
+      for(RouteBean route : routes.getList()) {
+        routeList.add(route.getId());
+      }
+    }
+   
+    return new ModelAndView("json", "routes", routeList);
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!active-blocks-for-route-json.do", method = RequestMethod.GET)
+  public ModelAndView activeBlocksForRouteJson(@RequestParam(required=true) String routeId) {
+    Map<String, ArrayList<String>> m = new HashMap<String, ArrayList<String>>();
+
+    ListBean<BlockStatusBean> beans = _blockStatusBeanService.getBlocksForRoute(
+          AgencyAndIdLibrary.convertFromString(routeId), System.currentTimeMillis());
+
+    for(BlockStatusBean blockBean : beans.getList()) {
+      BlockBean block = blockBean.getBlock();
+        
+      ArrayList<String> trips = new ArrayList<String>();
+      for(BlockConfigurationBean config : block.getConfigurations()) {
+        for(BlockTripBean blockTrip : config.getTrips()) {
+          trips.add(blockTrip.getTrip().getId());
+        }
+      }
+
+      m.put(block.getId(), trips);
+    }
+
+    return new ModelAndView("json", "blocks", m);
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!points-for-trip-id.do", method = RequestMethod.GET)
+  public ModelAndView activeBlocksJson(@RequestParam(required=true) String tripId) {
+    TripBean trip = _transitDataService.getTrip(tripId);
+    EncodedPolylineBean polyline = _transitDataService.getShapeForId(trip.getShapeId());
+    
+    return new ModelAndView("json", "points", polyline.getPoints());
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!map.do", method = RequestMethod.GET)
+  public ModelAndView activeBlocksAndRecordsForTask(@RequestParam() int taskId,
+      HttpServletResponse response) throws IOException {
+
+    return new ModelAndView("vehicle-location-simulation-map.jspx", null);
+  }
+  
   @RequestMapping(value = "/vehicle-location-simulation!block.do", method = RequestMethod.GET)
   public ModelAndView block(@RequestParam String blockId,
       @RequestParam long serviceDate) {

@@ -28,7 +28,7 @@ OBA.Config = {
 		siriSMUrl: "api/stop-monitoring",
 		siriVMUrl: "api/vehicle-monitoring",
 		
-		refreshInterval: 5000,
+		refreshInterval: 15000,
 		
 		googleAnalyticsId: 'UA-XXXXXXXX-X',
 

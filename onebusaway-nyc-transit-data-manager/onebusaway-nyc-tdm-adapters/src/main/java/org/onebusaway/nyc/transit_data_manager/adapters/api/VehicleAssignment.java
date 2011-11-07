@@ -16,6 +16,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPVehicleAssignm
 import org.onebusaway.nyc.transit_data_manager.adapters.input.VehicleAssignmentsOutputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsVehiclePullInPullOut;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CSVVehicleAssignsInputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.UTSVehiclePullInOutDataUtility;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.VehicleAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tcip.ListPullOutsGenerator;
 
@@ -67,8 +68,13 @@ public class VehicleAssignment {
     List<MtaUtsVehiclePullInPullOut> vehicleAssignments = inConv.getVehicleAssignments();
 
     System.out.println("ran getVehicleAssignments and got "
-        + vehicleAssignments.size() + " results");
+        + vehicleAssignments.size() + " results before cleanup");
 
+    vehicleAssignments = UTSVehiclePullInOutDataUtility.filterOutStrangeRows(vehicleAssignments);
+    
+    System.out.println("after cleanup, "
+        + vehicleAssignments.size() + " results.");
+    
     firstServiceDate = vehicleAssignments.get(0).getServiceDate();
 
     VehicleAssignmentsOutputConverter converter = new TCIPVehicleAssignmentsOutputConverter(

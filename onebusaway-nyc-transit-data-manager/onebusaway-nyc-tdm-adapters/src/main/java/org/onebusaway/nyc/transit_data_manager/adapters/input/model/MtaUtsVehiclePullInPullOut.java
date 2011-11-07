@@ -94,6 +94,10 @@ public class MtaUtsVehiclePullInPullOut {
     return busNumber;
   }
 
+  public String getBusNumberField() {
+    return busNumberField;
+  }
+
   public String getDate() {
     return dateField;
   }
