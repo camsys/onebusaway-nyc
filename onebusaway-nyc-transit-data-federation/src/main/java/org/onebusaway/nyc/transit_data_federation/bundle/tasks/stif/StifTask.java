@@ -230,6 +230,8 @@ public class StifTask implements Runnable {
       }
     }
 
+    int blockNo = 0;
+
     Map<ServiceCode, List<RawTrip>> rawData = loader.getRawStifData();
     for (List<RawTrip> rawTrips : rawData.values()) {
       // this is a monster -- we want to group these by run and find the
@@ -251,7 +253,6 @@ public class StifTask implements Runnable {
         Collections.sort(byRun);
       }
 
-      int blockNo = 0;
       for (RawTrip pullout : pullouts) {
         blockNo ++;
         RawTrip lastTrip = pullout;
