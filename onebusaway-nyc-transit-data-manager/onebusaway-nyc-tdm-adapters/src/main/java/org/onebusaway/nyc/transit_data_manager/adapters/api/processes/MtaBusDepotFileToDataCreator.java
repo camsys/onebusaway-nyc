@@ -24,6 +24,14 @@ public class MtaBusDepotFileToDataCreator {
 
   private File inputFile;
   private Reader reader;
+  
+  public MtaBusDepotFileToDataCreator(File mtaBusDepotFile) throws FileNotFoundException {
+    super();
+    
+    setInputFile(mtaBusDepotFile);
+  }
+  
+  
 
   public VehicleDepotData generateDataObject() throws IOException {
     List<MtaBusDepotAssignment> assignments = loadDepotAssignments();
@@ -64,7 +72,13 @@ public class MtaBusDepotFileToDataCreator {
     return reader;
   }
 
-  public void setReader(Reader reader) {
+  private void setReader(Reader reader) {
     this.reader = reader;
+  }
+  
+  private void setInputFile(File inputFile) throws FileNotFoundException {
+    this.inputFile = inputFile;
+    
+    setReader(new FileReader(this.inputFile));
   }
 }
