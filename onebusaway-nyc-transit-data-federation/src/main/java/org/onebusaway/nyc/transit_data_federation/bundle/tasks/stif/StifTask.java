@@ -20,7 +20,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,12 +31,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.utility.ObjectSerializationLibrary;
-import org.opentripplanner.graph_builder.services.DisjointSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,31 +105,11 @@ public class StifTask implements Runnable {
     StifTripLoader loader = new StifTripLoader();
     loader.setGtfsDao(_gtfsMutableRelationalDao);
 
-    FileOutputStream outputStream = null;
-    if (logPath != null) {
-      try {
-        outputStream = new FileOutputStream(new File(logPath));
-        loader.setOutputStream(outputStream);
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    }
     for (File path : _stifPaths) {
       loadStif(path, loader);
     }
 
-    //set computed block ids for trips
-    Map<Trip, RawRunData> rawRunDataByTrip = loader.getRawRunDataByTrip();
-    DisjointSet<String> blocks = loader.getBlocks();
-    for (Map.Entry<Trip, RawRunData> entry : rawRunDataByTrip.entrySet()) {
-      Trip trip = entry.getKey();
-      RawRunData data = entry.getValue();
-
-      String newBlockId = "computed_block_" + blocks.find(data.getRun1() + data.getServiceCode());
-      trip.setBlockId(newBlockId);
-      _gtfsMutableRelationalDao.updateEntity(trip);
-    }
-
+    computeBlocks(loader);
     warnOnMissingTrips();
 
     Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
@@ -174,14 +158,191 @@ public class StifTask implements Runnable {
         ObjectSerializationLibrary.writeObject(_bundle.getTripsForDSCIndex(), 
         		tripToDscMap);
 
-        ObjectSerializationLibrary.writeObject(_bundle.getDSCForTripIndex(), 
-        		dscToTripMap);
+      ObjectSerializationLibrary.writeObject(_bundle.getDSCForTripIndex(),
+          dscToTripMap);
     } catch (IOException e) {
-        throw new IllegalStateException(
-            "error serializing DSC/STIF data", e);
+      throw new IllegalStateException("error serializing DSC/STIF data", e);
+    }
+
+  }
+
+  class TripWithStartTime implements Comparable<TripWithStartTime> {
+
+    private int startTime;
+    private Trip trip;
+
+    public TripWithStartTime(Trip trip) {
+      this.trip = trip;
+      List<StopTime> stopTimes = _gtfsMutableRelationalDao.getStopTimesForTrip(trip);
+      startTime = stopTimes.get(0).getDepartureTime();
+    }
+
+    // this is just for creating bogus objects for searching
+    public TripWithStartTime(int startTime) {
+      this.startTime = startTime;
+    }
+
+    @Override
+    public int compareTo(TripWithStartTime o) {
+      return startTime - o.startTime;
+    }
+
+    public String toString() {
+      return "TripWithStartTime(" + startTime + ", " + trip + ")";
+    }
+
+  }
+
+  @SuppressWarnings("rawtypes")
+  class RawTripComparator implements Comparator {
+    @Override
+    public int compare(Object o1, Object o2) {
+      if (o1 instanceof Integer) {
+        if (o2 instanceof Integer) {
+          return ((Integer) o1) - ((Integer) o2);
+        } else {
+          RawTrip trip = (RawTrip) o2;
+          return ((Integer) o1) - trip.firstStopTime;
+        }
+      } else {
+        if (o2 instanceof Integer) {
+          return ((RawTrip) o1).firstStopTime - ((Integer) o2);
+        } else {
+          RawTrip trip = (RawTrip) o2;
+          return ((RawTrip) o1).firstStopTime - trip.firstStopTime;
+        }
+      }
+    }
+  }
+
+  private void computeBlocks(StifTripLoader loader) {
+
+    FileOutputStream outputStream = null;
+    PrintStream printStream = null;
+    if (logPath != null) {
+      try {
+        outputStream = new FileOutputStream(new File(logPath));
+        printStream = new PrintStream(outputStream);
+        printStream.println("blockId,tripId,firstStop,firstStopTime,lastStop,lastStopTime,"+
+        "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq");
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    int blockNo = 0;
+
+    Map<ServiceCode, List<RawTrip>> rawData = loader.getRawStifData();
+    for (List<RawTrip> rawTrips : rawData.values()) {
+      // this is a monster -- we want to group these by run and find the
+      // pullouts
+      HashMap<String, List<RawTrip>> tripsByRun = new HashMap<String, List<RawTrip>>();
+      ArrayList<RawTrip> pullouts = new ArrayList<RawTrip>();
+      for (RawTrip trip : rawTrips) {
+        List<RawTrip> byRun = tripsByRun.get(trip.runId);
+        if (byRun == null) {
+          byRun = new ArrayList<RawTrip>();
+          tripsByRun.put(trip.runId, byRun);
+        }
+        byRun.add(trip);
+        if (trip.type == StifTripType.PULLOUT) {
+          pullouts.add(trip);
+        }
+      }
+      for (List<RawTrip> byRun : tripsByRun.values()) {
+        Collections.sort(byRun);
+      }
+
+      for (RawTrip pullout : pullouts) {
+        blockNo ++;
+        RawTrip lastTrip = pullout;
+        int i = 0;
+        HashSet<String> blockIds = new HashSet<String>();
+        while (lastTrip.type != StifTripType.PULLIN) {
+          if (++i > 200) {
+            _log.warn("We seem to be caught in an infinite loop; this is usually caused\n"
+                + "by two trips on the same run having the same start time.  Since nobody\n"
+                + "can be in two places at once, this is an error in the STIF.  Some trips\n"
+                + "will end up with missing blocks and the log will be screwed up.  A \n"
+                + "representative trip starts at "
+                + lastTrip.firstStop
+                + " at " + lastTrip.firstStopTime + " on " + lastTrip.runId + " on " + lastTrip.serviceCode);
+            break;
+          }
+          List<RawTrip> trips = tripsByRun.get(lastTrip.nextRun);
+          if (trips == null) {
+            _log.warn("No trips for run " + lastTrip.nextRun);
+            break;
+          }
+
+          int nextTripStartTime = lastTrip.lastStopTime + lastTrip.recoveryTime;
+          @SuppressWarnings("unchecked")
+          int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
+
+          if (index < 0) {
+            index = -(index + 1);
+          }
+          if (index >= trips.size()) {
+            _log.warn("The preceding trip says that the run "
+                + lastTrip.nextRun
+                + " is next, but there are no trips after "
+                + lastTrip.firstStopTime
+                + ", so some trips will end up with missing blocks (the log may"
+                + "also be incorrect.");
+            break;
+          }
+
+          RawTrip trip = trips.get(index);
+          if (trip == lastTrip) {
+            index ++;
+            if (index >= trips.size()) {
+              _log.warn("The preceding trip says that the run "
+                  + lastTrip.nextRun
+                  + " is next, but there are no trips after "
+                  + lastTrip.firstStopTime
+                  + ", so some trips will end up with missing blocks (the log may"
+                  + "also be incorrect.");
+              break;
+            }
+            trip = trips.get(index);
+          }
+
+          lastTrip = trip;
+          for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
+            String blockId = "block_" + blockNo + "_" + gtfsTrip.getServiceId().getId();
+            blockId = blockId.intern();
+            blockIds.add(blockId);
+            gtfsTrip.setBlockId(blockId);
+            _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
+
+            dumpBlockDataForTrip(printStream, trip,
+                gtfsTrip.getId().getId(), blockId);
+          }
+          if (lastTrip.type == StifTripType.DEADHEAD) {
+            for (String blockId : blockIds) {
+              dumpBlockDataForTrip(printStream, lastTrip, "deadhead", blockId);
+            }
+          }
+        }
+        for (String blockId : blockIds) {
+          dumpBlockDataForTrip(printStream, pullout, "pullout", blockId);
+          dumpBlockDataForTrip(printStream, lastTrip, "pullin", blockId);
+        }
+      }
     }
 
     if (outputStream != null) {
+      boolean header = true;
+      for (Trip trip : _gtfsMutableRelationalDao.getAllTrips()) {
+        if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
+          if (header) {
+            printStream.println("Trips without blocks:");
+            header = false;
+          }
+          printStream.println(trip.getId().getId());
+        }
+      }
+
       try {
         outputStream.close();
       } catch (IOException e) {
@@ -190,11 +351,53 @@ public class StifTask implements Runnable {
     }
   }
 
+  /**
+   * Dump some raw block matching data to a CSV file from stif trips
+   * 
+   * @param outputStream
+   * @param rawRunDataByTrip
+   * @param trip
+   */
+  private void dumpBlockDataForTrip(PrintStream printStream, RawTrip trip,
+      String tripId, String blockId) {
+    if (printStream == null) {
+      return;
+    }
+
+    printStream.print(blockId);
+    printStream.print(",");
+    printStream.print(tripId);
+    printStream.print(",");
+
+    printStream.print(trip.firstStop);
+    printStream.print(",");
+    printStream.print(trip.firstStopTime);
+    printStream.print(",");
+    printStream.print(trip.lastStop);
+    printStream.print(",");
+    printStream.print(trip.lastStopTime);
+    printStream.print(",");
+
+    printStream.print(trip.runId);
+    printStream.print(",");
+    printStream.print(trip.reliefRunId);
+
+    printStream.print(",");
+    printStream.print(trip.recoveryTime);
+    printStream.print(",");
+    printStream.print(trip.firstTripInSequence);
+    printStream.print(",");
+    printStream.print(trip.lastTripInSequence);
+    printStream.print("\n");
+
+  }
+
   private void warnOnMissingTrips() {
     for (Trip t : _gtfsMutableRelationalDao.getAllTrips()) {
       String blockId = t.getBlockId();
       if (blockId == null || blockId.equals("")) {
-         _log.warn("When matching GTFS to STIF, failed to find block in STIF for " + t.getId());
+        _log.warn("When matching GTFS to STIF, failed to find block in STIF for "
+            + t.getId());
       }
     }
   }

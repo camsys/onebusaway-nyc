@@ -44,10 +44,14 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
           record.setTripType(getInteger());
         }
       }),
-      new FieldDef(23 - 19, "destination location", null),
+      new FieldDef(23 - 19, "destination location", new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setDestinationLocation(getStringData());
+        }
+      }),
       new FieldDef(31 - 23, "destination time", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setDestinationTime(getInteger());
+          record.setDestinationTime(getTimeFromCentiminutes());
         }
       }),
       new FieldDef(35 - 31, "pick code", null),
@@ -85,9 +89,17 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
         }
       }),
       new FieldDef(89 - 88, "empty", null),
-      new FieldDef(90 - 89, "first trip in sequence", null),
+      new FieldDef(90 - 89, "first trip in sequence",  new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setFirstTripInSequence(getBoolean());
+        }
+      }),
       new FieldDef(91 - 90, "empty", null),
-      new FieldDef(92 - 91, "last trip in sequence", null),
+      new FieldDef(92 - 91, "last trip in sequence",  new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setLastTripInSequence(getBoolean());
+        }
+      }),
       new FieldDef(93 - 92, "primary relief status", null),
       new FieldDef(99 - 93, "next operator run number", null),
       new FieldDef(100 - 99, "empty", null),
@@ -117,7 +129,11 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(141 - 140, "empty", null),
       new FieldDef(149 - 141, "next trip origin time", null),
       new FieldDef(150 - 149, "empty", null),
-      new FieldDef(154 - 150, "recovery time after this trip", null),
+      new FieldDef(154 - 150, "recovery time after this trip", new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setRecoveryTime(getTimeFromCentiminutesSafe());
+        }
+      }),
       new FieldDef(155 - 154, "empty", null),
       new FieldDef(161 - 155, "sign code route for this trip",
           new TripFieldSetter() {

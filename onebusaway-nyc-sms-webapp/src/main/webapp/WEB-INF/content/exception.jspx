@@ -15,17 +15,9 @@
     the License.
 
 -->
-<html xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
-	xmlns:wiki="/oba-wiki-tags">
-<jsp:directive.page contentType="text/html" />
-<head>
-<title>One Bus Away NYC SMS</title>
-</head>
-<body>
-Provide:<br />
-stop ID or<br />
-intersection or<br />
-intersection+route
-</body>
-</html>
+<jsp:root version="2.0" xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core" 
+	xmlns:s="/struts-tags">
+<jsp:directive.page contentType="text/plain"/>
+Error
+</jsp:root>
