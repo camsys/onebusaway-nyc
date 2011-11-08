@@ -90,8 +90,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   public void setL(String location) {
     String[] locationParts = location.split(",");
     if(locationParts.length == 2) {
-      this._location = new CoordinatePoint(
-          Double.parseDouble(locationParts[0]), 
+      this._location = new CoordinatePoint(Double.parseDouble(locationParts[0]), 
           Double.parseDouble(locationParts[1]));
     } else
       this._location = null;
@@ -107,8 +106,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     
     // empty query with location means search for current location
     if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT)))) {
-      _searchResults.addAll(
-          _stopSearchService.resultsForLocation(_location.getLat(), _location.getLon()));        
+      _searchResults.addAll(_stopSearchService.resultsForLocation(_location.getLat(), _location.getLon()));        
 
     } else {
       if(_q.isEmpty())
@@ -135,6 +133,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return SUCCESS;
   }
   
+  /**
+   * PRIVATE HELPER METHODS
+   */
   private void transformSearchModels(List<SearchResult> searchResults) {
     for(SearchResult searchResult : searchResults) {
       if(searchResult instanceof StopResult) {
@@ -178,7 +179,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
           SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
           SiriDistanceExtension distanceExtension = wrapper.getDistances();
-
           distanceAwayStrings.add(distanceExtension.getPresentableDistance());
         }
 
@@ -194,36 +194,37 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       if(destination.getStops() == null)
         continue;
       
-      List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(
-          routeSearchResult.getRouteId(), null, false);
+      List<VehicleActivityStructure> journeyList = 
+          _realtimeService.getVehicleActivityForRoute(routeSearchResult.getRouteId(), null, false);
       
       // build map of stop IDs to list of distance strings
       Map<String, ArrayList<String>> stopIdToDistanceStringMap = new HashMap<String, ArrayList<String>>();      
+
       for(VehicleActivityStructure journey : journeyList) {
+        MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
+        if(monitoredCall == null) 
+          continue;
+
         // find latest update time across all realtime data
         Long thisLastUpdateTime = journey.getRecordedAtTime().getTime();
         if(thisLastUpdateTime != null && thisLastUpdateTime > lastUpdateTime) {
           lastUpdateTime = thisLastUpdateTime;
         }
 
-        MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
-        if(monitoredCall == null) 
-          continue;
-        
         SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
         SiriDistanceExtension distanceExtension = wrapper.getDistances();
         String stopId = monitoredCall.getStopPointRef().getValue();
 
         ArrayList<String> distances = stopIdToDistanceStringMap.get(stopId);
-        if(distances == null) {
+        if(distances == null)
           distances = new ArrayList<String>();
-        }
+
         distances.add(distanceExtension.getPresentableDistance());
 
         stopIdToDistanceStringMap.put(stopId, distances);        
       }
       
-      // fold the list of distance strings into the stop list
+      // fold the list of distance strings into the stop list from the route result
       for(StopResult _stop : destination.getStops()) {
         MobileWebStopResult stop = (MobileWebStopResult)_stop;
 
@@ -235,6 +236,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
             if(sb.length() > 0) {
               sb.append(", ");
             }
+
             sb.append(distance);
           }
         }
@@ -270,11 +272,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
         locationSearchResult.setGeocoderResult(result);
 
         if(result.isRegion()) {
-          locationSearchResult.setNearbyRoutes(
-              _routeSearchService.resultsForLocation(result.getBounds()));
+          locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getBounds()));
         } else {
-          locationSearchResult.setNearbyRoutes(
-              _routeSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
+          locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getLatitude(), 
+              result.getLongitude()));
         }
         
         results.add(locationSearchResult);
@@ -284,6 +285,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return results;
   }  
   
+  /**
+   * METHODS FOR VIEWS
+   */
   // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
   public String getGoogleAnalyticsTrackingUrl() {
 	  try {
@@ -292,7 +296,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      url.append("utmac=").append(GA_ACCOUNT);
 	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
 
-	      // referer
+	      // referrer
 	      HttpServletRequest request = ServletActionContext.getRequest();      
 	      String referer = request.getHeader("referer");
 	
@@ -358,7 +362,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getCacheBreaker() {
-	  return String.valueOf(Math.ceil((Math.random() * 100000)));
+	  return String.valueOf((int)Math.ceil((Math.random() * 100000)));
   }
   
   public String getLastUpdateTime() {

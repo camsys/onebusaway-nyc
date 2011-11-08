@@ -141,6 +141,20 @@ li {
 strong {
     font-weight: bold;
 }
+#toggleUI {
+	padding-bottom: 10px;	
+}
+#toggleUI a,
+.routeList a {
+	display: inline-block;
+	text-align: center;
+	width: 75px;
+	height: 25px;
+}
+span.noUpcomingService {
+	font-style: italic;
+	color: #AAAAAA;
+}
 .refresh {
     background-color: #aaaaaa;
     color: #eaeaea;
@@ -188,14 +202,4 @@ strong {
 #credit {
     color: #666666;
     font-size: 80%;
-}
-#toggleUI {
-	padding-bottom: 10px;	
-}
-#toggleUI a,
-.routeList a {
-	display: inline-block;
-	text-align: center;
-	width: 75px;
-	height: 25px;
 }

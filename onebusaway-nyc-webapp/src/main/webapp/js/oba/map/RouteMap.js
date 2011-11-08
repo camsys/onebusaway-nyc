@@ -155,6 +155,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var stopsAddedForRoute = {};
 	var stopsByIdReferenceCount = {}; // (number of routes on map a stop is associated with)
 	var stopsById = {};
+	var hoverPolylines = [];
 
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
@@ -287,7 +288,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		// service available
 		if(visits.length === 0) {
-			html += '<p class="service">OneBusAway NYC is not tracking any buses en-route to your location.<br/>Please check back shortly for an update.</p>';
+			html += '<p class="service">No buses en-route to your location.<br/>Please check back shortly for an update.</p>';
 		} else {		
 			html += '<p class="service">This stop is served by:</p>';
 			html += '<ul>';
@@ -350,14 +351,20 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				return new google.maps.LatLng(x[0], x[1]);
 			});
 
-			var shape = new google.maps.Polyline({
+			var options = {
 				path: latlngs,
 				strokeColor: "#" + color,
 				strokeOpacity: 1.0,
-				strokeWeight: 5,
+				strokeWeight: 3,
 				map: map
-			});
-		
+			};
+			
+			var shape = new google.maps.Polyline(options);
+
+			// used when changing the line color FIXME 
+			shape.originalPath = latlngs;
+			shape.originalColor = "#" + color;
+			
 			polylinesByRoute[routeId].push(shape);
 		});	
 	}
@@ -603,6 +610,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 	}, OBA.Config.refreshInterval);
 
+	//////////////////// PUBLIC INTERFACE /////////////////////
 	return {
 		getBounds: function() {
 			return map.getBounds();
@@ -610,6 +618,16 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		removeAllRoutes: function() {
 			removeRoutesNotInSet({});
+		},
+		
+		showPopupForStopId: function(stopId) {
+			var stopMarker = stopsById[stopId];
+			
+			if(typeof stopMarker === 'undefined') {
+				return;
+			}
+			
+			google.maps.event.trigger(stopMarker, "click");
 		},
 		
 		removeRoutesNotInSet: removeRoutesNotInSet,
@@ -628,6 +646,71 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			updateVehicles(routeResult.routeId);
 		},
 
+		setRouteStatus: function(routeId, enabled) {
+			var polylines = polylinesByRoute[routeId];
+			
+			if(typeof polylines === 'undefined') {
+				return;
+			}
+			
+			// FIXME: better way to change polylines?
+			jQuery.each(polylines, function(_, polyline) {
+				if(enabled === false) {
+					var newOptions = {
+							strokeColor: "#EFEFEF",
+							strokeOpacity: 1.0,
+							strokeWeight: 3,
+							map: map,
+							path: polyline.originalPath
+					};
+					polyline.setOptions(newOptions);
+
+					removeVehicles(routeId);
+				} else {
+					var newOptions = {
+							strokeColor: polyline.originalColor,
+							strokeOpacity: 1.0,
+							strokeWeight: 3,
+							map: map,
+							path: polyline.originalPath
+					};
+					polyline.setOptions(newOptions);
+					
+					updateVehicles(routeId);
+				}
+			});
+		},
+		
+		removeHoverPolyline: function() {
+			if(hoverPolylines !== null) {
+				jQuery.each(hoverPolylines, function(_, polyline) {
+					polyline.setMap(null);
+				});
+			}
+			hoverPolylines = null;
+		},
+		
+		showHoverPolyline: function(encodedPolylines, color) {
+			hoverPolylines = [];
+			jQuery.each(encodedPolylines, function(_, encodedPolyline) {
+				var points = OBA.Util.decodePolyline(encodedPolyline);
+			
+				var latlngs = jQuery.map(points, function(x) {
+					return new google.maps.LatLng(x[0], x[1]);
+				});
+
+				var shape = new google.maps.Polyline({
+					path: latlngs,
+					strokeColor: "#" + color,
+					strokeOpacity: 0.7,
+					strokeWeight: 3,
+					map: map
+				});
+			
+				hoverPolylines.push(shape);
+			});
+		},
+		
 		showBounds: function(bounds) {
 			map.fitBounds(bounds);
 		},

@@ -10,6 +10,8 @@ public interface RouteSearchService {
 
   public void setModelFactory(SearchModelFactory factory);
 
+  public boolean isRoute(String value);
+  
   public List<RouteResult> resultsForLocation(Double latitude, Double longitude);
 
   public List<RouteResult> resultsForLocation(CoordinateBounds bounds);

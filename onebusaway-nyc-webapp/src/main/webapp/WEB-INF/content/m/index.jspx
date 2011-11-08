@@ -54,7 +54,6 @@
 			<input type="text" name="q" class="q" value="${q}"/>
 			<input type="submit" class="s" value="Find" id="submitButton"/>
 		</s:form>
-		<p><small><i>TIP: Enter a route, an intersection along a route, or a stop ID.</i></small></p>
 	</div>
 
 	<s:if test="%{searchResults.size==0}">
