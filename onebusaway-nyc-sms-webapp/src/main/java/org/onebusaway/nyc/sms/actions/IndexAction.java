@@ -25,6 +25,7 @@ import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.nyc.sms.actions.model.SmsRouteDestinationItem;
@@ -53,47 +54,26 @@ public class IndexAction extends SessionedIndexAction {
   private RealtimeService _realtimeService;
 
   @Autowired
+  private RouteSearchService _routeSearchService;
+
+  @Autowired
   private StopSearchService _stopSearchService;
 
   @Autowired
   private NycGeocoderService _geocoderService;
-
-  /**
-   * Returns the canonical string for a command, or null if not a command at all.
-   * @param query: user query.
-   * @return null if not a command, canonical command string if a command.
-   */
-  public String normalizeCommand(String query) {
-    if(query.toUpperCase().startsWith("A ") || query.toUpperCase().startsWith("ALERT "))
-      return "A";
-
-    if(query.toUpperCase().equals("R") || query.toUpperCase().equals("REFRESH"))
-      return "R";
-
-    if(query.toUpperCase().equals("M") || query.toUpperCase().equals("MORE"))
-      return "M";
-    
-    try {
-      Integer choice = Integer.parseInt(query);
-
-      if(choice >= 1 && choice <= 10) 
-        return choice.toString();
-    } catch (Exception e) {
-      // (fall through)
-    }
-
-    return null;
-  }
   
   public String execute() throws Exception {
     SmsSearchModelFactory factory = new SmsSearchModelFactory();
     _stopSearchService.setModelFactory(factory);
 
-    // if query is a command, process it using the last result context. 
-    // otherwise, try the input as a query.
+    
+    /**
+     * INPUT PARSING
+     */  
     String commandString = normalizeCommand(_query);
+
     if(commandString != null) {
-      // ALERT
+      // Alert: second parameter contains route to find alerts for
       if(commandString.equals("A")) {
         String[] tokens = _query.split(" ");
         if(tokens.length == 2) {
@@ -101,30 +81,33 @@ public class IndexAction extends SessionedIndexAction {
           return SUCCESS;
         }
         
-      // REFRESH
+      // Refresh: just re-run the last query!
       } else if(commandString.equals("R")) {
         _query = _lastQuery;
         generateNewSearchResults(_query);
         
-      // MORE
+      // More: (handled as part of regular logic)
       } else if(commandString.equals("M")) {
         // (fall through)
 
-      // AMBIGUOUS LOCATION CHOICE
+      // 1-X: ambiguous location choice
       } else {
-        try {
-          Integer choice = Integer.parseInt(commandString);
-          LocationResult theResult = (LocationResult)_searchResults.get(choice - 1);
+        // (the command will always be a number if we're here)
+        Integer choice = Integer.parseInt(commandString);
+        LocationResult pickedResult = (LocationResult)_searchResults.get(choice - 1);
 
-          _query = theResult.getFormattedAddress();
-          generateNewSearchResults(_query);
-        } catch(Exception e) {
-          // (fall through)
-        }
+        _query = pickedResult.getFormattedAddress();
+        generateNewSearchResults(_query);
       }
+
+    // if not a command, we must be a query
     } else
       generateNewSearchResults(_query);
 
+    
+    /**
+     * GIVEN RESULTS, DISPLAY THEM TO THE USER:
+     */    
     // display results to user
     if(_searchResults.size() == 0) {
       errorResponse("No matches.");
@@ -132,7 +115,7 @@ public class IndexAction extends SessionedIndexAction {
     } else {
       String resultType = _searchResults.get(0).getType();
       
-      // STOP RESULT
+      // STOPS
       if(resultType.equals("stopResult")) {
 
         // try to fill the most space in the SMS with realtime data; if we can't even get
@@ -178,9 +161,9 @@ public class IndexAction extends SessionedIndexAction {
         
         // shouldn't happen!
         if(_response == null)
-          throw new Exception("No combination of values produced a message that could fit into 1 SMS!");
+          throw new Exception("No combination of values we tried produced a message that could fit into 1 SMS!?");
 
-      // LOCATION RESULT
+      // LOCATIONS
       } else if(resultType.equals("locationResult")) {
         locationDisambiguationResponse(_searchResults);
         
@@ -192,77 +175,33 @@ public class IndexAction extends SessionedIndexAction {
     
     return SUCCESS;
   }
-  
-  private void generateNewSearchResults(String q) {
-    _searchResults.clear();
-    _searchResultsCursor = 0;
 
-    if(q == null || q.isEmpty())
-      return;
-
-    // try as stop ID
-    _searchResults.addAll(_stopSearchService.resultsForQuery(q));
-
-    // nothing? geocode it!
-    if(_searchResults.size() == 0) {
-      _searchResults.addAll(generateResultsFromGeocode(q));        
-    }
-    
-    Collections.sort(_searchResults, new SearchResultComparator());
-
-    injectRealtimeDataIntoResults(_searchResults);
-  }
-    
-  
-  private List<SearchResult> generateResultsFromGeocode(String q) {
-    List<SearchResult> results = new ArrayList<SearchResult>();
-
-    List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(q);
-    
-    if(geocoderResults.size() == 1) {
-      NycGeocoderResult result = geocoderResults.get(0);
-
-      if(!result.isRegion()) {
-        results.addAll(_stopSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
-      }
-    } else {
-      for(NycGeocoderResult result : geocoderResults) {
-        if(!result.isRegion()) {
-          LocationResult locationSearchResult = new LocationResult();
-          locationSearchResult.setGeocoderResult(result);
-
-          results.add(locationSearchResult);
-        }
-      }
-    }
-
-    return results;
-  } 
-
-  private void serviceAlertResponse(String route) throws Exception {
+  /**
+   * RESPONSE GENERATION METHODS
+   */
+  private void serviceAlertResponse(String routeQuery) throws Exception {
     List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
     
-    for(SearchResult _result : _searchResults) {
-      if(! (_result instanceof StopResult))
-        continue;
-
-      StopResult result = (StopResult)_result;
+    List<RouteResult> routes = _routeSearchService.resultsForQuery(routeQuery);
+    
+    if(routes.size() == 0) {
+      errorResponse("Route not found.");
+      return;
+    }
       
-      for(RouteResult routeAvailable : result.getRoutesAvailable()) {
-        if(!routeAvailable.getRouteIdWithoutAgency().equals(route))
-          continue;
-        
-        for(RouteDestinationItem _destination : routeAvailable.getDestinations()) {
-          SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
-          alerts.addAll(destination.getServiceAlerts());
-        }
+    for(RouteResult result : routes) {
+      for(RouteDestinationItem _destination : result.getDestinations()) {
+        SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
+        alerts.addAll(destination.getServiceAlerts());
       }
     }
     
-    if(alerts.size() == 0) 
-      errorResponse("No alerts found.");
-    else
-      _response = StringUtils.join(alerts, "\n\n");
+    if(alerts.size() == 0) {
+      errorResponse("No alerts available.");
+      return;
+    }
+
+    _response = StringUtils.join(alerts, "\n\n");
   }
   
   private void locationDisambiguationResponse(List<SearchResult> results) {
@@ -274,7 +213,7 @@ public class IndexAction extends SessionedIndexAction {
       
       _response += i + ") " + result.getFormattedAddress() + "\n";
       
-      if(results.size() <= 2) {
+      if(results.size() <= 2 && result.getNeighborhood() != null) {
         _response += "(" + result.getNeighborhood() + ")";
         _response += "\n";
       }
@@ -324,7 +263,7 @@ public class IndexAction extends SessionedIndexAction {
               c++;
             }
           } else {
-            _response += "No bus en-route.\n";
+            _response += prefix + "no bus en-route.\n";
           }
           
           _response += "\n";
@@ -399,24 +338,114 @@ public class IndexAction extends SessionedIndexAction {
       _response = staticStuff;
   }
 
-  private void injectRealtimeDataIntoResults(List<SearchResult> searchResults) {
+  /**
+   * PRIVATE HELPER METHODS
+   */
+  
+  /**
+   * Returns the canonical string for a command, or null if string is not a command.
+   * @param query: user query.
+   * @return null if not a command, canonical command string if a command.
+   */
+  public String normalizeCommand(String query) {
+    if(query.toUpperCase().startsWith("A ") || query.toUpperCase().startsWith("ALERT "))
+      return "A";
+
+    if(query.toUpperCase().equals("R") || query.toUpperCase().equals("REFRESH"))
+      return "R";
+
+    if(query.toUpperCase().equals("M") || query.toUpperCase().equals("MORE"))
+      return "M";
+
+    // try as ambiguous location result choice:
+    try {
+      // no results means this can't be a pick from ambiguous location results
+      if(_searchResults == null || _searchResults.size() == 0)
+        return null;
+      
+      // a list of things other than location results can't be a pick from ambiguous locations.
+      if(!(_searchResults.get(0) instanceof LocationResult))
+        return null;
+      
+      // is the choice within the bounds of the number of things we have?
+      Integer choice = Integer.parseInt(query);
+      if(choice >= 1 && choice <= _searchResults.size())
+        return choice.toString();
+    } catch (NumberFormatException e) {
+      return null;
+    }
+
+    return null;
+  }
+  
+  private void generateNewSearchResults(String q) {
+    _searchResults.clear();
+    _searchResultsCursor = 0;
+
+    if(q == null || q.isEmpty())
+      return;
+
+    // try as stop ID
+    _searchResults.addAll(_stopSearchService.resultsForQuery(q));
+
+    // nothing? geocode it!
+    if(_searchResults.size() == 0) {
+      _searchResults.addAll(generateResultsFromGeocode(q));        
+    }
+    
+    transformSearchModels(_searchResults);
+
+    Collections.sort(_searchResults, new SearchResultComparator());
+  } 
+  
+  private List<SearchResult> generateResultsFromGeocode(String q) {
+    List<SearchResult> results = new ArrayList<SearchResult>();
+
+    List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(q);
+    
+    // if we got a location that is a point, return stops nearby
+    if(geocoderResults.size() == 1) {
+      NycGeocoderResult result = geocoderResults.get(0);
+
+      if(!result.isRegion())
+        results.addAll(_stopSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
+
+    } else {
+      // if we get locations that are not regions, prompt the user to choose from them.
+      for(NycGeocoderResult result : geocoderResults) {
+        if(!result.isRegion()) {
+          LocationResult locationSearchResult = new LocationResult();
+          locationSearchResult.setGeocoderResult(result);
+
+          results.add(locationSearchResult);
+        }
+      }
+    }
+
+    return results;
+  }
+  
+  private void transformSearchModels(List<SearchResult> searchResults) {
     for(SearchResult searchResult : searchResults) {
-      if(searchResult instanceof StopResult)
-        injectRealtimeDataIntoModel((StopResult)searchResult);
+      if(searchResult instanceof StopResult) {
+        injectRealtimeData((StopResult)searchResult);
+      }
     }
   }
   
-  private StopResult injectRealtimeDataIntoModel(StopResult stopSearchResult) {
+  private StopResult injectRealtimeData(StopResult stopSearchResult) {
     for(RouteResult route : stopSearchResult.getRoutesAvailable()) {
       for(RouteDestinationItem _destination : route.getDestinations()) {
         SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
 
         // service alerts
-        List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForStop(stopSearchResult.getStopId());
+        List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForStop(
+            stopSearchResult.getStopId());
         destination.setServiceAlerts(serviceAlerts);
 
         // stop visits
-        List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stopSearchResult.getStopId(), false);
+        List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(
+            stopSearchResult.getStopId(), false);
 
         List<String> distanceAwayStrings = new ArrayList<String>();
         for(MonitoredStopVisitStructure visit : visits) {
@@ -441,6 +470,9 @@ public class IndexAction extends SessionedIndexAction {
     return stopSearchResult;
   }
   
+  /**
+   * METHODS FOR VIEWS
+   */
   public String getResponse() {
     syncSession();
     
