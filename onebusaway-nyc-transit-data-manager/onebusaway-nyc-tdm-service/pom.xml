@@ -108,11 +108,13 @@
 			<properties>
 				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
 				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
 				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
 				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
 				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
 				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+				<!-- <tdm.config.configXmlFile>/opt/tdm-config/tdm_config.xml</tdm.config.configXmlFile> -->
+				<tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
 			</properties>
 		</profile>
 		<profile>
@@ -125,6 +127,7 @@
 				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
 				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
 				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+				<tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
 			</properties>
 		</profile>
 		<profile>
@@ -137,6 +140,7 @@
 				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
 				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
 				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+				<tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
 			</properties>
 		</profile>
 	</profiles>

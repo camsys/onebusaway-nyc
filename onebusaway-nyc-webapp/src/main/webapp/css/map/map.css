@@ -27,20 +27,27 @@
 	overflow-y: auto;
 }
 
+#no-results,
+#welcome,
 #results,
 #legend,
 #search {
 	padding: 10px;
+	font-size: 14px;
+}
+
+#welcome ul {
+	padding-top: 10px;
 }
 
 #search {
 	padding-bottom: 0px;
 }
 
+#no-results,
 #results,
 #legend {
 	display: none;
-	font-size: 14px;
 }
 
 #search input {
@@ -99,7 +106,7 @@
 #legend ul li.legendItem {
 	margin: 0px;
 	margin-top: 5px;
-	margin-bottom: 5px;
+	margin-bottom: 10px;
 	padding-left: 20px;
 	position: relative;
 }

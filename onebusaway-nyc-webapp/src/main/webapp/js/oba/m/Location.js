@@ -12,7 +12,7 @@ OBA.Mobile = (function() {
 	var addToggleUI = function() {
 		var searchPanelForm = jQuery("#searchPanel form");		
 
-		var toggleUI = jQuery("<p>Share location:</p>")
+		var toggleUI = jQuery("<p>Use my location:</p>")
 			.attr("id", "toggleUI");
 
 		turnOffButton = jQuery("<a href='#'>Turn Off</a>")
@@ -121,4 +121,3 @@ OBA.Mobile = (function() {
 })();
 
 jQuery(document).ready(function() { OBA.Mobile.initialize(); });
-

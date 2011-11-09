@@ -98,7 +98,6 @@ OBA.SignConfig = function() {
 				});
 
 				// find most common headsign per direction ID
-				var directionIdToMostCommonHeadsign = {};
 				jQuery.each(directionIdToHeadsignMap, function(directionId, headsignMap) {
 					var maxObs = -1;
 					var mostCommonHeadsign = null;

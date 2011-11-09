@@ -20,8 +20,12 @@ OBA.Sidebar = function() {
 	var theWindow = null;
 	var headerDiv, footerDiv, contentDiv = null;
 
-	var mapNode = document.getElementById("map");
-	var routeMap = OBA.RouteMap(mapNode);	
+	var routeMap = OBA.RouteMap(document.getElementById("map"));
+
+	var welcome = jQuery("#welcome");
+	var legend = jQuery("#legend");
+	var results = jQuery("#results");
+	var noResults = jQuery("#no-results");
 
 	function addSearchBehavior() {
 		var searchForm = jQuery("#search");
@@ -61,9 +65,6 @@ OBA.Sidebar = function() {
 
 	// show user list of addresses
 	function disambiguate(locationResults) {
-		var legend = jQuery("#legend");
-		var results = jQuery("#results");
-
 		legend.hide();
 		results.show();
 
@@ -102,7 +103,8 @@ OBA.Sidebar = function() {
 			}, function() {
 				marker.setAnimation(null);
 			});
-			
+
+			// calculate extent of all options
 			if(bounds === null) {
 				bounds = new google.maps.LatLngBounds(latlng, latlng);
 			} else {
@@ -115,16 +117,12 @@ OBA.Sidebar = function() {
 
 	// display (few enough) routes on map and in legend
 	function showRoutesOnMap(routeResults) {
-		var legend = jQuery("#legend");
-		var results = jQuery("#results");
-
 		legend.show();
 		results.hide();
 
 		var legendList = jQuery("#legend ul");
 		jQuery.each(routeResults, function(_, routeResult) {	
-			var checkBox = jQuery("<input type='checkbox' checked></input>")
-							.attr("routeId", routeResult.routeId);
+			var checkBox = jQuery("<input type='checkbox' checked></input>");
 			
 			var titleBox = jQuery("<span></span>")
 							.addClass("routeName")
@@ -136,36 +134,42 @@ OBA.Sidebar = function() {
 							.append(checkBox)
 							.append(titleBox);
 
-			jQuery.each(routeResult.destinations, function(_, destination) {
-				var destinationContainer = jQuery("<p></p>")
-											.addClass("destination");
+			legendList.append(listItem);
+
+			checkBox.click(function(e) {
+				var checkbox = jQuery(this);
+				var enabled = checkbox.attr("checked");
 				
-				var header = jQuery("<p></p>")
-											.text(destination.headsign)
-											.appendTo(destinationContainer);
+				routeMap.setRouteStatus(routeResult.routeId, enabled);
+			});
+			
+			// directions
+			jQuery.each(routeResult.destinations, function(_, destination) {
+				var directionHeader = jQuery("<p></p>")
+											.text("to " + destination.headsign);
 
 				var stopsList = jQuery("<ul></ul>")
-									.addClass("stops")
-									.appendTo(destinationContainer);
-				
+											.addClass("stops");
+
+				var destinationContainer = jQuery("<p></p>")
+											.addClass("destination")
+											.append(directionHeader)
+											.append(stopsList);
+
+				// stops for this destination
 				jQuery.each(destination.stops, function(__, stop) {
 					var stopLink = jQuery("<a href='#'></a>")
 									.text(stop.name);
 					
-					stopLink.click(function(e) {
-						e.preventDefault();
-
-						var searchForm = jQuery("#search");
-						var searchInput = jQuery("#search input[type=text]");
-						
-						searchInput.val(stop.stopIdWithoutAgency);
-						searchForm.submit();
-					});
-					
 					var stopItem = jQuery("<li></li>")
 									.append(stopLink);
-					
+	
 					stopsList.append(stopItem);
+
+					stopLink.click(function(e) {
+						e.preventDefault();
+						routeMap.showPopupForStopId(stop.stopId);
+					});
 				});
 
 				// accordion-ize
@@ -177,30 +181,42 @@ OBA.Sidebar = function() {
 				listItem.append(destinationContainer);
 			});
 
-			legendList.append(listItem);
 			routeMap.showRoute(routeResult);
 		});
 	}
 
 	// show many (too many to show on map) routes to user
 	function showRoutePickerList(routeResults) {
-		var legend = jQuery("#legend");
-		var results = jQuery("#results");
-
 		legend.hide();
 		results.show();
 
 		var resultsList = jQuery("#results ul");
 		jQuery.each(routeResults, function(_, route) {
 			var link = jQuery("<a href='#'></a>")
-							.text(route.name);
+							.text(route.name)
+							.attr("title", route.description);
 
 			var listItem = jQuery("<li></li>")
 							.addClass("routeItem")
 							.append(link);
 			
 			resultsList.append(listItem);
+
+			// polyline hover
+			var allPolylines = [];
+			jQuery.each(route.destinations, function(__, destination) {
+				jQuery.each(destination.polylines, function(___, polyline) {
+					allPolylines.push(polyline);
+				});
+			});
 			
+			link.hover(function() {
+				routeMap.showHoverPolyline(allPolylines, route.color);
+			}, function() {
+				routeMap.removeHoverPolyline();
+			});
+			
+			// search link handler
 			link.click(function(e) {
 				e.preventDefault();
 				
@@ -216,13 +232,12 @@ OBA.Sidebar = function() {
 
 	// process search results
 	function doSearch(q) {
-		var legend = jQuery("#legend");
-		var results = jQuery("#results");
-		var resultsList = jQuery("#results ul");
-		var legendList = jQuery("#legend ul");
-
+		welcome.hide();
 		legend.hide();
 		results.show();
+
+		var resultsList = jQuery("#results ul");
+		var legendList = jQuery("#legend ul");
 
 		legendList.empty();
 		resultsList.empty();
@@ -234,7 +249,11 @@ OBA.Sidebar = function() {
 			if(resultCount === 0) {
 				legend.hide();
 				results.hide();
+
+				noResults.show();
 				return;
+			} else {
+				noResults.hide();
 			}
 
 			var resultType = json.searchResults[0].type;			
@@ -242,20 +261,25 @@ OBA.Sidebar = function() {
 				if(resultType === "locationResult" || resultType === "stopResult") {
 					var result = json.searchResults[0];
 
-					// region (zipcode or borough)
+					// region (zip code or borough)
 					if(resultType === "locationResult" && result.region === true) {
 						var bounds = result.bounds;
 						var latLngBounds = new google.maps.LatLngBounds(
 								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
 								new google.maps.LatLng(bounds.maxLat, bounds.maxLon));
 						
-						routeMap.showBounds(latLngBounds);
 						showRoutePickerList(result.nearbyRoutes);
+						routeMap.showBounds(latLngBounds);
 
 					// intersection or stop ID
 					} else {
-						routeMap.showLocation(result.latitude, result.longitude);
 						showRoutesOnMap(result.nearbyRoutes);
+
+						if(resultType === "stopResult") {
+							routeMap.showPopupForStopId(result.stopId);
+						} else {
+							routeMap.showLocation(result.latitude, result.longitude);
+						}
 					}
 					
 				// single route
@@ -275,6 +299,19 @@ OBA.Sidebar = function() {
 		initialize: function() {
 			addSearchBehavior();
 			addResizeBehavior();
+			
+			// deep link handler
+			jQuery.history.init(function(hash) {
+            	if(hash !== null && hash !== "") {
+					var searchForm = jQuery("#search");
+					var searchInput = jQuery("#search input[type=text]");
+					
+					searchInput.val(hash);
+					searchForm.submit();
+
+            		OBA.Config.analyticsFunction("Deep Link", hash);
+            	}
+            });	
 		}
 	};
 };

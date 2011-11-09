@@ -27,7 +27,17 @@
 		</property>
 	</bean>
     
-    <bean class="org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepotFileToDataCreator">
+    <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
+    	<constructor-arg ref="bundleSource"/>
     </bean>
+    
+    <bean id="bundleSource" class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
+    	<constructor-arg type="java.lang.String" value="${tdm.bundlePath}"/>
+    	<constructor-arg ref="gsonTool" />
+    </bean>
+	
+	<bean id="gsonTool" class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
+		<property name="prettyPrintOutput" value="${tdm.prettyPrintOutput}" />
+	</bean>
 	
 </beans>

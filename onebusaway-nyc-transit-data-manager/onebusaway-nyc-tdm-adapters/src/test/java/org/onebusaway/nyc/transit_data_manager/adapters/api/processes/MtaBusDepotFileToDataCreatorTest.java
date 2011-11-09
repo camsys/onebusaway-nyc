@@ -8,18 +8,23 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotA
 
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
-public class MtaBusDepotFileToDataCreatorTest extends
-    MtaBusDepotFileToDataCreator {
+public class MtaBusDepotFileToDataCreatorTest  {
 
   @Test
-  public void testLoadDepotAssignments() throws FileNotFoundException, IOException {
-    setReader(new InputStreamReader(getClass().getResourceAsStream("/DOB_draft_depot_assignments.xml")));
-    List<MtaBusDepotAssignment> assignments = loadDepotAssignments();
+  public void testLoadDepotAssignments() throws FileNotFoundException, IOException, URISyntaxException {
+    URI depAssignUri = getClass().getResource("/DOB_draft_depot_assignments.xml").toURI();
+    
+    MtaBusDepotFileToDataCreator dcreator = new MtaBusDepotFileToDataCreator(new File(depAssignUri));
+    
+    List<MtaBusDepotAssignment> assignments = dcreator.loadDepotAssignments();
     assertNotNull(assignments);
     assertTrue(assignments.size() > 0);
     MtaBusDepotAssignment assignment = assignments.get(0);
