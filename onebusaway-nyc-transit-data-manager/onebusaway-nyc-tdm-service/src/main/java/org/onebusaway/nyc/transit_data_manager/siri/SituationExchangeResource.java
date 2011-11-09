@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,8 +23,6 @@ import javax.xml.bind.Unmarshaller;
 import org.joda.time.DateMidnight;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-
-import org.onebusaway.exceptions.ServiceAreaServiceException;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
@@ -34,20 +30,14 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssi
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.OperatorAssignmentsMessage;
 import org.onebusaway.siri.core.ESiriModuleType;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriService;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
-import uk.org.siri.siri.AbstractServiceDeliveryStructure;
-import uk.org.siri.siri.ContextStructure;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -86,7 +76,7 @@ public class SituationExchangeResource {
   @Produces("application/xml")
   @Consumes("application/xml")
   public Response handlePost(String body) throws JAXBException {
-	_log.info("---begin body---\n" + body + "\n---end body---");
+	_log.debug("---begin body---\n" + body + "\n---end body---");
 //    try {
 		JAXBContext jc = JAXBContext.newInstance(Siri.class);
 		Unmarshaller u = jc.createUnmarshaller();

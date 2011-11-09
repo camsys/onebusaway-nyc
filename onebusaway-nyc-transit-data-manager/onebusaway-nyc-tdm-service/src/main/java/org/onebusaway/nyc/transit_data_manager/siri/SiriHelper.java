@@ -2,7 +2,6 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -13,6 +12,7 @@ import org.joda.time.format.ISODateTimeFormat;
 
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
+import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
@@ -24,7 +24,6 @@ import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
-import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
 
 public class SiriHelper {
@@ -61,7 +60,7 @@ public class SiriHelper {
 
 	}
 
-	private PtSituationElementStructure createPtSituationElementStructure(
+	public PtSituationElementStructure createPtSituationElementStructure(
 			String summaryText, String descriptionText, String idNumber,
 			String begins, String expires, String lines, String statusType) {
 		PtSituationElementStructure ptSit = new PtSituationElementStructure();
@@ -86,21 +85,21 @@ public class SiriHelper {
 		AffectsScopeStructure affects = createAffects(lines);
 		ptSit.setAffects(affects);
 
-		if (false) {
-			ptSit.setDetail(defaultedTextStructure("detail text"));
-			ptSit.setAdvice(defaultedTextStructure("advice text"));
-
-			// AffectsScopeStructure affects = new AffectsScopeStructure();
-			// StopPoints stopPoints = new StopPoints();
-			// AffectedStopPointStructure stopPoint = new
-			// AffectedStopPointStructure();
-			// StopPointRefStructure stopPointRef = new StopPointRefStructure();
-			// stopPoint.setStopPointRef(stopPointRef);
-			// stopPointRef.setValue("stoppoint ref");
-			// stopPoints.getAffectedStopPoint().add(stopPoint);
-			// affects.setStopPoints(stopPoints);
-
-		}
+//		if (false) {
+//			ptSit.setDetail(defaultedTextStructure("detail text"));
+//			ptSit.setAdvice(defaultedTextStructure("advice text"));
+//
+//			 AffectsScopeStructure affects = new AffectsScopeStructure();
+//			 StopPoints stopPoints = new StopPoints();
+//			 AffectedStopPointStructure stopPoint = new
+//			 AffectedStopPointStructure();
+//			 StopPointRefStructure stopPointRef = new StopPointRefStructure();
+//			 stopPoint.setStopPointRef(stopPointRef);
+//			 stopPointRef.setValue("stoppoint ref");
+//			 stopPoints.getAffectedStopPoint().add(stopPoint);
+//			 affects.setStopPoints(stopPoints);
+//		}
+		
 		return ptSit;
 	}
 

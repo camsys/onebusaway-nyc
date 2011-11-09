@@ -71,9 +71,9 @@ import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
 @Component
-public class SiriService {
+public class NycSiriService {
 
-  private static final Logger _log = LoggerFactory.getLogger(SiriService.class);
+  private static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
 
   @Autowired
   private TransitDataService _transitDataService;
@@ -121,8 +121,7 @@ public class SiriService {
 
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
       // TODO Needs to be create or update, not just create
-       _transitDataService.createServiceAlert(defaultAgencyId,
-       serviceAlertBean);
+      _transitDataService.createServiceAlert(defaultAgencyId, serviceAlertBean);
       // _serviceAlertsService.createOrUpdateServiceAlert(serviceAlert,
       // defaultAgencyId);
     }
@@ -160,33 +159,34 @@ public class SiriService {
     return serviceAlert;
   }
 
-//  private ServiceAlert.Builder getPtSituationAsServiceAlert(
-//      PtSituationElementStructure ptSituation,
-//      SiriEndpointDetails endpointDetails) {
-//
-//    ServiceAlert.Builder serviceAlert = ServiceAlert.newBuilder();
-//    EntryQualifierStructure serviceAlertNumber = ptSituation.getSituationNumber();
-//    String situationId = serviceAlertNumber.getValue();
-//
-//    if (!endpointDetails.getDefaultAgencyIds().isEmpty()) {
-//      String agencyId = endpointDetails.getDefaultAgencyIds().get(0);
-//      serviceAlert.setId(ServiceAlertLibrary.id(agencyId, situationId));
-//    } else {
-//      AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
-//      serviceAlert.setId(ServiceAlertLibrary.id(id));
-//    }
-//
-//    handleDescriptions(ptSituation, serviceAlert);
-//    handleOtherFields(ptSituation, serviceAlert);
-//    handlReasons(ptSituation, serviceAlert);
-//    handleAffects(ptSituation, serviceAlert);
-//    handleConsequences(ptSituation, serviceAlert);
-//
-//    return serviceAlert;
-//  }
-//
-  private void handleDescriptions(
-      PtSituationElementStructure ptSituation, ServiceAlertBean serviceAlert) {
+  // private ServiceAlert.Builder getPtSituationAsServiceAlert(
+  // PtSituationElementStructure ptSituation,
+  // SiriEndpointDetails endpointDetails) {
+  //
+  // ServiceAlert.Builder serviceAlert = ServiceAlert.newBuilder();
+  // EntryQualifierStructure serviceAlertNumber =
+  // ptSituation.getSituationNumber();
+  // String situationId = serviceAlertNumber.getValue();
+  //
+  // if (!endpointDetails.getDefaultAgencyIds().isEmpty()) {
+  // String agencyId = endpointDetails.getDefaultAgencyIds().get(0);
+  // serviceAlert.setId(ServiceAlertLibrary.id(agencyId, situationId));
+  // } else {
+  // AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
+  // serviceAlert.setId(ServiceAlertLibrary.id(id));
+  // }
+  //
+  // handleDescriptions(ptSituation, serviceAlert);
+  // handleOtherFields(ptSituation, serviceAlert);
+  // handlReasons(ptSituation, serviceAlert);
+  // handleAffects(ptSituation, serviceAlert);
+  // handleConsequences(ptSituation, serviceAlert);
+  //
+  // return serviceAlert;
+  // }
+  //
+  private void handleDescriptions(PtSituationElementStructure ptSituation,
+      ServiceAlertBean serviceAlert) {
     TranslatedString summary = translation(ptSituation.getSummary());
     if (summary != null)
       serviceAlert.setSummaries(naturalLanguageStringBeanFromTranslatedString(summary));
@@ -205,20 +205,20 @@ public class SiriService {
     return nlsb;
   }
 
-//  private void handleDescriptions(PtSituationElementStructure ptSituation,
-//      ServiceAlert.Builder serviceAlert) {
-//
-//    TranslatedString summary = translation(ptSituation.getSummary());
-//    if (summary != null)
-//      serviceAlert.setSummary(summary);
-//
-//    TranslatedString description = translation(ptSituation.getDescription());
-//    if (description != null)
-//      serviceAlert.setDescription(description);
-//  }
-//
-  private void handleOtherFields(
-      PtSituationElementStructure ptSituation, ServiceAlertBean serviceAlert) {
+  // private void handleDescriptions(PtSituationElementStructure ptSituation,
+  // ServiceAlert.Builder serviceAlert) {
+  //
+  // TranslatedString summary = translation(ptSituation.getSummary());
+  // if (summary != null)
+  // serviceAlert.setSummary(summary);
+  //
+  // TranslatedString description = translation(ptSituation.getDescription());
+  // if (description != null)
+  // serviceAlert.setDescription(description);
+  // }
+  //
+  private void handleOtherFields(PtSituationElementStructure ptSituation,
+      ServiceAlertBean serviceAlert) {
 
     SeverityEnumeration severity = ptSituation.getSeverity();
     if (severity != null) {
@@ -238,92 +238,93 @@ public class SiriService {
     }
   }
 
-//  private void handleOtherFields(PtSituationElementStructure ptSituation,
-//      ServiceAlert.Builder serviceAlert) {
-//
-//    SeverityEnumeration severity = ptSituation.getSeverity();
-//    if (severity != null) {
-//      ESeverity severityEnum = ESeverity.valueOfTpegCode(severity.value());
-//      serviceAlert.setSeverity(ServiceAlertLibrary.convertSeverity(severityEnum));
-//    }
-//
-//    if (ptSituation.getPublicationWindow() != null) {
-//      HalfOpenTimestampRangeStructure window = ptSituation.getPublicationWindow();
-//      TimeRange.Builder range = TimeRange.newBuilder();
-//      if (window.getStartTime() != null)
-//        range.setStart(window.getStartTime().getTime());
-//      if (window.getEndTime() != null)
-//        range.setEnd(window.getEndTime().getTime());
-//      if (range.hasStart() || range.hasEnd())
-//        serviceAlert.addPublicationWindow(range);
-//    }
-//  }
-//
+  // private void handleOtherFields(PtSituationElementStructure ptSituation,
+  // ServiceAlert.Builder serviceAlert) {
+  //
+  // SeverityEnumeration severity = ptSituation.getSeverity();
+  // if (severity != null) {
+  // ESeverity severityEnum = ESeverity.valueOfTpegCode(severity.value());
+  // serviceAlert.setSeverity(ServiceAlertLibrary.convertSeverity(severityEnum));
+  // }
+  //
+  // if (ptSituation.getPublicationWindow() != null) {
+  // HalfOpenTimestampRangeStructure window =
+  // ptSituation.getPublicationWindow();
+  // TimeRange.Builder range = TimeRange.newBuilder();
+  // if (window.getStartTime() != null)
+  // range.setStart(window.getStartTime().getTime());
+  // if (window.getEndTime() != null)
+  // range.setEnd(window.getEndTime().getTime());
+  // if (range.hasStart() || range.hasEnd())
+  // serviceAlert.addPublicationWindow(range);
+  // }
+  // }
+  //
   @SuppressWarnings("unused")
   private void handlReasons(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
     throw new RuntimeException("handleReasons not implemented");
   }
 
-//  private void handlReasons(PtSituationElementStructure ptSituation,
-//      ServiceAlert.Builder serviceAlert) {
-//
-//    Cause cause = getReasonAsCause(ptSituation);
-//    if (cause != null)
-//      serviceAlert.setCause(cause);
-//  }
-//
-//  private Cause getReasonAsCause(PtSituationElementStructure ptSituation) {
-//    if (ptSituation.getEnvironmentReason() != null)
-//      return Cause.WEATHER;
-//    if (ptSituation.getEquipmentReason() != null) {
-//      switch (ptSituation.getEquipmentReason()) {
-//        case CONSTRUCTION_WORK:
-//          return Cause.CONSTRUCTION;
-//        case CLOSED_FOR_MAINTENANCE:
-//        case MAINTENANCE_WORK:
-//        case EMERGENCY_ENGINEERING_WORK:
-//        case LATE_FINISH_TO_ENGINEERING_WORK:
-//        case REPAIR_WORK:
-//          return Cause.MAINTENANCE;
-//        default:
-//          return Cause.TECHNICAL_PROBLEM;
-//      }
-//    }
-//    if (ptSituation.getPersonnelReason() != null) {
-//      switch (ptSituation.getPersonnelReason()) {
-//        case INDUSTRIAL_ACTION:
-//        case UNOFFICIAL_INDUSTRIAL_ACTION:
-//          return Cause.STRIKE;
-//      }
-//      return Cause.OTHER_CAUSE;
-//    }
-//    /**
-//     * There are really so many possibilities here that it's tricky to translate
-//     * them all
-//     */
-//    if (ptSituation.getMiscellaneousReason() != null) {
-//      switch (ptSituation.getMiscellaneousReason()) {
-//        case ACCIDENT:
-//        case COLLISION:
-//          return Cause.ACCIDENT;
-//        case DEMONSTRATION:
-//        case MARCH:
-//          return Cause.DEMONSTRATION;
-//        case PERSON_ILL_ON_VEHICLE:
-//        case FATALITY:
-//          return Cause.MEDICAL_EMERGENCY;
-//        case POLICE_REQUEST:
-//        case BOMB_ALERT:
-//        case CIVIL_EMERGENCY:
-//        case EMERGENCY_SERVICES:
-//        case EMERGENCY_SERVICES_CALL:
-//          return Cause.POLICE_ACTIVITY;
-//      }
-//    }
-//
-//    return null;
-//  }
+  // private void handlReasons(PtSituationElementStructure ptSituation,
+  // ServiceAlert.Builder serviceAlert) {
+  //
+  // Cause cause = getReasonAsCause(ptSituation);
+  // if (cause != null)
+  // serviceAlert.setCause(cause);
+  // }
+  //
+  // private Cause getReasonAsCause(PtSituationElementStructure ptSituation) {
+  // if (ptSituation.getEnvironmentReason() != null)
+  // return Cause.WEATHER;
+  // if (ptSituation.getEquipmentReason() != null) {
+  // switch (ptSituation.getEquipmentReason()) {
+  // case CONSTRUCTION_WORK:
+  // return Cause.CONSTRUCTION;
+  // case CLOSED_FOR_MAINTENANCE:
+  // case MAINTENANCE_WORK:
+  // case EMERGENCY_ENGINEERING_WORK:
+  // case LATE_FINISH_TO_ENGINEERING_WORK:
+  // case REPAIR_WORK:
+  // return Cause.MAINTENANCE;
+  // default:
+  // return Cause.TECHNICAL_PROBLEM;
+  // }
+  // }
+  // if (ptSituation.getPersonnelReason() != null) {
+  // switch (ptSituation.getPersonnelReason()) {
+  // case INDUSTRIAL_ACTION:
+  // case UNOFFICIAL_INDUSTRIAL_ACTION:
+  // return Cause.STRIKE;
+  // }
+  // return Cause.OTHER_CAUSE;
+  // }
+  // /**
+  // * There are really so many possibilities here that it's tricky to translate
+  // * them all
+  // */
+  // if (ptSituation.getMiscellaneousReason() != null) {
+  // switch (ptSituation.getMiscellaneousReason()) {
+  // case ACCIDENT:
+  // case COLLISION:
+  // return Cause.ACCIDENT;
+  // case DEMONSTRATION:
+  // case MARCH:
+  // return Cause.DEMONSTRATION;
+  // case PERSON_ILL_ON_VEHICLE:
+  // case FATALITY:
+  // return Cause.MEDICAL_EMERGENCY;
+  // case POLICE_REQUEST:
+  // case BOMB_ALERT:
+  // case CIVIL_EMERGENCY:
+  // case EMERGENCY_SERVICES:
+  // case EMERGENCY_SERVICES_CALL:
+  // return Cause.POLICE_ACTIVITY;
+  // }
+  // }
+  //
+  // return null;
+  // }
 
   /****
    * Affects
@@ -442,123 +443,133 @@ public class SiriService {
       serviceAlert.setAllAffects(allAffects);
   }
 
-//  private void handleAffects(PtSituationElementStructure ptSituation,
-//      ServiceAlert.Builder serviceAlert) {
-//
-//    AffectsScopeStructure affectsStructure = ptSituation.getAffects();
-//
-//    if (affectsStructure == null)
-//      return;
-//
-//    Operators operators = affectsStructure.getOperators();
-//
-//    if (operators != null
-//        && !CollectionsLibrary.isEmpty(operators.getAffectedOperator())) {
-//
-//      for (AffectedOperatorStructure operator : operators.getAffectedOperator()) {
-//        OperatorRefStructure operatorRef = operator.getOperatorRef();
-//        if (operatorRef == null || operatorRef.getValue() == null)
-//          continue;
-//        String agencyId = operatorRef.getValue();
-//        Affects.Builder affects = Affects.newBuilder();
-//        affects.setAgencyId(agencyId);
-//        serviceAlert.addAffects(affects);
-//      }
-//    }
-//
-//    StopPoints stopPoints = affectsStructure.getStopPoints();
-//
-//    if (stopPoints != null
-//        && !CollectionsLibrary.isEmpty(stopPoints.getAffectedStopPoint())) {
-//
-//      for (AffectedStopPointStructure stopPoint : stopPoints.getAffectedStopPoint()) {
-//        StopPointRefStructure stopRef = stopPoint.getStopPointRef();
-//        if (stopRef == null || stopRef.getValue() == null)
-//          continue;
-//        AgencyAndId stopId = AgencyAndIdLibrary.convertFromString(stopRef.getValue());
-//        Id id = ServiceAlertLibrary.id(stopId);
-//        Affects.Builder affects = Affects.newBuilder();
-//        affects.setStopId(id);
-//        serviceAlert.addAffects(affects);
-//      }
-//    }
-//
-//    VehicleJourneys vjs = affectsStructure.getVehicleJourneys();
-//    if (vjs != null
-//        && !CollectionsLibrary.isEmpty(vjs.getAffectedVehicleJourney())) {
-//
-//      for (AffectedVehicleJourneyStructure vj : vjs.getAffectedVehicleJourney()) {
-//
-//        Affects.Builder affects = Affects.newBuilder();
-//        if (vj.getLineRef() != null) {
-//          AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(vj.getLineRef().getValue());
-//          Id id = ServiceAlertLibrary.id(routeId);
-//          affects.setRouteId(id);
-//        }
-//
-//        if (vj.getDirectionRef() != null)
-//          affects.setDirectionId(vj.getDirectionRef().getValue());
-//
-//        List<VehicleJourneyRefStructure> tripRefs = vj.getVehicleJourneyRef();
-//        Calls stopRefs = vj.getCalls();
-//
-//        boolean hasTripRefs = !CollectionsLibrary.isEmpty(tripRefs);
-//        boolean hasStopRefs = stopRefs != null
-//            && !CollectionsLibrary.isEmpty(stopRefs.getCall());
-//
-//        if (!(hasTripRefs || hasStopRefs)) {
-//          if (affects.hasRouteId())
-//            serviceAlert.addAffects(affects);
-//        } else if (hasTripRefs && hasStopRefs) {
-//          for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
-//            AgencyAndId tripId = AgencyAndIdLibrary.convertFromString(vjRef.getValue());
-//            affects.setTripId(ServiceAlertLibrary.id(tripId));
-//            for (AffectedCallStructure call : stopRefs.getCall()) {
-//              AgencyAndId stopId = AgencyAndIdLibrary.convertFromString(call.getStopPointRef().getValue());
-//              affects.setStopId(ServiceAlertLibrary.id(stopId));
-//              serviceAlert.addAffects(affects);
-//            }
-//          }
-//        } else if (hasTripRefs) {
-//          for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
-//            AgencyAndId tripId = AgencyAndIdLibrary.convertFromString(vjRef.getValue());
-//            affects.setTripId(ServiceAlertLibrary.id(tripId));
-//            serviceAlert.addAffects(affects);
-//          }
-//        } else {
-//          for (AffectedCallStructure call : stopRefs.getCall()) {
-//            AgencyAndId stopId = AgencyAndIdLibrary.convertFromString(call.getStopPointRef().getValue());
-//            affects.setStopId(ServiceAlertLibrary.id(stopId));
-//            serviceAlert.addAffects(affects);
-//          }
-//        }
-//      }
-//    }
-//
-//    ExtensionsStructure extension = affectsStructure.getExtensions();
-//    if (extension != null && extension.getAny() != null) {
-//      Object ext = extension.getAny();
-//      if (ext instanceof OneBusAwayAffects) {
-//        OneBusAwayAffects obaAffects = (OneBusAwayAffects) ext;
-//
-//        Applications applications = obaAffects.getApplications();
-//        if (applications != null
-//            && !CollectionsLibrary.isEmpty(applications.getAffectedApplication())) {
-//
-//          List<AffectedApplicationStructure> apps = applications.getAffectedApplication();
-//
-//          for (AffectedApplicationStructure sApp : apps) {
-//            Affects.Builder affects = Affects.newBuilder();
-//            affects.setApplicationId(sApp.getApiKey());
-//            serviceAlert.addAffects(affects);
-//          }
-//        }
-//      }
-//    }
-//  }
+  // private void handleAffects(PtSituationElementStructure ptSituation,
+  // ServiceAlert.Builder serviceAlert) {
+  //
+  // AffectsScopeStructure affectsStructure = ptSituation.getAffects();
+  //
+  // if (affectsStructure == null)
+  // return;
+  //
+  // Operators operators = affectsStructure.getOperators();
+  //
+  // if (operators != null
+  // && !CollectionsLibrary.isEmpty(operators.getAffectedOperator())) {
+  //
+  // for (AffectedOperatorStructure operator : operators.getAffectedOperator())
+  // {
+  // OperatorRefStructure operatorRef = operator.getOperatorRef();
+  // if (operatorRef == null || operatorRef.getValue() == null)
+  // continue;
+  // String agencyId = operatorRef.getValue();
+  // Affects.Builder affects = Affects.newBuilder();
+  // affects.setAgencyId(agencyId);
+  // serviceAlert.addAffects(affects);
+  // }
+  // }
+  //
+  // StopPoints stopPoints = affectsStructure.getStopPoints();
+  //
+  // if (stopPoints != null
+  // && !CollectionsLibrary.isEmpty(stopPoints.getAffectedStopPoint())) {
+  //
+  // for (AffectedStopPointStructure stopPoint :
+  // stopPoints.getAffectedStopPoint()) {
+  // StopPointRefStructure stopRef = stopPoint.getStopPointRef();
+  // if (stopRef == null || stopRef.getValue() == null)
+  // continue;
+  // AgencyAndId stopId =
+  // AgencyAndIdLibrary.convertFromString(stopRef.getValue());
+  // Id id = ServiceAlertLibrary.id(stopId);
+  // Affects.Builder affects = Affects.newBuilder();
+  // affects.setStopId(id);
+  // serviceAlert.addAffects(affects);
+  // }
+  // }
+  //
+  // VehicleJourneys vjs = affectsStructure.getVehicleJourneys();
+  // if (vjs != null
+  // && !CollectionsLibrary.isEmpty(vjs.getAffectedVehicleJourney())) {
+  //
+  // for (AffectedVehicleJourneyStructure vj : vjs.getAffectedVehicleJourney())
+  // {
+  //
+  // Affects.Builder affects = Affects.newBuilder();
+  // if (vj.getLineRef() != null) {
+  // AgencyAndId routeId =
+  // AgencyAndIdLibrary.convertFromString(vj.getLineRef().getValue());
+  // Id id = ServiceAlertLibrary.id(routeId);
+  // affects.setRouteId(id);
+  // }
+  //
+  // if (vj.getDirectionRef() != null)
+  // affects.setDirectionId(vj.getDirectionRef().getValue());
+  //
+  // List<VehicleJourneyRefStructure> tripRefs = vj.getVehicleJourneyRef();
+  // Calls stopRefs = vj.getCalls();
+  //
+  // boolean hasTripRefs = !CollectionsLibrary.isEmpty(tripRefs);
+  // boolean hasStopRefs = stopRefs != null
+  // && !CollectionsLibrary.isEmpty(stopRefs.getCall());
+  //
+  // if (!(hasTripRefs || hasStopRefs)) {
+  // if (affects.hasRouteId())
+  // serviceAlert.addAffects(affects);
+  // } else if (hasTripRefs && hasStopRefs) {
+  // for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
+  // AgencyAndId tripId =
+  // AgencyAndIdLibrary.convertFromString(vjRef.getValue());
+  // affects.setTripId(ServiceAlertLibrary.id(tripId));
+  // for (AffectedCallStructure call : stopRefs.getCall()) {
+  // AgencyAndId stopId =
+  // AgencyAndIdLibrary.convertFromString(call.getStopPointRef().getValue());
+  // affects.setStopId(ServiceAlertLibrary.id(stopId));
+  // serviceAlert.addAffects(affects);
+  // }
+  // }
+  // } else if (hasTripRefs) {
+  // for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
+  // AgencyAndId tripId =
+  // AgencyAndIdLibrary.convertFromString(vjRef.getValue());
+  // affects.setTripId(ServiceAlertLibrary.id(tripId));
+  // serviceAlert.addAffects(affects);
+  // }
+  // } else {
+  // for (AffectedCallStructure call : stopRefs.getCall()) {
+  // AgencyAndId stopId =
+  // AgencyAndIdLibrary.convertFromString(call.getStopPointRef().getValue());
+  // affects.setStopId(ServiceAlertLibrary.id(stopId));
+  // serviceAlert.addAffects(affects);
+  // }
+  // }
+  // }
+  // }
+  //
+  // ExtensionsStructure extension = affectsStructure.getExtensions();
+  // if (extension != null && extension.getAny() != null) {
+  // Object ext = extension.getAny();
+  // if (ext instanceof OneBusAwayAffects) {
+  // OneBusAwayAffects obaAffects = (OneBusAwayAffects) ext;
+  //
+  // Applications applications = obaAffects.getApplications();
+  // if (applications != null
+  // && !CollectionsLibrary.isEmpty(applications.getAffectedApplication())) {
+  //
+  // List<AffectedApplicationStructure> apps =
+  // applications.getAffectedApplication();
+  //
+  // for (AffectedApplicationStructure sApp : apps) {
+  // Affects.Builder affects = Affects.newBuilder();
+  // affects.setApplicationId(sApp.getApiKey());
+  // serviceAlert.addAffects(affects);
+  // }
+  // }
+  // }
+  // }
+  // }
 
-  private void handleConsequences(
-      PtSituationElementStructure ptSituation, ServiceAlertBean serviceAlert) {
+  private void handleConsequences(PtSituationElementStructure ptSituation,
+      ServiceAlertBean serviceAlert) {
 
     List<SituationConsequenceBean> consequencesList = new ArrayList<SituationConsequenceBean>();
 
@@ -581,7 +592,8 @@ public class SiriService {
             situationConsequenceBean.setDetourPath(obaConsequence.getDiversionPath());
         }
       }
-      if (situationConsequenceBean.getDetourPath() != null || situationConsequenceBean.getEffect() != null)
+      if (situationConsequenceBean.getDetourPath() != null
+          || situationConsequenceBean.getEffect() != null)
         consequencesList.add(situationConsequenceBean);
     }
 
@@ -589,31 +601,31 @@ public class SiriService {
       serviceAlert.setConsequences(consequencesList);
   }
 
-//  private void handleConsequences(PtSituationElementStructure ptSituation,
-//      ServiceAlert.Builder serviceAlert) {
-//
-//    PtConsequencesStructure consequences = ptSituation.getConsequences();
-//
-//    if (consequences == null || consequences.getConsequence() == null)
-//      return;
-//
-//    for (PtConsequenceStructure consequence : consequences.getConsequence()) {
-//      Consequence.Builder builder = Consequence.newBuilder();
-//      if (consequence.getCondition() != null)
-//        builder.setEffect(getConditionAsEffect(consequence.getCondition()));
-//      ExtensionsStructure extensions = consequence.getExtensions();
-//      if (extensions != null) {
-//        Object obj = extensions.getAny();
-//        if (obj instanceof OneBusAwayConsequence) {
-//          OneBusAwayConsequence obaConsequence = (OneBusAwayConsequence) obj;
-//          if (obaConsequence.getDiversionPath() != null)
-//            builder.setDetourPath(obaConsequence.getDiversionPath());
-//        }
-//      }
-//      if (builder.hasDetourPath() || builder.hasEffect())
-//        serviceAlert.addConsequence(builder);
-//    }
-//  }
+  // private void handleConsequences(PtSituationElementStructure ptSituation,
+  // ServiceAlert.Builder serviceAlert) {
+  //
+  // PtConsequencesStructure consequences = ptSituation.getConsequences();
+  //
+  // if (consequences == null || consequences.getConsequence() == null)
+  // return;
+  //
+  // for (PtConsequenceStructure consequence : consequences.getConsequence()) {
+  // Consequence.Builder builder = Consequence.newBuilder();
+  // if (consequence.getCondition() != null)
+  // builder.setEffect(getConditionAsEffect(consequence.getCondition()));
+  // ExtensionsStructure extensions = consequence.getExtensions();
+  // if (extensions != null) {
+  // Object obj = extensions.getAny();
+  // if (obj instanceof OneBusAwayConsequence) {
+  // OneBusAwayConsequence obaConsequence = (OneBusAwayConsequence) obj;
+  // if (obaConsequence.getDiversionPath() != null)
+  // builder.setDetourPath(obaConsequence.getDiversionPath());
+  // }
+  // }
+  // if (builder.hasDetourPath() || builder.hasEffect())
+  // serviceAlert.addConsequence(builder);
+  // }
+  // }
 
   private EEffect getConditionAsEffect(ServiceConditionEnumeration condition) {
     switch (condition) {
@@ -661,51 +673,52 @@ public class SiriService {
     }
   }
 
-//  private Effect getConditionAsEffect(ServiceConditionEnumeration condition) {
-//    switch (condition) {
-//
-//      case CANCELLED:
-//      case NO_SERVICE:
-//        return Effect.NO_SERVICE;
-//
-//      case DELAYED:
-//        return Effect.SIGNIFICANT_DELAYS;
-//
-//      case DIVERTED:
-//        return Effect.DETOUR;
-//
-//      case ADDITIONAL_SERVICE:
-//      case EXTENDED_SERVICE:
-//      case SHUTTLE_SERVICE:
-//      case SPECIAL_SERVICE:
-//      case REPLACEMENT_SERVICE:
-//        return Effect.ADDITIONAL_SERVICE;
-//
-//      case DISRUPTED:
-//      case INTERMITTENT_SERVICE:
-//      case SHORT_FORMED_SERVICE:
-//        return Effect.REDUCED_SERVICE;
-//
-//      case ALTERED:
-//      case ARRIVES_EARLY:
-//      case REPLACEMENT_TRANSPORT:
-//      case SPLITTING_TRAIN:
-//        return Effect.MODIFIED_SERVICE;
-//
-//      case ON_TIME:
-//      case FULL_LENGTH_SERVICE:
-//      case NORMAL_SERVICE:
-//        return Effect.OTHER_EFFECT;
-//
-//      case UNDEFINED_SERVICE_INFORMATION:
-//      case UNKNOWN:
-//        return Effect.UNKNOWN_EFFECT;
-//
-//      default:
-//        _log.warn("unknown condition: " + condition);
-//        return Effect.UNKNOWN_EFFECT;
-//    }
-//  }
+  // private Effect getConditionAsEffect(ServiceConditionEnumeration condition)
+  // {
+  // switch (condition) {
+  //
+  // case CANCELLED:
+  // case NO_SERVICE:
+  // return Effect.NO_SERVICE;
+  //
+  // case DELAYED:
+  // return Effect.SIGNIFICANT_DELAYS;
+  //
+  // case DIVERTED:
+  // return Effect.DETOUR;
+  //
+  // case ADDITIONAL_SERVICE:
+  // case EXTENDED_SERVICE:
+  // case SHUTTLE_SERVICE:
+  // case SPECIAL_SERVICE:
+  // case REPLACEMENT_SERVICE:
+  // return Effect.ADDITIONAL_SERVICE;
+  //
+  // case DISRUPTED:
+  // case INTERMITTENT_SERVICE:
+  // case SHORT_FORMED_SERVICE:
+  // return Effect.REDUCED_SERVICE;
+  //
+  // case ALTERED:
+  // case ARRIVES_EARLY:
+  // case REPLACEMENT_TRANSPORT:
+  // case SPLITTING_TRAIN:
+  // return Effect.MODIFIED_SERVICE;
+  //
+  // case ON_TIME:
+  // case FULL_LENGTH_SERVICE:
+  // case NORMAL_SERVICE:
+  // return Effect.OTHER_EFFECT;
+  //
+  // case UNDEFINED_SERVICE_INFORMATION:
+  // case UNKNOWN:
+  // return Effect.UNKNOWN_EFFECT;
+  //
+  // default:
+  // _log.warn("unknown condition: " + condition);
+  // return Effect.UNKNOWN_EFFECT;
+  // }
+  // }
 
   private TranslatedString translation(DefaultedTextStructure text) {
     if (text == null)

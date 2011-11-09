@@ -12,7 +12,7 @@ import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDet
 
 import uk.org.siri.siri.PtSituationElementStructure;
 
-public class SiriServiceTest extends SiriService {
+public class NycSiriServiceTest extends NycSiriService {
 
   @Test
   public void testGetPtSituationAsServiceAlertBean() {
