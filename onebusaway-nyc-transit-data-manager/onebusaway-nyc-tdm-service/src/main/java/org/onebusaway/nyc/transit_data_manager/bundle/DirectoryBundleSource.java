@@ -1,13 +1,10 @@
 package org.onebusaway.nyc.transit_data_manager.bundle;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.lang.reflect.Type;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
@@ -185,15 +182,14 @@ public class DirectoryBundleSource implements BundleSource {
   }
 
   @Override
-  public File getBundleFile(String bundleId, String relativeFilePath) {
+  public File getBundleFile(String bundleId, String relativeFilePath) throws FileNotFoundException {
     
     File file = new File(masterBundleDirectory, getFilePath(bundleId, relativeFilePath));
     
-    if (file.exists()){  
-      return file;
-    } else {
-      return null;
+    if (!file.exists()) {
+      throw new FileNotFoundException("File " + file.getPath() + " not found.");
     }
+    return file;
   }
   
   private String getFilePath(String bundleId, String relativeFilePath) {
@@ -202,5 +198,19 @@ public class DirectoryBundleSource implements BundleSource {
     String relPath = bundleId + fileSep + BUNDLE_DATA_DIRNAME + fileSep + relativeFilePath ;
     
     return relPath;
+  }
+
+  @Override
+  public boolean checkIsValidBundleFile(String bundleId, String relativeFilePath) {
+    boolean isValid = false;
+    
+    Bundle requestedBundle = loadBundleDirectory(bundleId);
+    if (requestedBundle != null) {
+      if (requestedBundle.containsFile(relativeFilePath)) {
+        isValid = true;
+      }
+    }
+    
+    return isValid;
   }
 }
