@@ -6,7 +6,7 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-			classpath:application-context.xml
+			classpath:org/onebusaway/nyc/transit_data_manager/application-context.xml
 		</param-value>
 	</context-param>
 
@@ -22,10 +22,14 @@
 		<servlet-name>Jersey Spring Web Application</servlet-name>
 		<servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
 	</servlet>
-	<servlet-mapping>
-		<servlet-name>Jersey Spring Web Application</servlet-name>
-		<url-pattern>/api/*</url-pattern>
-	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Jersey Spring Web Application</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Jersey Spring Web Application</servlet-name>
+        <url-pattern>/siri/*</url-pattern>
+    </servlet-mapping>
 
 
 </web-app>

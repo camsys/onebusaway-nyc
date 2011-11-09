@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Siri xmlns:ns2="http://www.ifopt.org.uk/acsb" xmlns="http://www.siri.org.uk/siri" xmlns:ns4="http://datex2.eu/schema/1_0/1_0" xmlns:ns3="http://www.ifopt.org.uk/ifopt">
+    <ServiceDelivery>
+        <SituationExchangeDelivery>
+            <Situations>
+                <PtSituationElement>
+                    <SituationNumber>MTA NYCT_56754</SituationNumber>
+                    <PublicationWindow>
+                        <StartTime>2011-10-25T20:00:00-04:00</StartTime>
+                        <EndTime>2011-11-25T18:59:00-05:00</EndTime>
+                    </PublicationWindow>
+                    <Summary xml:lang="EN">X27, X28, X37 and X38 temporary bus stop change due a demonstration</Summary>
+                    <Description xml:lang="EN">Until further notice Brooklyn bound buses will not make the stop at the near side of Cedar St due to police barricades and will now make the stop at the far side of Cedar St. Please allow additional travel time.</Description>
+                    <Affects>
+                        <VehicleJourneys>
+                            <AffectedVehicleJourney>
+                                <LineRef>MTA NYCT_X27</LineRef>
+                            </AffectedVehicleJourney>
+                            <AffectedVehicleJourney>
+                                <LineRef>MTA NYCT_X28</LineRef>
+                            </AffectedVehicleJourney>
+                            <AffectedVehicleJourney>
+                                <LineRef>MTA NYCT_X37</LineRef>
+                            </AffectedVehicleJourney>
+                            <AffectedVehicleJourney>
+                                <LineRef>MTA NYCT_X38</LineRef>
+                            </AffectedVehicleJourney>
+                        </VehicleJourneys>
+                    </Affects>
+                    <Consequences>
+                        <Consequence>
+                            <Condition>altered</Condition>
+                        </Consequence>
+                    </Consequences>
+                </PtSituationElement>
+                <PtSituationElement>
+                    <SituationNumber>MTA NYCT_56755</SituationNumber>
+                    <PublicationWindow>
+                        <StartTime>2011-11-07T19:00:00-05:00</StartTime>
+                    </PublicationWindow>
+                    <Summary xml:lang="EN">S79 buses detoured due to road work</Summary>
+                    <Description xml:lang="EN">Buses are being detoured from Hylan Blvd between Midland Av and Steuben St</Description>
+                    <Affects>
+                        <VehicleJourneys>
+                            <AffectedVehicleJourney>
+                                <LineRef>MTA NYCT_S79</LineRef>
+                            </AffectedVehicleJourney>
+                        </VehicleJourneys>
+                    </Affects>
+                    <Consequences>
+                        <Consequence>
+                            <Condition>altered</Condition>
+                        </Consequence>
+                    </Consequences>
+                </PtSituationElement>
+            </Situations>
+        </SituationExchangeDelivery>
+    </ServiceDelivery>
+</Siri>

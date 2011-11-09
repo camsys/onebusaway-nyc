@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Siri xmlns="http://www.siri.org.uk/siri" xmlns:ns2="http://www.ifopt.org.uk/acsb" xmlns:ns3="http://www.ifopt.org.uk/ifopt"
+    xmlns:ns4="http://datex2.eu/schema/1_0/1_0">
+    <ServiceDelivery>
+        <!--=======ENDPOINT ================================== -->
+        <RequestorRef>NADER</RequestorRef>
+        <RequestRef>2004-12-17T09:30:47</RequestRef>
+        <!--=======FIRST SUBSCRIPTION======================== -->
+        <SituationExchangeDelivery version="1.1">
+            <ResponseTimestamp>2004-12-17T09:30:47</ResponseTimestamp>
+            <SubscriberRef> NADER </SubscriberRef>
+            <Status>true</Status>
+            <MoreData>false</MoreData>
+            <!--=======PAYLOAD ===================================== -->
+<!--             <PtSituation xsi:schemaLocation="http://www.siri.org.uk/siri siri_situationExchange_service.xsd"
+                xmlns:acsb="http://www.ifopt.org.uk/acsb" xmlns:siri="http://www.siri.org.uk/siri" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">  -->
+            <PtSituation>
+                <CreationTime>2001-12-17T09:30:47.0Z</CreationTime>
+                <ParticipantRef>RAILCO01</ParticipantRef>
+                <SituationNumber>000354</SituationNumber>
+                <Version>0</Version>
+                <Source>
+                    <Phone>017654</Phone>
+                    <AgentReference>03274</AgentReference>
+                    <TimeOfCommunication>2001-12-17T09:30:47.0Z</TimeOfCommunication>
+                </Source>
+            </PtSituation>
+        </SituationExchangeDelivery>
+    </ServiceDelivery>
+</Siri>
