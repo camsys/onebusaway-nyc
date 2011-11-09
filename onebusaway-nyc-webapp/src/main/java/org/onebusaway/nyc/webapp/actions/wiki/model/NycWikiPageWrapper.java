@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.model;
+package org.onebusaway.nyc.webapp.actions.wiki.model;
 
 import java.util.Date;
 import java.util.regex.Matcher;

@@ -33,28 +33,28 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
   
   private Map<String, Object> _session;
   
-  protected List<SearchResult> _searchResults = new ArrayList<SearchResult>();
+  protected List<SearchResult> _searchResults = null;
 
-  protected Integer _searchResultsCursor = 0;
+  protected Integer _searchResultsCursor = null;
   
   protected String _lastQuery = null;
 
   protected String _query = null;
   
+  @SuppressWarnings("unchecked")
   public void setSession(Map<String, Object> session) {
     this._session = session;
     
     if(session != null) {
-      @SuppressWarnings("unchecked")
-      List<SearchResult> results = (List<SearchResult>)session.get("searchResults");
-      if(results != null)
-        _searchResults = results; 
-      
+      _searchResults = (List<SearchResult>)session.get("searchResults");
       _searchResultsCursor = (Integer)session.get("searchResultsCursor");
+      _lastQuery = (String)session.get("lastQuery");
+
+      if(_searchResults == null)
+        _searchResults = new ArrayList<SearchResult>();
+      
       if(_searchResultsCursor == null)
         _searchResultsCursor = 0;
-      
-      _lastQuery = (String)session.get("lastQuery");
     }
   }
   

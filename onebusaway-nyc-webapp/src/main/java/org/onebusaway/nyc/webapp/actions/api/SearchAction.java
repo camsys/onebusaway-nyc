@@ -118,11 +118,10 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
       locationSearchResult.setGeocoderResult(result);
 
       if(result.isRegion()) {
-        locationSearchResult.setNearbyRoutes(
-            _routeSearchService.resultsForLocation(result.getBounds()));
+        locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getBounds()));
       } else {
-        locationSearchResult.setNearbyRoutes(
-            _routeSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
+        locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getLatitude(), 
+            result.getLongitude()));
       }
       
       results.add(locationSearchResult);
@@ -131,6 +130,9 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     return results;
   }  
   
+  /** 
+   * VIEW METHODS
+   */
   public List<SearchResult> getSearchResults() {
     return _searchResults;
   }

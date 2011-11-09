@@ -1,7 +1,6 @@
 .project
 .classpath
 .settings
-*/src/main/resources/data-sources.xml
 */bin/*
 *~
 */local-hsqldb-db/*
