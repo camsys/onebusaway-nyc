@@ -75,6 +75,8 @@
             <props>
                 <prop key="webapp.api.url">${webapp.api.url}</prop>
                 <prop key="tdm.host">${tdm.host}</prop>
+                <prop key="bundle.location">${bundle.location}</prop>
+                <prop key="bundle.mode.standalone">${bundle.mode.standalone}</prop>
             </props>
         </property>
     </bean>

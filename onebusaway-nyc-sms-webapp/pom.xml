@@ -112,6 +112,32 @@
             </properties>
         </profile>
         <!-- TODO MySQL -->
+        <!--  bundle location profiles -->
+        <profile>
+            <id>bundle-tmp</id>
+            <properties>
+                <bundle.location>/tmp/oba-bundle</bundle.location>
+            </properties>
+        </profile>
+        <profile>
+            <id>bundle-obanyc</id>
+            <properties>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+            </properties>
+        </profile>
+        <!--  bundle mode profiles -->
+        <profile>
+            <id>bundle-mode-standalone</id>
+            <properties>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+            </properties>
+        </profile>
+        <profile>
+            <id>bundle-mode-download</id>
+            <properties>
+                <bundle.mode.standalone>false</bundle.mode.standalone>
+            </properties>
+        </profile>
 
         <!-- Services profiles -->
         <profile>
@@ -193,7 +219,7 @@
     </profiles>
 
     <build>
-        <finalName>onebusaway-nyc-webapp</finalName>
+        <finalName>onebusaway-nyc-sms-webapp</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
