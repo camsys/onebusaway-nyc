@@ -9,9 +9,10 @@ public class BundleProvider {
 
   private BundleSource bundleSource;
   
+  public BundleProvider() {
+  }
+
   public BundleProvider(BundleSource bundleSource) {
-    super();
-    
     this.bundleSource = bundleSource;
   }
   

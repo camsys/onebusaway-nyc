@@ -143,6 +143,84 @@
 				<tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
 			</properties>
 		</profile>
+		
+        <!-- Services profiles -->
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-tdf-as-tds</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url></webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-staging</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-prod</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.prod.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-qa</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.qa.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Vehicle tracking webapp offers the TDS -->
+            <id>services-vtw-as-tds</id> <!-- single port, aka development -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8080</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <id>services-vtw-as-tds-multiport</id> <!-- multi port, also for development -->
+            <!-- assumes we're running on 8080, and vtw and api are on different ports -->
+            <properties>
+                <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8082</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+		
 	</profiles>
 
 	<build>
