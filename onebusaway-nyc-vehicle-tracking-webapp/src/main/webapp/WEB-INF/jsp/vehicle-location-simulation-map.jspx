@@ -109,16 +109,27 @@ OBA.Debug = function() {
 		            
 		            marker.events.register("mousedown", marker, function(event) {
 			            feature = new OpenLayers.Feature(markers, point);	
-						feature.data.popupSize = new OpenLayers.Size(300, 100);
+						feature.data.popupSize = new OpenLayers.Size(500, 100);
 			            popup = feature.createPopup(true);
 		                
 		                var html = "";
 						jQuery.each(record, function(property, value) {
-							html += property + ": " + value + "<br/>";
+							if(property === "inferredTripId") {
+								html += property + ": &lt;a href='#'&gt;" + value + "&lt;/a&gt;&lt;br/&gt;";
+							} else {
+								html += property + ": " + value + "<br/>";
+							}
 						});
 		                popup.setContentHTML(html);
-		                
 		                markers.map.addPopup(popup);
+		                
+		                var tripLink = jQuery(popup.contentDiv).find("a");
+		                tripLink.click(function(e) {
+		                	e.preventDefault();
+
+		                	selectTrip(jQuery(this).text());
+		                });
+
 		                OpenLayers.Event.stop(event);
 		            });
 		            
@@ -132,9 +143,11 @@ OBA.Debug = function() {
 		});
 	}
 	
-	function selectTrip() {
-		var selectedTrip = jQuery("#trips option:selected");
-		var selectedTripId = selectedTrip.val();
+	function selectTrip(selectedTripId) {
+		if(typeof selectedTripId === 'undefined') {
+			var selectedTrip = jQuery("#trips option:selected");
+			selectedTripId = selectedTrip.val();
+		}
 		
 		jQuery.ajax({
 			url: "vehicle-location-simulation!points-for-trip-id.do?tripId=" + selectedTripId,
@@ -266,7 +279,9 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 <a href="vehicle-location-simulation.do">Back to Vehicle Location Simulation Console</a>
 </p>
 
-<div id="list" style="width: 410px; float: left;">
+<table>
+<tr>
+<td style="width: 410px;">
 	All Routes:
 	<br/>
 	<select size="10" style="width: 400px;" id="routes">
@@ -284,10 +299,12 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<select size="10" style="width: 400px;" id="trips">
 		<option value="">Select a block first.</option>
 	</select>
-
-</div>
-
-<div id="map" style="width: 800px; height: 500px;"></div>
+</td>
+<td>
+	<div id="map" style="width: 800px; height: 500px;"></div>
+</td>
+</tr>
+</table>
 
 </body>
 </html>
