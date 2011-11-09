@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.report_archive.queue;
 
-import org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.onebusaway.nyc.report_archive.model.NycVehicleManagementStatusRecord;
 import org.onebusaway.nyc.report_archive.services.NycVehicleManagementStatusDao;
@@ -52,16 +52,8 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   // listening
   protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
     try {
-      NycQueuedInferredLocationRecord locationRecord = new NycQueuedInferredLocationRecord(inferredResult, contents);
+      ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(inferredResult, contents);
 
-      NycVehicleManagementStatusBean managementBean = inferredResult.getManagementRecord();
-
-      if (managementBean != null) {
-	NycVehicleManagementStatusRecord managementRecord =
-	  new NycVehicleManagementStatusRecord(managementBean);
-	_statusDao.saveOrUpdateRecord(managementRecord);
-      }
-    
       _locationDao.saveOrUpdateRecord(locationRecord);
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);
