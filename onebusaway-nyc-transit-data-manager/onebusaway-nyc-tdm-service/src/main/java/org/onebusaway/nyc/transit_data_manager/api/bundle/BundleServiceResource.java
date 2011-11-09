@@ -1,11 +1,10 @@
 package org.onebusaway.nyc.transit_data_manager.api.bundle;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,7 +36,7 @@ import com.sun.jersey.core.header.ContentDisposition;
 public class BundleServiceResource {
 
   private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
-  
+
   @Autowired
   BundleProvider bundleProvider;
   @Autowired
@@ -95,44 +94,49 @@ public class BundleServiceResource {
       @PathParam("bundleFileFilename") String relativeFilename) {
 
     _log.info("starting BundleServiceResource.getBundleFile");
-    Response response;
-    
-    File requestedFile = bundleProvider.getBundleFile(bundleId, relativeFilename);
-    
-    
-    
-    if (requestedFile != null) {
-      
-      _log.info("requested " + requestedFile.getPath());
-      
-      final File fileToSend = requestedFile;
-      
-      StreamingOutput output = new StreamingOutput() {
-        
-        @Override
-        public void write(OutputStream os) throws IOException,
-            WebApplicationException {
 
-          InputStream is = new BufferedInputStream(new FileInputStream(fileToSend));
-          
-          int next;
-          while ((next = is.read()) != -1) {
-            os.write(next);
-          }
-          
-          is.close();
-          os.close();
-        }
-      };
-      
-      ContentDisposition cd = ContentDisposition.type("file").fileName(fileToSend.getName()).build();
-      response = Response.ok(output, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", cd).build();
-    } else {
-      _log.info("requestedFile was null");
-      response = null;
-      throw new WebApplicationException(new Exception("In BundleServiceResource.getBundleFile, requestedFile was null."));
+    boolean requestIsForValidBundleFile = bundleProvider.checkIsValidBundleFile(
+        bundleId, relativeFilename);
+    if (!requestIsForValidBundleFile) {
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
     }
-    
+
+    Response response;
+
+    final File requestedFile;
+    try {
+      requestedFile = bundleProvider.getBundleFile(bundleId, relativeFilename);
+    } catch (FileNotFoundException e) {
+      _log.info("FileNotFoundException loading " + relativeFilename + " in "
+          + bundleId + " bundle.");
+      throw new WebApplicationException(e,
+          Response.Status.INTERNAL_SERVER_ERROR);
+    }
+
+    StreamingOutput output = new StreamingOutput() {
+
+      @Override
+      public void write(OutputStream os) throws IOException,
+          WebApplicationException {
+
+        InputStream is = new BufferedInputStream(
+            new FileInputStream(requestedFile));
+
+        int next;
+        while ((next = is.read()) != -1) {
+          os.write(next);
+        }
+
+        is.close();
+        os.close();
+      }
+    };
+
+    ContentDisposition cd = ContentDisposition.type("file").fileName(
+        requestedFile.getName()).build();
+    response = Response.ok(output, MediaType.APPLICATION_OCTET_STREAM).header(
+        "Content-Disposition", cd).build();
+
     return response;
   }
 }

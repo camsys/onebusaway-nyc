@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.bundle;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
@@ -9,10 +10,9 @@ public class BundleProvider {
 
   private BundleSource bundleSource;
   
-  public BundleProvider() {
-  }
-
   public BundleProvider(BundleSource bundleSource) {
+    super();
+    
     this.bundleSource = bundleSource;
   }
   
@@ -20,7 +20,11 @@ public class BundleProvider {
     return bundleSource.getBundles();
   }
   
-  public File getBundleFile (String bundleId, String relativeFilePath) {
+  public File getBundleFile (String bundleId, String relativeFilePath) throws FileNotFoundException {
     return bundleSource.getBundleFile(bundleId, relativeFilePath);
+  }
+  
+  public boolean checkIsValidBundleFile (String bundleId, String relativeFilePath) {
+    return bundleSource.checkIsValidBundleFile(bundleId, relativeFilePath);
   }
 }

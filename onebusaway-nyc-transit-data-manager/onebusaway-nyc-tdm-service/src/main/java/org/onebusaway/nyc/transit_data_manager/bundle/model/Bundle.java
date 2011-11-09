@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.bundle.model;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -63,5 +64,18 @@ public class Bundle {
 //  }
   public void setFiles(List<BundleFile> files) {
     this.files = files;
+  }
+  
+  public boolean containsFile(String fileName) {
+    boolean containsFile = false;
+    
+    for (BundleFile file : getFiles()) {
+      if (file.getFilename().equals(fileName)){
+        containsFile = true;
+        break;
+      }
+    }
+    
+    return containsFile;
   }
 }
