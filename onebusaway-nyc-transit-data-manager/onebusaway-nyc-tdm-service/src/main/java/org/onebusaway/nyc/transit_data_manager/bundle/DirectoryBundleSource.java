@@ -122,23 +122,25 @@ public class DirectoryBundleSource implements BundleSource {
 
     File bundleFile = new File(getMasterBundleDirectory(), dirName);
 
-    // List the contents of the directory.
-    String[] dirList = bundleFile.list();
+    if (bundleFile.isDirectory()){
+      // List the contents of the directory.
+      String[] dirList = bundleFile.list();
 
-    // Check for two entries, a file named 'BundleMetadata.json' and a directory
-    // named 'data'
-    if (arrayContainsItem(dirList, BUNDLE_METADATA_FILENAME)
-        && arrayContainsItem(dirList, BUNDLE_DATA_DIRNAME)) {
-      File bundleMetadataFile = new File(bundleFile, BUNDLE_METADATA_FILENAME);
-      File dataDir = new File(bundleFile, BUNDLE_DATA_DIRNAME);
+      // Check for two entries, a file named 'BundleMetadata.json' and a directory
+      // named 'data'
+      if (arrayContainsItem(dirList, BUNDLE_METADATA_FILENAME)
+          && arrayContainsItem(dirList, BUNDLE_DATA_DIRNAME)) {
+        File bundleMetadataFile = new File(bundleFile, BUNDLE_METADATA_FILENAME);
+        File dataDir = new File(bundleFile, BUNDLE_DATA_DIRNAME);
 
-      if (bundleMetadataFile.isFile() && dataDir.isDirectory()) {
-        Bundle bundle = loadBundleMetadata(bundleMetadataFile);
+        if (bundleMetadataFile.isFile() && dataDir.isDirectory()) {
+          Bundle bundle = loadBundleMetadata(bundleMetadataFile);
 
-        if(dirName.equals(bundle.getId())) {
-          resultBundle = bundle;
-        } else {
-          _log.info("bundle id " + bundle.getId() + " in metadata does not equal directory name " + dirName + " for potential bundle directory " + bundleFile.getPath());
+          if(dirName.equals(bundle.getId())) {
+            resultBundle = bundle;
+          } else {
+            _log.info("bundle id " + bundle.getId() + " in metadata does not equal directory name " + dirName + " for potential bundle directory " + bundleFile.getPath());
+          }
         }
       }
     }
