@@ -220,7 +220,25 @@
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
         <webapp.api.url>http://localhost:8082</webapp.api.url>
         <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jetty-port-multiport</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
         <jetty.port>8083</jetty.port>
+      </properties>
+    </profile>
+    <profile>
+      <id>jetty-port-staging</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <jetty.port>8081</jetty.port>
       </properties>
     </profile>
 
