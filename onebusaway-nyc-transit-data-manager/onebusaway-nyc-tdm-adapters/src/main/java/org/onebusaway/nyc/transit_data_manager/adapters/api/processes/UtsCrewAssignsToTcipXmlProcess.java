@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -12,6 +14,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.joda.time.DateMidnight;
+import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.CrewAssignmentsOutputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPCrewAssignmentsOutputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
@@ -40,27 +43,28 @@ public class UtsCrewAssignsToTcipXmlProcess extends FileToFileConverterProcess {
   @Override
   public void executeProcess() throws IOException {
 
-    FileReader inputFileReader = new FileReader(inputFile);
+    UtsCrewAssignsToDataCreator dataCreator = new UtsCrewAssignsToDataCreator(inputFile);
+    
+    OperatorAssignmentData data;
+    
+    data = dataCreator.generateDataObject();
 
-    CrewAssignsInputConverter inConv = new CSVCrewAssignsInputConverter(
-        inputFileReader);
-
-    List<MtaUtsCrewAssignment> crewAssignments = inConv.getCrewAssignments();
-
-    inputFileReader.close();
-
-    System.out.println("ran getCrewAssignments and got "
-        + crewAssignments.size() + " results");
-
-    CrewAssignmentsOutputConverter converter = new TCIPCrewAssignmentsOutputConverter(
-        crewAssignments);
-    List<SCHOperatorAssignment> opAssignments = converter.convertAssignments();
-
-    DateMidnight firstServiceDate = new DateMidnight(
-        crewAssignments.get(0).getDate());
+    List<DateMidnight> serviceDates = data.getAllServiceDates();
+    
+    DateMidnight firstServiceDate = serviceDates.get(0);
+    
+    List<SCHOperatorAssignment> assignsForAllDates = new ArrayList<SCHOperatorAssignment>();
+    
+    Iterator<DateMidnight> sDateIt = serviceDates.iterator();
+    while (sDateIt.hasNext()) {
+      DateMidnight date = sDateIt.next();
+      
+      assignsForAllDates.addAll(data.getOperatorAssignmentsByServiceDate(date));
+    }
+    
     PushOperatorAssignsGenerator opAssignsGen = new PushOperatorAssignsGenerator(
         firstServiceDate);
-    SchPushOperatorAssignments opAssignsPush = opAssignsGen.generateFromOpAssignList(opAssignments);
+    SchPushOperatorAssignments opAssignsPush = opAssignsGen.generateFromOpAssignList(assignsForAllDates);
 
     try {
       output = generateXml(opAssignsPush);

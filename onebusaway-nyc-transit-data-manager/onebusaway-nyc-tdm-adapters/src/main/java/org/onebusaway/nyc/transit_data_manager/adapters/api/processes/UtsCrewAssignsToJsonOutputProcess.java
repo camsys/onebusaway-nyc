@@ -38,25 +38,12 @@ public class UtsCrewAssignsToJsonOutputProcess extends
 
   @Override
   public void executeProcess() throws IOException {
-    FileReader inputFileReader = new FileReader(inputFile);
-
-    CrewAssignsInputConverter inConv = new CSVCrewAssignsInputConverter(
-        inputFileReader);
-
-    List<MtaUtsCrewAssignment> crewAssignments = inConv.getCrewAssignments();
-
-    inputFileReader.close();
-
-    System.out.println("ran getCrewAssignments and got "
-        + crewAssignments.size() + " results");
-
-    CrewAssignmentsOutputConverter converter = new TCIPCrewAssignmentsOutputConverter(
-        crewAssignments);
-    List<SCHOperatorAssignment> opAssignments = converter.convertAssignments();
-
-    // Set up a data object to interface with the tcip data.
-    OperatorAssignmentData data = new ImporterOperatorAssignmentData(
-        opAssignments); // a data object to represent the data.
+    
+    UtsCrewAssignsToDataCreator dataCreator = new UtsCrewAssignsToDataCreator(inputFile);
+    
+    OperatorAssignmentData data;
+    
+    data = dataCreator.generateDataObject();
 
     ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();
 
