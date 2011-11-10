@@ -8,6 +8,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepo
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepotsToTcipXmlProcess;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToJsonOutputProcess;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToTcipXmlProcess;
+import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsVehiclePulloutToTcipXmlProcess;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
@@ -20,6 +21,7 @@ public class GenericConverter {
   private String mtaBusDepotToTcipXml = "mtabd2tcipxml";
   private String mtaUtsCrewToCrewJson = "utsCrew2crewjson";
   private String mtaUtsCrewToTcipXml = "utsCrew2tcipxml";
+  private String mtaUtsPipoToTcipXml = "utsPipo2tcipxml";
 
   public GenericConverter(String convType, File inputFile, File outputFile) {
     if (mtaBusDepotToAllDepotsJson.equals(convType)) {
@@ -30,6 +32,8 @@ public class GenericConverter {
       conv = new UtsCrewAssignsToJsonOutputProcess(inputFile, outputFile);
     } else if (mtaUtsCrewToTcipXml.equals(convType)) {
       conv = new UtsCrewAssignsToTcipXmlProcess(inputFile, outputFile);
+    } else if (mtaUtsPipoToTcipXml.equals(convType)) {
+      conv = new UtsVehiclePulloutToTcipXmlProcess(inputFile, outputFile);
     }
   }
 

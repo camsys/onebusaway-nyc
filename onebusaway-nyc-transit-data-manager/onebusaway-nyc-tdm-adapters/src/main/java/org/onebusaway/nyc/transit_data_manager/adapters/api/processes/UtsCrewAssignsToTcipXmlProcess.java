@@ -45,9 +45,7 @@ public class UtsCrewAssignsToTcipXmlProcess extends FileToFileConverterProcess {
 
     UtsCrewAssignsToDataCreator dataCreator = new UtsCrewAssignsToDataCreator(inputFile);
     
-    OperatorAssignmentData data;
-    
-    data = dataCreator.generateDataObject();
+    OperatorAssignmentData data = dataCreator.generateDataObject();
 
     List<DateMidnight> serviceDates = data.getAllServiceDates();
     
