@@ -21,6 +21,7 @@
 	<servlet>
 		<servlet-name>Jersey Spring Web Application</servlet-name>
 		<servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
     <servlet-mapping>
         <servlet-name>Jersey Spring Web Application</servlet-name>

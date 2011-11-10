@@ -81,17 +81,20 @@ public class NycSiriService {
   public synchronized void handleServiceDelivery(
       ServiceDelivery serviceDelivery,
       AbstractServiceDeliveryStructure deliveryForModule,
-      ESiriModuleType moduleType, SiriEndpointDetails endpointDetails) {
+      ESiriModuleType moduleType, SiriEndpointDetails endpointDetails, SituationExchangeResults result) {
 
     handleSituationExchange(serviceDelivery,
-        (SituationExchangeDeliveryStructure) deliveryForModule, endpointDetails);
+        (SituationExchangeDeliveryStructure) deliveryForModule, endpointDetails, result);
 
   }
 
   private void handleSituationExchange(ServiceDelivery serviceDelivery,
       SituationExchangeDeliveryStructure sxDelivery,
-      SiriEndpointDetails endpointDetails) {
+      SiriEndpointDetails endpointDetails, SituationExchangeResults result) {
 
+    DeliveryResult deliveryResult = new DeliveryResult();
+    result.delivery.add(deliveryResult);
+    
     Situations situations = sxDelivery.getSituations();
 
     if (situations == null)
@@ -122,6 +125,7 @@ public class NycSiriService {
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
       // TODO Needs to be create or update, not just create
       _transitDataService.createServiceAlert(defaultAgencyId, serviceAlertBean);
+      result.countPtSituationElementResult(deliveryResult, serviceAlertBean, "added");
       // _serviceAlertsService.createOrUpdateServiceAlert(serviceAlert,
       // defaultAgencyId);
     }
@@ -129,6 +133,7 @@ public class NycSiriService {
     for (String serviceAlertId : serviceAlertIdsToRemove) {
       // TODO Confirm this conversion
       _transitDataService.removeServiceAlert(serviceAlertId);
+      result.countPtSituationElementResult(deliveryResult, serviceAlertId, "removed");
     }
   }
 
