@@ -99,8 +99,9 @@
 
 #results ul li.routeItem {
 	display: inline-block;
-	width: 30%;
+	width: 65px;
 	height: 25px;
+	text-align: center;
 }
 
 #legend ul li.legendItem {
