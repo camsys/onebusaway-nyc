@@ -1,0 +1,14 @@
+Listening for transport dt_socket at address: 8000
+13:01:48,544 INFO  ~ Starting /Users/dwhsix/clients/cs/workspace/atis-simulator
+13:01:48,548 WARN  ~ Declaring modules in application.conf is deprecated. Use dependencies.yml instead (module.maven)
+13:01:48,549 INFO  ~ Module maven is available (/Users/dwhsix/play-1.2.3/modules/maven-head)
+13:01:48,549 INFO  ~ Module maven is available (/Users/dwhsix/play-1.2.3/modules/maven-head)
+13:01:48,550 INFO  ~ Module spring is available (/Users/dwhsix/play-1.2.3/modules/spring-1.0.2)
+13:01:49,075 WARN  ~ You're running Play! in DEV mode
+~
+~ Go to http://localhost:9000/@tests to run the tests
+~
+13:01:49,155 INFO  ~ Listening for HTTP on port 9000 (Waiting a first request to start) ...
+13:01:52,086 INFO  ~ Connected to jdbc:h2:mem:play;MODE=MYSQL;LOCK_MODE=0
+13:01:52,412 INFO  ~ Application 'atis-simulator' is now started !
+@KILLED

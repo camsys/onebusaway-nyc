@@ -1,0 +1,25 @@
+#{extends 'main.html' /} #{set title:'Preview' /} #{form
+@Application.sendToOba()}
+<fieldset>
+	<legend>Preview SIRI-SX</legend>
+	<div class="clearfix">
+		<label for="siri">SIRI-SX</label>
+		<div class="input">
+			<textarea name="siri" id="siri" class="span12" rows="30">${result}</textarea>
+		</div>
+	</div>
+	<div class="clearfix">
+
+		<label for="tdm">TDM</label>
+
+		<div class="input">
+			<input type="text" name="tdm" id="tdm" value="${tdm}" class="span12" />
+		</div>
+	</div>
+	<div class="clearfix">
+		<div class="input">
+			<input type="submit" value="Send to TDM" class="btn primary" />
+		</div>
+	</div>
+</fieldset>
+#{/form}

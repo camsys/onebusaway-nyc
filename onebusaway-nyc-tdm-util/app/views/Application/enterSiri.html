@@ -1,0 +1,68 @@
+#{extends 'main.html' /} #{set title:'Enter ATIS Data' /} #{form
+@Application.createSiri()}
+<fieldset>
+	<legend>ATIS Data</legend>
+	<div class="clearfix">
+		<label for="title">Title</label>
+		<div class="input">
+			<input type="text" name="title" id="titleField" class="span12" />
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="statusType">Status Type</label>
+		<div class="input">
+			<input type="text" name="statusType" id="statusType" />
+			 <span class="help-block">Details TBD</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="id">Id</label>
+		<div class="input">
+			<input type="text" name="id" id="id" /> <span class="help-block">Agency
+				and numeric ID, e.g. MTA NYCT_167</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="begins">Begins</label>
+		<div class="input">
+			<input type="text" name="begins" id="begins" class="span6" /> <span
+				class="help-block">Full ISO-8601 Time, e.g.
+				yyyy-mm-ddThh:mm:ss.zzzt</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="expires">Expires</label>
+		<div class="input">
+			<input type="text" name="expires" id="expires" class="span6" /> <span
+				class="help-block">Full ISO-8601 Time, e.g.
+				yyyy-mm-ddThh:mm:ss.zzzt</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="affected">Affected</label>
+		<div class="input">
+			<input type="text" name="affected" id="affected" /> <span
+				class="help-block">Comma-separated list of <b>full</b> route
+				IDs, e.g. "MTA NYCT_B63,MTA NYCT_X17"
+			</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="text">Text</label>
+		<div class="input">
+			<textarea name="text" id="text" class="span6" rows="10"></textarea>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="tdm">TDM URL</label>
+		<div class="input">
+			<input type="text" name="tdm" id="tdm" class="span12"
+				value="http://localhost:8083/siri/situation-exchange" />
+		</div>
+	</div>
+	<div class="clearfix">
+		<div class="input">
+			<input type="submit" value="Generate SIRI-SX" class="btn primary" />
+		</div>
+</fieldset>
+#{/form}

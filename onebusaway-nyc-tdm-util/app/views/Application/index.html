@@ -1,0 +1,54 @@
+#{extends 'main.html' /} #{set title:'Service Alerts' /}
+
+<h1>Service Alerts</h1>
+
+<div class="well">
+	<a class="btn primary">Refresh</a>
+</div>
+
+<table class="bordered-table">
+	<thead>
+		<tr>
+			<th>id</th>
+			<th>creationTime</th>
+			<th>activeWIndows</th>
+			<th>pub from</th>
+			<th>pub to</th>
+			<th>reason</th>
+			<th>summary</th>
+			<th>description</th>
+			<th>urls</th>
+			<th>agency+route</th>
+			<th>consequences</th>
+			<th>severity</th>
+		</tr>
+	</thead>
+	<tbody>
+		#{list items:serviceAlerts.list, as:'serviceAlert'}
+		<tr>
+			<td>${serviceAlert.id}</td>
+			<td>${serviceAlert.creationTime}</td>
+
+			<td>${serviceAlert.activeWindows}</td>
+
+			<td>${serviceAlert.publicationWindows.from.get(0)}</td>
+			<td>${serviceAlert.publicationWindows.to.get(0)}</td>
+
+			<td>${serviceAlert.reason}</td>
+
+			<td>${serviceAlert.summaries.get(0).value}</td>
+
+			<td>${serviceAlert.descriptions.get(0).value}</td>
+
+			<td>${serviceAlert.urls}</td>
+
+			<td>${serviceAlert.allAffects.get(0).agencyId} |
+				${serviceAlert.allAffects.get(0).routeId}</td>
+
+			<td>${serviceAlert.consequences.get(0).effect}</td>
+
+			<td>${serviceAlert.severity}</td>
+		</tr>
+		#{/list}
+	</tbody>
+</table>
