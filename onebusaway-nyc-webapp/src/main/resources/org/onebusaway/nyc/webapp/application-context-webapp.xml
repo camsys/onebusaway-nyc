@@ -62,6 +62,4 @@
     <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
         <property name="geocoderService" ref="externalGeocoderImpl" />
     </bean>
-
-    <bean id="adbeanFilter" class="org.onebusaway.nyc.presentation.impl.ArrivalDepartureBeanListFilterImpl" />
 </beans>

@@ -42,31 +42,243 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <!-- DB profiles -->
+        <profile>
+            <id>db-postgres-local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <db.driverClassName>org.postgresql.Driver</db.driverClassName>
+                <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
+                <db.username>postgres</db.username>
+                <db.password>changeme</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
+                <!-- TODO Note sure about autocommit for postgres -->
+                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-staging</id>
+            <properties>
+                <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+                <db.url>jdbc:mysql://db.staging.obanyc.com:3306/staging</db.url>
+                <db.username>obanyc</db.username>
+                <db.password>blueceilingbrick</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-prod</id>
+            <properties>
+                <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+                <db.url>jdbc:mysql://db.staging.obanyc.com:3306/prod</db.url>
+                <db.username>obanyc</db.username>
+                <db.password>blueceilingbrick</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-qa</id>
+            <properties>
+                <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+                <db.url>jdbc:mysql://db.staging.obanyc.com:3306/qa</db.url>
+                <db.username>obanyc</db.username>
+                <db.password>blueceilingbrick</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-hsqldb-local</id>
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
+                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-hsqldb-local-server</id>
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:hsql://localhost/onebusaway_nyc</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
+                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+            </properties>
+        </profile>
+        <!-- TODO MySQL -->
+
+        <!-- Services profiles -->
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-tdf-as-tds</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url></webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-staging</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-prod</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.prod.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-qa</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.qa.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Vehicle tracking webapp offers the TDS -->
+            <id>services-vtw-as-tds</id> <!-- single port, aka development -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8080</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <id>services-vtw-as-tds-multiport</id> <!-- multi port, also for development -->
+            <!-- assumes we're running on 8080, and vtw and api are on different ports -->
+            <properties>
+                <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8082</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+
+    </profiles>
+
     <build>
-        <finalName>onebusaway-nyc-sms-webapp</finalName>
+        <finalName>onebusaway-nyc-webapp</finalName>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>copy-resources</id>
-                        <phase>generate-resources</phase>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- bind to the packaging phase -->
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/src/main/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/default-resources</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
+                <artifactId>maven-svn-revision-number-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <entries>
+                        <entry>
+                            <prefix>svn</prefix>
+                        </entry>
+                    </entries>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <version>${jetty.version}</version>
+            </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <pluginManagement>
+        	<plugins>
+        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        		<plugin>
+        			<groupId>org.eclipse.m2e</groupId>
+        			<artifactId>lifecycle-mapping</artifactId>
+        			<version>1.0.0</version>
+        			<configuration>
+        				<lifecycleMappingMetadata>
+        					<pluginExecutions>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>
+        									com.google.code.maven-svn-revision-number-plugin
+        								</groupId>
+        								<artifactId>
+        									maven-svn-revision-number-plugin
+        								</artifactId>
+        								<versionRange>
+        									[1.5,)
+        								</versionRange>
+        								<goals>
+        									<goal>revision</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+        								<ignore></ignore>
+        							</action>
+        						</pluginExecution>
+        					</pluginExecutions>
+        				</lifecycleMappingMetadata>
+        			</configuration>
+        		</plugin>
+        	</plugins>
+        </pluginManagement>
     </build>
-
+    
 </project>

@@ -60,75 +60,174 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-siri-api-v13</artifactId>
+			<version>${onebusaway.siri.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.onebusaway</groupId>
+			<artifactId>onebusaway-transit-data-federation</artifactId>
+			<version>${onebusaway.app-modules.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+		</dependency>
 	</dependencies>
 	<profiles>
+		<profile>
+			<id>local</id>
+			<properties>
+				<tdm.dataPath>target/test-classes/</tdm.dataPath>
+				<tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>depotassign.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
+				<tdm.dscFilename>dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
+				<tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
+			</properties>
+		</profile>
+		<profile>
+			<id>local-windows</id>
+			<properties>
+				<tdm.dataPath>d:\</tdm.dataPath>
+				<tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>depotassign.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
+				<tdm.dscFilename>dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
+				<tdm.bundlePath>D:\tmp\bundles</tdm.bundlePath>
+			</properties>
+		</profile>
+		<profile>
+			<id>tdm-staging</id>
+ 			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+				<!-- <tdm.config.configXmlFile>/opt/tdm-config/tdm_config.xml</tdm.config.configXmlFile> -->
+				<tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+				<!-- <tdm.bundlePath>/opt/bundleservice/activebundles</tdm.bundlePath> -->
+			</properties>
+		</profile>
+		<profile>
+			<id>tdm-prod</id>
+			<properties>
+				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+				<tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+			</properties>
+		</profile>
+		<profile>
+			<id>tdm-qa</id>
+			<properties>
+				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
+				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+				<tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+			</properties>
+		</profile>
+		
+        <!-- Services profiles -->
         <profile>
-            <id>local</id>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-tdf-as-tds</id> <!-- aka staging, production -->
             <properties>
-                <tdm.dataPath>target/test-classes/</tdm.dataPath>
-                <tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
-                <tdm.depotAssignFilename>DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
-                <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
-                <tdm.dscFilename>dsc.csv</tdm.dscFilename>
-                <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
-                <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
+                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url></webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
             </properties>
         </profile>
         <profile>
-            <id>local-windows</id>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-staging</id> <!-- aka staging, production -->
             <properties>
-                <tdm.dataPath>d:\</tdm.dataPath>
-                <tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
-                <tdm.depotAssignFilename>DOB_draft_depot_assignments.xml</tdm.depotAssignFilename>
-                <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
-                <tdm.dscFilename>dsc.csv</tdm.dscFilename>
-                <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
-                <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
+                <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
             </properties>
         </profile>
-		<profile>
-		  <id>tdm-staging</id>
-		  <activation>
-		    <activeByDefault>true</activeByDefault>
-		  </activation>
-			<properties>
-				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
-				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
-				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
-				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
-				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
-				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-			</properties>
-		</profile>
-		<profile>
-		  <id>tdm-prod</id>
-			<properties>
-				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
-				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
-				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
-				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
-				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
-				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-			</properties>
-		</profile>
-		<profile>
-		  <id>tdm-qa</id>
-			<properties>
-				<tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
-				<tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-				<tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
-				<tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
-				<tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
-				<tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
-				<tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-			</properties>
-		</profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-prod</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.prod.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-qa</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <vtms.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+                <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <tdm.host>http://tdm.qa.obanyc.com:8080</tdm.host>
+                <webapp.api.url></webapp.api.url>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Vehicle tracking webapp offers the TDS -->
+            <id>services-vtw-as-tds</id> <!-- single port, aka development -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8080</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <id>services-vtw-as-tds-multiport</id> <!-- multi port, also for development -->
+            <!-- assumes we're running on 8080, and vtw and api are on different ports -->
+            <properties>
+                <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+                <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <webapp.api.url>http://localhost:8082</webapp.api.url>
+                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+            </properties>
+        </profile>
+		
 	</profiles>
-	
+
 	<build>
-	  <finalName>onebusaway-nyc-tdm-service</finalName>	
+		<finalName>onebusaway-nyc-tdm-service</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
@@ -150,19 +249,27 @@
 					<mainClass>org.onebusaway.nyc.transit_data_manager.api.HelloWorld</mainClass>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.1</version>
+				<configuration>
+					<appendAssemblyId>false</appendAssemblyId>
+					<descriptors>
+						<descriptor>src/resources/assembly.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+
 		</plugins>
-		
+
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
-			<resource>
-				<directory>src/main/default-resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		
+
 		</resources>
-		
+
 	</build>
 </project>

@@ -20,6 +20,7 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 
 import java.util.List;
 
+// stop-centric view model
 public class MobileWebRouteDestinationItem extends RouteDestinationItem {
 
   private List<NaturalLanguageStringBean> serviceAlerts;

@@ -16,10 +16,15 @@
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp;
 
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.AbstractTraceRunner;
+import org.onebusaway.realtime.api.EVehiclePhase;
 
 public class BundleSwitchingIntegrationTest_TestTrace2 extends AbstractTraceRunner {
 
   public BundleSwitchingIntegrationTest_TestTrace2() throws Exception {
     super("7560-2010-11-27T23-28-47.csv.gz");
+    setLoops(1);
+
+    // This test is noisy
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.90);
   }
 }

@@ -62,4 +62,7 @@ public interface VehicleLocationInferenceService {
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId);
 
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId, int particleId);
+
+  void setPhaseSeed(long seed);
+  void setCdfSeed(long seed);
 }

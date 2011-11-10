@@ -15,16 +15,19 @@
  */
 package org.onebusaway.nyc.presentation.impl.search;
 
+import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.presentation.impl.DefaultSearchModelFactory;
+import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.SearchModelFactory;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
@@ -54,12 +57,14 @@ import java.util.List;
 @Component
 public class RouteSearchServiceImpl implements RouteSearchService {
   
+  private final WebappSupportLibrary _support = new WebappSupportLibrary();
+  
   // when querying for routes from a lat/lng, use this distance in meters
   private double _distanceToRoutes = 100;
 
   // number of periods to increment, looking for a trip used to order stops on a given route/direction
   private int _periodsToTryToFindATrip = 24;
-  
+
   private SearchModelFactory _modelFactory = new DefaultSearchModelFactory();
 
   @Autowired
@@ -72,13 +77,44 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     _modelFactory = factory;
   }
 
+  @Cacheable
+  private List<String> getAllRouteIds() {
+    List<String> knownRouteIds = new ArrayList<String>();
+    
+    // build a list of all known routes for later tests for "routeness".
+    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+      ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agency.getAgency().getId());
+      for(RouteBean route : routes.getList()) {
+        knownRouteIds.add(_support.parseIdWithoutAgency(route.getId()));
+      }
+    }
+    
+    return knownRouteIds;
+  }
+  
+  @Override
+  public boolean isRoute(String value) {
+    return getAllRouteIds().contains(value);
+  }
+  
+  // this method returns stops on the route!
   @Override
   public List<RouteResult> resultsForLocation(Double latitude, Double longitude) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, _distanceToRoutes);
 
-    return resultsForLocation(bounds);
+    SearchQueryBean queryBean = new SearchQueryBean();
+    queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
+    queryBean.setBounds(bounds);
+    queryBean.setMaxCount(100);
+    
+    RoutesBean routes = _transitDataService.getRoutes(queryBean);
+
+    List<RouteResult> results = routesBeanToRouteSearchResults(routes);
+
+    return results;
   }    
   
+  // this method DOES NOT return stops on the route!
   @Override
   public List<RouteResult> resultsForLocation(CoordinateBounds bounds) {
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -93,6 +129,7 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     return results;
   }
 
+  // this method returns stops on the route!
   @Override
   public RouteResult makeResultForRouteId(String routeId) {
     RouteBean routeBean = _transitDataService.getRouteForId(routeId);
@@ -111,6 +148,7 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     return null;
   }
   
+  // this method returns stops on the route!
   @Override
   public List<RouteResult> resultsForQuery(String routeQuery) {
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -199,9 +237,8 @@ public class RouteSearchServiceImpl implements RouteSearchService {
   }
   
   private List<RouteDestinationItem> getRouteDestinationItemWithStopsForRoute(RouteBean routeBean) {
-    List<RouteDestinationItem> output = new ArrayList<RouteDestinationItem>();
-
     List<RouteDestinationItem> destinations = getRouteDestinationItemsForRoute(routeBean);
+
     for(RouteDestinationItem destination : destinations) {
       List<StopBean> stopBeansForThisDirection = 
           getStopBeansForRouteAndHeadsign(routeBean, destination.getHeadsign());
@@ -217,16 +254,10 @@ public class RouteSearchServiceImpl implements RouteSearchService {
         }
       }
 
-      RouteDestinationItem routeDestination = _modelFactory.getRouteDestinationItemModel();
-      routeDestination.setDirectionId(destination.getDirectionId());
-      routeDestination.setHeadsign(destination.getHeadsign());
-      routeDestination.setPolylines(destination.getPolylines());
-      routeDestination.setStops(stopItems);
-
-      output.add(routeDestination);
+      destination.setStops(stopItems);
     }
     
-    return output;
+    return destinations;
   }
 
   // get ordered stop beans for a given route + headsign, using a trip sampled from the schedule.

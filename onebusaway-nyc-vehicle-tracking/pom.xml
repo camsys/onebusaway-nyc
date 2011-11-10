@@ -15,11 +15,6 @@
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
             <version>${onebusaway.nyc.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-siri-api</artifactId>
-            <version>${onebusaway.siri.version}</version>
-        </dependency>
 	  	
         <!-- This needs to be more than just test scope so we can use it run the bundle builder -->
         <dependency>
@@ -48,6 +43,21 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
+	      <dependency>
+	        <groupId>com.google.collections</groupId>
+	        <artifactId>google-collections</artifactId>
+	        <version>1.0</version>
+	      </dependency>
+				<dependency>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava-collections</artifactId>
+					<version>r03</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-math</artifactId>
+					<version>2.2</version>
+				</dependency>
     </dependencies>
 
 </project>

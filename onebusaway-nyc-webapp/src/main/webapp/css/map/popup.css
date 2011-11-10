@@ -49,6 +49,7 @@
 }
 
 #popup .service {
+	white-space: nowrap;
 	padding-top: 7px;
 	color: #666666;
 }

@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.realtime.api.VehicleLocationListener;
-import org.onebusaway.siri.model.Siri;
 import org.onebusaway.utility.DateLibrary;
 
 import com.caucho.hessian.client.HessianProxyFactory;
@@ -30,6 +29,8 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Before;
+
+import uk.org.siri.Siri;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

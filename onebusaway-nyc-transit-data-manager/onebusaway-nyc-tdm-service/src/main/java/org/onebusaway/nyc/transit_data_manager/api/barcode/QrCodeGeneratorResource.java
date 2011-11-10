@@ -1,20 +1,26 @@
 package org.onebusaway.nyc.transit_data_manager.api.barcode;
 
-import java.awt.Image;
 import java.awt.image.RenderedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -23,13 +29,19 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.onebusaway.nyc.transit_data_manager.api.CrewResource;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverter;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeContentsConverterImpl;
 import org.onebusaway.nyc.transit_data_manager.barcode.BarcodeImageType;
 import org.onebusaway.nyc.transit_data_manager.barcode.GoogleChartBarcodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.QRErrorCorrectionLevel;
 import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
+import org.onebusaway.nyc.transit_data_manager.barcode.model.MtaBarcode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import au.com.bytecode.opencsv.CSVReader;
 
 @Path("/barcode")
 @Component
@@ -37,15 +49,30 @@ import org.springframework.stereotype.Component;
 public class QrCodeGeneratorResource {
 
   public QrCodeGeneratorResource() {
+    super();
+
     setContentConv(new BarcodeContentsConverterImpl());
+    setBarcodeGen(new GoogleChartBarcodeGenerator(QRErrorCorrectionLevel.Q));
   }
+
+  private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
 
   // Note that while i'm putting these in lower case, they will be made
   // uppercase before encoding into a barcode.
   private String shortenedBustimeBarcodeUrl = "http://bt.mta.info";
   private String busStopPath = "/s";
 
+  private static String STOP_COLUMN_NAME = "STOP_ID";
+
+  private static String ZIP_FILE_PREFIX = "QrCodes";
+  private static String ZIP_FILE_SUFFIX = ".zip";
+
+  private QrCodeGenerator barcodeGen;
   private BarcodeContentsConverter contentConv;
+
+  public void setBarcodeGen(QrCodeGenerator barcodeGen) {
+    this.barcodeGen = barcodeGen;
+  }
 
   public void setContentConv(BarcodeContentsConverter contentConv) {
     this.contentConv = contentConv;
@@ -53,39 +80,26 @@ public class QrCodeGeneratorResource {
 
   @Path("/getByStopId/{stopId}")
   @GET
-  public Response getQrCodeForStopUrlById(
-      @PathParam("stopId") int stopId,
-      @DefaultValue("300") @QueryParam("img-dimension") int imgDimension,
+  public Response getQrCodeForStopUrlById(@PathParam("stopId") int stopId,
+      @DefaultValue("99") @QueryParam("img-dimension") int imgDimension,
       @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName) {
-    
+
     final RenderedImage responseImg;
-    final BarcodeImageType imageType;
-    
-    // determine the image type parameter.
-    if ("PNG".equals(imgFormatName)) {
-      imageType = BarcodeImageType.PNG;
-    } else if ("BMP".equals(imgFormatName)) {
-      imageType = BarcodeImageType.BMP;
-    }  else {
-      imageType = BarcodeImageType.BMP;
-    }
+    final BarcodeImageType imageType = parseImgFormatName(imgFormatName);
 
-    String barcodeContents = contentConv.contentsForUrl(getStopUrl(stopId));
+    String barcodeContents = generateBusStopContentsForStopId(String.valueOf(stopId));
 
-    // Set to uppercase for more compact encoding.
-    barcodeContents = barcodeContents.toUpperCase();
-    
-    boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(QRErrorCorrectionLevel.Q, barcodeContents);
-    
+    boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
+        QRErrorCorrectionLevel.Q, barcodeContents);
+
     Response response = null;
-    
-    if (!"".equals(barcodeContents) && contentsFitBarcodeVersion) {
-      QrCodeGenerator barcodeGen = new GoogleChartBarcodeGenerator(QRErrorCorrectionLevel.Q);
 
-      responseImg = barcodeGen.generateCode(imgDimension, imgDimension, barcodeContents);
-      
+    if (!"".equals(barcodeContents) && contentsFitBarcodeVersion) {
+      responseImg = barcodeGen.generateCode(imgDimension, imgDimension,
+          barcodeContents);
+
       StreamingOutput output = new StreamingOutput() {
-        
+
         @Override
         public void write(OutputStream os) throws IOException,
             WebApplicationException {
@@ -94,19 +108,193 @@ public class QrCodeGeneratorResource {
           ios.close();
         }
       };
-      
-      response = Response.ok(output, imageType.getMimeType()).build();
-      
+
+      response = Response.ok(output, imageType.getMimeType()).header(
+          "Content-Disposition",
+          "attachment; filename=\"" + String.valueOf(stopId) + "."
+              + imageType.getFormatName() + "\"").build();
+
     } else {
 
       response = Response.ok().build();
     }
-    
+
     return response;
 
   }
 
-  private String getStopUrl(int stopId) {
+  @Path("/batchGen")
+  @Consumes({"text/comma-separated-values", "text/csv"})
+  @POST
+  public Response batchGenerateBarcodes(
+      @DefaultValue("99") @QueryParam("img-dimension") int imgDimension,
+      @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName,
+      InputStream inputFileStream) {
+
+    _log.info("batchGenerateBarcodes Started.");
+
+    BarcodeImageType imageType = parseImgFormatName(imgFormatName);
+
+    int stopColumnIdx = -1;
+
+    /*
+     * First check the header to make sure our data is in an acceptable format
+     * Take note of the stopid column to use it later.
+     */
+
+    CSVReader reader = new CSVReader(new InputStreamReader(inputFileStream));
+
+    // First make sure we have a STOP_COLUMN_NAME column.
+    // Take note of its index.
+    List<String[]> allLines = null;
+    String[] headerLine;
+    List<String[]> dataLines = null;
+
+    try {
+      allLines = reader.readAll();
+      headerLine = allLines.get(0);
+      _log.info("found " + allLines.size()
+          + " total lines in input. header is " + Arrays.toString(headerLine));
+
+      dataLines = allLines.subList(1, allLines.size());
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
+    }
+
+    for (int i = 0; i < headerLine.length; i++) {
+      if (STOP_COLUMN_NAME.equalsIgnoreCase(headerLine[i])) {
+        if (stopColumnIdx == -1) {
+          stopColumnIdx = i;
+        } else { // multiple columns with the same column name?
+          throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+      }
+    }
+
+    if (stopColumnIdx == -1) { // We didn't find the column
+      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+    }
+
+    /*
+     * Now that we have the header sorted out, create a barcode for each line
+     * and add it to the zipfile.
+     */
+
+    List<MtaBarcode> urlsToEncode = new ArrayList<MtaBarcode>();
+
+    Iterator<String[]> linesIt = dataLines.iterator();
+    String[] line;
+    while (linesIt.hasNext()) {
+      line = linesIt.next();
+
+      _log.debug("encoding stopnum " + line[stopColumnIdx]);
+
+      String stopIdStr = line[stopColumnIdx];
+
+      String barcodeContents = generateBusStopContentsForStopId(stopIdStr);
+
+      boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
+          QRErrorCorrectionLevel.Q, barcodeContents);
+
+      if (!"".equals(barcodeContents) && contentsFitBarcodeVersion) {
+
+        MtaBarcode barcode = new MtaBarcode();
+
+        barcode.setContents(barcodeContents);
+        barcode.setStopIdStr(stopIdStr);
+
+        if (!urlsToEncode.contains(barcode)){
+          urlsToEncode.add(barcode);
+        }
+        
+      }
+    }
+
+    Response response = null;
+
+    final File resultZipFile;
+    try {
+      resultZipFile = generateBarcodeZipFileFromUrlList(urlsToEncode,
+          imgDimension, imageType);
+    } catch (IOException e1) {
+      _log.warn("Error generating zip file.");
+      throw new WebApplicationException(e1,
+          Response.Status.INTERNAL_SERVER_ERROR);
+    };
+
+    StreamingOutput output = new StreamingOutput() {
+
+      @Override
+      public void write(OutputStream os) throws IOException,
+          WebApplicationException {
+
+        InputStream in = new FileInputStream(resultZipFile);
+        int b;
+        while ((b = in.read()) != -1) {
+          os.write(b);
+        }
+
+        in.close();
+        os.close();
+      }
+    };
+
+    response = Response.ok(output, "application/zip").header(
+        "Content-disposition",
+        "attachment; filename=" + ZIP_FILE_PREFIX + ZIP_FILE_SUFFIX).build();
+
+    return response;
+  }
+
+  protected File generateBarcodeZipFileFromUrlList(List<MtaBarcode> bcList,
+      int imageDimension, BarcodeImageType imgType) throws IOException {
+
+    File tempFile = getTempFile(ZIP_FILE_PREFIX, ZIP_FILE_SUFFIX);
+
+    FileOutputStream fos = new FileOutputStream(tempFile);
+    ZipOutputStream zipOutput = new ZipOutputStream(fos);
+
+    for (MtaBarcode bc : bcList) {
+      RenderedImage responseImg = barcodeGen.generateCode(imageDimension,
+          imageDimension, bc.getContents());
+
+      String imgFileName = String.valueOf(bc.getStopIdStr()) + "."
+          + imgType.getFormatName();
+
+      ZipEntry zipEntry = new ZipEntry(imgFileName);
+
+      zipOutput.putNextEntry(zipEntry);
+
+      _log.debug("writing " + imgFileName + " to tempfile.");
+      ImageIO.write(responseImg, imgType.getFormatName(), zipOutput);
+    }
+
+    zipOutput.close();
+
+    return tempFile;
+  }
+
+  private File getTempFile(String prefix, String suffix) throws IOException {
+    // Create the zip file & output stream.
+    File tempFile;
+
+    try {
+      tempFile = File.createTempFile(prefix, suffix);
+    } catch (IOException e) {
+      try {
+        tempFile = File.createTempFile(prefix + "_B", suffix);
+      } catch (IOException e1) {
+        throw new IOException("Could not create temporary file", e);
+      }
+    }
+
+    _log.info("Generated temp file " + tempFile.getPath());
+
+    return tempFile;
+  }
+
+  private String getStopUrl(String stopId) {
     StringBuilder contents = new StringBuilder();
 
     contents.append(shortenedBustimeBarcodeUrl);
@@ -115,5 +303,29 @@ public class QrCodeGeneratorResource {
     contents.append(String.valueOf(stopId));
 
     return contents.toString();
+  }
+
+  private String generateBusStopContentsForStopId(String stopId) {
+    String barcodeContents = contentConv.contentsForUrl(getStopUrl(stopId));
+
+    // Set to uppercase for more compact encoding.
+    barcodeContents = barcodeContents.toUpperCase();
+
+    return barcodeContents;
+  }
+
+  private BarcodeImageType parseImgFormatName(String imgFormatName) {
+    BarcodeImageType imageType;
+
+    // determine the image type parameter.
+    if ("PNG".equals(imgFormatName)) {
+      imageType = BarcodeImageType.PNG;
+    } else if ("BMP".equals(imgFormatName)) {
+      imageType = BarcodeImageType.BMP;
+    } else {
+      imageType = BarcodeImageType.BMP;
+    }
+
+    return imageType;
   }
 }
