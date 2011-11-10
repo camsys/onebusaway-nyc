@@ -14,8 +14,11 @@ public class ServiceAlertsResourceTest extends ServiceAlertsResource {
 
   @Test
   public void testList() throws JAXBException {
-    Response list = list();
-    System.err.println(list);
+    // This is not meant to be an automatic test, but can be used for manual investigation.
+    // Needs other services running.
+    
+//    Response list = list();
+//    System.err.println(list);
   }
 
 }

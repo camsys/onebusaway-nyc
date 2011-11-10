@@ -124,7 +124,7 @@ public class NycSiriService {
 
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
       // TODO Needs to be create or update, not just create
-      _transitDataService.createServiceAlert(defaultAgencyId, serviceAlertBean);
+      getTransitDataService().createServiceAlert(defaultAgencyId, serviceAlertBean);
       result.countPtSituationElementResult(deliveryResult, serviceAlertBean, "added");
       // _serviceAlertsService.createOrUpdateServiceAlert(serviceAlert,
       // defaultAgencyId);
@@ -132,7 +132,7 @@ public class NycSiriService {
     // _serviceAlertsService.removeServiceAlerts(serviceAlertIdsToRemove);
     for (String serviceAlertId : serviceAlertIdsToRemove) {
       // TODO Confirm this conversion
-      _transitDataService.removeServiceAlert(serviceAlertId);
+      getTransitDataService().removeServiceAlert(serviceAlertId);
       result.countPtSituationElementResult(deliveryResult, serviceAlertId, "removed");
     }
   }
@@ -740,5 +740,13 @@ public class NycSiriService {
     TranslatedString.Builder tsBuilder = TranslatedString.newBuilder();
     tsBuilder.addTranslation(translation);
     return tsBuilder.build();
+  }
+
+  public TransitDataService getTransitDataService() {
+    return _transitDataService;
+  }
+
+  public void setTransitDataService(TransitDataService _transitDataService) {
+    this._transitDataService = _transitDataService;
   }
 }
