@@ -55,7 +55,7 @@
     <!-- Other Stuff: -->
 
     <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
-		<property name="administrativeAreaWhitelist" value="NY"/>        
+		<property name="usStateFilter" value="NY"/>        
         <property name="resultBiasingBounds">
             <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
                 <property name="minLat" value="40.57963926492829" />

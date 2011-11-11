@@ -15,12 +15,20 @@
  */
 package org.onebusaway.nyc.webapp.actions.m.model;
 
+import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
+import org.onebusaway.transit_data.model.StopBean;
+
+import java.util.List;
 
 // route-centric view model
 public class MobileWebStopResult extends StopResult {
 
   private String distanceAwayString;
+
+  public MobileWebStopResult(StopBean stopBean, List<RouteResult> routesAvailable) {
+    super(stopBean, routesAvailable);
+  }
 
   public String getDistanceAwayString() {
     return distanceAwayString;

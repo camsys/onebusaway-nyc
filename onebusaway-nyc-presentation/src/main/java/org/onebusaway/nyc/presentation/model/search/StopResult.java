@@ -23,25 +23,15 @@ import java.util.List;
 
 public class StopResult implements SearchResult {
 
-  private StopBean stopBean;
+  private final StopBean stopBean;
 
-  private List<RouteResult> routesAvailable;
+  private final List<RouteResult> routesAvailable;
 
-  public StopResult() {}
-
-  public void setStopBean(StopBean stopBean) {
+  public StopResult(StopBean stopBean, List<RouteResult> routesAvailable) {
     this.stopBean = stopBean;
-  }
-  
-  public void setRoutesAvailable(List<RouteResult> routesAvailable) {
     this.routesAvailable = routesAvailable;
   }
-  
-  @Override
-  public String getType() {
-    return "stopResult";
-  }
-  
+
   @Override
   public String getName() {
     return stopBean.getName();
@@ -70,5 +60,10 @@ public class StopResult implements SearchResult {
   
   public List<RouteResult> getRoutesAvailable() {
     return routesAvailable;
+  }
+
+  @Override
+  public String getResultType() {
+    return "StopResult";
   }
 }

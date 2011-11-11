@@ -67,9 +67,8 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     for(TripDetailsBean tripDetails : trips.getList()) {
       // filtered out by user
-      if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId)) {
+      if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
         continue;
-      }
       
       if(!include(tripDetails.getStatus()))
         continue;

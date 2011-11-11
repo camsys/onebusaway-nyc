@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.model;
 
+import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.search.LocationResult;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 
@@ -24,6 +25,10 @@ public class DesktopWebLocationResult extends LocationResult {
   
   private List<RouteResult> nearbyRoutes;
   
+  public DesktopWebLocationResult(NycGeocoderResult result) {
+    super(result);
+  }
+
   public void setNearbyRoutes(List<RouteResult> nearbyRoutes) {
     this.nearbyRoutes = nearbyRoutes;
   }

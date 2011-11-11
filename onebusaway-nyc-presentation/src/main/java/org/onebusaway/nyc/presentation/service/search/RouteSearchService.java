@@ -2,13 +2,13 @@ package org.onebusaway.nyc.presentation.service.search;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
-import org.onebusaway.nyc.presentation.service.SearchModelFactory;
+import org.onebusaway.nyc.presentation.service.PresentationModelFactory;
 
 import java.util.List;
 
 public interface RouteSearchService {
 
-  public void setModelFactory(SearchModelFactory factory);
+  public void setModelFactory(PresentationModelFactory factory);
 
   public boolean isRoute(String value);
   

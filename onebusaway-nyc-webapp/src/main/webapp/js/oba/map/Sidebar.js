@@ -256,13 +256,13 @@ OBA.Sidebar = function() {
 				noResults.hide();
 			}
 
-			var resultType = json.searchResults[0].type;			
+			var resultType = json.searchResults[0].resultType;			
 			if(resultCount === 1) {
-				if(resultType === "locationResult" || resultType === "stopResult") {
+				if(resultType === "LocationResult" || resultType === "StopResult") {
 					var result = json.searchResults[0];
 
 					// region (zip code or borough)
-					if(resultType === "locationResult" && result.region === true) {
+					if(resultType === "LocationResult" && result.region === true) {
 						var bounds = result.bounds;
 						var latLngBounds = new google.maps.LatLngBounds(
 								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
@@ -275,7 +275,7 @@ OBA.Sidebar = function() {
 					} else {
 						showRoutesOnMap(result.nearbyRoutes);
 
-						if(resultType === "stopResult") {
+						if(resultType === "StopResult") {
 							routeMap.showPopupForStopId(result.stopId);
 						} else {
 							routeMap.showLocation(result.latitude, result.longitude);
@@ -283,12 +283,12 @@ OBA.Sidebar = function() {
 					}
 					
 				// single route
-				} else if(resultType === "routeResult") {
+				} else if(resultType === "RouteResult") {
 					showRoutesOnMap(json.searchResults);
 				}
 			} else {
 				// location disambiguation
-				if(resultType === "locationResult") {
+				if(resultType === "LocationResult") {
 					disambiguate(json.searchResults);
 				}
 			}

@@ -41,20 +41,20 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
 
   private CoordinateBounds _resultBiasingBounds = null;
 
-  private String _administrativeAreaWhitelist = null;
+  private String _usStateFilter = null;
   
   public void setSensor(boolean sensor) {
     _sensor = sensor;
-  }
-
-  public void setAdministrativeAreaWhitelist(String aa) {
-    _administrativeAreaWhitelist = aa;
   }
 
   public void setResultBiasingBounds(CoordinateBounds bounds) {
     _resultBiasingBounds = bounds;
   }
   
+  public void setUsStateFilter(String state) {
+    _usStateFilter = state;
+  }
+
   // (method to make legacy OBA components that use the geocoder happy...)
   public GeocoderResults geocode(String location) {
     GeocoderResults output = new GeocoderResults();
@@ -68,22 +68,20 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     StringBuilder b = new StringBuilder();
     b.append(BASE_URL);
     b.append("?");
+
     b.append("sensor=").append(_sensor);
     
-    CoordinateBounds bounds = _resultBiasingBounds;
-    if(bounds != null) {
-      b.append("&bounds=").append(
-          bounds.getMinLat() + "," + bounds.getMinLon() + "|" + 
-          bounds.getMaxLat() + "," + bounds.getMaxLon());
+    if(_resultBiasingBounds != null) {
+      b.append("&bounds=").append(_resultBiasingBounds.getMinLat() + "," + _resultBiasingBounds.getMinLon() 
+          + "|" + _resultBiasingBounds.getMaxLat() + "," + _resultBiasingBounds.getMaxLon());
     }
     
-    String encodedLocation = null;
     try {
-      encodedLocation = URLEncoder.encode(location, "UTF-8");
+      String encodedLocation = URLEncoder.encode(location, "UTF-8");
+      b.append("&address=").append(encodedLocation);
     } catch (UnsupportedEncodingException e) {
       throw new IllegalStateException("unknown encoding: UTF-8");
     }
-    b.append("&address=").append(encodedLocation);
 
     URL url = null;
     try {
@@ -114,13 +112,12 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
   }
 
   private List<NycGeocoderResult> filterResults(List<NycGeocoderResult> input) {
-    if(_administrativeAreaWhitelist == null)
+    if(_usStateFilter == null)
       return input;
     
     List<NycGeocoderResult> output = new ArrayList<NycGeocoderResult>();
     for(NycGeocoderResult result : input) {
-      if(result.getAdministrativeArea() != null 
-          && result.getAdministrativeArea().equals(_administrativeAreaWhitelist))
+      if(result.getAdministrativeArea() != null && result.getAdministrativeArea().equals(_usStateFilter))
         output.add(result);
     }
     return output;

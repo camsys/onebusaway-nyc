@@ -16,13 +16,12 @@
 package org.onebusaway.nyc.presentation.impl.search;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.presentation.impl.DefaultSearchModelFactory;
+import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
-import org.onebusaway.nyc.presentation.service.SearchModelFactory;
+import org.onebusaway.nyc.presentation.service.PresentationModelFactory;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.NameBean;
@@ -47,7 +46,7 @@ public class StopSearchServiceImpl implements StopSearchService {
   // when querying for stops from a lat/lng, use this distance in meters
   private double _distanceToStops = 100;
   
-  private SearchModelFactory _modelFactory = new DefaultSearchModelFactory();
+  private PresentationModelFactory _modelFactory = new DefaultPresentationModelFactory();
   
   @Autowired
   private TransitDataService _transitDataService;
@@ -55,7 +54,7 @@ public class StopSearchServiceImpl implements StopSearchService {
   @Autowired
   private ServiceAreaService _serviceArea;
   
-  public void setModelFactory(SearchModelFactory factory) {
+  public void setModelFactory(PresentationModelFactory factory) {
     _modelFactory = factory;
   }
 
@@ -81,21 +80,13 @@ public class StopSearchServiceImpl implements StopSearchService {
     
     if(stopBean != null) {
       List<RouteResult> routesAvailable = new ArrayList<RouteResult>();
+      
       for(RouteBean routeBean : stopBean.getRoutes()) {
         List<RouteDestinationItem> destinations = getRouteDestinationItemsForRouteAndStop(routeBean, stopBean);      
-        
-        RouteResult routeSearchResult = _modelFactory.getRouteSearchResultModel();
-        routeSearchResult.setRouteBean(routeBean);
-        routeSearchResult.setDestinations(destinations);
-
-        routesAvailable.add(routeSearchResult);      
+        routesAvailable.add(_modelFactory.getRouteModelForStop(routeBean, destinations));      
       }
 
-      StopResult stopSearchResult = _modelFactory.getStopSearchResultModel();
-      stopSearchResult.setStopBean(stopBean);
-      stopSearchResult.setRoutesAvailable(routesAvailable);
-
-      return stopSearchResult;
+      return _modelFactory.getStopModel(stopBean, routesAvailable);
     }
     
     return null;
@@ -121,21 +112,13 @@ public class StopSearchServiceImpl implements StopSearchService {
     
     for(StopBean stopBean : stopsBean.getStops()) {
       List<RouteResult> routesAvailable = new ArrayList<RouteResult>();
+      
       for(RouteBean routeBean : stopBean.getRoutes()) {
         List<RouteDestinationItem> destinations = getRouteDestinationItemsForRouteAndStop(routeBean, stopBean);      
-
-        RouteResult routeSearchResult = _modelFactory.getRouteSearchResultModel();
-        routeSearchResult.setRouteBean(routeBean);
-        routeSearchResult.setDestinations(destinations);
-
-        routesAvailable.add(routeSearchResult);      
+        routesAvailable.add(_modelFactory.getRouteModelForStop(routeBean, destinations));      
       }
 
-      StopResult stopSearchResult = _modelFactory.getStopSearchResultModel();
-      stopSearchResult.setStopBean(stopBean);
-      stopSearchResult.setRoutesAvailable(routesAvailable);
-
-      results.add(stopSearchResult);
+      results.add(_modelFactory.getStopModel(stopBean, routesAvailable));
     }
     
     return results;
@@ -148,8 +131,7 @@ public class StopSearchServiceImpl implements StopSearchService {
     StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
-      List<StopGroupBean> stopGroups = stopGroupingBean.getStopGroups();
-      for (StopGroupBean stopGroupBean : stopGroups) {
+      for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
         NameBean name = stopGroupBean.getName();
         String type = name.getType();
         if (!type.equals("destination"))
@@ -159,24 +141,7 @@ public class StopSearchServiceImpl implements StopSearchService {
         if(!stopIdsInGroup.contains(stopBean.getId()))
           continue;
         
-        List<String> headsigns = name.getNames();
-        String directionId = stopGroupBean.getId();
-
-        // polylines
-        List<String> polylines = new ArrayList<String>();
-        for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-          polylines.add(polyline.getPoints());
-        }
-        
-        // add data for all available headsigns
-        for(String headsign: headsigns) {
-          RouteDestinationItem routeDestination = _modelFactory.getRouteDestinationItemModel();
-          routeDestination.setHeadsign(headsign);
-          routeDestination.setDirectionId(directionId);
-          routeDestination.setPolylines(polylines);
-          
-          destinations.add(routeDestination);
-        }
+        destinations.add(_modelFactory.getRouteDestinationModelForStop(stopGroupBean, routeBean, stopBean));
       }
     }
       

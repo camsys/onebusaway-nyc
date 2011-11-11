@@ -13,12 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.presentation.service.search;
+package org.onebusaway.nyc.presentation.model.search;
 
-public interface SearchResult {
+import org.onebusaway.nyc.presentation.service.search.SearchResult;
 
-  public String getResultType();
+import java.util.ArrayList;
 
-  public String getName();
+public class SearchResultCollection extends ArrayList<SearchResult> {
+
+  private static final long serialVersionUID = 1L;
+  
+  public String getTypeOfResults() {
+    SearchResult item = this.get(0);
+    
+    if(item != null) {
+      return item.getResultType();
+    } else
+      return null;
+  }
   
 }
