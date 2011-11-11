@@ -48,4 +48,8 @@ public class ImporterSignCodeData implements SignCodeData {
     return result;
   }
 
+  public List<CCDestinationSignMessage> getAllDisplays() {
+   return destinations;
+  }
+
 }

@@ -3,7 +3,10 @@ package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +15,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.BusDepotAssignmentsOutputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.BusDepotAssignsToDepotMapTranslator;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.GroupByPropInListObjectTranslator;
@@ -22,6 +26,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.XMLBusDepo
 import org.onebusaway.nyc.transit_data_manager.adapters.tcip.FleetSubsetsGenerator;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
+import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CptFleetSubsets;
 import tcip_final_3_0_5_1.ObjectFactory;
 
@@ -31,32 +36,22 @@ public class MtaBusDepotsToTcipXmlProcess extends FileToFileConverterProcess {
     super(inputFile, outputFile);
   }
 
-  public void executeProcess() throws FileNotFoundException {
+  public void executeProcess() throws IOException {
 
-    FileReader inputFileReader = new FileReader(inputFile);
+    MtaBusDepotFileToDataCreator dataCreator = new MtaBusDepotFileToDataCreator(
+        inputFile);
+    
+    VehicleDepotData data = dataCreator.generateDataObject();
+    
+    List<CPTFleetSubsetGroup> allDefinedGroups = new ArrayList<CPTFleetSubsetGroup>();
 
-    BusDepotAssignsInputConverter inConv = new XMLBusDepotAssignsInputConverter(
-        inputFileReader);
-
-    List<MtaBusDepotAssignment> assignments = inConv.getBusDepotAssignments();
-
-    System.out.println("ran getVehicleAssignments and got "
-        + assignments.size() + " results");
-
-    // With Bus Depot Assignments we need to group MtaBusDepotAssignment s by
-    // the depot field.
-    // I'll add another class to do that.
-    GroupByPropInListObjectTranslator<List<MtaBusDepotAssignment>, Map<String, List<MtaBusDepotAssignment>>> translator = new BusDepotAssignsToDepotMapTranslator();
-    // Create a map to map depot codes to lists of MtaBusDepotAssignment s
-    // corresponding to that depot.
-    Map<String, List<MtaBusDepotAssignment>> depotBusesMap = translator.restructure(assignments);
-
-    BusDepotAssignmentsOutputConverter converter = new TCIPBusDepotAssignmentsOutputConverter(
-        depotBusesMap);
-    List<CPTFleetSubsetGroup> fleetSSGroups = converter.convertAssignments();
-
+    Iterator<String> depNamesIt = data.getAllDepotNames().iterator();
+    while(depNamesIt.hasNext()) {
+      allDefinedGroups.addAll(data.getGroupsWithDepotNameStr(depNamesIt.next()));
+    }
+    
     FleetSubsetsGenerator fleetSSGen = new FleetSubsetsGenerator();
-    CptFleetSubsets fleetSubsets = fleetSSGen.generateFromSubsetGroups(fleetSSGroups);
+    CptFleetSubsets fleetSubsets = fleetSSGen.generateFromSubsetGroups(allDefinedGroups);
 
     try {
       output = generateXml(fleetSubsets);
