@@ -50,6 +50,8 @@ public class IndexAction extends SessionedIndexAction {
   
   private String _response = null;
 
+  private String _routeToFilterBy = null;
+  
   @Autowired
   private RealtimeService _realtimeService;
 
@@ -65,21 +67,18 @@ public class IndexAction extends SessionedIndexAction {
   public String execute() throws Exception {
     SmsSearchModelFactory factory = new SmsSearchModelFactory();
     _stopSearchService.setModelFactory(factory);
-
     
     /**
      * INPUT PARSING
      */  
+    _routeToFilterBy = findRouteToFilterBy(_query);
+    
     String commandString = normalizeCommand(_query);
-
     if(commandString != null) {
       // Alert: second parameter contains route to find alerts for
       if(commandString.equals("A")) {
-        String[] tokens = _query.split(" ");
-        if(tokens.length == 2) {
-          serviceAlertResponse(tokens[1]);
-          return SUCCESS;
-        }
+        serviceAlertResponse(_routeToFilterBy);
+        return SUCCESS;
         
       // Refresh: just re-run the last query!
       } else if(commandString.equals("R")) {
@@ -180,14 +179,14 @@ public class IndexAction extends SessionedIndexAction {
    * RESPONSE GENERATION METHODS
    */
   private void serviceAlertResponse(String routeQuery) throws Exception {
-    List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
-    
     List<RouteResult> routes = _routeSearchService.resultsForQuery(routeQuery);
     
     if(routes.size() == 0) {
       errorResponse("Route not found.");
       return;
     }
+
+    List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
       
     for(RouteResult result : routes) {
       for(RouteDestinationItem _destination : result.getDestinations()) {
@@ -239,6 +238,10 @@ public class IndexAction extends SessionedIndexAction {
       _response += result.getStopIdWithoutAgency() + " (" + result.getStopDirection() + "-bound)\n";
 
       for(RouteResult routeHere : result.getRoutesAvailable()) {
+        // filtered out by user
+        if(_routeToFilterBy != null && !routeHere.getRouteIdWithoutAgency().equals(_routeToFilterBy))
+          continue;
+        
         for(RouteDestinationItem _destination : routeHere.getDestinations()) {
           SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
           
@@ -341,6 +344,15 @@ public class IndexAction extends SessionedIndexAction {
   /**
    * PRIVATE HELPER METHODS
    */
+  private String findRouteToFilterBy(String _query) {
+    String[] tokens = _query.split(" ");
+    for(String token : tokens) {
+      if(_routeSearchService.isRoute(token)) {
+        return token;
+      }
+    }
+    return null;
+  }
   
   /**
    * Returns the canonical string for a command, or null if string is not a command.
