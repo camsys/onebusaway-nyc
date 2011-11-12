@@ -135,7 +135,7 @@
 }
 
 #legend ul li.legendItem p.destination p {
-	padding: 5px;
+	padding: 2px;
 	padding-left: 20px;
 	position: relative;
 	cursor: pointer;
@@ -148,7 +148,7 @@
 	height: 15px;
 	display: block;
 	position: absolute;
-	top: 2px;
+	top: 0px;
 	left: 0px;
 }
 
@@ -159,7 +159,7 @@
 	height: 15px;
 	display: block;
 	position: absolute;
-	top: 2px;
+	top: 0px;
 	left: 0px;
 }
 
