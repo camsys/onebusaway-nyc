@@ -35,6 +35,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 public class  NycQueuedInferredLocationDaoImplTest {
 
@@ -74,6 +75,9 @@ public class  NycQueuedInferredLocationDaoImplTest {
     _dao.saveOrUpdateRecords(record);
     assertEquals(2, getNumberOfRecords());
     assertEquals(1, getNumberOfCurrentRecords());
+    
+    //List<ArchivedInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords();
+    //assertEquals(1, lastKnownRecords.size()); // I believe this should be one as both saveOrUpdateRecords happen for the same bus. Also this will prob end up being similar to getNumberOfCurrentRecords 
   }
 
   private ArchivedInferredLocationRecord getTestRecord() {

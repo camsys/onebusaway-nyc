@@ -46,4 +46,12 @@ class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocationDao {
       list.add(record);
     _template.saveOrUpdateAll(list);
   }
+
+  @Override
+  public List<ArchivedInferredLocationRecord> getAllLastKnownRecords() {
+    
+    List<ArchivedInferredLocationRecord> firstArchivedRecord = new ArrayList<ArchivedInferredLocationRecord>();
+    
+    return firstArchivedRecord;
+  }
 }
