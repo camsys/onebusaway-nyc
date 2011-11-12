@@ -144,12 +144,17 @@ strong {
 #toggleUI {
 	padding-bottom: 10px;	
 }
-#toggleUI a,
+#toggleUI a {
+	display: inline-block;
+	text-align: center;
+	margin: .6em;
+}
 .routeList a {
 	display: inline-block;
 	text-align: center;
-	width: 75px;
-	height: 25px;
+	width: 30%;
+	margin-top: .6em;
+	margin-bottom: .6em;
 }
 span.noUpcomingService {
 	font-style: italic;

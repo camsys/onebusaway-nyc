@@ -1,0 +1,24 @@
+# Application dependencies
+
+require:
+    - play -> jersey 0.1
+    - play -> maven head
+    - play -> spring 1.0.2
+    - play -> tabularasa 0.2
+    
+#    - org.onebusaway.nyc.transit_data_manager -> onebusaway-nyc-tdm-service 2.0.3-SNAPSHOT
+#    - uk.org.siri -> onebusaway-siri-api-v13 1.0.0
+
+#repositories:    
+#    - onebusaway-nyc-tdm-service:
+#        type:       local
+#        artifact:   ${application.path}/extlib/[module]-[revision].jar
+#        contains:
+#            - org.onebusaway.nyc.transit_data_manager -> *
+#            
+#    - onebusaway-siri-api-v13:
+#        type:       local
+#        artifact:   ${application.path}/extlib/[module]-[revision].jar
+#        contains:
+#            - uk.org.siri -> *
+            

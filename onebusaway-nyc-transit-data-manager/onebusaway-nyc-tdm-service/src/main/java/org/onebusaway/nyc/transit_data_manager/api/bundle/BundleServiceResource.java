@@ -88,7 +88,7 @@ public class BundleServiceResource {
     return response;
   }
 
-  @Path("/{bundleId}/file/{bundleFileFilename}/get")
+  @Path("/{bundleId}/file/{bundleFileFilename: [a-zA-Z0-9_./]+}/get")
   @GET
   public Response getBundleFile(@PathParam("bundleId") String bundleId,
       @PathParam("bundleFileFilename") String relativeFilename) {

@@ -1,13 +1,13 @@
 package org.onebusaway.nyc.presentation.service.search;
 
 import org.onebusaway.nyc.presentation.model.search.StopResult;
-import org.onebusaway.nyc.presentation.service.SearchModelFactory;
+import org.onebusaway.nyc.presentation.service.PresentationModelFactory;
 
 import java.util.List;
 
 public interface StopSearchService {
 
-  public void setModelFactory(SearchModelFactory factory);
+  public void setModelFactory(PresentationModelFactory factory);
 
   public List<StopResult> resultsForLocation(Double lat, Double lng);
 

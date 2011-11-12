@@ -16,6 +16,8 @@
 package org.onebusaway.nyc.sms.actions.model;
 
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
+import org.onebusaway.nyc.presentation.model.search.StopResult;
+import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 import java.util.List;
@@ -26,6 +28,10 @@ public class SmsRouteDestinationItem extends RouteDestinationItem {
   
   private List<String> distanceAwayStrings;
   
+  public SmsRouteDestinationItem(StopGroupBean group, List<StopResult> stops) {
+    super(group, stops);
+  }
+
   public List<NaturalLanguageStringBean> getServiceAlerts() {
     return serviceAlerts;
   }

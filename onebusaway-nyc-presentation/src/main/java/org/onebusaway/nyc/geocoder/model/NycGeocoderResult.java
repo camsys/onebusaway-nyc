@@ -35,6 +35,7 @@ public class NycGeocoderResult extends GoogleGeocoderResult {
 
   private Double southwestLongitude = null;
 
+  // address
   public void setFormattedAddress(String a) {
     formattedAddress = a;
   }
@@ -45,10 +46,20 @@ public class NycGeocoderResult extends GoogleGeocoderResult {
     return formattedAddress;
   }
 
+  // neighborhood
+  @Override
+  public void addAddressComponent(GoogleAddressComponent addressComponent) {
+    super.addAddressComponent(addressComponent);
+    
+    if(addressComponent.getTypes().contains("neighborhood"))
+      this.neighborhood = addressComponent.getLongName();
+  }
+  
   public String getNeighborhood() {
     return neighborhood;
   }
 
+  // bounds
   public Double getNortheastLatitude() {
     return northeastLatitude;
   }
@@ -84,6 +95,7 @@ public class NycGeocoderResult extends GoogleGeocoderResult {
   public CoordinateBounds getBounds() {
     if(northeastLatitude != null && northeastLongitude != null 
         && southwestLatitude != null && southwestLongitude != null) {
+      
       return new CoordinateBounds(northeastLatitude, northeastLongitude, 
           southwestLatitude, southwestLongitude);
     } else {
@@ -93,13 +105,5 @@ public class NycGeocoderResult extends GoogleGeocoderResult {
   
   public boolean isRegion() {
     return getBounds() != null;
-  }
-  
-  @Override
-  public void addAddressComponent(GoogleAddressComponent addressComponent) {
-    super.addAddressComponent(addressComponent);
-    
-    if(addressComponent.getTypes().contains("neighborhood"))
-      this.neighborhood = addressComponent.getLongName();
   }
 }

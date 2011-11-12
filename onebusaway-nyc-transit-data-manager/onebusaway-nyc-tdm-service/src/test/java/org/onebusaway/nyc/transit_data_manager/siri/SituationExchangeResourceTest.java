@@ -1,7 +1,11 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -21,48 +25,33 @@ import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 
 import org.junit.Test;
-import org.onebusaway.siri.core.ESiriModuleType;
-import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
-import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriService;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
 
-import uk.org.siri.siri.AffectedStopPointStructure;
-import uk.org.siri.siri.AffectedVehicleJourneyStructure;
-import uk.org.siri.siri.AffectsScopeStructure;
-import uk.org.siri.siri.AffectsScopeStructure.StopPoints;
-import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
-import uk.org.siri.siri.BlockingStructure;
-import uk.org.siri.siri.BoardingStructure;
-import uk.org.siri.siri.CasualtiesStructure;
-import uk.org.siri.siri.DefaultedTextStructure;
-import uk.org.siri.siri.DelaysStructure;
-import uk.org.siri.siri.EntryQualifierStructure;
-import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
-import uk.org.siri.siri.LineRefStructure;
-import uk.org.siri.siri.PtAdviceStructure;
-import uk.org.siri.siri.PtConsequenceStructure;
-import uk.org.siri.siri.PtConsequenceStructure.Suitabilities;
-import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
-import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
-import uk.org.siri.siri.SeverityEnumeration;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveriesStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
-import uk.org.siri.siri.StopPointRefStructure;
 
 public class SituationExchangeResourceTest extends SituationExchangeResource {
 
-	@Test
-	public void testHandlePost() throws Exception {
-		ServiceAlertsService saService = mock(ServiceAlertsService.class);
+	public SituationExchangeResourceTest() throws JAXBException {
+    super();
+  }
 
-		SiriService siriService = new SiriService();
-		siriService.setServiceAlertService(saService);
-		setSiriService(siriService);
+  @Test
+	public void testHandlePost() throws Exception {
+    ServiceAlertsService saService = mock(ServiceAlertsService.class);
+    TransitDataService tds = mock(TransitDataService.class);
+
+		NycSiriService siriService = new NycSiriService();
+		siriService.setTransitDataService(tds);
+//		siriService.setServiceAlertService(saService);
+		setNycSiriService(siriService);
 		InputStream stream = getClass().getResourceAsStream("t.xml");
 		byte[] b = new byte[10240];
 		int read = new DataInputStream(stream).read(b);
@@ -70,8 +59,9 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 		Response response = handlePost(body);
 
 		// Somewhat lame test at the moment.
-		verify(saService).createOrUpdateServiceAlert(
-				any(ServiceAlert.Builder.class), anyString());
+		verify(tds).createServiceAlert(anyString(), any(ServiceAlertBean.class));
+//		verify(saService).createOrUpdateServiceAlert(
+//				any(ServiceAlert.Builder.class), anyString());
 
 	}
 

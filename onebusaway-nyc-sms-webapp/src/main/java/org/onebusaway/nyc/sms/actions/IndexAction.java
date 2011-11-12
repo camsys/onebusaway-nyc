@@ -17,8 +17,6 @@ package org.onebusaway.nyc.sms.actions;
 
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
 import org.onebusaway.nyc.presentation.model.search.LocationResult;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
@@ -29,14 +27,11 @@ import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.nyc.sms.actions.model.SmsRouteDestinationItem;
-import org.onebusaway.nyc.sms.actions.model.SmsSearchModelFactory;
+import org.onebusaway.nyc.sms.actions.model.SmsPresentationModelFactory;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 import org.apache.commons.lang.xwork.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.org.siri.siri.MonitoredCallStructure;
-import uk.org.siri.siri.MonitoredStopVisitStructure;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,8 +42,6 @@ public class IndexAction extends SessionedIndexAction {
   private static final long serialVersionUID = 1L;
 
   private static final int MAX_SMS_CHARACTER_COUNT = 160;
-  
-  private String _response = null;
 
   @Autowired
   private RealtimeService _realtimeService;
@@ -62,24 +55,29 @@ public class IndexAction extends SessionedIndexAction {
   @Autowired
   private NycGeocoderService _geocoderService;
   
-  public String execute() throws Exception {
-    SmsSearchModelFactory factory = new SmsSearchModelFactory();
-    _stopSearchService.setModelFactory(factory);
+  /* response to user */
+  private String _response = null;
 
+  /* route we're filtering results by */
+  private String _routeToFilterBy = null;
+  
+  public String execute() throws Exception {
+    SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService);
+    _stopSearchService.setModelFactory(factory);
+    _routeSearchService.setModelFactory(factory);
+    
     
     /**
      * INPUT PARSING
      */  
-    String commandString = normalizeCommand(_query);
+    _routeToFilterBy = getRouteToFilterBy(_query);
 
+    String commandString = normalizeCommand(_query);
     if(commandString != null) {
       // Alert: second parameter contains route to find alerts for
       if(commandString.equals("A")) {
-        String[] tokens = _query.split(" ");
-        if(tokens.length == 2) {
-          serviceAlertResponse(tokens[1]);
-          return SUCCESS;
-        }
+        serviceAlertResponse(_routeToFilterBy);
+        return SUCCESS;
         
       // Refresh: just re-run the last query!
       } else if(commandString.equals("R")) {
@@ -106,17 +104,14 @@ public class IndexAction extends SessionedIndexAction {
 
     
     /**
-     * GIVEN RESULTS, DISPLAY THEM TO THE USER:
+     * GIVEN RESULTS, DISPLAY THEM TO THE USER
      */    
     // display results to user
     if(_searchResults.size() == 0) {
       errorResponse("No matches.");
       
     } else {
-      String resultType = _searchResults.get(0).getType();
-      
-      // STOPS
-      if(resultType.equals("stopResult")) {
+      if(_searchResults.getTypeOfResults().equals("StopResult")) {
 
         // try to fill the most space in the SMS with realtime data; if we can't even get
         // one observation for each route available in there, then punt to disambiguation.
@@ -163,8 +158,7 @@ public class IndexAction extends SessionedIndexAction {
         if(_response == null)
           throw new Exception("No combination of values we tried produced a message that could fit into 1 SMS!?");
 
-      // LOCATIONS
-      } else if(resultType.equals("locationResult")) {
+      } else if(_searchResults.getTypeOfResults().equals("LocationResult")) {
         locationDisambiguationResponse(_searchResults);
         
         if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
@@ -180,14 +174,14 @@ public class IndexAction extends SessionedIndexAction {
    * RESPONSE GENERATION METHODS
    */
   private void serviceAlertResponse(String routeQuery) throws Exception {
-    List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
-    
     List<RouteResult> routes = _routeSearchService.resultsForQuery(routeQuery);
     
     if(routes.size() == 0) {
       errorResponse("Route not found.");
       return;
     }
+
+    List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
       
     for(RouteResult result : routes) {
       for(RouteDestinationItem _destination : result.getDestinations()) {
@@ -239,10 +233,15 @@ public class IndexAction extends SessionedIndexAction {
       _response += result.getStopIdWithoutAgency() + " (" + result.getStopDirection() + "-bound)\n";
 
       for(RouteResult routeHere : result.getRoutesAvailable()) {
+        // filtered out by user query
+        if(_routeToFilterBy != null && !routeHere.getRouteIdWithoutAgency().equals(_routeToFilterBy))
+          continue;
+        
         for(RouteDestinationItem _destination : routeHere.getDestinations()) {
           SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
           
           String prefix = "";
+          
           if(destination.getServiceAlerts().size() > 0) {
             prefix += "*";
             routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
@@ -341,12 +340,6 @@ public class IndexAction extends SessionedIndexAction {
   /**
    * PRIVATE HELPER METHODS
    */
-  
-  /**
-   * Returns the canonical string for a command, or null if string is not a command.
-   * @param query: user query.
-   * @return null if not a command, canonical command string if a command.
-   */
   public String normalizeCommand(String query) {
     if(query.toUpperCase().startsWith("A ") || query.toUpperCase().startsWith("ALERT "))
       return "A";
@@ -389,12 +382,9 @@ public class IndexAction extends SessionedIndexAction {
     _searchResults.addAll(_stopSearchService.resultsForQuery(q));
 
     // nothing? geocode it!
-    if(_searchResults.size() == 0) {
+    if(_searchResults.size() == 0)
       _searchResults.addAll(generateResultsFromGeocode(q));        
-    }
     
-    transformSearchModels(_searchResults);
-
     Collections.sort(_searchResults, new SearchResultComparator());
   } 
   
@@ -410,64 +400,26 @@ public class IndexAction extends SessionedIndexAction {
       if(!result.isRegion())
         results.addAll(_stopSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
 
+    // prompt the user to choose from non-regional locations.
     } else {
-      // if we get locations that are not regions, prompt the user to choose from them.
       for(NycGeocoderResult result : geocoderResults) {
-        if(!result.isRegion()) {
-          LocationResult locationSearchResult = new LocationResult();
-          locationSearchResult.setGeocoderResult(result);
-
-          results.add(locationSearchResult);
-        }
+        if(!result.isRegion())
+          results.add(new LocationResult(result));
       }
     }
 
     return results;
   }
-  
-  private void transformSearchModels(List<SearchResult> searchResults) {
-    for(SearchResult searchResult : searchResults) {
-      if(searchResult instanceof StopResult) {
-        injectRealtimeData((StopResult)searchResult);
-      }
+
+  private String getRouteToFilterBy(String q) {
+    String[] tokens = q.split(" ");
+    
+    for(String token : tokens) {
+      if(_routeSearchService.isRoute(token))
+        return token;
     }
-  }
-  
-  private StopResult injectRealtimeData(StopResult stopSearchResult) {
-    for(RouteResult route : stopSearchResult.getRoutesAvailable()) {
-      for(RouteDestinationItem _destination : route.getDestinations()) {
-        SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
-
-        // service alerts
-        List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForStop(
-            stopSearchResult.getStopId());
-        destination.setServiceAlerts(serviceAlerts);
-
-        // stop visits
-        List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(
-            stopSearchResult.getStopId(), false);
-
-        List<String> distanceAwayStrings = new ArrayList<String>();
-        for(MonitoredStopVisitStructure visit : visits) {
-          String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
-          String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
-          if(!route.getRouteId().equals(routeId) || !destination.getDirectionId().equals(directionId))
-            continue;
-
-          MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-          if(monitoredCall == null) 
-            continue;
-
-          SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
-          SiriDistanceExtension distanceExtension = wrapper.getDistances();
-          distanceAwayStrings.add(distanceExtension.getPresentableDistance());
-        }
-
-        destination.setDistanceAwayStrings(distanceAwayStrings);
-      }
-    }    
-
-    return stopSearchResult;
+    
+    return null;
   }
   
   /**

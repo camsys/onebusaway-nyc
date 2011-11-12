@@ -23,37 +23,13 @@ import java.util.List;
 
 public class RouteResult implements SearchResult {
 
-  private RouteBean routeBean;
+  private final RouteBean routeBean;
   
-  private List<? extends RouteDestinationItem> destinations;
+  private final List<RouteDestinationItem> destinations;
 
-  public RouteResult() {}
-
-  public void setRouteBean(RouteBean routeBean) {
+  public RouteResult(RouteBean routeBean, List<RouteDestinationItem> destinations) {
     this.routeBean = routeBean;
-  }
-  
-  public void setDestinations(List<? extends RouteDestinationItem> destinations) {
     this.destinations = destinations;
-  }
-  
-  @Override
-  public String getType() {
-    boolean hasStops = false;
-
-    if(destinations != null) {
-      for(RouteDestinationItem destination : destinations) {
-        if(destination.getStops() != null) {
-          hasStops = true;
-          break;
-        }
-      }
-    }
-    
-    if(hasStops)
-      return "routeResult";
-    else
-      return "routeItem";
   }
 
   @Override
@@ -78,8 +54,24 @@ public class RouteResult implements SearchResult {
     return routeBean.getColor();
   }
   
-  public List<? extends RouteDestinationItem> getDestinations() {
+  public List<RouteDestinationItem> getDestinations() {
     return destinations;
+  }
+
+  @Override
+  public String getResultType() {
+    boolean hasStops = false;
+    for(RouteDestinationItem destination : destinations) {
+      if(destination.getStops() != null && destination.getStops().size() > 0) {
+        hasStops = true;
+        break;
+      }
+    }
+
+    if(hasStops) 
+      return "RouteResult";
+    else
+      return "RouteItem";
   }
 
 }

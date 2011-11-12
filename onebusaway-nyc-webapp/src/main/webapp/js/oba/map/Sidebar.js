@@ -65,11 +65,9 @@ OBA.Sidebar = function() {
 
 	// show user list of addresses
 	function disambiguate(locationResults) {
-		legend.hide();
-		results.show();
-
 		var bounds = null;
 		var resultsList = jQuery("#results ul");
+
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
 			var address = location.formattedAddress;
@@ -113,16 +111,15 @@ OBA.Sidebar = function() {
 		});
 		
 		routeMap.showBounds(bounds);
+		results.show();
 	}
 
 	// display (few enough) routes on map and in legend
 	function showRoutesOnMap(routeResults) {
-		legend.show();
-		results.hide();
-
 		var legendList = jQuery("#legend ul");
+		
 		jQuery.each(routeResults, function(_, routeResult) {	
-			var checkBox = jQuery("<input type='checkbox' checked></input>");
+			var checkBox = jQuery("<input type='checkbox' checked disabled></input>");
 			
 			var titleBox = jQuery("<span></span>")
 							.addClass("routeName")
@@ -136,13 +133,6 @@ OBA.Sidebar = function() {
 
 			legendList.append(listItem);
 
-			checkBox.click(function(e) {
-				var checkbox = jQuery(this);
-				var enabled = checkbox.attr("checked");
-				
-				routeMap.setRouteStatus(routeResult.routeId, enabled);
-			});
-			
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {
 				var directionHeader = jQuery("<p></p>")
@@ -183,14 +173,14 @@ OBA.Sidebar = function() {
 
 			routeMap.showRoute(routeResult);
 		});
+		
+		legend.show();
 	}
 
 	// show many (too many to show on map) routes to user
 	function showRoutePickerList(routeResults) {
-		legend.hide();
-		results.show();
-
 		var resultsList = jQuery("#results ul");
+
 		jQuery.each(routeResults, function(_, route) {
 			var link = jQuery("<a href='#'></a>")
 							.text(route.name)
@@ -228,13 +218,15 @@ OBA.Sidebar = function() {
 				searchForm.submit();
 			});
 		});
+		
+		results.show();
 	}
 
 	// process search results
 	function doSearch(q) {
 		welcome.hide();
 		legend.hide();
-		results.show();
+		results.hide();
 
 		var resultsList = jQuery("#results ul");
 		var legendList = jQuery("#legend ul");
@@ -256,13 +248,13 @@ OBA.Sidebar = function() {
 				noResults.hide();
 			}
 
-			var resultType = json.searchResults[0].type;			
+			var resultType = json.searchResults[0].resultType;			
 			if(resultCount === 1) {
-				if(resultType === "locationResult" || resultType === "stopResult") {
+				if(resultType === "LocationResult" || resultType === "StopResult") {
 					var result = json.searchResults[0];
 
 					// region (zip code or borough)
-					if(resultType === "locationResult" && result.region === true) {
+					if(resultType === "LocationResult" && result.region === true) {
 						var bounds = result.bounds;
 						var latLngBounds = new google.maps.LatLngBounds(
 								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
@@ -274,21 +266,20 @@ OBA.Sidebar = function() {
 					// intersection or stop ID
 					} else {
 						showRoutesOnMap(result.nearbyRoutes);
+						routeMap.showLocation(result.latitude, result.longitude);
 
-						if(resultType === "stopResult") {
+						if(resultType === "StopResult") {
 							routeMap.showPopupForStopId(result.stopId);
-						} else {
-							routeMap.showLocation(result.latitude, result.longitude);
 						}
 					}
 					
 				// single route
-				} else if(resultType === "routeResult") {
+				} else if(resultType === "RouteResult") {
 					showRoutesOnMap(json.searchResults);
 				}
 			} else {
 				// location disambiguation
-				if(resultType === "locationResult") {
+				if(resultType === "LocationResult") {
 					disambiguate(json.searchResults);
 				}
 			}

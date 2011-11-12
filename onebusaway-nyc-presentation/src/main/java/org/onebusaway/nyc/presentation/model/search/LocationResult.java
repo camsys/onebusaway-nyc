@@ -21,19 +21,12 @@ import org.onebusaway.nyc.presentation.service.search.SearchResult;
 
 public class LocationResult implements SearchResult {
 
-  private NycGeocoderResult result;
+  private final NycGeocoderResult result;
 
-  public LocationResult() {}
-  
-  public void setGeocoderResult(NycGeocoderResult result) {
+  public LocationResult(NycGeocoderResult result) {
     this.result = result;
   }
   
-  @Override
-  public String getType() {
-    return "locationResult";    
-  }
-
   @Override
   public String getName() {
     return getFormattedAddress();
@@ -71,4 +64,9 @@ public class LocationResult implements SearchResult {
   public Double getLongitude() {
     return result.getLongitude();
   }  
+  
+  @Override
+  public String getResultType() {
+    return "LocationResult";
+  }
 }

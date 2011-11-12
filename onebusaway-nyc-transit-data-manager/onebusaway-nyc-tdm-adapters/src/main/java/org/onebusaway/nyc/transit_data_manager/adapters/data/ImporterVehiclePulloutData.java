@@ -12,4 +12,8 @@ public class ImporterVehiclePulloutData implements PulloutData {
   public ImporterVehiclePulloutData(List<SCHPullInOutInfo> pulloutData) {
     this.pulloutData = pulloutData;
   }
+  
+  public List<SCHPullInOutInfo> getAllPullouts() {
+    return pulloutData;
+  }
 }

@@ -55,16 +55,24 @@
     <!-- Other Stuff: -->
 
     <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
-		<property name="administrativeAreaWhitelist" value="NY"/>        
-    </bean>
-
-    <bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
-        <property name="defaultBounds">
+		<property name="usStateFilter" value="NY"/>        
+        <property name="resultBiasingBounds">
             <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
                 <property name="minLat" value="40.57963926492829" />
                 <property name="minLon" value="-74.19498680838014" />
                 <property name="maxLat" value="40.94577345952476" />
                 <property name="maxLon" value="-73.69785546072389" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
+        <property name="defaultBounds">
+            <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
+                <property name="minLat" value="38.792627" />
+                <property name="minLon" value="-76.069336" />
+                <property name="maxLat" value="40.93634" />
+                <property name="maxLon" value="-73.607025" />
             </bean>
         </property>
         <property name="calculateDefaultBoundsFromAgencyCoverage" value="false" />

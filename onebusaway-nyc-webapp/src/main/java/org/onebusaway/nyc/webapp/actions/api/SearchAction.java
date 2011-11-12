@@ -18,14 +18,13 @@ package org.onebusaway.nyc.webapp.actions.api;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
-import org.onebusaway.nyc.presentation.model.search.StopResult;
+import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebLocationResult;
 import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebSearchModelFactory;
-import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebStopResult;
-import org.onebusaway.nyc.webapp.actions.m.model.MobileWebLocationResult;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
@@ -50,7 +49,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private NycGeocoderService _geocoderService;
   
-  private List<SearchResult> _searchResults = new ArrayList<SearchResult>();
+  private SearchResultCollection _searchResults = new SearchResultCollection();
   
   private String _q;
 
@@ -66,7 +65,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     if(_q == null || _q.isEmpty())
       return SUCCESS;
 
-    DesktopWebSearchModelFactory factory = new DesktopWebSearchModelFactory();
+    DesktopWebSearchModelFactory factory = new DesktopWebSearchModelFactory(_routeSearchService);
     _stopSearchService.setModelFactory(factory);
     _routeSearchService.setModelFactory(factory);
     
@@ -74,39 +73,18 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     _searchResults.addAll(_stopSearchService.resultsForQuery(_q));
 
     // try as route ID
-    if(_searchResults.size() == 0) {
+    if(_searchResults.size() == 0)
       _searchResults.addAll(_routeSearchService.resultsForQuery(_q));
-    }
 
     // nothing? geocode it!
-    if(_searchResults.size() == 0) {
+    if(_searchResults.size() == 0)
       _searchResults.addAll(generateResultsFromGeocode(_q));        
-    }
-
-    transformSearchModels(_searchResults);
 
     Collections.sort(_searchResults, new SearchResultComparator());
 
     return SUCCESS;
   }   
 
-  private void transformSearchModels(List<SearchResult> searchResults) {
-    for(SearchResult searchResult : searchResults) {
-      if(searchResult instanceof StopResult) {
-        injectRouteData((StopResult)searchResult);
-      }
-    }
-  }
-  
-  private StopResult injectRouteData(StopResult _stopSearchResult) {
-    DesktopWebStopResult stopSearchResult = (DesktopWebStopResult)_stopSearchResult;
-    
-    stopSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(
-        stopSearchResult.getLatitude(), 
-        stopSearchResult.getLongitude()));
-    
-    return stopSearchResult;
-  }
 
   private List<SearchResult> generateResultsFromGeocode(String q) {
     List<SearchResult> results = new ArrayList<SearchResult>();
@@ -114,8 +92,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(q);
 
     for(NycGeocoderResult result : geocoderResults) {
-      MobileWebLocationResult locationSearchResult = new MobileWebLocationResult();
-      locationSearchResult.setGeocoderResult(result);
+      DesktopWebLocationResult locationSearchResult = new DesktopWebLocationResult(result);
 
       if(result.isRegion()) {
         locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getBounds()));
@@ -133,7 +110,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   /** 
    * VIEW METHODS
    */
-  public List<SearchResult> getSearchResults() {
+  public SearchResultCollection getSearchResults() {
     return _searchResults;
   }
 

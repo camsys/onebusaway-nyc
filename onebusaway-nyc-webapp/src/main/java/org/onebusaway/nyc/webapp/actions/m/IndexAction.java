@@ -18,37 +18,24 @@ package org.onebusaway.nyc.webapp.actions.m;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.impl.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.impl.sort.LocationSensitiveSearchResultComparator;
-import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
-import org.onebusaway.nyc.presentation.model.search.RouteResult;
-import org.onebusaway.nyc.presentation.model.search.StopResult;
+import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.MobileWebLocationResult;
-import org.onebusaway.nyc.webapp.actions.m.model.MobileWebRouteDestinationItem;
-import org.onebusaway.nyc.webapp.actions.m.model.MobileWebSearchModelFactory;
-import org.onebusaway.nyc.webapp.actions.m.model.MobileWebStopResult;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+import org.onebusaway.nyc.webapp.actions.m.model.MobileWebPresentationModelFactory;
 
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.org.siri.siri.MonitoredCallStructure;
-import uk.org.siri.siri.MonitoredStopVisitStructure;
-import uk.org.siri.siri.VehicleActivityStructure;
 
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -72,9 +59,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private NycGeocoderService _geocoderService;
 
-  private List<SearchResult> _searchResults = new ArrayList<SearchResult>();
-
-  private long lastUpdateTime = System.currentTimeMillis();
+  private MobileWebPresentationModelFactory _factory = null;
+  
+  private SearchResultCollection _searchResults = new SearchResultCollection();
   
   private String _q;
   
@@ -100,9 +87,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if(_q == null)
       return SUCCESS;
 
-    MobileWebSearchModelFactory factory = new MobileWebSearchModelFactory();
-    _stopSearchService.setModelFactory(factory);
-    _routeSearchService.setModelFactory(factory);
+    _factory = new MobileWebPresentationModelFactory(_realtimeService);
+    _stopSearchService.setModelFactory(_factory);
+    _routeSearchService.setModelFactory(_factory);
     
     // empty query with location means search for current location
     if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT)))) {
@@ -116,17 +103,13 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       _searchResults.addAll(_stopSearchService.resultsForQuery(_q));
 
       // try as route ID
-      if(_searchResults.size() == 0) {
+      if(_searchResults.size() == 0)
         _searchResults.addAll(_routeSearchService.resultsForQuery(_q));
-      }
 
       // nothing? geocode it!
-      if(_searchResults.size() == 0) {
+      if(_searchResults.size() == 0)
         _searchResults.addAll(generateResultsFromGeocode(_q));        
-      }
     }
-
-    transformSearchModels(_searchResults);
       
     Collections.sort(_searchResults, new LocationSensitiveSearchResultComparator(_location));
 
@@ -136,118 +119,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   /**
    * PRIVATE HELPER METHODS
    */
-  private void transformSearchModels(List<SearchResult> searchResults) {
-    for(SearchResult searchResult : searchResults) {
-      if(searchResult instanceof StopResult) {
-        injectRealtimeData((StopResult)searchResult);
-      } else if(searchResult instanceof RouteResult) {
-        injectRealtimeData((RouteResult)searchResult);
-      }
-    }
-  }
-  
-  private StopResult injectRealtimeData(StopResult stopSearchResult) {
-    for(RouteResult route : stopSearchResult.getRoutesAvailable()) {
-      for(RouteDestinationItem _destination : route.getDestinations()) {
-        MobileWebRouteDestinationItem destination = (MobileWebRouteDestinationItem)_destination;
-
-        // service alerts
-        List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForStop(
-            stopSearchResult.getStopId());
-        destination.setServiceAlerts(serviceAlerts);
-
-        // stop visits
-        List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(
-            stopSearchResult.getStopId(), false);
-
-        List<String> distanceAwayStrings = new ArrayList<String>();
-        for(MonitoredStopVisitStructure visit : visits) {
-          String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
-          String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
-          if(!route.getRouteId().equals(routeId) || !destination.getDirectionId().equals(directionId))
-            continue;
-
-          // find latest update time across all realtime data
-          Long thisLastUpdateTime = visit.getRecordedAtTime().getTime();
-          if(thisLastUpdateTime != null && thisLastUpdateTime > lastUpdateTime) {
-            lastUpdateTime = thisLastUpdateTime;
-          }
-          
-          MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-          if(monitoredCall == null) 
-            continue;
-
-          SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
-          SiriDistanceExtension distanceExtension = wrapper.getDistances();
-          distanceAwayStrings.add(distanceExtension.getPresentableDistance());
-        }
-
-        destination.setDistanceAwayStrings(distanceAwayStrings);
-      }
-    }    
-
-    return stopSearchResult;
-  }
-
-  private RouteResult injectRealtimeData(RouteResult routeSearchResult) {
-    for(RouteDestinationItem destination : routeSearchResult.getDestinations()) {
-      if(destination.getStops() == null)
-        continue;
-      
-      List<VehicleActivityStructure> journeyList = 
-          _realtimeService.getVehicleActivityForRoute(routeSearchResult.getRouteId(), null, false);
-      
-      // build map of stop IDs to list of distance strings
-      Map<String, ArrayList<String>> stopIdToDistanceStringMap = new HashMap<String, ArrayList<String>>();      
-
-      for(VehicleActivityStructure journey : journeyList) {
-        MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
-        if(monitoredCall == null) 
-          continue;
-
-        // find latest update time across all realtime data
-        Long thisLastUpdateTime = journey.getRecordedAtTime().getTime();
-        if(thisLastUpdateTime != null && thisLastUpdateTime > lastUpdateTime) {
-          lastUpdateTime = thisLastUpdateTime;
-        }
-
-        SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
-        SiriDistanceExtension distanceExtension = wrapper.getDistances();
-        String stopId = monitoredCall.getStopPointRef().getValue();
-
-        ArrayList<String> distances = stopIdToDistanceStringMap.get(stopId);
-        if(distances == null)
-          distances = new ArrayList<String>();
-
-        distances.add(distanceExtension.getPresentableDistance());
-
-        stopIdToDistanceStringMap.put(stopId, distances);        
-      }
-      
-      // fold the list of distance strings into the stop list from the route result
-      for(StopResult _stop : destination.getStops()) {
-        MobileWebStopResult stop = (MobileWebStopResult)_stop;
-
-        StringBuilder sb = new StringBuilder();        
-
-        List<String> distancesForThisStop = stopIdToDistanceStringMap.get(stop.getStopId());
-        if(distancesForThisStop != null) {
-          for(String distance : distancesForThisStop) {
-            if(sb.length() > 0) {
-              sb.append(", ");
-            }
-
-            sb.append(distance);
-          }
-        }
-        
-        stop.setDistanceAwayString(sb.toString());
-      }
-    }
-
-    return routeSearchResult;       
-  }
-  
   private List<SearchResult> generateResultsFromGeocode(String q) {
     List<SearchResult> results = new ArrayList<SearchResult>();
     
@@ -268,8 +139,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     // location disambiguation w/ nearby routes
     } else {
       for(NycGeocoderResult result : geocoderResults) {
-        MobileWebLocationResult locationSearchResult = new MobileWebLocationResult();
-        locationSearchResult.setGeocoderResult(result);
+        MobileWebLocationResult locationSearchResult = new MobileWebLocationResult(result);
 
         if(result.isRegion()) {
           locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getBounds()));
@@ -313,10 +183,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	      
 	      String action = new String("Unknown");
 	      if(_searchResults != null && !_searchResults.isEmpty()) {
-	    	  SearchResult firstResult = _searchResults.get(0);	    	  
-	    	  if(firstResult.getType().equals("route")) {
+	    	  if(_searchResults.getTypeOfResults().equals("RouteResult")) {
 	    		  action = "Route Search";
-	    	  } else if(firstResult.getType().equals("stop")) {
+	    	  } else if(_searchResults.getTypeOfResults().equals("StopResult")) {
 	    		  if(_searchResults.size() > 1) {
 	    			  action = "Intersection Search";
 	    		  } else {
@@ -366,7 +235,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getLastUpdateTime() {
-    return DateFormat.getTimeInstance().format(lastUpdateTime);
+    return DateFormat.getTimeInstance().format(_factory.getLastUpdateTime());
   } 
   
   public boolean getQueryIsEmpty() {
@@ -375,10 +244,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getResultType() {
-    if(_searchResults.size() > 0)
-      return _searchResults.get(0).getType();
-    else
-      return null;
+    return _searchResults.getTypeOfResults();
   }
   
   public List<SearchResult> getSearchResults() {

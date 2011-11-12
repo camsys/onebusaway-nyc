@@ -44,8 +44,8 @@
 
         <!-- List all the mapping documents we're using -->
 	<mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReportRecord"/>
-	<mapping class="org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord"/>
-	<mapping class="org.onebusaway.nyc.report_archive.model.NycVehicleManagementStatusRecord"/>
 	<mapping class="org.onebusaway.nyc.report_archive.model.InvalidLocationRecord"/>
+	<mapping class="org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord"/>
+	<mapping class="org.onebusaway.nyc.report_archive.model.InferredLocationRecord"/>
     </session-factory>
 </hibernate-configuration>

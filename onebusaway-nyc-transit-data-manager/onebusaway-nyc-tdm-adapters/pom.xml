@@ -72,6 +72,16 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>org.onebusaway.nyc.transit_data_manager.adapters.api.GenericConverter</mainClass>
+				</configuration>
 			</plugin>
 			<plugin>
 				<inherited>true</inherited>
