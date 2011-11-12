@@ -14,6 +14,11 @@
     <context:component-scan base-package="org.onebusaway.nyc.report_archive" />
     <bean id="configurationService" class="org.onebusaway.nyc.report_archive.services.LocalConfigurationService"/>
 
+	<bean id="gsonTool"
+		class="org.onebusaway.nyc.report_archive.api.json.LowerCaseWDashesGsonJsonTool">
+		<property name="prettyPrintOutput" value="true" />
+	</bean>
+
     <bean id="usersHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
         <property name="target" value="hibernateAnnotatedClasses" />
         <property name="values">
