@@ -36,18 +36,14 @@
 	font-size: 14px;
 }
 
-#welcome ul {
-	padding-top: 10px;
-}
-
-#search {
-	padding-bottom: 0px;
-}
-
 #no-results,
 #results,
 #legend {
 	display: none;
+}
+
+#search {
+	padding-bottom: 0px;
 }
 
 #search input {
@@ -71,6 +67,14 @@
 	padding: 2px;
 }
 
+#welcome ul {
+	padding-top: 10px;
+}
+
+#welcome ul li {
+	line-height: 150%;	
+}
+
 /* navigation */
 
 #header ul li.link {
@@ -87,6 +91,7 @@
 }
 
 /* result types */
+
 #results ul {
 	padding-top: 5px;
 	padding-bottom: 5px;
@@ -131,12 +136,37 @@
 
 #legend ul li.legendItem p.destination p {
 	padding: 5px;
-	padding-left: 30px;
+	padding-left: 20px;
+	position: relative;
+	cursor: pointer;
+}
+
+#legend ul li.legendItem p.destination p span.ui-icon-triangle-1-s {
+	background-image: url("img/ui-icons_228ef1_256x240.png");
+	background-position: -64px -16px;
+	width: 15px;
+	height: 15px;
+	display: block;
+	position: absolute;
+	top: 2px;
+	left: 0px;
+}
+
+#legend ul li.legendItem p.destination p span.ui-icon-triangle-1-e {
+	background-image: url("img/ui-icons_228ef1_256x240.png");
+	background-position: -32px -16px;
+	width: 15px;
+	height: 15px;
+	display: block;
+	position: absolute;
+	top: 2px;
+	left: 0px;
 }
 
 #legend ul li.legendItem p.destination ul.stops li {
 	padding-top: 2px;
 	padding-bottom: 2px;
+	padding-left: 20px;
 }
 
 /* map/popup */

@@ -152,10 +152,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var vehiclesByRoute = {};
 	var vehiclesById = {};
 	var polylinesByRoute = {};
-	var stopsAddedForRoute = {};
-	var stopsByIdReferenceCount = {}; // (number of routes on map a stop is associated with)
-	var stopsById = {};
 	var hoverPolylines = [];
+	var stopsById = {};
+	var stopsAddedForRoute = {};
 
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
@@ -361,10 +360,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			var shape = new google.maps.Polyline(options);
 
-			// used when changing the line color FIXME 
-			shape.originalPath = latlngs;
-			shape.originalColor = "#" + color;
-			
 			polylinesByRoute[routeId].push(shape);
 		});	
 	}
@@ -376,14 +371,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			jQuery.each(stops, function(_, marker) {
 				var stopId = marker.stopId;
-				stopsByIdReferenceCount[stopId]--;
 				
-				if(stopsByIdReferenceCount[stopId] === 0) {
-					delete stopsByIdReferenceCount[stopId];
-					delete stopsById[stopId];				
-					mgr.removeMarker(marker);
-					marker.setMap(null);
-				}
+				delete stopsById[stopId];				
+				mgr.removeMarker(marker);
+				marker.setMap(null);
 			});
 			
 			delete stopsAddedForRoute[routeId];
@@ -405,7 +396,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			// does the stop arleady exist, e.g. from another route?
 			if(typeof stopsById[stopId] !== 'undefined') {
 				stopsAddedForRoute[routeId].push(stopsById[stopId]);
-				stopsByIdReferenceCount[stopId]++;
 				return;
 			}
 			
@@ -444,7 +434,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	    	mgr.addMarker(marker, 16, 19);
 	    
 	        stopsAddedForRoute[routeId].push(marker);
-	    	stopsByIdReferenceCount[stop.stopId] = 1;
 	        stopsById[stop.stopId] = marker;
 	    });
 	}
@@ -620,6 +609,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			removeRoutesNotInSet({});
 		},
 		
+		removeRoutesNotInSet: removeRoutesNotInSet,
+		
 		showPopupForStopId: function(stopId) {
 			var stopMarker = stopsById[stopId];
 			
@@ -629,8 +620,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			google.maps.event.trigger(stopMarker, "click");
 		},
-		
-		removeRoutesNotInSet: removeRoutesNotInSet,
 		
 		showRoute: function(routeResult) {
 			// already on map
@@ -644,41 +633,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 
 			updateVehicles(routeResult.routeId);
-		},
-
-		setRouteStatus: function(routeId, enabled) {
-			var polylines = polylinesByRoute[routeId];
-			
-			if(typeof polylines === 'undefined') {
-				return;
-			}
-			
-			// FIXME: better way to change polylines?
-			jQuery.each(polylines, function(_, polyline) {
-				if(enabled === false) {
-					var newOptions = {
-							strokeColor: "#EFEFEF",
-							strokeOpacity: 1.0,
-							strokeWeight: 3,
-							map: map,
-							path: polyline.originalPath
-					};
-					polyline.setOptions(newOptions);
-
-					removeVehicles(routeId);
-				} else {
-					var newOptions = {
-							strokeColor: polyline.originalColor,
-							strokeOpacity: 1.0,
-							strokeWeight: 3,
-							map: map,
-							path: polyline.originalPath
-					};
-					polyline.setOptions(newOptions);
-					
-					updateVehicles(routeId);
-				}
-			});
 		},
 		
 		removeHoverPolyline: function() {
