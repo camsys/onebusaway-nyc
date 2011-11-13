@@ -20,7 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "obanyc_cclocationreport_archive")
+@Table(name = "obanyc_cclocationreport")
 @AccessType("field")
 @Cache(usage = CacheConcurrencyStrategy.NONE)
 public class CcLocationReportRecord implements Serializable {
@@ -56,6 +56,7 @@ public class CcLocationReportRecord implements Serializable {
   private Date timeReported;
   
   @Column(nullable = false, name = "time_received")
+  @Index(name = "time_received")
   private Date timeReceived;
   
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "latitude")

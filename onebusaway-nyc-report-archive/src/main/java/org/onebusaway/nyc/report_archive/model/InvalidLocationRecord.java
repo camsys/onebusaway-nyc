@@ -14,7 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "obanyc_invalidlocationreport_archive")
+@Table(name = "obanyc_invalidlocationreport")
 @AccessType("field")
 @Cache(usage = CacheConcurrencyStrategy.NONE)
 /**
