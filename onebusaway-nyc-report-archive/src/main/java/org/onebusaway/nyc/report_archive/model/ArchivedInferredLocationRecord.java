@@ -43,7 +43,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "obanyc_inferredlocation_archive")
+@Table(name = "obanyc_inferredlocation")
 @AccessType("field")
 @Cache(usage = CacheConcurrencyStrategy.NONE)
 public class ArchivedInferredLocationRecord implements Serializable {
@@ -60,6 +60,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
   private Date recordTimestamp;
 
   @Column(nullable = false, name = "vehicle_id")
+  @Index(name = "vehicle_id")
   private String vehicleId;
 
   @Column(nullable = false, name = "service_date")

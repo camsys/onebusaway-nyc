@@ -40,6 +40,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.CascadeType;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 
 @Entity
 @Table(name = "obanyc_inferredlocation_map")
@@ -53,8 +56,8 @@ public class InferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "vehicle_id")
   private String vehicleId;
 
-  @Column(nullable = false, name = "record_id")
-  private Integer recordId;
+  @OneToOne(cascade = CascadeType.ALL)
+  private ArchivedInferredLocationRecord currentRecord;
 
   public InferredLocationRecord() {
   }
@@ -63,8 +66,7 @@ public class InferredLocationRecord implements Serializable {
     super();
 
     setVehicleId(record.getVehicleId());
-    setRecordId(record.getId());
-
+    setCurrentRecord(record);
   }
 
   public String getVehicleId() {
@@ -75,11 +77,11 @@ public class InferredLocationRecord implements Serializable {
     this.vehicleId = id;
   }
 
-  public Integer getRecordId() {
-    return recordId;
+  public ArchivedInferredLocationRecord getCurrentRecord() {
+      return currentRecord;
   }
 
-  public void setRecordId(Integer id) {
-    this.recordId = id;
+  public void setCurrentRecord(ArchivedInferredLocationRecord record) {
+      this.currentRecord = record;
   }
 }
