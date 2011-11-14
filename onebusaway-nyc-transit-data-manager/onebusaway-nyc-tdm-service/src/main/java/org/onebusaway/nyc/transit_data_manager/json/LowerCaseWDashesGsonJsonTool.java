@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
 import com.google.gson.FieldNamingPolicy;
@@ -70,5 +71,6 @@ public class LowerCaseWDashesGsonJsonTool implements JsonTool{
   private void setTypeAdapters(GsonBuilder gsonBuilder) {
     // First set Joda DateTime Adapter
     gsonBuilder.registerTypeAdapter(LocalDate.class, new JodaLocalDateAdapter());
+    gsonBuilder.registerTypeAdapter(DateTime.class, new JodaDateTimeAdapter());
   }
 }

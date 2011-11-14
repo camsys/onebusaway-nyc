@@ -136,11 +136,16 @@ public class DirectoryBundleSource implements BundleSource {
         if (bundleMetadataFile.isFile() && dataDir.isDirectory()) {
           Bundle bundle = loadBundleMetadata(bundleMetadataFile);
 
-          if(dirName.equals(bundle.getId())) {
-            resultBundle = bundle;
+          if (bundle != null) {
+            if(dirName.equals(bundle.getId())) {
+              resultBundle = bundle;
+            } else {
+              _log.info("bundle id " + bundle.getId() + " in metadata does not equal directory name " + dirName + " for potential bundle directory " + bundleFile.getPath());
+            }
           } else {
-            _log.info("bundle id " + bundle.getId() + " in metadata does not equal directory name " + dirName + " for potential bundle directory " + bundleFile.getPath());
+            _log.info("bundle directory " + dirName + " not loaded as loadBundleMetadata returned null.");
           }
+          
         }
       }
     }
@@ -162,7 +167,7 @@ public class DirectoryBundleSource implements BundleSource {
     } catch (Exception e) {
       // Log and set resultBundle to null, as this is an invalid bundle because we couldn't read the metadata for it.
       _log.info("Exception reading bundle metadata in " + metadataFile.getPath());
-      _log.debug(e.getMessage());
+      _log.info(e.getMessage());
       
       resultBundle = null;
     }
