@@ -76,8 +76,10 @@ public class  NycQueuedInferredLocationDaoImplTest {
     assertEquals(2, getNumberOfRecords());
     assertEquals(1, getNumberOfCurrentRecords());
     
-    //List<ArchivedInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords();
-    //assertEquals(1, lastKnownRecords.size()); // I believe this should be one as both saveOrUpdateRecords happen for the same bus. Also this will prob end up being similar to getNumberOfCurrentRecords 
+    List<ArchivedInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords();
+    // I believe this should be one as both saveOrUpdateRecords happen for the same bus. Also this will prob end up being similar to getNumberOfCurrentRecords 
+    assertEquals(1, lastKnownRecords.size()); 
+    assertEquals(record.getId(), lastKnownRecords.get(0).getId());
   }
 
   private ArchivedInferredLocationRecord getTestRecord() {
