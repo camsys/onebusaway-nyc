@@ -34,6 +34,7 @@ public class InvalidLocationRecord implements Serializable {
   private Integer id;
 
   @Column(nullable = false, name = "time_received")
+  @Index(name = "time_received")
   private Date timeReceived;
 
   @Column(nullable = false, name = "raw_message", length = 1400)
