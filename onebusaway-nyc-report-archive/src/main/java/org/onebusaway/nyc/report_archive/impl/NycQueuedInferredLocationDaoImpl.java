@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.report_archive.impl;
 
-import org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.InferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 
 import org.hibernate.HibernateException;
@@ -30,15 +31,32 @@ class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocationDao {
   }
 
   @Override
-  public void saveOrUpdateRecord(NycQueuedInferredLocationRecord record) {
+  public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
     _template.saveOrUpdate(record);
+
+    InferredLocationRecord currentRecord = new InferredLocationRecord(record);
+
+    _template.saveOrUpdate(currentRecord);
   }
 
-  public void saveOrUpdateRecords(NycQueuedInferredLocationRecord... records) {
-    List<NycQueuedInferredLocationRecord> list = new ArrayList<NycQueuedInferredLocationRecord>(
+  public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
+    List<ArchivedInferredLocationRecord> list = new ArrayList<ArchivedInferredLocationRecord>(
         records.length);
-    for (NycQueuedInferredLocationRecord record : records)
+    for (ArchivedInferredLocationRecord record : records)
       list.add(record);
     _template.saveOrUpdateAll(list);
+    for (ArchivedInferredLocationRecord record : records) {
+	InferredLocationRecord currentRecord = new InferredLocationRecord(record);
+	_template.saveOrUpdate(currentRecord);
+    }
+  }
+
+  @Override
+  public List<ArchivedInferredLocationRecord> getAllLastKnownRecords() {
+    
+      List<ArchivedInferredLocationRecord> firstArchivedRecord 
+	  = _template.find("select record from InferredLocationRecord map join map.currentRecord record"); 
+    
+    return firstArchivedRecord;
   }
 }

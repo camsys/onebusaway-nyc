@@ -15,46 +15,37 @@
  */
 package org.onebusaway.nyc.presentation.model.search;
 
+import org.onebusaway.geospatial.model.EncodedPolylineBean;
+import org.onebusaway.transit_data.model.StopGroupBean;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class RouteDestinationItem {
+ 
+  private final StopGroupBean group;
   
-  private String headsign;
-
-  private String directionId;
-
-  private List<String> polylines;
+  private final List<StopResult> stops;
   
-  private List<StopResult> stops;
-
-  public RouteDestinationItem() {}
-
-  public void setHeadsign(String headsign) {
-    this.headsign = headsign;
-  }
-
-  public void setDirectionId(String directionId) {
-    this.directionId = directionId;
-  }
-
-  public void setPolylines(List<String> polylines) {
-    this.polylines = polylines;
-  }
-
-  public void setStops(List<StopResult> stops) {
+  public RouteDestinationItem(StopGroupBean group, List<StopResult> stops) {
+    this.group = group;
     this.stops = stops;
   }
-  
+
   public String getHeadsign() {
-    return headsign;
+    return group.getName().getName();
   }
 
   public String getDirectionId() {
-    return directionId;
+    return group.getId();
   }
   
   public List<String> getPolylines() {
-    return polylines;
+    List<String> output = new ArrayList<String>();
+    for(EncodedPolylineBean polyline : group.getPolylines()) {
+      output.add(polyline.getPoints());
+    }
+    return output;
   }
   
   public List<StopResult> getStops() {

@@ -15,6 +15,16 @@
  */
 package org.onebusaway.nyc.geocoder.impl;
 
+import org.onebusaway.geocoder.impl.GoogleAddressComponent;
+import org.onebusaway.geocoder.model.GeocoderResult;
+import org.onebusaway.geocoder.model.GeocoderResults;
+import org.onebusaway.geocoder.services.GeocoderService;
+import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+
+import org.apache.commons.digester.Digester;
+
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -23,50 +33,28 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.digester.Digester;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.onebusaway.geocoder.impl.GoogleAddressComponent;
-import org.onebusaway.geocoder.model.GeocoderResult;
-import org.onebusaway.geocoder.model.GeocoderResults;
-import org.onebusaway.geocoder.services.GeocoderService;
-import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
-import org.onebusaway.presentation.services.ServiceAreaService;
-
 public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
-
-  @Autowired
-  private ServiceAreaService _serviceArea;
 
   private static final String BASE_URL = "http://maps.google.com/maps/api/geocode/xml";
   
-  private boolean sensor = false;
-  
-  private String administrativeAreaWhitelist = null;
+  private boolean _sensor = false;
+
+  private CoordinateBounds _resultBiasingBounds = null;
+
+  private String _usStateFilter = null;
   
   public void setSensor(boolean sensor) {
-    this.sensor = sensor;
+    _sensor = sensor;
   }
 
-  public void setAdministrativeAreaWhitelist(String aa) {
-    administrativeAreaWhitelist = aa;
+  public void setResultBiasingBounds(CoordinateBounds bounds) {
+    _resultBiasingBounds = bounds;
   }
   
-  private List<NycGeocoderResult> filterResults(List<NycGeocoderResult> input) {
-    if(administrativeAreaWhitelist == null)
-      return input;
-    
-    List<NycGeocoderResult> output = new ArrayList<NycGeocoderResult>();
-    for(NycGeocoderResult result : input) {
-      if(result.getAdministrativeArea() != null 
-          && result.getAdministrativeArea().equals(administrativeAreaWhitelist))
-        output.add(result);
-    }
-    return output;
+  public void setUsStateFilter(String state) {
+    _usStateFilter = state;
   }
-  
+
   // (method to make legacy OBA components that use the geocoder happy...)
   public GeocoderResults geocode(String location) {
     GeocoderResults output = new GeocoderResults();
@@ -80,22 +68,20 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     StringBuilder b = new StringBuilder();
     b.append(BASE_URL);
     b.append("?");
-    b.append("sensor=").append(sensor);
+
+    b.append("sensor=").append(_sensor);
     
-    CoordinateBounds bounds = _serviceArea.getServiceArea();
-    if(bounds != null) {
-      b.append("&bounds=").append(
-          bounds.getMinLat() + "," + bounds.getMinLon() + "|" + 
-          bounds.getMaxLat() + "," + bounds.getMaxLon());
+    if(_resultBiasingBounds != null) {
+      b.append("&bounds=").append(_resultBiasingBounds.getMinLat() + "," + _resultBiasingBounds.getMinLon() 
+          + "|" + _resultBiasingBounds.getMaxLat() + "," + _resultBiasingBounds.getMaxLon());
     }
     
-    String encodedLocation = null;
     try {
-      encodedLocation = URLEncoder.encode(location, "UTF-8");
+      String encodedLocation = URLEncoder.encode(location, "UTF-8");
+      b.append("&address=").append(encodedLocation);
     } catch (UnsupportedEncodingException e) {
       throw new IllegalStateException("unknown encoding: UTF-8");
     }
-    b.append("&address=").append(encodedLocation);
 
     URL url = null;
     try {
@@ -125,6 +111,18 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     return results;
   }
 
+  private List<NycGeocoderResult> filterResults(List<NycGeocoderResult> input) {
+    if(_usStateFilter == null)
+      return input;
+    
+    List<NycGeocoderResult> output = new ArrayList<NycGeocoderResult>();
+    for(NycGeocoderResult result : input) {
+      if(result.getAdministrativeArea() != null && result.getAdministrativeArea().equals(_usStateFilter))
+        output.add(result);
+    }
+    return output;
+  }
+  
   private Digester createDigester() {
     Digester digester = new Digester();
 

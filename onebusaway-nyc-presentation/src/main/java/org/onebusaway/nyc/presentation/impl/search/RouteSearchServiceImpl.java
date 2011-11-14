@@ -15,52 +15,43 @@
  */
 package org.onebusaway.nyc.presentation.impl.search;
 
+import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.presentation.impl.DefaultSearchModelFactory;
+import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
+import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
-import org.onebusaway.nyc.presentation.service.SearchModelFactory;
+import org.onebusaway.nyc.presentation.service.PresentationModelFactory;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
-import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
-import org.onebusaway.transit_data.model.TripStopTimeBean;
-import org.onebusaway.transit_data.model.TripStopTimesBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
-import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 @Component
 public class RouteSearchServiceImpl implements RouteSearchService {
   
+  private final WebappSupportLibrary _support = new WebappSupportLibrary();
+  
   // when querying for routes from a lat/lng, use this distance in meters
   private double _distanceToRoutes = 100;
 
-  // number of periods to increment, looking for a trip used to order stops on a given route/direction
-  private int _periodsToTryToFindATrip = 24;
-  
-  private SearchModelFactory _modelFactory = new DefaultSearchModelFactory();
+  private PresentationModelFactory _modelFactory = new DefaultPresentationModelFactory();
 
   @Autowired
   private TransitDataService _transitDataService;
@@ -68,11 +59,15 @@ public class RouteSearchServiceImpl implements RouteSearchService {
   @Autowired
   private ServiceAreaService _serviceArea;
     
-  public void setModelFactory(SearchModelFactory factory) {
+  public void setModelFactory(PresentationModelFactory factory) {
     _modelFactory = factory;
   }
-
-  // this method returns stops on the route!
+  
+  @Override
+  public boolean isRoute(String value) {
+    return getAllRouteIds().contains(value);
+  }
+  
   @Override
   public List<RouteResult> resultsForLocation(Double latitude, Double longitude) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, _distanceToRoutes);
@@ -84,12 +79,9 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     
     RoutesBean routes = _transitDataService.getRoutes(queryBean);
 
-    List<RouteResult> results = routesBeanToRouteSearchResults(routes);
-
-    return results;
+    return routesBeanToRouteSearchResults(routes, true);
   }    
   
-  // this method DOES NOT return stops on the route!
   @Override
   public List<RouteResult> resultsForLocation(CoordinateBounds bounds) {
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -99,31 +91,21 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     
     RoutesBean routes = _transitDataService.getRoutes(queryBean);
 
-    List<RouteResult> results = routesBeanToRouteItem(routes);
-
-    return results;
+    return routesBeanToRouteSearchResults(routes, false);
   }
 
-  // this method returns stops on the route!
   @Override
   public RouteResult makeResultForRouteId(String routeId) {
     RouteBean routeBean = _transitDataService.getRouteForId(routeId);
     
     if(routeBean != null) {
-      List<RouteDestinationItem> destinations = 
-          getRouteDestinationItemWithStopsForRoute(routeBean);
-      
-      RouteResult routeSearchResult = _modelFactory.getRouteSearchResultModel();
-      routeSearchResult.setRouteBean(routeBean);
-      routeSearchResult.setDestinations(destinations);
-      
-      return routeSearchResult;
+      List<RouteDestinationItem> destinations = getRouteDestinationItemsForRoute(routeBean, true);
+      return _modelFactory.getRouteModel(routeBean, destinations);
     }
     
     return null;
   }
   
-  // this method returns stops on the route!
   @Override
   public List<RouteResult> resultsForQuery(String routeQuery) {
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -134,162 +116,69 @@ public class RouteSearchServiceImpl implements RouteSearchService {
 
     RoutesBean routes = _transitDataService.getRoutes(queryBean);
 
-    List<RouteResult> results = routesBeanToRouteSearchResults(routes);
-
-    return results;
+    return routesBeanToRouteSearchResults(routes, true);
   }
 
-  private List<RouteResult> routesBeanToRouteSearchResults(RoutesBean routesBean) {
+  private List<RouteResult> routesBeanToRouteSearchResults(RoutesBean routesBean, boolean includeStops) {
     ArrayList<RouteResult> results = new ArrayList<RouteResult>();
 
     List<RouteBean> routeBeans = routesBean.getRoutes();
     for(RouteBean routeBean : routeBeans) {
-      List<RouteDestinationItem> destinations = 
-          getRouteDestinationItemWithStopsForRoute(routeBean);
-      
-      RouteResult routeSearchResult = _modelFactory.getRouteSearchResultModel();
-      routeSearchResult.setRouteBean(routeBean);
-      routeSearchResult.setDestinations(destinations);
-      
-      results.add(routeSearchResult);
-    }
-    
-    return results;
-  } 
-
-  private List<RouteResult> routesBeanToRouteItem(RoutesBean routesBean) {
-    ArrayList<RouteResult> results = new ArrayList<RouteResult>();
-
-    List<RouteBean> routeBeans = routesBean.getRoutes();
-    for(RouteBean routeBean : routeBeans) {
-      List<RouteDestinationItem> destinations = getRouteDestinationItemsForRoute(routeBean);
-
-      RouteResult routeSearchResult = _modelFactory.getRouteSearchResultModel();
-      routeSearchResult.setRouteBean(routeBean);
-      routeSearchResult.setDestinations(destinations);
-      
-      results.add(routeSearchResult);
+      List<RouteDestinationItem> destinations = getRouteDestinationItemsForRoute(routeBean, includeStops);
+      results.add(_modelFactory.getRouteModel(routeBean, destinations));
     }
     
     return results;
   } 
   
-  private List<RouteDestinationItem> getRouteDestinationItemsForRoute(RouteBean routeBean) {
+  private List<RouteDestinationItem> getRouteDestinationItemsForRoute(RouteBean routeBean, boolean includeStops) {
     List<RouteDestinationItem> output = new ArrayList<RouteDestinationItem>();
     
     StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
-      List<StopGroupBean> stopGroups = stopGroupingBean.getStopGroups();
-      for (StopGroupBean stopGroupBean : stopGroups) {
+      for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
         NameBean name = stopGroupBean.getName();
         String type = name.getType();
         if (!type.equals("destination"))
           continue;
         
-        List<String> headsigns = name.getNames();
-        String directionId = stopGroupBean.getId();
-
-        // polylines
-        List<String> polylines = new ArrayList<String>();
-        for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-          polylines.add(polyline.getPoints());
+        List<StopResult> stopItems = null;
+        if(includeStops == true && !stopGroupBean.getStopIds().isEmpty()) {
+          stopItems = getStopResultsForStopIds(stopGroupBean.getStopIds());
         }
-
-        // add data for all available headsigns
-        for(String headsign: headsigns) {
-          RouteDestinationItem routeDestination = _modelFactory.getRouteDestinationItemModel();
-          routeDestination.setHeadsign(headsign);
-          routeDestination.setDirectionId(directionId);
-          routeDestination.setPolylines(polylines);
-
-          output.add(routeDestination);
-        }
+          
+        output.add(_modelFactory.getRouteDestinationModelForRoute(stopGroupBean, routeBean, stopItems));
       }
     }
     
     return output;
   }
   
-  private List<RouteDestinationItem> getRouteDestinationItemWithStopsForRoute(RouteBean routeBean) {
-    List<RouteDestinationItem> output = new ArrayList<RouteDestinationItem>();
-
-    List<RouteDestinationItem> destinations = getRouteDestinationItemsForRoute(routeBean);
-    for(RouteDestinationItem destination : destinations) {
-      List<StopBean> stopBeansForThisDirection = 
-          getStopBeansForRouteAndHeadsign(routeBean, destination.getHeadsign());
-
-      List<StopResult> stopItems = null;
-      
-      if(stopBeansForThisDirection != null) {     
-        stopItems = new ArrayList<StopResult>();
-        for(StopBean stopBean : stopBeansForThisDirection) {
-          StopResult stopItem = _modelFactory.getStopSearchResultModel();
-          stopItem.setStopBean(stopBean);
-          stopItems.add(stopItem);
-        }
-      }
-
-      RouteDestinationItem routeDestination = _modelFactory.getRouteDestinationItemModel();
-      routeDestination.setDirectionId(destination.getDirectionId());
-      routeDestination.setHeadsign(destination.getHeadsign());
-      routeDestination.setPolylines(destination.getPolylines());
-      routeDestination.setStops(stopItems);
-
-      output.add(routeDestination);
+  @Cacheable
+  private List<StopResult> getStopResultsForStopIds(List<String> stopIds) {
+    List<StopResult> output = new ArrayList<StopResult>();
+    
+    for(String stopId : stopIds) {
+      output.add(_modelFactory.getStopModelForRoute(_transitDataService.getStop(stopId)));
     }
     
     return output;
   }
-
-  // get ordered stop beans for a given route + headsign, using a trip sampled from the schedule.
-  // we try to look at noon on the current day, and then search in +8 hour blocks
-  private List<StopBean> getStopBeansForRouteAndHeadsign(RouteBean routeBean, String headsign) {
-    List<StopBean> output = new ArrayList<StopBean>();
-
-    // start looking at noon today
-    Calendar gregorianCalendar = new GregorianCalendar();
-    gregorianCalendar.setTime(new Date());
-    gregorianCalendar.set(Calendar.HOUR, 12);
-    gregorianCalendar.set(Calendar.MINUTE, 0);
-    gregorianCalendar.set(Calendar.SECOND, 0);
-    gregorianCalendar.set(Calendar.AM_PM, Calendar.PM);
+  
+  // build a list of all known routes for later tests for "routeness".
+  @Cacheable
+  private List<String> getAllRouteIds() {
+    List<String> knownRouteIds = new ArrayList<String>();
     
-    int tries = _periodsToTryToFindATrip;
-    long time = gregorianCalendar.getTimeInMillis();
-    while(tries-- > 0) {
-      for(TripDetailsBean tripDetails : getAllTripsForRoute(routeBean, time).getList()) {
-        TripBean tripBean = tripDetails.getTrip();
-        if(!tripBean.getRoute().equals(routeBean) || !tripBean.getTripHeadsign().equals(headsign))
-          continue;
-        
-        TripStopTimesBean tripStopTimes = tripDetails.getSchedule();
-        for(TripStopTimeBean tripStopTimeBean : tripStopTimes.getStopTimes()) {
-          output.add(tripStopTimeBean.getStop());
-        }
-        
-        return output;
+    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+      ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agency.getAgency().getId());
+      for(RouteBean route : routes.getList()) {
+        knownRouteIds.add(_support.parseIdWithoutAgency(route.getId()));
       }
-
-      // try the next search period (8h)
-      time += 8 * 60 * 60 * 1000;
     }
     
-    return null;
-  }
-  
-  private ListBean<TripDetailsBean> getAllTripsForRoute(RouteBean routeBean, long time) {
-    TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
-    tripRouteQueryBean.setRouteId(routeBean.getId());
-    tripRouteQueryBean.setMaxCount(100);
-    tripRouteQueryBean.setTime(time);
-
-    TripDetailsInclusionBean inclusionBean = new TripDetailsInclusionBean();
-    inclusionBean.setIncludeTripBean(true);
-    inclusionBean.setIncludeTripSchedule(true);
-    tripRouteQueryBean.setInclusion(inclusionBean);
-
-    return _transitDataService.getTripsForRoute(tripRouteQueryBean);
+    return knownRouteIds;
   }
 
 }

@@ -39,6 +39,7 @@
         <property name="properties">
             <props>
                 <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
+                <prop key="bundle.location">${bundle.location}</prop>
             </props> 
         </property> 
     </bean> 

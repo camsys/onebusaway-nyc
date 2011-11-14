@@ -137,7 +137,45 @@
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
             </properties>
         </profile>
-        <!-- TODO MySQL -->
+        <profile>
+            <id>db-staging</id>
+	    <!-- db is only for bundle, don't use RDS -->
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
+				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-prod</id>
+	    <!-- db is only for bundle, don't use RDS -->
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
+				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-qa</id>
+	    <!-- db is only for bundle, don't use RDS -->
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
+				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+            </properties>
+        </profile>
         
         <!--  bundle location profiles -->
         <profile>

@@ -2,6 +2,7 @@ package org.onebusaway.nyc.transit_data_manager.adapters.data;
 
 import java.util.List;
 
+import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 import tcip_final_3_0_5_1.CPTVehicleIden;
 
 public interface VehicleDepotData {
@@ -25,4 +26,11 @@ public interface VehicleDepotData {
    *         associated with the depot param.
    */
   List<CPTVehicleIden> getVehiclesByDepotNameStr(String depotNameStr);
+  
+  /**
+   * Get a list of all the fleetsubsetgroups matching a depotNameStr
+   * @param depotNameStr the depot name string to match
+   * @return a list of CPTFleetSubsetGroup
+   */
+  List<CPTFleetSubsetGroup> getGroupsWithDepotNameStr(String depotNameStr);
 }

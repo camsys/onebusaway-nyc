@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import javax.servlet.jsp.JspException;
 
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.model.NycWikiPageWrapper;
+import org.onebusaway.nyc.webapp.actions.wiki.model.NycWikiPageWrapper;
 import org.onebusaway.wiki.api.WikiDocumentService;
 import org.onebusaway.wiki.api.WikiRenderingService;
 import org.springframework.beans.factory.annotation.Autowired;

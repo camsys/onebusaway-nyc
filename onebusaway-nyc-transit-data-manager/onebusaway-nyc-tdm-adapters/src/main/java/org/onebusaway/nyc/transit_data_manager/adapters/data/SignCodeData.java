@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.data;
 
+import java.util.List;
+
 import tcip_final_3_0_5_1.CCDestinationSignMessage;
 
 public interface SignCodeData {
@@ -11,4 +13,6 @@ public interface SignCodeData {
    * @return the human readable display corresponding to the input sign code.
    */
   CCDestinationSignMessage getDisplayForCode(Long code);
+  
+  List<CCDestinationSignMessage> getAllDisplays();
 }

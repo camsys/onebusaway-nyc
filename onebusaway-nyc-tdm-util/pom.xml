@@ -1,0 +1,133 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>org.play</groupId>
+    <artifactId>play-parent</artifactId>
+    <version>1.1</version>
+  </parent>
+
+  <groupId>org.onebusaway</groupId>
+  <artifactId>onebusaway-nyc-tdm-util</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>TDM utility app</name>
+  <description>TDM utility app</description>
+
+  <repositories>
+    <repository>
+      <id>releases.github.onebusaway.org</id>
+      <url>https://github.com/camsys/mvn-repo/raw/master/releases</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>snapshots.github.onebusaway.org</id>
+      <url>https://github.com/camsys/mvn-repo/raw/master/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>releases.developer.onebusaway.org</id>
+      <url>http://developer.onebusaway.org/maven/repository/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>snapshots.developer.onebusaway.org</id>
+      <url>http://developer.onebusaway.org/maven/snapshot-repository/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>caucho</id>
+      <url>http://caucho.com/m2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>ssj</id>
+      <url>http://maven.iscpif.fr/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <dependencies>
+  		<dependency>
+		    <groupId>org.onebusaway</groupId>
+		    <artifactId>onebusaway-siri-api-v13</artifactId>
+		    <version>1.0.0</version>
+		</dependency>
+  		<dependency>
+		    <groupId>org.onebusaway</groupId>
+		    <artifactId>onebusaway-nyc-tdm-service</artifactId>
+		    <version>2.0.3-SNAPSHOT</version>
+		    <type>war</type>
+  		</dependency>
+  
+  <!-- Add your dependencies here
+    <dependency>
+      <groupId></groupId>
+      <artifactId></artifactId>
+      <version></version>
+    </dependency>
+   -->
+  <dependency>
+    <groupId>org.onebusaway</groupId>
+    <artifactId>onebusaway-transit-data-federation</artifactId>
+    <version>2.0.9-SNAPSHOT</version>
+  </dependency>
+  <dependency>
+    <groupId>com.sun.jersey</groupId>
+    <artifactId>jersey-bundle</artifactId>
+    <version>1.10</version>
+  </dependency>
+  <dependency>
+    <groupId>javax.ws.rs</groupId>
+    <artifactId>jsr311-api</artifactId>
+    <version>1.1.1</version>
+  </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+      </plugin>
+      <!-- Keeping this order is very important for packaging phase (copy-dependency must run before antrun) -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+      </plugin>
+    <!-- End -->
+    </plugins>
+  </build>
+
+</project>

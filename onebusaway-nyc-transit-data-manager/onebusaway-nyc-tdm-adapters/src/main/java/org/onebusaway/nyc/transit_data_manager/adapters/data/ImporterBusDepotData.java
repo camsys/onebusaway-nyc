@@ -34,28 +34,18 @@ public class ImporterBusDepotData implements VehicleDepotData {
   public List<CPTVehicleIden> getVehiclesByDepotNameStr(String depotNameStr) {
     List<CPTVehicleIden> vehicles = new ArrayList<CPTVehicleIden>();
 
-    CPTFleetSubsetGroup subGroup = null;
-
     // I'll do this in two rounds, first to grab all the CPTFleetSubsetGroups
     // that have our depotNameStr
     // (There should really only be one if my other part was right, but I guess
     // I don't want to count on that!)
-    List<CPTFleetSubsetGroup> fleetSubGroupsMatchingDepotStr = new ArrayList<CPTFleetSubsetGroup>();
-    subGroup = null;
-
-    Iterator<CPTFleetSubsetGroup> depGroupsIt = depotGroups.iterator();
-    while (depGroupsIt.hasNext()) {
-      subGroup = depGroupsIt.next();
-      if (getDepotNameStrFromSubsetGroup(subGroup).equals(depotNameStr)) {
-        fleetSubGroupsMatchingDepotStr.add(subGroup);
-      }
-    }
-
+    
+    List<CPTFleetSubsetGroup> fleetSubGroupsMatchingDepotStr = getGroupsWithDepotNameStr(depotNameStr);
+    
     // And second to put all the vehicles in each matching CPTFleetSubsetGroup
     // into the same
     // list for output.
-    subGroup = null;
-
+    CPTFleetSubsetGroup subGroup = null;
+    
     Iterator<CPTFleetSubsetGroup> matchDGroupsIt = fleetSubGroupsMatchingDepotStr.iterator();
     while (matchDGroupsIt.hasNext()) {
       subGroup = matchDGroupsIt.next();
@@ -65,7 +55,22 @@ public class ImporterBusDepotData implements VehicleDepotData {
 
     return vehicles;
   }
-
+  
+  public List<CPTFleetSubsetGroup> getGroupsWithDepotNameStr(String depotNameStr) {
+    List<CPTFleetSubsetGroup> fleetSubGroupsMatchingDepotStr = new ArrayList<CPTFleetSubsetGroup>();
+    
+    Iterator<CPTFleetSubsetGroup> depGroupsIt = depotGroups.iterator();
+    while (depGroupsIt.hasNext()) {
+      CPTFleetSubsetGroup group = depGroupsIt.next();
+      
+      if (getDepotNameStrFromSubsetGroup(group).equals(depotNameStr)) {
+        fleetSubGroupsMatchingDepotStr.add(group);
+      }
+    }
+    
+    return fleetSubGroupsMatchingDepotStr;
+  }
+  
   /**
    * Grab the depotNameStr from the "official" property of CPTFleetSubsetGroup.
    * 

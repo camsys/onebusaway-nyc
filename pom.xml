@@ -20,7 +20,7 @@
 	<jetty.version>6.1.26</jetty.version>
 	<spring.version>3.0.3.RELEASE</spring.version>
 	<onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
-	<onebusaway.app-modules.version>2.0.9-SNAPSHOT</onebusaway.app-modules.version>
+	<onebusaway.app-modules.version>2.0.10-SNAPSHOT</onebusaway.app-modules.version>
 	<onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
   </properties>
 
@@ -108,7 +108,7 @@
   </scm>
 
   <modules>
-    <module>onebusaway-nyc-integration-tests</module>
+<!--    <module>onebusaway-nyc-integration-tests</module> -->
     <module>onebusaway-nyc-vehicle-tracking</module>
     <module>onebusaway-nyc-vehicle-tracking-webapp</module>
     <module>onebusaway-nyc-webapp</module>
@@ -223,31 +223,6 @@
               </configuration>
             </execution>
           </executions>
-        </plugin>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        <plugin>
-            <groupId>org.eclipse.m2e</groupId>
-            <artifactId>lifecycle-mapping</artifactId>
-            <version>1.0.0</version>
-            <configuration>
-                <lifecycleMappingMetadata>
-                    <pluginExecutions>
-                        <pluginExecution>
-                            <pluginExecutionFilter>
-                                <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-                                <artifactId>maven-svn-revision-number-plugin</artifactId>
-                                <versionRange>[1.5,)</versionRange>
-                                <goals>
-                                    <goal>revision</goal>
-                                </goals>
-                            </pluginExecutionFilter>
-                            <action>
-                                <ignore></ignore>
-                            </action>
-                        </pluginExecution>
-                    </pluginExecutions>
-                </lifecycleMappingMetadata>
-            </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

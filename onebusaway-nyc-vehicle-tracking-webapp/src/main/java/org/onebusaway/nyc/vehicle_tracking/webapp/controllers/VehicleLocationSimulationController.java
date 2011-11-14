@@ -322,6 +322,8 @@ public class VehicleLocationSimulationController {
       }
     }
    
+    Collections.sort(routeList);
+    
     return new ModelAndView("json", "routes", routeList);
   }
   

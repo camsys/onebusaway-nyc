@@ -152,9 +152,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var vehiclesByRoute = {};
 	var vehiclesById = {};
 	var polylinesByRoute = {};
-	var stopsAddedForRoute = {};
-	var stopsByIdReferenceCount = {}; // (number of routes on map a stop is associated with)
+	var hoverPolylines = [];
 	var stopsById = {};
+	var stopsAddedForRoute = {};
 
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
@@ -287,7 +287,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		// service available
 		if(visits.length === 0) {
-			html += '<p class="service">OneBusAway NYC is not tracking any buses en-route to your location.<br/>Please check back shortly for an update.</p>';
+			html += '<p class="service">No buses en-route to your location.<br/>Please check back shortly for an update.</p>';
 		} else {		
 			html += '<p class="service">This stop is served by:</p>';
 			html += '<ul>';
@@ -350,14 +350,16 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				return new google.maps.LatLng(x[0], x[1]);
 			});
 
-			var shape = new google.maps.Polyline({
+			var options = {
 				path: latlngs,
 				strokeColor: "#" + color,
 				strokeOpacity: 1.0,
-				strokeWeight: 5,
+				strokeWeight: 3,
 				map: map
-			});
-		
+			};
+			
+			var shape = new google.maps.Polyline(options);
+
 			polylinesByRoute[routeId].push(shape);
 		});	
 	}
@@ -369,14 +371,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			jQuery.each(stops, function(_, marker) {
 				var stopId = marker.stopId;
-				stopsByIdReferenceCount[stopId]--;
 				
-				if(stopsByIdReferenceCount[stopId] === 0) {
-					delete stopsByIdReferenceCount[stopId];
-					delete stopsById[stopId];				
-					mgr.removeMarker(marker);
-					marker.setMap(null);
-				}
+				delete stopsById[stopId];				
+				mgr.removeMarker(marker);
+				marker.setMap(null);
 			});
 			
 			delete stopsAddedForRoute[routeId];
@@ -398,7 +396,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			// does the stop arleady exist, e.g. from another route?
 			if(typeof stopsById[stopId] !== 'undefined') {
 				stopsAddedForRoute[routeId].push(stopsById[stopId]);
-				stopsByIdReferenceCount[stopId]++;
 				return;
 			}
 			
@@ -437,7 +434,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	    	mgr.addMarker(marker, 16, 19);
 	    
 	        stopsAddedForRoute[routeId].push(marker);
-	    	stopsByIdReferenceCount[stop.stopId] = 1;
 	        stopsById[stop.stopId] = marker;
 	    });
 	}
@@ -603,6 +599,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 	}, OBA.Config.refreshInterval);
 
+	//////////////////// PUBLIC INTERFACE /////////////////////
 	return {
 		getBounds: function() {
 			return map.getBounds();
@@ -613,6 +610,16 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		},
 		
 		removeRoutesNotInSet: removeRoutesNotInSet,
+		
+		showPopupForStopId: function(stopId) {
+			var stopMarker = stopsById[stopId];
+			
+			if(typeof stopMarker === 'undefined') {
+				return;
+			}
+			
+			google.maps.event.trigger(stopMarker, "click");
+		},
 		
 		showRoute: function(routeResult) {
 			// already on map
@@ -627,7 +634,37 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 			updateVehicles(routeResult.routeId);
 		},
+		
+		removeHoverPolyline: function() {
+			if(hoverPolylines !== null) {
+				jQuery.each(hoverPolylines, function(_, polyline) {
+					polyline.setMap(null);
+				});
+			}
+			hoverPolylines = null;
+		},
+		
+		showHoverPolyline: function(encodedPolylines, color) {
+			hoverPolylines = [];
+			jQuery.each(encodedPolylines, function(_, encodedPolyline) {
+				var points = OBA.Util.decodePolyline(encodedPolyline);
+			
+				var latlngs = jQuery.map(points, function(x) {
+					return new google.maps.LatLng(x[0], x[1]);
+				});
 
+				var shape = new google.maps.Polyline({
+					path: latlngs,
+					strokeColor: "#" + color,
+					strokeOpacity: 0.7,
+					strokeWeight: 3,
+					map: map
+				});
+			
+				hoverPolylines.push(shape);
+			});
+		},
+		
 		showBounds: function(bounds) {
 			map.fitBounds(bounds);
 		},

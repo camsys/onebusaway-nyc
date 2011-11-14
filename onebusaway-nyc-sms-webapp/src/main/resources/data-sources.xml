@@ -55,7 +55,7 @@
     <!-- Other Stuff: -->
 
     <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
-		<property name="administrativeAreaWhitelist" value="NY"/>        
+		<property name="usStateFilter" value="NY"/>        
     </bean>
 
     <bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
@@ -75,6 +75,8 @@
             <props>
                 <prop key="webapp.api.url">${webapp.api.url}</prop>
                 <prop key="tdm.host">${tdm.host}</prop>
+                <prop key="bundle.location">${bundle.location}</prop>
+                <prop key="bundle.mode.standalone">${bundle.mode.standalone}</prop>
             </props>
         </property>
     </bean>

@@ -12,7 +12,7 @@ OBA.Mobile = (function() {
 	var addToggleUI = function() {
 		var searchPanelForm = jQuery("#searchPanel form");		
 
-		var toggleUI = jQuery("<p>Share location:</p>")
+		var toggleUI = jQuery("<p>Use my location:</p>")
 			.attr("id", "toggleUI");
 
 		turnOffButton = jQuery("<a href='#'>Turn Off</a>")
@@ -90,16 +90,16 @@ OBA.Mobile = (function() {
 	var turnOffGeolocation = function() {
 		removeLocationFields();
 		
-		turnOffButton.text("Is Off");
-		turnOnButton.text("Turn On");
+		turnOffButton.text("Is Off").css("font-weight", "normal");
+		turnOnButton.text("Turn On").css("font-weight", "bold");
 	};
 	
 	// event when user turns on location
 	var turnOnGeolocation = function() {
 		updateLocationFields();
 		
-		turnOffButton.text("Turn Off");
-		turnOnButton.text("Is On");
+		turnOffButton.text("Turn Off").css("font-weight", "normal");
+		turnOnButton.text("Is On").css("font-weight", "bold");
 	};
 		
 	return {
@@ -121,4 +121,3 @@ OBA.Mobile = (function() {
 })();
 
 jQuery(document).ready(function() { OBA.Mobile.initialize(); });
-

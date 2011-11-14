@@ -15,15 +15,13 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
-import org.onebusaway.nyc.presentation.service.search.SearchResult;
+import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
 import org.onebusaway.presentation.impl.NextActionSupport;
 
 import org.apache.struts2.convention.annotation.InterceptorRef;
 import org.apache.struts2.convention.annotation.InterceptorRefs;
 import org.apache.struts2.interceptor.SessionAware;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @InterceptorRefs({@InterceptorRef("onebusaway-nyc-sms-webapp-stack")})
@@ -33,9 +31,9 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
   
   private Map<String, Object> _session;
   
-  protected List<SearchResult> _searchResults = new ArrayList<SearchResult>();
+  protected SearchResultCollection _searchResults = null;
 
-  protected Integer _searchResultsCursor = 0;
+  protected Integer _searchResultsCursor = null;
   
   protected String _lastQuery = null;
 
@@ -45,16 +43,15 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
     this._session = session;
     
     if(session != null) {
-      @SuppressWarnings("unchecked")
-      List<SearchResult> results = (List<SearchResult>)session.get("searchResults");
-      if(results != null)
-        _searchResults = results; 
-      
+      _searchResults = (SearchResultCollection)session.get("searchResults");
       _searchResultsCursor = (Integer)session.get("searchResultsCursor");
+      _lastQuery = (String)session.get("lastQuery");
+
+      if(_searchResults == null)
+        _searchResults = new SearchResultCollection();
+      
       if(_searchResultsCursor == null)
         _searchResultsCursor = 0;
-      
-      _lastQuery = (String)session.get("lastQuery");
     }
   }
   
