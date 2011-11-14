@@ -19,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.onebusaway.nyc.transit_data_manager.api.CrewResource;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider;
 import org.onebusaway.nyc.transit_data_manager.bundle.BundlesListMessage;
 import org.onebusaway.nyc.transit_data_manager.bundle.model.Bundle;
@@ -35,7 +34,7 @@ import com.sun.jersey.core.header.ContentDisposition;
 @Component
 public class BundleServiceResource {
 
-  private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
+  private static Logger _log = LoggerFactory.getLogger(BundleServiceResource.class);
 
   @Autowired
   BundleProvider bundleProvider;
