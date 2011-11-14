@@ -1,14 +1,15 @@
 package org.onebusaway.nyc.transit_data_manager.api.bundle;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -105,6 +106,8 @@ public class BundleServiceResource {
     final File requestedFile;
     try {
       requestedFile = bundleProvider.getBundleFile(bundleId, relativeFilename);
+      
+      
     } catch (FileNotFoundException e) {
       _log.info("FileNotFoundException loading " + relativeFilename + " in "
           + bundleId + " bundle.");
@@ -112,29 +115,31 @@ public class BundleServiceResource {
           Response.Status.INTERNAL_SERVER_ERROR);
     }
 
+    long fileLength = requestedFile.length();
+    
     StreamingOutput output = new StreamingOutput() {
 
       @Override
       public void write(OutputStream os) throws IOException,
           WebApplicationException {
 
-        InputStream is = new BufferedInputStream(
-            new FileInputStream(requestedFile));
+        FileInputStream fis = new FileInputStream(requestedFile);
+        
+        FileChannel inChannel = fis.getChannel();
+        WritableByteChannel outChannel = Channels.newChannel(os);
+        
+        inChannel.transferTo(0 , inChannel.size(), outChannel);
 
-        int next;
-        while ((next = is.read()) != -1) {
-          os.write(next);
-        }
-
-        is.close();
-        os.close();
+        outChannel.close();
+        inChannel.close();
       }
     };
 
     ContentDisposition cd = ContentDisposition.type("file").fileName(
         requestedFile.getName()).build();
+    
     response = Response.ok(output, MediaType.APPLICATION_OCTET_STREAM).header(
-        "Content-Disposition", cd).build();
+        "Content-Disposition", cd).header("Content-Length", fileLength).build();
 
     return response;
   }
