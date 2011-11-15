@@ -18,29 +18,44 @@ public class UtsMappingTool {
 
   public static String TIMEFORMAT_HHMMSS = "HH:mm:ss";
 
-  public static String BUS_DESIGNATOR = "MTA NYCT";
+  public static String MTA_NYCT_BUS_DESIGNATOR = "MTA NYCT";
+  public static String MTA_BUS_CO_BUS_DESIGNATOR = "MTA BUS CO";
 
-  private static long NYCT_AGENCY_ID = new Long(2008);
-  private static long MTA_AGENCY_ID = new Long(2188);
+  private static long MTA_NYCT_AGENCY_ID = new Long(2008);
+  private static long MTA_BUS_CO_AGENCY_ID = new Long(2188);
 
   public UtsMappingTool() {
     super();
   }
 
   public Long getAgencyIdFromDepotAssignAgency(int value) {
-    return MTA_AGENCY_ID;
+    return MTA_BUS_CO_AGENCY_ID;
   }
 
   public Long getAgencyIdFromUtsAuthId(String authId) {
     Long agencyId = new Long(-1);
 
-    if ("TA".equals(authId) || "OA".equals(authId)) {
-      agencyId = MTA_AGENCY_ID;
-    } else if ("RB".equals(authId)) {
-      agencyId = MTA_AGENCY_ID;
+    if ("TA".equals(authId) || "OA".equals(authId)) { // TA and OA indicate MTA NYCT (2008)
+      agencyId = MTA_NYCT_AGENCY_ID;
+    } else if ("RB".equals(authId)) { // RB indicates MTA Bus Company (2188)
+      agencyId = MTA_BUS_CO_AGENCY_ID;
     }
 
     return agencyId;
+  }
+  
+  public String getVehicleDesignatorFromAgencyId(Long agencyId) {
+    String vehDesignator;
+    
+    if (agencyId == MTA_NYCT_AGENCY_ID) {
+      vehDesignator = MTA_NYCT_BUS_DESIGNATOR;
+    } else if (agencyId == MTA_BUS_CO_AGENCY_ID) {
+      vehDesignator = MTA_BUS_CO_BUS_DESIGNATOR;
+    } else {
+      vehDesignator = null;
+    }
+    
+    return vehDesignator;
   }
 
   // These methods use the Joda DateTime class
