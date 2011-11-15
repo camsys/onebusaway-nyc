@@ -35,7 +35,38 @@ public class PresentationServiceImpl implements PresentationService {
     else
       return System.currentTimeMillis();
   }
-    
+
+  // NB: this means the vehicle is at *any* terminal in the block, not necessarily a terminal
+  // that is the head of any trip.
+  @Override
+  public Boolean isInLayover(TripStatusBean statusBean) {
+    if(statusBean != null) {
+      String phase = statusBean.getPhase();
+
+      if (phase != null &&
+          (phase.toUpperCase().equals("LAYOVER_DURING") || phase.toUpperCase().equals("LAYOVER_BEFORE"))) {
+        return true;
+      } else
+        return false;
+    }
+
+    return null;
+  }
+
+  @Override
+  public Boolean isOnDetour(TripStatusBean statusBean) {
+    if(statusBean != null) {
+      String status = statusBean.getStatus();
+
+      if(status != null)
+        return status.contains("deviated");
+      else
+        return false;
+    }
+
+    return null;
+  }
+  
   @Override
   public String getPresentableDistance(SiriDistanceExtension distances) {
     return getPresentableDistance(distances, "approaching", "stop", "stops", "mile", "miles");
@@ -148,7 +179,11 @@ public class PresentationServiceImpl implements PresentationService {
     else
       if(adBean.getDistanceFromStop() > status.getTotalDistanceAlongTrip())
         return false;
-
+    
+    // hide buses that are on detour from a-d queries
+    if(isOnDetour(status))
+      return false;
+    
     /**
      * So this complicated thing-a-ma-jig is to filter out buses that are at the terminals
      * when considering arrivals and departures for a stop.

@@ -223,7 +223,7 @@ public class SiriSupport {
     headsign.setValue(tripBean.getTripHeadsign());
     monitoredVehicleJourney.setPublishedLineName(headsign);
   
-    if(isAtTerminal(trip.getStatus())) {
+    if(_presentationService.isInLayover(trip.getStatus())) {
       NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();
       progressStatus.setValue("layover");
       monitoredVehicleJourney.setProgressStatus(progressStatus);
@@ -261,12 +261,20 @@ public class SiriSupport {
     monitoredVehicleJourney.setDestinationRef(dest);
 
     LocationStructure location = new LocationStructure();
-    location.setLatitude(new BigDecimal(trip.getStatus().getLocation().getLat()));
-    location.setLongitude(new BigDecimal(trip.getStatus().getLocation().getLon()));    
+
+    // if vehicle is detected to be on detour, use actual lat/lon, not snapped location.
+    if(_presentationService.isOnDetour(trip.getStatus())) {
+      location.setLatitude(new BigDecimal(trip.getStatus().getLastKnownLocation().getLat()));
+      location.setLongitude(new BigDecimal(trip.getStatus().getLastKnownLocation().getLon()));    
+    } else {
+      location.setLatitude(new BigDecimal(trip.getStatus().getLocation().getLat()));
+      location.setLongitude(new BigDecimal(trip.getStatus().getLocation().getLon()));    
+    }
+
     monitoredVehicleJourney.setVehicleLocation(location);
     
     // monitored calls
-    if (monitoredCallStopBean != null && !isOnDetour(trip.getStatus())) {
+    if (monitoredCallStopBean != null && !_presentationService.isOnDetour(trip.getStatus())) {
       List<TripStopTimeBean> stopTimes = trip.getSchedule().getStopTimes();
 
       MonitoredCallStructure monitoredCall = getMonitoredCall(stopTimes, 
@@ -279,7 +287,7 @@ public class SiriSupport {
     }
     
     // onward calls
-    if (includeOnwardCalls && !isOnDetour(trip.getStatus())) {
+    if (includeOnwardCalls && !_presentationService.isOnDetour(trip.getStatus())) {
       List<TripStopTimeBean> stopTimes = trip.getSchedule().getStopTimes();
       
       monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, trip.getStatus()));
@@ -288,7 +296,7 @@ public class SiriSupport {
     return monitoredVehicleJourney;
   }
 
-  private static ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {
+  private ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {
     if (phase == null) {
     	return ProgressRateEnumeration.UNKNOWN;
     }
@@ -310,7 +318,7 @@ public class SiriSupport {
     return ProgressRateEnumeration.UNKNOWN;
   }
 
-  private static int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
+  private int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
     int visitNumber;
     if (visitNumberForStop.containsKey(stop.getId())) {
       visitNumber = visitNumberForStop.get(stop.getId()) + 1;
@@ -321,33 +329,5 @@ public class SiriSupport {
     return visitNumber;
   }
   
-  // NB: this means the vehicle is at *any* terminal in the block, not necessarily a terminal
-  // that is the head of any trip.
-  private static Boolean isAtTerminal(TripStatusBean statusBean) {
-    if(statusBean != null) {
-      String phase = statusBean.getPhase();
-
-      if (phase != null &&
-          (phase.toUpperCase().equals("LAYOVER_DURING") || phase.toUpperCase().equals("LAYOVER_BEFORE"))) {
-        return true;
-      } else
-        return false;
-    }
-
-    return null;
-  }
-
-  private static Boolean isOnDetour(TripStatusBean statusBean) {
-    if(statusBean != null) {
-      String status = statusBean.getStatus();
-
-      if(status != null)
-        return status.contains("deviated");
-      else
-        return false;
-    }
-
-    return null;
-  }
 }
 

@@ -15,6 +15,7 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 
 import java.util.ArrayList;
@@ -148,14 +149,15 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     String message = "";
     String distance = distanceExtension.getPresentableDistance();
 
-    if(isStopContext && journey.getProgressStatus().getValue().equals("layover")) {
+    NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+    if(isStopContext && progressStatus != null && progressStatus.getValue().equals("layover")) {
       message += "at terminal";
     }
     
-    int staleTimeout = 
-        _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
+    int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
+    long age = (System.currentTimeMillis() - updateTime) / 1000;
 
-    if(System.currentTimeMillis() - updateTime > staleTimeout) {
+    if(age > staleTimeout) {
       if(message.length() > 0) {
         message += ", ";
       }

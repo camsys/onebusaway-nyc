@@ -15,6 +15,7 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,12 +84,15 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     String message = "";
     String distance = distanceExtension.getPresentableDistance();
 
-    if(journey.getProgressStatus().getValue().equals("layover")) {
+    NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+    if(progressStatus != null && progressStatus.getValue().equals("layover")) {
       message += "@terminal";
     }
     
     int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
-    if(System.currentTimeMillis() - updateTime > staleTimeout) {
+    long age = (System.currentTimeMillis() - updateTime) / 1000;
+
+    if(age > staleTimeout) {
       if(message.length() > 0) {
         message += ", ";
       }
@@ -97,7 +101,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     }
 
     if(message.length() > 0)
-      return distance + " " + message;
+      return distance + " (" + message + ")";
     else
       return distance;
   }

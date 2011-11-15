@@ -10,6 +10,10 @@ public interface PresentationService {
 
   public void setTime(Date time);
 
+  public Boolean isInLayover(TripStatusBean statusBean);
+
+  public Boolean isOnDetour(TripStatusBean statusBean);
+  
   public String getPresentableDistance(SiriDistanceExtension distances, String approachingText, 
       String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord);
 
