@@ -9,6 +9,8 @@ import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,8 +66,17 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   }
  
   private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
-      // example call to tds
-      _transitDataService.getStop("MTA NYCT_404190");
+    // Extract next stop id and distance
+    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(locationRecord.getVehicleId(), System.currentTimeMillis());
+
+    TripStatusBean status = vehicle.getTripStatus();
+
+    if (status == null)
+	_log.info("Null trip status. Skipping TDS values."); // Common case, particularly, e.g. when dead heading
+    else {
+	locationRecord.setNextScheduledStopId(status.getNextStop().getId());
+	locationRecord.setNextScheduledStopDistance(status.getNextStopDistanceFromVehicle());
+    }
   }
 
   @PostConstruct

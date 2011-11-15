@@ -96,8 +96,8 @@
 	<properties>
 	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
 	  <db.url>jdbc:mysql://localhost:3306/onebusaway_nyc</db.url>
-	  <db.username>mysql</db.username>
-	  <db.password>dev2468</db.password>
+	  <db.username>root</db.username>
+	  <db.password></db.password>
 	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
 	</properties>
       </profile>
@@ -132,12 +132,49 @@
 	</properties>
       </profile>
         <profile>
-	  <id>test</id>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-tdf-as-tds</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-staging</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-prod</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-qa</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Vehicle tracking webapp offers the TDS -->
+            <id>services-vtw-as-tds</id> <!-- single port, aka development -->
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+            </properties>
+        </profile>
+        <profile>
+            <id>services-vtw-as-tds-multiport</id> <!-- multi port, also for development -->
+            <!-- assumes we're running on 8082, so vtw is on a different port -->
+            <properties>
+                <jetty.port>8082</jetty.port>
+                <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
             </properties>
         </profile>
     </profiles>
