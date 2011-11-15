@@ -85,7 +85,10 @@ OBA.Debug = function() {
 		}
 	}
 	
-	function showRecordsOnMap() {
+	function showRecordsOnMap(min_time, max_time) {
+		if(markers !== null)
+			markers.clearMarkers();
+		
 		jQuery.ajax({
 			url: "vehicle-location-simulation!task-result-records-json.do?taskId=" + getParameterByName("taskId"),
 			success: function(data) {
@@ -96,6 +99,13 @@ OBA.Debug = function() {
 
 				var i = 0;
 				jQuery.each(data.records, function(recordIndex, record) {
+					// filter out
+					if(min_time !== null &amp;&amp; max_time !== null &amp;&amp; min_time !== "" &amp;&amp; max_time !== "") {
+						if(record.timestamp &lt; min_time || record.timestamp &gt; max_time) {
+							return
+						}
+					}
+					
 		            var size = new OpenLayers.Size(21,25);
 		            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
 		            var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png',size,offset);
@@ -243,7 +253,7 @@ OBA.Debug = function() {
 	
 	return {
 		initialize: function() {
-			showRecordsOnMap();
+			showRecordsOnMap(null, null);
 			initRouteList();
 			
 			var apiKey = "AqTGBsziZHIJYYxgivLBf0hVdrAk9mWO5cQcb8Yux8sW5M8c8opEC2lZqKR1ZZXf";
@@ -266,6 +276,13 @@ OBA.Debug = function() {
 			    map.getProjectionObject()
 			), 11);
 
+			jQuery("#filter_apply").click(function(e) {
+				e.preventDefault();
+				
+				var min = jQuery("#filter_start").val();
+				var max = jQuery("#filter_end").val();
+				showRecordsOnMap(min, max);
+			});
 		}
 	};    
 };
@@ -299,6 +316,12 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<select size="10" style="width: 400px;" id="trips">
 		<option value="">Select a block first.</option>
 	</select>
+	
+	Show Records Between:
+	<br/>
+	<input type="text" id="filter_start" size="10"/> (epoch) and <input type="text" id="filter_end" size="10"/> (epoch)
+	<br/>
+	<input type="submit" value="Refresh" id="filter_apply"/>
 </td>
 <td>
 	<div id="map" style="width: 800px; height: 500px;"></div>

@@ -45,6 +45,13 @@
 	</p>
 	
 	<p>
+		<s:url var="url" namespace="/admin" action="last-known-vehicle"></s:url>
+		<a title="vehicles" href="${url}">Vehicles</a>
+		<br/>
+		Currently tracked vehicles
+	</p>
+	
+	<p>
 		<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
 		<a title="edit parameters" href="${url}">Parameters</a>
 		<br/>View and edit system parameters that affect UI logic and API results.
