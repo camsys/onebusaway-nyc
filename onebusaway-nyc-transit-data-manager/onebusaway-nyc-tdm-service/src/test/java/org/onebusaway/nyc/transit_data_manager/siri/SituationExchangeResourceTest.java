@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 
 import org.junit.Test;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
@@ -47,6 +49,12 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 	public void testHandlePost() throws Exception {
     ServiceAlertsService saService = mock(ServiceAlertsService.class);
     TransitDataService tds = mock(TransitDataService.class);
+    ListBean<ServiceAlertBean> serviceAlertsBeans = new ListBean<ServiceAlertBean>();
+    ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
+    List<ServiceAlertBean> list = new ArrayList<ServiceAlertBean>();
+    list.add(serviceAlertBean);
+    serviceAlertsBeans.setList(list);
+    when(tds.getAllServiceAlertsForAgencyId(anyString())).thenReturn(serviceAlertsBeans);
 
 		NycSiriService siriService = new NycSiriService();
 		siriService.setTransitDataService(tds);
@@ -56,7 +64,8 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 		byte[] b = new byte[10240];
 		int read = new DataInputStream(stream).read(b);
 		String body = new String(b, 0, read);
-		Response response = handlePost(body);
+		@SuppressWarnings("unused")
+    Response response = handlePost(body);
 
 		// Somewhat lame test at the moment.
 		verify(tds).createServiceAlert(anyString(), any(ServiceAlertBean.class));
