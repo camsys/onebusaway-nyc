@@ -11,7 +11,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.actions.api;
+package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import java.util.ArrayList;
 import java.util.Calendar;

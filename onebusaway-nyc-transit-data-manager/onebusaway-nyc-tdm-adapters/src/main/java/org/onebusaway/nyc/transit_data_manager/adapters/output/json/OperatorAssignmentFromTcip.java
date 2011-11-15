@@ -3,10 +3,9 @@ package org.onebusaway.nyc.transit_data_manager.adapters.output.json;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
-import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
@@ -21,10 +20,10 @@ import tcip_final_3_0_5_1.SCHOperatorAssignment;
 public class OperatorAssignmentFromTcip implements
     ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> {
 
-  UtsMappingTool mappingTool = null;
+  TcipMappingTool mappingTool = null;
 
   public OperatorAssignmentFromTcip() {
-    mappingTool = new UtsMappingTool();
+    mappingTool = new TcipMappingTool();
   }
 
   public OperatorAssignment convert(SCHOperatorAssignment input) {
@@ -36,10 +35,10 @@ public class OperatorAssignmentFromTcip implements
     //opAssign.setRunId(input.getRun().getDesignator());
     opAssign.setRunNumber(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
 
-    DateTimeFormatter xmlDTF = ISODateTimeFormat.dateTimeNoMillis();
+    DateTimeFormatter xmlDTF = TcipMappingTool.TCIP_DATETIME_FORMATTER;
     DateTime serviceDate = xmlDTF.parseDateTime(input.getMetadata().getEffective());
 
-    DateTimeFormatter shortDateDTF = ISODateTimeFormat.date();
+    DateTimeFormatter shortDateDTF = TcipMappingTool.TCIP_DATEONLY_FORMATTER;
     opAssign.setServiceDate(shortDateDTF.print(serviceDate));
 
     DateTimeFormatter jsonUpdateDTF = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ");

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2011 Metropolitan Transportation Authority
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -13,26 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.onebusaway.nyc.webapp.actions.api;
 
-var OBA = window.OBA || {};
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 
-/*
- * This is mostly for IE7, to make sure AJAX/JSON calls are not cached. 
- */
-$.ajaxSetup({ cache: false });
+import org.springframework.beans.factory.annotation.Autowired;
 
-OBA.Config = {		
-		searchUrl: "api/search",
-		configUrl: "api/config",
+public class ConfigAction extends OneBusAwayNYCActionSupport {
 
-		siriSMUrl: "api/siri/stop-monitoring",
-		siriVMUrl: "api/siri/vehicle-monitoring",
-		
-		refreshInterval: 15000,
-		
-		googleAnalyticsId: 'UA-XXXXXXXX-X',
+  private static final long serialVersionUID = 1L;
 
-		analyticsFunction: function(type, value) {
-			_gaq.push(['_trackEvent', "Desktop Web", type, value]);
-		}
-};
+  @Autowired
+  private ConfigurationService _configurationService;
+
+  public int getStaleTimeout() {
+    return _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
+  }
+
+}

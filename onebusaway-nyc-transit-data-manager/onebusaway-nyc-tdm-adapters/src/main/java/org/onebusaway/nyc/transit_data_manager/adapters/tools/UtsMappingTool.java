@@ -34,6 +34,7 @@ public class UtsMappingTool extends TcipMappingTool {
     return agencyId;
   }
   
+  // TODO: This method is the same as getJsonModelAgencyIdByTcipId in TcipMappingTool.
   public String getVehicleDesignatorFromAgencyId(Long agencyId) {
     String vehDesignator;
     
@@ -128,16 +129,6 @@ public class UtsMappingTool extends TcipMappingTool {
     }
 
     return result;
-  }
-
-  public String getJsonModelAgencyIdByTcipId(Long tcipId) {
-    return "MTA NYCT"; // Hard coded for now.
-  }
-
-  public String cutRunNumberFromTcipRunDesignator(String input) {
-    int dashIdx = input.indexOf("-") + 1;
-
-    return input.substring(dashIdx);
   }
 
   public String dateTimeToXmlDatetimeFormat(ReadableInstant input) {

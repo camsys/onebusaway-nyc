@@ -12,6 +12,8 @@ public interface RealtimeService {
 
   public void setTime(Date time);
 
+  public PresentationService getPresentationService();
+  
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
       String directionId, boolean includeNextStops);
     
@@ -25,5 +27,5 @@ public interface RealtimeService {
       String routeId, String directionId);
 
   public List<NaturalLanguageStringBean> getServiceAlertsForStop(String stopId);
-  
+    
 }

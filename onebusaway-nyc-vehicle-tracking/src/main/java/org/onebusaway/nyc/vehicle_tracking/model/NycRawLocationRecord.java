@@ -19,8 +19,8 @@ import java.util.Date;
 
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.serialization.mappings.AgencyIdFieldMappingFactory;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFactory;
 
 public class NycRawLocationRecord {
 
@@ -46,7 +46,7 @@ public class NycRawLocationRecord {
   @CsvField(name = "destinationsigncode")
   private String destinationSignCode;
 
-  @CsvField(name = "vehicle", mapping = AgencyIdFieldMappingFactory.class)
+  @CsvField(name = "vehicleId", mapping = AgencyAndIdFieldMappingFactory.class)
   private AgencyAndId vehicleId;
 
   @CsvField(name = "operator")

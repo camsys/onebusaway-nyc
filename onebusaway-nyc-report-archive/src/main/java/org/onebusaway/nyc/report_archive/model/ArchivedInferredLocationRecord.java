@@ -222,7 +222,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setLastInferredOperatorId(managementBean.getLastInferredOperatorId());
     setInferredRunId(managementBean.getInferredRunId());
 
-    // TODO: Query to get fields from TDS.
+    // TDS fields are inserted by listener task.
 
   }
 
@@ -502,7 +502,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
   // Properties from TDS
 
-  public void setNextScheduledStopId(String nextScheduleStopId) {
+  public void setNextScheduledStopId(String nextScheduledStopId) {
       this.nextScheduledStopId = nextScheduledStopId;
    }
 

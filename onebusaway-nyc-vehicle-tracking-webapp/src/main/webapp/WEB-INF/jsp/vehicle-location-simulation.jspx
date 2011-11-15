@@ -85,8 +85,8 @@
     <tr>
         <td>Trace Type</td>
         <td><select name="traceType">
-            <option value="NycTestInferredLocationRecord" selected="true">NycTestInferredLocationRecord (Tab delimited; previously-generated inference output w/ optional "ground truth")</option>
-            <option value="NycRawLocationRecord">NycRawLocationRecord (Tab delimited; input as it would come from a bus)</option>
+            <option value="NycTestInferredLocationRecord" selected="true">NycTestInferredLocationRecord (COMMA delimited; previously-generated inference output w/ optional "ground truth")</option>
+            <option value="NycRawLocationRecord">NycRawLocationRecord (TAB delimited; input as it would come from a bus)</option>
         </select></td>
     </tr>
     <tr>

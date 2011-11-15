@@ -24,6 +24,7 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.MobileWebLocationResult;
 import org.onebusaway.nyc.webapp.actions.m.model.MobileWebPresentationModelFactory;
@@ -59,6 +60,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private NycGeocoderService _geocoderService;
 
+  @Autowired
+  private ConfigurationService _configurationService;
+
   private MobileWebPresentationModelFactory _factory = null;
   
   private SearchResultCollection _searchResults = new SearchResultCollection();
@@ -87,7 +91,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if(_q == null)
       return SUCCESS;
 
-    _factory = new MobileWebPresentationModelFactory(_realtimeService);
+    _factory = new MobileWebPresentationModelFactory(_realtimeService, _configurationService);
     _stopSearchService.setModelFactory(_factory);
     _routeSearchService.setModelFactory(_factory);
     

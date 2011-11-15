@@ -10,7 +10,7 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import java.util.List;
 
 public abstract interface PresentationModelFactory {
-
+  
   // stop as top-level object
   public StopResult getStopModel(StopBean stopBean, List<RouteResult> routesAvailable);
 
