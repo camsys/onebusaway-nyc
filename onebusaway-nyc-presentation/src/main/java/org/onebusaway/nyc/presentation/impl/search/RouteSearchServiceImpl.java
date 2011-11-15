@@ -19,7 +19,7 @@ import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
-import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
+import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
@@ -45,9 +45,7 @@ import java.util.List;
 
 @Component
 public class RouteSearchServiceImpl implements RouteSearchService {
-  
-  private final WebappSupportLibrary _support = new WebappSupportLibrary();
-  
+    
   // when querying for routes from a lat/lng, use this distance in meters
   private double _distanceToRoutes = 100;
 
@@ -174,7 +172,7 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
       ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agency.getAgency().getId());
       for(RouteBean route : routes.getList()) {
-        knownRouteIds.add(_support.parseIdWithoutAgency(route.getId()));
+        knownRouteIds.add(AgencySupportLibrary.parseIdWithoutAgency(route.getId()));
       }
     }
     

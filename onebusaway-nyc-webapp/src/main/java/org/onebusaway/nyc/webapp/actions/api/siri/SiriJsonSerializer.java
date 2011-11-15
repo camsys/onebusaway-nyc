@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.api;
+package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;

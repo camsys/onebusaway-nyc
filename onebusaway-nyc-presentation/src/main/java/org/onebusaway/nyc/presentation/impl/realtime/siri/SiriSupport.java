@@ -12,8 +12,12 @@
  * the License.
  */
 
-package org.onebusaway.nyc.presentation.impl.realtime;
+package org.onebusaway.nyc.presentation.impl.realtime.siri;
 
+import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
+import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriDistanceExtension;
+import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriExtensionWrapper;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -46,14 +50,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-public class SiriUtils {
+public class SiriSupport {
   
-  private static String getAgencyForId(String id) {
-    String[] parts = id.split("_");
-    return parts[0];
+  private PresentationService _presentationService;
+  
+  public void setPresentationService(PresentationService presentationService) {
+    _presentationService = presentationService;
   }
   
-  public static MonitoredCallStructure getMonitoredCall(List<TripStopTimeBean> stopTimes, StopBean monitoredCallStopBean, 
+  public MonitoredCallStructure getMonitoredCall(List<TripStopTimeBean> stopTimes, StopBean monitoredCallStopBean, 
       TripStatusBean statusBean) {
 
     double distance = statusBean.getDistanceAlongTrip();
@@ -99,10 +104,11 @@ public class SiriUtils {
           SiriExtensionWrapper wrapper = new SiriExtensionWrapper();
           ExtensionsStructure distancesExtensions = new ExtensionsStructure();
           SiriDistanceExtension distances = new SiriDistanceExtension();
-          
+
           distances.setStopsFromCall(i - 1);
           distances.setCallDistanceAlongRoute(stopTime.getDistanceAlongTrip());
           distances.setDistanceFromCall(stopTime.getDistanceAlongTrip() - distance);
+          distances.setPresentableDistance(_presentationService.getPresentableDistance(distances));
 
           wrapper.setDistances(distances);
           distancesExtensions.setAny(wrapper);
@@ -116,7 +122,7 @@ public class SiriUtils {
     return null;
   }
   
-  public static OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes, TripStatusBean statusBean) {
+  public OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes, TripStatusBean statusBean) {
 
     double distance = statusBean.getDistanceAlongTrip();
     if (Double.isNaN(distance)) {
@@ -168,7 +174,8 @@ public class SiriUtils {
           distances.setStopsFromCall(i - 1);
           distances.setCallDistanceAlongRoute(stopTime.getDistanceAlongTrip());
           distances.setDistanceFromCall(stopTime.getDistanceAlongTrip());
-          
+          distances.setPresentableDistance(_presentationService.getPresentableDistance(distances));
+
           wrapper.setDistances(distances);
           distancesExtensions.setAny(wrapper);
           onwardCall.setExtensions(distancesExtensions);
@@ -189,18 +196,7 @@ public class SiriUtils {
     return onwardCalls;
   }
 
-  private static int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
-    int visitNumber;
-    if (visitNumberForStop.containsKey(stop.getId())) {
-      visitNumber = visitNumberForStop.get(stop.getId()) + 1;
-    } else {
-      visitNumber = 1;
-    }
-    visitNumberForStop.put(stop.getId(), visitNumber);
-    return visitNumber;
-  }
-
-  public static MonitoredVehicleJourney getMonitoredVehicleJourney(TripDetailsBean trip, StopBean monitoredCallStopBean, 
+  public MonitoredVehicleJourney getMonitoredVehicleJourney(TripDetailsBean trip, StopBean monitoredCallStopBean, 
       boolean includeOnwardCalls) {
 
     TripBean tripBean = trip.getTrip();
@@ -216,15 +212,9 @@ public class SiriUtils {
     monitoredVehicleJourney.setLineRef(lineRef);
 
     OperatorRefStructure operatorRef = new OperatorRefStructure();
-    operatorRef.setValue(getAgencyForId(tripBean.getRoute().getId()));
+    operatorRef.setValue(AgencySupportLibrary.getAgencyForId(tripBean.getRoute().getId()));
     monitoredVehicleJourney.setOperatorRef(operatorRef);
 
-    if(isAtTerminal(trip.getStatus())) {
-      NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();
-      progressStatus.setValue("atTerminal");
-      monitoredVehicleJourney.setProgressStatus(progressStatus);    
-    }
-    
     DirectionRefStructure directionRef = new DirectionRefStructure();
     directionRef.setValue(tripBean.getDirectionId());
     monitoredVehicleJourney.setDirectionRef(directionRef);
@@ -233,6 +223,12 @@ public class SiriUtils {
     headsign.setValue(tripBean.getTripHeadsign());
     monitoredVehicleJourney.setPublishedLineName(headsign);
   
+    if(isAtTerminal(trip.getStatus())) {
+      NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();
+      progressStatus.setValue("layover");
+      monitoredVehicleJourney.setProgressStatus(progressStatus);
+    }
+    
     VehicleRefStructure vehicleRef = new VehicleRefStructure();
     vehicleRef.setValue(trip.getStatus().getVehicleId());
     monitoredVehicleJourney.setVehicleRef(vehicleRef);
@@ -270,13 +266,12 @@ public class SiriUtils {
     monitoredVehicleJourney.setVehicleLocation(location);
     
     // monitored calls
-    boolean deviated = trip.getStatus().getStatus().toLowerCase().equals("deviated");
-    if (monitoredCallStopBean != null && !deviated) {
+    if (monitoredCallStopBean != null && !isOnDetour(trip.getStatus())) {
       List<TripStopTimeBean> stopTimes = trip.getSchedule().getStopTimes();
 
-      MonitoredCallStructure monitoredCall = SiriUtils.getMonitoredCall(stopTimes, 
+      MonitoredCallStructure monitoredCall = getMonitoredCall(stopTimes, 
           monitoredCallStopBean, trip.getStatus());
-      
+
       if(monitoredCall == null)
         return null;
       
@@ -284,7 +279,7 @@ public class SiriUtils {
     }
     
     // onward calls
-    if (includeOnwardCalls && !deviated) {
+    if (includeOnwardCalls && !isOnDetour(trip.getStatus())) {
       List<TripStopTimeBean> stopTimes = trip.getSchedule().getStopTimes();
       
       monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, trip.getStatus()));
@@ -293,7 +288,7 @@ public class SiriUtils {
     return monitoredVehicleJourney;
   }
 
-  public static ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {
+  private static ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {
     if (phase == null) {
     	return ProgressRateEnumeration.UNKNOWN;
     }
@@ -314,16 +309,26 @@ public class SiriUtils {
         
     return ProgressRateEnumeration.UNKNOWN;
   }
+
+  private static int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
+    int visitNumber;
+    if (visitNumberForStop.containsKey(stop.getId())) {
+      visitNumber = visitNumberForStop.get(stop.getId()) + 1;
+    } else {
+      visitNumber = 1;
+    }
+    visitNumberForStop.put(stop.getId(), visitNumber);
+    return visitNumber;
+  }
   
   // NB: this means the vehicle is at *any* terminal in the block, not necessarily a terminal
   // that is the head of any trip.
-  public static Boolean isAtTerminal(TripStatusBean statusBean) {
+  private static Boolean isAtTerminal(TripStatusBean statusBean) {
     if(statusBean != null) {
       String phase = statusBean.getPhase();
 
       if (phase != null &&
-          (phase.toUpperCase().equals("LAYOVER_DURING") 
-           || phase.toUpperCase().equals("LAYOVER_BEFORE"))) {
+          (phase.toUpperCase().equals("LAYOVER_DURING") || phase.toUpperCase().equals("LAYOVER_BEFORE"))) {
         return true;
       } else
         return false;
@@ -331,4 +336,18 @@ public class SiriUtils {
 
     return null;
   }
+
+  private static Boolean isOnDetour(TripStatusBean statusBean) {
+    if(statusBean != null) {
+      String status = statusBean.getStatus();
+
+      if(status != null)
+        return status.contains("deviated");
+      else
+        return false;
+    }
+
+    return null;
+  }
 }
+

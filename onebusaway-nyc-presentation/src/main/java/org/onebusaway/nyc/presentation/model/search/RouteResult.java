@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.presentation.model.search;
 
-import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
+import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
 
@@ -42,8 +42,7 @@ public class RouteResult implements SearchResult {
   }
 
   public String getRouteIdWithoutAgency() {
-    WebappSupportLibrary idParser = new WebappSupportLibrary();
-    return idParser.parseIdWithoutAgency(getRouteId());
+    return AgencySupportLibrary.parseIdWithoutAgency(getRouteId());
   }
 
   public String getDescription() {

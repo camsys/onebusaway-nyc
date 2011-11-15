@@ -26,8 +26,9 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
-import org.onebusaway.nyc.sms.actions.model.SmsRouteDestinationItem;
 import org.onebusaway.nyc.sms.actions.model.SmsPresentationModelFactory;
+import org.onebusaway.nyc.sms.actions.model.SmsRouteDestinationItem;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 import org.apache.commons.lang.xwork.StringUtils;
@@ -55,6 +56,9 @@ public class IndexAction extends SessionedIndexAction {
   private StopSearchService _stopSearchService;
 
   @Autowired
+  private ConfigurationService _configurationService;
+
+  @Autowired
   private NycGeocoderService _geocoderService;
   
   /* response to user */
@@ -64,10 +68,9 @@ public class IndexAction extends SessionedIndexAction {
   private String _routeToFilterBy = null;
   
   public String execute() throws Exception {
-    SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService);
+    SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService, _configurationService);
     _stopSearchService.setModelFactory(factory);
     _routeSearchService.setModelFactory(factory);
-    
     
     /**
      * INPUT PARSING
