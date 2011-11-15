@@ -176,7 +176,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     this._request = request;
   }
 
-  void addSituationExchange(ServiceDelivery serviceDelivery,
+  protected void addSituationExchange(ServiceDelivery serviceDelivery,
       List<VehicleActivityStructure> activities) {
     SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
     Situations situations = new Situations();
