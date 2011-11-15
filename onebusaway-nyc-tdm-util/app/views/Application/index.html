@@ -2,18 +2,24 @@
 
 <h1>Service Alerts</h1>
 
+#{form @Application.index(), method:'POST'}
 <div class="well">
-	<a class="btn primary">Refresh</a>
+    <input type="hidden" value="true" name="refresh"/>
+    <input type="submit" value="Refresh" class="btn primary"/>
+    <input type="text" value="${tdsUrl}" name="tdsUrl" class="span14"/>
 </div>
+#{/form}
 
 <table class="bordered-table">
 	<thead>
 		<tr>
-			<th>id</th>
+            <th>&nbsp;</th>
+            <th>id</th>
 			<th>creationTime</th>
-			<th>activeWIndows</th>
-			<th>pub from</th>
-			<th>pub to</th>
+            <th>active from</th>
+            <th>active to</th>
+			<th>publication from</th>
+			<th>publication to</th>
 			<th>reason</th>
 			<th>summary</th>
 			<th>description</th>
@@ -26,13 +32,15 @@
 	<tbody>
 		#{list items:serviceAlerts.list, as:'serviceAlert'}
 		<tr>
-			<td>${serviceAlert.id}</td>
-			<td>${serviceAlert.creationTime}</td>
+            <td><a href="@{Application.deleteServiceAlert(serviceAlert.id, tdsUrl)}"><img width="16 height="16" src="/public/images/cross.png"/></a></td>
+            <td>${serviceAlert.id}</td>
+			<td>${serviceAlert.creationTime.formatDate()}</td>
 
-			<td>${serviceAlert.activeWindows}</td>
+            <td>${serviceAlert.formatTimeWindowValue("active", "from")}</td>
+            <td>${serviceAlert.formatTimeWindowValue("active", "to")}</td>
 
-			<td>${serviceAlert.publicationWindows.from.get(0)}</td>
-			<td>${serviceAlert.publicationWindows.to.get(0)}</td>
+            <td>${serviceAlert.formatTimeWindowValue("publication", "from")}</td>
+            <td>${serviceAlert.formatTimeWindowValue("publication", "to")}</td>
 
 			<td>${serviceAlert.reason}</td>
 

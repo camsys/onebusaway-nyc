@@ -9,6 +9,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.ISODateTimeFormat;
 
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
@@ -24,6 +25,7 @@ import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
+import uk.org.siri.siri.WorkflowStatusEnumeration;
 import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
 
@@ -48,7 +50,7 @@ public class SiriHelper {
 
 	public void addPtSituationElementStructure(String summaryText,
 			String descriptionText, String idNumber, String begins,
-			String expires, String lines, String statusType) {
+			String expires, String lines, String statusType, String progress) {
 
 		List<PtSituationElementStructure> list = siri.getServiceDelivery()
 				.getSituationExchangeDelivery().get(0).getSituations()
@@ -56,14 +58,14 @@ public class SiriHelper {
 
 		PtSituationElementStructure ptSit = createPtSituationElementStructure(
 				summaryText, descriptionText, idNumber, begins, expires, lines,
-				statusType);
+				statusType, progress);
 		list.add(ptSit);
 
 	}
 
 	private PtSituationElementStructure createPtSituationElementStructure(
 			String summaryText, String descriptionText, String idNumber,
-			String begins, String expires, String lines, String statusType) {
+			String begins, String expires, String lines, String statusType, String progress) {
 		PtSituationElementStructure ptSit = new PtSituationElementStructure();
 		ptSit.setSummary(defaultedTextStructure(summaryText));
 		ptSit.setDescription(defaultedTextStructure(descriptionText));
@@ -100,6 +102,10 @@ public class SiriHelper {
 			// stopPoints.getAffectedStopPoint().add(stopPoint);
 			// affects.setStopPoints(stopPoints);
 
+		}
+		
+		if (!StringUtils.isBlank(progress)) {
+		  ptSit.setProgress(WorkflowStatusEnumeration.fromValue(progress));
 		}
 		return ptSit;
 	}
