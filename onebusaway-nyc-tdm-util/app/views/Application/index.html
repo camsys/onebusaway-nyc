@@ -32,7 +32,7 @@
 	<tbody>
 		#{list items:serviceAlerts.list, as:'serviceAlert'}
 		<tr>
-            <td><a href="@{Application.deleteServiceAlert(serviceAlert.id, tdsUrl)}"><img width="16 height="16" src="/public/images/cross.png"/></a></td>
+            <td><a href="@{Application.deleteServiceAlert(serviceAlert.id, tdsUrl)}"><img width="16 height="16" src="public/images/cross.png"/></a></td>
             <td>${serviceAlert.id}</td>
 			<td>${serviceAlert.creationTime.formatDate()}</td>
 
