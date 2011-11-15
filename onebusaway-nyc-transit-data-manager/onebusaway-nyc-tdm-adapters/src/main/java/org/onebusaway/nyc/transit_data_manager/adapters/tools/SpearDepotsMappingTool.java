@@ -2,8 +2,6 @@ package org.onebusaway.nyc.transit_data_manager.adapters.tools;
 
 public class SpearDepotsMappingTool extends TcipMappingTool {
 
-  protected static long MTA_LI_BUS_AGENCY_ID = new Long(2007);
-  
   public Long getAgencyIdFromAgency(int value) {
     Long agencyId;
     if (1 == value) {
