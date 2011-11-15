@@ -35,7 +35,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class IndexAction extends SessionedIndexAction {
   
@@ -173,6 +175,14 @@ public class IndexAction extends SessionedIndexAction {
   /**
    * RESPONSE GENERATION METHODS
    */
+
+  /**
+   * Note this is NOT internationalized.  If there are service alerts in multiple languages,
+   * all translations will be returned.
+   *  
+   * @param routeQuery
+   * @throws Exception
+   */
   private void serviceAlertResponse(String routeQuery) throws Exception {
     List<RouteResult> routes = _routeSearchService.resultsForQuery(routeQuery);
     
@@ -195,7 +205,12 @@ public class IndexAction extends SessionedIndexAction {
       return;
     }
 
-    _response = StringUtils.join(alerts, "\n\n");
+    // Note we use a set here so that the list gets deduped.
+    Set<String> alertValues = new HashSet<String>(alerts.size());
+    for (NaturalLanguageStringBean alert: alerts) {
+      alertValues.add(alert.getValue());
+    }
+    _response = StringUtils.join(alertValues, "\n\n");
   }
   
   private void locationDisambiguationResponse(List<SearchResult> results) {
