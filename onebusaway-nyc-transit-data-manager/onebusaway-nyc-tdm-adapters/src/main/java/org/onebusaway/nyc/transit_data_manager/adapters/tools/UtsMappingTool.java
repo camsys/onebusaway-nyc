@@ -12,24 +12,14 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-public class UtsMappingTool {
+public class UtsMappingTool extends TcipMappingTool {
   public static String UTS_DATE_FIELD_DATEFORMAT = "yyyy-MM-dd";
   public static String UTS_TIMESTAMP_FIELD_DATEFORMAT = "yyyy-MM-dd HH:mm:ss";
 
-  public static String TIMEFORMAT_HHMMSS = "HH:mm:ss";
-
-  public static String MTA_NYCT_BUS_DESIGNATOR = "MTA NYCT";
-  public static String MTA_BUS_CO_BUS_DESIGNATOR = "MTA BUS CO";
-
-  private static long MTA_NYCT_AGENCY_ID = new Long(2008);
-  private static long MTA_BUS_CO_AGENCY_ID = new Long(2188);
+  //public static String TIMEFORMAT_HHMMSS = "HH:mm:ss";
 
   public UtsMappingTool() {
     super();
-  }
-
-  public Long getAgencyIdFromDepotAssignAgency(int value) {
-    return MTA_BUS_CO_AGENCY_ID;
   }
 
   public Long getAgencyIdFromUtsAuthId(String authId) {

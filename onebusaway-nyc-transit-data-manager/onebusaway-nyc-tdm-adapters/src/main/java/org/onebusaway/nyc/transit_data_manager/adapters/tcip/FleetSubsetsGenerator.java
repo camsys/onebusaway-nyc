@@ -10,9 +10,8 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 import tcip_final_3_0_5_1.CPTSubscriptionHeader;
@@ -37,8 +36,10 @@ public class FleetSubsetsGenerator {
     // Set the expiration date/time
     DateTime tomorrow = now.plusDays(1);
     // To start with, I'll set these to the next day (tomorrow).
-    DateTimeFormatter dateDTF = DateTimeFormat.forPattern(UtsMappingTool.UTS_DATE_FIELD_DATEFORMAT);
-    DateTimeFormatter timeDTF = DateTimeFormat.forPattern(UtsMappingTool.TIMEFORMAT_HHMMSS);
+    DateTimeFormatter dateDTF = TcipMappingTool.TCIP_DATEONLY_FORMATTER;
+
+    DateTimeFormatter timeDTF = TcipMappingTool.TCIP_TIMEONLY_FORMATTER;
+
 
     subHeader.setExpirationDate(dateDTF.print(tomorrow));
     subHeader.setExpirationTime(timeDTF.print(tomorrow));
