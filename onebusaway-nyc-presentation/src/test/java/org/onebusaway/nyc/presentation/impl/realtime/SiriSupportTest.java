@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.junit.Test;
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.presentation.impl.realtime.siri.SiriSupport;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RouteBean.Builder;
 import org.onebusaway.transit_data.model.StopBean;
@@ -22,7 +24,7 @@ import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
-public class SiriUtilsTest extends SiriUtils {
+public class SiriSupportTest extends SiriSupport {
 
   private static final String MOCK_SERVICE_ALERT_ID = "mock service alert id";
   private static final String STOP_ID = "stop id";
@@ -31,6 +33,8 @@ public class SiriUtilsTest extends SiriUtils {
   @Test
   public void testGetMonitoredVehicleJourney() {    
     TripDetailsBean trip = setupMock();
+    PresentationService presentationService = mock(PresentationService.class);
+    setPresentationService(presentationService );
 
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
