@@ -79,10 +79,10 @@
     <profile>
       <id>local</id>
       <properties>
-        <tdm.dataPath>target/test-classes/</tdm.dataPath>
-        <tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
-        <tdm.depotAssignFilename>depotassign.xml</tdm.depotAssignFilename>
-        <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
+        <tdm.dataPath>src/resources/tdm_data/</tdm.dataPath>
+        <tdm.crewAssignFilename>CIS.txt</tdm.crewAssignFilename>
+        <tdm.depotAssignFilename>depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.pipoFilename>UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
         <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
