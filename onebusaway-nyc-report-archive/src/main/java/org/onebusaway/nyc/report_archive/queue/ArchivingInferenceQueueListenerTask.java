@@ -8,6 +8,7 @@ import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,6 +26,8 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   private NycQueuedInferredLocationDao _locationDao;
   @Autowired
   private NycVehicleManagementStatusDao _statusDao;
+  @Autowired
+  private TransitDataService _transitDataService;
 
   @Refreshable(dependsOn = {"inference-engine.outputQueueHost", "inference-engine.outputQueuePort", 
       "inference-engine.outputQueueName"})
@@ -53,13 +56,18 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
     try {
       ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(inferredResult, contents);
-
+      postProcess(locationRecord);
       _locationDao.saveOrUpdateRecord(locationRecord);
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);
     }
   }
  
+  private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
+      // example call to tds
+      _transitDataService.getStop("MTA NYCT_404190");
+  }
+
   @PostConstruct
   public void setup() {
     super.setup();

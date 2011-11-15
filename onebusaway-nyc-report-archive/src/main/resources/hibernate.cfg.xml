@@ -17,7 +17,7 @@
         <property name="connection.shutdown">true</property>
  -->
         <!-- SQL dialect -->
-        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="dialect">${db.hibernate.dialect}</property>
 
         <!-- Database connection settings -->
         <property name="connection.driver_class">${db.driverClassName}</property>
