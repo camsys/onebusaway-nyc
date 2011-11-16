@@ -65,5 +65,6 @@
     
     <bean class="org.onebusaway.nyc.webapp.actions.admin.LastKnownVehicleAction">
 		<property name="lastKnownLocationsUrl" value="${archive.path}/api/record/last-known/list" />
+		<property name="signCodesUrl" value="${tdm.host}/api/dsc/list" />
 	</bean>
 </beans>

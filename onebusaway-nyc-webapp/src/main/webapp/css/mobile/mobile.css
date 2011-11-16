@@ -126,6 +126,7 @@ small{
 }
 .alert {
     color: #cc0000;
+    padding-bottom: 0.6em;
 }
 ul {
 	margin: 0;

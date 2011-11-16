@@ -1,5 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.admin.model;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ArchiveRecord {
 
 	private int id;
@@ -16,8 +19,8 @@ public class ArchiveRecord {
 	private long lastLocationUpdateTime; // seems to be in ms
 	private double lastObservedLatitude;
 	private double lastObservedLongitude;
-	private String mostRecentObservedDestinationSignCode;
-	private String lastInferredDestinationSignCode;
+	private Long mostRecentObservedDestinationSignCode;
+	private Long lastInferredDestinationSignCode;
 	private boolean inferenceIsEnabled;
 	private boolean inferenceEngineIsPrimary;
 	private boolean inferenceIsFormal;
@@ -108,18 +111,18 @@ public class ArchiveRecord {
 	public void setLastObservedLongitude(double lastObservedLongitude) {
 		this.lastObservedLongitude = lastObservedLongitude;
 	}
-	public String getMostRecentObservedDestinationSignCode() {
+	public Long getMostRecentObservedDestinationSignCode() {
 		return mostRecentObservedDestinationSignCode;
 	}
 	public void setMostRecentObservedDestinationSignCode(
-			String mostRecentObservedDestinationSignCode) {
+			Long mostRecentObservedDestinationSignCode) {
 		this.mostRecentObservedDestinationSignCode = mostRecentObservedDestinationSignCode;
 	}
-	public String getLastInferredDestinationSignCode() {
+	public Long getLastInferredDestinationSignCode() {
 		return lastInferredDestinationSignCode;
 	}
 	public void setLastInferredDestinationSignCode(
-			String lastInferredDestinationSignCode) {
+			Long lastInferredDestinationSignCode) {
 		this.lastInferredDestinationSignCode = lastInferredDestinationSignCode;
 	}
 	public boolean isInferenceIsEnabled() {
@@ -151,5 +154,13 @@ public class ArchiveRecord {
 	}
 	public void setDepotId(String depotId) {
 		this.depotId = depotId;
+	}
+	
+	public int getBusId() {
+		String busIdStr = getVehicleId().replaceFirst("\\D+", "");
+		
+		int busId = Integer.parseInt(busIdStr);
+		
+		return busId;
 	}
 }

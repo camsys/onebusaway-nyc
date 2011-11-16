@@ -46,9 +46,9 @@
 	
 	<p>
 		<s:url var="url" namespace="/admin" action="last-known-vehicle"></s:url>
-		<a title="vehicles" href="${url}">Vehicles</a>
+		<a title="vehicles" href="${url}">Vehicle Status</a>
 		<br/>
-		Currently tracked vehicles
+		Most recent vehicle status
 	</p>
 	
 	<p>

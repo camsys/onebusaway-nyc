@@ -519,7 +519,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 					marker = new google.maps.Marker(markerOptions);
 			        
 			    	google.maps.event.addListener(marker, "click", function(mouseEvent) {
-			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl, 
+			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl + "?callback=?", 
 			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, VehicleMonitoringDetailLevel: "calls" }, 
 			    				getVehicleContentForResponse, null);
 			    	});
