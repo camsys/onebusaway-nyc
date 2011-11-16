@@ -59,8 +59,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     List<String> distanceAwayStrings = new ArrayList<String>();
     for(MonitoredStopVisitStructure visit : visits) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
-      String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
-      if(!route.getId().equals(routeId) || !destination.getDirectionId().equals(directionId))
+      if(!route.getId().equals(routeId))
         continue;
 
       // find latest update time across all realtime data
@@ -89,9 +88,9 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     if(destination.getStops() == null)
       return destination;
       
-    List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(route.getId(), 
-        null, false);
-
+    List<VehicleActivityStructure> journeyList = 
+        _realtimeService.getVehicleActivityForRoute(route.getId(), null, false);
+    
     // build map of stop IDs to list of distance strings
     Map<String, ArrayList<String>> stopIdToDistanceStringMap = new HashMap<String, ArrayList<String>>();      
     for(VehicleActivityStructure journey : journeyList) {
@@ -141,7 +140,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     return destination;       
   }
   
-  public String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime, boolean isStopContext) {
+  private String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime, boolean isStopContext) {
     MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
     SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
     SiriDistanceExtension distanceExtension = wrapper.getDistances();    
@@ -149,6 +148,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     String message = "";
     String distance = distanceExtension.getPresentableDistance();
 
+    // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
     if(isStopContext && progressStatus != null && progressStatus.getValue().equals("layover")) {
       message += "at terminal";

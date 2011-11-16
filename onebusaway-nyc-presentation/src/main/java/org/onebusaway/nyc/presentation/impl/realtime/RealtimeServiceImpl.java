@@ -36,7 +36,6 @@ import java.util.List;
 @Component
 public class RealtimeServiceImpl implements RealtimeService {
 
-  @Autowired
   private TransitDataService _transitDataService;
 
   private PresentationService _presentationService;
@@ -48,6 +47,7 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Override
   public void setTime(Date time) {
     _now = time;
+    _siriSupport.setTime(time);
     _presentationService.setTime(time);
   }
 
@@ -57,7 +57,13 @@ public class RealtimeServiceImpl implements RealtimeService {
     else
       return System.currentTimeMillis();
   }
-  
+
+  @Autowired
+  public void setTransitDataService(TransitDataService transitDataService) {
+    _transitDataService = transitDataService;
+    _siriSupport.setTransitDataService(transitDataService);
+  }
+
   @Autowired
   public void setPresentationService(PresentationService presentationService) {
     _presentationService = presentationService;
@@ -163,7 +169,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       query.setTripId(statusBean.getActiveTrip().getId());
       query.setTime(getTime());
       query.setVehicleId(statusBean.getVehicleId());
-      
+
       ListBean<TripDetailsBean> tripDetailBeans = _transitDataService.getTripDetails(query);      
 
       for(TripDetailsBean tripDetails : tripDetailBeans.getList()) {
@@ -280,6 +286,5 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
   }
-
 
 }
