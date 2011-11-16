@@ -21,9 +21,14 @@ import tcip_final_3_0_5_1.SCHTripIden;
  */
 public class MtaUtsToTcipAssignmentConverter {
 
-  UtsMappingTool mappingTool = null;
-
   public MtaUtsToTcipAssignmentConverter() {
+    mappingTool = new UtsMappingTool();
+  }
+  
+  private UtsMappingTool mappingTool;
+
+  public void setMappingTool(UtsMappingTool mappingTool) {
+    this.mappingTool = mappingTool;
   }
 
   /***
@@ -33,8 +38,6 @@ public class MtaUtsToTcipAssignmentConverter {
    */
   public SCHOperatorAssignment ConvertToOutput(
       MtaUtsCrewAssignment inputAssignment) {
-
-    mappingTool = new UtsMappingTool();
 
     SCHOperatorAssignment outputAssignment = new SCHOperatorAssignment();
 

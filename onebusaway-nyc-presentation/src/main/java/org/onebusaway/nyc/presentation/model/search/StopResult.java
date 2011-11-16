@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.presentation.model.search;
 
-import org.onebusaway.nyc.presentation.impl.WebappSupportLibrary;
+import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
 
@@ -42,8 +42,7 @@ public class StopResult implements SearchResult {
   }
 
   public String getStopIdWithoutAgency() {
-    WebappSupportLibrary webappIdParser = new WebappSupportLibrary();
-    return webappIdParser.parseIdWithoutAgency(getStopId());
+    return AgencySupportLibrary.parseIdWithoutAgency(getStopId());
   }
 
   public Double getLatitude() {

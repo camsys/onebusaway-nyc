@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.presentation.impl.realtime;
+package org.onebusaway.nyc.presentation.impl.realtime.siri.model;
 
 public class SiriExtensionWrapper {
   

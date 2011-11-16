@@ -16,19 +16,25 @@ import javax.xml.stream.XMLStreamReader;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignment.NewDataSet;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignment.NewDataSet.Table;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.SpearDepotsMappingTool;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 public class XMLBusDepotAssignsInputConverter implements
     BusDepotAssignsInputConverter {
 
-  private UtsMappingTool mappingTool = null;
+  //private UtsMappingTool mappingTool = null;
+  private SpearDepotsMappingTool mappingTool; 
+
+  public void setMappingTool(SpearDepotsMappingTool mappingTool) {
+    this.mappingTool = mappingTool;
+  }
 
   private Reader inputReader = null;
 
   public XMLBusDepotAssignsInputConverter(Reader csvInputReader) {
     inputReader = csvInputReader;
 
-    mappingTool = new UtsMappingTool();
+    mappingTool = new SpearDepotsMappingTool();
   }
 
   public List<MtaBusDepotAssignment> getBusDepotAssignments() {
@@ -58,13 +64,12 @@ public class XMLBusDepotAssignsInputConverter implements
 
       Iterator<Table> tableIt = xmlTables.iterator();
 
-      Table tableDepotAssign = null;
       MtaBusDepotAssignment depAssign = null;
       while (tableIt.hasNext()) {
-        tableDepotAssign = tableIt.next();
+        Table tableDepotAssign = tableIt.next();
 
         depAssign = new MtaBusDepotAssignment();
-        depAssign.setAgencyId(mappingTool.getAgencyIdFromDepotAssignAgency(tableDepotAssign.getAGENCY()));
+        depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
         depAssign.setBusNumber(tableDepotAssign.getBUSNUMBER());
         depAssign.setDepot(tableDepotAssign.getDEPOT());
 

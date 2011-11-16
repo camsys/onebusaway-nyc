@@ -524,7 +524,7 @@ public class VehicleInferenceInstance {
         double d = SphericalGeometryLibrary.distance(location,
             blockLocation.getLocation());
         if (d > (double) _configurationService.getConfigurationValueAsInteger(
-            "display.offRouteDistance", 500))
+            "display.offRouteDistance", 200))
           statusFields.add("deviated");
 
         int secondsSinceLastMotion = (int) ((particle.getTimestamp() - motionState

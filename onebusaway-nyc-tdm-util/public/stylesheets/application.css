@@ -1,0 +1,17 @@
+.topbar p {
+	color: white;
+}
+
+.modal-footer .link {
+	float: right;
+	margin-left: 5px;
+	padding-top: 6px;
+}
+
+.modal form {
+	margin-bottom: 0px;    
+}
+
+.modal-body label {
+	margin-right: 5px;
+}

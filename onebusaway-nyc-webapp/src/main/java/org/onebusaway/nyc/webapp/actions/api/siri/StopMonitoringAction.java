@@ -11,7 +11,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.webapp.actions.api;
+package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;

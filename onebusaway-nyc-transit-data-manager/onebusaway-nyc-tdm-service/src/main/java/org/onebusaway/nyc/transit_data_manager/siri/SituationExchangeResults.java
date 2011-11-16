@@ -12,6 +12,8 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 @XmlRootElement
 public class SituationExchangeResults {
   @XmlElement
+  String status = "OK";
+  @XmlElement
   List<DeliveryResult> delivery = new ArrayList<DeliveryResult>();
 
   void countPtSituationElementResult(DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean, String status) {
@@ -29,6 +31,7 @@ public class SituationExchangeResults {
   @Override
   public String toString() {
     List<String> s = new ArrayList<String>();
+    s.add("status=" + status);
     for (DeliveryResult d: delivery) {
       for (PtSituationElementResult p: d.ptSituationElement) {
         s.add("id=" + p.id + " result=" + p.result);

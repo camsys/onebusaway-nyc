@@ -8,6 +8,9 @@ import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,6 +28,8 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   private NycQueuedInferredLocationDao _locationDao;
   @Autowired
   private NycVehicleManagementStatusDao _statusDao;
+  @Autowired
+  private TransitDataService _transitDataService;
 
   @Refreshable(dependsOn = {"inference-engine.outputQueueHost", "inference-engine.outputQueuePort", 
       "inference-engine.outputQueueName"})
@@ -53,13 +58,27 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
     try {
       ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(inferredResult, contents);
-
+      postProcess(locationRecord);
       _locationDao.saveOrUpdateRecord(locationRecord);
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);
     }
   }
  
+  private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
+    // Extract next stop id and distance
+    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(locationRecord.getVehicleId(), System.currentTimeMillis());
+
+    TripStatusBean status = vehicle.getTripStatus();
+
+    if (status == null)
+	_log.info("Null trip status. Skipping TDS values."); // Common case, particularly, e.g. when dead heading
+    else {
+	locationRecord.setNextScheduledStopId(status.getNextStop().getId());
+	locationRecord.setNextScheduledStopDistance(status.getNextStopDistanceFromVehicle());
+    }
+  }
+
   @PostConstruct
   public void setup() {
     super.setup();

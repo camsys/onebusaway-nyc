@@ -35,5 +35,5 @@ public class DefaultPresentationModelFactory implements PresentationModelFactory
   public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop) {
     return new RouteDestinationItem(group, null);
   }
-
+  
 }

@@ -41,6 +41,10 @@
     </bean> 
 
  -->
+    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
+        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+    </bean>
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${db.driverClassName}" />
         <property name="url" value="${db.url}" />
@@ -51,8 +55,8 @@
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
-                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">false</prop>
             </props> 
         </property> 
     </bean> 

@@ -17,7 +17,10 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -26,6 +29,7 @@ import org.onebusaway.siri.OneBusAwayAffects;
 import org.onebusaway.siri.OneBusAwayAffectsStructure.Applications;
 import org.onebusaway.siri.OneBusAwayConsequence;
 import org.onebusaway.siri.core.ESiriModuleType;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ESeverity;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
@@ -78,13 +82,53 @@ public class NycSiriService {
   @Autowired
   private TransitDataService _transitDataService;
 
+  public void handleServiceDeliveries(SituationExchangeResults result,
+      ServiceDelivery delivery) {
+    Set<String> incomingAgencies = collectAgencies(delivery);
+    List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
+    for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
+      SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
+      handleServiceDelivery(delivery, s, ESiriModuleType.SITUATION_EXCHANGE,
+          endpointDetails, result);
+    }
+    List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
+    boolean deletedIds = Collections.disjoint(preAlertIds, postAlertIds);
+//    org.apache.commons.collections.SetUtils.
+  }
+
+  private List<String> getExistingAlertIds(Set<String> agencies) {
+    List<String> alertIds = new ArrayList<String>();
+    for (String agency: agencies) {
+      ListBean<ServiceAlertBean> alerts = _transitDataService.getAllServiceAlertsForAgencyId(agency);
+      for (ServiceAlertBean alert: alerts.getList()) {
+        alertIds.add(alert.getId());
+      }
+    }
+    return alertIds;
+  }
+
+  private Set<String> collectAgencies(ServiceDelivery delivery) {
+    Set<String> agencies = new HashSet<String>();
+    for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
+      Situations situations = s.getSituations();
+      for (PtSituationElementStructure element : situations.getPtSituationElement()) {
+        String situationId = element.getSituationNumber().getValue();
+        AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
+        agencies.add(id.getAgencyId());
+      }
+    }
+    return agencies;
+  }
+
   public synchronized void handleServiceDelivery(
       ServiceDelivery serviceDelivery,
       AbstractServiceDeliveryStructure deliveryForModule,
-      ESiriModuleType moduleType, SiriEndpointDetails endpointDetails, SituationExchangeResults result) {
+      ESiriModuleType moduleType, SiriEndpointDetails endpointDetails,
+      SituationExchangeResults result) {
 
     handleSituationExchange(serviceDelivery,
-        (SituationExchangeDeliveryStructure) deliveryForModule, endpointDetails, result);
+        (SituationExchangeDeliveryStructure) deliveryForModule,
+        endpointDetails, result);
 
   }
 
@@ -94,7 +138,7 @@ public class NycSiriService {
 
     DeliveryResult deliveryResult = new DeliveryResult();
     result.delivery.add(deliveryResult);
-    
+
     Situations situations = sxDelivery.getSituations();
 
     if (situations == null)
@@ -124,8 +168,10 @@ public class NycSiriService {
 
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
       // TODO Needs to be create or update, not just create
-      getTransitDataService().createServiceAlert(defaultAgencyId, serviceAlertBean);
-      result.countPtSituationElementResult(deliveryResult, serviceAlertBean, "added");
+      getTransitDataService().createServiceAlert(defaultAgencyId,
+          serviceAlertBean);
+      result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
+          "added");
       // _serviceAlertsService.createOrUpdateServiceAlert(serviceAlert,
       // defaultAgencyId);
     }
@@ -133,7 +179,8 @@ public class NycSiriService {
     for (String serviceAlertId : serviceAlertIdsToRemove) {
       // TODO Confirm this conversion
       getTransitDataService().removeServiceAlert(serviceAlertId);
-      result.countPtSituationElementResult(deliveryResult, serviceAlertId, "removed");
+      result.countPtSituationElementResult(deliveryResult, serviceAlertId,
+          "removed");
     }
   }
 
@@ -749,4 +796,5 @@ public class NycSiriService {
   public void setTransitDataService(TransitDataService _transitDataService) {
     this._transitDataService = _transitDataService;
   }
+
 }

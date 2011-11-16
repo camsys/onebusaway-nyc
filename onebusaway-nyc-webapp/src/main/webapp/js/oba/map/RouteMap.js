@@ -216,7 +216,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		// update time
 		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
 		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
-		html += '   <span class="updated">Last updated ' + OBA.Util.displayTime((updateTimestampReference - updateTimestamp) / 1000) + '</span>'; 
+
+		var age = (updateTimestampReference - updateTimestamp) / 1000;
+		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
+		html += '   <span class="updated' + staleClass + '">Last updated ' + OBA.Util.displayTime(age) + '</span>'; 
 		
 		// (end header)
 		html += '  </p>';
@@ -276,9 +279,11 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			if(thisAge > age) {
 				age = thisAge;
 			}
-		});
+		});		
 		if(age !== null) {
-			html += '   <span class="updated">Last updated ' + OBA.Util.displayTime(age) + '</span>'; 
+			var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");
+
+			html += '   <span class="updated' + staleClass + '">Last updated ' + OBA.Util.displayTime(age) + '</span>'; 
 		}
 		
 		// (end header)
@@ -303,17 +308,25 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 					arrivalsByRouteAndHeadsign[key] = [];
 				}
 
-				arrivalsByRouteAndHeadsign[key].push(monitoredJourney.MonitoredVehicleJourney.MonitoredCall);
+				arrivalsByRouteAndHeadsign[key].push(monitoredJourney.MonitoredVehicleJourney);
 			});
 		
-			jQuery.each(arrivalsByRouteAndHeadsign, function(routeLabel, monitoredCalls) {
+			jQuery.each(arrivalsByRouteAndHeadsign, function(routeLabel, monitoredVehicleJourneyCollection) {
 				html += '<li class="route">' + routeLabel + '</li>';
 
-				jQuery.each(monitoredCalls, function(_, monitoredCall) {
+				jQuery.each(monitoredVehicleJourneyCollection, function(_, monitoredVehicleJourney) {
 					if(_ >= 3) {
 						return false;
 					}
-					html += '<li class="arrival">' + monitoredCall.Extensions.distances.presentableDistance + '</li>';
+					
+					var distance = monitoredVehicleJourney.MonitoredCall.Extensions.distances.presentableDistance;
+					
+					if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
+							monitoredVehicleJourney.ProgressStatus === "layover") {
+						distance += " (at terminal)";
+					}
+					
+					html += '<li class="arrival">' + distance + '</li>';
 				});
 			});
 			html += '</ul>';

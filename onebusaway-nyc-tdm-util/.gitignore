@@ -7,3 +7,5 @@ test-result/*
 *~
 *.log
 logs/*
+eclipse/classes/*
+precompiled/*

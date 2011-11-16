@@ -15,10 +15,14 @@ import tcip_final_3_0_5_1.SCHPullInOutInfo;
 
 public class MtaUtsToTcipVehicleAssignmentConverter {
 
+  public MtaUtsToTcipVehicleAssignmentConverter() {
+    setMappingTool(new UtsMappingTool());
+  }
+
   UtsMappingTool mappingTool = null;
 
-  public MtaUtsToTcipVehicleAssignmentConverter() {
-    mappingTool = new UtsMappingTool();
+  public void setMappingTool(UtsMappingTool mappingTool) {
+    this.mappingTool = mappingTool;
   }
 
   /***
@@ -56,31 +60,18 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     SCHPullInOutInfo outputAssignment = new SCHPullInOutInfo();
 
     Long agencyId = mappingTool.getAgencyIdFromUtsAuthId(inputAssignment.getAuthId());
-    DateTime pullInTime = getSchedDateAsCalByType(inputAssignment, true); // Get
-                                                                          // the
-                                                                          // pull
-                                                                          // in
-                                                                          // time
-                                                                          // and
-                                                                          // store
-                                                                          // it
-                                                                          // as
-                                                                          // it's
-                                                                          // used
-                                                                          // multiple
-                                                                          // times.
-    DateTime pullOutTime = getSchedDateAsCalByType(inputAssignment, false); // ditto
-                                                                            // for
-                                                                            // the
-                                                                            // pull
-                                                                            // out
-                                                                            // time.
+
+    // Get the pull in time and store it as it's used multiple times.
+    DateTime pullInTime = getSchedDateAsCalByType(inputAssignment, true);
+
+    // ditto for the pull out time.
+    DateTime pullOutTime = getSchedDateAsCalByType(inputAssignment, false);
 
     // Set vehicle to new CPTVehicleIden
     CPTVehicleIden bus = new CPTVehicleIden();
     bus.setAgencyId(agencyId);
     bus.setVehicleId(inputAssignment.getBusNumber());
-    bus.setDesignator(UtsMappingTool.BUS_DESIGNATOR);
+    bus.setDesignator(mappingTool.getVehicleDesignatorFromAgencyId(agencyId));
     outputAssignment.setVehicle(bus);
 
     // set time to be the scheduled pull in or pull out time, based on isPullIn
