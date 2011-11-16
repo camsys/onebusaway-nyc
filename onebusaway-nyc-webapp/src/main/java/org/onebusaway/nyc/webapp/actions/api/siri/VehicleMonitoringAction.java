@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -181,16 +183,24 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
     Situations situations = new Situations();
     situationExchangeDelivery.setSituations(situations);
+//    List<PtSituationElementStructure> ptSituationElements = situations.getPtSituationElement();
+    
+    Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>(); 
+    
     for (VehicleActivityStructure activity : activities) {
       List<SituationRefStructure> situationRefs = activity.getMonitoredVehicleJourney().getSituationRef();
       for (SituationRefStructure situationRef : situationRefs) {
         String situationId = situationRef.getSituationSimpleRef().getValue();
         ServiceAlertBean serviceAlert = _transitDataService.getServiceAlertForId(situationId);
         PtSituationElementStructure e = getServiceAlertBeanAsPtSituationElementStructure(serviceAlert);
-        situationExchangeDelivery.getSituations().getPtSituationElement().add(e);
+        ptSituationElements.put(situationId, e);
       }
     }
 
+    for (PtSituationElementStructure p: ptSituationElements.values()) {
+      situations.getPtSituationElement().add(p);
+    }
+    
     if (situationExchangeDelivery.getSituations() != null
         && !CollectionUtils.isEmpty(situationExchangeDelivery.getSituations().getPtSituationElement()))
       serviceDelivery.getSituationExchangeDelivery().add(
