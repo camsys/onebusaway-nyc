@@ -56,8 +56,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     List<String> distanceAwayStrings = new ArrayList<String>();
     for(MonitoredStopVisitStructure visit : visits) {
       String routeId = visit.getMonitoredVehicleJourney().getLineRef().getValue();
-      String directionId = visit.getMonitoredVehicleJourney().getDirectionRef().getValue();
-      if(!route.getId().equals(routeId) || !group.getId().equals(directionId))
+      if(!route.getId().equals(routeId))
         continue;
 
       MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
@@ -67,7 +66,6 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
         continue;
 
       Long thisLastUpdateTime = visit.getRecordedAtTime().getTime();
-
       distanceAwayStrings.add(getPresentableDistance(visit.getMonitoredVehicleJourney(), thisLastUpdateTime));
     }
 
@@ -76,7 +74,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     return item;
   }
   
-  public String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime) {
+  private String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime) {
     MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
     SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
     SiriDistanceExtension distanceExtension = wrapper.getDistances();    
