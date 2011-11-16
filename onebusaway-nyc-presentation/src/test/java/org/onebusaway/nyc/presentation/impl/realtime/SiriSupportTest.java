@@ -39,7 +39,7 @@ public class SiriSupportTest extends SiriSupport {
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     boolean includeOnwardCalls = false;
-    MonitoredVehicleJourney journey = getMonitoredVehicleJourney(trip, monitoredCallStopBean, includeOnwardCalls);
+    MonitoredVehicleJourney journey = getMonitoredVehicleJourney(trip.getTrip(), trip, monitoredCallStopBean, includeOnwardCalls);
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();
     assertNotNull(situationRefs);
