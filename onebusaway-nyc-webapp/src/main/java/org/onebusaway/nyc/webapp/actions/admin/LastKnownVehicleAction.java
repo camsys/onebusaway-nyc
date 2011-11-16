@@ -26,6 +26,8 @@ import com.google.gson.GsonBuilder;
 @Results({ @Result(type = "redirectAction", name = "redirect", params = {
 		"namespace", "/admin", "actionName", "last-known-vehicle" }) })
 public class LastKnownVehicleAction extends OneBusAwayNYCActionSupport {
+	private static final long serialVersionUID = 1L;
+	
 	private String lastKnownLocationsUrl;
 	private String signCodesUrl;
 	

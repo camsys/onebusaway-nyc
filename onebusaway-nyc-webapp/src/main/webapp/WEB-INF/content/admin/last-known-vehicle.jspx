@@ -20,16 +20,14 @@
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>OneBusAway NYC: Last Known Vehicle Locations</title>
+<title>OneBusAway NYC: Vehicle Status</title>
 
 </head>
 <body>
 
 <div id="content">
 <div id="text">
-	<h1>Vehicles</h1>
-	
-	<p>Last known locations</p>
+	<h1>Most Recent Vehicle Status</h1>
 	
 	<table>
 	
