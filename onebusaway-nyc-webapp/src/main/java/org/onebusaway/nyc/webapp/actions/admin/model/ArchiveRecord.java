@@ -1,5 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.admin.model;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ArchiveRecord {
 
 	private int id;
@@ -151,5 +154,13 @@ public class ArchiveRecord {
 	}
 	public void setDepotId(String depotId) {
 		this.depotId = depotId;
+	}
+	
+	public int getBusId() {
+		String busIdStr = getVehicleId().replaceFirst("\\D+", "");
+		
+		int busId = Integer.parseInt(busIdStr);
+		
+		return busId;
 	}
 }
