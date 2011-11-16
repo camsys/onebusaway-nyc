@@ -1,5 +1,11 @@
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.Version;
@@ -16,14 +22,9 @@ import org.codehaus.jackson.map.ser.BeanSerializer;
 import org.codehaus.jackson.map.ser.BeanSerializerModifier;
 import org.codehaus.jackson.map.ser.std.BeanSerializerBase;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import org.springframework.util.ReflectionUtils;
 
 import uk.org.siri.siri.Siri;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.List;
 
 public class SiriJsonSerializer {
   
@@ -42,7 +43,7 @@ public class SiriJsonSerializer {
       
       try {
         Class<? extends Object> beanClass = bean.getClass();
-        Field valueField = beanClass.getDeclaredField(fieldName);
+        Field valueField = ReflectionUtils.findField(beanClass, fieldName);
         valueField.setAccessible(true);
 
         Object value = valueField.get(bean);
@@ -52,6 +53,7 @@ public class SiriJsonSerializer {
         jgen.writeNull();
       }
     }
+    
   }
   
   public static class CustomBeanSerializerModifier extends BeanSerializerModifier {

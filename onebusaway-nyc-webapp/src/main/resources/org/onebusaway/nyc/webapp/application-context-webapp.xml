@@ -64,6 +64,6 @@
     </bean>
     
     <bean class="org.onebusaway.nyc.webapp.actions.admin.LastKnownVehicleAction">
-		<property name="lastKnownLocationsUrl" value="http://localhost:8084/onebusaway-nyc-report-archive/api/record/last-known/list" />
+		<property name="lastKnownLocationsUrl" value="${archive.path}/api/record/last-known/list" />
 	</bean>
 </beans>

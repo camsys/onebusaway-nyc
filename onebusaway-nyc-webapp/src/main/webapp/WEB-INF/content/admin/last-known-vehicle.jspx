@@ -30,7 +30,7 @@
 	<h1>Vehicles</h1>
 	
 	<p>Last known locations</p>
-	<s:text name="lastKnownLocationsUrl" />
+	
 	<table>
 	
 	<tr>
@@ -41,6 +41,7 @@
 		<th>Inferred State</th>
 		<th>Inferred Route + Headsign</th>
 		<th>Inferred DSC</th>
+		<th>Observed DSC</th>
 		<th>Pull-out</th>
 		<th>Pull-in</th>
 		
@@ -51,12 +52,12 @@
 			
 			<tr>
 			
-			<td>  <s:property value="id" /> </td>
+			<td>  <s:property value="vehicleId" /> </td>
 			<td>  </td>
 			<td> <s:property value="phase" /> </td>
 			<td>  </td>
+			<td>  <s:property value="lastInferredDestinationSignCode" /> </td>
 			<td>  <s:property value="mostRecentObservedDestinationSignCode" /> </td>
-			<td>  </td>
 			<td>  </td>
 			
 			</tr>

@@ -249,7 +249,24 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 			html += '</ul>';
 		}
-	
+		
+		// Service alerts
+		var situationIds = {};
+		var situationCount = 0; // Yes, this counts vehicles w/ situation refs
+		jQuery.each(activity.MonitoredVehicleJourney.SituationRef, function(_, situation) {
+			situationIds[situation.SituationSimpleRef] = true;
+			situationCount += 1;
+		});
+		
+		if (situationCount > 0) {
+			jQuery.each(r.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+				var situationId = ptSituationElement.SituationNumber;
+				if (situationIds[situationId]==true) {
+				html += "<p>" + ptSituationElement.Description + "</p>";
+				}
+			});
+		}
+
 		// (end popup)
 		html += '</div>';
 		

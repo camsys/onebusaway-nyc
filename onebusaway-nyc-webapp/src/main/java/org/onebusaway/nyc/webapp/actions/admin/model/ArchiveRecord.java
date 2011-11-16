@@ -17,6 +17,7 @@ public class ArchiveRecord {
 	private double lastObservedLatitude;
 	private double lastObservedLongitude;
 	private String mostRecentObservedDestinationSignCode;
+	private String lastInferredDestinationSignCode;
 	private boolean inferenceIsEnabled;
 	private boolean inferenceEngineIsPrimary;
 	private boolean inferenceIsFormal;
@@ -113,6 +114,13 @@ public class ArchiveRecord {
 	public void setMostRecentObservedDestinationSignCode(
 			String mostRecentObservedDestinationSignCode) {
 		this.mostRecentObservedDestinationSignCode = mostRecentObservedDestinationSignCode;
+	}
+	public String getLastInferredDestinationSignCode() {
+		return lastInferredDestinationSignCode;
+	}
+	public void setLastInferredDestinationSignCode(
+			String lastInferredDestinationSignCode) {
+		this.lastInferredDestinationSignCode = lastInferredDestinationSignCode;
 	}
 	public boolean isInferenceIsEnabled() {
 		return inferenceIsEnabled;
