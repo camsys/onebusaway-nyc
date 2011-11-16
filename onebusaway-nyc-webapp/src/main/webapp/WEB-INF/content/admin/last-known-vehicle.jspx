@@ -55,7 +55,7 @@
 			<td>  <s:property value="vehicleId" /> </td>
 			<td>  </td>
 			<td> <s:property value="phase" /> </td>
-			<td>  </td>
+			<td> <s:property value="destSignMap[lastInferredDestinationSignCode].routeName" /> &#160; <s:property value="destSignMap[lastInferredDestinationSignCode].messageText" />   </td>
 			<td>  <s:property value="lastInferredDestinationSignCode" /> </td>
 			<td>  <s:property value="mostRecentObservedDestinationSignCode" /> </td>
 			<td>  </td>
