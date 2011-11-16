@@ -12,6 +12,7 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import uk.org.siri.siri.DefaultedTextStructure;
+import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
@@ -62,7 +63,6 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
 
   @Test
   public void testAddSituationExchangeDuplicate() {
-    
     ServiceAlertBean serviceAlertBean = createServiceAlertBean("MTA NYCT_100");
 
     transitDataService = mock(TransitDataService.class);
@@ -83,8 +83,32 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     DefaultedTextStructure description = ptSituationElementStructure.getDescription();
     DefaultedTextStructure summary = ptSituationElementStructure.getSummary();
     assertEquals("description", description.getValue());
-    assertEquals("summary", summary.getValue());
+    assertEquals("summary", summary.getValue());    
+  }
+
+  @Test
+  public void testAddSituationExchangeDuplicateForStops() {
+    ServiceAlertBean serviceAlertBean = createServiceAlertBean("MTA NYCT_100");
+
+    transitDataService = mock(TransitDataService.class);
+    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean);
+
+    ServiceDelivery serviceDelivery = new ServiceDelivery();
+    List<MonitoredStopVisitStructure> activities = new ArrayList<MonitoredStopVisitStructure>();
+    createStopActivity(activities, "MTA NYCT_100");
+    createStopActivity(activities, "MTA NYCT_100");
     
+    addSituationExchangeToSiriForStops(serviceDelivery, activities, transitDataService);
+    
+    List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
+    assertEquals(1, list.size());
+    SituationExchangeDeliveryStructure situationExchangeDeliveryStructure = list.get(0);
+    List<PtSituationElementStructure> ptSituationElements = situationExchangeDeliveryStructure.getSituations().getPtSituationElement();
+    PtSituationElementStructure ptSituationElementStructure = ptSituationElements.get(0);
+    DefaultedTextStructure description = ptSituationElementStructure.getDescription();
+    DefaultedTextStructure summary = ptSituationElementStructure.getSummary();
+    assertEquals("description", description.getValue());
+    assertEquals("summary", summary.getValue());    
   }
 
   public void createActivity(List<VehicleActivityStructure> activities, String id) {
@@ -93,6 +117,21 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
 
     MonitoredVehicleJourney monitoredVehicleJourney = new MonitoredVehicleJourney();
     vehicleActivity.setMonitoredVehicleJourney(monitoredVehicleJourney);
+
+    SituationRefStructure situationRefStructure = new SituationRefStructure();
+    monitoredVehicleJourney.getSituationRef().add(situationRefStructure);
+    SituationSimpleRefStructure situationSimpleRef = new SituationSimpleRefStructure();
+    situationRefStructure.setSituationSimpleRef(situationSimpleRef);
+    situationSimpleRef.setValue(id);
+  }
+
+  private void createStopActivity(List<MonitoredStopVisitStructure> activities,
+      String id) {
+    MonitoredStopVisitStructure activity = new MonitoredStopVisitStructure();
+    activities.add(activity);
+
+    MonitoredVehicleJourney monitoredVehicleJourney = new MonitoredVehicleJourney();
+    activity.setMonitoredVehicleJourney(monitoredVehicleJourney);
 
     SituationRefStructure situationRefStructure = new SituationRefStructure();
     monitoredVehicleJourney.getSituationRef().add(situationRefStructure);

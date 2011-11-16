@@ -50,7 +50,7 @@
 			
 			<tr>
 			
-			<td>  <s:property value="vehicleId" /> </td>
+			<td>  <s:property value="getBusId()" /> </td>
 			<td>  </td>
 			<td> <s:property value="phase" /> </td>
 			<td> <s:property value="destSignMap[lastInferredDestinationSignCode].routeName" /> &#160; <s:property value="destSignMap[lastInferredDestinationSignCode].messageText" />   </td>

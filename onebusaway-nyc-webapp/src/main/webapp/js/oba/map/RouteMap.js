@@ -250,27 +250,38 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '</ul>';
 		}
 		
-		// Service alerts
-		var situationIds = {};
-		var situationCount = 0; // Yes, this counts vehicles w/ situation refs
-		jQuery.each(activity.MonitoredVehicleJourney.SituationRef, function(_, situation) {
-			situationIds[situation.SituationSimpleRef] = true;
-			situationCount += 1;
-		});
+		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);
 		
-		if (situationCount > 0) {
-			jQuery.each(r.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
-				var situationId = ptSituationElement.SituationNumber;
-				if (situationIds[situationId]==true) {
-				html += "<p>" + ptSituationElement.Description + "</p>";
-				}
-			});
-		}
-
 		// (end popup)
 		html += '</div>';
 		
 		return html;
+	}
+
+	function getServiceAlertContent(r, situationRefs) {
+	    var html = '';
+        var situationIds = {};
+        var situationRefsCount = 0; // Yes, this counts vehicles w/ situation refs
+        if (situationRefs != null) {
+            jQuery.each(situationRefs, function(_, situation) {
+                situationIds[situation.SituationSimpleRef] = true;
+                situationRefsCount += 1;
+            });
+        }
+        
+        if (situationRefs == null || situationRefsCount > 0) {
+            jQuery.each(r.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+                var situationId = ptSituationElement.SituationNumber;
+                if (situationRefs == null || situationIds[situationId]==true) {
+                    html += "<li>" + ptSituationElement.Description + "</li>";
+                }
+            });
+        }
+        
+        if (!(html == '')) {
+            html = '<p class="service">Alerts:</p><ul class="service-alert">' + html + '</ul>';
+        }
+        return html;
 	}
 	
 	function getStopContentForResponse(r, stopItem) {
@@ -348,7 +359,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 			html += '</ul>';
 		}
-		
+
+	    html += getServiceAlertContent(r, null);
+	        
 		// (end popup)
 		html += '</div>';
 		

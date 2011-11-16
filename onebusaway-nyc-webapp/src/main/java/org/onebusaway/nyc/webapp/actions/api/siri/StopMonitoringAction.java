@@ -13,8 +13,10 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
+import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +39,16 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
   private static final long serialVersionUID = 1L;
 
+  @Autowired
+  public TransitDataService _transitDataService;
+
   @Autowired  
   private RealtimeService _realtimeService;
 
   private Siri _response;
   
+  private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
+
   private HttpServletRequest _request;
   
   private Date _now = new Date();
@@ -102,6 +109,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     serviceDelivery.setResponseTimestamp(_now);
     serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
+
+    _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _transitDataService);
 
     Siri siri = new Siri();
     siri.setServiceDelivery(serviceDelivery);

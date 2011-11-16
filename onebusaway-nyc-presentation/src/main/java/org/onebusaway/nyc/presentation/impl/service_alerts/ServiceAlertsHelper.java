@@ -27,6 +27,7 @@ import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.ExtensionsStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
 import uk.org.siri.siri.LineRefStructure;
+import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.PtConsequenceStructure;
 import uk.org.siri.siri.PtConsequencesStructure;
@@ -52,21 +53,49 @@ public class ServiceAlertsHelper {
   public void addSituationExchangeToSiri(ServiceDelivery serviceDelivery,
       List<VehicleActivityStructure> activities,
       TransitDataService transitDataService) {
+
+    Map<String, PtSituationElementStructure> ptSituationElements =
+        new HashMap<String, PtSituationElementStructure>();
+    for (VehicleActivityStructure activity : activities) {
+      addSituationElement(transitDataService, ptSituationElements,
+          activity.getMonitoredVehicleJourney().getSituationRef());
+    }
+    addPtSituationElementsToServiceDelivery(serviceDelivery, ptSituationElements);
+  }
+
+
+  public void addSituationExchangeToSiriForStops(ServiceDelivery serviceDelivery,
+      List<MonitoredStopVisitStructure> visits,
+      TransitDataService transitDataService) {
+
+    Map<String, PtSituationElementStructure> ptSituationElements =
+        new HashMap<String, PtSituationElementStructure>();
+    for (MonitoredStopVisitStructure visit: visits) {
+      addSituationElement(transitDataService, ptSituationElements,
+          visit.getMonitoredVehicleJourney().getSituationRef());
+    }
+    addPtSituationElementsToServiceDelivery(serviceDelivery, ptSituationElements);
+  }
+
+  
+  private void addSituationElement(TransitDataService transitDataService,
+      Map<String, PtSituationElementStructure> ptSituationElements,
+       List<SituationRefStructure> situationRefs) {
+    for (SituationRefStructure situationRef : situationRefs) {
+      String situationId = situationRef.getSituationSimpleRef().getValue();
+      ServiceAlertBean serviceAlert = transitDataService.getServiceAlertForId(situationId);
+      PtSituationElementStructure e = getServiceAlertBeanAsPtSituationElementStructure(serviceAlert);
+      ptSituationElements.put(situationId, e);
+    }
+  }
+
+  
+  private void addPtSituationElementsToServiceDelivery(
+      ServiceDelivery serviceDelivery,
+      Map<String, PtSituationElementStructure> ptSituationElements) {
     SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
     Situations situations = new Situations();
     situationExchangeDelivery.setSituations(situations);
-
-    Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
-
-    for (VehicleActivityStructure activity : activities) {
-      List<SituationRefStructure> situationRefs = activity.getMonitoredVehicleJourney().getSituationRef();
-      for (SituationRefStructure situationRef : situationRefs) {
-        String situationId = situationRef.getSituationSimpleRef().getValue();
-        ServiceAlertBean serviceAlert = transitDataService.getServiceAlertForId(situationId);
-        PtSituationElementStructure e = getServiceAlertBeanAsPtSituationElementStructure(serviceAlert);
-        ptSituationElements.put(situationId, e);
-      }
-    }
 
     for (PtSituationElementStructure p : ptSituationElements.values()) {
       situations.getPtSituationElement().add(p);
@@ -76,8 +105,8 @@ public class ServiceAlertsHelper {
         && !CollectionUtils.isEmpty(situationExchangeDelivery.getSituations().getPtSituationElement()))
       serviceDelivery.getSituationExchangeDelivery().add(
           situationExchangeDelivery);
-
   }
+
 
   public PtSituationElementStructure getServiceAlertBeanAsPtSituationElementStructure(
       ServiceAlertBean serviceAlert) {
