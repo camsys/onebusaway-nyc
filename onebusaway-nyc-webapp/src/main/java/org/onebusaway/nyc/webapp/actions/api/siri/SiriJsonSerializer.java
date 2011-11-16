@@ -44,7 +44,6 @@ public class SiriJsonSerializer {
       try {
         Class<? extends Object> beanClass = bean.getClass();
         Field valueField = ReflectionUtils.findField(beanClass, fieldName);
-//        Field valueField = beanClass.getDeclaredField(fieldName);
         valueField.setAccessible(true);
 
         Object value = valueField.get(bean);
