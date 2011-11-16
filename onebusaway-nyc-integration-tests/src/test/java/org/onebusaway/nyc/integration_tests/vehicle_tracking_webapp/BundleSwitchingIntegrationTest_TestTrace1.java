@@ -16,11 +16,16 @@
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp;
 
 import org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases.AbstractTraceRunner;
+import org.onebusaway.realtime.api.EVehiclePhase;
 
 public class BundleSwitchingIntegrationTest_TestTrace1 extends AbstractTraceRunner {
 
   public BundleSwitchingIntegrationTest_TestTrace1() throws Exception {
     super("7564-2010-12-02T03-40-55.csv.gz");
     setLoops(1);
+    // Looks like we need to do this because the tests are
+    // loaded once and run twice, so the results will differ
+    setSeeds();
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.80);
   }
 }

@@ -136,6 +136,9 @@ public class VehicleStateLibrary {
     if (_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
       return false;
 
+    if (obs.isAtTerminal())
+      return true;
+    
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
@@ -162,11 +165,6 @@ public class VehicleStateLibrary {
         record.getLongitude());
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         loc, _terminalSearchRadius);
-
-//    List<BlockLayoverIndex> layoverIndices = Collections.emptyList();
-//    List<FrequencyBlockTripIndex> frequencyIndices = Collections.emptyList();
-//
-//    Set<BlockTripIndex> blockindices = new HashSet<BlockTripIndex>();
 
     List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
     for (StopEntry stop : stops) {

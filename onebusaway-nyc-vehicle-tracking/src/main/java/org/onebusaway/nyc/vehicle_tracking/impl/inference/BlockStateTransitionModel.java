@@ -190,10 +190,7 @@ public class BlockStateTransitionModel {
 
       updatedBlockState = cdf.sample();
 
-      // if (EVehiclePhase.isLayover(parentPhase) || obs.isAtTerminal()) {
-      if (EVehiclePhase.isLayover(parentPhase)
-          || VehicleStateLibrary.isAtPotentialLayoverSpot(updatedBlockState
-              .getBlockLocation())) {
+      if (EVehiclePhase.isLayover(parentPhase) || obs.isAtTerminal()) {
         updatedBlockState = _blocksFromObservationService.advanceLayoverState(
             obs.getTime(), updatedBlockState);
       }
