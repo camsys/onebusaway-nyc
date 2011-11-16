@@ -92,7 +92,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       VehicleActivityStructure activity = new VehicleActivityStructure();
       activity.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
 
-      MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(tripDetails, 
+      MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(tripDetails.getTrip(), tripDetails, 
           tripDetails.getStatus().getNextStop(), includeNextStops);
       
       if(journey == null)
@@ -139,7 +139,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       VehicleActivityStructure output = new VehicleActivityStructure();
       output.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
 
-      MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(tripDetails, 
+      MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(tripDetails.getTrip(), tripDetails, 
           tripDetails.getStatus().getNextStop(), includeNextStops);
       
       if(journey == null)
@@ -182,7 +182,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
         stopVisit.setRecordedAtTime(new Date(statusBean.getLastUpdateTime()));
         
-        MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(tripDetails, 
+        MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(adBean.getTrip(), tripDetails,
             adBean.getStop(), includeNextStops);
 
         if(journey == null)
