@@ -45,8 +45,8 @@ public class JourneyStateTransitionModel {
    * 
    ****/
 
-  public void move(VehicleState parentState, MotionState motionState, 
-		  Observation obs, List<VehicleState> results) {
+  public void move(VehicleState parentState,  
+      MotionState motionState, Observation obs, List<VehicleState> results) {
 
     List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
         obs);

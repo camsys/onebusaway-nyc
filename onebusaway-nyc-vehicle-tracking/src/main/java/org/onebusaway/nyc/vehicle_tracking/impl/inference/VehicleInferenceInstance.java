@@ -94,6 +94,13 @@ public class VehicleInferenceInstance {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
 
+  private VehicleStateLibrary _vehicleStateLibrary;
+
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+    _vehicleStateLibrary = vehicleStateLibrary;
+  }
+  
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -253,8 +260,9 @@ public class VehicleInferenceInstance {
     }
 
     boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-    boolean atTerminal = _baseLocationService
-        .getTerminalNameForLocation(location) != null;
+//    boolean atTerminal = _baseLocationService
+//        .getTerminalNameForLocation(location) != null;
+    boolean atTerminal = _vehicleStateLibrary.isAtPotentialTerminal(record);
     boolean outOfService = lastValidDestinationSignCode == null
         || _destinationSignCodeService
             .isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)

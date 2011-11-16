@@ -40,7 +40,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   /**
    * Distance, in meters, that a bus has to travel to be considered "in motion"
    */
-  private double _motionThreshold = 20;
+  static private double _motionThreshold = 20;
 
   @Autowired
   public void setJourneyMotionModel(
@@ -48,8 +48,12 @@ public class MotionModelImpl implements MotionModel<Observation> {
     _journeyMotionModel = journeyMotionModel;
   }
 
-  public void setMotionThreshold(double motionThreshold) {
+  static public void setMotionThreshold(double motionThreshold) {
     _motionThreshold = motionThreshold;
+  }
+  
+  static public double getMotionThreshold() {
+    return _motionThreshold;
   }
 
   @Override

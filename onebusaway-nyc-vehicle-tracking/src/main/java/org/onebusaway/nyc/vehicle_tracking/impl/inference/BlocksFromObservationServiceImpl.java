@@ -451,7 +451,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     /**
      * First, we must actually be in a layover location
      */
-    BlockStopTimeEntry layoverSpot = _vehicleStateLibrary
+    BlockStopTimeEntry layoverSpot = VehicleStateLibrary
         .getPotentialLayoverSpot(blockLocation);
 
     if (layoverSpot == null)
