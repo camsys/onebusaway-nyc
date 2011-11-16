@@ -30,7 +30,7 @@
 	<h1>Vehicles</h1>
 	
 	<p>Last known locations</p>
-	<s:text name="lastKnownLocationsUrl" />
+	
 	<table>
 	
 	<tr>
