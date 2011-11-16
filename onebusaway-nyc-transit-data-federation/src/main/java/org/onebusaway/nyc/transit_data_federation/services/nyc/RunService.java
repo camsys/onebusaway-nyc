@@ -11,6 +11,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 public interface RunService {
   String getInitialRunForTrip(AgencyAndId trip);
@@ -53,5 +54,7 @@ public interface RunService {
    */
   TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(AgencyAndId runAgencyAndId,
       Set<BlockInstance> nearbyBlocks, long time);
+
+  RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip, int scheduledTime);
 
 }

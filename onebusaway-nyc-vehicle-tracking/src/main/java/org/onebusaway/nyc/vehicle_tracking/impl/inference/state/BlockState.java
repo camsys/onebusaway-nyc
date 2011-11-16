@@ -77,11 +77,19 @@ public final class BlockState {
 
   @Override
   public String toString() {
-    return "[" + blockInstance + ", location=" + blockLocation + ", dsc="
-        + destinationSignCode + ", runTrip=" + runTrip + ", isOpAssigned="
-        + isOpAssigned + ", isRunReported=" + isRunReported
-        + ", isRunReportedAssignedMismatch=" + isRunReportedAssignedMismatch
-        + "]";
+    StringBuilder b = new StringBuilder();
+    b.append("BlockState(");
+    b.append(blockInstance).append(",");
+    b.append(blockLocation).append(",");
+    b.append(runTrip).append(",");
+    b.append(" {dsc=").append(destinationSignCode);
+    b.append(", isOpAssigned=").append(isOpAssigned);
+    b.append(", isRunReported=").append(isRunReported);
+    b.append(", isRunReportedAssignedMismatch=").append(
+        isRunReportedAssignedMismatch);
+    b.append("})");
+
+    return b.toString();
   }
 
   public String getRunId() {

@@ -338,8 +338,8 @@ public class BlockStateService {
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService
         .getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
-    RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(
-        blockInstance, blockLocation.getScheduledTime());
+    RunTripEntry rte = _runService.getRunTripEntryForTripAndTime(
+        activeTrip.getTrip(), blockLocation.getScheduledTime());
     if (rte == null)
       _log.debug("runTrip null for blockInstance=" + blockInstance
           + ", scheduleTime=" + blockLocation.getScheduledTime());

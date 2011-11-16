@@ -264,8 +264,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     }
 
     /**
-     * Third source of trips: trips nearby the current gps location Ok we're not
-     * doing this for now
+     * Third source of trips: trips nearby the current gps location 
      */
     if (_includeNearbyBlocks) {
       potentialBlocks.addAll(nearbyBlocks);
@@ -452,7 +451,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     /**
      * First, we must actually be in a layover location
      */
-    BlockStopTimeEntry layoverSpot = _vehicleStateLibrary
+    BlockStopTimeEntry layoverSpot = VehicleStateLibrary
         .getPotentialLayoverSpot(blockLocation);
 
     if (layoverSpot == null)

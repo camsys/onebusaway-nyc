@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -33,6 +34,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +43,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class BlockStateTransitionModel {
 
+  private static Logger _log = LoggerFactory
+      .getLogger(BlockStateTransitionModel.class);
+  
   private DestinationSignCodeService _destinationSignCodeService;
 
   private BlocksFromObservationService _blocksFromObservationService;
@@ -50,6 +56,8 @@ public class BlockStateTransitionModel {
 
   private VehicleStateLibrary _vehicleStateLibrary;
 
+  @Autowired
+  private ConfigurationService _configurationService;
   /****
    * Parameters
    ****/
@@ -102,8 +110,8 @@ public class BlockStateTransitionModel {
    ****/
 
   /**
-   * This method samples the best block transition.  It should probably
-   * return all best possible.  Just following convention for now.
+   * This method samples the best block transition. It should probably return
+   * all best possible. Just following convention for now.
    * 
    * @param parentState
    * @param motionState
@@ -149,7 +157,8 @@ public class BlockStateTransitionModel {
          * We're currently in progress on a block, so we update our block
          * location along the block that we're actively serving
          */
-        potentialTransStates = advanceAlongBlock(parentPhase, parentBlockState, obs);
+        potentialTransStates = advanceAlongBlock(parentPhase, parentBlockState,
+            obs);
 
       } else {
 
@@ -166,51 +175,54 @@ public class BlockStateTransitionModel {
        */
       return null;
     }
-    
-    BlockState updatedBlockState = null; 
-    
+
+    BlockState updatedBlockState = null;
+
     if (potentialTransStates == null) {
       /**
-       * Resample the potential blocks-in-progress when no "best" transitions are found
-       * (why?)
+       * Resample the potential blocks-in-progress when no "best" transitions
+       * are found (why?)
        */
-      CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+      CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy
+          .cdfForJourneyInProgress(obs);
       if (!cdf.canSample())
         return null;
-      
+
       updatedBlockState = cdf.sample();
-      
+
       if (EVehiclePhase.isLayover(parentPhase) || obs.isAtTerminal()) {
         updatedBlockState = _blocksFromObservationService.advanceLayoverState(
             obs.getTime(), updatedBlockState);
       }
     } else {
       /**
-       * Sample the "best" possible transitions
-       * (best in terms of schedDev and locDev)
+       * Sample the "best" possible transitions (best in terms of schedDev and
+       * locDev)
        */
       CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
-      
-      for (BlockState state: potentialTransStates) {
+
+      for (BlockState state : potentialTransStates) {
 
         double p = _blockStateSamplingStrategy.scoreState(state, obs);
 
         cdf.put(p, state);
       }
-      
+
       if (!cdf.canSample())
         return null;
-      
+
       updatedBlockState = cdf.sample();
     }
-    
+
     return updatedBlockState;
   }
 
-  public Set<BlockState> getClosestBlockStates(BlockState blockState, Observation obs) {
+  public Set<BlockState> getClosestBlockStates(BlockState blockState,
+      Observation obs) {
 
-    Map<BlockInstance, Set<BlockState>> states = _observationCache.getValueForObservation(
-        obs, EObservationCacheKey.CLOSEST_BLOCK_LOCATION);
+    Map<BlockInstance, Set<BlockState>> states = _observationCache
+        .getValueForObservation(obs,
+            EObservationCacheKey.CLOSEST_BLOCK_LOCATION);
 
     if (states == null) {
       states = new HashMap<BlockInstance, Set<BlockState>>();
@@ -245,7 +257,7 @@ public class BlockStateTransitionModel {
     /**
      * Have we just transitioned out of a terminal?
      */
-    if (prevObs != null) {
+    if (prevObs != null && parentState.getBlockState() != null) {
 
       // If we just move out of the terminal, allow a block transition
       if (prevObs.isAtTerminal() && !obs.isAtTerminal()) {
@@ -256,7 +268,8 @@ public class BlockStateTransitionModel {
     NycRawLocationRecord record = obs.getRecord();
     String dsc = record.getDestinationSignCode();
 
-    boolean unknownDSC = _destinationSignCodeService.isUnknownDestinationSignCode(dsc);
+    boolean unknownDSC = _destinationSignCodeService
+        .isUnknownDestinationSignCode(dsc);
 
     /**
      * If we have an unknown DSC, we assume it's a typo, so we assume our
@@ -289,13 +302,13 @@ public class BlockStateTransitionModel {
     /**
      * TODO: Should we allow a vehicle to travel backwards?
      */
-    Set<BlockState> updatedBlockStates = _blocksFromObservationService.advanceState(
-        obs, blockState, 0, distanceToTravel);
+    Set<BlockState> updatedBlockStates = _blocksFromObservationService
+        .advanceState(obs, blockState, 0, distanceToTravel);
 
     if (EVehiclePhase.isLayover(phase) || obs.isAtTerminal()) {
       for (BlockState state : updatedBlockStates) {
         state = _blocksFromObservationService.advanceLayoverState(
-          obs.getTime(), state);
+            obs.getTime(), state);
       }
     }
 
@@ -319,16 +332,17 @@ public class BlockStateTransitionModel {
     }
 
     Set<BlockState> closestStates = new HashSet<BlockState>();
-    
-    for (BlockState state : _blocksFromObservationService.advanceState(obs, blockState,
-        -distanceToTravel, distanceToTravel)) {
-  
+
+    for (BlockState state : _blocksFromObservationService.advanceState(obs,
+        blockState, -distanceToTravel, distanceToTravel)) {
+
       ScheduledBlockLocation blockLocation = state.getBlockLocation();
       double d = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
           obs.getLocation());
-  
+
       if (d > 400) {
-        closestStates.addAll(_blocksFromObservationService.bestStates(obs, state));
+        closestStates.addAll(_blocksFromObservationService.bestStates(obs,
+            state));
       } else {
         closestStates.add(state);
       }

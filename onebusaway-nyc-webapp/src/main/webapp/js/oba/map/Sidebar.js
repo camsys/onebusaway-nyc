@@ -155,7 +155,7 @@ OBA.Sidebar = function() {
 					stopLink.click(function(e) {
 						e.preventDefault();
 						
-						jQuery.history.load(stop.stopIdWithoutAgency);
+						routeMap.showPopupForStopId(stop.stopId);
 					});
 				});
 

@@ -94,6 +94,13 @@ public class VehicleInferenceInstance {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
 
+  private VehicleStateLibrary _vehicleStateLibrary;
+
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+    _vehicleStateLibrary = vehicleStateLibrary;
+  }
+  
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -220,7 +227,8 @@ public class VehicleInferenceInstance {
        * to replace the missing values
        */
       if (_previousObservation == null) {
-        _log.info("missing previous observation and current lat/lon.  skipping update.");
+        _log.info("missing previous observation and current lat/lon:"
+            + record.getVehicleId() + ", skipping update.");
         return false;
       }
 
@@ -252,8 +260,9 @@ public class VehicleInferenceInstance {
     }
 
     boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-    boolean atTerminal = _baseLocationService
-        .getTerminalNameForLocation(location) != null;
+//    boolean atTerminal = _baseLocationService
+//        .getTerminalNameForLocation(location) != null;
+    boolean atTerminal = _vehicleStateLibrary.isAtPotentialTerminal(record);
     boolean outOfService = lastValidDestinationSignCode == null
         || _destinationSignCodeService
             .isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)
@@ -533,10 +542,10 @@ public class VehicleInferenceInstance {
             .getConfigurationValueAsInteger("display.stalledTimeout", 900))
           statusFields.add("stalled");
       }
-      
+
       record.setInferredDsc(blockState.getDestinationSignCode());
-    } 
-    
+    }
+
     if (StringUtils.isBlank(record.getInferredDsc()))
       record.setInferredDsc("0000");
 
@@ -575,7 +584,7 @@ public class VehicleInferenceInstance {
         lastRecord.setRunRouteId(runInfo[0]);
         if (runInfo.length > 1)
           lastRecord.setRunNumber(runInfo[1]);
-      } 
+      }
     }
 
     details.setLastObservation(lastRecord);

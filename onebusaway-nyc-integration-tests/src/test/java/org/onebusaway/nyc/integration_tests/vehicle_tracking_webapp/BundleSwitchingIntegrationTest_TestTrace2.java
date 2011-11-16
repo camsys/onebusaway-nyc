@@ -24,6 +24,10 @@ public class BundleSwitchingIntegrationTest_TestTrace2 extends AbstractTraceRunn
     super("7560-2010-11-27T23-28-47.csv.gz");
     setLoops(1);
 
+    // Looks like we need to do this because the tests are
+    // loaded once and run twice, so the results will differ
+    setSeeds();
+    
     // This test is noisy
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.90);
   }
