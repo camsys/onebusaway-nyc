@@ -91,6 +91,11 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
       
     List<VehicleActivityStructure> journeyList = _realtimeService.getVehicleActivityForRoute(route.getId(), 
         null, false);
+    
+    // service alerts
+    // TODO jmaki need to figure out what's going on with direction IDs
+    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForRouteAndDirection(route.getId(),group.getId()); 
+    destination.setServiceAlerts(serviceAlerts);
 
     // build map of stop IDs to list of distance strings
     Map<String, ArrayList<String>> stopIdToDistanceStringMap = new HashMap<String, ArrayList<String>>();      
