@@ -34,7 +34,7 @@ OBA.Sidebar = function() {
 		searchForm.submit(function(e) {
 			e.preventDefault();
 			
-			doSearch(searchInput.val());
+			jQuery.history.load(searchInput.val());
 
 			OBA.Config.analyticsFunction("Search", searchInput.val());
 		});
@@ -89,11 +89,7 @@ OBA.Sidebar = function() {
 				e.preventDefault();
 
 				var link = jQuery(this);
-				var searchForm = jQuery("#search");
-				var searchInput = jQuery("#search input[type=text]");
-
-				searchInput.val(link.text());
-				searchForm.submit();
+				jQuery.history.load(link.text());
 			});
 
 			link.hover(function() {
@@ -158,6 +154,7 @@ OBA.Sidebar = function() {
 
 					stopLink.click(function(e) {
 						e.preventDefault();
+						
 						routeMap.showPopupForStopId(stop.stopId);
 					});
 				});
@@ -211,11 +208,7 @@ OBA.Sidebar = function() {
 				e.preventDefault();
 				
 				var link = jQuery(this);
-				var searchForm = jQuery("#search");
-				var searchInput = jQuery("#search input[type=text]");
-				
-				searchInput.val(link.text());
-				searchForm.submit();
+				jQuery.history.load(link.text());
 			});
 		});
 		
@@ -294,13 +287,11 @@ OBA.Sidebar = function() {
 			// deep link handler
 			jQuery.history.init(function(hash) {
             	if(hash !== null && hash !== "") {
-					var searchForm = jQuery("#search");
 					var searchInput = jQuery("#search input[type=text]");
-					
-					searchInput.val(hash);
-					searchForm.submit();
 
-            		OBA.Config.analyticsFunction("Deep Link", hash);
+					searchInput.val(hash);
+					
+					doSearch(hash);
             	}
             });	
 		}

@@ -225,16 +225,14 @@ public class SiriSupport {
     return onwardCalls;
   }
 
-  public MonitoredVehicleJourney getMonitoredVehicleJourney(
-      TripDetailsBean trip, StopBean monitoredCallStopBean,
+  public MonitoredVehicleJourney getMonitoredVehicleJourney(TripBean tripBean,
+      TripDetailsBean tripDetails, StopBean monitoredCallStopBean,
       boolean includeOnwardCalls) {
-
-    TripBean tripBean = trip.getTrip();
 
     MonitoredVehicleJourney monitoredVehicleJourney = new MonitoredVehicleJourney();
 
     CourseOfJourneyStructure journey = new CourseOfJourneyStructure();
-    journey.setValue(trip.getTripId());
+    journey.setValue(tripBean.getId());
     monitoredVehicleJourney.setCourseOfJourneyRef(journey);
 
     LineRefStructure lineRef = new LineRefStructure();
@@ -253,33 +251,33 @@ public class SiriSupport {
     headsign.setValue(tripBean.getTripHeadsign());
     monitoredVehicleJourney.setPublishedLineName(headsign);
 
-    if (_presentationService.isInLayover(trip.getStatus())) {
+    if (_presentationService.isInLayover(tripDetails.getStatus())) {
       NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();
       progressStatus.setValue("layover");
       monitoredVehicleJourney.setProgressStatus(progressStatus);
     }
 
     VehicleRefStructure vehicleRef = new VehicleRefStructure();
-    vehicleRef.setValue(trip.getStatus().getVehicleId());
+    vehicleRef.setValue(tripDetails.getStatus().getVehicleId());
     monitoredVehicleJourney.setVehicleRef(vehicleRef);
 
-    monitoredVehicleJourney.setMonitored(trip.getStatus().isPredicted());
+    monitoredVehicleJourney.setMonitored(tripDetails.getStatus().isPredicted());
 
-    monitoredVehicleJourney.setBearing((float) trip.getStatus().getOrientation());
+    monitoredVehicleJourney.setBearing((float) tripDetails.getStatus().getOrientation());
 
     monitoredVehicleJourney.setProgressRate(getProgressRateForPhaseAndStatus(
-        trip.getStatus().getStatus(), trip.getStatus().getPhase()));
+        tripDetails.getStatus().getStatus(), tripDetails.getStatus().getPhase()));
 
     // framed journey
     FramedVehicleJourneyRefStructure framedJourney = new FramedVehicleJourneyRefStructure();
     DataFrameRefStructure dataFrame = new DataFrameRefStructure();
-    dataFrame.setValue(String.format("%1$tY-%1$tm-%1$td", trip.getServiceDate()));
+    dataFrame.setValue(String.format("%1$tY-%1$tm-%1$td", tripDetails.getServiceDate()));
     framedJourney.setDataFrameRef(dataFrame);
-    framedJourney.setDatedVehicleJourneyRef(trip.getTripId());
+    framedJourney.setDatedVehicleJourneyRef(tripBean.getId());
     monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 
     // origin/dest.
-    List<TripStopTimeBean> stops = trip.getSchedule().getStopTimes();
+    List<TripStopTimeBean> stops = tripDetails.getSchedule().getStopTimes();
 
     JourneyPlaceRefStructure origin = new JourneyPlaceRefStructure();
     origin.setValue(stops.get(0).getStop().getId());
@@ -294,30 +292,30 @@ public class SiriSupport {
 
     // if vehicle is detected to be on detour, use actual lat/lon, not snapped
     // location.
-    if (_presentationService.isOnDetour(trip.getStatus())) {
-      location.setLatitude(new BigDecimal(trip.getStatus().getLastKnownLocation().getLat()));
-      location.setLongitude(new BigDecimal(trip.getStatus().getLastKnownLocation().getLon()));
+    if (_presentationService.isOnDetour(tripDetails.getStatus())) {
+      location.setLatitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLat()));
+      location.setLongitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLon()));
     } else {
-      location.setLatitude(new BigDecimal(trip.getStatus().getLocation().getLat()));
-      location.setLongitude(new BigDecimal(trip.getStatus().getLocation().getLon()));
+      location.setLatitude(new BigDecimal(tripDetails.getStatus().getLocation().getLat()));
+      location.setLongitude(new BigDecimal(tripDetails.getStatus().getLocation().getLon()));
     }
 
     monitoredVehicleJourney.setVehicleLocation(location);
     
     // include stop times from the next trip if we're in layover on the previous trip
     List<TripStopTimeBean> stopTimes = 
-        getStopTimesForTripDetails(trip, _presentationService.isInLayover(trip.getStatus()));
+        getStopTimesForTripDetails(tripDetails, _presentationService.isInLayover(tripDetails.getStatus()));
 
-    addSituations(monitoredVehicleJourney, trip);
+    addSituations(monitoredVehicleJourney, tripDetails);
 
     // monitored calls
-    if (monitoredCallStopBean != null && !_presentationService.isOnDetour(trip.getStatus())) {
-      monitoredVehicleJourney.setMonitoredCall(getMonitoredCall(stopTimes, monitoredCallStopBean, trip.getStatus()));
+    if (monitoredCallStopBean != null && !_presentationService.isOnDetour(tripDetails.getStatus())) {
+      monitoredVehicleJourney.setMonitoredCall(getMonitoredCall(stopTimes, monitoredCallStopBean, tripDetails.getStatus()));
     }
 
     // onward calls
-    if (includeOnwardCalls && !_presentationService.isOnDetour(trip.getStatus())) {
-      monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, trip.getStatus()));
+    if (includeOnwardCalls && !_presentationService.isOnDetour(tripDetails.getStatus())) {
+      monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, tripDetails.getStatus()));
     }
 
     return monitoredVehicleJourney;
