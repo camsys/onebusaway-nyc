@@ -270,12 +270,15 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
         }
         
         if (situationRefs == null || situationRefsCount > 0) {
-            jQuery.each(r.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
-                var situationId = ptSituationElement.SituationNumber;
-                if (situationRefs == null || situationIds[situationId]==true) {
-                    html += "<li>" + ptSituationElement.Description + "</li>";
-                }
-            });
+            if (r.ServiceDelivery.SituationExchangeDelivery != null) {
+                jQuery.each(r.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+                    var situationId = ptSituationElement.SituationNumber;
+                    if (situationRefs == null || situationIds[situationId]==true) {
+                        html += "<li>" + ptSituationElement.Description + "</li>";
+                    }
+                });
+            }
+
         }
         
         if (!(html == '')) {
