@@ -20,16 +20,14 @@
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>OneBusAway NYC: Last Known Vehicle Locations</title>
+<title>OneBusAway NYC: Vehicle Status</title>
 
 </head>
 <body>
 
 <div id="content">
 <div id="text">
-	<h1>Vehicles</h1>
-	
-	<p>Last known locations</p>
+	<h1>Most Recent Vehicle Status</h1>
 	
 	<table>
 	
@@ -41,6 +39,7 @@
 		<th>Inferred State</th>
 		<th>Inferred Route + Headsign</th>
 		<th>Inferred DSC</th>
+		<th>Observed DSC</th>
 		<th>Pull-out</th>
 		<th>Pull-in</th>
 		
@@ -51,12 +50,12 @@
 			
 			<tr>
 			
-			<td>  <s:property value="id" /> </td>
+			<td>  <s:property value="vehicleId" /> </td>
 			<td>  </td>
 			<td> <s:property value="phase" /> </td>
-			<td>  </td>
+			<td> <s:property value="destSignMap[lastInferredDestinationSignCode].routeName" /> &#160; <s:property value="destSignMap[lastInferredDestinationSignCode].messageText" />   </td>
+			<td>  <s:property value="lastInferredDestinationSignCode" /> </td>
 			<td>  <s:property value="mostRecentObservedDestinationSignCode" /> </td>
-			<td>  </td>
 			<td>  </td>
 			
 			</tr>

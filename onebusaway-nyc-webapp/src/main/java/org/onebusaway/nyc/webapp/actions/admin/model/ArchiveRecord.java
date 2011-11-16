@@ -16,7 +16,8 @@ public class ArchiveRecord {
 	private long lastLocationUpdateTime; // seems to be in ms
 	private double lastObservedLatitude;
 	private double lastObservedLongitude;
-	private String mostRecentObservedDestinationSignCode;
+	private Long mostRecentObservedDestinationSignCode;
+	private Long lastInferredDestinationSignCode;
 	private boolean inferenceIsEnabled;
 	private boolean inferenceEngineIsPrimary;
 	private boolean inferenceIsFormal;
@@ -107,12 +108,19 @@ public class ArchiveRecord {
 	public void setLastObservedLongitude(double lastObservedLongitude) {
 		this.lastObservedLongitude = lastObservedLongitude;
 	}
-	public String getMostRecentObservedDestinationSignCode() {
+	public Long getMostRecentObservedDestinationSignCode() {
 		return mostRecentObservedDestinationSignCode;
 	}
 	public void setMostRecentObservedDestinationSignCode(
-			String mostRecentObservedDestinationSignCode) {
+			Long mostRecentObservedDestinationSignCode) {
 		this.mostRecentObservedDestinationSignCode = mostRecentObservedDestinationSignCode;
+	}
+	public Long getLastInferredDestinationSignCode() {
+		return lastInferredDestinationSignCode;
+	}
+	public void setLastInferredDestinationSignCode(
+			Long lastInferredDestinationSignCode) {
+		this.lastInferredDestinationSignCode = lastInferredDestinationSignCode;
 	}
 	public boolean isInferenceIsEnabled() {
 		return inferenceIsEnabled;
