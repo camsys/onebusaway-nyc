@@ -88,6 +88,12 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     if(destination.getStops() == null)
       return destination;
       
+    // service alerts
+    List<NaturalLanguageStringBean> serviceAlerts = 
+        _realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), group.getId()); 
+    destination.setServiceAlerts(serviceAlerts);    
+    
+    // stop visits
     List<VehicleActivityStructure> journeyList = 
         _realtimeService.getVehicleActivityForRoute(route.getId(), null, false);
     
@@ -107,7 +113,6 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
       }
 
       String stopId = monitoredCall.getStopPointRef().getValue();      
-
       ArrayList<String> distances = stopIdToDistanceStringMap.get(stopId);
       if(distances == null) {
         distances = new ArrayList<String>();
