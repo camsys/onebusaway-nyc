@@ -126,6 +126,9 @@ OBA.Debug = function() {
 						jQuery.each(record, function(property, value) {
 							if(property === "inferredTripId") {
 								html += property + ": &lt;a href='#'&gt;" + value + "&lt;/a&gt;&lt;br/&gt;";
+							} else if(property === "timestampAsDate") {
+								formattedTime = new Date(value);
+								html += property + ": " + formattedTime + "<br/>";
 							} else {
 								html += property + ": " + value + "<br/>";
 							}

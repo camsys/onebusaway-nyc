@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.onebusaway.realtime.api.EVehiclePhase;
+
 /**
  * This one is hard
  * 
@@ -25,5 +27,9 @@ public class Trace_3649_20101125T121801_IntegrationTest extends AbstractTraceRun
   public Trace_3649_20101125T121801_IntegrationTest() throws Exception {
     super("3649-2010-11-25T12-18-01.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
+    /*
+     * FIXME this has a potential bundle-conflict with the trace 
+     */
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.92);
   }
 }
