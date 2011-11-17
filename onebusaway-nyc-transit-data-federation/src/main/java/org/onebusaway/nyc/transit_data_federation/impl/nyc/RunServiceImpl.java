@@ -233,14 +233,14 @@ public class RunServiceImpl implements RunService {
     /*
      * 1. check for exact match
      */
-    RunTripEntry exactMatch = getActiveRunTripEntryForRunAndTime(
-        runAgencyAndId, time);
-    if (exactMatch != null) {
-      List<RunTripEntry> lrtes = new ArrayList<RunTripEntry>();
-      lrtes.add(exactMatch);
-      matchedRTEs.put(0, lrtes);
-      return matchedRTEs;
-    }
+//    RunTripEntry exactMatch = getActiveRunTripEntryForRunAndTime(
+//        runAgencyAndId, time);
+//    if (exactMatch != null) {
+//      List<RunTripEntry> lrtes = new ArrayList<RunTripEntry>();
+//      lrtes.add(exactMatch);
+//      matchedRTEs.put(0, lrtes);
+//      return matchedRTEs;
+//    }
 
     Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId
         .getId());

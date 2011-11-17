@@ -58,6 +58,8 @@
                     <c:set var="journeyState"
                         value="${p.data.journeyState}" />
                     <c:set var="blockState" value="${p.data.blockState}" />
+                    <c:set var="runReported" value="${blockState.runReported}" />
+                    <c:set var="opAssigned" value="${blockState.opAssigned}" />
                     <c:set var="blockLocation"
                         value="${blockState.blockLocation}" />
                     <td><fmt:formatDate pattern="HH:mm"
@@ -72,8 +74,8 @@
                         <a href="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"><c:out value="${p.weight}"/></a>
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>
-                    <td><c:out value="${blockState.runReported}" /></td>
-                    <td><c:out value="${blockState.opAssigned}" /></td>
+                    <td><c:out value="${runReported == null?'NA':runReported}" /></td>
+                    <td><c:out value="${opAssigned == null?'NA':opAssigned}" /></td>
                     <td><c:out value="${blockState.runTripEntry.runId}" /></td>
                     <td><a
                         href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
