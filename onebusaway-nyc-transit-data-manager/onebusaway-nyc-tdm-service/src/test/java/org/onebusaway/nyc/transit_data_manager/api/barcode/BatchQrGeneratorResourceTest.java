@@ -27,7 +27,7 @@ public class BatchQrGeneratorResourceTest extends QrCodeGeneratorResource {
     bcTwo.setContents("HTTP://BT.MTA.INFO/S/20");
     bcList.add(bcTwo);
     
-    File zipFile = generateBarcodeZipFileFromUrlList(bcList, 99, BarcodeImageType.PNG);
+    File zipFile = generateBarcodeZipFileFromUrlList(bcList, 99, BarcodeImageType.PNG, 4);
     
     ZipFileTesterUtil tester = new ZipFileTesterUtil();
     
