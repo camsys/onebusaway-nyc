@@ -49,7 +49,17 @@ public class RunRule implements SensorModelRule {
     VehicleState state = context.getState();
     BlockState blockState = state.getBlockState();
     SensorModelResult result = new SensorModelResult("pRun");
+    
 
+    /*
+     * we don't want active trips to out-weigh non-active
+     * particles when we're really out-of-service.
+     */
+    if (state.getObservation().isOutOfService()) {
+      result.addResultAsAnd("NA (out-of-service)", 1.0);
+      return result;
+    }
+    
     /**
      * Weigh matched run's higher
      */

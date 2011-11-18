@@ -260,7 +260,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     /**
      * Second source of trips: the destination sign code
      */
-    if (observation.getLastValidDestinationSignCode() != null) {
+    if (observation.getLastValidDestinationSignCode() != null
+        && !observation.isOutOfService()) {
       computePotentialBlocksFromDestinationSignCode(observation, potentialBlocks);
     }
 
