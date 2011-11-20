@@ -8,6 +8,18 @@ OBA.Mobile = (function() {
 	var lastLatitude = null;
 	var lastLongitude = null; 
 
+	function getParameterByName(name, defaultValue) {
+		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+		var regexS = "[\\?&]"+name+"=([^&#]*)";
+		var regex = new RegExp(regexS);
+		var results = regex.exec(window.location.href);
+		if(results == null) {
+			return defaultValue;
+		} else {
+			return decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+	}
+	
 	// add location toggle UI to DOM
 	var addToggleUI = function() {
 		var searchPanelForm = jQuery("#searchPanel form");		
@@ -31,7 +43,7 @@ OBA.Mobile = (function() {
 		searchPanelForm.before(toggleUI);
 	};
 	
-	// remove location toggle UI from DOM
+	// remove location toggle UI from DOM if location services are not available
 	var removeToggleUI = function() {
 		turnOffGeolocation();
 		
@@ -51,7 +63,7 @@ OBA.Mobile = (function() {
 			
 			var existingHref = link.attr("href");
 			if(typeof existingHref !== 'undefined' && existingHref.indexOf("&l=") > -1) {
-				var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "");
+				var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "&l=off");
 				link.attr("href", newHref);
 			}
 		});
@@ -90,14 +102,19 @@ OBA.Mobile = (function() {
 	var turnOffGeolocation = function() {
 		removeLocationFields();
 		
-		turnOffButton.text("Is Off").css("font-weight", "normal");
-		turnOnButton.text("Turn On").css("font-weight", "bold");
+		turnOffButton.text("Is Off").css("font-weight", "bold");
+		turnOnButton.text("Turn On").css("font-weight", "normal");
 	};
 	
 	// event when user turns on location
 	var turnOnGeolocation = function() {
-		updateLocationFields();
-		
+		navigator.geolocation.getCurrentPosition(function(location) {
+			lastLatitude = location.coords.latitude;
+			lastLongitude = location.coords.longitude;
+
+			updateLocationFields();
+		}, removeToggleUI);
+
 		turnOffButton.text("Turn Off").css("font-weight", "normal");
 		turnOnButton.text("Is On").css("font-weight", "bold");
 	};
@@ -107,14 +124,13 @@ OBA.Mobile = (function() {
 			if(navigator.geolocation) {
 				addToggleUI();
 
-				navigator.geolocation.getCurrentPosition(function(location) {
-					lastLatitude = location.coords.latitude;
-					lastLongitude = location.coords.longitude;
+				var locationEnabled = getParameterByName("l");
 
-					updateLocationFields();
-				}, removeToggleUI);
-				
-				turnOnGeolocation();
+				if(locationEnabled === "off") {
+					turnOffGeolocation();
+				} else {
+					turnOnGeolocation();
+				}
 			}			
 		}
 	};
