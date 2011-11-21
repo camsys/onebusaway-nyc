@@ -1,5 +1,8 @@
 package org.onebusaway.nyc.presentation.impl.realtime.siri.model;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class SiriDistanceExtension {
 
   private Integer StopsFromCall = null;

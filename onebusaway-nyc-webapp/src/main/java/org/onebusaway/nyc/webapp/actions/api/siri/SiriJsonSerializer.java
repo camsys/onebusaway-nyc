@@ -28,7 +28,7 @@ import uk.org.siri.siri.Siri;
 
 public class SiriJsonSerializer {
   
-  public static class CustomValueObjectSerializer extends BeanSerializerBase {
+  private static class CustomValueObjectSerializer extends BeanSerializerBase {
 
     private String fieldName = null;
     
@@ -56,7 +56,7 @@ public class SiriJsonSerializer {
     
   }
   
-  public static class CustomBeanSerializerModifier extends BeanSerializerModifier {
+  private static class CustomBeanSerializerModifier extends BeanSerializerModifier {
 
     @Override
     public JsonSerializer<?> modifySerializer(SerializationConfig config,
@@ -78,7 +78,7 @@ public class SiriJsonSerializer {
     }
   }
   
-  public static class JacksonModule extends Module {
+  private static class JacksonModule extends Module {
     private final static Version VERSION = new Version(1,0,0, null);
     
     @Override
@@ -102,34 +102,30 @@ public class SiriJsonSerializer {
   }
   
   public static String getJson(Siri siri, String callback) throws Exception {    
-    try {
-      ObjectMapper mapper = new ObjectMapper();    
-      mapper.setSerializationInclusion(Inclusion.NON_NULL);
-      mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+    ObjectMapper mapper = new ObjectMapper();    
+    mapper.setSerializationInclusion(Inclusion.NON_NULL);
+    mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
 
-      DateFormat isoDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-      mapper.setDateFormat(isoDateFormatter);
+    DateFormat isoDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    mapper.setDateFormat(isoDateFormatter);
 
-      AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
-      SerializationConfig config = mapper.getSerializationConfig().withAnnotationIntrospector(introspector);
-      mapper.setSerializationConfig(config);
+    AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
+    SerializationConfig config = mapper.getSerializationConfig().withAnnotationIntrospector(introspector);
+    mapper.setSerializationConfig(config);
 
-      mapper.registerModule(new JacksonModule());
+    mapper.registerModule(new JacksonModule());
 
-      String output = "";
-      
-      if(callback != null)
-        output = callback + "(";
-      
-      output += mapper.writeValueAsString(siri);
+    String output = "";
 
-      if(callback != null)
-        output += ")";
-    
-      return output;
-    } catch(Exception e) {
-      return e.getMessage();
-    }
+    if(callback != null)
+      output = callback + "(";
+
+    output += mapper.writeValueAsString(siri);
+
+    if(callback != null)
+      output += ")";
+
+    return output;
   }  
   
 }

@@ -41,7 +41,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
   }
   
   @Override
-  public StopResult getStopModelForRoute(StopBean stopBean) {
+  public StopResult getStopModelForRoute(StopBean stopBean, RouteBean route) {
     return new MobileWebStopResult(stopBean, null);
   }
   

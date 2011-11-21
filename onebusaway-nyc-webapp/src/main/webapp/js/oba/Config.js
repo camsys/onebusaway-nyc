@@ -25,8 +25,8 @@ OBA.Config = {
 		searchUrl: "api/search",
 		configUrl: "api/config",
 
-		siriSMUrl: "api/siri/stop-monitoring",
-		siriVMUrl: "api/siri/vehicle-monitoring",
+		siriSMUrl: "api/siri/stop-monitoring.json",
+		siriVMUrl: "api/siri/vehicle-monitoring.json",
 		
 		refreshInterval: 15000,
 		

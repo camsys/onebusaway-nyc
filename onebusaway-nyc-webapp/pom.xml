@@ -73,13 +73,11 @@
             <artifactId>onebusaway-wiki-integration-xwiki-macros</artifactId>
             <version>${xwiki.integration.version}</version>
         </dependency>
-
-        <!-- the json package is included directly here -->
-        <!-- in the oba webapp, it gets pulled in from the everylastlogin module -->
+        
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20090211</version>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.3.1</version>
         </dependency>
         
         <dependency>

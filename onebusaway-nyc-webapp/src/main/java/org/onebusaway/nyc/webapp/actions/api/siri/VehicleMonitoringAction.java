@@ -54,6 +54,12 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   private Date _now = new Date();
 
+  private String _type = "json";
+
+  public void setType(String type) {
+    _type = type;
+  }
+  
   @Override
   public String execute() {
     String agencyId = _request.getParameter("OperatorRef");
@@ -130,9 +136,15 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     return siri;
   }
 
-  public String getVehicleMonitoring() throws Exception {
-    return SiriJsonSerializer.getJson(_response,
-        _request.getParameter("callback"));
+  public String getVehicleMonitoring() {
+    try {
+      if(_type.equals("xml"))
+        return SiriXmlSerializer.getXml(_response);
+      else
+        return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+    } catch(Exception e) {
+      return e.getMessage();
+    }
   }
 
   @Override

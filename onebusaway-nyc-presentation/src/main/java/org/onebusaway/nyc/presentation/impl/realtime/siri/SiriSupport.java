@@ -39,6 +39,7 @@ import uk.org.siri.siri.JourneyPlaceRefStructure;
 import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.LocationStructure;
 import uk.org.siri.siri.MonitoredCallStructure;
+import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.OnwardCallStructure;
 import uk.org.siri.siri.OnwardCallsStructure;
@@ -47,7 +48,6 @@ import uk.org.siri.siri.ProgressRateEnumeration;
 import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.StopPointRefStructure;
-import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 import uk.org.siri.siri.VehicleRefStructure;
 
 import java.math.BigDecimal;
@@ -225,11 +225,9 @@ public class SiriSupport {
     return onwardCalls;
   }
 
-  public MonitoredVehicleJourney getMonitoredVehicleJourney(TripBean tripBean,
-      TripDetailsBean tripDetails, StopBean monitoredCallStopBean,
+  public void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
+      TripBean tripBean, TripDetailsBean tripDetails, StopBean monitoredCallStopBean,
       boolean includeOnwardCalls) {
-
-    MonitoredVehicleJourney monitoredVehicleJourney = new MonitoredVehicleJourney();
 
     CourseOfJourneyStructure journey = new CourseOfJourneyStructure();
     journey.setValue(tripBean.getId());
@@ -317,8 +315,6 @@ public class SiriSupport {
     if (includeOnwardCalls && !_presentationService.isOnDetour(tripDetails.getStatus())) {
       monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, tripDetails.getStatus()));
     }
-
-    return monitoredVehicleJourney;
   }
   
   private List<TripStopTimeBean> getStopTimesForTripDetails(TripDetailsBean tripDetails, boolean includeNextTrip) {
@@ -379,7 +375,7 @@ public class SiriSupport {
     return visitNumber;
   }
 
-  private void addSituations(MonitoredVehicleJourney monitoredVehicleJourney, TripDetailsBean trip) {
+  private void addSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripDetailsBean trip) {
     if (trip == null || CollectionUtils.isEmpty(trip.getSituations())) {
       return;
     }

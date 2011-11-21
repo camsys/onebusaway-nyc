@@ -58,6 +58,7 @@ OBA.Util = (function() {
 			return array;
 		},
 		displayTime: function(secondsAgo) {
+			secondsAgo = Math.floor(secondsAgo);
 			if(secondsAgo < 60) {
 				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s") + " ago";
 			} else {

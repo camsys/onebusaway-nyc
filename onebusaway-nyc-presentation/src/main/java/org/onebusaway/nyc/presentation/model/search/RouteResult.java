@@ -49,6 +49,10 @@ public class RouteResult implements SearchResult {
     return routeBean.getDescription();
   }
 
+  public String getLongName() {
+    return routeBean.getLongName();
+  }
+
   public String getColor() {
     return routeBean.getColor();
   }
@@ -60,13 +64,15 @@ public class RouteResult implements SearchResult {
   @Override
   public String getResultType() {
     boolean hasStops = false;
-    for(RouteDestinationItem destination : destinations) {
-      if(destination.getStops() != null && destination.getStops().size() > 0) {
-        hasStops = true;
-        break;
+    if(destinations != null) {
+      for(RouteDestinationItem destination : destinations) {
+        if(destination.getStops() != null && destination.getStops().size() > 0) {
+          hasStops = true;
+          break;
+        }
       }
     }
-
+    
     if(hasStops) 
       return "RouteResult";
     else

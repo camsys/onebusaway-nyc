@@ -15,7 +15,7 @@ public abstract interface PresentationModelFactory {
   public StopResult getStopModel(StopBean stopBean, List<RouteResult> routesAvailable);
 
   // stop on route
-  public StopResult getStopModelForRoute(StopBean stopBean);
+  public StopResult getStopModelForRoute(StopBean stopBean, RouteBean route);
 
   // route as top-level object
   public RouteResult getRouteModel(RouteBean routeBean, List<RouteDestinationItem> destinations);
