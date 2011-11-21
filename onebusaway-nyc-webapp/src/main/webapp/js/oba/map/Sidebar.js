@@ -121,6 +121,12 @@ OBA.Sidebar = function() {
 							.addClass("routeName")
 							.text(routeResult.routeIdWithoutAgency + " " + routeResult.description)
 							.css("color", "#" + routeResult.color);
+			
+			// on double click pan to route extent (unless zoomed in)
+			titleBox.click(function(e) {
+				e.preventDefault();
+				routeMap.panToRoute(routeResult);
+			});
 
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")

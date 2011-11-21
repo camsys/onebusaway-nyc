@@ -680,6 +680,44 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 			updateVehicles(routeResult.routeId);
 		},
+	
+		panToRoute: function(routeResult) {
+			var polylines = polylinesByRoute[routeResult.routeId];
+			var newBounds = new google.maps.LatLngBounds();
+			var currentBounds = map.getBounds();
+			var routeBounds = new google.maps.LatLngBounds();
+			var sw = currentBounds.getSouthWest();
+			var ne = currentBounds.getNorthEast();
+			
+			// filter bounds by what's in current viewport plus some
+			// Note: for western hemisphere, above equator
+			currentBounds.extend(new google.maps.LatLng(sw.lat() - .20, sw.lng() - .20));
+			currentBounds.extend(new google.maps.LatLng(ne.lat() + .20, ne.lng() + .20));			
+					
+			jQuery.each(polylines, function(_, polyline) {
+				if (typeof polyline !== 'undefined') { 
+					var coordinates = polyline.getPath();
+					
+					// scenario 1: route will be in bounds
+					coordinates.forEach(function(coordinate, index) {
+						if (currentBounds.contains(coordinate)) {	
+							newBounds.extend(coordinate);
+						}
+						routeBounds.extend(coordinate);
+					});
+				}
+			});
+			
+			// scenario 2: route will not be in bounds
+			if (newBounds.isEmpty()) {
+				map.fitBounds(routeBounds);
+			} else {
+				// stay at user's existing zoom level
+				var currentZoom = map.getZoom();
+				map.fitBounds(newBounds);
+				map.setZoom(currentZoom);
+			}	
+		},
 		
 		removeHoverPolyline: function() {
 			if(hoverPolylines !== null) {
