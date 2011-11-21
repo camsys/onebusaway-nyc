@@ -162,6 +162,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		var closeFn = function() {
 			if(infoWindow !== null) {
 				infoWindow.close();
+				infoWindow = null;
 			}
 		};
 		closeFn();
@@ -213,7 +214,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	// return html for a SIRI VM response
-	function getVehicleContentForResponse(r, userData, popupContainerId) {
+	function getVehicleContentForResponse(r, unusedUserData, popupContainerId) {
 		var activity = r.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 
 		if(activity === null) {
@@ -314,7 +315,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
         return html;
 	}
 	
-	function getStopContentForResponse(r, stopItem, popupContainerId) {
+	function getStopContentForResponse(r, stopResult, popupContainerId) {
 		var visits = r.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
 		
 		if(visits === null) {
@@ -325,27 +326,29 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		// header
 		html += '<div class="header stop">';
-		html += '<p class="title">' + stopItem.name + '</p><p>';
-		html += '<span class="type">Stop #' + stopItem.stopIdWithoutAgency + '</span>';
+		html += '<p class="title">' + stopResult.name + '</p><p>';
+		html += '<span class="type">Stop #' + stopResult.stopIdWithoutAgency + '</span>';
 
 		// update time across all arrivals
-		var maxUpdateTimestamp = null;
 		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
+		var maxUpdateTimestamp = null;
 		jQuery.each(visits, function(_, monitoredJourney) {
 			var updateTimestamp = new Date(monitoredJourney.RecordedAtTime).getTime();
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
 		});		
-		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
-		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");
+		if(maxUpdateTimestamp !== null) {
+			var age = (parseInt(updateTimestampReference) - parseInt(maxUpdateTimestamp)) / 1000;
+			var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");
 
-		html += '<span class="updated' + staleClass + '"' + 
-				' age="' + age + '"' + 
-				' referenceEpoch="' + new Date().getTime() + '"' + 
-				'>Data updated ' 
-			 	+ OBA.Util.displayTime(age) 
-			 	+ '</span>'; 
+			html += '<span class="updated' + staleClass + '"' + 
+					' age="' + age + '"' + 
+					' referenceEpoch="' + new Date().getTime() + '"' + 
+					'>Data updated ' 
+					+ OBA.Util.displayTime(age) 
+					+ '</span>'; 
+		}
 		
 		// (end header)
 		html += '  </p>';
@@ -393,6 +396,16 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '</ul>';
 		}
 
+		if(stopResult.routesAvailable.length > 0) {
+			html += '<p class="otherRoutes">Other routes available at this stop:</p>';
+			html += '<ul class="otherRoutes">';
+			jQuery.each(stopResult.routesAvailable, function(_, routeAvailable) {
+				html += '<li class="route"><a href="#' + routeAvailable.routeIdWithoutAgency + '" title="' + routeAvailable.description + '">'
+						+ routeAvailable.routeIdWithoutAgency + '</a></li>';
+			});
+			html += '</ul>';
+		}
+		
 	    html += getServiceAlertContent(r, null);
 	        
 		// (end popup)

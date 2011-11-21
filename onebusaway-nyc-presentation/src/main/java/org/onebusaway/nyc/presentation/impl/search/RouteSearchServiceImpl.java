@@ -143,7 +143,7 @@ public class RouteSearchServiceImpl implements RouteSearchService {
         
         List<StopResult> stopItems = null;
         if(includeStops == true && !stopGroupBean.getStopIds().isEmpty()) {
-          stopItems = getStopResultsForStopIds(stopGroupBean.getStopIds());
+          stopItems = getStopResultsForStopIds(stopGroupBean.getStopIds(), routeBean);
         }
           
         output.add(_modelFactory.getRouteDestinationModelForRoute(stopGroupBean, routeBean, stopItems));
@@ -154,11 +154,11 @@ public class RouteSearchServiceImpl implements RouteSearchService {
   }
   
   @Cacheable
-  private List<StopResult> getStopResultsForStopIds(List<String> stopIds) {
+  private List<StopResult> getStopResultsForStopIds(List<String> stopIds, RouteBean routeBean) {
     List<StopResult> output = new ArrayList<StopResult>();
     
     for(String stopId : stopIds) {
-      output.add(_modelFactory.getStopModelForRoute(_transitDataService.getStop(stopId)));
+      output.add(_modelFactory.getStopModelForRoute(_transitDataService.getStop(stopId), routeBean));
     }
     
     return output;

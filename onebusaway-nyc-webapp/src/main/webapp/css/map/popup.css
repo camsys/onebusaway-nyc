@@ -49,6 +49,11 @@
 	color: #666666;
 }
 
+.popup p.otherRoutes {
+	white-space: nowrap;
+	padding-top: 7px;
+}
+
 .popup .meta.stale {
   	color: #d12020;
 }
@@ -86,6 +91,11 @@
 	background: url("img/bullet_stop.png");
 	background-position: left top;
 	background-repeat: no-repeat;
+}
+
+.popup ul.otherRoutes li {
+	display: inline;
+	margin-right: 10px;
 }
 
 .popup ul li.nextStop span,
