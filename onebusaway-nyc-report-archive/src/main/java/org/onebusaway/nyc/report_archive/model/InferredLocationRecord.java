@@ -54,7 +54,7 @@ public class InferredLocationRecord implements Serializable {
 
   @Id
   @Column(nullable = false, name = "vehicle_id")
-  private String vehicleId;
+  private int vehicleId;
 
   @OneToOne(cascade = CascadeType.ALL)
   private ArchivedInferredLocationRecord currentRecord;
@@ -69,11 +69,11 @@ public class InferredLocationRecord implements Serializable {
     setCurrentRecord(record);
   }
 
-  public String getVehicleId() {
+  public int getVehicleId() {
     return vehicleId;
   }
 
-  public void setVehicleId(String id) {
+  public void setVehicleId(int id) {
     this.vehicleId = id;
   }
 

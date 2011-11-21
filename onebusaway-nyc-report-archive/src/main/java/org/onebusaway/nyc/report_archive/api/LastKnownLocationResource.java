@@ -79,10 +79,6 @@ public class LastKnownLocationResource {
 		List<ArchivedInferredLocationRecord> lastKnownRecords = _locationDao
 				.getAllLastKnownRecords();
 
-		for(ArchivedInferredLocationRecord rec : lastKnownRecords) {
-			rec.setRawMessage(null);
-		}
-		
 		return lastKnownRecords;
 	}
 }
