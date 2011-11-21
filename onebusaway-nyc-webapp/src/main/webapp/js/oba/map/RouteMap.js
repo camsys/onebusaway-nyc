@@ -177,21 +177,43 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
-		showPopupWithContent(marker, "Loading...");
+		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
+		
+		showPopupWithContent(marker, 'Loading...');
 		
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
-				infoWindow.setContent(contentFn(json, userData));
+				infoWindow.setContent(contentFn(json, userData, popupContainerId));
 			});
 		};
 		refreshFn();		
 
+		var updateTimestamp = function() {
+			var timestampContainer = jQuery("#" + popupContainerId).find(".updated");
+			
+			if(timestampContainer.length === 0) {
+				return;
+			}
+			
+			var age = parseInt(timestampContainer.attr("age"));
+			var referenceEpoch = parseInt(timestampContainer.attr("referenceEpoch"));
+			
+			if(isNaN(age) || isNaN(referenceEpoch)) {
+				return;
+			}
+		
+			var newAge = age + ((new Date().getTime() - referenceEpoch) / 1000);
+			timestampContainer.text("Data updated " + OBA.Util.displayTime(newAge));
+		};
+		updateTimestamp();		
+
 		// this method will be called regularly by the update timer
 		infoWindow.refreshFn = refreshFn;	
+		infoWindow.updateTimestamp = updateTimestamp;	
 	}
 	
 	// return html for a SIRI VM response
-	function getVehicleContentForResponse(r) {
+	function getVehicleContentForResponse(r, userData, popupContainerId) {
 		var activity = r.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 
 		if(activity === null) {
@@ -206,24 +228,29 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		var routeIdParts = routeId.split("_");
 		var routeIdWithoutAgency = routeIdParts[1];
 
-		var html = '<div id="popup">';
+		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
 		// header
-		html += ' <div class="header vehicle">';
-		html += '  <p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.PublishedLineName + '</p><p>';
-		html += '   <span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
+		html += '<div class="header vehicle">';
+		html += '<p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.PublishedLineName + '</p><p>';
+		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
 		// update time
 		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
 		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
-
-		var age = (updateTimestampReference - updateTimestamp) / 1000;
+		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
-		html += '   <span class="updated' + staleClass + '">Last updated ' + OBA.Util.displayTime(age) + '</span>'; 
+
+		html += '<span class="updated' + staleClass + '"' + 
+				' age="' + age + '"' + 
+				' referenceEpoch="' + new Date().getTime() + '"' + 
+				'>Data updated ' 
+				+ OBA.Util.displayTime(age) 
+				+ '</span>'; 
 		
 		// (end header)
-		html += '  </p>';
-		html += ' </div>';
+		html += '</p>';
+		html += '</div>';
 		
 		// service available at stop
 		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' 
@@ -287,35 +314,38 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
         return html;
 	}
 	
-	function getStopContentForResponse(r, stopItem) {
+	function getStopContentForResponse(r, stopItem, popupContainerId) {
 		var visits = r.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
 		
 		if(visits === null) {
 			return null;
 		}
 		
-		var html = '<div id="popup">';
+		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
 		// header
-		html += ' <div class="header stop">';
-		html += '  <p class="title">' + stopItem.name + '</p><p>';
-		html += '   <span class="type">Stop #' + stopItem.stopIdWithoutAgency + '</span>';
+		html += '<div class="header stop">';
+		html += '<p class="title">' + stopItem.name + '</p><p>';
+		html += '<span class="type">Stop #' + stopItem.stopIdWithoutAgency + '</span>';
 
 		// update time across all arrivals
-		var age = null;
+		var maxUpdateTimestamp = null;
 		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
 		jQuery.each(visits, function(_, monitoredJourney) {
 			var updateTimestamp = new Date(monitoredJourney.RecordedAtTime).getTime();
-			var thisAge = (updateTimestampReference - updateTimestamp) / 1000;
-			if(thisAge > age) {
-				age = thisAge;
+			if(updateTimestamp > maxUpdateTimestamp) {
+				maxUpdateTimestamp = updateTimestamp;
 			}
 		});		
-		if(age !== null) {
-			var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");
+		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
+		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");
 
-			html += '   <span class="updated' + staleClass + '">Last updated ' + OBA.Util.displayTime(age) + '</span>'; 
-		}
+		html += '<span class="updated' + staleClass + '"' + 
+				' age="' + age + '"' + 
+				' referenceEpoch="' + new Date().getTime() + '"' + 
+				'>Data updated ' 
+			 	+ OBA.Util.displayTime(age) 
+			 	+ '</span>'; 
 		
 		// (end header)
 		html += '  </p>';
@@ -651,10 +681,17 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			updateVehicles(routeId);
 		});
 
-		if(infoWindow !== null && infoWindow.refreshFn != null) {
+		if(infoWindow !== null && typeof infoWindow.refreshFn === 'function') {
 			infoWindow.refreshFn();
 		}
 	}, OBA.Config.refreshInterval);
+
+	// updates timestamp
+	setInterval(function() {
+		if(infoWindow !== null && typeof infoWindow.updateTimestamp === 'function') {
+			infoWindow.updateTimestamp();
+		}
+	}, 1000);
 
 	//////////////////// PUBLIC INTERFACE /////////////////////
 	return {

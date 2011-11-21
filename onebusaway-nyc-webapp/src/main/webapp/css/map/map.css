@@ -24,6 +24,7 @@
 	float: left;
 	width: 310px;
 	font-size: 120%;
+	overflow-y: auto;
 }
 
 #content #searchbar form {
@@ -169,6 +170,7 @@
 #content #legend ul li.legendItem p.destination ul.stops li a {
 	height: 20px;
 	color: #000000;
+	text-decoration: none;
 }
 
 /* map/popup */
