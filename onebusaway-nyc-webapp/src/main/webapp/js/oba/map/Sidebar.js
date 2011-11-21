@@ -17,9 +17,7 @@
 var OBA = window.OBA || {};
 
 OBA.Sidebar = function() {
-	var theWindow = null;
-	var headerDiv, footerDiv, contentDiv = null;
-
+	var theWindow, headerDiv, contentDiv = null;
 	var routeMap = OBA.RouteMap(document.getElementById("map"));
 
 	var welcome = jQuery("#welcome");
@@ -28,8 +26,8 @@ OBA.Sidebar = function() {
 	var noResults = jQuery("#no-results");
 
 	function addSearchBehavior() {
-		var searchForm = jQuery("#search");
-		var searchInput = jQuery("#search input[type=text]");
+		var searchForm = jQuery("#searchbar form");
+		var searchInput = jQuery("#searchbar form input[type=text]");
 		
 		searchForm.submit(function(e) {
 			e.preventDefault();
@@ -43,31 +41,25 @@ OBA.Sidebar = function() {
 	function addResizeBehavior() {
 		theWindow = jQuery(window);
 		headerDiv = jQuery("#header");
-		footerDiv = jQuery("#footer");
 		contentDiv = jQuery("#content");
 		searchBarDiv = jQuery("#searchbar");
 		
 		function resize() {
-			var h = theWindow.height() - footerDiv.height() - headerDiv.height();
+			var h = theWindow.height() - headerDiv.height();
 			contentDiv.height(h);
 			searchBarDiv.height(h);
 		}
+		resize();
 
 		// call when the window is resized
 		theWindow.resize(resize);
-
-		// call upon initial load
-		resize();
-
-		// now that we're resizing, we can hide any body overflow/scrollbars
-		jQuery("body").css("overflow", "hidden");
 	}
 
 	// show user list of addresses
 	function disambiguate(locationResults) {
-		var bounds = null;
 		var resultsList = jQuery("#results ul");
 
+		var bounds = null;
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
 			var address = location.formattedAddress;
@@ -88,8 +80,7 @@ OBA.Sidebar = function() {
 			link.click(function(e) {
 				e.preventDefault();
 
-				var link = jQuery(this);
-				jQuery.history.load(link.text());
+				jQuery.history.load(jQuery(this).text());
 			});
 
 			link.hover(function() {
@@ -115,17 +106,19 @@ OBA.Sidebar = function() {
 		var legendList = jQuery("#legend ul");
 		
 		jQuery.each(routeResults, function(_, routeResult) {	
-			var checkBox = jQuery("<input type='checkbox' checked disabled></input>");
-			
-			var titleBox = jQuery("<span></span>")
-							.addClass("routeName")
-							.text(routeResult.routeIdWithoutAgency + " " + routeResult.description)
-							.css("color", "#" + routeResult.color);
+			var titleBox = jQuery("<p></p>")
+							.addClass("name")
+							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
+							.css("border-bottom", "5px solid #" + routeResult.color);
 
+			var descriptionBox = jQuery("<p></p>")
+							 .addClass("description")
+							 .text(routeResult.description);
+							 
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
-							.append(checkBox)
-							.append(titleBox);
+							.append(titleBox)
+							.append(descriptionBox);
 
 			legendList.append(listItem);
 
@@ -207,8 +200,7 @@ OBA.Sidebar = function() {
 			link.click(function(e) {
 				e.preventDefault();
 				
-				var link = jQuery(this);
-				jQuery.history.load(link.text());
+				jQuery.history.load(jQuery(this).text());
 			});
 		});
 		
@@ -287,10 +279,9 @@ OBA.Sidebar = function() {
 			// deep link handler
 			jQuery.history.init(function(hash) {
             	if(hash !== null && hash !== "") {
-					var searchInput = jQuery("#search input[type=text]");
+					var searchInput = jQuery("#searchbar form input[type=text]");
 
 					searchInput.val(hash);
-					
 					doSearch(hash);
             	}
             });	

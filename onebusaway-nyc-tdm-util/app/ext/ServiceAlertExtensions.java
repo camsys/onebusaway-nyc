@@ -13,23 +13,27 @@ public class ServiceAlertExtensions extends JavaExtensions {
   // TODO This method is so full of kludges it's not funny.
   public static String formatTimeWindowValue(ServiceAlertBean serviceAlert,
       String windowName, String fieldName) {
-    if (serviceAlert == null || serviceAlert.getPublicationWindows() == null) {
-      return "(none)";
+    try {
+      if (serviceAlert == null || serviceAlert.getPublicationWindows() == null) {
+        return "(none)";
+      }
+      List<TimeRangeBean> windows;
+      if (windowName.equalsIgnoreCase("publication"))
+        windows = serviceAlert.getPublicationWindows();
+      else
+        windows = serviceAlert.getActiveWindows();
+      TimeRangeBean bean = windows.get(0);
+      long value;
+      if (fieldName.equalsIgnoreCase("from"))
+        value = bean.getFrom();
+      else
+        value = bean.getTo();
+      if (value == 0)
+        return "";
+      return (new Date(value)).toString();
+    } catch (Exception e) {
+      return e.getMessage();
     }
-    List<TimeRangeBean> windows;
-    if (windowName.equalsIgnoreCase("publication"))
-      windows = serviceAlert.getPublicationWindows();
-    else
-      windows = serviceAlert.getActiveWindows();
-    TimeRangeBean bean = windows.get(0);
-    long value;
-    if (fieldName.equalsIgnoreCase("from"))
-      value = bean.getFrom();
-    else
-      value = bean.getTo();
-    if (value == 0)
-      return "";
-    return (new Date(value)).toString();
   }
 
   public static String formatDate(Long d) {

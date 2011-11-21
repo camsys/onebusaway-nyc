@@ -318,7 +318,6 @@ public class BlockStateTransitionModel {
   private Set<BlockState> getClosestBlockStateUncached(BlockState blockState,
       Observation obs) {
 
-    BlockState closestState;
     double distanceToTravel = 400;
 
     Observation prevObs = obs.getPreviousObservation();
@@ -348,6 +347,18 @@ public class BlockStateTransitionModel {
       }
     }
 
+    /*
+     * keep these flags alive
+     * TODO must be a better/more consistent way
+     */
+    if (!closestStates.isEmpty()) {
+      for (BlockState state : closestStates) {
+        state.setOpAssigned(blockState.getOpAssigned());
+        state.setRunReported(blockState.getRunReported());
+        state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+      }
+    }
+    
     return closestStates;
   }
 

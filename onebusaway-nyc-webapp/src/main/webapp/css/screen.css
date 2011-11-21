@@ -14,108 +14,12 @@
  * the License.
  */
 
-html, body {
-	font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;
-	font-size: 12px;
-	background-color: #999999;
-}
-
-a,
-a:visited,
-a:hover {
-	color: #0358B6;
-}
-
-a:hover {
-	text-decoration: underline;
-}
-	
-#page {
-    position: relative;
-    width: 96%; 
-    margin: 0 auto;  
-	border: 1px solid #666666;
-	border-top: none;
-    min-width: 960px;
-	background-color: #FFFFFF;
-}
-
-#header {
-	height: 100px;
-	position: relative;
-}
-
-#header .title {
-    position: absolute;
-    top: 30px;
-    left: 20px;
-}
-
-#header h1,
-#header h2 {
-	font-size: 18px;
-	color: #c0c0c0;
-	float: left;
-    font-weight: normal;
-}
-
-#header h1 a,
-#header h2 a {
-	text-decoration: none;
-	color: #666666;	
-}
-
-#header h1 {
-	border-left: 1px solid #C0C0C0;
-	padding-left: 10px;
-	margin-left: 10px;
-	font-weight: bold;
-}
-
-#header ul {
-	position: absolute;
-	bottom: 0px;
-	height: 32px;
-	width: 100%;
-    overflow: hidden;
-
-	background-image: url('img/nav_background.png');
-	background-repeat: repeat-x;
-}
-
-#header ul li {
-	height: 30px;
-	float: left;
-	border-right: 1px solid #ACACAC;
-	padding-top: 8px;
-	padding-left: 15px;
-	padding-right: 15px;
-}
-
-#header ul li.right {
-	border-left: 1px solid #ACACAC;
-	border-right: none;
-	float: right;
-}
-
-#header ul li ul {
-	display: none;
-}
-
-#header ul li a {
-	text-decoration: none;
-	font-size: 12px;
-	color: #ffffff;
-	font-weight: bold;
-}
-
 #content #text {
     position: relative;
 	padding: 15px;
 	line-height: 120%;
 	overflow: hidden;
 }
-
 
 #content.sidebar #text {
 	margin-left: 250px;
@@ -158,7 +62,6 @@ a:hover {
 	padding-bottom: 5px;	
 	border: none;
 }
-
 
 #content #text p {
 	padding-top: 10px;
@@ -256,43 +159,4 @@ a:hover {
 	list-style-type: disc;
 	padding-top: 2px;
 	padding-bottom: 2px;
-}
-
-#footer {
-    position: relative;
-    height: 45px;
-    clear: both;
-	font-size: 11px;
-	border-top: 1px solid #ACACAC;
-	background-color: #FFFFFF;
-	color: #333333;
-}
-
-#footer ul {
-	float: left;
-	height: 11px;
-	padding: 15px;
-}
-
-#footer ul li {
-	padding-left: 10px;
-	margin-left: 10px;
-	border-left: 1px solid #bebebe;
-	float: left;
-}
-
-#footer ul li:first-child {
-	padding-left: 0px;
-	margin-left: 0px;
-	border-left: none;		
-}
-
-#footer ul li a {
-	text-decoration: none;
-}
-
-#footer p {
-	float: right;
-	height: 11px;
-	padding: 15px;
 }

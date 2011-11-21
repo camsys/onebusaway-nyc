@@ -27,30 +27,23 @@
 <jsp:directive.page contentType="text/html" />
 
 <head>
+  <title><decorator:title default="mta.info | MTA Bus Time" /></title>
+
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=8" />
-
-  <title><decorator:title default="OneBusAway NYC" /></title>
   
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+  <link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
 
-  <s:url var="url" value="/css/reset.css"></s:url>
-  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+  <script type="text/javascript" src="http://mta.info/js/csshorizontalmenu.js"><!-- //prevent jspx minimization --></script>
 
-  <s:url var="url" value="/css/screen.css"></s:url>
-  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+  <s:url var="url" value="/css/reset.css"/>
+  <link rel="stylesheet" type="text/css" href="${url}"/>
 
-  <s:url var="url" value="/css/branding.css"></s:url>
-  <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+  <s:url var="url" value="/css/screen.css"/>
+  <link rel="stylesheet" type="text/css" href="${url}"/>
 
-<jsp:text>
-&lt;!--[if IE 6]&gt;
-</jsp:text>
-	<s:url var="url" value="/css/ie6.css"></s:url>
-  	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
-<jsp:text>
-&lt;![endif]--&gt;
-</jsp:text>
+  <s:url var="url" value="/css/branding.css"/>
+  <link rel="stylesheet" type="text/css" href="${url}"/>
 
   <s:url var="url" value="/js/lib/jquery.js"/>
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
@@ -62,59 +55,112 @@
 </head>
 
 <body>
-  <div id="page">
-    <div id="header">
-      <div class="title">
-      	<h2><a href="http://www.example.com">A City Transit Agency</a></h2>
-
-      	<s:url var="url" value="/"></s:url>
-	  	<h1><a href="${url}">OneBusAway NYC</a></h1>
-	  </div>
-
-      <ul>
-      	<s:url var="url" value="/"></s:url>
-        <li><a href="${url}">Home</a></li>
-
-		<s:url var="url" namespace="/m" action="index"/>
-        <li><a href="${url}">Text/Mobile Version</a></li>
-
-		<s:if test="adminUser">
-	        <li>
-				<s:url var="url" namespace="/admin" action="index"/>
-        		<a href="${url}">Administration Console</a>    
-    	    </li>
-    	</s:if>
-    	    
-		<s:url var="url" namespace="/wiki/Help" action="Index"/>
-        <li><a href="${url}">Help</a></li>	
-      </ul>
-    </div>
-
-	<decorator:body />
-
-	<div id="footer">
-		<ul>
-			<s:url var="url" namespace="/wiki" action="About"/>
-			<li><a href="${url}">About</a></li>
-
-			<s:url var="url" namespace="/wiki" action="ContactUs"/>
-			<li><a href="${url}">Contact Us</a></li>
-
-			<s:url var="url" namespace="/wiki/Developers" action="Index"/>
-			<li><a href="${url}">For Developers</a></li>
-
-			<s:url var="url" namespace="/m" action="index"/>
-			<li><a href="${url}">Text Only/Mobile Version</a></li>
-
-			<li><a href="http://www.example.com">ACTA Home</a></li>
-		</ul>
-
-		<p>&amp;copy; 2011, A City Transit Agency</p>
-	</div>
+<div id="mainbox">
+	<div id="topbar">
+		<div id="branding">
+			<a href="http://mta.info/default.html">
+				<img src="http://mta.info/template/images/mta_info.gif"/>
+			</a>
+		</div>
+		
+		<div id="search">
+			<ul id="topbar-links">
+				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/weekender.html">The Weekender</a></li>
+				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/accessibility">Accessibility</a></li>
+				<li class="list_h" style="margin-left:4px;"><a href="http://assistive.usablenet.com/tt/http://mta.info/index.html">Text-only</a></li>
+				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/faqs.htm">FAQs/Contact Us</a></li>
+			</ul>
+			<br />
 	
-	<script type="text/javascript">
-	  <![CDATA[var _gaq = _gaq || [];_gaq.push(['_setAccount', OBA.Config.googleAnalyticsId]);_gaq.push(['_setDomainName', 'none']);_gaq.push(['_setAllowLinker', true]);_gaq.push(['_trackPageview']);(function() {var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);})();]]>
-	</script>
-  </div>
+			<form id="searchform" method="get" action="http://search.mta.info/search">
+				<input type="hidden" name="site" value="my_collection"/>
+				<input type="hidden" name="client" value="my_collection"/>
+				<input type="hidden" name="proxystylesheet" value="my_collection"/>
+				<input type="hidden" name="output" value="xml_no_dtd"/>				
+				
+				<input type="submit" name="btnG" value="search" id="searchbutton" style="padding: 1px 8px;"/>
+				<input type="text" name="q" id="searchinputbox" alt="searchinputbox" size="12" maxlength="255" value=""/>
+			</form>		
+		</div>
+
+		<div id="horizontalcssmenu" style="clear: both;">	
+			<ul id="cssmenu1">
+				<li style="width: 71px; border-left: none;"><a href="http://mta.info/default.html" style="padding-left:18px;">Home</a>
+					<ul>
+						<li><a href="http://mta.info/default.html">MTA Home</a></li>
+						<li><a href="http://mta.info/nyct">NYC Subways and Buses</a></li>
+						<li><a href="http://mta.info/lirr">Long Island Rail Road</a></li>						
+						<li><a href="http://mta.info/libus">Long Island Bus</a></li>
+						<li><a href="http://mta.info/mnr">Metro-North Railroad</a></li>
+						<li><a href="http://mta.info/bandt">Bridges and Tunnels</a></li>
+						<li><a href="http://mta.info/capital">MTA Capital Program</a></li>
+					</ul> 
+				</li>
+				<li style="width: 95px;"><a href="http://mta.info/schedules">Schedules</a></li>
+				<li style="width: 113px;"><a href="http://mta.info/fares">Fares &amp; Tolls</a></li>
+				<li style="width: 61px;"><a href="http://mta.info/maps">Maps</a></li>
+				<li style="width: 195px;"><a href="http://mta.info/service">Planned Service Changes</a></li>
+				<li style="width: 123px;"><a href="http://mta.info/about">About the MTA</a></li>
+				<li style="width: 180px;"><a href="http://mta.info/business">Doing Business With Us</a></li>
+				<li style="width: 115px;"><a href="http://mta.info/accountability/" style="padding-right:23px;">Transparency</a>
+					<ul>
+						<li><a href="http://mta.info/accountability">Main Page</a></li>
+						<li><a href="http://mta.info/mta/boardmaterials.html">Board Materials</a></li>
+						<li><a href="http://mta.info/mta/budget/">Budget Info</a></li>
+						<li><a href="http://mta.info/capital">Capital Program Info</a></li>
+						<li><a href="http://mta.info/capitaldashboard/index.html">Capital Program Dashboard</a></li>
+						<li><a href="http://mta.info/mta/leadership/">MTA Leadership</a></li>
+						<li><a href="http://mta.info/mta/ind-perform/">Performance Indicators</a></li>						
+						<li><a href="http://mta.info/news/">Press Releases and News</a></li>
+						<li><a href="http://mta.info/mta/news/hearings">Public Hearings</a></li>						
+					</ul>
+				</li>
+			</ul>	
+		</div>
+	</div> <!-- close topbar -->
+ 
+	<div id="contentbox" style="margin:20px 0 10px 0; padding:0;">
+	<!-- Enter Content here -->
+
+  		<div id="bustime">
+	    	<div id="header">
+    	  		<div class="title">
+	      			<s:url var="url" value="/"></s:url>
+		  			<h1><a href="${url}">OneBusAway NYC</a></h1>
+	  	  		</div>
+
+	      	  	<ul>
+					<s:url var="url" namespace="/wiki" action="About"/>
+					<li><a href="${url}">About</a></li>
+
+					<s:url var="url" namespace="/wiki" action="ContactUs"/>
+					<li><a href="${url}">Contact Us</a></li>
+
+					<s:url var="url" namespace="/m" action="index"/>
+    			    <li><a href="${url}">Text/Mobile Version</a></li>
+
+					<s:if test="adminUser">
+				        <li>
+							<s:url var="url" namespace="/admin" action="index"/>
+        					<a href="${url}">Administration Console</a>    
+		    	    	</li>
+	    			</s:if>
+    	    
+			    </ul>
+			</div>
+	
+			<decorator:body />
+
+	    </div>
+
+	<!-- End Content -->
+	</div>
+
+	<div class="container clear">
+		<script type="text/javascript">
+  			<![CDATA[var _gaq = _gaq || [];_gaq.push(['_setAccount', OBA.Config.googleAnalyticsId]);_gaq.push(['_setDomainName', 'none']);_gaq.push(['_setAllowLinker', true]);_gaq.push(['_trackPageview']);(function() {var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);})();]]>
+		</script>
+	</div>
+</div> <!-- close mainbox -->
 </body>
 </html>

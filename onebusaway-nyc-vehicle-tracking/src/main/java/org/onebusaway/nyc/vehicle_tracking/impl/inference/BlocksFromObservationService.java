@@ -33,9 +33,11 @@ public interface BlocksFromObservationService {
 
   public Set<BlockState> bestStates(Observation observation, BlockState blockState);
 
-  public Set<BlockState> determinePotentialBlockStatesForObservation(
-      Observation observation, boolean bestBlockLocation);
 
-  Set<BlockState> getReportedBlockStates(Observation observation,
-      Set<BlockInstance> nearbyBlocks, boolean bestBlockLocation);
+  public Set<BlockState> getReportedBlockStates(Observation observation,
+      Set<BlockInstance> potentialBlocks, boolean bestBlockLocation,
+      Set<BlockState> statesToUpdate);
+
+  Set<BlockState> determinePotentialBlockStatesForObservation(
+      Observation observation, boolean bestBlockLocation);
 }
