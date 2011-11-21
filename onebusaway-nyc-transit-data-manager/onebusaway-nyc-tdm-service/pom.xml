@@ -134,6 +134,19 @@
       </properties>
     </profile>
     <profile>
+      <id>tdm-demo</id>
+      <properties>
+        <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
+        <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+        <tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
+        <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
+        <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
+        <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+        <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+      </properties>
+    </profile>
+    <profile>
       <id>tdm-qa</id>
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
@@ -169,6 +182,18 @@
         <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
         <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+        <webapp.api.url></webapp.api.url>
+      </properties>
+    </profile>
+    <profile>
+      <!-- Transit data federation webapp offers the TDS -->
+      <id>services-demo</id> <!-- aka staging, production -->
+      <properties>
+        <tds.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+        <tdm.host>http://tdm.demo.obanyc.com:8080</tdm.host>
         <webapp.api.url></webapp.api.url>
       </properties>
     </profile>
