@@ -53,6 +53,12 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   private Date _now = new Date();
 
+  private String _type = "json";
+
+  public void setType(String type) {
+    _type = type;
+  }
+  
   @Override
   public String execute() {  
     String stopId = _request.getParameter("MonitoringRef");
@@ -118,8 +124,15 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     return siri;
   }
 
-  public String getStopMonitoring() throws Exception {
-    return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+  public String getStopMonitoring() {
+    try {
+      if(_type.equals("xml"))
+        return SiriXmlSerializer.getXml(_response);
+      else
+        return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+    } catch(Exception e) {
+      return e.getMessage();
+    }
   }
 
   @Override

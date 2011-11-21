@@ -18,11 +18,23 @@ var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
+		bounds: new google.maps.LatLngBounds(
+				new google.maps.LatLng(40.48801936882241,-74.28397178649902),
+				new google.maps.LatLng(40.92862373397717,-73.68182659149171)
+		),
 		getTileUrl: function(coord, zoom) {
 			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
 				return null;
 			}
+			
+			var zoomFactor = Math.pow(2, zoom);
+			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
+		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
 
+		    if(!this.bounds.contains(center_ll)) {
+		    	return null;
+		    }
+		    
 			var quad = ""; 
 		    for (var i = zoom; i > 0; i--){
 		        var mask = 1 << (i - 1); 

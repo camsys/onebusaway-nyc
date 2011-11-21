@@ -57,8 +57,10 @@ public class ServiceAlertsHelper {
     Map<String, PtSituationElementStructure> ptSituationElements =
         new HashMap<String, PtSituationElementStructure>();
     for (VehicleActivityStructure activity : activities) {
-      addSituationElement(transitDataService, ptSituationElements,
+      if(activity.getMonitoredVehicleJourney() != null) {
+        addSituationElement(transitDataService, ptSituationElements,
           activity.getMonitoredVehicleJourney().getSituationRef());
+      }
     }
     addPtSituationElementsToServiceDelivery(serviceDelivery, ptSituationElements);
   }
