@@ -4,11 +4,6 @@
 	display: block;
 }
 
-#popup p,
-#popup ul {
-    padding: 0;
-}
-
 #popup .header {
 	padding-left: 35px;
 	white-space: nowrap;
@@ -58,7 +53,7 @@
   	color: #d12020;
 }
 
-#popup ul.notices li {
+#popup ul.service-alert li {
     color: #d12020;
 	background-color: #efefef;
 	border: 1px solid #bebebe;
@@ -103,18 +98,6 @@
 #popup ul li.arrival span:first-child {
 	margin-left: 0px;
 }
-
-#popup ul.service-alert li {
-    white-space: nowrap;
-    color: #990000;
-    height: 16px;
-    font-weight: bold;
-    padding-left: 19px;
-    background: url("img/bullet_alert.png");
-    background-position: left top;
-    background-repeat: no-repeat;
-}
-
 
 #popup .footer {
 	margin-top: 7px;	

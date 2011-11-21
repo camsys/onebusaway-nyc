@@ -20,153 +20,155 @@
 
 /* search/sidebar */
 
-#searchbar {
+#content #searchbar {
 	float: left;
-	width: 300px;
-	border-right: 1px solid #bebebe;
-	overflow-y: auto;
+	width: 310px;
+	font-size: 120%;
 }
 
-#no-results,
-#welcome,
-#results,
-#legend,
-#search {
-	padding: 10px;
-	font-size: 14px;
+#content #searchbar form {
+	display: block;
+	width: 280px;
+	height: 40px;
+
+	background-image: url('img/search_background.png');
+	background-repeat: no-repeat;
+
+	margin-bottom: 10px;
 }
 
-#no-results,
-#results,
-#legend {
+#content #searchbar form input {
+	font-weight: bold;
+	font-family: inherit;
+	font-size: 120%;
+	
+	width: 235px;
+	height: 30px;
+	border: none;
+	
+	margin: 5px;
+	margin-right: 0px;
+}
+
+#content #searchbar form input.submit {
+	width: 30px;
+	height: 30px;
+	border: none;
+
+	display: inline-block;
+	margin: 5px;
+	text-indent: -9999px;
+
+	background-image: url('img/search_icon.png');
+	background-repeat: no-repeat;
+}
+
+#content #no-results h2,
+#content #welcome h2,
+#content #results h2,
+#content #legend h2 {
+	font-weight: bold;
+	font-size: 100%;
+
+	color: #818181;	
+
+	padding-bottom: 5px;
+}
+
+#content #no-results,
+#content #results,
+#content #legend {
+	width: 280px;
 	display: none;
 }
 
-#search {
-	padding-bottom: 0px;
-}
-
-#search input {
-	font-size: 16px;
-	font-family: inherit;
-	width: 170px;
-	display: inline;
-}
-
-#search input.submit {
-	background-color: #efefef;
-	border: 1px solid #a0a0a0;
-	color: #666666;
-	
-	font-family: inherit;
-	font-weight: bold;
-	font-size: 15px;
-	
-	width: 80px;
-	margin-left: 5px;
-	padding: 2px;
-}
-
-#welcome ul {
+#content #welcome ul {
 	padding-top: 10px;
 }
 
-#welcome ul li {
+#content #welcome ul li {
 	line-height: 150%;	
-}
-
-/* navigation */
-
-#header ul li.link {
-	border-left: none;
-}
-
-#header ul li.link a {
-	background-image: url("img/button_link.png");
-	background-repeat: no-repeat;
-	background-position: center center;
-	height: 16px;
-	width: 46px;	
-	display: block;
 }
 
 /* result types */
 
-#results ul {
-	padding-top: 5px;
-	padding-bottom: 5px;
-}
-
-#results ul li.locationItem {
-	padding-top: 5px;
-	padding-bottom: 5px;
-}
-
-#results ul li.routeItem {
-	display: inline-block;
+#content #results ul li.routeItem {
 	width: 65px;
 	height: 25px;
+	display: inline-block;
 	text-align: center;
 }
 
-#legend ul li.legendItem {
-	margin: 0px;
+#content #legend ul li.legendItem {
 	margin-top: 5px;
 	margin-bottom: 10px;
-	padding-left: 20px;
 	position: relative;
+	width: 280px;
 }
 
-#legend ul li.legendItem input {
-	position: absolute;
-	left: 0px;
-	top: 0px;
-}
-
-#legend ul li.legendItem span.routeName {
-	padding: 5px;
+#content #legend ul li.legendItem .name {
+	margin-bottom: 5px;
 	font-weight: bold;
 }
 
-#legend ul li.legendItem p.destination {
-	margin-top: 10px;
-	font-size: 75%;
-	width: 240px;
+#content #legend ul li.legendItem .description {
+	margin-bottom: 5px;
+	font-size: 14px;
 }
 
-#legend ul li.legendItem p.destination p {
-	padding: 2px;
-	padding-left: 20px;
+#content #legend ul li.legendItem .destination {
+	font-size: 11px;
+	width: 280px;
+}
+
+#content #legend ul li.legendItem .destination p {
+	color: #1c75bc;
+	font-weight: bold;
+
+	padding: 3px;
+	padding-left: 25px;
+	
 	position: relative;
 	cursor: pointer;
 }
 
-#legend ul li.legendItem p.destination p span.ui-icon-triangle-1-s {
-	background-image: url("img/ui-icons_228ef1_256x240.png");
-	background-position: -64px -16px;
-	width: 15px;
-	height: 15px;
+#content #legend ul li.legendItem p.destination p span.ui-icon-triangle-1-s {
+	background-image: url("img/arrows.png");
+	background-position: 0px -20px;
+	width: 20px;
+	height: 20px;
 	display: block;
 	position: absolute;
 	top: 0px;
 	left: 0px;
 }
 
-#legend ul li.legendItem p.destination p span.ui-icon-triangle-1-e {
-	background-image: url("img/ui-icons_228ef1_256x240.png");
-	background-position: -32px -16px;
-	width: 15px;
-	height: 15px;
+#content #legend ul li.legendItem p.destination p span.ui-icon-triangle-1-e {
+	background-image: url("img/arrows.png");
+	background-position: 0px 0px;
+	width: 20px;
+	height: 20px;
 	display: block;
 	position: absolute;
 	top: 0px;
 	left: 0px;
 }
 
-#legend ul li.legendItem p.destination ul.stops li {
-	padding-top: 2px;
-	padding-bottom: 2px;
-	padding-left: 20px;
+#content #legend ul li.legendItem p.destination ul.stops {
+	margin-top: 5px;
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li {
+	background-image: url('img/stop_on_route_background.png');
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding: 3px;
+	padding-left: 40px;
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li a {
+	height: 20px;
+	color: #000000;
 }
 
 /* map/popup */

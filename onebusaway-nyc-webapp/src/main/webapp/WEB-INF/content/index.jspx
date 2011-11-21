@@ -54,27 +54,29 @@
 <body>
 <div id="content" class="map">
     <div id="searchbar">
-       <form action="search.action" id="search">
+       <form action="search.action">
          <input type="text" name="q" value=""/>  
          <input type="submit" value="Search" class="submit"/>
        </form>
        
        <div id="results">
-       	 Did you mean...
+       	 <h2>Did you mean...</h2>
+
          <ul></ul>
        </div>
 	            
 	   <div id="legend">
-		 Nearby routes:
+       	 <h2>Nearby routes:</h2>
+
 		 <ul></ul>
 	   </div>
 
 	   <div id="no-results">
-		 No results.
+       	 <h2>No results.</h2>
 	   </div>
 
 	   <div id="welcome">
-		 Try these example searches:
+		 <h2>Try these example searches:</h2>
 		 
 		 <ul>
 		 	<li>Route: <a href="#B63">B63</a></li>

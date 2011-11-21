@@ -49,6 +49,10 @@ public class RouteResult implements SearchResult {
     return routeBean.getDescription();
   }
 
+  public String getLongName() {
+    return routeBean.getLongName();
+  }
+
   public String getColor() {
     return routeBean.getColor();
   }

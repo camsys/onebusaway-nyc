@@ -270,6 +270,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
         }
         
         if (situationRefs == null || situationRefsCount > 0) {
+        	if(typeof r.ServiceDelivery.SituationExchangeDelivery === 'undefined') {
+        		return html;
+        	}
+        	
             jQuery.each(r.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
                 var situationId = ptSituationElement.SituationNumber;
                 if (situationRefs == null || situationIds[situationId]==true) {
@@ -322,7 +326,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		if(visits.length === 0) {
 			html += '<p class="service">No buses en-route to your location.<br/>Please check back shortly for an update.</p>';
 		} else {		
-			html += '<p class="service">This stop is served by:</p>';
+			html += '<p class="service">Upcoming arrivals:</p>';
 			html += '<ul>';
 
 			var arrivalsByRouteAndHeadsign = {};
@@ -587,14 +591,16 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	
 	// MISC
 	function removeRoutesNotInSet(routeResults) {
-		for(routeAndAgencyId in polylinesByRoute) {
+		removeHoverPolyline();
+
+		jQuery.each(polylinesByRoute, function(routeAndAgencyId, _) {
 			if(routeAndAgencyId === null) {
-				continue;
+				return;
 			}
 
 			// don't remove the routes we just added!
 			var removeMe = true;
-			jQuery.each(routeResults, function(_, result) {
+			jQuery.each(routeResults, function(__, result) {
 				if(routeAndAgencyId === result.routeId) {
 					removeMe = false;
 					return false;
@@ -606,13 +612,22 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				removeStops(routeAndAgencyId);
 				removeVehicles(routeAndAgencyId);
 			}
-		}		
+		});
 	}
 	
 	function removeDisambiguationMarkers() {
 		jQuery.each(disambiguationMarkers, function(_, marker) {
 			marker.setMap(null);
 		});
+	}
+	
+	function removeHoverPolyline() {
+		if(hoverPolylines !== null) {
+			jQuery.each(hoverPolylines, function(_, polyline) {
+				polyline.setMap(null);
+			});
+		}
+		hoverPolylines = null;
 	}
 		
 	//////////////////// CONSTRUCTOR /////////////////////
@@ -678,14 +693,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			updateVehicles(routeResult.routeId);
 		},
 		
-		removeHoverPolyline: function() {
-			if(hoverPolylines !== null) {
-				jQuery.each(hoverPolylines, function(_, polyline) {
-					polyline.setMap(null);
-				});
-			}
-			hoverPolylines = null;
-		},
+		removeHoverPolyline: removeHoverPolyline,
 		
 		showHoverPolyline: function(encodedPolylines, color) {
 			hoverPolylines = [];
@@ -724,7 +732,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			var icon = new google.maps.MarkerImage("img/location/beachflag.png",
 	                new google.maps.Size(20, 32),
 	                new google.maps.Point(0,0),
-	                new google.maps.Point(10, -32));
+	                new google.maps.Point(-10, 32));
 				
 			var markerOptions = {
 					position: latlng,
