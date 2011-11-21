@@ -84,30 +84,25 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
   private ArchivedInferredLocationRecord getTestRecord() {
     ArchivedInferredLocationRecord record = new ArchivedInferredLocationRecord();
-    record.setRecordTimestamp(new Date(123456789L));
-    record.setVehicleId("120");
+    record.setTimeReported(new Date(123456789L));
+    record.setVehicleId(120);
+    record.setVehicleAgencyDesignator("NYC");
+    record.setTimeReceived(new Date());
     record.setServiceDate(new Date(20111010L));
     record.setScheduleDeviation(1);
     record.setBlockId("1");
     record.setTripId("2");
-    record.setDistanceAlongBlock(1000.0);
-    record.setDistanceAlongTrip(5000.0);
+    record.setBlockDistance(1000.0);
+    record.setTripDistance(5000.0);
     record.setInferredLatitude(new BigDecimal("70.35"));
     record.setInferredLongitude(new BigDecimal("-101.20"));
-    record.setObservedLatitude(new BigDecimal("70.25"));
-    record.setObservedLongitude(new BigDecimal("-101.10"));
     record.setPhase("phase");
-    record.setStatus("status");
-    record.setBearing(180.0);
-    record.setRawMessage("This is a standin for the raw message");
+    record.setStatusInfo("status");
 
     record.setActiveBundleId("1");
     record.setLastUpdateTime(20111010L);
     record.setLastLocationUpdateTime(20111010L);
-    record.setLastObservedLatitude(new BigDecimal("70.25"));
-    record.setLastObservedLongitude(new BigDecimal("-101.10"));
-    record.setMostRecentObservedDestinationSignCode("123");
-    record.setLastInferredDestinationSignCode("123");
+    record.setLastInferredDestSignCode("123");
     record.setInferenceEngineHostname("prod.obanyc.com");
     record.setInferenceIsEnabled(true);
     record.setInferenceEngineIsPrimary(true);

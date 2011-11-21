@@ -67,12 +67,13 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
  
   private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
     // Extract next stop id and distance
-    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(locationRecord.getVehicleId(), System.currentTimeMillis());
+    String vehicleId = locationRecord.getVehicleAgencyDesignator() + "_" + locationRecord.getVehicleId().toString();
+    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(vehicleId, System.currentTimeMillis());
 
     TripStatusBean status = vehicle.getTripStatus();
 
-    if (status == null)
-	_log.info("Null trip status. Skipping TDS values."); // Common case, particularly, e.g. when dead heading
+    if ((status == null) || (status.getNextStop() == null))
+	_log.debug("Null trip status. Skipping TDS values."); // Common case, particularly, e.g. when dead heading
     else {
 	locationRecord.setNextScheduledStopId(status.getNextStop().getId());
 	locationRecord.setNextScheduledStopDistance(status.getNextStopDistanceFromVehicle());
