@@ -1,18 +1,11 @@
 package org.onebusaway.nyc.transit_data_manager.barcode;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import javax.activation.MimeType;
 import javax.imageio.ImageIO;
 
 /**
@@ -21,11 +14,10 @@ import javax.imageio.ImageIO;
  * @author sclark
  * 
  */
-public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
+public class GoogleChartBarcodeGenerator extends QrCodeGenerator {
 
-  public GoogleChartBarcodeGenerator(QRErrorCorrectionLevel ecLevel) {
+  public GoogleChartBarcodeGenerator() {
     super();
-    this.ecLevel = ecLevel;
   }
 
   private static String URL_ENCODING_NAME = "UTF-8";
@@ -80,17 +72,13 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
   private static String CHART_PARAMVALUE_SIZE_REPLACE = "__WWW__x__HHH__";
   private static String CHART_PARAMVALUE_EC_MARGN_REPLACE = "__EC__|__MM__";
 
-  private static int CHART_PARAMVALUE_MARGN_DEFAULT = 4;
   private static long CHART_MAX_PIXELS = 300000;
 
-  private static String CHART_IMAGE_MIMETYPE = "image/png";
-
-  private QRErrorCorrectionLevel ecLevel;
-
-  private RenderedImage generateBarcode(int width, int height, String text)
+  @Override
+  protected RenderedImage generateBarcode(String text, int width, int height, int quietZoneRows)
       throws Exception {
     if (checkRequestImageSizeIsTooLarge(width, height)) {
-      throw new Exception(
+      throw new IllegalArgumentException(
           "Requested Image size exceeds Google Chart maximum of 300000 pixels.");
     }
 
@@ -110,7 +98,7 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
       urlBldr.append(CHART_PARAMNAME_TYPE + CHART_PARAMVALUE_TYPE_QR);
       urlBldr.append("&");
       urlBldr.append(CHART_PARAMNAME_EC_MARGN
-          + getEcLevelWithMarginParamValue(ecLevel, CHART_PARAMVALUE_MARGN_DEFAULT));
+          + getEcLevelWithMarginParamValue(getEcLevel(), quietZoneRows));
       urlBldr.append("&");
       urlBldr.append(CHART_PARAMNAME_DATA);
 
@@ -152,11 +140,6 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
     return paramValue;
   }
 
-  @Override
-  public void setErrorLevel(QRErrorCorrectionLevel errorCorrectionLevel) {
-    ecLevel = errorCorrectionLevel;
-  }
-
   private boolean checkRequestImageSizeIsTooLarge(int width, int height) {
     boolean isTooLarge = false;
 
@@ -168,16 +151,5 @@ public class GoogleChartBarcodeGenerator implements QrCodeGenerator {
     return isTooLarge;
   }
 
-  @Override
-  public RenderedImage generateCode(int width, int height, String bcText) {
-    RenderedImage resultImage = null;
-
-    try {
-      resultImage = generateBarcode(width, height, bcText);
-    } catch (Exception e) {
-      resultImage = null;
-    }
-
-    return resultImage;
-  }
+  
 }

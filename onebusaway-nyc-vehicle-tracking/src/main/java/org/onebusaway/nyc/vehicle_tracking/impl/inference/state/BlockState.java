@@ -32,11 +32,11 @@ public final class BlockState {
 
   private final String destinationSignCode;
 
-  private boolean isOpAssigned;
+  private Boolean isOpAssigned;
 
-  private boolean isRunReported;
+  private Boolean isRunReported;
 
-  private boolean isRunReportedAssignedMismatch;
+  private Boolean isRunReportedAssignedMismatch;
 
   public BlockState(BlockInstance blockInstance,
       ScheduledBlockLocation blockLocation, RunTripEntry runTrip,
@@ -53,9 +53,6 @@ public final class BlockState {
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;
-    this.isOpAssigned = false;
-    this.isRunReported = false;
-    this.isRunReportedAssignedMismatch = false;
     this.runTrip = runTrip;
   }
 
@@ -97,27 +94,27 @@ public final class BlockState {
     return runTrip == null ? null : runTrip.getRunId();
   }
 
-  public boolean isRunReported() {
+  public Boolean getRunReported() {
     return isRunReported;
   }
 
-  public void setRunReported(boolean isRunReported) {
+  public void setRunReported(Boolean isRunReported) {
     this.isRunReported = isRunReported;
   }
 
-  public boolean isOpAssigned() {
+  public Boolean getOpAssigned() {
     return isOpAssigned;
   }
 
-  public void setOpAssigned(boolean isUTSassigned) {
+  public void setOpAssigned(Boolean isUTSassigned) {
     this.isOpAssigned = isUTSassigned;
   }
 
-  public boolean isRunReportedAssignedMismatch() {
+  public Boolean isRunReportedAssignedMismatch() {
     return isRunReportedAssignedMismatch;
   }
 
-  public void setRunReportedAssignedMismatch(boolean isRunReportedUTSMismatch) {
+  public void setRunReportedAssignedMismatch(Boolean isRunReportedUTSMismatch) {
     this.isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
   }
 }

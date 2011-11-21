@@ -7,9 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
 import tcip_final_3_0_5_1.CCDestinationMessageIden;
 import tcip_final_3_0_5_1.CCDestinationSignMessage;
@@ -119,7 +118,7 @@ public class CSVCcAnnouncementInfoConverter implements
 
   private CPTRowMetaData createMetaData(String[] line) {
     CPTRowMetaData md = new CPTRowMetaData();
-    DateTimeFormatter dtf = DateTimeFormat.forPattern(UtsMappingTool.UTS_TIMESTAMP_FIELD_DATEFORMAT);
+    DateTimeFormatter dtf = TcipMappingTool.TCIP_DATETIME_FORMATTER;
     String now = dtf.print(new Date().getTime());
     md.setUpdated(now);
     return md;

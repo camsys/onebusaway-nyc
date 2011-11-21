@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.transit_data_federation.model.tdm;
 
 import org.joda.time.DateTime;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -56,7 +58,7 @@ public class OperatorAssignmentItem implements Serializable {
   }
 
   public String getRunId() {
-    return runRoute + "_" + runNumber;
+    return RunTripEntry.createId(runRoute, runNumber);
   }
 
   public Date getServiceDate() {

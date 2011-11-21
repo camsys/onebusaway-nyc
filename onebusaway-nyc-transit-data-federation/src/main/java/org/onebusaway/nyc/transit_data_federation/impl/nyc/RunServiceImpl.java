@@ -233,14 +233,14 @@ public class RunServiceImpl implements RunService {
     /*
      * 1. check for exact match
      */
-    RunTripEntry exactMatch = getActiveRunTripEntryForRunAndTime(
-        runAgencyAndId, time);
-    if (exactMatch != null) {
-      List<RunTripEntry> lrtes = new ArrayList<RunTripEntry>();
-      lrtes.add(exactMatch);
-      matchedRTEs.put(0, lrtes);
-      return matchedRTEs;
-    }
+//    RunTripEntry exactMatch = getActiveRunTripEntryForRunAndTime(
+//        runAgencyAndId, time);
+//    if (exactMatch != null) {
+//      List<RunTripEntry> lrtes = new ArrayList<RunTripEntry>();
+//      lrtes.add(exactMatch);
+//      matchedRTEs.put(0, lrtes);
+//      return matchedRTEs;
+//    }
 
     Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId
         .getId());
@@ -306,6 +306,11 @@ public class RunServiceImpl implements RunService {
     return matchedRTEs;
   }
 
+  /**
+   * If a schedule time is between the last stop time of
+   * a trip and the first start time of the next, we return
+   * the next trip. 
+   */
   @Override
   public RunTripEntry getActiveRunTripEntryForRunAndTime(
       AgencyAndId runAgencyAndId, long time) {
@@ -316,15 +321,25 @@ public class RunServiceImpl implements RunService {
       return null;
     }
 
-    Date serviceDate = getTimestampAsDate(runAgencyAndId.getAgencyId(), time);
+    Date serviceDate = getTimestampAsDate(time);
     int scheduleTime = (int) (time - serviceDate.getTime()) / 1000;
 
     for (RunTripEntry entry : entriesByRun.get(runId)) {
-      if (calendarService.isLocalizedServiceIdActiveOnDate(entry.getTripEntry()
-          .getServiceId(), serviceDate)
-          && scheduleTime >= entry.getStartTime()
-          && scheduleTime < entry.getStopTime())
+      if (!calendarService.isLocalizedServiceIdActiveOnDate(entry.getTripEntry()
+          .getServiceId(), serviceDate))
+        continue;
+      
+      boolean activeInThisTrip = scheduleTime >= entry.getStartTime()
+          && scheduleTime < entry.getStopTime();
+          
+      if (activeInThisTrip)
         return entry;
+      
+      RunTripEntry nextTrip = getNextEntry(entry, serviceDate.getTime());
+      if (nextTrip != null
+          && scheduleTime <= nextTrip.getStartTime()) {
+        return nextTrip;
+      }
     }
     return null;
   }
@@ -439,7 +454,8 @@ public class RunServiceImpl implements RunService {
   }
 
   /**
-   * This follows the same general contract of BlockTripEntry.getActiveTrip
+   * This follows the same general contract of ScheduledBlockLocation.getActiveTrip,
+   * i.e. if we go past the end of the block, return the last run-trip
    */
   @Override
   public RunTripEntry getActiveRunTripEntryForBlockInstance(
@@ -449,26 +465,28 @@ public class RunServiceImpl implements RunService {
         .getScheduledBlockLocationFromScheduledTime(blockInstance.getBlock(),
             scheduleTime);
 
+    /*
+     * according to getScheduledBlockLocationFromScheduledTime, we get
+     * null when we've gone past the end of the block.
+     */
     if (blockLocation == null) {
-      _log.debug("no scheduled block location for block=" + blockInstance
-          + ", scheduleTime=" + scheduleTime);
-      return null;
+      blockLocation = scheduledBlockLocationService
+          .getScheduledBlockLocationFromDistanceAlongBlock(blockInstance.getBlock(),
+              blockInstance.getBlock().getTotalBlockDistance());
     }
 
     BlockTripEntry trip = blockLocation.getActiveTrip();
 
-    return getRunTripEntryForTripAndTime(trip.getTrip(), scheduleTime);
+    return getRunTripEntryForTripAndTime(trip.getTrip(), blockLocation.getScheduledTime());
   }
 
-  private Date getTimestampAsDate(String agencyId, long timestamp) {
+  private Date getTimestampAsDate(long timestamp) {
     Calendar cd = Calendar.getInstance();
     cd.setTimeInMillis(timestamp);
     cd.set(Calendar.HOUR_OF_DAY, 0);
     cd.set(Calendar.MINUTE, 0);
     cd.set(Calendar.SECOND, 0);
     cd.set(Calendar.MILLISECOND, 0);
-    // TODO are these timezone changes necessary?
-    cd.setTimeZone(calendarService.getTimeZoneForAgencyId(agencyId));
     return cd.getTime();
   }
 
@@ -478,8 +496,7 @@ public class RunServiceImpl implements RunService {
   public ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
       RunTripEntry runTrip, long timestamp) {
 
-    Date serviceDate = getTimestampAsDate(runTrip.getTripEntry().getId()
-        .getAgencyId(), timestamp);
+    Date serviceDate = getTimestampAsDate(timestamp);
     BlockInstance activeBlock = getBlockInstanceForRunTripEntry(runTrip,
         serviceDate);
     int scheduleTime = (int) ((timestamp - serviceDate.getTime()) / 1000);
@@ -496,24 +513,26 @@ public class RunServiceImpl implements RunService {
   @Override
   public BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
       Date serviceDate) {
-    Calendar cd = Calendar.getInstance();
-    cd.setTime(serviceDate);
-    // TODO are these timezone changes necessary?
-    cd.setTimeZone(calendarService.getTimeZoneForAgencyId(rte.getTripEntry()
-        .getId().getAgencyId()));
+    
+    Date trunDate = getTimestampAsDate(serviceDate.getTime());
     AgencyAndId blockId = rte.getTripEntry().getBlock().getId();
     BlockInstance bli = blockCalendarService.getBlockInstance(blockId,
-        cd.getTimeInMillis());
+        trunDate.getTime());
+    
     if (bli == null) {
       // FIXME just a hack, mostly for time issues
-      List<BlockInstance> tmpBli = blockCalendarService.getActiveBlocks(
-          blockId, serviceDate.getTime(), serviceDate.getTime());
+      List<BlockInstance> tmpBli = blockCalendarService.getClosestActiveBlocks(
+          blockId, serviceDate.getTime());
       if (tmpBli != null && !tmpBli.isEmpty())
         return tmpBli.get(0);
     }
     return bli;
   }
 
+  /**
+   * Notice that this will only match times EXACTLY within the
+   * ACTIVE schedule times (based on stops times).
+   */
   @Override
   public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,
       int scheduleTime) {

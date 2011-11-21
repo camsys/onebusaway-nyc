@@ -31,13 +31,15 @@ import org.onebusaway.realtime.api.EVehiclePhase;
  * to using the already in-progress block). The filter fails to find a block
  * with enough likelihood, so it keeps it DEADHEAD_BEFORE.
  * 
+ * NOTE: this one has operator-entered runs.  they don't always match
+ * the made-up "actual" run.
  * 
- * @author bdferris
+ * @author bdferris, bwillard
  */
-public class Trace_7564_20101203T004633_IntegrationTest extends AbstractTraceRunner {
+public class Trace_7564_20101203T004633_with_runs_reported_IntegrationTest extends AbstractTraceRunner {
 
-  public Trace_7564_20101203T004633_IntegrationTest() throws Exception {
-    super("7564-2010-12-03T00-46-33.csv.gz");
+  public Trace_7564_20101203T004633_with_runs_reported_IntegrationTest() throws Exception {
+    super("7564-2010-12-03T00-46-33.with.runs.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
     setLoops(1);
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.75);
