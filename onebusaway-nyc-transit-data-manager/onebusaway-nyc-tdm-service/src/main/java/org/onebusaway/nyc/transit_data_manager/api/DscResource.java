@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -21,6 +22,9 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Destin
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DestinationSignMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DestinationSignsMessage;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -32,7 +36,7 @@ import tcip_final_3_0_5_1.CCDestinationSignMessage;
 @Scope("request")
 public class DscResource {
   
-  //private static Logger _log = LoggerFactory.getLogger(DscResource.class);
+  private static Logger _log = LoggerFactory.getLogger(DscResource.class);
   
   @Autowired
   private JsonTool jsonTool;
@@ -47,6 +51,8 @@ public class DscResource {
   public String getDisplayForCode(@PathParam("code")
   Long dscCode) {
 
+    _log.info("Starting getDisplayForCode for code " + String.valueOf(dscCode));
+    
     //   Need to create a data object to be our interface to the TCIP sign code
     // data.
     SignCodeData data = null;
@@ -73,6 +79,8 @@ public class DscResource {
       throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
     }
 
+    _log.info("Returning JSON String from getDisplayForCode.");
+    
     return output;
   }
   
@@ -80,6 +88,9 @@ public class DscResource {
   @GET
   @Produces("application/json")
   public String getAllDisplays() {
+    
+    _log.info("Starting getAllDisplays.");
+    
     SignCodeData data = null;
     try {
       data = getDataObject();
@@ -108,6 +119,7 @@ public class DscResource {
       throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
     }
     
+    _log.info("Returning Json from getAllDisplays.");
     return output;
   }
   
@@ -115,11 +127,14 @@ public class DscResource {
     File inputFile = new File(System.getProperty("tdm.dataPath")
         + System.getProperty("tdm.dscFilename"));
     
+    _log.debug("Loading SignCodeData object from " + inputFile.getPath());
+    
     CsvCrewAssignsToDataCreator process = new CsvCrewAssignsToDataCreator(
         inputFile);
     
     SignCodeData data = process.generateDataObject();
     
+    _log.debug("Returning SignCodeData object.");
     return data;
   }
   

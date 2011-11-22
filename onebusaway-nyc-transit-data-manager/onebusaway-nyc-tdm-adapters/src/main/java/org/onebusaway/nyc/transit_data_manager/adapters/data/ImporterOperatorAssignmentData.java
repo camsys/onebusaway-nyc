@@ -7,10 +7,14 @@ import java.util.List;
 import org.joda.time.DateMidnight;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
 public class ImporterOperatorAssignmentData implements OperatorAssignmentData {
+  
+  private static Logger _log = LoggerFactory.getLogger(ImporterOperatorAssignmentData.class);
 
   private List<SCHOperatorAssignment> assignmentsData = null;
 
@@ -43,27 +47,29 @@ public class ImporterOperatorAssignmentData implements OperatorAssignmentData {
   // This will work similarly to getAllServiceDates above
   public List<SCHOperatorAssignment> getOperatorAssignmentsByServiceDate(
       DateMidnight inputServiceDate) {
+    
     // check for null input value
     if (inputServiceDate == null)
       return new ArrayList<SCHOperatorAssignment>();
-
+    
+    _log.debug("getting Operator Assignments for the service date " + inputServiceDate.toString());
+    
     List<SCHOperatorAssignment> opAssigns = new ArrayList<SCHOperatorAssignment>();
 
-    Iterator<SCHOperatorAssignment> assignsIt = assignmentsData.iterator();
-    DateMidnight thisDate = null;
-    SCHOperatorAssignment assignment = null;
-
-    while (assignsIt.hasNext()) {
-      assignment = assignsIt.next();
+    _log.debug("About to loop over " + assignmentsData.size() + " SCHOperatorAssignment objects, checking the service date of each one.");
+    
+    for (SCHOperatorAssignment opAssign : assignmentsData) {
       DateTimeFormatter xmlFormat = ISODateTimeFormat.dateTimeNoMillis();
-      thisDate = new DateMidnight(
-          xmlFormat.parseDateTime(assignment.getMetadata().getEffective()));
-
+      DateMidnight thisDate = new DateMidnight(
+          xmlFormat.parseDateTime(opAssign.getMetadata().getEffective()));
+      
       if (inputServiceDate.equals(thisDate)) {
-        opAssigns.add(assignment);
-      }
+        opAssigns.add(opAssign);
+      }      
     }
 
+    _log.debug("Returning " + opAssigns.size() + " results for this service date.");
+    
     return opAssigns;
   }
 

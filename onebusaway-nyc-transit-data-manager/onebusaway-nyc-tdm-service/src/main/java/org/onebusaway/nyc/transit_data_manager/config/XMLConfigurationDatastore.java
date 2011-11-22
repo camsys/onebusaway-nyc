@@ -2,7 +2,6 @@ package org.onebusaway.nyc.transit_data_manager.config;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
@@ -11,15 +10,18 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.joda.time.DateTime;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItem;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigurationStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class XMLConfigurationDatastore implements
     ConfigurationDatastoreInterface {
 
+  private static Logger _log = LoggerFactory.getLogger(XMLConfigurationDatastore.class);
+  
   private boolean isConfigLoaded = false;
   private File configFile;
 
@@ -58,6 +60,8 @@ public class XMLConfigurationDatastore implements
   public synchronized void setConfigItemByComponentKey(String component, String key,
       ConfigItem config) {
 
+    _log.info("Saving value in configurationstore in setConfigItemByComponentKey.");
+    
     configuration.setConfigForComponentKey(component, key, config);
 
     try {
@@ -66,6 +70,7 @@ public class XMLConfigurationDatastore implements
       e.printStackTrace();
     }
 
+    _log.info("Done in setConfigItemByComponentKey.");
   }
 
   @Override
@@ -85,6 +90,7 @@ public class XMLConfigurationDatastore implements
 
   private void loadConfiguration() throws IOException, JAXBException {
 
+    _log.info("For the TDM Config tool, loading XML Configuration from " + configFile.getPath());
     if (!isConfigLoaded) {
       FileInputStream fis = null;
       try {
@@ -113,13 +119,18 @@ public class XMLConfigurationDatastore implements
       isConfigLoaded = true;
     }
 
+    _log.info("XML Configuration loaded.");
   }
 
   private void saveConfiguration() throws JAXBException {
+    _log.debug("writing configuration to file.");
+    
     JAXBContext jc = JAXBContext.newInstance(ConfigurationStore.class);
     Marshaller m = jc.createMarshaller();
 
     m.marshal(configuration, configFile);
+    
+    _log.debug("Done writing configuration to file.");
   }
   
   private void loadConfigFile(String configFilePath) throws Exception {
