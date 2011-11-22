@@ -177,7 +177,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         
         stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
         _siriSupport.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
-            tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
+            adBean.getTrip(), tripDetails, adBean.getStop(), 
             includeNextStops);
           
         output.add(stopVisit);

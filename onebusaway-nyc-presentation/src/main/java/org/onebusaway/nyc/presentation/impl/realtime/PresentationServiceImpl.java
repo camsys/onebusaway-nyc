@@ -79,34 +79,41 @@ public class PresentationServiceImpl implements PresentationService {
     int atStopThresholdInFeet = 
         _configurationService.getConfigurationValueAsInteger("display.atStopThresholdInFeet", 100);    
 
-    int arrivingThresholdInFeet = 
-        _configurationService.getConfigurationValueAsInteger("display.arrivingThresholdInFeet", 500);    
+    int approachingThresholdInFeet = 
+        _configurationService.getConfigurationValueAsInteger("display.approachingThresholdInFeet", 500);    
     
-    int arrivingThresholdInStops = 
-        _configurationService.getConfigurationValueAsInteger("display.arrivingThresholdInStops", 0);    
+    int distanceAsStopsThresholdInFeet = 
+        _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsTresholdInFeet", 2640);    
     
-    int showDistanceAsStopsThresholdInStops = 
-        _configurationService.getConfigurationValueAsInteger("display.showDistanceAsStopsThresholdInStops", 3);    
+    int distanceAsStopsThresholdInStops = 
+        _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsThresholdInStops", 3);    
 
+    int distanceAsStopsMaximumThresholdInFeet = 
+        _configurationService.getConfigurationValueAsInteger("display.distanceAsStopsMaximumThresholdInFeet", 2640);    
+    
     String r = "";
 
     // meters->feet
     double feetAway = distances.getDistanceFromCall() * 3.2808399;
 
-    if(feetAway <= atStopThresholdInFeet) {
+    if(feetAway < atStopThresholdInFeet) {
       r = "at " + oneStopWord;
 
-    } else if(feetAway <= arrivingThresholdInFeet && distances.getStopsFromCall() <= arrivingThresholdInStops) {
+    } else if(feetAway < approachingThresholdInFeet) {
       r = approachingText;
     
     } else {
-      if(distances.getStopsFromCall() <= showDistanceAsStopsThresholdInStops) {
+      if(feetAway <= distanceAsStopsMaximumThresholdInFeet && 
+          (distances.getStopsFromCall() <= distanceAsStopsThresholdInStops 
+          || feetAway <= distanceAsStopsThresholdInFeet)) {
+        
         if(distances.getStopsFromCall() == 0)
           r = "< 1 " + oneStopWord + " away";
         else
           r = distances.getStopsFromCall() == 1
           ? "1 " + oneStopWord + " away"
               : distances.getStopsFromCall() + " " + multipleStopsWord + " away";
+
       } else {
         double milesAway = (float)feetAway / 5280;
         r = String.format("%1.1f " + multipleMilesWord + " away", milesAway);
