@@ -18,11 +18,23 @@ var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
+		bounds: new google.maps.LatLngBounds(
+				new google.maps.LatLng(40.48801936882241,-74.28397178649902),
+				new google.maps.LatLng(40.92862373397717,-73.68182659149171)
+		),
 		getTileUrl: function(coord, zoom) {
 			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
 				return null;
 			}
+			
+			var zoomFactor = Math.pow(2, zoom);
+			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
+		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
 
+		    if(!this.bounds.contains(center_ll)) {
+		    	return null;
+		    }
+		    
 			var quad = ""; 
 		    for (var i = zoom; i > 0; i--){
 		        var mask = 1 << (i - 1); 
@@ -169,7 +181,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 		infoWindow = new google.maps.InfoWindow({
 	    	content: content,
-	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2))
+	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
+	    	maxWidth: 320
 	    });
 
 		infoWindow.open(map, marker);
@@ -236,9 +249,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.PublishedLineName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
-		// update time
-		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
-		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
+		// revise time formats
+		var activityInGMT = OBA.Util.cleanUpGMT(activity.RecordedAtTime);
+		var responseTimeInGMT = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
+
+		var updateTimestamp = new Date(activityInGMT).getTime();
+		var updateTimestampReference = new Date(responseTimeInGMT).getTime();
 		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
 
@@ -278,6 +294,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '</ul>';
 		}
 		
+		html += OBA.Config.infoBubbleFooterFunction('route', routeIdWithoutAgency);			
 		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);
 		
 		// (end popup)
@@ -328,12 +345,15 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<div class="header stop">';
 		html += '<p class="title">' + stopResult.name + '</p><p>';
 		html += '<span class="type">Stop #' + stopResult.stopIdWithoutAgency + '</span>';
+		
+		var responseTime = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
 
 		// update time across all arrivals
-		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
+		var updateTimestampReference = new Date(responseTime).getTime();
 		var maxUpdateTimestamp = null;
 		jQuery.each(visits, function(_, monitoredJourney) {
-			var updateTimestamp = new Date(monitoredJourney.RecordedAtTime).getTime();
+			var journeyRecordedTime = OBA.Util.cleanUpGMT(monitoredJourney.RecordedAtTime);
+			var updateTimestamp = new Date(journeyRecordedTime).getTime();
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
@@ -405,6 +425,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 			html += '</ul>';
 		}
+		
+		html += OBA.Config.infoBubbleFooterFunction("stop", stopResult.stopIdWithoutAgency);
 		
 	    html += getServiceAlertContent(r, null);
 	        
@@ -740,6 +762,44 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 
 			updateVehicles(routeResult.routeId);
+		},
+	
+		panToRoute: function(routeResult) {
+			var polylines = polylinesByRoute[routeResult.routeId];
+			var newBounds = new google.maps.LatLngBounds();
+			var currentBounds = map.getBounds();
+			var routeBounds = new google.maps.LatLngBounds();
+			var sw = currentBounds.getSouthWest();
+			var ne = currentBounds.getNorthEast();
+			
+			// filter bounds by what's in current viewport plus some
+			// Note: for western hemisphere, above equator
+			currentBounds.extend(new google.maps.LatLng(sw.lat() - .20, sw.lng() - .20));
+			currentBounds.extend(new google.maps.LatLng(ne.lat() + .20, ne.lng() + .20));			
+					
+			jQuery.each(polylines, function(_, polyline) {
+				if (typeof polyline !== 'undefined') { 
+					var coordinates = polyline.getPath();
+					
+					// scenario 1: route will be in bounds
+					coordinates.forEach(function(coordinate, index) {
+						if (currentBounds.contains(coordinate)) {	
+							newBounds.extend(coordinate);
+						}
+						routeBounds.extend(coordinate);
+					});
+				}
+			});
+			
+			// scenario 2: route will not be in bounds
+			if (newBounds.isEmpty()) {
+				map.fitBounds(routeBounds);
+			} else {
+				// stay at user's existing zoom level
+				var currentZoom = map.getZoom();
+				map.fitBounds(newBounds);
+				map.setZoom(currentZoom);
+			}	
 		},
 		
 		removeHoverPolyline: removeHoverPolyline,

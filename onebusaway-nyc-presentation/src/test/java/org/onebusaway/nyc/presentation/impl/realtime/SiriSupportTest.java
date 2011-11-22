@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.SiriSupport;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RouteBean.Builder;
@@ -39,7 +38,8 @@ public class SiriSupportTest extends SiriSupport {
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     boolean includeOnwardCalls = false;
-    MonitoredVehicleJourney journey = getMonitoredVehicleJourney(trip.getTrip(), trip, monitoredCallStopBean, includeOnwardCalls);
+    MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
+    fillMonitoredVehicleJourney(journey, trip.getTrip(), trip, monitoredCallStopBean, includeOnwardCalls);
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();
     assertNotNull(situationRefs);

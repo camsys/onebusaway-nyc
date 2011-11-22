@@ -58,7 +58,6 @@ OBA.Sidebar = function() {
 	// show user list of addresses
 	function disambiguate(locationResults) {
 		var resultsList = jQuery("#results ul");
-
 		var bounds = null;
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
@@ -106,14 +105,15 @@ OBA.Sidebar = function() {
 		var legendList = jQuery("#legend ul");
 		
 		jQuery.each(routeResults, function(_, routeResult) {	
+
 			var titleBox = jQuery("<p></p>")
 							.addClass("name")
 							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
 							.css("border-bottom", "5px solid #" + routeResult.color);
 
 			var descriptionBox = jQuery("<p></p>")
-							 .addClass("description")
-							 .text(routeResult.description);
+							.addClass("description")
+							.text(routeResult.description);
 							 
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
@@ -121,6 +121,12 @@ OBA.Sidebar = function() {
 							.append(descriptionBox);
 
 			legendList.append(listItem);
+			
+			// on double click of title pan to route extent (unless zoomed in)
+			titleBox.click(function(e) {
+				e.preventDefault();
+				routeMap.panToRoute(routeResult);
+			});
 
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {

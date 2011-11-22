@@ -1,8 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.m.model;
 
 import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriExtensionWrapper;
+import org.onebusaway.nyc.presentation.model.realtime.SiriDistanceExtension;
+import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -41,7 +41,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
   }
   
   @Override
-  public StopResult getStopModelForRoute(StopBean stopBean) {
+  public StopResult getStopModelForRoute(StopBean stopBean, RouteBean route) {
     return new MobileWebStopResult(stopBean, null);
   }
   

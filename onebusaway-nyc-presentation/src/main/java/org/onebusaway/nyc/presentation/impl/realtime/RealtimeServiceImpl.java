@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
-import org.onebusaway.nyc.presentation.impl.realtime.siri.SiriSupport;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriExtensionWrapper;
+import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
@@ -22,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import uk.org.siri.siri.MonitoredStopVisitStructure;
+import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
@@ -92,14 +92,11 @@ public class RealtimeServiceImpl implements RealtimeService {
       VehicleActivityStructure activity = new VehicleActivityStructure();
       activity.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
 
-      MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(tripDetails.getTrip(), tripDetails, 
-          tripDetails.getStatus().getNextStop(), includeNextStops);
+      activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
+      _siriSupport.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
+          tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
+          includeNextStops);
       
-      if(journey == null)
-        continue;
-      
-      activity.setMonitoredVehicleJourney(journey);
-
       output.add(activity);
     }
 
@@ -132,25 +129,20 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     TripDetailsBean tripDetails = _transitDataService.getTripDetailsForVehicleAndTime(query);
     
+    VehicleActivityStructure output = new VehicleActivityStructure();
     if (tripDetails != null) {
       if(!_presentationService.include(tripDetails.getStatus()))
         return null;
       
-      VehicleActivityStructure output = new VehicleActivityStructure();
       output.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
 
-      MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(tripDetails.getTrip(), tripDetails, 
-          tripDetails.getStatus().getNextStop(), includeNextStops);
-      
-      if(journey == null)
-        return null;
-
-      output.setMonitoredVehicleJourney(journey);
-        
-      return output;
+      output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
+      _siriSupport.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
+          tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
+          includeNextStops);
     }
     
-    return null;
+    return output;
   }
 
   @Override
@@ -182,14 +174,11 @@ public class RealtimeServiceImpl implements RealtimeService {
         MonitoredStopVisitStructure stopVisit = new MonitoredStopVisitStructure();
         stopVisit.setRecordedAtTime(new Date(statusBean.getLastUpdateTime()));
         
-        MonitoredVehicleJourney journey = _siriSupport.getMonitoredVehicleJourney(adBean.getTrip(), tripDetails,
-            adBean.getStop(), includeNextStops);
-
-        if(journey == null)
-          continue;
-        
-        stopVisit.setMonitoredVehicleJourney(journey);
-
+        stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
+        _siriSupport.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
+            adBean.getTrip(), tripDetails, adBean.getStop(), 
+            includeNextStops);
+          
         output.add(stopVisit);
       }
     }
