@@ -90,21 +90,21 @@ public class PresentationServiceImplTest {
   }
 
   @Test
-  public void testMilesAboveThreshold() throws Exception {
-    SiriDistanceExtension distances = new SiriDistanceExtension();
-    distances.setDistanceFromCall(5280.0 /FEET_TO_METERS);
-    distances.setStopsFromCall(0);
-    
-    assertEquals(service.getPresentableDistance(distances), "1.0 miles away");
-  }
-
-  @Test
-  public void testStopsAboveThreshold() throws Exception {
+  public void testMilesCaseFail() throws Exception {
     SiriDistanceExtension distances = new SiriDistanceExtension();
     distances.setDistanceFromCall(5280.0 /FEET_TO_METERS);
     distances.setStopsFromCall(4);
     
     assertEquals(service.getPresentableDistance(distances), "1.0 miles away");
+  }
+
+  @Test
+  public void testStopsCase() throws Exception {
+    SiriDistanceExtension distances = new SiriDistanceExtension();
+    distances.setDistanceFromCall((5280.0 * .25) /FEET_TO_METERS);
+    distances.setStopsFromCall(2);
+    
+    assertEquals(service.getPresentableDistance(distances), "2 stops away");
   }
 
 }
