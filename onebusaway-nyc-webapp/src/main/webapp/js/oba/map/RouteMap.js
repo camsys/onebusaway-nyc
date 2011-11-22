@@ -181,7 +181,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 		infoWindow = new google.maps.InfoWindow({
 	    	content: content,
-	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2))
+	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
+	    	maxWidth: 320
 	    });
 
 		infoWindow.open(map, marker);
@@ -248,9 +249,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.PublishedLineName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
-		// update time
-		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
-		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
+		// revise time formats
+		var activityInGMT = OBA.Util.cleanUpGMT(activity.RecordedAtTime);
+		var responseTimeInGMT = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
+
+		var updateTimestamp = new Date(activityInGMT).getTime();
+		var updateTimestampReference = new Date(responseTimeInGMT).getTime();
 		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
 
@@ -290,6 +294,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '</ul>';
 		}
 		
+		html += OBA.Config.infoBubbleFooterFunction('route', routeIdWithoutAgency);			
 		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);
 		
 		// (end popup)
@@ -340,12 +345,15 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<div class="header stop">';
 		html += '<p class="title">' + stopResult.name + '</p><p>';
 		html += '<span class="type">Stop #' + stopResult.stopIdWithoutAgency + '</span>';
+		
+		var responseTime = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
 
 		// update time across all arrivals
-		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
+		var updateTimestampReference = new Date(responseTime).getTime();
 		var maxUpdateTimestamp = null;
 		jQuery.each(visits, function(_, monitoredJourney) {
-			var updateTimestamp = new Date(monitoredJourney.RecordedAtTime).getTime();
+			var journeyRecordedTime = OBA.Util.cleanUpGMT(monitoredJourney.RecordedAtTime);
+			var updateTimestamp = new Date(journeyRecordedTime).getTime();
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
@@ -417,6 +425,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 			html += '</ul>';
 		}
+		
+		html += OBA.Config.infoBubbleFooterFunction("stop", stopResult.stopIdWithoutAgency);
 		
 	    html += getServiceAlertContent(r, null);
 	        
