@@ -12,11 +12,11 @@
  * the License.
  */
 
-package org.onebusaway.nyc.presentation.impl.realtime.siri;
+package org.onebusaway.nyc.presentation.impl.realtime;
 
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriExtensionWrapper;
+import org.onebusaway.nyc.presentation.model.realtime.SiriDistanceExtension;
+import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;

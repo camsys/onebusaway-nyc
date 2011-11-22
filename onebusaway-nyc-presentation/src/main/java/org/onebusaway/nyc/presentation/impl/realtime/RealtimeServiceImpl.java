@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
-import org.onebusaway.nyc.presentation.impl.realtime.siri.SiriSupport;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriExtensionWrapper;
+import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
