@@ -53,6 +53,8 @@ public class BundleServiceResource {
   @Path("/list")
   @GET
   public Response getBundleList() {
+    _log.info("Starting getBundleList.");
+    
     List<Bundle> bundles = bundleProvider.getBundles();
 
     Response response;
@@ -85,6 +87,7 @@ public class BundleServiceResource {
       response = Response.serverError().build();
     }
 
+    _log.info("Returning Response in getBundleList.");
     return response;
   }
 
@@ -141,6 +144,8 @@ public class BundleServiceResource {
     response = Response.ok(output, MediaType.APPLICATION_OCTET_STREAM).header(
         "Content-Disposition", cd).header("Content-Length", fileLength).build();
 
+    _log.info("Returning Response in getBundleFile");
+    
     return response;
   }
 }

@@ -25,6 +25,8 @@ import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.ConfigItemsMess
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.Message;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.SingleConfigItem;
 import org.onebusaway.nyc.transit_data_manager.config.model.jaxb.WarningMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -37,6 +39,8 @@ import com.sun.jersey.api.spring.Autowire;
 @Scope("singleton")
 public class ConfigResource {
 
+  private static Logger _log = LoggerFactory.getLogger(ConfigResource.class);
+  
   private ObjectMapper mapper;
 
   public ConfigResource() {
@@ -46,7 +50,6 @@ public class ConfigResource {
   @Autowired
   private ConfigurationDatastoreInterface datastore;
 
-  // @Autowired
   public void setDatastore(ConfigurationDatastoreInterface datastore) {
     this.datastore = datastore;
   }
@@ -56,12 +59,15 @@ public class ConfigResource {
   @Produces("application/json")
   public String getCompleteConfigList() throws JsonGenerationException,
       JsonMappingException, IOException {
+    _log.info("Starting getCompleteConfigList");
+    
     List<ConfigItem> configList = datastore.getCompleteSetConfigItems();
 
     ConfigItemsMessage message = new ConfigItemsMessage();
     message.setConfig(configList);
     message.setStatus("OK");
 
+    _log.info("Returning config as string.");
     return mapper.writeValueAsString(message);
 
   }
@@ -72,6 +78,8 @@ public class ConfigResource {
   public String getComponentConfigList(@PathParam("component")
   String component) throws JsonGenerationException, JsonMappingException,
       IOException {
+    
+    _log.info("Starting getComponentConfigList for component " + component);
 
     List<ConfigItem> configList = null;
 
@@ -89,6 +97,7 @@ public class ConfigResource {
     message.setConfig(configList);
     message.setStatus("OK");
 
+    _log.info("Returning component config as JSON.");
     return mapper.writeValueAsString(message);
   }
 
@@ -99,11 +108,13 @@ public class ConfigResource {
   String component, @PathParam("key")
   String key) throws JsonGenerationException, JsonMappingException, IOException {
 
+    _log.info("Starting getConfigVal for component " + component + " and key " + key);
     String resultStr = null;
 
     ConfigItem item = datastore.getConfigItemByComponentKey(component, key);
     resultStr = mapper.writeValueAsString(item);
 
+    _log.info("Returning JSON output for config value.");
     return resultStr;
   }
 
@@ -115,6 +126,8 @@ public class ConfigResource {
   String component, @PathParam("key")
   String key) throws JsonParseException, JsonMappingException, IOException {
 
+    _log.info("Starting setConfigVal for component " + component + " and key " + key);
+    
     boolean giveUnsupportedValueTypeWarning = false;
     boolean giveNoValueError = false;
 
@@ -165,6 +178,7 @@ public class ConfigResource {
       statusMessage.setStatus("OK");
     }
 
+    _log.info("Returning result in setConfigVal.");
     return mapper.writeValueAsString(statusMessage);
 
   }
