@@ -17,17 +17,22 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.NycRefreshableResources;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,6 +45,13 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   private Map<AgencyAndId, String> _tripToDscMap;
   
   private Set<String> _notInServiceDscs;
+  
+  private TransitGraphDao _transitGraphDao;
+
+  @Autowired
+  public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
+    _transitGraphDao = transitGraphDao;
+  }
 
   @Autowired
   private NycFederatedTransitDataBundle _bundle;
@@ -72,6 +84,27 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   @Override
   public List<AgencyAndId> getTripIdsForDestinationSignCode(String destinationSignCode) {
 	  return _dscToTripMap.get(destinationSignCode);
+  }
+  
+  @Override
+  public Set<AgencyAndId> getRouteCollectionIdsForDestinationSignCode(String destinationSignCode) {
+    /*
+     * TODO there should really be one implied routeCollection, no?
+     */
+    Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
+    if (StringUtils.isNotBlank(destinationSignCode)) {
+      List<AgencyAndId> dscTripIds = getTripIdsForDestinationSignCode(destinationSignCode);
+      
+      if (dscTripIds != null) {
+        for (AgencyAndId tripId : dscTripIds) {
+          TripEntry trip = _transitGraphDao.getTripEntryForId(tripId);
+          RouteCollectionEntry route = trip.getRouteCollection();
+          routeIds.add(route.getId());
+        }
+      }
+    } 
+    
+    return routeIds;
   }
 
   @Override

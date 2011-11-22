@@ -20,6 +20,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -44,9 +45,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   /**
    * We need some way of scoring nearby trips
    */
-  private DeviationModel _nearbyTripSigma = new DeviationModel(400.0);
+  static public DeviationModel _nearbyTripSigma = new DeviationModel(400.0);
 
-  private DeviationModel _scheduleDeviationSigma = new DeviationModel(32 * 60);
+  static public DeviationModel _scheduleDeviationSigma = new DeviationModel(32 * 60);
 
   private BlocksFromObservationService _blocksFromObservationService;
 
@@ -169,8 +170,14 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
 
   public double scoreState(BlockState state, Observation observation) {
-
     ScheduledBlockLocation blockLocation = state.getBlockLocation();
+    BlockInstance blockInstance = state.getBlockInstance();
+    long serviceDate = blockInstance.getServiceDate();
+    return scoreState(blockLocation, observation, serviceDate);
+  }
+  
+  static public double scoreState(ScheduledBlockLocation blockLocation, Observation observation, long serviceDate) {
+
     CoordinatePoint p1 = blockLocation.getLocation();
     ProjectedPoint p2 = observation.getPoint();
 
@@ -178,8 +185,6 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         p2.getLat(), p2.getLon());
     double prob1 = _nearbyTripSigma.probability(d);
 
-    BlockInstance blockInstance = state.getBlockInstance();
-    long serviceDate = blockInstance.getServiceDate();
     int scheduledTime = blockLocation.getScheduledTime();
 
     long time = serviceDate + scheduledTime * 1000;
@@ -214,10 +219,25 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     } else {
       // Favor blocks that match the correct DSC
       String dsc = state.getDestinationSignCode();
-      if (StringUtils.equals(observedDsc, dsc))
+      if (StringUtils.equals(observedDsc, dsc)) {
         return 0.95;
-      else
-        return 0.25;
+      } else {
+        // Favor blocks servicing the same route implied by the DSC
+        Set<AgencyAndId> dscRoutes = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(dsc);
+        AgencyAndId thisRoute = state.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
+        boolean sameRoute = false;
+        for (AgencyAndId route : dscRoutes) {
+          if (thisRoute.equals(route)) {
+            sameRoute = true;
+            break;
+          }
+        }
+        
+        if (sameRoute)
+          return 0.75;
+        else 
+          return 0.25;
+      }
     }
   }
 }

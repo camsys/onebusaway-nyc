@@ -35,6 +35,7 @@
     <table>
         <thead>
             <tr>
+                <td>#</td>
                 <td>Time</td>
                 <td>P</td>
                 <td>Phase</td>
@@ -43,6 +44,7 @@
                 <td>RunId</td>
                 <td>BlockId</td>
                 <td>TripId</td>
+                <td>Dsc</td>
                 <td>BlockLocation</td>
                 <td>DistanceAlongBlock</td>
                 <td>ScheduledTime</td>
@@ -62,6 +64,7 @@
                     <c:set var="opAssigned" value="${blockState.opAssigned}" />
                     <c:set var="blockLocation"
                         value="${blockState.blockLocation}" />
+                    <td><c:out value="${p.index}" /></td>
                     <td><fmt:formatDate pattern="HH:mm"
                         value="${p.data.observation.record.timeAsDate}" /></td>
                     <td>
@@ -82,6 +85,8 @@
                         value="${blockState.blockInstance.block.block.id}" /></a></td>
                     <td><c:out
                         value="${blockLocation.activeTrip.trip.id}" /></td>
+                    <td><c:out
+                        value="${blockState.destinationSignCode}" /></td>
                     <td><c:out
                         value="${blockLocation.location.lat}" /><jsp:text>
                     </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
