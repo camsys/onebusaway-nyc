@@ -85,7 +85,7 @@ public class SiriSupport {
     _presentationService = presentationService;
   }
 
-  public MonitoredCallStructure getMonitoredCall(
+  private MonitoredCallStructure getMonitoredCall(
       List<TripStopTimeBean> stopTimes, StopBean monitoredCallStopBean,
       TripStatusBean statusBean) {
 
@@ -150,7 +150,7 @@ public class SiriSupport {
     return null;
   }
 
-  public OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes,
+  private OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes,
       TripStatusBean statusBean) {
 
     double distance = statusBean.getDistanceAlongTrip();
@@ -288,8 +288,7 @@ public class SiriSupport {
 
     LocationStructure location = new LocationStructure();
 
-    // if vehicle is detected to be on detour, use actual lat/lon, not snapped
-    // location.
+    // if vehicle is detected to be on detour, use actual lat/lon, not snapped location.
     if (_presentationService.isOnDetour(tripDetails.getStatus())) {
       location.setLatitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLat()));
       location.setLongitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLon()));
@@ -299,12 +298,13 @@ public class SiriSupport {
     }
 
     monitoredVehicleJourney.setVehicleLocation(location);
-    
+
+    // situations
+    addSituations(monitoredVehicleJourney, tripDetails);
+
     // include stop times from the next trip if we're in layover on the previous trip
     List<TripStopTimeBean> stopTimes = 
         getStopTimesForTripDetails(tripDetails, _presentationService.isInLayover(tripDetails.getStatus()));
-
-    addSituations(monitoredVehicleJourney, tripDetails);
 
     // monitored calls
     if (monitoredCallStopBean != null && !_presentationService.isOnDetour(tripDetails.getStatus())) {
@@ -363,8 +363,7 @@ public class SiriSupport {
     return ProgressRateEnumeration.UNKNOWN;
   }
 
-  private int getVisitNumber(HashMap<String, Integer> visitNumberForStop,
-      StopBean stop) {
+  private int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
     int visitNumber;
     if (visitNumberForStop.containsKey(stop.getId())) {
       visitNumber = visitNumberForStop.get(stop.getId()) + 1;
