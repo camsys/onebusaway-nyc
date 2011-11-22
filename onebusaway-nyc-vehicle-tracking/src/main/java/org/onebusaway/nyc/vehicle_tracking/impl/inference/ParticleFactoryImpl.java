@@ -123,7 +123,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
-  // FIXME TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState,
       CategoricalDist<BlockState> atStartCdf,
       CategoricalDist<BlockState> inProgressCdf, Observation obs) {

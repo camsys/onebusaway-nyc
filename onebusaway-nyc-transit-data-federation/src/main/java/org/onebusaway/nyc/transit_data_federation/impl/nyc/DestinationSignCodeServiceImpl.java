@@ -89,18 +89,17 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
   @Override
   public Set<AgencyAndId> getRouteCollectionIdsForDestinationSignCode(String destinationSignCode) {
     /*
-     * TODO there should really be one implied routeCollection, no?
+     * For now we just assume that the mapping is consistent in
+     * that a dsc maps to one route-collection-id. 
      */
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
     if (StringUtils.isNotBlank(destinationSignCode)) {
       List<AgencyAndId> dscTripIds = getTripIdsForDestinationSignCode(destinationSignCode);
       
-      if (dscTripIds != null) {
-        for (AgencyAndId tripId : dscTripIds) {
-          TripEntry trip = _transitGraphDao.getTripEntryForId(tripId);
+      if (dscTripIds != null && !dscTripIds.isEmpty()) {
+          TripEntry trip = _transitGraphDao.getTripEntryForId(dscTripIds.get(0));
           RouteCollectionEntry route = trip.getRouteCollection();
           routeIds.add(route.getId());
-        }
       }
     } 
     
