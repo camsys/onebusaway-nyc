@@ -28,6 +28,8 @@
 }
 
 #content #searchbar form {
+	position: relative;
+	
 	display: block;
 	width: 280px;
 	height: 40px;
@@ -52,11 +54,15 @@
 }
 
 #content #searchbar form input.submit {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	
 	width: 30px;
 	height: 30px;
 	border: none;
+	cursor: pointer;
 
-	display: inline-block;
 	margin: 5px;
 	text-indent: -9999px;
 
