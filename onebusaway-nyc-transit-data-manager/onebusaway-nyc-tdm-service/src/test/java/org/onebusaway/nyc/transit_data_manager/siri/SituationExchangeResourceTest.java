@@ -111,9 +111,12 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 		siriHelper.addPtSituationElementStructure("X27, X28, X37 and X38 temporary bus stop change due a demonstration",
 				"Until further notice Brooklyn bound buses will not make the stop at the near side of Cedar St due to police barricades and will now make the stop at the far side of Cedar St. Please allow additional travel time.",
 				"MTA NYCT_56754", "2011-10-26T00:00:00.000Z", "2011-11-25T23:59:00.000Z", "MTA NYCT_X27,MTA NYCT_X28,MTA NYCT_X37,MTA NYCT_X38", "D");		
-		siriHelper.addPtSituationElementStructure("S79 buses detoured due to road work",
-				"Buses are being detoured from Hylan Blvd between Midland Av and Steuben St",
-				"MTA NYCT_56755", "2011-11-08T00:00:00.000Z", "", "MTA NYCT_S79", "D");
+    siriHelper.addPtSituationElementStructure("S79 buses detoured due to road work",
+        "Buses are being detoured from Hylan Blvd between Midland Av and Steuben St",
+        "MTA NYCT_56755", "2011-11-08T00:00:00.000Z", "", "MTA NYCT_S79", "D");
+    siriHelper.addPtSituationElementStructure("S79 buses detoured due to road work",
+        "Buses are being detoured from Hylan Blvd between Midland Av and Steuben St",
+        "MTA NYCT_56755", "", "", "MTA NYCT_S79", "D");
 
 		return siriHelper.getSiri();
 	}

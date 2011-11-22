@@ -71,16 +71,20 @@ public class SiriHelper {
 		ptSit.setConsequences(createConsequences());
 
 		HalfOpenTimestampRangeStructure s = new HalfOpenTimestampRangeStructure();
+		boolean hasTime = false;
 		if (begins != null && !begins.isEmpty()) {
 			s.setStartTime(ISODateTimeFormat.dateTime().parseDateTime(begins)
 					.toDate());
+			hasTime = true;
 		}
 		if (expires != null && !expires.isEmpty()) {
 			s.setEndTime(ISODateTimeFormat.dateTime().parseDateTime(expires)
 					.toDate());
+      hasTime = true;
 		}
 
-		ptSit.setPublicationWindow(s);
+		if (hasTime)
+		  ptSit.setPublicationWindow(s);
 
 		AffectsScopeStructure affects = createAffects(lines);
 		ptSit.setAffects(affects);
