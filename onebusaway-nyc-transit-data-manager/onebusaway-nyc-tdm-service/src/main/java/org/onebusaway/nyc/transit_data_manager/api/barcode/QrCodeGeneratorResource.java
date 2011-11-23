@@ -85,6 +85,8 @@ public class QrCodeGeneratorResource {
       @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName,
       @DefaultValue("4") @QueryParam("margin-rows") final int quietZoneRows) {
 
+    _log.info("Starting getQrCodeForStopUrlById.");
+    
     final BarcodeImageType imageType = parseImgFormatName(imgFormatName);
 
     final String barcodeContents = generateBusStopContentsForStopId(String.valueOf(stopId));
@@ -119,6 +121,7 @@ public class QrCodeGeneratorResource {
       response = Response.serverError().build();
     }
 
+    _log.info("Returning Response in getQrCodeForStopUrlById.");
     return response;
   }
 
@@ -179,6 +182,8 @@ public class QrCodeGeneratorResource {
         "Content-disposition",
         "attachment; filename=" + ZIP_FILE_PREFIX + ZIP_FILE_SUFFIX).header("Content-Length", zipFileLength).build();
 
+    _log.info("Returning Response in batchGenerateBarcodes.");
+    
     return response;
   }
   

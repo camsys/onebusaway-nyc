@@ -316,7 +316,7 @@ public class SensorModelSupportLibrary {
 
     /**
      * The idea here is that we look for the absolute best block location given
-     * our current oberservation, even if it means travelling backwards
+     * our current observation, even if it means traveling backwards
      */
     Set<BlockState> closestBlockStates = _blockStateTransitionModel.getClosestBlockStates(
         blockState, obs);

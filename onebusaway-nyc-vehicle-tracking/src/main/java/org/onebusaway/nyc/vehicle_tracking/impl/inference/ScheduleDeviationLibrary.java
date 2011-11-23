@@ -22,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObse
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.transit_data_federation.impl.blocks.ScheduledBlockLocationLibrary;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
@@ -49,10 +50,15 @@ public class ScheduleDeviationLibrary {
 
   public int computeScheduleDeviation(VehicleState state,
       Observation observation) {
-
+    
     BlockState blockState = state.getBlockState();
-    BlockInstance blockInstance = blockState.getBlockInstance();
     ScheduledBlockLocation actualBlockLocation = blockState.getBlockLocation();
+    return computeScheduleDeviation(blockState.getBlockInstance(), actualBlockLocation, observation);
+  } 
+  
+  public int computeScheduleDeviation(BlockInstance blockInstance,
+      ScheduledBlockLocation actualBlockLocation,
+      Observation observation) {
 
     int scheduleTime = (int) ((observation.getTime() - blockInstance.getServiceDate()) / 1000);
 
