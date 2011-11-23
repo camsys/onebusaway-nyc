@@ -24,13 +24,15 @@ public class RawTrip implements Comparable<RawTrip> {
   private ArrayList<Trip> gtfsTrips;
   public boolean firstTripInSequence;
   public boolean lastTripInSequence;
+  private String dsc;
 
   public RawTrip(String runId, String reliefRunId, String nextRun,
-      StifTripType type) {
+      StifTripType type, String dsc) {
     this.runId = runId;
     this.reliefRunId = reliefRunId;
     this.nextRun = nextRun;
     this.type = type;
+    this.dsc = dsc;
   }
 
   // this is just for creating bogus objects for searching
@@ -55,5 +57,9 @@ public class RawTrip implements Comparable<RawTrip> {
       return Collections.emptyList();
     }
     return gtfsTrips;
+  }
+
+  public String getDsc() {
+    return dsc;
   }
 }
