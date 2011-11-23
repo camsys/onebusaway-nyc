@@ -47,6 +47,11 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.17</version>
     </dependency>
+	<dependency>
+    	<groupId>com.dmurph</groupId>
+    	<artifactId>JGoogleAnalyticsTracker</artifactId>
+    	<version>1.2.0</version>
+	</dependency>
   </dependencies>
 
   <profiles>
