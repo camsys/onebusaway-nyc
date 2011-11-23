@@ -232,9 +232,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		infoWindow = new google.maps.InfoWindow({
 	    	content: content,
 	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
-	    	maxWidth: 320
+	    	maxWidth: 320,
+	    	disableAutoPan: false
 	    });
-
 		infoWindow.open(map, marker);
     
 		google.maps.event.addListener(infoWindow, "closeclick", closeFn);
@@ -243,7 +243,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		
-		showPopupWithContent(marker, 'Loading...');
+		// fix for popups that appear off the map edge when inner content changes to stop or bus info
+		showPopupWithContent(marker, 
+			'<p style="font-size:25px;width:300px;text-align:center;"><br /><br />Loading . . . <br /><br /><br /></p>');
 		
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
@@ -833,8 +835,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				stopMarker.setMap(map);
 			}
 			map.setCenter(stopMarker.getPosition());
-			map.setZoom(15);
+			map.setZoom(14);
 			google.maps.event.trigger(stopMarker, "click");
+			
 			clickedStopIcons[stopId] = true;
 		},
 		
