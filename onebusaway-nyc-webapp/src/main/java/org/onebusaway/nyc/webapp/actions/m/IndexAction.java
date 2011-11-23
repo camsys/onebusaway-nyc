@@ -46,8 +46,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private static final String CURRENT_LOCATION_TEXT = "(Current Location)";
   
-  private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
-
   @Autowired
   private RealtimeService _realtimeService;
 
@@ -164,62 +162,74 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
    */
   // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
   public String getGoogleAnalyticsTrackingUrl() {
-	  try {
-	      StringBuilder url = new StringBuilder();
-	      url.append("/m/ga?");
-	      url.append("utmac=").append(GA_ACCOUNT);
-	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
+    try {
+      StringBuilder url = new StringBuilder();
+      url.append("ga?");
+      url.append("&guid=ON");
+      url.append("utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
+      url.append("&utmac=").append(
+          _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null));    
 
-	      // referrer
-	      HttpServletRequest request = ServletActionContext.getRequest();      
-	      String referer = request.getHeader("referer");
-	
-	      if (referer == null || "".equals(referer)) {
-	        referer = "-";
-	      }
-	      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
+      // referrer
+      HttpServletRequest request = ServletActionContext.getRequest();      
+      String referer = request.getHeader("referer");	
+      if (referer == null || referer.isEmpty()) {
+        referer = "-";
+      }
+      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
 
-	      // event tracking
-	      String label = getQ();	      
-	      if(label == null) {
-	    	  label = "";
-	      }
-	      
-	      String action = new String("Unknown");
-	      if(_searchResults != null && !_searchResults.isEmpty()) {
-	    	  if(_searchResults.getTypeOfResults().equals("RouteResult")) {
-	    		  action = "Route Search";
-	    	  } else if(_searchResults.getTypeOfResults().equals("StopResult")) {
-	    		  if(_searchResults.size() > 1) {
-	    			  action = "Intersection Search";
-	    		  } else {
-	    			  action = "Stop Search";
-	    		  }
-	    	  }	    	  
-	      }	else {
-	    	  if(getQueryIsEmpty()) {
-	    		  action = "Home";
-	    	  } else {
-	    		  action = "No Search Results";	    		  
-	    	  }
-	      }
-	      
-	      // page view on homepage hit, "event" for everything else.
-	      if(action.equals("Home")) {
-    	      url.append("&utmp=/m/index");
-	      } else {
-    	      url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");	    	  
-	      }
-	      
-	      // misc.
-	      url.append("&guid=ON");
-	      
-	      return url.toString().replace("&", "&amp;"); 
-	  } catch(Exception e) {
-		  return null;
-	  }
+      // event tracking
+      String label = getQ();	      
+      if(label == null) {
+        label = "";
+      }
+      label += " [" + _searchResults.size();	      
+      if(_location != null) {
+        label += " - with location";
+      }
+      label += "]";
+      label = label.trim();
+
+      String action = "Unknown";
+      if(_searchResults != null && !_searchResults.isEmpty()) {
+        if(_searchResults.getTypeOfResults().equals("RouteItem")) {
+          action = "Region Search";
+
+        } else if(_searchResults.getTypeOfResults().equals("RouteResult")) {
+          action = "Route Search";
+
+        } else if(_searchResults.getTypeOfResults().equals("LocationResult")) {
+          action = "Location Disambiguation";
+
+        } else if(_searchResults.getTypeOfResults().equals("StopResult")) {
+          if(_searchResults.size() > 1) {
+            action = "Intersection Search";
+          } else {
+            action = "Stop Search";
+          }
+          
+        }	    	  
+      }	else {
+        if(getQueryIsEmpty()) {
+          action = "Home";
+        } else {
+          action = "No Search Results";	    		  
+        }
+      }
+
+      // page view on homepage hit, "event" for everything else.
+      if(action.equals("Home")) {
+        url.append("&utmp=/m/index");
+      } else {
+        url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");	    	  
+      }
+
+      return url.toString().replace("&", "&amp;"); 
+    } catch(Exception e) {
+      return null;
+    }
   }
-    
+
   public String getQ() {
     if((_q == null || _q.isEmpty()) && _location != null)
       return CURRENT_LOCATION_TEXT;

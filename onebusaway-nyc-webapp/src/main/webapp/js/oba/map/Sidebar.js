@@ -33,8 +33,6 @@ OBA.Sidebar = function() {
 			e.preventDefault();
 			
 			jQuery.history.load(searchInput.val());
-
-			OBA.Config.analyticsFunction("Search", searchInput.val());
 		});
 	}
 
@@ -56,8 +54,9 @@ OBA.Sidebar = function() {
 	}
 
 	// show user list of addresses
-	function disambiguate(locationResults) {
+	function disambiguate(locationResults) {		
 		var resultsList = jQuery("#results ul");
+
 		var bounds = null;
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
@@ -153,7 +152,7 @@ OBA.Sidebar = function() {
 
 					stopLink.click(function(e) {
 						e.preventDefault();
-						
+
 						routeMap.showPopupForStopId(stop.stopId);
 					});
 				});
@@ -239,6 +238,8 @@ OBA.Sidebar = function() {
 				noResults.hide();
 			}
 
+			OBA.Config.analyticsFunction("Search", q + " [" + resultCount + "]");
+			
 			var resultType = json.searchResults[0].resultType;			
 			if(resultCount === 1) {
 				if(resultType === "LocationResult" || resultType === "StopResult") {

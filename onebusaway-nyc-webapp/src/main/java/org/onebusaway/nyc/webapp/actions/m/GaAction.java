@@ -171,7 +171,7 @@ public class GaAction extends OneBusAwayNYCActionSupport {
     HttpServletRequest request = ServletActionContext.getRequest();      
     HttpServletResponse response = ServletActionContext.getResponse();
     
- 	String domainName = request.getServerName();
+    String domainName = request.getServerName();
     if (isEmpty(domainName)) {
       domainName = "";
     }
