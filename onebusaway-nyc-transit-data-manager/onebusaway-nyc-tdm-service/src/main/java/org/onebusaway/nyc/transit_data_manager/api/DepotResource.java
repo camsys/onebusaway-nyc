@@ -51,15 +51,7 @@ public class DepotResource {
   public String getDepotList() {
     _log.info("Starting getDepotList.");
     
-    VehicleDepotData data;
-    try {
-      data = getVehicleDepotDataObject();
-    } catch (IOException e) {
-      _log.info("Could not create data object from " + getInputDepotAssignmentFilePath());
-      _log.debug(e.getMessage());
-      
-      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
-    }
+    VehicleDepotData data = getVehicleDepotDataObject();
     
     List<String> allDepotNames = data.getAllDepotNames();
 
@@ -96,16 +88,8 @@ public class DepotResource {
     
     _log.info("Starting getDepotAssignments");
 
-    VehicleDepotData data;
-    try {
-      data = getVehicleDepotDataObject();
-    } catch (IOException e) {
-      _log.info("Could not create data object from " + getInputDepotAssignmentFilePath());
-      _log.debug(e.getMessage());
-      
-      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
-    }
-
+    VehicleDepotData data = getVehicleDepotDataObject();
+    
     // Then I need to get the data for the input depot
     List<CPTVehicleIden> depotVehicles = data.getVehiclesByDepotNameStr(depotName);
 
@@ -142,17 +126,23 @@ public class DepotResource {
 
   }
 
-  private VehicleDepotData getVehicleDepotDataObject() throws IOException {
+  private VehicleDepotData getVehicleDepotDataObject() throws WebApplicationException {
     File inputFile = new File(getInputDepotAssignmentFilePath());
 
     _log.debug("Getting VehicleDepotData object in getVehicleDepotDataObject from " + inputFile.getPath());
     
     VehicleDepotData resultData = null;
 
-    MtaBusDepotFileToDataCreator process = new MtaBusDepotFileToDataCreator(
-        inputFile);
-
-    resultData = process.generateDataObject();
+    MtaBusDepotFileToDataCreator process;
+    try {
+      process = new MtaBusDepotFileToDataCreator(
+          inputFile);
+      resultData = process.generateDataObject();
+    } catch (IOException e) {
+      _log.info("Could not create data object from " + getInputDepotAssignmentFilePath());
+      _log.info(e.getMessage());
+      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+    }
 
     _log.debug("Returning VehicleDepotData object in getVehicleDepotDataObject.");
     return resultData;

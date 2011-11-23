@@ -1,6 +1,9 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.input.readers;
 
-import java.io.Reader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,27 +20,25 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotA
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignment.NewDataSet;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.busAssignment.NewDataSet.Table;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.SpearDepotsMappingTool;
-import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 public class XMLBusDepotAssignsInputConverter implements
     BusDepotAssignsInputConverter {
 
-  //private UtsMappingTool mappingTool = null;
-  private SpearDepotsMappingTool mappingTool; 
+  // private UtsMappingTool mappingTool = null;
+  private SpearDepotsMappingTool mappingTool;
+  private File xmlFile;
 
   public void setMappingTool(SpearDepotsMappingTool mappingTool) {
     this.mappingTool = mappingTool;
   }
 
-  private Reader inputReader = null;
-
-  public XMLBusDepotAssignsInputConverter(Reader csvInputReader) {
-    inputReader = csvInputReader;
+  public XMLBusDepotAssignsInputConverter(File xmlInputFile) {
+    xmlFile = xmlInputFile;
 
     mappingTool = new SpearDepotsMappingTool();
   }
 
-  public List<MtaBusDepotAssignment> getBusDepotAssignments() {
+  public List<MtaBusDepotAssignment> getBusDepotAssignments() throws IOException {
     List<MtaBusDepotAssignment> assignments = null;
 
     NewDataSet enclosingXml = null;
@@ -46,36 +47,38 @@ public class XMLBusDepotAssignsInputConverter implements
 
     XMLStreamReader reader = null;
     try {
-      reader = xmlInputFact.createXMLStreamReader(inputReader);
+      reader = xmlInputFact.createXMLStreamReader(
+          new FileReader(xmlFile));
+      enclosingXml = unmarshall(NewDataSet.class, reader);
+    } catch (FileNotFoundException e) {
+      throw e;
     } catch (XMLStreamException e) {
-      throw new RuntimeException(e);
+      throw new IOException(e);
+    } catch (JAXBException e) {
+      throw new IOException(e);
+    } finally {
+      if (reader != null)
+        try {
+          reader.close();
+        } catch (XMLStreamException e) {}
     }
 
-    if (reader != null) {
-      try {
-        enclosingXml = unmarshall(NewDataSet.class, reader);
-      } catch (JAXBException e) {
-        throw new RuntimeException(e);
-      }
+    assignments = new ArrayList<MtaBusDepotAssignment>();
 
-      assignments = new ArrayList<MtaBusDepotAssignment>();
+    List<Table> xmlTables = enclosingXml.getTable();
 
-      List<Table> xmlTables = enclosingXml.getTable();
+    Iterator<Table> tableIt = xmlTables.iterator();
 
-      Iterator<Table> tableIt = xmlTables.iterator();
+    MtaBusDepotAssignment depAssign = null;
+    while (tableIt.hasNext()) {
+      Table tableDepotAssign = tableIt.next();
 
-      MtaBusDepotAssignment depAssign = null;
-      while (tableIt.hasNext()) {
-        Table tableDepotAssign = tableIt.next();
+      depAssign = new MtaBusDepotAssignment();
+      depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
+      depAssign.setBusNumber(tableDepotAssign.getBUSNUMBER());
+      depAssign.setDepot(tableDepotAssign.getDEPOT());
 
-        depAssign = new MtaBusDepotAssignment();
-        depAssign.setAgencyId(mappingTool.getAgencyIdFromAgency(tableDepotAssign.getAGENCY()));
-        depAssign.setBusNumber(tableDepotAssign.getBUSNUMBER());
-        depAssign.setDepot(tableDepotAssign.getDEPOT());
-
-        assignments.add(depAssign);
-      }
-
+      assignments.add(depAssign);
     }
 
     return assignments;

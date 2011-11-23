@@ -1,31 +1,35 @@
 package org.onebusaway.nyc.transit_data_manager.importers;
 
-import static org.junit.Assert.*;
-import tcip_final_3_0_5_1.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.List;
+import java.io.File;
+import java.net.URISyntaxException;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.CSVCcAnnouncementInfoConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.CcAnnouncementInfoConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
+
+import tcip_final_3_0_5_1.CCDestinationMessageIden;
+import tcip_final_3_0_5_1.CCDestinationSignMessage;
+import tcip_final_3_0_5_1.CPTRowMetaData;
+import tcip_final_3_0_5_1.CcAnnouncementInfo;
+import tcip_final_3_0_5_1.SCHRouteIden;
 
 public class CSVCcAnnouncementInfoConverterTest {
 
   CcAnnouncementInfoConverter inConverter = null;
 
   @Before
-  public void setup() {
+  public void setup() throws URISyntaxException {
     ClassLoader classLoader = CSVCcAnnouncementInfoConverterTest.class.getClassLoader();
-    InputStream in = classLoader.getResourceAsStream("dsc.csv");
-    Reader csvInputReader = new InputStreamReader(in);
-    inConverter = new CSVCcAnnouncementInfoConverter(csvInputReader);
+    //InputStream in = classLoader.getResourceAsStream("dsc.csv");
+    File inputFile = new File(classLoader.getResource("dsc.csv").toURI());
+    //Reader csvInputReader = new InputStreamReader(in);
+    //inConverter = new CSVCcAnnouncementInfoConverter(csvInputReader);
+    inConverter = new CSVCcAnnouncementInfoConverter(inputFile);
   }
 
   @Test

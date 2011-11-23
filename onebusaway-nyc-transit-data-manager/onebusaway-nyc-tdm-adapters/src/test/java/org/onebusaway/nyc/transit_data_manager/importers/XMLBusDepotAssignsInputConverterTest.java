@@ -2,9 +2,9 @@ package org.onebusaway.nyc.transit_data_manager.importers;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.Before;
@@ -18,17 +18,16 @@ public class XMLBusDepotAssignsInputConverterTest {
   BusDepotAssignsInputConverter inConverter = null;
 
   @Before
-  public void setup() {
+  public void setup() throws URISyntaxException {
     ClassLoader classLoader = XMLBusDepotAssignsInputConverterTest.class.getClassLoader();
-    InputStream in = classLoader.getResourceAsStream("BusDepotAssignXMLExample.xml");
+    
+    File inputFile = new File(classLoader.getResource("BusDepotAssignXMLExample.xml").toURI());
 
-    Reader csvInputReader = new InputStreamReader(in);
-
-    inConverter = new XMLBusDepotAssignsInputConverter(csvInputReader);
+    inConverter = new XMLBusDepotAssignsInputConverter(inputFile);
   }
 
   @Test
-  public void testGetBusDepotAssignments() {
+  public void testGetBusDepotAssignments() throws IOException {
 
     List<MtaBusDepotAssignment> assignments = inConverter.getBusDepotAssignments();
 

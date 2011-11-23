@@ -2,9 +2,9 @@ package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+
 import java.io.IOException;
-import java.io.Reader;
+
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +23,6 @@ import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 public class MtaBusDepotFileToDataCreator {
 
   private File inputFile;
-  private Reader reader;
   
   public MtaBusDepotFileToDataCreator(File mtaBusDepotFile) throws FileNotFoundException {
     super();
@@ -31,8 +30,6 @@ public class MtaBusDepotFileToDataCreator {
     setInputFile(mtaBusDepotFile);
   }
   
-  
-
   public VehicleDepotData generateDataObject() throws IOException {
     List<MtaBusDepotAssignment> assignments = loadDepotAssignments();
 
@@ -55,30 +52,17 @@ public class MtaBusDepotFileToDataCreator {
     return data;
   }
 
-  public List<MtaBusDepotAssignment> loadDepotAssignments()
-      throws FileNotFoundException, IOException {
-    Reader inputReader = getReader();
-
+  public List<MtaBusDepotAssignment> loadDepotAssignments() throws IOException {
+         
     BusDepotAssignsInputConverter inConv = new XMLBusDepotAssignsInputConverter(
-        inputReader);
+        inputFile);
 
     List<MtaBusDepotAssignment> assignments = inConv.getBusDepotAssignments();
 
-    inputReader.close();
     return assignments;
-  }
-
-  public Reader getReader() throws IOException {
-    return reader;
-  }
-
-  private void setReader(Reader reader) {
-    this.reader = reader;
   }
   
   private void setInputFile(File inputFile) throws FileNotFoundException {
     this.inputFile = inputFile;
-    
-    setReader(new FileReader(this.inputFile));
   }
 }
