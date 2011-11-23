@@ -118,6 +118,13 @@
 	font-weight: bold;
 }
 
+#content #legend ul li.legendItem .alerts {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	color: #D12020;
+	font-weight: bold;
+}
+
 #content #legend ul li.legendItem .description {
 	margin-bottom: 5px;
 	font-size: 14px;

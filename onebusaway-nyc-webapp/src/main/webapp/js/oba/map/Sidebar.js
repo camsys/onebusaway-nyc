@@ -113,12 +113,23 @@ OBA.Sidebar = function() {
 			var descriptionBox = jQuery("<p></p>")
 							.addClass("description")
 							.text(routeResult.description);
-							 
+
+			var serviceAlertList = jQuery("<ul></ul>")
+							.addClass("alerts");
+			
+			jQuery.each(routeResult.serviceAlerts, function(_, alert) {
+				var alertItem = jQuery("<li></li>")
+									.text(alert.value);
+				
+				serviceAlertList.append(alertItem);
+			});
+			
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
 							.append(titleBox)
+							.append(serviceAlertList)
 							.append(descriptionBox);
-
+	
 			legendList.append(listItem);
 			
 			// on double click of title pan to route extent (unless zoomed in)

@@ -22,7 +22,9 @@ public interface RealtimeService {
   
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
       boolean includeNextStops);  
-  
+
+  public List<NaturalLanguageStringBean> getServiceAlertsForRoute(String routeId);
+
   public List<NaturalLanguageStringBean> getServiceAlertsForRouteAndDirection(
       String routeId, String directionId);
 
