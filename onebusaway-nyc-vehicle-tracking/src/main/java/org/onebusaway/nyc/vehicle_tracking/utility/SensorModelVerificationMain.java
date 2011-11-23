@@ -26,8 +26,10 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.cli.CommandLine;
@@ -283,6 +285,13 @@ public class SensorModelVerificationMain {
       lastValidDestinationSignCode = prevObs.getLastValidDestinationSignCode();
     }
 
+    Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
+    if (prevObs == null || !StringUtils.equals(lastValidDestinationSignCode, dsc)) {
+      _dscService.getRouteCollectionIdsForDestinationSignCode(dsc);
+    } else if (prevObs != null){
+      routeIds = prevObs.getDscImpliedRouteCollections();
+    }
+    
     NycRawLocationRecord r = new NycRawLocationRecord();
     r.setBearing(0);
     r.setDestinationSignCode(record.getDsc());
@@ -309,7 +318,7 @@ public class SensorModelVerificationMain {
         || _dscService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
     return new Observation(record.getTimestamp(), r,
-        lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs);
+        lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs, routeIds);
   }
 
   private VehicleState getRecordAsVehicleState(NycTestInferredLocationRecord record,

@@ -15,7 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.List;
+import java.util.Set;
+
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
@@ -38,9 +42,11 @@ public class Observation {
 
   private Observation _previousObservation;
 
+  private final Set<AgencyAndId> _dscImpliedRouteCollections;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
-      boolean outOfService, Observation previousObservation) {
+      boolean outOfService, Observation previousObservation, Set<AgencyAndId> dscImpliedRoutes) {
     _timestamp = timestamp;
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
@@ -49,6 +55,7 @@ public class Observation {
     this.atBase = atBase;
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
+    this._dscImpliedRouteCollections = dscImpliedRoutes;
     _previousObservation = previousObservation;
   }
 
@@ -101,5 +108,9 @@ public class Observation {
   @Override
   public String toString() {
     return _record.toString();
+  }
+  
+  public Set<AgencyAndId> getDscImpliedRouteCollections() {
+    return _dscImpliedRouteCollections;
   }
 }

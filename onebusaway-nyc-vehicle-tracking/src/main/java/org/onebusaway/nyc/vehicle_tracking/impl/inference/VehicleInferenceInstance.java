@@ -25,6 +25,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
@@ -53,6 +54,9 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +104,7 @@ public class VehicleInferenceInstance {
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
   }
-  
+
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -260,8 +264,8 @@ public class VehicleInferenceInstance {
     }
 
     boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-//    boolean atTerminal = _baseLocationService
-//        .getTerminalNameForLocation(location) != null;
+    // boolean atTerminal = _baseLocationService
+    // .getTerminalNameForLocation(location) != null;
     boolean atTerminal = _vehicleStateLibrary.isAtPotentialTerminal(record);
     boolean outOfService = lastValidDestinationSignCode == null
         || _destinationSignCodeService
@@ -269,12 +273,23 @@ public class VehicleInferenceInstance {
         || _destinationSignCodeService
             .isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
+    Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
+    if (_previousObservation == null
+        || !StringUtils.equals(_lastValidDestinationSignCode,
+            lastValidDestinationSignCode)) {
+      routeIds = _destinationSignCodeService
+          .getRouteCollectionIdsForDestinationSignCode(lastValidDestinationSignCode);
+    } else {
+      routeIds = _previousObservation.getDscImpliedRouteCollections();
+    }
+
     Observation observation = new Observation(timestamp, record,
         lastValidDestinationSignCode, atBase, atTerminal, outOfService,
-        _previousObservation);
+        _previousObservation, routeIds);
 
     if (_previousObservation != null)
       _previousObservation.clearPreviousObservation();
+
     _previousObservation = observation;
     _nycTestInferredLocationRecord = null;
     _lastValidDestinationSignCode = lastValidDestinationSignCode;

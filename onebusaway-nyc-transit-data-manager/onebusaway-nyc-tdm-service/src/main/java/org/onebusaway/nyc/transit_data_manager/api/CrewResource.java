@@ -3,7 +3,6 @@ package org.onebusaway.nyc.transit_data_manager.api;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -47,8 +46,8 @@ public class CrewResource {
   public Response getCrewAssignments(
       @PathParam("serviceDate") String inputDateStr) {
 
-    Response response = null;
-
+    _log.info("Starting getCrewAssignments for input date " + inputDateStr);
+    
     DateTimeFormatter dateDTF = ISODateTimeFormat.date();
 
     DateMidnight serviceDate = null;
@@ -63,6 +62,7 @@ public class CrewResource {
     File inputFile = new File(System.getProperty("tdm.dataPath")
         + System.getProperty("tdm.crewAssignFilename"));
 
+    _log.debug("Generating OperatorAssignmentData object from file " + inputFile.getPath());
     // First create a OperatorAssignmentData object
     UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(
         inputFile);
@@ -77,11 +77,9 @@ public class CrewResource {
           Response.Status.INTERNAL_SERVER_ERROR);
     }
 
-    List<OperatorAssignment> jsonOpAssigns = null;
-
     ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();
 
-    jsonOpAssigns = listConvertOpAssignTcipToJson(tcipToJsonConverter,
+    List<OperatorAssignment> jsonOpAssigns = listConvertOpAssignTcipToJson(tcipToJsonConverter,
         data.getOperatorAssignmentsByServiceDate(serviceDate)); // grab the
                                                                 // assigns for
                                                                 // this date
@@ -105,8 +103,10 @@ public class CrewResource {
 
     String output = gson.toJson(opAssignMessage);
 
-    response = Response.ok(output).build();
+    Response response = Response.ok(output).build();
 
+    _log.info("Returning response ok.");
+    
     return response;
 
   }
@@ -118,14 +118,15 @@ public class CrewResource {
   private List<OperatorAssignment> listConvertOpAssignTcipToJson(
       ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> conv,
       List<SCHOperatorAssignment> inputAssigns) {
+    
+    _log.debug("About to convert " + inputAssigns.size() + " SCHOperatorAssignments to OperatorAssignment using " + conv.getClass().getName());
     List<OperatorAssignment> outputAssigns = new ArrayList<OperatorAssignment>();
 
-    Iterator<SCHOperatorAssignment> assignTcipIt = inputAssigns.iterator();
-
-    while (assignTcipIt.hasNext()) {
-      outputAssigns.add(conv.convert(assignTcipIt.next()));
+    for (SCHOperatorAssignment assignment : inputAssigns) {
+      outputAssigns.add(conv.convert(assignment));
     }
-
+    
+    _log.debug("Done converting operatorassignments to tcip.");
     return outputAssigns;
   }
 

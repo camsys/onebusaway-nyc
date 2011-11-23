@@ -155,6 +155,55 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			navigationControlOptions: { style: google.maps.NavigationControlStyle.DEFAULT },
 			center: new google.maps.LatLng(40.639228,-74.081154)
 	};
+	
+	
+	// Create Subway Tiles toggle button
+	var subwayControlDiv = document.createElement('DIV');
+	subwayControlDiv.index = 1;
+	 
+	// Adds a button control to toggle MTA Subway tiles
+	function SubwayTilesControl(controlDiv, map) {
+
+	  controlDiv.style.padding = '5px';
+	  
+	  var controlUI = document.createElement('DIV');
+	  controlUI.style.backgroundColor = 'white';
+	  controlUI.style.borderStyle = 'solid';
+	  controlUI.style.borderWidth = '1px';
+	  controlUI.style.cursor = 'pointer';
+	  controlUI.style.textAlign = 'center';
+	  controlUI.title = 'Click to toggle MTA Subway lines';
+	  controlUI.style.color = '#000000';
+	  controlDiv.appendChild(controlUI);
+
+	  var controlText = document.createElement('DIV');
+	  controlText.style.fontFamily = 'Arial,sans-serif';
+	  controlText.style.fontWeight = 'normal';
+	  controlText.style.fontSize = '12px';
+	  controlText.style.paddingLeft = '5px';
+	  controlText.style.paddingRight = '5px';
+	  controlText.style.paddingTop = '3px';
+	  controlText.style.paddingBottom = '3px';
+	  controlText.innerHTML = '<b>Subway</b>';
+	  controlUI.appendChild(controlText);
+	  
+	  // toggle map tiles and color of button text
+	  var toggleSubway = function () {
+			  (map.overlayMapTypes.length == 1) ? 
+					  map.overlayMapTypes.removeAt(0, mtaSubwayMapType) : map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
+
+			  (new RGBColor(controlText.style.color).toHex().toUpperCase() == "#CCCCCC") ?
+					   controlText.style.color = "#000000" : controlText.style.color = "#CCCCCC";
+	  };
+	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
+
+	  return { 
+		  toggleSubwayTiles: function() {
+			  toggleSubway();
+		  }
+	  };
+	}	
+	
 
 	var map = null;
 	var mgr = null;
@@ -700,7 +749,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 	// mta custom tiles
 	map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
-	
+
 	// styled basemap
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
@@ -709,6 +758,35 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	if(typeof mapMoveCallbackFn === 'function') {
 		google.maps.event.addListener(map, "idle", mapMoveCallbackFn);
 	}
+	
+	// show subway tiles toggle control only at relevant zoom levels
+	var subwayTilesControl = new SubwayTilesControl(subwayControlDiv, map);
+	
+	function showSubwayToggle() {
+		var topRightControls = map.controls[google.maps.ControlPosition.TOP_RIGHT];
+		var length = map.controls[google.maps.ControlPosition.TOP_RIGHT].getLength();
+		var currentZoom = map.getZoom();
+		var i = 0;
+		for (; i < length; i++) {
+			if (topRightControls.getAt(i) == subwayControlDiv) {
+				if (currentZoom < 14) {
+					subwayTilesControl.toggleSubwayTiles();
+					topRightControls.removeAt(i);
+				} 
+			}
+		}
+		if (currentZoom >= 14 && (i > length || i == 0)) {
+			topRightControls.push(subwayControlDiv);
+		} 
+	}
+	var zoomSubwayCtrlTimeout = null;
+	google.maps.event.addListener(map, 'zoom_changed', function() {
+		if (zoomSubwayCtrlTimeout !== null) {
+			clearTimeout(zoomSubwayCtrlTimeout);
+		}
+		zoomSubwayCtrlTimeout = setTimeout(showSubwayToggle, 2000);
+	});
+	
 	
 	// timer to update periodically
 	setInterval(function() {
