@@ -109,7 +109,8 @@ OBA.Sidebar = function() {
 			var titleBox = jQuery("<p></p>")
 							.addClass("name")
 							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
-							.css("border-bottom", "5px solid #" + routeResult.color);
+							.css("border-bottom", "5px solid #" + routeResult.color)
+							.css("cursor", "pointer");
 
 			var descriptionBox = jQuery("<p></p>")
 							.addClass("description")
@@ -153,8 +154,17 @@ OBA.Sidebar = function() {
 
 					stopLink.click(function(e) {
 						e.preventDefault();
-						
 						routeMap.showPopupForStopId(stop.stopId);
+					});
+					stopLink.mouseenter(function(e) {
+						e.preventDefault();
+						routeMap.showStopIcon(stop.stopId);
+						stopLink.append("<span class='zoomToStop'>&lt;&lt; Click to see stop<span>");
+					});
+					stopLink.mouseout(function(e) {
+						e.preventDefault();
+						routeMap.hideStopIcon(stop.stopId);
+						stopLink.children('.zoomToStop').remove();
 					});
 				});
 
@@ -169,6 +179,11 @@ OBA.Sidebar = function() {
 
 			routeMap.showRoute(routeResult);
 		});
+		
+		// pan to extent of first few routes in legend TODO
+		if (routeResults.length > 0) {
+			routeMap.panToRoute(routeResults[0]);
+		}
 		
 		legend.show();
 	}
