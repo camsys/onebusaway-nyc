@@ -19,16 +19,18 @@ public class TripIdentifier {
   public int startTime;
   public String routeName;
   public String startStop;
+  private int endTime;
 
-  public TripIdentifier(String routeName, int startTime, String startStop) {
+  public TripIdentifier(String routeName, int startTime, int endTime, String startStop) {
     this.routeName = routeName;
     this.startTime = startTime;
     this.startStop = startStop;
+    this.endTime = endTime;
   }
 
   @Override
   public String toString() {
-    return "TripIdentifier(" + routeName + "," + startTime + "," + startStop
+    return "TripIdentifier(" + routeName + "," + startTime + "," + endTime + "," + startStop
         + ")";
   }
 
@@ -39,6 +41,7 @@ public class TripIdentifier {
     result = prime * result + ((routeName == null) ? 0 : routeName.hashCode());
     result = prime * result + ((startStop == null) ? 0 : startStop.hashCode());
     result = prime * result + startTime;
+    result = prime * result + endTime;
     return result;
   }
 
@@ -61,7 +64,7 @@ public class TripIdentifier {
         return false;
     } else if (!startStop.equals(other.startStop))
       return false;
-    if (startTime != other.startTime)
+    if (startTime != other.startTime || endTime != other.endTime)
       return false;
     return true;
   }
