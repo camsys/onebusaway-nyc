@@ -1,8 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.data.ImporterOperatorAssignmentData;
@@ -18,25 +17,24 @@ import org.slf4j.LoggerFactory;
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
 public class UtsCrewAssignsToDataCreator {
-  
+
   private static Logger _log = LoggerFactory.getLogger(UtsCrewAssignsToDataCreator.class);
-  
+
   private File inputFile;
 
   public UtsCrewAssignsToDataCreator(File inputFile) {
     this.inputFile = inputFile;
   }
 
-  public OperatorAssignmentData generateDataObject() throws IOException {
-    FileReader inputFileReader = new FileReader(inputFile);
+  public OperatorAssignmentData generateDataObject() throws FileNotFoundException  {
+
+    List<MtaUtsCrewAssignment> crewAssignments;
 
     _log.debug("Importing crew assignments from source data file using CSVCrewAssignsInputConverter.");
     CrewAssignsInputConverter inConv = new CSVCrewAssignsInputConverter(
-        inputFileReader);
+        inputFile);
 
-    List<MtaUtsCrewAssignment> crewAssignments = inConv.getCrewAssignments();
-
-    inputFileReader.close();
+    crewAssignments = inConv.getCrewAssignments();
 
     _log.debug("Converting List<MtaUtsCrewAssignment> imported from source data to TCIP List<SCHOperatorAssignment> using TCIPCrewAssignmentsOutputConverter.");
     CrewAssignmentsOutputConverter converter = new TCIPCrewAssignmentsOutputConverter(

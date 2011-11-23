@@ -1,14 +1,11 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -16,17 +13,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.data.VehicleDepotData;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.BusDepotAssignmentsOutputConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.BusDepotAssignsToDepotMapTranslator;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.GroupByPropInListObjectTranslator;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPBusDepotAssignmentsOutputConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.BusDepotAssignsInputConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.XMLBusDepotAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tcip.FleetSubsetsGenerator;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
-import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CptFleetSubsets;
 import tcip_final_3_0_5_1.ObjectFactory;
 
