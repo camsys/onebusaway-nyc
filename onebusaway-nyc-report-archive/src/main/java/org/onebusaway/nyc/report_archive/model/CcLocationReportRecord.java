@@ -46,7 +46,7 @@ public class CcLocationReportRecord implements Serializable {
   private Integer vehicleAgencyId;
   
   @Column(nullable = false, name = "vehicle_agency_designator", length = 64)
-  private String vehicleAgencydesignator;
+  private String vehicleAgencyDesignator;
   
   @Column(nullable = false, name = "status_info")
   private Integer statusInfo;
@@ -132,7 +132,7 @@ public class CcLocationReportRecord implements Serializable {
     setStatusInfo(message.getStatusInfo());
     setTimeReported(convertTime(message.getTimeReported()));
     setTimeReceived(new Date());
-    setVehicleAgencydesignator(message.getVehicle().getAgencydesignator());
+    setVehicleAgencyDesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());
     setVehicleId((int) message.getVehicle().getVehicleId());
 
@@ -200,12 +200,12 @@ public class CcLocationReportRecord implements Serializable {
     this.vehicleAgencyId = vehicleAgencyId;
   }
 
-  public String getVehicleAgencydesignator() {
-    return vehicleAgencydesignator;
+  public String getVehicleAgencyDesignator() {
+    return vehicleAgencyDesignator;
   }
 
-  public void setVehicleAgencydesignator(String vehicleAgencydesignator) {
-    this.vehicleAgencydesignator = vehicleAgencydesignator;
+  public void setVehicleAgencyDesignator(String vehicleAgencyDesignator) {
+    this.vehicleAgencyDesignator = vehicleAgencyDesignator;
   }
 
   public Integer getStatusInfo() {

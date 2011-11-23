@@ -1,18 +1,9 @@
 package org.onebusaway.nyc.report_archive.services;
 
-// import org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord;
-
-// public interface NycQueuedInferredLocationDao {
-
-//   void saveOrUpdateRecord(NycQueuedInferredLocationRecord record);
-
-//   void saveOrUpdateRecords(NycQueuedInferredLocationRecord... records);
-
-// }
-
 import java.util.List;
 
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 
 public interface NycQueuedInferredLocationDao {
 
@@ -20,5 +11,5 @@ public interface NycQueuedInferredLocationDao {
 
   void saveOrUpdateRecords(ArchivedInferredLocationRecord... records);
 
-  List<ArchivedInferredLocationRecord> getAllLastKnownRecords();
+  List<CcAndInferredLocationRecord> getAllLastKnownRecords();
 }

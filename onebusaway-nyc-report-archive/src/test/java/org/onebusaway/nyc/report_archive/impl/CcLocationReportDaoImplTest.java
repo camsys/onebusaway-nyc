@@ -83,7 +83,7 @@ public class CcLocationReportDaoImplTest {
     report.setStatusInfo(456);
     report.setTimeReported(new Date());
     report.setTimeReceived(new Date());
-    report.setVehicleAgencydesignator("vehicleAgencydesignator");
+    report.setVehicleAgencyDesignator("vehicleAgencyDesignator");
     report.setVehicleAgencyId(789);
     report.setVehicleId(120);
     report.setNmeaSentenceGPGGA("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");

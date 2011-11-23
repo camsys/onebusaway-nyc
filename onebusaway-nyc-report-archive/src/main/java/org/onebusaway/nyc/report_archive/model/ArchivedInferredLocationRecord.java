@@ -63,8 +63,8 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Index(name = "vehicle_id")
   private Integer vehicleId;
 
-  @Column(nullable = false, name = "vehicle_agency_designator", length = 64)
-  private String vehicleAgencyDesignator;
+  @Column(nullable = false, name = "agency_id", length = 64)
+  private String agencyId;
 
   @Column(nullable = false, name = "time_received")
   private Date timeReceived;
@@ -75,17 +75,17 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "schedule_deviation")
   private Integer scheduleDeviation;
   
-  @Column(nullable = true, name = "block_id")
-  private String blockId;
+  @Column(nullable = true, name = "inferred_block_id")
+  private String inferredBlockId;
   
-  @Column(nullable = true, name = "trip_id")
-  private String tripId;
+  @Column(nullable = true, name = "inferred_trip_id")
+  private String inferredTripId;
   
-  @Column(nullable = true, name = "block_distance")
-  private Double blockDistance;
+  @Column(nullable = true, name = "distance_along_block")
+  private Double distanceAlongBlock;
   
-  @Column(nullable = true, name = "trip_distance")
-  private Double tripDistance;
+  @Column(nullable = true, name = "distance_along_trip")
+  private Double distanceAlongTrip;
   
   @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_latitude")
   private BigDecimal inferredLatitude;
@@ -93,40 +93,32 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_longitude")
   private BigDecimal inferredLongitude;
   
-  @Column(nullable = false, name = "phase")
-  private String phase;
+  @Column(nullable = false, name = "inferred_phase")
+  private String inferredPhase;
   
-  @Column(nullable = false, name = "status_info")
-  private String statusInfo;
+  @Column(nullable = false, name = "inferred_status")
+  private String inferredStatus;
   
   @Column(nullable = true, name = "run_id")
   private String runId;
 
-  @Column(nullable = true, name = "route_id")
-  private String routeId;
+  @Column(nullable = true, name = "inferred_route_id")
+  private String inferredRouteId;
+
+  @Column(nullable = true, name = "inferred_direction_id")
+  private String inferredDirectionId;
+   
 
   // Fields from NycVehicleManagementStatusBean
-  @Column(nullable = true, name = "active_bundle_id")
-  private String activeBundleId;
-
   @Column(nullable = false, name = "last_update_time")
   private Long lastUpdateTime;
   
   @Column(nullable = false, name = "last_location_update_time")
   private Long lastLocationUpdateTime;
 
-  @Column(nullable = true, name = "last_inferred_dest_sign_code")
-  private String lastInferredDestSignCode;
+  @Column(nullable = true, name = "inferred_dest_sign_code")
+  private String inferredDestSignCode;
   
-  @Column(nullable = true, name = "inference_engine_hostname")
-  private String inferenceEngineHostname;
-
-  @Column(nullable = false, name = "inference_is_enabled")
-  private boolean inferenceIsEnabled;
-
-  @Column(nullable = false, name = "inference_engine_is_primary")
-  private boolean inferenceEngineIsPrimary;
-
   @Column(nullable = false, name = "inference_is_formal")
   private boolean inferenceIsFormal;
 
@@ -136,8 +128,8 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "depot_id")
   private String depotId;
 
-  @Column(nullable = true, name = "last_inferred_operator_id")
-  private String lastInferredOperatorId;
+  @Column(nullable = true, name = "inferred_operator_id")
+  private String inferredOperatorId;
 
   @Column(nullable = true, name = "inferred_run_id")
   private String inferredRunId;
@@ -168,7 +160,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     int vehicleId = Integer.parseInt(id.substring(index + 1));
 
     setVehicleId(vehicleId);
-    setVehicleAgencyDesignator(agency);
+    setAgencyId(agency);
 
     setTimeReceived(new Date());
 
@@ -177,11 +169,11 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
     possibleNaN = message.getDistanceAlongBlock();
     if (Double.isNaN(possibleNaN))
-      setBlockDistance(null);
+      setDistanceAlongBlock(null);
     else
-      setBlockDistance(possibleNaN);
+      setDistanceAlongBlock(possibleNaN);
     
-    setTripDistance(message.getDistanceAlongTrip());
+    setDistanceAlongTrip(message.getDistanceAlongTrip());
 
     if (Double.isNaN(message.getInferredLatitude()))
       setInferredLatitude(null);
@@ -191,24 +183,21 @@ public class ArchivedInferredLocationRecord implements Serializable {
       setInferredLongitude(null);
     else
       setInferredLongitude(new BigDecimal(message.getInferredLongitude()));
-    setPhase(message.getPhase());
-    setStatusInfo(message.getStatus());
+    setInferredPhase(message.getPhase());
+    setInferredStatus(message.getStatus());
     setRunId(message.getRunId());
-    setRouteId(message.getRouteId());
+    setInferredRouteId(message.getRouteId());
+    // TODO: set inferredDirectionId
 
     NycVehicleManagementStatusBean managementBean = message.getManagementRecord();
 
-    setActiveBundleId(managementBean.getActiveBundleId());
     setLastUpdateTime(managementBean.getLastUpdateTime());
     setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
-    setLastInferredDestSignCode(managementBean.getLastInferredDestinationSignCode());
-    setInferenceEngineHostname(managementBean.getInferenceEngineHostname());
-    setInferenceIsEnabled(managementBean.isInferenceIsEnabled());
-    setInferenceEngineIsPrimary(managementBean.isInferenceEngineIsPrimary());
+    setInferredDestSignCode(managementBean.getLastInferredDestinationSignCode());
     setInferenceIsFormal(managementBean.isInferenceIsFormal());
     setDepotId(managementBean.getDepotId());
     setEmergencyFlag(managementBean.isEmergencyFlag());
-    setLastInferredOperatorId(managementBean.getLastInferredOperatorId());
+    setInferredOperatorId(managementBean.getLastInferredOperatorId());
     setInferredRunId(managementBean.getInferredRunId());
 
     // TDS fields are inserted by listener task.
@@ -239,12 +228,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.vehicleId = vehicleId;
   }
 
-  public String getVehicleAgencyDesignator() {
-    return vehicleAgencyDesignator;
+  public String getAgencyId() {
+    return agencyId;
   }
 
-  public void setVehicleAgencyDesignator(String vehicleAgencyDesignator) {
-    this.vehicleAgencyDesignator = vehicleAgencyDesignator;
+  public void setAgencyId(String agencyId) {
+    this.agencyId = agencyId;
   }
 
   public Date getTimeReceived() {
@@ -271,36 +260,36 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.scheduleDeviation = scheduleDeviation;
   }
 
-  public String getBlockId() {
-    return blockId;
+  public String getInferredBlockId() {
+    return inferredBlockId;
   }
 
-  public void setBlockId(String blockId) {
-    this.blockId = blockId;
+  public void setInferredBlockId(String inferredBlockId) {
+    this.inferredBlockId = inferredBlockId;
   }
 
-  public String getTripId() {
-    return tripId;
+  public String getInferredTripId() {
+    return inferredTripId;
   }
 
-  public void setTripId(String tripId) {
-    this.tripId = tripId;
+  public void setInferredTripId(String inferredTripId) {
+    this.inferredTripId = inferredTripId;
   }
 
-  public Double getBlockDistance() {
-    return blockDistance;
+  public Double getDistanceAlongBlock() {
+    return distanceAlongBlock;
   }
 
-  public void setBlockDistance(Double distance) {
-    this.blockDistance = distance;
+  public void setDistanceAlongBlock(Double distance) {
+    this.distanceAlongBlock = distance;
   }
 
-  public Double getTripDistance() {
-    return tripDistance;
+  public Double getDistanceAlongTrip() {
+    return distanceAlongTrip;
   }
 
-  public void setTripDistance(Double distance) {
-    this.tripDistance = distance;
+  public void setDistanceAlongTrip(Double distance) {
+    this.distanceAlongTrip = distance;
   }
 
   public BigDecimal getInferredLatitude() {
@@ -319,20 +308,20 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.inferredLongitude = longitude;
   }
 
-  public String getPhase() {
-    return phase;
+  public String getInferredPhase() {
+    return inferredPhase;
   }
 
-  public void setPhase(String phase) {
-    this.phase = phase;
+  public void setInferredPhase(String inferredPhase) {
+    this.inferredPhase = inferredPhase;
   }
 
-  public String getStatusInfo() {
-    return statusInfo;
+  public String getInferredStatus() {
+    return inferredStatus;
   }
 
-  public void setStatusInfo(String statusInfo) {
-    this.statusInfo = statusInfo;
+  public void setInferredStatus(String inferredStatus) {
+    this.inferredStatus = inferredStatus;
   }
 
   public void setRunId(String runId) {
@@ -343,23 +332,23 @@ public class ArchivedInferredLocationRecord implements Serializable {
     return runId;
   }
 
-  public void setRouteId(String routeId) {
-    this.routeId = routeId;
+  public void setInferredRouteId(String inferredRouteId) {
+    this.inferredRouteId = inferredRouteId;
   }
   
-  public String getRouteId() {
-    return routeId;
+  public String getInferredRouteId() {
+    return inferredRouteId;
+  }
+
+  public void setInferredDirectionId(String inferredDirectionId) {
+    this.inferredDirectionId = inferredDirectionId;
+  }
+  
+  public String getInferredDirectionId() {
+    return inferredDirectionId;
   }
 
    // properties from NycVehicleManagementStatusBean
-  public String getActiveBundleId() {
-    return activeBundleId;
-  }
-
-  public void setActiveBundleId(String activeBundleId) {
-    this.activeBundleId = activeBundleId;
-  }
-
   public long getLastUpdateTime() {
     return lastUpdateTime;
   }
@@ -376,28 +365,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.lastLocationUpdateTime = lastGpsTime;
   }
 
-  public String getLastInferredDestSignCode() {
-    return lastInferredDestSignCode;
+  public String getInferredDestSignCode() {
+    return inferredDestSignCode;
   }
 
-  public void setLastInferredDestSignCode(String inferredDestSignCode) {
-    this.lastInferredDestSignCode = inferredDestSignCode;
-  }
-
-  public String getInferenceEngineHostname() {
-    return inferenceEngineHostname;
-  }
-
-  public void setInferenceEngineHostname(String inferenceEngineHostname) {
-    this.inferenceEngineHostname = inferenceEngineHostname;
-  }
-
-  public boolean isInferenceIsEnabled() {
-    return inferenceIsEnabled;
-  }
-
-  public void setInferenceIsEnabled(boolean enabled) {
-    this.inferenceIsEnabled = enabled;
+  public void setInferredDestSignCode(String inferredDestSignCode) {
+    this.inferredDestSignCode = inferredDestSignCode;
   }
 
   public boolean isInferenceIsFormal() {
@@ -406,14 +379,6 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
   public void setInferenceIsFormal(boolean inferenceIsFormal) {
 	this.inferenceIsFormal = inferenceIsFormal;
-  }
-
-  public boolean isInferenceEngineIsPrimary() {
-    return inferenceEngineIsPrimary;
-  }
-
-  public void setInferenceEngineIsPrimary(boolean inferenceEngineIsPrimary) {
-    this.inferenceEngineIsPrimary = inferenceEngineIsPrimary;
   }
 
   public void setDepotId(String depotId) {
@@ -432,12 +397,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.emergencyFlag = emergencyFlag;
   }
 
-  public void setLastInferredOperatorId(String operatorId) {
-    this.lastInferredOperatorId = operatorId;
+  public void setInferredOperatorId(String operatorId) {
+    this.inferredOperatorId = operatorId;
   }
 
-  public String getLastInferredOperatorId() {
-    return lastInferredOperatorId;
+  public String getInferredOperatorId() {
+    return inferredOperatorId;
   }
 
   public void setInferredRunId(String inferredRunId) {

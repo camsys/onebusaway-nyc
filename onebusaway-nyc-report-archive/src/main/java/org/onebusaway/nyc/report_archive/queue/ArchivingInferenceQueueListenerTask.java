@@ -67,7 +67,7 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
  
   private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
     // Extract next stop id and distance
-    String vehicleId = locationRecord.getVehicleAgencyDesignator() + "_" + locationRecord.getVehicleId().toString();
+    String vehicleId = locationRecord.getAgencyId() + "_" + locationRecord.getVehicleId().toString();
     VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(vehicleId, System.currentTimeMillis());
 
     TripStatusBean status = vehicle.getTripStatus();
