@@ -33,8 +33,6 @@ OBA.Sidebar = function() {
 			e.preventDefault();
 			
 			jQuery.history.load(searchInput.val());
-
-			OBA.Config.analyticsFunction("Search", searchInput.val());
 		});
 	}
 
@@ -56,8 +54,9 @@ OBA.Sidebar = function() {
 	}
 
 	// show user list of addresses
-	function disambiguate(locationResults) {
+	function disambiguate(locationResults) {		
 		var resultsList = jQuery("#results ul");
+
 		var bounds = null;
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
@@ -115,12 +114,23 @@ OBA.Sidebar = function() {
 			var descriptionBox = jQuery("<p></p>")
 							.addClass("description")
 							.text(routeResult.description);
-							 
+
+			var serviceAlertList = jQuery("<ul></ul>")
+							.addClass("alerts");
+			
+			jQuery.each(routeResult.serviceAlerts, function(_, alert) {
+				var alertItem = jQuery("<li></li>")
+									.text(alert.value);
+				
+				serviceAlertList.append(alertItem);
+			});
+			
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
 							.append(titleBox)
+							.append(serviceAlertList)
 							.append(descriptionBox);
-
+	
 			legendList.append(listItem);
 			
 			// on double click of title pan to route extent (unless zoomed in)
@@ -154,6 +164,7 @@ OBA.Sidebar = function() {
 
 					stopLink.click(function(e) {
 						e.preventDefault();
+
 						routeMap.showPopupForStopId(stop.stopId);
 					});
 					stopLink.mouseenter(function(e) {
@@ -254,6 +265,8 @@ OBA.Sidebar = function() {
 				noResults.hide();
 			}
 
+			OBA.Config.analyticsFunction("Search", q + " [" + resultCount + "]");
+			
 			var resultType = json.searchResults[0].resultType;			
 			if(resultCount === 1) {
 				if(resultType === "LocationResult" || resultType === "StopResult") {

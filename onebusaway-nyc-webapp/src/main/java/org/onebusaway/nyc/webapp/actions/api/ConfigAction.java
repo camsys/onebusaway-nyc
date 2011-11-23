@@ -31,4 +31,8 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
     return _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
   }
 
+  public String getGoogleAnalyticsSiteId() {
+    return _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);    
+  }
+
 }

@@ -586,6 +586,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	    		var agencyId = stopIdParts[0];
 	    		var stopIdWithoutAgency = stopIdParts[1];
 
+	    		OBA.Config.analyticsFunction("Stop Marker Click", stopIdWithoutAgency);
+	    		
 	    		showPopupWithContentFromRequest(this, OBA.Config.siriSMUrl, 
 	    				{ OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" }, 
 	    				getStopContentForResponse, stop);
@@ -639,6 +641,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 					marker = new google.maps.Marker(markerOptions);
 			        
 			    	google.maps.event.addListener(marker, "click", function(mouseEvent) {
+			    		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleIdWithoutAgency);
+
 			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl + "?callback=?", 
 			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, VehicleMonitoringDetailLevel: "calls" }, 
 			    				getVehicleContentForResponse, null);

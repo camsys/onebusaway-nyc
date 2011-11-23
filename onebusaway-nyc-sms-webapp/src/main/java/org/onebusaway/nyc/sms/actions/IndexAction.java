@@ -31,6 +31,10 @@ import org.onebusaway.nyc.sms.actions.model.SmsRouteDestinationItem;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
+import com.dmurph.tracking.AnalyticsConfigData;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
+
 import org.apache.commons.lang.xwork.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,7 +49,7 @@ public class IndexAction extends SessionedIndexAction {
   private static final long serialVersionUID = 1L;
 
   private static final int MAX_SMS_CHARACTER_COUNT = 160;
-
+  
   @Autowired
   private RealtimeService _realtimeService;
 
@@ -61,6 +65,8 @@ public class IndexAction extends SessionedIndexAction {
   @Autowired
   private NycGeocoderService _geocoderService;
   
+  private JGoogleAnalyticsTracker _googleAnalytics = null;
+  
   /* response to user */
   private String _response = null;
 
@@ -68,10 +74,15 @@ public class IndexAction extends SessionedIndexAction {
   private String _routeToFilterBy = null;
   
   public String execute() throws Exception {
+    AnalyticsConfigData config = 
+        new AnalyticsConfigData(_configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null));
+ 
+    _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
+
     SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService, _configurationService);
     _stopSearchService.setModelFactory(factory);
-    _routeSearchService.setModelFactory(factory);
-    
+    _routeSearchService.setModelFactory(factory);    
+          
     /**
      * INPUT PARSING
      */  
@@ -114,6 +125,8 @@ public class IndexAction extends SessionedIndexAction {
     // display results to user
     if(_searchResults.size() == 0) {
       errorResponse("No matches.");
+      
+      _googleAnalytics.trackEvent("SMS", "No Results", _query);
       
     } else {
       if(_searchResults.getTypeOfResults().equals("StopResult")) {
@@ -178,25 +191,18 @@ public class IndexAction extends SessionedIndexAction {
   /**
    * RESPONSE GENERATION METHODS
    */
-
-  /**
-   * Note this is NOT internationalized.  If there are service alerts in multiple languages,
-   * all translations will be returned.
-   *  
-   * @param routeQuery
-   * @throws Exception
-   */
   private void serviceAlertResponse(String routeQuery) throws Exception {
-    List<RouteResult> routes = _routeSearchService.resultsForQuery(routeQuery);
+    _searchResults.addAll(_routeSearchService.resultsForQuery(routeQuery));
     
-    if(routes.size() == 0) {
+    if(_searchResults.size() == 0) {
       errorResponse("Route not found.");
       return;
     }
 
     List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
       
-    for(RouteResult result : routes) {
+    for(SearchResult _result : _searchResults) {
+      RouteResult result = (RouteResult)_result;
       for(RouteDestinationItem _destination : result.getDestinations()) {
         SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
         alerts.addAll(destination.getServiceAlerts());
@@ -213,7 +219,10 @@ public class IndexAction extends SessionedIndexAction {
     for (NaturalLanguageStringBean alert: alerts) {
       alertValues.add(alert.getValue());
     }
+    
     _response = StringUtils.join(alertValues, "\n\n");
+    
+    _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + _searchResults.size() + "]");
   }
   
   private void locationDisambiguationResponse(List<SearchResult> results) {
@@ -234,13 +243,15 @@ public class IndexAction extends SessionedIndexAction {
     }
 
     _response += "\nReply: 1-" + (i - 1);
+
+    _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.size() + "]");
   }
   
   private boolean realtimeStopResponse(List<SearchResult> results, int realtimeObservationCount) {
     boolean truncated = false;
 
     _response = "";
-
+    
     if(results.size() > 1)
       _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here.\n\n";
     
@@ -295,6 +306,8 @@ public class IndexAction extends SessionedIndexAction {
       _response += "Reply: R)efresh";
     }
     
+    _googleAnalytics.trackEvent("SMS", "Stop With Realtime Response", _query + " [" + results.size() + "]");
+
     return truncated;
   }
     
@@ -332,6 +345,8 @@ public class IndexAction extends SessionedIndexAction {
       _response += "\nOR M)ore";
     }
     
+    _googleAnalytics.trackEvent("SMS", "Stop Disambiguation", _query + " [" + results.size() + "]");
+
     return truncated;
   }
   
@@ -353,6 +368,8 @@ public class IndexAction extends SessionedIndexAction {
       _response = message + " " + staticStuff;
     } else
       _response = staticStuff;
+    
+    _googleAnalytics.trackEvent("SMS", "Unrecognized Query", _query);
   }
 
   /**
@@ -439,7 +456,7 @@ public class IndexAction extends SessionedIndexAction {
     
     return null;
   }
-  
+    
   /**
    * METHODS FOR VIEWS
    */

@@ -199,6 +199,11 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
   
   @Override
+  public List<NaturalLanguageStringBean> getServiceAlertsForRoute(String routeId) {
+    return getServiceAlertsForRouteAndDirection(routeId, null); 
+  }
+  
+  @Override
   public List<NaturalLanguageStringBean> getServiceAlertsForRouteAndDirection(String routeId,
       String directionId) {
 
@@ -207,8 +212,10 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     for (TripDetailsBean tripDetailsBean : getAllTripsForRoute(routeId).getList()) {
       TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
-      if(tripStatusBean == null || tripStatusBean.getSituations() == null
-          || !tripStatusBean.getActiveTrip().getDirectionId().equals(directionId))
+      if(tripStatusBean == null || tripStatusBean.getSituations() == null)
+        continue;
+      
+      if(directionId != null && !tripStatusBean.getActiveTrip().getDirectionId().equals(directionId))
         continue;
 
       for(ServiceAlertBean serviceAlert : tripStatusBean.getSituations()) {

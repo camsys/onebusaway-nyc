@@ -15,19 +15,19 @@
  */
 package org.onebusaway.nyc.sms.impl;
 
-import java.util.Map;
-
-import org.apache.struts2.interceptor.SessionAware;
-
 import org.onebusaway.nyc.sms.services.SessionManager;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
+
+import org.apache.struts2.interceptor.SessionAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import java.util.Map;
 
 public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
 
@@ -35,15 +35,15 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
 
   private SessionManager _sessionManager;
 
-  private String _phoneNumberParameterName = "phone";
+  private String _sessionIdParameterName = "profile_id";
 
   @Autowired
   public void setSessionManager(SessionManager sessionManager) {
     _sessionManager = sessionManager;
   }
 
-  public void setPhoneNumberParameterName(String phoneNumberParameterName) {
-    _phoneNumberParameterName = phoneNumberParameterName;
+  public void setSessionIdParameterName(String sessionIdParameterName) {
+    _sessionIdParameterName = sessionIdParameterName;
   }
 
   @Override
@@ -52,19 +52,19 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
     ActionContext context = invocation.getInvocationContext();
     Map<String, Object> parameters = context.getParameters();
 
-    Object phoneNumber = parameters.get(_phoneNumberParameterName);
+    Object rawSessionId = parameters.get(_sessionIdParameterName);
 
-    if (phoneNumber == null)
+    if (rawSessionId == null)
       return invocation.invoke();
 
-    if (phoneNumber instanceof String[]) {
-      String[] values = (String[]) phoneNumber;
+    if (rawSessionId instanceof String[]) {
+      String[] values = (String[]) rawSessionId;
       if (values.length == 0)
         return invocation.invoke();
-      phoneNumber = values[0];
+      rawSessionId = values[0];
     }
 
-    String sessionId = phoneNumber.toString();
+    String sessionId = rawSessionId.toString();
     Map<String, Object> persistentSession = _sessionManager.getContext(sessionId);
 
     Map<String, Object> originalSession = context.getSession();
@@ -75,9 +75,14 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
     RequestContextHolder.setRequestAttributes(attributes);
 
     Object action = invocation.getAction();
-    if (action instanceof SessionAware)
-      ((SessionAware) action).setSession(persistentSession);
-
+    if (action instanceof SessionAware) {
+      if(persistentSession != null) {
+        persistentSession.put("sessionId", sessionId);
+      }
+      
+      ((SessionAware)action).setSession(persistentSession);
+    }
+    
     try {
       return invocation.invoke();
     } finally {
