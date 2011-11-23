@@ -923,7 +923,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			var icon = new google.maps.MarkerImage("img/location/beachflag.png",
 	                new google.maps.Size(20, 32),
 	                new google.maps.Point(0,0),
-	                new google.maps.Point(-10, 32));
+	                new google.maps.Point(0, 32));
 				
 			var markerOptions = {
 					position: latlng,

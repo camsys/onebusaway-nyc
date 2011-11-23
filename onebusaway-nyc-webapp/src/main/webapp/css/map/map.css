@@ -116,10 +116,10 @@
 #content #legend ul li.legendItem .name {
 	margin-bottom: 5px;
 	font-weight: bold;
+	cursor: pointer;
 }
 
 #content #legend ul li.legendItem .alerts {
-	padding-top: 10px;
 	padding-bottom: 10px;
 	color: #D12020;
 	font-weight: bold;
