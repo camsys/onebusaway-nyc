@@ -9,7 +9,10 @@ import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +80,22 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
     else {
 	locationRecord.setNextScheduledStopId(status.getNextStop().getId());
 	locationRecord.setNextScheduledStopDistance(status.getNextStopDistanceFromVehicle());
+
+	TripBean trip = status.getActiveTrip();
+	if (trip != null) {
+	    locationRecord.setInferredTripId(trip.getId());
+	    RouteBean route = trip.getRoute();
+	    if (route != null) {
+		locationRecord.setInferredRouteId(route.getId());
+	    }
+	}
+	StopBean stop = status.getNextStop();
+	if (stop != null) {
+	    //locationRecord.setDirectionDeg(stop.getDirection());
+	    locationRecord.setNextScheduledStopId(stop.getId());
+	}
+	locationRecord.setNextScheduledStopDistance(status.getNextStopDistanceFromVehicle());
+	locationRecord.setScheduleDeviation((int)new Double(status.getScheduleDeviation()).longValue());
     }
   }
 

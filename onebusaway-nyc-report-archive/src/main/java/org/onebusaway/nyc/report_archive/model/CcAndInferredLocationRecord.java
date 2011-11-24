@@ -22,6 +22,9 @@
  */
 package org.onebusaway.nyc.report_archive.model;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -36,10 +39,8 @@ public class CcAndInferredLocationRecord implements Serializable {
 					CcLocationReportRecord realtime) {
 	// realtime fields
 	setVehicleAgencyId(realtime.getVehicleAgencyId());
-	setVehicleAgencyDesignator(realtime.getVehicleAgencyDesignator());
-	setTimeReported(realtime.getTimeReported());
-	setTimeReceived(realtime.getTimeReceived());
-	setOperatorId(realtime.getOperatorId());
+	setTimeReported(toISODate(realtime.getTimeReported()));
+	setTimeReceived(toISODate(realtime.getTimeReceived()));
 	setOperatorIdDesignator(realtime.getOperatorIdDesignator());
 	setDestSignCode(realtime.getDestSignCode());
 	setEmergencyCode(realtime.getEmergencyCode());
@@ -51,7 +52,7 @@ public class CcAndInferredLocationRecord implements Serializable {
 	setAgencyId(inferred.getAgencyId());
 	setVehicleId(inferred.getVehicleId());
 	setDepotId(inferred.getDepotId());
-	setServiceDate(inferred.getServiceDate());
+	setServiceDate(toSimpleDate(inferred.getServiceDate()));
 	setInferredOperatorId(inferred.getInferredOperatorId());
 	setInferredRunId(inferred.getInferredRunId());
 	setInferredBlockId(inferred.getInferredBlockId());
@@ -71,10 +72,8 @@ public class CcAndInferredLocationRecord implements Serializable {
 
     // realtime fields
   private Integer vehicleAgencyId;
-  private String vehicleAgencyDesignator;
-  private Date timeReported;
-  private Date timeReceived;
-  private Integer operatorId;
+  private String timeReported;
+  private String timeReceived;
   private String operatorIdDesignator;
   private Integer destSignCode;
   private String emergencyCode;
@@ -86,7 +85,7 @@ public class CcAndInferredLocationRecord implements Serializable {
   private String agencyId;
   private Integer vehicleId;
   private String depotId;
-  private Date serviceDate;
+  private String serviceDate;
   private String inferredOperatorId;
   private String inferredRunId;
   private String inferredBlockId;
@@ -120,36 +119,20 @@ public class CcAndInferredLocationRecord implements Serializable {
     this.vehicleAgencyId = vehicleAgencyId;
   }
 
-  public String getVehicleAgencyDesignator() {
-    return vehicleAgencyDesignator;
-  }
-
-  public void setVehicleAgencyDesignator(String vehicleAgencyDesignator) {
-    this.vehicleAgencyDesignator = vehicleAgencyDesignator;
-  }
-
-  public Date getTimeReported() {
+  public String getTimeReported() {
     return timeReported;
   }
 
-  public void setTimeReported(Date timeReported) {
+  public void setTimeReported(String timeReported) {
     this.timeReported = timeReported;
   }
 
-  public Date getTimeReceived() {
+  public String getTimeReceived() {
     return timeReceived;
   }
 
-  public void setTimeReceived(Date timeReceived) {
+  public void setTimeReceived(String timeReceived) {
     this.timeReceived = timeReceived;
-  }
-
-  public Integer getOperatorId() {
-    return operatorId;
-  }
-
-  public void setOperatorId(Integer operatorId) {
-    this.operatorId = operatorId;
   }
 
   public String getOperatorIdDesignator() {
@@ -225,11 +208,11 @@ public class CcAndInferredLocationRecord implements Serializable {
     return depotId;
   }
 
-  public Date getServiceDate() {
+  public String getServiceDate() {
     return serviceDate;
   }
 
-  public void setServiceDate(Date serviceDate) {
+  public void setServiceDate(String serviceDate) {
     this.serviceDate = serviceDate;
   }
 
@@ -353,4 +336,17 @@ public class CcAndInferredLocationRecord implements Serializable {
     this.scheduleDeviation = scheduleDeviation;
   }
 
+  private String toISODate(Date date) {
+      if (date != null) {
+	  return ISODateTimeFormat.dateTime().print(new DateTime(date));
+      }
+      return null;
+  }
+
+  private String toSimpleDate(Date date) {
+      if (date != null) {
+	  DateTimeFormat.forPattern("yyyy-MM-DD").print(new DateTime(date));
+      }  
+      return null;
+  }
 }
