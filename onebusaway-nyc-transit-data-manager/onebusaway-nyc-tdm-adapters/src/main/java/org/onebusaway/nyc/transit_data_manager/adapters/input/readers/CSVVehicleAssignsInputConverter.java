@@ -1,5 +1,9 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.input.readers;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
@@ -7,23 +11,20 @@ import java.util.Map;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsVehiclePullInPullOut;
 
-import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.bean.CsvToBean;
 import au.com.bytecode.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
 
 public class CSVVehicleAssignsInputConverter implements
     VehicleAssignsInputConverter {
 
-  private Reader inputReader = null;
-  private CSVReader csvReader = null;
-
-  public CSVVehicleAssignsInputConverter(Reader csvInputReader) {
-    inputReader = csvInputReader;
+  private File csvFile;
+  
+  public CSVVehicleAssignsInputConverter(File csvInputFile) {
+    csvFile = csvInputFile;
   }
 
-  public List<MtaUtsVehiclePullInPullOut> getVehicleAssignments() {
-    setupCsvReader();
-
+  public List<MtaUtsVehiclePullInPullOut> getVehicleAssignments() throws FileNotFoundException {
+    
     // Would this mapping possibly be better implemented somewhere else?
     // Inside of MtaUtsVehiclePullInPullOut perhaps? Just a thought
     Map<String, String> colMap = new HashMap<String, String>();
@@ -45,15 +46,23 @@ public class CSVVehicleAssignsInputConverter implements
     mapStrat.setColumnMapping(colMap);
 
     CsvToBean<MtaUtsVehiclePullInPullOut> crewAssignsCsv = new CsvToBean<MtaUtsVehiclePullInPullOut>();
-    List<MtaUtsVehiclePullInPullOut> vehicleAssignments = crewAssignsCsv.parse(
-        mapStrat, inputReader);
+    
+    List<MtaUtsVehiclePullInPullOut> vehicleAssignments = null;
+    
+    Reader inputReader = null;
+    try {
+      inputReader = new FileReader(csvFile);
+      vehicleAssignments = crewAssignsCsv.parse(
+          mapStrat, inputReader);
+    } finally {
+      if (inputReader != null)
+        try {
+          inputReader.close();
+        } catch (IOException e) {}
+    }
+    
 
     return vehicleAssignments;
   }
-
-  private void setupCsvReader() {
-    if (csvReader == null) {
-      csvReader = new CSVReader(inputReader);
-    }
-  }
+  
 }

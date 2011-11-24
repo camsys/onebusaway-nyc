@@ -216,6 +216,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var hoverPolylines = [];
 	var stopsById = {};
 	var stopsAddedForRoute = {};
+	var clickedStopIcons = {};
 
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
@@ -231,9 +232,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		infoWindow = new google.maps.InfoWindow({
 	    	content: content,
 	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
-	    	maxWidth: 320
+	    	maxWidth: 320,
+	    	disableAutoPan: false
 	    });
-
 		infoWindow.open(map, marker);
     
 		google.maps.event.addListener(infoWindow, "closeclick", closeFn);
@@ -242,7 +243,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		
-		showPopupWithContent(marker, 'Loading...');
+		// fix for popups that appear off the map edge when inner content changes to stop or bus info
+		showPopupWithContent(marker, 
+			'<p style="font-size:25px;width:300px;text-align:center;"><br /><br />Loading . . . <br /><br /><br /></p>');
 		
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
@@ -828,8 +831,37 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			if(typeof stopMarker === 'undefined') {
 				return;
 			}
-			
+			if (stopMarker.getMap() !== null) {
+				stopMarker.setMap(map);
+			}
+			map.setCenter(stopMarker.getPosition());
+			map.setZoom(14);
 			google.maps.event.trigger(stopMarker, "click");
+			
+			clickedStopIcons[stopId] = true;
+		},
+		
+		showStopIcon: function(stopId) {
+			var stopMarker = stopsById[stopId];
+			
+			if(typeof stopMarker === 'undefined') {
+				return;
+			}
+			if (stopMarker.getMap() == null) {
+				stopMarker.setMap(map);
+			}
+		},
+		
+		hideStopIcon: function(stopId) {
+			var stopMarker = stopsById[stopId];
+			
+			if(typeof stopMarker === 'undefined') {
+				return;
+			}
+			// only hide if user hasn't clicked on it yet
+			if (clickedStopIcons[stopId] !== true) {
+				stopMarker.setMap(null);
+			}
 		},
 		
 		showRoute: function(routeResult) {
@@ -846,38 +878,51 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			updateVehicles(routeResult.routeId);
 		},
 	
+		// pan to route extent unless zoomed in and the route is nearby
 		panToRoute: function(routeResult) {
+			
 			var polylines = polylinesByRoute[routeResult.routeId];
 			var newBounds = new google.maps.LatLngBounds();
-			var currentBounds = map.getBounds();
 			var routeBounds = new google.maps.LatLngBounds();
+			var currentBounds = map.getBounds();
+			var currentBoundsBuffer = currentBounds;
 			var sw = currentBounds.getSouthWest();
 			var ne = currentBounds.getNorthEast();
+			var boundaryBuffer = .05;  // ~3.5 miles?
+			var alreadyInView = false;
 			
 			// filter bounds by what's in current viewport plus some
 			// Note: for western hemisphere, above equator
-			currentBounds.extend(new google.maps.LatLng(sw.lat() - .20, sw.lng() - .20));
-			currentBounds.extend(new google.maps.LatLng(ne.lat() + .20, ne.lng() + .20));			
+			currentBoundsBuffer.extend(new google.maps.LatLng(sw.lat() - boundaryBuffer, sw.lng() - boundaryBuffer));
+			currentBoundsBuffer.extend(new google.maps.LatLng(ne.lat() + boundaryBuffer, ne.lng() + boundaryBuffer));	
 					
 			jQuery.each(polylines, function(_, polyline) {
 				if (typeof polyline !== 'undefined') { 
 					var coordinates = polyline.getPath();
 					
-					// scenario 1: route will be in bounds
-					coordinates.forEach(function(coordinate, index) {
-						if (currentBounds.contains(coordinate)) {	
+					// scenario 0: route is aleady in view
+					// scenario 1: route will be in bounds + buffer						
+					for (var k=0; k < coordinates.length; k++) {
+						var coordinate = coordinates.getAt(k);
+						if (currentBoundsBuffer.contains(coordinate)) {	
 							newBounds.extend(coordinate);
 						}
+						if (currentBounds.contains(coordinate)) {	
+							alreadyInView = true;
+							break;
+						}
 						routeBounds.extend(coordinate);
-					});
+					}
 				}
 			});
 			
-			// scenario 2: route will not be in bounds
-			if (newBounds.isEmpty()) {
+			if (alreadyInView) {
+				// do nothing for now
+			} else if (newBounds.isEmpty()) {
+				// scenario 2: route will not be in bounds
 				map.fitBounds(routeBounds);
 			} else {
-				// stay at user's existing zoom level
+				// stay close to user's existing zoom level
 				var currentZoom = map.getZoom();
 				map.fitBounds(newBounds);
 				map.setZoom(currentZoom);

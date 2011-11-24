@@ -186,6 +186,12 @@
 	text-decoration: none;
 }
 
+#content #legend ul li.legendItem p.destination ul.stops li span.zoomToStop {
+	padding-left: 10px;
+	color: #000000;
+	font-style: italic;
+}
+
 /* map/popup */
 
 #content #map {

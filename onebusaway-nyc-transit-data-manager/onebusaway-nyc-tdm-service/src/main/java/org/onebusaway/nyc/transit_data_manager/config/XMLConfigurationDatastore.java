@@ -1,8 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.config;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -21,7 +19,7 @@ public class XMLConfigurationDatastore implements
     ConfigurationDatastoreInterface {
 
   private static Logger _log = LoggerFactory.getLogger(XMLConfigurationDatastore.class);
-  
+
   private boolean isConfigLoaded = false;
   private File configFile;
 
@@ -45,23 +43,25 @@ public class XMLConfigurationDatastore implements
   }
 
   @Override
-  public synchronized List<ConfigItem> getConfigItemsForComponent(String component) {
+  public synchronized List<ConfigItem> getConfigItemsForComponent(
+      String component) {
     List<ConfigItem> result = configuration.getConfigForComponent(component);
 
     return result;
   }
 
   @Override
-  public synchronized ConfigItem getConfigItemByComponentKey(String component, String key) {
+  public synchronized ConfigItem getConfigItemByComponentKey(String component,
+      String key) {
     return configuration.getConfigForComponentKey(component, key);
   }
 
   @Override
-  public synchronized void setConfigItemByComponentKey(String component, String key,
-      ConfigItem config) {
+  public synchronized void setConfigItemByComponentKey(String component,
+      String key, ConfigItem config) {
 
     _log.info("Saving value in configurationstore in setConfigItemByComponentKey.");
-    
+
     configuration.setConfigForComponentKey(component, key, config);
 
     try {
@@ -88,32 +88,20 @@ public class XMLConfigurationDatastore implements
     }
   }
 
-  private void loadConfiguration() throws IOException, JAXBException {
+  private void loadConfiguration() throws JAXBException  {
 
-    _log.info("For the TDM Config tool, loading XML Configuration from " + configFile.getPath());
+    _log.info("For the TDM Config tool, loading XML Configuration from "
+        + configFile.getPath());
     if (!isConfigLoaded) {
-      FileInputStream fis = null;
-      try {
-        fis = new FileInputStream(configFile);
 
-        // Check to see if the file is empty
-        if (fis.read() == -1) { // If the file is
-                                // empty...
-          configuration = new ConfigurationStore();
-        } else { // File is not empty, must contain ConfigurationStore stuff.
-          JAXBContext jc = JAXBContext.newInstance(ConfigurationStore.class);
-          Unmarshaller u = jc.createUnmarshaller();
+      // Check to see if the file is empty
+      if (configFile.length() == 0) { // If the file is empty...
+        configuration = new ConfigurationStore();
+      } else { // File is not empty, must contain ConfigurationStore stuff.
+        JAXBContext jc = JAXBContext.newInstance(ConfigurationStore.class);
+        Unmarshaller u = jc.createUnmarshaller();
 
-          configuration = (ConfigurationStore) u.unmarshal(configFile);
-        }
-
-        fis.close();
-      } catch (IOException ioe) {
-        if (fis != null) fis.close();
-        
-        throw new IOException("Could not create a FileInputStream with "
-            + configFile + " in XMLConfigurationDatastore.loadConfiguration.",
-            ioe);
+        configuration = (ConfigurationStore) u.unmarshal(configFile);
       }
 
       isConfigLoaded = true;
@@ -124,15 +112,15 @@ public class XMLConfigurationDatastore implements
 
   private void saveConfiguration() throws JAXBException {
     _log.debug("writing configuration to file.");
-    
+
     JAXBContext jc = JAXBContext.newInstance(ConfigurationStore.class);
     Marshaller m = jc.createMarshaller();
 
     m.marshal(configuration, configFile);
-    
+
     _log.debug("Done writing configuration to file.");
   }
-  
+
   private void loadConfigFile(String configFilePath) throws Exception {
     if (configFile.exists()) {
       if (!configFile.canRead()) {

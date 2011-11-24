@@ -85,7 +85,7 @@
 
 		<div id="horizontalcssmenu" style="clear: both;">	
 			<ul id="cssmenu1">
-				<li style="width: 71px; border-left: none;"><a href="http://mta.info/default.html" style="padding-left:18px;">Home</a>
+				<li style="width: 111px; border-left: none;"><a href="http://mta.info/default.html" style="padding-left:18px;">Home</a>
 					<ul>
 						<li><a href="http://mta.info/default.html">MTA Home</a></li>
 						<li><a href="http://mta.info/nyct">NYC Subways and Buses</a></li>
@@ -96,13 +96,13 @@
 						<li><a href="http://mta.info/capital">MTA Capital Program</a></li>
 					</ul> 
 				</li>
-				<li style="width: 95px;"><a href="http://mta.info/schedules">Schedules</a></li>
-				<li style="width: 113px;"><a href="http://mta.info/fares">Fares &amp; Tolls</a></li>
-				<li style="width: 61px;"><a href="http://mta.info/maps">Maps</a></li>
-				<li style="width: 195px;"><a href="http://mta.info/service">Planned Service Changes</a></li>
-				<li style="width: 123px;"><a href="http://mta.info/about">About the MTA</a></li>
-				<li style="width: 180px;"><a href="http://mta.info/business">Doing Business With Us</a></li>
-				<li style="width: 115px;"><a href="http://mta.info/accountability/" style="padding-right:23px;">Transparency</a>
+				<li style="width: 125px;"><a href="http://mta.info/schedules">Schedules</a></li>
+				<li style="width: 143px;"><a href="http://mta.info/fares">Fares &amp; Tolls</a></li>
+				<li style="width: 111px;"><a href="http://mta.info/maps">Maps</a></li>
+				<li style="width: 215px;"><a href="http://mta.info/service">Planned Service Changes</a></li>
+				<li style="width: 143px;"><a href="http://mta.info/about">About the MTA</a></li>
+				<li style="width: 200px;"><a href="http://mta.info/business">Doing Business With Us</a></li>
+				<li style="width: 145px;"><a href="http://mta.info/accountability/" style="padding-right:20px;">Transparency</a>
 					<ul>
 						<li><a href="http://mta.info/accountability">Main Page</a></li>
 						<li><a href="http://mta.info/mta/boardmaterials.html">Board Materials</a></li>

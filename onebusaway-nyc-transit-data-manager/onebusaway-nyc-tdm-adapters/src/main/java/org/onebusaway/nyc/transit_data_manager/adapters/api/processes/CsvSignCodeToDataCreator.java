@@ -1,7 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
@@ -20,10 +19,8 @@ public class CsvSignCodeToDataCreator {
   }
   
   public SignCodeData generateDataObject() throws IOException {
-    FileReader inputFileReader = new FileReader(inputFile);
-    
     CcAnnouncementInfoConverter inConv = new CSVCcAnnouncementInfoConverter(
-        inputFileReader);
+        inputFile);
     
     List<CCDestinationSignMessage> signs = inConv.getDestinationsAsList();
     

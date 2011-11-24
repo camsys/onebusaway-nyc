@@ -28,5 +28,7 @@
     <import resource="classpath:org/onebusaway/nyc/vehicle_tracking/application-context.xml" />
 
     <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.webapp.controllers"/>
+    <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.siri"/>
+    
 
 </beans>

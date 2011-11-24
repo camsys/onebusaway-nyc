@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.FileToFileConverterProcess;
-import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepotsToJsonOutputProcess;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaBusDepotsToTcipXmlProcess;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaSignCodeToTcipXmlProcess;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToJsonOutputProcess;
@@ -18,7 +17,6 @@ public class GenericConverter {
 
   FileToFileConverterProcess conv = null;
 
-  private String mtaBusDepotToAllDepotsJson = "mtabd2alldepots";
   private String mtaBusDepotToTcipXml = "mtabd2tcipxml";
   private String mtaUtsCrewToCrewJson = "utsCrew2crewjson";
   private String mtaUtsCrewToTcipXml = "utsCrew2tcipxml";
@@ -26,9 +24,7 @@ public class GenericConverter {
   private String mtaDscToTcipXml = "dsccsv2tcipxml";
 
   public GenericConverter(String convType, File inputFile, File outputFile) {
-    if (mtaBusDepotToAllDepotsJson.equals(convType)) {
-      conv = new MtaBusDepotsToJsonOutputProcess(inputFile, outputFile);
-    } else if (mtaBusDepotToTcipXml.equals(convType)) {
+    if (mtaBusDepotToTcipXml.equals(convType)) {
       conv = new MtaBusDepotsToTcipXmlProcess(inputFile, outputFile);
     } else if (mtaUtsCrewToCrewJson.equals(convType)) {
       conv = new UtsCrewAssignsToJsonOutputProcess(inputFile, outputFile);

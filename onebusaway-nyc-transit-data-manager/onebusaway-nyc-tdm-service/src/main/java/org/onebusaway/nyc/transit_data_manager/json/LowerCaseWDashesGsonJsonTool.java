@@ -21,8 +21,6 @@ public class LowerCaseWDashesGsonJsonTool implements JsonTool{
     super();
     
     this.prettyPrintOutput = prettyPrintOutput;
-    
-    buildGsonObject();
   }
   
   /**
@@ -40,24 +38,22 @@ public class LowerCaseWDashesGsonJsonTool implements JsonTool{
     buildGsonObject();
   }
 
-  private Gson gson;
-  
   @Override
   public <T> T readJson(Reader reader, Class<T> classOfT) {
+    Gson gson = buildGsonObject();
     return gson.fromJson(reader, classOfT);
   }
 
   @Override
   public void writeJson(Writer writer, Object objectToWrite) throws IOException {
-
+    Gson gson = buildGsonObject();
+    
     String serializedObject = gson.toJson(objectToWrite);
     
     writer.write(serializedObject);
-    
-    
   }
   
-  private void buildGsonObject() {
+  private Gson buildGsonObject() {
     GsonBuilder gbuilder = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES);
     
     setTypeAdapters(gbuilder);
@@ -65,7 +61,9 @@ public class LowerCaseWDashesGsonJsonTool implements JsonTool{
     if (prettyPrintOutput)
       gbuilder.setPrettyPrinting();
     
-    gson = gbuilder.create();
+    Gson gson = gbuilder.create();
+    
+    return gson;
   }
   
   private void setTypeAdapters(GsonBuilder gsonBuilder) {

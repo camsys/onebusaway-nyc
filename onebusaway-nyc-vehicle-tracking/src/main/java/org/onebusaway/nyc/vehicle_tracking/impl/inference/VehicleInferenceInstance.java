@@ -231,7 +231,7 @@ public class VehicleInferenceInstance {
        * to replace the missing values
        */
       if (_previousObservation == null) {
-        _log.info("missing previous observation and current lat/lon:"
+        _log.debug("missing previous observation and current lat/lon:"
             + record.getVehicleId() + ", skipping update.");
         return false;
       }

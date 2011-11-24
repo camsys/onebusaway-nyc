@@ -32,6 +32,7 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>
             classpath:org/onebusaway/nyc/vehicle_tracking/webapp/application-context-webapp.xml
+            classpath:org/onebusaway/nyc/tdm_adapters/application-context.xml
             classpath:data-sources.xml
 		</param-value>
     </context-param>
@@ -39,7 +40,20 @@
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
 
+    <servlet>
+        <servlet-name>Jersey Spring Web Application</servlet-name>
+        <servlet-class>com.sun.jersey.spi.spring.container.servlet.SpringServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Jersey Spring Web Application</servlet-name>
+        <url-pattern>/siri/*</url-pattern>
+    </servlet-mapping>
+    
     <servlet>
         <servlet-name>remoting</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -56,5 +70,5 @@
         <servlet-name>remoting</servlet-name>
         <url-pattern>/remoting/*</url-pattern>
     </servlet-mapping>
-    
+
 </web-app>

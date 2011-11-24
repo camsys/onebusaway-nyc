@@ -125,7 +125,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "emergency_flag")
   private boolean emergencyFlag;
 
-  @Column(nullable = false, name = "depot_id")
+  @Column(nullable = true, name = "depot_id")
   private String depotId;
 
   @Column(nullable = true, name = "inferred_operator_id")

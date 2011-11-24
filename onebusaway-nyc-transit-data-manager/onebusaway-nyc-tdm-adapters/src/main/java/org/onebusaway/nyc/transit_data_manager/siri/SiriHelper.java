@@ -85,7 +85,7 @@ public class SiriHelper {
 
 		if (hasTime)
 		  ptSit.setPublicationWindow(s);
-
+		
 		AffectsScopeStructure affects = createAffects(lines);
 		ptSit.setAffects(affects);
 
