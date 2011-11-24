@@ -36,7 +36,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, stops);
 
     // service alerts
-    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), group.getId());
+    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForRoute(route.getId());
     item.setServiceAlerts(serviceAlerts);
 
     return item;
@@ -59,9 +59,8 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
       if(!route.getId().equals(routeId))
         continue;
 
-      MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-
       // no next stop = detoured
+      MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
       if(monitoredCall == null)
         continue;
 
@@ -87,7 +86,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
       message += "@terminal";
     }
     
-    int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
+    int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
     long age = (System.currentTimeMillis() - updateTime) / 1000;
 
     if(age > staleTimeout) {

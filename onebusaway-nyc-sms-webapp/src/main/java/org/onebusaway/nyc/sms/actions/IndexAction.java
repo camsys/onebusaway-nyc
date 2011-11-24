@@ -74,9 +74,8 @@ public class IndexAction extends SessionedIndexAction {
   private String _routeToFilterBy = null;
   
   public String execute() throws Exception {
-    AnalyticsConfigData config = 
-        new AnalyticsConfigData(_configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null));
- 
+    AnalyticsConfigData config = new AnalyticsConfigData(
+        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null));
     _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
 
     SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService, _configurationService);
@@ -86,22 +85,33 @@ public class IndexAction extends SessionedIndexAction {
     /**
      * INPUT PARSING
      */  
-    _routeToFilterBy = getRouteToFilterBy(_query);
+    _routeToFilterBy = findRouteTokenInQuery(_query);
 
-    String commandString = normalizeCommand(_query);
+    String commandString = findAndNormalizeCommandInQuery(_query);
+    
     if(commandString != null) {
-      // Alert: second parameter contains route to find alerts for
-      if(commandString.equals("A")) {
+      // (service) change
+      if(commandString.equals("C")) {
         serviceAlertResponse(_routeToFilterBy);
         return SUCCESS;
-        
-      // Refresh: just re-run the last query!
+
+      // help
+      } else if(commandString.equals("H")) {
+        errorResponse(null);
+        return SUCCESS;
+
+      // refresh: just re-run the last query!
       } else if(commandString.equals("R")) {
         _query = _lastQuery;
         generateNewSearchResults(_query);
         
-      // More: (handled as part of regular logic)
+      // more: (handled as part of regular logic)
       } else if(commandString.equals("M")) {
+        if(_searchResultsCursor >= _searchResults.size()) {
+          errorResponse("No more.");
+          return SUCCESS;
+        }
+
         // (fall through)
 
       // 1-X: ambiguous location choice
@@ -132,30 +142,28 @@ public class IndexAction extends SessionedIndexAction {
       if(_searchResults.getTypeOfResults().equals("StopResult")) {
 
         // try to fill the most space in the SMS with realtime data; if we can't even get
-        // one observation for each route available in there, then punt to disambiguation.
+        // one observation for each route available in there, then punt to stop disambiguation.
         boolean truncated = true;
-        int i = 1;
-        while(truncated) {
-          truncated = realtimeStopResponse(_searchResults, i);
+        for(int i = 1; truncated == true; i++) {
+          truncated = stopRealtimeResponse(_searchResults, i);            
 
           if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
             if(i == 1) {
               _response = null;
             } else {
-              truncated = realtimeStopResponse(_searchResults, i - 1);
+              truncated = stopRealtimeResponse(_searchResults, i - 1);            
             }
+
             break;
           }
-          
-          i++;
         }
 
         // okay, so we have to disambiguate--now find the maximum page size we can fit into 
         // one SMS!
         if(_response == null) {
           truncated = true;
-          i = 0;
-          while(truncated) {
+          int i = 0;
+          for(i = 1; truncated == true; i++) {
             truncated = stopDisambiguationResponse(_searchResults, _searchResultsCursor, i);
 
             if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
@@ -163,24 +171,29 @@ public class IndexAction extends SessionedIndexAction {
                 _response = null;
               } else {
                 truncated = stopDisambiguationResponse(_searchResults, _searchResultsCursor, i - 1);
-                _searchResultsCursor += (i - 1);
               }
               break;
             }
-            
-            i++;
           }
+
+          _searchResultsCursor = i;
         }
-        
-        // shouldn't happen!
+                  
+        // shouldn't get here!
         if(_response == null)
-          throw new Exception("No combination of values we tried produced a message that could fit into 1 SMS!?");
+          errorResponse("Too general.");
 
       } else if(_searchResults.getTypeOfResults().equals("LocationResult")) {
-        locationDisambiguationResponse(_searchResults);
+        locationDisambiguationResponse(_searchResults, false);
         
+        // too long? try compact mode!
         if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
-          errorResponse("Not specific enough.");
+          locationDisambiguationResponse(_searchResults, true); 
+        }
+
+        // still too long? sorry...
+        if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
+          errorResponse("Too general.");
         }
       }
     }
@@ -192,16 +205,16 @@ public class IndexAction extends SessionedIndexAction {
    * RESPONSE GENERATION METHODS
    */
   private void serviceAlertResponse(String routeQuery) throws Exception {
-    _searchResults.addAll(_routeSearchService.resultsForQuery(routeQuery));
+    List<RouteResult> routeResult = _routeSearchService.resultsForQuery(routeQuery);
     
-    if(_searchResults.size() == 0) {
+    if(routeResult.size() == 0) {
       errorResponse("Route not found.");
       return;
     }
 
     List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
       
-    for(SearchResult _result : _searchResults) {
+    for(SearchResult _result : routeResult) {
       RouteResult result = (RouteResult)_result;
       for(RouteDestinationItem _destination : result.getDestinations()) {
         SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
@@ -222,47 +235,69 @@ public class IndexAction extends SessionedIndexAction {
     
     _response = StringUtils.join(alertValues, "\n\n");
     
-    _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + _searchResults.size() + "]");
+    _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + routeResult.size() + "]");
   }
   
-  private void locationDisambiguationResponse(List<SearchResult> results) {
-    _response = "Did you mean:\n\n";
+  private void locationDisambiguationResponse(List<SearchResult> results, boolean compactMode) {
+    _response = "Did you mean\n\n";
     
     int i = 1;
     for(SearchResult _result : results) {
       LocationResult result = (LocationResult)_result;
       
-      _response += i + ") " + result.getFormattedAddress() + "\n";
-      
-      if(results.size() <= 2 && result.getNeighborhood() != null) {
-        _response += "(" + result.getNeighborhood() + ")";
-        _response += "\n";
+      // compact mode omits neighborhood, city/borough and whitespace to save space!
+      if(compactMode) {
+        _response += i + ") " + result.getAddress() + " " + result.getPostalCode() + "\n";
+      } else {
+        _response += i + ") " + result.getAddress() + "\n";        
+        _response += result.getCity() + " " + result.getPostalCode() + "\n";
+
+        if(results.size() <= 2) {
+          if(result.getNeighborhood() != null) {
+            _response += "(" + result.getNeighborhood() + ")\n";
+          }
+
+          // if we have few results, throw some whitespace in for nicer formatting
+          if(results.iterator().hasNext()) {
+            _response += "\n";
+          }
+        }
       }
       
       i++;
     }
 
-    _response += "\nReply: 1-" + (i - 1);
-
+    if(compactMode) {
+      _response += "\n";    
+    }
+    
+    _response += "Send:\n";
+    _response += "1-" + (i - 1) + "\n";
+      
     _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.size() + "]");
   }
   
-  private boolean realtimeStopResponse(List<SearchResult> results, int realtimeObservationCount) {
+  private boolean stopRealtimeResponse(List<SearchResult> results, int realtimeObservationCount) {
     boolean truncated = false;
 
     _response = "";
     
-    if(results.size() > 1)
-      _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here.\n\n";
+    if(results.size() > 1) {
+      _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here\n\n";
+    }
     
     List<String> routesWithAlerts = new ArrayList<String>();
     for(SearchResult _result : results) {
       StopResult result = (StopResult)_result;
 
-      _response += result.getStopIdWithoutAgency() + " (" + result.getStopDirection() + "-bound)\n";
-
+      if(results.size() > 1) {
+        _response += result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
+      } else {
+        _response += result.getStopIdWithoutAgency() + "\n";
+      }
+      
       for(RouteResult routeHere : result.getRoutesAvailable()) {
-        // filtered out by user query
+        // filter out by user query
         if(_routeToFilterBy != null && !routeHere.getRouteIdWithoutAgency().equals(_routeToFilterBy))
           continue;
         
@@ -270,28 +305,32 @@ public class IndexAction extends SessionedIndexAction {
           SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
           
           String prefix = "";
-          
+
           if(destination.getServiceAlerts().size() > 0) {
             prefix += "*";
             routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
           }            
 
-          prefix += routeHere.getRouteIdWithoutAgency() + ":";
+          prefix += routeHere.getRouteIdWithoutAgency() + " ";
           
           if(destination.getDistanceAwayStrings().size() > 0) {
             int c = 0;
             for(String distanceAway : destination.getDistanceAwayStrings()) {
-              if(c >= realtimeObservationCount) {
+              if(c > realtimeObservationCount) {
                 truncated = true;
                 break;
               }
 
-              _response += prefix + distanceAway + "\n";
+              if(c > 0) {
+                _response += "\n";
+              }
 
+              _response += prefix + distanceAway;
+              
               c++;
             }
           } else {
-            _response += prefix + "no bus en-route.\n";
+            _response += prefix + "no bus en-route";
           }
           
           _response += "\n";
@@ -299,66 +338,100 @@ public class IndexAction extends SessionedIndexAction {
       }
     }
 
+    _response += "\n";
+    _response += "Send:\n";
+    _response += "STOP CODE + ROUTE realtime info\n";
+
     if(routesWithAlerts.size() > 0) {
-      _response += "* Alert for " + StringUtils.join(routesWithAlerts, ",") + "\n";
-      _response += "Reply: A)lert +route R)efresh";
-    } else {
-      _response += "Reply: R)efresh";
+      _response += "'C' + ROUTE service change (*)\n";
     }
     
-    _googleAnalytics.trackEvent("SMS", "Stop With Realtime Response", _query + " [" + results.size() + "]");
+    _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query + " [" + results.size() + "]");
 
     return truncated;
   }
-    
+  
   private boolean stopDisambiguationResponse(List<SearchResult> results, int offset, int count) {
     boolean truncated = false;
-    
-    _response = results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here.\n\n";
 
+    _response = "";
+    
+    if(results.size() > 1) {
+      _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here\n\n";
+    }
+    
+    List<String> routesWithAlerts = new ArrayList<String>();
     int c = 0;
     for(SearchResult _result : results) {
-      if(c >= count) {
+      // pagination
+      if(c < offset) {
+        c++;
+        continue;
+      }
+      
+      if(c > count) {
         truncated = true;
         break;
       }
       
       StopResult result = (StopResult)_result;
-
+      
       // header of item
-      _response += result.getStopIdWithoutAgency() + " (" + result.getStopDirection() + "-bound)\n";
+      if(results.size() > 1) {
+        _response += (c + 1) + ") " + result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
+      } else {
+        _response += result.getStopIdWithoutAgency() + "\n"; 
+        _response += "Routes here:\n";
+      }
 
       // routes available at stop
-      List<String> routesHere = new ArrayList<String>();
-      for(RouteResult routeAvailable : result.getRoutesAvailable()) {
-        routesHere.add(routeAvailable.getRouteIdWithoutAgency());
+      for(RouteResult routeHere : result.getRoutesAvailable()) {
+        for(RouteDestinationItem _destination : routeHere.getDestinations()) {
+          SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
+            
+          if(destination.getServiceAlerts().size() > 0) {
+            _response += "*";
+            routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
+          }            
+
+          _response += routeHere.getRouteIdWithoutAgency() + "  ";
+        }
       }
       
-      _response += StringUtils.join(routesHere, ",") + "\n";
+      _response += "\n";
 
       c++;
     }
-    
-    _response += "\nReply: stop ID +route";
-    
-    if(offset + count < results.size()) {
-      _response += "\nOR M)ore";
+
+    _response += "\n";
+    _response += "Send:\n";
+
+    if(offset + c < results.size()) {
+      _response += "MORE more stops\n";
     }
     
+    _response += "STOP CODE + ROUTE realtime info\n";
+
+    if(routesWithAlerts.size() > 0) {
+      _response += "'C' + ROUTE service change (*)\n";
+    }
+        
     _googleAnalytics.trackEvent("SMS", "Stop Disambiguation", _query + " [" + results.size() + "]");
 
     return truncated;
   }
-  
+      
   private void errorResponse(String message) throws Exception {
-    String staticStuff = "Reply with:\n\n";
+    String staticStuff = "Text your:\n\n";
     
-    staticStuff += "stop ID (+route)\n";
-    staticStuff += "or\n";
-    staticStuff += "route+intersection:\n";
-    staticStuff += "'B63 Atlantic & 4 Av'\n\n";
+    staticStuff += "STOP CODE or\n";
+    staticStuff += "INTERSECTION\n\n";
     
-    staticStuff += "For alerts reply with A +route";
+    staticStuff += "Add ROUTE for best results:\n";
+    staticStuff += "'B63 5 AV & 3 ST'\n";
+    staticStuff += "'307540 B63'\n\n";
+    
+    staticStuff += "Find 6-digit stop code on the bus stop pole box.";
 
     if(message != null) {
       if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {
@@ -368,37 +441,47 @@ public class IndexAction extends SessionedIndexAction {
       _response = message + " " + staticStuff;
     } else
       _response = staticStuff;
-    
-    _googleAnalytics.trackEvent("SMS", "Unrecognized Query", _query);
   }
 
   /**
    * PRIVATE HELPER METHODS
    */
-  public String normalizeCommand(String query) {
-    if(query.toUpperCase().startsWith("A ") || query.toUpperCase().startsWith("ALERT "))
-      return "A";
+  public String findAndNormalizeCommandInQuery(String query) {
+    query = query.trim();
+    
+    if(query.toUpperCase().startsWith("C") || query.toUpperCase().startsWith("CHANGE")) {
+      return "C";
+    }
 
-    if(query.toUpperCase().equals("R") || query.toUpperCase().equals("REFRESH"))
+    if(query.toUpperCase().equals("R") || query.toUpperCase().equals("REFRESH")) {
       return "R";
+    }
 
-    if(query.toUpperCase().equals("M") || query.toUpperCase().equals("MORE"))
+    if(query.toUpperCase().equals("M") || query.toUpperCase().equals("MORE")) {
       return "M";
+    }
+
+    if(query.toUpperCase().equals("H") || query.toUpperCase().equals("HELP")) {
+      return "H";
+    }
 
     // try as ambiguous location result choice:
     try {
       // no results means this can't be a pick from ambiguous location results
-      if(_searchResults == null || _searchResults.size() == 0)
+      if(_searchResults == null || _searchResults.size() == 0) {
         return null;
+      }
       
       // a list of things other than location results can't be a pick from ambiguous locations.
-      if(!(_searchResults.get(0) instanceof LocationResult))
+      if(!(_searchResults.getTypeOfResults().equals("LocationResult"))) {
         return null;
+      }
       
       // is the choice within the bounds of the number of things we have?
       Integer choice = Integer.parseInt(query);
-      if(choice >= 1 && choice <= _searchResults.size())
+      if(choice >= 1 && choice <= _searchResults.size()) {
         return choice.toString();
+      }
     } catch (NumberFormatException e) {
       return null;
     }
@@ -406,19 +489,37 @@ public class IndexAction extends SessionedIndexAction {
     return null;
   }
   
+  private String findRouteTokenInQuery(String q) {
+    if(q == null) {
+      return null;
+    }
+    
+    for(String token : q.split(" ")) {
+      if(_routeSearchService.isRoute(token)) {
+        return token;
+      }
+    }
+    
+    return null;
+  }
+  
   private void generateNewSearchResults(String q) {
     _searchResults.clear();
     _searchResultsCursor = 0;
 
-    if(q == null || q.isEmpty())
+    if(q == null || q.isEmpty()) {
       return;
+    }
+
+    _lastQuery = q;
 
     // try as stop ID
     _searchResults.addAll(_stopSearchService.resultsForQuery(q));
 
     // nothing? geocode it!
-    if(_searchResults.size() == 0)
+    if(_searchResults.size() == 0) {
       _searchResults.addAll(generateResultsFromGeocode(q));        
+    }
     
     Collections.sort(_searchResults, new SearchResultComparator());
   } 
@@ -432,29 +533,20 @@ public class IndexAction extends SessionedIndexAction {
     if(geocoderResults.size() == 1) {
       NycGeocoderResult result = geocoderResults.get(0);
 
-      if(!result.isRegion())
+      if(!result.isRegion()) {
         results.addAll(_stopSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
+      }
 
     // prompt the user to choose from non-regional locations.
     } else {
       for(NycGeocoderResult result : geocoderResults) {
-        if(!result.isRegion())
+        if(!result.isRegion()) {
           results.add(new LocationResult(result));
+        }
       }
     }
 
     return results;
-  }
-
-  private String getRouteToFilterBy(String q) {
-    String[] tokens = q.split(" ");
-    
-    for(String token : tokens) {
-      if(_routeSearchService.isRoute(token))
-        return token;
-    }
-    
-    return null;
   }
     
   /**
