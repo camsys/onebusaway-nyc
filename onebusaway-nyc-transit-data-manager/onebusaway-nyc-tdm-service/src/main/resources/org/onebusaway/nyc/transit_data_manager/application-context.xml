@@ -48,4 +48,9 @@
 		<property name="prettyPrintOutput" value="${tdm.prettyPrintOutput}" />
 	</bean>
 
+    <bean id="nycSiriService"
+        class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriService">
+        <property name="mode" value="gateway" />
+    </bean>
+
 </beans>

@@ -44,7 +44,11 @@
       <artifactId>jersey-spring</artifactId>
       <version>1.9.1</version>
     </dependency>
-
+  <dependency>
+    <groupId>com.sun.jersey</groupId>
+    <artifactId>jersey-bundle</artifactId>
+    <version>1.10</version>
+  </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
