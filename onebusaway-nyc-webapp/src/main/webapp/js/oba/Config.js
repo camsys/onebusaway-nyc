@@ -54,7 +54,7 @@ OBA.Config = {
 				html += '<span class="header">At the bus stop... </strong></span>';
 
 				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>511123</strong> ';
-				html += 'or check <a href="http://' + window.location.hostname + ((window.location.port !== '') ? ':' + window.location.port: '') + '/m/?q=' + query + '">this stop</a> on your smartphone.';
+				html += 'or check <a href="m/?q=' + query + '">this stop</a> on your smartphone.';
 
 				html += '</div>';
 
@@ -62,7 +62,7 @@ OBA.Config = {
 				html += '<div class="footer">';
 				html += '<span class="header">At the bus stop... </strong></span>';
 
-				html += 'Check <a href="http://' + window.location.hostname + ((window.location.port !== '') ? ':' + window.location.port : '') + '/m/?q=' + query + '">this route</a> on your smartphone.';
+				html += 'Check <a href="m/?q=' + query + '">this route</a> on your smartphone.';
 
 				html += '</div>';				
 
