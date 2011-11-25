@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.api.siri;
+package org.onebusaway.nyc.transit_data_federation.siri;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
