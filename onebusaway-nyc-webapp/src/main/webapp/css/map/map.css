@@ -186,11 +186,11 @@
 	text-decoration: none;
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li span.zoomToStop {
-	padding-left: 10px;
-	color: #000000;
-	font-style: italic;
+#content #legend ul li.legendItem p.destination ul.stops li a:hover {
+	font-size: 140%;
+	font-weight: bold;
 }
+
 
 /* map/popup */
 

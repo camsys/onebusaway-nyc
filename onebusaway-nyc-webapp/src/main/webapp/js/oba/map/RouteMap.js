@@ -347,12 +347,21 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', routeIdWithoutAgency);			
-		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);
+		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);		
+		html += getZoomHereLink();
 		
 		// (end popup)
 		html += '</div>';
 		
 		return html;
+	}
+	
+	function getZoomHereLink() {
+		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
+		$('#zoomHere').live("click", function() { 
+			map.setZoom(map.getZoom()+1); 
+		});
+		return $('<a></a>').append(zoomHere.clone()).html();
 	}
 
 	function getServiceAlertContent(r, situationRefs) {
@@ -481,6 +490,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopResult.stopIdWithoutAgency);
 		
 	    html += getServiceAlertContent(r, null);
+	  
+		
+		html += getZoomHereLink();
 	        
 		// (end popup)
 		html += '</div>';

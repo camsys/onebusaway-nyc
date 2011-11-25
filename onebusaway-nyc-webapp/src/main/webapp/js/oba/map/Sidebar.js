@@ -170,7 +170,6 @@ OBA.Sidebar = function() {
 					stopLink.mouseenter(function(e) {
 						e.preventDefault();
 						routeMap.showStopIcon(stop.stopId);
-						stopLink.append("<span class='zoomToStop'>&lt;&lt; Click to see stop<span>");
 					});
 					stopLink.mouseout(function(e) {
 						e.preventDefault();
