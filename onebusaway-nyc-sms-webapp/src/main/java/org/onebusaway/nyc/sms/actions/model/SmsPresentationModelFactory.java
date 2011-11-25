@@ -1,12 +1,12 @@
 package org.onebusaway.nyc.sms.actions.model;
 
 import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
-import org.onebusaway.nyc.presentation.model.realtime.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
