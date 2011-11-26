@@ -61,9 +61,10 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
   public void syncSession() {
     _session.put("searchResults", _searchResults);
     _session.put("searchResultsCursor", _searchResultsCursor);
-    _session.put("lastQuery", _query);
+    _session.put("lastQuery", _lastQuery);
   }
   
+  // user input/query
   public void setArgs(String args) {
     if(args != null)
       this._query = args.trim();

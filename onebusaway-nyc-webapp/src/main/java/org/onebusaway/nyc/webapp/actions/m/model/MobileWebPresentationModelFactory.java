@@ -1,16 +1,15 @@
 package org.onebusaway.nyc.webapp.actions.m.model;
 
 import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
-import org.onebusaway.nyc.presentation.model.realtime.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
@@ -50,8 +49,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     MobileWebRouteDestinationItem destination = new MobileWebRouteDestinationItem(group, null);
 
     // service alerts
-    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForStop(stop.getId());
-    destination.setServiceAlerts(serviceAlerts);
+    destination.setServiceAlerts(_realtimeService.getServiceAlertsForStop(stop.getId()));
 
     // stop visits
     List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), false);
@@ -89,9 +87,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
       return destination;
       
     // service alerts
-    List<NaturalLanguageStringBean> serviceAlerts = 
-        _realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), group.getId()); 
-    destination.setServiceAlerts(serviceAlerts);    
+    destination.setServiceAlerts(_realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), group.getId()));    
     
     // stop visits
     List<VehicleActivityStructure> journeyList = 
@@ -100,9 +96,9 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     // build map of stop IDs to list of distance strings
     Map<String, ArrayList<String>> stopIdToDistanceStringMap = new HashMap<String, ArrayList<String>>();      
     for(VehicleActivityStructure journey : journeyList) {
-      MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
 
       // on detour?
+      MonitoredCallStructure monitoredCall = journey.getMonitoredVehicleJourney().getMonitoredCall();
       if(monitoredCall == null) 
         continue;
 

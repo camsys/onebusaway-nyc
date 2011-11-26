@@ -1,14 +1,20 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Date;
+
+import javax.ws.rs.core.MediaType;
 
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
+
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 
 import uk.org.siri.siri.PtSituationElementStructure;
 
@@ -33,6 +39,17 @@ public class NycSiriServiceTest extends NycSiriService {
     
     assertEquals(EEffect.MODIFIED_SERVICE, serviceAlertBean.getConsequences().get(0).getEffect());
     
+  }
+  
+  @Test
+  public void testSendSubscriptionRequest() {
+//    WebResource mockWebResource = mock(WebResource.class);
+//    Builder mockBuilder = null;
+//    when(mockWebResource.accept(any(MediaType.class))).thenReturn(mockBuilder);
+////    when(mockBuilder.type(any(MediaType.class))).thenReturn(mockBuilder);
+//    setWebResource(mockWebResource);
+    sendSubscriptionRequest();
+//    verify(mockWebResource).post();
   }
 
 }

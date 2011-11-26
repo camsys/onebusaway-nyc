@@ -16,17 +16,23 @@
 package org.onebusaway.nyc.geocoder.model;
 
 import org.onebusaway.geocoder.impl.GoogleAddressComponent;
-import org.onebusaway.geocoder.impl.GoogleGeocoderResult;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 
-public class NycGeocoderResult extends GoogleGeocoderResult {
+import java.io.Serializable;
+import java.util.HashMap;
+
+public class NycGeocoderResult implements Serializable {
 
   private static final long serialVersionUID = 1L;
   
-  private String formattedAddress;
-
-  private String neighborhood;
-
+  private String formattedAddress = null;
+  
+  private HashMap<String, String> addressComponentMap = new HashMap<String, String>();
+  
+  private Double latitude = null;
+  
+  private Double longitude = null;
+  
   private Double northeastLatitude = null;
 
   private Double northeastLongitude = null;
@@ -35,63 +41,92 @@ public class NycGeocoderResult extends GoogleGeocoderResult {
 
   private Double southwestLongitude = null;
 
-  // address
-  public void setFormattedAddress(String a) {
-    formattedAddress = a;
-  }
-  
-  public String getFormattedAddress() {
-    if(formattedAddress != null)
-      formattedAddress = formattedAddress.replace(", USA", "");
-    return formattedAddress;
-  }
-
-  // neighborhood
-  @Override
-  public void addAddressComponent(GoogleAddressComponent addressComponent) {
-    super.addAddressComponent(addressComponent);
-    
-    if(addressComponent.getTypes().contains("neighborhood"))
-      this.neighborhood = addressComponent.getLongName();
-  }
-  
-  public String getNeighborhood() {
-    return neighborhood;
-  }
-
-  // bounds
-  public Double getNortheastLatitude() {
-    return northeastLatitude;
+  public void setFormattedAddress(String formattedAddress) {
+    this.formattedAddress = formattedAddress;
   }
 
   public void setNortheastLatitude(Double northeastLatitude) {
     this.northeastLatitude = northeastLatitude;
   }
 
-  public Double getNortheastLongitude() {
-    return northeastLongitude;
-  }
-
   public void setNortheastLongitude(Double northeastLongitude) {
     this.northeastLongitude = northeastLongitude;
-  }
-
-  public Double getSouthwestLatitude() {
-    return southwestLatitude;
   }
 
   public void setSouthwestLatitude(Double southwestLatitude) {
     this.southwestLatitude = southwestLatitude;
   }
 
-  public Double getSouthwestLongitude() {
-    return southwestLongitude;
-  }
-
   public void setSouthwestLongitude(Double southwestLongitude) {
     this.southwestLongitude = southwestLongitude;
   }  
 
+  public void setLatitude(Double latitude) {
+    this.latitude = latitude;
+  }
+
+  public void setLongitude(Double longitude) {
+    this.longitude = longitude;
+  }
+
+  public void addAddressComponent(GoogleAddressComponent addressComponent) {
+    for(String type : addressComponent.getTypes()) {
+      addressComponentMap.put(type, addressComponent.getShortName());
+    }
+  }
+  
+  public Double getLatitude() {
+    return latitude;
+  }
+  
+  public Double getLongitude() {
+    return longitude;
+  }
+  
+  public String getNeighborhood() {
+    String output = addressComponentMap.get("neighborhood");
+
+    if(output != null)
+      return output;
+    else
+      return addressComponentMap.get("sublocality");
+  }
+ 
+  public String getFormattedAddress() {
+    return this.formattedAddress;
+  }
+
+  public String getAddress() {
+    String address = getFormattedAddress();
+    
+    if(address != null)
+      return address.substring(0, address.indexOf(","));
+    else
+      return null;
+  }
+
+  public String getCity() {
+    String output = addressComponentMap.get("sublocality");
+
+    if(output != null)
+      return output;
+    else
+      return addressComponentMap.get("locality");
+
+  }
+
+  public String getAdministrativeArea() {
+    return addressComponentMap.get("administrative_area_level_1");
+  }
+
+  public String getPostalCode() {
+    return addressComponentMap.get("postal_code");
+  }
+
+  public String getCountry() {
+    return addressComponentMap.get("country");
+  }
+  
   public CoordinateBounds getBounds() {
     if(northeastLatitude != null && northeastLongitude != null 
         && southwestLatitude != null && southwestLongitude != null) {

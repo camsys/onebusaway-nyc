@@ -1,12 +1,12 @@
 package org.onebusaway.nyc.sms.actions.model;
 
 import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
-import org.onebusaway.nyc.presentation.model.realtime.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
@@ -36,7 +36,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, stops);
 
     // service alerts
-    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), group.getId());
+    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForRoute(route.getId());
     item.setServiceAlerts(serviceAlerts);
 
     return item;
@@ -59,9 +59,8 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
       if(!route.getId().equals(routeId))
         continue;
 
-      MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-
       // no next stop = detoured
+      MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
       if(monitoredCall == null)
         continue;
 
@@ -87,7 +86,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
       message += "@terminal";
     }
     
-    int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
+    int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
     long age = (System.currentTimeMillis() - updateTime) / 1000;
 
     if(age > staleTimeout) {

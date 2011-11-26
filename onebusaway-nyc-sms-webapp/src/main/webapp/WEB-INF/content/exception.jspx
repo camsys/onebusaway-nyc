@@ -19,5 +19,5 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" 
 	xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/plain"/>
-An error occured. Please try your request again.
+An unexpected error occurred. Please try your request again.
 </jsp:root>

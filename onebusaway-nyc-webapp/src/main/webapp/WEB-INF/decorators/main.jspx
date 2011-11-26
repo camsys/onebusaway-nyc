@@ -130,14 +130,17 @@
 	  	  		</div>
 
 	      	  	<ul>
+	      	  		<s:url var="url" namespace="/m" action="index"/>
+    			    <li><a href="${url}">Text/Mobile Version</a></li>
+	      	  	
 					<s:url var="url" namespace="/wiki" action="About"/>
 					<li><a href="${url}">About</a></li>
 
 					<s:url var="url" namespace="/wiki" action="ContactUs"/>
 					<li><a href="${url}">Contact Us</a></li>
-
-					<s:url var="url" namespace="/m" action="index"/>
-    			    <li><a href="${url}">Text/Mobile Version</a></li>
+    			    
+    			    <s:url var="url" namespace="/wiki" action="Developers"/>
+    			    <li><a href="${url}">For Developers</a></li>
 
 					<s:if test="adminUser">
 				        <li>

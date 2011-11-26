@@ -1,7 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.api.siri;
-
-import org.onebusaway.nyc.presentation.model.realtime.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.model.realtime.SiriExtensionWrapper;
+package org.onebusaway.nyc.transit_data_federation.siri;
 
 import uk.org.siri.siri.Siri;
 

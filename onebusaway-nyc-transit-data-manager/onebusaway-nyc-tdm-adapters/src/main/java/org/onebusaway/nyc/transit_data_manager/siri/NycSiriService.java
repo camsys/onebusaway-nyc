@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.ws.rs.core.MediaType;
+
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.siri.AffectedApplicationStructure;
@@ -47,6 +50,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import uk.org.siri.Siri;
+import uk.org.siri.SubscriptionContextStructure;
+import uk.org.siri.SubscriptionRequest;
 import uk.org.siri.siri.AbstractServiceDeliveryStructure;
 import uk.org.siri.siri.AffectedCallStructure;
 import uk.org.siri.siri.AffectedOperatorStructure;
@@ -74,6 +80,11 @@ import uk.org.siri.siri.StopPointRefStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+
 @Component
 public class NycSiriService {
 
@@ -81,6 +92,19 @@ public class NycSiriService {
 
   @Autowired
   private TransitDataService _transitDataService;
+
+  private String _mode;
+
+  private String _serviceAlertsServer;
+
+  private WebResource _webResource;
+
+  @PostConstruct
+  public void setup() {
+    _log.info("setup(), mode is: " + _mode + ", server is: "
+        + _serviceAlertsServer);
+    sendSubscriptionRequest();
+  }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
       ServiceDelivery delivery) {
@@ -92,15 +116,16 @@ public class NycSiriService {
           endpointDetails, result);
     }
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
+    // TODO This is not done yet.
     boolean deletedIds = Collections.disjoint(preAlertIds, postAlertIds);
-//    org.apache.commons.collections.SetUtils.
+    // org.apache.commons.collections.SetUtils.
   }
 
   private List<String> getExistingAlertIds(Set<String> agencies) {
     List<String> alertIds = new ArrayList<String>();
-    for (String agency: agencies) {
+    for (String agency : agencies) {
       ListBean<ServiceAlertBean> alerts = _transitDataService.getAllServiceAlertsForAgencyId(agency);
-      for (ServiceAlertBean alert: alerts.getList()) {
+      for (ServiceAlertBean alert : alerts.getList()) {
         alertIds.add(alert.getId());
       }
     }
@@ -789,12 +814,67 @@ public class NycSiriService {
     return tsBuilder.build();
   }
 
+  void sendSubscriptionRequest() {
+    String siri = createSubscriptionRequest();
+    sendToOba(siri, _serviceAlertsServer);
+  }
+
+  String createSubscriptionRequest() {
+    Siri s = new Siri();
+    SubscriptionRequest request = new SubscriptionRequest();
+    s.setSubscriptionRequest(request);
+    SubscriptionContextStructure context = new SubscriptionContextStructure();
+    request.setSubscriptionContext(context);
+    return "NOT DONE";
+  }
+
+  public void sendToOba(String siri, String tdm) {
+//    String error = "";
+//    String postResult = "";
+//    _log.debug("result=" + siri);
+//    WebResource r = getWebResourcce(tdm);
+//    postResult = r.accept(MediaType.APPLICATION_XML_TYPE).type(
+//        MediaType.APPLICATION_XML_TYPE).post(String.class, siri);
+//    _log.debug("postResult=" + postResult);
+//    // render(postResult, error);
+  }
+
+  public WebResource getWebResourcce(String tdm) {
+    if (_webResource == null) {
+      ClientConfig config = new DefaultClientConfig();
+      Client client = Client.create(config);
+      _webResource = client.resource(tdm);
+    }
+    return _webResource;
+  }
+
+  // Only expected to be used for testing
+  public void setWebResource(WebResource webResource) {
+    _webResource = webResource;
+  }
+
   public TransitDataService getTransitDataService() {
     return _transitDataService;
   }
 
   public void setTransitDataService(TransitDataService _transitDataService) {
     this._transitDataService = _transitDataService;
+  }
+
+  public String getMode() {
+    return _mode;
+  }
+
+  public void setMode(String mode) {
+    this._mode = mode;
+  }
+
+  public String getServiceAlertsServer() {
+    return _serviceAlertsServer;
+  }
+
+  public void setServiceAlertsServer(String _serviceAlertsServer) {
+    this._serviceAlertsServer = _serviceAlertsServer;
   }
 
 }
