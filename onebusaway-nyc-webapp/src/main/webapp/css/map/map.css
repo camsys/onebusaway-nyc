@@ -227,11 +227,11 @@
 	background-image: url('img/stop_on_route_background_red_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.black {
+#content #legend ul li.legendItem p.destination ul.stops li.r_none {
 	background-image: url('img/stop_on_route_background.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.black:hover {
+#content #legend ul li.legendItem p.destination ul.stops li.r_none:hover {
 	background-image: url('img/stop_on_route_background_big.png');
 }
 

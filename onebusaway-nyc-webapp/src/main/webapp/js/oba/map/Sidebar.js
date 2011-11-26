@@ -157,8 +157,10 @@ OBA.Sidebar = function() {
 				jQuery.each(destination.stops, function(__, stop) {
 					var stopLink = jQuery("<a href='#'></a>")
 									.text(stop.name);
+					
+					var r_color = (routeResult.color !== null) ? routeResult.color : "none";
 
-					var stopItem = jQuery('<li class="r_' + routeResult.color + '"></li>')
+					var stopItem = jQuery('<li class="r_' + r_color + '"></li>')
 									.append(stopLink);
 	
 					stopsList.append(stopItem);
