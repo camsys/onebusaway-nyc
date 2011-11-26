@@ -31,6 +31,11 @@ import org.hibernate.annotations.Index;
 
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -187,7 +192,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setInferredStatus(message.getStatus());
     setRunId(message.getRunId());
     setInferredRouteId(message.getRouteId());
-    // TODO: set inferredDirectionId
+    // inferredDirectionId set by TDS
 
     NycVehicleManagementStatusBean managementBean = message.getManagementRecord();
 
@@ -200,8 +205,51 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setInferredOperatorId(managementBean.getLastInferredOperatorId());
     setInferredRunId(managementBean.getInferredRunId());
 
-    // TDS fields are inserted by listener task.
+    // TDS fields are inserted by setVehicleLocationRecordBean
 
+  }
+
+  public void setVehicleStatusBean(VehicleStatusBean vehicle) {
+      TripStatusBean tsb = vehicle.getTripStatus();
+      if (tsb != null) {
+	  setTripStatusBean(tsb);
+      }
+  }
+
+  public void setTripStatusBean(TripStatusBean tsb) {
+      setNextScheduledStopDistance(tsb.getNextStopDistanceFromVehicle());
+      if (tsb.getNextStop() != null) {
+	  setNextScheduledStopId(tsb.getNextStop().getId());
+      }
+      setInferredPhase(tsb.getPhase());
+      setInferredStatus(tsb.getStatus());
+      if (!Double.isNaN(tsb.getLastKnownDistanceAlongTrip())) {
+	  setDistanceAlongTrip(tsb.getLastKnownDistanceAlongTrip());
+      }
+      // todo: can this be pulled from TDS?
+      //setDistanceAlongBlock()
+      TripBean trip = tsb.getActiveTrip();
+      if (trip != null && trip.getRoute() != null) {
+	  setInferredBlockId(trip.getBlockId());
+	  setInferredTripId(trip.getId());
+	  setRouteBean(trip.getRoute());
+	  setInferredDirectionId(trip.getDirectionId());
+      }
+      
+  }
+
+  public void setRouteBean(RouteBean rb) {
+      setInferredRouteId(rb.getId());
+  }
+
+  public void setVehicleLocationRecordBean(VehicleLocationRecordBean vlr) {
+      if (getInferredLatitude() == null || getInferredLongitude() == null) {
+  setInferredLatitude(new BigDecimal(vlr.getCurrentLocation().getLat()));
+	  setInferredLongitude(new BigDecimal(vlr.getCurrentLocation().getLon()));
+	  setLastLocationUpdateTime(vlr.getTimeOfLocationUpdate());
+	  setServiceDate(new Date(vlr.getServiceDate()));
+	  setScheduleDeviation((int)new Double(vlr.getScheduleDeviation()).longValue());
+      }
   }
 
   public Integer getId() {
