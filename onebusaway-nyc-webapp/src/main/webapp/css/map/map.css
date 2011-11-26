@@ -173,11 +173,66 @@
 }
 
 #content #legend ul li.legendItem p.destination ul.stops li {
-	background-image: url('img/stop_on_route_background.png');
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 3px;
 	padding-left: 40px;
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_00A651 {
+	background-image: url('img/stop_on_route_background_green.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_00A651:hover {
+	background-image: url('img/stop_on_route_background_green_big.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_006CB7 {
+	background-image: url('img/stop_on_route_background_blue.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_006CB7:hover {
+	background-image: url('img/stop_on_route_background_blue_big.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_00AEEF {
+	background-image: url('img/stop_on_route_background_ltblue.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_00AEEF:hover {
+	background-image: url('img/stop_on_route_background_ltblue_big.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_9A258F {
+	background-image: url('img/stop_on_route_background_purple.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_9A258F:hover {
+	background-image: url('img/stop_on_route_background_purple_big.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_FAA61A {
+	background-image: url('img/stop_on_route_background_orange.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_FAA61A:hover {
+	background-image: url('img/stop_on_route_background_orange_big.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_ED1C24 {
+	background-image: url('img/stop_on_route_background_red.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.r_ED1C24:hover {
+	background-image: url('img/stop_on_route_background_red_big.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.black {
+	background-image: url('img/stop_on_route_background.png');
+}
+
+#content #legend ul li.legendItem p.destination ul.stops li.black:hover {
+	background-image: url('img/stop_on_route_background_big.png');
 }
 
 #content #legend ul li.legendItem p.destination ul.stops li a {
@@ -187,12 +242,27 @@
 }
 
 #content #legend ul li.legendItem p.destination ul.stops li a:hover {
-	font-size: 140%;
+	font-size: 120%;
 	font-weight: bold;
+	padding-left: 1%;
+}
+
+#content #searchbar #loading {
+	display: none;
+	background-image: url('img/ajax-loader.gif');
+	background-repeat: no-repeat;
+	background-position: 25% 95%;
+}
+
+#content #searchbar #loading p {
+	padding: 10% 0 0 35%;
+	font-size: 100%;
+	font-weight: normal;
+	color: #999;
 }
 
 
-/* map/popup */
+/** map/popup **/
 
 #content #map {
     position: relative;
