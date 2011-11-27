@@ -146,6 +146,7 @@
             <id>services-tdf-as-tds</id> <!-- aka staging, production -->
             <properties>
                 <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -153,6 +154,7 @@
             <id>services-staging</id> <!-- aka staging, production -->
             <properties>
                 <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -160,6 +162,15 @@
             <id>services-prod</id> <!-- aka staging, production -->
             <properties>
                 <tds.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.prod.obanyc.com</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-demo</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.demo.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -167,6 +178,7 @@
             <id>services-qa</id> <!-- aka staging, production -->
             <properties>
                 <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -177,6 +189,7 @@
             </activation>
             <properties>
                 <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -185,6 +198,7 @@
             <properties>
                 <jetty.port>8082</jetty.port>
                 <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
     </profiles>
