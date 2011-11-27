@@ -145,7 +145,7 @@
         <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
         <webapp.api.url></webapp.api.url>
-        <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+        <tdm.host>tdm.staging.obanyc.com</tdm.host>
       </properties>
     </profile>
     <profile>
@@ -156,7 +156,7 @@
         <vtms.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
-        <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+        <tdm.host>tdm.staging.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
       </properties>
     </profile>
@@ -168,7 +168,7 @@
         <vtms.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
-        <tdm.host>http://tdm.prod.obanyc.com:8080</tdm.host>
+        <tdm.host>tdm.prod.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
       </properties>
     </profile>
@@ -180,7 +180,7 @@
         <vtms.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
-        <tdm.host>http://tdm.qa.obanyc.com:8080</tdm.host>
+        <tdm.host>tdm.qa.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
       </properties>
     </profile>
@@ -196,7 +196,7 @@
         <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
         <webapp.api.url>http://localhost:8080</webapp.api.url>
-        <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+        <tdm.host>tdm.staging.obanyc.com</tdm.host>
       </properties>
     </profile>
     <profile>
@@ -209,7 +209,7 @@
         <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
         <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
         <webapp.api.url>http://localhost:8082</webapp.api.url>
-        <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+        <tdm.host>tdm.staging.obanyc.com</tdm.host>
       </properties>
     </profile>
     <!-- bundle location profiles -->

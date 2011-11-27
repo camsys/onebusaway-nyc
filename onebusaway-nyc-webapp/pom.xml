@@ -221,7 +221,7 @@
                 <archive.path>http://localhost:8084/onebusaway-nyc-report-archive</archive.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <webapp.api.url></webapp.api.url>
-                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -233,7 +233,7 @@
                 <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.staging.obanyc.com:8080/onebusaway-nyc-report-archive</archive.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
-                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
         </profile>
@@ -246,7 +246,7 @@
                 <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.prod.obanyc.com/onebusaway-nyc-report-archive</archive.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
-                <tdm.host>http://tdm.prod.obanyc.com:8080</tdm.host>
+                <tdm.host>tdm.prod.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
         </profile>
@@ -259,7 +259,7 @@
                 <config.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.demo.obanyc.com/onebusaway-nyc-report-archive</archive.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
-                <tdm.host>http://tdm.demo.obanyc.com:8080</tdm.host>
+                <tdm.host>tdm.demo.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
         </profile>
@@ -272,7 +272,7 @@
                 <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.qa.obanyc.com/onebusaway-nyc-report-archive</archive.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
-                <tdm.host>http://tdm.qa.obanyc.com:8080</tdm.host>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
         </profile>
@@ -289,7 +289,7 @@
                 <archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <webapp.api.url>http://localhost:8080</webapp.api.url>
-                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -302,7 +302,7 @@
                 <archive.path>http://localhost:8081/onebusaway-nyc-report-archive</archive.path>
                 <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
                 <webapp.api.url>http://localhost:8082</webapp.api.url>
-                <tdm.host>http://tdm.staging.obanyc.com:8080</tdm.host>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
 
