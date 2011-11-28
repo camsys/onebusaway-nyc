@@ -33,8 +33,7 @@ import java.util.Date;
 public class CcAndInferredLocationRecord implements Serializable {
 
     public CcAndInferredLocationRecord() { 
-    }
-    
+    }    
     public CcAndInferredLocationRecord (ArchivedInferredLocationRecord inferred,
 					CcLocationReportRecord realtime) {
 	// realtime fields
@@ -345,7 +344,7 @@ public class CcAndInferredLocationRecord implements Serializable {
 
   private String toSimpleDate(Date date) {
       if (date != null) {
-	  DateTimeFormat.forPattern("yyyy-MM-DD").print(new DateTime(date));
+	  return DateTimeFormat.forPattern("yyyy-MM-dd").print(new DateTime(date));
       }  
       return null;
   }

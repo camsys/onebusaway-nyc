@@ -223,7 +223,7 @@ public class StifTask implements Runnable {
       try {
         outputStream = new FileOutputStream(new File(logPath));
         printStream = new PrintStream(outputStream);
-        printStream.println("blockId,tripId,firstStop,firstStopTime,lastStop,lastStopTime,"+
+        printStream.println("blockId,tripId,dsc,firstStop,firstStopTime,lastStop,lastStopTime,"+
         "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq");
       } catch (FileNotFoundException e) {
         throw new RuntimeException(e);
@@ -269,6 +269,13 @@ public class StifTask implements Runnable {
                 + " at " + lastTrip.firstStopTime + " on " + lastTrip.runId + " on " + lastTrip.serviceCode);
             break;
           }
+          if (lastTrip.nextRun == null) {
+            _log.warn("A non-pullin has no next run; some trips will end up with missing blocks"
+                    + " and the log will be messed up. The bad trip starts at " + lastTrip.firstStop + " at "
+                    + lastTrip.firstStopTime + " on " + lastTrip.runId + " on " + lastTrip.serviceCode);
+            break;
+          }
+
           List<RawTrip> trips = tripsByRun.get(lastTrip.nextRun);
           if (trips == null) {
             _log.warn("No trips for run " + lastTrip.nextRun);
@@ -288,7 +295,7 @@ public class StifTask implements Runnable {
                 + " is next, but there are no trips after "
                 + lastTrip.firstStopTime
                 + ", so some trips will end up with missing blocks (the log may"
-                + "also be incorrect.");
+                + " also be incorrect.");
             break;
           }
 
@@ -301,12 +308,11 @@ public class StifTask implements Runnable {
                   + " is next, but there are no trips after "
                   + lastTrip.firstStopTime
                   + ", so some trips will end up with missing blocks (the log may"
-                  + "also be incorrect.");
+                  + " also be incorrect.");
               break;
             }
             trip = trips.get(index);
           }
-
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
             String blockId = "block_" + blockNo + "_" + gtfsTrip.getServiceId().getId();
@@ -367,6 +373,8 @@ public class StifTask implements Runnable {
     printStream.print(blockId);
     printStream.print(",");
     printStream.print(tripId);
+    printStream.print(",");
+    printStream.print(trip.getDsc());
     printStream.print(",");
 
     printStream.print(trip.firstStop);

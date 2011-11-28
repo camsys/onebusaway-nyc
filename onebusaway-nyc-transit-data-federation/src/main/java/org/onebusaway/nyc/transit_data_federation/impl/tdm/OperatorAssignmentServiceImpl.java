@@ -41,13 +41,14 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 
   private ConfigurationService _configurationService;
 
-  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = new TransitDataManagerApiLibrary();
+  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
 
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {
     this._configurationService = configurationService;
   }
 
+  @Autowired
   public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
     this._transitDataManagerApiLibrary = apiLibrary;
   }

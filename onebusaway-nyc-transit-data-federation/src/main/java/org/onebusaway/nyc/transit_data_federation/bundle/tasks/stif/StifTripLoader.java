@@ -90,7 +90,7 @@ public class StifTripLoader {
       if (path.getName().endsWith(".gz"))
         in = new GZIPInputStream(in);
       run(in);
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException("Error loading " + path, e);
     }
   }
@@ -129,7 +129,7 @@ public class StifTripLoader {
 
           RawTrip rawTrips = new RawTrip(tripRecord.getRunId(),
               tripRecord.getReliefRunId(), tripRecord.getNextTripOperatorRunId(),
-              StifTripType.byValue(tripType));
+              StifTripType.byValue(tripType), tripRecord.getSignCode());
           rawTrips.serviceCode = serviceCode;
           rawTrips.firstStopTime = tripRecord.getOriginTime();
           rawTrips.lastStopTime = tripRecord.getDestinationTime();

@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.5.6</version>
+            <version>1.9.2</version>
         </dependency>
     </dependencies>
 
@@ -128,6 +128,7 @@
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 				<ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -140,6 +141,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -153,6 +155,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -166,6 +169,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.demo.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -179,6 +183,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.prod.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -192,6 +197,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
             </properties>
         </profile>
         
