@@ -87,7 +87,10 @@ public class StifRecordReader {
           bufferEnd = 0;
 				  inputStream.read(buffer, bufferEnd, start - BUFFER_SIZE);
 				}
-
+				if (BUFFER_SIZE == bufferEnd) {
+				  //buffer is full and yet we want to read more.  Throw an exception
+				  throw new IOException("Too-long line trying to read STIF");
+				}
 				int bytesRead = inputStream.read(buffer, bufferEnd, BUFFER_SIZE - bufferEnd);
 				if (bytesRead == -1) {
 					//eof

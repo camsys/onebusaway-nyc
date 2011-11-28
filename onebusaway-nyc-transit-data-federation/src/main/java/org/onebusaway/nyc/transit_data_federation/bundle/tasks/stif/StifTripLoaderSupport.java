@@ -73,11 +73,14 @@ public class StifTripLoaderSupport {
       routeName = tripRecord.getRunRoute();
     String startStop = getStopIdForLocation(tripRecord.getOriginLocation());
     int startTime = tripRecord.getOriginTime();
+    int endTime = tripRecord.getDestinationTime();
     if (startTime < 0) {
       // skip a day ahead for previous-day trips.
       startTime += 24 * 60 * 60;
+      endTime += 24 * 60 * 60;
     }
-    return new TripIdentifier(routeName, startTime, startStop);
+    String run = tripRecord.getRunId();
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
   }
 
   public List<Trip> getTripsForIdentifier(TripIdentifier id) {
@@ -124,13 +127,14 @@ public class StifTripLoaderSupport {
   private TripIdentifier getTripAsIdentifier(final Trip trip) {
 
     String routeName = trip.getRoute().getId().getId();
-    int startTime = -1;
+    int startTime = -1, endTime = -1;
     String startStop;
 
     /**
      * This is WAY faster if we are working in hibernate, in that we don't need
      * to look up EVERY StopTime for a Trip, along with the Stop objects for
-     * those StopTimes. Instead, we just grab the first departure time.
+     * those StopTimes. Instead, we just grab the first departure and last
+     * arrival times.
      */
     if (gtfsDao instanceof HibernateGtfsRelationalDaoImpl) {
       HibernateGtfsRelationalDaoImpl dao = (HibernateGtfsRelationalDaoImpl) gtfsDao;
@@ -146,12 +150,34 @@ public class StifTripLoaderSupport {
       Object[] values = (Object[]) rows.get(0);
       startTime = ((Integer) values[0]);
       startStop = (String) values[1];
+
+      rows = (List<?>) dao.execute(new HibernateOperation() {
+        @Override
+        public Object doInHibernate(Session session) throws HibernateException,
+            SQLException {
+          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 ORDER BY st.arrivalTime DESC LIMIT 1");
+          query.setParameter("trip", trip);
+          return query.list();
+        }
+      });
+      values = (Object[]) rows.get(0);
+      endTime = ((Integer) values[0]);
     } else {
-      StopTime stopTime = gtfsDao.getStopTimesForTrip(trip).get(0);
-      startTime = stopTime.getDepartureTime();
-      startStop = stopTime.getStop().getId().getId();
+      List<StopTime> stopTimes = gtfsDao.getStopTimesForTrip(trip);
+      StopTime startStopTime = stopTimes.get(0);
+      startTime = startStopTime.getDepartureTime();
+      startStop = startStopTime.getStop().getId().getId();
+      StopTime endStopTime = stopTimes.get(stopTimes.size() - 1);
+      endTime = endStopTime.getArrivalTime();
     }
-    return new TripIdentifier(routeName, startTime, startStop);
+    //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
+    //their current trip id format.
+
+    String[] parts = trip.getId().getId().split("_");
+    String runRoute = parts[4];
+    String runId = parts[5];
+    String run = runRoute + "-" + runId;
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
   }
 
   public GtfsMutableRelationalDao getGtfsDao() {

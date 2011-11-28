@@ -63,7 +63,13 @@
 
     <alias name="dataSource" alias="mutableDataSource" />
 
-
+    <!-- define which TDM to use -->
+    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary" >
+      <constructor-arg type="java.lang.String" value="${tdm.host}"/>
+      <constructor-arg type="java.lang.Integer" value="80" />
+      <constructor-arg type="java.lang.String" value="/api/" />
+    </bean>
+    
 	<!-- Input Queue Configuration -->
 	<!-- This option listens to the queue with pilot and SI data on it. -->
    	<bean id="bhsInputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.${ie.listener}"> 

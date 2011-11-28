@@ -7,24 +7,40 @@ import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class TransitDataManagerApiLibrary {
 
-  private static final String _tdmHostname = "tdm.staging.obanyc.com";
+  private static Logger _log = LoggerFactory.getLogger(TransitDataManagerApiLibrary.class);
 
-  private static final Integer _tdmPort = 80;
+  private String _tdmHostname = null;
 
-  private static final String _apiEndpointPath = "/api/";
+  private Integer _tdmPort = 80;
 
-  private RestApiLibrary _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
+  private String _apiEndpointPath = "/api/";
 
-  public void setRestApiLibrary(RestApiLibrary restApiLibrary) {
-    this._restApiLibrary = restApiLibrary;
+  /**
+    * Constructor injection necessary due to the usage of RestApiLibrary.
+    */
+  public TransitDataManagerApiLibrary (String hostname, Integer port, String path) {
+      _tdmHostname = hostname;
+      if (port != null) {
+	  _tdmPort = port;
+      }
+      if (path != null) {
+	  _apiEndpointPath = path;
+      }
+      _log.info("_tdmHostname=" + _tdmHostname);
+      _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
   }
-  
+
+  private RestApiLibrary _restApiLibrary;
+
   public URL buildUrl(String baseObject, String... params) throws Exception {
     return _restApiLibrary.buildUrl(baseObject, params);
   }

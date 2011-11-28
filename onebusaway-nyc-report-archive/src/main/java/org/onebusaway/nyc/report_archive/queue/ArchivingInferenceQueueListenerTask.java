@@ -12,11 +12,14 @@ import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -51,7 +54,7 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
       _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
       return;
     }
-
+    _log.info("inference archive listening on " + host + ":" + port + ", queue=" + queueName);
     initializeZmq(host, queueName, port);
   }
 
@@ -71,32 +74,13 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
     // Extract next stop id and distance
     String vehicleId = locationRecord.getAgencyId() + "_" + locationRecord.getVehicleId().toString();
-    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(vehicleId, System.currentTimeMillis());
+    // VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(vehicleId, locationRecord.getTimeReported().getTime());
+    // locationRecord.setVehicleStatusBean(vehicle);
+    // VehicleLocationRecordBean vehicleLocation = _transitDataService.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord.getTimeReported().getTime()) ;
+    // if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
+    // 	locationRecord.setVehicleLocationRecordBean(vehicleLocation);
+    // }
 
-    TripStatusBean status = vehicle.getTripStatus();
-
-    if ((status == null) || (status.getNextStop() == null))
-	_log.debug("Null trip status. Skipping TDS values."); // Common case, particularly, e.g. when dead heading
-    else {
-	locationRecord.setNextScheduledStopId(status.getNextStop().getId());
-	locationRecord.setNextScheduledStopDistance(status.getNextStopDistanceFromVehicle());
-
-	TripBean trip = status.getActiveTrip();
-	if (trip != null) {
-	    locationRecord.setInferredTripId(trip.getId());
-	    RouteBean route = trip.getRoute();
-	    if (route != null) {
-		locationRecord.setInferredRouteId(route.getId());
-	    }
-	}
-	StopBean stop = status.getNextStop();
-	if (stop != null) {
-	    //locationRecord.setDirectionDeg(stop.getDirection());
-	    locationRecord.setNextScheduledStopId(stop.getId());
-	}
-	locationRecord.setNextScheduledStopDistance(status.getNextStopDistanceFromVehicle());
-	locationRecord.setScheduleDeviation((int)new Double(status.getScheduleDeviation()).longValue());
-    }
   }
 
   @PostConstruct

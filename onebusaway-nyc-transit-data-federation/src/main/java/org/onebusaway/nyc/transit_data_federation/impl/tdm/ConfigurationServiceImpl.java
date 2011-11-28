@@ -21,7 +21,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private RefreshService _refreshService = null;
 		
-  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = new TransitDataManagerApiLibrary();
+  
+        private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
 
 	private Timer _updateTimer = null;
 
@@ -32,6 +33,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     this._refreshService = refreshService;
   }
   
+  @Autowired
   public void setTransitDataManagerApiLibrary(TransitDataManagerApiLibrary apiLibrary) {
     this._transitDataManagerApiLibrary = apiLibrary;
   }

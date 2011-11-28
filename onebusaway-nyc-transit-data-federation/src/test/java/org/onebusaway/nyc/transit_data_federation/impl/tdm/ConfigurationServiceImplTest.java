@@ -38,7 +38,7 @@ public class ConfigurationServiceImplTest {
     when(mockApiLibrary.getItemsForRequest("config", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
 
-    TransitDataManagerApiLibrary tdmal = new TransitDataManagerApiLibrary();
+    TransitDataManagerApiLibrary tdmal = new TransitDataManagerApiLibrary("tdm.staging.obanyc.com", 80, "/api");
     URL setUrl = tdmal.buildUrl("config", "set", "test123", "testValue");
     when(mockRestApiLibrary.executeApiMethodWithNoResult(setUrl))
       .thenReturn(true);

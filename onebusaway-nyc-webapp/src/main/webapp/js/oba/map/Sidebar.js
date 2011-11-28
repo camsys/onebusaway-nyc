@@ -24,6 +24,7 @@ OBA.Sidebar = function() {
 	var legend = jQuery("#legend");
 	var results = jQuery("#results");
 	var noResults = jQuery("#no-results");
+	var loading = jQuery("#loading");
 
 	function addSearchBehavior() {
 		var searchForm = jQuery("#searchbar form");
@@ -157,7 +158,9 @@ OBA.Sidebar = function() {
 					var stopLink = jQuery("<a href='#'></a>")
 									.text(stop.name);
 					
-					var stopItem = jQuery("<li></li>")
+					var r_color = (routeResult.color !== null) ? routeResult.color : "none";
+
+					var stopItem = jQuery('<li class="r_' + r_color + '"></li>')
 									.append(stopLink);
 	
 					stopsList.append(stopItem);
@@ -174,7 +177,6 @@ OBA.Sidebar = function() {
 					stopLink.mouseout(function(e) {
 						e.preventDefault();
 						routeMap.hideStopIcon(stop.stopId);
-						stopLink.children('.zoomToStop').remove();
 					});
 				});
 
@@ -243,6 +245,7 @@ OBA.Sidebar = function() {
 		welcome.hide();
 		legend.hide();
 		results.hide();
+		loading.show();
 
 		var resultsList = jQuery("#results ul");
 		var legendList = jQuery("#legend ul");
@@ -257,12 +260,12 @@ OBA.Sidebar = function() {
 			if(resultCount === 0) {
 				legend.hide();
 				results.hide();
-
 				noResults.show();
 				return;
 			} else {
 				noResults.hide();
 			}
+			loading.hide();
 
 			OBA.Config.analyticsFunction("Search", q + " [" + resultCount + "]");
 			

@@ -75,10 +75,11 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
   private static SimpleDateFormat _serviceDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
-  private TransitDataManagerApiLibrary _apiLibrary = new TransitDataManagerApiLibrary();
+	@Autowired
+        private TransitDataManagerApiLibrary _apiLibrary;
 	
 	@Autowired
-  private ApplicationContext _applicationContext;
+        private ApplicationContext _applicationContext;
 	
 	@Autowired
 	private NycFederatedTransitDataBundle _nycBundle;
