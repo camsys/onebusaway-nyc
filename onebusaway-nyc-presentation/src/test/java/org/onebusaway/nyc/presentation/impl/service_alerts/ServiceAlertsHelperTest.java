@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import uk.org.siri.siri.DefaultedTextStructure;
@@ -39,7 +37,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   @Test
   public void testAddSituationExchangeNonEmpty() {
 
-    ServiceAlertBean serviceAlertBean = createServiceAlertBean("MTA NYCT_100");
+    ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
     transitDataService = mock(TransitDataService.class);
     when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
@@ -72,7 +70,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   @Test
   public void testAddSituationExchangeNonEmptyMissingJourney() {
 
-    ServiceAlertBean serviceAlertBean = createServiceAlertBean("MTA NYCT_100");
+    ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
     transitDataService = mock(TransitDataService.class);
     when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
@@ -90,7 +88,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
 
   @Test
   public void testAddSituationExchangeDuplicate() {
-    ServiceAlertBean serviceAlertBean = createServiceAlertBean("MTA NYCT_100");
+    ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
     transitDataService = mock(TransitDataService.class);
     when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
@@ -116,7 +114,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
 
   @Test
   public void testAddSituationExchangeDuplicateForStops() {
-    ServiceAlertBean serviceAlertBean = createServiceAlertBean("MTA NYCT_100");
+    ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
     transitDataService = mock(TransitDataService.class);
     when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
@@ -178,29 +176,6 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     SituationSimpleRefStructure situationSimpleRef = new SituationSimpleRefStructure();
     situationRefStructure.setSituationSimpleRef(situationSimpleRef);
     situationSimpleRef.setValue(id);
-  }
-
-  public ServiceAlertBean createServiceAlertBean(String id) {
-    ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
-    serviceAlertBean.setId(id);
-    List<NaturalLanguageStringBean> summaries = new ArrayList<NaturalLanguageStringBean>();
-    summaries.add(createNaturalLanguageStringBean("summary"));
-    serviceAlertBean.setSummaries(summaries);
-    List<NaturalLanguageStringBean> descriptions = new ArrayList<NaturalLanguageStringBean>();
-    descriptions.add(createNaturalLanguageStringBean("description"));
-    serviceAlertBean.setDescriptions(descriptions);
-
-    List<SituationAffectsBean> allAffects = new ArrayList<SituationAffectsBean>();
-    serviceAlertBean.setAllAffects(allAffects);
-    return serviceAlertBean;
-  }
-
-  private NaturalLanguageStringBean createNaturalLanguageStringBean(
-      String string) {
-    NaturalLanguageStringBean n = new NaturalLanguageStringBean();
-    n.setValue(string);
-    n.setLang("EN");
-    return n;
   }
 
 }

@@ -244,6 +244,37 @@
             </properties>            
         </profile>
         
+        <!--  Service alerts server -->
+        <profile>
+            <id>service-alerts-staging</id>
+            <properties>
+                <service.alerts.url>http://tdm.staging.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-prod</id>
+            <properties>
+                <service.alerts.url>http://tdm.prod.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-qa</id>
+            <properties>
+                <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-demo</id>
+            <properties>
+                <service.alerts.url>http://tdm.demo.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-local-8083</id>
+            <properties>
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
 
     </profiles>
 

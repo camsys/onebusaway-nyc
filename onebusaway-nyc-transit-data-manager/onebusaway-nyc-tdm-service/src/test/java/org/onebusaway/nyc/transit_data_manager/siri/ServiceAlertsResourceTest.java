@@ -1,16 +1,17 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/org/onebusaway/nyc/transit_data_manager/test-application-context.xml")
+@RunWith(MockitoJUnitRunner.class)
 public class ServiceAlertsResourceTest extends ServiceAlertsResource {
+
+  @InjectMocks
+  NycSiriService nycSiriService = new NycSiriService();
 
   @Test
   public void testList() throws JAXBException {
