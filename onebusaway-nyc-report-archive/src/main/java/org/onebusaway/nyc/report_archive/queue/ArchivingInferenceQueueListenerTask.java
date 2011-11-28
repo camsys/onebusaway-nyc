@@ -54,7 +54,7 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
       _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
       return;
     }
-
+    _log.error("inference archive listening on " + host + ":" + port + ", queue=" + queueName);
     initializeZmq(host, queueName, port);
   }
 
