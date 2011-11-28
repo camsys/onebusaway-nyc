@@ -210,6 +210,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
   }
 
   public void setVehicleStatusBean(VehicleStatusBean vehicle) {
+      if (vehicle == null) return;
       TripStatusBean tsb = vehicle.getTripStatus();
       if (tsb != null) {
 	  setTripStatusBean(tsb);

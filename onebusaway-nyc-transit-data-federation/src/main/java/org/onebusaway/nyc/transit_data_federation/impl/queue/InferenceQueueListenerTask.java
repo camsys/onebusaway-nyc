@@ -132,7 +132,7 @@ public abstract class InferenceQueueListenerTask {
       return;
     }
     
-    _log.error("real-time archive listening on " + host + ":" + port + ", queue=" + queueName);
+    _log.info("real-time archive listening on " + host + ":" + port + ", queue=" + queueName);
     initializeZmq(host, queueName, port);
 
     _initialized = true;

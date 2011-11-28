@@ -22,6 +22,13 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+    <!-- define which TDM to use -->
+    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary" >
+      <constructor-arg type="java.lang.String" value="${tdm.host}"/>
+      <constructor-arg type="java.lang.Integer" value="80" />
+      <constructor-arg type="java.lang.String" value="/api/" />
+    </bean>
+
     <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
     <!-- Database Configuration -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

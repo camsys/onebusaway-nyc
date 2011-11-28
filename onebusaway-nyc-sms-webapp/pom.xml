@@ -174,6 +174,18 @@
     </profile>
     <profile>
       <!-- Transit data federation webapp offers the TDS -->
+      <id>services-demo</id> <!-- aka staging, production -->
+      <properties>
+        <tds.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+        <tdm.host>tdm.demo.obanyc.com</tdm.host>
+        <webapp.api.url></webapp.api.url>
+      </properties>
+    </profile>
+    <profile>
+      <!-- Transit data federation webapp offers the TDS -->
       <id>services-qa</id> <!-- aka staging, production -->
       <properties>
         <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>

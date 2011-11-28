@@ -35,7 +35,7 @@ public class TransitDataManagerApiLibrary {
       if (path != null) {
 	  _apiEndpointPath = path;
       }
-      _log.error("_tdmHostname=" + _tdmHostname);
+      _log.info("_tdmHostname=" + _tdmHostname);
       _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
   }
 
