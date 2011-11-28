@@ -275,7 +275,7 @@ public class StifTask implements Runnable {
                     + lastTrip.firstStopTime + " on " + lastTrip.runId + " on " + lastTrip.serviceCode);
             break;
           }
- 
+
           List<RawTrip> trips = tripsByRun.get(lastTrip.nextRun);
           if (trips == null) {
             _log.warn("No trips for run " + lastTrip.nextRun);
@@ -313,7 +313,6 @@ public class StifTask implements Runnable {
             }
             trip = trips.get(index);
           }
-
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
             String blockId = "block_" + blockNo + "_" + gtfsTrip.getServiceId().getId();

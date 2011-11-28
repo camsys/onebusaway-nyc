@@ -79,7 +79,8 @@ public class StifTripLoaderSupport {
       startTime += 24 * 60 * 60;
       endTime += 24 * 60 * 60;
     }
-    return new TripIdentifier(routeName, startTime, endTime, startStop);
+    String run = tripRecord.getRunId();
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
   }
 
   public List<Trip> getTripsForIdentifier(TripIdentifier id) {
@@ -132,7 +133,8 @@ public class StifTripLoaderSupport {
     /**
      * This is WAY faster if we are working in hibernate, in that we don't need
      * to look up EVERY StopTime for a Trip, along with the Stop objects for
-     * those StopTimes. Instead, we just grab the first departure time.
+     * those StopTimes. Instead, we just grab the first departure and last
+     * arrival times.
      */
     if (gtfsDao instanceof HibernateGtfsRelationalDaoImpl) {
       HibernateGtfsRelationalDaoImpl dao = (HibernateGtfsRelationalDaoImpl) gtfsDao;
@@ -168,7 +170,14 @@ public class StifTripLoaderSupport {
       StopTime endStopTime = stopTimes.get(stopTimes.size() - 1);
       endTime = endStopTime.getArrivalTime();
     }
-    return new TripIdentifier(routeName, startTime, endTime, startStop);
+    //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
+    //their current trip id format.
+
+    String[] parts = trip.getId().getId().split("_");
+    String runRoute = parts[4];
+    String runId = parts[5];
+    String run = runRoute + "-" + runId;
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
   }
 
   public GtfsMutableRelationalDao getGtfsDao() {
