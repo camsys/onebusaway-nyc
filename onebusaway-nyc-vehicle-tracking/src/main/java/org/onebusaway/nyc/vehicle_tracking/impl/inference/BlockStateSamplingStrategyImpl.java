@@ -47,19 +47,19 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
    */
   static public DeviationModel _nearbyTripSigma = new DeviationModel(400.0);
 
-  static public DeviationModel _scheduleDeviationSigma = new DeviationModel(32 * 60);
+  static public DeviationModel _scheduleDeviationSigma = new DeviationModel(
+      32 * 60);
 
   private BlocksFromObservationService _blocksFromObservationService;
 
   private ObservationCache _observationCache;
-
 
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
   }
-  
+
   @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
@@ -81,7 +81,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public CategoricalDist<BlockState> cdfForJourneyAtStart(Observation observation) {
+  public CategoricalDist<BlockState> cdfForJourneyAtStart(
+      Observation observation) {
 
     CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
         observation, EObservationCacheKey.JOURNEY_START_BLOCK_CDF);
@@ -89,7 +90,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     if (cdf == null) {
 
       Set<BlockState> potentialBlocks = _blocksFromObservationService
-            .determinePotentialBlockStatesForObservation(observation, false);
+          .determinePotentialBlockStatesForObservation(observation, false);
 
       cdf = new CategoricalDist<BlockState>();
 
@@ -100,7 +101,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         b.append("potential blocks found: ").append(potentialBlocks.size());
       }
 
-      for (BlockState state: potentialBlocks) {
+      for (BlockState state : potentialBlocks) {
 
         double p = scoreJourneyStartState(state, observation);
 
@@ -124,7 +125,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public CategoricalDist<BlockState> cdfForJourneyInProgress(Observation observation) {
+  public CategoricalDist<BlockState> cdfForJourneyInProgress(
+      Observation observation) {
 
     CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
         observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK_CDF);
@@ -142,7 +144,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         b.append("potential blocks found: " + potentialBlocks.size());
       }
 
-      for (BlockState state: potentialBlocks) {
+      for (BlockState state : potentialBlocks) {
 
         double p = scoreState(state, observation);
 
@@ -168,15 +170,15 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     return cdf;
   }
 
-
   public double scoreState(BlockState state, Observation observation) {
     ScheduledBlockLocation blockLocation = state.getBlockLocation();
     BlockInstance blockInstance = state.getBlockInstance();
     long serviceDate = blockInstance.getServiceDate();
     return scoreState(blockLocation, observation, serviceDate);
   }
-  
-  static public double scoreState(ScheduledBlockLocation blockLocation, Observation observation, long serviceDate) {
+
+  static public double scoreState(ScheduledBlockLocation blockLocation,
+      Observation observation, long serviceDate) {
 
     CoordinatePoint p1 = blockLocation.getLocation();
     ProjectedPoint p2 = observation.getPoint();
@@ -204,7 +206,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       Observation observation) {
     return scoreJourneyStartDestinationSignCode(state, observation);
   }
-  
+
   private double scoreJourneyStartDestinationSignCode(BlockState state,
       Observation observation) {
 
@@ -223,8 +225,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         return 0.95;
       } else {
         // Favor blocks servicing the same route implied by the DSC
-        Set<AgencyAndId> dscRoutes = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(dsc);
-        AgencyAndId thisRoute = state.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
+        Set<AgencyAndId> dscRoutes = _destinationSignCodeService
+            .getRouteCollectionIdsForDestinationSignCode(dsc);
+        AgencyAndId thisRoute = state.getBlockLocation().getActiveTrip()
+            .getTrip().getRouteCollection().getId();
         boolean sameRoute = false;
         for (AgencyAndId route : dscRoutes) {
           if (thisRoute.equals(route)) {
@@ -232,10 +236,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
             break;
           }
         }
-        
+
         if (sameRoute)
           return 0.75;
-        else 
+        else
           return 0.25;
       }
     }

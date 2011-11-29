@@ -21,11 +21,15 @@ import org.springframework.stereotype.Component;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceRequest;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveriesStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
+import uk.org.siri.siri.StatusResponseStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
+import uk.org.siri.siri.SubscriptionRequest;
 
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.spring.Autowire;
 
 @Path("/situation-exchange")
@@ -51,20 +55,37 @@ public class SituationExchangeResource {
   public Response handlePost(String body) throws JAXBException {
     _log.debug("---begin body---\n" + body + "\n---end body---");
     _log.info("SituationExchangeResource.handlePost");
-    SituationExchangeResults result = new SituationExchangeResults();
-    try {
-      Unmarshaller u = jc.createUnmarshaller();
-      Siri siri = (Siri) u.unmarshal(new StringReader(body));
-      ServiceDelivery delivery = siri.getServiceDelivery();
+
+    Unmarshaller u = jc.createUnmarshaller();
+    Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
+
+    ServiceDelivery delivery = incomingSiri.getServiceDelivery();
+    if (delivery != null) {
+      SituationExchangeResults result = new SituationExchangeResults();
       _siriService.handleServiceDeliveries(result, delivery);
-    } catch (Exception e) {
-      _log.error("An error here likely means the TDS returned an error to us: " + e.getMessage());
-      result.status = "ERROR:" + e.getMessage();
+      _log.info(result.toString());
+      return Response.ok(result).build();
     }
 
-    _log.info(result.toString());
+    Siri responseSiri = new Siri();
 
-    return Response.ok(result).build();
+    ServiceRequest serviceRequest = incomingSiri.getServiceRequest();
+    if (serviceRequest != null)
+      _siriService.handleServiceRequests(serviceRequest, responseSiri);
+
+    SubscriptionRequest subscriptionRequests = incomingSiri.getSubscriptionRequest();
+    if (subscriptionRequests != null)
+      _siriService.handleSubscriptionRequests(subscriptionRequests,
+          responseSiri);
+
+    if (serviceRequest == null && subscriptionRequests == null) {
+      _log.warn("Bad request from client, did not contain service delivery, service request, nor subscription request.");
+      return Response.status(Status.BAD_REQUEST).build();
+    }
+
+    _log.info(responseSiri.toString());
+    return Response.ok(responseSiri).build();
+
   }
 
   // TODO I don't believe this is needed any more but it may still be called by

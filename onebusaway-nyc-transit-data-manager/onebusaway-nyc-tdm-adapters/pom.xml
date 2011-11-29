@@ -44,11 +44,11 @@
       <artifactId>jersey-spring</artifactId>
       <version>1.9.1</version>
     </dependency>
-  <dependency>
-    <groupId>com.sun.jersey</groupId>
-    <artifactId>jersey-bundle</artifactId>
-    <version>1.10</version>
-  </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-bundle</artifactId>
+      <version>1.10</version>
+    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -86,18 +86,27 @@
     </dependency>
 
     <dependency>
-      <groupId>org.onebusaway</groupId>
-      <artifactId>onebusaway-transit-data-federation</artifactId>
-      <version>${onebusaway.app-modules.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
     </dependency>
 
 
 
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+      <version>${onebusaway.nyc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-presentation</artifactId>
+      <version>${onebusaway.nyc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.2</version>
+    </dependency>
   </dependencies>
 
   <build>
