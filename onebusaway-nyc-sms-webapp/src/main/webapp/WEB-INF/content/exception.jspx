@@ -19,12 +19,5 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" 
 	xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/plain"/>
-Unregonized error. Reply with:
-
-stop ID (+route)
-or
-route+intersection:
-'B63 Atlantic & 4 Av'
-
-For alerts reply with A +route
+An unexpected error occurred. Please try your request again.
 </jsp:root>

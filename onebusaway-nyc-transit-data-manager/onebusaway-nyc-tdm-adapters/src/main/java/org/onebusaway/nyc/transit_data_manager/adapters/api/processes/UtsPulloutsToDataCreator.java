@@ -1,8 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.data.ImporterVehiclePulloutData;
@@ -23,15 +22,11 @@ public class UtsPulloutsToDataCreator {
     this.inputFile = inputFile;
   }
 
-  public PulloutData generateDataObject() throws IOException {
-    FileReader inputFileReader = new FileReader(inputFile);
-
+  public PulloutData generateDataObject() throws FileNotFoundException  {
     VehicleAssignsInputConverter inConv = new CSVVehicleAssignsInputConverter(
-        inputFileReader);
+        inputFile);
 
     List<MtaUtsVehiclePullInPullOut> vehPullouts = inConv.getVehicleAssignments();
-    
-    inputFileReader.close();
     
     vehPullouts = UTSVehiclePullInOutDataUtility.filterOutStrangeRows(vehPullouts);
 

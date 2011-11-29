@@ -38,6 +38,9 @@
 <s:url var="url" value="/js/lib/markerManager.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<s:url var="url" value="/js/lib/rgbcolor.js"/>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 <s:url var="url" value="/api/config"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
@@ -84,6 +87,10 @@
 		 	<li>Stop ID: <a href="#305394">305394</a></li>
 		 	<li>Location: <a href="#10003">10003</a> or <a href="#Staten Island">Staten Island</a></li>
 		 </ul>
+	   </div>
+	   
+	   <div id="loading">
+	   		<p>Loading . . .</p>
 	   </div>
 
     </div>

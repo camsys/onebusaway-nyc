@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 
 // import org.onebusaway.nyc.report_archive.model.NycQueuedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -42,6 +44,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
   private SessionFactory _sessionFactory;
 
   private NycQueuedInferredLocationDaoImpl _dao;
+  private CcLocationReportDaoImpl _ccDao;
 
   @Before
   public void setup() throws IOException {
@@ -52,6 +55,9 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
     _dao = new NycQueuedInferredLocationDaoImpl();
     _dao.setSessionFactory(_sessionFactory);
+
+    _ccDao = new CcLocationReportDaoImpl();
+    _ccDao.setSessionFactory(_sessionFactory);
   }
 
   @After
@@ -71,45 +77,74 @@ public class  NycQueuedInferredLocationDaoImplTest {
     assertEquals(1, getNumberOfRecords());
     assertEquals(1, getNumberOfCurrentRecords());
 
+    CcLocationReportRecord bhs = getCcRecord();
+    _ccDao.saveOrUpdateReport(bhs);
+
     record = getTestRecord();
     _dao.saveOrUpdateRecords(record);
     assertEquals(2, getNumberOfRecords());
     assertEquals(1, getNumberOfCurrentRecords());
     
-    List<ArchivedInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords();
+    List<CcAndInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords();
     // I believe this should be one as both saveOrUpdateRecords happen for the same bus. Also this will prob end up being similar to getNumberOfCurrentRecords 
+
     assertEquals(1, lastKnownRecords.size()); 
-    assertEquals(record.getId(), lastKnownRecords.get(0).getId());
+    assertEquals(record.getVehicleId(), lastKnownRecords.get(0).getVehicleId());
+  }
+
+  private CcLocationReportRecord getCcRecord() {
+      ArchivedInferredLocationRecord record = getTestRecord();
+      CcLocationReportRecord cc = new CcLocationReportRecord();
+      cc.setTimeReported(record.getTimeReported());
+      cc.setVehicleId(record.getVehicleId());
+      cc.setDestSignCode(123);
+      cc.setDirectionDeg(new BigDecimal("10.1"));
+      cc.setLatitude(new BigDecimal("70.25"));
+      cc.setLongitude(new BigDecimal("-101.10"));
+      cc.setManufacturerData("manufacturerData");
+      cc.setOperatorId(123);
+      cc.setOperatorIdDesignator("operatorIdDesignator");
+      cc.setRequestId(456);
+      cc.setRouteId(789);
+      cc.setRouteIdDesignator("routeIdDesignator");
+      cc.setRunId(123);
+      cc.setRunIdDesignator("runIdDesignator");
+      cc.setSpeed(new BigDecimal("5.6"));
+      cc.setStatusInfo(456);
+      cc.setTimeReceived(new Date());
+      cc.setVehicleAgencyDesignator("vehicleAgencyDesignator");
+      cc.setVehicleAgencyId(789);
+      cc.setNmeaSentenceGPGGA("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
+      cc.setNmeaSentenceGPRMC("$GPGGA,105850.000,4038.44565,N,07401.09404,W,1,09,01.7,+00042.0,M,,M,,*49");
+      cc.setRawMessage("This is a standin for the raw message");
+      return cc;
   }
 
   private ArchivedInferredLocationRecord getTestRecord() {
+
     ArchivedInferredLocationRecord record = new ArchivedInferredLocationRecord();
     record.setTimeReported(new Date(123456789L));
     record.setVehicleId(120);
-    record.setVehicleAgencyDesignator("NYC");
+    record.setAgencyId("NYC");
     record.setTimeReceived(new Date());
     record.setServiceDate(new Date(20111010L));
     record.setScheduleDeviation(1);
-    record.setBlockId("1");
-    record.setTripId("2");
-    record.setBlockDistance(1000.0);
-    record.setTripDistance(5000.0);
+    record.setInferredBlockId("1");
+    record.setInferredTripId("2");
+    record.setDistanceAlongBlock(1000.0);
+    record.setDistanceAlongTrip(5000.0);
     record.setInferredLatitude(new BigDecimal("70.35"));
     record.setInferredLongitude(new BigDecimal("-101.20"));
-    record.setPhase("phase");
-    record.setStatusInfo("status");
+    record.setInferredPhase("phase");
+    record.setInferredStatus("status");
 
-    record.setActiveBundleId("1");
     record.setLastUpdateTime(20111010L);
     record.setLastLocationUpdateTime(20111010L);
-    record.setLastInferredDestSignCode("123");
-    record.setInferenceEngineHostname("prod.obanyc.com");
-    record.setInferenceIsEnabled(true);
-    record.setInferenceEngineIsPrimary(true);
+    record.setInferredDestSignCode("123");
     record.setInferenceIsFormal(false);
     record.setDepotId("123");
     record.setEmergencyFlag(true);
-    record.setLastInferredOperatorId("6");
+    record.setInferredOperatorId("6");
     record.setInferredRunId("1");
 
     record.setNextScheduledStopId("1");
@@ -117,8 +152,8 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
     return record;
   }    
-
-  private int getNumberOfRecords() {
+ 
+ private int getNumberOfRecords() {
     //    @SuppressWarnings("rawtypes")
     Long count = (Long) _dao.getHibernateTemplate().execute(new HibernateCallback() {
 	public Object doInHibernate(Session session) throws HibernateException {

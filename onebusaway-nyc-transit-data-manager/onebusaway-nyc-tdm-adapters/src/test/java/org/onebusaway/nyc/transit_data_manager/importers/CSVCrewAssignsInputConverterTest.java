@@ -2,9 +2,9 @@ package org.onebusaway.nyc.transit_data_manager.importers;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.Before;
@@ -18,17 +18,18 @@ public class CSVCrewAssignsInputConverterTest {
   CrewAssignsInputConverter inConverter = null;
 
   @Before
-  public void setup() {
+  public void setup() throws URISyntaxException {
     ClassLoader classLoader = CSVCrewAssignsInputConverterTest.class.getClassLoader();
-    InputStream in = classLoader.getResourceAsStream("CrewAssignCSVSampleForTests.csv");
+    //InputStream in = classLoader.getResourceAsStream("CrewAssignCSVSampleForTests.csv");
+    File inputFile = new File(classLoader.getResource("CrewAssignCSVSampleForTests.csv").toURI());
 
-    Reader csvInputReader = new InputStreamReader(in);
+    //Reader csvInputReader = new InputStreamReader(in);
 
-    inConverter = new CSVCrewAssignsInputConverter(csvInputReader);
+    inConverter = new CSVCrewAssignsInputConverter(inputFile);
   }
 
   @Test
-  public void testGetCrewAssignments() {
+  public void testGetCrewAssignments() throws FileNotFoundException {
 
     List<MtaUtsCrewAssignment> crewAssignments = inConverter.getCrewAssignments();
 

@@ -15,6 +15,8 @@ package org.onebusaway.nyc.webapp.actions.api.siri;
 
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
 
@@ -53,6 +55,12 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   private Date _now = new Date();
 
+  private String _type = "json";
+
+  public void setType(String type) {
+    _type = type;
+  }
+  
   @Override
   public String execute() {  
     String stopId = _request.getParameter("MonitoringRef");
@@ -118,8 +126,15 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     return siri;
   }
 
-  public String getStopMonitoring() throws Exception {
-    return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+  public String getStopMonitoring() {
+    try {
+      if(_type.equals("xml"))
+        return SiriXmlSerializer.getXml(_response);
+      else
+        return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+    } catch(Exception e) {
+      return e.getMessage();
+    }
   }
 
   @Override

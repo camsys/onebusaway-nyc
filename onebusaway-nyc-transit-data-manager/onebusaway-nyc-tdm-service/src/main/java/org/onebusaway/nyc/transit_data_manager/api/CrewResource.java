@@ -2,8 +2,8 @@ package org.onebusaway.nyc.transit_data_manager.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -22,16 +22,15 @@ import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentD
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.OperatorAssignmentsMessage;
+import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.sun.jersey.api.spring.Autowire;
 
 @Path("/crew/{serviceDate}/list")
@@ -42,13 +41,20 @@ public class CrewResource {
 
   private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
 
+  @Autowired
+  JsonTool jsonTool;
+  
+  public void setJsonTool(JsonTool jsonTool) {
+    this.jsonTool = jsonTool;
+  }
+  
   @GET
   @Produces("application/json")
   public Response getCrewAssignments(
       @PathParam("serviceDate") String inputDateStr) {
 
-    Response response = null;
-
+    _log.info("Starting getCrewAssignments for input date " + inputDateStr);
+    
     DateTimeFormatter dateDTF = ISODateTimeFormat.date();
 
     DateMidnight serviceDate = null;
@@ -63,6 +69,7 @@ public class CrewResource {
     File inputFile = new File(System.getProperty("tdm.dataPath")
         + System.getProperty("tdm.crewAssignFilename"));
 
+    _log.debug("Generating OperatorAssignmentData object from file " + inputFile.getPath());
     // First create a OperatorAssignmentData object
     UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(
         inputFile);
@@ -77,11 +84,9 @@ public class CrewResource {
           Response.Status.INTERNAL_SERVER_ERROR);
     }
 
-    List<OperatorAssignment> jsonOpAssigns = null;
-
     ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> tcipToJsonConverter = new OperatorAssignmentFromTcip();
 
-    jsonOpAssigns = listConvertOpAssignTcipToJson(tcipToJsonConverter,
+    List<OperatorAssignment> jsonOpAssigns = listConvertOpAssignTcipToJson(tcipToJsonConverter,
         data.getOperatorAssignmentsByServiceDate(serviceDate)); // grab the
                                                                 // assigns for
                                                                 // this date
@@ -93,20 +98,25 @@ public class CrewResource {
     opAssignMessage.setCrew(jsonOpAssigns);
     opAssignMessage.setStatus("OK");
 
-    // Then I need to write it as json output.
-    Gson gson = null;
-    if (Boolean.parseBoolean(System.getProperty("tdm.prettyPrintOutput"))) {
-      gson = new GsonBuilder().setFieldNamingPolicy(
-          FieldNamingPolicy.LOWER_CASE_WITH_DASHES).setPrettyPrinting().create();
-    } else {
-      gson = new GsonBuilder().setFieldNamingPolicy(
-          FieldNamingPolicy.LOWER_CASE_WITH_DASHES).create();
+    StringWriter writer = null;
+    String output = null;
+    try {
+      writer = new StringWriter();
+      jsonTool.writeJson(writer, opAssignMessage);
+      output = writer.toString();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } finally {
+      try {
+        writer.close();
+      } catch (IOException e) {}
     }
+    
+    Response response = Response.ok(output).build();
 
-    String output = gson.toJson(opAssignMessage);
-
-    response = Response.ok(output).build();
-
+    _log.info("Returning response ok.");
+    
     return response;
 
   }
@@ -118,14 +128,15 @@ public class CrewResource {
   private List<OperatorAssignment> listConvertOpAssignTcipToJson(
       ModelCounterpartConverter<SCHOperatorAssignment, OperatorAssignment> conv,
       List<SCHOperatorAssignment> inputAssigns) {
+    
+    _log.debug("About to convert " + inputAssigns.size() + " SCHOperatorAssignments to OperatorAssignment using " + conv.getClass().getName());
     List<OperatorAssignment> outputAssigns = new ArrayList<OperatorAssignment>();
 
-    Iterator<SCHOperatorAssignment> assignTcipIt = inputAssigns.iterator();
-
-    while (assignTcipIt.hasNext()) {
-      outputAssigns.add(conv.convert(assignTcipIt.next()));
+    for (SCHOperatorAssignment assignment : inputAssigns) {
+      outputAssigns.add(conv.convert(assignment));
     }
-
+    
+    _log.debug("Done converting operatorassignments to tcip.");
     return outputAssigns;
   }
 

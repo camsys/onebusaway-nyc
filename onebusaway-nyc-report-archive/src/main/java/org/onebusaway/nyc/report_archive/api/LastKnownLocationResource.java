@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import org.onebusaway.nyc.report_archive.api.json.JsonTool;
 import org.onebusaway.nyc.report_archive.api.json.LastKnownRecordsMessage;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
+import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class LastKnownLocationResource {
 	@Produces("application/json")
 	public Response getAllLastLocationRecords() {
 
-		List<ArchivedInferredLocationRecord> lastKnownRecords = getLastKnownRecordsFromDao();
+		List<CcAndInferredLocationRecord> lastKnownRecords = getLastKnownRecordsFromDao();
 		
 		LastKnownRecordsMessage message = new LastKnownRecordsMessage();
 		message.setRecords(lastKnownRecords);
@@ -75,8 +76,8 @@ public class LastKnownLocationResource {
 		return response;
 	}
 	
-	private List<ArchivedInferredLocationRecord> getLastKnownRecordsFromDao() {
-		List<ArchivedInferredLocationRecord> lastKnownRecords = _locationDao
+	private List<CcAndInferredLocationRecord> getLastKnownRecordsFromDao() {
+		List<CcAndInferredLocationRecord> lastKnownRecords = _locationDao
 				.getAllLastKnownRecords();
 
 		return lastKnownRecords;

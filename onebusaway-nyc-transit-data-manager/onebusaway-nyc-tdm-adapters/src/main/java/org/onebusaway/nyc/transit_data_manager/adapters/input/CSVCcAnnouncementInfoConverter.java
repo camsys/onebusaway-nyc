@@ -1,7 +1,8 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.input;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -10,12 +11,13 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 
+import au.com.bytecode.opencsv.CSVReader;
+
 import tcip_final_3_0_5_1.CCDestinationMessageIden;
 import tcip_final_3_0_5_1.CCDestinationSignMessage;
 import tcip_final_3_0_5_1.CPTRowMetaData;
 import tcip_final_3_0_5_1.CcAnnouncementInfo;
 import tcip_final_3_0_5_1.SCHRouteIden;
-import au.com.bytecode.opencsv.CSVReader;
 
 public class CSVCcAnnouncementInfoConverter implements
     CcAnnouncementInfoConverter {
@@ -25,11 +27,11 @@ public class CSVCcAnnouncementInfoConverter implements
   public static final int DIRECTION = 3;
   public static final int DEPOT = 4;
   private static final boolean DEBUG = false;
-  private Reader inputReader = null;
-  private CSVReader csvReader = null;
-
-  public CSVCcAnnouncementInfoConverter(Reader csvInputReader) {
-    inputReader = csvInputReader;
+  
+  private File csvFile;
+  
+  public CSVCcAnnouncementInfoConverter(File inputCsvFile) {
+    csvFile = inputCsvFile;
   }
 
   /*
@@ -48,11 +50,14 @@ public class CSVCcAnnouncementInfoConverter implements
   }
 
   public List<CCDestinationSignMessage> getDestinationsAsList() {
-    setupCsvReader();
-
+    
     List<CCDestinationSignMessage> messages = new ArrayList<CCDestinationSignMessage>();
 
+    CSVReader csvReader = null;
+    
     try {
+      csvReader = new CSVReader(new FileReader(csvFile));
+      
       // swallow header
       csvReader.readNext();
 
@@ -80,6 +85,11 @@ public class CSVCcAnnouncementInfoConverter implements
       }
     } catch (IOException ioe) {
       ioe.printStackTrace();
+    } finally {
+      if (csvReader != null)
+        try {
+          csvReader.close();
+        } catch (IOException e) {}
     }
 
     return messages;
@@ -132,12 +142,6 @@ public class CSVCcAnnouncementInfoConverter implements
                                                          // formatting
     }
     return firstLine;
-  }
-
-  private void setupCsvReader() {
-    if (csvReader == null) {
-      csvReader = new CSVReader(inputReader);
-    }
   }
 
   private void debug(String[] line) {

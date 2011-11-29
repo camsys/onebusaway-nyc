@@ -12,12 +12,12 @@
  * the License.
  */
 
-package org.onebusaway.nyc.presentation.impl.realtime.siri;
+package org.onebusaway.nyc.presentation.impl.realtime;
 
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriDistanceExtension;
-import org.onebusaway.nyc.presentation.impl.realtime.siri.model.SiriExtensionWrapper;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -39,6 +39,7 @@ import uk.org.siri.siri.JourneyPlaceRefStructure;
 import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.LocationStructure;
 import uk.org.siri.siri.MonitoredCallStructure;
+import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.OnwardCallStructure;
 import uk.org.siri.siri.OnwardCallsStructure;
@@ -47,7 +48,6 @@ import uk.org.siri.siri.ProgressRateEnumeration;
 import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.StopPointRefStructure;
-import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 import uk.org.siri.siri.VehicleRefStructure;
 
 import java.math.BigDecimal;
@@ -85,7 +85,7 @@ public class SiriSupport {
     _presentationService = presentationService;
   }
 
-  public MonitoredCallStructure getMonitoredCall(
+  private MonitoredCallStructure getMonitoredCall(
       List<TripStopTimeBean> stopTimes, StopBean monitoredCallStopBean,
       TripStatusBean statusBean) {
 
@@ -150,7 +150,7 @@ public class SiriSupport {
     return null;
   }
 
-  public OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes,
+  private OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes,
       TripStatusBean statusBean) {
 
     double distance = statusBean.getDistanceAlongTrip();
@@ -225,11 +225,9 @@ public class SiriSupport {
     return onwardCalls;
   }
 
-  public MonitoredVehicleJourney getMonitoredVehicleJourney(TripBean tripBean,
-      TripDetailsBean tripDetails, StopBean monitoredCallStopBean,
+  public void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
+      TripBean tripBean, TripDetailsBean tripDetails, StopBean monitoredCallStopBean,
       boolean includeOnwardCalls) {
-
-    MonitoredVehicleJourney monitoredVehicleJourney = new MonitoredVehicleJourney();
 
     CourseOfJourneyStructure journey = new CourseOfJourneyStructure();
     journey.setValue(tripBean.getId());
@@ -290,8 +288,7 @@ public class SiriSupport {
 
     LocationStructure location = new LocationStructure();
 
-    // if vehicle is detected to be on detour, use actual lat/lon, not snapped
-    // location.
+    // if vehicle is detected to be on detour, use actual lat/lon, not snapped location.
     if (_presentationService.isOnDetour(tripDetails.getStatus())) {
       location.setLatitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLat()));
       location.setLongitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLon()));
@@ -301,12 +298,13 @@ public class SiriSupport {
     }
 
     monitoredVehicleJourney.setVehicleLocation(location);
-    
+
+    // situations
+    addSituations(monitoredVehicleJourney, tripDetails);
+
     // include stop times from the next trip if we're in layover on the previous trip
     List<TripStopTimeBean> stopTimes = 
         getStopTimesForTripDetails(tripDetails, _presentationService.isInLayover(tripDetails.getStatus()));
-
-    addSituations(monitoredVehicleJourney, tripDetails);
 
     // monitored calls
     if (monitoredCallStopBean != null && !_presentationService.isOnDetour(tripDetails.getStatus())) {
@@ -317,8 +315,6 @@ public class SiriSupport {
     if (includeOnwardCalls && !_presentationService.isOnDetour(tripDetails.getStatus())) {
       monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, tripDetails.getStatus()));
     }
-
-    return monitoredVehicleJourney;
   }
   
   private List<TripStopTimeBean> getStopTimesForTripDetails(TripDetailsBean tripDetails, boolean includeNextTrip) {
@@ -367,8 +363,7 @@ public class SiriSupport {
     return ProgressRateEnumeration.UNKNOWN;
   }
 
-  private int getVisitNumber(HashMap<String, Integer> visitNumberForStop,
-      StopBean stop) {
+  private int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
     int visitNumber;
     if (visitNumberForStop.containsKey(stop.getId())) {
       visitNumber = visitNumberForStop.get(stop.getId()) + 1;
@@ -379,7 +374,7 @@ public class SiriSupport {
     return visitNumber;
   }
 
-  private void addSituations(MonitoredVehicleJourney monitoredVehicleJourney, TripDetailsBean trip) {
+  private void addSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripDetailsBean trip) {
     if (trip == null || CollectionUtils.isEmpty(trip.getSituations())) {
       return;
     }

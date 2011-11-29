@@ -35,22 +35,29 @@ public class LocationResult implements SearchResult {
   public String getFormattedAddress() {
     return result.getFormattedAddress();
   }
-  
+
+  public String getAddress() {
+    return result.getAddress();
+  }
+
+  public String getPostalCode() {
+    return result.getPostalCode();
+  }
+
+  public String getCity() {
+    return result.getCity();
+  }
+
+  public String getAdministrativeArea() {
+    return result.getAdministrativeArea();
+  }
+
   public String getNeighborhood() {
     return result.getNeighborhood();
   }
 
   public CoordinateBounds getBounds() {
-    Double neLat = result.getNortheastLatitude();
-    Double neLng = result.getNortheastLongitude();
-    Double swLat = result.getSouthwestLatitude();
-    Double swLng = result.getSouthwestLongitude();
-    
-    if(neLat != null && neLng != null && swLat != null && swLng != null) {
-      return new CoordinateBounds(neLat, neLng, swLat, swLng);
-    } else {
-      return null;
-    }
+    return result.getBounds();
   }
   
   public boolean isRegion() {

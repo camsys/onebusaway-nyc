@@ -23,17 +23,13 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DepotsMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclesMessage;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
-import org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
-
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 @Path("/depot")
 @Component
@@ -41,28 +37,27 @@ import com.google.gson.GsonBuilder;
 public class DepotResource {
 
   private static Logger _log = LoggerFactory.getLogger(DepotResource.class);
+  
+  @Autowired
+  private JsonTool jsonTool;
+  
+  public void setJsonTool(JsonTool jsonTool) {
+    this.jsonTool = jsonTool;
+  }
 
   @Path("/list")
   @GET
   @Produces("application/json")
   public String getDepotList() {
-    VehicleDepotData data;
-    try {
-      data = getVehicleDepotDataObject();
-    } catch (IOException e) {
-      _log.info("Could not create data object from " + getInputDepotAssignmentFilePath());
-      _log.debug(e.getMessage());
-      
-      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
-    }
+    _log.info("Starting getDepotList.");
+    
+    VehicleDepotData data = getVehicleDepotDataObject();
     
     List<String> allDepotNames = data.getAllDepotNames();
 
     DepotsMessage message = new DepotsMessage();
     message.setDepots(allDepotNames);
     message.setStatus("OK");
-    
-    JsonTool jsonTool = new LowerCaseWDashesGsonJsonTool(Boolean.parseBoolean(System.getProperty("tdm.prettyPrintOutput")));
     
     String outputJson;
     try {
@@ -81,6 +76,7 @@ public class DepotResource {
       throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
     }
     
+    _log.info("getDepotList returning JSON output.");
     return outputJson;
   }
 
@@ -89,17 +85,11 @@ public class DepotResource {
   @Produces("application/json")
   public String getDepotAssignments(@PathParam("depotName") String depotName)
       throws FileNotFoundException {
+    
+    _log.info("Starting getDepotAssignments");
 
-    VehicleDepotData data;
-    try {
-      data = getVehicleDepotDataObject();
-    } catch (IOException e) {
-      _log.info("Could not create data object from " + getInputDepotAssignmentFilePath());
-      _log.debug(e.getMessage());
-      
-      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
-    }
-
+    VehicleDepotData data = getVehicleDepotDataObject();
+    
     // Then I need to get the data for the input depot
     List<CPTVehicleIden> depotVehicles = data.getVehiclesByDepotNameStr(depotName);
 
@@ -120,32 +110,41 @@ public class DepotResource {
     message.setVehicles(depotVehiclesJson);
     message.setStatus("OK");
 
-    // Then I need to write it as json output.
-    Gson gson = null;
-    if (Boolean.parseBoolean(System.getProperty("tdm.prettyPrintOutput"))) {
-      gson = new GsonBuilder().setFieldNamingPolicy(
-          FieldNamingPolicy.LOWER_CASE_WITH_DASHES).setPrettyPrinting().create();
-    } else {
-      gson = new GsonBuilder().setFieldNamingPolicy(
-          FieldNamingPolicy.LOWER_CASE_WITH_DASHES).create();
+    StringWriter writer = new StringWriter();
+    String output = null;
+    try {
+      jsonTool.writeJson(writer, message);
+      output = writer.toString();
+      writer.close();
+    } catch (IOException e) {
+      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
     }
-
-    String output = gson.toJson(message);
-
+   
+    _log.info("getDepotAssignments returning json output.");
+    
     return output;
 
   }
 
-  private VehicleDepotData getVehicleDepotDataObject() throws IOException {
+  private VehicleDepotData getVehicleDepotDataObject() throws WebApplicationException {
     File inputFile = new File(getInputDepotAssignmentFilePath());
 
+    _log.debug("Getting VehicleDepotData object in getVehicleDepotDataObject from " + inputFile.getPath());
+    
     VehicleDepotData resultData = null;
 
-    MtaBusDepotFileToDataCreator process = new MtaBusDepotFileToDataCreator(
-        inputFile);
+    MtaBusDepotFileToDataCreator process;
+    try {
+      process = new MtaBusDepotFileToDataCreator(
+          inputFile);
+      resultData = process.generateDataObject();
+    } catch (IOException e) {
+      _log.info("Could not create data object from " + getInputDepotAssignmentFilePath());
+      _log.info(e.getMessage());
+      throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+    }
 
-    resultData = process.generateDataObject();
-
+    _log.debug("Returning VehicleDepotData object in getVehicleDepotDataObject.");
     return resultData;
   }
 

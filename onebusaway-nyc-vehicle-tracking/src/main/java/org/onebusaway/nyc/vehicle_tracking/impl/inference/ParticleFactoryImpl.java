@@ -53,7 +53,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private static Logger _log = LoggerFactory
       .getLogger(ParticleFactoryImpl.class);
 
-  private int _initialNumberOfParticles = 50;
+  private int _initialNumberOfParticles = 100;
 
   private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
@@ -123,7 +123,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return particles;
   }
 
-  // FIXME TODO fix this hackish atStart/inProgress stuff
   public VehicleState determineJourneyState(MotionState motionState,
       CategoricalDist<BlockState> atStartCdf,
       CategoricalDist<BlockState> inProgressCdf, Observation obs) {

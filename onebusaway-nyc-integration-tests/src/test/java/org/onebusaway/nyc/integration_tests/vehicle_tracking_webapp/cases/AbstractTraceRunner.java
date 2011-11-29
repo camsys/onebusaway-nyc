@@ -63,7 +63,7 @@ public class AbstractTraceRunner {
 
   private String _trace;
 
-  private int _loops = 2;
+  private int _loops = 1;
 
   /**
    * The max amount of time we should wait for a single record to process
@@ -153,18 +153,19 @@ public class AbstractTraceRunner {
             "http://localhost:"
                 + federationPort
                 + "/onebusaway-nyc-vehicle-tracking-webapp/remoting/vehicle-tracking-management-service");
-    
+
     setSeeds();
   }
-  
+
   public void setSeeds() throws Exception {
-    
+
     String port = System.getProperty(
         "org.onebusaway.transit_data_federation_webapp.port", "9905");
     String phaseSeed = "298763210";
     String cdfSeed = "184970829";
-    String urlStr = "http://localhost:" + port
-        + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!set-seeds.do?phaseSeed=" 
+    String urlStr = "http://localhost:"
+        + port
+        + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!set-seeds.do?phaseSeed="
         + phaseSeed + "&cdfSeed=" + cdfSeed;
 
     HttpClient client = new HttpClient();
@@ -175,9 +176,10 @@ public class AbstractTraceRunner {
     if (!response.equals("OK"))
       throw new Exception("Failed trying to execute:" + urlStr);
 
-    System.out.println("Successfully set seeds: phase=" + phaseSeed + ", cdf=" + cdfSeed);
+    System.out.println("Successfully set seeds: phase=" + phaseSeed + ", cdf="
+        + cdfSeed);
   }
-  
+
   @Test
   public void test() throws Throwable {
     Map<EVehiclePhase, Double> results = runTest();
@@ -185,17 +187,16 @@ public class AbstractTraceRunner {
     for (Entry<EVehiclePhase, Double> result : results.entrySet()) {
       double relativeRatio = result.getValue();
 
-
       double minAccuracyRatio = _minAccuracyRatio;
 
       if (_minAccuracyRatiosByPhase.containsKey(result.getKey()))
         minAccuracyRatio = _minAccuracyRatiosByPhase.get(result.getKey());
-      
-      String label = "average phase ratio " + result.getKey() + "=" + relativeRatio
-          + " vs min of " + minAccuracyRatio;
-      
+
+      String label = "average phase ratio " + result.getKey() + "="
+          + relativeRatio + " vs min of " + minAccuracyRatio;
+
       System.out.println(label);
-      
+
       assertTrue(label, relativeRatio > minAccuracyRatio);
     }
   }
@@ -291,6 +292,10 @@ public class AbstractTraceRunner {
     Counter<EVehiclePhase> expPhaseCounts = new Counter<EVehiclePhase>();
     Counter<EVehiclePhase> actPhaseCounts = new Counter<EVehiclePhase>();
 
+    int actuallyActiveTrips = 0;
+    int correctlyPredictedActiveTrips = 0;
+    int falsePositiveCount = 0;
+
     Map<EVehiclePhase, Double> phaseResults = new HashMap<EVehiclePhase, Double>();
 
     DoubleArrayList distanceAlongBlockDeviations = new DoubleArrayList();
@@ -341,7 +346,29 @@ public class AbstractTraceRunner {
               - actualDistanceAlongBlock);
           distanceAlongBlockDeviations.add(delta);
         }
+
       }
+
+      /*
+       * here we tally the number of correctly identified (truly) active trips.
+       */
+      if (EVehiclePhase.isActiveDuringBlock(expPhase)) {
+        ++actuallyActiveTrips;
+
+        if (StringUtils.equals(actRecord.getActualTripId(),
+            actRecord.getInferredTripId())) {
+          ++correctlyPredictedActiveTrips;
+        }
+      }
+      
+      /*
+       * record the false positives
+       */
+      if (!EVehiclePhase.isActiveDuringBlock(expPhase)
+          && EVehiclePhase.isActiveDuringBlock(actPhase)) {
+        ++falsePositiveCount;
+      }
+      
     }
 
     /****
@@ -371,6 +398,12 @@ public class AbstractTraceRunner {
       phaseResults.put(phase, relativeRatio);
 
     }
+
+    System.out.println("active trip ratio="
+        + (double)correctlyPredictedActiveTrips / actuallyActiveTrips + " ("
+        + correctlyPredictedActiveTrips + "/" + actuallyActiveTrips + ")");
+    System.out.println("false positive ratio="
+        + (double)falsePositiveCount / expected.size());
 
     if (distanceAlongBlockDeviations.size() > 1) {
 

@@ -16,7 +16,6 @@
 package org.onebusaway.nyc.geocoder.impl;
 
 import org.onebusaway.geocoder.impl.GoogleAddressComponent;
-import org.onebusaway.geocoder.model.GeocoderResult;
 import org.onebusaway.geocoder.model.GeocoderResults;
 import org.onebusaway.geocoder.services.GeocoderService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -57,11 +56,7 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
 
   // (method to make legacy OBA components that use the geocoder happy...)
   public GeocoderResults geocode(String location) {
-    GeocoderResults output = new GeocoderResults();
-    for(NycGeocoderResult r : nycGeocode(location)) {
-      output.addResult((GeocoderResult)r);
-    }
-    return output;
+    return null;
   }
   
   public List<NycGeocoderResult> nycGeocode(String location) {

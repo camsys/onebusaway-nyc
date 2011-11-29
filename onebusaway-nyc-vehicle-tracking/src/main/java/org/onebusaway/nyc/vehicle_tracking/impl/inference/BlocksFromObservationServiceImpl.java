@@ -456,7 +456,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      * keep these flags alive
      * TODO must be a better/more consistent way
      */
-    if (!resStates.isEmpty()) {
+    if (!resStates.isEmpty() && blockState.getOpAssigned() != null) {
       for (BlockState state : resStates) {
         state.setOpAssigned(blockState.getOpAssigned());
         state.setRunReported(blockState.getRunReported());

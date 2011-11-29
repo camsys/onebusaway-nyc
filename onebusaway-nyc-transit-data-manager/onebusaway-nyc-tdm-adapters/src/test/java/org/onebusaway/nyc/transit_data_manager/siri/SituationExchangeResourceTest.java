@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -16,7 +17,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
@@ -29,8 +32,6 @@ import org.junit.Test;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.ServiceAlert;
-import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlertsService;
 
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -38,6 +39,8 @@ import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveriesStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
+import uk.org.siri.siri.StatusResponseStructure;
+import uk.org.siri.siri.SubscriptionResponseStructure;
 
 public class SituationExchangeResourceTest extends SituationExchangeResource {
 
@@ -47,7 +50,6 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 
   @Test
 	public void testHandlePost() throws Exception {
-    ServiceAlertsService saService = mock(ServiceAlertsService.class);
     TransitDataService tds = mock(TransitDataService.class);
     ListBean<ServiceAlertBean> serviceAlertsBeans = new ListBean<ServiceAlertBean>();
     ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
@@ -60,10 +62,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 		siriService.setTransitDataService(tds);
 //		siriService.setServiceAlertService(saService);
 		setNycSiriService(siriService);
-		InputStream stream = getClass().getResourceAsStream("t.xml");
-		byte[] b = new byte[10240];
-		int read = new DataInputStream(stream).read(b);
-		String body = new String(b, 0, read);
+		String body = loadSample("t.xml");
 		@SuppressWarnings("unused")
     Response response = handlePost(body);
 
@@ -73,6 +72,76 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 //				any(ServiceAlert.Builder.class), anyString());
 
 	}
+
+  @Test
+  public void testServiceAndSubscriptionRequest() throws IOException, JAXBException {
+    setupServiceAlerts();
+
+    String body = loadSample("service-and-subscription-requests.xml");
+    Response response = handlePost(body);
+    Siri responseSiri = verifySiriResponse(response);
+
+    verifySituationExchangeDelivery(responseSiri);
+    verifySubscriptionRequest(responseSiri);
+}
+
+  @Test
+  public void testServiceRequest() throws IOException, JAXBException {
+    setupServiceAlerts();
+
+    String body = loadSample("service-request.xml");
+    Response response = handlePost(body);
+    Siri responseSiri = verifySiriResponse(response);
+    
+    verifySituationExchangeDelivery(responseSiri);
+  }
+
+  @Test
+  public void testSubscriptionRequest() throws IOException, JAXBException {
+    String body = loadSample("subscription-request.xml");
+    Response response = handlePost(body);
+    Siri responseSiri = verifySiriResponse(response);
+
+    verifySubscriptionRequest(responseSiri);
+  }
+
+  private void verifySituationExchangeDelivery(Siri responseSiri) {
+    SituationExchangeDeliveryStructure situationExchange = responseSiri.getServiceDelivery().getSituationExchangeDelivery().get(0);
+    PtSituationElementStructure situation = situationExchange.getSituations().getPtSituationElement().get(0);
+    assertEquals("description", situation.getDescription().getValue());
+  }
+
+  private void verifySubscriptionRequest(Siri responseSiri) {
+    SubscriptionResponseStructure responseStructure = responseSiri.getSubscriptionResponse();
+    assertTrue(responseStructure != null);
+    List<StatusResponseStructure> status = responseStructure.getResponseStatus();
+    assertTrue(status != null);
+    assertEquals(1, status.size());
+    StatusResponseStructure statusResponse = status.get(0);
+    assertTrue(statusResponse != null);
+    assertEquals(true, statusResponse.isStatus());
+
+    // it's a Java UUID
+    assertTrue(statusResponse.getSubscriptionRef().getValue().matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
+    
+    List<ServiceAlertSubscription> subscriptions = getSiriService().getServiceAlertSubscriptions();
+    assertEquals(1, subscriptions.size());
+    ServiceAlertSubscription subscription = subscriptions.get(0);
+    assertEquals("http://localhost/foo/bar",subscription.getAddress());
+  }
+
+  private Siri verifySiriResponse(Response response) {
+    Object entity = response.getEntity();
+    assertTrue(entity instanceof Siri);
+    Siri responseSiri = (Siri)entity;
+    return responseSiri;
+  }
+
+  private void setupServiceAlerts() {
+    Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
+    currentServiceAlerts.put("foo", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1000"));
+    getSiriService().setCurrentServiceAlerts(currentServiceAlerts);
+  }
 
 	@Test
 	public void testGenerateSiriResponse() throws JAXBException {
@@ -111,9 +180,12 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 		siriHelper.addPtSituationElementStructure("X27, X28, X37 and X38 temporary bus stop change due a demonstration",
 				"Until further notice Brooklyn bound buses will not make the stop at the near side of Cedar St due to police barricades and will now make the stop at the far side of Cedar St. Please allow additional travel time.",
 				"MTA NYCT_56754", "2011-10-26T00:00:00.000Z", "2011-11-25T23:59:00.000Z", "MTA NYCT_X27,MTA NYCT_X28,MTA NYCT_X37,MTA NYCT_X38", "D");		
-		siriHelper.addPtSituationElementStructure("S79 buses detoured due to road work",
-				"Buses are being detoured from Hylan Blvd between Midland Av and Steuben St",
-				"MTA NYCT_56755", "2011-11-08T00:00:00.000Z", "", "MTA NYCT_S79", "D");
+    siriHelper.addPtSituationElementStructure("S79 buses detoured due to road work",
+        "Buses are being detoured from Hylan Blvd between Midland Av and Steuben St",
+        "MTA NYCT_56755", "2011-11-08T00:00:00.000Z", "", "MTA NYCT_S79", "D");
+    siriHelper.addPtSituationElementStructure("S79 buses detoured due to road work",
+        "Buses are being detoured from Hylan Blvd between Midland Av and Steuben St",
+        "MTA NYCT_56755", "", "", "MTA NYCT_S79", "D");
 
 		return siriHelper.getSiri();
 	}
@@ -144,6 +216,15 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 		String description = elementStructure.getDescription().getValue();
 		return description;
 	}
+
+  private String loadSample(String filename) throws IOException {
+    InputStream stream = getClass().getResourceAsStream(filename);
+    byte[] b = new byte[10240];
+    int read = new DataInputStream(stream).read(b);
+    String body = new String(b, 0, read);
+    return body;
+  }
+  
 
 
 

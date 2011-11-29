@@ -1,9 +1,12 @@
 package org.onebusaway.nyc.presentation.impl.service_alerts;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -54,33 +57,51 @@ public class ServiceAlertsHelper {
       List<VehicleActivityStructure> activities,
       TransitDataService transitDataService) {
 
-    Map<String, PtSituationElementStructure> ptSituationElements =
-        new HashMap<String, PtSituationElementStructure>();
+    Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
     for (VehicleActivityStructure activity : activities) {
-      addSituationElement(transitDataService, ptSituationElements,
-          activity.getMonitoredVehicleJourney().getSituationRef());
+      if (activity.getMonitoredVehicleJourney() != null) {
+        addSituationElement(transitDataService, ptSituationElements,
+            activity.getMonitoredVehicleJourney().getSituationRef());
+      }
     }
-    addPtSituationElementsToServiceDelivery(serviceDelivery, ptSituationElements);
+    addPtSituationElementsToServiceDelivery(serviceDelivery,
+        ptSituationElements);
   }
 
-
-  public void addSituationExchangeToSiriForStops(ServiceDelivery serviceDelivery,
+  public void addSituationExchangeToSiriForStops(
+      ServiceDelivery serviceDelivery,
       List<MonitoredStopVisitStructure> visits,
       TransitDataService transitDataService) {
 
-    Map<String, PtSituationElementStructure> ptSituationElements =
-        new HashMap<String, PtSituationElementStructure>();
-    for (MonitoredStopVisitStructure visit: visits) {
-      addSituationElement(transitDataService, ptSituationElements,
-          visit.getMonitoredVehicleJourney().getSituationRef());
+    Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
+    for (MonitoredStopVisitStructure visit : visits) {
+      if (visit.getMonitoredVehicleJourney() != null)
+        addSituationElement(transitDataService, ptSituationElements,
+            visit.getMonitoredVehicleJourney().getSituationRef());
     }
-    addPtSituationElementsToServiceDelivery(serviceDelivery, ptSituationElements);
+    addPtSituationElementsToServiceDelivery(serviceDelivery,
+        ptSituationElements);
   }
 
-  
+  public void addSituationExchangeToSiri(ServiceDelivery serviceDelivery,
+      Map<String, ServiceAlertBean> currentServiceAlerts) {
+    Situations situations = new Situations();
+    for (ServiceAlertBean serviceAlert : currentServiceAlerts.values()) {
+      situations.getPtSituationElement().add(
+          getServiceAlertBeanAsPtSituationElementStructure(serviceAlert));
+    }
+
+    if (situations.getPtSituationElement().size() > 0) {
+      SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
+      situationExchangeDelivery.setSituations(situations);
+      serviceDelivery.getSituationExchangeDelivery().add(
+          situationExchangeDelivery);
+    }
+  }
+
   private void addSituationElement(TransitDataService transitDataService,
       Map<String, PtSituationElementStructure> ptSituationElements,
-       List<SituationRefStructure> situationRefs) {
+      List<SituationRefStructure> situationRefs) {
     for (SituationRefStructure situationRef : situationRefs) {
       String situationId = situationRef.getSituationSimpleRef().getValue();
       ServiceAlertBean serviceAlert = transitDataService.getServiceAlertForId(situationId);
@@ -89,7 +110,6 @@ public class ServiceAlertsHelper {
     }
   }
 
-  
   private void addPtSituationElementsToServiceDelivery(
       ServiceDelivery serviceDelivery,
       Map<String, PtSituationElementStructure> ptSituationElements) {
@@ -106,7 +126,6 @@ public class ServiceAlertsHelper {
       serviceDelivery.getSituationExchangeDelivery().add(
           situationExchangeDelivery);
   }
-
 
   public PtSituationElementStructure getServiceAlertBeanAsPtSituationElementStructure(
       ServiceAlertBean serviceAlert) {

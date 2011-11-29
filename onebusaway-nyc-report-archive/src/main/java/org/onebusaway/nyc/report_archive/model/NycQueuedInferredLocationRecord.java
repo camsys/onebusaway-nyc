@@ -104,7 +104,7 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "route_id")
   private String routeId;
 
-  @Column(nullable = false, name = "bearing")
+  @Column(nullable = true, name = "bearing")
   private Double bearing;
 
   public NycQueuedInferredLocationRecord() {

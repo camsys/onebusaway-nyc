@@ -19,7 +19,9 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.impl.sort.LocationSensitiveSearchResultComparator;
+import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
+import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
@@ -46,8 +48,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private static final String CURRENT_LOCATION_TEXT = "(Current Location)";
   
-  private static final String GA_ACCOUNT = "UA-XXXXXXXX-X";
-
   @Autowired
   private RealtimeService _realtimeService;
 
@@ -114,7 +114,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       if(_searchResults.size() == 0)
         _searchResults.addAll(generateResultsFromGeocode(_q));        
     }
-      
+
+    // apply route filter
+    _searchResults = filterResults(_searchResults, _q);
+    
     Collections.sort(_searchResults, new LocationSensitiveSearchResultComparator(_location));
 
     return SUCCESS;
@@ -123,6 +126,47 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   /**
    * PRIVATE HELPER METHODS
    */
+  private SearchResultCollection filterResults(SearchResultCollection results, String q) {    
+    String routeToFilterBy = null;
+    for(String token : q.split(" ")) {
+      if(_routeSearchService.isRoute(token)) {
+        routeToFilterBy = token;
+        break;
+      }
+    }
+
+    if(routeToFilterBy == null)
+      return results;
+
+    SearchResultCollection newResults = new SearchResultCollection();
+    for(SearchResult _result : results) {
+      if(_result instanceof MobileWebLocationResult) {
+        MobileWebLocationResult result = (MobileWebLocationResult)_result;
+        
+        for(RouteResult nearbyRoute : result.getNearbyRoutes()) {
+          if(nearbyRoute.getRouteIdWithoutAgency().equals(routeToFilterBy)) {
+            newResults.add(result);
+          }
+        }
+        
+      } else if (_result instanceof StopResult) {
+        StopResult result = (StopResult)_result;
+
+        for(RouteResult nearbyRoute : result.getRoutesAvailable()) {
+          if(nearbyRoute.getRouteIdWithoutAgency().equals(routeToFilterBy)) {
+            newResults.add(result);
+          }
+        }
+
+      // pass through
+      } else {
+        newResults.add(_result);
+      }
+    }
+       
+    return newResults;
+  }
+  
   private List<SearchResult> generateResultsFromGeocode(String q) {
     List<SearchResult> results = new ArrayList<SearchResult>();
     
@@ -164,62 +208,80 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
    */
   // Adapted from http://code.google.com/mobile/analytics/docs/web/#jsp
   public String getGoogleAnalyticsTrackingUrl() {
-	  try {
-	      StringBuilder url = new StringBuilder();
-	      url.append("/m/ga?");
-	      url.append("utmac=").append(GA_ACCOUNT);
-	      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
+    try {
+      StringBuilder url = new StringBuilder();
+      url.append("ga?");
+      url.append("guid=ON");
+      url.append("&utmn=").append(Integer.toString((int) (Math.random() * 0x7fffffff)));
+      url.append("&utmac=").append(
+          _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null));    
 
-	      // referrer
-	      HttpServletRequest request = ServletActionContext.getRequest();      
-	      String referer = request.getHeader("referer");
-	
-	      if (referer == null || "".equals(referer)) {
-	        referer = "-";
-	      }
-	      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
+      // referrer
+      HttpServletRequest request = ServletActionContext.getRequest();      
+      String referer = request.getHeader("referer");	
 
-	      // event tracking
-	      String label = getQ();	      
-	      if(label == null) {
-	    	  label = "";
-	      }
-	      
-	      String action = new String("Unknown");
-	      if(_searchResults != null && !_searchResults.isEmpty()) {
-	    	  if(_searchResults.getTypeOfResults().equals("RouteResult")) {
-	    		  action = "Route Search";
-	    	  } else if(_searchResults.getTypeOfResults().equals("StopResult")) {
-	    		  if(_searchResults.size() > 1) {
-	    			  action = "Intersection Search";
-	    		  } else {
-	    			  action = "Stop Search";
-	    		  }
-	    	  }	    	  
-	      }	else {
-	    	  if(getQueryIsEmpty()) {
-	    		  action = "Home";
-	    	  } else {
-	    		  action = "No Search Results";	    		  
-	    	  }
-	      }
-	      
-	      // page view on homepage hit, "event" for everything else.
-	      if(action.equals("Home")) {
-    	      url.append("&utmp=/m/index");
-	      } else {
-    	      url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");	    	  
-	      }
-	      
-	      // misc.
-	      url.append("&guid=ON");
-	      
-	      return url.toString().replace("&", "&amp;"); 
-	  } catch(Exception e) {
-		  return null;
-	  }
+      if (referer == null || referer.isEmpty()) {
+        referer = "-";
+      }
+
+      url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
+
+      // event tracking
+      String label = getQ();	      
+      
+      if(label == null) {
+        label = "";
+      }
+      
+      label += " [";
+      label += _searchResults.size();	      
+
+      if(_location != null) {
+        label += " - with location";
+      }
+      
+      label += "]";
+      label = label.trim();
+
+      String action = "Unknown";
+      if(_searchResults != null && !_searchResults.isEmpty()) {
+        if(_searchResults.getTypeOfResults().equals("RouteItem")) {
+          action = "Region Search";
+
+        } else if(_searchResults.getTypeOfResults().equals("RouteResult")) {
+          action = "Route Search";
+
+        } else if(_searchResults.getTypeOfResults().equals("LocationResult")) {
+          action = "Location Disambiguation";
+
+        } else if(_searchResults.getTypeOfResults().equals("StopResult")) {
+          if(_searchResults.size() > 1) {
+            action = "Intersection Search";
+          } else {
+            action = "Stop Search";
+          }          
+        }	    	  
+      }	else {
+        if(getQueryIsEmpty()) {
+          action = "Home";
+        } else {
+          action = "No Search Results";	    		  
+        }
+      }
+
+      // page view on homepage hit, "event" for everything else.
+      if(action.equals("Home")) {
+        url.append("&utmp=/m/index");
+      } else {
+        url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");	    	  
+      }
+
+      return url.toString().replace("&", "&amp;"); 
+    } catch(Exception e) {
+      return null;
+    }
   }
-    
+
   public String getQ() {
     if((_q == null || _q.isEmpty()) && _location != null)
       return CURRENT_LOCATION_TEXT;
@@ -260,7 +322,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	
     if(_searchResults.size() == 1) {
       SearchResult result = _searchResults.get(0);
-	  
+ 
       if(result != null) {
         title = result.getName() + " (" + title + ")";
       }

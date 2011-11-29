@@ -30,6 +30,11 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
+            <version>${onebusaway.nyc.version}</version>
+        </dependency>
         <!-- Standard Java Webapp Libraries -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -88,7 +93,7 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.5.6</version>
+            <version>1.9.2</version>
         </dependency>
     </dependencies>
 
@@ -123,6 +128,7 @@
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 				<ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -135,6 +141,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -148,6 +155,21 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-demo</id>
+	    <!-- db is only for bundle, don't use RDS -->
+            <properties>
+                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
+                <db.url>jdbc:hsqldb:file:${bundle.location}/org_onebusaway_database</db.url>
+                <db.username>sa</db.username>
+                <db.password></db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
+				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.demo.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -161,6 +183,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.prod.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -174,6 +197,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.qa.obanyc.com</tdm.host>
             </properties>
         </profile>
         
@@ -202,6 +226,56 @@
             <id>bundle-mode-download</id>
             <properties>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
+            </properties>
+        </profile>
+        
+        <!--  depot partition keys -->
+        <!--  mainly useful for limiting data for development environments -->
+        <profile>
+            <id>depots-all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <depot.partition.key>JG,CA,MA,MH,YU,100th,126,BPK,CAST,CHAR,CP,ECH,ENY,FLAT,FP,FRK,GH,GRAND,JAM,JFK,KB,LAG,MANVI,MJQ,NJL,QV,RVC,SPRCK,STF,ULPK,WF,YNK,YUK</depot.partition.key>
+            </properties>            
+        </profile>
+        <profile>
+            <id>depots-one</id>
+            <properties>
+                <depot.partition.key>JG</depot.partition.key>
+            </properties>            
+        </profile>
+        
+        <!--  Service alerts server -->
+        <profile>
+            <id>service-alerts-staging</id>
+            <properties>
+                <service.alerts.url>http://tdm.staging.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-prod</id>
+            <properties>
+                <service.alerts.url>http://tdm.prod.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-qa</id>
+            <properties>
+                <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-demo</id>
+            <properties>
+                <service.alerts.url>http://tdm.demo.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-local-8083</id>
+            <properties>
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
             </properties>
         </profile>
 

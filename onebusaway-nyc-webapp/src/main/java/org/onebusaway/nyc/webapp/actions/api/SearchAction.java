@@ -19,12 +19,13 @@ import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
 import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.nyc.presentation.service.search.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebLocationResult;
-import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebSearchModelFactory;
+import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebPresentationModelFactory;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
@@ -47,6 +48,9 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   private StopSearchService _stopSearchService;
 
   @Autowired
+  private RealtimeService _realtimeService;
+
+  @Autowired
   private NycGeocoderService _geocoderService;
   
   private SearchResultCollection _searchResults = new SearchResultCollection();
@@ -65,7 +69,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     if(_q == null || _q.isEmpty())
       return SUCCESS;
 
-    DesktopWebSearchModelFactory factory = new DesktopWebSearchModelFactory(_routeSearchService);
+    DesktopWebPresentationModelFactory factory = new DesktopWebPresentationModelFactory(_realtimeService, _routeSearchService);
     _stopSearchService.setModelFactory(factory);
     _routeSearchService.setModelFactory(factory);
     

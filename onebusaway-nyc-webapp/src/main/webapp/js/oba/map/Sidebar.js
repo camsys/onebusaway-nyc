@@ -24,6 +24,7 @@ OBA.Sidebar = function() {
 	var legend = jQuery("#legend");
 	var results = jQuery("#results");
 	var noResults = jQuery("#no-results");
+	var loading = jQuery("#loading");
 
 	function addSearchBehavior() {
 		var searchForm = jQuery("#searchbar form");
@@ -33,8 +34,6 @@ OBA.Sidebar = function() {
 			e.preventDefault();
 			
 			jQuery.history.load(searchInput.val());
-
-			OBA.Config.analyticsFunction("Search", searchInput.val());
 		});
 	}
 
@@ -56,7 +55,7 @@ OBA.Sidebar = function() {
 	}
 
 	// show user list of addresses
-	function disambiguate(locationResults) {
+	function disambiguate(locationResults) {		
 		var resultsList = jQuery("#results ul");
 
 		var bounds = null;
@@ -106,21 +105,40 @@ OBA.Sidebar = function() {
 		var legendList = jQuery("#legend ul");
 		
 		jQuery.each(routeResults, function(_, routeResult) {	
+
 			var titleBox = jQuery("<p></p>")
 							.addClass("name")
 							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
-							.css("border-bottom", "5px solid #" + routeResult.color);
+							.css("border-bottom", "5px solid #" + routeResult.color)
+							.css("cursor", "pointer");
 
 			var descriptionBox = jQuery("<p></p>")
-							 .addClass("description")
-							 .text(routeResult.description);
-							 
+							.addClass("description")
+							.text(routeResult.description);
+
+			var serviceAlertList = jQuery("<ul></ul>")
+							.addClass("alerts");
+			
+			jQuery.each(routeResult.serviceAlerts, function(_, alert) {
+				var alertItem = jQuery("<li></li>")
+									.text(alert.value);
+				
+				serviceAlertList.append(alertItem);
+			});
+			
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
 							.append(titleBox)
+							.append(serviceAlertList)
 							.append(descriptionBox);
-
+	
 			legendList.append(listItem);
+			
+			// on double click of title pan to route extent (unless zoomed in)
+			titleBox.click(function(e) {
+				e.preventDefault();
+				routeMap.panToRoute(routeResult);
+			});
 
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {
@@ -140,15 +158,25 @@ OBA.Sidebar = function() {
 					var stopLink = jQuery("<a href='#'></a>")
 									.text(stop.name);
 					
-					var stopItem = jQuery("<li></li>")
+					var r_color = (routeResult.color !== null) ? routeResult.color : "none";
+
+					var stopItem = jQuery('<li class="r_' + r_color + '"></li>')
 									.append(stopLink);
 	
 					stopsList.append(stopItem);
 
 					stopLink.click(function(e) {
 						e.preventDefault();
-						
+
 						routeMap.showPopupForStopId(stop.stopId);
+					});
+					stopLink.mouseenter(function(e) {
+						e.preventDefault();
+						routeMap.showStopIcon(stop.stopId);
+					});
+					stopLink.mouseout(function(e) {
+						e.preventDefault();
+						routeMap.hideStopIcon(stop.stopId);
 					});
 				});
 
@@ -163,6 +191,11 @@ OBA.Sidebar = function() {
 
 			routeMap.showRoute(routeResult);
 		});
+		
+		// pan to extent of first few routes in legend TODO
+		if (routeResults.length > 0) {
+			routeMap.panToRoute(routeResults[0]);
+		}
 		
 		legend.show();
 	}
@@ -212,6 +245,7 @@ OBA.Sidebar = function() {
 		welcome.hide();
 		legend.hide();
 		results.hide();
+		loading.show();
 
 		var resultsList = jQuery("#results ul");
 		var legendList = jQuery("#legend ul");
@@ -226,13 +260,15 @@ OBA.Sidebar = function() {
 			if(resultCount === 0) {
 				legend.hide();
 				results.hide();
-
 				noResults.show();
 				return;
 			} else {
 				noResults.hide();
 			}
+			loading.hide();
 
+			OBA.Config.analyticsFunction("Search", q + " [" + resultCount + "]");
+			
 			var resultType = json.searchResults[0].resultType;			
 			if(resultCount === 1) {
 				if(resultType === "LocationResult" || resultType === "StopResult") {

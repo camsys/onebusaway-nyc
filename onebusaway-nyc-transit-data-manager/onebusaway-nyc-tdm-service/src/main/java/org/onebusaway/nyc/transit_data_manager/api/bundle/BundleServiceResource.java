@@ -53,13 +53,14 @@ public class BundleServiceResource {
   @Path("/list")
   @GET
   public Response getBundleList() {
+    _log.info("Starting getBundleList.");
+
     List<Bundle> bundles = bundleProvider.getBundles();
 
     Response response;
 
-    BundlesListMessage bundlesMessage = new BundlesListMessage();
-
     if (bundles != null) {
+      BundlesListMessage bundlesMessage = new BundlesListMessage();
       bundlesMessage.setBundles(bundles);
       bundlesMessage.setStatus("OK");
 
@@ -85,6 +86,7 @@ public class BundleServiceResource {
       response = Response.serverError().build();
     }
 
+    _log.info("Returning Response in getBundleList.");
     return response;
   }
 
@@ -93,21 +95,20 @@ public class BundleServiceResource {
   public Response getBundleFile(@PathParam("bundleId") String bundleId,
       @PathParam("bundleFileFilename") String relativeFilename) {
 
-    _log.info("starting BundleServiceResource.getBundleFile");
+    _log.info("starting getBundleFile for relative filename " + relativeFilename + " in bundle " + bundleId);
 
     boolean requestIsForValidBundleFile = bundleProvider.checkIsValidBundleFile(
         bundleId, relativeFilename);
     if (!requestIsForValidBundleFile) {
-      throw new WebApplicationException(Response.Status.BAD_REQUEST);
+      throw new WebApplicationException(new IllegalArgumentException(
+          relativeFilename + " is not listed in bundle metadata."),
+          Response.Status.BAD_REQUEST);
     }
-
-    Response response;
 
     final File requestedFile;
     try {
       requestedFile = bundleProvider.getBundleFile(bundleId, relativeFilename);
-      
-      
+
     } catch (FileNotFoundException e) {
       _log.info("FileNotFoundException loading " + relativeFilename + " in "
           + bundleId + " bundle.");
@@ -116,30 +117,38 @@ public class BundleServiceResource {
     }
 
     long fileLength = requestedFile.length();
-    
+
     StreamingOutput output = new StreamingOutput() {
 
       @Override
       public void write(OutputStream os) throws IOException,
           WebApplicationException {
 
-        FileInputStream fis = new FileInputStream(requestedFile);
-        
-        FileChannel inChannel = fis.getChannel();
-        WritableByteChannel outChannel = Channels.newChannel(os);
-        
-        inChannel.transferTo(0 , inChannel.size(), outChannel);
+        FileChannel inChannel = null;
+        WritableByteChannel outChannel = null;
 
-        outChannel.close();
-        inChannel.close();
+        try {
+          inChannel = new FileInputStream(requestedFile).getChannel();
+          outChannel = Channels.newChannel(os);
+
+          inChannel.transferTo(0, inChannel.size(), outChannel);
+        } finally {
+          if (outChannel != null)
+            outChannel.close();
+          if (inChannel != null)
+            inChannel.close();
+        }
+
       }
     };
 
     ContentDisposition cd = ContentDisposition.type("file").fileName(
         requestedFile.getName()).build();
-    
-    response = Response.ok(output, MediaType.APPLICATION_OCTET_STREAM).header(
+
+    Response response = Response.ok(output, MediaType.APPLICATION_OCTET_STREAM).header(
         "Content-Disposition", cd).header("Content-Length", fileLength).build();
+
+    _log.info("Returning Response in getBundleFile");
 
     return response;
   }

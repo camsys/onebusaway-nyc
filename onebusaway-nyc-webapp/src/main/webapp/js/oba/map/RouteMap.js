@@ -18,11 +18,23 @@ var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
+		bounds: new google.maps.LatLngBounds(
+				new google.maps.LatLng(40.48801936882241,-74.28397178649902),
+				new google.maps.LatLng(40.92862373397717,-73.68182659149171)
+		),
 		getTileUrl: function(coord, zoom) {
 			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
 				return null;
 			}
+			
+			var zoomFactor = Math.pow(2, zoom);
+			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
+		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
 
+		    if(!this.bounds.contains(center_ll)) {
+		    	return null;
+		    }
+		    
 			var quad = ""; 
 		    for (var i = zoom; i > 0; i--){
 		        var mask = 1 << (i - 1); 
@@ -143,6 +155,55 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			navigationControlOptions: { style: google.maps.NavigationControlStyle.DEFAULT },
 			center: new google.maps.LatLng(40.639228,-74.081154)
 	};
+	
+	
+	// Create Subway Tiles toggle button
+	var subwayControlDiv = document.createElement('DIV');
+	subwayControlDiv.index = 1;
+	 
+	// Adds a button control to toggle MTA Subway tiles
+	function SubwayTilesControl(controlDiv, map) {
+
+	  controlDiv.style.padding = '5px';
+	  
+	  var controlUI = document.createElement('DIV');
+	  controlUI.style.backgroundColor = 'white';
+	  controlUI.style.borderStyle = 'solid';
+	  controlUI.style.borderWidth = '1px';
+	  controlUI.style.cursor = 'pointer';
+	  controlUI.style.textAlign = 'center';
+	  controlUI.title = 'Click to toggle MTA Subway lines';
+	  controlUI.style.color = '#000000';
+	  controlDiv.appendChild(controlUI);
+
+	  var controlText = document.createElement('DIV');
+	  controlText.style.fontFamily = 'Arial,sans-serif';
+	  controlText.style.fontWeight = 'normal';
+	  controlText.style.fontSize = '12px';
+	  controlText.style.paddingLeft = '5px';
+	  controlText.style.paddingRight = '5px';
+	  controlText.style.paddingTop = '3px';
+	  controlText.style.paddingBottom = '3px';
+	  controlText.innerHTML = '<b>Subway</b>';
+	  controlUI.appendChild(controlText);
+	  
+	  // toggle map tiles and color of button text
+	  var toggleSubway = function () {
+			  (map.overlayMapTypes.length == 1) ? 
+					  map.overlayMapTypes.removeAt(0, mtaSubwayMapType) : map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
+
+			  (new RGBColor(controlText.style.color).toHex().toUpperCase() == "#CCCCCC") ?
+					   controlText.style.color = "#000000" : controlText.style.color = "#CCCCCC";
+	  };
+	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
+
+	  return { 
+		  toggleSubwayTiles: function() {
+			  toggleSubway();
+		  }
+	  };
+	}	
+	
 
 	var map = null;
 	var mgr = null;
@@ -155,6 +216,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var hoverPolylines = [];
 	var stopsById = {};
 	var stopsAddedForRoute = {};
+	var alreadyDisplayedStopIcons = {};
 
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
@@ -169,9 +231,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 		infoWindow = new google.maps.InfoWindow({
 	    	content: content,
-	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2))
+	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
+	    	maxWidth: 320,
+	    	disableAutoPan: false
 	    });
-
 		infoWindow.open(map, marker);
     
 		google.maps.event.addListener(infoWindow, "closeclick", closeFn);
@@ -180,7 +243,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		
-		showPopupWithContent(marker, 'Loading...');
+		// fix for popups that appear off the map edge when inner content changes to stop or bus info
+		showPopupWithContent(marker, 
+			'<p style="font-size:25px;width:300px;text-align:center;"><br /><br />Loading . . . <br /><br /><br /></p>');
 		
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
@@ -217,7 +282,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	function getVehicleContentForResponse(r, unusedUserData, popupContainerId) {
 		var activity = r.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 
-		if(activity === null) {
+		if(activity === null || activity.MonitoredVehicleJourney === null) {
 			return null;
 		}
 
@@ -236,10 +301,14 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.PublishedLineName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
-		// update time
-		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
-		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
+		// revise time formats
+		var activityInGMT = OBA.Util.cleanUpGMT(activity.RecordedAtTime);
+		var responseTimeInGMT = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
+
+		var updateTimestamp = new Date(activityInGMT).getTime();
+		var updateTimestampReference = new Date(responseTimeInGMT).getTime();
 		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
+		
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
 
 		html += '<span class="updated' + staleClass + '"' + 
@@ -278,12 +347,22 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '</ul>';
 		}
 		
-		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);
+		html += OBA.Config.infoBubbleFooterFunction('route', routeIdWithoutAgency);			
+		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);		
+		html += getZoomHereLink();
 		
 		// (end popup)
 		html += '</div>';
 		
 		return html;
+	}
+	
+	function getZoomHereLink() {
+		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
+		$('#zoomHere').live("click", function() { 
+			map.setZoom(map.getZoom()+1); 
+		});
+		return $('<a></a>').append(zoomHere.clone()).html();
 	}
 
 	function getServiceAlertContent(r, situationRefs) {
@@ -328,12 +407,15 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<div class="header stop">';
 		html += '<p class="title">' + stopResult.name + '</p><p>';
 		html += '<span class="type">Stop #' + stopResult.stopIdWithoutAgency + '</span>';
+		
+		var responseTime = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
 
 		// update time across all arrivals
-		var updateTimestampReference = new Date(r.ServiceDelivery.ResponseTimestamp).getTime();
+		var updateTimestampReference = new Date(responseTime).getTime();
 		var maxUpdateTimestamp = null;
 		jQuery.each(visits, function(_, monitoredJourney) {
-			var updateTimestamp = new Date(monitoredJourney.RecordedAtTime).getTime();
+			var journeyRecordedTime = OBA.Util.cleanUpGMT(monitoredJourney.RecordedAtTime);
+			var updateTimestamp = new Date(journeyRecordedTime).getTime();
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
@@ -406,7 +488,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '</ul>';
 		}
 		
+		html += OBA.Config.infoBubbleFooterFunction("stop", stopResult.stopIdWithoutAgency);
+		
 	    html += getServiceAlertContent(r, null);
+	  
+		
+		html += getZoomHereLink();
 	        
 		// (end popup)
 		html += '</div>';
@@ -460,6 +547,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			jQuery.each(stops, function(_, marker) {
 				var stopId = marker.stopId;
+				alreadyDisplayedStopIcons[stopId] = false;
 				
 				delete stopsById[stopId];				
 				mgr.removeMarker(marker);
@@ -514,6 +602,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	    		var agencyId = stopIdParts[0];
 	    		var stopIdWithoutAgency = stopIdParts[1];
 
+	    		OBA.Config.analyticsFunction("Stop Marker Click", stopIdWithoutAgency);
+	    		
 	    		showPopupWithContentFromRequest(this, OBA.Config.siriSMUrl, 
 	    				{ OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" }, 
 	    				getStopContentForResponse, stop);
@@ -567,6 +657,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 					marker = new google.maps.Marker(markerOptions);
 			        
 			    	google.maps.event.addListener(marker, "click", function(mouseEvent) {
+			    		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleIdWithoutAgency);
+
 			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl + "?callback=?", 
 			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, VehicleMonitoringDetailLevel: "calls" }, 
 			    				getVehicleContentForResponse, null);
@@ -671,6 +763,21 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 		hoverPolylines = null;
 	}
+	
+	// TODO convert to sprites
+	function getActiveIcon(iconMarker) {
+		if (iconMarker !== null && iconMarker.url !== null) {
+			iconMarker.url = iconMarker.url.replace(/\.png/i, "-active.png");	
+		}
+		return iconMarker;
+	}
+	
+	function getInactiveIcon(iconMarker) {
+		if (iconMarker !== null && iconMarker.url !== null) {
+			iconMarker.url = iconMarker.url.replace(/\-active/i, "");	
+		}
+		return iconMarker;
+	}
 		
 	//////////////////// CONSTRUCTOR /////////////////////
 	map = new google.maps.Map(mapNode, defaultMapOptions);
@@ -678,7 +785,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 	// mta custom tiles
 	map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
-	
+
 	// styled basemap
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
@@ -687,6 +794,35 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	if(typeof mapMoveCallbackFn === 'function') {
 		google.maps.event.addListener(map, "idle", mapMoveCallbackFn);
 	}
+	
+	// show subway tiles toggle control only at relevant zoom levels
+	var subwayTilesControl = new SubwayTilesControl(subwayControlDiv, map);
+	
+	function showSubwayToggle() {
+		var topRightControls = map.controls[google.maps.ControlPosition.TOP_RIGHT];
+		var length = map.controls[google.maps.ControlPosition.TOP_RIGHT].getLength();
+		var currentZoom = map.getZoom();
+		var i = 0;
+		for (; i < length; i++) {
+			if (topRightControls.getAt(i) == subwayControlDiv) {
+				if (currentZoom < 14) {
+					subwayTilesControl.toggleSubwayTiles();
+					topRightControls.removeAt(i);
+				} 
+			}
+		}
+		if (currentZoom >= 14 && (i > length || i == 0)) {
+			topRightControls.push(subwayControlDiv);
+		} 
+	}
+	var zoomSubwayCtrlTimeout = null;
+	google.maps.event.addListener(map, 'zoom_changed', function() {
+		if (zoomSubwayCtrlTimeout !== null) {
+			clearTimeout(zoomSubwayCtrlTimeout);
+		}
+		zoomSubwayCtrlTimeout = setTimeout(showSubwayToggle, 2000);
+	});
+	
 	
 	// timer to update periodically
 	setInterval(function() {
@@ -724,8 +860,45 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			if(typeof stopMarker === 'undefined') {
 				return;
 			}
-			
+			if (stopMarker.getMap() !== null) {
+				stopMarker.setMap(map);
+			}
+			map.setCenter(stopMarker.getPosition());
+			map.setZoom(14);
 			google.maps.event.trigger(stopMarker, "click");
+			
+			alreadyDisplayedStopIcons[stopId] = true;
+		},
+		
+		showStopIcon: function(stopId) {
+			var stopMarker = stopsById[stopId];
+			
+			if(typeof stopMarker === 'undefined') {
+				return;
+			}
+			var activeIcon = getActiveIcon(stopMarker.getIcon());
+			stopMarker.setIcon(activeIcon);
+			
+			if (stopMarker.getMap() == null) {
+				stopMarker.setMap(map);
+			} else if (stopMarker.getVisible() == true) {
+				alreadyDisplayedStopIcons[stopId] = true;
+			}
+		},
+		
+		hideStopIcon: function(stopId) {
+			var stopMarker = stopsById[stopId];
+			
+			if(typeof stopMarker === 'undefined') {
+				return;
+			}
+			var inactiveIcon = getInactiveIcon(stopMarker.getIcon());
+			stopMarker.setIcon(inactiveIcon);
+			
+			// only hide if wasn't already visible
+			if (alreadyDisplayedStopIcons[stopId] !== true) {
+				stopMarker.setMap(null);
+			}
 		},
 		
 		showRoute: function(routeResult) {
@@ -740,6 +913,57 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 
 			updateVehicles(routeResult.routeId);
+		},
+	
+		// pan to route extent unless zoomed in and the route is nearby
+		panToRoute: function(routeResult) {
+			
+			var polylines = polylinesByRoute[routeResult.routeId];
+			var newBounds = new google.maps.LatLngBounds();
+			var routeBounds = new google.maps.LatLngBounds();
+			var currentBounds = map.getBounds();
+			var currentBoundsBuffer = currentBounds;
+			var sw = currentBounds.getSouthWest();
+			var ne = currentBounds.getNorthEast();
+			var boundaryBuffer = .05;  // ~3.5 miles?
+			var alreadyInView = false;
+			
+			// filter bounds by what's in current viewport plus some
+			// Note: for western hemisphere, above equator
+			currentBoundsBuffer.extend(new google.maps.LatLng(sw.lat() - boundaryBuffer, sw.lng() - boundaryBuffer));
+			currentBoundsBuffer.extend(new google.maps.LatLng(ne.lat() + boundaryBuffer, ne.lng() + boundaryBuffer));	
+					
+			jQuery.each(polylines, function(_, polyline) {
+				if (typeof polyline !== 'undefined') { 
+					var coordinates = polyline.getPath();
+					
+					// scenario 0: route is aleady in view
+					// scenario 1: route will be in bounds + buffer						
+					for (var k=0; k < coordinates.length; k++) {
+						var coordinate = coordinates.getAt(k);
+						if (currentBoundsBuffer.contains(coordinate)) {	
+							newBounds.extend(coordinate);
+						}
+						if (currentBounds.contains(coordinate)) {	
+							alreadyInView = true;
+							break;
+						}
+						routeBounds.extend(coordinate);
+					}
+				}
+			});
+			
+			if (alreadyInView) {
+				// do nothing for now
+			} else if (newBounds.isEmpty()) {
+				// scenario 2: route will not be in bounds
+				map.fitBounds(routeBounds);
+			} else {
+				// stay close to user's existing zoom level
+				var currentZoom = map.getZoom();
+				map.fitBounds(newBounds);
+				map.setZoom(currentZoom);
+			}	
 		},
 		
 		removeHoverPolyline: removeHoverPolyline,
@@ -781,7 +1005,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			var icon = new google.maps.MarkerImage("img/location/beachflag.png",
 	                new google.maps.Size(20, 32),
 	                new google.maps.Point(0,0),
-	                new google.maps.Point(-10, 32));
+	                new google.maps.Point(0, 32));
 				
 			var markerOptions = {
 					position: latlng,

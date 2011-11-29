@@ -32,7 +32,8 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
 
   private ConfigurationService _configurationService;
 
-  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = new TransitDataManagerApiLibrary();
+  @Autowired
+  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
 
   @Autowired
   public void setConfigurationService(ConfigurationService configurationService) {

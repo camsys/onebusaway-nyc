@@ -72,6 +72,15 @@ OBA.Util = (function() {
 				s += " ago";
 				return s;
 			}
-		}		
+		},
+		cleanUpGMT: function(prevTimeString) {
+			var timeString = prevTimeString.replace(/\.[0-9]+/i, "");		
+			var semicolonIndex = timeString.lastIndexOf('-');
+			if (semicolonIndex > -1) {
+				timeString = timeString.substring(0, semicolonIndex+3) + ':' 
+					+ timeString.substr(semicolonIndex+3);
+			}
+			return timeString;
+		}
 	};
 })();

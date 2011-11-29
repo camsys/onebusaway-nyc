@@ -14,18 +14,18 @@
     <!-- Transit Data Service -->
     
     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
-        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+       <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
+       <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
-
+ 
     <bean id="vehicleTrackingManagementService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="${vtms.path}/remoting/vehicle-tracking-management-service" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
+       <property name="serviceUrl" value="${vtms.path}/remoting/vehicle-tracking-management-service" />
+       <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
     </bean>
-
+ 
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="${config.path}/remoting/configuration-service" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
+       <property name="serviceUrl" value="${config.path}/remoting/configuration-service" />
+       <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
     </bean>
 
 
@@ -56,6 +56,14 @@
 
     <bean id="externalGeocoderImpl" class="org.onebusaway.nyc.geocoder.impl.GoogleGeocoderImpl">
 		<property name="usStateFilter" value="NY"/>        
+        <property name="resultBiasingBounds">
+            <bean class="org.onebusaway.geospatial.model.CoordinateBounds">
+                <property name="minLat" value="40.57963926492829" />
+                <property name="minLon" value="-74.19498680838014" />
+                <property name="maxLat" value="40.94577345952476" />
+                <property name="maxLon" value="-73.69785546072389" />
+            </bean>
+        </property>
     </bean>
 
     <bean id="serviceAreaServiceImpl" class="org.onebusaway.presentation.impl.ServiceAreaServiceImpl">
@@ -75,8 +83,6 @@
             <props>
                 <prop key="webapp.api.url">${webapp.api.url}</prop>
                 <prop key="tdm.host">${tdm.host}</prop>
-                <prop key="bundle.location">${bundle.location}</prop>
-                <prop key="bundle.mode.standalone">${bundle.mode.standalone}</prop>
             </props>
         </property>
     </bean>

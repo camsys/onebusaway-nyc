@@ -91,7 +91,7 @@ public class RunRule implements SensorModelRule {
          */
         result.addResultAsAnd("run reported (fuzzy)", 0.5);
       } else {
-        result.addResultAsAnd("no run info provided", 0.25);
+        result.addResultAsAnd("no run info matches", 0.25);
       }
     } else {
       /*

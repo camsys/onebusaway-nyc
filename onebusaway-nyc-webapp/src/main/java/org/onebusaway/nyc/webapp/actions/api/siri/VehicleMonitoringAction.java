@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
@@ -54,6 +56,12 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   private Date _now = new Date();
 
+  private String _type = "json";
+
+  public void setType(String type) {
+    _type = type;
+  }
+  
   @Override
   public String execute() {
     String agencyId = _request.getParameter("OperatorRef");
@@ -130,9 +138,15 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     return siri;
   }
 
-  public String getVehicleMonitoring() throws Exception {
-    return SiriJsonSerializer.getJson(_response,
-        _request.getParameter("callback"));
+  public String getVehicleMonitoring() {
+    try {
+      if(_type.equals("xml"))
+        return SiriXmlSerializer.getXml(_response);
+      else
+        return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+    } catch(Exception e) {
+      return e.getMessage();
+    }
   }
 
   @Override

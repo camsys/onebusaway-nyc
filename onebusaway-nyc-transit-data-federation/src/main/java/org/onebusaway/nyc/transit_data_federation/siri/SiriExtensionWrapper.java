@@ -1,9 +1,13 @@
-package org.onebusaway.nyc.presentation.impl.realtime.siri.model;
+package org.onebusaway.nyc.transit_data_federation.siri;
 
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class SiriExtensionWrapper {
   
   private SiriDistanceExtension distances;
-  
+
   public SiriDistanceExtension getDistances() {
     return distances;
   }

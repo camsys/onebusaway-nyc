@@ -30,7 +30,7 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
   private static final long serialVersionUID = 1L;
   
   private Map<String, Object> _session;
-  
+    
   protected SearchResultCollection _searchResults = null;
 
   protected Integer _searchResultsCursor = null;
@@ -39,6 +39,8 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
 
   protected String _query = null;
   
+  protected String _sessionId = null;
+  
   public void setSession(Map<String, Object> session) {
     this._session = session;
     
@@ -46,7 +48,8 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
       _searchResults = (SearchResultCollection)session.get("searchResults");
       _searchResultsCursor = (Integer)session.get("searchResultsCursor");
       _lastQuery = (String)session.get("lastQuery");
-
+      _sessionId = (String)session.get("sessionId");
+      
       if(_searchResults == null)
         _searchResults = new SearchResultCollection();
       
@@ -58,9 +61,10 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
   public void syncSession() {
     _session.put("searchResults", _searchResults);
     _session.put("searchResultsCursor", _searchResultsCursor);
-    _session.put("lastQuery", _query);
+    _session.put("lastQuery", _lastQuery);
   }
   
+  // user input/query
   public void setArgs(String args) {
     if(args != null)
       this._query = args.trim();
@@ -69,5 +73,4 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
   }
 
   public abstract String execute() throws Exception;
-
 }
