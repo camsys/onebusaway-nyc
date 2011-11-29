@@ -115,6 +115,7 @@
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
