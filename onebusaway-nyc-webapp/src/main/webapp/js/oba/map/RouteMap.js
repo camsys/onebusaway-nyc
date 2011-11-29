@@ -232,7 +232,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		infoWindow = new google.maps.InfoWindow({
 	    	content: content,
 	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
-	    	maxWidth: 320,
 	    	disableAutoPan: false
 	    });
 		infoWindow.open(map, marker);
@@ -250,6 +249,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
 				infoWindow.setContent(contentFn(json, userData, popupContainerId));
+
+				// hack fixme
+				var container = jQuery("#" + popupContainerId);
+				container.parent().parent().css("height", container.height());
 			});
 		};
 		refreshFn();		
@@ -272,7 +275,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			timestampContainer.text("Data updated " + OBA.Util.displayTime(newAge));
 		};
 		updateTimestamp();		
-
+		
 		// this method will be called regularly by the update timer
 		infoWindow.refreshFn = refreshFn;	
 		infoWindow.updateTimestamp = updateTimestamp;	
