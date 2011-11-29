@@ -216,7 +216,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var hoverPolylines = [];
 	var stopsById = {};
 	var stopsAddedForRoute = {};
-	var clickedStopIcons = {};
+	var alreadyDisplayedStopIcons = {};
 
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
@@ -282,7 +282,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	function getVehicleContentForResponse(r, unusedUserData, popupContainerId) {
 		var activity = r.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 
-		if(activity === null) {
+		if(activity === null || activity.MonitoredVehicleJourney === null) {
 			return null;
 		}
 
@@ -308,6 +308,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		var updateTimestamp = new Date(activityInGMT).getTime();
 		var updateTimestampReference = new Date(responseTimeInGMT).getTime();
 		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
+		
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
 
 		html += '<span class="updated' + staleClass + '"' + 
@@ -546,6 +547,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			jQuery.each(stops, function(_, marker) {
 				var stopId = marker.stopId;
+				alreadyDisplayedStopIcons[stopId] = false;
 				
 				delete stopsById[stopId];				
 				mgr.removeMarker(marker);
@@ -761,6 +763,21 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 		hoverPolylines = null;
 	}
+	
+	// TODO convert to sprites
+	function getActiveIcon(iconMarker) {
+		if (iconMarker !== null && iconMarker.url !== null) {
+			iconMarker.url = iconMarker.url.replace(/\.png/i, "-active.png");	
+		}
+		return iconMarker;
+	}
+	
+	function getInactiveIcon(iconMarker) {
+		if (iconMarker !== null && iconMarker.url !== null) {
+			iconMarker.url = iconMarker.url.replace(/\-active/i, "");	
+		}
+		return iconMarker;
+	}
 		
 	//////////////////// CONSTRUCTOR /////////////////////
 	map = new google.maps.Map(mapNode, defaultMapOptions);
@@ -850,7 +867,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			map.setZoom(14);
 			google.maps.event.trigger(stopMarker, "click");
 			
-			clickedStopIcons[stopId] = true;
+			alreadyDisplayedStopIcons[stopId] = true;
 		},
 		
 		showStopIcon: function(stopId) {
@@ -859,8 +876,13 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			if(typeof stopMarker === 'undefined') {
 				return;
 			}
+			var activeIcon = getActiveIcon(stopMarker.getIcon());
+			stopMarker.setIcon(activeIcon);
+			
 			if (stopMarker.getMap() == null) {
 				stopMarker.setMap(map);
+			} else if (stopMarker.getVisible() == true) {
+				alreadyDisplayedStopIcons[stopId] = true;
 			}
 		},
 		
@@ -870,8 +892,11 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			if(typeof stopMarker === 'undefined') {
 				return;
 			}
-			// only hide if user hasn't clicked on it yet
-			if (clickedStopIcons[stopId] !== true) {
+			var inactiveIcon = getInactiveIcon(stopMarker.getIcon());
+			stopMarker.setIcon(inactiveIcon);
+			
+			// only hide if wasn't already visible
+			if (alreadyDisplayedStopIcons[stopId] !== true) {
 				stopMarker.setMap(null);
 			}
 		},
