@@ -115,6 +115,10 @@ public class NycSiriService {
   public void setup() throws Exception {
     _log.info("setup(), mode is: " + _mode + ", serviceAlertsUrl is: "
         + _serviceAlertsUrl);
+    if (_mode == null) { 
+	_log.error("_mode unset, returning");
+	return;
+    }
     if (_mode.equals("client")) {
       String result = sendSubscriptionAndServiceRequest();
       Siri siri = SiriXmlSerializer.fromXml(result);
