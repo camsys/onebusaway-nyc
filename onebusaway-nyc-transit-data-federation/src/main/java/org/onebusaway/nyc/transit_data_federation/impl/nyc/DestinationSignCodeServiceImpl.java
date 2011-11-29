@@ -118,7 +118,9 @@ class DestinationSignCodeServiceImpl implements DestinationSignCodeService {
 
   @Override
   public boolean isMissingDestinationSignCode(String destinationSignCode) {
-    return "0000".equals(destinationSignCode);
+    return "0000".equals(destinationSignCode)
+        || "9999".equals(destinationSignCode)
+        || "0".equals(destinationSignCode);
   }
 
   @Override
