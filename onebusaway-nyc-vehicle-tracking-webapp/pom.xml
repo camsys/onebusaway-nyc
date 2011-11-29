@@ -247,6 +247,7 @@
             </properties>            
         </profile>
         
+        <!-- TODO Talk to Sheldon about how to parameterize this for deployment -->
         <!--  Service alerts server -->
         <profile>
             <id>service-alerts-staging</id>
@@ -276,6 +277,7 @@
             <id>service-alerts-local-8083</id>
             <properties>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.address>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.address>
             </properties>
         </profile>
 
