@@ -8,6 +8,7 @@ import org.hibernate.annotations.Index;
 import org.joda.time.format.ISODateTimeFormat;
 
 import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_3_0_5_1.SPDataQuality;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -47,10 +48,7 @@ public class CcLocationReportRecord implements Serializable {
   
   @Column(nullable = false, name = "vehicle_agency_designator", length = 64)
   private String vehicleAgencyDesignator;
-  
-  @Column(nullable = false, name = "status_info")
-  private Integer statusInfo;
-  
+    
   @Column(nullable = false, name = "time_reported")
   @Index(name = "time_reported")
   private Date timeReported;
@@ -71,21 +69,15 @@ public class CcLocationReportRecord implements Serializable {
   @Column(nullable = false, columnDefinition = "DECIMAL(4,1)", name = "speed")
   private BigDecimal speed;
   
-  @Column(name = "data_quality")
-  private Integer dataQuality;
+  @Column(name = "data_quality_qualitative_indicator")
+  private Byte dataQuality;
   
   @Column(nullable = false, name = "manufacturer_data", length = 64)
   private String manufacturerData;
-  
-  @Column(nullable = false, name = "operator_id")
-  private Integer operatorId;
-  
+    
   @Column(nullable = false, name = "operator_id_designator", length = 16)
   private String operatorIdDesignator;
-  
-  @Column(nullable = false, name = "run_id")
-  private Integer runId;
-  
+    
   @Column(nullable = false, name = "run_id_designator", length = 32)
   private String runIdDesignator;
   
@@ -94,10 +86,7 @@ public class CcLocationReportRecord implements Serializable {
   
   @Column(name = "emergency_code", length = 1)
   private String emergencyCode;
-  
-  @Column(nullable = false, name = "route_id")
-  private Integer routeId;
-  
+    
   @Column(nullable = false, name = "route_id_designator", length =16)
   private String routeIdDesignator;
   
@@ -117,19 +106,28 @@ public class CcLocationReportRecord implements Serializable {
     super();
     if (message == null) return; // deserialization failure, abort
     setRequestId((int) message.getRequestId());
+
+    // Data Quality requires special handling
+    SPDataQuality quality = message.getDataQuality();
+    Byte qualityValue = null;
+    if (quality != null) {
+	String indicator = quality.getQualitativeIndicator();
+
+	if (indicator != null) {
+	    qualityValue = new Byte(indicator);
+	}
+    }
+    setDataQuality(qualityValue);
+
     setDestSignCode(message.getDestSignCode().intValue());
     setDirectionDeg(message.getDirection().getDeg());
     setLatitude(convertMicrodegreesToDegrees(message.getLatitude()));
     setLongitude(convertMicrodegreesToDegrees(message.getLongitude()));
     setManufacturerData(message.getManufacturerData());
-    setOperatorId((int) message.getOperatorID().getOperatorId());
     setOperatorIdDesignator(message.getOperatorID().getDesignator());
-    setRouteId((int) message.getRouteID().getRouteId());
     setRouteIdDesignator(message.getRouteID().getRouteDesignator());
-    setRunId((int) message.getRunID().getRunId());
     setRunIdDesignator(message.getRunID().getDesignator());
     setSpeed(convertSpeed(message.getSpeed()));
-    setStatusInfo(message.getStatusInfo());
     setTimeReported(convertTime(message.getTimeReported()));
     setTimeReceived(new Date());
     setVehicleAgencyDesignator(message.getVehicle().getAgencydesignator());
@@ -148,6 +146,7 @@ public class CcLocationReportRecord implements Serializable {
     }
     setNmeaSentenceGPGGA(gpggaSentence);
     setNmeaSentenceGPRMC(gprmcSentence);
+    // Check this.
     setRawMessage(contents);
   }
 
@@ -208,14 +207,6 @@ public class CcLocationReportRecord implements Serializable {
     this.vehicleAgencyDesignator = vehicleAgencyDesignator;
   }
 
-  public Integer getStatusInfo() {
-    return statusInfo;
-  }
-
-  public void setStatusInfo(Integer statusInfo) {
-    this.statusInfo = statusInfo;
-  }
-
   public Date getTimeReported() {
     return timeReported;
   }
@@ -256,11 +247,11 @@ public class CcLocationReportRecord implements Serializable {
     this.speed = speed;
   }
 
-  public Integer getDataQuality() {
+  public Byte getDataQuality() {
     return dataQuality;
   }
 
-  public void setDataQuality(Integer dataQuality) {
+  public void setDataQuality(Byte dataQuality) {
     this.dataQuality = dataQuality;
   }
 
@@ -272,28 +263,12 @@ public class CcLocationReportRecord implements Serializable {
     this.manufacturerData = manufacturerData;
   }
 
-  public Integer getOperatorId() {
-    return operatorId;
-  }
-
-  public void setOperatorId(Integer operatorId) {
-    this.operatorId = operatorId;
-  }
-
   public String getOperatorIdDesignator() {
     return operatorIdDesignator;
   }
 
   public void setOperatorIdDesignator(String operatorIdDesignator) {
     this.operatorIdDesignator = operatorIdDesignator;
-  }
-
-  public Integer getRunId() {
-    return runId;
-  }
-
-  public void setRunId(Integer runId) {
-    this.runId = runId;
   }
 
   public String getRunIdDesignator() {
@@ -318,14 +293,6 @@ public class CcLocationReportRecord implements Serializable {
 
   public void setEmergencyCode(String emergencyCode) {
     this.emergencyCode = emergencyCode;
-  }
-
-  public Integer getRouteId() {
-    return routeId;
-  }
-
-  public void setRouteId(Integer routeId) {
-    this.routeId = routeId;
   }
 
   public String getRouteIdDesignator() {
