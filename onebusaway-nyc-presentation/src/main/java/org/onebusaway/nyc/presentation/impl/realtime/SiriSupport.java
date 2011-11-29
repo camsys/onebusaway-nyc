@@ -85,14 +85,11 @@ public class SiriSupport {
     _presentationService = presentationService;
   }
 
-  private MonitoredCallStructure getMonitoredCall(
-      List<TripStopTimeBean> stopTimes, StopBean monitoredCallStopBean,
-      TripStatusBean statusBean) {
+  // TODO: refactor the below two methods to use the same core logic? they seem basically the same...
+  private MonitoredCallStructure getMonitoredCall(List<TripStopTimeBean> stopTimes, 
+      StopBean monitoredCallStopBean, TripStatusBean statusBean) {
 
     double distance = statusBean.getDistanceAlongTrip();
-    if (Double.isNaN(distance)) {
-      distance = statusBean.getScheduledDistanceAlongTrip();
-    }
 
     // sort stop times--important!
     Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
@@ -150,13 +147,10 @@ public class SiriSupport {
     return null;
   }
 
-  private OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes,
-      TripStatusBean statusBean) {
+  private OnwardCallsStructure getOnwardCalls(List<TripStopTimeBean> stopTimes, 
+      StopBean monitoredCallStopBean, TripStatusBean statusBean) {
 
     double distance = statusBean.getDistanceAlongTrip();
-    if (Double.isNaN(distance)) {
-      distance = statusBean.getScheduledDistanceAlongTrip();
-    }
 
     // sort stop times--important!
     Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
@@ -183,7 +177,7 @@ public class SiriSupport {
       if (afterStart) {
         i += 1;
 
-        if (afterStop) {
+        if(afterStop) {
           OnwardCallStructure onwardCall = new OnwardCallStructure();
 
           StopPointRefStructure stopPoint = new StopPointRefStructure();
@@ -202,7 +196,7 @@ public class SiriSupport {
 
           distances.setStopsFromCall(i - 1);
           distances.setCallDistanceAlongRoute(stopTime.getDistanceAlongTrip());
-          distances.setDistanceFromCall(stopTime.getDistanceAlongTrip());
+          distances.setDistanceFromCall(stopTime.getDistanceAlongTrip() - distance);
           distances.setPresentableDistance(_presentationService.getPresentableDistance(distances));
 
           wrapper.setDistances(distances);
@@ -211,10 +205,10 @@ public class SiriSupport {
 
           onwardCalls.getOnwardCall().add(onwardCall);
         }
-
-        if (stop.equals(statusBean.getNextStop())) {
-          afterStop = true;
-        }
+      }
+      
+      if(stop.getId().equals(monitoredCallStopBean.getId())) {
+         afterStop = true;
       }
     }
 
@@ -317,7 +311,7 @@ public class SiriSupport {
 
     // onward calls
     if (includeOnwardCalls && !_presentationService.isOnDetour(tripDetails.getStatus())) {
-      monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, tripDetails.getStatus()));
+      monitoredVehicleJourney.setOnwardCalls(getOnwardCalls(stopTimes, monitoredCallStopBean, tripDetails.getStatus()));
     }
   }
   
