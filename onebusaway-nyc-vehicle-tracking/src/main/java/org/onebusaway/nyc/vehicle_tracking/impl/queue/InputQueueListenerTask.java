@@ -65,6 +65,7 @@ public abstract class InputQueueListenerTask {
       message = _mapper.readValue(ccLocationReportString, CcLocationReport.class);
     } catch (Exception e) {
       _log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
+      _log.warn("Contents: " + contents);
     }
     return message;
   }
