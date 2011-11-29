@@ -84,6 +84,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
       if(routeId != null || directionId != null) {
         List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();
+
         for(MonitoredStopVisitStructure visit : visits) {
           MonitoredVehicleJourneyStructure journey = visit.getMonitoredVehicleJourney();
           String thisRouteId = journey.getLineRef().getValue();
