@@ -40,7 +40,10 @@ public class SiriXmlSerializer {
     outputAsString = outputAsString.replaceAll("<ns5:", "<");
     outputAsString = outputAsString.replaceAll("</ns5:", "</");
     outputAsString = outputAsString.replaceAll("xmlns:ns5", "xmlns");
-    
+
+    outputAsString = outputAsString.replaceAll("<siriExtensionWrapper>", "");
+    outputAsString = outputAsString.replaceAll("</siriExtensionWrapper>", "");
+
     return outputAsString;
   }
   

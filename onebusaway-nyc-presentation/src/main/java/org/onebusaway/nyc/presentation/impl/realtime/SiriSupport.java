@@ -29,7 +29,7 @@ import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import uk.org.siri.siri.CourseOfJourneyStructure;
+import uk.org.siri.siri.JourneyPatternRefStructure;
 import uk.org.siri.siri.DataFrameRefStructure;
 import uk.org.siri.siri.DestinationRefStructure;
 import uk.org.siri.siri.DirectionRefStructure;
@@ -229,10 +229,6 @@ public class SiriSupport {
       TripBean tripBean, TripDetailsBean tripDetails, StopBean monitoredCallStopBean,
       boolean includeOnwardCalls) {
 
-    CourseOfJourneyStructure journey = new CourseOfJourneyStructure();
-    journey.setValue(tripBean.getId());
-    monitoredVehicleJourney.setCourseOfJourneyRef(journey);
-
     LineRefStructure lineRef = new LineRefStructure();
     lineRef.setValue(tripBean.getRoute().getId());
     monitoredVehicleJourney.setLineRef(lineRef);
@@ -245,9 +241,17 @@ public class SiriSupport {
     directionRef.setValue(tripBean.getDirectionId());
     monitoredVehicleJourney.setDirectionRef(directionRef);
 
+    NaturalLanguageStringStructure routeLongName = new NaturalLanguageStringStructure();
+    routeLongName.setValue(tripBean.getRoute().getLongName());
+    monitoredVehicleJourney.setPublishedLineName(routeLongName);
+
+    JourneyPatternRefStructure journeyPattern = new JourneyPatternRefStructure();
+    journeyPattern.setValue(tripBean.getShapeId());
+    monitoredVehicleJourney.setJourneyPatternRef(journeyPattern);
+    
     NaturalLanguageStringStructure headsign = new NaturalLanguageStringStructure();
     headsign.setValue(tripBean.getTripHeadsign());
-    monitoredVehicleJourney.setPublishedLineName(headsign);
+    monitoredVehicleJourney.setDestinationName(headsign);
 
     if (_presentationService.isInLayover(tripDetails.getStatus())) {
       NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();

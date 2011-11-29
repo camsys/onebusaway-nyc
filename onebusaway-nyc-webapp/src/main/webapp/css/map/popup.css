@@ -6,7 +6,6 @@
 
 .popup .header {
 	padding-left: 35px;
-	white-space: nowrap;
 }
 
 .popup .header.stop {
@@ -44,13 +43,11 @@
 }
 
 .popup .service {
-	white-space: nowrap;
 	padding-top: 7px;
 	color: #666666;
 }
 
 .popup p.otherRoutes {
-	white-space: nowrap;
 	padding-top: 7px;
 }
 
@@ -67,13 +64,11 @@
 }
 
 .popup ul li.route {
-	white-space: nowrap;
 	color: #000099;
 	font-weight: bold;
 }
 
 .popup ul li.arrival {
-	white-space: nowrap;
 	height: 16px;
 	font-weight: bold;
 	padding-left: 19px;
@@ -83,7 +78,6 @@
 }
 
 .popup ul li.nextStop {
-	white-space: nowrap;
 	color: #000099;
 	height: 16px;
 	font-weight: bold;

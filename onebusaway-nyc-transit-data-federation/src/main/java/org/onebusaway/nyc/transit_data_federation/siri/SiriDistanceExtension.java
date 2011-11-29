@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.siri;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
@@ -13,6 +14,7 @@ public class SiriDistanceExtension {
 
   private String PresentableDistance = null;
   
+  @XmlElement(name="StopsFromCall")
   public Integer getStopsFromCall() {
     return StopsFromCall;
   }
@@ -21,6 +23,7 @@ public class SiriDistanceExtension {
     StopsFromCall = stopsFromCall;
   }
 
+  @XmlElement(name="CallDistanceAlongRoute")
   public Double getCallDistanceAlongRoute() {
     return CallDistanceAlongRoute;
   }
@@ -29,6 +32,7 @@ public class SiriDistanceExtension {
     CallDistanceAlongRoute = callDistanceAlongRoute;
   }
 
+  @XmlElement(name="DistanceFromCall")
   public Double getDistanceFromCall() {
     return DistanceFromCall;
   }
@@ -37,6 +41,7 @@ public class SiriDistanceExtension {
     DistanceFromCall = distanceFromCall;
   }
 
+  @XmlElement(name="PresentableDistance")
   public String getPresentableDistance() {
     return PresentableDistance;
   }
