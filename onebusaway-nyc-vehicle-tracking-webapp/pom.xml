@@ -242,9 +242,6 @@
         </profile>
         <profile>
             <id>depots-one</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <depot.partition.key>JG</depot.partition.key>
             </properties>            
