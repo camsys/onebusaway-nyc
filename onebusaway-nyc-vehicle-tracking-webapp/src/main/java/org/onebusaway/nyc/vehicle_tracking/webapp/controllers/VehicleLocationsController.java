@@ -15,33 +15,48 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
+import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordDestinationSignCodeComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordVehicleComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.transit_data.model.NameBean;
+import org.onebusaway.transit_data.model.StopGroupBean;
+import org.onebusaway.transit_data.model.StopGroupingBean;
+import org.onebusaway.transit_data.model.StopsForRouteBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class VehicleLocationsController {
 
-  private VehicleLocationInferenceService _vehicleLocationInferenceService;
+  @Autowired
+  private TransitDataService _transitDataService;
 
   @Autowired
-  public void setVehicleLocationService(
-		  VehicleLocationInferenceService vehicleLocationService) {
-    _vehicleLocationInferenceService = vehicleLocationService;
-  }
+  private DestinationSignCodeService _dscService;
+
+  @Autowired
+  private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   @RequestMapping("/vehicle-locations.do")
   public ModelAndView index(@RequestParam(required = false) String sort) {
@@ -78,6 +93,46 @@ public class VehicleLocationsController {
     return mv;
   }
 
+  @RequestMapping(value = "/vehicle-location!map.do", method = RequestMethod.GET)
+  public ModelAndView map(@RequestParam() Double lat, @RequestParam() Double lon, @RequestParam() String dsc) {
+    return new ModelAndView("vehicle-location-map.jspx");
+  }
+  
+  @RequestMapping(value = "/vehicle-location!lines-for-dsc-json.do", method = RequestMethod.GET)
+  public ModelAndView linesForDSC(@RequestParam() String dsc) throws IOException {
+    Map<String, List<String>> routes = new HashMap<String, List<String>>();
+
+    List<AgencyAndId> trips = _dscService.getTripIdsForDestinationSignCode(dsc);    
+    for(AgencyAndId tripId : trips) {
+      TripBean tripBean = _transitDataService.getTrip(tripId.toString());
+      String routeId = tripBean.getRoute().getId();
+      
+      if(routes.get(routeId) == null) {
+        StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeId);
+        List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
+        for (StopGroupingBean stopGroupingBean : stopGroupings) {
+          for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
+            NameBean name = stopGroupBean.getName();
+            String type = name.getType();
+            if (!type.equals("destination"))
+              continue;
+
+            List<String> polylinesAsString = new ArrayList<String>();
+
+            List<EncodedPolylineBean> polylines = stopGroupBean.getPolylines();
+            for(EncodedPolylineBean epb : polylines) {
+              polylinesAsString.add(epb.getPoints());
+            }
+            
+            routes.put(routeId, polylinesAsString);
+          }
+        }
+      }
+    }
+    
+    return new ModelAndView("json", "polylinesByRoute", routes);
+  }
+  
   @RequestMapping(value = "/vehicle-location!particle-details.do")
   public ModelAndView particleDetails(@RequestParam() String vehicleId,
       @RequestParam() int particleId) {

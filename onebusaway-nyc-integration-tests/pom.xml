@@ -43,6 +43,12 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
+            <version>${onebusaway.nyc.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-vehicle-tracking</artifactId>
             <version>${onebusaway.nyc.version}</version>
         </dependency>

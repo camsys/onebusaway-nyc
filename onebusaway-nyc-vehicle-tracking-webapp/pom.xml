@@ -115,6 +115,7 @@
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -128,7 +129,7 @@
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 				<ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
-                <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -141,7 +142,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
-                <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -159,7 +160,7 @@
             </properties>
         </profile>
         <profile>
-            <id>db-demo</id>
+            <id>db-dev</id>
 	    <!-- db is only for bundle, don't use RDS -->
             <properties>
                 <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
@@ -169,7 +170,7 @@
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
-                <tdm.host>tdm.demo.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -244,6 +245,12 @@
             <id>depots-one</id>
             <properties>
                 <depot.partition.key>JG</depot.partition.key>
+            </properties>            
+        </profile>
+        <profile>
+            <id>depots-none</id>
+            <properties>
+                <depot.partition.key></depot.partition.key>
             </properties>            
         </profile>
         

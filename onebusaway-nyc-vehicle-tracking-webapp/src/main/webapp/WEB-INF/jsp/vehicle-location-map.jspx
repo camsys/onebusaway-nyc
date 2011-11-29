@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>Map</title>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"><!-- //prevent jspx minimization --></script>
+<script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"><!-- //prevent jspx minimization --></script>
+
+<script type="text/javascript">
+var OBA = window.OBA || {};
+
+OBA.Debug = function() {
+	var map, markers, routes = null;
+	
+	function decodePolyline(encoded) {
+		var len = encoded.length;
+		var index = 0;
+		var array = [];
+		var lat = 0;
+		var lng = 0;
+
+		while(index &lt; len) {
+			var b;
+			var shift = 0;
+			var result = 0;
+			do {
+				b = encoded.charCodeAt(index++) - 63;
+				result |= (b &amp; 0x1f) &lt;&lt; shift;
+				shift += 5;
+			} while (b &gt;= 0x20);
+			var dlat = ((result &amp; 1) ? ~(result &gt;&gt; 1) : (result &gt;&gt; 1));
+			lat += dlat;
+
+			shift = 0;
+			result = 0;
+			do {
+				b = encoded.charCodeAt(index++) - 63;
+				result |= (b &amp; 0x1f) &lt;&lt; shift;
+				shift += 5;
+			} while (b &gt;= 0x20);
+			var dlng = ((result &amp; 1) ? ~(result &gt;&gt; 1) : (result &gt;&gt; 1));
+			lng += dlng;
+
+			array.push([lat * 1e-5, lng * 1e-5]);
+		}
+
+		return array;
+	}
+	
+	function getParameterByName(name, defaultValue) {
+		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+		var regexS = "[\\?&amp;]"+name+"=([^&amp;#]*)";
+		var regex = new RegExp(regexS);
+		var results = regex.exec(window.location.href);
+		if(results == null) {
+			return defaultValue;
+		} else {
+			return decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+	}
+	
+	function showPathOnMap() {
+		
+		jQuery.ajax({
+			url: "vehicle-location!lines-for-dsc-json.do?dsc=" + getParameterByName("dsc"),
+			success: function(data) {
+				
+				jQuery.each(data.polylinesByRoute, function(routeId, polylines) {
+					jQuery.each(polylines, function(_, polyline) {
+						var rawPoints = decodePolyline(polyline);
+
+			            var points = [];
+			            for(var i = 0; i &lt; rawPoints.length; i++) {
+			                var wgsPoint = new OpenLayers.Geometry.Point(rawPoints[i][1], rawPoints[i][0]);
+		    	            var proj = new OpenLayers.Projection("EPSG:4326");
+		        	        var point = wgsPoint.transform(proj, map.getProjectionObject());
+		            	    points.push(point);
+			            }
+
+			            if(points.length === 0) {
+			                return;
+			            }
+
+			            var style = {
+			                strokeColor: "#00FF00",
+			                strokeOpacity: 0.80,
+		    	            strokeWidth: 5
+		        	    };
+
+			            var polyline = new OpenLayers.Geometry.LineString(points);
+			            var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+			            routes.addFeatures([lineFeature]);
+					});
+					
+//		            map.zoomToExtent(routes.getDataExtent());
+				});
+				
+			}
+		});
+	}
+	
+	return {
+		initialize: function() {
+			showPathOnMap();
+	
+			map = new OpenLayers.Map('map');
+            markers = new OpenLayers.Layer.Markers("Markers");
+            routes = new OpenLayers.Layer.Vector("Routes");
+
+			var apiKey = "AqTGBsziZHIJYYxgivLBf0hVdrAk9mWO5cQcb8Yux8sW5M8c8opEC2lZqKR1ZZXf";
+            var road = new OpenLayers.Layer.Bing({
+			    key: apiKey,
+			    type: "Road",
+			    metadataParams: {mapVersion: "v1"}
+			});
+
+			map.addLayers([road, routes, markers]);
+			map.addControl(new OpenLayers.Control.LayerSwitcher());
+
+			
+            var size = new OpenLayers.Size(21,25);
+            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+            var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png',size,offset);
+            
+            var proj = new OpenLayers.Projection("EPSG:4326");
+            var point = new OpenLayers.LonLat(getParameterByName("lon"), getParameterByName("lat"));
+            var mapPoint = point.transform(proj, map.getProjectionObject());
+            
+            var marker = new OpenLayers.Marker(mapPoint, icon);
+            markers.addMarker(marker);
+            map.setCenter(mapPoint, 15);
+		}
+	};    
+};
+
+jQuery(document).ready(function() { new OBA.Debug().initialize(); });
+</script>
+</head>
+<body style="position: relative;">
+
+<div id="map" style="width: 800px; height: 500px;"></div>
+</body>
+</html>

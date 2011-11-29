@@ -133,7 +133,7 @@ public abstract class NycSiriService {
   }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
-      ServiceDelivery delivery) throws Exception {
+      ServiceDelivery delivery) {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {

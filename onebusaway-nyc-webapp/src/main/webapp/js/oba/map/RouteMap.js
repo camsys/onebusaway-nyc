@@ -232,7 +232,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		infoWindow = new google.maps.InfoWindow({
 	    	content: content,
 	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
-	    	maxWidth: 320,
 	    	disableAutoPan: false
 	    });
 		infoWindow.open(map, marker);
@@ -250,6 +249,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
 				infoWindow.setContent(contentFn(json, userData, popupContainerId));
+
+				// hack fixme
+				var container = jQuery("#" + popupContainerId);
+				container.parent().parent().css("height", container.height()).css("overflow", "hidden");
 			});
 		};
 		refreshFn();		
@@ -272,7 +275,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			timestampContainer.text("Data updated " + OBA.Util.displayTime(newAge));
 		};
 		updateTimestamp();		
-
+		
 		// this method will be called regularly by the update timer
 		infoWindow.refreshFn = refreshFn;	
 		infoWindow.updateTimestamp = updateTimestamp;	
@@ -280,7 +283,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	
 	// return html for a SIRI VM response
 	function getVehicleContentForResponse(r, unusedUserData, popupContainerId) {
-		var activity = r.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
+		var activity = r.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 
 		if(activity === null || activity.MonitoredVehicleJourney === null) {
 			return null;
@@ -303,7 +306,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 		// revise time formats
 		var activityInGMT = OBA.Util.cleanUpGMT(activity.RecordedAtTime);
-		var responseTimeInGMT = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
+		var responseTimeInGMT = OBA.Util.cleanUpGMT(r.Siri.ServiceDelivery.ResponseTimestamp);
 
 		var updateTimestamp = new Date(activityInGMT).getTime();
 		var updateTimestampReference = new Date(responseTimeInGMT).getTime();
@@ -341,7 +344,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '<ul>';
 			jQuery.each(nextStops, function(_, call) {
 				html += '<li class="nextStop">' + call.StopPointName + ' <span>';
-				html +=   call.Extensions.distances.presentableDistance;
+				html +=   call.Extensions.Distances.PresentableDistance;
 				html += '</span></li>';
 			});
 			html += '</ul>';
@@ -377,8 +380,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
         }
         
         if (situationRefs == null || situationRefsCount > 0) {
-            if (r.ServiceDelivery.SituationExchangeDelivery != null) {
-                jQuery.each(r.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+            if (r.Siri.ServiceDelivery.SituationExchangeDelivery != null) {
+                jQuery.each(r.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
                     var situationId = ptSituationElement.SituationNumber;
                     if (situationRefs == null || situationIds[situationId]==true) {
                         html += "<li>" + ptSituationElement.Description + "</li>";
@@ -395,7 +398,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function getStopContentForResponse(r, stopResult, popupContainerId) {
-		var visits = r.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
+		var visits = r.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
 		
 		if(visits === null) {
 			return null;
@@ -408,7 +411,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<p class="title">' + stopResult.name + '</p><p>';
 		html += '<span class="type">Stop #' + stopResult.stopIdWithoutAgency + '</span>';
 		
-		var responseTime = OBA.Util.cleanUpGMT(r.ServiceDelivery.ResponseTimestamp);
+		var responseTime = OBA.Util.cleanUpGMT(r.Siri.ServiceDelivery.ResponseTimestamp);
 
 		// update time across all arrivals
 		var updateTimestampReference = new Date(responseTime).getTime();
@@ -465,7 +468,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 						return false;
 					}
 					
-					var distance = monitoredVehicleJourney.MonitoredCall.Extensions.distances.presentableDistance;
+					var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
 					
 					if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
 							monitoredVehicleJourney.ProgressStatus === "layover") {
@@ -631,7 +634,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		function(json) {
 
 			var vehiclesByIdInResponse = {};
-			jQuery.each(json.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
+			jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
 
 				var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
 				var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;

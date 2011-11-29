@@ -105,7 +105,8 @@ public class SiriJsonSerializer {
     ObjectMapper mapper = new ObjectMapper();    
     mapper.setSerializationInclusion(Inclusion.NON_NULL);
     mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-
+    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);
+    
     DateFormat isoDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     mapper.setDateFormat(isoDateFormatter);
 
