@@ -52,6 +52,7 @@ table td {
             <td>SchedTime</td>
             <td>DSC</td>
             <td>Status</td>
+            <td>Map</td>
         </tr>
     </thead>
     <tbody>
@@ -63,7 +64,12 @@ table td {
                     href="vehicle-location!particles.do?vehicleId=${vp.vehicleId}">Particles</a></td>
                 <td><a
                     href="vehicle-location!reset.do?vehicleId=${vp.vehicleId}">Reset</a></td>
-                <td><c:out value="${vp.lat}" />,<c:out value="${vp.lon}" /></td>
+                <td>
+                	<c:out value="${vp.lat}" />,<c:out value="${vp.lon}" />
+					<br/>
+	    			<a 
+	    			href="vehicle-location!map.do?lat=${vp.lat}&amp;lon=${vp.lon}&amp;dsc=${vp.dsc}">View on Map</a>
+                </td>
                 <td><c:out value="${vp.dsc}" /></td>
                 <td><c:out value="${vp.inferredPhase}" /></td>
                 <td><c:out value="${vp.inferredRunId}" /></td>
@@ -78,7 +84,7 @@ table td {
                     value="${vp.inferredServiceDate + vp.inferredScheduleTime*1000}" />
                 <td><fmt:formatDate pattern="HH:mm" value="${scheduleTime}" /></td>
                 <td><c:out value="${vp.inferredDsc}" /></td>
-                <td><c:out value="${vp.inferredStatus}" /></td>
+                <td><c:out value="${vp.inferredStatus}" /></td>                
             </tr>
         </c:forEach>
     </tbody>
