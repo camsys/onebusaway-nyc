@@ -115,6 +115,7 @@
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -242,14 +243,42 @@
         </profile>
         <profile>
             <id>depots-one</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <depot.partition.key>JG</depot.partition.key>
             </properties>            
         </profile>
         
+        <!--  Service alerts server -->
+        <profile>
+            <id>service-alerts-staging</id>
+            <properties>
+                <service.alerts.url>http://tdm.staging.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-prod</id>
+            <properties>
+                <service.alerts.url>http://tdm.prod.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-qa</id>
+            <properties>
+                <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-demo</id>
+            <properties>
+                <service.alerts.url>http://tdm.demo.obanyc.com/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
+        <profile>
+            <id>service-alerts-local-8083</id>
+            <properties>
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+            </properties>
+        </profile>
 
     </profiles>
 

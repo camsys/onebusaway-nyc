@@ -1,32 +1,37 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
-import javax.ws.rs.core.MediaType;
-
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
 
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
-
 import uk.org.siri.siri.PtSituationElementStructure;
+import uk.org.siri.siri.Siri;
 
-public class NycSiriServiceTest extends NycSiriService {
+@RunWith(MockitoJUnitRunner.class)
+public class NycSiriServiceTest {
 
+  @InjectMocks
+  NycSiriService nycSiriService = new NycSiriService();
+  
   @Test
   public void testGetPtSituationAsServiceAlertBean() {
     SiriHelper siriHelper = new SiriHelper();
     PtSituationElementStructure ptSituation = siriHelper.createPtSituationElementStructure("summaryText",
         "descriptionText", "MTA NYCT_123", "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
     SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
-    ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(ptSituation, endpointDetails);
+    ServiceAlertBean serviceAlertBean = nycSiriService.getPtSituationAsServiceAlertBean(ptSituation, endpointDetails);
     assertNotNull(serviceAlertBean.getSummaries());
     assertEquals("summaryText", serviceAlertBean.getSummaries().get(0).getValue());
     assertEquals("descriptionText", serviceAlertBean.getDescriptions().get(0).getValue());
@@ -42,14 +47,11 @@ public class NycSiriServiceTest extends NycSiriService {
   }
   
   @Test
-  public void testSendSubscriptionRequest() {
-//    WebResource mockWebResource = mock(WebResource.class);
-//    Builder mockBuilder = null;
-//    when(mockWebResource.accept(any(MediaType.class))).thenReturn(mockBuilder);
-////    when(mockBuilder.type(any(MediaType.class))).thenReturn(mockBuilder);
-//    setWebResource(mockWebResource);
-    sendSubscriptionRequest();
-//    verify(mockWebResource).post();
+  public void testCreateRequest() throws Exception {
+    Siri request = nycSiriService.createSubsAndSxRequest();
+    String xml = SiriXmlSerializer.getXml(request);
+    // TODO Lame test
+    assertTrue(xml.contains("<SubscriptionRequest>"));
   }
 
 }

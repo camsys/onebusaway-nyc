@@ -2,11 +2,14 @@ package org.onebusaway.nyc.transit_data_federation.siri;
 
 import uk.org.siri.siri.Siri;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,6 +42,13 @@ public class SiriXmlSerializer {
     outputAsString = outputAsString.replaceAll("xmlns:ns5", "xmlns");
     
     return outputAsString;
+  }
+  
+  public static Siri fromXml(String xml) throws JAXBException {
+    JAXBContext context = JAXBContext.newInstance(uk.org.siri.siri.Siri.class, SiriExtensionWrapper.class, SiriDistanceExtension.class);
+    Unmarshaller u = context.createUnmarshaller();
+    Siri siri = (Siri) u.unmarshal(new StringReader(xml));
+    return siri;
   }
 
 }

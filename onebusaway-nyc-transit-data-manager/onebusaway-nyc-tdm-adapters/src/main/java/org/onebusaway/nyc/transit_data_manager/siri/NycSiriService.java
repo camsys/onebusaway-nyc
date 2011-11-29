@@ -18,15 +18,21 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.core.MediaType;
 
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.siri.AffectedApplicationStructure;
 import org.onebusaway.siri.OneBusAwayAffects;
 import org.onebusaway.siri.OneBusAwayAffectsStructure.Applications;
@@ -50,9 +56,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import uk.org.siri.Siri;
-import uk.org.siri.SubscriptionContextStructure;
-import uk.org.siri.SubscriptionRequest;
 import uk.org.siri.siri.AbstractServiceDeliveryStructure;
 import uk.org.siri.siri.AffectedCallStructure;
 import uk.org.siri.siri.AffectedOperatorStructure;
@@ -73,10 +76,18 @@ import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceRequest;
 import uk.org.siri.siri.SeverityEnumeration;
+import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
+import uk.org.siri.siri.SituationExchangeRequestStructure;
+import uk.org.siri.siri.SituationExchangeSubscriptionStructure;
+import uk.org.siri.siri.StatusResponseStructure;
 import uk.org.siri.siri.StopPointRefStructure;
+import uk.org.siri.siri.SubscriptionQualifierStructure;
+import uk.org.siri.siri.SubscriptionRequest;
+import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
@@ -95,19 +106,27 @@ public class NycSiriService {
 
   private String _mode;
 
-  private String _serviceAlertsServer;
+  private String _serviceAlertsUrl;
 
-  private WebResource _webResource;
+  private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
+  private List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
 
   @PostConstruct
-  public void setup() {
-    _log.info("setup(), mode is: " + _mode + ", server is: "
-        + _serviceAlertsServer);
-    sendSubscriptionRequest();
+  public void setup() throws Exception {
+    _log.info("setup(), mode is: " + _mode + ", serviceAlertsUrl is: "
+        + _serviceAlertsUrl);
+    if (_mode.equals("client")) {
+      String result = sendSubscriptionAndServiceRequest();
+      Siri siri = SiriXmlSerializer.fromXml(result);
+      SituationExchangeResults handleResult = new SituationExchangeResults();
+      handleServiceDeliveries(handleResult, siri.getServiceDelivery());
+      // TODO Probably doesn't do the right thing.
+      _log.info(handleResult.toString());
+    }
   }
 
-  public void handleServiceDeliveries(SituationExchangeResults result,
-      ServiceDelivery delivery) {
+    public void handleServiceDeliveries(SituationExchangeResults result,
+        ServiceDelivery delivery) {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
@@ -207,6 +226,61 @@ public class NycSiriService {
       result.countPtSituationElementResult(deliveryResult, serviceAlertId,
           "removed");
     }
+  }
+
+  public void handleServiceRequests(ServiceRequest serviceRequest,
+      Siri responseSiri) {
+    List<SituationExchangeRequestStructure> requests = serviceRequest.getSituationExchangeRequest();
+    for (SituationExchangeRequestStructure request : requests) {
+      handleServiceRequest(request, responseSiri);
+    }
+  }
+
+  private void handleServiceRequest(SituationExchangeRequestStructure request, Siri responseSiri) {
+    ServiceAlertsHelper helper = new ServiceAlertsHelper();
+    ServiceDelivery serviceDelivery = new ServiceDelivery();
+    helper.addSituationExchangeToSiri(serviceDelivery, getCurrentServiceAlerts());
+    responseSiri.setServiceDelivery(serviceDelivery);
+    return;
+  }
+
+  public void handleSubscriptionRequests(SubscriptionRequest subscriptionRequests, Siri responseSiri) {
+    String address = subscriptionRequests.getAddress();
+    List<SituationExchangeSubscriptionStructure> requests = subscriptionRequests.getSituationExchangeSubscriptionRequest();
+    for (SituationExchangeSubscriptionStructure request : requests) {
+      handleSubscriptionRequest(request, responseSiri, address);
+    }
+  }
+
+  private void handleSubscriptionRequest(SituationExchangeSubscriptionStructure request, Siri responseSiri, String address) {
+    boolean status = true;
+    String errorMessage = null;
+    String subscriptionRef = UUID.randomUUID().toString();
+    try {
+      ServiceAlertSubscription subscription = new ServiceAlertSubscription();
+      subscription.setAddress(address);
+      subscription.setCreatedAt(new Date());
+      subscription.setSubscriptionIdentifier(request.getSubscriptionIdentifier().getValue());
+      subscription.setSubscriptionRef(subscriptionRef);
+      getServiceAlertSubscriptions().add(subscription);
+    } catch (Exception e) {
+      errorMessage = "Failed to create service alert subscription: " + e.getMessage();
+      _log.error(errorMessage);
+      status = false;
+    }
+    
+    SubscriptionResponseStructure response = new SubscriptionResponseStructure();
+    StatusResponseStructure statusResponseStructure = new StatusResponseStructure();
+    statusResponseStructure.setStatus(status);
+    if (errorMessage != null) {
+      statusResponseStructure.getErrorCondition().getDescription().setValue(errorMessage);
+    }
+    SubscriptionQualifierStructure subscriptionQualifierStructure = new SubscriptionQualifierStructure();
+    subscriptionQualifierStructure.setValue(subscriptionRef);
+    statusResponseStructure.setSubscriptionRef(subscriptionQualifierStructure );
+    response.getResponseStatus().add(statusResponseStructure );
+    responseSiri.setSubscriptionResponse(response );
+    return;
   }
 
   ServiceAlertBean getPtSituationAsServiceAlertBean(
@@ -814,43 +888,53 @@ public class NycSiriService {
     return tsBuilder.build();
   }
 
-  void sendSubscriptionRequest() {
-    String siri = createSubscriptionRequest();
-    sendToOba(siri, _serviceAlertsServer);
+  String sendSubscriptionAndServiceRequest() throws Exception {
+    Siri siri = createSubsAndSxRequest();
+    String sendResult = post(SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
+    return sendResult;
   }
 
-  String createSubscriptionRequest() {
-    Siri s = new Siri();
-    SubscriptionRequest request = new SubscriptionRequest();
-    s.setSubscriptionRequest(request);
-    SubscriptionContextStructure context = new SubscriptionContextStructure();
-    request.setSubscriptionContext(context);
-    return "NOT DONE";
+  Siri createSubsAndSxRequest() throws Exception {
+    Siri siri = createSubscriptionRequest();
+    addSituationExchangeRequest(siri);
+    return siri;
   }
 
-  public void sendToOba(String siri, String tdm) {
-//    String error = "";
-//    String postResult = "";
-//    _log.debug("result=" + siri);
-//    WebResource r = getWebResourcce(tdm);
-//    postResult = r.accept(MediaType.APPLICATION_XML_TYPE).type(
-//        MediaType.APPLICATION_XML_TYPE).post(String.class, siri);
-//    _log.debug("postResult=" + postResult);
-//    // render(postResult, error);
+  Siri createSubscriptionRequest() throws Exception {
+    Siri siri = new Siri();
+    SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
+    // TODO I think this needs to be changed, no?
+    subscriptionRequest.setAddress("http://localhost/foo/bar");
+    siri.setSubscriptionRequest(subscriptionRequest);
+    List<SituationExchangeSubscriptionStructure> exchangeSubscriptionRequests = subscriptionRequest.getSituationExchangeSubscriptionRequest();
+    SituationExchangeSubscriptionStructure situationExchangeSubscriptionStructure = new SituationExchangeSubscriptionStructure();;
+    exchangeSubscriptionRequests.add(situationExchangeSubscriptionStructure);
+    SituationExchangeRequestStructure situationExchangeRequestStructure = new SituationExchangeRequestStructure();
+    situationExchangeSubscriptionStructure.setSituationExchangeRequest(situationExchangeRequestStructure);
+    situationExchangeRequestStructure.setRequestTimestamp(new Date());
+
+    return siri;
   }
 
-  public WebResource getWebResourcce(String tdm) {
-    if (_webResource == null) {
-      ClientConfig config = new DefaultClientConfig();
-      Client client = Client.create(config);
-      _webResource = client.resource(tdm);
-    }
-    return _webResource;
+  public String post(String siri, String tdm) {
+    String postResult = "";
+    // _log.debug("result=" + siri);
+    ClientConfig config = new DefaultClientConfig();
+    Client client = Client.create(config);
+    WebResource r = client.resource(tdm);
+    postResult = r.accept(MediaType.APPLICATION_XML_TYPE).type(
+        MediaType.APPLICATION_XML_TYPE).post(String.class, siri);
+    // _log.debug("postResult=" + postResult);
+    return postResult;
   }
 
-  // Only expected to be used for testing
-  public void setWebResource(WebResource webResource) {
-    _webResource = webResource;
+  private void addSituationExchangeRequest(Siri siri) {
+    ServiceRequest serviceRequest = new ServiceRequest();
+    siri.setServiceRequest(serviceRequest);
+    List<SituationExchangeRequestStructure> situationExchangeRequest = serviceRequest.getSituationExchangeRequest();
+    SituationExchangeRequestStructure situationExchangeRequestStructure = new SituationExchangeRequestStructure();
+    situationExchangeRequest.add(situationExchangeRequestStructure);
+    situationExchangeRequestStructure.setRequestTimestamp(new Date());
   }
 
   public TransitDataService getTransitDataService() {
@@ -869,12 +953,28 @@ public class NycSiriService {
     this._mode = mode;
   }
 
-  public String getServiceAlertsServer() {
-    return _serviceAlertsServer;
+  public String getServiceAlertsUrl() {
+    return _serviceAlertsUrl;
   }
 
-  public void setServiceAlertsServer(String _serviceAlertsServer) {
-    this._serviceAlertsServer = _serviceAlertsServer;
+  public void setServiceAlertsUrl(String _serviceAlertsUrl) {
+    this._serviceAlertsUrl = _serviceAlertsUrl;
+  }
+
+  public Map<String, ServiceAlertBean> getCurrentServiceAlerts() {
+    return currentServiceAlerts;
+  }
+
+  public void setCurrentServiceAlerts(Map<String, ServiceAlertBean> currentServiceAlerts) {
+    this.currentServiceAlerts = currentServiceAlerts;
+  }
+
+  public List<ServiceAlertSubscription> getServiceAlertSubscriptions() {
+    return serviceAlertSubscriptions;
+  }
+
+  public void setServiceAlertSubscriptions(List<ServiceAlertSubscription> serviceAlertSubscriptions) {
+    this.serviceAlertSubscriptions = serviceAlertSubscriptions;
   }
 
 }
