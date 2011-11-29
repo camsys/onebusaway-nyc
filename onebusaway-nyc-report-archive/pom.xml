@@ -23,6 +23,12 @@
             <artifactId>onebusaway-nyc-transit-data</artifactId>
             <version>${onebusaway.nyc.version}</version>
         </dependency>
+	<!-- for configuration service impl -->
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+            <version>${onebusaway.nyc.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -112,10 +118,10 @@
 	</properties>
       </profile>
       <profile>
-	<id>db-demo</id>
+	<id>db-dev</id>
 	<properties>
 	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-	  <db.url>jdbc:mysql://db.staging.obanyc.com:3306/onebusaway_nyc_demo</db.url>
+	  <db.url>jdbc:mysql://db.staging.obanyc.com:3306/onebusaway_nyc_dev</db.url>
 	  <db.username>obanyc</db.username>
 	  <db.password>blueceilingbrick</db.password>
 	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
@@ -146,7 +152,7 @@
             <id>services-tdf-as-tds</id> <!-- aka staging, production -->
             <properties>
                 <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -167,10 +173,10 @@
         </profile>
         <profile>
             <!-- Transit data federation webapp offers the TDS -->
-            <id>services-demo</id> <!-- aka staging, production -->
+            <id>services-dev</id> <!-- aka staging, production -->
             <properties>
-                <tds.path>http://app.demo.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.demo.obanyc.com</tdm.host>
+                <tds.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -189,7 +195,7 @@
             </activation>
             <properties>
                 <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
-                <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
@@ -198,7 +204,7 @@
             <properties>
                 <jetty.port>8082</jetty.port>
                 <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
-                <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
     </profiles>

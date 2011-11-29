@@ -12,7 +12,9 @@
     <import resource="classpath:org/onebusaway/container/application-context.xml" />
 
     <context:component-scan base-package="org.onebusaway.nyc.report_archive" />
-    <bean id="configurationService" class="org.onebusaway.nyc.report_archive.services.LocalConfigurationService"/>
+	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl" />
+
+	<bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 
 	<bean id="gsonTool"
 		class="org.onebusaway.nyc.report_archive.api.json.LowerCaseWDashesGsonJsonTool">

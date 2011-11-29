@@ -37,8 +37,8 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   @Autowired
   private TransitDataService _transitDataService;
 
-  @Refreshable(dependsOn = {"inference-engine.outputQueueHost", "inference-engine.outputQueuePort", 
-      "inference-engine.outputQueueName"})
+  @Refreshable(dependsOn = {"tds.inputQueueHost", "tds.inputQueuePort", 
+      "tds.inputQueueName"})
   @Override
   public void startListenerThread() {
     if(_initialized == true) {
@@ -46,9 +46,9 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
       return;
     }
 
-    String host = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueHost", null);
-    String queueName = _configurationService.getConfigurationValueAsString("inference-engine.outputQueueName", null);
-    Integer port = _configurationService.getConfigurationValueAsInteger("inference-engine.outputQueuePort", 5567);
+    String host = _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+    String queueName = _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+    Integer port = _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5567);
 
     if(host == null || queueName == null || port == null) {
       _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
