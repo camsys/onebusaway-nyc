@@ -29,6 +29,7 @@ import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -82,6 +83,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
           _realtimeService.getMonitoredStopVisitsForStop(stopIdWithAgency, includeOnwardCalls);
 
       if(routeId != null || directionId != null) {
+        List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();
+
         for(MonitoredStopVisitStructure visit : visits) {
           MonitoredVehicleJourneyStructure journey = visit.getMonitoredVehicleJourney();
           String thisRouteId = journey.getLineRef().getValue();
@@ -89,11 +92,15 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
           
           // user filtering
           if(routeId != null && !thisRouteId.equals(routeId))
-            visits.remove(visit);
+            continue;
           
           if(directionId != null && !thisDirectionId.equals(directionId))
-            visits.remove(visit);
+            continue;
+          
+          filteredVisits.add(visit);
         }
+
+        visits = filteredVisits;
       }
       
       _response = generateSiriResponse(visits);

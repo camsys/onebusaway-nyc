@@ -139,6 +139,7 @@ public abstract class InputQueueListenerTask {
       return;
     }
 
+    _log.info("realtime archive listening on " + host + ":" + port + ", queue=" + queueName);
     initializeZmq(host, queueName, port);
   }
 

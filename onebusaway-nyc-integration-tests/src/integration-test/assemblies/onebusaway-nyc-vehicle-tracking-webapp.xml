@@ -27,6 +27,7 @@
             <outputDirectory>/</outputDirectory>
             <includes>
                 <include>org.onebusaway:onebusaway-nyc-vehicle-tracking-webapp</include>
+                <include>org.onebusaway:onebusaway-nyc-tdm-adapters</include>
             </includes>
         	<unpackOptions>
             	<excludes>
