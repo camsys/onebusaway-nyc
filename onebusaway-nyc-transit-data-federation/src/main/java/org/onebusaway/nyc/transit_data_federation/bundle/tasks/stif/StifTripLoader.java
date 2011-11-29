@@ -90,7 +90,7 @@ public class StifTripLoader {
       if (path.getName().endsWith(".gz"))
         in = new GZIPInputStream(in);
       run(in);
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException("Error loading " + path, e);
     }
   }
