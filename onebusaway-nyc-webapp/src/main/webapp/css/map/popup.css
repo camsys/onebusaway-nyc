@@ -10,18 +10,19 @@
 }
 
 .popup .header.stop {
-	background-image: url("img/header_stop.png");
+	background-image: url("img/header_bus_stop.png");
 	background-repeat: no-repeat;
 	background-position: left center;
 }
 
 .popup .header.vehicle {
-	background-image: url("img/header_bus.png");
+	background-image: url("img/header_bus_icon.png");
 	background-repeat: no-repeat;
 	background-position: left center;
 }
 
 .popup .header .title {
+	white-space: nowrap;
     font-size: 16px;
     font-weight: bold;
 }
@@ -32,6 +33,7 @@
 }
 
 .popup .header .updated {
+	white-space: nowrap;
 	height: 16px;
 	color: #666666;
 	padding-left: 4px;
@@ -79,6 +81,7 @@
 }
 
 .popup ul li.nextStop {
+	white-space: nowrap;
 	color: #000099;
 	height: 16px;
 	font-weight: bold;

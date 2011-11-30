@@ -153,6 +153,16 @@ public class CcLocationReportRecord implements Serializable {
   // Timestamp of the on-board device when this message is created, in standard XML timestamp format
   // "time-reported": "2011-06-22T10:58:10.0-00:00"
   private Date convertTime(String timeString) {
+      if (timeString == null) {
+	  return null;
+      }
+      // some times the date doesn't include UTC
+      // 2011-08-06T10:40:38.825
+      if (timeString.length() > 20 
+	  && timeString.length() < 24) {
+	  // append UTC
+	  timeString = timeString + "-00:00";
+      }
     return ISODateTimeFormat.dateTime().parseDateTime(timeString).toDate();
   }
 

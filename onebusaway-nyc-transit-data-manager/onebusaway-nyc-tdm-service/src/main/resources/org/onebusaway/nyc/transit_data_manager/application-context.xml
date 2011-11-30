@@ -49,8 +49,7 @@
 	</bean>
 
     <bean id="nycSiriService"
-        class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriService">
-        <property name="mode" value="gateway" />
+        class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceGateway">
     </bean>
 
 </beans>

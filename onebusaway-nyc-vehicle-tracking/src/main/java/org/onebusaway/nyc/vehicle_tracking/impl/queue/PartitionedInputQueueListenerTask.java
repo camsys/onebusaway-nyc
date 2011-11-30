@@ -79,7 +79,7 @@ public class PartitionedInputQueueListenerTask
   }
 
   public void setDepotPartitionKey(String depotPartitionKey) {
-    if(depotPartitionKey != null)
+    if(depotPartitionKey != null && !depotPartitionKey.isEmpty())
       _depotPartitionKeys = depotPartitionKey.split(",");
     else
       _depotPartitionKeys = null;

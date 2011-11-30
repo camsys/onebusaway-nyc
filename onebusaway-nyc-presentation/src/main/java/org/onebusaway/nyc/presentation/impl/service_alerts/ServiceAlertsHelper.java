@@ -1,15 +1,5 @@
 package org.onebusaway.nyc.presentation.impl.service_alerts;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.onebusaway.siri.OneBusAwayConsequence;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
@@ -18,11 +8,20 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
 import uk.org.siri.siri.AffectedLineStructure;
+import uk.org.siri.siri.AffectedLineStructure.Routes;
 import uk.org.siri.siri.AffectedRouteStructure;
 import uk.org.siri.siri.AffectedStopPointStructure;
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
+import uk.org.siri.siri.AffectsScopeStructure.Networks;
+import uk.org.siri.siri.AffectsScopeStructure.Networks.AffectedNetwork;
+import uk.org.siri.siri.AffectsScopeStructure.Operators;
+import uk.org.siri.siri.AffectsScopeStructure.StopPoints;
+import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.DirectionRefStructure;
 import uk.org.siri.siri.DirectionStructure;
@@ -40,16 +39,15 @@ import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.SeverityEnumeration;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
-import uk.org.siri.siri.StopPointRefStructure;
-import uk.org.siri.siri.AffectedLineStructure.Routes;
-import uk.org.siri.siri.AffectsScopeStructure.Networks;
-import uk.org.siri.siri.AffectsScopeStructure.Operators;
-import uk.org.siri.siri.AffectsScopeStructure.StopPoints;
-import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
-import uk.org.siri.siri.AffectsScopeStructure.Networks.AffectedNetwork;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
 import uk.org.siri.siri.SituationRefStructure;
+import uk.org.siri.siri.StopPointRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ServiceAlertsHelper {
 
@@ -205,33 +203,8 @@ public class ServiceAlertsHelper {
         affectsStructure.setOperators(operators);
       }
       String routeId = affects.getRouteId(); // LineRef
-      String stopId = affects.getStopId();
-      String directionId = affects.getDirectionId(); // DirectionRef
-      String tripId = affects.getTripId(); // vehiclejourneyref
+      String directionId = affects.getDirectionId();
       if (!StringUtils.isBlank(routeId)) {
-        Networks networks = new Networks();
-        List<AffectedNetwork> network = networks.getAffectedNetwork();
-        AffectedNetwork affectedNetwork = new AffectedNetwork();
-        List<AffectedLineStructure> affectedLine = affectedNetwork.getAffectedLine();
-        AffectedLineStructure affectedLineStructure = new AffectedLineStructure();
-        Routes routes = new Routes();
-        List<AffectedRouteStructure> affectedRoute = routes.getAffectedRoute();
-        AffectedRouteStructure affectedRouteStructure = new AffectedRouteStructure();
-        RouteRefStructure routeRefStructure = new RouteRefStructure();
-        routeRefStructure.setValue(routeId);
-        affectedRouteStructure.setRouteRef(routeRefStructure);
-        affectedRoute.add(affectedRouteStructure);
-        affectedLineStructure.setRoutes(routes);
-        DirectionStructure directionStructure = new DirectionStructure();
-        NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
-        directionName.setValue(directionId);
-        directionStructure.setDirectionName(directionName);
-        affectedLineStructure.getDirection().add(directionStructure);
-        affectedLine.add(affectedLineStructure);
-        network.add(affectedNetwork);
-        affectsStructure.setNetworks(networks);
-      }
-      if (!StringUtils.isBlank(tripId)) {
         VehicleJourneys vehicleJourneys = new VehicleJourneys();
         AffectedVehicleJourneyStructure affectedVehicleJourneyStructure = new AffectedVehicleJourneyStructure();
         LineRefStructure lineRefStructure = new LineRefStructure();
@@ -245,16 +218,6 @@ public class ServiceAlertsHelper {
         vehicleJourneys.getAffectedVehicleJourney().add(
             affectedVehicleJourneyStructure);
         affectsStructure.setVehicleJourneys(vehicleJourneys);
-      }
-      if (!StringUtils.isBlank(stopId)) {
-        StopPoints value = new StopPoints();
-        List<AffectedStopPointStructure> stopPoints = value.getAffectedStopPoint();
-        AffectedStopPointStructure affectedStopPointStructure = new AffectedStopPointStructure();
-        StopPointRefStructure stopPointRef = new StopPointRefStructure();
-        stopPointRef.setValue(stopId);
-        affectedStopPointStructure.setStopPointRef(stopPointRef);
-        stopPoints.add(affectedStopPointStructure);
-        affectsStructure.setStopPoints(value);
       }
     }
 

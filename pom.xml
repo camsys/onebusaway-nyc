@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>onebusaway</artifactId>
     <groupId>org.onebusaway</groupId>
@@ -13,15 +14,15 @@
   <name>onebusaway-nyc</name>
 
   <properties>
-  	<onebusaway.gtfs.version>1.2.4</onebusaway.gtfs.version>
-  	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
-  	<onebusaway.csv-entities.version>1.0.2-SNAPSHOT</onebusaway.csv-entities.version>
-  	<struts.version>2.1.8.1</struts.version>
-	<jetty.version>6.1.26</jetty.version>
-	<spring.version>3.0.3.RELEASE</spring.version>
-	<onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
-	<onebusaway.app-modules.version>2.0.11-SNAPSHOT</onebusaway.app-modules.version>
-	<onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
+    <onebusaway.gtfs.version>1.2.4</onebusaway.gtfs.version>
+    <onebusaway.siri.version>1.0.0</onebusaway.siri.version>
+    <onebusaway.csv-entities.version>1.0.2-SNAPSHOT</onebusaway.csv-entities.version>
+    <struts.version>2.1.8.1</struts.version>
+    <jetty.version>6.1.26</jetty.version>
+    <spring.version>3.0.3.RELEASE</spring.version>
+    <onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
+    <onebusaway.app-modules.version>2.0.11-SNAPSHOT</onebusaway.app-modules.version>
+    <onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
   </properties>
 
   <repositories>
@@ -107,8 +108,10 @@
     <url>https://github.com/camsys/onebusaway-nyc/</url>
   </scm>
 
+  <!-- NOTE If you change the module list, make sure to keep the one
+       in the skip-integration-tests profile updated. -->
   <modules>
-    <module>onebusaway-nyc-integration-tests</module>
+<!--     <module>onebusaway-nyc-integration-tests</module> -->
     <module>onebusaway-nyc-vehicle-tracking</module>
     <module>onebusaway-nyc-vehicle-tracking-webapp</module>
     <module>onebusaway-nyc-webapp</module>
@@ -124,6 +127,35 @@
     <module>onebusaway-nyc-queue-subscriber</module>
     <module>onebusaway-nyc-report-archive</module>
   </modules>
+
+  <profiles>
+    <profile>
+      <id>skip-integration-tests</id>
+    </profile>
+    <profile>
+      <id>include-integration-tests</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>onebusaway-nyc-integration-tests</module>
+        <module>onebusaway-nyc-vehicle-tracking</module>
+        <module>onebusaway-nyc-vehicle-tracking-webapp</module>
+        <module>onebusaway-nyc-webapp</module>
+        <module>onebusaway-nyc-presentation</module>
+        <module>onebusaway-nyc-sms-webapp</module>
+        <module>onebusaway-nyc-transit-data</module>
+        <module>onebusaway-nyc-transit-data-manager</module>
+        <module>onebusaway-nyc-transit-data-federation</module>
+        <module>onebusaway-nyc-transit-data-federation-webapp</module>
+        <module>onebusaway-nyc-api-webapp</module>
+        <module>onebusaway-nyc-queue-broker</module>
+        <module>onebusaway-nyc-queue-http-proxy</module>
+        <module>onebusaway-nyc-queue-subscriber</module>
+        <module>onebusaway-nyc-report-archive</module>
+      </modules>
+    </profile>
+  </profiles>
 
   <build>
     <!-- This is where we control the master plugin version used by all modules -->
@@ -153,7 +185,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
           <version>1.0</version>
-        </plugin>        
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
@@ -168,7 +200,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.5</version>
-        </plugin>        
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
@@ -194,15 +226,16 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.5</version>
-          <!-- By default, we exclude anything in the org.onebusaway.integration package from regular unit test -->
+          <!-- By default, we exclude anything in the org.onebusaway.integration 
+            package from regular unit test -->
           <configuration>
             <excludes>
               <exclude>**/*IntegrationTest.java</exclude>
             </excludes>
           </configuration>
           <executions>
-            <!-- Instead, we add a special integration-test execution that runs any tests in the org.onebusaway.integration 
-              package -->
+            <!-- Instead, we add a special integration-test execution that 
+              runs any tests in the org.onebusaway.integration package -->
             <execution>
               <id>integration-tests</id>
               <phase>integration-test</phase>
@@ -217,8 +250,8 @@
                 <includes>
                   <include>**/*IntegrationTest.java</include>
                 </includes>
-                <!-- Don't stop the build if integration tests fail because we still want post-integration-test cleanup to 
-                  run -->
+                <!-- Don't stop the build if integration tests fail because 
+                  we still want post-integration-test cleanup to run -->
                 <testFailureIgnore>true</testFailureIgnore>
               </configuration>
             </execution>
@@ -297,7 +330,7 @@
         <artifactId>onebusaway-csv-entities</artifactId>
         <version>${onebusaway.csv-entities.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.onebusaway</groupId>
         <artifactId>onebusaway-gtfs</artifactId>
@@ -313,7 +346,7 @@
         <artifactId>onebusaway-gtfs-transformer</artifactId>
         <version>${onebusaway.gtfs.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.onebusaway</groupId>
         <artifactId>onebusaway-presentation</artifactId>

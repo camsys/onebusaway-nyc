@@ -51,7 +51,7 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     item.setServiceAlerts(serviceAlerts);
 
     // stop visits
-    List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), false);
+    List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), 0);
 
     List<String> distanceAwayStrings = new ArrayList<String>();
     for(MonitoredStopVisitStructure visit : visits) {

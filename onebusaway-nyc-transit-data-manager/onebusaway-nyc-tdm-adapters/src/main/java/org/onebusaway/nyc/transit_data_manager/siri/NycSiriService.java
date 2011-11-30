@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.transit_data_manager.siri;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
-import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBException;
 
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -38,7 +40,6 @@ import org.onebusaway.siri.OneBusAwayAffects;
 import org.onebusaway.siri.OneBusAwayAffectsStructure.Applications;
 import org.onebusaway.siri.OneBusAwayConsequence;
 import org.onebusaway.siri.core.ESiriModuleType;
-import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.ESeverity;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
@@ -68,6 +69,7 @@ import uk.org.siri.siri.AffectsScopeStructure.StopPoints;
 import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
+import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.ExtensionsStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
 import uk.org.siri.siri.OperatorRefStructure;
@@ -76,6 +78,7 @@ import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.ServiceRequest;
 import uk.org.siri.siri.SeverityEnumeration;
 import uk.org.siri.siri.Siri;
@@ -91,46 +94,50 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 @Component
-public class NycSiriService {
+public abstract class NycSiriService {
 
-  private static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
+  static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
 
+  // TODO Should this stay autowired?
   @Autowired
   private TransitDataService _transitDataService;
 
-  private String _mode;
-
   private String _serviceAlertsUrl;
 
+  private String _subscriptionPath;
+
   private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
+  
   private List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
 
+  private WebResourceWrapper _webResourceWrapper;
+
+  private String _subscriptionUrl;
+
+  abstract void setupForMode() throws Exception, JAXBException;
+  
+  abstract List<String> getExistingAlertIds(Set<String> agencies);
+  
+  abstract void removeServiceAlert(SituationExchangeResults result,
+      DeliveryResult deliveryResult, String serviceAlertId);
+  
+  abstract void addOrUpdateServiceAlert(SituationExchangeResults result,
+      DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
+      String defaultAgencyId);
+  
+  abstract void postServiceDeliveryActions(SituationExchangeResults result) throws Exception;  
+
+  
   @PostConstruct
   public void setup() throws Exception {
-    _log.info("setup(), mode is: " + _mode + ", serviceAlertsUrl is: "
-        + _serviceAlertsUrl);
-    if (_mode == null) { 
-	_log.error("_mode unset, returning");
-	return;
-    }
-    if (_mode.equals("client")) {
-      String result = sendSubscriptionAndServiceRequest();
-      Siri siri = SiriXmlSerializer.fromXml(result);
-      SituationExchangeResults handleResult = new SituationExchangeResults();
-      handleServiceDeliveries(handleResult, siri.getServiceDelivery());
-      // TODO Probably doesn't do the right thing.
-      _log.info(handleResult.toString());
-    }
+    _log.info("setup(), serviceAlertsUrl is: " + _serviceAlertsUrl);
+    setupForMode();
   }
 
-    public void handleServiceDeliveries(SituationExchangeResults result,
-        ServiceDelivery delivery) {
+  public void handleServiceDeliveries(SituationExchangeResults result,
+      ServiceDelivery delivery) throws Exception {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
@@ -141,18 +148,7 @@ public class NycSiriService {
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
     // TODO This is not done yet.
     boolean deletedIds = Collections.disjoint(preAlertIds, postAlertIds);
-    // org.apache.commons.collections.SetUtils.
-  }
-
-  private List<String> getExistingAlertIds(Set<String> agencies) {
-    List<String> alertIds = new ArrayList<String>();
-    for (String agency : agencies) {
-      ListBean<ServiceAlertBean> alerts = _transitDataService.getAllServiceAlertsForAgencyId(agency);
-      for (ServiceAlertBean alert : alerts.getList()) {
-        alertIds.add(alert.getId());
-      }
-    }
-    return alertIds;
+    postServiceDeliveryActions(result);
   }
 
   private Set<String> collectAgencies(ServiceDelivery delivery) {
@@ -180,12 +176,12 @@ public class NycSiriService {
 
   }
 
-  private void handleSituationExchange(ServiceDelivery serviceDelivery,
+  void handleSituationExchange(ServiceDelivery serviceDelivery,
       SituationExchangeDeliveryStructure sxDelivery,
       SiriEndpointDetails endpointDetails, SituationExchangeResults result) {
 
     DeliveryResult deliveryResult = new DeliveryResult();
-    result.delivery.add(deliveryResult);
+    result.getDelivery().add(deliveryResult);
 
     Situations situations = sxDelivery.getSituations();
 
@@ -216,19 +212,14 @@ public class NycSiriService {
 
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
       // TODO Needs to be create or update, not just create
-      getTransitDataService().createServiceAlert(defaultAgencyId,
-          serviceAlertBean);
-      result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
-          "added");
-      // _serviceAlertsService.createOrUpdateServiceAlert(serviceAlert,
-      // defaultAgencyId);
+      addOrUpdateServiceAlert(result, deliveryResult, serviceAlertBean,
+          defaultAgencyId);
     }
+    // TODO?
     // _serviceAlertsService.removeServiceAlerts(serviceAlertIdsToRemove);
     for (String serviceAlertId : serviceAlertIdsToRemove) {
       // TODO Confirm this conversion
-      getTransitDataService().removeServiceAlert(serviceAlertId);
-      result.countPtSituationElementResult(deliveryResult, serviceAlertId,
-          "removed");
+      removeServiceAlert(result, deliveryResult, serviceAlertId);
     }
   }
 
@@ -240,15 +231,18 @@ public class NycSiriService {
     }
   }
 
-  private void handleServiceRequest(SituationExchangeRequestStructure request, Siri responseSiri) {
+  private void handleServiceRequest(SituationExchangeRequestStructure request,
+      Siri responseSiri) {
     ServiceAlertsHelper helper = new ServiceAlertsHelper();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    helper.addSituationExchangeToSiri(serviceDelivery, getCurrentServiceAlerts());
+    helper.addSituationExchangeToSiri(serviceDelivery,
+        getCurrentServiceAlerts());
     responseSiri.setServiceDelivery(serviceDelivery);
     return;
   }
 
-  public void handleSubscriptionRequests(SubscriptionRequest subscriptionRequests, Siri responseSiri) {
+  public void handleSubscriptionRequests(
+      SubscriptionRequest subscriptionRequests, Siri responseSiri) {
     String address = subscriptionRequests.getAddress();
     List<SituationExchangeSubscriptionStructure> requests = subscriptionRequests.getSituationExchangeSubscriptionRequest();
     for (SituationExchangeSubscriptionStructure request : requests) {
@@ -256,7 +250,9 @@ public class NycSiriService {
     }
   }
 
-  private void handleSubscriptionRequest(SituationExchangeSubscriptionStructure request, Siri responseSiri, String address) {
+  private void handleSubscriptionRequest(
+      SituationExchangeSubscriptionStructure request, Siri responseSiri,
+      String address) {
     boolean status = true;
     String errorMessage = null;
     String subscriptionRef = UUID.randomUUID().toString();
@@ -264,26 +260,34 @@ public class NycSiriService {
       ServiceAlertSubscription subscription = new ServiceAlertSubscription();
       subscription.setAddress(address);
       subscription.setCreatedAt(new Date());
+      if (request.getSubscriptionIdentifier() == null)
+        throw new RuntimeException(
+            "required element missing: subscriptionIdentifier");
       subscription.setSubscriptionIdentifier(request.getSubscriptionIdentifier().getValue());
       subscription.setSubscriptionRef(subscriptionRef);
       getServiceAlertSubscriptions().add(subscription);
     } catch (Exception e) {
-      errorMessage = "Failed to create service alert subscription: " + e.getMessage();
+      errorMessage = "Failed to create service alert subscription: "
+          + e.getMessage();
       _log.error(errorMessage);
       status = false;
     }
-    
+
     SubscriptionResponseStructure response = new SubscriptionResponseStructure();
     StatusResponseStructure statusResponseStructure = new StatusResponseStructure();
     statusResponseStructure.setStatus(status);
-    if (errorMessage != null) {
-      statusResponseStructure.getErrorCondition().getDescription().setValue(errorMessage);
+    if (!status) {
+      ServiceDeliveryErrorConditionStructure condition = new ServiceDeliveryErrorConditionStructure();
+      statusResponseStructure.setErrorCondition(condition);
+      ErrorDescriptionStructure description = new ErrorDescriptionStructure();
+      condition.setDescription(description);
+      description.setValue(errorMessage);
     }
     SubscriptionQualifierStructure subscriptionQualifierStructure = new SubscriptionQualifierStructure();
     subscriptionQualifierStructure.setValue(subscriptionRef);
-    statusResponseStructure.setSubscriptionRef(subscriptionQualifierStructure );
-    response.getResponseStatus().add(statusResponseStructure );
-    responseSiri.setSubscriptionResponse(response );
+    statusResponseStructure.setSubscriptionRef(subscriptionQualifierStructure);
+    response.getResponseStatus().add(statusResponseStructure);
+    responseSiri.setSubscriptionResponse(response);
     return;
   }
 
@@ -314,32 +318,6 @@ public class NycSiriService {
     return serviceAlert;
   }
 
-  // private ServiceAlert.Builder getPtSituationAsServiceAlert(
-  // PtSituationElementStructure ptSituation,
-  // SiriEndpointDetails endpointDetails) {
-  //
-  // ServiceAlert.Builder serviceAlert = ServiceAlert.newBuilder();
-  // EntryQualifierStructure serviceAlertNumber =
-  // ptSituation.getSituationNumber();
-  // String situationId = serviceAlertNumber.getValue();
-  //
-  // if (!endpointDetails.getDefaultAgencyIds().isEmpty()) {
-  // String agencyId = endpointDetails.getDefaultAgencyIds().get(0);
-  // serviceAlert.setId(ServiceAlertLibrary.id(agencyId, situationId));
-  // } else {
-  // AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
-  // serviceAlert.setId(ServiceAlertLibrary.id(id));
-  // }
-  //
-  // handleDescriptions(ptSituation, serviceAlert);
-  // handleOtherFields(ptSituation, serviceAlert);
-  // handlReasons(ptSituation, serviceAlert);
-  // handleAffects(ptSituation, serviceAlert);
-  // handleConsequences(ptSituation, serviceAlert);
-  //
-  // return serviceAlert;
-  // }
-  //
   private void handleDescriptions(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
     TranslatedString summary = translation(ptSituation.getSummary());
@@ -360,18 +338,6 @@ public class NycSiriService {
     return nlsb;
   }
 
-  // private void handleDescriptions(PtSituationElementStructure ptSituation,
-  // ServiceAlert.Builder serviceAlert) {
-  //
-  // TranslatedString summary = translation(ptSituation.getSummary());
-  // if (summary != null)
-  // serviceAlert.setSummary(summary);
-  //
-  // TranslatedString description = translation(ptSituation.getDescription());
-  // if (description != null)
-  // serviceAlert.setDescription(description);
-  // }
-  //
   private void handleOtherFields(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
 
@@ -393,97 +359,12 @@ public class NycSiriService {
     }
   }
 
-  // private void handleOtherFields(PtSituationElementStructure ptSituation,
-  // ServiceAlert.Builder serviceAlert) {
-  //
-  // SeverityEnumeration severity = ptSituation.getSeverity();
-  // if (severity != null) {
-  // ESeverity severityEnum = ESeverity.valueOfTpegCode(severity.value());
-  // serviceAlert.setSeverity(ServiceAlertLibrary.convertSeverity(severityEnum));
-  // }
-  //
-  // if (ptSituation.getPublicationWindow() != null) {
-  // HalfOpenTimestampRangeStructure window =
-  // ptSituation.getPublicationWindow();
-  // TimeRange.Builder range = TimeRange.newBuilder();
-  // if (window.getStartTime() != null)
-  // range.setStart(window.getStartTime().getTime());
-  // if (window.getEndTime() != null)
-  // range.setEnd(window.getEndTime().getTime());
-  // if (range.hasStart() || range.hasEnd())
-  // serviceAlert.addPublicationWindow(range);
-  // }
-  // }
-  //
   @SuppressWarnings("unused")
   private void handlReasons(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
     throw new RuntimeException("handleReasons not implemented");
   }
 
-  // private void handlReasons(PtSituationElementStructure ptSituation,
-  // ServiceAlert.Builder serviceAlert) {
-  //
-  // Cause cause = getReasonAsCause(ptSituation);
-  // if (cause != null)
-  // serviceAlert.setCause(cause);
-  // }
-  //
-  // private Cause getReasonAsCause(PtSituationElementStructure ptSituation) {
-  // if (ptSituation.getEnvironmentReason() != null)
-  // return Cause.WEATHER;
-  // if (ptSituation.getEquipmentReason() != null) {
-  // switch (ptSituation.getEquipmentReason()) {
-  // case CONSTRUCTION_WORK:
-  // return Cause.CONSTRUCTION;
-  // case CLOSED_FOR_MAINTENANCE:
-  // case MAINTENANCE_WORK:
-  // case EMERGENCY_ENGINEERING_WORK:
-  // case LATE_FINISH_TO_ENGINEERING_WORK:
-  // case REPAIR_WORK:
-  // return Cause.MAINTENANCE;
-  // default:
-  // return Cause.TECHNICAL_PROBLEM;
-  // }
-  // }
-  // if (ptSituation.getPersonnelReason() != null) {
-  // switch (ptSituation.getPersonnelReason()) {
-  // case INDUSTRIAL_ACTION:
-  // case UNOFFICIAL_INDUSTRIAL_ACTION:
-  // return Cause.STRIKE;
-  // }
-  // return Cause.OTHER_CAUSE;
-  // }
-  // /**
-  // * There are really so many possibilities here that it's tricky to translate
-  // * them all
-  // */
-  // if (ptSituation.getMiscellaneousReason() != null) {
-  // switch (ptSituation.getMiscellaneousReason()) {
-  // case ACCIDENT:
-  // case COLLISION:
-  // return Cause.ACCIDENT;
-  // case DEMONSTRATION:
-  // case MARCH:
-  // return Cause.DEMONSTRATION;
-  // case PERSON_ILL_ON_VEHICLE:
-  // case FATALITY:
-  // return Cause.MEDICAL_EMERGENCY;
-  // case POLICE_REQUEST:
-  // case BOMB_ALERT:
-  // case CIVIL_EMERGENCY:
-  // case EMERGENCY_SERVICES:
-  // case EMERGENCY_SERVICES_CALL:
-  // return Cause.POLICE_ACTIVITY;
-  // }
-  // }
-  //
-  // return null;
-  // }
-
-  /****
-   * Affects
-   ****/
 
   private void handleAffects(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
@@ -598,130 +479,6 @@ public class NycSiriService {
       serviceAlert.setAllAffects(allAffects);
   }
 
-  // private void handleAffects(PtSituationElementStructure ptSituation,
-  // ServiceAlert.Builder serviceAlert) {
-  //
-  // AffectsScopeStructure affectsStructure = ptSituation.getAffects();
-  //
-  // if (affectsStructure == null)
-  // return;
-  //
-  // Operators operators = affectsStructure.getOperators();
-  //
-  // if (operators != null
-  // && !CollectionsLibrary.isEmpty(operators.getAffectedOperator())) {
-  //
-  // for (AffectedOperatorStructure operator : operators.getAffectedOperator())
-  // {
-  // OperatorRefStructure operatorRef = operator.getOperatorRef();
-  // if (operatorRef == null || operatorRef.getValue() == null)
-  // continue;
-  // String agencyId = operatorRef.getValue();
-  // Affects.Builder affects = Affects.newBuilder();
-  // affects.setAgencyId(agencyId);
-  // serviceAlert.addAffects(affects);
-  // }
-  // }
-  //
-  // StopPoints stopPoints = affectsStructure.getStopPoints();
-  //
-  // if (stopPoints != null
-  // && !CollectionsLibrary.isEmpty(stopPoints.getAffectedStopPoint())) {
-  //
-  // for (AffectedStopPointStructure stopPoint :
-  // stopPoints.getAffectedStopPoint()) {
-  // StopPointRefStructure stopRef = stopPoint.getStopPointRef();
-  // if (stopRef == null || stopRef.getValue() == null)
-  // continue;
-  // AgencyAndId stopId =
-  // AgencyAndIdLibrary.convertFromString(stopRef.getValue());
-  // Id id = ServiceAlertLibrary.id(stopId);
-  // Affects.Builder affects = Affects.newBuilder();
-  // affects.setStopId(id);
-  // serviceAlert.addAffects(affects);
-  // }
-  // }
-  //
-  // VehicleJourneys vjs = affectsStructure.getVehicleJourneys();
-  // if (vjs != null
-  // && !CollectionsLibrary.isEmpty(vjs.getAffectedVehicleJourney())) {
-  //
-  // for (AffectedVehicleJourneyStructure vj : vjs.getAffectedVehicleJourney())
-  // {
-  //
-  // Affects.Builder affects = Affects.newBuilder();
-  // if (vj.getLineRef() != null) {
-  // AgencyAndId routeId =
-  // AgencyAndIdLibrary.convertFromString(vj.getLineRef().getValue());
-  // Id id = ServiceAlertLibrary.id(routeId);
-  // affects.setRouteId(id);
-  // }
-  //
-  // if (vj.getDirectionRef() != null)
-  // affects.setDirectionId(vj.getDirectionRef().getValue());
-  //
-  // List<VehicleJourneyRefStructure> tripRefs = vj.getVehicleJourneyRef();
-  // Calls stopRefs = vj.getCalls();
-  //
-  // boolean hasTripRefs = !CollectionsLibrary.isEmpty(tripRefs);
-  // boolean hasStopRefs = stopRefs != null
-  // && !CollectionsLibrary.isEmpty(stopRefs.getCall());
-  //
-  // if (!(hasTripRefs || hasStopRefs)) {
-  // if (affects.hasRouteId())
-  // serviceAlert.addAffects(affects);
-  // } else if (hasTripRefs && hasStopRefs) {
-  // for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
-  // AgencyAndId tripId =
-  // AgencyAndIdLibrary.convertFromString(vjRef.getValue());
-  // affects.setTripId(ServiceAlertLibrary.id(tripId));
-  // for (AffectedCallStructure call : stopRefs.getCall()) {
-  // AgencyAndId stopId =
-  // AgencyAndIdLibrary.convertFromString(call.getStopPointRef().getValue());
-  // affects.setStopId(ServiceAlertLibrary.id(stopId));
-  // serviceAlert.addAffects(affects);
-  // }
-  // }
-  // } else if (hasTripRefs) {
-  // for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
-  // AgencyAndId tripId =
-  // AgencyAndIdLibrary.convertFromString(vjRef.getValue());
-  // affects.setTripId(ServiceAlertLibrary.id(tripId));
-  // serviceAlert.addAffects(affects);
-  // }
-  // } else {
-  // for (AffectedCallStructure call : stopRefs.getCall()) {
-  // AgencyAndId stopId =
-  // AgencyAndIdLibrary.convertFromString(call.getStopPointRef().getValue());
-  // affects.setStopId(ServiceAlertLibrary.id(stopId));
-  // serviceAlert.addAffects(affects);
-  // }
-  // }
-  // }
-  // }
-  //
-  // ExtensionsStructure extension = affectsStructure.getExtensions();
-  // if (extension != null && extension.getAny() != null) {
-  // Object ext = extension.getAny();
-  // if (ext instanceof OneBusAwayAffects) {
-  // OneBusAwayAffects obaAffects = (OneBusAwayAffects) ext;
-  //
-  // Applications applications = obaAffects.getApplications();
-  // if (applications != null
-  // && !CollectionsLibrary.isEmpty(applications.getAffectedApplication())) {
-  //
-  // List<AffectedApplicationStructure> apps =
-  // applications.getAffectedApplication();
-  //
-  // for (AffectedApplicationStructure sApp : apps) {
-  // Affects.Builder affects = Affects.newBuilder();
-  // affects.setApplicationId(sApp.getApiKey());
-  // serviceAlert.addAffects(affects);
-  // }
-  // }
-  // }
-  // }
-  // }
 
   private void handleConsequences(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
@@ -755,32 +512,6 @@ public class NycSiriService {
     if (!consequencesList.isEmpty())
       serviceAlert.setConsequences(consequencesList);
   }
-
-  // private void handleConsequences(PtSituationElementStructure ptSituation,
-  // ServiceAlert.Builder serviceAlert) {
-  //
-  // PtConsequencesStructure consequences = ptSituation.getConsequences();
-  //
-  // if (consequences == null || consequences.getConsequence() == null)
-  // return;
-  //
-  // for (PtConsequenceStructure consequence : consequences.getConsequence()) {
-  // Consequence.Builder builder = Consequence.newBuilder();
-  // if (consequence.getCondition() != null)
-  // builder.setEffect(getConditionAsEffect(consequence.getCondition()));
-  // ExtensionsStructure extensions = consequence.getExtensions();
-  // if (extensions != null) {
-  // Object obj = extensions.getAny();
-  // if (obj instanceof OneBusAwayConsequence) {
-  // OneBusAwayConsequence obaConsequence = (OneBusAwayConsequence) obj;
-  // if (obaConsequence.getDiversionPath() != null)
-  // builder.setDetourPath(obaConsequence.getDiversionPath());
-  // }
-  // }
-  // if (builder.hasDetourPath() || builder.hasEffect())
-  // serviceAlert.addConsequence(builder);
-  // }
-  // }
 
   private EEffect getConditionAsEffect(ServiceConditionEnumeration condition) {
     switch (condition) {
@@ -828,53 +559,6 @@ public class NycSiriService {
     }
   }
 
-  // private Effect getConditionAsEffect(ServiceConditionEnumeration condition)
-  // {
-  // switch (condition) {
-  //
-  // case CANCELLED:
-  // case NO_SERVICE:
-  // return Effect.NO_SERVICE;
-  //
-  // case DELAYED:
-  // return Effect.SIGNIFICANT_DELAYS;
-  //
-  // case DIVERTED:
-  // return Effect.DETOUR;
-  //
-  // case ADDITIONAL_SERVICE:
-  // case EXTENDED_SERVICE:
-  // case SHUTTLE_SERVICE:
-  // case SPECIAL_SERVICE:
-  // case REPLACEMENT_SERVICE:
-  // return Effect.ADDITIONAL_SERVICE;
-  //
-  // case DISRUPTED:
-  // case INTERMITTENT_SERVICE:
-  // case SHORT_FORMED_SERVICE:
-  // return Effect.REDUCED_SERVICE;
-  //
-  // case ALTERED:
-  // case ARRIVES_EARLY:
-  // case REPLACEMENT_TRANSPORT:
-  // case SPLITTING_TRAIN:
-  // return Effect.MODIFIED_SERVICE;
-  //
-  // case ON_TIME:
-  // case FULL_LENGTH_SERVICE:
-  // case NORMAL_SERVICE:
-  // return Effect.OTHER_EFFECT;
-  //
-  // case UNDEFINED_SERVICE_INFORMATION:
-  // case UNKNOWN:
-  // return Effect.UNKNOWN_EFFECT;
-  //
-  // default:
-  // _log.warn("unknown condition: " + condition);
-  // return Effect.UNKNOWN_EFFECT;
-  // }
-  // }
-
   private TranslatedString translation(DefaultedTextStructure text) {
     if (text == null)
       return null;
@@ -894,7 +578,7 @@ public class NycSiriService {
 
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
-    String sendResult = post(SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
+    String sendResult = getWebResourceWrapper().post(SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
     return sendResult;
   }
 
@@ -907,29 +591,27 @@ public class NycSiriService {
   Siri createSubscriptionRequest() throws Exception {
     Siri siri = new Siri();
     SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
-    // TODO I think this needs to be changed, no?
-    subscriptionRequest.setAddress("http://localhost/foo/bar");
+    subscriptionRequest.setAddress(makeSubscriptionUrl(getSubscriptionPath()));
     siri.setSubscriptionRequest(subscriptionRequest);
     List<SituationExchangeSubscriptionStructure> exchangeSubscriptionRequests = subscriptionRequest.getSituationExchangeSubscriptionRequest();
     SituationExchangeSubscriptionStructure situationExchangeSubscriptionStructure = new SituationExchangeSubscriptionStructure();;
     exchangeSubscriptionRequests.add(situationExchangeSubscriptionStructure);
     SituationExchangeRequestStructure situationExchangeRequestStructure = new SituationExchangeRequestStructure();
     situationExchangeSubscriptionStructure.setSituationExchangeRequest(situationExchangeRequestStructure);
+    SubscriptionQualifierStructure id = new SubscriptionQualifierStructure();
+    id.setValue(UUID.randomUUID().toString());
+    situationExchangeSubscriptionStructure.setSubscriptionIdentifier(id);
     situationExchangeRequestStructure.setRequestTimestamp(new Date());
 
     return siri;
   }
 
-  public String post(String siri, String tdm) {
-    String postResult = "";
-    // _log.debug("result=" + siri);
-    ClientConfig config = new DefaultClientConfig();
-    Client client = Client.create(config);
-    WebResource r = client.resource(tdm);
-    postResult = r.accept(MediaType.APPLICATION_XML_TYPE).type(
-        MediaType.APPLICATION_XML_TYPE).post(String.class, siri);
-    // _log.debug("postResult=" + postResult);
-    return postResult;
+  private String makeSubscriptionUrl(String subscriptionPath) throws UnknownHostException {
+    if (_subscriptionUrl != null)
+      return _subscriptionUrl;
+    String hostName = InetAddress.getLocalHost().getCanonicalHostName();
+    _subscriptionUrl = "http://" + hostName + subscriptionPath;
+    return _subscriptionUrl;
   }
 
   private void addSituationExchangeRequest(Siri siri) {
@@ -949,14 +631,6 @@ public class NycSiriService {
     this._transitDataService = _transitDataService;
   }
 
-  public String getMode() {
-    return _mode;
-  }
-
-  public void setMode(String mode) {
-    this._mode = mode;
-  }
-
   public String getServiceAlertsUrl() {
     return _serviceAlertsUrl;
   }
@@ -969,7 +643,8 @@ public class NycSiriService {
     return currentServiceAlerts;
   }
 
-  public void setCurrentServiceAlerts(Map<String, ServiceAlertBean> currentServiceAlerts) {
+  public void setCurrentServiceAlerts(
+      Map<String, ServiceAlertBean> currentServiceAlerts) {
     this.currentServiceAlerts = currentServiceAlerts;
   }
 
@@ -977,8 +652,27 @@ public class NycSiriService {
     return serviceAlertSubscriptions;
   }
 
-  public void setServiceAlertSubscriptions(List<ServiceAlertSubscription> serviceAlertSubscriptions) {
+  public void setServiceAlertSubscriptions(
+      List<ServiceAlertSubscription> serviceAlertSubscriptions) {
     this.serviceAlertSubscriptions = serviceAlertSubscriptions;
+  }
+
+  public String getSubscriptionPath() {
+    return _subscriptionPath;
+  }
+
+  public void setSubscriptionPath(String subscriptionPath) {
+    this._subscriptionPath = subscriptionPath;
+  }
+
+  public WebResourceWrapper getWebResourceWrapper() {
+    if (_webResourceWrapper == null)
+      _webResourceWrapper = new WebResourceWrapper();
+    return _webResourceWrapper;
+  }
+
+  public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
+    this._webResourceWrapper = _webResourceWrapper;
   }
 
 }

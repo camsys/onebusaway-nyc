@@ -52,7 +52,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     destination.setServiceAlerts(_realtimeService.getServiceAlertsForStop(stop.getId()));
 
     // stop visits
-    List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), false);
+    List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), 0);
 
     List<String> distanceAwayStrings = new ArrayList<String>();
     for(MonitoredStopVisitStructure visit : visits) {
@@ -91,7 +91,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     
     // stop visits
     List<VehicleActivityStructure> journeyList = 
-        _realtimeService.getVehicleActivityForRoute(route.getId(), null, false);
+        _realtimeService.getVehicleActivityForRoute(route.getId(), null, 0);
     
     // build map of stop IDs to list of distance strings
     Map<String, ArrayList<String>> stopIdToDistanceStringMap = new HashMap<String, ArrayList<String>>();      

@@ -194,6 +194,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 			  (new RGBColor(controlText.style.color).toHex().toUpperCase() == "#CCCCCC") ?
 					   controlText.style.color = "#000000" : controlText.style.color = "#CCCCCC";
+			  
+			  (new RGBColor(controlUI.style.color).toHex().toUpperCase() == "#CCCCCC") ?
+					  controlUI.style.color = "#000000" : controlUI.style.color = "#CCCCCC";
 	  };
 	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
 
@@ -202,8 +205,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			  toggleSubway();
 		  }
 	  };
-	}	
-	
+	}
 
 	var map = null;
 	var mgr = null;
@@ -252,7 +254,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 				// hack fixme
 				var container = jQuery("#" + popupContainerId);
-				container.parent().parent().css("height", container.height()).css("overflow", "hidden");
+				
+				container.parent().parent().css("height", container.height());
+				container.parent().parent().css("width", container.width() + 25); // margin for close button
+
+				container.parent().css("overflow", "hidden");
+				container.parent().parent().css("overflow", "hidden");
 			});
 		};
 		refreshFn();		
@@ -363,7 +370,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	function getZoomHereLink() {
 		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
 		$('#zoomHere').live("click", function() { 
-			map.setZoom(map.getZoom()+1); 
+			if(infoWindow !== null && infoWindow.anchor !== null) {
+				map.setCenter(infoWindow.anchor.getPosition());
+			}
+			map.setZoom(map.maxZoom - 3); 
 		});
 		return $('<a></a>').append(zoomHere.clone()).html();
 	}
@@ -482,7 +492,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 
 		if(stopResult.routesAvailable.length > 0) {
-			html += '<p class="otherRoutes">Other routes available at this stop:</p>';
+			html += '<p class="otherRoutes">Routes available at this stop:</p>';
 			html += '<ul class="otherRoutes">';
 			jQuery.each(stopResult.routesAvailable, function(_, routeAvailable) {
 				html += '<li class="route"><a href="#' + routeAvailable.routeIdWithoutAgency + '" title="' + routeAvailable.description + '">'
@@ -663,7 +673,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			    		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleIdWithoutAgency);
 
 			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl + "?callback=?", 
-			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, VehicleMonitoringDetailLevel: "calls" }, 
+			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "2", VehicleMonitoringDetailLevel: "calls" }, 
 			    				getVehicleContentForResponse, null);
 			    	});
 				}
