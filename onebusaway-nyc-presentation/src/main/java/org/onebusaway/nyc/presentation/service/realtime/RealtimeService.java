@@ -15,13 +15,13 @@ public interface RealtimeService {
   public PresentationService getPresentationService();
   
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
-      String directionId, boolean includeNextStops);
+      String directionId, int maximumOnwardCalls);
     
   public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, 
-      boolean includeNextStops);
+      int maximumOnwardCalls);
   
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
-      boolean includeNextStops);  
+      int maximumOnwardCalls);  
 
   // FIXME TODO: refactor these to receive a passed in collection of MonitoredStopVisits or VehicleActivities?
   public List<NaturalLanguageStringBean> getServiceAlertsForRoute(String routeId);

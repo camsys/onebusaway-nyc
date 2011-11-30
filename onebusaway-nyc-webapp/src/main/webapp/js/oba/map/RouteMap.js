@@ -205,8 +205,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			  toggleSubway();
 		  }
 	  };
-	}	
-	
+	}
 
 	var map = null;
 	var mgr = null;
@@ -255,7 +254,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 				// hack fixme
 				var container = jQuery("#" + popupContainerId);
-				container.parent().parent().css("height", container.height()).css("overflow", "hidden");
+				
+				container.parent().parent().css("height", container.height());
+				container.parent().parent().css("width", container.width() + 25); // margin for close button
+
+				container.parent().css("overflow", "hidden");
+				container.parent().parent().css("overflow", "hidden");
 			});
 		};
 		refreshFn();		
@@ -669,7 +673,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			    		OBA.Config.analyticsFunction("Vehicle Marker Click", vehicleIdWithoutAgency);
 
 			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl + "?callback=?", 
-			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, VehicleMonitoringDetailLevel: "calls" }, 
+			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "2", VehicleMonitoringDetailLevel: "calls" }, 
 			    				getVehicleContentForResponse, null);
 			    	});
 				}

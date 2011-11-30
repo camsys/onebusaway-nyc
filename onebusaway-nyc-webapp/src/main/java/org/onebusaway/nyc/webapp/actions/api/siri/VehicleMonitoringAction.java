@@ -70,11 +70,17 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     String directionId = _request.getParameter("DirectionRef");
     String routeId = _request.getParameter("LineRef");
 
-    String detailLevel = _request.getParameter("VehicleMonitoringDetailLevel");
+    int maximumOnwardCalls = 0;        
 
-    boolean includeOnwardCalls = false;
-    if (detailLevel != null) {
-      includeOnwardCalls = detailLevel.equals("calls");
+    String detailLevel = _request.getParameter("VehicleMonitoringDetailLevel");
+    if (detailLevel != null && detailLevel.equals("calls")) {
+      maximumOnwardCalls = Integer.MAX_VALUE;
+
+      try {
+        maximumOnwardCalls = Integer.parseInt(_request.getParameter("MaximumNumberOfCallsOnwards"));
+      } catch (NumberFormatException e) {
+        maximumOnwardCalls = Integer.MAX_VALUE;
+      }
     }
 
     // *** CASE 1: by route
@@ -82,7 +88,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       String routeIdWithAgency = agencyId + "_" + routeId;
 
       _response = generateSiriResponse(_realtimeService.getVehicleActivityForRoute(
-          routeIdWithAgency, directionId, includeOnwardCalls));
+          routeIdWithAgency, directionId, maximumOnwardCalls));
 
       return SUCCESS;
     }
@@ -94,7 +100,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       String vehicleIdWithAgency = agencyId + "_" + vehicleId;
 
       activities.add(_realtimeService.getVehicleActivityForVehicle(
-          vehicleIdWithAgency, includeOnwardCalls));
+          vehicleIdWithAgency, maximumOnwardCalls));
 
       // *** CASE 3: all vehicles
     } else {
@@ -103,7 +109,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
       for (VehicleStatusBean v : vehicles.getList()) {
         activities.add(_realtimeService.getVehicleActivityForVehicle(
-            v.getVehicleId(), includeOnwardCalls));
+            v.getVehicleId(), maximumOnwardCalls));
       }
     }
 

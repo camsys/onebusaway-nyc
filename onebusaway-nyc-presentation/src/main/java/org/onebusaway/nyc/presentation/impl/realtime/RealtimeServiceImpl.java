@@ -39,15 +39,12 @@ public class RealtimeServiceImpl implements RealtimeService {
   private TransitDataService _transitDataService;
 
   private PresentationService _presentationService;
-
-  private SiriSupport _siriSupport = new SiriSupport();
   
   private Date _now = null;
   
   @Override
   public void setTime(Date time) {
     _now = time;
-    _siriSupport.setTime(time);
     _presentationService.setTime(time);
   }
 
@@ -61,13 +58,11 @@ public class RealtimeServiceImpl implements RealtimeService {
   @Autowired
   public void setTransitDataService(TransitDataService transitDataService) {
     _transitDataService = transitDataService;
-    _siriSupport.setTransitDataService(transitDataService);
   }
 
   @Autowired
   public void setPresentationService(PresentationService presentationService) {
     _presentationService = presentationService;
-    _siriSupport.setPresentationService(presentationService);
   }
   
   @Override
@@ -76,14 +71,14 @@ public class RealtimeServiceImpl implements RealtimeService {
   }  
 
   @Override
-  public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId, boolean includeNextStops) {
+  public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId, int maximumOnwardCalls) {
     List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
 
     ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
 
     for(TripDetailsBean tripDetails : trips.getList()) {
       // filter out interlined routes? sometimes OBA returns vehicles serving routes that are not the same one 
-      // we requested! 
+      // we requested! not 100% sure why...
       if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
         continue;
 
@@ -98,9 +93,9 @@ public class RealtimeServiceImpl implements RealtimeService {
       activity.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
 
       activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
-      _siriSupport.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
+      SiriSupport.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
           tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
-          includeNextStops);
+          _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
       
       output.add(activity);
     }
@@ -121,7 +116,7 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
 
   @Override
-  public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, boolean includeNextStops) {    
+  public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, int maximumOnwardCalls) {    
 
     TripForVehicleQueryBean query = new TripForVehicleQueryBean();
     query.setTime(new Date(getTime()));
@@ -142,16 +137,16 @@ public class RealtimeServiceImpl implements RealtimeService {
       output.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
 
       output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
-      _siriSupport.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
+      SiriSupport.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
           tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
-          includeNextStops);
+          _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
     }
     
     return output;
   }
 
   @Override
-  public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, boolean includeNextStops) {
+  public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls) {
 
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
@@ -180,9 +175,9 @@ public class RealtimeServiceImpl implements RealtimeService {
         stopVisit.setRecordedAtTime(new Date(statusBean.getLastUpdateTime()));
         
         stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
-        _siriSupport.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
+        SiriSupport.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
             adBean.getTrip(), tripDetails, adBean.getStop(), 
-            includeNextStops);
+            _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
           
         output.add(stopVisit);
       }

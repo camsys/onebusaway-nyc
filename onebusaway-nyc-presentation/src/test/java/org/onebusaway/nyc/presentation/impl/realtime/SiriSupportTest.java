@@ -23,7 +23,7 @@ import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
-public class SiriSupportTest extends SiriSupport {
+public class SiriSupportTest {
 
   private static final String MOCK_SERVICE_ALERT_ID = "mock service alert id";
   private static final String STOP_ID = "stop id";
@@ -33,13 +33,13 @@ public class SiriSupportTest extends SiriSupport {
   public void testGetMonitoredVehicleJourney() {    
     TripDetailsBean trip = setupMock();
     PresentationService presentationService = mock(PresentationService.class);
-    setPresentationService(presentationService );
 
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
-    boolean includeOnwardCalls = false;
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
-    fillMonitoredVehicleJourney(journey, trip.getTrip(), trip, monitoredCallStopBean, includeOnwardCalls);
+    SiriSupport.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip, monitoredCallStopBean, 
+        presentationService, null, System.currentTimeMillis(), 0);
+    
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();
     assertNotNull(situationRefs);
