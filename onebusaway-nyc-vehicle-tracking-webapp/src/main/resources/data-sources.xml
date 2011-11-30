@@ -100,6 +100,6 @@
                 <property name="standaloneMode" value="${bundle.mode.standalone}" />
     </bean>
 
-    <import resource="${run.siri.service}"/>
+    <import resource="${siri.service.config}"/>
         
 </beans>

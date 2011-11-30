@@ -12,12 +12,6 @@
     <packaging>war</packaging>
     <name>onebusaway-nyc-vehicle-tracking-webapp</name>
 
-    <properties>
-        <!-- Set this to empty.xml if you do not want the NycSiriService to run -->
-        <run.siri.service>nyc-siri-service.xml</run.siri.service>
-<!--         <run.siri.service>empty.xml</run.siri.service> -->
-    </properties>
-    
     <dependencies>
 
         <dependency>
@@ -124,6 +118,10 @@
                 <tdm.host>tdm.staging.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                
+                <!-- Set this to empty.xml if you do not want the NycSiriService to run -->
+                <siri.service.config>nyc-siri-service.xml</siri.service.config>
+<!--                 <siri.service.config>empty.xml</siri.service.config> -->
             </properties>
         </profile>
         <profile>
@@ -140,6 +138,7 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <siri.service.config>nyc-siri-service.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -155,6 +154,7 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <siri.service.config>nyc-siri-service.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -171,6 +171,7 @@
                 <tdm.host>tdm.staging.obanyc.com</tdm.host>
                 <service.alerts.url>http://tdm.staging.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -187,6 +188,7 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -203,6 +205,7 @@
                 <tdm.host>tdm.prod.obanyc.com</tdm.host>
                 <service.alerts.url>http://tdm.prod.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -219,6 +222,7 @@
                 <tdm.host>tdm.qa.obanyc.com</tdm.host>
                 <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         
