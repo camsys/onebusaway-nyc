@@ -15,6 +15,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,6 @@ import uk.org.siri.siri.ServiceRequest;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveriesStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
-import uk.org.siri.siri.StatusResponseStructure;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
 import uk.org.siri.siri.SubscriptionRequest;
 
@@ -40,7 +40,8 @@ public class SituationExchangeResource {
 
   private static Logger _log = LoggerFactory.getLogger(SituationExchangeResource.class);
 
-  NycSiriService _siriService = new NycSiriService();
+  @Autowired
+  NycSiriService _siriService;
 
   private JAXBContext jc;
 
@@ -52,7 +53,7 @@ public class SituationExchangeResource {
   @POST
   @Produces("application/xml")
   @Consumes("application/xml")
-  public Response handlePost(String body) throws JAXBException {
+  public Response handlePost(String body) throws Exception {
     _log.debug("---begin body---\n" + body + "\n---end body---");
     _log.info("SituationExchangeResource.handlePost");
 
@@ -110,7 +111,7 @@ public class SituationExchangeResource {
     return siri;
   }
 
-  public NycSiriService getSiriService() {
+  public NycSiriService getNycSiriService() {
     return _siriService;
   }
 

@@ -12,6 +12,12 @@
     <packaging>war</packaging>
     <name>onebusaway-nyc-vehicle-tracking-webapp</name>
 
+    <properties>
+        <!-- Set this to empty.xml if you do not want the NycSiriService to run -->
+        <run.siri.service>nyc-siri-service.xml</run.siri.service>
+<!--         <run.siri.service>empty.xml</run.siri.service> -->
+    </properties>
+    
     <dependencies>
 
         <dependency>
@@ -116,6 +122,8 @@
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         <profile>
@@ -130,6 +138,8 @@
 				<ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         <profile>
@@ -143,6 +153,8 @@
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         <profile>
@@ -157,6 +169,8 @@
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <service.alerts.url>http://tdm.staging.obanyc.com/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         <profile>
@@ -171,6 +185,8 @@
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         <profile>
@@ -185,6 +201,8 @@
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.prod.obanyc.com</tdm.host>
+                <service.alerts.url>http://tdm.prod.obanyc.com/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         <profile>
@@ -199,6 +217,8 @@
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.qa.obanyc.com</tdm.host>
+                <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
             </properties>
         </profile>
         
@@ -254,40 +274,6 @@
             </properties>            
         </profile>
         
-        <!-- TODO Talk to Sheldon about how to parameterize this for deployment -->
-        <!--  Service alerts server -->
-        <profile>
-            <id>service-alerts-staging</id>
-            <properties>
-                <service.alerts.url>http://tdm.staging.obanyc.com/siri/situation-exchange</service.alerts.url>
-            </properties>
-        </profile>
-        <profile>
-            <id>service-alerts-prod</id>
-            <properties>
-                <service.alerts.url>http://tdm.prod.obanyc.com/siri/situation-exchange</service.alerts.url>
-            </properties>
-        </profile>
-        <profile>
-            <id>service-alerts-qa</id>
-            <properties>
-                <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
-            </properties>
-        </profile>
-        <profile>
-            <id>service-alerts-demo</id>
-            <properties>
-                <service.alerts.url>http://tdm.demo.obanyc.com/siri/situation-exchange</service.alerts.url>
-            </properties>
-        </profile>
-        <profile>
-            <id>service-alerts-local-8083</id>
-            <properties>
-                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
-                <service.alerts.subscription.address>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.address>
-            </properties>
-        </profile>
-
     </profiles>
 
     <build>

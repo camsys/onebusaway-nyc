@@ -1,13 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -28,10 +22,9 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -44,37 +37,19 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 
 public class SituationExchangeResourceTest extends SituationExchangeResource {
 
-	public SituationExchangeResourceTest() throws JAXBException {
+	private static final boolean EXPECT_FAILURE = true;
+
+  public SituationExchangeResourceTest() throws JAXBException {
     super();
+  }
+  
+  @Before
+  public void setup() {
+      setNycSiriService(new NycSiriServiceGateway());
   }
 
   @Test
-	public void testHandlePost() throws Exception {
-    TransitDataService tds = mock(TransitDataService.class);
-    ListBean<ServiceAlertBean> serviceAlertsBeans = new ListBean<ServiceAlertBean>();
-    ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
-    List<ServiceAlertBean> list = new ArrayList<ServiceAlertBean>();
-    list.add(serviceAlertBean);
-    serviceAlertsBeans.setList(list);
-    when(tds.getAllServiceAlertsForAgencyId(anyString())).thenReturn(serviceAlertsBeans);
-
-		NycSiriService siriService = new NycSiriService();
-		siriService.setTransitDataService(tds);
-//		siriService.setServiceAlertService(saService);
-		setNycSiriService(siriService);
-		String body = loadSample("t.xml");
-		@SuppressWarnings("unused")
-    Response response = handlePost(body);
-
-		// Somewhat lame test at the moment.
-		verify(tds).createServiceAlert(anyString(), any(ServiceAlertBean.class));
-//		verify(saService).createOrUpdateServiceAlert(
-//				any(ServiceAlert.Builder.class), anyString());
-
-	}
-
-  @Test
-  public void testServiceAndSubscriptionRequest() throws IOException, JAXBException {
+  public void testServiceAndSubscriptionRequest() throws Exception {
     setupServiceAlerts();
 
     String body = loadSample("service-and-subscription-requests.xml");
@@ -86,7 +61,19 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 }
 
   @Test
-  public void testServiceRequest() throws IOException, JAXBException {
+  public void testServiceAndSubscriptionRequestMissingRequiredElement() throws Exception {
+    setupServiceAlerts();
+
+    String body = loadSample("service-and-subscription-requests-missing.xml");
+    Response response = handlePost(body);
+    Siri responseSiri = verifySiriResponse(response);
+
+    verifySituationExchangeDelivery(responseSiri);
+    verifySubscriptionRequest(responseSiri, EXPECT_FAILURE);
+}
+
+  @Test
+  public void testServiceRequest() throws Exception {
     setupServiceAlerts();
 
     String body = loadSample("service-request.xml");
@@ -97,7 +84,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
   }
 
   @Test
-  public void testSubscriptionRequest() throws IOException, JAXBException {
+  public void testSubscriptionRequest() throws Exception {
     String body = loadSample("subscription-request.xml");
     Response response = handlePost(body);
     Siri responseSiri = verifySiriResponse(response);
@@ -112,6 +99,10 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
   }
 
   private void verifySubscriptionRequest(Siri responseSiri) {
+    verifySubscriptionRequest(responseSiri, false);
+  }
+    
+  private void verifySubscriptionRequest(Siri responseSiri, boolean expectFailure) {
     SubscriptionResponseStructure responseStructure = responseSiri.getSubscriptionResponse();
     assertTrue(responseStructure != null);
     List<StatusResponseStructure> status = responseStructure.getResponseStatus();
@@ -119,12 +110,16 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     assertEquals(1, status.size());
     StatusResponseStructure statusResponse = status.get(0);
     assertTrue(statusResponse != null);
-    assertEquals(true, statusResponse.isStatus());
+
+    if (expectFailure) {
+      assertEquals(false, statusResponse.isStatus());
+      return;
+    }
 
     // it's a Java UUID
     assertTrue(statusResponse.getSubscriptionRef().getValue().matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
     
-    List<ServiceAlertSubscription> subscriptions = getSiriService().getServiceAlertSubscriptions();
+    List<ServiceAlertSubscription> subscriptions = getNycSiriService().getServiceAlertSubscriptions();
     assertEquals(1, subscriptions.size());
     ServiceAlertSubscription subscription = subscriptions.get(0);
     assertEquals("http://localhost/foo/bar",subscription.getAddress());
@@ -140,7 +135,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
   private void setupServiceAlerts() {
     Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
     currentServiceAlerts.put("foo", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1000"));
-    getSiriService().setCurrentServiceAlerts(currentServiceAlerts);
+    getNycSiriService().setCurrentServiceAlerts(currentServiceAlerts);
   }
 
 	@Test

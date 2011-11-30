@@ -18,6 +18,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.core.impl.provider.entity.XMLRootElementProvider;
 
+import play.Logger;
 import play.modules.spring.Spring;
 import play.mvc.Before;
 import play.mvc.Controller;
@@ -52,9 +53,13 @@ public class Application extends Controller {
       HessianProxyFactory factory = new HessianProxyFactory();
       try {
         TransitDataService tds;
+        Logger.info("creating factory");
         tds = (TransitDataService) factory.create(TransitDataService.class,
             tdsUrl);
+        Logger.info("Sending tds request");
         serviceAlerts = tds.getAllServiceAlertsForAgencyId("MTA NYCT");
+        Logger.info("Service alerts: " + serviceAlerts);
+        Logger.info("Size: " + serviceAlerts.getList().size());
       } catch (Exception e) {
         error = e.getMessage();
       }

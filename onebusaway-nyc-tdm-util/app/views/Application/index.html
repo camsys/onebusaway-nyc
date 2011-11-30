@@ -50,8 +50,7 @@
 
 			<td>${serviceAlert.urls}</td>
 
-			<td>${serviceAlert.allAffects.get(0).agencyId} |
-				${serviceAlert.allAffects.get(0).routeId}</td>
+            <td>${serviceAlert.formatAffects()}</td>
 
 			<td>${serviceAlert.consequences.get(0).effect}</td>
 

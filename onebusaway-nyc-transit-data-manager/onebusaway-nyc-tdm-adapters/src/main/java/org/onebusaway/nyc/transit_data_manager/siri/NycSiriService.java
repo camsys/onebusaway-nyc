@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.transit_data_manager.siri;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,13 +106,15 @@ public abstract class NycSiriService {
 
   private String _serviceAlertsUrl;
 
-  private String _subscriptionAddress;
+  private String _subscriptionPath;
 
   private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
   
   private List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
 
   private WebResourceWrapper _webResourceWrapper;
+
+  private String _subscriptionUrl;
 
   abstract void setupForMode() throws Exception, JAXBException;
   
@@ -133,7 +137,7 @@ public abstract class NycSiriService {
   }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
-      ServiceDelivery delivery) {
+      ServiceDelivery delivery) throws Exception {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
@@ -587,7 +591,7 @@ public abstract class NycSiriService {
   Siri createSubscriptionRequest() throws Exception {
     Siri siri = new Siri();
     SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
-    subscriptionRequest.setAddress(getSubscriptionAddress());
+    subscriptionRequest.setAddress(makeSubscriptionUrl(getSubscriptionPath()));
     siri.setSubscriptionRequest(subscriptionRequest);
     List<SituationExchangeSubscriptionStructure> exchangeSubscriptionRequests = subscriptionRequest.getSituationExchangeSubscriptionRequest();
     SituationExchangeSubscriptionStructure situationExchangeSubscriptionStructure = new SituationExchangeSubscriptionStructure();;
@@ -600,6 +604,14 @@ public abstract class NycSiriService {
     situationExchangeRequestStructure.setRequestTimestamp(new Date());
 
     return siri;
+  }
+
+  private String makeSubscriptionUrl(String subscriptionPath) throws UnknownHostException {
+    if (_subscriptionUrl != null)
+      return _subscriptionUrl;
+    String hostName = InetAddress.getLocalHost().getCanonicalHostName();
+    _subscriptionUrl = "http://" + hostName + subscriptionPath;
+    return _subscriptionUrl;
   }
 
   private void addSituationExchangeRequest(Siri siri) {
@@ -645,12 +657,12 @@ public abstract class NycSiriService {
     this.serviceAlertSubscriptions = serviceAlertSubscriptions;
   }
 
-  public String getSubscriptionAddress() {
-    return _subscriptionAddress;
+  public String getSubscriptionPath() {
+    return _subscriptionPath;
   }
 
-  public void setSubscriptionAddress(String _subscriptionAddress) {
-    this._subscriptionAddress = _subscriptionAddress;
+  public void setSubscriptionPath(String subscriptionPath) {
+    this._subscriptionPath = subscriptionPath;
   }
 
   public WebResourceWrapper getWebResourceWrapper() {
