@@ -44,13 +44,15 @@ OBA.Sidebar = function() {
 		searchBarDiv = jQuery("#searchbar");
 		mainbox = jQuery("#mainbox");
 		
-		function resize() {
+		function resize() {			
 			var h = theWindow.height() - headerDiv.height();
-			var w = theWindow.width() - headerDiv.width();
+			var w = theWindow.width();
 			contentDiv.height(h);
 			searchBarDiv.height(h);
 			if (w <= 1060) {
 				mainbox.css("width", "960px");
+			} else {
+				mainbox.css("width", "95%");
 			}
 		}
 		resize();

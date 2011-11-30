@@ -194,6 +194,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 			  (new RGBColor(controlText.style.color).toHex().toUpperCase() == "#CCCCCC") ?
 					   controlText.style.color = "#000000" : controlText.style.color = "#CCCCCC";
+			  
+			  (new RGBColor(controlUI.style.color).toHex().toUpperCase() == "#CCCCCC") ?
+					  controlUI.style.color = "#000000" : controlUI.style.color = "#CCCCCC";
 	  };
 	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
 
