@@ -77,13 +77,14 @@ html, body {
     margin: 0 auto;
     padding: 0 0 20px;
     position: relative;
-    width: 90%;
+    width: 95%;
 }
 #topbar {
     height: 122px;
 }
 #topbar #branding {
     float: left;
+    height: 90px;
 }
 #topbar #search {
     float: right;
@@ -167,12 +168,12 @@ html, body {
     font-weight: bold;
 }
 #horizontalcssmenu {
-    clear: both;
+	clear: both;
 }
+
 #horizontalcssmenu ul#cssmenu1 {
     list-style-type: none;
     margin: 0;
-    padding: 0;
 }
 #horizontalcssmenu ul#cssmenu1 li {
     border-left: 1px solid #AEAEB0;
@@ -187,7 +188,7 @@ html, body {
     display: block;
     font-weight: bold;
     height: 16px;
-    padding: 8px 14px;
+    padding: 8px;
     text-align: center;
     text-decoration: none;
 }
