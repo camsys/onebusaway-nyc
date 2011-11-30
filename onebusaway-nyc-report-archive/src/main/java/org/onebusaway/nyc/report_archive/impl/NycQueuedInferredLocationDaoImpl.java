@@ -45,6 +45,7 @@ class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocationDao {
 
     _template.saveOrUpdate(currentRecord);
     // clear from level on cache
+    _template.flush();
     _template.evict(currentRecord);
     _template.evict(record);
   }
