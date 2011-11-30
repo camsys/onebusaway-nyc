@@ -79,6 +79,18 @@ public class JourneyStateTransitionModel {
     }
   }
 
+  /**
+   * This takes all the possible journeyStates that the
+   * parentState could transition to, given the observation,
+   * and populates results with the resulting VehicleStates 
+   * of each of those transitions.
+   * 
+   * @param parentState
+   * @param motionState
+   * @param journeyStates
+   * @param obs
+   * @param results
+   */
   private void generateVehicleStates(VehicleState parentState,
       MotionState motionState, List<JourneyState> journeyStates, 
       Observation obs, List<VehicleState> results) {
