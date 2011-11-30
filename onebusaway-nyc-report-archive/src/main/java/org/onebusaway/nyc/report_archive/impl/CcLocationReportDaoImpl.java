@@ -39,6 +39,7 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
   public void saveOrUpdateReport(CcLocationReportRecord report) {
     _template.saveOrUpdate(report);
     // clear from level one cache
+    _template.flush();
     _template.evict(report);
   }
 
