@@ -27,8 +27,13 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
     try {    
       CcLocationReport message = deserializeMessage(contents);
 
-      // message discarded, probably corrupted
-      if (message == null) return false;
+      if (message == null) {
+	  _log.error("Message discarded, probably corrupted, contents= " + contents);
+	  Exception e = new Exception("deserializeMessage failed, possible corrupted message.");
+
+	  _dao.handleException(contents, e);
+	  return false;
+      }
 
       CcLocationReportRecord record = new CcLocationReportRecord(message, contents);
       if (record != null) {

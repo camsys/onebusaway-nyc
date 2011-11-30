@@ -104,15 +104,14 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "inferred_status")
   private String inferredStatus;
   
-  @Column(nullable = true, name = "run_id")
-  private String runId;
+  @Column(nullable = true, name = "inferred_run_id")
+  private String inferredRunId;
 
   @Column(nullable = true, name = "inferred_route_id")
   private String inferredRouteId;
 
   @Column(nullable = true, name = "inferred_direction_id")
   private String inferredDirectionId;
-   
 
   // Fields from NycVehicleManagementStatusBean
   @Column(nullable = false, name = "last_update_time")
@@ -373,12 +372,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.inferredStatus = inferredStatus;
   }
 
-  public void setRunId(String runId) {
-    this.runId = runId;
+  public void setInferredRunId(String runId) {
+    this.inferredRunId = runId;
   }
   
-  public String getRunId() {
-    return runId;
+  public String getInferredRunId() {
+    return inferredRunId;
   }
 
   public void setInferredRouteId(String inferredRouteId) {
@@ -397,7 +396,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     return inferredDirectionId;
   }
 
-   // properties from NycVehicleManagementStatusBean
+  // properties from NycVehicleManagementStatusBean
   public long getLastUpdateTime() {
     return lastUpdateTime;
   }
