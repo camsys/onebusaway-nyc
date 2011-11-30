@@ -53,7 +53,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private static Logger _log = LoggerFactory
       .getLogger(ParticleFactoryImpl.class);
 
-  private int _initialNumberOfParticles = 100;
+  private int _initialNumberOfParticles = 50;
 
   private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 

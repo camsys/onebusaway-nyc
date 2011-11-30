@@ -65,7 +65,7 @@ public class VehicleStateLibrary {
   private double _terminalSearchRadius = 150;
 
   private TransitGraphDao _transitGraphDao;
-  
+
   private BlockIndexService _blockIndexService;
 
   private BlockGeospatialService _blockGeospatialService;
@@ -81,7 +81,7 @@ public class VehicleStateLibrary {
       BlockIndexFactoryService blockIndexFactoryService) {
     _blockIndexFactoryService = blockIndexFactoryService;
   }
-  
+
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
@@ -91,7 +91,7 @@ public class VehicleStateLibrary {
   public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
     _blockCalendarService = blockCalendarService;
   }
-  
+
   @Autowired
   public void setBlockGeospatialService(
       BlockGeospatialService blockGeospatialService) {
@@ -102,8 +102,6 @@ public class VehicleStateLibrary {
   public void setBlockIndexService(BlockIndexService blockIndexService) {
     _blockIndexService = blockIndexService;
   }
-
-
 
   @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
@@ -136,17 +134,28 @@ public class VehicleStateLibrary {
     if (_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
       return false;
 
-//    if (obs.isAtTerminal())
-//      return true;
-    
+
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
   public boolean isAtPotentialLayoverSpot(BlockState blockState, Observation obs) {
 
-    if (blockState == null)
-      return false;
+    /**
+     * If there is no block assigned to this vehicle state,
+     * then we allow a layover spot the terminals of all blocks. 
+     */
+    if (blockState == null) {
+      return obs.isAtTerminal();
+    }
 
+    /**
+     * Otherwise, if there is a block assigned, then we need
+     * to be more specific and check only terminals for trips
+     * on this block.
+     */
+    if (isAtPotentialTerminal(obs.getRecord(), blockState.getBlockInstance()))
+      return true;
+   
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
     if (blockLocation == null)
@@ -159,12 +168,57 @@ public class VehicleStateLibrary {
     return getPotentialLayoverSpot(location) != null;
   }
 
+  /**
+   * This method determines if an observation record is within
+   * a certain radius, _terminalSearchRadius argument, of a stop at the
+   * start or end of a trip on a given block, blockInstance argument. 
+   * @param record
+   * @param blockInstance
+   * @return whether the observation is within the search radius
+   */
+  public boolean isAtPotentialTerminal(NycRawLocationRecord record,
+      BlockInstance blockInstance) {
+
+    CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
+        record.getLongitude());
+
+    for (BlockTripEntry bte : blockInstance.getBlock().getTrips()) {
+      /*
+       * is this the first stop on this trip?
+       */
+      List<StopTimeEntry> stopsOnTrip = bte.getTrip().getStopTimes();
+
+      double firstStopDist = SphericalGeometryLibrary.distance(loc, stopsOnTrip
+          .get(0).getStop().getStopLocation());
+      int lastStopIdx = stopsOnTrip.size() - 1;
+      double lastStopDist = SphericalGeometryLibrary.distance(loc, stopsOnTrip
+          .get(lastStopIdx).getStop().getStopLocation());
+
+      if (firstStopDist <= _terminalSearchRadius
+          || lastStopDist <= _terminalSearchRadius) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * This method determines if an observation record is within
+   * a certain radius, _terminalSearchRadius argument, of a stop at the
+   * start or end of a trip.
+   * <br>
+   * Note: all trips' stops within the radius are checked.
+   *  
+   * @param record
+   * @return whether the observation is within the search radius
+   */
   public boolean isAtPotentialTerminal(NycRawLocationRecord record) {
 
     CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
         record.getLongitude());
-    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
-        loc, _terminalSearchRadius);
+    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(loc,
+        _terminalSearchRadius);
 
     List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
     for (StopEntry stop : stops) {
@@ -179,12 +233,12 @@ public class VehicleStateLibrary {
           if (stop.equals(stopsOnTrip.get(0).getStop())) {
             return true;
           }
-          
-          int numOfStops = stopsOnTrip.size()-1;
+
+          int numOfStops = stopsOnTrip.size() - 1;
           if (stop.equals(stopsOnTrip.get(numOfStops).getStop())) {
             return true;
           }
-          
+
         }
       }
     }
