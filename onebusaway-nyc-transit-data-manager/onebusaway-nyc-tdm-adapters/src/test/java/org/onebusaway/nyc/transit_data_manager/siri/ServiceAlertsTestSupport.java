@@ -9,6 +9,8 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 
 public class ServiceAlertsTestSupport {
 
+  public static final String TEST_ROUTE_ID = "test route id";
+
   public static ServiceAlertBean createServiceAlertBean(String id) {
     ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
     serviceAlertBean.setId(id);
@@ -20,6 +22,9 @@ public class ServiceAlertsTestSupport {
     serviceAlertBean.setDescriptions(descriptions);
   
     List<SituationAffectsBean> allAffects = new ArrayList<SituationAffectsBean>();
+    SituationAffectsBean saBean = new SituationAffectsBean();
+    saBean.setRouteId(TEST_ROUTE_ID);
+    allAffects.add(saBean );
     serviceAlertBean.setAllAffects(allAffects);
     return serviceAlertBean;
   }

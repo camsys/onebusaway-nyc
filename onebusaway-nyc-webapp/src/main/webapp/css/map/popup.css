@@ -2,6 +2,7 @@
     font-size: 12px;
 	color: #333333;
 	display: block;
+	width: 320px;
 }
 
 .popup .header {
@@ -9,13 +10,13 @@
 }
 
 .popup .header.stop {
-	background-image: url("img/header_stop.png");
+	background-image: url("img/header_bus_stop.png");
 	background-repeat: no-repeat;
 	background-position: left center;
 }
 
 .popup .header.vehicle {
-	background-image: url("img/header_bus.png");
+	background-image: url("img/header_bus_icon.png");
 	background-repeat: no-repeat;
 	background-position: left center;
 }
@@ -94,6 +95,7 @@
 
 .popup ul li.nextStop span,
 .popup ul li.arrival span {
+	white-space: nowrap;
 	color: #333333;
 	padding-left: 0px;
 	margin-left: 4px;

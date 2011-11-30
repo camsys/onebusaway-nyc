@@ -63,6 +63,7 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   // listening
   protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
     try {
+	_log.info("vehicle=" + inferredResult.getVehicleId() + ":" + new Date(inferredResult.getRecordTimestamp()));
       ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(inferredResult, contents);
       postProcess(locationRecord);
       _locationDao.saveOrUpdateRecord(locationRecord);
@@ -74,12 +75,12 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
     // Extract next stop id and distance
     String vehicleId = locationRecord.getAgencyId() + "_" + locationRecord.getVehicleId().toString();
-    // VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(vehicleId, locationRecord.getTimeReported().getTime());
-    // locationRecord.setVehicleStatusBean(vehicle);
-    // VehicleLocationRecordBean vehicleLocation = _transitDataService.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord.getTimeReported().getTime()) ;
-    // if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
-    // 	locationRecord.setVehicleLocationRecordBean(vehicleLocation);
-    // }
+    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(vehicleId, locationRecord.getTimeReported().getTime());
+    locationRecord.setVehicleStatusBean(vehicle);
+    VehicleLocationRecordBean vehicleLocation = _transitDataService.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord.getTimeReported().getTime()) ;
+    if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
+     	locationRecord.setVehicleLocationRecordBean(vehicleLocation);
+    }
 
   }
 

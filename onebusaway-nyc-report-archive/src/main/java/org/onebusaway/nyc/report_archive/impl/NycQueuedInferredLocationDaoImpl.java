@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocationDao {
     return _template;
   }
 
+  @Transactional(rollbackFor=Throwable.class)
   @Override
   public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
     _template.saveOrUpdate(record);
@@ -42,6 +44,9 @@ class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocationDao {
     InferredLocationRecord currentRecord = new InferredLocationRecord(record);
 
     _template.saveOrUpdate(currentRecord);
+    // clear from level on cache
+    _template.evict(currentRecord);
+    _template.evict(record);
   }
 
   public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {

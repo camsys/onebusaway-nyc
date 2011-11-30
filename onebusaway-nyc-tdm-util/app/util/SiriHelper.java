@@ -18,6 +18,7 @@ import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
 import uk.org.siri.siri.LineRefStructure;
+import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.PtConsequenceStructure;
 import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
@@ -25,6 +26,8 @@ import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
+import uk.org.siri.siri.SituationSourceStructure;
+import uk.org.siri.siri.SituationSourceTypeEnumeration;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
@@ -70,6 +73,13 @@ public class SiriHelper {
 		ptSit.setSummary(defaultedTextStructure(summaryText));
 		ptSit.setDescription(defaultedTextStructure(descriptionText));
 		ptSit.setSituationNumber(createSiriNumberElement(idNumber));
+		
+		ptSit.setCreationTime(new Date());
+		ptSit.setPlanned(true);
+		ptSit.setReasonName(naturalLanguageStringStructure("Service Change"));
+		SituationSourceStructure source = new SituationSourceStructure();
+    ptSit.setSource(source );
+    source.setSourceType(SituationSourceTypeEnumeration.DIRECT_REPORT);
 
 		ptSit.setConsequences(createConsequences());
 
@@ -110,7 +120,15 @@ public class SiriHelper {
 		return ptSit;
 	}
 
-	private AffectsScopeStructure createAffects(String lines) {
+	private NaturalLanguageStringStructure naturalLanguageStringStructure(
+      String text) {
+	  NaturalLanguageStringStructure s = new NaturalLanguageStringStructure();
+	  s.setLang("EN");
+	  s.setValue(text);
+    return s;
+  }
+
+  private AffectsScopeStructure createAffects(String lines) {
 		AffectsScopeStructure affects = new AffectsScopeStructure();
 		VehicleJourneys vehicleJourneys = new VehicleJourneys();
 		affects.setVehicleJourneys(vehicleJourneys);

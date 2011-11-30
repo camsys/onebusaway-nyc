@@ -1,9 +1,11 @@
 package ext;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 
 import play.templates.JavaExtensions;
@@ -40,5 +42,18 @@ public class ServiceAlertExtensions extends JavaExtensions {
     if (d == 0)
       return "(none)";
     return new Date(d).toString();
+  }
+  
+  public static String formatAffects(ServiceAlertBean serviceAlert) {
+    String s = "";
+    if (serviceAlert == null)
+      return "serviceAlert is null";
+    if (serviceAlert.getAllAffects() == null)
+      return "getAllAffects is null";
+    List<SituationAffectsBean> affects = serviceAlert.getAllAffects();
+    for (SituationAffectsBean affect: affects) {
+      s += "routeid: " + affect.getRouteId();
+    }
+    return s;
   }
 }
