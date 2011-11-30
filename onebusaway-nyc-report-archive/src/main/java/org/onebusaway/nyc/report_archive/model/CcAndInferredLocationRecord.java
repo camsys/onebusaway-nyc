@@ -37,6 +37,8 @@ public class CcAndInferredLocationRecord implements Serializable {
     public CcAndInferredLocationRecord (ArchivedInferredLocationRecord inferred,
 					CcLocationReportRecord realtime) {
 	// realtime fields
+	setRunIdDesignator(realtime.getRunIdDesignator());
+	setRouteIdDesignator(realtime.getRouteIdDesignator());
 	setVehicleAgencyId(realtime.getVehicleAgencyId());
 	setTimeReported(toISODate(realtime.getTimeReported()));
 	setTimeReceived(toISODate(realtime.getTimeReceived()));
@@ -66,6 +68,8 @@ public class CcAndInferredLocationRecord implements Serializable {
 	setInferenceIsFormal(inferred.isInferenceIsFormal());
 	setDistanceAlongBlock(inferred.getDistanceAlongBlock());
 	setDistanceAlongTrip(inferred.getDistanceAlongTrip());
+	setNextScheduledStopId(inferred.getNextScheduledStopId());
+	setNextScheduledStopDistance(inferred.getNextScheduledStopDistance());
 	setScheduleDeviation(inferred.getScheduleDeviation());
     }
 
@@ -74,6 +78,8 @@ public class CcAndInferredLocationRecord implements Serializable {
   private String timeReported;
   private String timeReceived;
   private String operatorIdDesignator;
+  private String routeIdDesignator;
+  private String runIdDesignator;
   private Integer destSignCode;
   private String emergencyCode;
   private BigDecimal latitude;
@@ -99,6 +105,8 @@ public class CcAndInferredLocationRecord implements Serializable {
   private boolean inferenceIsFormal;
   private Double distanceAlongBlock;
   private Double distanceAlongTrip;
+  private String nextScheduledStopId;
+  private Double nextScheduledStopDistance;
   private Integer scheduleDeviation;
 
 
@@ -140,6 +148,22 @@ public class CcAndInferredLocationRecord implements Serializable {
 
   public void setOperatorIdDesignator(String operatorIdDesignator) {
     this.operatorIdDesignator = operatorIdDesignator;
+  }
+
+  public String getRouteIdDesignator() {
+    return routeIdDesignator;
+  }
+
+  public void setRouteIdDesignator(String routeIdDesignator) {
+    this.routeIdDesignator = routeIdDesignator;
+  }
+
+  public String getRunIdDesignator() {
+    return runIdDesignator;
+  }
+
+  public void setRunIdDesignator(String runIdDesignator) {
+    this.runIdDesignator = runIdDesignator;
   }
 
   public Integer getDestSignCode() {
@@ -324,7 +348,23 @@ public class CcAndInferredLocationRecord implements Serializable {
   }
 
   public void setDistanceAlongTrip(Double distance) {
-    this.distanceAlongTrip = distance;
+      this.distanceAlongTrip = distance;
+  }
+
+  public String getNextScheduledStopId() {
+      return nextScheduledStopId;
+  }
+
+  public void setNextScheduledStopId(String stopId) {
+      this.nextScheduledStopId = stopId;
+  }
+
+  public Double getNextScheduledStopDistance() {
+      return nextScheduledStopDistance;
+  }
+
+  public void setNextScheduledStopDistance(Double stopDistance) {
+      this.nextScheduledStopDistance = stopDistance;
   }
 
   public Integer getScheduleDeviation() {

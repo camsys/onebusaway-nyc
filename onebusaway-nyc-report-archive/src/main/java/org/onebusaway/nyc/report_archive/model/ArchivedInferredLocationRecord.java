@@ -148,6 +148,15 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "next_scheduled_stop_distance")
   private Double nextScheduledStopDistance;
 
+  // Fields for 1B, back-linking UTS data
+  @Column(nullable = true, name = "assigned_run_route", length = 8)
+  private String assignedRunRoute = null;
+
+  @Column(nullable = true, name = "assigned_run_number", length = 8)
+  private String assignedRunNumber = null;
+
+
+
   public ArchivedInferredLocationRecord() {
   }
 
@@ -222,8 +231,6 @@ public class ArchivedInferredLocationRecord implements Serializable {
       if (tsb.getNextStop() != null) {
 	  setNextScheduledStopId(tsb.getNextStop().getId());
       }
-      setInferredPhase(tsb.getPhase());
-      setInferredStatus(tsb.getStatus());
       if (!Double.isNaN(tsb.getLastKnownDistanceAlongTrip())) {
 	  setDistanceAlongTrip(tsb.getLastKnownDistanceAlongTrip());
       }
@@ -243,12 +250,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
       setInferredRouteId(rb.getId());
   }
 
+
   public void setVehicleLocationRecordBean(VehicleLocationRecordBean vlr) {
       if (getInferredLatitude() == null || getInferredLongitude() == null) {
-  setInferredLatitude(new BigDecimal(vlr.getCurrentLocation().getLat()));
+	  setInferredLatitude(new BigDecimal(vlr.getCurrentLocation().getLat()));
 	  setInferredLongitude(new BigDecimal(vlr.getCurrentLocation().getLon()));
 	  setLastLocationUpdateTime(vlr.getTimeOfLocationUpdate());
-	  setServiceDate(new Date(vlr.getServiceDate()));
 	  setScheduleDeviation((int)new Double(vlr.getScheduleDeviation()).longValue());
       }
   }

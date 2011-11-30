@@ -23,6 +23,7 @@ public interface RealtimeService {
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
       boolean includeNextStops);  
 
+  // FIXME TODO: refactor these to receive a passed in collection of MonitoredStopVisits or VehicleActivities?
   public List<NaturalLanguageStringBean> getServiceAlertsForRoute(String routeId);
 
   public List<NaturalLanguageStringBean> getServiceAlertsForRouteAndDirection(

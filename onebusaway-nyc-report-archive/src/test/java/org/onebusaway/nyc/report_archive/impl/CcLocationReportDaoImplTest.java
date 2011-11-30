@@ -32,6 +32,7 @@ import tcip_final_3_0_5_1.CPTOperatorIden;
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.SCHRouteIden;
 import tcip_final_3_0_5_1.SCHRunIden;
+import tcip_final_3_0_5_1.SPDataQuality;
 import tcip_3_0_5_local.NMEA;
 
 import java.io.IOException;
@@ -67,20 +68,17 @@ public class CcLocationReportDaoImplTest {
     assertEquals(0, _dao.getNumberOfReports());
 
     CcLocationReportRecord report = new CcLocationReportRecord();
+    report.setDataQuality(new Byte("4"));
     report.setDestSignCode(123);
     report.setDirectionDeg(new BigDecimal("10.1"));
     report.setLatitude(new BigDecimal("70.25"));
     report.setLongitude(new BigDecimal("-101.10"));
     report.setManufacturerData("manufacturerData");
-    report.setOperatorId(123);
     report.setOperatorIdDesignator("operatorIdDesignator");
     report.setRequestId(456);
-    report.setRouteId(789);
     report.setRouteIdDesignator("routeIdDesignator");
-    report.setRunId(123);
     report.setRunIdDesignator("runIdDesignator");
     report.setSpeed(new BigDecimal("5.6"));
-    report.setStatusInfo(456);
     report.setTimeReported(new Date());
     report.setTimeReceived(new Date());
     report.setVehicleAgencyDesignator("vehicleAgencyDesignator");
@@ -104,6 +102,8 @@ public class CcLocationReportDaoImplTest {
   public void testConstructor() {
       CcLocationReport m = new CcLocationReport();
       m.setRequestId(1205);
+      m.setDataQuality(new SPDataQuality());
+      m.getDataQuality().setQualitativeIndicator("4");
       m.setDestSignCode(4631l);
       m.setDirection(new Angle());
       m.getDirection().setDeg(new BigDecimal(128.77));

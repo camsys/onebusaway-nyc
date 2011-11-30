@@ -20,11 +20,7 @@ public class DefaultPresentationModelFactory implements PresentationModelFactory
   public StopResult getStopModelForRoute(StopBean stopBean, RouteBean route) {
     List<RouteResult> routesAvailable = new ArrayList<RouteResult>();
     for(RouteBean routeBean : stopBean.getRoutes()) {
-      // skip the route this stop is part of!
-      if(routeBean.getId().equals(route.getId()))
-        continue;
-      
-      routesAvailable.add(getRouteModel(routeBean, null));
+      routesAvailable.add(getRouteModelForStop(routeBean, null));
     }
     return new StopResult(stopBean, routesAvailable);
   }

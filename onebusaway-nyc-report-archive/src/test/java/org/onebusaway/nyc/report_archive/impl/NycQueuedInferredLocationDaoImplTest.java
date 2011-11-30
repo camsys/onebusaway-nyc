@@ -102,15 +102,11 @@ public class  NycQueuedInferredLocationDaoImplTest {
       cc.setLatitude(new BigDecimal("70.25"));
       cc.setLongitude(new BigDecimal("-101.10"));
       cc.setManufacturerData("manufacturerData");
-      cc.setOperatorId(123);
       cc.setOperatorIdDesignator("operatorIdDesignator");
       cc.setRequestId(456);
-      cc.setRouteId(789);
       cc.setRouteIdDesignator("routeIdDesignator");
-      cc.setRunId(123);
       cc.setRunIdDesignator("runIdDesignator");
       cc.setSpeed(new BigDecimal("5.6"));
-      cc.setStatusInfo(456);
       cc.setTimeReceived(new Date());
       cc.setVehicleAgencyDesignator("vehicleAgencyDesignator");
       cc.setVehicleAgencyId(789);

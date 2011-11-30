@@ -82,6 +82,11 @@ public class RealtimeServiceImpl implements RealtimeService {
     ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
 
     for(TripDetailsBean tripDetails : trips.getList()) {
+      // filter out interlined routes? sometimes OBA returns vehicles serving routes that are not the same one 
+      // we requested! 
+      if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
+        continue;
+
       // filtered out by user
       if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
         continue;
