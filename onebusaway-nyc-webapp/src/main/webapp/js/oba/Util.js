@@ -73,10 +73,15 @@ OBA.Util = (function() {
 				return s;
 			}
 		},
+		// quick fix to correct GMT timestamps to be 2011-11-29T13:37:07-05:00
+		// Assumes receipt of 2011-11-29T13:37:07.342-0500 
 		cleanUpGMT: function(prevTimeString) {
 			var timeString = prevTimeString.replace(/\.[0-9]+/i, "");		
 			var semicolonIndex = timeString.lastIndexOf('-');
-			if (semicolonIndex > -1) {
+			if (semicolonIndex < 9) {
+				semicolonIndex = timeString.lastIndexOf('+');
+			}
+			if (semicolonIndex > 9) {
 				timeString = timeString.substring(0, semicolonIndex+3) + ':' 
 					+ timeString.substr(semicolonIndex+3);
 			}

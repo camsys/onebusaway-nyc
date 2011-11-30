@@ -18,8 +18,8 @@ package org.onebusaway.nyc.presentation.impl.search;
 import org.onebusaway.container.cache.Cacheable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
+import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
@@ -32,6 +32,7 @@ import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
+import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
@@ -41,7 +42,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class RouteSearchServiceImpl implements RouteSearchService {
@@ -133,6 +136,14 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     List<RouteDestinationItem> output = new ArrayList<RouteDestinationItem>();
     
     StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+    
+    // create stop ID->stop bean map
+    Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
+    for(StopBean stopBean : stopsForRoute.getStops()) {
+      stopIdToStopBeanMap.put(stopBean.getId(), stopBean);
+    }    
+    
+    // generate route destination groups with beans
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
       for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
@@ -143,22 +154,15 @@ public class RouteSearchServiceImpl implements RouteSearchService {
         
         List<StopResult> stopItems = null;
         if(includeStops == true && !stopGroupBean.getStopIds().isEmpty()) {
-          stopItems = getStopResultsForStopIds(stopGroupBean.getStopIds(), routeBean);
+          stopItems = new ArrayList<StopResult>();
+
+          for(String stopId : stopGroupBean.getStopIds()) {
+            stopItems.add(_modelFactory.getStopModelForRoute(stopIdToStopBeanMap.get(stopId), routeBean));
+          }
         }
           
         output.add(_modelFactory.getRouteDestinationModelForRoute(stopGroupBean, routeBean, stopItems));
       }
-    }
-    
-    return output;
-  }
-  
-  @Cacheable
-  private List<StopResult> getStopResultsForStopIds(List<String> stopIds, RouteBean routeBean) {
-    List<StopResult> output = new ArrayList<StopResult>();
-    
-    for(String stopId : stopIds) {
-      output.add(_modelFactory.getStopModelForRoute(_transitDataService.getStop(stopId), routeBean));
     }
     
     return output;

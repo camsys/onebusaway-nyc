@@ -10,13 +10,13 @@
 }
 
 .popup .header.stop {
-	background-image: url("img/header_stop.png");
+	background-image: url("img/header_bus_stop.png");
 	background-repeat: no-repeat;
 	background-position: left center;
 }
 
 .popup .header.vehicle {
-	background-image: url("img/header_bus.png");
+	background-image: url("img/header_bus_icon.png");
 	background-repeat: no-repeat;
 	background-position: left center;
 }
