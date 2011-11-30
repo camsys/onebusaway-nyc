@@ -10,6 +10,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +30,11 @@ class NycVehicleManagementStatusDaoImpl implements NycVehicleManagementStatusDao
     return _template;
   }
 
+  @Transactional(rollbackFor=Throwable.class)
   @Override
   public void saveOrUpdateRecord(NycVehicleManagementStatusRecord record) {
     _template.saveOrUpdate(record);
+    _template.evict(record);
   }
 
 }

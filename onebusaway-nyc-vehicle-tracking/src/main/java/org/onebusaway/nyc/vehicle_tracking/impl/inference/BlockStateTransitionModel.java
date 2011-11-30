@@ -110,14 +110,17 @@ public class BlockStateTransitionModel {
    ****/
 
   /**
-   * This method samples the best block transition. It should probably return
-   * all best possible. Just following convention for now.
+   * This method takes a parent VehicleState, parentState,
+   * and a potential JourneyState, journeyState, with which
+   * a new potential BlockState is sampled/determined.  This
+   * is where we consider a block, allow a block change, 
+   * or move along a block we're already tracking. 
    * 
    * @param parentState
    * @param motionState
    * @param journeyState
    * @param obs
-   * @return
+   * @return BlockState
    */
   public BlockState transitionBlockState(VehicleState parentState,
       MotionState motionState, JourneyState journeyState, Observation obs) {

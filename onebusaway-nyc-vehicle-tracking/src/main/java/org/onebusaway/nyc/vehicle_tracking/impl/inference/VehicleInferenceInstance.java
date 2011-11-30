@@ -162,7 +162,7 @@ public class VehicleInferenceInstance {
       long backInTime = (long) (_particleFilter.getTimeOfLastUpdated() - timestamp);
 
       /**
-       * If the difference is large, we reset the particle filter. Othwerise, we
+       * If the difference is large, we reset the particle filter. Otherwise, we
        * simply ignore the out-of-order record
        */
       if (backInTime > 5 * 60 * 1000) {
@@ -231,7 +231,7 @@ public class VehicleInferenceInstance {
        * to replace the missing values
        */
       if (_previousObservation == null) {
-        _log.debug("missing previous observation and current lat/lon:"
+        _log.info("missing previous observation and current lat/lon:"
             + record.getVehicleId() + ", skipping update.");
         return false;
       }
