@@ -70,17 +70,24 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     String routeId = _request.getParameter("LineRef");
     String directionId = _request.getParameter("DirectionRef");
 
+    int maximumOnwardCalls = 0;        
+
     String detailLevel = _request.getParameter("StopMonitoringDetailLevel");
-    boolean includeOnwardCalls = false;
-    if (detailLevel != null) {
-      includeOnwardCalls = detailLevel.equals("calls");
+    if (detailLevel != null && detailLevel.equals("calls")) {
+      maximumOnwardCalls = Integer.MAX_VALUE;
+
+      try {
+        maximumOnwardCalls = Integer.parseInt(_request.getParameter("MaximumNumberOfCallsOnwards"));
+      } catch (NumberFormatException e) {
+        maximumOnwardCalls = Integer.MAX_VALUE;
+      }
     }
 
     if(stopId != null && agencyId != null) {
       String stopIdWithAgency = agencyId + "_" + stopId;
       
       List<MonitoredStopVisitStructure> visits = 
-          _realtimeService.getMonitoredStopVisitsForStop(stopIdWithAgency, includeOnwardCalls);
+          _realtimeService.getMonitoredStopVisitsForStop(stopIdWithAgency, maximumOnwardCalls);
 
       if(routeId != null || directionId != null) {
         List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();

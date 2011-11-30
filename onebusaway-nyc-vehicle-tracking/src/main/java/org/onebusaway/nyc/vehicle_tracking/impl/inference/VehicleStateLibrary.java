@@ -136,8 +136,8 @@ public class VehicleStateLibrary {
     if (_baseLocationService.getBaseNameForLocation(obs.getLocation()) != null)
       return false;
 
-    if (obs.isAtTerminal())
-      return true;
+//    if (obs.isAtTerminal())
+//      return true;
     
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
