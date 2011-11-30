@@ -366,7 +366,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	function getZoomHereLink() {
 		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
 		$('#zoomHere').live("click", function() { 
-			map.setZoom(map.getZoom()+1); 
+			if(infoWindow !== null && infoWindow.anchor !== null) {
+				map.setCenter(infoWindow.anchor.getPosition());
+			}
+			map.setZoom(map.maxZoom - 3); 
 		});
 		return $('<a></a>').append(zoomHere.clone()).html();
 	}
@@ -485,7 +488,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 
 		if(stopResult.routesAvailable.length > 0) {
-			html += '<p class="otherRoutes">Other routes available at this stop:</p>';
+			html += '<p class="otherRoutes">Routes available at this stop:</p>';
 			html += '<ul class="otherRoutes">';
 			jQuery.each(stopResult.routesAvailable, function(_, routeAvailable) {
 				html += '<li class="route"><a href="#' + routeAvailable.routeIdWithoutAgency + '" title="' + routeAvailable.description + '">'
