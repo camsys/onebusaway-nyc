@@ -104,9 +104,6 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "inferred_status")
   private String inferredStatus;
   
-  @Column(nullable = true, name = "inferred_run_id")
-  private String inferredRunId;
-
   @Column(nullable = true, name = "inferred_route_id")
   private String inferredRouteId;
 
@@ -198,7 +195,6 @@ public class ArchivedInferredLocationRecord implements Serializable {
       setInferredLongitude(new BigDecimal(message.getInferredLongitude()));
     setInferredPhase(message.getPhase());
     setInferredStatus(message.getStatus());
-    setRunId(message.getRunId());
     setInferredRouteId(message.getRouteId());
     // inferredDirectionId set by TDS
 
@@ -377,14 +373,6 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
   public void setInferredStatus(String inferredStatus) {
     this.inferredStatus = inferredStatus;
-  }
-
-  public void setInferredRunId(String runId) {
-    this.inferredRunId = runId;
-  }
-  
-  public String getInferredRunId() {
-    return inferredRunId;
   }
 
   public void setInferredRouteId(String inferredRouteId) {
