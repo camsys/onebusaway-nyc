@@ -71,9 +71,9 @@
     </bean>
 
     <bean id="nycSiriService"
-        class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriService">
-        <property name="mode" value="client" />
+        class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceClient">
         <property name="serviceAlertsUrl" value="${service.alerts.url}" />
+        <property name="subscriptionAddress" value="${service.alerts.subscription.address}" />        
     </bean>
         
 </beans>

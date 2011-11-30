@@ -203,33 +203,8 @@ public class ServiceAlertsHelper {
         affectsStructure.setOperators(operators);
       }
       String routeId = affects.getRouteId(); // LineRef
-      String stopId = affects.getStopId();
-      String directionId = affects.getDirectionId(); // DirectionRef
-      String tripId = affects.getTripId(); // vehiclejourneyref
+      String directionId = affects.getDirectionId();
       if (!StringUtils.isBlank(routeId)) {
-        Networks networks = new Networks();
-        List<AffectedNetwork> network = networks.getAffectedNetwork();
-        AffectedNetwork affectedNetwork = new AffectedNetwork();
-        List<AffectedLineStructure> affectedLine = affectedNetwork.getAffectedLine();
-        AffectedLineStructure affectedLineStructure = new AffectedLineStructure();
-        Routes routes = new Routes();
-        List<AffectedRouteStructure> affectedRoute = routes.getAffectedRoute();
-        AffectedRouteStructure affectedRouteStructure = new AffectedRouteStructure();
-        RouteRefStructure routeRefStructure = new RouteRefStructure();
-        routeRefStructure.setValue(routeId);
-        affectedRouteStructure.setRouteRef(routeRefStructure);
-        affectedRoute.add(affectedRouteStructure);
-        affectedLineStructure.setRoutes(routes);
-        DirectionStructure directionStructure = new DirectionStructure();
-        NaturalLanguageStringStructure directionName = new NaturalLanguageStringStructure();
-        directionName.setValue(directionId);
-        directionStructure.setDirectionName(directionName);
-        affectedLineStructure.getDirection().add(directionStructure);
-        affectedLine.add(affectedLineStructure);
-        network.add(affectedNetwork);
-        affectsStructure.setNetworks(networks);
-      }
-      if (!StringUtils.isBlank(tripId)) {
         VehicleJourneys vehicleJourneys = new VehicleJourneys();
         AffectedVehicleJourneyStructure affectedVehicleJourneyStructure = new AffectedVehicleJourneyStructure();
         LineRefStructure lineRefStructure = new LineRefStructure();
@@ -243,16 +218,6 @@ public class ServiceAlertsHelper {
         vehicleJourneys.getAffectedVehicleJourney().add(
             affectedVehicleJourneyStructure);
         affectsStructure.setVehicleJourneys(vehicleJourneys);
-      }
-      if (!StringUtils.isBlank(stopId)) {
-        StopPoints value = new StopPoints();
-        List<AffectedStopPointStructure> stopPoints = value.getAffectedStopPoint();
-        AffectedStopPointStructure affectedStopPointStructure = new AffectedStopPointStructure();
-        StopPointRefStructure stopPointRef = new StopPointRefStructure();
-        stopPointRef.setValue(stopId);
-        affectedStopPointStructure.setStopPointRef(stopPointRef);
-        stopPoints.add(affectedStopPointStructure);
-        affectsStructure.setStopPoints(value);
       }
     }
 
