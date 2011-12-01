@@ -278,8 +278,7 @@ OBA.Sidebar = function() {
 			OBA.Config.analyticsFunction("Search", q + " [" + resultCount + "]");
 			
 			var resultType = json.searchResults[0].resultType;			
-			if(resultCount === 1) {
-				if(resultType === "LocationResult" || resultType === "StopResult") {
+			if(resultCount === 1 && (resultType === "LocationResult" || resultType === "StopResult")) {
 					var result = json.searchResults[0];
 
 					// region (zip code or borough)
@@ -301,15 +300,14 @@ OBA.Sidebar = function() {
 							routeMap.showPopupForStopId(result.stopId);
 						}
 					}
-					
-				// single route
-				} else if(resultType === "RouteResult") {
-					showRoutesOnMap(json.searchResults);
-				}
 			} else {
 				// location disambiguation
 				if(resultType === "LocationResult") {
 					disambiguate(json.searchResults);
+
+				// routes (e.g. S74 itself or S74 + S74 LTD)
+				} else if(resultType === "RouteResult") {
+					showRoutesOnMap(json.searchResults);
 				}
 			}
 		});		

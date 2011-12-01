@@ -100,9 +100,11 @@ public abstract class NycSiriService {
 
   static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
 
-  // TODO Should this stay autowired?
   @Autowired
   private TransitDataService _transitDataService;
+
+  @Autowired
+  private SiriServicePersister _siriServicePersister;
 
   private String _serviceAlertsUrl;
 
@@ -110,8 +112,6 @@ public abstract class NycSiriService {
 
   private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
   
-  private List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
-
   private WebResourceWrapper _webResourceWrapper;
 
   private String _subscriptionUrl;
@@ -265,7 +265,7 @@ public abstract class NycSiriService {
             "required element missing: subscriptionIdentifier");
       subscription.setSubscriptionIdentifier(request.getSubscriptionIdentifier().getValue());
       subscription.setSubscriptionRef(subscriptionRef);
-      getServiceAlertSubscriptions().add(subscription);
+      addSubscription(subscription);
     } catch (Exception e) {
       errorMessage = "Failed to create service alert subscription: "
           + e.getMessage();
@@ -648,13 +648,12 @@ public abstract class NycSiriService {
     this.currentServiceAlerts = currentServiceAlerts;
   }
 
-  public List<ServiceAlertSubscription> getServiceAlertSubscriptions() {
-    return serviceAlertSubscriptions;
+  private void addSubscription(ServiceAlertSubscription subscription) {
+    getPersister().saveOrUpdateSubscription(subscription);
   }
 
-  public void setServiceAlertSubscriptions(
-      List<ServiceAlertSubscription> serviceAlertSubscriptions) {
-    this.serviceAlertSubscriptions = serviceAlertSubscriptions;
+  public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions() {
+    return getPersister().getAllActiveSubscriptions();
   }
 
   public String getSubscriptionPath() {
@@ -673,6 +672,14 @@ public abstract class NycSiriService {
 
   public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
     this._webResourceWrapper = _webResourceWrapper;
+  }
+
+  public SiriServicePersister getPersister() {
+    return _siriServicePersister;
+  }
+
+  public void setPersister(SiriServicePersister _siriServicePersister) {
+    this._siriServicePersister = _siriServicePersister;
   }
 
 }

@@ -156,14 +156,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			center: new google.maps.LatLng(40.639228,-74.081154)
 	};
 	
-	
 	// Create Subway Tiles toggle button
 	var subwayControlDiv = document.createElement('DIV');
 	subwayControlDiv.index = 1;
 	 
 	// Adds a button control to toggle MTA Subway tiles
 	function SubwayTilesControl(controlDiv, map) {
-
 	  controlDiv.style.padding = '5px';
 	  
 	  var controlUI = document.createElement('DIV');
@@ -311,14 +309,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.PublishedLineName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
-		// revise time formats
-		var activityInGMT = OBA.Util.cleanUpGMT(activity.RecordedAtTime);
-		var responseTimeInGMT = OBA.Util.cleanUpGMT(r.Siri.ServiceDelivery.ResponseTimestamp);
-
-		var updateTimestamp = new Date(activityInGMT).getTime();
-		var updateTimestampReference = new Date(responseTimeInGMT).getTime();
+		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
+		var updateTimestampReference = new Date(r.Siri.ServiceDelivery.ResponseTimestamp).getTime();
 		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
-		
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
 
 		html += '<span class="updated' + staleClass + '"' + 
@@ -421,14 +414,11 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<p class="title">' + stopResult.name + '</p><p>';
 		html += '<span class="type">Stop #' + stopResult.stopIdWithoutAgency + '</span>';
 		
-		var responseTime = OBA.Util.cleanUpGMT(r.Siri.ServiceDelivery.ResponseTimestamp);
-
 		// update time across all arrivals
-		var updateTimestampReference = new Date(responseTime).getTime();
+		var updateTimestampReference = new Date(r.Siri.ServiceDelivery.ResponseTimestamp).getTime();
 		var maxUpdateTimestamp = null;
 		jQuery.each(visits, function(_, monitoredJourney) {
-			var journeyRecordedTime = OBA.Util.cleanUpGMT(monitoredJourney.RecordedAtTime);
-			var updateTimestamp = new Date(journeyRecordedTime).getTime();
+			var updateTimestamp = new Date(monitoredJourney.RecordedAtTime).getTime();
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
@@ -451,7 +441,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		// service available
 		if(visits.length === 0) {
-			html += '<p class="service">No buses en-route to your location.<br/>Please check back shortly for an update.</p>';
+			html += '<p class="service">No buses en-route to your location. Please check back shortly for an update.</p>';
 		} else {		
 			html += '<p class="service">Upcoming arrivals:</p>';
 			html += '<ul>';
@@ -930,7 +920,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	
 		// pan to route extent unless zoomed in and the route is nearby
 		panToRoute: function(routeResult) {
-			
 			var polylines = polylinesByRoute[routeResult.routeId];
 			var newBounds = new google.maps.LatLngBounds();
 			var routeBounds = new google.maps.LatLngBounds();

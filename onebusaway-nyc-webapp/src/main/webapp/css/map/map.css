@@ -120,9 +120,12 @@
 }
 
 #content #legend ul li.legendItem .alerts {
-	padding-bottom: 10px;
 	color: #D12020;
 	font-weight: bold;
+}
+
+#content #legend ul li.legendItem .alerts li {
+	padding-bottom: 10px;
 }
 
 #content #legend ul li.legendItem .description {

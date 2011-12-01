@@ -5,9 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import org.joda.time.format.ISODateTimeFormat;
@@ -25,9 +23,6 @@ import uk.org.siri.siri.Siri;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
-
-  // @InjectMocks
-  // NycSiriService nycSiriService = new NycSiriServiceGateway();
 
   @Test
   public void testGetPtSituationAsServiceAlertBean() {
@@ -67,23 +62,22 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
 
   @Test
   public void testPostServiceDeliveryActions() throws Exception {
+    SiriServicePersister mockPersister = new MockSiriServicePersister();
+    setPersister(mockPersister);
     SituationExchangeResults result = mock(SituationExchangeResults.class);
     ServiceDelivery delivery = mock(ServiceDelivery.class);
-    List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
-    addSubscription(serviceAlertSubscriptions);
-    addSubscription(serviceAlertSubscriptions);
-    setServiceAlertSubscriptions(serviceAlertSubscriptions);
+    addSubscription();
+    addSubscription();
 
     handleServiceDeliveries(result, delivery);
 
-    for (ServiceAlertSubscription s : serviceAlertSubscriptions)
+    for (ServiceAlertSubscription s : getActiveServiceAlertSubscriptions())
       verify(s).send(eq(result), any(Map.class));
   }
 
-  private ServiceAlertSubscription addSubscription(
-      List<ServiceAlertSubscription> serviceAlertSubscriptions) {
+  private ServiceAlertSubscription addSubscription() {
     ServiceAlertSubscription subscription = mock(ServiceAlertSubscription.class);
-    serviceAlertSubscriptions.add(subscription);
+    getPersister().saveOrUpdateSubscription(subscription);
     return subscription;
   }
 
