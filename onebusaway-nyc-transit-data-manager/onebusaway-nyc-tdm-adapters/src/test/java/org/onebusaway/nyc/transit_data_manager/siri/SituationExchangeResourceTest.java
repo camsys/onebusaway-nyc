@@ -85,6 +85,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 
   @Test
   public void testSubscriptionRequest() throws Exception {
+    getNycSiriService().setPersister(new MockSiriServicePersister());
     String body = loadSample("subscription-request.xml");
     Response response = handlePost(body);
     Siri responseSiri = verifySiriResponse(response);
@@ -119,7 +120,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     // it's a Java UUID
     assertTrue(statusResponse.getSubscriptionRef().getValue().matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
     
-    List<ServiceAlertSubscription> subscriptions = getNycSiriService().getServiceAlertSubscriptions();
+    List<ServiceAlertSubscription> subscriptions = getNycSiriService().getActiveServiceAlertSubscriptions();
     assertEquals(1, subscriptions.size());
     ServiceAlertSubscription subscription = subscriptions.get(0);
     assertEquals("http://localhost/foo/bar",subscription.getAddress());
@@ -136,6 +137,7 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
     Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
     currentServiceAlerts.put("foo", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1000"));
     getNycSiriService().setCurrentServiceAlerts(currentServiceAlerts);
+    getNycSiriService().setPersister(new MockSiriServicePersister());
   }
 
 	@Test

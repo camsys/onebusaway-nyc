@@ -22,6 +22,7 @@ public class NycSiriServiceGateway extends NycSiriService {
     getCurrentServiceAlerts().put(serviceAlertBean.getId(), serviceAlertBean);
     result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
         "added");
+    getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
   }
   
   
@@ -30,6 +31,7 @@ public class NycSiriServiceGateway extends NycSiriService {
     ServiceAlertBean removed = getCurrentServiceAlerts().remove(serviceAlertId);
     result.countPtSituationElementResult(deliveryResult, serviceAlertId,
         "removed");
+    getPersister().deleteServiceAlertById(serviceAlertId);
   }
 
   
@@ -40,7 +42,7 @@ public class NycSiriServiceGateway extends NycSiriService {
 
   @Override
   void postServiceDeliveryActions(SituationExchangeResults results) throws Exception {
-    for (ServiceAlertSubscription subscription: getServiceAlertSubscriptions()) {
+    for (ServiceAlertSubscription subscription: getActiveServiceAlertSubscriptions()) {
       subscription.send(results, getCurrentServiceAlerts());
     }
   }
