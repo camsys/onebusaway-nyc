@@ -24,13 +24,13 @@
   </bean>
 
   <bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl">
-    <property name="xwikiUrl" value="http://oba.prd.openplans.org/xwiki" />
+    <property name="xwikiUrl" value="http://xwiki.staging.obanyc.com" />
   </bean>
 
   <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl">
-    <property name="wikiDocumentViewUrl" value="/wiki/%{documentName}" />
-    <property name="wikiDocumentEditUrl" value="http://oba.prd.openplans.org/xwiki/bin/edit/Main/%{documentName}" />
-    <property name="wikiAttachmentUrl" value="http://oba.prd.openplans.org/xwiki/bin/download/Main/%{documentName}/%{attachmentName}" />
+    <property name="wikiDocumentViewUrl" value="/onebusaway-nyc-webapp/wiki/%{documentName}" />
+    <property name="wikiDocumentEditUrl" value="http://xwiki.staging.obanyc.com/bin/edit/Main/%{documentName}" />
+    <property name="wikiAttachmentUrl" value="http://xwiki.staging.obanyc.com/bin/download/Main/%{documentName}/%{attachmentName}" />
   </bean>
 
   <!-- Create a default admin user -->

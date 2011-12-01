@@ -219,7 +219,7 @@
                 <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://localhost:8084/onebusaway-nyc-report-archive</archive.path>
-                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
@@ -232,7 +232,7 @@
                 <vtms.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.staging.obanyc.com:8080/onebusaway-nyc-report-archive</archive.path>
-                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.staging.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
@@ -245,7 +245,7 @@
                 <vtms.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.prod.obanyc.com/onebusaway-nyc-report-archive</archive.path>
-                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.prod.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
@@ -258,7 +258,7 @@
                 <vtms.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.dev.obanyc.com/onebusaway-nyc-report-archive</archive.path>
-                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
@@ -271,7 +271,7 @@
                 <vtms.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
                 <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
                 <archive.path>http://archive.qa.obanyc.com/onebusaway-nyc-report-archive</archive.path>
-                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.qa.obanyc.com</tdm.host>
                 <webapp.api.url></webapp.api.url>
             </properties>
@@ -287,7 +287,7 @@
                 <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
                 <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
-                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <webapp.api.url>http://localhost:8080</webapp.api.url>
             </properties>
@@ -300,7 +300,7 @@
                 <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
                 <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
                 <archive.path>http://localhost:8081/onebusaway-nyc-report-archive</archive.path>
-                <service.wikihost>localhost:8080</service.wikihost> <!-- TODO wikihost not handled yet -->
+                <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <webapp.api.url>http://localhost:8082</webapp.api.url>
             </properties>
