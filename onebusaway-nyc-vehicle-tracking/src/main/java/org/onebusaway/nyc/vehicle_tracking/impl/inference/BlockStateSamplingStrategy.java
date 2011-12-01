@@ -28,5 +28,5 @@ public interface BlockStateSamplingStrategy {
 
   public CategoricalDist<BlockState> cdfForJourneyInProgress(Observation observation);
 
-  public double scoreState(BlockState state, Observation obs);
+  public double scoreState(BlockState state, Observation observation, boolean atStart);
 }

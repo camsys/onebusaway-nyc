@@ -214,7 +214,7 @@ public class NycRawLocationRecord {
     return (Double.isNaN(this.latitude) || Double.isNaN(this.longitude))
         || (this.latitude == 0.0 && this.longitude == 0.0);
   }
-
+  
   @Override
   public String toString() {
     return vehicleId + ": (" + latitude + "," + longitude + "), "

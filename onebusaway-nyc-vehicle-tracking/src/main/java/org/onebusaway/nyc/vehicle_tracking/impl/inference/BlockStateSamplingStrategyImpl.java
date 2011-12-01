@@ -22,6 +22,8 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
@@ -54,6 +56,15 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private ObservationCache _observationCache;
 
+  private OperatorAssignmentService _operatorAssignmentService;
+
+  private RunService _runService;
+
+  @Autowired
+  public void setRunService(RunService runService) {
+    _runService = runService;
+  }
+  
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -66,6 +77,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     _blocksFromObservationService = blocksFromObservationService;
   }
 
+  @Autowired
+  public void setOperatorAssignmentService(
+      OperatorAssignmentService operatorAssignmentService) {
+    _operatorAssignmentService = operatorAssignmentService;
+  }
+  
   @Autowired
   public void setObservationCache(ObservationCache observationCache) {
     _observationCache = observationCache;
@@ -103,7 +120,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state : potentialBlocks) {
 
-        double p = scoreJourneyStartState(state, observation);
+        double p = scoreState(state, observation, true);
 
         cdf.put(p, state);
 
@@ -146,7 +163,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       for (BlockState state : potentialBlocks) {
 
-        double p = scoreState(state, observation);
+        double p = scoreState(state, observation, false);
 
         cdf.put(p, state);
 
@@ -170,14 +187,53 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     return cdf;
   }
 
-  public double scoreState(BlockState state, Observation observation) {
-    ScheduledBlockLocation blockLocation = state.getBlockLocation();
-    BlockInstance blockInstance = state.getBlockInstance();
-    long serviceDate = blockInstance.getServiceDate();
-    return scoreState(blockLocation, observation, serviceDate);
+  @Override
+  public double scoreState(BlockState state, Observation observation,
+      boolean atStart) {
+    double score;
+
+    if (atStart) {
+      /**
+       * If it's at start, we judge it by it's dsc/route
+       */
+      score = scoreJourneyStartState(state, observation);
+    } else {
+      /**
+       * If it's in-progress, we use sched. time and location deviances
+       */
+      ScheduledBlockLocation blockLocation = state.getBlockLocation();
+      BlockInstance blockInstance = state.getBlockInstance();
+      long serviceDate = blockInstance.getServiceDate();
+      score = scoreJourneyInProgressState(blockLocation, observation, serviceDate);
+    }
+
+    /**
+     * In all cases we use the run info, when available, to determine a
+     * preference
+     */
+    boolean operatorHasAssignment = false;
+    try {
+      operatorHasAssignment = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
+              observation.getRecord().getTimeAsDate(),
+              observation.getRecord().getOperatorId()) != null;
+    } catch (Exception e) {
+    }
+    
+    boolean noStateButRunInfo = state == null 
+        && (operatorHasAssignment
+          || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
+    
+    boolean stateButNoRunMatch = state != null
+        && !state.getOpAssigned() && !state.getRunReported();
+        
+    if (noStateButRunInfo || stateButNoRunMatch) {
+      score *= 0.5;
+    }
+
+    return score;
   }
 
-  static public double scoreState(ScheduledBlockLocation blockLocation,
+  public double scoreJourneyInProgressState(ScheduledBlockLocation blockLocation,
       Observation observation, long serviceDate) {
 
     CoordinatePoint p1 = blockLocation.getLocation();
@@ -219,12 +275,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     if (observedOutOfService) {
       return 0.5;
     } else {
-      // Favor blocks that match the correct DSC
+      // Favor in-service blocks that match the correct DSC
       String dsc = state.getDestinationSignCode();
       if (StringUtils.equals(observedDsc, dsc)) {
         return 0.95;
       } else {
-        // Favor blocks servicing the same route implied by the DSC
+        // Favor in-service blocks servicing the same route implied by the DSC
         Set<AgencyAndId> dscRoutes = _destinationSignCodeService
             .getRouteCollectionIdsForDestinationSignCode(dsc);
         AgencyAndId thisRoute = state.getBlockLocation().getActiveTrip()
@@ -240,7 +296,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         if (sameRoute)
           return 0.75;
         else
-          return 0.25;
+          return 0.10;
       }
     }
   }

@@ -57,4 +57,6 @@ public interface RunService {
 
   RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip, int scheduledTime);
 
+  public boolean isValidRunNumber(String runNumber);
+
 }

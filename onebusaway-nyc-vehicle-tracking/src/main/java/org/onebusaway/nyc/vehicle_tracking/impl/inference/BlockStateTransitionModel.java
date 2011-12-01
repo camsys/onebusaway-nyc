@@ -45,7 +45,7 @@ public class BlockStateTransitionModel {
 
   private static Logger _log = LoggerFactory
       .getLogger(BlockStateTransitionModel.class);
-  
+
   private DestinationSignCodeService _destinationSignCodeService;
 
   private BlocksFromObservationService _blocksFromObservationService;
@@ -110,11 +110,10 @@ public class BlockStateTransitionModel {
    ****/
 
   /**
-   * This method takes a parent VehicleState, parentState,
-   * and a potential JourneyState, journeyState, with which
-   * a new potential BlockState is sampled/determined.  This
-   * is where we consider a block, allow a block change, 
-   * or move along a block we're already tracking. 
+   * This method takes a parent VehicleState, parentState, and a potential
+   * JourneyState, journeyState, with which a new potential BlockState is
+   * sampled/determined. This is where we consider a block, allow a block
+   * change, or move along a block we're already tracking.
    * 
    * @param parentState
    * @param motionState
@@ -144,30 +143,33 @@ public class BlockStateTransitionModel {
      */
     if (!allowBlockChange) {
 
-      if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
+      /**
+       * There isn't actually a block to this particle, so no progressing
+       * possible.
+       */
+      if (parentBlockState == null)
+        return null;
 
-        if (parentBlockState == null)
-          return null;
+      /**
+       * If we're off block, kill the block
+       */
+      if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
+          parentBlockState))
+        return null;
 
-        /**
-         * If we're off block, kill the block
-         */
-        if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
-            parentBlockState))
-          return null;
+      boolean notActiveButRunAssigned = parentBlockState != null
+          && parentBlockState.getOpAssigned();
 
-        /**
-         * We're currently in progress on a block, so we update our block
-         * location along the block that we're actively serving
-         */
+      /**
+       * If we're currently in progress on a block or this block was assigned to
+       * the operator, then we update our block location along the block that
+       * we're serving TODO why don't we progress deadhead-before, etc. anyway?
+       */
+      if (EVehiclePhase.isActiveDuringBlock(parentPhase)
+          || notActiveButRunAssigned) {
         potentialTransStates = advanceAlongBlock(parentPhase, parentBlockState,
             obs);
-
       } else {
-
-        /**
-         * We're not serving a block, so we kill the block state
-         */
         return null;
       }
     }
@@ -188,33 +190,40 @@ public class BlockStateTransitionModel {
        */
       CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy
           .cdfForJourneyInProgress(obs);
+
       if (!cdf.canSample())
         return null;
 
       updatedBlockState = cdf.sample();
 
-      if (EVehiclePhase.isLayover(parentPhase) || obs.isAtTerminal()) {
+      if (EVehiclePhase.isLayover(parentPhase) 
+          || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
+              updatedBlockState.getBlockInstance())) {
         updatedBlockState = _blocksFromObservationService.advanceLayoverState(
             obs.getTime(), updatedBlockState);
       }
     } else {
       /**
-       * Sample the "best" possible transitions (best in terms of schedDev and
-       * locDev)
+       * When we return multiple possible transitions, choose the best in terms
+       * of schedDev and locDev. TODO consider more! why not all the rules!?
        */
-      CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
+      if (potentialTransStates.size() == 1) {
+        updatedBlockState = potentialTransStates.iterator().next();
+      } else {
+        CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
 
-      for (BlockState state : potentialTransStates) {
+        for (BlockState state : potentialTransStates) {
 
-        double p = _blockStateSamplingStrategy.scoreState(state, obs);
+          double p = _blockStateSamplingStrategy.scoreState(state, obs, false);
 
-        cdf.put(p, state);
+          cdf.put(p, state);
+        }
+
+        if (!cdf.canSample())
+          return null;
+
+        updatedBlockState = cdf.sample();
       }
-
-      if (!cdf.canSample())
-        return null;
-
-      updatedBlockState = cdf.sample();
     }
 
     return updatedBlockState;
@@ -260,11 +269,24 @@ public class BlockStateTransitionModel {
     /**
      * Have we just transitioned out of a terminal?
      */
-    if (prevObs != null && parentState.getBlockState() != null) {
-
-      // If we just move out of the terminal, allow a block transition
-      if (prevObs.isAtTerminal() && !obs.isAtTerminal()) {
-        return true;
+    if (prevObs != null) {
+      /**
+       * If we were assigned a block, then use the block's terminals, 
+       * otherwise, all terminals.
+       */
+      if (parentState.getBlockState() != null) {
+        boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
+            prevObs.getRecord(), parentState.getBlockState().getBlockInstance());
+        boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
+            obs.getRecord(), parentState.getBlockState().getBlockInstance());
+        
+        if (wasAtBlockTerminal && !isAtBlockTerminal) {
+          return true;
+        }
+      } else {
+        if (prevObs.isAtTerminal() && !obs.isAtTerminal()) {
+          return true;
+        }
       }
     }
 
@@ -293,6 +315,16 @@ public class BlockStateTransitionModel {
     return false;
   }
 
+  /**
+   * This method searches for the best block location within a
+   * given distance from the previous block location.  As well,
+   * transitions to and from layover states are considered here.
+   * 
+   * @param phase
+   * @param blockState
+   * @param obs
+   * @return
+   */
   private Set<BlockState> advanceAlongBlock(EVehiclePhase phase,
       BlockState blockState, Observation obs) {
 
@@ -308,7 +340,9 @@ public class BlockStateTransitionModel {
     Set<BlockState> updatedBlockStates = _blocksFromObservationService
         .advanceState(obs, blockState, 0, distanceToTravel);
 
-    if (EVehiclePhase.isLayover(phase) || obs.isAtTerminal()) {
+    if (EVehiclePhase.isLayover(phase) || 
+        _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
+            blockState.getBlockInstance())) {
       for (BlockState state : updatedBlockStates) {
         state = _blocksFromObservationService.advanceLayoverState(
             obs.getTime(), state);
@@ -351,17 +385,17 @@ public class BlockStateTransitionModel {
     }
 
     /*
-     * keep these flags alive
-     * TODO must be a better/more consistent way
+     * keep these flags alive TODO must be a better/more consistent way
      */
     if (!closestStates.isEmpty()) {
       for (BlockState state : closestStates) {
         state.setOpAssigned(blockState.getOpAssigned());
         state.setRunReported(blockState.getRunReported());
-        state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+        state.setRunReportedAssignedMismatch(blockState
+            .isRunReportedAssignedMismatch());
       }
     }
-    
+
     return closestStates;
   }
 
