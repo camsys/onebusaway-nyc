@@ -23,6 +23,7 @@
     <onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
     <onebusaway.app-modules.version>2.0.11-SNAPSHOT</onebusaway.app-modules.version>
     <onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
+    <gitDescribe>99999</gitDescribe>
   </properties>
 
   <repositories>
@@ -195,6 +196,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>2.2</version>
+          <configuration>
+            <archive>
+              <manifestEntries><Implementation-Build>${gitDescribe}</Implementation-Build></manifestEntries>
+            </archive> 
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -220,6 +226,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
           <version>2.1</version>
+          <configuration>
+            <archive>
+              <manifestEntries><Implementation-Build>${gitDescribe}</Implementation-Build></manifestEntries>
+            </archive> 
+          </configuration>
         </plugin>
 
         <plugin>
