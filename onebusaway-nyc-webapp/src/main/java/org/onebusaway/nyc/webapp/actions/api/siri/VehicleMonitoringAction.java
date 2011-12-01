@@ -56,7 +56,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   private Date _now = new Date();
 
-  private String _type = "json";
+  private String _type = "xml";
 
   public void setType(String type) {
     _type = type;
