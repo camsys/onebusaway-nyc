@@ -30,6 +30,7 @@
 #bustime #header {
 	position: relative;
 	height: 58px;
+	padding-top: 8px;
 }
 
 #bustime #header .title h1 a {
@@ -42,24 +43,28 @@
 }
 
 #bustime #header ul {
-	position: absolute;
-	left: 320px;
-	bottom: 0px;
+	position: relative;
+	margin-top: 12px;
 }
 
 #bustime #header ul li {
 	list-style: none;
 	float: left;
-	font-size: 125%;
-	margin-right: 20px;
+	font-size: .8em;
+	margin-right: 15px;
 }
 
 #bustime #header ul li a {
 	text-decoration: none;
 }
 
+#bustime #header ul li a:hover {
+	text-decoration: none;
+	color: #94CB45;
+}
+
 #bustime #content {
-	padding-top: 15px;
+	padding-top: 0;
 }
 
 
@@ -71,11 +76,11 @@ html, body {
     height: 100%;
     color: #333333;
     font: 13px/1.231 helvetica,arial,clean,sans-serif;
+	overflow-x: hidden;
 }
 #mainbox {
     background-color: #FFFFFF;
     margin: 0 auto;
-    padding: 0 0 20px;
     position: relative;
     width: 95%;
 }

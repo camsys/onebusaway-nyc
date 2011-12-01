@@ -22,7 +22,7 @@
 
 #content #searchbar {
 	float: left;
-	width: 310px;
+	width: 320px;
 	font-size: 120%;
 	overflow-y: auto;
 }
@@ -37,7 +37,7 @@
 	background-image: url('img/search_background.png');
 	background-repeat: no-repeat;
 
-	margin-bottom: 10px;
+	margin: 40px 0 20px 0;
 }
 
 #content #searchbar form input {
@@ -51,6 +51,12 @@
 	
 	margin: 5px;
 	margin-right: 0px;
+}
+
+#content #searchbar #tip {
+	font-size: .73em;
+	color: #666666;
+	margin-top: 7px;
 }
 
 #content #searchbar form input.submit {
@@ -80,6 +86,7 @@
 	color: #818181;	
 
 	padding-bottom: 5px;
+	padding-top: 20px;
 }
 
 #content #no-results,
@@ -90,7 +97,7 @@
 }
 
 #content #welcome ul {
-	padding-top: 10px;
+	padding-top: 5px;
 }
 
 #content #welcome ul li {
