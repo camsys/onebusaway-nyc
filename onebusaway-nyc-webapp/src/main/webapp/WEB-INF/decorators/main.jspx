@@ -139,7 +139,7 @@
 					<s:url var="url" namespace="/wiki" action="ContactUs"/>
 					<li><a href="${url}">Contact Us</a></li>
     			    
-    			    <s:url var="url" namespace="/wiki" action="Developers"/>
+    			    <s:url var="url" namespace="/wiki/Developers" action="Index"/>
     			    <li><a href="${url}">For Developers</a></li>
 
 					<s:if test="adminUser">

@@ -16,13 +16,13 @@
 
 #content #text {
     position: relative;
-	padding: 15px;
+	padding-top: 15px;
 	line-height: 120%;
 	overflow: hidden;
 }
 
 #content.sidebar #text {
-	margin-left: 250px;
+	margin-left: 310px;
 	font-size: 14px;
 }
 
@@ -30,10 +30,14 @@
 	margin-left: 0px;
 }
 
+#content.sidebar #sidebar {
+	float: left;
+	width: 300px;
+}
+
 #content.sidebar #sidebar .wrapper {
 	padding: 10px;
-	padding-right: 0px;
-	padding-bottom: 150px;
+	padding-left: 0px;
 	line-height: 140%;	
 }
 
@@ -159,4 +163,8 @@
 	list-style-type: disc;
 	padding-top: 2px;
 	padding-bottom: 2px;
+}
+
+.clear {
+	clear: both;	
 }
