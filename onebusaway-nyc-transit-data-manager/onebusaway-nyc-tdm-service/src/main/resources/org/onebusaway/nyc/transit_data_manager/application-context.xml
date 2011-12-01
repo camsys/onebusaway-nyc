@@ -1,55 +1,74 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+  xsi:schemaLocation="
    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
-    <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.api" />
-    <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.siri" />
-	
-    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
-        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
-    </bean>
+  <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.api" />
+  <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.siri" />
 
-	<bean class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
-        <property name="order" value="-2" />
-        <property name="properties">
-            <props>
-                <prop key="tdm.dataPath">${tdm.dataPath}</prop>
-                <prop key="tdm.crewAssignFilename">${tdm.crewAssignFilename}</prop>
-                <prop key="tdm.depotAssignFilename">${tdm.depotAssignFilename}</prop>
-                <prop key="tdm.pipoFilename">${tdm.pipoFilename}</prop>
-                <prop key="tdm.dscFilename">${tdm.dscFilename}</prop>
-                <prop key="tdm.prettyPrintOutput">${tdm.prettyPrintOutput}</prop>
-            </props>
+  <import resource="classpath:org/onebusaway/container/application-context.xml" />
+
+    <bean id="usersHibernateAnnotatedClasses" class="org.onebusaway.container.spring.ListBeanPostProcessor">
+        <property name="target" value="hibernateAnnotatedClasses" />
+        <property name="values">
+            <list>
+                <value>org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertRecord</value>
+            </list>
         </property>
     </bean>
-	
-	<bean class="org.onebusaway.nyc.transit_data_manager.config.XMLConfigurationDatastore">
-		<!--  <constructor-arg value="testconfigfile.xml" />   -->
-		<property name="configFilePath">
-			<value>${tdm.config.configXmlFile}</value>
-		</property>
-	</bean>
 
-	<bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
-		<constructor-arg ref="bundleSource" />
-	</bean>
+  <bean id="transitDataService"
+    class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+    <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
+    <property name="serviceInterface"
+      value="org.onebusaway.transit_data.services.TransitDataService" />
+  </bean>
 
-	<bean id="bundleSource"
-		class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
-		<constructor-arg type="java.lang.String" value="${tdm.bundlePath}" />
-		<constructor-arg ref="gsonTool" />
-	</bean>
+  <bean
+    class="org.onebusaway.container.spring.SystemPropertyOverrideConfigurer">
+    <property name="order" value="-2" />
+    <property name="properties">
+      <props>
+        <prop key="tdm.dataPath">${tdm.dataPath}</prop>
+        <prop key="tdm.crewAssignFilename">${tdm.crewAssignFilename}</prop>
+        <prop key="tdm.depotAssignFilename">${tdm.depotAssignFilename}</prop>
+        <prop key="tdm.pipoFilename">${tdm.pipoFilename}</prop>
+        <prop key="tdm.dscFilename">${tdm.dscFilename}</prop>
+        <prop key="tdm.prettyPrintOutput">${tdm.prettyPrintOutput}</prop>
+      </props>
+    </property>
+  </bean>
 
-	<bean id="gsonTool"
-		class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
-		<property name="prettyPrintOutput" value="${tdm.prettyPrintOutput}" />
-	</bean>
+  <bean
+    class="org.onebusaway.nyc.transit_data_manager.config.XMLConfigurationDatastore">
+    <!-- <constructor-arg value="testconfigfile.xml" /> -->
+    <property name="configFilePath">
+      <value>${tdm.config.configXmlFile}</value>
+    </property>
+  </bean>
 
-    <bean id="nycSiriService"
-        class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceGateway">
-    </bean>
+  <bean class="org.onebusaway.nyc.transit_data_manager.bundle.BundleProvider">
+    <constructor-arg ref="bundleSource" />
+  </bean>
+
+  <bean id="bundleSource"
+    class="org.onebusaway.nyc.transit_data_manager.bundle.DirectoryBundleSource">
+    <constructor-arg type="java.lang.String" value="${tdm.bundlePath}" />
+    <constructor-arg ref="gsonTool" />
+  </bean>
+
+  <bean id="gsonTool"
+    class="org.onebusaway.nyc.transit_data_manager.json.LowerCaseWDashesGsonJsonTool">
+    <property name="prettyPrintOutput" value="${tdm.prettyPrintOutput}" />
+  </bean>
+
+  <bean id="siriServicePersister"
+    class="org.onebusaway.nyc.transit_data_manager.siri.SiriServiceDao"></bean>
+
+  <bean id="nycSiriService"
+    class="org.onebusaway.nyc.transit_data_manager.siri.NycSiriServiceGateway">
+    <property name="persister" ref="siriServicePersister" />
+  </bean>
 
 </beans>

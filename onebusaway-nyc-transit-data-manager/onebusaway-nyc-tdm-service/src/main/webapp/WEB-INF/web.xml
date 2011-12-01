@@ -6,7 +6,8 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-			classpath:org/onebusaway/nyc/transit_data_manager/application-context.xml
+			classpath:data-sources.xml
+            classpath:org/onebusaway/nyc/transit_data_manager/application-context.xml
 		</param-value>
 	</context-param>
 

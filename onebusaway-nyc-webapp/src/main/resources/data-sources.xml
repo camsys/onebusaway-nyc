@@ -96,14 +96,14 @@
     </bean>
 
     <bean id="wikiDocumentService" class="org.onebusaway.wiki.xwiki.impl.XWikiDocumentServiceImpl">
-        <property name="xwikiUrl" value="http://${service.wikihost}/xwiki" />
+        <property name="xwikiUrl" value="http://${service.wikihost}" />
     </bean>
 
     <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl">
-        <property name="wikiDocumentViewUrl" value="/wiki/%{documentName}" />
-        <property name="wikiDocumentEditUrl" value="http://${service.wikihost}/xwiki/bin/edit/%{namespace}/%{documentName}" />
+        <property name="wikiDocumentViewUrl" value="/onebusaway-nyc-webapp/wiki/%{documentName}" />
+        <property name="wikiDocumentEditUrl" value="http://${service.wikihost}/bin/edit/%{namespace}/%{documentName}" />
         <property name="wikiAttachmentUrl"
-            value="http://${service.wikihost}/xwiki/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
+            value="http://${service.wikihost}/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
     </bean>
 
 </beans>

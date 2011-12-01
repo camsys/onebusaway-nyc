@@ -13,12 +13,14 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,15 +66,25 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   @Override
   public String execute() {  
-    String stopId = _request.getParameter("MonitoringRef");
-    String agencyId = _request.getParameter("OperatorRef");
-
-    String routeId = _request.getParameter("LineRef");
     String directionId = _request.getParameter("DirectionRef");
+    
+    AgencyAndId stopId = null;
+    try {
+      stopId = AgencyAndIdLibrary.convertFromString(_request.getParameter("MonitoringRef"));
+    } catch (Exception e) {
+      stopId = new AgencyAndId(_request.getParameter("OperatorRef"), _request.getParameter("MonitoringRef"));
+    }
+    
+    AgencyAndId routeId = null;
+    try {
+      routeId = AgencyAndIdLibrary.convertFromString(_request.getParameter("LineRef"));
+    } catch (Exception e) {
+      routeId = new AgencyAndId(_request.getParameter("OperatorRef"), _request.getParameter("LineRef"));
+    }
+    
+    String detailLevel = _request.getParameter("StopMonitoringDetailLevel");
 
     int maximumOnwardCalls = 0;        
-
-    String detailLevel = _request.getParameter("StopMonitoringDetailLevel");
     if (detailLevel != null && detailLevel.equals("calls")) {
       maximumOnwardCalls = Integer.MAX_VALUE;
 
@@ -83,22 +95,21 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       }
     }
 
-    if(stopId != null && agencyId != null) {
-      String stopIdWithAgency = agencyId + "_" + stopId;
-      
+    if(stopId != null && stopId.hasValues()) {
       List<MonitoredStopVisitStructure> visits = 
-          _realtimeService.getMonitoredStopVisitsForStop(stopIdWithAgency, maximumOnwardCalls);
+          _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls);
 
-      if(routeId != null || directionId != null) {
+      if((routeId != null && routeId.hasValues()) || directionId != null) {
         List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();
 
         for(MonitoredStopVisitStructure visit : visits) {
           MonitoredVehicleJourneyStructure journey = visit.getMonitoredVehicleJourney();
-          String thisRouteId = journey.getLineRef().getValue();
+
+          AgencyAndId thisRouteId = AgencyAndIdLibrary.convertFromString(journey.getLineRef().getValue());
           String thisDirectionId = journey.getDirectionRef().getValue();
           
           // user filtering
-          if(routeId != null && !thisRouteId.equals(routeId))
+          if((routeId != null && routeId.hasValues()) && !thisRouteId.equals(routeId))
             continue;
           
           if(directionId != null && !thisDirectionId.equals(directionId))
@@ -115,9 +126,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     
     return SUCCESS;
   }
+  
 
   private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits) {
-    
     StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
     stopMonitoringDelivery.setResponseTimestamp(_now);
     
@@ -155,4 +166,5 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   public void setServletRequest(HttpServletRequest request) {
     this._request = request;
   }
+  
 }
