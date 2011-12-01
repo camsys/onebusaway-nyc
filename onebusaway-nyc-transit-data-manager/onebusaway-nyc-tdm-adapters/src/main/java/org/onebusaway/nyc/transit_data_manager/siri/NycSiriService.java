@@ -94,46 +94,51 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
-
 @Component
 public abstract class NycSiriService {
 
   static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
 
-  // TODO Should this stay autowired?
   @Autowired
   private TransitDataService _transitDataService;
+
+  @Autowired
+  private SiriServicePersister _siriServicePersister;
 
   private String _serviceAlertsUrl;
 
   private String _subscriptionPath;
 
   private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
-  
-  private List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
 
   private WebResourceWrapper _webResourceWrapper;
 
   private String _subscriptionUrl;
 
   abstract void setupForMode() throws Exception, JAXBException;
-  
+
   abstract List<String> getExistingAlertIds(Set<String> agencies);
-  
+
   abstract void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId);
-  
+
   abstract void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
       String defaultAgencyId);
-  
-  abstract void postServiceDeliveryActions(SituationExchangeResults result) throws Exception;  
 
-  
+  abstract void postServiceDeliveryActions(SituationExchangeResults result)
+      throws Exception;
+
   @PostConstruct
-  public void setup() throws Exception {
+  public void setup() {
     _log.info("setup(), serviceAlertsUrl is: " + _serviceAlertsUrl);
-    setupForMode();
+    try {
+      setupForMode();
+    } catch (Exception e) {
+      _log.error("********************\n"
+          + "NycSiriService failed to start, message is: " + e.getMessage()
+          + "\n********************");
+    }
   }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
@@ -265,7 +270,7 @@ public abstract class NycSiriService {
             "required element missing: subscriptionIdentifier");
       subscription.setSubscriptionIdentifier(request.getSubscriptionIdentifier().getValue());
       subscription.setSubscriptionRef(subscriptionRef);
-      getServiceAlertSubscriptions().add(subscription);
+      addSubscription(subscription);
     } catch (Exception e) {
       errorMessage = "Failed to create service alert subscription: "
           + e.getMessage();
@@ -364,7 +369,6 @@ public abstract class NycSiriService {
       ServiceAlertBean serviceAlert) {
     throw new RuntimeException("handleReasons not implemented");
   }
-
 
   private void handleAffects(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
@@ -479,7 +483,6 @@ public abstract class NycSiriService {
       serviceAlert.setAllAffects(allAffects);
   }
 
-
   private void handleConsequences(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
 
@@ -578,7 +581,8 @@ public abstract class NycSiriService {
 
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
-    String sendResult = getWebResourceWrapper().post(SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
+    String sendResult = getWebResourceWrapper().post(
+        SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
     return sendResult;
   }
 
@@ -606,7 +610,8 @@ public abstract class NycSiriService {
     return siri;
   }
 
-  private String makeSubscriptionUrl(String subscriptionPath) throws UnknownHostException {
+  private String makeSubscriptionUrl(String subscriptionPath)
+      throws UnknownHostException {
     if (_subscriptionUrl != null)
       return _subscriptionUrl;
     String hostName = InetAddress.getLocalHost().getCanonicalHostName();
@@ -648,13 +653,12 @@ public abstract class NycSiriService {
     this.currentServiceAlerts = currentServiceAlerts;
   }
 
-  public List<ServiceAlertSubscription> getServiceAlertSubscriptions() {
-    return serviceAlertSubscriptions;
+  private void addSubscription(ServiceAlertSubscription subscription) {
+    getPersister().saveOrUpdateSubscription(subscription);
   }
 
-  public void setServiceAlertSubscriptions(
-      List<ServiceAlertSubscription> serviceAlertSubscriptions) {
-    this.serviceAlertSubscriptions = serviceAlertSubscriptions;
+  public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions() {
+    return getPersister().getAllActiveSubscriptions();
   }
 
   public String getSubscriptionPath() {
@@ -673,6 +677,14 @@ public abstract class NycSiriService {
 
   public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
     this._webResourceWrapper = _webResourceWrapper;
+  }
+
+  public SiriServicePersister getPersister() {
+    return _siriServicePersister;
+  }
+
+  public void setPersister(SiriServicePersister _siriServicePersister) {
+    this._siriServicePersister = _siriServicePersister;
   }
 
 }

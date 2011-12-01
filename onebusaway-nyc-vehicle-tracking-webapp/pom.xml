@@ -118,10 +118,9 @@
                 <tdm.host>tdm.staging.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                
-                <!-- Set this to empty.xml if you do not want the NycSiriService to run -->
-                <siri.service.config>nyc-siri-service.xml</siri.service.config>
-<!--                 <siri.service.config>empty.xml</siri.service.config> -->
+                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
+                 <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -138,7 +137,9 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                <siri.service.config>nyc-siri-service.xml</siri.service.config>
+                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
+                 <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -154,7 +155,9 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
-                <siri.service.config>nyc-siri-service.xml</siri.service.config>
+                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
+                 <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         <profile>
@@ -223,6 +226,13 @@
                 <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <siri.service.config>empty.xml</siri.service.config>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>run-nyc-siri-service</id>
+            <properties>
+                <siri.service.config>nyc-siri-service.xml</siri.service.config>
             </properties>
         </profile>
         
