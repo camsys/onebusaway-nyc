@@ -40,5 +40,8 @@
     <!-- List all the mapping documents we're using -->
     <mapping
       class="org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertRecord" />
+    <mapping
+      class="org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertSubscription"/>
+      
   </session-factory>
 </hibernate-configuration>

@@ -51,7 +51,9 @@
 
     <mapping
       class="org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertRecord" />
-
+    <mapping
+      class="org.onebusaway.nyc.transit_data_manager.siri.ServiceAlertSubscription"/>
+      
 <!--         <mapping resource="org/onebusaway/users/impl/UserDaoImpl.hibernate.xml" />
  -->
     </session-factory>
