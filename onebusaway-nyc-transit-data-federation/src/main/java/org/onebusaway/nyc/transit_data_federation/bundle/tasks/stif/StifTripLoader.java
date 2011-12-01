@@ -197,12 +197,14 @@ public class StifTripLoader {
                 trip = null;
               }
             }
+
+            String block = tripRecord.getBlockNumber();
             if (trip != null) {
 
               rawTrips.addGtfsTrip(trip);
 
               int reliefTime = tripRecord.getReliefTime();
-              RawRunData rawRunData = new RawRunData(run1, run2, run3, serviceId, serviceCode);
+              RawRunData rawRunData = new RawRunData(run1, run2, run3, serviceId, serviceCode, block);
               
               filtered.add(trip);
               rawRunDataByTrip.put(trip, rawRunData);

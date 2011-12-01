@@ -268,6 +268,7 @@ OBA.Sidebar = function() {
 				legend.hide();
 				results.hide();
 				noResults.show();
+				loading.hide();
 				return;
 			} else {
 				noResults.hide();

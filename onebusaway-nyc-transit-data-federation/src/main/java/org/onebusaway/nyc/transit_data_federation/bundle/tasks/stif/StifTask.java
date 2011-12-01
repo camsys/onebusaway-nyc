@@ -67,6 +67,8 @@ public class StifTask implements Runnable {
 
   private String logPath;
 
+  private boolean runBasedBlocks = true;
+
   @Autowired
   public void setGtfsMutableRelationalDao(
       GtfsMutableRelationalDao gtfsMutableRelationalDao) {
@@ -109,7 +111,11 @@ public class StifTask implements Runnable {
       loadStif(path, loader);
     }
 
-    computeBlocks(loader);
+    if (runBasedBlocks) {
+      computeBlocksFromRuns(loader);
+    } else {
+      loadStifBlocks(loader);
+    }
     warnOnMissingTrips();
 
     Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
@@ -166,6 +172,17 @@ public class StifTask implements Runnable {
 
   }
 
+  private void loadStifBlocks(StifTripLoader loader) {
+
+    Map<Trip, RawRunData> rawData = loader.getRawRunDataByTrip();
+    for (Map.Entry<Trip, RawRunData> entry : rawData.entrySet()) {
+      Trip trip = entry.getKey();
+      RawRunData data = entry.getValue();
+      trip.setBlockId("block_" + data.getBlock());
+      _gtfsMutableRelationalDao.updateEntity(trip);
+    }
+  }
+
   class TripWithStartTime implements Comparable<TripWithStartTime> {
 
     private int startTime;
@@ -215,7 +232,7 @@ public class StifTask implements Runnable {
     }
   }
 
-  private void computeBlocks(StifTripLoader loader) {
+  private void computeBlocksFromRuns(StifTripLoader loader) {
 
     FileOutputStream outputStream = null;
     PrintStream printStream = null;
@@ -438,5 +455,17 @@ public class StifTask implements Runnable {
             + _notInServiceDscPath);
       }
     }
+  }
+
+  /**
+   * Whether blocks should come be computed from runs (true) or read from the STIF (false)
+   * @return
+   */
+  public boolean usesRunBasedBlocks() {
+    return runBasedBlocks;
+  }
+
+  public void setRunBasedBlocks(boolean runBasedBlocks) {
+    this.runBasedBlocks = runBasedBlocks;
   }
 }
