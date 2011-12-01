@@ -47,7 +47,7 @@
 				<fieldset>
 					<label>Choose A Route:</label>
 					<select id="route">
-						<option value="MTA NYCT_B63">B63</option>
+						<option value="MTA NYCT_S62">S62</option>
 					</select>			
 				</fieldset>			
 
@@ -78,7 +78,7 @@
 					</textarea>
 					
 					<p class="small">
-					TIP: This text is displayed to users of the sign--advertise specials to B63 riders 
+					TIP: This text is displayed to users of the sign--advertise specials to S62 riders 
 					or provide additional information related to your business!
 					</p>
 					

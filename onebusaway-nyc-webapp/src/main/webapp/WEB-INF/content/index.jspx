@@ -65,7 +65,7 @@
 	  		</div>
 	   	  	<ul>
 	   	  		<s:url var="url" namespace="/m" action="index"/>
-				<li><a href="${url}">Text/Mobile</a></li>
+				<li><a href="${url}">Text / Mobile</a></li>
 	    	  	
 				<s:url var="url" namespace="/wiki" action="About"/>
 				<li><a href="${url}">About</a></li>
@@ -114,10 +114,10 @@
 		 <h2>Try these example searches:</h2>
 		 
 		 <ul>
-		 	<li>Route: <a href="#B63">B63</a></li>
-		 	<li>Intersection: <a href="#Atlantic Ave and Hoyt St">Atlantic Ave and Hoyt St</a></li>
-		 	<li>Stop ID: <a href="#305394">305394</a></li>
-		 	<li>Location: <a href="#10003">10003</a> or <a href="#Staten Island">Staten Island</a></li>
+		 	<li>Route: <a href="#S62">S62</a></li>
+		 	<li>Intersection: <a href="#Main St and Craig Rd">Main St &amp; Craig Rd</a></li>
+		 	<li>Stop ID: <a href="#200884">200884</a></li>
+		 	<li>Location: <a href="#10304">10304</a> or <a href="#Staten Island">Staten Island</a></li>
 		 </ul>
 	   </div>
 	   
