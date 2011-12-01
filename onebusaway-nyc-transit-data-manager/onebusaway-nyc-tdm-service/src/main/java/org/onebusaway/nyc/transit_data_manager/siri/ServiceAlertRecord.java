@@ -164,6 +164,7 @@ public class ServiceAlertRecord implements Serializable {
     return gbuilder.create().toJson(object);
   }
 
+  // These 2 annotations are NOT working at the moment.  See https://issuetracker.camsys.com/browse/OBANYC-589
   @PrePersist
   protected void onCreate() {
     createdAt = updatedAt = new Date();

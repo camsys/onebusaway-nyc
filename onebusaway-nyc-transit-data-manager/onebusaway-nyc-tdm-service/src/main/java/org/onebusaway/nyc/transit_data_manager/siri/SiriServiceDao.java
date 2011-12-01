@@ -36,8 +36,10 @@ public class SiriServiceDao implements SiriServicePersister {
     return ServiceAlertRecord.toBean(record);
   }
 
-  private ServiceAlertRecord getServiceAlertByServiceAlertId(String serviceAlertId) {
-    List<ServiceAlertRecord> list = _template.find("from ServiceAlertRecord where service_alert_id=?", serviceAlertId);
+  private ServiceAlertRecord getServiceAlertByServiceAlertId(
+      String serviceAlertId) {
+    List<ServiceAlertRecord> list = _template.find(
+        "from ServiceAlertRecord where service_alert_id=?", serviceAlertId);
     return list.get(0);
   }
 
@@ -56,7 +58,7 @@ public class SiriServiceDao implements SiriServicePersister {
     String hql = hsql;
     List<Object> list = _template.find(hql);
     for (Object o : list) {
-      ServiceAlertBean b = ServiceAlertRecord.toBean((ServiceAlertRecord)o);
+      ServiceAlertBean b = ServiceAlertRecord.toBean((ServiceAlertRecord) o);
       results.add(b);
     }
     return results;
@@ -64,27 +66,17 @@ public class SiriServiceDao implements SiriServicePersister {
 
   @Override
   public void saveOrUpdateSubscription(ServiceAlertSubscription subscription) {
-    // TODO Auto-generated method stub
-
+    _template.saveOrUpdate(subscription);
   }
 
   @Override
   public void deleteSubscription(ServiceAlertSubscription subscription) {
-    // TODO Auto-generated method stub
-
+    _template.delete(subscription);
   }
 
   @Override
   public List<ServiceAlertSubscription> getAllActiveSubscriptions() {
-    // TODO Auto-generated method stub
-
-    // ********** NOT DONE ***************
-    // ********** NOT DONE ***************
-    // ********** NOT DONE ***************
-    // ********** NOT DONE ***************
-    // ********** NOT DONE ***************
-
-    return new ArrayList<ServiceAlertSubscription>();
+    return (List<ServiceAlertSubscription>)_template.find("from ServiceAlertSubscription");
   }
 
 }

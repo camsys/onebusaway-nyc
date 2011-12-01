@@ -1,8 +1,18 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.AccessType;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -10,14 +20,44 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 
-public class ServiceAlertSubscription {
+@Entity
+@Table(name = "obanyc_servicealert_subscription")
+@AccessType("field")
+@Cache(usage = CacheConcurrencyStrategy.NONE)
+public class ServiceAlertSubscription implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
+  @Id
+  @GeneratedValue
+  @AccessType("property")
+  private Integer id;
+
+  @Column(name = "address", length = 512)
   private String address;
+
+  @Column(name = "identifier", length = 64)
   private String subscriptionIdentifier;
+
+  @Column(name = "ref", length = 64)
   private String subscriptionRef;
-  private Date createdAt;
-  private WebResourceWrapper webResourceWrapper;
   
+  @Column(name = "consecutive_failures")
+  private Integer consecutiveFailures;
+  
+  @Column(name = "created_at")
+  private Date createdAt;
+  
+  transient private WebResourceWrapper webResourceWrapper;
+  
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
   public String getAddress() {
     return address;
   }
@@ -72,6 +112,14 @@ public class ServiceAlertSubscription {
 
   public void setWebResourceWrapper(WebResourceWrapper webResourceWrapper) {
     this.webResourceWrapper = webResourceWrapper;
+  }
+
+  public Integer getConsecutiveFailures() {
+    return consecutiveFailures;
+  }
+
+  public void setConsecutiveFailures(Integer consecutiveFailures) {
+    this.consecutiveFailures = consecutiveFailures;
   }
   
 }
