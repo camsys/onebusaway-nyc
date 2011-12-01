@@ -94,7 +94,6 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
-
 @Component
 public abstract class NycSiriService {
 
@@ -111,29 +110,35 @@ public abstract class NycSiriService {
   private String _subscriptionPath;
 
   private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
-  
+
   private WebResourceWrapper _webResourceWrapper;
 
   private String _subscriptionUrl;
 
   abstract void setupForMode() throws Exception, JAXBException;
-  
+
   abstract List<String> getExistingAlertIds(Set<String> agencies);
-  
+
   abstract void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId);
-  
+
   abstract void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
       String defaultAgencyId);
-  
-  abstract void postServiceDeliveryActions(SituationExchangeResults result) throws Exception;  
 
-  
+  abstract void postServiceDeliveryActions(SituationExchangeResults result)
+      throws Exception;
+
   @PostConstruct
-  public void setup() throws Exception {
+  public void setup() {
     _log.info("setup(), serviceAlertsUrl is: " + _serviceAlertsUrl);
-    setupForMode();
+    try {
+      setupForMode();
+    } catch (Exception e) {
+      _log.error("********************\n"
+          + "NycSiriService failed to start, message is: " + e.getMessage()
+          + "\n********************");
+    }
   }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
@@ -365,7 +370,6 @@ public abstract class NycSiriService {
     throw new RuntimeException("handleReasons not implemented");
   }
 
-
   private void handleAffects(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
     AffectsScopeStructure affectsStructure = ptSituation.getAffects();
@@ -479,7 +483,6 @@ public abstract class NycSiriService {
       serviceAlert.setAllAffects(allAffects);
   }
 
-
   private void handleConsequences(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
 
@@ -578,7 +581,8 @@ public abstract class NycSiriService {
 
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
-    String sendResult = getWebResourceWrapper().post(SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
+    String sendResult = getWebResourceWrapper().post(
+        SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
     return sendResult;
   }
 
@@ -606,7 +610,8 @@ public abstract class NycSiriService {
     return siri;
   }
 
-  private String makeSubscriptionUrl(String subscriptionPath) throws UnknownHostException {
+  private String makeSubscriptionUrl(String subscriptionPath)
+      throws UnknownHostException {
     if (_subscriptionUrl != null)
       return _subscriptionUrl;
     String hostName = InetAddress.getLocalHost().getCanonicalHostName();
