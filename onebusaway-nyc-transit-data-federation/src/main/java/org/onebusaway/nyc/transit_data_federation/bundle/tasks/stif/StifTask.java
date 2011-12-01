@@ -67,7 +67,7 @@ public class StifTask implements Runnable {
 
   private String logPath;
 
-  private boolean runBasedBlocks = true;
+  private boolean fallBackToStifBlocks = false;
 
   @Autowired
   public void setGtfsMutableRelationalDao(
@@ -111,12 +111,12 @@ public class StifTask implements Runnable {
       loadStif(path, loader);
     }
 
-    if (runBasedBlocks) {
-      computeBlocksFromRuns(loader);
-    } else {
+    computeBlocksFromRuns(loader);
+    warnOnMissingTrips();
+
+    if (fallBackToStifBlocks) {
       loadStifBlocks(loader);
     }
-    warnOnMissingTrips();
 
     Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
     //store trip-run mapping in bundle
@@ -177,9 +177,11 @@ public class StifTask implements Runnable {
     Map<Trip, RawRunData> rawData = loader.getRawRunDataByTrip();
     for (Map.Entry<Trip, RawRunData> entry : rawData.entrySet()) {
       Trip trip = entry.getKey();
-      RawRunData data = entry.getValue();
-      trip.setBlockId("block_" + data.getBlock());
-      _gtfsMutableRelationalDao.updateEntity(trip);
+      if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
+        RawRunData data = entry.getValue();
+        trip.setBlockId(trip.getServiceId() + "_STIF_" + data.getDepotCode() + "_" + data.getBlock());
+        _gtfsMutableRelationalDao.updateEntity(trip);
+      }
     }
   }
 
@@ -332,7 +334,10 @@ public class StifTask implements Runnable {
           }
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
-            String blockId = "block_" + blockNo + "_" + gtfsTrip.getServiceId().getId();
+            RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
+            String blockId = gtfsTrip.getServiceId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.runId + "_" + blockNo;
+
+
             blockId = blockId.intern();
             blockIds.add(blockId);
             gtfsTrip.setBlockId(blockId);
@@ -461,11 +466,11 @@ public class StifTask implements Runnable {
    * Whether blocks should come be computed from runs (true) or read from the STIF (false)
    * @return
    */
-  public boolean usesRunBasedBlocks() {
-    return runBasedBlocks;
+  public boolean usesFallBackToStiffBlocks() {
+    return fallBackToStifBlocks;
   }
 
-  public void setRunBasedBlocks(boolean runBasedBlocks) {
-    this.runBasedBlocks = runBasedBlocks;
+  public void setFallBackToStifBlocks(boolean fallBackToStifBlocks) {
+    this.fallBackToStifBlocks = fallBackToStifBlocks;
   }
 }

@@ -107,7 +107,11 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(107 - 106, "empty", null),
       new FieldDef(112 - 107, "trip mileage", null),
       new FieldDef(113 - 112, "empty", null),
-      new FieldDef(115 - 113, "depot code", null),
+      new FieldDef(115 - 113, "depot code",  new TripFieldSetter() {
+        public void setField(TripRecord record) {
+          record.setDepotCode(getStringData());
+        }
+      }),
       new FieldDef(116 - 115, "empty", null),
       new FieldDef(126 - 116, "block number", new TripFieldSetter() {
         public void setField(TripRecord record) {
