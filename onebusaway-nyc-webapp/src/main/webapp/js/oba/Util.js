@@ -73,10 +73,10 @@ OBA.Util = (function() {
 				return s;
 			}
 		},
-		// For IE quirks
+		// For IE
 		getPageHeightAndWidth: function() {
 			var w = 0, h = 0;
-			if( isNaN(window.innerWidth) ) {
+			if( typeof(window.innerWidth) == "number") {
 				//Non-IE
 				w = window.innerWidth;
 				h = window.innerHeight;
