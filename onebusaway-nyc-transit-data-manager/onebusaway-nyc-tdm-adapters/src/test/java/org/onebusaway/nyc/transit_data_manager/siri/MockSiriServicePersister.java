@@ -1,49 +1,43 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
-public class MockSiriServicePersister implements
+public class MockSiriServicePersister extends HashMap<String, ServiceAlertBean> implements
     SiriServicePersister {
 
   List<ServiceAlertSubscription> subs = new ArrayList<ServiceAlertSubscription>();
-  @Override
+//  Map<String, ServiceAlertBean> alerts = new HashMap<String, ServiceAlertBean>();
+  
   public void saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
-    // TODO Auto-generated method stub
-
+    throw new RuntimeException("not implemented");
   }
 
-  @Override
   public ServiceAlertBean deleteServiceAlertById(String serviceAlertId) {
-    // TODO not implemented
-    return null;
+    throw new RuntimeException("not implemented");
   }
 
-  @Override
   public List<ServiceAlertBean> getAllActiveServiceAlerts() {
-    // TODO Auto-generated method stub
-    return null;
+    return new ArrayList<ServiceAlertBean>(super.values());
   }
 
-  @Override
   public List<ServiceAlertBean> getAllServiceAlerts() {
-    // TODO Auto-generated method stub
-    return null;
+    throw new RuntimeException("not implemented");
   }
 
-  @Override
   public void saveOrUpdateSubscription(ServiceAlertSubscription subscription) {
     subs.add(subscription);
   }
 
-  @Override
   public void deleteSubscription(ServiceAlertSubscription subscription) {
     subs.remove(subscription);
   }
 
-  @Override
   public List<ServiceAlertSubscription> getAllActiveSubscriptions() {
     return subs;
   }

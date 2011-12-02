@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +24,6 @@ public class NycSiriServiceGateway extends NycSiriService {
   @Override
   void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean, String defaultAgencyId) {
-    getCurrentServiceAlerts().put(serviceAlertBean.getId(), serviceAlertBean);
     result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
         "added");
     getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
@@ -32,7 +32,6 @@ public class NycSiriServiceGateway extends NycSiriService {
   
   void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId) {
-    ServiceAlertBean removed = getCurrentServiceAlerts().remove(serviceAlertId);
     result.countPtSituationElementResult(deliveryResult, serviceAlertId,
         "removed");
     getPersister().deleteServiceAlertById(serviceAlertId);
@@ -40,14 +39,19 @@ public class NycSiriServiceGateway extends NycSiriService {
 
   
   List<String> getExistingAlertIds(Set<String> agencies) {
-    return new ArrayList<String>(getCurrentServiceAlerts().keySet());
+    List<String> existing = new ArrayList<String>();
+    List<ServiceAlertBean> alerts = getPersister().getAllActiveServiceAlerts();
+    for (ServiceAlertBean alert: alerts) {
+      existing.add(alert.getId());
+    }
+    return existing;
   }
 
 
   @Override
-  void postServiceDeliveryActions(SituationExchangeResults results) throws Exception {
+  void postServiceDeliveryActions(SituationExchangeResults results, Collection<String> deletedIds) throws Exception {
     for (ServiceAlertSubscription subscription: getActiveServiceAlertSubscriptions()) {
-      subscription.send(results, getCurrentServiceAlerts());
+      subscription.send(getPersister().getAllActiveServiceAlerts(), deletedIds);
     }
   }
 
@@ -65,6 +69,12 @@ public class NycSiriServiceGateway extends NycSiriService {
 
   public void setPersister(SiriServicePersister _siriServicePersister) {
     this._siriServicePersister = _siriServicePersister;
+  }
+
+
+  @Override
+  public boolean isInputIncremental() {
+    return false;
   }
 
 

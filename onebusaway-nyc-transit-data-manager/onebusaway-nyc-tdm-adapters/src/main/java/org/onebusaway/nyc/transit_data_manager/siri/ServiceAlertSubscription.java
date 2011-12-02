@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -90,14 +91,19 @@ public class ServiceAlertSubscription implements Serializable {
     this.subscriptionRef = subscriptionRef;    
   }
 
-  public void send(SituationExchangeResults results, Map<String, ServiceAlertBean> serviceAlerts) throws Exception {
+  public void send(Map<String, ServiceAlertBean> serviceAlerts, Collection<String> deletedIds) throws Exception {
+    send(serviceAlerts.values(), deletedIds);
+  }
+
+  public void send(Collection<ServiceAlertBean> collection,
+      Collection<String> deletedIds) throws Exception {
     ServiceAlertsHelper h = new ServiceAlertsHelper();
     Siri s = new Siri();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     
-    h.addSituationExchangeToSiri(serviceDelivery, serviceAlerts);
-    // TODO removed
-
+    h.addSituationExchangeToSiri(serviceDelivery, collection);
+    h.addClosedSituationExchangesToSiri(serviceDelivery, deletedIds);
+    
     s.setServiceDelivery(serviceDelivery);
     String xml = SiriXmlSerializer.getXml(s);
     

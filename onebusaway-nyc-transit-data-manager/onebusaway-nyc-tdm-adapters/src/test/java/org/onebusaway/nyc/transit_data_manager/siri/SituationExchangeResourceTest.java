@@ -135,9 +135,9 @@ public class SituationExchangeResourceTest extends SituationExchangeResource {
 
   private void setupServiceAlerts() {
     Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
-    currentServiceAlerts.put("foo", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1000"));
-    getNycSiriService().setCurrentServiceAlerts(currentServiceAlerts);
-    getNycSiriService().setPersister(new MockSiriServicePersister());
+    MockSiriServicePersister persister = new MockSiriServicePersister();
+    persister.put("foo", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1000"));
+    getNycSiriService().setPersister(persister);
   }
 
 	@Test

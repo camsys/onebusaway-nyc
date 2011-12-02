@@ -3,6 +3,7 @@ package org.onebusaway.nyc.presentation.impl.service_alerts;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
@@ -10,6 +11,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import uk.org.siri.siri.DefaultedTextStructure;
+import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -18,6 +20,7 @@ import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
+import uk.org.siri.siri.WorkflowStatusEnumeration;
 import static org.mockito.Mockito.*;
 
 public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
@@ -62,9 +65,9 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   }
 
   /**
-   * I have sometimes seen vehicleActivities without monitoredVehicleJourneys, which is
-   * what we need to hang service alerts off of.  That may be an error, but let's make
-   * sure we don't blow up if that happens.
+   * I have sometimes seen vehicleActivities without monitoredVehicleJourneys,
+   * which is what we need to hang service alerts off of. That may be an error,
+   * but let's make sure we don't blow up if that happens.
    * 
    */
   @Test
@@ -139,6 +142,26 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     assertEquals("summary", summary.getValue());
   }
 
+  @Test
+  public void testAddClosedSituationExchangesToSiri() {
+    ServiceDelivery serviceDelivery = new ServiceDelivery();
+    List<String> deletedIds = new ArrayList<String>();
+    deletedIds.add("MTA NYCT_100");
+    deletedIds.add("MTA NYCT_101");
+
+    addClosedSituationExchangesToSiri(serviceDelivery, deletedIds);
+
+    List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
+    assertEquals(1, list.size());
+    SituationExchangeDeliveryStructure situationExchangeDeliveryStructure = list.get(0);
+    List<PtSituationElementStructure> ptSituationElements = situationExchangeDeliveryStructure.getSituations().getPtSituationElement();
+    assertEquals(2, ptSituationElements.size());
+    for (PtSituationElementStructure ptSit : ptSituationElements) {
+      assertTrue(deletedIds.contains(ptSit.getSituationNumber().getValue()));
+      assertEquals(WorkflowStatusEnumeration.CLOSED, ptSit.getProgress());
+    }
+  }
+
   public void createActivity(List<VehicleActivityStructure> activities,
       String id) {
     createActivity(activities, id, false);
@@ -151,7 +174,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     SituationRefStructure situationRefStructure = new SituationRefStructure();
 
     MonitoredVehicleJourney monitoredVehicleJourney = new MonitoredVehicleJourney();
-//    vehicleActivity.setMonitoredVehicleJourney(monitoredVehicleJourney);
+    // vehicleActivity.setMonitoredVehicleJourney(monitoredVehicleJourney);
     monitoredVehicleJourney.getSituationRef().add(situationRefStructure);
 
     if (!skipJourney) {
