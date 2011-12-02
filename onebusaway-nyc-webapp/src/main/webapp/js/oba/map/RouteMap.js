@@ -23,7 +23,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				new google.maps.LatLng(40.92862373397717,-73.68182659149171)
 		),
 		getTileUrl: function(coord, zoom) {
-			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
+			if (!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
 				return null;
 			}
 			
@@ -31,18 +31,18 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
 		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
 
-		    if(!this.bounds.contains(center_ll)) {
+		    if (!this.bounds.contains(center_ll)) {
 		    	return null;
 		    }
 		    
-			var quad = ""; 
-		    for (var i = zoom; i > 0; i--){
+			var quad = "", i;
+		    for (i = zoom; i > 0; i--) {
 		        var mask = 1 << (i - 1); 
 		        var cell = 0; 
-		        if ((coord.x & mask) != 0) 
-		            cell++; 
-		        if ((coord.y & mask) != 0) 
-		            cell += 2; 
+		        if ((coord.x & mask) != 0) {
+		            cell++; }
+		        if ((coord.y & mask) != 0) {
+		            cell += 2; }
 		        quad += cell; 
 		    } 
 			return 'http://tripplanner.mta.info/maps/SystemRoutes_New/' + quad + '.png'; 
@@ -190,11 +190,11 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			  (map.overlayMapTypes.length == 1) ? 
 					  map.overlayMapTypes.removeAt(0, mtaSubwayMapType) : map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
 
-			  (new RGBColor(controlText.style.color).toHex().toUpperCase() == "#CCCCCC") ?
-					   controlText.style.color = "#000000" : controlText.style.color = "#CCCCCC";
+			  controlText.style.color = (new RGBColor(controlText.style.color).toHex().toUpperCase() == "#CCCCCC") ?
+					  "#000000" : "#CCCCCC";
 			  
-			  (new RGBColor(controlUI.style.color).toHex().toUpperCase() == "#CCCCCC") ?
-					  controlUI.style.color = "#000000" : controlUI.style.color = "#CCCCCC";
+			  controlUI.style.color = (new RGBColor(controlUI.style.color).toHex().toUpperCase() == "#CCCCCC") ?
+					  "#000000" : "#CCCCCC";
 	  };
 	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
 
@@ -217,7 +217,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var stopsById = {};
 	var stopsAddedForRoute = {};
 	var alreadyDisplayedStopIcons = {};
-
+	
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
 		// only one popup open at a time!
@@ -269,8 +269,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				return;
 			}
 			
-			var age = parseInt(timestampContainer.attr("age"));
-			var referenceEpoch = parseInt(timestampContainer.attr("referenceEpoch"));
+			var age = parseInt(timestampContainer.attr("age"), 10);
+			var referenceEpoch = parseInt(timestampContainer.attr("referenceEpoch"), 10);
 			
 			if(isNaN(age) || isNaN(referenceEpoch)) {
 				return;
@@ -311,7 +311,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
 		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
 		var updateTimestampReference = new Date(r.Siri.ServiceDelivery.ResponseTimestamp).getTime();
-		var age = (parseInt(updateTimestampReference) - parseInt(updateTimestamp)) / 1000;
+		var age = (parseInt(updateTimestampReference, 10) - parseInt(updateTimestamp, 10)) / 1000;
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
 
 		html += '<span class="updated' + staleClass + '"' + 
@@ -394,7 +394,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 
         }
         
-        if (!(html == '')) {
+        if (html !== '') {
             html = '<p class="service">Alerts:</p><ul class="service-alert">' + html + '</ul>';
         }
         return html;
@@ -424,7 +424,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			}
 		});		
 		if(maxUpdateTimestamp !== null) {
-			var age = (parseInt(updateTimestampReference) - parseInt(maxUpdateTimestamp)) / 1000;
+			var age = (parseInt(updateTimestampReference, 10) - parseInt(maxUpdateTimestamp, 10)) / 1000;
 			var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");
 
 			html += '<span class="updated' + staleClass + '"' + 
@@ -586,31 +586,31 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			}
 			
 			var icon = new google.maps.MarkerImage("img/stop/stop-" + directionKey + ".png",
-                new google.maps.Size(21, 21),
-                new google.maps.Point(0,0),
-                new google.maps.Point(10, 10));
+					new google.maps.Size(21, 21),
+					new google.maps.Point(0,0),
+					new google.maps.Point(10, 10));
 			
 			var markerOptions = {
-				position: new google.maps.LatLng(latitude, longitude),
-	            icon: icon,
-	            zIndex: 1,
-	            title: name,
-	            stopId: stopId
-			};
+					position: new google.maps.LatLng(latitude, longitude),
+					icon: icon,
+					zIndex: 1,
+					title: name,
+					stopId: stopId
+					};
 
 	        var marker = new google.maps.Marker(markerOptions);
 	        
-	    	google.maps.event.addListener(marker, "click", function(mouseEvent) {
-	    		var stopIdParts = stopId.split("_");
-	    		var agencyId = stopIdParts[0];
-	    		var stopIdWithoutAgency = stopIdParts[1];
-
-	    		OBA.Config.analyticsFunction("Stop Marker Click", stopIdWithoutAgency);
-	    		
-	    		showPopupWithContentFromRequest(this, OBA.Config.siriSMUrl, 
-	    				{ OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" }, 
-	    				getStopContentForResponse, stop);
-	    	});
+	       google.maps.event.addListener(marker, "click", function(mouseEvent) {
+	    	   var stopIdParts = stopId.split("_");
+	    	   var agencyId = stopIdParts[0];
+	    	   var stopIdWithoutAgency = stopIdParts[1];
+	    	   
+	    	   OBA.Config.analyticsFunction("Stop Marker Click", stopIdWithoutAgency);
+	    	   
+	    	   showPopupWithContentFromRequest(this, OBA.Config.siriSMUrl, 
+	    			   { OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" },
+	    			   getStopContentForResponse, stop);
+	    	   });
 
 	    	// FIXME: route zoom level configuration?
 	    	mgr.addMarker(marker, 16, 19);
@@ -644,13 +644,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
 				var vehicleIdParts = vehicleId.split("_");
 				var vehicleIdWithoutAgency = vehicleIdParts[1];
-
 				var marker = vehiclesById[vehicleId];
-
+				
 				// create marker if it doesn't exist				
 				if(typeof marker === 'undefined' || marker === null) {
 					var markerOptions = {
-				            zIndex: 2,
+							zIndex: 2,
 							map: map,
 							title: routeIdWithoutAgency + " " + headsign,
 							vehicleId: vehicleId,
@@ -723,8 +722,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 
 			delete vehiclesByRoute[routeId];
-		};
-	};
+		}
+	}
 	
 	// MISC
 	function removeRoutesNotInSet(routeResults) {

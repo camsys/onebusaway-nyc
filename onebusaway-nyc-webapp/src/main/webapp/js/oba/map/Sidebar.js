@@ -16,19 +16,18 @@
 
 var OBA = window.OBA || {};
 
-OBA.Sidebar = function() {
-	var theWindow, headerDiv, contentDiv = null;
-	var routeMap = OBA.RouteMap(document.getElementById("map"));
-
-	var welcome = jQuery("#welcome");
-	var legend = jQuery("#legend");
-	var results = jQuery("#results");
-	var noResults = jQuery("#no-results");
-	var loading = jQuery("#loading");
+OBA.Sidebar = function () {
+	var theWindow, headerDiv, contentDiv = null, searchBarDiv, mainbox,
+		routeMap = OBA.RouteMap(document.getElementById("map")),
+		welcome = jQuery("#welcome"),
+		legend = jQuery("#legend"),
+		results = jQuery("#results"),
+		noResults = jQuery("#no-results"),
+		loading = jQuery("#loading");
 
 	function addSearchBehavior() {
-		var searchForm = jQuery("#searchbar form");
-		var searchInput = jQuery("#searchbar form input[type=text]");
+		var searchForm = jQuery("#searchbar form"),
+			searchInput = jQuery("#searchbar form input[type=text]");
 		
 		searchForm.submit(function(e) {
 			e.preventDefault();
@@ -45,8 +44,8 @@ OBA.Sidebar = function() {
 		mainbox = jQuery("#mainbox");
 		
 		function resize() {			
-			var h = theWindow.height() - headerDiv.height();
-			var w = theWindow.width();
+			var h = theWindow.height() - headerDiv.height(),
+				w = theWindow.width();
 			contentDiv.height(h);
 			searchBarDiv.height(h);
 			if (w <= 1060) {
@@ -64,8 +63,8 @@ OBA.Sidebar = function() {
 	// show user list of addresses
 	function disambiguate(locationResults) {		
 		var resultsList = jQuery("#results ul");
-
 		var bounds = null;
+		
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
 			var address = location.formattedAddress;
@@ -304,14 +303,14 @@ OBA.Sidebar = function() {
 				// location disambiguation
 				if(resultType === "LocationResult") {
 					disambiguate(json.searchResults);
-
+					
 				// routes (e.g. S74 itself or S74 + S74 LTD)
 				} else if(resultType === "RouteResult") {
 					showRoutesOnMap(json.searchResults);
 				}
 			}
-		});		
-	}
+		});
+		}
 	
 	return {
 		initialize: function() {
@@ -320,14 +319,14 @@ OBA.Sidebar = function() {
 			
 			// deep link handler
 			jQuery.history.init(function(hash) {
-            	if(hash !== null && hash !== "") {
+				if(hash !== null && hash !== "") {
 					var searchInput = jQuery("#searchbar form input[type=text]");
-
+					
 					searchInput.val(hash);
 					doSearch(hash);
-            	}
-            });	
-		}
+					}
+				});
+			}
 	};
 };
 
