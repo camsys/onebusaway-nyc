@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:decorator="http://www.opensymphony.com/sitemesh/decorator" xmlns:s="/struts-tags">
+
+<jsp:output doctype-root-element="html"
+	doctype-public="-//W3C//DTD XHTML 1.1 Transitional//EN"
+	doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" />
+
+<jsp:directive.page contentType="text/html" />
+
+<head>
+  <title><decorator:title default="MTA Bus Time" /></title>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=8" />
+  
+  <link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
+
+  <script type="text/javascript" src="http://mta.info/js/csshorizontalmenu.js"><!-- //prevent jspx minimization --></script>
+
+  <s:url var="url" value="/css/reset.css"/>
+  <link rel="stylesheet" type="text/css" href="${url}"/>
+
+  <s:url var="url" value="/css/screen.css"/>
+  <link rel="stylesheet" type="text/css" href="${url}"/>
+
+  <s:url var="url" value="/css/branding.css"/>
+  <link rel="stylesheet" type="text/css" href="${url}"/>
+
+  <s:url var="url" value="/js/lib/jquery.js"/>
+  <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+    
+  <s:url var="url" value="/js/oba/Config.js"/>
+  <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+  <decorator:head />
+</head>
+
+<body>
+<div id="mainbox">
+	<div id="topbar">
+		<div id="branding">
+			<a href="http://mta.info/default.html">
+				<img src="http://mta.info/template/images/mta_info.gif"/>
+			</a>
+		</div>
+		
+		<div id="search">
+			<ul id="topbar-links">
+				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/weekender.html">The Weekender</a></li>
+				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/accessibility">Accessibility</a></li>
+				<li class="list_h" style="margin-left:4px;"><a href="http://assistive.usablenet.com/tt/http://mta.info/index.html">Text-only</a></li>
+				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/faqs.htm">FAQs/Contact Us</a></li>
+			</ul>
+			<br />
+	
+			<form id="searchform" method="get" action="http://search.mta.info/search">
+				<input type="hidden" name="site" value="my_collection"/>
+				<input type="hidden" name="client" value="my_collection"/>
+				<input type="hidden" name="proxystylesheet" value="my_collection"/>
+				<input type="hidden" name="output" value="xml_no_dtd"/>				
+				
+				<input type="submit" name="btnG" value="search" id="searchbutton" style="padding: 1px 8px;"/>
+				<input type="text" name="q" id="searchinputbox" alt="searchinputbox" size="12" maxlength="255" value=""/>
+			</form>		
+		</div>
+
+		<div id="horizontalcssmenu" style="clear: both;">	
+			<ul id="cssmenu1">
+				<li style="width:7%; border-left: none;"><a href="http://mta.info/default.html">Home</a>
+					<ul>
+						<li><a href="http://mta.info/default.html">MTA Home</a></li>
+						<li><a href="http://mta.info/nyct">NYC Subways and Buses</a></li>
+						<li><a href="http://mta.info/lirr">Long Island Rail Road</a></li>						
+						<li><a href="http://mta.info/libus">Long Island Bus</a></li>
+						<li><a href="http://mta.info/mnr">Metro-North Railroad</a></li>
+						<li><a href="http://mta.info/bandt">Bridges and Tunnels</a></li>
+						<li><a href="http://mta.info/capital">MTA Capital Program</a></li>
+					</ul> 
+				</li>
+				<li style="width: 9%;"><a href="http://mta.info/schedules">Schedules</a></li>
+				<li style="width: 12%;"><a href="http://mta.info/fares">Fares &amp; Tolls</a></li>
+				<li style="width: 7%;"><a href="http://mta.info/maps">Maps</a></li>
+				<li style="width: 19%;"><a href="http://mta.info/service">Planned Service Changes</a></li>
+				<li style="width: 13%;"><a href="http://mta.info/about">About the MTA</a></li>
+				<li style="width: 19%;"><a href="http://mta.info/business">Doing Business With Us</a></li>
+				<li style="width: 13.5%; position: absolute; margin-left:-1px;"><a href="http://mta.info/accountability/">Transparency</a>
+					<ul>
+						<li><a href="http://mta.info/accountability">Main Page</a></li>
+						<li><a href="http://mta.info/mta/boardmaterials.html">Board Materials</a></li>
+						<li><a href="http://mta.info/mta/budget/">Budget Info</a></li>
+						<li><a href="http://mta.info/capital">Capital Program Info</a></li>
+						<li><a href="http://mta.info/capitaldashboard/index.html">Capital Program Dashboard</a></li>
+						<li><a href="http://mta.info/mta/leadership/">MTA Leadership</a></li>
+						<li><a href="http://mta.info/mta/ind-perform/">Performance Indicators</a></li>				
+						<li><a href="http://mta.info/news/">Press Releases and News</a></li>
+						<li><a href="http://mta.info/mta/news/hearings">Public Hearings</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div> <!-- close topbar -->
+	
+	<div id="contentbox" style="margin-bottom: 10px; padding:0;">
+	<!-- Enter Content here -->
+
+  		<div id="bustime">
+			<div id="header">
+    	  		<div class="title">
+	      			<s:url var="url" value="/"></s:url>
+		  			<h1><a href="${url}">OneBusAway NYC</a></h1>
+	  	  		</div>
+
+	      	  	<ul>
+					<s:url var="url" namespace="/m" action="index"/>
+					<li><a href="${url}">Text / Mobile</a></li>
+	    	  	
+					<s:url var="url" namespace="/wiki" action="About"/>
+					<li><a href="${url}">About</a></li>
+	
+					<s:url var="url" namespace="/wiki" action="ContactUs"/>
+					<li><a href="${url}">Contact</a></li>
+	 				    
+	 				<s:url var="url" namespace="/wiki/Developers" action="Index"/>
+	 				<li><a href="${url}">Developers</a></li>
+	 			
+		 			<s:url var="url" namespace="/wiki/Help" action="Index"/>
+		 			<li><a href="${url}">Help</a></li>
+			    </ul>
+			</div>  		
+  		
+			<decorator:body />
+	    </div>
+
+	<!-- End Content -->
+	</div>
+
+	<div class="container clear"></div>
+</div> <!-- close mainbox -->
+</body>
+</html>

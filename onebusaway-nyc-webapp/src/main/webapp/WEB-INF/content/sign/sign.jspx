@@ -22,7 +22,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 
-	<title>A City Transit Agency | OneBusAway NYC Sign</title>
+	<title>MTA BusTime Sign</title>
 
   	<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon"/>
 
@@ -58,7 +58,7 @@
 
 <div id="arrivals"><!-- //prevent jspx minimization --></div>
 
-<p id="footer"><span>&amp;copy; 2011, A City Transit Agency</span></p>
+<p id="footer"></p>
 
 <script type="text/javascript">
   <![CDATA[var _gaq = _gaq || [];_gaq.push(['_setAccount', OBA.Config.googleAnalyticsId]);_gaq.push(['_setDomainName', 'none']);_gaq.push(['_setAllowLinker', true]);_gaq.push(['_trackPageview']);(function() {var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);})();]]>
