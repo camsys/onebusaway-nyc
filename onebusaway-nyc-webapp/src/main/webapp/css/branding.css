@@ -44,25 +44,35 @@
 
 #bustime #header ul {
 	position: relative;
-	margin-top: 12px;
+	margin-top: 10px;
+    display: inline;
+    float: left;
+    width: 100%;
 }
 
 #bustime #header ul li {
 	list-style: none;
 	float: left;
 	font-size: .8em;
-	margin-right: 15px;
+    display: block;
+    margin: 0;
+    z-index: 100;
+    margin-right: 1px;
 }
 
 #bustime #header ul li a {
 	text-decoration: none;
+   	background-color: #3399C9;
+    color: #FFFFFF;
+    display: block;
+    font-weight: bold;
+    height: 10px;
+    padding: 4px 5px 6px 5px;
+    text-align: center;
 }
-
 #bustime #header ul li a:hover {
-	text-decoration: none;
-	color: #94CB45;
+    background-color: #94CB45;
 }
-
 #bustime #content {
 	padding-top: 0;
 }

@@ -22,7 +22,7 @@
 
 #content #searchbar {
 	float: left;
-	width: 320px;
+	width: 330px;
 	font-size: 120%;
 	overflow-y: auto;
 }
@@ -31,7 +31,7 @@
 	position: relative;
 	
 	display: block;
-	width: 280px;
+	width: 310px;
 	height: 40px;
 
 	background-image: url('img/search_background.png');
@@ -45,7 +45,7 @@
 	font-family: inherit;
 	font-size: 120%;
 	
-	width: 235px;
+	width: 258px;
 	height: 30px;
 	border: none;
 	

@@ -62,8 +62,8 @@
 		  	<div class="title">
 	   			<s:url var="url" value="/"></s:url>
 				<h1><a href="${url}">OneBusAway NYC</a></h1>
-	  		</div>
-	   	  	<ul>
+	  		</div>	  		
+	   	  	<ul id="btcssmenu">
 	   	  		<s:url var="url" namespace="/m" action="index"/>
 				<li><a href="${url}">Text / Mobile</a></li>
 	    	  	
