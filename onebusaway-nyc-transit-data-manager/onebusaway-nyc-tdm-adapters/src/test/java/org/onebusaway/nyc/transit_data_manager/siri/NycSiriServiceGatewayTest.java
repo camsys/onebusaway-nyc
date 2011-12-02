@@ -5,7 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.joda.time.format.ISODateTimeFormat;
@@ -62,8 +64,9 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
 
   @Test
   public void testPostServiceDeliveryActions() throws Exception {
-    SiriServicePersister mockPersister = new MockSiriServicePersister();
+    MockSiriServicePersister mockPersister = new MockSiriServicePersister();
     setPersister(mockPersister);
+    mockPersister.put("one", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100"));
     SituationExchangeResults result = mock(SituationExchangeResults.class);
     ServiceDelivery delivery = mock(ServiceDelivery.class);
     addSubscription();
@@ -72,7 +75,7 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
     handleServiceDeliveries(result, delivery);
 
     for (ServiceAlertSubscription s : getActiveServiceAlertSubscriptions())
-      verify(s).send(eq(result), any(Map.class));
+      verify(s).send(any(List.class), any(Collection.class));
   }
 
   private ServiceAlertSubscription addSubscription() {

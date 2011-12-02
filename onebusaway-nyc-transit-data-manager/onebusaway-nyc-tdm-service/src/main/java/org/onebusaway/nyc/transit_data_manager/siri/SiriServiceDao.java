@@ -5,11 +5,15 @@ import java.util.List;
 
 import org.hibernate.SessionFactory;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 public class SiriServiceDao implements SiriServicePersister {
+
+  static final Logger _log = LoggerFactory.getLogger(SiriServiceDao.class);
 
   private HibernateTemplate _template;
 
@@ -25,12 +29,20 @@ public class SiriServiceDao implements SiriServicePersister {
   @Transactional(rollbackFor = Throwable.class)
   @Override
   public void saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
-    _template.saveOrUpdate(new ServiceAlertRecord(serviceAlertBean));
+    ServiceAlertRecord record = getServiceAlertByServiceAlertId(serviceAlertBean.getId());
+    if (record != null) {
+      record.setDeleted(false);
+      _template.saveOrUpdate(record.updateFrom(serviceAlertBean));
+    } else {
+      _template.saveOrUpdate(new ServiceAlertRecord(serviceAlertBean));
+    }
   }
 
   @Override
   public ServiceAlertBean deleteServiceAlertById(String serviceAlertId) {
     ServiceAlertRecord record = getServiceAlertByServiceAlertId(serviceAlertId);
+    if (record == null)
+      return null;
     record.setDeleted(true);
     _template.saveOrUpdate(record);
     return ServiceAlertRecord.toBean(record);
@@ -40,7 +52,10 @@ public class SiriServiceDao implements SiriServicePersister {
       String serviceAlertId) {
     List<ServiceAlertRecord> list = _template.find(
         "from ServiceAlertRecord where service_alert_id=?", serviceAlertId);
-    return list.get(0);
+    if (list.size() > 0)
+      return list.get(0);
+    else
+      return null;
   }
 
   @Override
@@ -57,6 +72,7 @@ public class SiriServiceDao implements SiriServicePersister {
     List<ServiceAlertBean> results = new ArrayList<ServiceAlertBean>();
     String hql = hsql;
     List<Object> list = _template.find(hql);
+    _log.info("Ran query: " + hql + " size of results " + list.size());
     for (Object o : list) {
       ServiceAlertBean b = ServiceAlertRecord.toBean((ServiceAlertRecord) o);
       results.add(b);
@@ -76,7 +92,7 @@ public class SiriServiceDao implements SiriServicePersister {
 
   @Override
   public List<ServiceAlertSubscription> getAllActiveSubscriptions() {
-    return (List<ServiceAlertSubscription>)_template.find("from ServiceAlertSubscription");
+    return (List<ServiceAlertSubscription>) _template.find("from ServiceAlertSubscription");
   }
 
 }
