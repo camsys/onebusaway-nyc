@@ -65,5 +65,31 @@ public class NycSiriServiceClient extends NycSiriService {
     // None when in client mode
   }
 
+
+  @Override
+  void addSubscription(ServiceAlertSubscription subscription) {
+    // not used in client mode
+  }
+
+
+  @Override
+  public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions() {
+    // not used in client mode
+    return null;
+  }
+
+
+  @Override
+  public SiriServicePersister getPersister() {
+    // not used in client mode
+    return null;
+  }
+
+
+  @Override
+  public void setPersister(SiriServicePersister _siriServicePersister) {
+    // not used in client mode
+  }
+
   
 }

@@ -7,8 +7,12 @@ import java.util.Set;
 import javax.xml.bind.JAXBException;
 
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class NycSiriServiceGateway extends NycSiriService {
+
+  @Autowired
+  private SiriServicePersister _siriServicePersister;
 
   @Override
   void setupForMode() throws Exception, JAXBException {
@@ -47,5 +51,21 @@ public class NycSiriServiceGateway extends NycSiriService {
     }
   }
 
-  
+  void addSubscription(ServiceAlertSubscription subscription) {
+    getPersister().saveOrUpdateSubscription(subscription);
+  }
+
+  public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions() {
+    return getPersister().getAllActiveSubscriptions();
+  }
+
+  public SiriServicePersister getPersister() {
+    return _siriServicePersister;
+  }
+
+  public void setPersister(SiriServicePersister _siriServicePersister) {
+    this._siriServicePersister = _siriServicePersister;
+  }
+
+
 }

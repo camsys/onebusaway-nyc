@@ -102,9 +102,6 @@ public abstract class NycSiriService {
   @Autowired
   private TransitDataService _transitDataService;
 
-  @Autowired
-  private SiriServicePersister _siriServicePersister;
-
   private String _serviceAlertsUrl;
 
   private String _subscriptionPath;
@@ -128,6 +125,15 @@ public abstract class NycSiriService {
 
   abstract void postServiceDeliveryActions(SituationExchangeResults result)
       throws Exception;
+
+  abstract void addSubscription(ServiceAlertSubscription subscription);
+
+  abstract public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions();
+
+  abstract public SiriServicePersister getPersister();
+  
+  abstract public void setPersister(SiriServicePersister _siriServicePersister);
+
 
   @PostConstruct
   public void setup() {
@@ -653,14 +659,6 @@ public abstract class NycSiriService {
     this.currentServiceAlerts = currentServiceAlerts;
   }
 
-  private void addSubscription(ServiceAlertSubscription subscription) {
-    getPersister().saveOrUpdateSubscription(subscription);
-  }
-
-  public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions() {
-    return getPersister().getAllActiveSubscriptions();
-  }
-
   public String getSubscriptionPath() {
     return _subscriptionPath;
   }
@@ -677,14 +675,6 @@ public abstract class NycSiriService {
 
   public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
     this._webResourceWrapper = _webResourceWrapper;
-  }
-
-  public SiriServicePersister getPersister() {
-    return _siriServicePersister;
-  }
-
-  public void setPersister(SiriServicePersister _siriServicePersister) {
-    this._siriServicePersister = _siriServicePersister;
   }
 
 }
