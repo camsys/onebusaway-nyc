@@ -17,8 +17,7 @@
 /* Insert agency-specific branding overrides here */
 
 #bustime {
-	margin: 20px;
-	margin-top: 0px;
+	margin: 0 0 0 20px;
 }
 
 #bustime a:visited,

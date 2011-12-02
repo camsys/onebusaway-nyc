@@ -45,7 +45,7 @@
 	font-family: inherit;
 	font-size: 120%;
 	
-	width: 258px;
+	width: 262px;
 	height: 30px;
 	border: none;
 	
@@ -54,7 +54,7 @@
 }
 
 #content #searchbar #tip {
-	font-size: .73em;
+	font-size: .8em;
 	color: #666666;
 	margin-top: 7px;
 }
