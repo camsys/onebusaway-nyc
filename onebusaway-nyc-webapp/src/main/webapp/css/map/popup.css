@@ -92,6 +92,14 @@
 	background-repeat: no-repeat;
 }
 
+#bustime .popup ul li.nextStop a.stopName {
+	color: #000099;
+}
+
+#bustime .popup ul li.nextStop a.stopName:hover {
+	color: #8FC743;
+}
+
 .popup ul.otherRoutes li {
 	display: inline;
 	margin-right: 10px;

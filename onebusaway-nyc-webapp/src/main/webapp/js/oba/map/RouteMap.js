@@ -351,9 +351,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			});
 		
 			html += '<p class="service">Next stops:</p>';
-			html += '<ul>';
+			html += '<ul>';			
 			jQuery.each(nextStops, function(_, call) {
-				html += '<li class="nextStop">' + call.StopPointName + ' <span>';
+				html += '<li class="nextStop">' + getStopLink(call) + ' <span>';
 				html +=   call.Extensions.Distances.PresentableDistance;
 				html += '</span></li>';
 			});
@@ -370,10 +370,18 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		return html;
 	}
 	
+	function getStopLink(call) {
+		var stopListLink = $('<a class="stopName" id="stopLink_"' + call.StopPointRef + '">' + call.StopPointName + '</a>');
+		$('#stopLink_' + name).live("click", function() { 
+			mapShowPopupForStopId(call.StopPointRef);
+		});
+		return $('<a></a>').append(stopListLink.clone()).html();
+	}
+	
 	function getZoomHereLink() {
 		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
 		$('#zoomHere').live("click", function() { 
-			if(infoWindow !== null && infoWindow.anchor !== null) {
+			if (infoWindow !== null && infoWindow.anchor !== null) {
 				map.setCenter(infoWindow.anchor.getPosition());
 			}
 			map.setZoom(map.maxZoom - 3); 
@@ -630,6 +638,22 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	    });
 	}
 	
+	function mapShowPopupForStopId(stopId) {
+		var stopMarker = stopsById[stopId];
+		
+		if(typeof stopMarker === 'undefined') {
+			return;
+		}
+		if (stopMarker.getMap() !== null) {
+			stopMarker.setMap(map);
+		}
+		map.setCenter(stopMarker.getPosition());
+		map.setZoom(14);
+		google.maps.event.trigger(stopMarker, "click");
+		
+		alreadyDisplayedStopIcons[stopId] = true;
+	}
+	
 	// VEHICLES
 	function updateVehicles(routeId) {
 		if(typeof vehiclesByRoute[routeId] === 'undefined') {
@@ -867,19 +891,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		removeRoutesNotInSet: removeRoutesNotInSet,
 		
 		showPopupForStopId: function(stopId) {
-			var stopMarker = stopsById[stopId];
-			
-			if(typeof stopMarker === 'undefined') {
-				return;
-			}
-			if (stopMarker.getMap() !== null) {
-				stopMarker.setMap(map);
-			}
-			map.setCenter(stopMarker.getPosition());
-			map.setZoom(14);
-			google.maps.event.trigger(stopMarker, "click");
-			
-			alreadyDisplayedStopIcons[stopId] = true;
+			mapShowPopupForStopId(stopId);
 		},
 		
 		showStopIcon: function(stopId) {

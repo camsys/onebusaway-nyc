@@ -24,7 +24,7 @@ OBA.Sidebar = function () {
 		results = jQuery("#results"),
 		noResults = jQuery("#no-results"),
 		loading = jQuery("#loading");
-
+	
 	function addSearchBehavior() {
 		var searchForm = jQuery("#searchbar form"),
 			searchInput = jQuery("#searchbar form input[type=text]");
@@ -178,6 +178,7 @@ OBA.Sidebar = function () {
 						e.preventDefault();
 
 						routeMap.showPopupForStopId(stop.stopId);
+						console.log(stop.stopId);
 					});
 					stopLink.mouseenter(function(e) {
 						e.preventDefault();
