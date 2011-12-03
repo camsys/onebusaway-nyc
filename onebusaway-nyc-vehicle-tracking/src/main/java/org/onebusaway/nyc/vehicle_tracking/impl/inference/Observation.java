@@ -44,6 +44,8 @@ public class Observation {
 
   private final Set<AgencyAndId> _dscImpliedRouteCollections;
 
+  private int _fuzzyMatchDistance;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, Observation previousObservation,
@@ -114,6 +116,14 @@ public class Observation {
 
   public Set<AgencyAndId> getDscImpliedRouteCollections() {
     return _dscImpliedRouteCollections;
+  }
+
+  public void setFuzzyMatchDistance(int bestDist) {
+    _fuzzyMatchDistance = bestDist;
+  }
+  
+  public int getFuzzyMatchDistance() {
+    return _fuzzyMatchDistance;
   }
 
 }

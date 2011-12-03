@@ -18,7 +18,13 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 /**
  * Core particle filter implementation
@@ -28,6 +34,8 @@ import java.util.List;
  * @param <OBS>
  */
 public class ParticleFilter<OBS> {
+
+  private static final boolean _maxLikelihoodParticle = false;
 
   private ParticleFactory<OBS> _particleFactory;
 
@@ -52,8 +60,8 @@ public class ParticleFilter<OBS> {
    **************************************************************************/
 
   public ParticleFilter(ParticleFilterModel<OBS> model) {
-    this(model.getParticleFactory(), model.getSensorModel(),
-        model.getMotionModel());
+    this(model.getParticleFactory(), model.getSensorModel(), model
+        .getMotionModel());
   }
 
   public ParticleFilter(ParticleFactory<OBS> particleFactory,
@@ -177,7 +185,8 @@ public class ParticleFilter<OBS> {
       particles = new ArrayList<Particle>(numberOfParticles);
       double elapsed = timestamp - _timeOfLastUpdate;
       for (int i = 0; i < _particles.size(); i++)
-        _motionModel.move(_particles.get(i), timestamp, elapsed, obs, particles);
+        _motionModel
+            .move(_particles.get(i), timestamp, elapsed, obs, particles);
     }
 
     /**
@@ -193,25 +202,24 @@ public class ParticleFilter<OBS> {
     /**
      * 4. store the most likely particle's information
      */
-    double highestWeight = Double.NEGATIVE_INFINITY;
-    double lowestWeight = Double.POSITIVE_INFINITY;
+    /*
+     * double highestWeight = Double.NEGATIVE_INFINITY; double lowestWeight =
+     * Double.POSITIVE_INFINITY;
+     * 
+     * 
+     * int index = 0; for (Particle p : particles) { double w = p.getWeight();
+     * if (w > highestWeight) { _mostLikelyParticle = p.cloneParticle();
+     * highestWeight = w; } if (w < lowestWeight) { _leastLikelyParticle =
+     * p.cloneParticle(); lowestWeight = w; } p.setIndex(index++); }
+     * 
+     * if (highestWeight == 0) throw new
+     * ZeroProbabilityParticleFilterException();
+     */
 
-    int index = 0;
-    for (Particle p : particles) {
-      double w = p.getWeight();
-      if (w > highestWeight) {
-        _mostLikelyParticle = p.cloneParticle();
-        highestWeight = w;
-      }
-      if (w < lowestWeight) {
-        _leastLikelyParticle = p.cloneParticle();
-        lowestWeight = w;
-      }
-      p.setIndex(index++);
-    }
-
-    if (highestWeight == 0)
+    if (!cdf.canSample())
       throw new ZeroProbabilityParticleFilterException();
+
+    computeBestState(particles);
 
     /**
      * 5. resample (use the CDF of unevenly weighted particles to create an
@@ -228,12 +236,76 @@ public class ParticleFilter<OBS> {
     _particles = reweighted;
   }
 
+  private void computeBestState(List<Particle> particles) {
+    /**
+     * We choose the "most likely" particle over the entire distribution w.r.t
+     * the inferred trip.
+     */
+    Map<String, Map<String, Double>> tripPhaseToProb = 
+        new HashMap<String, Map<String, Double>>();
+
+    Set<Particle> bestParticles = new HashSet<Particle>();
+    if (!_maxLikelihoodParticle) {
+      double highestTripProb = Double.MIN_VALUE;
+      int index = 0;
+      for (Particle p : particles) {
+        p.setIndex(index++);
+  
+        double w = p.getWeight();
+        
+        if (w == 0.0)
+          continue;
+        
+        VehicleState vs = p.getData();
+        String id = vs.getBlockState() == null ? "NA" : vs.getBlockState()
+            .getBlockLocation().getActiveTrip().getTrip().toString();
+        String phase = vs.getJourneyState().toString();
+  
+        Map<String, Double> tripsPhases = tripPhaseToProb.get(id);
+  
+        double newProb;
+        if (tripsPhases == null) {
+          tripsPhases = new HashMap<String, Double>();
+          tripsPhases.put(phase, w);
+          tripPhaseToProb.put(id, tripsPhases);
+          newProb = w;
+        } else {
+          Double prob = tripsPhases.get(phase);
+          newProb = (prob == null ? 0.0 : prob) + w;
+          tripsPhases.put(phase, newProb);
+        }
+  
+        /**
+         * Check most likely new trip & phase pairs, then
+         * find the most likely particle(s) within those. 
+         */
+        if (bestParticles.isEmpty() || newProb > highestTripProb) {
+          bestParticles.add(p);
+          highestTripProb = newProb;
+        } 
+      }
+    } else {
+      bestParticles.addAll(particles);
+    }
+
+    Particle bestParticle = null;
+    for (Particle p : bestParticles) {
+      if (bestParticle == null 
+          || p.getWeight() > bestParticle.getWeight()) {
+        bestParticle = p;
+      }
+    }
+    
+    _mostLikelyParticle = bestParticle.cloneParticle();
+
+  }
+
   /**
    * Applies the sensor model (as set by setSensorModel) to each particle in the
    * filter, according to the given observable.
    */
-  private CategoricalDist<Particle> applySensorModel(List<Particle> particles, OBS obs)
-      throws ParticleFilterException {
+  private CategoricalDist<Particle> applySensorModel(List<Particle> particles,
+      OBS obs) throws ParticleFilterException {
 
     CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
 

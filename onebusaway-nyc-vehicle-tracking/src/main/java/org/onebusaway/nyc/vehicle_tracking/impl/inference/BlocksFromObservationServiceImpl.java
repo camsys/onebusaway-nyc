@@ -288,8 +288,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     String operatorId = observation.getRecord().getOperatorId();
 
     if (StringUtils.isEmpty(operatorId)) {
-      _log.warn("no operator id reported");
-      // FIXME TODO use new model stuff
+      _log.info("no operator id reported");
     } else {
       try {
         OperatorAssignmentItem oai = _operatorAssignmentService
@@ -313,14 +312,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       opAssignedRunTrip = _runService.getActiveRunTripEntryForRunAndTime(
           new AgencyAndId(agencyId, opAssignedRunId), obsDate.getTime());
       if (opAssignedRunTrip == null) {
-        _log.warn("couldn't find operator's assigned runTripEntry for runId="
+        _log.info("couldn't find operator's assigned runTripEntry for runId="
             + opAssignedRunId + ", time=" + obsDate.getTime() + ", agency="
             + agencyId);
       } else {
         runEntriesToTry.add(opAssignedRunTrip);
       }
     } else {
-      _log.warn("no assigned run found for operator=" + operatorId);
+      _log.info("no assigned run found for operator=" + operatorId);
     }
 
     List<RunTripEntry> reportedRtes = new ArrayList<RunTripEntry>();
@@ -331,18 +330,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       // TODO should we really match 000-000?
       reportedRunId = observation.getRecord().getRunId();
 
-      /*
-       * FIXME without "weighing", searching by nearby blocks is, in conjunction
-       * with nearby block searches alone, not completely useful other than
-       * perhaps to confirm that the assigned and reported runId match, and/or
-       * narrow down the blocks to consider...
-       */
       try {
         TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService
             .getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId,
                 reportedRunId), potentialBlocks, obsDate.getTime());
         if (fuzzyReportedMatches.isEmpty()) {
-          _log.warn("couldn't find a fuzzy match for reported runId="
+          _log.info("couldn't find a fuzzy match for reported runId="
               + reportedRunId);
         } else {
           /*
@@ -361,13 +354,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
            */
           if (opAssignedRunTrip != null) {
             if (!fuzzyReportedMatches.get(bestDist).contains(opAssignedRunTrip)) {
-              _log.warn("operator assigned runTrip=" + opAssignedRunId
+              _log.info("operator assigned runTrip=" + opAssignedRunId
                   + " not found among best reported-run matches");
               assignedReportedRunMismatch = true;
             }
           } else {
             // FIXME don't keep this reportedRtes set around just for matching
             // later
+            observation.setFuzzyMatchDistance(bestDist);
             reportedRtes.addAll(fuzzyReportedMatches.get(bestDist));
             runEntriesToTry.addAll(reportedRtes);
           }
@@ -581,7 +575,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         .getTripIdsForDestinationSignCode(dsc);
 
     if (dscTripIds == null) {
-      _log.warn("no trips found for dsc: " + dsc);
+      _log.info("no trips found for dsc: " + dsc);
       return;
     }
 

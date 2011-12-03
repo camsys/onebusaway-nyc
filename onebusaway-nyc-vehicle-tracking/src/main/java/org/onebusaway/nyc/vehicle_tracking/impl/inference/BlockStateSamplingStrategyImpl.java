@@ -227,7 +227,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         && !state.getOpAssigned() && !state.getRunReported();
         
     if (noStateButRunInfo || stateButNoRunMatch) {
-      score *= 0.5;
+      score *= 0.05;
     }
 
     return score;

@@ -125,7 +125,7 @@ public class BlockStateTransitionModel {
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
     BlockState parentBlockState = parentState.getBlockState();
-    Set<BlockState> potentialTransStates = null;
+    Set<BlockState> potentialTransStates = new HashSet<BlockState>();
 
     EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
 
@@ -157,51 +157,70 @@ public class BlockStateTransitionModel {
           parentBlockState))
         return null;
 
-      boolean notActiveButRunAssigned = parentBlockState != null
-          && parentBlockState.getOpAssigned();
+      // boolean notActiveButRunAssigned = parentBlockState != null
+      // && parentBlockState.getOpAssigned();
+      //
+      // /**
+      // * If we're currently in progress on a block or this block was assigned
+      // to
+      // * the operator, then we update our block location along the block that
+      // * we're serving TODO why don't we progress deadhead-before, etc.
+      // anyway?
+      // */
+      // if (EVehiclePhase.isActiveDuringBlock(parentPhase)
+      // || notActiveButRunAssigned) {
+      // potentialTransStates = advanceAlongBlock(parentPhase, parentBlockState,
+      // obs);
+      // } else {
+      // return null;
+      // }
 
-      /**
-       * If we're currently in progress on a block or this block was assigned to
-       * the operator, then we update our block location along the block that
-       * we're serving TODO why don't we progress deadhead-before, etc. anyway?
-       */
-      if (EVehiclePhase.isActiveDuringBlock(parentPhase)
-          || notActiveButRunAssigned) {
-        potentialTransStates = advanceAlongBlock(parentPhase, parentBlockState,
-            obs);
+      if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
+        potentialTransStates.addAll(advanceAlongBlock(parentPhase,
+            parentBlockState, obs));
       } else {
-        return null;
+        potentialTransStates.add(parentBlockState);
       }
     }
 
-    if (obs.isOutOfService()) {
-      /**
-       * Operator just went out of service so forget the block
-       */
-      return null;
-    }
+    // if (obs.isOutOfService()) {
+    // /**
+    // * Operator just went out of service so forget the block
+    // */
+    // return null;
+    // }
 
     BlockState updatedBlockState = null;
 
-    if (potentialTransStates == null) {
-      /**
-       * Resample the potential blocks-in-progress when no "best" transitions
-       * are found (why?)
-       */
-      CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy
-          .cdfForJourneyInProgress(obs);
+    /**
+     * If this state has no transitions, consider block changes. Otherwise, pick
+     * the best transition.
+     */
+    if ((potentialTransStates == null || potentialTransStates.isEmpty())) {
 
-      if (!cdf.canSample())
+      if (allowBlockChange) {
+        /**
+         * We're now considering that the driver may have been re-assigned, or
+         * whatnot.
+         */
+        CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy
+            .cdfForJourneyInProgress(obs);
+
+        if (!cdf.canSample())
+          return null;
+
+        updatedBlockState = cdf.sample();
+
+        if (EVehiclePhase.isLayover(parentPhase)
+            || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
+                updatedBlockState.getBlockInstance())) {
+          updatedBlockState = _blocksFromObservationService
+              .advanceLayoverState(obs.getTime(), updatedBlockState);
+        }
+      } else {
         return null;
-
-      updatedBlockState = cdf.sample();
-
-      if (EVehiclePhase.isLayover(parentPhase) 
-          || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
-              updatedBlockState.getBlockInstance())) {
-        updatedBlockState = _blocksFromObservationService.advanceLayoverState(
-            obs.getTime(), updatedBlockState);
       }
+
     } else {
       /**
        * When we return multiple possible transitions, choose the best in terms
@@ -271,15 +290,16 @@ public class BlockStateTransitionModel {
      */
     if (prevObs != null) {
       /**
-       * If we were assigned a block, then use the block's terminals, 
-       * otherwise, all terminals.
+       * If we were assigned a block, then use the block's terminals, otherwise,
+       * all terminals.
        */
       if (parentState.getBlockState() != null) {
-        boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-            prevObs.getRecord(), parentState.getBlockState().getBlockInstance());
+        boolean wasAtBlockTerminal = _vehicleStateLibrary
+            .isAtPotentialTerminal(prevObs.getRecord(), parentState
+                .getBlockState().getBlockInstance());
         boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
             obs.getRecord(), parentState.getBlockState().getBlockInstance());
-        
+
         if (wasAtBlockTerminal && !isAtBlockTerminal) {
           return true;
         }
@@ -316,9 +336,9 @@ public class BlockStateTransitionModel {
   }
 
   /**
-   * This method searches for the best block location within a
-   * given distance from the previous block location.  As well,
-   * transitions to and from layover states are considered here.
+   * This method searches for the best block location within a given distance
+   * from the previous block location. As well, transitions to and from layover
+   * states are considered here.
    * 
    * @param phase
    * @param blockState
@@ -340,8 +360,8 @@ public class BlockStateTransitionModel {
     Set<BlockState> updatedBlockStates = _blocksFromObservationService
         .advanceState(obs, blockState, 0, distanceToTravel);
 
-    if (EVehiclePhase.isLayover(phase) || 
-        _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
+    if (EVehiclePhase.isLayover(phase)
+        || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
             blockState.getBlockInstance())) {
       for (BlockState state : updatedBlockStates) {
         state = _blocksFromObservationService.advanceLayoverState(

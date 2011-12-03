@@ -51,15 +51,6 @@ public class RunRule implements SensorModelRule {
     SensorModelResult result = new SensorModelResult("pRun");
     
 
-    /*
-     * we don't want active trips to out-weigh non-active
-     * particles when we're really out-of-service.
-     */
-    if (state.getObservation().isOutOfService()) {
-      result.addResultAsAnd("NA (out-of-service)", 1.0);
-      return result;
-    }
-    
     /**
      * Weigh matched run's higher
      */
@@ -70,7 +61,7 @@ public class RunRule implements SensorModelRule {
        */
       if (blockState.getOpAssigned() == null
           || blockState.getRunReported() == null) {
-        result.addResultAsAnd("run-info status was not determined", 0.25);
+        result.addResultAsAnd("run-info status was not determined", 0.01);
         return result;
       }
     
@@ -82,24 +73,18 @@ public class RunRule implements SensorModelRule {
          */
         result.addResultAsAnd("operator assigned", 1.0);
       } else if (blockState.getRunReported()){
-        /*
-         * if the run for this block isn't in the
-         * schedule for this driver, but the driver
-         * reports (in a fuzzy sense) this run, then
-         * make operator assigned runs 2 times more 
-         * likely than simply reported runs.
-         */
-        result.addResultAsAnd("run reported (fuzzy)", 0.5);
+        result.addResultAsAnd("run reported (fuzzy)", 0.1);
       } else {
-        result.addResultAsAnd("no run info matches", 0.25);
+        result.addResultAsAnd("no run info matches", 0.01);
       }
     } else {
-      /*
-       * if this block's run is neither reported nor 
-       * scheduled, then make op assigned runs 4 times 
-       * more likely, and reported runs 2 times more likely.
-       */
-      result.addResultAsAnd("no run info provided", 0.25);
+      
+      if (state.getObservation().isOutOfService()) {
+        result.addResultAsAnd("NA (out-of-service)", 1.0);
+        return result;
+      }
+    
+      result.addResultAsAnd("no run info provided", 0.01);
     }
     
     return result;
