@@ -38,8 +38,9 @@ OBA.Sign = function() {
 	}
 
 	function detectSize() {
-		var h = jQuery(window).height();
-		var w = jQuery(window).width();
+		var heightAndWidth = OBA.Util.getPageHeightAndWidth();
+		var h = heightAndWidth[0];
+		var w = heightAndWidth[1];
 
 		// special mode for MTA TIS display
 		if(tisMode === "true") {

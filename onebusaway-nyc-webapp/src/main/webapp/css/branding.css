@@ -16,8 +16,15 @@
  
 /* Insert agency-specific branding overrides here */
 
+#contentbox {
+	margin-bottom: 10px; 
+	padding:0;
+	height: 100%;   /* For IE */
+}
+
 #bustime {
 	margin: 0 0 0 20px;
+	height: 100%;   /* For IE */
 }
 
 #bustime a:visited,
@@ -128,6 +135,8 @@ html, body {
     margin: 0 auto;
     position: relative;
     width: 95%;
+    min-width: 960px; /* For IE7 */ 
+    min-height: 800px; /* For IE7 */ 
 }
 #topbar {
     height: 121px;

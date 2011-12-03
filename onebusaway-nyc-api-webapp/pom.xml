@@ -143,9 +143,9 @@
             <id>db-prod</id>
             <properties>
                 <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-                <db.url>jdbc:mysql://db.staging.obanyc.com:3306/prod</db.url>
-                <db.username>obanyc</db.username>
-                <db.password>blueceilingbrick</db.password>
+                <db.url>jdbc:mysql://db.prod.obanyc.com:3306/onebusaway_nyc_app</db.url>
+                <db.username>app</db.username>
+                <db.password>changeme</db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
             </properties>
         </profile>

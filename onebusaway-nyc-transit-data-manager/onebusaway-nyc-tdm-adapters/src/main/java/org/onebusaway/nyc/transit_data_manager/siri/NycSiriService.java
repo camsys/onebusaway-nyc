@@ -19,7 +19,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +31,7 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -123,7 +124,7 @@ public abstract class NycSiriService {
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
       String defaultAgencyId);
 
-  abstract void postServiceDeliveryActions(SituationExchangeResults result)
+  abstract void postServiceDeliveryActions(SituationExchangeResults result, Collection<String> deletedIds)
       throws Exception;
 
   abstract void addSubscription(ServiceAlertSubscription subscription);
@@ -133,6 +134,8 @@ public abstract class NycSiriService {
   abstract public SiriServicePersister getPersister();
   
   abstract public void setPersister(SiriServicePersister _siriServicePersister);
+  
+  abstract public boolean isInputIncremental();
 
 
   @PostConstruct
@@ -151,17 +154,22 @@ public abstract class NycSiriService {
       ServiceDelivery delivery) throws Exception {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
+
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
       SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
       handleServiceDelivery(delivery, s, ESiriModuleType.SITUATION_EXCHANGE,
-          endpointDetails, result);
+          endpointDetails, result, preAlertIds);
     }
+    
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
     // TODO This is not done yet.
-    boolean deletedIds = Collections.disjoint(preAlertIds, postAlertIds);
-    postServiceDeliveryActions(result);
+    @SuppressWarnings("unchecked")
+    Collection<String> deletedIds = CollectionUtils.subtract(preAlertIds, postAlertIds);
+    postServiceDeliveryActions(result, deletedIds);
+    
   }
 
+  
   private Set<String> collectAgencies(ServiceDelivery delivery) {
     Set<String> agencies = new HashSet<String>();
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
@@ -179,17 +187,17 @@ public abstract class NycSiriService {
       ServiceDelivery serviceDelivery,
       AbstractServiceDeliveryStructure deliveryForModule,
       ESiriModuleType moduleType, SiriEndpointDetails endpointDetails,
-      SituationExchangeResults result) {
+      SituationExchangeResults result, List<String> preAlertIds) {
 
     handleSituationExchange(serviceDelivery,
         (SituationExchangeDeliveryStructure) deliveryForModule,
-        endpointDetails, result);
-
+        endpointDetails, result, preAlertIds);
   }
 
+  
   void handleSituationExchange(ServiceDelivery serviceDelivery,
       SituationExchangeDeliveryStructure sxDelivery,
-      SiriEndpointDetails endpointDetails, SituationExchangeResults result) {
+      SiriEndpointDetails endpointDetails, SituationExchangeResults result, List<String> preAlertIds) {
 
     DeliveryResult deliveryResult = new DeliveryResult();
     result.getDelivery().add(deliveryResult);
@@ -199,6 +207,9 @@ public abstract class NycSiriService {
     if (situations == null)
       return;
 
+    List<String> existingIds = new ArrayList<String>(preAlertIds);
+    _log.info("Size of existing ids: " + existingIds.size());
+    
     List<ServiceAlertBean> serviceAlertsToUpdate = new ArrayList<ServiceAlertBean>();
     List<String> serviceAlertIdsToRemove = new ArrayList<String>();
 
@@ -215,21 +226,26 @@ public abstract class NycSiriService {
       } else {
         serviceAlertsToUpdate.add(serviceAlertBean);
       }
+      
+      existingIds.remove(serviceAlertBean.getId());
     }
 
+    _log.info("After loop, size of existing ids: " + existingIds.size());
+
+    if (!isInputIncremental()) {
+      _log.info("Not incremental, adding " + existingIds.size() + " existing ids to the remove list, which currently has " + serviceAlertIdsToRemove.size());
+      serviceAlertIdsToRemove.addAll(existingIds);
+    }
+    
     String defaultAgencyId = null;
     if (!CollectionsLibrary.isEmpty(endpointDetails.getDefaultAgencyIds()))
       defaultAgencyId = endpointDetails.getDefaultAgencyIds().get(0);
 
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
-      // TODO Needs to be create or update, not just create
       addOrUpdateServiceAlert(result, deliveryResult, serviceAlertBean,
           defaultAgencyId);
     }
-    // TODO?
-    // _serviceAlertsService.removeServiceAlerts(serviceAlertIdsToRemove);
     for (String serviceAlertId : serviceAlertIdsToRemove) {
-      // TODO Confirm this conversion
       removeServiceAlert(result, deliveryResult, serviceAlertId);
     }
   }
@@ -247,7 +263,7 @@ public abstract class NycSiriService {
     ServiceAlertsHelper helper = new ServiceAlertsHelper();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     helper.addSituationExchangeToSiri(serviceDelivery,
-        getCurrentServiceAlerts());
+        getPersister().getAllActiveServiceAlerts());
     responseSiri.setServiceDelivery(serviceDelivery);
     return;
   }
@@ -648,15 +664,6 @@ public abstract class NycSiriService {
 
   public void setServiceAlertsUrl(String _serviceAlertsUrl) {
     this._serviceAlertsUrl = _serviceAlertsUrl;
-  }
-
-  public Map<String, ServiceAlertBean> getCurrentServiceAlerts() {
-    return currentServiceAlerts;
-  }
-
-  public void setCurrentServiceAlerts(
-      Map<String, ServiceAlertBean> currentServiceAlerts) {
-    this.currentServiceAlerts = currentServiceAlerts;
   }
 
   public String getSubscriptionPath() {

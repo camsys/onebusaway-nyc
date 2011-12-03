@@ -428,8 +428,8 @@ public class IndexAction extends SessionedIndexAction {
     staticStuff += "INTERSECTION\n\n";
     
     staticStuff += "Add ROUTE for best results:\n";
-    staticStuff += "'B63 5 AV & 3 ST'\n";
-    staticStuff += "'307540 B63'\n\n";
+    staticStuff += "'S74 MAIN & CRAIG'\n";
+    staticStuff += "'200884 S44'\n\n";
     
     staticStuff += "Find 6-digit stop code on the bus stop pole box.";
 

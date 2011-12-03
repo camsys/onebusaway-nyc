@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import static org.mockito.Matchers.matches;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -12,10 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 public class ServiceAlertSubscriptionTest extends ServiceAlertSubscription {
 
+  private static final long serialVersionUID = 1L;
   private static final String TEST_ADDRESS = "http://localhost/foo/bar";
   private static final String TEST_SERVICE_ALERT_ID = "MTA NYC_101";
 
@@ -41,11 +42,17 @@ public class ServiceAlertSubscriptionTest extends ServiceAlertSubscription {
     ServiceAlertBean testBean = ServiceAlertsTestSupport.createServiceAlertBean(TEST_SERVICE_ALERT_ID);
     currentServiceAlerts.put(TEST_SERVICE_ALERT_ID, testBean );
 
-    send(results, currentServiceAlerts );
+    List<String> deletedIds = new ArrayList<String>();
+    deletedIds.add("MTA NYCT_1000");
+    deletedIds.add("MTA NYCT_1001");
     
-    // Lame-ish test.
-    verify(webResourceWrapper).post(matches("(?s).+<SituationNumber>MTA NYC_101</SituationNumber>.+<VehicleJourneys>\\s*<AffectedVehicleJourney>\\s*<LineRef>" + 
-        ServiceAlertsTestSupport.TEST_ROUTE_ID + "</LineRef>.+"), same(TEST_ADDRESS));
+    send(currentServiceAlerts, deletedIds );
+
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+//    verify(webResourceWrapper).post(matches("(?s).+<SituationNumber>MTA NYC_101</SituationNumber>.+<VehicleJourneys>\\s*<AffectedVehicleJourney>\\s*<LineRef>" + 
+//        ServiceAlertsTestSupport.TEST_ROUTE_ID + "</LineRef>.+"), same(TEST_ADDRESS));
+    verify(webResourceWrapper).post(argument.capture(), same(TEST_ADDRESS));
+    System.err.println(argument.getValue());
     
   }
 

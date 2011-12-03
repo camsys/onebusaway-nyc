@@ -106,8 +106,12 @@ public class ServiceAlertRecord implements Serializable {
 
   public ServiceAlertRecord(ServiceAlertBean bean) {
     this();
+    updateFrom(bean);
+  }
+
+  public ServiceAlertRecord updateFrom(ServiceAlertBean bean) {
     if (bean == null)
-      return;
+      return this;
     this.serviceAlertId = bean.getId();
     this.creationTime = bean.getCreationTime();
     this.activeWindows = toJson(bean.getActiveWindows());
@@ -119,7 +123,9 @@ public class ServiceAlertRecord implements Serializable {
     this.allAffects = toJson(bean.getAllAffects());
     this.consequences = toJson(bean.getConsequences());
     this.severity = toJson(bean.getSeverity());
+    return this;
   }
+  
 
   @SuppressWarnings("unchecked")
   public static ServiceAlertBean toBean(ServiceAlertRecord o) {
@@ -160,9 +166,11 @@ public class ServiceAlertRecord implements Serializable {
     return bean;
   }
 
+  
   String toJson(Object object) {
     return gbuilder.create().toJson(object);
   }
+
 
   // These 2 annotations are NOT working at the moment.  See https://issuetracker.camsys.com/browse/OBANYC-589
   @PrePersist

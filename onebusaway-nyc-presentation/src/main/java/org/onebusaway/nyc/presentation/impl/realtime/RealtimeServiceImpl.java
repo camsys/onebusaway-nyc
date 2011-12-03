@@ -129,20 +129,22 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     TripDetailsBean tripDetails = _transitDataService.getTripDetailsForVehicleAndTime(query);
     
-    VehicleActivityStructure output = new VehicleActivityStructure();
     if (tripDetails != null) {
       if(!_presentationService.include(tripDetails.getStatus()))
         return null;
       
+      VehicleActivityStructure output = new VehicleActivityStructure();
       output.setRecordedAtTime(new Date(tripDetails.getStatus().getLastUpdateTime()));
 
       output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
       SiriSupport.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
           tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
           _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
+
+      return output;
     }
     
-    return output;
+    return null;
   }
 
   @Override

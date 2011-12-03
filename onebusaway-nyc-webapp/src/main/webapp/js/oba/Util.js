@@ -62,7 +62,7 @@ OBA.Util = (function() {
 			if(secondsAgo < 60) {
 				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s") + " ago";
 			} else {
-				minutesAgo = Math.floor(secondsAgo / 60);
+				var minutesAgo = Math.floor(secondsAgo / 60);
 				secondsAgo = secondsAgo - (minutesAgo * 60);
 				
 				var s = minutesAgo + " minute" + ((minutesAgo === 1) ? "" : "s");
@@ -72,6 +72,21 @@ OBA.Util = (function() {
 				s += " ago";
 				return s;
 			}
+		},
+		// For IE
+		getPageHeightAndWidth: function() {
+			var w = 0, h = 0;
+			if( typeof(window.innerWidth) == "number") {
+				//Non-IE
+				w = window.innerWidth;
+				h = window.innerHeight;
+			} else if( document.documentElement 
+					&& ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+				//IE 6+ in 'standards compliant mode'
+				w = document.documentElement.clientWidth;
+				h = document.documentElement.clientHeight;
+			}
+			return [h,w];
 		}
 	};
 })();

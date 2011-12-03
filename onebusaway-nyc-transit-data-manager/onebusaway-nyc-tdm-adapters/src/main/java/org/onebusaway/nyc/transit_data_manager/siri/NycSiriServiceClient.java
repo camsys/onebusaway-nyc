@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -61,7 +62,7 @@ public class NycSiriServiceClient extends NycSiriService {
 
 
   @Override
-  void postServiceDeliveryActions(SituationExchangeResults result) {
+  void postServiceDeliveryActions(SituationExchangeResults result, Collection<String> deletedIds) throws Exception {
     // None when in client mode
   }
 
@@ -89,6 +90,12 @@ public class NycSiriServiceClient extends NycSiriService {
   @Override
   public void setPersister(SiriServicePersister _siriServicePersister) {
     // not used in client mode
+  }
+
+
+  @Override
+  public boolean isInputIncremental() {
+    return true;
   }
 
   

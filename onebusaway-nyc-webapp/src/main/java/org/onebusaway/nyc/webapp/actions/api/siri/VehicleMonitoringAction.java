@@ -129,8 +129,12 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
     // *** CASE 2: single vehicle--no route specified (that's the case above)
     if((vehicleId != null && vehicleId.hasValues()) && (routeId == null || !routeId.hasValues())) {      
-      activities.add(_realtimeService.getVehicleActivityForVehicle(
-          vehicleId.toString(), maximumOnwardCalls));
+      VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+          vehicleId.toString(), maximumOnwardCalls);
+
+      if(activity != null) {
+        activities.add(activity);
+      }
 
     // *** CASE 3: all vehicles
     } else {
@@ -138,8 +142,12 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
           agencyId, _now.getTime());
 
       for (VehicleStatusBean v : vehicles.getList()) {
-        activities.add(_realtimeService.getVehicleActivityForVehicle(
-            v.getVehicleId(), maximumOnwardCalls));
+        VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
+            v.getVehicleId(), maximumOnwardCalls);
+        
+        if(activity != null) {
+          activities.add(activity);
+        }
       }
     }
 
