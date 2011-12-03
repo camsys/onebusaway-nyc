@@ -119,7 +119,7 @@
 		</div>
 	</div> <!-- close topbar -->
 	
-	<div id="contentbox" style="margin-bottom: 10px; padding:0;">
+	<div id="contentbox">
 	<!-- Enter Content here -->
 
   		<div id="bustime">

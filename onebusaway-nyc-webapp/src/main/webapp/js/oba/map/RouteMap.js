@@ -218,6 +218,16 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var stopsAddedForRoute = {};
 	var alreadyDisplayedStopIcons = {};
 	
+	// DISAMBIGUATION ICONS
+	var normalLocationIcon = new google.maps.MarkerImage("img/location/beachflag.png",
+            new google.maps.Size(20, 32),
+            new google.maps.Point(0,0),
+            new google.maps.Point(0, 32));
+	var activeLocationIcon = new google.maps.MarkerImage("img/location/beachflag_active.png",
+            new google.maps.Size(20, 32),
+            new google.maps.Point(0,0),
+            new google.maps.Point(0, 32));
+	
 	// POPUPS	
 	function showPopupWithContent(marker, content) {
 		// only one popup open at a time!
@@ -1003,14 +1013,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		removeDisambiguationMarkers: removeDisambiguationMarkers,
 		
 		addDisambiguationMarkerWithContent: function(latlng, address, neighborhood) {
-			var icon = new google.maps.MarkerImage("img/location/beachflag.png",
-	                new google.maps.Size(20, 32),
-	                new google.maps.Point(0,0),
-	                new google.maps.Point(0, 32));
 				
 			var markerOptions = {
 					position: latlng,
-		            icon: icon,
+		            icon: normalLocationIcon,
 		            zIndex: 2,
 		            title: address,
 		            map: map
@@ -1030,6 +1036,14 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	    	});
 	    	
 	    	return marker;
+		},
+		
+		activateLocationIcon: function(marker) {
+			marker.setIcon(activeLocationIcon);
+		},
+		
+		deactivateLocationIcon: function(marker) {
+			marker.setIcon(normalLocationIcon);
 		}
 	};
 };

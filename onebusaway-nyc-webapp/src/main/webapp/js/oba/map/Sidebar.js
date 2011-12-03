@@ -91,8 +91,10 @@ OBA.Sidebar = function () {
 
 			link.hover(function() {
 				marker.setAnimation(google.maps.Animation.BOUNCE);
+				routeMap.activateLocationIcon(marker);
 			}, function() {
 				marker.setAnimation(null);
+				routeMap.deactivateLocationIcon(marker);
 			});
 
 			// calculate extent of all options

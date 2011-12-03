@@ -108,10 +108,10 @@
 		 <h2>Try these example searches:</h2>
 		 
 		 <ul>
-		 	<li>Routes: &#160; <a href="#B63">B63</a> &#160; <a href="#S62">S62</a> &#160; <a href="#X1">X1</a></li>
-		 	<li>Intersection: &#160; <a href="#Main St and Craig Rd">Main St &amp; Craig Rd</a></li>
-		 	<li>Stop ID: &#160; <a href="#200884">200884</a></li>
-		 	<li>Location: &#160; <a href="#10304">10304</a> or <a href="#Staten Island">Staten Island</a></li>
+		 	<li>Routes: &amp;nbsp; <a href="#B63">B63</a> &amp;nbsp; <a href="#S62">S62</a> &amp;nbsp; <a href="#X1">X1</a></li>
+		 	<li>Intersection: &amp;nbsp; <a href="#Main St and Craig Rd">Main St &amp; Craig Rd</a></li>
+		 	<li>Stop ID: &amp;nbsp; <a href="#200884">200884</a></li>
+		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a> or <a href="#Staten Island">Staten Island</a></li>
 		 </ul>
 	   </div>
 	   
