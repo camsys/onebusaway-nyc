@@ -48,7 +48,6 @@ public class VehicleAssignmentServiceImplTest {
     // VehicleAssignmentServiceImpl
     @SuppressWarnings("unused")
     ArrayList<AgencyAndId> vehicles = service.getAssignedVehicleIdsForDepot("JG");
-
   }
 
   @Test
@@ -69,4 +68,40 @@ public class VehicleAssignmentServiceImplTest {
     assertEquals("JG", depot);
   }
 
+  @Test
+  public void testRemovedVehicle() throws Exception {
+    // vehicle is assigned to JG
+    String depot = service.getAssignedDepotForVehicleId(new AgencyAndId("MTA", "45"));
+    assertEquals("JG", depot);
+
+    ArrayList<AgencyAndId> vehicles = service.getAssignedVehicleIdsForDepot("JG");
+    assertEquals(vehicles.size(), 1);
+
+    // data changes from service
+    List<Map<String, String>> value = new ArrayList<Map<String, String>>();
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("agency-id", "MTA");
+    map.put("vehicle-id", "46");
+    value.add(map);
+
+    when(mockApiLibrary.getItems("depot", "JG", "vehicles", "list")).thenReturn(
+        value);
+    service.refreshData();
+
+    // data is changed in calls
+    String newDepot = service.getAssignedDepotForVehicleId(new AgencyAndId("MTA", "45"));
+    assertEquals(null, newDepot);
+
+    newDepot = service.getAssignedDepotForVehicleId(new AgencyAndId("MTA", "46"));
+    assertEquals("JG", newDepot);
+
+    ArrayList<AgencyAndId> newVehicles = service.getAssignedVehicleIdsForDepot("JG");
+    assertEquals(vehicles.size(), 1);
+
+    newDepot = service.getAssignedDepotForVehicleId(new AgencyAndId("MTA", "46"));
+    assertEquals("JG", newDepot);
+
+    AgencyAndId vehicleId = newVehicles.get(0);
+    assertEquals(vehicleId.getId(), "46");
+  }
 }

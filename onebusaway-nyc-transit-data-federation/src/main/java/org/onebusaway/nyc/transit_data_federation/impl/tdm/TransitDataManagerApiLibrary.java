@@ -1,18 +1,18 @@
 package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
+import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class TransitDataManagerApiLibrary {
 
@@ -30,12 +30,15 @@ public class TransitDataManagerApiLibrary {
   public TransitDataManagerApiLibrary (String hostname, Integer port, String path) {
       _tdmHostname = hostname;
       if (port != null) {
-	  _tdmPort = port;
+        _tdmPort = port;
       }
+
       if (path != null) {
-	  _apiEndpointPath = path;
+        _apiEndpointPath = path;
       }
-      _log.info("_tdmHostname=" + _tdmHostname);
+
+      _log.info("TDM hostname = " + _tdmHostname);
+
       _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
   }
 
@@ -47,6 +50,7 @@ public class TransitDataManagerApiLibrary {
     
   public void executeApiMethodWithNoResult(String baseObject, String... params) throws Exception {
     URL requestUrl = buildUrl(baseObject, params);
+    _log.info("Requesting " + requestUrl);
 
     if(!_restApiLibrary.executeApiMethodWithNoResult(requestUrl)) {
       throw new Exception("Error setting configuration value");
@@ -55,7 +59,10 @@ public class TransitDataManagerApiLibrary {
   
   public ArrayList<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
     URL requestUrl = _restApiLibrary.buildUrl(baseObject, params);
-    String responseJson = _restApiLibrary.getContentsOfUrlAsString(requestUrl);
+    _log.info("Requesting " + requestUrl);
+
+    String responseJson = _restApiLibrary.getContentsOfUrlAsString(requestUrl);    
+
     return _restApiLibrary.getJsonObjectsForString(responseJson);
   }
 

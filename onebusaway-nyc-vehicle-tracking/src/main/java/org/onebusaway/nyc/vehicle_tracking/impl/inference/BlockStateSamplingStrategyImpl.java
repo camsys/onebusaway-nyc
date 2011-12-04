@@ -15,12 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
@@ -214,9 +216,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     boolean operatorHasAssignment = false;
     try {
       operatorHasAssignment = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
-              observation.getRecord().getTimeAsDate(),
+              new ServiceDate(new Date(observation.getTime())),
               observation.getRecord().getOperatorId()) != null;
+
     } catch (Exception e) {
+      _log.warn("Operator service was not available.");
     }
     
     boolean noStateButRunInfo = state == null 

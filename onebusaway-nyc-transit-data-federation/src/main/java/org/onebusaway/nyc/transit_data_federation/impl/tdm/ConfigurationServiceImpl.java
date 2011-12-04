@@ -1,32 +1,33 @@
 package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.annotation.PostConstruct;
-
 import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+
+import com.google.gson.JsonObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.annotation.PostConstruct;
 
 public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private static Logger _log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);
 
+  @Autowired
+  private ThreadPoolTaskScheduler _taskScheduler;
+
 	private RefreshService _refreshService = null;
 		
-  
-        private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
-
-	private Timer _updateTimer = null;
+  private TransitDataManagerApiLibrary _transitDataManagerApiLibrary = null;
 
 	private volatile HashMap<String, String> _configurationKeyToValueMap = new HashMap<String,String>();
+	
 
   @Autowired
   public void setRefreshService(RefreshService refreshService) {
@@ -41,11 +42,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	private void updateConfigurationMap(String configKey, String configValue) {
     synchronized(_configurationKeyToValueMap) {
       String currentValue = _configurationKeyToValueMap.get(configKey);
-		
       _configurationKeyToValueMap.put(configKey, configValue);
       
       if(currentValue == null || !configValue.equals(currentValue)) {	
         _log.info("Invoking refresh method for config key " + configKey);
+        
         _refreshService.refresh(configKey);
       }
     }
@@ -63,7 +64,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     } 
 	}
 	
-	private class UpdateThread extends TimerTask {
+	private class UpdateThread implements Runnable {
 		@Override
 		public void run() {			
 			try {				
@@ -78,8 +79,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@SuppressWarnings("unused")
   @PostConstruct
 	private void startUpdateProcess() {
-		_updateTimer = new Timer();
-		_updateTimer.schedule(new UpdateThread(), 0, 30 * 1000); // 30s	
+	  _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), 30 * 1000); // 30s
 	}
 	
 	@Override
@@ -89,10 +89,13 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     synchronized(_configurationKeyToValueMap) {
       String value = _configurationKeyToValueMap.get(configurationItemKey);
 		
-      if(value == null)
+      _log.debug("Have " + _configurationKeyToValueMap.size() + " configuration parameters.");
+      
+      if(value == null) {
         return defaultValue;
-      else 
+      } else { 
         return value;
+      }
     }
 	}
 
@@ -101,8 +104,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
 			
-			return Float.parseFloat(
-					getConfigurationValueAsString(configurationItemKey, defaultValueAsString));					
+			return Float.parseFloat(getConfigurationValueAsString(configurationItemKey, defaultValueAsString));					
 		} catch(NumberFormatException ex) {
 			return defaultValue;
 		}
@@ -113,8 +115,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		try {
 			String defaultValueAsString = ((defaultValue != null) ? defaultValue.toString() : null);
 			
-			return Integer.parseInt(
-					getConfigurationValueAsString(configurationItemKey, defaultValueAsString));					
+			return Integer.parseInt(getConfigurationValueAsString(configurationItemKey, defaultValueAsString));					
 		} catch(NumberFormatException ex) {
 			return defaultValue;
 		}
@@ -126,13 +127,18 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			throw new Exception("Configuration values cannot be null (or 'null' as a string!).");
 		}
 		
+		if(configurationItemKey == null) {
+		  throw new Exception("Configuration item key cannot be null.");
+		}
+		
 		synchronized(_configurationKeyToValueMap) {
 		  String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
-		  if(configurationItemKey != null && (currentValue != null && currentValue.equals(value)))
+
+		  if(currentValue.equals(value)) {
 		    return;
+		  }
 		
-		  _transitDataManagerApiLibrary
-		    .executeApiMethodWithNoResult("config", "set", configurationItemKey, value);
+		  _transitDataManagerApiLibrary.executeApiMethodWithNoResult("config", "set", configurationItemKey, value);		  
 		  updateConfigurationMap(configurationItemKey, value);
 		}		 
 	}

@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -283,7 +284,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       Set<BlockInstance> potentialBlocks, boolean bestBlockLocation, Set<BlockState> statesToUpdate) {
 
     Set<BlockState> blockStates = new HashSet<BlockState>();
-    Date obsDate = observation.getRecord().getTimeAsDate();
+    Date obsDate = new Date(observation.getTime());
+
     String opAssignedRunId = null;
     String operatorId = observation.getRecord().getOperatorId();
 
@@ -291,13 +293,13 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       _log.info("no operator id reported");
     } else {
       try {
-        OperatorAssignmentItem oai = _operatorAssignmentService
-            .getOperatorAssignmentItemForServiceDate(obsDate, operatorId);
+        OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
+          new ServiceDate(obsDate), operatorId);
+        
         if (oai != null) {
           opAssignedRunId = oai.getRunId();
         }
       } catch (Exception e) {
-        // what do do if the OAS is temporarily unavailable? retry again?
         _log.warn(e.getMessage());
       }
     }

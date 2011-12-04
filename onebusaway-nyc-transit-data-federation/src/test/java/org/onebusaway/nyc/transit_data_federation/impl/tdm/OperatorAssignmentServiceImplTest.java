@@ -3,9 +3,9 @@ package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
-import org.onebusaway.utility.DateLibrary;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collection;
-import java.util.Date;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OperatorAssignmentServiceImplTest {
@@ -42,7 +41,7 @@ public class OperatorAssignmentServiceImplTest {
 
   @Test
   public void getAll() throws Exception {
-    Date date = DateLibrary.getIso8601StringAsTime("2011-10-14T10:00:00EDT");
+    ServiceDate date = ServiceDate.parseString("2011-10-14");
     Collection<OperatorAssignmentItem> items = service.getOperatorsForServiceDate(date);
     OperatorAssignmentItem item = items.iterator().next();
 
@@ -54,7 +53,7 @@ public class OperatorAssignmentServiceImplTest {
 
   @Test
   public void getForServiceDate() throws Exception {
-    Date date = DateLibrary.getIso8601StringAsTime("2011-10-14T10:00:00EDT");
+    ServiceDate date = ServiceDate.parseString("2011-10-14");
     OperatorAssignmentItem item = service.getOperatorAssignmentItemForServiceDate(date, "123456");
 
     assertEquals(item.getPassId(), "123456");
