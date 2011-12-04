@@ -27,7 +27,7 @@ public class TransitDataManagerApiLibrary {
   /**
     * Constructor injection necessary due to the usage of RestApiLibrary.
     */
-  public TransitDataManagerApiLibrary (String hostname, Integer port, String path) {
+  public TransitDataManagerApiLibrary(String hostname, Integer port, String path) {
       _tdmHostname = hostname;
       if (port != null) {
         _tdmPort = port;

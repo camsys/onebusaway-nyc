@@ -88,12 +88,15 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	public void setTime(Date time) {
 	  Calendar cal = new GregorianCalendar();
 	  cal.setTime(time);
-	  
 	  _currentServiceDate = new ServiceDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE));
+
+	  refreshApplicableBundles();
 	}
 	
 	public void setServiceDate(ServiceDate serviceDate) {
     _currentServiceDate = serviceDate;
+
+    refreshApplicableBundles();
 	}
 
   public ServiceDate getServiceDate() {
