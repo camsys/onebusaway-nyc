@@ -67,7 +67,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         item.setPassId(itemToAdd.get("pass-id").getAsString());
         item.setRunNumber(itemToAdd.get("run-number").getAsString()); 
         item.setRunRoute(itemToAdd.get("run-route").getAsString());
-        item.setServiceDate(ServiceDate.parseString(itemToAdd.get("service-date").getAsString()));
+        item.setServiceDate(ServiceDate.parseString(itemToAdd.get("service-date").getAsString().replace("-", "")));
         item.setUpdated(_updatedDateFormatter.parseDateTime(itemToAdd.get("updated").getAsString()));
 			  
 			  output.put(item.getPassId(), item);

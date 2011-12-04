@@ -33,6 +33,7 @@ public class OperatorAssignmentServiceImplTest {
   public void setupApiLibrary() throws Exception {
     RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");
     String json = "{\"crew\": [{\"agency-id\": \"MTA NYCT\",\"pass-id\": \"123456\",\"run-route\": \"63\",\"run-number\": \"200\",\"service-date\": \"2011-11-02\",\"updated\": \"2011-11-02T10:11:10-05:00\"}],\"status\": \"OK\"}";
+
     when(mockApiLibrary.getItemsForRequest("crew", "2011-10-14", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
     
@@ -41,7 +42,7 @@ public class OperatorAssignmentServiceImplTest {
 
   @Test
   public void getAll() throws Exception {
-    ServiceDate date = ServiceDate.parseString("2011-10-14");
+    ServiceDate date = ServiceDate.parseString("20111014");
     Collection<OperatorAssignmentItem> items = service.getOperatorsForServiceDate(date);
     OperatorAssignmentItem item = items.iterator().next();
 
@@ -53,7 +54,7 @@ public class OperatorAssignmentServiceImplTest {
 
   @Test
   public void getForServiceDate() throws Exception {
-    ServiceDate date = ServiceDate.parseString("2011-10-14");
+    ServiceDate date = ServiceDate.parseString("20111014");
     OperatorAssignmentItem item = service.getOperatorAssignmentItemForServiceDate(date, "123456");
 
     assertEquals(item.getPassId(), "123456");

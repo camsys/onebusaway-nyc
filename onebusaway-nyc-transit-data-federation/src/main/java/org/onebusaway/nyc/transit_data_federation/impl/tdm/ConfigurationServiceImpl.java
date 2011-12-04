@@ -134,7 +134,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		synchronized(_configurationKeyToValueMap) {
 		  String currentValue = _configurationKeyToValueMap.get(configurationItemKey);
 
-		  if(currentValue.equals(value)) {
+		  if(currentValue != null && currentValue.equals(value)) {
 		    return;
 		  }
 		
