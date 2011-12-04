@@ -28,7 +28,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	private volatile HashMap<String, String> _configurationKeyToValueMap = new HashMap<String,String>();
 	
-
   @Autowired
   public void setRefreshService(RefreshService refreshService) {
     this._refreshService = refreshService;
@@ -87,9 +86,13 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			String defaultValue) {
 
     synchronized(_configurationKeyToValueMap) {
+      if(_configurationKeyToValueMap.size() == 0) {
+        _log.warn("No configuration values are present!");
+      } else {        
+        _log.debug("Have " + _configurationKeyToValueMap.size() + " configuration parameters.");
+      }
+      
       String value = _configurationKeyToValueMap.get(configurationItemKey);
-		
-      _log.debug("Have " + _configurationKeyToValueMap.size() + " configuration parameters.");
       
       if(value == null) {
         return defaultValue;

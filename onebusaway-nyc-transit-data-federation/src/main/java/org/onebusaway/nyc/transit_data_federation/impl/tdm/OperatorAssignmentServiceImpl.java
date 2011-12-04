@@ -144,10 +144,14 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         }
         
         _serviceDateToOperatorListMap.put(serviceDate, list);
+
+        if(_serviceDateToOperatorListMap.size() == 0) {
+          _log.warn("No operator assignment values are present!");
+        } else {        
+          _log.debug("Have " + _serviceDateToOperatorListMap.size() + " operator assignments.");
+        }
       }
       
-      _log.debug("Have " + list.size() + " operators for servicedate " + serviceDate);
-
       return list.values();
     }
 	}
@@ -170,9 +174,13 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         }
         
         _serviceDateToOperatorListMap.put(serviceDate, list);
-      }      
 
-      _log.debug("Have " + list.size() + " operators for servicedate " + serviceDate);
+        if(_serviceDateToOperatorListMap.size() == 0) {
+          _log.warn("No operator assignment values are present!");
+        } else {        
+          _log.debug("Have " + _serviceDateToOperatorListMap.size() + " operator assignments.");
+        }
+      }      
 
       return list.get(operatorId);
     }

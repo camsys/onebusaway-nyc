@@ -153,8 +153,12 @@ public class VehicleAssignmentServiceImpl implements VehicleAssignmentService {
         _depotToVehicleIdListMap.put(depotId, list);
       }
 
-      _log.debug("Have " + list.size() + " vehicles for depot " + depotId);
-      
+      if(_depotToVehicleIdListMap.size() == 0) {
+        _log.warn("No depot/vehicle assignment values are present!");
+      } else {        
+        _log.debug("Have " + _depotToVehicleIdListMap.size() + " depot/vehicle assignments.");
+      }
+
       return list;
     }
   }
