@@ -11,6 +11,9 @@ import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreSer
 import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -258,6 +261,18 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		  bean.setCacheNamePrefix(bundleId);
 		}
 
+		// clear caches
+		List<CacheManager> cacheManagers = CacheManager.ALL_CACHE_MANAGERS;
+		for(CacheManager cacheManager : cacheManagers) {
+		  for(String cacheName : cacheManager.getCacheNames()) {
+		    Cache cache = cacheManager.getCache(cacheName);
+		    if(cache != null) {
+		      _log.info("Clearing cache with ID " + cacheName);
+		      cache.removeAll();
+		    }
+		  }
+		}
+				
 		_currentBundleId = bundleId;
 		return;
 	}
