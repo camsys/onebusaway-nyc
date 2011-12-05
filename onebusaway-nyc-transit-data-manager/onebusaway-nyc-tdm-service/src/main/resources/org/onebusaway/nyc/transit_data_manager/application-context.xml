@@ -73,4 +73,9 @@
     <property name="persister" ref="siriServicePersister" />
   </bean>
 
+  <bean id="urlToEmbedStopIdReplace"
+    class="java.lang.String">
+    <constructor-arg type="java.lang.String" value="${qrBarcodes.stopIdReplaceUrl}" />
+    </bean>
+
 </beans>
