@@ -28,6 +28,7 @@ basedir = os.getcwd()
 if len(sys.argv) > 1:
     basedir = sys.argv[1]
 
+print "Starting script in " + basedir
 
 found_non_holiday = False
 for file in os.listdir(basedir):
@@ -56,3 +57,5 @@ def process(base, directory):
 for file in os.listdir(basedir):
     if os.path.isdir(file):
         process(basedir, file)
+
+print "Script seems to have finished succesfully"
