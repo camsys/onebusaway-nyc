@@ -47,6 +47,9 @@
 <s:url var="url" value="/js/oba/Util.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<s:url var="url" value="/js/lib/domWindow.js"/>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 <s:url var="url" value="/js/oba/map/RouteMap.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
@@ -90,14 +93,10 @@
        
        <div id="results">
        	 <h2>Did you mean...</h2>
-
-         <ul></ul>
        </div>
 	            
 	   <div id="legend">
        	 <h2>Nearby routes:</h2>
-
-		 <ul></ul>
 	   </div>
 
 	   <div id="no-results">
@@ -109,9 +108,9 @@
 		 
 		 <ul>
 		 	<li>Routes: &amp;nbsp; <a href="#B63">B63</a> &amp;nbsp; <a href="#S62">S62</a> &amp;nbsp; <a href="#X1">X1</a></li>
-		 	<li>Intersection: &amp;nbsp; <a href="#Main St and Craig Rd">Main St &amp; Craig Rd</a></li>
+		 	<li>Intersection: &amp;nbsp; <a href="#Main%20St%20and%20Craig%20Rd">Main St &amp;amp; Craig Rd</a></li>
 		 	<li>Stop ID: &amp;nbsp; <a href="#200884">200884</a></li>
-		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a> or <a href="#Staten Island">Staten Island</a></li>
+		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a> or <a href="#Staten%20Island">Staten Island</a></li>
 		 </ul>
 	   </div>
 	   
@@ -122,6 +121,7 @@
     </div>
 
 	<div id="map"></div>
+	
 </div>
 </body>
 </html>

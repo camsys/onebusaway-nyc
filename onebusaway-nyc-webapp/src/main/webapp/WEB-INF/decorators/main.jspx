@@ -59,7 +59,7 @@
 	<div id="topbar">
 		<div id="branding">
 			<a href="http://mta.info/default.html">
-				<img src="http://mta.info/template/images/mta_info.gif"/>
+				<img src="http://mta.info/template/images/mta_info.gif" alt="MTA.info logo" />
 			</a>
 		</div>
 		
@@ -97,7 +97,7 @@
 					</ul> 
 				</li>
 				<li style="width: 9%;"><a href="http://mta.info/schedules">Schedules</a></li>
-				<li style="width: 12%;"><a href="http://mta.info/fares">Fares &amp; Tolls</a></li>
+				<li style="width: 12%;"><a href="http://mta.info/fares">Fares &amp;amp; Tolls</a></li>
 				<li style="width: 7%;"><a href="http://mta.info/maps">Maps</a></li>
 				<li style="width: 19%;"><a href="http://mta.info/service">Planned Service Changes</a></li>
 				<li style="width: 13%;"><a href="http://mta.info/about">About the MTA</a></li>
@@ -125,7 +125,7 @@
   		<div id="bustime">
 			<decorator:body />
 	    </div>
-
+	    
 	<!-- End Content -->
 	</div>
 

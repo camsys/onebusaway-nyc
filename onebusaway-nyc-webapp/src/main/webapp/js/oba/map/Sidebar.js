@@ -63,7 +63,7 @@ OBA.Sidebar = function () {
 
 	// show user list of addresses
 	function disambiguate(locationResults) {		
-		var resultsList = jQuery("#results ul");
+		var resultsList = $("<ul></ul>").appendTo(results);
 		var bounds = null;
 		
 		jQuery.each(locationResults, function(_, location) {
@@ -111,8 +111,8 @@ OBA.Sidebar = function () {
 
 	// display (few enough) routes on map and in legend
 	function showRoutesOnMap(routeResults) {
-		var legendList = jQuery("#legend ul");
-		
+		var legendList = $("<ul></ul>").appendTo(legend);
+
 		jQuery.each(routeResults, function(_, routeResult) {	
 
 			var titleBox = jQuery("<p></p>")
@@ -330,7 +330,7 @@ OBA.Sidebar = function () {
 					doSearch(hash);
 					}
 				});
-			}
+		}
 	};
 };
 
