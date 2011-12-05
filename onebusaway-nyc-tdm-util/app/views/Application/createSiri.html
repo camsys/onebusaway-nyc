@@ -16,10 +16,16 @@
 			<input type="text" name="tdm" id="tdm" value="${tdm}" class="span12" />
 		</div>
 	</div>
-	<div class="clearfix">
-		<div class="input">
-			<input type="submit" value="Send to TDM" class="btn primary" />
-		</div>
-	</div>
+    <div class="clearfix">
+        <label for="tdm">Incremental?</label>
+        <div class="input">
+            <input type="checkbox" name="incremental" value="Send as incremental" class="btn primary" />
+        </div>
+    </div>
+    <div class="clearfix">
+        <div class="input">
+            <input type="submit" value="Send to TDM" class="btn primary" />
+        </div>
+    </div>
 </fieldset>
 #{/form}

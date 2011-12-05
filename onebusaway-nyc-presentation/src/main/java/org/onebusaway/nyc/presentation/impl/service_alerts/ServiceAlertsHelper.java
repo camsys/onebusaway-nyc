@@ -45,6 +45,8 @@ public class ServiceAlertsHelper {
       List<VehicleActivityStructure> activities,
       TransitDataService transitDataService) {
 
+    if (activities == null)
+      return;
     Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
     for (VehicleActivityStructure activity : activities) {
       if (activity.getMonitoredVehicleJourney() != null) {
@@ -115,6 +117,8 @@ public class ServiceAlertsHelper {
   private void addSituationElement(TransitDataService transitDataService,
       Map<String, PtSituationElementStructure> ptSituationElements,
       List<SituationRefStructure> situationRefs) {
+    if (situationRefs == null)
+      return;
     for (SituationRefStructure situationRef : situationRefs) {
       String situationId = situationRef.getSituationSimpleRef().getValue();
       ServiceAlertBean serviceAlert = transitDataService.getServiceAlertForId(situationId);
@@ -123,9 +127,12 @@ public class ServiceAlertsHelper {
     }
   }
 
+  
   private void addPtSituationElementsToServiceDelivery(
       ServiceDelivery serviceDelivery,
       Map<String, PtSituationElementStructure> ptSituationElements) {
+    if (serviceDelivery == null || ptSituationElements == null)
+      return;
     SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
     Situations situations = new Situations();
     situationExchangeDelivery.setSituations(situations);
@@ -140,6 +147,7 @@ public class ServiceAlertsHelper {
           situationExchangeDelivery);
   }
 
+  
   public PtSituationElementStructure getServiceAlertBeanAsPtSituationElementStructure(
       ServiceAlertBean serviceAlert) {
     PtSituationElementStructure ptSit = new PtSituationElementStructure();
@@ -156,19 +164,21 @@ public class ServiceAlertsHelper {
     return ptSit;
   }
 
+  
   private void handleDescriptions(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert == null)
+      return;
     for (NaturalLanguageStringBean summary : serviceAlert.getSummaries()) {
       ptSituation.setSummary(createDefaultedTextStructure(summary));
     }
-
     for (NaturalLanguageStringBean description : serviceAlert.getDescriptions()) {
       ptSituation.setDescription(createDefaultedTextStructure(description));
     }
-
   }
 
+  
   private DefaultedTextStructure createDefaultedTextStructure(
       NaturalLanguageStringBean summary) {
     DefaultedTextStructure d = new DefaultedTextStructure();
@@ -177,9 +187,12 @@ public class ServiceAlertsHelper {
     return d;
   }
 
+  
   private void handleOtherFields(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert == null || serviceAlert.getPublicationWindows() == null)
+      return;
     // TODO Not handling severity yet.
     ptSituation.setSeverity(SeverityEnumeration.UNDEFINED);
 
@@ -191,7 +204,6 @@ public class ServiceAlertsHelper {
           0).getTo()));
       ptSituation.setPublicationWindow(timestampRangeStructure);
     }
-
   }
 
   public Date serviceAlertTimeToDate(long time) {
@@ -209,6 +221,9 @@ public class ServiceAlertsHelper {
   private void handleAffects(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert.getAllAffects() == null)
+      return;
+    
     AffectsScopeStructure affectsStructure = new AffectsScopeStructure();
     for (SituationAffectsBean affects : serviceAlert.getAllAffects()) {
       String agencyId = affects.getAgencyId();
@@ -243,8 +258,10 @@ public class ServiceAlertsHelper {
   private void handleConsequences(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert == null)
+      return;
     List<SituationConsequenceBean> consequences = serviceAlert.getConsequences();
-    if (CollectionUtils.isEmpty(consequences))
+    if (consequences == null || CollectionUtils.isEmpty(consequences))
       return;
 
     PtConsequencesStructure ptConsequences = new PtConsequencesStructure();

@@ -72,7 +72,7 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
     addSubscription();
     addSubscription();
 
-    handleServiceDeliveries(result, delivery);
+    handleServiceDeliveries(result, delivery, false);
 
     for (ServiceAlertSubscription s : getActiveServiceAlertSubscriptions())
       verify(s).send(any(List.class), any(Collection.class));

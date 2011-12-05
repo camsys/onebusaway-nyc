@@ -32,6 +32,7 @@ import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.xwork.StringUtils;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -151,14 +152,14 @@ public abstract class NycSiriService {
   }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
-      ServiceDelivery delivery) throws Exception {
+      ServiceDelivery delivery, boolean incremental) throws Exception {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
 
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
       SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
       handleServiceDelivery(delivery, s, ESiriModuleType.SITUATION_EXCHANGE,
-          endpointDetails, result, preAlertIds);
+          endpointDetails, result, preAlertIds, incremental);
     }
     
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
@@ -177,7 +178,8 @@ public abstract class NycSiriService {
       for (PtSituationElementStructure element : situations.getPtSituationElement()) {
         String situationId = element.getSituationNumber().getValue();
         AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
-        agencies.add(id.getAgencyId());
+        if (id != null)
+          agencies.add(id.getAgencyId());
       }
     }
     return agencies;
@@ -187,17 +189,17 @@ public abstract class NycSiriService {
       ServiceDelivery serviceDelivery,
       AbstractServiceDeliveryStructure deliveryForModule,
       ESiriModuleType moduleType, SiriEndpointDetails endpointDetails,
-      SituationExchangeResults result, List<String> preAlertIds) {
+      SituationExchangeResults result, List<String> preAlertIds, boolean incremental) {
 
     handleSituationExchange(serviceDelivery,
         (SituationExchangeDeliveryStructure) deliveryForModule,
-        endpointDetails, result, preAlertIds);
+        endpointDetails, result, preAlertIds, incremental);
   }
 
   
   void handleSituationExchange(ServiceDelivery serviceDelivery,
       SituationExchangeDeliveryStructure sxDelivery,
-      SiriEndpointDetails endpointDetails, SituationExchangeResults result, List<String> preAlertIds) {
+      SiriEndpointDetails endpointDetails, SituationExchangeResults result, List<String> preAlertIds, boolean incremental) {
 
     DeliveryResult deliveryResult = new DeliveryResult();
     result.getDelivery().add(deliveryResult);
@@ -218,6 +220,10 @@ public abstract class NycSiriService {
       ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
           ptSituation, endpointDetails);
 
+      if (StringUtils.isEmpty(serviceAlertBean.getId())) {
+        _log.warn("Service alert has no id, discarding.");
+        continue;
+      }
       WorkflowStatusEnumeration progress = ptSituation.getProgress();
       boolean remove = (progress != null && (progress == WorkflowStatusEnumeration.CLOSING || progress == WorkflowStatusEnumeration.CLOSED));
 
@@ -232,7 +238,7 @@ public abstract class NycSiriService {
 
     _log.info("After loop, size of existing ids: " + existingIds.size());
 
-    if (!isInputIncremental()) {
+    if (!(isInputIncremental() || incremental) ) {
       _log.info("Not incremental, adding " + existingIds.size() + " existing ids to the remove list, which currently has " + serviceAlertIdsToRemove.size());
       serviceAlertIdsToRemove.addAll(existingIds);
     }

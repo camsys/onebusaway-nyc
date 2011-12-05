@@ -100,14 +100,14 @@ public class Application extends Controller {
     render(result, tdm);
   }
 
-  public static void sendToOba(String siri, String tdm) {
+  public static void sendToOba(String siri, String tdm, boolean incremental) {
     String error = "";
     String postResult = "";
     try {
       System.err.println("result=" + siri);
       ClientConfig config = new DefaultClientConfig();
       Client client = Client.create(config);
-      WebResource r = client.resource(tdm);
+      WebResource r = client.resource(tdm + "?incremental=" + incremental);
       postResult = r.accept(MediaType.APPLICATION_XML_TYPE).type(
           MediaType.APPLICATION_XML_TYPE).post(String.class, siri);
       System.err.println("postResult=" + postResult);
