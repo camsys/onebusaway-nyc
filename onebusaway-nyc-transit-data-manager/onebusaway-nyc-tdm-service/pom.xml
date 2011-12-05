@@ -138,7 +138,7 @@
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
         <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-        <tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
@@ -151,7 +151,7 @@
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
         <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-        <tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
@@ -164,7 +164,7 @@
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
         <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
-        <tdm.depotAssignFilename>/depot_assigns/draft_depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
