@@ -32,7 +32,7 @@
 	
 	display: block;
 	width: 310px;
-	height: 40px;
+	height: 36px;
 
 	background-image: url('img/search_background.png');
 	background-repeat: no-repeat;
@@ -46,11 +46,10 @@
 	font-size: 120%;
 	
 	width: 262px;
-	height: 30px;
+	height: 28px;
 	border: none;
 	
-	margin: 5px;
-	margin-right: 0px;
+	margin: 5px 0 0 5px;
 }
 
 #content #searchbar #tip {
@@ -85,8 +84,8 @@
 
 	color: #818181;	
 
-	padding-bottom: 5px;
-	padding-top: 20px;
+	padding-bottom: 2px;
+	padding-top: 12px;
 }
 
 #content #no-results,

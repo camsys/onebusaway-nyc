@@ -12,12 +12,17 @@
     <import resource="classpath:org/onebusaway/container/application-context.xml" />
 
     <context:component-scan base-package="org.onebusaway.nyc.report_archive" />
+<!-- tdm api library is defined in data-sources -->
+<!--
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary" >
       <constructor-arg type="java.lang.String" value="tdm.dev.obanyc.com"/>
       <constructor-arg type="java.lang.Integer" value="80" />
       <constructor-arg type="java.lang.String" value="/api/" />
     </bean>
+-->
 	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl" />
+
+	<bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
 
 	<bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 
