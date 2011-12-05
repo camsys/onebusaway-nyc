@@ -178,7 +178,6 @@ OBA.Sidebar = function () {
 						e.preventDefault();
 
 						routeMap.showPopupForStopId(stop.stopId);
-						console.log(stop.stopId);
 					});
 					stopLink.mouseenter(function(e) {
 						e.preventDefault();
@@ -330,6 +329,7 @@ OBA.Sidebar = function () {
 					doSearch(hash);
 					}
 				});
+
 		}
 	};
 };
