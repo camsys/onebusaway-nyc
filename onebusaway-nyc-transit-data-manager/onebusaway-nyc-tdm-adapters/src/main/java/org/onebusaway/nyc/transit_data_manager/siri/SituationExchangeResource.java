@@ -38,6 +38,8 @@ import com.sun.jersey.api.spring.Autowire;
 @Autowire
 public class SituationExchangeResource {
 
+  static final boolean INCREMENTAL = true;
+
   private static Logger _log = LoggerFactory.getLogger(SituationExchangeResource.class);
 
   @Autowired
@@ -54,8 +56,13 @@ public class SituationExchangeResource {
   @Produces("application/xml")
   @Consumes("application/xml")
   public Response handlePost(String body) throws Exception {
-    _log.debug("---begin body---\n" + body + "\n---end body---");
+    return handleRequest(body, !INCREMENTAL);
+  }
+
+  public Response handleRequest(String body, boolean incremental) throws JAXBException, Exception {
     _log.info("SituationExchangeResource.handlePost");
+    _log.debug("---begin body---\n" + body + "\n---end body---");
+    _log.debug("incremental: " + incremental);
 
     Unmarshaller u = jc.createUnmarshaller();
     Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
@@ -63,7 +70,7 @@ public class SituationExchangeResource {
     ServiceDelivery delivery = incomingSiri.getServiceDelivery();
     if (delivery != null) {
       SituationExchangeResults result = new SituationExchangeResults();
-      _siriService.handleServiceDeliveries(result, delivery);
+      _siriService.handleServiceDeliveries(result, delivery, incremental);
       _log.info(result.toString());
       return Response.ok(result).build();
     }
@@ -86,7 +93,6 @@ public class SituationExchangeResource {
 
     _log.info(responseSiri.toString());
     return Response.ok(responseSiri).build();
-
   }
 
   // TODO I don't believe this is needed any more but it may still be called by

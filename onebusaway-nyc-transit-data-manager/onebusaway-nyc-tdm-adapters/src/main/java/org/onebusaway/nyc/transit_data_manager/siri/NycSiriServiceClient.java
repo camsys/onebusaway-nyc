@@ -21,7 +21,7 @@ public class NycSiriServiceClient extends NycSiriService {
       String result = sendSubscriptionAndServiceRequest();
       Siri siri = SiriXmlSerializer.fromXml(result);
       SituationExchangeResults handleResult = new SituationExchangeResults();
-      handleServiceDeliveries(handleResult, siri.getServiceDelivery());
+      handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
       // TODO Probably doesn't do the right thing.
       _log.info(handleResult.toString());
   }

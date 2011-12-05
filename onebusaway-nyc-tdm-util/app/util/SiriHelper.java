@@ -15,6 +15,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.DefaultedTextStructure;
+import uk.org.siri.siri.DirectionRefStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
 import uk.org.siri.siri.LineRefStructure;
@@ -144,11 +145,17 @@ public class SiriHelper {
 		if (lineReference == null) {
 			return;
 		}
+		String[] parts = lineReference.split(":");
 		AffectedVehicleJourneyStructure vehicleJourney = new AffectedVehicleJourneyStructure();
 		LineRefStructure lineRef = new LineRefStructure();
-		lineRef.setValue(lineReference);
+		lineRef.setValue(parts[0]);
 		vehicleJourney.setLineRef(lineRef);
-		vehicleJourneys.getAffectedVehicleJourney().add(vehicleJourney);
+		if (parts.length==2) {
+		  DirectionRefStructure dirRef = new DirectionRefStructure();
+      dirRef.setValue(parts[1]);
+      vehicleJourney.setDirectionRef(dirRef );
+		}
+    vehicleJourneys.getAffectedVehicleJourney().add(vehicleJourney);
 	}
 
 	private EntryQualifierStructure createSiriNumberElement(String value) {

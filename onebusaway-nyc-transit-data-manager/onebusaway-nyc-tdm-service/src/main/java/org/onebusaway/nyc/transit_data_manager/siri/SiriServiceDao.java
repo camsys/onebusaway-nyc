@@ -38,6 +38,7 @@ public class SiriServiceDao implements SiriServicePersister {
     }
   }
 
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public ServiceAlertBean deleteServiceAlertById(String serviceAlertId) {
     ServiceAlertRecord record = getServiceAlertByServiceAlertId(serviceAlertId);
@@ -80,14 +81,29 @@ public class SiriServiceDao implements SiriServicePersister {
     return results;
   }
 
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public void saveOrUpdateSubscription(ServiceAlertSubscription subscription) {
+    // This is not the most efficient way to do this.  FIXME
+    List<ServiceAlertSubscription> list = _template.find(
+        "from ServiceAlertSubscription where address=?", subscription.getAddress());
+    if (list.size() > 0) {
+      _log.info("Subscription already exists, updating.");
+      ServiceAlertSubscription old = list.get(0);
+      old.updateFrom(subscription);
+      _template.saveOrUpdate(old);
+      return;
+    }
+
+    _log.info("Saving new subscription.");
     _template.saveOrUpdate(subscription);
   }
 
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public void deleteSubscription(ServiceAlertSubscription subscription) {
     _template.delete(subscription);
+    _template.flush();
   }
 
   @Override

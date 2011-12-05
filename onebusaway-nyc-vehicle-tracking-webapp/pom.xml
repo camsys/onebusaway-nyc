@@ -95,6 +95,11 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.2</version>
         </dependency>
+        <dependency>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+          <version>5.1.18</version>
+        </dependency>
     </dependencies>
 
     <!-- TODO These are duplicated in several pom.xml files. Need to refactor out. -->
@@ -132,9 +137,27 @@
                 <db.password></db.password>
                 <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
-				<ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
-				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
+                <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
+                 <siri.service.config>empty.xml</siri.service.config>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-mysql-local</id>
+            <properties>
+        <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+        <db.url>jdbc:mysql://localhost:3306/onebusaway_nyc</db.url>
+        <db.username>root</db.username>
+        <db.password></db.password>
+        <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
+                <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
+                <ie.output.queue>OutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host>tdm.staging.obanyc.com</tdm.host>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
@@ -278,7 +301,7 @@
         <profile>
             <id>depots-one</id>
             <properties>
-                <depot.partition.key>JG</depot.partition.key>
+                <depot.partition.key>YUK</depot.partition.key>
             </properties>            
         </profile>
         <profile>

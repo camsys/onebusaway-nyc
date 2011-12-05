@@ -19,6 +19,8 @@
     </bean>
 	<bean id="configurationService" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.ConfigurationServiceImpl" />
 
+	<bean id="taskScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" />
+
 	<bean id="refreshServiceImpl" class="org.onebusaway.container.refresh.RefreshServiceImpl" />
 
 	<bean id="gsonTool"

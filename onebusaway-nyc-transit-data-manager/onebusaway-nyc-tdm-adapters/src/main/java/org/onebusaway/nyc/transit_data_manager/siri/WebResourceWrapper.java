@@ -11,13 +11,13 @@ public class WebResourceWrapper {
 
   public String post(String siri, String tdm) {
     String postResult = "";
-    // _log.debug("result=" + siri);
     ClientConfig config = new DefaultClientConfig();
+    config.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, 5*1000);
+    config.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, 5*1000);
     Client client = Client.create(config);
     WebResource r = client.resource(tdm);
     postResult = r.accept(MediaType.APPLICATION_XML_TYPE).type(
         MediaType.APPLICATION_XML_TYPE).post(String.class, siri);
-    // _log.debug("postResult=" + postResult);
     return postResult;
   }
 

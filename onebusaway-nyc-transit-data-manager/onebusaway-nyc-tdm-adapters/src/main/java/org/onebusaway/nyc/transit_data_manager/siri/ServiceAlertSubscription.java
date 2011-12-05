@@ -127,5 +127,13 @@ public class ServiceAlertSubscription implements Serializable {
   public void setConsecutiveFailures(Integer consecutiveFailures) {
     this.consecutiveFailures = consecutiveFailures;
   }
+
+  public void updateFrom(ServiceAlertSubscription s) {
+    this.address = s.getAddress();
+    this.consecutiveFailures = s.getConsecutiveFailures();
+    this.createdAt = s.getCreatedAt();
+    this.subscriptionIdentifier = s.getSubscriptionIdentifier();
+    this.subscriptionRef = s.getSubscriptionRef();
+  }
   
 }
