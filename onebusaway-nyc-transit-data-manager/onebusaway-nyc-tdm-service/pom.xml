@@ -17,6 +17,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <qrBarcodes.stopIdReplaceUrl>HTTP://BT.MTA.INFO/S/__REPLACE__</qrBarcodes.stopIdReplaceUrl>
   </properties>
   <dependencies>
 

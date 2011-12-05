@@ -7,6 +7,7 @@
 
 .popup .header {
 	padding-left: 35px;
+	padding-top: 1px;
 }
 
 .popup .header.stop {
