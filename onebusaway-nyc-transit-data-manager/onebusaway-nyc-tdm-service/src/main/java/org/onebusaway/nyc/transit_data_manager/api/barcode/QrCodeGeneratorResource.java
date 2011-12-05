@@ -95,8 +95,10 @@ public class QrCodeGeneratorResource {
 
     final String barcodeContents = generateBusStopContentsForStopId(String.valueOf(stopId));
 
-    boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
-        QRErrorCorrectionLevel.Q, barcodeContents);
+    //boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
+        //QRErrorCorrectionLevel.Q, barcodeContents);
+    
+    boolean contentsFitBarcodeVersion = true;
 
     if (!contentsFitBarcodeVersion) {
       throw new WebApplicationException(new IllegalArgumentException(
@@ -271,8 +273,10 @@ public class QrCodeGeneratorResource {
 
       String barcodeContents = generateBusStopContentsForStopId(stopIdStr);
 
-      boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
-          QRErrorCorrectionLevel.Q, barcodeContents);
+//      boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
+//          QRErrorCorrectionLevel.Q, barcodeContents);
+      
+      boolean contentsFitBarcodeVersion = true;
 
       if (!"".equals(barcodeContents) && contentsFitBarcodeVersion) {
 
@@ -360,9 +364,6 @@ public class QrCodeGeneratorResource {
 
   private String generateBusStopContentsForStopId(String stopId) {
     String barcodeContents = contentConv.contentsForUrl(getStopUrl(stopId));
-
-    // Set to uppercase for more compact encoding.
-    barcodeContents = barcodeContents.toUpperCase();
 
     return barcodeContents;
   }

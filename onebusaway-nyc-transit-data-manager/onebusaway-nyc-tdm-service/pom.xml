@@ -17,6 +17,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!--  The url to encode for stop id barcodes. Make sure this is all uppercase to allow the barcodes to be lower resolution. -->
     <qrBarcodes.stopIdReplaceUrl>HTTP://BT.MTA.INFO/S/__REPLACE__</qrBarcodes.stopIdReplaceUrl>
   </properties>
   <dependencies>
