@@ -28,27 +28,23 @@
 }
 
 #content #searchbar form {
-	position: relative;
-	
+	position: relative;	
 	display: block;
-	width: 310px;
+	width: 307px;
 	height: 36px;
-
 	background-image: url('img/search_background.png');
 	background-repeat: no-repeat;
-
 	margin: 40px 0 20px 0;
 }
 
 #content #searchbar form input {
 	font-weight: bold;
 	font-family: inherit;
-	font-size: 120%;
-	
+	font-size: 120%;	
 	width: 262px;
 	height: 28px;
-	border: none;
-	
+	border: 0;
+	background-color: transparent;	
 	margin: 5px 0 0 5px;
 }
 
@@ -67,12 +63,10 @@
 	height: 30px;
 	border: none;
 	cursor: pointer;
-
-	margin: 5px;
+	margin: 3px 6px 0 0;
 	text-indent: -9999px;
-
-	background-image: url('img/search_icon.png');
-	background-repeat: no-repeat;
+	background: url('img/search_icon.png') no-repeat scroll 0 0 transparent;
+	text-transform: capitalize; 
 }
 
 #content #no-results h2,
