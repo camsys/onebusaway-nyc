@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,11 @@ public class RouteSearchServiceImpl implements RouteSearchService {
   
   @Override
   public List<RouteResult> resultsForQuery(String routeQuery) {
+    // FIXME we have this in here to disable the "full text" search OBA has--we'll enable that later!
+    if(!isRoute(routeQuery)) {
+      return Collections.emptyList();
+    }
+    
     SearchQueryBean queryBean = new SearchQueryBean();
     queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
     queryBean.setBounds(_serviceArea.getServiceArea());

@@ -21,6 +21,7 @@ import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
 import org.onebusaway.nyc.presentation.model.search.LocationResult;
 import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
+import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
@@ -70,9 +71,6 @@ public class IndexAction extends SessionedIndexAction {
   /* response to user */
   private String _response = null;
 
-  /* route we're filtering results by */
-  private String _routeToFilterBy = null;
-  
   public String execute() throws Exception {
     AnalyticsConfigData config = new AnalyticsConfigData(
         _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null));
@@ -85,14 +83,12 @@ public class IndexAction extends SessionedIndexAction {
     /**
      * INPUT PARSING
      */  
-    _routeToFilterBy = findRouteTokenInQuery(_query);
-
     String commandString = findAndNormalizeCommandInQuery(_query);
     
     if(commandString != null) {
       // (service) change
       if(commandString.equals("C")) {
-        serviceAlertResponse(_routeToFilterBy);
+        serviceAlertResponse(_query);
         return SUCCESS;
 
       // help
@@ -128,6 +124,8 @@ public class IndexAction extends SessionedIndexAction {
     } else
       generateNewSearchResults(_query);
 
+    // filter results
+    _searchResults = filterResults(_searchResults, _query);
     
     /**
      * GIVEN RESULTS, DISPLAY THEM TO THE USER
@@ -204,11 +202,18 @@ public class IndexAction extends SessionedIndexAction {
   /**
    * RESPONSE GENERATION METHODS
    */
-  private void serviceAlertResponse(String routeQuery) throws Exception {
-    List<RouteResult> routeResult = _routeSearchService.resultsForQuery(routeQuery);
+  private void serviceAlertResponse(String _q) throws Exception {
+    List<String> routeTokens = findRouteTokensInQuery(_q);
+    
+    if(routeTokens.size() != 1) {
+      errorResponse("Not found.");
+      return;      
+    }
+
+    List<RouteResult> routeResult = _routeSearchService.resultsForQuery(routeTokens.get(0));
     
     if(routeResult.size() == 0) {
-      errorResponse("Route not found.");
+      errorResponse("Not found.");
       return;
     }
 
@@ -223,7 +228,7 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     if(alerts.size() == 0) {
-      errorResponse("No alerts available.");
+      errorResponse("No alerts.");
       return;
     }
 
@@ -296,48 +301,48 @@ public class IndexAction extends SessionedIndexAction {
         _response += result.getStopIdWithoutAgency() + "\n";
       }
       
-      for(RouteResult routeHere : result.getRoutesAvailable()) {
-        // filter out by user query
-        if(_routeToFilterBy != null && !routeHere.getRouteIdWithoutAgency().equals(_routeToFilterBy))
-          continue;
-        
-        for(RouteDestinationItem _destination : routeHere.getDestinations()) {
-          SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
-          
-          String prefix = "";
+      if(result.getRoutesAvailable().size() > 0) {
+        for(RouteResult routeHere : result.getRoutesAvailable()) {
+          for(RouteDestinationItem _destination : routeHere.getDestinations()) {
+            SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
 
-          if(destination.getServiceAlerts().size() > 0) {
-            prefix += "*";
-            routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
-          }            
+            String prefix = "";
 
-          prefix += routeHere.getRouteIdWithoutAgency() + " ";
-          
-          if(destination.getDistanceAwayStrings().size() > 0) {
-            int c = 0;
-            for(String distanceAway : destination.getDistanceAwayStrings()) {
-              if(c > realtimeObservationCount) {
-                truncated = true;
-                break;
+            if(destination.getServiceAlerts().size() > 0) {
+              prefix += "*";
+              routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
+            }            
+
+            prefix += routeHere.getRouteIdWithoutAgency() + " ";
+
+            if(destination.getDistanceAwayStrings().size() > 0) {
+              int c = 0;
+              for(String distanceAway : destination.getDistanceAwayStrings()) {
+                if(c > realtimeObservationCount) {
+                  truncated = true;
+                  break;
+                }
+
+                if(c > 0) {
+                  _response += "\n";
+                } 
+
+                _response += prefix + distanceAway;
+
+                c++;
               }
-
-              if(c > 0) {
-                _response += "\n";
-              }
-
-              _response += prefix + distanceAway;
-              
-              c++;
+            } else {
+              _response += prefix + "no bus en-route";
             }
-          } else {
-            _response += prefix + "no bus en-route";
-          }
-          
-          _response += "\n";
-        }
+
+            _response += "\n";
+          } // for destinations
+        } // for routes
+      } else {
+        _response += "No matches.\n";
       }
     }
-
+    
     _response += "\n";
     _response += "Send:\n";
     _response += "STOP CODE + ROUTE realtime info\n";
@@ -446,6 +451,39 @@ public class IndexAction extends SessionedIndexAction {
   /**
    * PRIVATE HELPER METHODS
    */
+  private SearchResultCollection filterResults(SearchResultCollection results, String q) {    
+    List<String> routesToFilterBy = findRouteTokensInQuery(q);
+
+    if(routesToFilterBy.size() == 0) {
+      return results;
+    }
+
+    SearchResultCollection newResults = new SearchResultCollection();
+    for(SearchResult _result : results) {
+      if (_result instanceof StopResult) {
+        StopResult result = (StopResult)_result;
+        
+        List<RouteResult> newRoutesAvailable = new ArrayList<RouteResult>();
+        for(RouteResult routeAvailable : result.getRoutesAvailable()) {
+          if(routesToFilterBy.contains(routeAvailable.getRouteIdWithoutAgency())) {
+            newRoutesAvailable.add(routeAvailable);
+          }
+        }
+        
+        result.getRoutesAvailable().clear();
+        result.getRoutesAvailable().addAll(newRoutesAvailable);
+        
+        newResults.add(result);
+
+      // pass through
+      } else {
+        newResults.add(_result);
+      }
+    }
+       
+    return newResults;
+  }
+  
   public String findAndNormalizeCommandInQuery(String query) {
     query = query.trim();
     
@@ -489,18 +527,20 @@ public class IndexAction extends SessionedIndexAction {
     return null;
   }
   
-  private String findRouteTokenInQuery(String q) {
+  private List<String> findRouteTokensInQuery(String q) {
+    List<String> output = new ArrayList<String>();
+    
     if(q == null) {
-      return null;
+      return output;
     }
     
     for(String token : q.split(" ")) {
       if(_routeSearchService.isRoute(token)) {
-        return token;
+        output.add(token);
       }
     }
-    
-    return null;
+
+    return output;
   }
   
   private void generateNewSearchResults(String q) {

@@ -127,16 +127,16 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
    * PRIVATE HELPER METHODS
    */
   private SearchResultCollection filterResults(SearchResultCollection results, String q) {    
-    String routeToFilterBy = null;
+    List<String> routesToFilterBy = new ArrayList<String>();
     for(String token : q.split(" ")) {
       if(_routeSearchService.isRoute(token)) {
-        routeToFilterBy = token;
-        break;
+        routesToFilterBy.add(token);
       }
     }
 
-    if(routeToFilterBy == null)
+    if(routesToFilterBy.size() == 0) {
       return results;
+    }
 
     SearchResultCollection newResults = new SearchResultCollection();
     for(SearchResult _result : results) {
@@ -144,19 +144,25 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
         MobileWebLocationResult result = (MobileWebLocationResult)_result;
         
         for(RouteResult nearbyRoute : result.getNearbyRoutes()) {
-          if(nearbyRoute.getRouteIdWithoutAgency().equals(routeToFilterBy)) {
+          if(routesToFilterBy.contains(nearbyRoute.getRouteIdWithoutAgency())) {
             newResults.add(result);
           }
         }
         
       } else if (_result instanceof StopResult) {
         StopResult result = (StopResult)_result;
-
-        for(RouteResult nearbyRoute : result.getRoutesAvailable()) {
-          if(nearbyRoute.getRouteIdWithoutAgency().equals(routeToFilterBy)) {
-            newResults.add(result);
+        
+        List<RouteResult> newRoutesAvailable = new ArrayList<RouteResult>();
+        for(RouteResult routeAvailable : result.getRoutesAvailable()) {
+          if(routesToFilterBy.contains(routeAvailable.getRouteIdWithoutAgency())) {
+            newRoutesAvailable.add(routeAvailable);
           }
         }
+        
+        result.getRoutesAvailable().clear();
+        result.getRoutesAvailable().addAll(newRoutesAvailable);
+        
+        newResults.add(result);
 
       // pass through
       } else {
