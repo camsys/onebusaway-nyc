@@ -78,7 +78,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@SuppressWarnings("unused")
   @PostConstruct
 	private void startUpdateProcess() {
-	  _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), 30 * 1000); // 30s
+	  _taskScheduler.scheduleWithFixedDelay(new UpdateThread(), 5 * 60 * 1000); // 5m
 	}
 	
 	@Override
