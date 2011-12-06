@@ -610,7 +610,8 @@ public abstract class NycSiriService {
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
     String sendResult = getWebResourceWrapper().post(
-        SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
+        SiriXmlSerializer.getXml(siri), _serviceAlertsUrl,
+        WebResourceWrapper.USE_DEFAULT_TIMEOUTS, WebResourceWrapper.USE_DEFAULT_TIMEOUTS);
     return sendResult;
   }
 
