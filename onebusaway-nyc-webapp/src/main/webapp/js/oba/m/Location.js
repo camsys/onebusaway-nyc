@@ -7,7 +7,7 @@ OBA.Mobile = (function() {
 	var locationField = null;
 	var lastLatitude = null;
 	var lastLongitude = null; 
-
+	
 	function getParameterByName(name, defaultValue) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
 		var regexS = "[\\?&]"+name+"=([^&#]*)";
@@ -41,6 +41,25 @@ OBA.Mobile = (function() {
 		toggleUI.append(turnOnButton);	
 		
 		searchPanelForm.before(toggleUI);
+		
+		// find nearby button
+		var welcomeDiv = jQuery(".welcome");
+		if(welcomeDiv.length > 0) {
+			var nearbyForm = jQuery("<form id='nearby'></form>");
+			var nearbyButton = jQuery("<input type='button' value='Find Stops Near Me'/>")
+				.appendTo(nearbyForm);
+
+			nearbyButton.click(function(e) {
+				e.preventDefault();
+
+				searchPanelForm.find("input.q").val("");
+				searchPanelForm.submit();
+				
+				return false;
+			});
+			
+			welcomeDiv.append(nearbyForm);
+		}
 	};
 	
 	// remove location toggle UI from DOM if location services are not available

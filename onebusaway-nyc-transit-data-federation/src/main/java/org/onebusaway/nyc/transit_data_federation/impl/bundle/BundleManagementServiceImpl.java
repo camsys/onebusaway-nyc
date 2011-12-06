@@ -189,6 +189,11 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   }
 
   @Override
+  public boolean bundleWithIdExists(String bundleId) {
+    return _applicableBundles.containsKey(bundleId);
+  }
+
+  @Override
   public synchronized BundleItem getCurrentBundleMetadata() {
     return _applicableBundles.get(_currentBundleId);
   }

@@ -3,6 +3,8 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
+import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
@@ -40,6 +42,10 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   private PresentationService _presentationService;
   
+  private SiriXmlSerializer _siriXmlSerializer = new SiriXmlSerializer();
+
+  private SiriJsonSerializer _siriJsonSerializer = new SiriJsonSerializer();
+
   private Date _now = null;
   
   @Override
@@ -71,9 +77,19 @@ public class RealtimeServiceImpl implements RealtimeService {
   }  
 
   @Override
+  public SiriJsonSerializer getSiriJsonSerializer() {
+    return _siriJsonSerializer;
+  }
+  
+  @Override
+  public SiriXmlSerializer getSiriXmlSerializer() {
+    return _siriXmlSerializer;
+  }
+
+  @Override
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, String directionId, int maximumOnwardCalls) {
     List<VehicleActivityStructure> output = new ArrayList<VehicleActivityStructure>();
-
+    
     ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
 
     for(TripDetailsBean tripDetails : trips.getList()) {

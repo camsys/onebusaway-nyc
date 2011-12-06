@@ -29,7 +29,7 @@
 	</div>
 </c:if>
 
-<div>
+<div class="welcome">
 	<p>Try these example searches:</p>
 	<ul>
 		<s:url var="url" namespace="/m" action="index">
