@@ -47,9 +47,6 @@
 <s:url var="url" value="/js/oba/Util.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/domWindow.js"/>
-<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
 <s:url var="url" value="/js/oba/map/RouteMap.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
