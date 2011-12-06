@@ -27,8 +27,8 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCo
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -100,7 +100,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public CategoricalDist<BlockState> cdfForJourneyAtStart(
+  public org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist<BlockState> cdfForJourneyAtStart(
       Observation observation) {
 
     CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
