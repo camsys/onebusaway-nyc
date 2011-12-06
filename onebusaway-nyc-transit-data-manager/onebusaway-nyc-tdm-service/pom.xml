@@ -283,9 +283,9 @@
       <!-- Transit data federation webapp offers the TDS -->
       <id>services-dev</id> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
@@ -295,9 +295,9 @@
       <!-- Transit data federation webapp offers the TDS -->
       <id>services-prod</id> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://app.prod.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.prod.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
