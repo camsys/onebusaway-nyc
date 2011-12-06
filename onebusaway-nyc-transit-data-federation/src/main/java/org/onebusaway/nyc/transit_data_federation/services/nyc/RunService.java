@@ -2,8 +2,6 @@ package org.onebusaway.nyc.transit_data_federation.services.nyc;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -56,5 +54,7 @@ public interface RunService {
       Set<BlockInstance> nearbyBlocks, long time);
 
   RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip, int scheduledTime);
+
+  public boolean isValidRunNumber(String runNumber);
 
 }

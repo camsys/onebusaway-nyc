@@ -15,22 +15,6 @@
  */
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBException;
-
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -52,6 +36,9 @@ import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDet
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString.Translation;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.xwork.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,13 +81,27 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBException;
 
 @Component
 public abstract class NycSiriService {
 
   static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
 
-  // TODO Should this stay autowired?
   @Autowired
   private TransitDataService _transitDataService;
 
@@ -109,48 +110,69 @@ public abstract class NycSiriService {
   private String _subscriptionPath;
 
   private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
-  
-  private List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
 
   private WebResourceWrapper _webResourceWrapper;
 
   private String _subscriptionUrl;
 
+  private SiriXmlSerializer _siriXmlSerializer = new SiriXmlSerializer();
+  
   abstract void setupForMode() throws Exception, JAXBException;
-  
+
   abstract List<String> getExistingAlertIds(Set<String> agencies);
-  
+
   abstract void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId);
-  
+
   abstract void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
       String defaultAgencyId);
-  
-  abstract void postServiceDeliveryActions(SituationExchangeResults result) throws Exception;  
 
+  abstract void postServiceDeliveryActions(SituationExchangeResults result, Collection<String> deletedIds)
+      throws Exception;
+
+  abstract void addSubscription(ServiceAlertSubscription subscription);
+
+  abstract public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions();
+
+  abstract public SiriServicePersister getPersister();
   
+  abstract public void setPersister(SiriServicePersister _siriServicePersister);
+  
+  abstract public boolean isInputIncremental();
+
   @PostConstruct
-  public void setup() throws Exception {
+  public void setup() {
     _log.info("setup(), serviceAlertsUrl is: " + _serviceAlertsUrl);
-    setupForMode();
+    try {
+      setupForMode();
+    } catch (Exception e) {
+      _log.error("********************\n"
+          + "NycSiriService failed to start, message is: " + e.getMessage()
+          + "\n********************");
+    }
   }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
-      ServiceDelivery delivery) throws Exception {
+      ServiceDelivery delivery, boolean incremental) throws Exception {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
+
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
       SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
       handleServiceDelivery(delivery, s, ESiriModuleType.SITUATION_EXCHANGE,
-          endpointDetails, result);
+          endpointDetails, result, preAlertIds, incremental);
     }
+    
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
     // TODO This is not done yet.
-    boolean deletedIds = Collections.disjoint(preAlertIds, postAlertIds);
-    postServiceDeliveryActions(result);
+    @SuppressWarnings("unchecked")
+    Collection<String> deletedIds = CollectionUtils.subtract(preAlertIds, postAlertIds);
+    postServiceDeliveryActions(result, deletedIds);
+    
   }
 
+  
   private Set<String> collectAgencies(ServiceDelivery delivery) {
     Set<String> agencies = new HashSet<String>();
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
@@ -158,7 +180,8 @@ public abstract class NycSiriService {
       for (PtSituationElementStructure element : situations.getPtSituationElement()) {
         String situationId = element.getSituationNumber().getValue();
         AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
-        agencies.add(id.getAgencyId());
+        if (id != null)
+          agencies.add(id.getAgencyId());
       }
     }
     return agencies;
@@ -168,17 +191,17 @@ public abstract class NycSiriService {
       ServiceDelivery serviceDelivery,
       AbstractServiceDeliveryStructure deliveryForModule,
       ESiriModuleType moduleType, SiriEndpointDetails endpointDetails,
-      SituationExchangeResults result) {
+      SituationExchangeResults result, List<String> preAlertIds, boolean incremental) {
 
     handleSituationExchange(serviceDelivery,
         (SituationExchangeDeliveryStructure) deliveryForModule,
-        endpointDetails, result);
-
+        endpointDetails, result, preAlertIds, incremental);
   }
 
+  
   void handleSituationExchange(ServiceDelivery serviceDelivery,
       SituationExchangeDeliveryStructure sxDelivery,
-      SiriEndpointDetails endpointDetails, SituationExchangeResults result) {
+      SiriEndpointDetails endpointDetails, SituationExchangeResults result, List<String> preAlertIds, boolean incremental) {
 
     DeliveryResult deliveryResult = new DeliveryResult();
     result.getDelivery().add(deliveryResult);
@@ -188,6 +211,9 @@ public abstract class NycSiriService {
     if (situations == null)
       return;
 
+    List<String> existingIds = new ArrayList<String>(preAlertIds);
+    _log.info("Size of existing ids: " + existingIds.size());
+    
     List<ServiceAlertBean> serviceAlertsToUpdate = new ArrayList<ServiceAlertBean>();
     List<String> serviceAlertIdsToRemove = new ArrayList<String>();
 
@@ -196,6 +222,10 @@ public abstract class NycSiriService {
       ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
           ptSituation, endpointDetails);
 
+      if (StringUtils.isEmpty(serviceAlertBean.getId())) {
+        _log.warn("Service alert has no id, discarding.");
+        continue;
+      }
       WorkflowStatusEnumeration progress = ptSituation.getProgress();
       boolean remove = (progress != null && (progress == WorkflowStatusEnumeration.CLOSING || progress == WorkflowStatusEnumeration.CLOSED));
 
@@ -204,21 +234,26 @@ public abstract class NycSiriService {
       } else {
         serviceAlertsToUpdate.add(serviceAlertBean);
       }
+      
+      existingIds.remove(serviceAlertBean.getId());
     }
 
+    _log.info("After loop, size of existing ids: " + existingIds.size());
+
+    if (!(isInputIncremental() || incremental) ) {
+      _log.info("Not incremental, adding " + existingIds.size() + " existing ids to the remove list, which currently has " + serviceAlertIdsToRemove.size());
+      serviceAlertIdsToRemove.addAll(existingIds);
+    }
+    
     String defaultAgencyId = null;
     if (!CollectionsLibrary.isEmpty(endpointDetails.getDefaultAgencyIds()))
       defaultAgencyId = endpointDetails.getDefaultAgencyIds().get(0);
 
     for (ServiceAlertBean serviceAlertBean : serviceAlertsToUpdate) {
-      // TODO Needs to be create or update, not just create
       addOrUpdateServiceAlert(result, deliveryResult, serviceAlertBean,
           defaultAgencyId);
     }
-    // TODO?
-    // _serviceAlertsService.removeServiceAlerts(serviceAlertIdsToRemove);
     for (String serviceAlertId : serviceAlertIdsToRemove) {
-      // TODO Confirm this conversion
       removeServiceAlert(result, deliveryResult, serviceAlertId);
     }
   }
@@ -236,7 +271,7 @@ public abstract class NycSiriService {
     ServiceAlertsHelper helper = new ServiceAlertsHelper();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     helper.addSituationExchangeToSiri(serviceDelivery,
-        getCurrentServiceAlerts());
+        getPersister().getAllActiveServiceAlerts());
     responseSiri.setServiceDelivery(serviceDelivery);
     return;
   }
@@ -265,7 +300,7 @@ public abstract class NycSiriService {
             "required element missing: subscriptionIdentifier");
       subscription.setSubscriptionIdentifier(request.getSubscriptionIdentifier().getValue());
       subscription.setSubscriptionRef(subscriptionRef);
-      getServiceAlertSubscriptions().add(subscription);
+      addSubscription(subscription);
     } catch (Exception e) {
       errorMessage = "Failed to create service alert subscription: "
           + e.getMessage();
@@ -364,7 +399,6 @@ public abstract class NycSiriService {
       ServiceAlertBean serviceAlert) {
     throw new RuntimeException("handleReasons not implemented");
   }
-
 
   private void handleAffects(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
@@ -479,7 +513,6 @@ public abstract class NycSiriService {
       serviceAlert.setAllAffects(allAffects);
   }
 
-
   private void handleConsequences(PtSituationElementStructure ptSituation,
       ServiceAlertBean serviceAlert) {
 
@@ -578,7 +611,9 @@ public abstract class NycSiriService {
 
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
-    String sendResult = getWebResourceWrapper().post(SiriXmlSerializer.getXml(siri), _serviceAlertsUrl);
+    String sendResult = getWebResourceWrapper().post(
+        _siriXmlSerializer.getXml(siri), _serviceAlertsUrl,
+        WebResourceWrapper.USE_DEFAULT_TIMEOUTS, WebResourceWrapper.USE_DEFAULT_TIMEOUTS);
     return sendResult;
   }
 
@@ -606,7 +641,8 @@ public abstract class NycSiriService {
     return siri;
   }
 
-  private String makeSubscriptionUrl(String subscriptionPath) throws UnknownHostException {
+  private String makeSubscriptionUrl(String subscriptionPath)
+      throws UnknownHostException {
     if (_subscriptionUrl != null)
       return _subscriptionUrl;
     String hostName = InetAddress.getLocalHost().getCanonicalHostName();
@@ -637,24 +673,6 @@ public abstract class NycSiriService {
 
   public void setServiceAlertsUrl(String _serviceAlertsUrl) {
     this._serviceAlertsUrl = _serviceAlertsUrl;
-  }
-
-  public Map<String, ServiceAlertBean> getCurrentServiceAlerts() {
-    return currentServiceAlerts;
-  }
-
-  public void setCurrentServiceAlerts(
-      Map<String, ServiceAlertBean> currentServiceAlerts) {
-    this.currentServiceAlerts = currentServiceAlerts;
-  }
-
-  public List<ServiceAlertSubscription> getServiceAlertSubscriptions() {
-    return serviceAlertSubscriptions;
-  }
-
-  public void setServiceAlertSubscriptions(
-      List<ServiceAlertSubscription> serviceAlertSubscriptions) {
-    this.serviceAlertSubscriptions = serviceAlertSubscriptions;
   }
 
   public String getSubscriptionPath() {

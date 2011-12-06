@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +25,6 @@ import uk.org.siri.siri.Siri;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
-
-  // @InjectMocks
-  // NycSiriService nycSiriService = new NycSiriServiceGateway();
 
   @Test
   public void testGetPtSituationAsServiceAlertBean() {
@@ -59,31 +56,32 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
 
   @Test
   public void testCreateRequest() throws Exception {
+    SiriXmlSerializer siriXmlSerializer = new SiriXmlSerializer();
     Siri request = createSubsAndSxRequest();
-    String xml = SiriXmlSerializer.getXml(request);
+    String xml = siriXmlSerializer.getXml(request);
     // Lame test
     assertTrue(xml.contains("<SubscriptionRequest>"));
   }
 
   @Test
   public void testPostServiceDeliveryActions() throws Exception {
+    MockSiriServicePersister mockPersister = new MockSiriServicePersister();
+    setPersister(mockPersister);
+    mockPersister.put("one", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100"));
     SituationExchangeResults result = mock(SituationExchangeResults.class);
     ServiceDelivery delivery = mock(ServiceDelivery.class);
-    List<ServiceAlertSubscription> serviceAlertSubscriptions = new ArrayList<ServiceAlertSubscription>();
-    addSubscription(serviceAlertSubscriptions);
-    addSubscription(serviceAlertSubscriptions);
-    setServiceAlertSubscriptions(serviceAlertSubscriptions);
+    addSubscription();
+    addSubscription();
 
-    handleServiceDeliveries(result, delivery);
+    handleServiceDeliveries(result, delivery, false);
 
-    for (ServiceAlertSubscription s : serviceAlertSubscriptions)
-      verify(s).send(eq(result), any(Map.class));
+    for (ServiceAlertSubscription s : getActiveServiceAlertSubscriptions())
+      verify(s).send(any(List.class), any(Collection.class));
   }
 
-  private ServiceAlertSubscription addSubscription(
-      List<ServiceAlertSubscription> serviceAlertSubscriptions) {
+  private ServiceAlertSubscription addSubscription() {
     ServiceAlertSubscription subscription = mock(ServiceAlertSubscription.class);
-    serviceAlertSubscriptions.add(subscription);
+    getPersister().saveOrUpdateSubscription(subscription);
     return subscription;
   }
 

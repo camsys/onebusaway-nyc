@@ -16,9 +16,15 @@
  
 /* Insert agency-specific branding overrides here */
 
+#contentbox {
+	margin-bottom: 10px; 
+	padding:0;
+	height: 100%;   /* For IE */
+}
+
 #bustime {
-	margin: 20px;
-	margin-top: 0px;
+	margin: 0 0 0 20px;
+	height: 100%;   /* For IE */
 }
 
 #bustime a:visited,
@@ -27,7 +33,10 @@
 	color: #0189c7;
 }
 
+/* header on wiki pages */
 #bustime #header {
+	padding-top: 10px;
+	padding-bottom: 15px;
 	position: relative;
 	height: 58px;
 }
@@ -44,7 +53,7 @@
 #bustime #header ul {
 	position: absolute;
 	left: 320px;
-	bottom: 0px;
+	bottom: 15px;
 }
 
 #bustime #header ul li {
@@ -58,8 +67,56 @@
 	text-decoration: none;
 }
 
+/* header on map page */
+#bustime #map_header {
+	position: relative;
+	height: 58px;
+	padding-top: 8px;
+}
+
+#bustime #map_header .title h1 a {
+	width: 302px;
+	height: 58px;
+	display: block;
+	background-image: url('img/bustime.png');
+	background-repeat: no-repeat;
+	text-indent: -9999px;
+}
+
+#bustime #map_header ul {
+	position: relative;
+	margin-top: 10px;
+    display: inline;
+    float: left;
+    width: 100%;
+}
+
+#bustime #map_header ul li {
+	list-style: none;
+	float: left;
+	font-size: .8em;
+    display: block;
+    margin: 0;
+    z-index: 100;
+    margin-right: 1px;
+}
+
+#bustime #map_header ul li a {
+	text-decoration: none;
+   	background-color: #3399C9;
+    color: #FFFFFF;
+    display: block;
+    font-weight: bold;
+    height: 10px;
+    padding: 4px 5px 6px 5px;
+    text-align: center;
+}
+#bustime #map_header ul li a:hover {
+    background-color: #94CB45;
+}
+
 #bustime #content {
-	padding-top: 15px;
+	padding-top: 0;
 }
 
 
@@ -71,16 +128,18 @@ html, body {
     height: 100%;
     color: #333333;
     font: 13px/1.231 helvetica,arial,clean,sans-serif;
+	overflow-x: hidden;
 }
 #mainbox {
     background-color: #FFFFFF;
     margin: 0 auto;
-    padding: 0 0 20px;
     position: relative;
     width: 95%;
+    min-width: 960px; /* For IE7 */ 
+    min-height: 800px; /* For IE7 */ 
 }
 #topbar {
-    height: 122px;
+    height: 121px;
 }
 #topbar #branding {
     float: left;

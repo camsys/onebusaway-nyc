@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -14,15 +15,27 @@ import uk.org.siri.siri.Siri;
 
 public class NycSiriServiceClient extends NycSiriService {
 
+  private SiriXmlSerializer _siriXmlSerializer = new SiriXmlSerializer();
+  
   @Override
   void setupForMode() throws Exception, JAXBException {
-      _log.info("Setting up for client mode.");
-      String result = sendSubscriptionAndServiceRequest();
-      Siri siri = SiriXmlSerializer.fromXml(result);
-      SituationExchangeResults handleResult = new SituationExchangeResults();
-      handleServiceDeliveries(handleResult, siri.getServiceDelivery());
-      // TODO Probably doesn't do the right thing.
-      _log.info(handleResult.toString());
+      boolean setupDone = false;
+      do {
+        try {
+          _log.info("Setting up for client mode.");
+          String result = sendSubscriptionAndServiceRequest();
+          Siri siri = _siriXmlSerializer.fromXml(result);
+          SituationExchangeResults handleResult = new SituationExchangeResults();
+          handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
+          _log.info(handleResult.toString());
+          setupDone = true;
+        } catch (Exception e) {
+          _log.error("Setup for client failed, exception is: " + e.getMessage());
+          _log.error("Retrying in 60 seconds.");
+          Thread.sleep(60*1000);
+        }
+      } while (!setupDone);
+      _log.info("Setup for client mode complete.");
   }
   
 
@@ -61,8 +74,40 @@ public class NycSiriServiceClient extends NycSiriService {
 
 
   @Override
-  void postServiceDeliveryActions(SituationExchangeResults result) {
+  void postServiceDeliveryActions(SituationExchangeResults result, Collection<String> deletedIds) throws Exception {
     // None when in client mode
+  }
+
+
+  @Override
+  void addSubscription(ServiceAlertSubscription subscription) {
+    // not used in client mode
+  }
+
+
+  @Override
+  public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions() {
+    // not used in client mode
+    return null;
+  }
+
+
+  @Override
+  public SiriServicePersister getPersister() {
+    // not used in client mode
+    return null;
+  }
+
+
+  @Override
+  public void setPersister(SiriServicePersister _siriServicePersister) {
+    // not used in client mode
+  }
+
+
+  @Override
+  public boolean isInputIncremental() {
+    return true;
   }
 
   

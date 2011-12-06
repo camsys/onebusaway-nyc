@@ -36,6 +36,7 @@ public class TripRecord implements StifRecord {
   private int recoveryTime;
   private boolean lastTripInSequence;
   private boolean firstTripInSequence;
+  private String depotCode;
 
   public void setSignCode(String signCode) {
     this.signCode = signCode;
@@ -215,5 +216,13 @@ public class TripRecord implements StifRecord {
 
   public boolean isLastTripInSequence() {
     return lastTripInSequence;
+  }
+
+  public String getDepotCode() {
+    return depotCode;
+  }
+
+  public void setDepotCode(String depotCode) {
+    this.depotCode = depotCode;
   }
 }

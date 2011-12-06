@@ -69,8 +69,17 @@ public class TransitionRule implements SensorModelRule {
      */
     boolean transitionBeforeToDuring = EVehiclePhase.isActiveBeforeBlock(parentPhase)
         && EVehiclePhase.isActiveDuringBlock(phase);
-    
-    boolean justLeftTerminal = prevObs.isAtTerminal() && !obs.isAtTerminal();
+    boolean justLeftTerminal = false;
+    if (parentState.getBlockState() != null) {
+      boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
+          prevObs.getRecord(), parentState.getBlockState().getBlockInstance());
+      boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
+          obs.getRecord(), parentState.getBlockState().getBlockInstance());
+      
+      justLeftTerminal = wasAtBlockTerminal && !isAtBlockTerminal;
+    } else {
+      justLeftTerminal = prevObs.isAtTerminal() && !obs.isAtTerminal();
+    }
       
     boolean pOutToInService = prevObs.isOutOfService() && !obs.isOutOfService();
 

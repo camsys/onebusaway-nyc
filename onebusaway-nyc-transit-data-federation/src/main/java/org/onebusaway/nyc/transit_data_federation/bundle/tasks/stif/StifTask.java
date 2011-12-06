@@ -67,6 +67,8 @@ public class StifTask implements Runnable {
 
   private String logPath;
 
+  private boolean fallBackToStifBlocks = false;
+
   @Autowired
   public void setGtfsMutableRelationalDao(
       GtfsMutableRelationalDao gtfsMutableRelationalDao) {
@@ -109,8 +111,12 @@ public class StifTask implements Runnable {
       loadStif(path, loader);
     }
 
-    computeBlocks(loader);
+    computeBlocksFromRuns(loader);
     warnOnMissingTrips();
+
+    if (fallBackToStifBlocks) {
+      loadStifBlocks(loader);
+    }
 
     Map<AgencyAndId, RunData> runsForTrip = loader.getRunsForTrip();
     //store trip-run mapping in bundle
@@ -166,6 +172,19 @@ public class StifTask implements Runnable {
 
   }
 
+  private void loadStifBlocks(StifTripLoader loader) {
+
+    Map<Trip, RawRunData> rawData = loader.getRawRunDataByTrip();
+    for (Map.Entry<Trip, RawRunData> entry : rawData.entrySet()) {
+      Trip trip = entry.getKey();
+      if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
+        RawRunData data = entry.getValue();
+        trip.setBlockId(trip.getServiceId() + "_STIF_" + data.getDepotCode() + "_" + data.getBlock());
+        _gtfsMutableRelationalDao.updateEntity(trip);
+      }
+    }
+  }
+
   class TripWithStartTime implements Comparable<TripWithStartTime> {
 
     private int startTime;
@@ -215,7 +234,7 @@ public class StifTask implements Runnable {
     }
   }
 
-  private void computeBlocks(StifTripLoader loader) {
+  private void computeBlocksFromRuns(StifTripLoader loader) {
 
     FileOutputStream outputStream = null;
     PrintStream printStream = null;
@@ -315,7 +334,10 @@ public class StifTask implements Runnable {
           }
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
-            String blockId = "block_" + blockNo + "_" + gtfsTrip.getServiceId().getId();
+            RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
+            String blockId = gtfsTrip.getServiceId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.runId + "_" + blockNo;
+
+
             blockId = blockId.intern();
             blockIds.add(blockId);
             gtfsTrip.setBlockId(blockId);
@@ -438,5 +460,17 @@ public class StifTask implements Runnable {
             + _notInServiceDscPath);
       }
     }
+  }
+
+  /**
+   * Whether blocks should come be computed from runs (true) or read from the STIF (false)
+   * @return
+   */
+  public boolean usesFallBackToStiffBlocks() {
+    return fallBackToStifBlocks;
+  }
+
+  public void setFallBackToStifBlocks(boolean fallBackToStifBlocks) {
+    this.fallBackToStifBlocks = fallBackToStifBlocks;
   }
 }

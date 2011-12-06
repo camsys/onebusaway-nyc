@@ -1,11 +1,5 @@
 package org.onebusaway.nyc.transit_data_federation.siri;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.Version;
@@ -25,6 +19,13 @@ import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.springframework.util.ReflectionUtils;
 
 import uk.org.siri.siri.Siri;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 public class SiriJsonSerializer {
   
@@ -96,19 +97,33 @@ public class SiriJsonSerializer {
       context.addBeanSerializerModifier(new CustomBeanSerializerModifier());
     }
   }
+  
+  private static class RFC822SimpleDateFormat extends SimpleDateFormat {
+    private static final long serialVersionUID = 1L;
 
-  public static String getJson(Siri siri) throws Exception {    
+    public RFC822SimpleDateFormat() {
+      super("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    }
+    
+    @Override
+    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
+      StringBuffer sb = super.format(date, toAppendTo, pos);
+      sb.insert(sb.length() - 2, ":");
+      return sb;
+    }
+  }
+
+  public String getJson(Siri siri) throws Exception {    
     return getJson(siri, null);
   }
   
-  public static String getJson(Siri siri, String callback) throws Exception {    
+  public String getJson(Siri siri, String callback) throws Exception {    
     ObjectMapper mapper = new ObjectMapper();    
     mapper.setSerializationInclusion(Inclusion.NON_NULL);
     mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);
+    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);   
     
-    DateFormat isoDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-    mapper.setDateFormat(isoDateFormatter);
+    mapper.setDateFormat(new RFC822SimpleDateFormat());
 
     AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
     SerializationConfig config = mapper.getSerializationConfig().withAnnotationIntrospector(introspector);

@@ -29,4 +29,9 @@
 	<decorator name="main" page="main.jspx">
 		<pattern>/*</pattern>
 	</decorator>
+
+	<decorator name="wiki" page="wiki.jspx">
+		<pattern>/wiki/*</pattern>
+	</decorator>
+
 </decorators>

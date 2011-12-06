@@ -1,14 +1,19 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class NycSiriServiceGateway extends NycSiriService {
+
+  @Autowired
+  private SiriServicePersister _siriServicePersister;
 
   @Override
   void setupForMode() throws Exception, JAXBException {
@@ -19,31 +24,72 @@ public class NycSiriServiceGateway extends NycSiriService {
   @Override
   void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean, String defaultAgencyId) {
-    getCurrentServiceAlerts().put(serviceAlertBean.getId(), serviceAlertBean);
     result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
         "added");
+    getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
   }
   
   
   void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId) {
-    ServiceAlertBean removed = getCurrentServiceAlerts().remove(serviceAlertId);
     result.countPtSituationElementResult(deliveryResult, serviceAlertId,
         "removed");
+    getPersister().deleteServiceAlertById(serviceAlertId);
   }
 
   
   List<String> getExistingAlertIds(Set<String> agencies) {
-    return new ArrayList<String>(getCurrentServiceAlerts().keySet());
+    List<String> existing = new ArrayList<String>();
+    List<ServiceAlertBean> alerts = getPersister().getAllActiveServiceAlerts();
+    for (ServiceAlertBean alert: alerts) {
+      existing.add(alert.getId());
+    }
+    return existing;
   }
 
 
   @Override
-  void postServiceDeliveryActions(SituationExchangeResults results) throws Exception {
-    for (ServiceAlertSubscription subscription: getServiceAlertSubscriptions()) {
-      subscription.send(results, getCurrentServiceAlerts());
+  void postServiceDeliveryActions(SituationExchangeResults results, Collection<String> deletedIds) throws Exception {
+    for (ServiceAlertSubscription subscription: getActiveServiceAlertSubscriptions()) {
+      try {
+        subscription.send(getPersister().getAllActiveServiceAlerts(), deletedIds);
+      } catch (Exception e) {
+        Integer failures = subscription.getConsecutiveFailures();
+        if (failures == null)
+          failures = new Integer(0);
+        failures += 1;
+        subscription.setConsecutiveFailures(failures);
+        getPersister().saveOrUpdateSubscription(subscription);
+        _log.error("Unable to send service alert updates to subscriber: " + subscription.getAddress() + ", consecutive failures: " + failures + ", exception: " + e.getMessage());
+        if (failures >= 3) {
+          _log.info(">=3 consecutive failures, deleting subscription.");
+          getPersister().deleteSubscription(subscription);
+        }
+      }
     }
   }
 
-  
+  void addSubscription(ServiceAlertSubscription subscription) {
+    getPersister().saveOrUpdateSubscription(subscription);
+  }
+
+  public List<ServiceAlertSubscription> getActiveServiceAlertSubscriptions() {
+    return getPersister().getAllActiveSubscriptions();
+  }
+
+  public SiriServicePersister getPersister() {
+    return _siriServicePersister;
+  }
+
+  public void setPersister(SiriServicePersister _siriServicePersister) {
+    this._siriServicePersister = _siriServicePersister;
+  }
+
+
+  @Override
+  public boolean isInputIncremental() {
+    return false;
+  }
+
+
 }

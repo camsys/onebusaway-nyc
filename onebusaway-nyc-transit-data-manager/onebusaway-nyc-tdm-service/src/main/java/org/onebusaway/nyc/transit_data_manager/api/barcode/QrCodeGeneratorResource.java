@@ -39,6 +39,7 @@ import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.model.MtaBarcode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -55,14 +56,13 @@ public class QrCodeGeneratorResource {
     barcodeGen.setEcLevel(QRErrorCorrectionLevel.Q);
   }
 
+  private static String REPLACE_STR = "__REPLACE__";
+  private static String STOP_COLUMN_NAME = "STOP_ID";
+  
   private static Logger _log = LoggerFactory.getLogger(QrCodeGeneratorResource.class);
 
-  // Note that while i'm putting these in lower case, they will be made
-  // uppercase before encoding into a barcode.
-  private String shortenedBustimeBarcodeUrl = "http://bt.mta.info";
-  private String busStopPath = "/s";
-
-  private static String STOP_COLUMN_NAME = "STOP_ID";
+  @Autowired
+  private String urlToEmbedStopIdReplace;
 
   private static String ZIP_FILE_PREFIX = "QrCodes";
   private static String ZIP_FILE_SUFFIX = ".zip";
@@ -70,6 +70,10 @@ public class QrCodeGeneratorResource {
   private QrCodeGenerator barcodeGen;
   private BarcodeContentsConverter contentConv;
 
+  public void setUrlToEmbedStopIdReplace (String replaceUrl) {
+    this.urlToEmbedStopIdReplace = replaceUrl;
+  }
+  
   public void setBarcodeGen(QrCodeGenerator barcodeGen) {
     this.barcodeGen = barcodeGen;
   }
@@ -91,8 +95,10 @@ public class QrCodeGeneratorResource {
 
     final String barcodeContents = generateBusStopContentsForStopId(String.valueOf(stopId));
 
-    boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
-        QRErrorCorrectionLevel.Q, barcodeContents);
+    //boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
+        //QRErrorCorrectionLevel.Q, barcodeContents);
+    
+    boolean contentsFitBarcodeVersion = true;
 
     if (!contentsFitBarcodeVersion) {
       throw new WebApplicationException(new IllegalArgumentException(
@@ -267,8 +273,10 @@ public class QrCodeGeneratorResource {
 
       String barcodeContents = generateBusStopContentsForStopId(stopIdStr);
 
-      boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
-          QRErrorCorrectionLevel.Q, barcodeContents);
+//      boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
+//          QRErrorCorrectionLevel.Q, barcodeContents);
+      
+      boolean contentsFitBarcodeVersion = true;
 
       if (!"".equals(barcodeContents) && contentsFitBarcodeVersion) {
 
@@ -351,21 +359,11 @@ public class QrCodeGeneratorResource {
   }
 
   private String getStopUrl(String stopId) {
-    StringBuilder contents = new StringBuilder();
-
-    contents.append(shortenedBustimeBarcodeUrl);
-    contents.append(busStopPath);
-    contents.append("/");
-    contents.append(String.valueOf(stopId));
-
-    return contents.toString();
+    return getEmbeddedStopIdUrl(stopId);
   }
 
   private String generateBusStopContentsForStopId(String stopId) {
     String barcodeContents = contentConv.contentsForUrl(getStopUrl(stopId));
-
-    // Set to uppercase for more compact encoding.
-    barcodeContents = barcodeContents.toUpperCase();
 
     return barcodeContents;
   }
@@ -383,5 +381,20 @@ public class QrCodeGeneratorResource {
     }
 
     return imageType;
+  }
+  
+  /**
+   * This method takes a stopId and returns a string representing the
+   * URL to embed in barcodes for that stop Id. It assumes the 
+   * property urlToEmbedStopIdReplace in this class contains a replacement
+   * string, '__REPLACE__'
+   * @param stopId The stop Id to substitute for __REPLACE__.
+   * @return A string with the stop id url for embedding into barcodes. Does
+   * not capitalize it or anything which may be needed for good barcodes.
+   */
+  private String getEmbeddedStopIdUrl(String stopIdStr) {
+    String stopIdUrl = urlToEmbedStopIdReplace.replaceAll(REPLACE_STR, stopIdStr);
+    
+    return stopIdUrl;
   }
 }

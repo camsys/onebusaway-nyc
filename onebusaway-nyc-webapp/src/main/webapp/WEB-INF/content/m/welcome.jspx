@@ -29,39 +29,39 @@
 	</div>
 </c:if>
 
-<div>
+<div class="welcome">
 	<p>Try these example searches:</p>
 	<ul>
 		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">B63</s:param>
+			<s:param name="q">S62</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Route: <a href="${url}">B63</a>
+		<li>Route: <a href="${url}">S62</a>
 		</li>
 
 		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">Atlantic Ave and Hoyt St</s:param>
+			<s:param name="q">Main St and Craig Rd</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Intersection: <a href="${url}">Atlantic Ave and Hoyt St</a>
+		<li>Intersection: <a href="${url}">Main St and Craig Rd</a>
 		</li>
 
 		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">305394</s:param>
+			<s:param name="q">200884</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Stop ID: <a href="${url}">305394</a>
+		<li>Stop ID: <a href="${url}">200884</a>
 		</li>
 
 		<s:url var="url" namespace="/m" action="index">
-			<s:param name="q">10003</s:param>
+			<s:param name="q">10304</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<s:url var="url2" namespace="/m" action="index">
 			<s:param name="q">Staten Island</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Location: <a href="${url}">10003</a> or <a href="${url2}">Staten Island</a>
+		<li>Location: <a href="${url}">10304</a> or <a href="${url2}">Staten Island</a>
 		</li>
 	</ul>
 </div>

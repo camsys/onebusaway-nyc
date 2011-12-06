@@ -31,6 +31,7 @@ public class BundleManagementController {
   @Autowired
   private BundleManagementServiceImpl _bundleManager;
 
+  // for integration testing only
   @RequestMapping(value = "/change-bundle.do", method = RequestMethod.GET)
   public ModelAndView index(@RequestParam String bundleId, 
       @RequestParam(required=false) String time) throws Exception {
@@ -41,7 +42,34 @@ public class BundleManagementController {
 
 	  _bundleManager.changeBundle(bundleId);
 
-	  return new ModelAndView("change-bundle.jspx");
+	  return new ModelAndView("bundle-change.jspx");
+  }
+
+  @RequestMapping("/bundles.do")
+  public ModelAndView index() {
+    return new ModelAndView("bundles.jspx", "bms", _bundleManager);
+  }
+
+  @RequestMapping("/bundles!discover.do")
+  public ModelAndView rediscover() throws Exception {
+    _bundleManager.discoverBundles();
+
+    return new ModelAndView("redirect:/bundles.do");
+  }
+
+  @RequestMapping("/bundles!reassign.do")
+  public ModelAndView reassign() throws Exception {
+    _bundleManager.refreshApplicableBundles();
+    _bundleManager.reevaluateBundleAssignment();
+    
+    return new ModelAndView("redirect:/bundles.do");
+  }
+
+  @RequestMapping("/bundles!change.do")
+  public ModelAndView change(@RequestParam String bundleId) throws Exception {
+    _bundleManager.changeBundle(bundleId);
+    
+    return new ModelAndView("redirect:/bundles.do");
   }
 
 }

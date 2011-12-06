@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.transit_data_federation.model.tdm;
 
-import org.joda.time.DateTime;
+import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
+
+import org.joda.time.DateTime;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class OperatorAssignmentItem implements Serializable {
 	
@@ -17,7 +17,7 @@ public class OperatorAssignmentItem implements Serializable {
 
 	private String runRoute;
 
-	private Date serviceDate;
+	private ServiceDate serviceDate;
 
 	private DateTime updated;
 
@@ -61,11 +61,11 @@ public class OperatorAssignmentItem implements Serializable {
     return RunTripEntry.createId(runRoute, runNumber);
   }
 
-  public Date getServiceDate() {
+  public ServiceDate getServiceDate() {
     return serviceDate;
   }
 
-  public void setServiceDate(Date serviceDate) {
+  public void setServiceDate(ServiceDate serviceDate) {
     this.serviceDate = serviceDate;
   }
 

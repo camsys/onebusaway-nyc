@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.math.distribution.ChiSquaredDistributionImpl;
 import org.junit.Test;
 import org.onebusaway.collections.Counter;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 
 import umontreal.iro.lecuyer.probdist.ChiDist;
 import umontreal.iro.lecuyer.probdist.ChiSquareDist;

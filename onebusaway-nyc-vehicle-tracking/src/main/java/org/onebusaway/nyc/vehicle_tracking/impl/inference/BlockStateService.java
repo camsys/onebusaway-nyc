@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -274,14 +275,19 @@ public class BlockStateService {
 
     List<AgencyAndId> shapePointIds = MappingLibrary.map(block.getTrips(),
         "trip.shapeId");
+    
+    if (shapePointIds.removeAll(Collections.singleton(null))) {
+      if (shapePointIds.isEmpty())
+        throw new IllegalStateException("block missing some shape points: "
+            + block.getBlock().getId());
+      else
+        _log.warn("block missing some shape points: "
+            + block.getBlock().getId());
+    }
+
 
     T2<List<XYPoint>, double[]> tuple = _projectedShapePointService
         .getProjectedShapePoints(shapePointIds, targetPoint.getSrid());
-
-    if (tuple == null) {
-      throw new IllegalStateException("block had no shape points: "
-          + block.getBlock().getId());
-    }
 
     List<XYPoint> projectedShapePoints = tuple.getFirst();
     double[] distances = tuple.getSecond();

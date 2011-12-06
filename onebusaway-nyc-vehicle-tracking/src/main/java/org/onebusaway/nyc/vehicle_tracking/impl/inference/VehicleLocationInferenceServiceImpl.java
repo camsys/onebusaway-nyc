@@ -15,11 +15,17 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +37,7 @@ import javax.annotation.PreDestroy;
 import lrms_final_09_07.Angle;
 
 import org.apache.axis.utils.StringUtils;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
@@ -40,8 +47,8 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTri
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
@@ -215,10 +222,12 @@ public class VehicleLocationInferenceServiceImpl implements
   public void handleCcLocationReportRecord(CcLocationReport message) {
     verifyVehicleResultMappingToCurrentBundle();
 
+    if(_bundleManagementService.getCurrentBundleMetadata() == null) {
+      _log.warn("Bundle is not ready or none is loaded; skipping update message.");
+      return;
+    }
+    
     NycRawLocationRecord r = new NycRawLocationRecord();
-
-    r.setTime(XML_DATE_TIME_FORMAT.parseMillis(message.getTimeReported()));
-    r.setTimeReceived(new Date().getTime());
 
     r.setLatitude(message.getLatitude() / 1000000f);
     r.setLongitude(message.getLongitude() / 1000000f);
@@ -259,11 +268,47 @@ public class VehicleLocationInferenceServiceImpl implements
     if (gpsData != null) {
       NMEA nemaSentences = gpsData.getNMEA();
       List<String> sentenceStrings = nemaSentences.getSentence();
-      if (sentenceStrings.size() == 2) {
-        String RMC = sentenceStrings.get(0);
-        String GGA = sentenceStrings.get(1);
-        r.setRmc(RMC);
-        r.setGga(GGA);
+
+      for(String sentence : sentenceStrings) {
+        if(sentence.startsWith("$GPGGA"))
+          r.setGga(sentence);
+
+        if(sentence.startsWith("$GPRMC"))
+          r.setRmc(sentence);
+      }
+    }
+
+    DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());    
+    r.setTime(time.getMillis());
+    r.setTimeReceived(new Date().getTime());
+
+    // validate timestamp from bus
+    String RMCSentence = r.getRmc();
+
+    if(RMCSentence != null) {
+      String[] parts = RMCSentence.split(",");
+      if(parts.length == 13) {      
+        String timePart = parts[1];
+        String datePart = parts[9];      
+        if(timePart.length() >= 6 && datePart.length() == 6) {
+          try {
+            DateFormat formatter = new SimpleDateFormat("ddMMyy HHmmss");
+            formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+            Date fromDRU = formatter.parse(datePart + " " + timePart);
+            long differenceInSeconds = (fromDRU.getTime() - time.getMillis()) / 1000;
+
+            if(differenceInSeconds > 30 * 60) { // 30m
+              _log.warn("Vehicle " + vehicleId + " has significant time difference between time from DRU and time from record\n" +  
+                "Difference in seconds: " + differenceInSeconds + "\n" + 
+                "Difference in hours: " + (differenceInSeconds / 60 / 60) + "\n" + 
+                "Raw timestamp: " + message.getTimeReported() + "\n" + 
+                "From RMC: " + datePart + " " + timePart);
+            }
+          } catch(ParseException e) {
+            _log.debug("Unparseable date: " + datePart + " " + timePart);
+          }
+        }
       }
     }
 

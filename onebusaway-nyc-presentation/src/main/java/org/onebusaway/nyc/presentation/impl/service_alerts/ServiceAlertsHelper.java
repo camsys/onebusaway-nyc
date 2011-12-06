@@ -1,5 +1,13 @@
 package org.onebusaway.nyc.presentation.impl.service_alerts;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.siri.OneBusAwayConsequence;
 import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
@@ -8,46 +16,28 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-
-import uk.org.siri.siri.AffectedLineStructure;
-import uk.org.siri.siri.AffectedLineStructure.Routes;
-import uk.org.siri.siri.AffectedRouteStructure;
-import uk.org.siri.siri.AffectedStopPointStructure;
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
-import uk.org.siri.siri.AffectsScopeStructure.Networks;
-import uk.org.siri.siri.AffectsScopeStructure.Networks.AffectedNetwork;
 import uk.org.siri.siri.AffectsScopeStructure.Operators;
-import uk.org.siri.siri.AffectsScopeStructure.StopPoints;
 import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.DirectionRefStructure;
-import uk.org.siri.siri.DirectionStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.ExtensionsStructure;
 import uk.org.siri.siri.HalfOpenTimestampRangeStructure;
 import uk.org.siri.siri.LineRefStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
-import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.PtConsequenceStructure;
 import uk.org.siri.siri.PtConsequencesStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
-import uk.org.siri.siri.RouteRefStructure;
 import uk.org.siri.siri.ServiceConditionEnumeration;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.SeverityEnumeration;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure;
+import uk.org.siri.siri.WorkflowStatusEnumeration;
 import uk.org.siri.siri.SituationExchangeDeliveryStructure.Situations;
 import uk.org.siri.siri.SituationRefStructure;
-import uk.org.siri.siri.StopPointRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ServiceAlertsHelper {
 
@@ -55,6 +45,8 @@ public class ServiceAlertsHelper {
       List<VehicleActivityStructure> activities,
       TransitDataService transitDataService) {
 
+    if (activities == null)
+      return;
     Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
     for (VehicleActivityStructure activity : activities) {
       if (activity.getMonitoredVehicleJourney() != null) {
@@ -83,8 +75,13 @@ public class ServiceAlertsHelper {
 
   public void addSituationExchangeToSiri(ServiceDelivery serviceDelivery,
       Map<String, ServiceAlertBean> currentServiceAlerts) {
+    addSituationExchangeToSiri(serviceDelivery, currentServiceAlerts.values());
+  }
+
+  public void addSituationExchangeToSiri(ServiceDelivery serviceDelivery,
+      Collection<ServiceAlertBean> currentServiceAlerts) {
     Situations situations = new Situations();
-    for (ServiceAlertBean serviceAlert : currentServiceAlerts.values()) {
+    for (ServiceAlertBean serviceAlert : currentServiceAlerts) {
       situations.getPtSituationElement().add(
           getServiceAlertBeanAsPtSituationElementStructure(serviceAlert));
     }
@@ -97,9 +94,31 @@ public class ServiceAlertsHelper {
     }
   }
 
+  
+  public void addClosedSituationExchangesToSiri(
+      ServiceDelivery serviceDelivery, Collection<String> deletedIds) {
+    Map<String, PtSituationElementStructure> ptSituationElements = new HashMap<String, PtSituationElementStructure>();
+
+    for (String id: deletedIds) {
+      PtSituationElementStructure ptSit = new PtSituationElementStructure();
+      EntryQualifierStructure value = new EntryQualifierStructure();
+      value.setValue(id);
+      ptSit.setSituationNumber(value);
+      ptSit.setProgress(WorkflowStatusEnumeration.CLOSED);
+      ptSituationElements.put(id, ptSit);
+    }
+    
+    addPtSituationElementsToServiceDelivery(serviceDelivery,
+        ptSituationElements);
+
+  }
+
+
   private void addSituationElement(TransitDataService transitDataService,
       Map<String, PtSituationElementStructure> ptSituationElements,
       List<SituationRefStructure> situationRefs) {
+    if (situationRefs == null)
+      return;
     for (SituationRefStructure situationRef : situationRefs) {
       String situationId = situationRef.getSituationSimpleRef().getValue();
       ServiceAlertBean serviceAlert = transitDataService.getServiceAlertForId(situationId);
@@ -108,9 +127,12 @@ public class ServiceAlertsHelper {
     }
   }
 
+  
   private void addPtSituationElementsToServiceDelivery(
       ServiceDelivery serviceDelivery,
       Map<String, PtSituationElementStructure> ptSituationElements) {
+    if (serviceDelivery == null || ptSituationElements == null)
+      return;
     SituationExchangeDeliveryStructure situationExchangeDelivery = new SituationExchangeDeliveryStructure();
     Situations situations = new Situations();
     situationExchangeDelivery.setSituations(situations);
@@ -125,6 +147,7 @@ public class ServiceAlertsHelper {
           situationExchangeDelivery);
   }
 
+  
   public PtSituationElementStructure getServiceAlertBeanAsPtSituationElementStructure(
       ServiceAlertBean serviceAlert) {
     PtSituationElementStructure ptSit = new PtSituationElementStructure();
@@ -141,19 +164,21 @@ public class ServiceAlertsHelper {
     return ptSit;
   }
 
+  
   private void handleDescriptions(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert == null)
+      return;
     for (NaturalLanguageStringBean summary : serviceAlert.getSummaries()) {
       ptSituation.setSummary(createDefaultedTextStructure(summary));
     }
-
     for (NaturalLanguageStringBean description : serviceAlert.getDescriptions()) {
       ptSituation.setDescription(createDefaultedTextStructure(description));
     }
-
   }
 
+  
   private DefaultedTextStructure createDefaultedTextStructure(
       NaturalLanguageStringBean summary) {
     DefaultedTextStructure d = new DefaultedTextStructure();
@@ -162,9 +187,12 @@ public class ServiceAlertsHelper {
     return d;
   }
 
+  
   private void handleOtherFields(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert == null || serviceAlert.getPublicationWindows() == null)
+      return;
     // TODO Not handling severity yet.
     ptSituation.setSeverity(SeverityEnumeration.UNDEFINED);
 
@@ -176,7 +204,6 @@ public class ServiceAlertsHelper {
           0).getTo()));
       ptSituation.setPublicationWindow(timestampRangeStructure);
     }
-
   }
 
   public Date serviceAlertTimeToDate(long time) {
@@ -194,6 +221,9 @@ public class ServiceAlertsHelper {
   private void handleAffects(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert.getAllAffects() == null)
+      return;
+    
     AffectsScopeStructure affectsStructure = new AffectsScopeStructure();
     for (SituationAffectsBean affects : serviceAlert.getAllAffects()) {
       String agencyId = affects.getAgencyId();
@@ -228,8 +258,10 @@ public class ServiceAlertsHelper {
   private void handleConsequences(ServiceAlertBean serviceAlert,
       PtSituationElementStructure ptSituation) {
 
+    if (serviceAlert == null)
+      return;
     List<SituationConsequenceBean> consequences = serviceAlert.getConsequences();
-    if (CollectionUtils.isEmpty(consequences))
+    if (consequences == null || CollectionUtils.isEmpty(consequences))
       return;
 
     PtConsequencesStructure ptConsequences = new PtConsequencesStructure();

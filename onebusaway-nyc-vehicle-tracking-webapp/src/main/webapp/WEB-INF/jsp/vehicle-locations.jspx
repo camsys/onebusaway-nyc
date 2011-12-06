@@ -52,7 +52,6 @@ table td {
             <td>SchedTime</td>
             <td>DSC</td>
             <td>Status</td>
-            <td>Map</td>
         </tr>
     </thead>
     <tbody>

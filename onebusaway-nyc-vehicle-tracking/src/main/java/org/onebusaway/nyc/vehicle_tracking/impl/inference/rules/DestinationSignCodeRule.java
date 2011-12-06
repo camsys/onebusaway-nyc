@@ -64,6 +64,13 @@ public class DestinationSignCodeRule implements SensorModelRule {
         p(phase != EVehiclePhase.IN_PROGRESS));
 
     result.addResultAsAnd("out-of-service DSC => ! IN_PROGRESS", p1);
+    
+    /**
+     * If it is out of service then the following route-based
+     * considerations can't be applied.
+     */
+    if (obs.isOutOfService())
+      return result;
 
     BlockState bs = state.getBlockState();
     if (bs != null) {
@@ -93,8 +100,10 @@ public class DestinationSignCodeRule implements SensorModelRule {
         if (routeMatch)
           result.addResultAsAnd("in-service route-matching DSC", 0.9);
         else
-          result.addResultAsAnd("in-service non-route-matching DSC", 0.2);
+          result.addResultAsAnd("in-service non-route-matching DSC", 0.01);
       }
+    } else {
+      result.addResultAsAnd("in-service no DSC predicted", 0.01);
     }
 
     return result;

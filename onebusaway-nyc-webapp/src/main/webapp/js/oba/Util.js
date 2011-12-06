@@ -62,7 +62,7 @@ OBA.Util = (function() {
 			if(secondsAgo < 60) {
 				return secondsAgo + " second" + ((secondsAgo === 1) ? "" : "s") + " ago";
 			} else {
-				minutesAgo = Math.floor(secondsAgo / 60);
+				var minutesAgo = Math.floor(secondsAgo / 60);
 				secondsAgo = secondsAgo - (minutesAgo * 60);
 				
 				var s = minutesAgo + " minute" + ((minutesAgo === 1) ? "" : "s");
@@ -73,19 +73,20 @@ OBA.Util = (function() {
 				return s;
 			}
 		},
-		// quick fix to correct GMT timestamps to be 2011-11-29T13:37:07-05:00
-		// Assumes receipt of 2011-11-29T13:37:07.342-0500 
-		cleanUpGMT: function(prevTimeString) {
-			var timeString = prevTimeString.replace(/\.[0-9]+/i, "");		
-			var semicolonIndex = timeString.lastIndexOf('-');
-			if (semicolonIndex < 9) {
-				semicolonIndex = timeString.lastIndexOf('+');
+		// For IE
+		getPageHeightAndWidth: function() {
+			var w = 0, h = 0;
+			if( typeof(window.innerWidth) == "number") {
+				//Non-IE
+				w = window.innerWidth;
+				h = window.innerHeight;
+			} else if( document.documentElement 
+					&& ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+				//IE 6+ in 'standards compliant mode'
+				w = document.documentElement.clientWidth;
+				h = document.documentElement.clientHeight;
 			}
-			if (semicolonIndex > 9) {
-				timeString = timeString.substring(0, semicolonIndex+3) + ':' 
-					+ timeString.substr(semicolonIndex+3);
-			}
-			return timeString;
+			return [h,w];
 		}
 	};
 })();
