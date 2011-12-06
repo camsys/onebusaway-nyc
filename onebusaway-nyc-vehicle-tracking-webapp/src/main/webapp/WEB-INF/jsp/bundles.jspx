@@ -56,7 +56,7 @@ table.data td {
 				<form action="bundles!change.do" method="POST">
 					<select size="1" name="bundleId">
 	        			<c:forEach var="vp" items="${bms.allKnownBundles}">
-							<option value="${vp.id}"><c:out value="${vp.name}" />: <c:out value="${vp.name}" /></option>
+							<option value="${vp.id}"><c:out value="${vp.id}" />: <c:out value="${vp.name}" /></option>
 						</c:forEach>		
 					</select>
 					<input type="submit" value="Change Bundle"/>
