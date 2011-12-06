@@ -97,6 +97,7 @@ public class ServiceAlertSubscription implements Serializable {
 
   public void send(Collection<ServiceAlertBean> collection,
       Collection<String> deletedIds) throws Exception {
+    SiriXmlSerializer siriXmlSerializer = new SiriXmlSerializer();
     ServiceAlertsHelper h = new ServiceAlertsHelper();
     Siri s = new Siri();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
@@ -105,7 +106,7 @@ public class ServiceAlertSubscription implements Serializable {
     h.addClosedSituationExchangesToSiri(serviceDelivery, deletedIds);
     
     s.setServiceDelivery(serviceDelivery);
-    String xml = SiriXmlSerializer.getXml(s);
+    String xml = siriXmlSerializer.getXml(s);
     
     getWebResourceWrapper().post(xml, getAddress());
   }

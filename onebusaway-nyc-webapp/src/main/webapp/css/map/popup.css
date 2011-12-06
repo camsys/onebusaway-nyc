@@ -7,7 +7,7 @@
 
 .popup .header {
 	padding-left: 35px;
-	padding-top: 1px;
+	padding-top: 5px;
 }
 
 .popup .header.stop {
@@ -31,6 +31,7 @@
 .popup .header .type {
 	height: 16px;
 	font-weight: bold;	
+	margin-top: 3px;
 }
 
 .popup .header .updated {
@@ -47,7 +48,8 @@
 }
 
 .popup .service {
-	padding-top: 7px;
+	padding-top: 4px;
+	padding-bottom: 4px;
 	color: #666666;
 }
 
@@ -64,12 +66,13 @@
 	background-color: #efefef;
 	border: 1px solid #bebebe;
 	padding: 3px;
-	margin-top: 7px;
+	margin-top: 2px;  
 }
 
 .popup ul li.route {
 	color: #000099;
 	font-weight: bold;
+	margin-bottom: 3px;
 }
 
 .popup ul li.arrival {

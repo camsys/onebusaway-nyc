@@ -16,8 +16,6 @@ package org.onebusaway.nyc.webapp.actions.api.siri;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
-import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
@@ -154,9 +152,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   public String getStopMonitoring() {
     try {
       if(_type.equals("xml"))
-        return SiriXmlSerializer.getXml(_response);
+        return _realtimeService.getSiriXmlSerializer().getXml(_response);
       else
-        return SiriJsonSerializer.getJson(_response, _request.getParameter("callback"));
+        return _realtimeService.getSiriJsonSerializer().getJson(_response, _request.getParameter("callback"));
     } catch(Exception e) {
       return e.getMessage();
     }
