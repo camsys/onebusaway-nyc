@@ -6,6 +6,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Index;
 
 import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.DateTimeZone;
 
 import tcip_final_3_0_5_1.CcLocationReport;
 import tcip_final_3_0_5_1.SPDataQuality;
@@ -102,7 +104,7 @@ public class CcLocationReportRecord implements Serializable {
   public CcLocationReportRecord() {
   }
 
-  public CcLocationReportRecord(CcLocationReport message, String contents) {
+    public CcLocationReportRecord(CcLocationReport message, String contents, String zoneOffset) {
     super();
     if (message == null) return; // deserialization failure, abort
     setRequestId((int) message.getRequestId());
@@ -128,7 +130,7 @@ public class CcLocationReportRecord implements Serializable {
     setRouteIdDesignator(message.getRouteID().getRouteDesignator());
     setRunIdDesignator(message.getRunID().getDesignator());
     setSpeed(convertSpeed(message.getSpeed()));
-    setTimeReported(convertTime(message.getTimeReported()));
+    setTimeReported(convertTime(message.getTimeReported(), zoneOffset));
     setTimeReceived(new Date());
     setVehicleAgencyDesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());
@@ -152,18 +154,22 @@ public class CcLocationReportRecord implements Serializable {
 
   // Timestamp of the on-board device when this message is created, in standard XML timestamp format
   // "time-reported": "2011-06-22T10:58:10.0-00:00"
-  private Date convertTime(String timeString) {
+    private Date convertTime(String timeString, String zoneOffset) {
       if (timeString == null) {
 	  return null;
       }
       // some times the date doesn't include UTC
-      // 2011-08-06T10:40:38.825
+      // 2011-08-06T10:40:38.825, we have to assume these are in 
+      // local, i.e. EST time and convert appropriately
+      DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
+      formatter.withZone(DateTimeZone.UTC);
+      
       if (timeString.length() > 20 
-	  && timeString.length() < 24) {
-	  // append UTC
-	  timeString = timeString + "-00:00";
+      	  && timeString.length() < 24) {
+      	  // append correct offset
+      	  timeString = timeString + zoneOffset;
       }
-    return ISODateTimeFormat.dateTime().parseDateTime(timeString).toDate();
+      return formatter.parseDateTime(timeString).toDate();
   }
 
   // Instantaneous speed.  Per SAE J1587 speed is in half mph increments with an offset of -15mph.

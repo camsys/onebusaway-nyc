@@ -3,6 +3,7 @@ package org.onebusaway.nyc.report_archive.queue;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 import org.onebusaway.nyc.vehicle_tracking.impl.queue.InputQueueListenerTask;
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   @Autowired
   private CcLocationReportDao _dao;
 
+  private String _zoneOffset;
+
   @Override
   // this method can't throw exceptions or it will stop the queue
   // listening
@@ -35,7 +38,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 	  return false;
       }
 
-      CcLocationReportRecord record = new CcLocationReportRecord(message, contents);
+      CcLocationReportRecord record = new CcLocationReportRecord(message, contents, _zoneOffset);
       if (record != null) {
         _dao.saveOrUpdateReport(record);
       }
@@ -55,6 +58,8 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   @PostConstruct
   public void setup() {
     super.setup();
+    _zoneOffset = 
+	_configurationService.getConfigurationValueAsString("tds.zoneOffset", "-04:00");
   }
   
   @PreDestroy 

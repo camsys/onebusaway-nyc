@@ -94,7 +94,7 @@ public class CcLocationReportDaoImplTest {
   @Test
   public void testConstructorNull() {
       // if deserialization fails, we can receive null object
-      CcLocationReportRecord r = new CcLocationReportRecord(null, "contents");
+      CcLocationReportRecord r = new CcLocationReportRecord(null, "contents", "zoneOffset");
       // no exception thrown
   }
 
@@ -132,7 +132,7 @@ public class CcLocationReportDaoImplTest {
       m.getLocalCcLocationReport().getNMEA().getSentence().add("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
       m.getLocalCcLocationReport().getNMEA().getSentence().add("$GPGGA,105850.000,4038.44565,N,07401.09404,W,1,09,01.7,+00042.0,M,,M,,*49");
       String contents = "TBD";
-      CcLocationReportRecord r = new CcLocationReportRecord(m, contents);
+      CcLocationReportRecord r = new CcLocationReportRecord(m, contents, "-04:00");
       assertEquals((int)r.getRequestId(), (int)m.getRequestId());
       // todo test others
       assertEquals(m.getLocalCcLocationReport().getNMEA().getSentence().get(0), r.getNmeaSentenceGPGGA());
