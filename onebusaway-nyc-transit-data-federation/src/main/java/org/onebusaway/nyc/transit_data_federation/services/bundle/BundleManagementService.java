@@ -12,5 +12,7 @@ public interface BundleManagementService {
 
   public List<BundleItem> getAllKnownBundles();
 
+  public boolean bundleWithIdExists(String bundleId);
+
 }
 
