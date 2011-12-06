@@ -211,7 +211,7 @@ OBA.Sidebar = function () {
 
 	// show many (too many to show on map) routes to user
 	function showRoutePickerList(routeResults) {
-		var resultsList = jQuery("#results ul");
+		var resultsList = $("<ul></ul>").appendTo(results);
 
 		jQuery.each(routeResults, function(_, route) {
 			var link = jQuery("<a href='#'></a>")
@@ -256,8 +256,8 @@ OBA.Sidebar = function () {
 		results.hide();
 		loading.show();
 
-		var resultsList = jQuery("#results ul");
-		var legendList = jQuery("#legend ul");
+		var resultsList = $("<ul></ul>").appendTo(results);
+		var legendList = $("<ul></ul>").appendTo(legend);
 
 		legendList.empty();
 		resultsList.empty();
@@ -329,7 +329,6 @@ OBA.Sidebar = function () {
 					doSearch(hash);
 					}
 				});
-
 		}
 	};
 };
