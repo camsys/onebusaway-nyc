@@ -23,6 +23,22 @@
 
 -->
 <urlrewrite>
+
+	<!--  
+		Redirect from URLs encoded in QR codes to the mobile page 
+		This maps from an url like HTTP://BT.MTA.INFO/S/879456
+		to an url like <host>/m/?q=879456
+	-->
+	<rule>
+		<note>
+		This rule added by Scott C to redirect the URLS that are coded into QR codes
+		to the mobile page for the stop id in the url.
+		
+		</note>
+		<from>^/S/([0-9]+)$</from>
+		<to last="true">/m/index.action?q=$1</to>
+	</rule>
+
 	<!--
 		Mobile browser redirection.
 	-->
