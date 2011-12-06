@@ -15,10 +15,18 @@ import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class SiriXmlSerializer {
-  
-  public static String getXml(Siri siri) throws Exception {    
-    JAXBContext context = JAXBContext.newInstance(uk.org.siri.siri.Siri.class, SiriExtensionWrapper.class, SiriDistanceExtension.class);
 
+  private JAXBContext context = null;
+  
+  public SiriXmlSerializer() {
+    try {
+      context = JAXBContext.newInstance(uk.org.siri.siri.Siri.class, SiriExtensionWrapper.class, SiriDistanceExtension.class);
+    } catch(Exception e) {
+      // discard
+    }
+  }
+  
+  public String getXml(Siri siri) throws Exception {    
     Marshaller marshaller = context.createMarshaller();
     marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
     marshaller.setEventHandler(
@@ -47,10 +55,10 @@ public class SiriXmlSerializer {
     return outputAsString;
   }
   
-  public static Siri fromXml(String xml) throws JAXBException {
-    JAXBContext context = JAXBContext.newInstance(uk.org.siri.siri.Siri.class, SiriExtensionWrapper.class, SiriDistanceExtension.class);
+  public Siri fromXml(String xml) throws JAXBException {
     Unmarshaller u = context.createUnmarshaller();
     Siri siri = (Siri) u.unmarshal(new StringReader(xml));
+    
     return siri;
   }
 

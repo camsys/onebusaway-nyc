@@ -15,6 +15,8 @@ import uk.org.siri.siri.Siri;
 
 public class NycSiriServiceClient extends NycSiriService {
 
+  private SiriXmlSerializer _siriXmlSerializer = new SiriXmlSerializer();
+  
   @Override
   void setupForMode() throws Exception, JAXBException {
       boolean setupDone = false;
@@ -22,7 +24,7 @@ public class NycSiriServiceClient extends NycSiriService {
         try {
           _log.info("Setting up for client mode.");
           String result = sendSubscriptionAndServiceRequest();
-          Siri siri = SiriXmlSerializer.fromXml(result);
+          Siri siri = _siriXmlSerializer.fromXml(result);
           SituationExchangeResults handleResult = new SituationExchangeResults();
           handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
           _log.info(handleResult.toString());

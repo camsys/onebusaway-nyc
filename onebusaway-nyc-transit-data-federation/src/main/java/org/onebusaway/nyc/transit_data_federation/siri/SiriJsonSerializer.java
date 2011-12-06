@@ -113,11 +113,11 @@ public class SiriJsonSerializer {
     }
   }
 
-  public static String getJson(Siri siri) throws Exception {    
+  public String getJson(Siri siri) throws Exception {    
     return getJson(siri, null);
   }
   
-  public static String getJson(Siri siri, String callback) throws Exception {    
+  public String getJson(Siri siri, String callback) throws Exception {    
     ObjectMapper mapper = new ObjectMapper();    
     mapper.setSerializationInclusion(Inclusion.NON_NULL);
     mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);

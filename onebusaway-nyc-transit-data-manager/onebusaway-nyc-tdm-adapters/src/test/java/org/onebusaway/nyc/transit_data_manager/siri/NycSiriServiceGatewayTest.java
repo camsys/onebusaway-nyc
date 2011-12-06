@@ -56,8 +56,9 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
 
   @Test
   public void testCreateRequest() throws Exception {
+    SiriXmlSerializer siriXmlSerializer = new SiriXmlSerializer();
     Siri request = createSubsAndSxRequest();
-    String xml = SiriXmlSerializer.getXml(request);
+    String xml = siriXmlSerializer.getXml(request);
     // Lame test
     assertTrue(xml.contains("<SubscriptionRequest>"));
   }
