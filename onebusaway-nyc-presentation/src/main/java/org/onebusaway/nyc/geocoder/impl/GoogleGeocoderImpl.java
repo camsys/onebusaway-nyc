@@ -23,6 +23,8 @@ import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 
 import org.apache.commons.digester.Digester;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -30,9 +32,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
+
+  private static Logger _log = LoggerFactory.getLogger(GoogleGeocoderImpl.class);
 
   private static final String BASE_URL = "http://maps.google.com/maps/api/geocode/xml";
   
@@ -89,6 +97,8 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     Digester digester = createDigester();
     digester.push(results);
 
+    _log.info("Requesting " + url.toString());
+    
     InputStream inputStream = null;
     try {
       inputStream = url.openStream();
@@ -101,11 +111,33 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
       }
     }
     
+    _log.info("Got " + results.size() + " geocoder results.");
+
     results = filterResults(results);
+
+    _log.info("Have " + results.size() + " geocoder results AFTER filtering.");
+
+    results = deDuplicateResults(results);
+
+    _log.info("Have " + results.size() + " geocoder results AFTER deduplicating.");
     
     return results;
   }
 
+  // google's returning two "Staten Island, NY, USA" results for the search "Staten Island". filter them!
+  private List<NycGeocoderResult> deDuplicateResults(List<NycGeocoderResult> input) {
+    if(input == null || (input != null && input.size() == 1)) {
+      return input;
+    }
+    
+    Map<String, NycGeocoderResult> output = new HashMap<String, NycGeocoderResult>();
+    for(NycGeocoderResult result : input) {
+      output.put(result.getAddress(), result);
+    }
+
+    return new ArrayList<NycGeocoderResult>(output.values());
+  }
+  
   private List<NycGeocoderResult> filterResults(List<NycGeocoderResult> input) {
     if(_usStateFilter == null)
       return input;
