@@ -148,6 +148,7 @@ public class VehicleLocationSimulationController {
     return new ModelAndView("redirect:/vehicle-location-simulation.do");
   }
   
+  // for integration testing
   @RequestMapping(value = "/vehicle-location-simulation!set-seeds.do", method = RequestMethod.GET)
   public ModelAndView setSeeds(HttpSession session,
       @RequestParam(value = "cdfSeed", required = false, defaultValue = "0") long cdfSeed,
@@ -160,7 +161,7 @@ public class VehicleLocationSimulationController {
       _vehicleLocationInferenceService.setPhaseSeed(phaseSeed);
     }
 
-    return new ModelAndView("change-bundle.jspx");
+    return new ModelAndView("vehicle-location-simulation-set-seeds.jspx");
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!upload-trace.do", method = RequestMethod.POST)
