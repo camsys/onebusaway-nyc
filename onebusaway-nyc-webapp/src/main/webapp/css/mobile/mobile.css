@@ -186,6 +186,12 @@ span.noUpcomingService {
     color: red;
     text-decoration: none;
 }
+#nearby {
+	padding-top: 15px;
+}
+#nearby input {
+	width: 300px;
+}
 #footer {
     background-color: #ffffff;
     color: #0358B6;
