@@ -320,7 +320,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       } else {
         runEntriesToTry.add(opAssignedRunTrip);
       }
-    } else {
+    } else if (!StringUtils.isEmpty(operatorId)){
       _log.info("no assigned run found for operator=" + operatorId);
     }
 
