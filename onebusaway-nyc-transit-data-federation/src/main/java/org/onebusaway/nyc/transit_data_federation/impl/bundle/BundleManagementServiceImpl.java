@@ -125,27 +125,23 @@ public class BundleManagementServiceImpl implements BundleManagementService {
    * This method calculates which of the bundles available to us are valid for today,
    * and updates the internal list appropriately. It does not switch any bundles.
    */
-	public synchronized void refreshApplicableBundles() {
-	  _applicableBundles.clear();
-	  
-	  try {
-	    for(BundleItem bundle : _allBundles) {
-	      if(bundle.isApplicableToDate(getServiceDate())) {
-	        _log.info("Bundle " + bundle.getId() + " is active for today; adding to list of active bundles.");
+  public synchronized void refreshApplicableBundles() {
+    _applicableBundles.clear();
 
-	        _applicableBundles.put(bundle.getId(), bundle);
-	      }
-	    }
-	  } catch(Exception e) {
-      _log.info("Error updating bundle list: " + e.getMessage());
-	  }
-	}
+    for(BundleItem bundle : _allBundles) {
+      if(bundle.isApplicableToDate(getServiceDate())) {
+        _log.info("Bundle " + bundle.getId() + " is active for today; adding to list of active bundles.");
+
+        _applicableBundles.put(bundle.getId(), bundle);
+      }
+    }
+  }
 	
 	/**
 	 * Recalculate which of the bundles that are available and active for today we should be 
 	 * using. Switch to that bundle if not already active. 
 	 */
-	protected void reevaluateBundleAssignment() throws Exception {
+	public void reevaluateBundleAssignment() throws Exception {
 	  if(_applicableBundles.size() == 0) {
 	    _log.error("No valid and active bundles found!");
 	    return;
@@ -187,19 +183,14 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   /******
    * Service methods
    ******/
-	@Override
-	public synchronized BundleItem getBundleMetadataForBundleWithId(String bundleId) {
-	  return _applicableBundles.get(bundleId);
-	}
-	
+  @Override
+  public List<BundleItem> getAllKnownBundles() {
+    return _allBundles;
+  }
+
   @Override
   public synchronized BundleItem getCurrentBundleMetadata() {
     return _applicableBundles.get(_currentBundleId);
-  }
-  
-  @Override
-  public boolean bundleWithIdExists(String bundleId) {
-    return _applicableBundles.containsKey(bundleId);
   }
 
 	@Override
@@ -261,7 +252,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		  bean.setCacheNamePrefix(bundleId);
 		}
 
-		// clear caches
+		// clear in-memory caches
 		List<CacheManager> cacheManagers = CacheManager.ALL_CACHE_MANAGERS;
 		for(CacheManager cacheManager : cacheManagers) {
 		  for(String cacheName : cacheManager.getCacheNames()) {
@@ -327,7 +318,6 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  public void run() {     
 	    try {       
 	      discoverBundles();
-	      refreshApplicableBundles();
 	    } catch(Exception e) {
 	      _log.error("Error updating bundle list: " + e.getMessage());
 	      e.printStackTrace();
@@ -347,7 +337,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       calendar.set(Calendar.SECOND, 0);
       
       int minute = calendar.get(Calendar.MINUTE);
-      calendar.set(Calendar.MINUTE, minute + 30);
+      calendar.set(Calendar.MINUTE, minute + 15);
       
       return calendar.getTime();
     }  

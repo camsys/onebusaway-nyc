@@ -17,13 +17,23 @@ public class NycSiriServiceClient extends NycSiriService {
 
   @Override
   void setupForMode() throws Exception, JAXBException {
-      _log.info("Setting up for client mode.");
-      String result = sendSubscriptionAndServiceRequest();
-      Siri siri = SiriXmlSerializer.fromXml(result);
-      SituationExchangeResults handleResult = new SituationExchangeResults();
-      handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
-      // TODO Probably doesn't do the right thing.
-      _log.info(handleResult.toString());
+      boolean setupDone = false;
+      do {
+        try {
+          _log.info("Setting up for client mode.");
+          String result = sendSubscriptionAndServiceRequest();
+          Siri siri = SiriXmlSerializer.fromXml(result);
+          SituationExchangeResults handleResult = new SituationExchangeResults();
+          handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
+          _log.info(handleResult.toString());
+          setupDone = true;
+        } catch (Exception e) {
+          _log.error("Setup for client failed, exception is: " + e.getMessage());
+          _log.error("Retrying in 60 seconds.");
+          Thread.sleep(60*1000);
+        }
+      } while (!setupDone);
+      _log.info("Setup for client mode complete.");
   }
   
 
