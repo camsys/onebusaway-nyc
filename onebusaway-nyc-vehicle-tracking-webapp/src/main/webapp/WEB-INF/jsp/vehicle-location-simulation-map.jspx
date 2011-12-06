@@ -106,7 +106,7 @@ OBA.Debug = function() {
 						}
 					}
 					
-		            var size = new OpenLayers.Size(21,25);
+		            var size = new OpenLayers.Size(11,15);
 		            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
 		            var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png',size,offset);
 		            
@@ -119,21 +119,41 @@ OBA.Debug = function() {
 		            
 		            marker.events.register("mousedown", marker, function(event) {
 			            feature = new OpenLayers.Feature(markers, point);	
-						feature.data.popupSize = new OpenLayers.Size(500, 100);
+						feature.data.popupSize = new OpenLayers.Size(600, 500);
 			            popup = feature.createPopup(true);
 		                
+			            var markerText = {
+			            	inferredTripId: "NA",
+			            	timestampAsDate: "NA",
+			            	other: "",
+			            	toString: function () {
+			            		return "inferredTripId:" + this.inferredTripId + "<br/>"
+			            		 + "timestampAsDate:" + this.timestampAsDate + "<br/>"
+			            		 + this.other;
+			            	}
+			            }
 		                var html = "";
 						jQuery.each(record, function(property, value) {
-							if(property === "inferredTripId") {
-								html += property + ": &lt;a href='#'&gt;" + value + "&lt;/a&gt;&lt;br/&gt;";
-							} else if(property === "timestampAsDate") {
-								formattedTime = new Date(value);
-								html += property + ": " + formattedTime + "<br/>";
-							} else {
-								html += property + ": " + value + "<br/>";
+							if (value !== null) {
+								
+								if(property === "inferredTripId") {
+									markerText.inferredTripId = "&lt;a href='#'&gt;" + value + "&lt;/a&gt;";
+// 									html += property + ": &lt;a href='#'&gt;" + value + "&lt;/a&gt;&lt;br/&gt;";
+								} else if(property === "timestampAsDate") {
+									formattedTime = new Date(value);
+									markerText.timestampAsDate = formattedTime;
+// 									html += property + ": " + formattedTime + "<br/>";
+								} else if (property === "vehicleId"){
+									markerText.other += property + ": " + value.agencyId + "_" 
+									 + value.id + "<br/>";
+								} else {
+									markerText.other += property + ": " + value + "<br/>";
+// 									html += property + ": " + value + "<br/>";
+								} 
 							}
 						});
-		                popup.setContentHTML(html);
+// 		                popup.setContentHTML(html);
+		                popup.setContentHTML(markerText.toString());
 		                markers.map.addPopup(popup);
 		                
 		                var tripLink = jQuery(popup.contentDiv).find("a");
@@ -327,7 +347,7 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<input type="submit" value="Refresh" id="filter_apply"/>
 </td>
 <td>
-	<div id="map" style="width: 800px; height: 500px;"></div>
+	<div id="map" style="width: 1000px; height: 700px;"></div>
 </td>
 </tr>
 </table>

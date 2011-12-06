@@ -289,9 +289,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     String opAssignedRunId = null;
     String operatorId = observation.getRecord().getOperatorId();
 
-    if (StringUtils.isEmpty(operatorId)) {
-      _log.info("no operator id reported");
-    } else {
+    if (!StringUtils.isEmpty(operatorId) 
+        && !StringUtils.containsOnly(operatorId, "0")) {
       try {
         OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
           new ServiceDate(obsDate), operatorId);
@@ -320,18 +319,16 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       } else {
         runEntriesToTry.add(opAssignedRunTrip);
       }
-    } else {
+    } else if (!StringUtils.isEmpty(opAssignedRunId)){
       _log.info("no assigned run found for operator=" + operatorId);
     }
 
     List<RunTripEntry> reportedRtes = new ArrayList<RunTripEntry>();
     boolean assignedReportedRunMismatch = false;
 
-    if (StringUtils.isNotEmpty(reportedRunId)) {
-
-      // TODO should we really match 000-000?
-      reportedRunId = observation.getRecord().getRunId();
-
+    if (StringUtils.isNotEmpty(reportedRunId)
+        && !StringUtils.containsOnly(reportedRunId, new char[]{'0', '-'})) {
+      
       try {
         TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService
             .getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId,
@@ -412,7 +409,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         }
       }
     } else {
-      _log.info("no operator id or run reported");
+      _log.info("no operator id or run reported for vehicle=" 
+          + observation.getRecord().getVehicleId());
     }
     
     /*

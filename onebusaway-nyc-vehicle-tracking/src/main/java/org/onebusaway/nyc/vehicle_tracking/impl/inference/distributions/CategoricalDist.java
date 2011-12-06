@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
+package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +22,7 @@ import java.util.Random;
 import java.util.TreeMap;
 
 import org.apache.commons.math.util.MathUtils;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 
 import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
@@ -35,7 +36,7 @@ public class CategoricalDist<T> {
   final static private Random rng = new Random();
 
   private List<Double> _objIdx = new ArrayList<Double>();
-  TreeMap<T, Double> _probsToEntries = new TreeMap<T, Double>(Ordering.usingToString());
+  TreeMap<T, Double> _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
   private List<T> _entries;
 
   DiscreteDistribution emd;
@@ -45,23 +46,23 @@ public class CategoricalDist<T> {
   }
 
   public List<T> getSupport() {
-    return new ArrayList<T>(_probsToEntries.keySet());
+    return new ArrayList<T>(_entriesToProbs.keySet());
   }
 
   public void put(double prob, T object) {
 
     _cumulativeProb += prob;
-    Double currentProb = _probsToEntries.get(object);
+    Double currentProb = _entriesToProbs.get(object);
     
     if (currentProb == null) {
-      _probsToEntries.put(object, prob);
+      _entriesToProbs.put(object, prob);
       _objIdx.add((double)_objIdx.size());
       _entries = getSupport(); 
     } else {
       /*
        * allow duplicate entries' probability to compound
        */
-      _probsToEntries.put(object, prob + currentProb);
+      _entriesToProbs.put(object, prob + currentProb);
     }
     
     /*
@@ -73,18 +74,18 @@ public class CategoricalDist<T> {
 
   public T sample() {
 
-    if (_probsToEntries.isEmpty())
+    if (_entriesToProbs.isEmpty())
       throw new IllegalStateException("No entries in the CDF");
 
     if (_cumulativeProb == 0.0)
       throw new IllegalStateException("No cumulative probability in CDF");
 
-    if (_probsToEntries.size() == 1) {
-      return _probsToEntries.firstKey();
+    if (_entriesToProbs.size() == 1) {
+      return _entriesToProbs.firstKey();
     }
     
     if (emd == null) {
-      double[] probs = MathUtils.normalizeArray(Doubles.toArray(_probsToEntries.values()), 1.0);
+      double[] probs = MathUtils.normalizeArray(Doubles.toArray(_entriesToProbs.values()), 1.0);
       emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs, _objIdx.size());
     }
     
@@ -96,7 +97,7 @@ public class CategoricalDist<T> {
 
   public List<T> sample(int samples) {
 
-    if (_probsToEntries.isEmpty())
+    if (_entriesToProbs.isEmpty())
       throw new IllegalStateException("No entries in the CDF map");
 
     if (_cumulativeProb == 0.0)
@@ -115,7 +116,7 @@ public class CategoricalDist<T> {
   }
 
   public boolean isEmpty() {
-    return _probsToEntries.isEmpty();
+    return _entriesToProbs.isEmpty();
   }
 
   public boolean hasProbability() {
@@ -123,15 +124,19 @@ public class CategoricalDist<T> {
   }
 
   public boolean canSample() {
-    return !_probsToEntries.isEmpty() && _cumulativeProb > 0.0;
+    return !_entriesToProbs.isEmpty() && _cumulativeProb > 0.0;
   }
 
   public int size() {
-    return _probsToEntries.size();
+    return _entriesToProbs.size();
   }
 
   @Override
   public String toString() {
-    return _probsToEntries.toString();
+    return _entriesToProbs.toString();
+  }
+
+  public double density(T thisState) {
+    return _entriesToProbs.get(thisState);
   }
 }
