@@ -145,6 +145,11 @@ html, body {
     float: left;
     height: 90px;
 }
+#topbar #branding a img,
+#topbar #branding a {
+	border: none;
+	text-decoration: none;
+}
 #topbar #search {
     float: right;
     margin: 4px 20px 0 0;
