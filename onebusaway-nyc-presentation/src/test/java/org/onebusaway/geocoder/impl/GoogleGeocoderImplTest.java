@@ -58,14 +58,17 @@ public class GoogleGeocoderImplTest {
 
     List<GeocoderResult> records = results.getResults();
 
-    assertEquals(1, records.size());
+    // Jeff had '1' here, but the Google geocoder seems to come back with 2 results for Staten Island.
+    // Slightly different lat/long (but they fall within the precision specified), one with city "New York"
+    // the other with city null.
+    assertEquals(2, records.size());
     
     GeocoderResult result = records.get(0);
 
     assertEquals(40.5795317, result.getLatitude(), 0.1);
     assertEquals(-74.1502007, result.getLongitude(), 0.1);
     assertEquals("",result.getAddress());
-    assertEquals("New York", result.getCity());
+    assertTrue(result.getCity() == null || result.getCity().equals("New York"));
     assertEquals("NY", result.getAdministrativeArea());
     assertEquals(null, result.getPostalCode());
     assertEquals("US", result.getCountry());
