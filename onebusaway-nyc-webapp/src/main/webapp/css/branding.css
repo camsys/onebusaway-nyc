@@ -94,7 +94,6 @@
 #bustime #map_header ul li {
 	list-style: none;
 	float: left;
-	font-size: .8em;
     display: block;
     margin: 0;
     z-index: 100;
@@ -107,6 +106,7 @@
     color: #FFFFFF;
     display: block;
     font-weight: bold;
+    font-size: 12px;
     height: 10px;
     padding: 4px 5px 6px 5px;
     text-align: center;
