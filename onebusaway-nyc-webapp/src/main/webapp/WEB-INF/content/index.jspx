@@ -93,8 +93,8 @@
        </div>
 	            
 	   <div id="legend">
-	   	 <h2 id="for_stop"></h2>
-       	 <h2 id="nearby"></h2>
+	   	 <h2 id="for_stop">&amp;nbsp;</h2>
+       	 <h2 id="nearby">&amp;nbsp;</h2>
 	   </div>
 
 	   <div id="no-results">
