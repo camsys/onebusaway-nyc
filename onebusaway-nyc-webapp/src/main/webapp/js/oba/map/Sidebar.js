@@ -108,13 +108,72 @@ OBA.Sidebar = function () {
 		routeMap.showBounds(bounds);
 		results.show();
 	}
+	
+	// separate nearby routes from routes for a stop 
+	// (need to copys routes anyway to get service alerts field)
+	function reorderRoutes(routes, routesFirst) {	
+		
+		var nearbyRoutes = {}, routesForStop = [];	
 
-	// display (few enough) routes on map and in legend
-	function showRoutesOnMap(routeResults) {
-		var legendList = $("<ul></ul>").appendTo(legend);
+		jQuery.each(routes, function(_, route) {
+			nearbyRoutes[route.routeIdWithoutAgency] = route;
+		});
+		
+		jQuery.each(routesFirst, function(_, routeFirst) {
+			routesForStop.push(nearbyRoutes[routeFirst.routeIdWithoutAgency]);
+			delete nearbyRoutes[routeFirst.routeIdWithoutAgency];
+		});
+		
+		return [nearbyRoutes, routesForStop];
+	}
 
-		jQuery.each(routeResults, function(_, routeResult) {	
+	// display routes on map and in legend, order by 1) for stop, then 2) nearby
+	function showRoutesOnMap(routeResults, routesFirst) {
+		
+		var nearbyRoutes = routeResults;
+		
+		if (routesFirst !== undefined && routesFirst.length !== 0) {	
+			// case 0: some routes for stop -> sort & list them 1st
+			if (routeResults.length !== routesFirst.length) {
+				var routelists = reorderRoutes(routeResults, routesFirst);
+				nearbyRoutes = routelists[0];
+				routesFirst = routelists[1];
+			} else {
+			// case 1: routes for stop equals all routes -> list all as 1st
+				routesFirst = routeResults;
+				nearbyRoutes = null;
+			}
+			// Add as "routes for this stop"
+			var for_stop = $("#legend > #for_stop");
+			for_stop.text("Routes for this stop:");
+			var routesAtStopLegend = $("<ul></ul>").appendTo(for_stop);
+			addRoutesToLegend(routesFirst, routesAtStopLegend);
+			for_stop.show();
+		}
+		
+		// case 2: no routes for stop -> Add all as "nearby"
+		if (nearbyRoutes !== null && nearbyRoutes.length !== 0) {
+			var nearby = $("#legend > #nearby");
+			nearby.text("Nearby routes:");
+			var nearbyRoutesLegend = $("<ul></ul>").appendTo(nearby);	
+			addRoutesToLegend(nearbyRoutes, nearbyRoutesLegend);
+			nearby.show();
+		}
+		
+		// pan to extent of first few routes in legend
+		if (routeResults.length > 0) {
+			if (routesFirst !== undefined) {
+				routeMap.panToRoute(routesFirst[0]);
+			} else {
+				routeMap.panToRoute(nearbyRoutes[0]);
+			}
+		}	
+		legend.show();
+	}
+		
+	function addRoutesToLegend(routeResults, legendList) {
 
+		jQuery.each(routeResults, function(_, routeResult) {				
 			var titleBox = jQuery("<p></p>")
 							.addClass("name")
 							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
@@ -127,7 +186,7 @@ OBA.Sidebar = function () {
 
 			var serviceAlertList = jQuery("<ul></ul>")
 							.addClass("alerts");
-			
+						
 			jQuery.each(routeResult.serviceAlerts, function(_, alert) {
 				var alertItem = jQuery("<li></li>")
 									.text(alert.value);
@@ -200,13 +259,6 @@ OBA.Sidebar = function () {
 
 			routeMap.showRoute(routeResult);
 		});
-		
-		// pan to extent of first few routes in legend TODO
-		if (routeResults.length > 0) {
-			routeMap.panToRoute(routeResults[0]);
-		}
-		
-		legend.show();
 	}
 
 	// show many (too many to show on map) routes to user
@@ -248,21 +300,29 @@ OBA.Sidebar = function () {
 		
 		results.show();
 	}
-
-	// process search results
-	function doSearch(q) {
+	
+	function resetSearchPanel() {
 		welcome.hide();
 		legend.hide();
 		results.hide();
-		loading.show();
-
-		var resultsList = $("<ul></ul>").appendTo(results);
-		var legendList = $("<ul></ul>").appendTo(legend);
-
-		legendList.empty();
-		resultsList.empty();
+		
+		var legendList1 = jQuery("#legend > #for_stop");
+		var legendList2 = jQuery("#legend > #nearby");
+		
+		if (legendList1 !== undefined) {
+			legendList1.empty();
+		}
+		if (legendList2 !== undefined) {
+			legendList2.empty();
+		}	
 		routeMap.removeAllRoutes();
 		routeMap.removeDisambiguationMarkers();
+	}
+
+	// process search results
+	function doSearch(q) {
+		resetSearchPanel();
+		loading.show();
 		
 		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", {q: q }, function(json) { 
 			var resultCount = json.searchResults.length;
@@ -294,10 +354,11 @@ OBA.Sidebar = function () {
 						routeMap.showBounds(latLngBounds);
 
 					// intersection or stop ID
-					} else {
-						showRoutesOnMap(result.nearbyRoutes);
+					} else {									
+						var listFirst = result.routesAvailable;	
+						showRoutesOnMap(result.nearbyRoutes, listFirst);
 						routeMap.showLocation(result.latitude, result.longitude);
-
+						
 						if(resultType === "StopResult") {
 							routeMap.showPopupForStopId(result.stopId);
 						}

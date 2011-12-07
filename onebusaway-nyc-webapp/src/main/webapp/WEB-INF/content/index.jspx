@@ -93,7 +93,8 @@
        </div>
 	            
 	   <div id="legend">
-       	 <h2>Nearby routes:</h2>
+	   	 <h2 id="for_stop"></h2>
+       	 <h2 id="nearby"></h2>
 	   </div>
 
 	   <div id="no-results">

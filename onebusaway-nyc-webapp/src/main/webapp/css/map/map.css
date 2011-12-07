@@ -106,39 +106,49 @@
 	text-align: center;
 }
 
-#content #legend ul li.legendItem {
+#content #legend #for_stop {
+	display: none;
+}
+
+#content #legend #nearby {
+	display: none;
+}
+
+#content #legend h2 ul li.legendItem {
 	margin-top: 5px;
 	margin-bottom: 10px;
 	position: relative;
 	width: 280px;
+	color: #000;
 }
 
-#content #legend ul li.legendItem .name {
+#content #legend h2 ul li.legendItem .name {
 	margin-bottom: 5px;
 	font-weight: bold;
 	cursor: pointer;
 }
 
-#content #legend ul li.legendItem .alerts {
+#content #legend h2 ul li.legendItem .alerts {
 	color: #D12020;
 	font-weight: bold;
 }
 
-#content #legend ul li.legendItem .alerts li {
+#content #legend h2 ul li.legendItem .alerts li {
 	padding-bottom: 10px;
 }
 
-#content #legend ul li.legendItem .description {
+#content #legend h2 ul li.legendItem .description {
 	margin-bottom: 5px;
 	font-size: 14px;
+	font-weight: normal;
 }
 
-#content #legend ul li.legendItem .destination {
+#content #legend h2 ul li.legendItem .destination {
 	font-size: 11px;
 	width: 280px;
 }
 
-#content #legend ul li.legendItem .destination p {
+#content #legend h2 ul li.legendItem .destination p {
 	color: #1c75bc;
 	font-weight: bold;
 
@@ -149,7 +159,7 @@
 	cursor: pointer;
 }
 
-#content #legend ul li.legendItem p.destination p span.ui-icon-triangle-1-s {
+#content #legend h2 ul li.legendItem p.destination p span.ui-icon-triangle-1-s {
 	background-image: url("img/arrows.png");
 	background-position: 0px -20px;
 	width: 20px;
@@ -160,7 +170,7 @@
 	left: 0px;
 }
 
-#content #legend ul li.legendItem p.destination p span.ui-icon-triangle-1-e {
+#content #legend h2 ul li.legendItem p.destination p span.ui-icon-triangle-1-e {
 	background-image: url("img/arrows.png");
 	background-position: 0px 0px;
 	width: 20px;
@@ -171,80 +181,88 @@
 	left: 0px;
 }
 
-#content #legend ul li.legendItem p.destination ul.stops {
+#content #legend h2 ul li.legendItem p.destination ul.stops {
 	margin-top: 5px;
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li {
+#content #legend h2 ul li.legendItem p.destination ul.stops li {
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 3px;
 	padding-left: 40px;
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_00A651 {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00A651 {
 	background-image: url('img/stop_on_route_background_green.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_00A651:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00A651:hover {
 	background-image: url('img/stop_on_route_background_green_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_006CB7 {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_006CB7 {
 	background-image: url('img/stop_on_route_background_blue.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_006CB7:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_006CB7:hover {
 	background-image: url('img/stop_on_route_background_blue_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_00AEEF {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00AEEF {
 	background-image: url('img/stop_on_route_background_ltblue.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_00AEEF:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00AEEF:hover {
 	background-image: url('img/stop_on_route_background_ltblue_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_9A258F {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_9A258F {
 	background-image: url('img/stop_on_route_background_purple.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_9A258F:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_9A258F:hover {
 	background-image: url('img/stop_on_route_background_purple_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_FAA61A {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_FAA61A {
 	background-image: url('img/stop_on_route_background_orange.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_FAA61A:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_FAA61A:hover {
 	background-image: url('img/stop_on_route_background_orange_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_ED1C24 {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_ED1C24 {
 	background-image: url('img/stop_on_route_background_red.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_ED1C24:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_ED1C24:hover {
 	background-image: url('img/stop_on_route_background_red_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_none {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_72BF44 {
+	background-image: url('img/stop_on_route_background_ltgreen.png');
+}
+
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_72BF44:hover {
+	background-image: url('img/stop_on_route_background_ltgreen_big.png');
+}
+
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_none {
 	background-image: url('img/stop_on_route_background.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li.r_none:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li.r_none:hover {
 	background-image: url('img/stop_on_route_background_big.png');
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li a {
+#content #legend h2 ul li.legendItem p.destination ul.stops li a {
 	height: 20px;
 	color: #000000;
 	text-decoration: none;
 }
 
-#content #legend ul li.legendItem p.destination ul.stops li a:hover {
+#content #legend h2 ul li.legendItem p.destination ul.stops li a:hover {
 	font-size: 120%;
 	font-weight: bold;
 	padding-left: 1%;
