@@ -84,8 +84,8 @@ table.data td {
  	               <td><c:out value="${vp.name}" /></td>
     	            <td><c:out value="${vp.serviceDateFrom}" /></td>
         	        <td><c:out value="${vp.serviceDateTo}" /></td>
-            	    <td><c:out value="${vp.created}" /></td>
-                	<td><c:out value="${vp.updated}" /></td>
+            	    <td><c:out value="${vp.updated}" /></td>
+                	<td><c:out value="${vp.created}" /></td>
 	            </tr>
     	    </c:forEach>
 	    </tbody>
