@@ -388,8 +388,8 @@ OBA.Sidebar = function () {
 					
 					searchInput.val(hash);
 					doSearch(hash);
-					}
-				});
+				}
+			});
 		}
 	};
 };

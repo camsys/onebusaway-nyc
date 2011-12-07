@@ -299,7 +299,7 @@ public class VehicleLocationInferenceServiceImpl implements
             long differenceInSeconds = (fromDRU.getTime() - time.getMillis()) / 1000;
 
             if(differenceInSeconds > 30 * 60) { // 30m
-              _log.warn("Vehicle " + vehicleId + " has significant time difference between time from DRU and time from record\n" +  
+              _log.debug("Vehicle " + vehicleId + " has significant time difference between time from DRU and time from record\n" +  
                 "Difference in seconds: " + differenceInSeconds + "\n" + 
                 "Difference in hours: " + (differenceInSeconds / 60 / 60) + "\n" + 
                 "Raw timestamp: " + message.getTimeReported() + "\n" + 
