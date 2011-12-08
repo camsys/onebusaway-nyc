@@ -16,14 +16,14 @@
 
 #content #text {
     position: relative;
-	padding-top: 15px;
+	padding-top: 5px;
+	margin-right: 20px;
 	line-height: 120%;
-	overflow: hidden;
 }
 
 #content.sidebar #text {
-	margin-left: 310px;
-	font-size: 14px;
+	margin-left: 320px;
+	font-size: 14px;	
 }
 
 #content.sidebar.right #text {
@@ -32,11 +32,12 @@
 
 #content.sidebar #sidebar {
 	float: left;
-	width: 300px;
 }
 
 #content.sidebar #sidebar .wrapper {
-	padding: 10px;
+	padding: 20px;
+	padding-top: 0px;
+	width: 300px;
 	padding-left: 0px;
 	line-height: 140%;	
 }

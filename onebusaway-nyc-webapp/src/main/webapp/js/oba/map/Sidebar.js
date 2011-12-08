@@ -17,14 +17,19 @@
 var OBA = window.OBA || {};
 
 OBA.Sidebar = function () {
-	var theWindow, headerDiv, contentDiv = null, searchBarDiv, mainbox,
-		routeMap = OBA.RouteMap(document.getElementById("map")),
+	var theWindow = jQuery(window),
+		topBarDiv = jQuery("#topbar"), 
+		mapDiv = jQuery("#map"), 
+		searchBarDiv = jQuery("#searchbar"), 
+		mainbox = jQuery("#mainbox"),
 		welcome = jQuery("#welcome"),
 		legend = jQuery("#legend"),
 		results = jQuery("#results"),
 		noResults = jQuery("#no-results"),
 		loading = jQuery("#loading");
-	
+
+	var routeMap = OBA.RouteMap(document.getElementById("map"));
+
 	function addSearchBehavior() {
 		var searchForm = jQuery("#searchbar form"),
 			searchInput = jQuery("#searchbar form input[type=text]");
@@ -37,24 +42,19 @@ OBA.Sidebar = function () {
 	}
 
 	function addResizeBehavior() {
-		theWindow = jQuery(window);
-		headerDiv = jQuery("#header");
-		contentDiv = jQuery("#content");
-		searchBarDiv = jQuery("#searchbar");
-		mainbox = jQuery("#mainbox");
-		
-		function resize() {		
-			var pageHeightAndWidth = OBA.Util.getPageHeightAndWidth();
-			var h = pageHeightAndWidth[0] - headerDiv.height(),
-				w = pageHeightAndWidth[1];
-			contentDiv.height(h);
+		var resize = function() {		
+			var h = theWindow.height() - topBarDiv.height(),
+				w = theWindow.width();
+
 			searchBarDiv.height(h);
+			mapDiv.height(h);
+						
 			if (w <= 1060) {
 				mainbox.css("width", "960px");
 			} else {
-				mainbox.css("width", "95%");
+				mainbox.css("width", w - 100); // 50px margin on each side
 			}
-		}
+		};
 		resize();
 
 		// call when the window is resized
@@ -63,9 +63,9 @@ OBA.Sidebar = function () {
 
 	// show user list of addresses
 	function disambiguate(locationResults) {		
-		var resultsList = $("<ul></ul>").appendTo(results);
+		var resultsList = jQuery("<ul></ul>").appendTo(results);
+
 		var bounds = null;
-		
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
 			var address = location.formattedAddress;
@@ -129,7 +129,6 @@ OBA.Sidebar = function () {
 
 	// display routes on map and in legend, order by 1) for stop, then 2) nearby
 	function showRoutesOnMap(routeResults, routesFirst) {
-		
 		var nearbyRoutes = routeResults;
 		
 		if (routesFirst !== undefined && routesFirst.length !== 0) {	
@@ -168,11 +167,11 @@ OBA.Sidebar = function () {
 				routeMap.panToRoute(nearbyRoutes[0]);
 			}
 		}	
+		
 		legend.show();
 	}
 		
 	function addRoutesToLegend(routeResults, legendList) {
-
 		jQuery.each(routeResults, function(_, routeResult) {				
 			var titleBox = jQuery("<p></p>")
 							.addClass("name")
@@ -184,6 +183,7 @@ OBA.Sidebar = function () {
 							.addClass("description")
 							.text(routeResult.description);
 
+			// service alerts
 			var serviceAlertList = jQuery("<ul></ul>")
 							.addClass("alerts");
 						
@@ -193,7 +193,8 @@ OBA.Sidebar = function () {
 				
 				serviceAlertList.append(alertItem);
 			});
-			
+
+			// legend item
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
 							.append(titleBox)
@@ -205,6 +206,7 @@ OBA.Sidebar = function () {
 			// on double click of title pan to route extent (unless zoomed in)
 			titleBox.click(function(e) {
 				e.preventDefault();
+				
 				routeMap.panToRoute(routeResult);
 			});
 
@@ -238,12 +240,16 @@ OBA.Sidebar = function () {
 
 						routeMap.showPopupForStopId(stop.stopId);
 					});
+					
 					stopLink.mouseenter(function(e) {
 						e.preventDefault();
+						
 						routeMap.showStopIcon(stop.stopId);
 					});
+					
 					stopLink.mouseout(function(e) {
 						e.preventDefault();
+						
 						routeMap.hideStopIcon(stop.stopId);
 					});
 				});
@@ -263,7 +269,8 @@ OBA.Sidebar = function () {
 
 	// show many (too many to show on map) routes to user
 	function showRoutePickerList(routeResults) {
-		var resultsList = $("<ul></ul>").appendTo(results);
+		var resultsList = jQuery("<ul></ul>")
+							.appendTo(results);
 
 		jQuery.each(routeResults, function(_, route) {
 			var link = jQuery("<a href='#'></a>")
@@ -301,41 +308,34 @@ OBA.Sidebar = function () {
 		results.show();
 	}
 	
-	function resetSearchPanel() {
+	function resetSearchPanelAndMap() {
 		welcome.hide();
 		legend.hide();
 		results.hide();
 		
-		var legendList1 = jQuery("#legend > #for_stop");
-		var legendList2 = jQuery("#legend > #nearby");
-				
-		if (legendList1 !== undefined && legendList1.children().length > 0) {
-			legendList1.empty();
-		}
-		if (legendList2 !== undefined && legendList2.children().length > 0) {
-			legendList2.empty();
-		}	
+		jQuery("#legend #for_stop").children().empty();
+		jQuery("#legend #nearby").children().empty();
+
 		routeMap.removeAllRoutes();
 		routeMap.removeDisambiguationMarkers();
 	}
 
 	// process search results
 	function doSearch(q) {
-		resetSearchPanel();
+		resetSearchPanelAndMap();
+
 		loading.show();
 		
 		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", {q: q }, function(json) { 
+			loading.hide();
+
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0) {
-				legend.hide();
-				results.hide();
 				noResults.show();
-				loading.hide();
 				return;
 			} else {
 				noResults.hide();
 			}
-			loading.hide();
 
 			OBA.Config.analyticsFunction("Search", q + " [" + resultCount + "]");
 			
@@ -385,8 +385,8 @@ OBA.Sidebar = function () {
 			jQuery.history.init(function(hash) {
 				if(hash !== null && hash !== "") {
 					var searchInput = jQuery("#searchbar form input[type=text]");
-					
 					searchInput.val(hash);
+
 					doSearch(hash);
 				}
 			});

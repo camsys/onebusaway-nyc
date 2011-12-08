@@ -17,9 +17,12 @@
 /* Insert agency-specific branding overrides here */
 
 #contentbox {
-	margin-bottom: 10px; 
 	padding:0;
 	height: 100%;   /* For IE */
+}
+
+#map {
+	height: 100%;  /* For IE */
 }
 
 #bustime {
@@ -69,9 +72,10 @@
 
 /* header on map page */
 #bustime #map_header {
-	position: relative;
-	height: 58px;
-	padding-top: 8px;
+	width: 302px;
+	height: 105px;
+	padding-top: 10px;
+	display: block;
 }
 
 #bustime #map_header .title h1 a {
@@ -86,15 +90,14 @@
 #bustime #map_header ul {
 	position: relative;
 	margin-top: 10px;
-    display: inline;
-    float: left;
-    width: 100%;
+	width: 302px;
 }
 
 #bustime #map_header ul li {
 	list-style: none;
 	float: left;
-    display: block;
+    display: inline;
+    height: 14px;
     margin: 0;
     z-index: 100;
     margin-right: 1px;
@@ -107,14 +110,29 @@
     display: block;
     font-weight: bold;
     font-size: 12px;
-    height: 10px;
-    padding: 4px 5px 6px 5px;
+    padding: 0px;
+	padding-top: 4px;
+    padding-bottom: 4px;
     text-align: center;
+}
+#bustime #map_header ul #link_mobile {
+	width: 84px;
+}
+#bustime #map_header ul #link_about {
+	width: 46px;
+}
+#bustime #map_header ul #link_contact {
+	width: 55px;
+}
+#bustime #map_header ul #link_developers {
+	width: 75px;
+}
+#bustime #map_header ul #link_help {
+	width: 37px;
 }
 #bustime #map_header ul li a:hover {
     background-color: #94CB45;
 }
-
 #bustime #content {
 	padding-top: 0;
 }
@@ -125,18 +143,14 @@
 html, body {
     background-image: url("http://mta.info/css/images/grey_bg.jpg");
     background-repeat: repeat-x;
-    height: 100%;
     color: #333333;
     font: 13px/1.231 helvetica,arial,clean,sans-serif;
-	overflow-x: hidden;
 }
 #mainbox {
     background-color: #FFFFFF;
     margin: 0 auto;
     position: relative;
-    width: 95%;
-    min-width: 960px; /* For IE7 */ 
-    min-height: 800px; /* For IE7 */ 
+    width: 960px;
 }
 #topbar {
     height: 121px;

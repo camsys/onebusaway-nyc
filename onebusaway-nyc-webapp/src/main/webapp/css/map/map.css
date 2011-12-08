@@ -14,10 +14,6 @@
  * the License.
  */
 
-#content {
-	position: relative;
-}
-
 /* search/sidebar */
 
 #content #searchbar {
@@ -25,48 +21,47 @@
 	width: 330px;
 	overflow-y: auto;
 	font-size: 14px;
+	position: relative;
 }
 
 #content #searchbar form {
-	position: relative;	
+	position: relative;
 	display: block;
-	width: 307px;
-	height: 36px;
+	width: 302px;
 	background-image: url('img/search_background.png');
 	background-repeat: no-repeat;
-	margin: 40px 0 20px 0;
 }
 
 #content #searchbar form input {
+	width: 262px;
+	height: 28px;
 	font-weight: bold;
 	font-family: inherit;
 	font-size: 120%;	
-	width: 262px;
-	height: 28px;
 	border: 0;
-	background-color: transparent;	
-	margin: 5px 0 0 5px;
+	background-color: transparent;
+	margin-top: 6px;
+	margin-left: 8px;
 }
 
 #content #searchbar #tip {
 	font-size: .85em;
 	color: #666666;
-	margin-top: 7px;
+	margin-top: 5px;
 }
 
 #content #searchbar form input.submit {
 	position: absolute;
 	top: 0px;
 	right: 0px;
-	
 	width: 30px;
 	height: 30px;
+
 	border: none;
 	cursor: pointer;
 	margin: 3px 6px 0 0;
 	text-indent: -9999px;
 	background: url('img/search_icon.png') no-repeat scroll 0 0 transparent;
-	text-transform: capitalize; 
 }
 
 #content #no-results,
@@ -123,7 +118,7 @@
 	margin-top: 5px;
 	margin-bottom: 10px;
 	position: relative;
-	width: 280px;
+	width: 300px;
 	color: #000;
 }
 
@@ -289,10 +284,3 @@
 }
 
 
-/** map/popup **/
-
-#content #map {
-    position: relative;
-    height: 100%;
-    background-color: #EFEFEF;
-}
