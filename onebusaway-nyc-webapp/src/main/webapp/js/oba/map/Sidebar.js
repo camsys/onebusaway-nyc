@@ -401,13 +401,5 @@ OBA.Sidebar = function () {
 	};
 };
 
-if(jQuery.browser.msie) {
-	function init() {
-		OBA.Sidebar().initialize();
-	}
-	
-    window.onload = init;
-} else {
-	jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
-}   
+jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
 
