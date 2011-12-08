@@ -368,9 +368,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function getStopLink(call) {
-		var stopListLink = $('<a class="stopName" id="stopLink_"' + call.StopPointRef + '">' + call.StopPointName + '</a>');
-		
-		jQuery('#stopLink_' + name).live("click", function() { 
+		var name = (call.StopPointRef).replace(/MTA\s/i,"");
+		var stopListLink = $('<a class="stopName" id="stopLink_' + name + '">' + call.StopPointName + '</a>');
+		$('#stopLink_' + name).live("click", function(e) {
+			e.preventDefault();
 			mapShowPopupForStopId(call.StopPointRef);
 		});
 		
@@ -378,9 +379,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function getZoomHereLink() {
-		var zoomHere = jQuery('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
-		
-		jQuery('#zoomHere').live("click", function() { 
+		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
+		$('#zoomHere').live("click", function(e) { 
+			e.preventDefault();
 			if (infoWindow !== null && infoWindow.anchor !== null) {
 				map.setCenter(infoWindow.anchor.getPosition());
 			}
