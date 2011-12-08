@@ -216,8 +216,11 @@ OBA.Sidebar = function () {
 
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {
-				var directionHeader = jQuery("<p></p>")
-											.text("to " + destination.headsign);
+				var directionHeader = jQuery("<p></p>");
+				
+				jQuery("<span></span>")
+					.text("to " + destination.headsign)
+					.appendTo(directionHeader);
 
 				var stopsList = jQuery("<ul></ul>")
 											.addClass("stops");
@@ -398,4 +401,13 @@ OBA.Sidebar = function () {
 	};
 };
 
-jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
+if(jQuery.browser.msie) {
+	function init() {
+		OBA.Sidebar().initialize();
+	}
+	
+    window.onload = init;
+} else {
+	jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
+}   
+
