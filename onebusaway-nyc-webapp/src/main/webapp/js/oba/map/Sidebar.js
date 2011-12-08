@@ -308,11 +308,11 @@ OBA.Sidebar = function () {
 		
 		var legendList1 = jQuery("#legend > #for_stop");
 		var legendList2 = jQuery("#legend > #nearby");
-		
-		if (legendList1 !== undefined) {
+				
+		if (legendList1 !== undefined && legendList1.children().length > 0) {
 			legendList1.empty();
 		}
-		if (legendList2 !== undefined) {
+		if (legendList2 !== undefined && legendList2.children().length > 0) {
 			legendList2.empty();
 		}	
 		routeMap.removeAllRoutes();
@@ -388,8 +388,8 @@ OBA.Sidebar = function () {
 					
 					searchInput.val(hash);
 					doSearch(hash);
-					}
-				});
+				}
+			});
 		}
 	};
 };

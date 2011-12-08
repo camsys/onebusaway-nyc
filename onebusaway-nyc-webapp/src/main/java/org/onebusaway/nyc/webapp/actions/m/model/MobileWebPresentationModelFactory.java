@@ -49,7 +49,7 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     MobileWebRouteDestinationItem destination = new MobileWebRouteDestinationItem(group, null);
 
     // service alerts
-    destination.setServiceAlerts(_realtimeService.getServiceAlertsForStop(stop.getId()));
+    destination.setServiceAlerts(_realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), destination.getDirectionId()));
 
     // stop visits
     List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), 0);

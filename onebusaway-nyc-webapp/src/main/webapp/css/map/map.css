@@ -23,8 +23,8 @@
 #content #searchbar {
 	float: left;
 	width: 330px;
-	font-size: 120%;
 	overflow-y: auto;
+	font-size: 14px;
 }
 
 #content #searchbar form {
@@ -49,7 +49,7 @@
 }
 
 #content #searchbar #tip {
-	font-size: .8em;
+	font-size: .85em;
 	color: #666666;
 	margin-top: 7px;
 }
@@ -69,24 +69,28 @@
 	text-transform: capitalize; 
 }
 
-#content #no-results h2,
-#content #welcome h2,
-#content #results h2,
-#content #legend h2 {
-	font-weight: bold;
-	font-size: 100%;
-
-	color: #818181;	
-
-	padding-bottom: 2px;
-	padding-top: 12px;
-}
-
 #content #no-results,
 #content #results,
 #content #legend {
 	width: 280px;
 	display: none;
+	font-size: 16px;
+}
+
+#content #welcome {
+	font-size: 16px;
+}
+
+#content #no-results h2,
+#content #welcome h2,
+#content #results h2,
+#content #legend h2 {
+	font-weight: bold;
+	color: #818181;	
+	font-size: 1em;
+
+	padding-bottom: 2px;
+	padding-top: 12px;
 }
 
 #content #welcome ul {
@@ -95,6 +99,7 @@
 
 #content #welcome ul li {
 	line-height: 150%;	
+	font-size: 1em;
 }
 
 /* result types */
