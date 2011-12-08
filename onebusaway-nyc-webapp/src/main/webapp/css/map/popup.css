@@ -2,10 +2,26 @@
     font-size: 12px;
 	color: #333333;
 	display: block;
-	width: 300px;
+}
+
+.popup.loading {
+	background-image: url('img/ajax-loader.gif');
+	background-repeat: no-repeat;
+	background-position: 35% 48%;
+}
+
+.popup.loading p {
+	padding: 0px;
+	padding-left: 45%;
+	padding-top: 50px;
+	padding-bottom: 50px;
+	font-size: 120%;
+	font-weight: normal;
+	color: #999;
 }
 
 .popup .header {
+	white-space: nowrap;
 	padding-left: 35px;
 	padding-top: 5px;
 }
@@ -76,7 +92,6 @@
 }
 
 .popup ul li.arrival {
-	white-space: nowrap;
 	height: 16px;
 	font-weight: bold;
 	padding-left: 19px;
@@ -86,7 +101,6 @@
 }
 
 .popup ul li.nextStop {
-	white-space: nowrap;
 	color: #000099;
 	height: 16px;
 	font-weight: bold;

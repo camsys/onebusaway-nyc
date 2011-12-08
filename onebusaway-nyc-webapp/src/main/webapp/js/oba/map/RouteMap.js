@@ -223,6 +223,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
             new google.maps.Size(20, 32),
             new google.maps.Point(0,0),
             new google.maps.Point(0, 32));
+	
 	var activeLocationIcon = new google.maps.MarkerImage("img/location/beachflag_active.png",
             new google.maps.Size(20, 32),
             new google.maps.Point(0,0),
@@ -250,22 +251,19 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
+		showPopupWithContent(marker, '<div class="loading popup"><p>Loading...</p></div>');
+
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
-		
-		// fix for popups that appear off the map edge when inner content changes to stop or bus info
-		showPopupWithContent(marker, 
-			'<p style="font-size:25px;width:300px;text-align:center;"><br /><br />Loading . . . <br /><br /><br /></p>');
-		
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
 				infoWindow.setContent(contentFn(json, userData, popupContainerId));
 
 				// hack fixme
 				var container = jQuery("#" + popupContainerId);
-				
-				container.parent().parent().css("height", container.height());
-				container.parent().parent().css("width", container.width() + 25); // margin for close button
 
+				container.parent().parent().css("height", container.height());
+				container.parent().parent().css("width", Math.min(Math.max(300, container.width() + 25), 400)); // 25 = margin for close button 
+				
 				container.parent().css("overflow", "hidden");
 				container.parent().parent().css("overflow", "hidden");
 			});
@@ -282,10 +280,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			var age = parseInt(timestampContainer.attr("age"), 10);
 			var referenceEpoch = parseInt(timestampContainer.attr("referenceEpoch"), 10);
 			
-			if(isNaN(age) || isNaN(referenceEpoch)) {
-				return;
-			}
-		
 			var newAge = age + ((new Date().getTime() - referenceEpoch) / 1000);
 			timestampContainer.text("Data updated " + OBA.Util.displayTime(newAge));
 		};
@@ -319,8 +313,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.PublishedLineName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
-		var updateTimestamp = new Date(activity.RecordedAtTime).getTime();
-		var updateTimestampReference = new Date(r.Siri.ServiceDelivery.ResponseTimestamp).getTime();
+		var updateTimestamp = OBA.Util.ISO8601StringToDate(activity.RecordedAtTime).getTime();
+		var updateTimestampReference = OBA.Util.ISO8601StringToDate(r.Siri.ServiceDelivery.ResponseTimestamp).getTime();
+
 		var age = (parseInt(updateTimestampReference, 10) - parseInt(updateTimestamp, 10)) / 1000;
 		var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");			
 
@@ -361,7 +356,9 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', routeIdWithoutAgency);			
+
 		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);		
+		
 		html += getZoomHereLink();
 		
 		// (end popup)
@@ -372,21 +369,25 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	
 	function getStopLink(call) {
 		var stopListLink = $('<a class="stopName" id="stopLink_"' + call.StopPointRef + '">' + call.StopPointName + '</a>');
-		$('#stopLink_' + name).live("click", function() { 
+		
+		jQuery('#stopLink_' + name).live("click", function() { 
 			mapShowPopupForStopId(call.StopPointRef);
 		});
-		return $('<a></a>').append(stopListLink.clone()).html();
+		
+		return jQuery('<a></a>').append(stopListLink.clone()).html();
 	}
 	
 	function getZoomHereLink() {
-		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
-		$('#zoomHere').live("click", function() { 
+		var zoomHere = jQuery('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
+		
+		jQuery('#zoomHere').live("click", function() { 
 			if (infoWindow !== null && infoWindow.anchor !== null) {
 				map.setCenter(infoWindow.anchor.getPosition());
 			}
 			map.setZoom(map.maxZoom - 3); 
 		});
-		return $('<a></a>').append(zoomHere.clone()).html();
+		
+		return jQuery('<a></a>').append(zoomHere.clone()).html();
 	}
 
 	function getServiceAlertContent(r, situationRefs) {
@@ -433,10 +434,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '<span class="type">Stop #' + stopResult.stopIdWithoutAgency + '</span>';
 		
 		// update time across all arrivals
-		var updateTimestampReference = new Date(r.Siri.ServiceDelivery.ResponseTimestamp).getTime();
+		var updateTimestampReference = OBA.Util.ISO8601StringToDate(r.Siri.ServiceDelivery.ResponseTimestamp).getTime();
 		var maxUpdateTimestamp = null;
 		jQuery.each(visits, function(_, monitoredJourney) {
-			var updateTimestamp = new Date(monitoredJourney.RecordedAtTime).getTime();
+			var updateTimestamp = OBA.Util.ISO8601StringToDate(monitoredJourney.RecordedAtTime).getTime();
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
@@ -459,7 +460,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		// service available
 		if(visits.length === 0) {
-			html += '<p class="service">No buses en-route to your location. Please check back shortly for an update.</p>';
+			html += '<p class="service">No buses en-route to your location.<br/>Please check back shortly for an update.</p>';
 		} else {		
 			html += '<p class="service">Upcoming arrivals:</p>';
 			html += '<ul>';

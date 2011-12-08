@@ -32,11 +32,6 @@ OBA.Config = {
 		// This variable is overwritten by the configuration service--the JS found at configUrl (above)
 		staleTimeout: 120,
 
-		// These are for the DIY sign configuration UI
-		tripsForRouteUrl: "/onebusaway-api-webapp/api/where/trips-for-route",
-		stopsForRouteUrl: "/onebusaway-api-webapp/api/where/stops-for-route",
-		apiKey: "TEST",
-			
 		// This method is called by the JS found at configUrl (above) when the configuration has finished loading.
 		configurationHasLoaded: function() {
 			_gaq.push(['_setAccount', OBA.Config.googleAnalyticsSiteId]);
@@ -57,8 +52,10 @@ OBA.Config = {
 			if(type === "stop")	{
 				html += '<div class="footer">';
 				html += '<span class="header">At the bus stop... </strong></span>';
+				html += '<br/>';
 
-				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>511123</strong> ';
+				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>511123</strong>';
+				html += '<br/>';
 				html += 'or check <a href="m/?q=' + query + '">this stop</a> on your smartphone.';
 
 				html += '</div>';
@@ -66,7 +63,8 @@ OBA.Config = {
 			} else if(type === "route") {
 				html += '<div class="footer">';
 				html += '<span class="header">At the bus stop... </strong></span>';
-
+				html += '<br/>';
+				
 				html += 'Check <a href="m/?q=' + query + '">this route</a> on your smartphone.';
 
 				html += '</div>';				

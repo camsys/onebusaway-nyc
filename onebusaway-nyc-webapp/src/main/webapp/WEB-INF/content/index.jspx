@@ -27,6 +27,15 @@
 <s:url var="url" value="/css/map/popup.css"></s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
+<jsp:text>
+&lt;!--[if IE 6]&gt;
+</jsp:text>
+<s:url var="url" value="/css/ie6.css"></s:url>
+   <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+<jsp:text>
+&lt;![endif]--&gt;
+</jsp:text>
+
 <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/lib/jquery.ui.js"/>
@@ -66,25 +75,25 @@
 	  			
 	   	  	<ul>
 	   	  		<s:url var="url" namespace="/m" action="index"/>
-				<li><a href="${url}">Text / Mobile</a></li>
+				<li id="link_mobile"><a href="${url}">Text / Mobile</a></li>
 	    	  	
 				<s:url var="url" namespace="/wiki" action="About"/>
-				<li><a href="${url}">About</a></li>
+				<li id="link_about"><a href="${url}">About</a></li>
 	
 				<s:url var="url" namespace="/wiki" action="ContactUs"/>
-				<li><a href="${url}">Contact</a></li>
+				<li id="link_contact"><a href="${url}">Contact</a></li>
 	 			    
 	 			<s:url var="url" namespace="/wiki/Developers" action="Index"/>
-	 			<li><a href="${url}">Developers</a></li>
+	 			<li id="link_developers"><a href="${url}">Developers</a></li>
 	 			
 	 			<s:url var="url" namespace="/wiki/Help" action="Index"/>
-	 			<li><a href="${url}">Help</a></li>
+	 			<li id="link_help"><a href="${url}">Help</a></li>
 		   	</ul>
 	   </div>
     
        <form action="search.action">
          <input type="text" name="q" value=""/>  
-         <input type="submit" value="Search" class="submit"/>
+         <input type="submit" value="" class="submit"/>
          <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
        </form>
        
@@ -93,8 +102,8 @@
        </div>
 	            
 	   <div id="legend">
-	   	 <h2 id="for_stop"></h2>
-       	 <h2 id="nearby"></h2>
+	   	 <h2 id="for_stop">&amp;nbsp;</h2>
+       	 <h2 id="nearby">&amp;nbsp;</h2>
 	   </div>
 
 	   <div id="no-results">
@@ -113,7 +122,7 @@
 	   </div>
 	   
 	   <div id="loading">
-	   		<p>Loading . . .</p>
+	   		<p>Loading...</p>
 	   </div>
 
     </div>

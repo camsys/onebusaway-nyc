@@ -73,20 +73,37 @@ OBA.Util = (function() {
 				return s;
 			}
 		},
-		// For IE
-		getPageHeightAndWidth: function() {
-			var w = 0, h = 0;
-			if( typeof(window.innerWidth) == "number") {
-				//Non-IE
-				w = window.innerWidth;
-				h = window.innerHeight;
-			} else if( document.documentElement 
-					&& ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
-				//IE 6+ in 'standards compliant mode'
-				w = document.documentElement.clientWidth;
-				h = document.documentElement.clientHeight;
-			}
-			return [h,w];
-		}
+		// From http://delete.me.uk/2005/03/iso8601.html
+	    ISO8601StringToDate: function(str) {	    	
+	    	var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
+	    	"(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
+	    	"(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
+
+	    	var d = str.match(new RegExp(regexp));
+
+	    	var offset = 0;
+	    	var date = new Date();
+	    	date.setFullYear(d[1]);
+
+	    	if (d[3]) { date.setMonth(d[3] - 1); }
+	    	if (d[5]) { date.setDate(d[5]); }
+	    	if (d[7]) { date.setHours(d[7]); }
+	    	if (d[8]) { date.setMinutes(d[8]); }
+	    	if (d[10]) { date.setSeconds(d[10]); }
+	    	if (d[12]) { date.setMilliseconds(Number("0." + d[12]) * 1000); }
+	    	if (d[14]) {
+	    		offset = (Number(d[16]) * 60) + Number(d[17]);
+	    		offset *= ((d[15] == '-') ? 1 : -1);
+	    	}
+
+	    	offset -= date.getTimezoneOffset();
+	    	
+	    	var time = (Number(date) + (offset * 60 * 1000));
+	    	var ret = new Date();
+
+	    	ret.setTime(Number(time));
+	    	
+	    	return ret;
+	    }
 	};
 })();
