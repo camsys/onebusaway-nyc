@@ -205,28 +205,28 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      */
     Set<BlockInstance> consideredBlocks = new HashSet<BlockInstance>();
     computeNearbyBlocks(observation, consideredBlocks);
-    
+
     Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(
         observation, consideredBlocks);
-    
+
     consideredBlocks.addAll(bisSet);
-    
+
     for (BlockInstance thisBIS : bisSet) {
       Set<BlockState> states = new HashSet<BlockState>();
       if (bestBlockLocation) {
-        states.addAll(_blockStateService.getBestBlockLocations(observation, thisBIS,
-            0, Double.POSITIVE_INFINITY));
+        states.addAll(_blockStateService.getBestBlockLocations(observation,
+            thisBIS, 0, Double.POSITIVE_INFINITY));
       } else {
         states.add(_blockStateService.getAsState(thisBIS, 0.0));
       }
       potentialBlocks.addAll(states);
     }
-    
+
     /*
      * NOTE: this will also set the run-state flags
      */
-    potentialBlocks.addAll(getReportedBlockStates(observation, consideredBlocks,
-        bestBlockLocation, potentialBlocks));
+    potentialBlocks.addAll(getReportedBlockStates(observation,
+        consideredBlocks, bestBlockLocation, potentialBlocks));
 
     if (!potentialBlocks.isEmpty()) {
       if (_log.isDebugEnabled()) {
@@ -263,11 +263,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      */
     if (observation.getLastValidDestinationSignCode() != null
         && !observation.isOutOfService()) {
-      computePotentialBlocksFromDestinationSignCode(observation, potentialBlocks);
+      computePotentialBlocksFromDestinationSignCode(observation,
+          potentialBlocks);
     }
 
     /**
-     * Third source of trips: trips nearby the current gps location 
+     * Third source of trips: trips nearby the current gps location
      */
     if (_includeNearbyBlocks) {
       potentialBlocks.addAll(nearbyBlocks);
@@ -281,7 +282,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    ****/
   @Override
   public Set<BlockState> getReportedBlockStates(Observation observation,
-      Set<BlockInstance> potentialBlocks, boolean bestBlockLocation, Set<BlockState> statesToUpdate) {
+      Set<BlockInstance> potentialBlocks, boolean bestBlockLocation,
+      Set<BlockState> statesToUpdate) {
 
     Set<BlockState> blockStates = new HashSet<BlockState>();
     Date obsDate = new Date(observation.getTime());
@@ -289,12 +291,13 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     String opAssignedRunId = null;
     String operatorId = observation.getRecord().getOperatorId();
 
-    if (!StringUtils.isEmpty(operatorId) 
+    if (!StringUtils.isEmpty(operatorId)
         && !StringUtils.containsOnly(operatorId, "0")) {
       try {
-        OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
-          new ServiceDate(obsDate), operatorId);
-        
+        OperatorAssignmentItem oai = _operatorAssignmentService
+            .getOperatorAssignmentItemForServiceDate(new ServiceDate(obsDate),
+                operatorId);
+
         if (oai != null) {
           opAssignedRunId = oai.getRunId();
         }
@@ -304,7 +307,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     }
 
     Set<RunTripEntry> runEntriesToTry = new HashSet<RunTripEntry>();
-    
+
     String reportedRunId = observation.getRecord().getRunId();
     String agencyId = observation.getRecord().getVehicleId().getAgencyId();
 
@@ -319,7 +322,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       } else {
         runEntriesToTry.add(opAssignedRunTrip);
       }
-    } else if (!StringUtils.isEmpty(opAssignedRunId)){
+    } else if (!StringUtils.isEmpty(opAssignedRunId)) {
       _log.info("no assigned run found for operator=" + operatorId);
     }
 
@@ -327,8 +330,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     boolean assignedReportedRunMismatch = false;
 
     if (StringUtils.isNotEmpty(reportedRunId)
-        && !StringUtils.containsOnly(reportedRunId, new char[]{'0', '-'})) {
-      
+        && !StringUtils.containsOnly(reportedRunId, new char[] { '0', '-' })) {
+
       try {
         TreeMap<Integer, List<RunTripEntry>> fuzzyReportedMatches = _runService
             .getRunTripEntriesForFuzzyIdAndTime(new AgencyAndId(agencyId,
@@ -409,25 +412,23 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         }
       }
     } else {
-      _log.info("no operator id or run reported for vehicle=" 
+      _log.info("no operator id or run reported for vehicle="
           + observation.getRecord().getVehicleId());
     }
-    
+
     /*
      * now, set the run-status for the pre-computed block-states
      */
     for (BlockState blockState : statesToUpdate) {
       RunTripEntry rte = blockState.getRunTripEntry();
-      
-      boolean opAssigned = StringUtils
-          .equals(opAssignedRunId, rte.getRunId());
-      boolean runReported = (reportedRtes != null && reportedRtes
-          .contains(rte));
+
+      boolean opAssigned = StringUtils.equals(opAssignedRunId, rte.getRunId());
+      boolean runReported = (reportedRtes != null && reportedRtes.contains(rte));
 
       blockState.setRunReported(runReported);
       blockState.setOpAssigned(opAssigned);
       blockState.setRunReportedAssignedMismatch(assignedReportedRunMismatch);
-      
+
     }
 
     return blockStates;
@@ -440,21 +441,21 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
     double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
-    
-    Set<BlockState> resStates = _blockStateService.getBestBlockLocations(observation,
-        blockState.getBlockInstance(), currentDistanceAlongBlock
+
+    Set<BlockState> resStates = _blockStateService.getBestBlockLocations(
+        observation, blockState.getBlockInstance(), currentDistanceAlongBlock
             + minDistanceToTravel, currentDistanceAlongBlock
             + maxDistanceToTravel);
-    
+
     /*
-     * keep these flags alive
-     * TODO must be a better/more consistent way
+     * keep these flags alive TODO must be a better/more consistent way
      */
     if (!resStates.isEmpty() && blockState.getOpAssigned() != null) {
       for (BlockState state : resStates) {
         state.setOpAssigned(blockState.getOpAssigned());
         state.setRunReported(blockState.getRunReported());
-        state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+        state.setRunReportedAssignedMismatch(blockState
+            .isRunReportedAssignedMismatch());
       }
     }
 
@@ -523,7 +524,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     if (state != null) {
       state.setOpAssigned(blockState.getOpAssigned());
       state.setRunReported(blockState.getRunReported());
-      state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+      state.setRunReportedAssignedMismatch(blockState
+          .isRunReportedAssignedMismatch());
     }
     return state;
   }
@@ -532,21 +534,22 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    * Finds the best block state assignments along the ENTIRE length of the block
    * (potentially expensive operation)
    */
-  public Set<BlockState> bestStates(Observation observation, BlockState blockState) {
+  public Set<BlockState> bestStates(Observation observation,
+      BlockState blockState) {
 
     BlockInstance blockInstance = blockState.getBlockInstance();
     BlockConfigurationEntry blockConfig = blockInstance.getBlock();
-    Set<BlockState> resStates = _blockStateService.getBestBlockLocations(observation, blockInstance,
-        0, blockConfig.getTotalBlockDistance());
+    Set<BlockState> resStates = _blockStateService.getBestBlockLocations(
+        observation, blockInstance, 0, blockConfig.getTotalBlockDistance());
     /*
-     * keep these flags alive
-     * TODO must be a better/more consistent way
+     * keep these flags alive TODO must be a better/more consistent way
      */
     if (!resStates.isEmpty()) {
       for (BlockState state : resStates) {
         state.setOpAssigned(blockState.getOpAssigned());
         state.setRunReported(blockState.getRunReported());
-        state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+        state.setRunReportedAssignedMismatch(blockState
+            .isRunReportedAssignedMismatch());
       }
     }
     return resStates;
