@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.queue;
 
 import org.zeromq.ZMQ;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Subscriber {
     public static final String HOST_KEY = "mq.host";
@@ -40,6 +42,15 @@ public class Subscriber {
      }
   }
     private static void process(String address, String contents) {
-      System.out.println(address + " : " + contents);
+	System.out.println(address + " : " + toDate(new Date()) +  " : " + contents);
     }
+
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static String toDate(Date date) {
+      if (date != null) {
+	  return dateFormatter.format(date);
+      }
+      return null;
+  }
+
 }
