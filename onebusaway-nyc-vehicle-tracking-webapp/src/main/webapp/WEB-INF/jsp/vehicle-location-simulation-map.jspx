@@ -33,6 +33,8 @@ var OBA = window.OBA || {};
 OBA.Debug = function() {
 	var map = null;
 	var markers = null;
+	var stopMarkers = null;
+	var inferredMarkers = null;
 	var routes = null;
 	var popup = null;
 	var feature = null;
@@ -87,8 +89,15 @@ OBA.Debug = function() {
 	}
 	
 	function showRecordsOnMap(min_time, max_time) {
-		if(markers !== null)
+		if(markers !== null) {
 			markers.clearMarkers();
+		}
+		if (stopMarkers !== null) {
+			stopMarkers.clearMarkers();
+		}
+		if (inferredMarkers !== null) {
+			inferredMarkers.clearMarkers();
+		}
 		
 		var	points = [];
 		
@@ -100,13 +109,18 @@ OBA.Debug = function() {
 					return;
 				}
 
-				var i = 0;
+				var i = -1;
 				jQuery.each(data.records, function(recordIndex, record) {
+					
+          i++;
+          
 					// filter out
-					if(min_time !== null && max_time !== null && min_time !== "" && max_time !== "") {
-						if(record.timestamp < min_time || record.timestamp > max_time) {
-							return
-						}
+					if(min_time !== null && max_time !== null 
+							&& min_time !== "" && max_time !== "") {
+						
+						  if(i < parseInt(min_time) || i > parseInt(max_time)) {
+							  return;
+						  }
 					}
 					
           var size = new OpenLayers.Size(20,20);
@@ -123,6 +137,7 @@ OBA.Debug = function() {
           
               
           var markerText = {
+        		recordNum: i,
           	inferredTripId: "NA",
           	timestampAsDate: "NA",
           	inferredPhase: "NA",
@@ -134,7 +149,8 @@ OBA.Debug = function() {
           	other: "",
           	inferredLatLon: "",
           	toString: function () {
-          		return "inferredTripId:" + this.inferredTripId + "<br/>"
+          		return "record #: " + this.recordNum + "<br/>"
+          		 + "inferredTripId:" + this.inferredTripId + "<br/>"
           		 + "timestampAsDate:" + this.timestampAsDate + "<br/>"
           		 + "inferredPhase: " + this.inferredPhase + "<br/>"
           		 + "dsc: " + this.dsc + "<br/>"
@@ -267,14 +283,13 @@ OBA.Debug = function() {
             OpenLayers.Event.stop(event);
 	        });
 		            
-          i++;
 				});
 
 				if(i > 0) {
           map.zoomToExtent(markers.getDataExtent());
 			    var style = {
 			        strokeColor: "#000000",
-			        strokeOpacity: 0.50,
+			        strokeOpacity: 0.30,
 			        strokeWidth: 3
 			    };
 			    var polyline = new OpenLayers.Geometry.LineString(points);
@@ -505,7 +520,7 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	
 	Show Records Between:
 	<br/>
-	<input type="text" id="filter_start" size="10"/> (epoch) and <input type="text" id="filter_end" size="10"/> (epoch)
+	<input type="text" id="filter_start" size="10"/> (record #) and <input type="text" id="filter_end" size="10"/> (record #)
 	<br/>
 	<input type="submit" value="Refresh" id="filter_apply"/>
 </td>

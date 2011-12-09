@@ -133,116 +133,76 @@ public class BlockStateTransitionModel {
         journeyState, obs);
 
     /**
-     * Do we explicitly allow a block change? If not, we just advance along our
-     * current block.
-     * 
-     * Note that we are considering the parentPhase, not the newly proposed
-     * phase here. I think that makes sense, since the proposed journeyPhase is
-     * just an iteration over all phases with no real consideration of
-     * likelihood yet.
+     * Ok, this is much different from how it used to be: we now allow
+     * states to be propagated, but ALSO allow for a change...when
+     * reasonable.
      */
-    if (!allowBlockChange) {
-
-      /**
-       * There isn't actually a block to this particle, so no progressing
-       * possible.
-       */
-      if (parentBlockState == null)
-        return null;
-
-      /**
-       * If we're off block, kill the block
-       */
-      if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
-          parentBlockState))
-        return null;
-
-      // boolean notActiveButRunAssigned = parentBlockState != null
-      // && parentBlockState.getOpAssigned();
-      //
-      // /**
-      // * If we're currently in progress on a block or this block was assigned
-      // to
-      // * the operator, then we update our block location along the block that
-      // * we're serving TODO why don't we progress deadhead-before, etc.
-      // anyway?
-      // */
-      // if (EVehiclePhase.isActiveDuringBlock(parentPhase)
-      // || notActiveButRunAssigned) {
-      // potentialTransStates = advanceAlongBlock(parentPhase, parentBlockState,
-      // obs);
-      // } else {
-      // return null;
-      // }
-
-      if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
-        potentialTransStates.addAll(advanceAlongBlock(parentPhase,
-            parentBlockState, obs));
-      } else {
-        potentialTransStates.add(parentBlockState);
-      }
-    }
-
-    // if (obs.isOutOfService()) {
-    // /**
-    // * Operator just went out of service so forget the block
-    // */
-    // return null;
-    // }
-
-    BlockState updatedBlockState = null;
 
     /**
-     * If this state has no transitions, consider block changes. Otherwise, pick
-     * the best transition.
+     * There isn't actually a block to this particle, so no progressing
+     * possible.
      */
-    if ((potentialTransStates == null || potentialTransStates.isEmpty())) {
+    if (parentBlockState == null)
+      return null;
 
-      if (allowBlockChange) {
-        /**
-         * We're now considering that the driver may have been re-assigned, or
-         * whatnot.
-         */
-        CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy
-            .cdfForJourneyInProgress(obs);
+    /**
+     * If we're off block, kill the block
+     */
+    if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
+        parentBlockState))
+      return null;
 
-        if (!cdf.canSample())
-          return null;
-
-        updatedBlockState = cdf.sample();
-
-        if (EVehiclePhase.isLayover(parentPhase)
-            || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
-                updatedBlockState.getBlockInstance())) {
-          updatedBlockState = _blocksFromObservationService
-              .advanceLayoverState(obs.getTime(), updatedBlockState);
-        }
-      } else {
-        return null;
-      }
-
+    if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
+      potentialTransStates.addAll(advanceAlongBlock(parentPhase,
+          parentBlockState, obs));
     } else {
+      potentialTransStates.add(parentBlockState);
+    }
+
+    if (allowBlockChange) {
       /**
-       * When we return multiple possible transitions, choose the best in terms
-       * of schedDev and locDev. TODO consider more! why not all the rules!?
+       * We're now considering that the driver may have been re-assigned, or
+       * whatnot.
        */
-      if (potentialTransStates.size() == 1) {
-        updatedBlockState = potentialTransStates.iterator().next();
-      } else {
-        CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
+      CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy
+          .cdfForJourneyInProgress(obs);
 
-        for (BlockState state : potentialTransStates) {
+      if (!cdf.canSample())
+        return null;
 
-          double p = _blockStateSamplingStrategy.scoreState(state, obs, false);
+      BlockState sampledState = cdf.sample();
 
-          cdf.put(p, state);
-        }
-
-        if (!cdf.canSample())
-          return null;
-
-        updatedBlockState = cdf.sample();
+      if (EVehiclePhase.isLayover(parentPhase)
+          || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
+              sampledState.getBlockInstance())) {
+        sampledState = _blocksFromObservationService
+            .advanceLayoverState(obs.getTime(), sampledState);
       }
+      potentialTransStates.add(sampledState);
+    } 
+
+    /**
+     * When we return multiple possible transitions, choose the best in terms
+     * of schedDev and locDev. TODO consider more! why not all the rules!?
+     */
+    BlockState updatedBlockState = null;
+    
+    if (potentialTransStates.size() == 1) {
+      updatedBlockState = potentialTransStates.iterator().next();
+    } else {
+      CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
+
+      for (BlockState state : potentialTransStates) {
+
+        double p = _blockStateSamplingStrategy.scoreState(state, obs, false);
+
+        cdf.put(p, state);
+      }
+
+      if (!cdf.canSample())
+        return null;
+
+      updatedBlockState = cdf.sample();
     }
 
     return updatedBlockState;

@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class InProgressRule implements SensorModelRule {
 
-  private DeviationModel _nearbyTripSigma = new DeviationModel(100.0);
+  private DeviationModel _nearbyTripSigma = new DeviationModel(50.0);
   
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
