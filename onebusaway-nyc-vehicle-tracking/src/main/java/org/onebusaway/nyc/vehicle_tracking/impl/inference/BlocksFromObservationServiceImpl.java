@@ -340,12 +340,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
           _log.info("couldn't find a fuzzy match for reported runId="
               + reportedRunId);
         } else {
-          /*
-           * FIXME this is a bit of a hack, but it helps for now. essentially,
-           * we only deal with the best matches. makes sense, but only if there
-           * is a good deal of consistency among the id's involved, and a fair
-           * ranking by using the Levenshtein distance.
-           */
+          
           int bestDist = fuzzyReportedMatches.firstKey();
 
           /*
@@ -353,6 +348,10 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
            * otherwise, check that the fuzzy matches contain the assigned
            * run-id, and, if so, use just that (implemented by not adding to the
            * runEntriesToTry).
+           * 
+           * FIXME We make a cutoff at levenshtein distance of 2, since
+           * much more of a distance could easily be a totally different,
+           * but valid, run number and route.
            */
           if (opAssignedRunTrip != null) {
             if (!fuzzyReportedMatches.get(bestDist).contains(opAssignedRunTrip)) {
@@ -360,9 +359,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
                   + " not found among best reported-run matches");
               assignedReportedRunMismatch = true;
             }
-          } else {
-            // FIXME don't keep this reportedRtes set around just for matching
-            // later
+          } else if (bestDist <= 2){
+            // TODO don't keep reportedRtes around just for matching
             observation.setFuzzyMatchDistance(bestDist);
             reportedRtes.addAll(fuzzyReportedMatches.get(bestDist));
             runEntriesToTry.addAll(reportedRtes);
