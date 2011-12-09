@@ -108,7 +108,7 @@ public class LayoverRule implements SensorModelRule {
 
       BlockStopTimeEntry nextStop = phase == EVehiclePhase.LAYOVER_BEFORE
           ? blockState.getBlockLocation().getNextStop()
-          : _vehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
+          : VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
 
       p3 = computeVehicleIsOnScheduleProbability(obs.getTime(), blockState,
           nextStop);
@@ -119,10 +119,6 @@ public class LayoverRule implements SensorModelRule {
 
     return result;
   }
-
-  /****
-   * 
-   ****/
 
   private double computeVehicleIsOnScheduleProbability(long timestamp,
       BlockState blockState, BlockStopTimeEntry layoverStop) {
