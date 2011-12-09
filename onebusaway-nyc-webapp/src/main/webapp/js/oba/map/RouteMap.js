@@ -251,12 +251,26 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
-		showPopupWithContent(marker, '<div class="loading popup"><p>Loading...</p></div>');
+		// only one popup open at a time!
+		var closeFn = function() {
+			if(infoWindow !== null) {
+				infoWindow.close();
+				infoWindow = null;
+			}
+		};
+		closeFn();
 
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
-				infoWindow.setContent(contentFn(json, userData, popupContainerId));
+				infoWindow = new google.maps.InfoWindow({
+			    	content: contentFn(json, userData, popupContainerId),
+			    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
+			    	disableAutoPan: false
+			    });
+				infoWindow.open(map, marker);
+		    
+				google.maps.event.addListener(infoWindow, "closeclick", closeFn);
 
 				// hack fixme
 				var container = jQuery("#" + popupContainerId);
@@ -563,14 +577,18 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 
 	// STOPS
-	function removeStops(routeId) {
+	function removeStops(routeId, preserveStopsInView) {
 		if(typeof stopsAddedForRoute[routeId] !== 'undefined') {
 			var stops = stopsAddedForRoute[routeId];
 			
 			jQuery.each(stops, function(_, marker) {
 				var stopId = marker.stopId;
-				alreadyDisplayedStopIcons[stopId] = false;
 				
+				if(preserveStopsInView && map.getBounds().contains(marker.getPosition())) {
+					return false;
+				}
+
+				alreadyDisplayedStopIcons[stopId] = false;
 				delete stopsById[stopId];				
 				mgr.removeMarker(marker);
 				marker.setMap(null);
@@ -780,7 +798,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			if(removeMe) {			
 				removePolylines(routeAndAgencyId);
-				removeStops(routeAndAgencyId);
+				removeStops(routeAndAgencyId, false);
 				removeVehicles(routeAndAgencyId);
 			}
 		});
@@ -827,10 +845,20 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
 		
-	// request list of routes in viewport when user stops moving map
-	if(typeof mapMoveCallbackFn === 'function') {
-		google.maps.event.addListener(map, "idle", mapMoveCallbackFn);
-	}
+	// request list of stops in viewport when user stops moving map
+	google.maps.event.addListener(map, "idle", function() {
+		if(map.getZoom() < 16) {
+			removeStops("__VIEWPORT__", false);
+			return;
+		}
+		
+		jQuery.getJSON(OBA.Config.stopsWithinBoundsUrl + "?callback=?", { bounds: map.getBounds().toUrlValue() }, 
+		function(json) {
+			removeStops("__VIEWPORT__", true);
+
+			addStops("__VIEWPORT__", json.searchResults);
+		});
+	});
 	
 	// show subway tiles toggle control only at relevant zoom levels
 	var subwayTilesControl = new SubwayTilesControl(subwayControlDiv, map);
