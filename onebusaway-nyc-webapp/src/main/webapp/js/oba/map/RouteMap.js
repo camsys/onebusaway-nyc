@@ -514,7 +514,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopResult.stopIdWithoutAgency);
 		
 	    html += getServiceAlertContent(r, null);
-	  
 		
 		html += getZoomHereLink();
 	        
