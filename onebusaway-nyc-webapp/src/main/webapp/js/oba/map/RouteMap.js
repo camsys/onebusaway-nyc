@@ -827,10 +827,18 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
 		
-	// request list of routes in viewport when user stops moving map
-	if(typeof mapMoveCallbackFn === 'function') {
-		google.maps.event.addListener(map, "idle", mapMoveCallbackFn);
-	}
+	// request list of stops in viewport when user stops moving map
+	google.maps.event.addListener(map, "idle", function() {
+		if(map.getZoom() < 16) {
+			removeStops("__VIEWPORT__");
+			return;
+		}
+		
+		jQuery.getJSON(OBA.Config.stopsWithinBoundsUrl + "?callback=?", { bounds: map.getBounds().toUrlValue() }, 
+		function(json) {
+			addStops("__VIEWPORT__", json.searchResults);
+		});
+	});
 	
 	// show subway tiles toggle control only at relevant zoom levels
 	var subwayTilesControl = new SubwayTilesControl(subwayControlDiv, map);

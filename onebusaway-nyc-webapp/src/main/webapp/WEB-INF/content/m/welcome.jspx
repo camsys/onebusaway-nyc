@@ -57,11 +57,7 @@
 			<s:param name="q">10304</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<s:url var="url2" namespace="/m" action="index">
-			<s:param name="q">Staten Island</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
-		</s:url>
-		<li>Location: <a href="${url}">10304</a> or <a href="${url2}">Staten Island</a>
+		<li>Location: <a href="${url}">10304</a>
 		</li>
 	</ul>
 </div>

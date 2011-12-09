@@ -67,7 +67,8 @@ OBA.Sidebar = function () {
 
 	// show user list of addresses
 	function disambiguate(locationResults) {		
-		var resultsList = jQuery("<ul></ul>").appendTo(results);
+		var resultsList = jQuery("<ul></ul>")
+							.appendTo(results);
 
 		var bounds = null;
 		jQuery.each(locationResults, function(_, location) {
@@ -320,6 +321,7 @@ OBA.Sidebar = function () {
 		legend.hide();
 		results.hide();
 		
+		jQuery("#results ul").remove();
 		jQuery("#legend #for_stop").children().empty();
 		jQuery("#legend #nearby").children().empty();
 
@@ -357,6 +359,13 @@ OBA.Sidebar = function () {
 								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
 								new google.maps.LatLng(bounds.maxLat, bounds.maxLon));
 						
+						// location exists, but no nearby routes.
+						var nearbyRoutes = result.nearbyRoutes;
+						if(nearbyRoutes.length === 0) {
+							noResults.show();
+							return;							
+						}
+						
 						showRoutePickerList(result.nearbyRoutes);
 						routeMap.showBounds(latLngBounds);
 
@@ -381,7 +390,7 @@ OBA.Sidebar = function () {
 				}
 			}
 		});
-		}
+	}
 	
 	return {
 		initialize: function() {

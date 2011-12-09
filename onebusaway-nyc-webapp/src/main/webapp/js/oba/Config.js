@@ -23,6 +23,7 @@ $.ajaxSetup({ cache: false });
 OBA.Config = {
 		searchUrl: "api/search",
 		configUrl: "api/config",
+		stopsWithinBoundsUrl: "api/stops-within-bounds",
 		
 		siriSMUrl: "api/siri/stop-monitoring.json",
 		siriVMUrl: "api/siri/vehicle-monitoring.json",
