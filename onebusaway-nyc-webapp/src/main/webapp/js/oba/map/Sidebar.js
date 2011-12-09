@@ -22,6 +22,7 @@ OBA.Sidebar = function () {
 		mapDiv = jQuery("#map"), 
 		searchBarDiv = jQuery("#searchbar"), 
 		mainbox = jQuery("#mainbox"),
+		menuBar = jQuery("#cssmenu1"),
 		welcome = jQuery("#welcome"),
 		legend = jQuery("#legend"),
 		results = jQuery("#results"),
@@ -52,8 +53,11 @@ OBA.Sidebar = function () {
 			if (w <= 1060) {
 				mainbox.css("width", "960px");
 			} else {
-				mainbox.css("width", w - 100); // 50px margin on each side
+				mainbox.css("width", w - 150); // 75px margin on each side
 			}
+
+			// size set so we can have MTA menu items calculate their widths properly
+			menuBar.width(mainbox.width());
 		};
 		resize();
 
@@ -212,8 +216,11 @@ OBA.Sidebar = function () {
 
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {
-				var directionHeader = jQuery("<p></p>")
-											.text("to " + destination.headsign);
+				var directionHeader = jQuery("<p></p>");
+				
+				jQuery("<span></span>")
+					.text("to " + destination.headsign)
+					.appendTo(directionHeader);
 
 				var stopsList = jQuery("<ul></ul>")
 											.addClass("stops");
@@ -395,3 +402,4 @@ OBA.Sidebar = function () {
 };
 
 jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
+

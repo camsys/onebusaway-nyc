@@ -100,7 +100,7 @@
     </bean>
 
     <bean id="wikiRenderingService" class="org.onebusaway.wiki.xwiki.impl.XWikiRenderingServiceImpl">
-        <property name="wikiDocumentViewUrl" value="/onebusaway-nyc-webapp/wiki/%{documentName}" />
+        <property name="wikiDocumentViewUrl" value="/wiki/%{documentName}" />
         <property name="wikiDocumentEditUrl" value="http://${service.wikihost}/bin/edit/%{namespace}/%{documentName}" />
         <property name="wikiAttachmentUrl"
             value="http://${service.wikihost}/bin/download/%{namespace}/%{documentName}/%{attachmentName}" />
