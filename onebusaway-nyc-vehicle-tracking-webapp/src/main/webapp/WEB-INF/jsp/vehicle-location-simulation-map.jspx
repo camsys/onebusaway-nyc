@@ -141,7 +141,7 @@ OBA.Debug = function() {
           		 + "inferredDsc: " + this.inferredDsc + "<br/>"
           		 + "reportedRunId: " + this.reportedRunId + "<br/>"
           		 + "inferredRunId: " + this.inferredRunId + "<br/>"
-          		 + "schedDeviation (mins): " + this.schedDeviation + "<br/>"
+          		 + "schedDeviation: " + Math.round(this.schedDeviation) + "(mins)<br/>"
           		 + "inferredLatLon:" + this.inferredLatLon + "<br/>"
           		 + this.other;
           	}
@@ -185,9 +185,9 @@ OBA.Debug = function() {
 							} else if (property.indexOf("Set") == -1
 									&& !isNaN(value)){
 								
-								if (property === "inferredBlockLat") {
+								if (property === "inferredBlockLat" && value != record.lat) {
 									inferredLat = value;
-								} else if (property === "inferredBlockLon") {
+								} else if (property === "inferredBlockLon" && value != record.lon) {
 									inferredLon = value;
 								} 
 								
@@ -212,19 +212,18 @@ OBA.Debug = function() {
           var marker = new OpenLayers.Marker(point, icon);
           markers.addMarker(marker);
           
+	        var inferredMarker = null; 
           if (inferredLon !== null && inferredLat !== null) {
 	          var inferredPoint = new OpenLayers.LonLat(inferredLon, inferredLat);
 		        var inferredProj = new OpenLayers.Projection("EPSG:4326");
 	          inferredPoint.transform(inferredProj, map.getProjectionObject());
 	          var inferredIcon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker-gold.png',size,offset);
-	          var inferredMarker = new OpenLayers.Marker(inferredPoint, inferredIcon);
+	          inferredMarker = new OpenLayers.Marker(inferredPoint, inferredIcon);
 	          inferredMarkers.addMarker(inferredMarker);
-	          marker.inferredMarker = inferredMarker;
 	          markerText.inferredLatLon = "<a name='inferredLoc' href='#'>" + inferredLat + "," + inferredLon + "</a>";
 	          inferredMarker.display(false);
-          } else {
-	          marker.inferredMarker = null;
-          }
+			      inferredMarker.displayed = false;
+          } 
           
           
           points.push(realpoint);
@@ -246,11 +245,13 @@ OBA.Debug = function() {
 	          var inferredLink = jQuery(popup.contentDiv).find("a[name='inferredLoc']");
 	          inferredLink.click(function(e) {
 	          	e.preventDefault();
-							if (marker.inferredMarker !== null) {
-		          	if (marker.inferredMarker.onScreen()) {
-			          	marker.inferredMarker.display(false);
+							if (inferredMarker !== null) {
+		          	if (inferredMarker.displayed) {
+			          	inferredMarker.display(false);
+			          	inferredMarker.displayed = false;
 		          	} else {
-			          	marker.inferredMarker.display(true);
+			          	inferredMarker.display(true);
+			          	inferredMarker.displayed = true;
 		          	}
 							}
 	          });

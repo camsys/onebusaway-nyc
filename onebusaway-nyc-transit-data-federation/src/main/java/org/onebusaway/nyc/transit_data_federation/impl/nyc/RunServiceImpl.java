@@ -218,7 +218,8 @@ public class RunServiceImpl implements RunService {
 
   private final Pattern realRunRouteIdPattern = Pattern
       .compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
-  private final Pattern reportedRunIdPattern = Pattern.compile("0*(\\d+-\\d+)");
+  private final Pattern reportedRunIdPattern = Pattern.compile("0*(\\d+)-0*(\\d+)");
+  private final Pattern routeIdPattern = Pattern.compile("[a-zA-Z]+(\\d{2})+");
 
   @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
@@ -229,18 +230,6 @@ public class RunServiceImpl implements RunService {
      * FIXME TODO really need to cache these search results...
      */
     TreeMap<Integer, List<RunTripEntry>> matchedRTEs = new TreeMap<Integer, List<RunTripEntry>>();
-
-    /*
-     * 1. check for exact match
-     */
-//    RunTripEntry exactMatch = getActiveRunTripEntryForRunAndTime(
-//        runAgencyAndId, time);
-//    if (exactMatch != null) {
-//      List<RunTripEntry> lrtes = new ArrayList<RunTripEntry>();
-//      lrtes.add(exactMatch);
-//      matchedRTEs.put(0, lrtes);
-//      return matchedRTEs;
-//    }
 
     Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId
         .getId());
@@ -254,7 +243,9 @@ public class RunServiceImpl implements RunService {
      * 2. rank route id levenshtein distance for nearby runTrips FIXME this is
      * for EXACT schedule time
      */
-    String fuzzyRunId = reportedIdMatcher.group(1);
+    String fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
+        reportedIdMatcher.group(2));
+    
     for (BlockInstance binst : nearbyBlocks) {
       long serviceDate = binst.getServiceDate();
       int scheduleTime = (int) ((time - serviceDate) / 1000);
@@ -268,38 +259,60 @@ public class RunServiceImpl implements RunService {
        * reported id's, as best we can.
        */
       Matcher routeIdMatcher = realRunRouteIdPattern.matcher(rte.getRunRoute());
-      String thisRunId = null;
+      List<String> runIdsToTry = new ArrayList<String>();
       if (routeIdMatcher.matches()) {
         if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
           String thisRunRouteNumber = routeIdMatcher.group(2);
-          thisRunId = RunTripEntry.createId(thisRunRouteNumber,
-              rte.getRunNumber());
+          runIdsToTry.add(RunTripEntry.createId(thisRunRouteNumber,
+              rte.getRunNumber()));
         } else {
           /*
            * there is no numeric part to the routeId. check for MISC value
            */
           if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
-            // TODO include more considerations than just this...
-            thisRunId = RunTripEntry.createId("000", rte.getRunNumber());
+            /*
+             * they're allowed to enter anything, so we put this in there
+             */
+            runIdsToTry.add(RunTripEntry.createId("00", rte.getRunNumber()));
+            
+            /*
+             * however, they often use the actual route number
+             */
+            String routeId = rte.getTripEntry().getRouteCollection().getId().getId();
+            Matcher actualRouteIdMatcher = routeIdPattern.matcher(routeId);
+            if (actualRouteIdMatcher.matches()) {
+              for (int i = 1; i <= actualRouteIdMatcher.groupCount(); ++i) {
+                runIdsToTry.add(RunTripEntry.createId(actualRouteIdMatcher.group(i),
+                    rte.getRunNumber()));
+              }
+            }
           }
         }
       }
 
-      if (StringUtils.isEmpty(thisRunId)) {
+      if (runIdsToTry.isEmpty()) {
         _log.error("bundle-data runId does not have the required format:"
             + rte.getRunId());
         continue;
       }
 
-      int ldist = StringUtils.getLevenshteinDistance(fuzzyRunId, thisRunId);
-      List<RunTripEntry> lrtes = matchedRTEs.get(ldist);
+      int bestDist = Integer.MAX_VALUE;
+      for (String runId : runIdsToTry) {
+        int ldist = StringUtils.getLevenshteinDistance(fuzzyRunId, runId);
+        if (ldist <= bestDist) {
+          bestDist = ldist;
+        }
+      }
+      
+      List<RunTripEntry> lrtes = matchedRTEs.get(bestDist);
+      
       if (lrtes != null) {
         lrtes.add(rte);
-        matchedRTEs.put(ldist, lrtes);
+        matchedRTEs.put(bestDist, lrtes);
       } else {
         lrtes = new ArrayList<RunTripEntry>();
         lrtes.add(rte);
-        matchedRTEs.put(ldist, lrtes);
+        matchedRTEs.put(bestDist, lrtes);
       }
     }
 
