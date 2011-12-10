@@ -31,6 +31,32 @@
       <version>2.4</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <!-- UUID support -->
+    <dependency>
+      <groupId>com.eaio.uuid</groupId>
+      <artifactId>uuid</artifactId>
+      <version>3.2</version>
+    </dependency>
+    <!-- for unit tests -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>1.7.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-queue-realtime</artifactId>
+      <version>${onebusaway.nyc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-tcip-api-v305</artifactId>
+      <version>${onebusaway.nyc-tcip.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>onebusaway-nyc-queue-http-proxy</finalName>

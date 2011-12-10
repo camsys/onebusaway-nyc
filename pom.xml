@@ -87,6 +87,17 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <!-- for UUID support -->
+    <repository>
+      <id>eaio.com</id>
+      <url>http://eaio.com/maven2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -123,6 +134,7 @@
     <module>onebusaway-nyc-transit-data-federation</module>
     <module>onebusaway-nyc-transit-data-federation-webapp</module>
     <module>onebusaway-nyc-api-webapp</module>
+    <module>onebusaway-nyc-queue-realtime</module>
     <module>onebusaway-nyc-queue-broker</module>
     <module>onebusaway-nyc-queue-http-proxy</module>
     <module>onebusaway-nyc-queue-subscriber</module>
@@ -150,6 +162,7 @@
         <module>onebusaway-nyc-transit-data-federation</module>
         <module>onebusaway-nyc-transit-data-federation-webapp</module>
         <module>onebusaway-nyc-api-webapp</module>
+        <module>onebusaway-nyc-queue-realtime</module>
         <module>onebusaway-nyc-queue-broker</module>
         <module>onebusaway-nyc-queue-http-proxy</module>
         <module>onebusaway-nyc-queue-subscriber</module>
