@@ -24,9 +24,9 @@ public class NycSiriServiceGateway extends NycSiriService {
   @Override
   void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean, String defaultAgencyId) {
+    boolean isNew = getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
     result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
-        "added");
-    getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
+        (isNew ? "added" : "updated"));
   }
   
   

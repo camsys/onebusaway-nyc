@@ -5,11 +5,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +27,22 @@ import uk.org.siri.siri.Siri;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
+
+  @Test
+  public void testFoo() {
+    List<String> pre = new ArrayList<String>();
+    List<String> post = new ArrayList<String>();
+    pre.add("One");
+    pre.add("Two");
+    pre.add("Three");
+    post.add("One");
+    post.add("Three");
+    Collection<String> left = CollectionUtils.subtract(pre, post);
+    assertEquals(1, left.size());
+    for (String s: left) {
+      assertEquals("Two", s);
+    }
+  }
 
   @Test
   public void testGetPtSituationAsServiceAlertBean() {
@@ -67,7 +85,8 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
   public void testPostServiceDeliveryActions() throws Exception {
     MockSiriServicePersister mockPersister = new MockSiriServicePersister();
     setPersister(mockPersister);
-    mockPersister.put("one", ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100"));
+    mockPersister.put("one",
+        ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100"));
     SituationExchangeResults result = mock(SituationExchangeResults.class);
     ServiceDelivery delivery = mock(ServiceDelivery.class);
     addSubscription();
