@@ -38,8 +38,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 						return false;
 				}
 
-			CcLocationReport message = envelope.getCcLocationReport();
-      CcLocationReportRecord record = new CcLocationReportRecord(message, contents, _zoneOffset);
+      CcLocationReportRecord record = new CcLocationReportRecord(envelope, contents, _zoneOffset);
       if (record != null) {
         _dao.saveOrUpdateReport(record);
       }

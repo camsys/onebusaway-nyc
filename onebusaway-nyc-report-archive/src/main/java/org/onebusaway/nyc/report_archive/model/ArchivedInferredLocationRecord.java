@@ -172,7 +172,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setVehicleId(vehicleId);
     setAgencyId(agency);
 
-    setTimeReceived(new Date());
+    setTimeReceived(new Date(System.currentTimeMillis()));
 
     setServiceDate(new Date(message.getServiceDate()));
     setScheduleDeviation(message.getScheduleDeviation());

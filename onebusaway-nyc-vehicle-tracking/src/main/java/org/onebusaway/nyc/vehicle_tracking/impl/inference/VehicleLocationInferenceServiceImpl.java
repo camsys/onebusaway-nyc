@@ -231,8 +231,7 @@ public class VehicleLocationInferenceServiceImpl implements
     
     NycRawLocationRecord r = new NycRawLocationRecord();
 		r.setUUID(envelope.getUUID());
-		r.setSystemTimeReceived(envelope.getTimeReceived());
-
+		
     r.setLatitude(message.getLatitude() / 1000000f);
     r.setLongitude(message.getLongitude() / 1000000f);
 

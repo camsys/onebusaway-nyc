@@ -95,7 +95,9 @@ public class  NycQueuedInferredLocationDaoImplTest {
   private CcLocationReportRecord getCcRecord() {
       ArchivedInferredLocationRecord record = getTestRecord();
       CcLocationReportRecord cc = new CcLocationReportRecord();
+			cc.setUUID("foo");
       cc.setTimeReported(record.getTimeReported());
+			cc.setArchiveTimeReceived(new Date(122345l));
       cc.setVehicleId(record.getVehicleId());
       cc.setDestSignCode(123);
       cc.setDirectionDeg(new BigDecimal("10.1"));
@@ -107,7 +109,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
       cc.setRouteIdDesignator("routeIdDesignator");
       cc.setRunIdDesignator("runIdDesignator");
       cc.setSpeed(new BigDecimal("5.6"));
-      cc.setTimeReceived(new Date());
+      cc.setTimeReceived(new Date(System.currentTimeMillis()));
       cc.setVehicleAgencyDesignator("vehicleAgencyDesignator");
       cc.setVehicleAgencyId(789);
       cc.setNmeaSentenceGPGGA("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
@@ -122,7 +124,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
     record.setTimeReported(new Date(123456789L));
     record.setVehicleId(120);
     record.setAgencyId("NYC");
-    record.setTimeReceived(new Date());
+    record.setTimeReceived(new Date(System.currentTimeMillis()));
     record.setServiceDate(new Date(20111010L));
     record.setScheduleDeviation(1);
     record.setInferredBlockId("1");
