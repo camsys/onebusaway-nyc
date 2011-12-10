@@ -42,12 +42,6 @@ public class NycRawLocationRecord {
   @CsvField(name = "timereceived")
   private long timeReceived;
 
-  /**
-   * The time on the server when the system received this record (when
-   * it was first put on the queue).
-   */
-  private long systemTimeReceived;
-
   private double latitude;
 
   private double longitude;
@@ -207,14 +201,6 @@ public class NycRawLocationRecord {
 
   public long getTimeReceived() {
     return timeReceived;
-  }
-
-  public void setSystemTimeReceived(long systemTimeReceived) {
-    this.systemTimeReceived = systemTimeReceived;
-  }
-
-  public long getSystemTimeReceived() {
-    return systemTimeReceived;
   }
 
   public void setDeviceId(String deviceId) {
