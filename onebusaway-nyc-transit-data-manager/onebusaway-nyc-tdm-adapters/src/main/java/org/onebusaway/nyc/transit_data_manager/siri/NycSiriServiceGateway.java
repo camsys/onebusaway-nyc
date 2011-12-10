@@ -52,7 +52,9 @@ public class NycSiriServiceGateway extends NycSiriService {
   void postServiceDeliveryActions(SituationExchangeResults results, Collection<String> deletedIds) throws Exception {
     for (ServiceAlertSubscription subscription: getActiveServiceAlertSubscriptions()) {
       try {
+        _log.info("Sending service alerts to subscriber: " + subscription.getAddress());
         subscription.send(getPersister().getAllActiveServiceAlerts(), deletedIds);
+        _log.info("Successfully sent service alerts to subscriber: " + subscription.getAddress());
       } catch (Exception e) {
         Integer failures = subscription.getConsecutiveFailures();
         if (failures == null)
