@@ -121,6 +121,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
   private ArchivedInferredLocationRecord getTestRecord() {
 
     ArchivedInferredLocationRecord record = new ArchivedInferredLocationRecord();
+		record.setUUID("foo");
     record.setTimeReported(new Date(123456789L));
     record.setVehicleId(120);
     record.setAgencyId("NYC");
