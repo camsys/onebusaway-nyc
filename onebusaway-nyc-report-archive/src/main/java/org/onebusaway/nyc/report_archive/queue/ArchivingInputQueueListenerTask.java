@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.report_archive.queue;
 
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 import org.onebusaway.nyc.vehicle_tracking.impl.queue.InputQueueListenerTask;
@@ -28,16 +29,16 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   // listening
   public boolean processMessage(String address, String contents) {
     try {    
-      CcLocationReport message = deserializeMessage(contents);
+				RealtimeEnvelope envelope = deserializeMessage(contents);
 
-      if (message == null) {
-	  _log.error("Message discarded, probably corrupted, contents= " + contents);
-	  Exception e = new Exception("deserializeMessage failed, possible corrupted message.");
+				if (envelope == null || envelope.getCcLocationReport() == null) {
+						_log.error("Message discarded, probably corrupted, contents= " + contents);
+						Exception e = new Exception("deserializeMessage failed, possible corrupted message.");
+						_dao.handleException(contents, e);
+						return false;
+				}
 
-	  _dao.handleException(contents, e);
-	  return false;
-      }
-
+			CcLocationReport message = envelope.getCcLocationReport();
       CcLocationReportRecord record = new CcLocationReportRecord(message, contents, _zoneOffset);
       if (record != null) {
         _dao.saveOrUpdateReport(record);

@@ -27,6 +27,11 @@ public class NycRawLocationRecord {
   private long id;
 
   /**
+	 * index to link the realtime record to the inference record.
+	 */
+  private String uuid; 
+
+  /**
    * The time on the bus when this record was sent to us.
    */
   private long time;
@@ -36,6 +41,12 @@ public class NycRawLocationRecord {
    */
   @CsvField(name = "timereceived")
   private long timeReceived;
+
+  /**
+   * The time on the server when the system received this record (when
+   * it was first put on the queue).
+   */
+  private long systemTimeReceived;
 
   private double latitude;
 
@@ -85,6 +96,14 @@ public class NycRawLocationRecord {
   public long getId() {
     return id;
   }
+
+  public String getUUID() {
+		return uuid;
+	}
+
+  public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
 
   public void setTime(long time) {
     this.time = time;
@@ -188,6 +207,14 @@ public class NycRawLocationRecord {
 
   public long getTimeReceived() {
     return timeReceived;
+  }
+
+  public void setSystemTimeReceived(long systemTimeReceived) {
+    this.systemTimeReceived = systemTimeReceived;
+  }
+
+  public long getSystemTimeReceived() {
+    return systemTimeReceived;
   }
 
   public void setDeviceId(String deviceId) {

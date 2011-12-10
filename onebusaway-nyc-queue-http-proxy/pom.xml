@@ -41,7 +41,11 @@
       <artifactId>uuid</artifactId>
       <version>3.2</version>
     </dependency>
-    <!-- for unit tests -->
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-xc</artifactId>
+			<version>1.9.2</version>
+		</dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>

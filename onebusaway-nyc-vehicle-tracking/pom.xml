@@ -12,6 +12,11 @@
     <dependencies>
         <dependency>
             <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-queue-realtime</artifactId>
+            <version>${onebusaway.nyc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
             <version>${onebusaway.nyc.version}</version>
         </dependency>

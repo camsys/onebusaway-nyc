@@ -56,18 +56,28 @@ public class Publisher implements IPublisher {
     }
 
     String wrap(byte[] message) {
-	long timeReceived = System.currentTimeMillis();
-	String realtime = new String(message);
-	String uuid = new UUID().toString();
-	StringBuffer prefix = new StringBuffer();
-	prefix.append("{\"UUID\":\"")
-	    .append(uuid)
-	    .append("\",\"timeReceived\":")
-	    .append(timeReceived)
-	    .append(",\"ccLocationReport\":")
-	    .append(realtime)
-	    .append("}");
-	return prefix.toString();
+				long timeReceived = getTimeReceived();
+				String realtime = new String(message);
+				// we remove wrapping below, so check for min length acceptable
+				if (realtime.length() < 2) return null;
+ 
+
+				StringBuffer prefix = new StringBuffer();
+				prefix.append("{\"RealtimeEnvelope\": {\"UUID\":\"")
+						.append(generateUUID())
+						.append("\",\"timeReceived\": ")
+						.append(timeReceived)
+						.append(",")
+						.append(realtime.substring(1, realtime.length()-1))
+						.append("}}");
+				return prefix.toString();
     }
+		
+		String generateUUID() {
+				return new UUID().toString();
+		}
+		long getTimeReceived() {
+				return System.currentTimeMillis();
+		}
 
 }

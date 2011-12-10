@@ -18,13 +18,12 @@ package org.onebusaway.nyc.vehicle_tracking.services.inference;
 import java.util.List;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-
-import tcip_final_3_0_5_1.CcLocationReport;
 
 public interface VehicleLocationInferenceService {
 	
@@ -32,7 +31,7 @@ public interface VehicleLocationInferenceService {
 
   public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record);
 
-  public void handleCcLocationReportRecord(CcLocationReport message);
+  public void handleRealtimeEnvelopeRecord(RealtimeEnvelope message);
 
   
   public void resetVehicleLocation(AgencyAndId vid);
