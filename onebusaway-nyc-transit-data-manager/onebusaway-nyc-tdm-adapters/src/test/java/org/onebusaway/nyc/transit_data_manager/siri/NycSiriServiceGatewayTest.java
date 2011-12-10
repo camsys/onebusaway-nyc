@@ -30,7 +30,7 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
   public void testGetPtSituationAsServiceAlertBean() {
     SiriHelper siriHelper = new SiriHelper();
     PtSituationElementStructure ptSituation = siriHelper.createPtSituationElementStructure(
-        "summaryText", "descriptionText", "MTA NYCT_123",
+        "summaryText", "descriptionText    ", "    MTA NYCT_123",
         "2011-11-08T00:00:00.000Z", "", "MTA NYCT_B63", "statusType");
     SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
     ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
