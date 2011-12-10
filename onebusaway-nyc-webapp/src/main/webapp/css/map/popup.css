@@ -24,6 +24,7 @@
 	white-space: nowrap;
 	padding-left: 35px;
 	padding-top: 5px;
+	padding-bottom: 5px;
 }
 
 .popup .header.stop {
@@ -78,20 +79,20 @@
 }
 
 .popup ul.service-alert li {
-    color: #d12020;
-	background-color: #efefef;
-	border: 1px solid #bebebe;
-	padding: 3px;
+	font-weight: bold;
+	color: #d12020;
 	margin-top: 2px;  
 }
 
 .popup ul li.route {
+	whitespace: no-wrap;
 	color: #000099;
 	font-weight: bold;
 	margin-bottom: 3px;
 }
 
 .popup ul li.arrival {
+	whitespace: no-wrap;
 	height: 16px;
 	font-weight: bold;
 	padding-left: 19px;

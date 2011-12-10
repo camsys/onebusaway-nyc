@@ -19,11 +19,11 @@ var OBA = window.OBA || {};
 OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
 		bounds: new google.maps.LatLngBounds(
-				new google.maps.LatLng(40.48801936882241,-74.28397178649902),
-				new google.maps.LatLng(40.92862373397717,-73.68182659149171)
-		),
+					new google.maps.LatLng(40.48801936882241,-74.28397178649902),
+					new google.maps.LatLng(40.92862373397717,-73.68182659149171)
+				),
 		getTileUrl: function(coord, zoom) {
-			if (!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
+			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
 				return null;
 			}
 			
@@ -31,12 +31,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
 		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
 
-		    if (!this.bounds.contains(center_ll)) {
+		    if(!this.bounds.contains(center_ll)) {
 		    	return null;
 		    }
 		    
 			var quad = "", i;
-		    for (i = zoom; i > 0; i--) {
+		    for(i = zoom; i > 0; i--) {
 		        var mask = 1 << (i - 1); 
 		        var cell = 0; 
 		        if ((coord.x & mask) != 0) {
@@ -155,7 +155,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			navigationControlOptions: { style: google.maps.NavigationControlStyle.DEFAULT },
 			center: new google.maps.LatLng(40.639228,-74.081154)
 	};
-	
+
 	// Create Subway Tiles toggle button
 	var subwayControlDiv = document.createElement('DIV');
 	subwayControlDiv.index = 1;
@@ -217,8 +217,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	var stopsById = {};
 	var stopsAddedForRoute = {};
 	var alreadyDisplayedStopIcons = {};
-	
-	// DISAMBIGUATION ICONS
+
 	var normalLocationIcon = new google.maps.MarkerImage("img/location/beachflag.png",
             new google.maps.Size(20, 32),
             new google.maps.Point(0,0),
@@ -229,8 +228,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
             new google.maps.Point(0,0),
             new google.maps.Point(0, 32));
 	
-	// POPUPS	
-	function showPopupWithContent(marker, content) {
+	// POPUPS
+	function preparePopup(marker) {
 		// only one popup open at a time!
 		var closeFn = function() {
 			if(infoWindow !== null) {
@@ -240,49 +239,47 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		};
 		closeFn();
 
+		// make a popup, but don't open it yet!
 		infoWindow = new google.maps.InfoWindow({
-	    	content: content,
 	    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
 	    	disableAutoPan: false
 	    });
-		infoWindow.open(map, marker);
-    
+
 		google.maps.event.addListener(infoWindow, "closeclick", closeFn);
 	}
 	
+	function showPopupWithContent(marker, content) {
+		preparePopup(marker);
+		
+		infoWindow.setContent(content);
+		infoWindow.open(map, marker);
+	}
+	
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
-		// only one popup open at a time!
-		var closeFn = function() {
-			if(infoWindow !== null) {
-				infoWindow.close();
-				infoWindow = null;
-			}
-		};
-		closeFn();
+		preparePopup(marker);		
 
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
-				infoWindow = new google.maps.InfoWindow({
-			    	content: contentFn(json, userData, popupContainerId),
-			    	pixelOffset: new google.maps.Size(0, (marker.getIcon().size.height / 2)),
-			    	disableAutoPan: false
-			    });
+				if(infoWindow === null) {
+					return;
+				}
+				
+				infoWindow.setContent(contentFn(json, userData, popupContainerId));
 				infoWindow.open(map, marker);
-		    
-				google.maps.event.addListener(infoWindow, "closeclick", closeFn);
 
-				// hack fixme
 				var container = jQuery("#" + popupContainerId);
 
-				container.parent().parent().css("height", container.height());
+				// resize bubble to fit (new) content
+				container.parent().parent().css("height", Math.min(Math.max(200, container.height()), 300));
 				container.parent().parent().css("width", Math.min(Math.max(300, container.width() + 25), 400)); // 25 = margin for close button 
-				
+
 				container.parent().css("overflow", "hidden");
 				container.parent().parent().css("overflow", "hidden");
 			});
 		};
 		refreshFn();		
+		infoWindow.refreshFn = refreshFn;	
 
 		var updateTimestamp = function() {
 			var timestampContainer = jQuery("#" + popupContainerId).find(".updated");
@@ -293,21 +290,16 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			
 			var age = parseInt(timestampContainer.attr("age"), 10);
 			var referenceEpoch = parseInt(timestampContainer.attr("referenceEpoch"), 10);
-			
 			var newAge = age + ((new Date().getTime() - referenceEpoch) / 1000);
 			timestampContainer.text("Data updated " + OBA.Util.displayTime(newAge));
 		};
 		updateTimestamp();		
-		
-		// this method will be called regularly by the update timer
-		infoWindow.refreshFn = refreshFn;	
 		infoWindow.updateTimestamp = updateTimestamp;	
 	}
 	
 	// return html for a SIRI VM response
 	function getVehicleContentForResponse(r, unusedUserData, popupContainerId) {
 		var activity = r.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
-
 		if(activity === null || activity.MonitoredVehicleJourney === null) {
 			return null;
 		}
@@ -344,12 +336,15 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '</p>';
 		html += '</div>';
 		
+		// service alerts
+		html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);		
+		
 		// service available at stop
 		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' 
 			|| typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined') {
 
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
-		} else {		
+		} else {
 			var nextStops = [];
 			nextStops.push(activity.MonitoredVehicleJourney.MonitoredCall);
 			jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
@@ -362,7 +357,12 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			html += '<p class="service">Next stops:</p>';
 			html += '<ul>';			
 			jQuery.each(nextStops, function(_, call) {
-				html += '<li class="nextStop">' + getStopLink(call) + ' <span>';
+				var stopIdParts = call.StopPointRef.split("_");
+				var stopIdWithoutAgencyId = stopIdParts[1];
+				
+				html += '<li class="nextStop">';				
+				html += '<a href="#' + stopIdWithoutAgencyId + '">' + call.StopPointName + '</a>';
+				html += '<span>';
 				html +=   call.Extensions.Distances.PresentableDistance;
 				html += '</span></li>';
 			});
@@ -370,9 +370,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', routeIdWithoutAgency);			
-
-		html += getServiceAlertContent(r, activity.MonitoredVehicleJourney.SituationRef);		
-		
 		html += getZoomHereLink();
 		
 		// (end popup)
@@ -381,34 +378,27 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		return html;
 	}
 	
-	function getStopLink(call) {
-		var name = (call.StopPointRef).replace(/MTA\s/i,"");
-		var stopListLink = $('<a class="stopName" id="stopLink_' + name + '">' + call.StopPointName + '</a>');
-		$('#stopLink_' + name).live("click", function(e) {
-			e.preventDefault();
-			mapShowPopupForStopId(call.StopPointRef);
-		});
-		
-		return jQuery('<a></a>').append(stopListLink.clone()).html();
-	}
-	
 	function getZoomHereLink() {
-		var zoomHere = $('<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>');
-		$('#zoomHere').live("click", function(e) { 
+		var zoomHere = '<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>';
+
+		jQuery('#zoomHere').live("click", function(e) { 
 			e.preventDefault();
+
 			if (infoWindow !== null && infoWindow.anchor !== null) {
 				map.setCenter(infoWindow.anchor.getPosition());
 			}
+			
 			map.setZoom(map.maxZoom - 3); 
 		});
 		
-		return jQuery('<a></a>').append(zoomHere.clone()).html();
+		return zoomHere;
 	}
 
-	function getServiceAlertContent(r, situationRefs) {
+	function getServiceAlerts(r, situationRefs) {
 	    var html = '';
-        var situationIds = {};
-        var situationRefsCount = 0; // Yes, this counts vehicles w/ situation refs
+
+	    var situationIds = {};
+        var situationRefsCount = 0; 
         if (situationRefs != null) {
             jQuery.each(situationRefs, function(_, situation) {
                 situationIds[situation.SituationSimpleRef] = true;
@@ -425,18 +415,17 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
                     }
                 });
             }
-
         }
         
         if (html !== '') {
-            html = '<p class="service">Alerts:</p><ul class="service-alert">' + html + '</ul>';
+            html = '<ul class="service-alert">' + html + '</ul>';
         }
+        
         return html;
 	}
 	
 	function getStopContentForResponse(r, stopResult, popupContainerId) {
 		var visits = r.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
-		
 		if(visits === null) {
 			return null;
 		}
@@ -457,6 +446,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
 		});		
+		
 		if(maxUpdateTimestamp !== null) {
 			var age = (parseInt(updateTimestampReference, 10) - parseInt(maxUpdateTimestamp, 10)) / 1000;
 			var staleClass = ((age > OBA.Config.staleTimeout) ? " stale" : "");
@@ -473,62 +463,83 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		html += '  </p>';
 		html += ' </div>';
 		
-		// service available
-		if(visits.length === 0) {
-			html += '<p class="service">No buses en-route to your location.<br/>Please check back shortly for an update.</p>';
-		} else {		
-			html += '<p class="service">Upcoming arrivals:</p>';
-			html += '<ul>';
+		// service alerts
+	    html += getServiceAlerts(r, null);
+		
+	    // service available
+		html += '<p class="service">Service available at this stop:</p>';
+		html += '<ul>';
+		
+		var totalRouteCount = 0;
+		var headsignsByRouteId = {};
+    	jQuery.each(stopResult.routesAvailable, function(_, routeResult) {
+    		headsignsByRouteId[routeResult.routeId] = routeResult.routeIdWithoutAgency + " " + routeResult.longName;
+    		totalRouteCount++;
+    	});
+		
+		var maxObservationsToShow = 3;
+		if(totalRouteCount > 10) {
+			maxObservationsToShow = 1;
+		} else if(totalRouteCount > 5) {
+			maxObservationsToShow = 2;
+		}		
+		
+		var arrivalsByRouteId = {};
+		jQuery.each(visits, function(_, monitoredJourney) {
+			var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
+			
+			if(typeof arrivalsByRouteId[routeId] === 'undefined') {
+				arrivalsByRouteId[routeId] = [];
+				delete headsignsByRouteId[routeId];
+			}
+			
+			arrivalsByRouteId[routeId].push(monitoredJourney.MonitoredVehicleJourney);
+		});
 
-			var arrivalsByRouteAndHeadsign = {};
-			jQuery.each(visits, function(_, monitoredJourney) {
-				var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
-				var routeIdParts = routeId.split("_");
-				var routeIdWithoutAgency = routeIdParts[1];
-				
-				var key = routeIdWithoutAgency + " " + monitoredJourney.MonitoredVehicleJourney.PublishedLineName;
-				if(typeof arrivalsByRouteAndHeadsign[key] === 'undefined') {
-					arrivalsByRouteAndHeadsign[key] = [];
+		jQuery.each(arrivalsByRouteId, function(routeId, monitoredVehicleJourneyCollection) {
+			var routeIdParts = routeId.split("_");
+			var routeIdWithoutAgency = routeIdParts[1];
+			
+			html += '<li class="route">';
+			html += '<a href="#' + routeIdWithoutAgency + '">' + routeIdWithoutAgency + " " + monitoredVehicleJourneyCollection[0].PublishedLineName + '</a>';
+			html += '</li>';
+			
+			jQuery.each(monitoredVehicleJourneyCollection, function(_, monitoredVehicleJourney) {
+				if(_ >= maxObservationsToShow) {
+					return false;
 				}
-
-				arrivalsByRouteAndHeadsign[key].push(monitoredJourney.MonitoredVehicleJourney);
+					
+				var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
+					
+				if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
+						monitoredVehicleJourney.ProgressStatus === "layover") {
+					distance += " (at terminal)";
+				}
+					
+				html += '<li class="arrival">' + distance + '</li>';
 			});
+		});
 		
-			jQuery.each(arrivalsByRouteAndHeadsign, function(routeLabel, monitoredVehicleJourneyCollection) {
-				html += '<li class="route">' + routeLabel + '</li>';
+		// ...and the routes available with no upcoming service
+		var haveRoutesWithoutService = false;
+		jQuery.each(headsignsByRouteId, function(routeId, headsign) {
+			var routeIdParts = routeId.split("_");
+			var routeIdWithoutAgency = routeIdParts[1];
 
-				jQuery.each(monitoredVehicleJourneyCollection, function(_, monitoredVehicleJourney) {
-					if(_ >= 3) {
-						return false;
-					}
-					
-					var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
-					
-					if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
-							monitoredVehicleJourney.ProgressStatus === "layover") {
-						distance += " (at terminal)";
-					}
-					
-					html += '<li class="arrival">' + distance + '</li>';
-				});
-			});
-			html += '</ul>';
-		}
+			html += '<li class="route">';
+			html += '<a href="#' + routeIdWithoutAgency + '">' + headsign + '</a>';
+			html += '</li>';
+			
+			haveRoutesWithoutService = true;
+		});
 
-		if(stopResult.routesAvailable.length > 0) {
-			html += '<p class="otherRoutes">Routes available at this stop:</p>';
-			html += '<ul class="otherRoutes">';
-			jQuery.each(stopResult.routesAvailable, function(_, routeAvailable) {
-				html += '<li class="route"><a href="#' + routeAvailable.routeIdWithoutAgency + '" title="' + routeAvailable.description + '">'
-						+ routeAvailable.routeIdWithoutAgency + '</a></li>';
-			});
-			html += '</ul>';
+		if(haveRoutesWithoutService === true) {
+			html += '<p class="service">No buses en-route. Check back shortly for an update.</p>';
 		}
 		
+		html += '</ul>';
+
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopResult.stopIdWithoutAgency);
-		
-	    html += getServiceAlertContent(r, null);
-		
 		html += getZoomHereLink();
 	        
 		// (end popup)
@@ -666,6 +677,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		if (stopMarker.getMap() !== null) {
 			stopMarker.setMap(map);
 		}
+
 		map.setCenter(stopMarker.getPosition());
 		map.setZoom(14);
 		google.maps.event.trigger(stopMarker, "click");
@@ -880,6 +892,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			topRightControls.push(subwayControlDiv);
 		} 
 	}
+	
 	var zoomSubwayCtrlTimeout = null;
 	google.maps.event.addListener(map, 'zoom_changed', function() {
 		if (zoomSubwayCtrlTimeout !== null) {
@@ -887,7 +900,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 		zoomSubwayCtrlTimeout = setTimeout(showSubwayToggle, 2000);
 	});
-	
 	
 	// timer to update periodically
 	setInterval(function() {
@@ -1053,8 +1065,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		removeDisambiguationMarkers: removeDisambiguationMarkers,
 		
-		addDisambiguationMarkerWithContent: function(latlng, address, neighborhood) {
-				
+		addDisambiguationMarkerWithContent: function(latlng, address, neighborhood) {				
 			var markerOptions = {
 					position: latlng,
 		            icon: normalLocationIcon,
