@@ -37,11 +37,13 @@ public class CcAndInferredLocationRecord implements Serializable {
     public CcAndInferredLocationRecord (ArchivedInferredLocationRecord inferred,
 					CcLocationReportRecord realtime) {
 	// realtime fields
+	setUUID(realtime.getUUID());
 	setRunIdDesignator(realtime.getRunIdDesignator());
 	setRouteIdDesignator(realtime.getRouteIdDesignator());
 	setVehicleAgencyId(realtime.getVehicleAgencyId());
 	setTimeReported(toISODate(realtime.getTimeReported()));
 	setTimeReceived(toISODate(realtime.getTimeReceived()));
+	setArchiveTimeReceived(toISODate(realtime.getArchiveTimeReceived()));
 	setOperatorIdDesignator(realtime.getOperatorIdDesignator());
 	setDestSignCode(realtime.getDestSignCode());
 	setEmergencyCode(realtime.getEmergencyCode());
@@ -74,9 +76,11 @@ public class CcAndInferredLocationRecord implements Serializable {
     }
 
     // realtime fields
+  private String uuid;
   private Integer vehicleAgencyId;
   private String timeReported;
   private String timeReceived;
+  private String archiveTimeReceived;
   private String operatorIdDesignator;
   private String routeIdDesignator;
   private String runIdDesignator;
@@ -109,6 +113,13 @@ public class CcAndInferredLocationRecord implements Serializable {
   private Double nextScheduledStopDistance;
   private Integer scheduleDeviation;
 
+  public String getUUID() {
+	return uuid;
+  }
+ 
+  public void setUUID(String uuid) {
+	this.uuid = uuid;
+  }
 
   public Integer getVehicleId() {
     return vehicleId;
@@ -140,6 +151,14 @@ public class CcAndInferredLocationRecord implements Serializable {
 
   public void setTimeReceived(String timeReceived) {
     this.timeReceived = timeReceived;
+  }
+
+  public String getArchiveTimeReceived() {
+	return archiveTimeReceived;
+  }
+
+  public void setArchiveTimeReceived(String archiveTimeReceived) {
+	this.archiveTimeReceived = archiveTimeReceived;
   }
 
   public String getOperatorIdDesignator() {

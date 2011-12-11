@@ -40,6 +40,7 @@ public class CcLocationReportRecord implements Serializable {
   @AccessType("property")
   private Integer id;
 
+  @Index(name = "UUID")
 	@Column(nullable = false, name = "UUID", length = 36)
   private String uuid;
 
