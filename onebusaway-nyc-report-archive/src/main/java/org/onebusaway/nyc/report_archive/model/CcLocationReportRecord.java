@@ -15,6 +15,7 @@ import tcip_final_3_0_5_1.SPDataQuality;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,7 +37,11 @@ public class CcLocationReportRecord implements Serializable {
   @Id
   @GeneratedValue
   @AccessType("property")
-  private Integer id;
+  private Long id;
+
+  @Column(name = "uuid")
+  @Index(name = "uuid")
+  private UUID uuid;
 
   @Column(nullable = false, name = "request_id")
   private Integer requestId;
@@ -59,6 +64,9 @@ public class CcLocationReportRecord implements Serializable {
   @Index(name = "time_received")
   private Date timeReceived;
   
+  @Column(nullable = false, name = "time_processed")
+  private Date timeProcessed;
+
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "latitude")
   private BigDecimal latitude;
   
@@ -89,7 +97,7 @@ public class CcLocationReportRecord implements Serializable {
   @Column(name = "emergency_code", length = 1)
   private String emergencyCode;
     
-  @Column(nullable = false, name = "route_id_designator", length =16)
+  @Column(nullable = false, name = "route_id_designator", length = 16)
   private String routeIdDesignator;
   
   @Column(name = "nmea_sentence_gpgga", length = 160)
@@ -104,8 +112,15 @@ public class CcLocationReportRecord implements Serializable {
   public CcLocationReportRecord() {
   }
 
+    // CcLocationReport will have to be changed to wrapper, message extracted
     public CcLocationReportRecord(CcLocationReport message, String contents, String zoneOffset) {
     super();
+
+    // Will need to set UUID from wrapper. For now just generate for testing.
+    setUuid(UUID.randomUUID());
+    // Will need to set timeReceived from wrapper.
+    setTimeReceived(new Date());
+
     if (message == null) return; // deserialization failure, abort
     setRequestId((int) message.getRequestId());
 
@@ -131,7 +146,7 @@ public class CcLocationReportRecord implements Serializable {
     setRunIdDesignator(message.getRunID().getDesignator());
     setSpeed(convertSpeed(message.getSpeed()));
     setTimeReported(convertTime(message.getTimeReported(), zoneOffset));
-    setTimeReceived(new Date());
+    setTimeProcessed(new Date());
     setVehicleAgencyDesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());
     setVehicleId((int) message.getVehicle().getVehicleId());
@@ -183,12 +198,20 @@ public class CcLocationReportRecord implements Serializable {
     return new BigDecimal(latlong * Math.pow(10.0, -6));
   }
 
-  public Integer getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(Integer id) {
+  public void setId(Long id) {
     this.id = id;
+  }
+
+  public UUID getUuid() {
+      return uuid;
+  }
+
+  public void setUuid(UUID uuid) {
+      this.uuid = uuid;
   }
 
   public Integer getRequestId() {
@@ -229,6 +252,14 @@ public class CcLocationReportRecord implements Serializable {
 
   public void setTimeReported(Date timeReported) {
     this.timeReported = timeReported;
+  }
+
+  public Date getTimeProcessed() {
+    return timeProcessed;
+  }
+
+  public void setTimeProcessed(Date timeProcessed) {
+    this.timeProcessed = timeProcessed;
   }
 
   public BigDecimal getLatitude() {

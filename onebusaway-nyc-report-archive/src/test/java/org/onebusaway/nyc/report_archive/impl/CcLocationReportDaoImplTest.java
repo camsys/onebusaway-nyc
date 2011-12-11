@@ -81,6 +81,7 @@ public class CcLocationReportDaoImplTest {
     report.setSpeed(new BigDecimal("5.6"));
     report.setTimeReported(new Date());
     report.setTimeReceived(new Date());
+    report.setTimeProcessed(new Date());
     report.setVehicleAgencyDesignator("vehicleAgencyDesignator");
     report.setVehicleAgencyId(789);
     report.setVehicleId(120);

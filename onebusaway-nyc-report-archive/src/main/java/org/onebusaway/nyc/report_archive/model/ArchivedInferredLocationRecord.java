@@ -40,6 +40,7 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -58,7 +59,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Id
   @GeneratedValue
   @AccessType("property")
-  private Integer id;
+  private Long id;
+
+  // This will come from NycVehicleManagementStatusBean
+  @Column(name = "uuid")
+  @Index(name = "uuid")
+  private UUID uuid;
 
   // Fields from NycQueuedInferredLocationBean
   @Column(nullable = false, name = "time_reported")
@@ -71,8 +77,9 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "agency_id", length = 64)
   private String agencyId;
 
-  @Column(nullable = false, name = "time_received")
-  private Date timeReceived;
+  // Matches time_processed in CcLocationReport
+  @Column(nullable = false, name = "time_processed")
+  private Date timeProcessed;
 
   @Column(nullable = false, name = "service_date")
   private Date serviceDate;
@@ -80,10 +87,10 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "schedule_deviation")
   private Integer scheduleDeviation;
   
-  @Column(nullable = true, name = "inferred_block_id")
+  @Column(nullable = true, name = "inferred_block_id", length = 64)
   private String inferredBlockId;
   
-  @Column(nullable = true, name = "inferred_trip_id")
+  @Column(nullable = true, name = "inferred_trip_id", length = 64)
   private String inferredTripId;
   
   @Column(nullable = true, name = "distance_along_block")
@@ -98,16 +105,16 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_longitude")
   private BigDecimal inferredLongitude;
   
-  @Column(nullable = false, name = "inferred_phase")
+  @Column(nullable = false, name = "inferred_phase", length = 32)
   private String inferredPhase;
   
-  @Column(nullable = false, name = "inferred_status")
+  @Column(nullable = false, name = "inferred_status", length = 32)
   private String inferredStatus;
   
-  @Column(nullable = true, name = "inferred_route_id")
+  @Column(nullable = true, name = "inferred_route_id", length = 32)
   private String inferredRouteId;
 
-  @Column(nullable = true, name = "inferred_direction_id")
+  @Column(nullable = true, name = "inferred_direction_id", length = 1)
   private String inferredDirectionId;
 
   // Fields from NycVehicleManagementStatusBean
@@ -118,7 +125,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
   private Long lastLocationUpdateTime;
 
   @Column(nullable = true, name = "inferred_dest_sign_code")
-  private String inferredDestSignCode;
+  private Integer inferredDestSignCode;
   
   @Column(nullable = false, name = "inference_is_formal")
   private boolean inferenceIsFormal;
@@ -126,18 +133,18 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "emergency_flag")
   private boolean emergencyFlag;
 
-  @Column(nullable = true, name = "depot_id")
+  @Column(nullable = true, name = "depot_id", length = 16)
   private String depotId;
 
-  @Column(nullable = true, name = "inferred_operator_id")
+  @Column(nullable = true, name = "inferred_operator_id", length = 16)
   private String inferredOperatorId;
 
-  @Column(nullable = true, name = "inferred_run_id")
+  @Column(nullable = true, name = "inferred_run_id", length = 16)
   private String inferredRunId;
  
   // Fields from TDS
   // Stop ID of next scheduled stop
-  @Column(nullable = true, name = "next_scheduled_stop_id")
+  @Column(nullable = true, name = "next_scheduled_stop_id", length = 32)
   private String nextScheduledStopId;
 
   // Distance to next scheduled stop
@@ -172,7 +179,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setVehicleId(vehicleId);
     setAgencyId(agency);
 
-    setTimeReceived(new Date());
+    setTimeProcessed(new Date());
 
     setServiceDate(new Date(message.getServiceDate()));
     setScheduleDeviation(message.getScheduleDeviation());
@@ -200,9 +207,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
     NycVehicleManagementStatusBean managementBean = message.getManagementRecord();
 
+    // Will need to set UUID from wrapper. For now just generate for testing.
+    setUuid(UUID.randomUUID());
     setLastUpdateTime(managementBean.getLastUpdateTime());
     setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
-    setInferredDestSignCode(managementBean.getLastInferredDestinationSignCode());
+    String inferredDscString = managementBean.getLastInferredDestinationSignCode();
+    setInferredDestSignCode(Integer.parseInt(inferredDscString));
     setInferenceIsFormal(managementBean.isInferenceIsFormal());
     setDepotId(managementBean.getDepotId());
     setEmergencyFlag(managementBean.isEmergencyFlag());
@@ -255,12 +265,20 @@ public class ArchivedInferredLocationRecord implements Serializable {
       }
   }
 
-  public Integer getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(Integer id) {
+  public void setId(Long id) {
     this.id = id;
+  }
+
+  public UUID getUuid() {
+      return uuid;
+  }
+
+  public void setUuid(UUID uuid) {
+      this.uuid = uuid;
   }
 
   public Date getTimeReported() {
@@ -287,12 +305,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.agencyId = agencyId;
   }
 
-  public Date getTimeReceived() {
-    return timeReceived;
+  public Date getTimeProcessed() {
+    return timeProcessed;
   }
 
-  public void setTimeReceived(Date timeReceived) {
-    this.timeReceived = timeReceived;
+  public void setTimeProcessed(Date timeProcessed) {
+    this.timeProcessed = timeProcessed;
   }
 
   public Date getServiceDate() {
@@ -408,11 +426,11 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.lastLocationUpdateTime = lastGpsTime;
   }
 
-  public String getInferredDestSignCode() {
+  public Integer getInferredDestSignCode() {
     return inferredDestSignCode;
   }
 
-  public void setInferredDestSignCode(String inferredDestSignCode) {
+  public void setInferredDestSignCode(Integer inferredDestSignCode) {
     this.inferredDestSignCode = inferredDestSignCode;
   }
 

@@ -77,6 +77,7 @@ public class CcAndInferredLocationRecord implements Serializable {
   private Integer vehicleAgencyId;
   private String timeReported;
   private String timeReceived;
+  private String timeProcessed;
   private String operatorIdDesignator;
   private String routeIdDesignator;
   private String runIdDesignator;
@@ -97,7 +98,7 @@ public class CcAndInferredLocationRecord implements Serializable {
   private String inferredTripId;
   private String inferredRouteId;
   private String inferredDirectionId;
-  private String inferredDestSignCode;
+  private Integer inferredDestSignCode;
   private BigDecimal inferredLatitude;
   private BigDecimal inferredLongitude;
   private String inferredPhase;
@@ -140,6 +141,14 @@ public class CcAndInferredLocationRecord implements Serializable {
 
   public void setTimeReceived(String timeReceived) {
     this.timeReceived = timeReceived;
+  }
+
+  public String getTimeProcessed() {
+    return timeProcessed;
+  }
+
+  public void setTimeProcessed(String timeProcessed) {
+    this.timeProcessed = timeProcessed;
   }
 
   public String getOperatorIdDesignator() {
@@ -287,11 +296,11 @@ public class CcAndInferredLocationRecord implements Serializable {
     return inferredDirectionId;
   }
 
-  public String getInferredDestSignCode() {
+  public Integer getInferredDestSignCode() {
     return inferredDestSignCode;
   }
 
-  public void setInferredDestSignCode(String inferredDestSignCode) {
+  public void setInferredDestSignCode(Integer inferredDestSignCode) {
     this.inferredDestSignCode = inferredDestSignCode;
   }
 

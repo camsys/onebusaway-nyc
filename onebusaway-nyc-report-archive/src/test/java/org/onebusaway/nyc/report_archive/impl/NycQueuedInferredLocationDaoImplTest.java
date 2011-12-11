@@ -108,6 +108,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
       cc.setRunIdDesignator("runIdDesignator");
       cc.setSpeed(new BigDecimal("5.6"));
       cc.setTimeReceived(new Date());
+      cc.setTimeProcessed(new Date());
       cc.setVehicleAgencyDesignator("vehicleAgencyDesignator");
       cc.setVehicleAgencyId(789);
       cc.setNmeaSentenceGPGGA("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
@@ -122,7 +123,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
     record.setTimeReported(new Date(123456789L));
     record.setVehicleId(120);
     record.setAgencyId("NYC");
-    record.setTimeReceived(new Date());
+    record.setTimeProcessed(new Date());
     record.setServiceDate(new Date(20111010L));
     record.setScheduleDeviation(1);
     record.setInferredBlockId("1");
@@ -136,7 +137,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
     record.setLastUpdateTime(20111010L);
     record.setLastLocationUpdateTime(20111010L);
-    record.setInferredDestSignCode("123");
+    record.setInferredDestSignCode(123);
     record.setInferenceIsFormal(false);
     record.setDepotId("123");
     record.setEmergencyFlag(true);
