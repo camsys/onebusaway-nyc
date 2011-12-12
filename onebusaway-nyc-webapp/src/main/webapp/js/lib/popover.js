@@ -114,6 +114,10 @@
         	tp = {top: this.options.top_offset, left: this.options.left};
           break;
         }
+        
+        $tip
+        	.find('.close')
+        	.click( function(e) { e.preventDefault(); $tip.hide(); });
 
         $tip
           .css(tp)
@@ -169,7 +173,11 @@
 
         title = ('' + title).replace(/(^\s*|\s*$)/, "")
 
-        return title || o.fallback
+        return this.addClose() + (title || o.fallback)
+    }
+  
+  , addClose: function() {
+       return '<a class="close" href="#">x</a>';
     }
 
   , tip: function() {
@@ -367,7 +375,7 @@
       var $tip = this.tip()
       $tip.find('.title')[this.options.html ? 'html' : 'text'](this.getTitle())
       $tip.find('.content p')[this.options.html ? 'html' : 'text'](this.getContent())
-      $tip[0].className = 'popover'
+      $tip[0].className = 'popover';
     }
 
   , hasContent: function () {
