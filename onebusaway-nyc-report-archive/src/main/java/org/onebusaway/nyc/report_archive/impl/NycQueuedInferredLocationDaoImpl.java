@@ -78,7 +78,7 @@ class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocationDao {
 	  "ArchivedInferredLocationRecord inferenceRecord " +
 	  "where map.currentRecord = inferenceRecord " +
 	  "and map.vehicleId = bhsRecord.vehicleId " +
-	  "and map.currentRecord.timeReported = bhsRecord.timeReported";
+	  "and map.currentRecord.uuid = bhsRecord.uuid";
 	List<Object[]> list  = _template.find(hql); 
 	// our join will return a list of object arrays now, in the order
 	// we selected above
