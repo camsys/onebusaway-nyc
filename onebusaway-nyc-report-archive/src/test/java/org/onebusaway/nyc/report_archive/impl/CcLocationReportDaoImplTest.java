@@ -145,4 +145,11 @@ public class CcLocationReportDaoImplTest {
       assertEquals(m.getLocalCcLocationReport().getNMEA().getSentence().get(0), r.getNmeaSentenceGPGGA());
       assertEquals(m.getLocalCcLocationReport().getNMEA().getSentence().get(1), r.getNmeaSentenceGPRMC());
   }
+
+    @Test
+    public void TestHandleException() {
+	Throwable t = new Throwable();
+	_dao.handleException("content", t, null);
+	_dao.handleException("content2", t, new Date());
+    }
 }

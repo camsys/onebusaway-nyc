@@ -33,9 +33,13 @@ public class InvalidLocationRecord implements Serializable {
   @AccessType("property")
   private Integer id;
 
-  @Column(nullable = false, name = "time_received")
+  @Column(nullable = true, name = "time_received")
   @Index(name = "time_received")
   private Date timeReceived;
+
+  @Column(nullable = false, name = "archive_time_received")
+  @Index(name = "archive_time_received")
+  private Date archiveTimeReceived;
 
   @Column(nullable = false, name = "raw_message", length = 1400)
   private String rawMessage;
@@ -43,8 +47,9 @@ public class InvalidLocationRecord implements Serializable {
   @Column(nullable = false, name = "exception_message", length = 1400)
   private String exceptionMessage;
 
-  public InvalidLocationRecord(String message, Throwable throwable) {
-      setTimeReceived(new Date());
+  public InvalidLocationRecord(String message, Throwable throwable, Date timeReceived) {
+      setArchiveTimeReceived(new Date());
+      setTimeReceived(timeReceived);
       if (message != null && message.length() > 1400) {
 	  message = message.substring(0, 1400);
       }
@@ -73,6 +78,14 @@ public class InvalidLocationRecord implements Serializable {
 
   public void setTimeReceived(Date timeReceived) {
     this.timeReceived = timeReceived;
+  }
+
+  public Date getArchiveTimeReceived() {
+    return archiveTimeReceived;
+  }
+
+  public void setArchiveTimeReceived(Date archiveTimeReceived) {
+    this.archiveTimeReceived = archiveTimeReceived;
   }
 
   public String getRawMessage() {
