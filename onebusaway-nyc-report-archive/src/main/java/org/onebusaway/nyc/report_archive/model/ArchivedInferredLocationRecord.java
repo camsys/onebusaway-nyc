@@ -62,9 +62,9 @@ public class ArchivedInferredLocationRecord implements Serializable {
   private Long id;
 
   // This will come from NycVehicleManagementStatusBean
-  @Column(name = "uuid")
-  @Index(name = "uuid")
-  private UUID uuid;
+  @Index(name = "UUID")
+  @Column(nullable = false, name = "UUID", length = 36)
+  private String uuid;
 
   // Fields from NycQueuedInferredLocationBean
   @Column(nullable = false, name = "time_reported")
@@ -77,10 +77,11 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = false, name = "agency_id", length = 64)
   private String agencyId;
 
-  // Matches time_processed in CcLocationReport
-  @Column(nullable = false, name = "time_processed")
-  private Date timeProcessed;
-
+  // Matches archive_time_received in CcLocationReport
+  @Column(nullable = false, name = "archive_time_received")
+  @Index(name = "archive_time_received")
+  private Date archiveTimeReceived;
+  
   @Column(nullable = false, name = "service_date")
   private Date serviceDate;
   
@@ -179,7 +180,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setVehicleId(vehicleId);
     setAgencyId(agency);
 
-    setTimeProcessed(new Date());
+    setArchiveTimeReceived(new Date(System.currentTimeMillis()));
 
     setServiceDate(new Date(message.getServiceDate()));
     setScheduleDeviation(message.getScheduleDeviation());
@@ -207,8 +208,8 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
     NycVehicleManagementStatusBean managementBean = message.getManagementRecord();
 
-    // Will need to set UUID from wrapper. For now just generate for testing.
-    setUuid(UUID.randomUUID());
+    setUUID(managementBean.getUUID());
+
     setLastUpdateTime(managementBean.getLastUpdateTime());
     setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
     String inferredDscString = managementBean.getLastInferredDestinationSignCode();
@@ -273,13 +274,13 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.id = id;
   }
 
-  public UUID getUuid() {
-      return uuid;
-  }
-
-  public void setUuid(UUID uuid) {
-      this.uuid = uuid;
-  }
+	public String getUUID() {
+		return uuid;
+	}
+ 
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
 
   public Date getTimeReported() {
     return timeReported;
@@ -305,12 +306,12 @@ public class ArchivedInferredLocationRecord implements Serializable {
     this.agencyId = agencyId;
   }
 
-  public Date getTimeProcessed() {
-    return timeProcessed;
+  public Date getArchiveTimeReceived() {
+    return archiveTimeReceived;
   }
 
-  public void setTimeProcessed(Date timeProcessed) {
-    this.timeProcessed = timeProcessed;
+  public void setArchiveTimeReceived(Date archiveTimeReceived) {
+    this.archiveTimeReceived = archiveTimeReceived;
   }
 
   public Date getServiceDate() {

@@ -1096,6 +1096,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		deactivateLocationIcon: function(marker) {
 			marker.setIcon(normalLocationIcon);
+		},
+		
+		registerMapListener: function(listener, fx) {
+			google.maps.event.addListener(map, listener, fx);
 		}
 	};
 };

@@ -66,9 +66,8 @@ OBA.Sidebar = function () {
 	}
 
 	// show user list of addresses
-	function disambiguate(locationResults) {		
-		var resultsList = jQuery("<ul></ul>")
-							.appendTo(results);
+	function disambiguate(locationResults) {	
+		var resultsList = jQuery("<ul></ul>").appendTo(results);
 
 		var bounds = null;
 		jQuery.each(locationResults, function(_, location) {
@@ -109,8 +108,9 @@ OBA.Sidebar = function () {
 	}
 	
 	// separate nearby routes from routes for a stop 
-	// (need to copys routes anyway to get service alerts field)
-	function reorderRoutes(routes, routesFirst) {			
+	// (need to copy routes anyway to get service alerts field)
+	function reorderRoutes(routes, routesFirst) {	
+	
 		var nearbyRoutes = {}, routesForStop = [];	
 
 		jQuery.each(routes, function(_, route) {
@@ -172,8 +172,8 @@ OBA.Sidebar = function () {
 				routeMap.panToRoute(nearbyRoutes[0]);
 			}
 		}	
-		
 		legend.show();
+		legend.trigger('legend_loaded');
 	}
 		
 	function addRoutesToLegend(routeResults, legendList) {
@@ -275,7 +275,7 @@ OBA.Sidebar = function () {
 	}
 
 	// show many (too many to show on map) routes to user
-	function showRoutePickerList(routeResults) {
+	function showRoutePickerList(routeResults) {	
 		var resultsList = jQuery("<ul></ul>")
 							.appendTo(results);
 
@@ -395,6 +395,9 @@ OBA.Sidebar = function () {
 					searchInput.val(hash);
 
 					doSearch(hash);
+				} else {
+					// Launch wizard
+					OBA.Wizard(routeMap);
 				}
 			});
 		}
