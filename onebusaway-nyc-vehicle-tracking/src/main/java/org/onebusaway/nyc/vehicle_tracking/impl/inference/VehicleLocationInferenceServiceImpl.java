@@ -41,6 +41,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
@@ -219,7 +220,8 @@ public class VehicleLocationInferenceServiceImpl implements
     _executorService.execute(new ProcessingTask(record));
   }
 
-  public void handleCcLocationReportRecord(CcLocationReport message) {
+  public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
+  	CcLocationReport message = envelope.getCcLocationReport();
     verifyVehicleResultMappingToCurrentBundle();
 
     if(_bundleManagementService.getCurrentBundleMetadata() == null) {
@@ -228,7 +230,8 @@ public class VehicleLocationInferenceServiceImpl implements
     }
     
     NycRawLocationRecord r = new NycRawLocationRecord();
-
+		r.setUUID(envelope.getUUID());
+		
     r.setLatitude(message.getLatitude() / 1000000f);
     r.setLongitude(message.getLongitude() / 1000000f);
 
@@ -313,7 +316,8 @@ public class VehicleLocationInferenceServiceImpl implements
     }
 
     _executorService.execute(new ProcessingTask(r));
-  }
+
+    }
 
   @Override
   public void setPhaseSeed(long seed) {

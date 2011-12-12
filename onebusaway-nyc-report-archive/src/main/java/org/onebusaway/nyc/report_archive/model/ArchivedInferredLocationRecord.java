@@ -60,6 +60,10 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @AccessType("property")
   private Integer id;
 
+  @Index(name = "UUID")
+	@Column(nullable = false, name = "UUID", length = 36)
+  private String uuid;
+
   // Fields from NycQueuedInferredLocationBean
   @Column(nullable = false, name = "time_reported")
   private Date timeReported;
@@ -172,7 +176,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setVehicleId(vehicleId);
     setAgencyId(agency);
 
-    setTimeReceived(new Date());
+    setTimeReceived(new Date(System.currentTimeMillis()));
 
     setServiceDate(new Date(message.getServiceDate()));
     setScheduleDeviation(message.getScheduleDeviation());
@@ -200,6 +204,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
     NycVehicleManagementStatusBean managementBean = message.getManagementRecord();
 
+		setUUID(managementBean.getUUID());
     setLastUpdateTime(managementBean.getLastUpdateTime());
     setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
     setInferredDestSignCode(managementBean.getLastInferredDestinationSignCode());
@@ -262,6 +267,14 @@ public class ArchivedInferredLocationRecord implements Serializable {
   public void setId(Integer id) {
     this.id = id;
   }
+
+	public String getUUID() {
+		return uuid;
+	}
+ 
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
 
   public Date getTimeReported() {
     return timeReported;

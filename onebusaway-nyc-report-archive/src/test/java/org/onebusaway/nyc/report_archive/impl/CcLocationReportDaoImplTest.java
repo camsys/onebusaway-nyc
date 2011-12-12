@@ -25,6 +25,7 @@ import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 
 import lrms_final_09_07.Angle;
 import tcip_final_3_0_5_1.CcLocationReport;
@@ -68,6 +69,8 @@ public class CcLocationReportDaoImplTest {
     assertEquals(0, _dao.getNumberOfReports());
 
     CcLocationReportRecord report = new CcLocationReportRecord();
+		report.setUUID("foo");
+		report.setArchiveTimeReceived(new Date(122345l));
     report.setDataQuality(new Byte("4"));
     report.setDestSignCode(123);
     report.setDirectionDeg(new BigDecimal("10.1"));
@@ -79,8 +82,8 @@ public class CcLocationReportDaoImplTest {
     report.setRouteIdDesignator("routeIdDesignator");
     report.setRunIdDesignator("runIdDesignator");
     report.setSpeed(new BigDecimal("5.6"));
-    report.setTimeReported(new Date());
-    report.setTimeReceived(new Date());
+    report.setTimeReported(new Date(System.currentTimeMillis()));
+    report.setTimeReceived(new Date(System.currentTimeMillis()));
     report.setVehicleAgencyDesignator("vehicleAgencyDesignator");
     report.setVehicleAgencyId(789);
     report.setVehicleId(120);
@@ -100,7 +103,11 @@ public class CcLocationReportDaoImplTest {
 
   @Test
   public void testConstructor() {
+			RealtimeEnvelope envelope = new RealtimeEnvelope();
+			envelope.setUUID("foo");
+			envelope.setTimeReceived(122345l);
       CcLocationReport m = new CcLocationReport();
+			envelope.setCcLocationReport(m);
       m.setRequestId(1205);
       m.setDataQuality(new SPDataQuality());
       m.getDataQuality().setQualitativeIndicator("4");
@@ -132,7 +139,7 @@ public class CcLocationReportDaoImplTest {
       m.getLocalCcLocationReport().getNMEA().getSentence().add("$GPRMC,105850.00,A,4038.445646,N,07401.094043,W,002.642,128.77,220611,,,A*7C");
       m.getLocalCcLocationReport().getNMEA().getSentence().add("$GPGGA,105850.000,4038.44565,N,07401.09404,W,1,09,01.7,+00042.0,M,,M,,*49");
       String contents = "TBD";
-      CcLocationReportRecord r = new CcLocationReportRecord(m, contents, "-04:00");
+      CcLocationReportRecord r = new CcLocationReportRecord(envelope, contents, "-04:00");
       assertEquals((int)r.getRequestId(), (int)m.getRequestId());
       // todo test others
       assertEquals(m.getLocalCcLocationReport().getNMEA().getSentence().get(0), r.getNmeaSentenceGPGGA());

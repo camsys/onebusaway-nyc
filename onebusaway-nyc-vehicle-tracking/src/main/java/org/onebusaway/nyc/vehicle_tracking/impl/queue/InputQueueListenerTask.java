@@ -28,6 +28,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,13 +57,13 @@ public abstract class InputQueueListenerTask {
     _mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
   }
   
-  public CcLocationReport deserializeMessage(String contents) {
-    CcLocationReport message = null;
+  public RealtimeEnvelope deserializeMessage(String contents) {
+    RealtimeEnvelope message = null;
     try {
       JsonNode wrappedMessage = _mapper.readValue(contents, JsonNode.class);
-      String ccLocationReportString = wrappedMessage.get("CcLocationReport").toString();
+      String ccLocationReportString = wrappedMessage.get("RealtimeEnvelope").toString();
 
-      message = _mapper.readValue(ccLocationReportString, CcLocationReport.class);
+      message = _mapper.readValue(ccLocationReportString, RealtimeEnvelope.class);
     } catch (Exception e) {
       _log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
       _log.warn("Contents: " + contents);

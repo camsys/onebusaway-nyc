@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
@@ -37,20 +38,21 @@ public class PartitionedInputQueueListenerTask
 
   @Override
   public boolean processMessage(String address, String contents) {
-    CcLocationReport message = deserializeMessage(contents);
+    RealtimeEnvelope message = deserializeMessage(contents);
 
     if(acceptMessage(message)) {
-      _vehicleLocationService.handleCcLocationReportRecord(message);
+      _vehicleLocationService.handleRealtimeEnvelopeRecord(message);
       return true;
     }
 
     return false;
   }
 
-  private boolean acceptMessage(CcLocationReport message) {
-    if(message == null)
+  private boolean acceptMessage(RealtimeEnvelope envelope) {
+    if(envelope == null || envelope.getCcLocationReport() == null)
       return false;
 
+		CcLocationReport message = envelope.getCcLocationReport();
     ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
     for(String key : _depotPartitionKeys) {
       try {
