@@ -8,7 +8,10 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DesktopWebPresentationModelFactory extends DefaultPresentationModelFactory {
@@ -26,7 +29,19 @@ public class DesktopWebPresentationModelFactory extends DefaultPresentationModel
   public RouteResult getRouteModel(RouteBean routeBean, List<RouteDestinationItem> destinations) {
     DesktopWebRouteResult routeResult = new DesktopWebRouteResult(routeBean, destinations);
 
-    routeResult.setServiceAlerts(_realtimeService.getServiceAlertsForRoute(routeBean.getId()));
+    List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+
+    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRoute(routeBean.getId());
+    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
+        if(description.getValue() != null) {
+          description.setValue(description.getValue().replace("\n", "<br/>"));
+          serviceAlertDescriptions.add(description);
+        }
+      }
+    }
+    
+    routeResult.setServiceAlerts(serviceAlertDescriptions);
     
     return routeResult;
   }

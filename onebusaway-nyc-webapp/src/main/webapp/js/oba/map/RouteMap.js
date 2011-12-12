@@ -411,7 +411,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
                 jQuery.each(r.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
                     var situationId = ptSituationElement.SituationNumber;
                     if (situationRefs == null || situationIds[situationId]==true) {
-                        html += "<li>" + ptSituationElement.Description + "</li>";
+                        html += "<li>" + ptSituationElement.Description.replace("\n", "<br/>") + "</li>";
                     }
                 });
             }
@@ -522,15 +522,22 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		// ...and the routes available with no upcoming service
 		var haveRoutesWithoutService = false;
+		var j = 0;
 		jQuery.each(headsignsByRouteId, function(routeId, headsign) {
 			var routeIdParts = routeId.split("_");
 			var routeIdWithoutAgency = routeIdParts[1];
 
-			html += '<li class="route">';
+			if(j > 0) {
+				html += '<li class="route no-padding">';
+			} else {
+				html += '<li class="route">';
+			}
+
 			html += '<a href="#' + routeIdWithoutAgency + '">' + headsign + '</a>';
 			html += '</li>';
 			
 			haveRoutesWithoutService = true;
+			j++;
 		});
 
 		if(haveRoutesWithoutService === true) {

@@ -11,6 +11,7 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
@@ -36,8 +37,16 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, stops);
 
     // service alerts
-    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForRoute(route.getId());
-    item.setServiceAlerts(serviceAlerts);
+    List<NaturalLanguageStringBean> serviceAlertSummaries = new ArrayList<NaturalLanguageStringBean>();
+
+    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRoute(route.getId());
+    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      for(NaturalLanguageStringBean summary : serviceAlertBean.getSummaries()) {
+        serviceAlertSummaries.add(summary);
+      }
+    }
+    
+    item.setServiceAlerts(serviceAlertSummaries);
 
     return item;
   }
@@ -47,9 +56,17 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, null);
 
     // service alerts
-    List<NaturalLanguageStringBean> serviceAlerts = _realtimeService.getServiceAlertsForStop(stop.getId());
-    item.setServiceAlerts(serviceAlerts);
+    List<NaturalLanguageStringBean> serviceAlertSummaries = new ArrayList<NaturalLanguageStringBean>();
 
+    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForStop(stop.getId());
+    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      for(NaturalLanguageStringBean summary : serviceAlertBean.getSummaries()) {
+        serviceAlertSummaries.add(summary);
+      }
+    }
+    
+    item.setServiceAlerts(serviceAlertSummaries);
+    
     // stop visits
     List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), 0);
 
