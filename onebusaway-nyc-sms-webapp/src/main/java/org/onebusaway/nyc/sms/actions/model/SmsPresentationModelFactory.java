@@ -58,8 +58,8 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
     // service alerts
     List<NaturalLanguageStringBean> serviceAlertSummaries = new ArrayList<NaturalLanguageStringBean>();
 
-    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForStop(stop.getId());
-    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRoute(route.getId());
+    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {      
       for(NaturalLanguageStringBean summary : serviceAlertBean.getSummaries()) {
         serviceAlertSummaries.add(summary);
       }
