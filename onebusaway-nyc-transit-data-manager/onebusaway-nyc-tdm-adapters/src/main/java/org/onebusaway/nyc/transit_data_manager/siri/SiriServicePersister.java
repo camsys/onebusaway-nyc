@@ -6,7 +6,7 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 public interface SiriServicePersister {
 
-  public void saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean);
+  public boolean saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean);
   public ServiceAlertBean deleteServiceAlertById(String serviceAlertId);
   public List<ServiceAlertBean> getAllActiveServiceAlerts();
   public List<ServiceAlertBean> getAllServiceAlerts();

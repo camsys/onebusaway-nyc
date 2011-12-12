@@ -27,6 +27,9 @@
 <s:url var="url" value="/css/map/popup.css"></s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
+<s:url var="url" value="/css/map/wizard.css"></s:url>
+<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+
 <jsp:text>
 &lt;!--[if IE 6]&gt;
 </jsp:text>
@@ -35,9 +38,6 @@
 <jsp:text>
 &lt;![endif]--&gt;
 </jsp:text>
-
-<s:url var="url" value="/css/map/wizard.css"></s:url>
-<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
 <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
@@ -79,7 +79,7 @@
     	<div id="map_header">
 		  	<div class="title">
 	   			<s:url var="url" value="/"></s:url>
-				<h1><a href="${url}">OneBusAway NYC</a></h1>
+				<h1><a href="${url}">MTA Bus Time</a></h1>
 	  		</div>	  	
 	  			
 	   	  	<ul>
@@ -126,7 +126,7 @@
 		 	<li>Routes: &amp;nbsp; <a href="#B63">B63</a> &amp;nbsp; <a href="#S62">S62</a> &amp;nbsp; <a href="#X1">X1</a></li>
 		 	<li>Intersection: &amp;nbsp; <a href="#Main%20St%20and%20Craig%20Rd">Main St &amp;amp; Craig Rd</a></li>
 		 	<li>Stop ID: &amp;nbsp; <a href="#200884">200884</a></li>
-		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a> or <a href="#Staten%20Island">Staten Island</a></li>
+		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a></li>
 		 </ul>
 	   </div>
 	   

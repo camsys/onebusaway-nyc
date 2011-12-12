@@ -1,20 +1,20 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 public class MockSiriServicePersister extends HashMap<String, ServiceAlertBean> implements
     SiriServicePersister {
 
+  private static final long serialVersionUID = 1L;
+  
   List<ServiceAlertSubscription> subs = new ArrayList<ServiceAlertSubscription>();
 //  Map<String, ServiceAlertBean> alerts = new HashMap<String, ServiceAlertBean>();
   
-  public void saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
+  public boolean saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
     throw new RuntimeException("not implemented");
   }
 

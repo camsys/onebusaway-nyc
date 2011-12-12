@@ -250,7 +250,9 @@ html, body {
 }
 
 #horizontalcssmenu ul#cssmenu1 {
-    list-style-type: none;
+	overflow: hidden;
+	position: relative;
+	list-style-type: none;
     margin: 0;
 }
 #horizontalcssmenu ul#cssmenu1 li {

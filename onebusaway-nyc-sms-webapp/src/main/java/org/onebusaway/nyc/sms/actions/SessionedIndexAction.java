@@ -66,10 +66,11 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
   
   // user input/query
   public void setArgs(String args) {
-    if(args != null)
-      this._query = args.trim();
-    else
+    if(args != null) {
+      this._query = args.trim().toUpperCase();
+    } else {
       this._query = null;
+    }
   }
 
   public abstract String execute() throws Exception;

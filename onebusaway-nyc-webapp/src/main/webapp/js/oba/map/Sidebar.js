@@ -18,10 +18,11 @@ var OBA = window.OBA || {};
 
 OBA.Sidebar = function () {
 	var theWindow = jQuery(window),
-		topBarDiv = jQuery("#topbar"), 
 		mapDiv = jQuery("#map"), 
+		topBarDiv = jQuery("#topbar"), 
 		searchBarDiv = jQuery("#searchbar"), 
 		mainbox = jQuery("#mainbox"),
+		menuBar = jQuery("#cssmenu1"),
 		welcome = jQuery("#welcome"),
 		legend = jQuery("#legend"),
 		results = jQuery("#results"),
@@ -52,8 +53,11 @@ OBA.Sidebar = function () {
 			if (w <= 1060) {
 				mainbox.css("width", "960px");
 			} else {
-				mainbox.css("width", w - 100); // 50px margin on each side
+				mainbox.css("width", w - 150); // 75px margin on each side
 			}
+
+			// size set so we can have MTA menu items calculate their widths properly
+			menuBar.width(mainbox.width());
 		};
 		resize();
 
@@ -74,7 +78,7 @@ OBA.Sidebar = function () {
 			var marker = routeMap.addDisambiguationMarkerWithContent(latlng, address, neighborhood);
 
 		    // sidebar item
-			var link = jQuery("<a href='#'></a>")
+			var link = jQuery("<a href='#" + address + "'></a>")
 							.text(address);
 
 			var listItem = jQuery("<li></li>")
@@ -82,12 +86,6 @@ OBA.Sidebar = function () {
 							.append(link);
 
 			resultsList.append(listItem);
-
-			link.click(function(e) {
-				e.preventDefault();
-
-				jQuery.history.load(jQuery(this).text());
-			});
 
 			link.hover(function() {
 				marker.setAnimation(google.maps.Animation.BOUNCE);
@@ -112,7 +110,7 @@ OBA.Sidebar = function () {
 	// separate nearby routes from routes for a stop 
 	// (need to copy routes anyway to get service alerts field)
 	function reorderRoutes(routes, routesFirst) {	
-		
+	
 		var nearbyRoutes = {}, routesForStop = [];	
 
 		jQuery.each(routes, function(_, route) {
@@ -131,6 +129,9 @@ OBA.Sidebar = function () {
 	function showRoutesOnMap(routeResults, routesFirst) {
 		var nearbyRoutes = routeResults;
 		
+		var nearby = jQuery("#legend > #nearby");
+		var for_stop = jQuery("#legend > #for_stop");
+
 		if (routesFirst !== undefined && routesFirst.length !== 0) {	
 			// case 0: some routes for stop -> sort & list them 1st
 			if (routeResults.length !== routesFirst.length) {
@@ -143,20 +144,24 @@ OBA.Sidebar = function () {
 				nearbyRoutes = null;
 			}
 			// Add as "routes for this stop"
-			var for_stop = $("#legend > #for_stop");
 			for_stop.text("Routes for this stop:");
-			var routesAtStopLegend = $("<ul></ul>").appendTo(for_stop);
+			
+			var routesAtStopLegend = jQuery("<ul></ul>").appendTo(for_stop);
 			addRoutesToLegend(routesFirst, routesAtStopLegend);
+
 			for_stop.show();
+			nearby.hide();
 		}
 		
 		// case 2: no routes for stop -> Add all as "nearby"
 		if (nearbyRoutes !== null && nearbyRoutes.length !== 0) {
-			var nearby = $("#legend > #nearby");
 			nearby.text("Nearby routes:");
-			var nearbyRoutesLegend = $("<ul></ul>").appendTo(nearby);	
+			
+			var nearbyRoutesLegend = jQuery("<ul></ul>").appendTo(nearby);	
 			addRoutesToLegend(nearbyRoutes, nearbyRoutesLegend);
+			
 			nearby.show();
+			for_stop.hide();
 		}
 		
 		// pan to extent of first few routes in legend
@@ -212,8 +217,11 @@ OBA.Sidebar = function () {
 
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {
-				var directionHeader = jQuery("<p></p>")
-											.text("to " + destination.headsign);
+				var directionHeader = jQuery("<p></p>");
+				
+				jQuery("<span></span>")
+					.text("to " + destination.headsign)
+					.appendTo(directionHeader);
 
 				var stopsList = jQuery("<ul></ul>")
 											.addClass("stops");
@@ -228,9 +236,8 @@ OBA.Sidebar = function () {
 					var stopLink = jQuery("<a href='#'></a>")
 									.text(stop.name);
 					
-					var r_color = (routeResult.color !== null) ? routeResult.color : "none";
-
-					var stopItem = jQuery('<li class="r_' + r_color + '"></li>')
+					var routeColor = (routeResult.color !== null) ? routeResult.color : "none";
+					var stopItem = jQuery('<li class="r_' + routeColor + '"></li>')
 									.append(stopLink);
 	
 					stopsList.append(stopItem);
@@ -273,7 +280,7 @@ OBA.Sidebar = function () {
 							.appendTo(results);
 
 		jQuery.each(routeResults, function(_, route) {
-			var link = jQuery("<a href='#'></a>")
+			var link = jQuery("<a href='#" + route.name + "'></a>")
 							.text(route.name)
 							.attr("title", route.description);
 
@@ -296,13 +303,6 @@ OBA.Sidebar = function () {
 			}, function() {
 				routeMap.removeHoverPolyline();
 			});
-			
-			// search link handler
-			link.click(function(e) {
-				e.preventDefault();
-				
-				jQuery.history.load(jQuery(this).text());
-			});
 		});
 		
 		results.show();
@@ -313,6 +313,7 @@ OBA.Sidebar = function () {
 		legend.hide();
 		results.hide();
 		
+		jQuery("#results ul").remove();
 		jQuery("#legend #for_stop").children().empty();
 		jQuery("#legend #nearby").children().empty();
 
@@ -323,10 +324,9 @@ OBA.Sidebar = function () {
 	// process search results
 	function doSearch(q) {
 		resetSearchPanelAndMap();
-
 		loading.show();
 		
-		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", {q: q }, function(json) { 
+		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
 			loading.hide();
 
 			var resultCount = json.searchResults.length;
@@ -349,6 +349,13 @@ OBA.Sidebar = function () {
 						var latLngBounds = new google.maps.LatLngBounds(
 								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
 								new google.maps.LatLng(bounds.maxLat, bounds.maxLon));
+						
+						// location exists, but no nearby routes exist
+						var nearbyRoutes = result.nearbyRoutes;
+						if(nearbyRoutes.length === 0) {
+							noResults.show();
+							return;							
+						}
 						
 						showRoutePickerList(result.nearbyRoutes);
 						routeMap.showBounds(latLngBounds);
@@ -374,7 +381,7 @@ OBA.Sidebar = function () {
 				}
 			}
 		});
-		}
+	}
 	
 	return {
 		initialize: function() {
@@ -398,3 +405,4 @@ OBA.Sidebar = function () {
 };
 
 jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
+

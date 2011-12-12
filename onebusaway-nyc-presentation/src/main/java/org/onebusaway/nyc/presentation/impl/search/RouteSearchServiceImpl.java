@@ -110,6 +110,10 @@ public class RouteSearchServiceImpl implements RouteSearchService {
   
   @Override
   public List<RouteResult> resultsForQuery(String routeQuery) {
+    if(routeQuery != null) {
+      routeQuery = routeQuery.toUpperCase();
+    }
+    
     // FIXME we have this in here to disable the "full text" search OBA has--we'll enable that later!
     if(!isRoute(routeQuery)) {
       return Collections.emptyList();

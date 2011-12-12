@@ -20,7 +20,7 @@
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>OneBusAway NYC: <s:property value="title" /></title>
+<title>MTA Bus Time: <s:property value="title" /></title>
 </head>
 <body>
 <s:if test="hasToc">

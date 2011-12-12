@@ -20,16 +20,15 @@ public class NycSiriServiceGateway extends NycSiriService {
     _log.info("No setup required in gateway mode.");
   }
 
-  
   @Override
   void addOrUpdateServiceAlert(SituationExchangeResults result,
-      DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean, String defaultAgencyId) {
+      DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,
+      String defaultAgencyId) {
+    boolean isNew = getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
     result.countPtSituationElementResult(deliveryResult, serviceAlertBean,
-        "added");
-    getPersister().saveOrUpdateServiceAlert(serviceAlertBean);
+        (isNew ? "added" : "updated"));
   }
-  
-  
+
   void removeServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, String serviceAlertId) {
     result.countPtSituationElementResult(deliveryResult, serviceAlertId,
@@ -37,22 +36,42 @@ public class NycSiriServiceGateway extends NycSiriService {
     getPersister().deleteServiceAlertById(serviceAlertId);
   }
 
-  
   List<String> getExistingAlertIds(Set<String> agencies) {
     List<String> existing = new ArrayList<String>();
     List<ServiceAlertBean> alerts = getPersister().getAllActiveServiceAlerts();
-    for (ServiceAlertBean alert: alerts) {
+    for (ServiceAlertBean alert : alerts) {
       existing.add(alert.getId());
     }
     return existing;
   }
 
-
   @Override
-  void postServiceDeliveryActions(SituationExchangeResults results, Collection<String> deletedIds) throws Exception {
-    for (ServiceAlertSubscription subscription: getActiveServiceAlertSubscriptions()) {
+  void postServiceDeliveryActions(SituationExchangeResults results,
+      Collection<String> deletedIds) throws Exception {
+    for (ServiceAlertSubscription subscription : getActiveServiceAlertSubscriptions()) {
+      new Thread(new SubscriptionSender(subscription, deletedIds)).start();
+    }
+  }
+
+  class SubscriptionSender implements Runnable {
+
+    private ServiceAlertSubscription subscription;
+    private Collection<String> deletedIds;
+
+    public SubscriptionSender(ServiceAlertSubscription subscription,
+        Collection<String> deletedIds) {
+      this.subscription = subscription;
+      this.deletedIds = deletedIds;
+    }
+
+    public void run() {
       try {
-        subscription.send(getPersister().getAllActiveServiceAlerts(), deletedIds);
+        _log.info("Sending service alerts to subscriber: "
+            + subscription.getAddress());
+        subscription.send(getPersister().getAllActiveServiceAlerts(),
+            deletedIds);
+        _log.info("Successfully sent service alerts to subscriber: "
+            + subscription.getAddress());
       } catch (Exception e) {
         Integer failures = subscription.getConsecutiveFailures();
         if (failures == null)
@@ -60,13 +79,16 @@ public class NycSiriServiceGateway extends NycSiriService {
         failures += 1;
         subscription.setConsecutiveFailures(failures);
         getPersister().saveOrUpdateSubscription(subscription);
-        _log.error("Unable to send service alert updates to subscriber: " + subscription.getAddress() + ", consecutive failures: " + failures + ", exception: " + e.getMessage());
+        _log.error("Unable to send service alert updates to subscriber: "
+            + subscription.getAddress() + ", consecutive failures: " + failures
+            + ", exception: " + e.getMessage());
         if (failures >= 3) {
           _log.info(">=3 consecutive failures, deleting subscription.");
           getPersister().deleteSubscription(subscription);
         }
       }
     }
+    
   }
 
   void addSubscription(ServiceAlertSubscription subscription) {
@@ -85,11 +107,9 @@ public class NycSiriServiceGateway extends NycSiriService {
     this._siriServicePersister = _siriServicePersister;
   }
 
-
   @Override
   public boolean isInputIncremental() {
     return false;
   }
-
 
 }
