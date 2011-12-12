@@ -36,6 +36,9 @@
 &lt;![endif]--&gt;
 </jsp:text>
 
+<s:url var="url" value="/css/map/wizard.css"></s:url>
+<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+
 <script src="http://maps.google.com/maps/api/js?sensor=true" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/lib/jquery.ui.js"/>
@@ -48,6 +51,12 @@
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/js/lib/rgbcolor.js"/>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+<s:url var="url" value="/js/lib/popover.js"/>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+<s:url var="url" value="/js/oba/map/Wizard.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 <s:url var="url" value="/api/config"/>
