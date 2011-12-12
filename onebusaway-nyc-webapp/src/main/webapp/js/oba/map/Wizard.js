@@ -53,7 +53,7 @@ OBA.Wizard = function(routeMap) {
 		wizard.css("height", wizard_height);
 		wizard.css("top", theWindow.height() - wizard_height);
 	}
-	reviseHeight(142);
+	reviseHeight(135);
 	
 	// 1. Launch wizard on click
 	

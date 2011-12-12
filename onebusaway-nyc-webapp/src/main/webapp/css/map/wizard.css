@@ -88,20 +88,20 @@
 
 #inner-col1 {
 	left: 10%;
-	margin-top: 8%;
+	margin-top: 8.5%;
 	width: 50%;
 	float: left;
 }
 
 #inner-col2 {
 	float: left;
-	margin-top: 8%;
+	margin-top: 8.5%;
 }
 
 /* wizard-col2 includes 'Also available using:' text */
 
 #wizard-col2 {
-	margin-top: 4%;
+	margin-top: 4.5%;
 	width: 7%;
 	text-align: left;
 	line-height: 150%;
@@ -119,7 +119,7 @@
 
 #wizard-col4 {
 	margin-left: 4.5%;
-	margin-top: 1.5%;
+	margin-top: 1.8%;
 	text-align: center;
 	cursor: pointer;
 }
@@ -130,14 +130,14 @@
 
 #smartphone_img {
 	background: url("img/wizard/smartphone.png") no-repeat;
-	height: 113px;
+	height: 107px;
 	width: 177px;
 }
 
 #sms_img {
 	background: url("img/wizard/sms_phone.png") no-repeat;
-	height: 112px;
-	width: 123px;
+	height: 103px;
+	width: 122px;
 }
 
 /* Close button */
@@ -169,7 +169,7 @@
 	opacity: 0.6; 
 }
 #wizard_start a.close .close_txt, #wizard_inuse a.close .close_txt, #wizard_finaltip a.close .close_txt  {
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: normal;
 }
 
