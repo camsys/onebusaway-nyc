@@ -330,25 +330,29 @@ public abstract class NycSiriService {
       PtSituationElementStructure ptSituation,
       SiriEndpointDetails endpointDetails) {
     ServiceAlertBean serviceAlert = new ServiceAlertBean();
-    EntryQualifierStructure serviceAlertNumber = ptSituation.getSituationNumber();
-    String situationId = serviceAlertNumber.getValue();
+    try {
+      EntryQualifierStructure serviceAlertNumber = ptSituation.getSituationNumber();
+      String situationId = StringUtils.trim(serviceAlertNumber.getValue());
 
-    if (!endpointDetails.getDefaultAgencyIds().isEmpty()) {
-      String agencyId = endpointDetails.getDefaultAgencyIds().get(0);
-      // TODO Check this
-      serviceAlert.setId(AgencyAndId.convertToString(new AgencyAndId(agencyId,
-          situationId)));
-    } else {
-      AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
-      serviceAlert.setId(AgencyAndId.convertToString(id));
+      if (!endpointDetails.getDefaultAgencyIds().isEmpty()) {
+        String agencyId = endpointDetails.getDefaultAgencyIds().get(0);
+        // TODO Check this
+        serviceAlert.setId(AgencyAndId.convertToString(new AgencyAndId(agencyId,
+            situationId)));
+      } else {
+        AgencyAndId id = AgencyAndIdLibrary.convertFromString(situationId);
+        serviceAlert.setId(AgencyAndId.convertToString(id));
+      }
+
+      handleDescriptions(ptSituation, serviceAlert);
+      handleOtherFields(ptSituation, serviceAlert);
+      // TODO not yet implemented
+      // handlReasons(ptSituation, serviceAlert);
+      handleAffects(ptSituation, serviceAlert);
+      handleConsequences(ptSituation, serviceAlert);
+    } catch (Exception e) {
+      _log.error("Failed to convert SIRI to service alert: " + e.getMessage());
     }
-
-    handleDescriptions(ptSituation, serviceAlert);
-    handleOtherFields(ptSituation, serviceAlert);
-    // TODO not yet implemented
-    // handlReasons(ptSituation, serviceAlert);
-    handleAffects(ptSituation, serviceAlert);
-    handleConsequences(ptSituation, serviceAlert);
 
     return serviceAlert;
   }
@@ -368,7 +372,7 @@ public abstract class NycSiriService {
       TranslatedString translatedString) {
     List<NaturalLanguageStringBean> nlsb = new ArrayList<NaturalLanguageStringBean>();
     for (Translation t : translatedString.getTranslationList()) {
-      nlsb.add(new NaturalLanguageStringBean(t.getText(), t.getLanguage()));
+      nlsb.add(new NaturalLanguageStringBean(StringUtils.trim(t.getText()), StringUtils.trim(t.getLanguage())));
     }
     return nlsb;
   }
@@ -378,7 +382,7 @@ public abstract class NycSiriService {
 
     SeverityEnumeration severity = ptSituation.getSeverity();
     if (severity != null) {
-      ESeverity severityEnum = ESeverity.valueOfTpegCode(severity.value());
+      ESeverity severityEnum = ESeverity.valueOfTpegCode(StringUtils.trim(severity.value()));
       serviceAlert.setSeverity(severityEnum);
     }
 
@@ -418,7 +422,7 @@ public abstract class NycSiriService {
         OperatorRefStructure operatorRef = operator.getOperatorRef();
         if (operatorRef == null || operatorRef.getValue() == null)
           continue;
-        String agencyId = operatorRef.getValue();
+        String agencyId = StringUtils.trim(operatorRef.getValue());
         SituationAffectsBean sab = new SituationAffectsBean();
         sab.setAgencyId(agencyId);
         allAffects.add(sab);
@@ -435,7 +439,7 @@ public abstract class NycSiriService {
         if (stopRef == null || stopRef.getValue() == null)
           continue;
         SituationAffectsBean sab = new SituationAffectsBean();
-        sab.setStopId(stopRef.getValue());
+        sab.setStopId(StringUtils.trim(stopRef.getValue()));
         allAffects.add(sab);
       }
     }
@@ -449,11 +453,11 @@ public abstract class NycSiriService {
         SituationAffectsBean sab = new SituationAffectsBean();
 
         if (vj.getLineRef() != null) {
-          sab.setRouteId(vj.getLineRef().getValue());
+          sab.setRouteId(StringUtils.trim(vj.getLineRef().getValue()));
         }
 
         if (vj.getDirectionRef() != null)
-          sab.setDirectionId(vj.getDirectionRef().getValue());
+          sab.setDirectionId(StringUtils.trim(vj.getDirectionRef().getValue()));
 
         List<VehicleJourneyRefStructure> tripRefs = vj.getVehicleJourneyRef();
         Calls stopRefs = vj.getCalls();
@@ -468,7 +472,7 @@ public abstract class NycSiriService {
           }
         } else if (hasTripRefs && hasStopRefs) {
           for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
-            sab.setTripId(vjRef.getValue());
+            sab.setTripId(StringUtils.trim(vjRef.getValue()));
             for (AffectedCallStructure call : stopRefs.getCall()) {
               sab.setStopId(call.getStopPointRef().getValue());
               allAffects.add(sab);
@@ -476,12 +480,12 @@ public abstract class NycSiriService {
           }
         } else if (hasTripRefs) {
           for (VehicleJourneyRefStructure vjRef : vj.getVehicleJourneyRef()) {
-            sab.setTripId(vjRef.getValue());
+            sab.setTripId(StringUtils.trim(vjRef.getValue()));
             allAffects.add(sab);
           }
         } else {
           for (AffectedCallStructure call : stopRefs.getCall()) {
-            sab.setStopId(call.getStopPointRef().getValue());
+            sab.setStopId(StringUtils.trim(call.getStopPointRef().getValue()));
             allAffects.add(sab);
           }
         }
@@ -502,7 +506,7 @@ public abstract class NycSiriService {
 
           for (AffectedApplicationStructure sApp : apps) {
             SituationAffectsBean sab = new SituationAffectsBean();
-            sab.setApplicationId(sApp.getApiKey());
+            sab.setApplicationId(StringUtils.trim(sApp.getApiKey()));
             allAffects.add(sab);
           }
         }
@@ -534,7 +538,7 @@ public abstract class NycSiriService {
         if (obj instanceof OneBusAwayConsequence) {
           OneBusAwayConsequence obaConsequence = (OneBusAwayConsequence) obj;
           if (obaConsequence.getDiversionPath() != null)
-            situationConsequenceBean.setDetourPath(obaConsequence.getDiversionPath());
+            situationConsequenceBean.setDetourPath(StringUtils.trim(obaConsequence.getDiversionPath()));
         }
       }
       if (situationConsequenceBean.getDetourPath() != null
@@ -595,14 +599,14 @@ public abstract class NycSiriService {
   private TranslatedString translation(DefaultedTextStructure text) {
     if (text == null)
       return null;
-    String value = text.getValue();
-    if (value == null)
+    String value = StringUtils.trim(text.getValue());
+    if (value == null || value.isEmpty())
       return null;
 
     Translation.Builder translation = Translation.newBuilder();
     translation.setText(value);
     if (text.getLang() != null)
-      translation.setLanguage(text.getLang());
+      translation.setLanguage(StringUtils.trim(text.getLang()));
 
     TranslatedString.Builder tsBuilder = TranslatedString.newBuilder();
     tsBuilder.addTranslation(translation);
@@ -612,8 +616,7 @@ public abstract class NycSiriService {
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
     String sendResult = getWebResourceWrapper().post(
-        _siriXmlSerializer.getXml(siri), _serviceAlertsUrl,
-        WebResourceWrapper.USE_DEFAULT_TIMEOUTS, WebResourceWrapper.USE_DEFAULT_TIMEOUTS);
+        _siriXmlSerializer.getXml(siri), _serviceAlertsUrl);
     return sendResult;
   }
 
@@ -692,5 +695,6 @@ public abstract class NycSiriService {
   public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
     this._webResourceWrapper = _webResourceWrapper;
   }
+  
 
 }

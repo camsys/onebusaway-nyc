@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -52,6 +53,19 @@ public class SituationExchangeResource {
     jc = JAXBContext.newInstance(Siri.class);
   }
 
+  @GET
+  public Response handleGet() {
+    _log.info("GET received, initiating re-subscribe.");
+    try {
+      _siriService.sendSubscriptionAndServiceRequest();
+    } catch (Exception e) {
+      String message = "Re-subscribe failed: " + e.getMessage();
+      _log.error(message);
+      return Response.ok(message).build();
+    }
+    return Response.ok("Re-subscribed").build();
+  }
+  
   @POST
   @Produces("application/xml")
   @Consumes("application/xml")

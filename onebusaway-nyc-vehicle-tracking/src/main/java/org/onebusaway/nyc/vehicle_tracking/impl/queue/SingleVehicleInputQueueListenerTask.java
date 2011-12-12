@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 
@@ -27,20 +28,21 @@ public class SingleVehicleInputQueueListenerTask
 
   @Override
   public boolean processMessage(String address, String contents) {
-    CcLocationReport message = deserializeMessage(contents);
+		RealtimeEnvelope envelope = deserializeMessage(contents); 
 
-    if(acceptMessage(message)) {
-      _vehicleLocationService.handleCcLocationReportRecord(message);
+    if(acceptMessage(envelope)) {
+      _vehicleLocationService.handleRealtimeEnvelopeRecord(envelope);
       return true;
     }
 
     return false;
   }
 
-  private boolean acceptMessage(CcLocationReport message) {
-    if(message == null)
+  private boolean acceptMessage(RealtimeEnvelope envelope) {
+    if(envelope == null || envelope.getCcLocationReport() == null)
       return false;
 
+		CcLocationReport message = envelope.getCcLocationReport();
     CPTVehicleIden vehicleIdent = message.getVehicle();
     AgencyAndId vehicleId = new AgencyAndId(vehicleIdent.getAgencydesignator(),
         vehicleIdent.getVehicleId() + "");

@@ -27,6 +27,11 @@ public class NycRawLocationRecord {
   private long id;
 
   /**
+	 * index to link the realtime record to the inference record.
+	 */
+  private String uuid; 
+
+  /**
    * The time on the bus when this record was sent to us.
    */
   private long time;
@@ -85,6 +90,14 @@ public class NycRawLocationRecord {
   public long getId() {
     return id;
   }
+
+  public String getUUID() {
+		return uuid;
+	}
+
+  public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
 
   public void setTime(long time) {
     this.time = time;

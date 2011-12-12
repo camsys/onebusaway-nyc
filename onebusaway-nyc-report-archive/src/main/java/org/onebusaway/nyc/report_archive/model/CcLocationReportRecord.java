@@ -5,6 +5,8 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Index;
 
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+
 import org.joda.time.format.ISODateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.DateTimeZone;
@@ -15,6 +17,7 @@ import tcip_final_3_0_5_1.SPDataQuality;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,7 +39,11 @@ public class CcLocationReportRecord implements Serializable {
   @Id
   @GeneratedValue
   @AccessType("property")
-  private Integer id;
+  private Long id;
+
+  @Index(name = "UUID")
+	@Column(nullable = false, name = "UUID", length = 36)
+  private String uuid;
 
   @Column(nullable = false, name = "request_id")
   private Integer requestId;
@@ -55,9 +62,14 @@ public class CcLocationReportRecord implements Serializable {
   @Index(name = "time_reported")
   private Date timeReported;
   
+  // this is the system time received -- when the queue first saw it
   @Column(nullable = false, name = "time_received")
   @Index(name = "time_received")
   private Date timeReceived;
+
+  @Column(nullable = false, name = "archive_time_received")
+  @Index(name = "archive_time_received")
+  private Date archiveTimeReceived;
   
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "latitude")
   private BigDecimal latitude;
@@ -89,7 +101,7 @@ public class CcLocationReportRecord implements Serializable {
   @Column(name = "emergency_code", length = 1)
   private String emergencyCode;
     
-  @Column(nullable = false, name = "route_id_designator", length =16)
+  @Column(nullable = false, name = "route_id_designator", length = 16)
   private String routeIdDesignator;
   
   @Column(name = "nmea_sentence_gpgga", length = 160)
@@ -104,9 +116,12 @@ public class CcLocationReportRecord implements Serializable {
   public CcLocationReportRecord() {
   }
 
-    public CcLocationReportRecord(CcLocationReport message, String contents, String zoneOffset) {
+  public CcLocationReportRecord(RealtimeEnvelope envelope, String contents, String zoneOffset) {
     super();
-    if (message == null) return; // deserialization failure, abort
+    if (envelope == null || envelope.getCcLocationReport() == null) return; // deserialization failure, abort
+		setUUID(envelope.getUUID());
+		CcLocationReport message = envelope.getCcLocationReport();
+
     setRequestId((int) message.getRequestId());
 
     // Data Quality requires special handling
@@ -131,7 +146,8 @@ public class CcLocationReportRecord implements Serializable {
     setRunIdDesignator(message.getRunID().getDesignator());
     setSpeed(convertSpeed(message.getSpeed()));
     setTimeReported(convertTime(message.getTimeReported(), zoneOffset));
-    setTimeReceived(new Date());
+    setArchiveTimeReceived(new Date(System.currentTimeMillis()));
+		setTimeReceived(new Date(envelope.getTimeReceived()));
     setVehicleAgencyDesignator(message.getVehicle().getAgencydesignator());
     setVehicleAgencyId(message.getVehicle().getAgencyId().intValue());
     setVehicleId((int) message.getVehicle().getVehicleId());
@@ -169,7 +185,7 @@ public class CcLocationReportRecord implements Serializable {
       	  // append correct offset
       	  timeString = timeString + zoneOffset;
       }
-      return formatter.parseDateTime(timeString).toDate();
+      return new Date(formatter.parseDateTime(timeString).getMillis());
   }
 
   // Instantaneous speed.  Per SAE J1587 speed is in half mph increments with an offset of -15mph.
@@ -183,13 +199,21 @@ public class CcLocationReportRecord implements Serializable {
     return new BigDecimal(latlong * Math.pow(10.0, -6));
   }
 
-  public Integer getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(Integer id) {
+  public void setId(Long id) {
     this.id = id;
   }
+
+	public String getUUID() {
+		return uuid;
+	}
+ 
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
 
   public Integer getRequestId() {
     return requestId;
@@ -342,6 +366,14 @@ public class CcLocationReportRecord implements Serializable {
   public void setTimeReceived(Date timeReceived) {
     this.timeReceived = timeReceived;
   }
+
+	public Date getArchiveTimeReceived() {
+		return archiveTimeReceived;
+	}
+
+	public void setArchiveTimeReceived(Date archiveTimeReceived) {
+		this.archiveTimeReceived = archiveTimeReceived;
+	}
 
   public String getRawMessage() {
     return rawMessage;

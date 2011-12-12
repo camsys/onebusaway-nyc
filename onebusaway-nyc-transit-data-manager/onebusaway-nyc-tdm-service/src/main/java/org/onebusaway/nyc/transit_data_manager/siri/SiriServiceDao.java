@@ -28,14 +28,17 @@ public class SiriServiceDao implements SiriServicePersister {
 
   @Transactional(rollbackFor = Throwable.class)
   @Override
-  public void saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
+  public boolean saveOrUpdateServiceAlert(ServiceAlertBean serviceAlertBean) {
+    boolean isNew = false;
     ServiceAlertRecord record = getServiceAlertByServiceAlertId(serviceAlertBean.getId());
     if (record != null) {
       record.setDeleted(false);
       _template.saveOrUpdate(record.updateFrom(serviceAlertBean));
     } else {
       _template.saveOrUpdate(new ServiceAlertRecord(serviceAlertBean));
+      isNew = true;
     }
+    return isNew;
   }
 
   @Transactional(rollbackFor = Throwable.class)

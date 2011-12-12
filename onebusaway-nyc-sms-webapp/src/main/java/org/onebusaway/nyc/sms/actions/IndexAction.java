@@ -79,7 +79,7 @@ public class IndexAction extends SessionedIndexAction {
     SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService, _configurationService);
     _stopSearchService.setModelFactory(factory);
     _routeSearchService.setModelFactory(factory);    
-          
+    
     /**
      * INPUT PARSING
      */  

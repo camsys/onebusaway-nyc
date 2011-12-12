@@ -434,6 +434,7 @@ public class VehicleInferenceInstance {
     NycRawLocationRecord nycRawRecord = obs.getRecord();
     BlockState blockState = state.getBlockState();
 
+		record.setUUID(nycRawRecord.getUUID());
     record.setInferenceIsEnabled(_enabled);
     record.setLastUpdateTime(_lastUpdateTime);
     record.setLastLocationUpdateTime(_lastLocationUpdateTime);

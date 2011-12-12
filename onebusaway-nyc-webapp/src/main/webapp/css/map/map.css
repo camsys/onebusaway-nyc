@@ -33,8 +33,8 @@
 }
 
 #content #searchbar form input {
-	width: 262px;
-	height: 28px;
+	width: 252px;
+	height: 25px;
 	font-weight: bold;
 	font-family: inherit;
 	font-size: 120%;	
@@ -56,8 +56,7 @@
 	right: 0px;
 	width: 30px;
 	height: 30px;
-
-	border: none;
+	border: 0;
 	cursor: pointer;
 	margin: 3px 6px 0 0;
 	text-indent: -9999px;
@@ -102,7 +101,8 @@
 #content #results ul li.routeItem {
 	width: 65px;
 	height: 25px;
-	display: inline-block;
+	display: block;
+	float: left;
 	text-align: center;
 }
 

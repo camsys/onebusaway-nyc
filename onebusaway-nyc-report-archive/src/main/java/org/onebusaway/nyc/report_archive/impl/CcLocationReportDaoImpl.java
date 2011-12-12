@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 @Component
 public
@@ -65,10 +66,11 @@ class CcLocationReportDaoImpl implements CcLocationReportDao {
   }
 
   @Transactional(rollbackFor=Throwable.class, propagation=Propagation.REQUIRES_NEW)
-  public void handleException(String content, Throwable error) {
-     InvalidLocationRecord ilr = new InvalidLocationRecord(content, error);
+  public void handleException(String content, Throwable error, Date timeReceived) {
+     InvalidLocationRecord ilr = new InvalidLocationRecord(content, error, timeReceived);
     _template.saveOrUpdate(ilr);
     // clear from level one cache
+    _template.flush();
     _template.evict(ilr);
   }
 
