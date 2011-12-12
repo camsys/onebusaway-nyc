@@ -62,7 +62,7 @@ public class CcLocationReportRecord implements Serializable {
   @Index(name = "time_reported")
   private Date timeReported;
   
-	// this is the system time received -- when the queue first saw it
+  // this is the system time received -- when the queue first saw it
   @Column(nullable = false, name = "time_received")
   @Index(name = "time_received")
   private Date timeReceived;

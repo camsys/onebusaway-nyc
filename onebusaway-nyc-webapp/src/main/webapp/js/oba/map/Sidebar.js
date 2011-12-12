@@ -195,7 +195,7 @@ OBA.Sidebar = function () {
 						
 			jQuery.each(routeResult.serviceAlerts, function(_, alert) {
 				var alertItem = jQuery("<li></li>")
-									.text(alert.value);
+									.html(alert.value);
 				
 				serviceAlertList.append(alertItem);
 			});
@@ -204,8 +204,8 @@ OBA.Sidebar = function () {
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
 							.append(titleBox)
-							.append(serviceAlertList)
-							.append(descriptionBox);
+							.append(descriptionBox)
+							.append(serviceAlertList);
 	
 			legendList.append(listItem);
 			

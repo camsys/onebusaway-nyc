@@ -15,6 +15,8 @@ import tcip_final_3_0_5_1.CcLocationReport;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import java.util.Date;
+
 public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
@@ -28,15 +30,16 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   // this method can't throw exceptions or it will stop the queue
   // listening
   public boolean processMessage(String address, String contents) {
+    RealtimeEnvelope envelope = null;
     try {    
-				RealtimeEnvelope envelope = deserializeMessage(contents);
+	envelope = deserializeMessage(contents);
 
-				if (envelope == null || envelope.getCcLocationReport() == null) {
-						_log.error("Message discarded, probably corrupted, contents= " + contents);
-						Exception e = new Exception("deserializeMessage failed, possible corrupted message.");
-						_dao.handleException(contents, e);
-						return false;
-				}
+	if (envelope == null || envelope.getCcLocationReport() == null) {
+	    _log.error("Message discarded, probably corrupted, contents= " + contents);
+	    Exception e = new Exception("deserializeMessage failed, possible corrupted message.");
+	    _dao.handleException(contents, e, null);
+	    return false;
+	}
 
       CcLocationReportRecord record = new CcLocationReportRecord(envelope, contents, _zoneOffset);
       if (record != null) {
@@ -45,7 +48,9 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);
       try {
-        _dao.handleException(contents, t);
+	  Date timeReceived = null;
+	  if (envelope != null) timeReceived = new Date(envelope.getTimeReceived());
+	  _dao.handleException(contents, t, timeReceived);
       } catch (Throwable tt) {
         // we tried
         _log.error("Exception handling exception= " + tt);
