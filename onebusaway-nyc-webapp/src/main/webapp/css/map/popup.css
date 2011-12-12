@@ -77,10 +77,10 @@
   	color: #d12020;
 }
 
-.popup ul.service-alert li {
-	font-weight: bold;
+.popup .service-alert {
 	color: #d12020;
 	margin-top: 2px;  
+	width: 400px;
 }
 
 .popup ul li.route {
