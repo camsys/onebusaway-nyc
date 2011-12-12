@@ -15,8 +15,11 @@
  */ 
 
 #wizard {
-	width: 100%;
+	overflow: hidden;
 	position: absolute;
+	width: 100%;
+	top: 100%;
+	
 	left: 0;
 	opacity:0.9;
 	z-index: 10;
@@ -50,6 +53,7 @@
 	width: 100%;
 	position: absolute;
 	left: 0;
+	min-height: 100%;
 }
 
 #wizard a {
@@ -67,7 +71,6 @@
 #wizard-col1 {
 	background: url("img/wizard/look_arrow.png") no-repeat 3% 7%;
 	border: 0;
-	height: 90%;
 	width: 50%;
 }
 
@@ -112,32 +115,41 @@
 
 #wizard-col3 {
 	margin-left: .5%;
-	margin-top: 1.5%;
 	text-align: center;
 	cursor: pointer;
+	height: 135px;
+	width: 177px;
+	position: relative;
 }
 
 #wizard-col4 {
 	margin-left: 4.5%;
-	margin-top: 1.8%;
 	text-align: center;
 	cursor: pointer;
+	height: 135px;
+	width: 122px;
+	position: relative;
 }
 
 #wizard-col3 p, #wizard-col4 p {
+	padding-top: 8px;
 	font-weight: bold;
 }
 
 #smartphone_img {
-	background: url("img/wizard/smartphone.png") no-repeat;
+	background: url("img/wizard/smartphone.png") no-repeat center bottom;
 	height: 107px;
 	width: 177px;
+	position: absolute;
+	bottom: 0;
 }
 
 #sms_img {
-	background: url("img/wizard/sms_phone.png") no-repeat;
+	background: url("img/wizard/sms_phone.png") no-repeat center bottom;
 	height: 103px;
 	width: 122px;
+	position: absolute;
+	bottom: 0;
 }
 
 /* Close button */
@@ -338,6 +350,15 @@
     line-height: 1;
     padding: 9px 15px;
     font-weight: bold;
+}
+.popover .title .close {
+	float: right;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 14px;
+	color: #FFF;
+	cursor: pointer;
+	margin: -4px -4px 0 0;
 }
 .popover * h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, cite, code, del, dfn, em, img, q, s, samp, small, strike, strong, sub, sup, tt, var, dd, dl, dt, li, ol, ul, fieldset, form, label, legend, button, table, caption, tbody, tfoot, thead, tr, th, td {
     border: 0 none;

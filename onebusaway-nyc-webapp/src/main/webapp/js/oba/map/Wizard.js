@@ -27,6 +27,8 @@ OBA.Wizard = function(routeMap) {
 		wizard_finaltip = jQuery("#wizard_finaltip"),
 		wizard_finaltipClose = jQuery("#wizard_finaltip .close"),
 		searchBar = jQuery("#searchbar form"),
+		mapHeader = jQuery("#map_header"),
+		formElement = jQuery("input[name=q]"),
 		legend = jQuery("#legend"),
 		theWindow = jQuery(window);	
 	
@@ -45,15 +47,26 @@ OBA.Wizard = function(routeMap) {
 		share_title = 'Copy this link',
 		share_text = '<form><input id="url" type="text" size="20" height="18" style="font-weight:bold;font-size="14px" value="mta.info/bustime"></input></form>';
 	
-	var popover_width = searchBar.width() + 100,
-		wizard_activated = false;
-	
+	var popover_left = 0,
+		wizard_activated = false,
+		current_height = 0;
+		
 	// Set wizard at footer
-	function reviseHeight(wizard_height) {
+	function reviseHeight(wizard_height) {	
 		wizard.css("height", wizard_height);
-		wizard.css("top", theWindow.height() - wizard_height);
+		wizard.css("margin-top", (-1 * wizard_height)-1);
+		current_height = wizard_height;
+		popover_left = searchBar.offset().left + searchBar.width();
 	}
 	reviseHeight(135);
+	
+	// When window is resized
+	function addResizeBehavior() {
+		function resize() {
+			reviseHeight(current_height);
+		}
+		theWindow.resize(resize);
+	}
 	
 	// 1. Launch wizard on click
 	
@@ -83,13 +96,13 @@ OBA.Wizard = function(routeMap) {
 		fallback: 'Enter a search term here',
 		html: true,
 		live: false,
-		offset: 20,
+		offset: 10,
 		placement: 'right',
 		title: function() { return search_title; },
 		content: function() { return search_text; },
 		trigger: 'manual',
-		left: popover_width,
-		top_offset: searchBar.offset().top - 30 - searchBar.height()/2  // ?
+		left: popover_left,
+		top_offset: mapHeader.offset().top + formElement.offset().top 
 	});
 	
 	function hideSearchPopover() {
@@ -156,7 +169,7 @@ OBA.Wizard = function(routeMap) {
 			title: function() { return direction_title; },
 			content: function() { return direction_text; },
 			trigger: 'manual',
-			left: popover_width,
+			left: popover_left,
 			top_offset: legend.offset().top + 30
 		});
 		wizard_inuse.popover('show');

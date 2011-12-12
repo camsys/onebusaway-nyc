@@ -128,7 +128,6 @@ OBA.Sidebar = function () {
 	// display routes on map and in legend, order by 1) for stop, then 2) nearby
 	function showRoutesOnMap(routeResults, routesFirst) {
 		var nearbyRoutes = routeResults;
-		
 		var nearby = jQuery("#legend > #nearby");
 		var for_stop = jQuery("#legend > #for_stop");
 
@@ -160,8 +159,10 @@ OBA.Sidebar = function () {
 			var nearbyRoutesLegend = jQuery("<ul></ul>").appendTo(nearby);	
 			addRoutesToLegend(nearbyRoutes, nearbyRoutesLegend);
 			
-			nearby.show();
-			for_stop.hide();
+			nearby.show();	
+			if (routesFirst !== undefined && routesFirst.length == 0) {
+				for_stop.hide();
+			}
 		}
 		
 		// pan to extent of first few routes in legend
@@ -405,4 +406,3 @@ OBA.Sidebar = function () {
 };
 
 jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
-
