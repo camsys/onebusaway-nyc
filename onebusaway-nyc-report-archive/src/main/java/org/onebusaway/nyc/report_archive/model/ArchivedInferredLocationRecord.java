@@ -213,7 +213,9 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setLastUpdateTime(managementBean.getLastUpdateTime());
     setLastLocationUpdateTime(managementBean.getLastLocationUpdateTime());
     String inferredDscString = managementBean.getLastInferredDestinationSignCode();
-    setInferredDestSignCode(Integer.parseInt(inferredDscString));
+		if (inferredDscString != null) {
+			setInferredDestSignCode(Integer.parseInt(inferredDscString));
+		}
     setInferenceIsFormal(managementBean.isInferenceIsFormal());
     setDepotId(managementBean.getDepotId());
     setEmergencyFlag(managementBean.isEmergencyFlag());
