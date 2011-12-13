@@ -16,21 +16,53 @@
 
 -->
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:s="/struts-tags"
 	xmlns:wiki="/oba-wiki-tags">
+
+<jsp:output doctype-root-element="html"
+	doctype-public="-//W3C//DTD XHTML 1.1 Transitional//EN"
+	doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" />
+
 <jsp:directive.page contentType="text/html" />
+
 <head>
-<title>OneBusAway NYC: 404 Not Found</title>
+  <title>404 Not Found</title>
 </head>
+
 <body>
 
-<div id="content" class="map">
-	<div id="text">
-		<h1>404 Not Found</h1>
-	
-		<wiki:wiki name="Error404"/>
+	<div id="header">
+  	  		<div class="title">
+     			<s:url var="url" value="/"></s:url>
+  			<h1><a href="${url}">OneBusAway NYC</a></h1>
+ 	  		</div>
+
+     	  	<ul>
+			<s:url var="url" namespace="/m" action="index"/>
+			<li><a href="${url}">Text / Mobile</a></li>
+   	  	
+			<s:url var="url" namespace="/wiki" action="About"/>
+			<li><a href="${url}">About</a></li>
+
+			<s:url var="url" namespace="/wiki" action="ContactUs"/>
+			<li><a href="${url}">Contact</a></li>
+				    
+				<s:url var="url" namespace="/wiki/Developers" action="Index"/>
+				<li><a href="${url}">Developers</a></li>
+			
+ 			<s:url var="url" namespace="/wiki/Help" action="Index"/>
+ 			<li><a href="${url}">Help</a></li>
+	    </ul>
+	</div>  		
+		
+	<div id="content">
+		<div id="text">
+			<h1>404 Not Found</h1>
+		
+			<wiki:wiki name="Error404"/>
+		</div>
 	</div>
-</div>
 
 </body>
 </html>
