@@ -77,7 +77,6 @@ OBA.Wizard = function(routeMap) {
 		 wizard_inuse.show();
 		 wizard_inuse.popover('hide');  // in case of previous search
 		 wizard_start.popover('show');
-		 bindLegend();
 		 wizard_activated = true;
 	});
 	
@@ -130,6 +129,7 @@ OBA.Wizard = function(routeMap) {
 			wizardClose.trigger('click');
 		}
 	});
+	bindLegend();
 	routeMap.registerMapListener('zoom_changed',
 		function() { 
 			if (wizard_activated) {
@@ -137,8 +137,7 @@ OBA.Wizard = function(routeMap) {
 			} else {
 				wizardClose.trigger('click');
 			}
-		});
-	
+		});	
 	
 	// TODO - MORE SPECIFIC
 	// Hints for disambiguation
@@ -157,7 +156,12 @@ OBA.Wizard = function(routeMap) {
 	}
 	
 	function showFindStopPopup() {
-		hideSearchPopover(); // double check it's closed
+		if (! wizard_activated) {
+			wizardClose.trigger('click');
+			unbindLegend();
+			return;
+		}
+		hideSearchPopover(); 		// check this is closed
 		
 		wizard_inuse.popover({
 			animate: true,
