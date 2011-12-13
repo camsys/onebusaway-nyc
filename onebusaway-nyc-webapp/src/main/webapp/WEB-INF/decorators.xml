@@ -32,6 +32,7 @@
 
 	<decorator name="wiki" page="wiki.jspx">
 		<pattern>/wiki/*</pattern>
+		<pattern>/error/*</pattern>
 	</decorator>
 
 </decorators>

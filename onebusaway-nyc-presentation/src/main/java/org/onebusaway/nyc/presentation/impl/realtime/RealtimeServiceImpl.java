@@ -91,8 +91,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
 
     for(TripDetailsBean tripDetails : trips.getList()) {
-      // filter out interlined routes? sometimes OBA returns vehicles serving routes that are not the same one 
-      // we requested! not 100% sure why...
+      // filter out interlined routes
       if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
         continue;
 
@@ -163,12 +162,10 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   @Override
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls) {
-
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId)) {
       TripStatusBean statusBean = adBean.getTripStatus();
-
       if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
         continue;
 
@@ -183,7 +180,6 @@ public class RealtimeServiceImpl implements RealtimeService {
       for(TripDetailsBean tripDetails : tripDetailBeans.getList()) {
         // should be the same as the bean above, but just to double check:
         TripStatusBean otherStatusBean = tripDetails.getStatus();
-
         if(!_presentationService.include(otherStatusBean) || !_presentationService.include(adBean, otherStatusBean))
           continue;
         
@@ -225,15 +221,22 @@ public class RealtimeServiceImpl implements RealtimeService {
 
     HashMap<String, ServiceAlertBean> serviceAlertIdsToAlerts =
         new HashMap<String, ServiceAlertBean>();
-    
-    for (TripDetailsBean tripDetailsBean : getAllTripsForRoute(routeId).getList()) {
-      TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
+
+    ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
+
+    for(TripDetailsBean tripDetails : trips.getList()) {
+      // filter out interlined routes
+      if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
+        continue;
+
+      // filtered out by user
+      if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
+        continue;
+      
+      TripStatusBean tripStatusBean = tripDetails.getStatus();
       if(tripStatusBean == null || tripStatusBean.getSituations() == null)
         continue;
       
-      if(directionId != null && !tripStatusBean.getActiveTrip().getDirectionId().equals(directionId))
-        continue;
-
       for(ServiceAlertBean serviceAlert : tripStatusBean.getSituations()) {
         serviceAlertIdsToAlerts.put(serviceAlert.getId(), serviceAlert);
       }
