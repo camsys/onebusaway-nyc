@@ -157,6 +157,14 @@
   , hasContent: function () {
       return this.getTitle()
     }
+  
+  , getExtraClass: function() {
+	  if (this.options.extraClass) {
+		  return ' inner_popup';
+	  } else {
+		  return '';
+	  }
+  	}
 
   , getTitle: function() {
       var title
@@ -379,7 +387,7 @@
       var $tip = this.tip()
       $tip.find('.title')[this.options.html ? 'html' : 'text'](this.getTitle())
       $tip.find('.content p')[this.options.html ? 'html' : 'text'](this.getContent())
-      $tip[0].className = 'popover';
+      $tip[0].className = 'popover' + this.getExtraClass();
     }
 
   , hasContent: function () {
@@ -423,7 +431,7 @@
   $.fn.popover.defaults = $.extend({} , $.fn.twipsy.defaults, {
     placement: 'right'
   , content: 'data-content'
-  , template: '<div class="arrow"></div><div class="inner"><h3 class="title"><a class="close" href="#">×</a></h3><div class="content"><p></p></div></div>'
+  , template: '<div class="arrow"></div><div class="inner"><h3 class="title"></h3><div class="content"><p></p></div></div>'
   })
 
   $.fn.twipsy.rejectAttrOptions.push( 'content' )

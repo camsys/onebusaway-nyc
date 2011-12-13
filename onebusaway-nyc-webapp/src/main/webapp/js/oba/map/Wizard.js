@@ -33,7 +33,7 @@ OBA.Wizard = function(routeMap) {
 		theWindow = jQuery(window);	
 	
 	var search_title = 'Search',
-		search_text = '<p>Type a bus route, <a href="#">stop code</a> or nearby intersection in the search box & press enter.</p><br /><p>Or keep zooming the map in by double clicking on a location.</p>',
+		search_text = '<p>Type a bus route, <a href="#" rel="popover" id="stop_code_popup">stop code</a> or nearby intersection in the search box & press enter.</p><br /><p>Or keep zooming the map in by double clicking on a location.</p>',
 		
 		direction_title = 'Find Your Stop',
 		direction_text = '<p>Click on a direction (next to the <span class="ui-icon ui-icon-triangle-1-e"></span><br /> symbol) to open a bus stop list. Click again to close it.</p><br /><p>Scroll down to your stop & click on it to see it on the map.</p>',
@@ -45,7 +45,11 @@ OBA.Wizard = function(routeMap) {
 		sms_text = 'Text your 6-digit bus stop code # (also add bus route for best results) to <span style="font-weight:bold">511123</span>.',
 		
 		share_title = 'Copy this link',
-		share_text = '<form><input id="url" type="text" size="25" style="font-weight:bold;height:20px;width=200px;" value="http://mta.info/bustime"></input></form>';
+		share_text = '<form><input id="url" type="text" size="25" style="font-weight:bold;height:20px;width=200px;" value="http://mta.info/bustime"></input></form>',
+		
+		stop_code_title = "What's my bus stop code?",
+		stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
+						  + "<p>Option 2. Locate your stop code on a bus stop pole:</p> <p id='pole'><img src='css/map/img/wizard/bus_stop_pole.png' /></p>";
 	
 	var popover_left = 0,
 		wizard_activated = false,
@@ -78,6 +82,24 @@ OBA.Wizard = function(routeMap) {
 		 wizard_inuse.popover('hide');  // in case of previous search
 		 wizard_start.popover('show');
 		 wizard_activated = true;
+		 
+		 // Stop code inner popup
+		 var stop_code_popup = jQuery("#stop_code_popup");
+		 stop_code_popup.popover({
+				animate: true,
+				delayIn: 0,
+				delayOut: 300,
+				fallback: 'Stop Codes can be found using the map or on bus stop pole boxes.',
+				html: true,
+				live: false,
+				offset: 0,
+				placement: 'below',
+				title: function() { return stop_code_title; },
+				content: function() { return stop_code_content; },
+				trigger: 'hover',
+				close_btn: false,
+				extraClass: true   // info popup within popover
+			});
 	});
 	
 	wizardClose.click(function(e) {

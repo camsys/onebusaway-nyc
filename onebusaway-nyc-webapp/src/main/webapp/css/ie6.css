@@ -47,9 +47,9 @@ body, html {
 
 .popover.above .arrow {
   bottom: 0;
-  left: 50%;
   margin: 0;
   border: 0;
+  left: 0;
 }
 .popover.right .arrow {
   left: 0;
