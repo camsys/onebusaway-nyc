@@ -34,7 +34,5 @@ public interface RealtimeService {
 
   public List<ServiceAlertBean> getServiceAlertsForRouteAndDirection(
       String routeId, String directionId);
-
-  public List<ServiceAlertBean> getServiceAlertsForStop(String stopId);
     
 }

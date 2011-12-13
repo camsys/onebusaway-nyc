@@ -162,14 +162,14 @@
 			    		<s:url var="url" namespace="/wiki/Help" action="MobileOverview"/>
 			    		<a href="${url}" target="_new">
 			    			<p>Mobile Web</p>
-			    			<div id="smartphone_img">&amp;nbsp;</div>
+			    			<a href="#" rel="popover"><div id="smartphone_img">&amp;nbsp;</div></a>
 			    		</a>
 				    </li>	
 				    <li id="wizard-col4">
 			    		<s:url var="url" namespace="/wiki/Help" action="SMSOverview"/>
 			    		<a href="${url}" target="_new">				    		
 			    			<p>SMS</p>
-			    			<div id="sms_img">&amp;nbsp;</div>
+			    			<a href="#" rel="popover"><div id="sms_img">&amp;nbsp;</div></a>
 			    		</a>
 				    </li>
 			    </ul>
@@ -183,9 +183,9 @@
 		    <div id="wizard_finaltip">
 		    	<div>
 			    	<a data-placement="right" href="#" class="wizard_panel" rel="popover"><p style="font-weight: bold;">Tips:</p></a>
-			    	<p>Bus Time is also available via <span id="wizard_mobile"><a href="#" rel="popover">Mobile Web</a></span> or <span id="wizard_sms"><a href="#" rel="popover">SMS/Text Message</a></span>.</p>
-			    	<p>Remember your Stop # from the pop-ups or find it on a bus stop pole box.</p>
-			    	<p id="sharelinks"><span id="wizard_share"><a href="#" rel="popover">Share</a></span> this link and tell others about Bus Time!
+			    	<p>Bus Time is also available via <a href="#" id="wizard_mobile" rel="popover">Mobile Web</a> or <a href="#" id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
+			    	<p>Remember your Stop # from the pop-ups or find it on a <a id="tips_code_popup" href="#" rel="popover" data-placement="above">bus stop pole box</a>.</p>
+			    	<p id="sharelinks"><a id="wizard_share" href="#" rel="popover">Share</a> this link and tell others about Bus Time!
 			    		<a href="http://twitter.com/MTAInsider" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>
 			    		<a href="http://www.facebook.com/MTA.info" target="_new"><span class="ui-icon ui-icon-facebook"> &amp;nbsp; </span></a>
 			    		<a href="http://www.youtube.com/playlist?list=PL70B2273F7B23A5F3" target="_new"><span class="ui-icon ui-icon-youtube"> &amp;nbsp; </span></a>
