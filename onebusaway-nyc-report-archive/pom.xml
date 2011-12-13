@@ -133,6 +133,16 @@
 	</properties>
       </profile>
       <profile>
+	<id>db-replay</id>
+	<properties>
+	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
+	  <db.url>jdbc:mysql://db.replay.obanyc.com:3306/onebusaway_nyc</db.url>
+	  <db.username>obanyc</db.username>
+	  <db.password>blueceilingbrick</db.password>
+	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
+	</properties>
+      </profile>
+      <profile>
 	<id>db-prod</id>
 	<properties>
 	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
@@ -182,6 +192,14 @@
             <properties>
                 <tds.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
+            </properties>
+        </profile>
+        <profile>
+            <!-- Transit data federation webapp offers the TDS -->
+            <id>services-replay</id> <!-- aka staging, production -->
+            <properties>
+                <tds.path>http://app.replay.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.replay.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
