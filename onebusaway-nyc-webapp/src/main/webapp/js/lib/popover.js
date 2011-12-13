@@ -177,7 +177,11 @@
     }
   
   , addClose: function() {
-       return '<a class="close" href="#">x</a>';
+	   if (this.options.close_btn === false) {
+		   return '';
+	   } else {
+		   return '<a class="close" href="#">x</a>';
+	   }
     }
 
   , tip: function() {

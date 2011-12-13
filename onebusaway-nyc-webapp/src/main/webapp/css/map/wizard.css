@@ -37,8 +37,10 @@
 	color: #333;
 	font-size: 12px;
 	line-height: normal;
-	border: 1px solid #bbb;
-	border-bottom-color: #bbb;
+	border-top: 1px solid #bbb;
+	border-bottom: 0px;
+	border-left: 0px;
+	border-right: 0px;
 	-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
 	-moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
 	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -115,7 +117,6 @@
 
 #wizard-col3 {
 	margin-left: .5%;
-	text-align: center;
 	cursor: pointer;
 	height: 135px;
 	width: 177px;
@@ -124,7 +125,6 @@
 
 #wizard-col4 {
 	margin-left: 4.5%;
-	text-align: center;
 	cursor: pointer;
 	height: 135px;
 	width: 122px;
@@ -134,6 +134,7 @@
 #wizard-col3 p, #wizard-col4 p {
 	padding-top: 8px;
 	font-weight: bold;
+	text-align: center;
 }
 
 #smartphone_img {
@@ -142,6 +143,7 @@
 	width: 177px;
 	position: absolute;
 	bottom: 0;
+	display: inline;
 }
 
 #sms_img {
@@ -150,6 +152,7 @@
 	width: 122px;
 	position: absolute;
 	bottom: 0;
+	display: inline;
 }
 
 /* Close button */
@@ -212,9 +215,9 @@
 	margin-top: 5px;
 }
 
-#wizard_mobile, #wizard_sms, #wizard_share {
-	color: #0189c7;
-	text-decoration: underline;
+a#wizard_mobile, a#wizard_sms, a#wizard_share {
+	color: #3398C7;
+	text-decoration: none;
 	font-weight: bold;
 }
 
@@ -300,34 +303,34 @@
 .popover.above .arrow {
   bottom: 0;
   left: 50%;
-  margin-left: -5px;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #000000;
+  margin-left: -7px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #000000;
 }
 .popover.right .arrow {
   top: 50%;
   left: 0;
-  margin-top: -5px;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-right: 5px solid #000000;
+  margin-top: -7px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 7px solid #000000;
 }
 .popover.below .arrow {
   top: 0;
   left: 50%;
-  margin-left: -5px;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 5px solid #000000;
+  margin-left: -7px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #000000;
 }
 .popover.left .arrow {
   top: 50%;
   right: 0;
-  margin-top: -5px;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 5px solid #000000;
+  margin-top: -7px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 7px solid #000000;
 }
 .popover .inner {
   background: #000000;
@@ -343,7 +346,7 @@
   box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
 }
 .popover .title {
-    background-color: #0189C7;
+    background-color: #3398C7;
     color: #FFFFFF;
     border-bottom: 1px solid #EEEEEE;
     border-radius: 3px 3px 0 0;
