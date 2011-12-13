@@ -85,7 +85,7 @@
       <id>db-dev</id>
       <properties>
         <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-        <db.url>jdbc:mysql://db.staging.obanyc.com:3306/dev</db.url>
+        <db.url>jdbc:mysql://db.dev.obanyc.com:3306/dev</db.url>
         <db.username>obanyc</db.username>
         <db.password>blueceilingbrick</db.password>
         <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
@@ -105,7 +105,7 @@
       <id>db-qa</id>
       <properties>
         <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-        <db.url>jdbc:mysql://db.staging.obanyc.com:3306/qa</db.url>
+        <db.url>jdbc:mysql://db.qa.obanyc.com:3306/qa</db.url>
         <db.username>obanyc</db.username>
         <db.password>blueceilingbrick</db.password>
         <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
