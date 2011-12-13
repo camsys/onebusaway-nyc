@@ -215,7 +215,7 @@
 	margin-top: 5px;
 }
 
-a#wizard_mobile, a#wizard_sms, a#wizard_share {
+a#wizard_mobile, a#wizard_sms, a#wizard_share, a#tips_code_popup {
 	color: #3398C7;
 	text-decoration: none;
 	font-weight: bold;

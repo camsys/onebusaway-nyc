@@ -48,8 +48,11 @@ OBA.Wizard = function(routeMap) {
 		share_text = '<form><input id="url" type="text" size="25" style="font-weight:bold;height:20px;width=200px;" value="http://mta.info/bustime"></input></form>',
 		
 		stop_code_title = "What's my bus stop code?",
-		stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
-						  + "<p>Option 2. Locate your stop code on a bus stop pole box:</p><div class='pole'><img id='pole_img' src='css/map/img/wizard/bus_stop_pole.png' /></div>";
+		stop_pole_diagram = "<div class='pole'><img id='pole_img' src='css/map/img/wizard/bus_stop_pole.png' /></div>";
+	
+	var stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
+						  + "<p>Option 2. Locate your stop code on a bus stop pole box:</p>" 
+						  + stop_pole_diagram;
 	
 	var popover_left = 0,
 		wizard_activated = false,
@@ -99,7 +102,7 @@ OBA.Wizard = function(routeMap) {
 				trigger: 'hover',
 				close_btn: false,
 				extraClass: true   // info popup within popover
-			});
+		});
 	});
 	
 	wizardClose.click(function(e) {
@@ -330,5 +333,23 @@ OBA.Wizard = function(routeMap) {
 			urlField.select();
 		}, 400);
 	});
+	
+	// Final tips stop code popup
+	// Stop code inner popup
+	 var tips_code_popup = jQuery("#tips_code_popup");
+	 tips_code_popup.popover({
+			animate: true,
+			delayIn: 0,
+			delayOut: 0,
+			fallback: 'Stop Codes can also be found on bus stop pole boxes.',
+			html: true,
+			live: false,
+			offset: 0,
+			placement: 'below',
+			title: function() { return "Bus Stop Pole Box"; },
+			content: function() { return stop_pole_diagram + "Stop codes can also be found here."; },
+			trigger: 'hover',
+			close_btn: false
+		});
 
 };
