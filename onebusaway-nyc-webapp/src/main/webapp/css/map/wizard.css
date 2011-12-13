@@ -420,7 +420,7 @@ a#wizard_mobile, a#wizard_sms, a#wizard_share {
   border: 0;
 }
 .inner_popup .inner {
-  background: #EEEEEE;
+  background: #CCCCCC;
   background: rgba(200, 200, 200, 0.8);
   padding: 3px;
   overflow: hidden;
@@ -446,9 +446,15 @@ a#wizard_mobile, a#wizard_sms, a#wizard_share {
     font-size: 12px;
     margin-bottom: 4px;
 }
-.inner_popup .content #pole {
+.inner_popup .content .pole {
 	text-align: center;
-	margin: -10px 0 -10px 0;
+	position: relative;
+	margin-top: -20px;
+	margin-bottom: -15px;
+}
+.inner_popup .content .pole img #pole_img {
+	width: 86px;
+	height: 111px;
 }
 
 

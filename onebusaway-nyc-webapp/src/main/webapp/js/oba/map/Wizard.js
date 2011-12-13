@@ -49,7 +49,7 @@ OBA.Wizard = function(routeMap) {
 		
 		stop_code_title = "What's my bus stop code?",
 		stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
-						  + "<p>Option 2. Locate your stop code on a bus stop pole:</p> <p id='pole'><img src='css/map/img/wizard/bus_stop_pole.png' /></p>";
+						  + "<p>Option 2. Locate your stop code on a bus stop pole box:</p><div class='pole'><img id='pole_img' src='css/map/img/wizard/bus_stop_pole.png' /></div>";
 	
 	var popover_left = 0,
 		wizard_activated = false,
