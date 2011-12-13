@@ -55,7 +55,7 @@ def process(base, directory):
         f.close()
 
 for file in os.listdir(basedir):
-    if os.path.isdir(file):
+    if os.path.isdir(os.path.join(basedir,file)):
         process(basedir, file)
 
 print "Script seems to have finished succesfully"

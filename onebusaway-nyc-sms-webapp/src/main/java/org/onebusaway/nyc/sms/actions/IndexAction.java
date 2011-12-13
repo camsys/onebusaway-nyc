@@ -272,9 +272,7 @@ public class IndexAction extends SessionedIndexAction {
       i++;
     }
 
-    if(compactMode) {
-      _response += "\n";    
-    }
+    _response += "\n";    
     
     _response += "Send:\n";
     _response += "1-" + (i - 1) + "\n";
@@ -436,7 +434,7 @@ public class IndexAction extends SessionedIndexAction {
     staticStuff += "'S74 MAIN & CRAIG'\n";
     staticStuff += "'200884 S44'\n\n";
     
-    staticStuff += "Find 6-digit stop code on the bus stop pole box.";
+    staticStuff += "Find 6-digit stop code on bus stop pole box.";
 
     if(message != null) {
       if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {

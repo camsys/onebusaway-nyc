@@ -242,26 +242,6 @@ public class RealtimeServiceImpl implements RealtimeService {
     return new ArrayList<ServiceAlertBean>(serviceAlertIdsToAlerts.values());
   }
   
-  @Override
-  public List<ServiceAlertBean> getServiceAlertsForStop(String stopId) {
-    HashMap<String, ServiceAlertBean> serviceAlertIdsToAlerts =
-        new HashMap<String, ServiceAlertBean>();
-    
-    List<ArrivalAndDepartureBean> arrivalsAndDepartures = getArrivalsAndDeparturesForStop(stopId);
-    
-    for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
-      TripStatusBean tripStatusBean = arrivalAndDepartureBean.getTripStatus();
-      if(tripStatusBean == null || tripStatusBean.getSituations() == null)
-        continue;
-
-      for(ServiceAlertBean serviceAlert : tripStatusBean.getSituations()) {
-        serviceAlertIdsToAlerts.put(serviceAlert.getId(), serviceAlert);
-      }
-    }
-    
-    return new ArrayList<ServiceAlertBean>(serviceAlertIdsToAlerts.values());
-  }
-  
   private ListBean<TripDetailsBean> getAllTripsForRoute(String routeId) {
     TripsForRouteQueryBean tripRouteQueryBean = new TripsForRouteQueryBean();
     tripRouteQueryBean.setRouteId(routeId);
