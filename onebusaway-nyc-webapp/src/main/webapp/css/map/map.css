@@ -106,6 +106,10 @@
 	text-align: center;
 }
 
+#content #results ul li.locationItem {
+	padding-top: .5em;
+}
+
 #content #legend #for_stop {
 	display: none;
 }
@@ -284,5 +288,6 @@
 	font-weight: normal;
 	color: #999;
 }
+
 
 

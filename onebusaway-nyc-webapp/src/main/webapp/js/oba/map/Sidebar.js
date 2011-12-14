@@ -313,6 +313,7 @@ OBA.Sidebar = function () {
 		welcome.hide();
 		legend.hide();
 		results.hide();
+		noResults.hide();
 		
 		jQuery("#results ul").remove();
 		jQuery("#legend #for_stop").children().empty();
@@ -357,6 +358,7 @@ OBA.Sidebar = function () {
 						var nearbyRoutes = result.nearbyRoutes;
 						if(nearbyRoutes.length === 0) {
 							noResults.show();
+							welcome.show();
 							return;							
 						}
 						
