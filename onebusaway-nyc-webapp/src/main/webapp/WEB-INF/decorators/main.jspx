@@ -177,13 +177,12 @@
 		    </div>
 		    <div id="wizard_inuse">
 		    	<a data-placement="right" href="#" class="wizard_panel" rel="popover">&amp;nbsp;</a>
-		    	Follow the instructions above...
+		    	<span class="text_span">Follow the instructions above...</span>
 		    	<a class="close" href="#"><span class="close_txt">Close</span> ×</a>
 		    </div>    
 		    <div id="wizard_finaltip">
 		    	<div>
-			    	<a data-placement="right" href="#" class="wizard_panel" rel="popover"><p style="font-weight: bold;">Tips:</p></a>
-			    	<p>Bus Time is also available via <a href="#" id="wizard_mobile" rel="popover">Mobile Web</a> or <a href="#" id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
+			    	<p><span style="font-weight: bold;">Tips:</span> <a data-placement="right" href="#" class="wizard_panel" rel="popover">&amp;nbsp;</a> Bus Time is also available via <a href="#" id="wizard_mobile" rel="popover">Mobile Web</a> or <a href="#" id="wizard_sms" rel="popover">SMS/Text Message</a>.</p>
 			    	<p>Remember your Stop # from the pop-ups or find it on a <a id="tips_code_popup" href="#" rel="popover" data-placement="above">bus stop pole box</a>.</p>
 			    	<p id="sharelinks"><a id="wizard_share" href="#" rel="popover">Share</a> this link and tell others about Bus Time!
 			    		<a href="http://twitter.com/MTAInsider" target="_new"><span class="ui-icon ui-icon-twitter"> &amp;nbsp; </span></a>

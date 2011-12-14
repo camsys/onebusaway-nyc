@@ -227,6 +227,14 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
             new google.maps.Size(20, 32),
             new google.maps.Point(0,0),
             new google.maps.Point(0, 32));
+            
+            
+    // InfoWindow Listeners (for Wizard)
+    var infoWindowListeners = [];
+     
+    function registerInfoWindowListener(listener, fx) {
+    	infoWindowListeners.push({'event': listener, 'func': fx, 'listener_ref': null});
+    }
 	
 	// POPUPS
 	function preparePopup(marker) {
@@ -246,6 +254,11 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	    });
 
 		google.maps.event.addListener(infoWindow, "closeclick", closeFn);
+				
+		// Register InfoWindow Listeners in waiting (for Wizard)
+		jQuery.each(infoWindowListeners, function(_, infoWindowListener) {
+			infoWindowListener.listener_ref = google.maps.event.addListener(infoWindow, infoWindowListener.event, infoWindowListener.func);
+		});
 	}
 	
 	function showPopupWithContent(marker, content) {
@@ -379,7 +392,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function getZoomHereLink() {
-		var zoomHere = '<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom In</a></p>';
+		var zoomHere = '<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom Here</a></p>';
 
 		jQuery('#zoomHere').live("click", function(e) { 
 			e.preventDefault();
@@ -388,7 +401,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				map.setCenter(infoWindow.anchor.getPosition());
 			}
 			
-			map.setZoom(map.maxZoom - 3); 
+			map.setZoom(map.maxZoom - 3);
 		});
 		
 		return zoomHere;
@@ -1106,7 +1119,33 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		},
 		
 		registerMapListener: function(listener, fx) {
-			google.maps.event.addListener(map, listener, fx);
+			return google.maps.event.addListener(map, listener, fx);
+		},
+		
+		unregisterMapListener: function(registeredName) {
+			google.maps.event.removeListener(registeredName);
+		},
+		
+		registerInfoWindowListener: function(fx) {
+			if (infoWindow !== null) {
+				var ref = google.maps.event.addListener(infoWindow, "domready", fx);
+				infoWindowListeners.push({'event': 'domready', 'func': fx, 'listener_ref': ref});
+				return ref;
+			} else {
+				// register when infoWindow initiazlized
+				registerInfoWindowListener("domready", fx);
+				return null;
+			}
+		},
+		
+		unregisterInfoWindowListeners: function() {
+			for(var key in infoWindowListeners) {
+				if ((infoWindowListeners[key].listener_ref !== null)) {
+					google.maps.event.removeListener(infoWindowListeners[key].listener_ref);
+				}
+				delete infoWindowListeners[key];
+			}
+			infoWindowListeners = [];
 		}
 	};
 };

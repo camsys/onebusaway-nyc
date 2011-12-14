@@ -37,6 +37,10 @@ OBA.Wizard = function(routeMap) {
 		
 		direction_title = 'Find Your Stop',
 		direction_text = '<p>Click on a direction (next to the <span class="ui-icon ui-icon-triangle-1-e"></span><br /> symbol) to open a bus stop list. Click again to close it.</p><br /><p>Scroll down to your stop & click on it to see it on the map.</p>',
+
+		dirOrStops_text = '<span class="text_span">Click on a direction name (next to the <img src="css/map/img/wizard/arrow.png" /> symbol) to find your stop &nbsp; OR &nbsp; zoom the map until you see clickable <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-6px;" /> stop icons.</span>',	
+		routeOrZoom_text = '<span class="text_span">Click on a route on the left or zoom the map in until you see a clickable <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-6px;" /> stop icon.</span>',
+		zoomMap_text = '<span class="text_span">Keep zooming the map in until you see clicakble stop icons: <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-6px;" /> or try a search in the left search bar.</span>',
 		
 		mobile_title = 'Bus Time for Mobile Web',
 		mobile_text = 'Visit <a href="http://bustime.mta.info/m"><span style="font-weight:bold;text-decoration:none;">http://mta.info/bustime</span></a> on your web-enabled mobile device.',
@@ -56,12 +60,30 @@ OBA.Wizard = function(routeMap) {
 	
 	var popover_left = 0,
 		wizard_activated = false,
-		current_height = 0;
+		showFindStopOnMapFooter_launched = false,
+		current_height = 0,
+		map_listener = null;
+	
+	/** 
+	 * Wizard Stages: 1. Search Start  2. Direction/Stop  3. Tips
+	 * 
+	 * Listen to following search result/map events:
+	 * 
+	 * stop_result  >> 3. Tips 
+	 * intersection_result >> 2. Direction/Stop or Stop Click >> 3. Tips 
+	 * location_result >> Hide 'Follow' >> ( ...for now waits until Direction/Stop)
+	 * disambiguation_result >> TODO
+	 * route_result >> 2. Direction/Stop > Stop Click >> 3. Tips
+	 * no_results >> TODO
+	 * map click >> 2. Direction/Stop in footer only
+	 * 
+	 * 
+	 **/
 		
 	// Set wizard at footer
 	function reviseHeight(wizard_height) {	
 		wizard.css("height", wizard_height);
-		wizard.css("margin-top", -1 * wizard_height);
+		wizard.css("margin-top", -1 * wizard_height - 1);
 		current_height = wizard_height;
 		popover_left = searchBar.offset().left + searchBar.width();
 	}
@@ -79,8 +101,8 @@ OBA.Wizard = function(routeMap) {
 	
 	wizard_startLink.click(function(e) { 
 		 e.preventDefault(); 
-		 wizard_start.hide();
 		 reviseHeight(22);
+		 wizard_start.hide();
 		 wizard_inuse.show();
 		 wizard_inuse.popover('hide');  // in case of previous search
 		 wizard_start.popover('show');
@@ -91,7 +113,7 @@ OBA.Wizard = function(routeMap) {
 		 stop_code_popup.popover({
 				animate: true,
 				delayIn: 0,
-				delayOut: 300,
+				delayOut: 200,
 				fallback: 'Stop Codes can be found using the map or on bus stop pole boxes.',
 				html: true,
 				live: false,
@@ -107,16 +129,19 @@ OBA.Wizard = function(routeMap) {
 	
 	wizardClose.click(function(e) {
 		e.preventDefault();
-		wizard_start.hide();
-		hideSearchPopover();
-		unbindLegend();
-		wizard.hide();
+		if (wizard_activated) {
+			wizard_start.hide();
+			hideSearchPopover();
+			unbindLegend();
+			wizard.hide();
+			wizard_activated = false;
+		}
 	});
 	
 	wizard_start.popover({
 		animate: true,
 		delayIn: 0,
-		delayOut: 500,
+		delayOut: 200,
 		fallback: 'Enter a search term here',
 		html: true,
 		live: false,
@@ -140,7 +165,6 @@ OBA.Wizard = function(routeMap) {
 		if (wizard_finaltip) {
 			wizard_finaltip.popover('hide');
 		}
-		wizard.hide();
 	});
 	
 	
@@ -151,38 +175,50 @@ OBA.Wizard = function(routeMap) {
 		if (wizard_activated) {
 			hideSearchPopover();
 		} else {
-			wizardClose.trigger('click');
+			closeWizard();
 		}
 	});
 	bindLegend();
-	routeMap.registerMapListener('zoom_changed',
-		function() { 
+	map_listener = routeMap.registerMapListener('click', function() { 
 			if (wizard_activated) {
-				hideSearchPopover(); 			
+				hideSearchPopover(); 
+				if (! showFindStopOnMapFooter_launched) {
+					showZoomMapFooter();
+				}
 			} else {
-				wizardClose.trigger('click');
+				closeWizard();
 			}
 		});	
 	
 	// TODO - MORE SPECIFIC
 	// Hints for disambiguation
 	// function showFindLocation() {
-	//}
+	// }
 	
 	// 3. Click on direction headings & find stop
 	// Show when legend loads
 	
 	function bindLegend() {
-		legend.bind('legend_loaded', showFindStopPopup);
+		legend.bind('stop_result', hideDirectionPopoverAndShowFinalTips);
+		legend.bind('intersection_result', showFindStopOnMapFooter);
+		legend.bind('route_result', showDirectionPopup);
+		legend.bind('location_result', showClickOnRouteOrZoomFooter);
 	}
 	
 	function unbindLegend() {
-		legend.unbind('legend_loaded', showFindStopPopup);
+		legend.unbind('stop_result', hideDirectionPopoverAndShowFinalTips);
+		legend.unbind('intersection_result', showFindStopOnMapFooter);
+		legend.unbind('route_result', showDirectionPopup);
+		legend.unbind('location_result', showClickOnRouteOrZoomFooter);
+		routeMap.unregisterInfoWindowListeners();
+		if (map_listener) {
+			routeMap.unregisterMapListener(map_listener);
+		}
 	}
 	
-	function showFindStopPopup() {
+	function showDirectionPopup() {
 		if (! wizard_activated) {
-			wizardClose.trigger('click');
+			closeWizard();
 			unbindLegend();
 			return;
 		}
@@ -191,7 +227,7 @@ OBA.Wizard = function(routeMap) {
 		wizard_inuse.popover({
 			animate: true,
 			delayIn: 100,
-			delayOut: 500,
+			delayOut: 200,
 			fallback: 'Click on a route direction to find your stop',
 			html: true,
 			live: false,
@@ -201,26 +237,68 @@ OBA.Wizard = function(routeMap) {
 			content: function() { return direction_text; },
 			trigger: 'manual',
 			left: popover_left,
-			top_offset: legend.offset().top + 30
+			top_offset: (legend.offset().top + 30)
 		});
 		wizard_inuse.popover('show');
 		
-		function hideDirectionPopover() {
-			wizard_inuse.popover('hide');
-			wizard_inuse.hide();
-			if (wizard_activated) {
-				showFinalTips();
-			}
+		// Change footer text
+		showFindStopOnMapFooter();
+				
+		// On map interaction hide this popup and show final tips
+		if (map_listener) {
+			routeMap.unregisterMapListener(map_listener);
 		}
-		routeMap.registerMapListener('center_changed', function() { hideDirectionPopover(); });
-		unbindLegend();
+		map_listener = routeMap.registerMapListener('click', hideDirectionPopover);	
 	}
 	
-	// 4. Final Tips & social web links
+	function hideDirectionPopover() {
+		if (wizard_activated) {
+			wizard_inuse.popover('hide');
+			wizard_inuse.hide();
+			showFindStopOnMapFooter();
+		} else {
+			closeWizard();
+		}
+	}
+
+	function hideDirectionPopoverAndShowFinalTips() {
+		hideSearchPopover();
+		wizard_inuse.popover('hide');
+		wizard_inuse.hide();
+		if (wizard_activated) {
+			showFinalTips();
+		}
+	}
 	
+	function showZoomMapFooter() {
+		jQuery("#wizard_inuse .text_span").html(zoomMap_text);
+		
+		// On stop bubble click show final Tips
+		routeMap.registerInfoWindowListener(hideDirectionPopoverAndShowFinalTips);
+	}
+	
+	function showClickOnRouteOrZoomFooter() {
+		hideSearchPopover();
+		wizard_inuse.show();
+		jQuery("#wizard_inuse .text_span").html(routeOrZoom_text);		
+	}
+	
+	function showFindStopOnMapFooter() {
+		hideSearchPopover();
+		jQuery("#wizard_inuse .text_span").html(dirOrStops_text);
+		wizard_inuse.show();
+		
+		// On stop bubble click show final Tips
+		routeMap.registerInfoWindowListener(hideDirectionPopoverAndShowFinalTips);
+		showFindStopOnMapFooter_launched = true;
+	}
+	
+	// 4. Final tips & social web links
 	function showFinalTips() {
-		reviseHeight(110);
+		wizard_inuse.hide();
+		reviseHeight(90);
 		wizard_finaltip.show();
+		unbindLegend();
 	}
 	
 	wizard_finaltipClose.click(function(e) {
@@ -233,8 +311,6 @@ OBA.Wizard = function(routeMap) {
 		if (wizard_share) {
 			wizard_share.popover('hide');
 		}
-		unbindLegend();
-		wizard_activated = false;
 		wizard.hide();
 	});
 	
@@ -244,7 +320,7 @@ OBA.Wizard = function(routeMap) {
 	wizard_mobile_splash.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 100,
+		delayOut: 50,
 		fallback: 'Go to http://bustime.mta.info on your phone',
 		html: true,
 		live: false,
@@ -260,7 +336,7 @@ OBA.Wizard = function(routeMap) {
 	wizard_mobile.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 100,
+		delayOut: 50,
 		fallback: 'Go to http://bustime.mta.info on your phone',
 		html: true,
 		live: false,
@@ -277,7 +353,7 @@ OBA.Wizard = function(routeMap) {
 	wizard_sms_splash.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 100,
+		delayOut: 50,
 		fallback: 'Text your 6-digit Bus Stop Code # to <span style="font-weight:bold;text-decoration:none;">511123</span>',
 		html: true,
 		live: false,
@@ -293,7 +369,7 @@ OBA.Wizard = function(routeMap) {
 	wizard_sms.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 100,
+		delayOut: 50,
 		fallback: 'Text your 6-digit Bus Stop Code # to <span style="font-weight:bold;text-decoration:none;">511123</span>',
 		html: true,
 		live: false,
@@ -310,7 +386,7 @@ OBA.Wizard = function(routeMap) {
 	wizard_share.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 100,
+		delayOut: 50,
 		fallback: 'Copy this URL: <span style="font-weight:bold;text-decoration:none">http://mta.info/bustime</span>',
 		html: true,
 		live: false,
@@ -351,5 +427,14 @@ OBA.Wizard = function(routeMap) {
 			trigger: 'hover',
 			close_btn: false
 		});
-
+	 
+	 function closeWizard() {
+		 wizardClose.trigger('click');
+	 }
+	 
+	 return  {
+		 enabled: function() {
+			 return wizard_activated;
+		 }
+	 };
 };

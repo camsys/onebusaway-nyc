@@ -30,6 +30,7 @@ OBA.Sidebar = function () {
 		loading = jQuery("#loading");
 
 	var routeMap = OBA.RouteMap(document.getElementById("map"));
+	var wizard = null;
 
 	function addSearchBehavior() {
 		var searchForm = jQuery("#searchbar form"),
@@ -174,7 +175,6 @@ OBA.Sidebar = function () {
 			}
 		}	
 		legend.show();
-		legend.trigger('legend_loaded');
 	}
 		
 	function addRoutesToLegend(routeResults, legendList) {
@@ -333,6 +333,7 @@ OBA.Sidebar = function () {
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0) {
 				noResults.show();
+				//(wizard && wizard.enabled()) ? legend.trigger('no_results') : null;
 				return;
 			} else {
 				noResults.hide();
@@ -360,6 +361,8 @@ OBA.Sidebar = function () {
 						
 						showRoutePickerList(result.nearbyRoutes);
 						routeMap.showBounds(latLngBounds);
+						
+						(wizard && wizard.enabled()) ? legend.trigger('location_result') : null;
 
 					// intersection or stop ID
 					} else {									
@@ -369,6 +372,10 @@ OBA.Sidebar = function () {
 						
 						if(resultType === "StopResult") {
 							routeMap.showPopupForStopId(result.stopId);
+							
+							(wizard && wizard.enabled()) ? legend.trigger('stop_result') : null;
+						} else {
+							(wizard && wizard.enabled()) ? legend.trigger('intersection_result') : null;
 						}
 					}
 			} else {
@@ -376,9 +383,13 @@ OBA.Sidebar = function () {
 				if(resultType === "LocationResult") {
 					disambiguate(json.searchResults);
 					
+					//(wizard && wizard.enabled()) ? legend.trigger('disambiguation_result') : null;
+					
 				// routes (e.g. S74 itself or S74 + S74 LTD)
 				} else if(resultType === "RouteResult") {
 					showRoutesOnMap(json.searchResults);
+					
+					(wizard && wizard.enabled()) ? legend.trigger('route_result') : null;
 				}
 			}
 		});
@@ -398,7 +409,7 @@ OBA.Sidebar = function () {
 					doSearch(hash);
 				} else {
 					// Launch wizard
-					OBA.Wizard(routeMap);
+					wizard = OBA.Wizard(routeMap);
 				}
 			});
 		}
