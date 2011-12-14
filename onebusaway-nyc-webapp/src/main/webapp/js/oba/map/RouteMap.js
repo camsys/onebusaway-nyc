@@ -393,17 +393,25 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 	
 	function getZoomHereLink() {
-		var zoomHere = '<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom Here</a></p>';
-
-		jQuery('#zoomHere').live("click", function(e) { 
-			e.preventDefault();
-
-			if (infoWindow !== null && infoWindow.anchor !== null) {
-				map.setCenter(infoWindow.anchor.getPosition());
-			}
-			
-			map.setZoom(map.maxZoom - 3);
-		});
+		var zoomHere;
+		
+		if ((map.maxZoom - 4) > map.getZoom()) {
+			zoomHere = '<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom Here</a></p>';
+		
+			jQuery('#zoomHere').live("click", function(e) { 
+				e.preventDefault();
+	
+				if (infoWindow !== null && infoWindow.anchor !== null) {
+					map.setCenter(infoWindow.anchor.getPosition());
+				}
+				var elem = jQuery(e.target);
+				elem.css("text-decoration", "none");
+				elem.css("color", "#CCCCCC");
+				map.setZoom(map.maxZoom - 3);				
+			});
+		} else {
+			zoomHere = '<p id="zoomHere" style="line-height: 210%; color: #CCCCCC;">Zoom Here</p>';
+		}
 		
 		return zoomHere;
 	}

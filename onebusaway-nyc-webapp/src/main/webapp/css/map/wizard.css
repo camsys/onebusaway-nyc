@@ -70,7 +70,7 @@
 /* wizard-col1 includes inner-col1 and inner-col2 text */
 
 #wizard-col1 {
-	background: url("img/wizard/look_arrow.png") no-repeat 3% 7%;
+	background: url("img/wizard/look_arrow.png") no-repeat 3% 5%;
 	border: 0;
 	width: 50%;
 }
@@ -92,20 +92,27 @@
 
 #inner-col1 {
 	left: 10%;
-	margin-top: 8.5%;
+	margin-top: 7%;
 	width: 50%;
 	float: left;
+	color: #000000;
+}
+
+#inner-col1:hover {
+	color: #3398C7;
+	cursor: pointer;
 }
 
 #inner-col2 {
 	float: left;
-	margin-top: 8.5%;
+	margin-top: 7%;
+	color: #000000;
 }
 
 /* wizard-col2 includes 'Also available using:' text */
 
 #wizard-col2 {
-	margin-top: 4.5%;
+	margin-top: 3.5%;
 	width: 7%;
 	text-align: left;
 	line-height: 150%;
@@ -339,7 +346,7 @@ a#wizard_mobile, a#wizard_sms, a#wizard_share, a#tips_code_popup {
   background: rgba(44, 40, 40, 0.8);
   padding: 3px;
   overflow: hidden;
-  width: 280px;
+  width: 260px;
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
   border-radius: 6px;
@@ -372,7 +379,7 @@ a#wizard_mobile, a#wizard_sms, a#wizard_share, a#tips_code_popup {
     font-style: normal;
     font-weight: normal;
     margin: 0;
-    color: #000000;
+    /*color: #000000;*/
 }
 .popover .content {
     background-clip: padding-box;
@@ -393,6 +400,12 @@ a#wizard_mobile, a#wizard_sms, a#wizard_share, a#tips_code_popup {
     height: 20px;
     position: relative;
     width: 20px;
+}
+
+.popover .content a.mobile_link {	
+	font-weight:bold;
+	text-decoration:none;
+	color: #000000;
 }
 
 /* info popups on hover within popovers */
@@ -448,15 +461,26 @@ a#wizard_mobile, a#wizard_sms, a#wizard_share, a#tips_code_popup {
     font-size: 12px;
     margin-bottom: 4px;
 }
-.inner_popup .content .pole {
+
+/* bus stop pole diagram */
+
+.content .pole {
+	overflow: auto;
+	width:100%;
+	text-align: center;
+	/*
 	text-align: center;
 	position: relative;
 	margin-top: -20px;
-	margin-bottom: -15px;
+	margin-bottom: -15px;*/
 }
-.inner_popup .content .pole img #pole_img {
-	width: 86px;
-	height: 111px;
+.content .pole .pole_img {
+	margin-left: 10px;
+	float:left;
+}
+.content .pole .pole_caption {
+	font-weight: bold;
+	text-align: left;
 }
 
 
