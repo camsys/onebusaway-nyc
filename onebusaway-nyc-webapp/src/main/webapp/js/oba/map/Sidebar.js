@@ -333,6 +333,7 @@ OBA.Sidebar = function () {
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0) {
 				noResults.show();
+				welcome.show();
 				//(wizard && wizard.enabled()) ? legend.trigger('no_results') : null;
 				return;
 			} else {
