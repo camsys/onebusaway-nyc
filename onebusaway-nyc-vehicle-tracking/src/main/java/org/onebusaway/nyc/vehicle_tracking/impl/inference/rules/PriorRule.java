@@ -37,10 +37,13 @@ public class PriorRule implements SensorModelRule {
      * Technically, we might better weight these from prior training data, but
      * for now we want to slightly prefer being in service, not out of service
      */
-    if (EVehiclePhase.isActiveDuringBlock(phase))
-      return new SensorModelResult("pPrior", 1.0);
-    else
+    if (phase == EVehiclePhase.DEADHEAD_DURING
+        || phase == EVehiclePhase.DEADHEAD_BEFORE)
       return new SensorModelResult("pPrior", 0.5);
+    else if (EVehiclePhase.isActiveAfterBlock(phase))
+      return new SensorModelResult("pPrior", 0.7);
+    else
+      return new SensorModelResult("pPrior", 1.0);
   }
 
 }

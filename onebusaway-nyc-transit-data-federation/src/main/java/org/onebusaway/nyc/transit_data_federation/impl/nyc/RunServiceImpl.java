@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -128,8 +129,8 @@ public class RunServiceImpl implements RunService {
       if (trip != null) {
         RunData runData = entry.getValue();
 
-        ReliefState initialReliefState = runData.hasRelief() ? ReliefState.BEFORE_RELIEF
-            : ReliefState.NO_RELIEF;
+        ReliefState initialReliefState = runData.hasRelief()
+            ? ReliefState.BEFORE_RELIEF : ReliefState.NO_RELIEF;
         processTripEntry(trip, runData.initialRun, runData.reliefTime,
             initialReliefState);
         if (runData.hasRelief()) {
@@ -216,10 +217,10 @@ public class RunServiceImpl implements RunService {
     return entriesByRun.get(runId);
   }
 
-  private final Pattern realRunRouteIdPattern = Pattern
-      .compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
+  private final Pattern realRunRouteIdPattern = Pattern.compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
   private final Pattern reportedRunIdPattern = Pattern.compile("0*(\\d+)-0*(\\d+)");
   private final Pattern routeIdPattern = Pattern.compile("[a-zA-Z]+(\\d{2})+");
+  private final Pattern multiRoutePattern = Pattern.compile("(?:0?)([1-9])(?:0?)([1-9])");
 
   @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
@@ -231,8 +232,7 @@ public class RunServiceImpl implements RunService {
      */
     TreeMap<Integer, List<RunTripEntry>> matchedRTEs = new TreeMap<Integer, List<RunTripEntry>>();
 
-    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId
-        .getId());
+    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId.getId());
 
     if (!reportedIdMatcher.matches()) {
       throw new IllegalArgumentException(
@@ -240,12 +240,12 @@ public class RunServiceImpl implements RunService {
     }
 
     /*
-     * 2. rank route id levenshtein distance for nearby runTrips FIXME this is
-     * for EXACT schedule time
+     * Get run-trips for nearby runTrips
      */
     String fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
         reportedIdMatcher.group(2));
-    
+
+    Set<RunTripEntry> runsToTry = new HashSet<RunTripEntry>();
     for (BlockInstance binst : nearbyBlocks) {
       long serviceDate = binst.getServiceDate();
       int scheduleTime = (int) ((time - serviceDate) / 1000);
@@ -253,18 +253,44 @@ public class RunServiceImpl implements RunService {
           scheduleTime);
       if (rte == null || StringUtils.isEmpty(rte.getRunId()))
         continue;
+      runsToTry.add(rte);
+    }
 
-      /*
-       * in the following we strip the runEntry's id down to the format of the
-       * reported id's, as best we can.
-       */
+    /*
+     * Now, add all the runs with the same run-number
+     */
+//    for (RunTripEntry rte : entriesByRunNumber.get(reportedIdMatcher.group(2))) {
+//      RunTripEntry runAtTime = getActiveRunTripEntryForRunAndTime(
+//          new AgencyAndId(rte.getTripEntry().getId().getAgencyId(),
+//              rte.getRunId()), time);
+//      if (runAtTime != null)
+//        runsToTry.add(runAtTime);
+//    }
+
+    /*
+     * In the following we strip the runEntry's id down to the format of the
+     * reported id's, as best we can. We allow matching to double-route
+     * route-id's, e.g. X0109 (match either 01 or 09 routes). Also, for MISC
+     * routes, we guess that they enter 00 or the route number of the trip.
+     */
+    for (RunTripEntry rte : runsToTry) {
       Matcher routeIdMatcher = realRunRouteIdPattern.matcher(rte.getRunRoute());
       List<String> runIdsToTry = new ArrayList<String>();
       if (routeIdMatcher.matches()) {
         if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
           String thisRunRouteNumber = routeIdMatcher.group(2);
-          runIdsToTry.add(RunTripEntry.createId(thisRunRouteNumber,
-              rte.getRunNumber()));
+
+          Matcher multiRouteMatcher = multiRoutePattern.matcher(thisRunRouteNumber);
+          if (multiRouteMatcher.matches()) {
+            for (int i = 1; i <= multiRouteMatcher.groupCount(); ++i) {
+              runIdsToTry.add(RunTripEntry.createId(multiRouteMatcher.group(i),
+                  rte.getRunNumber()));
+            }
+          } else {
+            runIdsToTry.add(RunTripEntry.createId(thisRunRouteNumber,
+                rte.getRunNumber()));
+          }
+
         } else {
           /*
            * there is no numeric part to the routeId. check for MISC value
@@ -274,7 +300,7 @@ public class RunServiceImpl implements RunService {
              * they're allowed to enter anything, so we put this in there
              */
             runIdsToTry.add(RunTripEntry.createId("00", rte.getRunNumber()));
-            
+
             /*
              * however, they often use the actual route number
              */
@@ -282,8 +308,8 @@ public class RunServiceImpl implements RunService {
             Matcher actualRouteIdMatcher = routeIdPattern.matcher(routeId);
             if (actualRouteIdMatcher.matches()) {
               for (int i = 1; i <= actualRouteIdMatcher.groupCount(); ++i) {
-                runIdsToTry.add(RunTripEntry.createId(actualRouteIdMatcher.group(i),
-                    rte.getRunNumber()));
+                runIdsToTry.add(RunTripEntry.createId(
+                    actualRouteIdMatcher.group(i), rte.getRunNumber()));
               }
             }
           }
@@ -303,9 +329,9 @@ public class RunServiceImpl implements RunService {
           bestDist = ldist;
         }
       }
-      
+
       List<RunTripEntry> lrtes = matchedRTEs.get(bestDist);
-      
+
       if (lrtes != null) {
         lrtes.add(rte);
         matchedRTEs.put(bestDist, lrtes);
@@ -320,9 +346,8 @@ public class RunServiceImpl implements RunService {
   }
 
   /**
-   * If a schedule time is between the last stop time of
-   * a trip and the first start time of the next, we return
-   * the next trip. 
+   * If a schedule time is between the last stop time of a trip and the first
+   * start time of the next, we return the next trip.
    */
   @Override
   public RunTripEntry getActiveRunTripEntryForRunAndTime(
@@ -338,19 +363,18 @@ public class RunServiceImpl implements RunService {
     int scheduleTime = (int) (time - serviceDate.getTime()) / 1000;
 
     for (RunTripEntry entry : entriesByRun.get(runId)) {
-      if (!calendarService.isLocalizedServiceIdActiveOnDate(entry.getTripEntry()
-          .getServiceId(), serviceDate))
+      if (!calendarService.isLocalizedServiceIdActiveOnDate(
+          entry.getTripEntry().getServiceId(), serviceDate))
         continue;
-      
+
       boolean activeInThisTrip = scheduleTime >= entry.getStartTime()
           && scheduleTime < entry.getStopTime();
-          
+
       if (activeInThisTrip)
         return entry;
-      
+
       RunTripEntry nextTrip = getNextEntry(entry, serviceDate.getTime());
-      if (nextTrip != null
-          && scheduleTime <= nextTrip.getStartTime()) {
+      if (nextTrip != null && scheduleTime <= nextTrip.getStartTime()) {
         return nextTrip;
       }
     }
@@ -361,15 +385,15 @@ public class RunServiceImpl implements RunService {
   public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(
       String agencyId, long time) {
     ArrayList<RunTripEntry> out = new ArrayList<RunTripEntry>();
-    List<BlockInstance> activeBlocks = blockCalendarService
-        .getActiveBlocksForAgencyInTimeRange(agencyId, time, time);
+    List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocksForAgencyInTimeRange(
+        agencyId, time, time);
     for (BlockInstance blockInstance : activeBlocks) {
       long serviceDate = blockInstance.getServiceDate();
       int scheduleTime = (int) ((time - serviceDate) / 1000);
       BlockConfigurationEntry blockConfig = blockInstance.getBlock();
 
-      ScheduledBlockLocation blockLocation = scheduledBlockLocationService
-          .getScheduledBlockLocationFromScheduledTime(blockConfig, scheduleTime);
+      ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+          blockConfig, scheduleTime);
 
       if (blockLocation != null) {
         BlockTripEntry trip = blockLocation.getActiveTrip();
@@ -390,8 +414,7 @@ public class RunServiceImpl implements RunService {
     Date date = calendar.getTime();
 
     List<RunTripEntry> entries = entriesByRun.get(before.getRunId());
-    ListIterator<RunTripEntry> listIterator = entries.listIterator(entries
-        .size());
+    ListIterator<RunTripEntry> listIterator = entries.listIterator(entries.size());
 
     boolean found = false;
     while (listIterator.hasPrevious()) {
@@ -467,30 +490,31 @@ public class RunServiceImpl implements RunService {
   }
 
   /**
-   * This follows the same general contract of ScheduledBlockLocation.getActiveTrip,
-   * i.e. if we go past the end of the block, return the last run-trip
+   * This follows the same general contract of
+   * ScheduledBlockLocation.getActiveTrip, i.e. if we go past the end of the
+   * block, return the last run-trip
    */
   @Override
   public RunTripEntry getActiveRunTripEntryForBlockInstance(
       BlockInstance blockInstance, int scheduleTime) {
 
-    ScheduledBlockLocation blockLocation = scheduledBlockLocationService
-        .getScheduledBlockLocationFromScheduledTime(blockInstance.getBlock(),
-            scheduleTime);
+    ScheduledBlockLocation blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+        blockInstance.getBlock(), scheduleTime);
 
     /*
-     * according to getScheduledBlockLocationFromScheduledTime, we get
-     * null when we've gone past the end of the block.
+     * according to getScheduledBlockLocationFromScheduledTime, we get null when
+     * we've gone past the end of the block.
      */
     if (blockLocation == null) {
-      blockLocation = scheduledBlockLocationService
-          .getScheduledBlockLocationFromDistanceAlongBlock(blockInstance.getBlock(),
-              blockInstance.getBlock().getTotalBlockDistance());
+      blockLocation = scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          blockInstance.getBlock(),
+          blockInstance.getBlock().getTotalBlockDistance());
     }
 
     BlockTripEntry trip = blockLocation.getActiveTrip();
 
-    return getRunTripEntryForTripAndTime(trip.getTrip(), blockLocation.getScheduledTime());
+    return getRunTripEntryForTripAndTime(trip.getTrip(),
+        blockLocation.getScheduledTime());
   }
 
   private Date getTimestampAsDate(long timestamp) {
@@ -515,9 +539,8 @@ public class RunServiceImpl implements RunService {
     int scheduleTime = (int) ((timestamp - serviceDate.getTime()) / 1000);
     BlockTripEntry bte = blockCalendarService.getTargetBlockTrip(activeBlock,
         runTrip.getTripEntry());
-    ScheduledBlockLocation sbl = scheduledBlockLocationService
-        .getScheduledBlockLocationFromScheduledTime(
-            bte.getBlockConfiguration(), scheduleTime);
+    ScheduledBlockLocation sbl = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+        bte.getBlockConfiguration(), scheduleTime);
 
     return sbl;
 
@@ -526,12 +549,12 @@ public class RunServiceImpl implements RunService {
   @Override
   public BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
       Date serviceDate) {
-    
+
     Date trunDate = getTimestampAsDate(serviceDate.getTime());
     AgencyAndId blockId = rte.getTripEntry().getBlock().getId();
     BlockInstance bli = blockCalendarService.getBlockInstance(blockId,
         trunDate.getTime());
-    
+
     if (bli == null) {
       // FIXME just a hack, mostly for time issues
       List<BlockInstance> tmpBli = blockCalendarService.getClosestActiveBlocks(
@@ -543,8 +566,8 @@ public class RunServiceImpl implements RunService {
   }
 
   /**
-   * Notice that this will only match times EXACTLY within the
-   * ACTIVE schedule times (based on stops times).
+   * Notice that this will only match times EXACTLY within the ACTIVE schedule
+   * times (based on stops times).
    */
   @Override
   public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,

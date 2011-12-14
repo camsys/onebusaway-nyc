@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -127,7 +127,7 @@ public class BlockStateService {
 
   public Set<BlockState> getBestBlockLocations(Observation observation,
       BlockInstance blockInstance, double blockDistanceFrom,
-      double blockDistanceTo) {
+      double blockDistanceTo) throws MissingShapePointsException {
 
     blockDistanceFrom = Math.floor(blockDistanceFrom / _threshold) * _threshold;
     blockDistanceTo = Math.ceil(blockDistanceTo / _threshold) * _threshold;
@@ -135,9 +135,8 @@ public class BlockStateService {
     BlockLocationKey key = new BlockLocationKey(blockInstance,
         blockDistanceFrom, blockDistanceTo);
 
-    Map<BlockLocationKey, Set<BlockState>> m = _observationCache
-        .getValueForObservation(observation,
-            EObservationCacheKey.BLOCK_LOCATION);
+    Map<BlockLocationKey, Set<BlockState>> m = _observationCache.getValueForObservation(
+        observation, EObservationCacheKey.BLOCK_LOCATION);
 
     if (m == null) {
       m = new HashMap<BlockStateService.BlockLocationKey, Set<BlockState>>();
@@ -160,16 +159,15 @@ public class BlockStateService {
       RunTripEntry rte, int scheduledTime) {
     BlockConfigurationEntry blockConfig = blockInstance.getBlock();
 
-    ScheduledBlockLocation blockLocation = _scheduledBlockLocationService
-        .getScheduledBlockLocationFromScheduledTime(blockConfig, scheduledTime);
+    ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+        blockConfig, scheduledTime);
 
     if (blockLocation == null)
       throw new IllegalStateException("no blockLocation for " + blockInstance
           + " scheduleTime=" + scheduledTime);
 
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
-    String dsc = _destinationSignCodeService
-        .getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
+    String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
     return new BlockState(blockInstance, blockLocation, rte, dsc);
   }
 
@@ -203,21 +201,21 @@ public class BlockStateService {
       if (distanceAlongBlock > block.getTotalBlockDistance())
         distanceAlongBlock = block.getTotalBlockDistance();
 
-      ScheduledBlockLocation location = _scheduledBlockLocationService
-          .getScheduledBlockLocationFromDistanceAlongBlock(block,
-              distanceAlongBlock);
+      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          block, distanceAlongBlock);
 
       if (location != null) {
         int scheduledTime = location.getScheduledTime();
         long scheduleTimestamp = blockInstance.getServiceDate() + scheduledTime
             * 1000;
         double delta = scheduleTimestamp - obs.getTime();
-        CauchyDistributionImpl cd = new CauchyDistributionImpl(0, 36.0*60.0);
+        CauchyDistributionImpl cd = new CauchyDistributionImpl(0, 36.0 * 60.0);
         double schedLik = cd.density(delta);
-        double locLik = BiStudentDist.density(1, 
-             (location.getLocation().getLat() - obs.getLocation().getLat())/20.0, 
-             (location.getLocation().getLon() - obs.getLocation().getLon())/20.0,
-             0.0);
+        double locLik = BiStudentDist.density(
+            1,
+            (location.getLocation().getLat() - obs.getLocation().getLat()) / 20.0,
+            (location.getLocation().getLon() - obs.getLocation().getLon()) / 20.0,
+            0.0);
         return locLik * schedLik;
       }
       return 0.0;
@@ -230,16 +228,17 @@ public class BlockStateService {
 
     if (blockDistanceTo > blockInstance.getBlock().getTotalBlockDistance())
       blockDistanceTo = blockInstance.getBlock().getTotalBlockDistance();
-    
+
     if (blockDistanceFrom < 0.0)
       blockDistanceFrom = 0.0;
-    
-    SchedLocFunction schedLocFunc = new SchedLocFunction(blockInstance, observation);
+
+    SchedLocFunction schedLocFunc = new SchedLocFunction(blockInstance,
+        observation);
     BrentOptimizer optimizer = new BrentOptimizer();
     optimizer.setMaxEvaluations(100);
 
     Set<BlockState> bestStates = new HashSet<BlockState>();
-    
+
     // minimization
     try {
       double optimum = optimizer.optimize(schedLocFunc, GoalType.MAXIMIZE,
@@ -247,7 +246,7 @@ public class BlockStateService {
 
       if (optimum < 0.0)
         optimum = 0.0;
-      
+
       BlockState bestState = getAsState(blockInstance, optimum);
 
       if (bestState != null)
@@ -266,7 +265,8 @@ public class BlockStateService {
 
   private Set<BlockState> getUncachedBestBlockLocations(
       Observation observation, BlockInstance blockInstance,
-      double blockDistanceFrom, double blockDistanceTo) {
+      double blockDistanceFrom, double blockDistanceTo)
+      throws MissingShapePointsException {
 
     long timestamp = observation.getTime();
     ProjectedPoint targetPoint = observation.getPoint();
@@ -275,19 +275,18 @@ public class BlockStateService {
 
     List<AgencyAndId> shapePointIds = MappingLibrary.map(block.getTrips(),
         "trip.shapeId");
-    
+
     if (shapePointIds.removeAll(Collections.singleton(null))) {
       if (shapePointIds.isEmpty())
-        throw new IllegalStateException("block missing some shape points: "
+        throw new MissingShapePointsException("block has no shape points: "
             + block.getBlock().getId());
       else
         _log.warn("block missing some shape points: "
             + block.getBlock().getId());
     }
 
-
-    T2<List<XYPoint>, double[]> tuple = _projectedShapePointService
-        .getProjectedShapePoints(shapePointIds, targetPoint.getSrid());
+    T2<List<XYPoint>, double[]> tuple = _projectedShapePointService.getProjectedShapePoints(
+        shapePointIds, targetPoint.getSrid());
 
     List<XYPoint> projectedShapePoints = tuple.getFirst();
     double[] distances = tuple.getSecond();
@@ -317,9 +316,8 @@ public class BlockStateService {
 
     XYPoint xyPoint = new XYPoint(targetPoint.getX(), targetPoint.getY());
 
-    List<PointAndIndex> assignments = _shapePointsLibrary
-        .computePotentialAssignments(projectedShapePoints, distances, xyPoint,
-            fromIndex, toIndex);
+    List<PointAndIndex> assignments = _shapePointsLibrary.computePotentialAssignments(
+        projectedShapePoints, distances, xyPoint, fromIndex, toIndex);
 
     Set<BlockState> bestStates = new HashSet<BlockState>();
     if (assignments.size() == 0) {
@@ -332,20 +330,19 @@ public class BlockStateService {
     }
 
     Min<PointAndIndex> bestSchedDev = new Min<PointAndIndex>();
-//    Min<PointAndIndex> bestLocDev = new Min<PointAndIndex>();
+    // Min<PointAndIndex> bestLocDev = new Min<PointAndIndex>();
 
     for (PointAndIndex index : assignments) {
 
-//      bestLocDev.add(index.distanceFromTarget, index);
+      // bestLocDev.add(index.distanceFromTarget, index);
 
       double distanceAlongBlock = index.distanceAlongShape;
 
       if (distanceAlongBlock > block.getTotalBlockDistance())
         distanceAlongBlock = block.getTotalBlockDistance();
 
-      ScheduledBlockLocation location = _scheduledBlockLocationService
-          .getScheduledBlockLocationFromDistanceAlongBlock(block,
-              distanceAlongBlock);
+      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          block, distanceAlongBlock);
 
       if (location != null) {
         int scheduledTime = location.getScheduledTime();
@@ -359,8 +356,8 @@ public class BlockStateService {
 
     PointAndIndex indexSched = bestSchedDev.getMinElement();
     bestStates.add(getAsState(blockInstance, indexSched.distanceAlongShape));
-//    PointAndIndex indexLoc = bestLocDev.getMinElement();
-//    bestStates.add(getAsState(blockInstance, indexLoc.distanceAlongShape));
+    // PointAndIndex indexLoc = bestLocDev.getMinElement();
+    // bestStates.add(getAsState(blockInstance, indexLoc.distanceAlongShape));
 
     return bestStates;
   }
@@ -405,11 +402,9 @@ public class BlockStateService {
           return false;
       } else if (!blockInstance.equals(other.blockInstance))
         return false;
-      if (Double.doubleToLongBits(distanceFrom) != Double
-          .doubleToLongBits(other.distanceFrom))
+      if (Double.doubleToLongBits(distanceFrom) != Double.doubleToLongBits(other.distanceFrom))
         return false;
-      if (Double.doubleToLongBits(distanceTo) != Double
-          .doubleToLongBits(other.distanceTo))
+      if (Double.doubleToLongBits(distanceTo) != Double.doubleToLongBits(other.distanceTo))
         return false;
       return true;
     }
@@ -427,17 +422,15 @@ public class BlockStateService {
     if (distanceAlongBlock > block.getTotalBlockDistance())
       distanceAlongBlock = block.getTotalBlockDistance();
 
-    ScheduledBlockLocation blockLocation = _scheduledBlockLocationService
-        .getScheduledBlockLocationFromDistanceAlongBlock(block,
-            distanceAlongBlock);
+    ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+        block, distanceAlongBlock);
 
     if (blockLocation == null)
       throw new IllegalStateException("no blockLocation for " + blockInstance
           + " d=" + distanceAlongBlock);
 
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
-    String dsc = _destinationSignCodeService
-        .getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
+    String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
     RunTripEntry rte = _runService.getRunTripEntryForTripAndTime(
         activeTrip.getTrip(), blockLocation.getScheduledTime());
     if (rte == null)

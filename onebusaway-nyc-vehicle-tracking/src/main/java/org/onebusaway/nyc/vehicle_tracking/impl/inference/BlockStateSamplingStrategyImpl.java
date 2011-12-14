@@ -100,7 +100,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist<BlockState> cdfForJourneyAtStart(
+  public CategoricalDist<BlockState> cdfForJourneyAtStart(
       Observation observation) {
 
     CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
@@ -230,8 +230,18 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     boolean stateButNoRunMatch = state != null
         && !state.getOpAssigned() && !state.getRunReported();
         
+    /**
+     * Use only 10% of the score when a proposal doesn't
+     * use the run info provided. 
+     * Also, sample closer fuzzy matches.
+     */
     if (noStateButRunInfo || stateButNoRunMatch) {
-      score *= 0.05;
+      score *= 0.10;
+    } else if (state != null) {
+      if (state.getRunReported()) {
+        if (observation.getFuzzyMatchDistance() > 0)
+          score *= 0.95;
+      }
     }
 
     return score;
@@ -282,7 +292,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       // Favor in-service blocks that match the correct DSC
       String dsc = state.getDestinationSignCode();
       if (StringUtils.equals(observedDsc, dsc)) {
-        return 0.95;
+        return 1.0;
       } else {
         // Favor in-service blocks servicing the same route implied by the DSC
         Set<AgencyAndId> dscRoutes = _destinationSignCodeService
@@ -298,9 +308,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         }
 
         if (sameRoute)
-          return 0.75;
+          return 0.85;
         else
-          return 0.10;
+          return 1e-5;
       }
     }
   }

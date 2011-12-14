@@ -114,12 +114,18 @@ public class TransitionRule implements SensorModelRule {
         pTransitionFromDuringToBefore);
 
     /**
-     * just left terminal AND in-service => active during
+     * just left terminal AND in-service => active during.
+     * the following condition essentially means we allow
+     * a bus to deadhead toward base after going through
+     * the last terminal with a valid dsc.
+     * 
      */
-    double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
-        p(EVehiclePhase.isActiveDuringBlock(phase)));
-    result.addResultAsAnd("just left terminal AND in-service => active during",
-        pInService);
+    if (!EVehiclePhase.isActiveAfterBlock(phase)) {
+      double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
+          p(EVehiclePhase.isActiveDuringBlock(phase)));
+      result.addResultAsAnd("just left terminal AND in-service => active during",
+          pInService);
+    }
 
     return result;
   }

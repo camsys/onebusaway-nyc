@@ -45,32 +45,45 @@ public class InProgressRule implements SensorModelRule {
     BlockState blockState = state.getBlockState();
 
     /**
-     * These probabilities only apply if are IN_PROGRESS and have a block state
+     * Basically, we say that in-progress states correspond
+     * more to nearby trips and good block locations.  As well,
+     * we're informed of the likelihood of not-in-progress states,
+     * by way of having more of the opposite properties.
      */
-    if (phase != EVehiclePhase.IN_PROGRESS || blockState == null)
+    if (!(phase == EVehiclePhase.IN_PROGRESS
+          || phase == EVehiclePhase.DEADHEAD_BEFORE
+          || phase == EVehiclePhase.DEADHEAD_DURING)
+         || blockState == null)
       return new SensorModelResult("pInProgress (n/a)");
 
     SensorModelResult result = new SensorModelResult("pInProgress");
-
+    
     /**
      * Rule: IN_PROGRESS => block location is close to gps location
      */
     double pBlockLocation = library.computeBlockLocationProbability(
         parentState, blockState, obs);
-    result.addResultAsAnd("pBlockLocation", pBlockLocation);
     
     /**
-     * Rule: IN_PROGRESS => on route
+     * Rule: IN_PROGRESS => trip in close range
      */
     CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
     ProjectedPoint p2 = obs.getPoint();
 
     double d = SphericalGeometryLibrary.distance(p1.getLat(), p1.getLon(),
         p2.getLat(), p2.getLon());
-    double pOnRoute = _nearbyTripSigma.probability(d);
-//    double pOnRoute = library.computeOnRouteProbability(state, obs);
-    result.addResultAsAnd("pOnRoute", pOnRoute);
-
+    
+    double pTripInRange = _nearbyTripSigma.probability(d);
+    
+    if (phase == EVehiclePhase.DEADHEAD_BEFORE
+        || phase == EVehiclePhase.DEADHEAD_DURING) {
+      double invResult = 1.0 - pBlockLocation*pTripInRange;
+      result.addResultAsAnd("pNotInProgress", invResult);
+    } else {
+      result.addResultAsAnd("pBlockLocation", pBlockLocation);
+      result.addResultAsAnd("pTripInRange", pTripInRange);
+    }
+    
     return result;
   }
 

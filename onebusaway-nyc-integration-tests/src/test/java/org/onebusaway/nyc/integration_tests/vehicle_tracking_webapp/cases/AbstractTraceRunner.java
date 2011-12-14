@@ -328,7 +328,13 @@ public class AbstractTraceRunner {
 
       expPhaseCounts.increment(expPhase);
 
-      if (expPhase.equals(actPhase))
+      /**
+       * Notice that we allow deadhead-after <=> deadhead-before,
+       * due to 
+       */
+      if (expPhase.equals(actPhase)
+          || (expPhase.equals(EVehiclePhase.DEADHEAD_AFTER)
+              && actPhase.equals(EVehiclePhase.DEADHEAD_BEFORE)))
         actPhaseCounts.increment(expPhase);
 
       if (EVehiclePhase.isActiveDuringBlock(expPhase)

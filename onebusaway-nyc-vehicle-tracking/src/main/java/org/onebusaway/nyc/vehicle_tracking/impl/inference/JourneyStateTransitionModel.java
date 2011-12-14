@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -45,14 +45,13 @@ public class JourneyStateTransitionModel {
    * 
    ****/
 
-  public void move(VehicleState parentState,  
-      MotionState motionState, Observation obs, List<VehicleState> results) {
+  public void move(VehicleState parentState, MotionState motionState,
+      Observation obs, List<VehicleState> results) {
 
     List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
         obs);
 
-    generateVehicleStates(parentState, motionState, journeyStates,
-        obs, results);
+    generateVehicleStates(parentState, motionState, journeyStates, obs, results);
   }
 
   public List<JourneyState> getTransitionJourneyStates(
@@ -73,6 +72,10 @@ public class JourneyStateTransitionModel {
         return moveDeadheadDuring(obs, parentJourneyState);
       case LAYOVER_DURING:
         return moveLayoverDuring(obs);
+      case LAYOVER_AFTER:
+        return moveLayoverAfter(obs);
+      case DEADHEAD_AFTER:
+        return moveDeadheadAfter(obs);
       default:
         throw new IllegalStateException("unknown journey state: "
             + parentJourneyState.getPhase());
@@ -80,10 +83,9 @@ public class JourneyStateTransitionModel {
   }
 
   /**
-   * This takes all the possible journeyStates that the
-   * parentState could transition to, given the observation,
-   * and populates results with the resulting VehicleStates 
-   * of each of those transitions.
+   * This takes all the possible journeyStates that the parentState could
+   * transition to, given the observation, and populates results with the
+   * resulting VehicleStates of each of those transitions.
    * 
    * @param parentState
    * @param motionState
@@ -92,7 +94,7 @@ public class JourneyStateTransitionModel {
    * @param results
    */
   private void generateVehicleStates(VehicleState parentState,
-      MotionState motionState, List<JourneyState> journeyStates, 
+      MotionState motionState, List<JourneyState> journeyStates,
       Observation obs, List<VehicleState> results) {
 
     for (JourneyState journeyState : journeyStates) {
@@ -103,8 +105,8 @@ public class JourneyStateTransitionModel {
       List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
           parentState, blockState, journeyState, obs);
 
-      VehicleState vehicleState = new VehicleState(motionState,
-          blockState, journeyState, summaries, obs);
+      VehicleState vehicleState = new VehicleState(motionState, blockState,
+          journeyState, summaries, obs);
 
       results.add(vehicleState);
     }
@@ -139,7 +141,22 @@ public class JourneyStateTransitionModel {
         JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.layoverBefore());
+        JourneyState.layoverBefore(), JourneyState.deadheadAfter(),
+        JourneyState.layoverAfter());
+  }
+
+  private List<JourneyState> moveDeadheadAfter(Observation obs) {
+
+    return Arrays.asList(JourneyState.atBase(), JourneyState.deadheadAfter(),
+        JourneyState.layoverAfter(),
+        JourneyState.deadheadBefore(obs.getLocation()));
+  }
+
+  private List<JourneyState> moveLayoverAfter(Observation obs) {
+
+    return Arrays.asList(JourneyState.atBase(), JourneyState.deadheadAfter(),
+        JourneyState.layoverAfter(), JourneyState.inProgress(),
+        JourneyState.deadheadBefore(obs.getLocation()));
   }
 
   private List<JourneyState> moveDeadheadDuring(Observation obs,
