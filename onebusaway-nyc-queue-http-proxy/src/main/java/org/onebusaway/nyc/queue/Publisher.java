@@ -68,11 +68,16 @@ public class Publisher implements IPublisher {
 						.append("\",\"timeReceived\": ")
 						.append(timeReceived)
 						.append(",")
-						.append(realtime.substring(1, realtime.length()-1))
+  					.append(removeLastBracket(realtime))
 						.append("}}");
 				return prefix.toString();
     }
-		
+	
+ 	  String removeLastBracket(String s) {
+			String trimmed = s.trim();
+			return trimmed.substring(1, trimmed.length() - 1);
+	  }
+
 		String generateUUID() {
 				return new UUID().toString();
 		}
