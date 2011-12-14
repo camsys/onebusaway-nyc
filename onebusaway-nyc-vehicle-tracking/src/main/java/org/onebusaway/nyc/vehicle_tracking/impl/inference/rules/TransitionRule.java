@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TransitionRule implements SensorModelRule {
-  
+
   private VehicleStateLibrary _vehicleStateLibrary;
 
   @Autowired
@@ -75,12 +75,12 @@ public class TransitionRule implements SensorModelRule {
           prevObs.getRecord(), parentState.getBlockState().getBlockInstance());
       boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
           obs.getRecord(), parentState.getBlockState().getBlockInstance());
-      
+
       justLeftTerminal = wasAtBlockTerminal && !isAtBlockTerminal;
     } else {
       justLeftTerminal = prevObs.isAtTerminal() && !obs.isAtTerminal();
     }
-      
+
     boolean pOutToInService = prevObs.isOutOfService() && !obs.isOutOfService();
 
     double pTransitionFromBeforeToDuring = implies(p(transitionBeforeToDuring),
@@ -103,28 +103,41 @@ public class TransitionRule implements SensorModelRule {
     boolean endOfBlock = false;
     BlockState blockState = state.getBlockState();
     if (blockState != null
-        && blockState.getBlockLocation().getNextStop() == null)
+        && (blockState.getBlockLocation().getNextStop() == null
+          || library.computeProbabilityOfEndOfBlock(blockState) > 0.9)
+        )
       endOfBlock = true;
 
+    /**
+     * Added this hack to allow no block transitions after finishing one.
+     */
+    boolean wasAtEndOfBlock = false;
+    BlockState parentBlockState = parentState.getBlockState();
+    if (parentBlockState != null
+        && blockState == null
+        && (parentBlockState.getBlockLocation().getNextStop() == null 
+            || library.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
+      wasAtEndOfBlock = true;
+
     double pTransitionFromDuringToBefore = implies(p(transitionDuringToBefore),
-        p(obs.isAtBase() || obs.isOutOfService() || wasOffRoute || endOfBlock));
+        p(obs.isAtBase() || obs.isOutOfService() || wasOffRoute || endOfBlock
+            || wasAtEndOfBlock));
 
     result.addResultAsAnd(
         "Transition During to Before => out of service OR at base OR was off route OR just finished block",
         pTransitionFromDuringToBefore);
 
     /**
-     * just left terminal AND in-service => active during.
-     * the following condition essentially means we allow
-     * a bus to deadhead toward base after going through
-     * the last terminal with a valid dsc.
+     * just left terminal AND in-service => active during. the following
+     * condition essentially means we allow a bus to deadhead toward base after
+     * going through the last terminal with a valid dsc.
      * 
      */
-    if (!EVehiclePhase.isActiveAfterBlock(phase)) {
+    if (!EVehiclePhase.isActiveAfterBlock(phase) && blockState != null) {
       double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
           p(EVehiclePhase.isActiveDuringBlock(phase)));
-      result.addResultAsAnd("just left terminal AND in-service => active during",
-          pInService);
+      result.addResultAsAnd(
+          "just left terminal AND in-service => active during", pInService);
     }
 
     return result;

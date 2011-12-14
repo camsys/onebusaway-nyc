@@ -132,110 +132,100 @@ public class BlockStateTransitionModel {
         journeyState, obs);
 
     /**
-     * Ok, this is much different from how it used to be: we now allow states to
-     * be propagated, but ALSO allow for a change...when reasonable.
+     * Do we explicitly allow a block change? If not, we just advance along our
+     * current block.
+     * 
+     * Note that we are considering the parentPhase, not the newly proposed
+     * phase here. I think that makes sense, since the proposed journeyPhase is
+     * just an iteration over all phases with no real consideration of
+     * likelihood yet.
      */
+    if (!allowBlockChange) {
 
-    /**
-     * There isn't actually a block to this particle, so no progressing
-     * possible.
-     */
-    if (parentBlockState == null)
-      return null;
-
-    /**
-     * If we're off block, kill the block
-     */
-    // if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
-    // parentBlockState))
-    // return null;
-
-    if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
-      Set<BlockState> advancedBlockState = advanceAlongBlock(parentPhase,
-          parentBlockState, obs);
-
-      if (advancedBlockState != null)
-        potentialTransStates.addAll(advancedBlockState);
-
-    } else if (EVehiclePhase.isActiveAfterBlock(journeyState.getPhase())
-        || EVehiclePhase.isActiveBeforeBlock(journeyState.getPhase())){
-      
       /**
-       * Note: Only allow transitions from after states to after states
+       * There isn't actually a block to this particle, so no progressing
+       * possible.
        */
-      potentialTransStates.add(parentBlockState);
-    }
-
-    if (allowBlockChange) {
-      /**
-       * We're now considering that the driver may have been re-assigned, or
-       * whatnot.
-       */
-      Set<BlockState> newBlocks;
-      
-      if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
-        newBlocks = _blocksFromObservationService
-          .determinePotentialBlockStatesForObservation(obs, true);
-      else
-        newBlocks = _blocksFromObservationService
-          .determinePotentialBlockStatesForObservation(obs, false);
-
-      if (!newBlocks.isEmpty()) {
-        for (BlockState transState : newBlocks) {
-          
-          /**
-           * Again, only allow afters to transition to different trips.
-           */
-          if (EVehiclePhase.isActiveAfterBlock(parentPhase)
-              && !EVehiclePhase.isActiveAfterBlock(journeyState.getPhase())
-              && transState.getBlockLocation().getActiveTrip().equals(
-                  parentBlockState.getBlockLocation().getActiveTrip()))
-            continue;
-          
-          if (EVehiclePhase.isLayover(parentPhase)
-              || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
-                  transState.getBlockInstance())) {
-            transState = _blocksFromObservationService.advanceLayoverState(
-                obs.getTime(), transState);
-          }
-          potentialTransStates.add(transState);
-        }
-      }
-    }
-
-    /**
-     * When we return multiple possible transitions, choose the best in terms of
-     * schedDev and locDev. TODO consider more! why not all the rules!?
-     */
-    BlockState updatedBlockState = null;
-
-    if (potentialTransStates.size() == 1) {
-      updatedBlockState = potentialTransStates.iterator().next();
-    } else {
-      CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
-
-      for (BlockState state : potentialTransStates) {
-
-        boolean atStart = !EVehiclePhase.isActiveDuringBlock(journeyState.getPhase());
-
-        double p = _blockStateSamplingStrategy.scoreState(state, obs, atStart);
-
-        /*
-         * For journeys in progress we still want the dsc weighing and such.
-         * Note: this whole "scoring" thing is a cheap approximation to the
-         * likelihood... We could always return all "viable" transitions.
-         */
-        if (!atStart) {
-          p *= _blockStateSamplingStrategy.scoreState(state, obs, !atStart);
-        }
-
-        cdf.put(p, state);
-      }
-
-      if (!cdf.canSample())
+      if (parentBlockState == null)
         return null;
 
-      updatedBlockState = cdf.sample();
+      /**
+       * If we're off block, kill the block
+       */
+      if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
+          parentBlockState))
+        return null;
+
+      if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
+        potentialTransStates.addAll(advanceAlongBlock(parentPhase,
+            parentBlockState, obs));
+      } else {
+        potentialTransStates.add(parentBlockState);
+      }
+    }
+
+    // if (obs.isOutOfService()) {
+    // /**
+    // * Operator just went out of service so forget the block
+    // */
+    // return null;
+    // }
+
+    BlockState updatedBlockState = null;
+
+    /**
+     * If this state has no transitions, consider block changes. Otherwise, pick
+     * the best transition.
+     */
+    if ((potentialTransStates == null || potentialTransStates.isEmpty())) {
+
+      /*
+       * We're pretty much following the path set out in ParticleFactory...
+       */
+      if (allowBlockChange && ParticleFactoryImpl.rng.nextDouble() >= 0.75) {
+        /**
+         * We're now considering that the driver may have been re-assigned, or
+         * whatnot.
+         */
+        CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+
+        if (!cdf.canSample())
+          return null;
+
+        updatedBlockState = cdf.sample();
+
+        if (EVehiclePhase.isLayover(parentPhase)
+            || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
+                updatedBlockState.getBlockInstance())) {
+          updatedBlockState = _blocksFromObservationService.advanceLayoverState(
+              obs.getTime(), updatedBlockState);
+        }
+      } else {
+        return null;
+      }
+
+    } else {
+      /**
+       * When we return multiple possible transitions, choose the best in terms
+       * of schedDev and locDev. TODO consider more! why not all the rules!?
+       */
+      if (potentialTransStates.size() == 1) {
+        updatedBlockState = potentialTransStates.iterator().next();
+      } else {
+        CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
+
+        for (BlockState state : potentialTransStates) {
+
+          double p = _blockStateSamplingStrategy.scoreState(state, obs, false);
+
+          cdf.put(p, state);
+        }
+
+        if (!cdf.canSample())
+          return null;
+
+        updatedBlockState = cdf.sample();
+      }
     }
 
     return updatedBlockState;
@@ -261,8 +251,7 @@ public class BlockStateTransitionModel {
 
       closestState = getClosestBlockStateUncached(blockState, obs);
 
-      if (closestState != null)
-        states.put(blockInstance, closestState);
+      states.put(blockInstance, closestState);
     }
 
     return closestState;
@@ -272,6 +261,7 @@ public class BlockStateTransitionModel {
    * Private Methods
    ****/
 
+  // FIXME TODO this should include run info...
   private boolean allowBlockTransition(VehicleState parentState,
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
@@ -344,16 +334,15 @@ public class BlockStateTransitionModel {
         + SphericalGeometryLibrary.distance(prevObs.getLocation(),
             obs.getLocation()) * _blockDistanceTravelScale;
 
-    double distanceToStartAt = 0.0;
-    // blockState.getBlockLocation()
-    // .getDistanceAlongBlock() - distanceToTravel;
-
+    /**
+     * TODO: Should we allow a vehicle to travel backwards?
+     */
     Set<BlockState> updatedBlockStates = _blocksFromObservationService.advanceState(
-        obs, blockState, distanceToStartAt, distanceToTravel);
+        obs, blockState, 0, distanceToTravel);
 
-    if (EVehiclePhase.isLayover(phase)
-        || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
-            blockState.getBlockInstance())) {
+    if (updatedBlockStates != null
+        && (EVehiclePhase.isLayover(phase) || _vehicleStateLibrary.isAtPotentialTerminal(
+            obs.getRecord(), blockState.getBlockInstance()))) {
       for (BlockState state : updatedBlockStates) {
         state = _blocksFromObservationService.advanceLayoverState(
             obs.getTime(), state);
@@ -379,7 +368,6 @@ public class BlockStateTransitionModel {
     }
 
     Set<BlockState> closestStates = new HashSet<BlockState>();
-
     Set<BlockState> advancedStates = _blocksFromObservationService.advanceState(
         obs, blockState, -distanceToTravel, distanceToTravel);
 
