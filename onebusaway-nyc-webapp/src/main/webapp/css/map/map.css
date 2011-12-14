@@ -288,6 +288,14 @@
 	font-weight: normal;
 	color: #999;
 }
+ 
+#subwayControl {
+	padding: 10px;
+}
 
-
-
+#subwayControl a {
+	background-color: #FFFFFF;
+	border: 1px solid #C0C0C0;
+	text-decoration: none;
+	padding: 5px;
+}
