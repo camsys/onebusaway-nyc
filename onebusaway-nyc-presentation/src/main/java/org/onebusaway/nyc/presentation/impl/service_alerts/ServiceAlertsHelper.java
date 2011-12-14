@@ -225,6 +225,7 @@ public class ServiceAlertsHelper {
       return;
     
     AffectsScopeStructure affectsStructure = new AffectsScopeStructure();
+    VehicleJourneys vehicleJourneys = new VehicleJourneys();
     for (SituationAffectsBean affects : serviceAlert.getAllAffects()) {
       String agencyId = affects.getAgencyId();
       if (agencyId != null) {
@@ -235,7 +236,6 @@ public class ServiceAlertsHelper {
       String routeId = affects.getRouteId(); // LineRef
       String directionId = affects.getDirectionId();
       if (!StringUtils.isBlank(routeId)) {
-        VehicleJourneys vehicleJourneys = new VehicleJourneys();
         AffectedVehicleJourneyStructure affectedVehicleJourneyStructure = new AffectedVehicleJourneyStructure();
         LineRefStructure lineRefStructure = new LineRefStructure();
         lineRefStructure.setValue(routeId);
@@ -247,11 +247,12 @@ public class ServiceAlertsHelper {
         }
         vehicleJourneys.getAffectedVehicleJourney().add(
             affectedVehicleJourneyStructure);
-        affectsStructure.setVehicleJourneys(vehicleJourneys);
       }
     }
-
-    ptSituation.setAffects(affectsStructure);
+    if (vehicleJourneys.getAffectedVehicleJourney().size() > 0) {
+      affectsStructure.setVehicleJourneys(vehicleJourneys);
+      ptSituation.setAffects(affectsStructure);
+    }
 
   }
 

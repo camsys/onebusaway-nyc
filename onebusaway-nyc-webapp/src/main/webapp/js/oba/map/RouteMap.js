@@ -354,7 +354,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		// service available at stop
 		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' 
-			|| typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined') {
+			|| typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
+			|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined') {
 
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
 		} else {
@@ -598,6 +599,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 				strokeColor: "#" + color,
 				strokeOpacity: 1.0,
 				strokeWeight: 3,
+				clickable: false,
 				map: map
 			};
 			
