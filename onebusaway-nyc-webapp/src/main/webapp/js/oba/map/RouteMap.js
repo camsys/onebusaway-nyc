@@ -737,6 +737,11 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 				var vehicleIdWithoutAgency = vehicleIdParts[1];
 				var marker = vehiclesById[vehicleId];
 				
+				// has route been removed while in the process of updating?
+				if(typeof vehiclesByRoute[routeId] === 'undefined') {
+					return false;
+				}
+				
 				// create marker if it doesn't exist				
 				if(typeof marker === 'undefined' || marker === null) {
 					var markerOptions = {
@@ -804,6 +809,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	function removeVehicles(routeId) {
 		if(typeof vehiclesByRoute[routeId] !== 'undefined') {
 			var vehicles = vehiclesByRoute[routeId];
+			delete vehiclesByRoute[routeId];
 			
 			jQuery.each(vehicles, function(_, marker) {
 				var vehicleId = marker.vehicleId;
@@ -811,8 +817,6 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 				marker.setMap(null);
 				delete vehiclesById[vehicleId];
 			});
-
-			delete vehiclesByRoute[routeId];
 		}
 	}
 	
@@ -1139,7 +1143,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 			marker.setIcon(normalLocationIcon);
 		},
 		
-		// wizard
+		// wizard event listeners
 		registerMapListener: function(listener, fx) {
 			return google.maps.event.addListener(map, listener, fx);
 		},
