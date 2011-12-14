@@ -43,16 +43,17 @@ OBA.Wizard = function(routeMap) {
 		zoomMap_text = '<span class="text_span">Keep zooming the map in until you see clicakble stop icons: <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-6px;" /> or try a search in the left search bar.</span>',
 		
 		mobile_title = 'Bus Time for Mobile Web',
-		mobile_text = 'Visit <a href="http://bustime.mta.info/m"><span style="font-weight:bold;text-decoration:none;">http://mta.info/bustime</span></a> on your web-enabled mobile device.',
+		mobile_text = 'Visit <a class="mobile_link" href="http://bustime.mta.info/m">mta.info/bustime</a> on your mobile phone browser.',
 		
 		sms_title = 'Bus Time for SMS / Text',
-		sms_text = 'Text your 6-digit bus stop code # (also add bus route for best results) to <span style="font-weight:bold">511123</span>.',
+		sms_text = 'Text your 6-digit bus stop code (also add bus route for best results) to <span style="font-weight:bold">511123</span>.',
 		
 		share_title = 'Copy this link',
 		share_text = '<form><input id="url" type="text" size="25" style="font-weight:bold;height:20px;width=200px;" value="http://mta.info/bustime"></input></form>',
 		
 		stop_code_title = "What's my bus stop code?",
-		stop_pole_diagram = "<div class='pole'><img id='pole_img' src='css/map/img/wizard/bus_stop_pole.png' /></div>";
+		stop_pole_diagram = '<div class="pole"><img class="pole_img" src="css/map/img/wizard/bus_stop_pole.png" /><br /><div class="pole_caption">Find stop code here<br />(or enter a search at left).</div></div>';
+	
 	
 	var stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
 						  + "<p>Option 2. Locate your stop code on a bus stop pole box:</p>" 
@@ -63,7 +64,7 @@ OBA.Wizard = function(routeMap) {
 		showFindStopOnMapFooter_launched = false,
 		current_height = 0,
 		map_listener = null;
-	
+		
 	/** 
 	 * Wizard Stages: 1. Search Start  2. Direction/Stop  3. Tips
 	 * 
@@ -135,6 +136,9 @@ OBA.Wizard = function(routeMap) {
 			unbindLegend();
 			wizard.hide();
 			wizard_activated = false;
+		} else {
+			unbindLegend();
+			wizard.hide();
 		}
 	});
 	
@@ -320,11 +324,11 @@ OBA.Wizard = function(routeMap) {
 	wizard_mobile_splash.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 50,
+		delayOut: 100,
 		fallback: 'Go to http://bustime.mta.info on your phone',
 		html: true,
 		live: false,
-		offset: 0,
+		offset: -10,
 		placement: 'above',
 		title: function() { return mobile_title; },
 		content: function() { return mobile_text; },
@@ -336,11 +340,11 @@ OBA.Wizard = function(routeMap) {
 	wizard_mobile.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 50,
+		delayOut: 100,
 		fallback: 'Go to http://bustime.mta.info on your phone',
 		html: true,
 		live: false,
-		offset: 10,
+		offset: 0,
 		placement: 'above',
 		title: function() { return mobile_title; },
 		content: function() { return mobile_text; },
@@ -353,7 +357,23 @@ OBA.Wizard = function(routeMap) {
 	wizard_sms_splash.popover({
 		animate: true,
 		delayIn: 100,
-		delayOut: 50,
+		delayOut: 100,
+		fallback: 'Text your 6-digit Bus Stop Code # to <span style="font-weight:bold;text-decoration:none;">511123</span>',
+		html: true,
+		live: false,
+		offset: -10,
+		placement: 'above',
+		title: function() { return sms_title; },
+		content: function() { return sms_text; },
+		trigger: 'hover', 
+		close_btn: false
+	});
+
+	var wizard_sms = jQuery("#wizard_sms");
+	wizard_sms.popover({
+		animate: true,
+		delayIn: 100,
+		delayOut: 100,
 		fallback: 'Text your 6-digit Bus Stop Code # to <span style="font-weight:bold;text-decoration:none;">511123</span>',
 		html: true,
 		live: false,
@@ -361,32 +381,16 @@ OBA.Wizard = function(routeMap) {
 		placement: 'above',
 		title: function() { return sms_title; },
 		content: function() { return sms_text; },
-		trigger: 'hover', 
-		close_btn: false
-	});
-	
-	var wizard_sms = jQuery("#wizard_sms");
-	wizard_sms.popover({
-		animate: true,
-		delayIn: 100,
-		delayOut: 50,
-		fallback: 'Text your 6-digit Bus Stop Code # to <span style="font-weight:bold;text-decoration:none;">511123</span>',
-		html: true,
-		live: false,
-		offset: 10,
-		placement: 'above',
-		title: function() { return sms_title; },
-		content: function() { return sms_text; },
 		trigger: 'hover',
 		close_btn: false
 	});
-	
+
 	// Share link popup
 	var wizard_share  = jQuery("#wizard_share");
 	wizard_share.popover({
 		animate: true,
-		delayIn: 100,
-		delayOut: 50,
+		delayIn: 50,
+		delayOut: 100,
 		fallback: 'Copy this URL: <span style="font-weight:bold;text-decoration:none">http://mta.info/bustime</span>',
 		html: true,
 		live: false,
@@ -394,20 +398,17 @@ OBA.Wizard = function(routeMap) {
 		placement: 'above',
 		title: function() { return share_title; },
 		content: function() { return share_text; },
-		trigger: 'hover'
+		trigger: 'hover',
+		close_btn: false
 	});
 	
-	wizard_share.click(function() {
-		wizard_share.popover('show');
-		wizard_share.find('#url').select();
-	});
 	wizard_share.hover(function(e) {
 		e.preventDefault();
 		setTimeout( function() {
 			var urlField = jQuery('input#url');
 			urlField.focus();
 			urlField.select();
-		}, 400);
+		}, 300);
 	});
 	
 	// Final tips stop code popup
@@ -423,7 +424,7 @@ OBA.Wizard = function(routeMap) {
 			offset: 0,
 			placement: 'below',
 			title: function() { return "Bus Stop Pole Box"; },
-			content: function() { return stop_pole_diagram + "Stop codes can also be found here."; },
+			content: function() { return stop_pole_diagram; },
 			trigger: 'hover',
 			close_btn: false
 		});
@@ -431,7 +432,7 @@ OBA.Wizard = function(routeMap) {
 	 function closeWizard() {
 		 wizardClose.trigger('click');
 	 }
-	 
+	 	 
 	 return  {
 		 enabled: function() {
 			 return wizard_activated;
