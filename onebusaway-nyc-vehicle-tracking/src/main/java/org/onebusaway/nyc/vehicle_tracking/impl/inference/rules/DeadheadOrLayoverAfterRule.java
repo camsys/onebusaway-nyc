@@ -52,7 +52,8 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
      * RULE: DEADHEAD_AFTER || LAYOVER_AFTER => reached the end of the block
      */
 
-    double pEndOfBlock = library.computeProbabilityOfEndOfBlock(state.getBlockState());
+    double pEndOfBlock = library.computeProbabilityOfEndOfBlock(state
+        .getBlockState());
     result.addResult("pEndOfBlock", pEndOfBlock);
 
     /**
@@ -63,9 +64,11 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
      * requirement), it can quickly go off-block if the block assignment doesn't
      * keep up.
      */
-    double pServedSomePartOfBlock = library.computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
+    double pServedSomePartOfBlock = library
+        .computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
     double pOffBlock = library.computeOffBlockProbability(state, obs);
-    double pOutOfService = library.computeOutOfServiceProbability(obs);
+//    double pOutOfService = library.computeOutOfServiceProbability(obs);
+    double pOutOfService = obs.isOutOfService() ? 1.0 : 0.0;
 
     double pOffRouteOrOutOfService = pServedSomePartOfBlock
         * or(pOffBlock, pOutOfService);

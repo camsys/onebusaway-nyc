@@ -27,11 +27,14 @@
 <script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"><!-- //prevent jspx minimization --></script>
 
 <script type="text/javascript">
+/* <![CDATA[ */
 var OBA = window.OBA || {};
 
 OBA.Debug = function() {
 	var map = null;
 	var markers = null;
+	var stopMarkers = null;
+	var inferredMarkers = null;
 	var routes = null;
 	var popup = null;
 	var feature = null;
@@ -45,26 +48,26 @@ OBA.Debug = function() {
 		var lat = 0;
 		var lng = 0;
 
-		while(index &lt; len) {
+		while(index < len) {
 			var b;
 			var shift = 0;
 			var result = 0;
 			do {
 				b = encoded.charCodeAt(index++) - 63;
-				result |= (b &amp; 0x1f) &lt;&lt; shift;
+				result |= (b & 0x1f) << shift;
 				shift += 5;
-			} while (b &gt;= 0x20);
-			var dlat = ((result &amp; 1) ? ~(result &gt;&gt; 1) : (result &gt;&gt; 1));
+			} while (b >= 0x20);
+			var dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
 			lat += dlat;
 
 			shift = 0;
 			result = 0;
 			do {
 				b = encoded.charCodeAt(index++) - 63;
-				result |= (b &amp; 0x1f) &lt;&lt; shift;
+				result |= (b & 0x1f) << shift;
 				shift += 5;
-			} while (b &gt;= 0x20);
-			var dlng = ((result &amp; 1) ? ~(result &gt;&gt; 1) : (result &gt;&gt; 1));
+			} while (b >= 0x20);
+			var dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
 			lng += dlng;
 
 			array.push([lat * 1e-5, lng * 1e-5]);
@@ -75,7 +78,7 @@ OBA.Debug = function() {
 	
 	function getParameterByName(name, defaultValue) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-		var regexS = "[\\?&amp;]"+name+"=([^&amp;#]*)";
+		var regexS = "[\\?&]"+name+"=([^&#]*)";
 		var regex = new RegExp(regexS);
 		var results = regex.exec(window.location.href);
 		if(results == null) {
@@ -86,8 +89,17 @@ OBA.Debug = function() {
 	}
 	
 	function showRecordsOnMap(min_time, max_time) {
-		if(markers !== null)
+		if(markers !== null) {
 			markers.clearMarkers();
+		}
+		if (stopMarkers !== null) {
+			stopMarkers.clearMarkers();
+		}
+		if (inferredMarkers !== null) {
+			inferredMarkers.clearMarkers();
+		}
+		
+		var	points = [];
 		
 		jQuery.ajax({
 			url: "vehicle-location-simulation!task-result-records-json.do?taskId=" + getParameterByName("taskId"),
@@ -97,86 +109,200 @@ OBA.Debug = function() {
 					return;
 				}
 
-				var i = 0;
+				var i = -1;
 				jQuery.each(data.records, function(recordIndex, record) {
+					
+          i++;
+          
 					// filter out
-					if(min_time !== null &amp;&amp; max_time !== null &amp;&amp; min_time !== "" &amp;&amp; max_time !== "") {
-						if(record.timestamp &lt; min_time || record.timestamp &gt; max_time) {
-							return
-						}
+					if(min_time !== null && max_time !== null 
+							&& min_time !== "" && max_time !== "") {
+						
+						  if(i < parseInt(min_time) || i > parseInt(max_time)) {
+							  return;
+						  }
 					}
 					
-		            var size = new OpenLayers.Size(11,15);
-		            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-		            var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png',size,offset);
-		            
-		            var proj = new OpenLayers.Projection("EPSG:4326");
-		            var point = new OpenLayers.LonLat(record.lon, record.lat);
-		            point.transform(proj, map.getProjectionObject());
-		            
-		            var marker = new OpenLayers.Marker(point, icon);
-		            markers.addMarker(marker);
-		            
-		            marker.events.register("mousedown", marker, function(event) {
-			            feature = new OpenLayers.Feature(markers, point);	
-						feature.data.popupSize = new OpenLayers.Size(600, 500);
-			            popup = feature.createPopup(true);
-		                
-			            var markerText = {
-			            	inferredTripId: "NA",
-			            	timestampAsDate: "NA",
-			            	other: "",
-			            	toString: function () {
-			            		return "inferredTripId:" + this.inferredTripId + "<br/>"
-			            		 + "timestampAsDate:" + this.timestampAsDate + "<br/>"
-			            		 + this.other;
-			            	}
-			            }
-		                var html = "";
-						jQuery.each(record, function(property, value) {
-							if (value !== null) {
+          var size = new OpenLayers.Size(20,20);
+          var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+          
+	        var point = new OpenLayers.LonLat(record.lon, record.lat);
+          var icon_url = 'http://www.openlayers.org/dev/img/marker.png';
+          var proj = new OpenLayers.Projection("EPSG:4326");
+          point.transform(proj, map.getProjectionObject());
+          
+          var wgsPoint = new OpenLayers.Geometry.Point(record.lon, record.lat);
+          var proj = new OpenLayers.Projection("EPSG:4326");
+          var realpoint = wgsPoint.transform(proj, map.getProjectionObject());
+          
+              
+          var markerText = {
+        		recordNum: i,
+          	inferredTripId: "NA",
+          	timestampAsDate: "NA",
+          	inferredPhase: "NA",
+          	dsc: "NA",
+          	inferredDsc: "NA",
+          	reportedRunId: "NA",
+          	inferredRunId: "NA",
+          	schedDeviation: "NA",
+          	other: "",
+          	inferredLatLon: "",
+          	toString: function () {
+          		return "record #: " + this.recordNum + "<br/>"
+          		 + "inferredTripId:" + this.inferredTripId + "<br/>"
+          		 + "timestampAsDate:" + this.timestampAsDate + "<br/>"
+          		 + "inferredPhase: " + this.inferredPhase + "<br/>"
+          		 + "dsc: " + this.dsc + "<br/>"
+          		 + "inferredDsc: " + this.inferredDsc + "<br/>"
+          		 + "reportedRunId: " + this.reportedRunId + "<br/>"
+          		 + "inferredRunId: " + this.inferredRunId + "<br/>"
+          		 + "schedDeviation: " + Math.round(this.schedDeviation) + "(mins)<br/>"
+          		 + "inferredLatLon:" + this.inferredLatLon + "<br/>"
+          		 + this.other;
+          	}
+          };
+          
+          var schedTime = null;
+          var currentTime = null;
+          var serviceDate = null;
+          var inferredLat = null;
+          var inferredLon = null;
+          
+					jQuery.each(record, function(property, value) {
+						if (value !== null) {
+							
+							if(property === "inferredTripId") {
+								markerText.inferredTripId = "<a name='trip' href='#'>" + value + "</a>";
+							} else if(property === "timestampAsDate") {
+								currentTime = value;
+								formattedTime = new Date(value);
+								markerText.timestampAsDate = formattedTime;
+							} else if (property === "vehicleId"){
+								markerText.other += property + ": " + value.agencyId + "_" 
+								 + value.id + "<br/>";
+							} else if (property === "inferredPhase") {
+								markerText.inferredPhase = value;
 								
-								if(property === "inferredTripId") {
-									markerText.inferredTripId = "&lt;a href='#'&gt;" + value + "&lt;/a&gt;";
-// 									html += property + ": &lt;a href='#'&gt;" + value + "&lt;/a&gt;&lt;br/&gt;";
-								} else if(property === "timestampAsDate") {
-									formattedTime = new Date(value);
-									markerText.timestampAsDate = formattedTime;
-// 									html += property + ": " + formattedTime + "<br/>";
-								} else if (property === "vehicleId"){
-									markerText.other += property + ": " + value.agencyId + "_" 
-									 + value.id + "<br/>";
-								} else {
-									markerText.other += property + ": " + value + "<br/>";
-// 									html += property + ": " + value + "<br/>";
+								if (value.indexOf("PROGRESS") != -1) {
+									icon_url = 'http://www.openlayers.org/dev/img/marker-green.png';
+								} else if (value.indexOf("LAYOVER") != -1) {
+									icon_url = 'http://www.openlayers.org/dev/img/marker-blue.png';
+								}
+								
+							} else if (property === "dsc") {
+								markerText.dsc = value;
+							} else if (property === "inferredDsc") {
+								markerText.inferredDsc = value;
+							} else if (property === "reportedRunId") {
+								markerText.reportedRunId = value;
+							} else if (property === "inferredRunId") {
+								markerText.inferredRunId = value;
+							} else if (property.indexOf("Set") == -1
+									&& !isNaN(value)){
+								
+								if (property === "inferredBlockLat" && value != record.lat) {
+									inferredLat = value;
+								} else if (property === "inferredBlockLon" && value != record.lon) {
+									inferredLon = value;
 								} 
-							}
-						});
-// 		                popup.setContentHTML(html);
-		                popup.setContentHTML(markerText.toString());
-		                markers.map.addPopup(popup);
+								
+								if (property === "inferredServiceDate") {
+									schedTime = value;
+									serviceDate = value;
+								} else if (property === "inferredScheduleTime") {
+									schedTime += value*1000;
+								}
+								
+								markerText.other += property + ": " + value + "<br/>";
+							} 
+							
+						}
+					});
+					
+					if (currentTime !== null) {
+						markerText.schedDeviation = (currentTime - schedTime)/(1000*60);
+					}
+					
+          var icon = new OpenLayers.Icon(icon_url,size,offset);
+          var marker = new OpenLayers.Marker(point, icon);
+          markers.addMarker(marker);
+          
+	        var inferredMarker = null; 
+          if (inferredLon !== null && inferredLat !== null) {
+	          var inferredPoint = new OpenLayers.LonLat(inferredLon, inferredLat);
+		        var inferredProj = new OpenLayers.Projection("EPSG:4326");
+	          inferredPoint.transform(inferredProj, map.getProjectionObject());
+	          var inferredIcon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker-gold.png',size,offset);
+	          inferredMarker = new OpenLayers.Marker(inferredPoint, inferredIcon);
+	          inferredMarkers.addMarker(inferredMarker);
+	          markerText.inferredLatLon = "<a name='inferredLoc' href='#'>" + inferredLat + "," + inferredLon + "</a>";
+	          inferredMarker.display(false);
+			      inferredMarker.displayed = false;
+          } 
+          
+          
+          points.push(realpoint);
+          
+          marker.events.register("mousedown", marker, function(event) {
+	          feature = new OpenLayers.Feature(markers, point);	
+						feature.data.popupSize = new OpenLayers.Size(500, 100);
+	          popup = feature.createPopup(true);
+	          popup.setContentHTML(markerText.toString());
+	          markers.map.addPopup(popup);
 		                
-		                var tripLink = jQuery(popup.contentDiv).find("a");
-		                tripLink.click(function(e) {
-		                	e.preventDefault();
-
-		                	selectTrip(jQuery(this).text());
-		                });
-
-		                OpenLayers.Event.stop(event);
-		            });
+	          var tripLink = jQuery(popup.contentDiv).find("a[name='trip']");
+	          tripLink.click(function(e) {
+	          	e.preventDefault();
+	
+	          	selectTrip(jQuery(this).text(), serviceDate);
+	          });
+	          
+	          var inferredLink = jQuery(popup.contentDiv).find("a[name='inferredLoc']");
+	          inferredLink.click(function(e) {
+	          	e.preventDefault();
+							if (inferredMarker !== null) {
+		          	if (inferredMarker.displayed) {
+			          	inferredMarker.display(false);
+			          	inferredMarker.displayed = false;
+		          	} else {
+			          	inferredMarker.display(true);
+			          	inferredMarker.displayed = true;
+		          	}
+							}
+	          });
+	
+// 						if (marker.inferredMarker !== null) {
+// 	          	if (marker.inferredMarker.onScreen()) {
+// 		          	marker.inferredMarker.display(false);
+// 	          	} else {
+// 		          	marker.inferredMarker.display(true);
+// 	          	}
+// 						}
+          	
+            OpenLayers.Event.stop(event);
+	        });
 		            
-		            i++;
 				});
 
 				if(i > 0) {
-		            map.zoomToExtent(markers.getDataExtent());
+          map.zoomToExtent(markers.getDataExtent());
+			    var style = {
+			        strokeColor: "#000000",
+			        strokeOpacity: 0.30,
+			        strokeWidth: 3
+			    };
+			    var polyline = new OpenLayers.Geometry.LineString(points);
+			    var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+			    obslines.addFeatures([lineFeature]);
 				}
+				
+
 			}
 		});
 	}
 	
-	function selectTrip(selectedTripId) {
+	function selectTrip(selectedTripId, serviceDate) {
 		if(typeof selectedTripId === 'undefined') {
 			var selectedTrip = jQuery("#trips option:selected");
 			selectedTripId = selectedTrip.val();
@@ -185,31 +311,78 @@ OBA.Debug = function() {
 		jQuery.ajax({
 			url: "vehicle-location-simulation!points-for-trip-id.do?tripId=" + selectedTripId,
 			success: function(data) {
-	            var rawPoints = decodePolyline(data.points);
-
-	            var points = [];
-	            for(var i = 0; i &lt; rawPoints.length; i++) {
-	                var wgsPoint = new OpenLayers.Geometry.Point(rawPoints[i][1], rawPoints[i][0]);
-	                var proj = new OpenLayers.Projection("EPSG:4326");
-	                var point = wgsPoint.transform(proj, map.getProjectionObject());
-	                points.push(point);
-	            }
-
-	            if(points.length === 0) {
-	                return;
-	            }
-
-	            var style = {
-	                strokeColor: "#00FF00",
-	                strokeOpacity: 0.80,
-	                strokeWidth: 5
-	            };
-
-	            var polyline = new OpenLayers.Geometry.LineString(points);
-	            var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
-	            routes.addFeatures([lineFeature]);
-	            
-	            map.zoomToExtent(routes.getDataExtent());
+	      var rawPoints = decodePolyline(data.points);
+	
+	      var points = [];
+	      for(var i = 0; i < rawPoints.length; i++) {
+	          var wgsPoint = new OpenLayers.Geometry.Point(rawPoints[i][1], rawPoints[i][0]);
+	          var proj = new OpenLayers.Projection("EPSG:4326");
+	          var point = wgsPoint.transform(proj, map.getProjectionObject());
+	          points.push(point);
+	      }
+	
+	      if(points.length === 0) {
+	          return;
+	      }
+	
+	      var style = {
+	          strokeColor: "#00FF00",
+	          strokeOpacity: 0.80,
+	          strokeWidth: 5
+	      };
+	
+	      var polyline = new OpenLayers.Geometry.LineString(points);
+	      var lineFeature = new OpenLayers.Feature.Vector(polyline, null, style);
+	      routes.addFeatures([lineFeature]);
+	      
+// 	      map.zoomToExtent(routes.getDataExtent());
+			}
+		});		
+		
+		jQuery.ajax({
+			url: "vehicle-location-simulation!stops-for-trip-id.do?tripId=" + selectedTripId,
+			success: function(data) {
+				
+	      for(var i = 0; i < data.stopTimes.length; i++) {
+	        var size = new OpenLayers.Size(16,16);
+	        var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+	    	  var stop = data.stopTimes[i];
+          var point = new OpenLayers.LonLat(stop.stop.lon, stop.stop.lat);
+	        var proj = new OpenLayers.Projection("EPSG:4326");
+          point.transform(proj, map.getProjectionObject());
+          
+          if (stop.stop.direction === null)
+        	  stop.stop.direction = "unknown";
+          var icon_url = 'img/stop/stop-' + stop.stop.direction + '.png';
+          var icon = new OpenLayers.Icon(icon_url,size,offset);
+          var marker = new OpenLayers.Marker(point, icon);
+          
+          stopMarkers.addMarker(marker);
+          
+          var html = null;
+          if (serviceDate !== null) {
+	          var dispTime = new Date(serviceDate + stop.arrivalTime*1000);
+	          html = "trip:" + selectedTripId + "<br/>" + "arrivalTime=" + dispTime; 
+          } else {
+	          var stopTimeHour = Math.round(stop.arrivalTime / 3600);
+	          var stopTimeMin = Math.round((stop.arrivalTime / 60)%60);
+	          html = "trip:" + selectedTripId + "<br/>" + "arrivalTime=" + stopTimeHour + ":" + stopTimeMin;
+          }
+          
+          /*
+          * wtf, closure issue in for loop...
+          */
+          (function(point, html) {
+        	  marker.events.register("mousedown", marker, function(event) {
+	        	  var feature = new OpenLayers.Feature(stopMarkers, point);	
+							feature.data.popupSize = new OpenLayers.Size(500, 100);
+		          popup = feature.createPopup(true);
+		          popup.setContentHTML(html);
+		          stopMarkers.map.addPopup(popup);
+	            OpenLayers.Event.stop(event);
+		        });
+          })(point, html);
+				}
 			}
 		});		
 	}
@@ -267,7 +440,7 @@ OBA.Debug = function() {
 					var option = jQuery("<option>" + routeId + "</option>");
 					option.attr("value", routeId);
 					routeList.append(option);
-				})
+				});
 
 				routeList.change(initBlockList);				
 			}
@@ -276,22 +449,26 @@ OBA.Debug = function() {
 	
 	return {
 		initialize: function() {
+			
 			showRecordsOnMap(null, null);
 			initRouteList();
 			
 			var apiKey = "AqTGBsziZHIJYYxgivLBf0hVdrAk9mWO5cQcb8Yux8sW5M8c8opEC2lZqKR1ZZXf";
 
 			map = new OpenLayers.Map('map');
-            markers = new OpenLayers.Layer.Markers("Markers");
-            routes = new OpenLayers.Layer.Vector("Routes");
+      stopMarkers = new OpenLayers.Layer.Markers("StopMarkers");
+      inferredMarkers = new OpenLayers.Layer.Markers("InferredMarkers");
+      markers = new OpenLayers.Layer.Markers("Markers");
+      routes = new OpenLayers.Layer.Vector("Routes");
+      obslines = new OpenLayers.Layer.Vector("ObsLines");
             
-            var road = new OpenLayers.Layer.Bing({
+      var road = new OpenLayers.Layer.Bing({
 			    key: apiKey,
 			    type: "Road",
 			    metadataParams: {mapVersion: "v1"}
 			});
-
-			map.addLayers([road, routes, markers]);
+      
+			map.addLayers([road, routes, obslines, stopMarkers, inferredMarkers, markers]);
 			map.addControl(new OpenLayers.Control.LayerSwitcher());
 			
 			map.setCenter(new OpenLayers.LonLat(-74.081154, 40.639228).transform(
@@ -311,6 +488,7 @@ OBA.Debug = function() {
 };
 
 jQuery(document).ready(function() { new OBA.Debug().initialize(); });
+/* ]]> */
 </script>
 </head>
 <body style="position: relative;">
@@ -342,7 +520,7 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	
 	Show Records Between:
 	<br/>
-	<input type="text" id="filter_start" size="10"/> (epoch) and <input type="text" id="filter_end" size="10"/> (epoch)
+	<input type="text" id="filter_start" size="10"/> (record #) and <input type="text" id="filter_end" size="10"/> (record #)
 	<br/>
 	<input type="submit" value="Refresh" id="filter_apply"/>
 </td>

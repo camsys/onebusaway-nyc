@@ -75,11 +75,13 @@ public class BlockRule implements SensorModelRule {
     result.addResultAsAnd("block assigned => on schedule", pOnSchedule);
 
     /**
-     * Punish for traveling backwards
+     * Punish for traveling backwards...when actively serving.
      */
     double pNoReverseTravel = 1.0;
 
-    if (parentState != null && blockState != null) {
+    if (parentState != null 
+        && blockState != null
+        && activeDuringBlock) {
       BlockState parentBlockState = parentState.getBlockState();
       if (parentBlockState != null
           && parentBlockState.getBlockInstance().equals(

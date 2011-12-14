@@ -87,7 +87,7 @@ public class SensorModelSupportLibrary {
 
   private double _propabilityOfBeingOutOfServiceWithAnOutOfServiceDSC = 0.95;
 
-  private double _propabilityOfBeingOutOfServiceWithAnInServiceDSC = 0.01;
+  private double _propabilityOfBeingOutOfServiceWithAnInServiceDSC = 0.1;
 
   private double _shortRangeProgressDistance = 500;
 

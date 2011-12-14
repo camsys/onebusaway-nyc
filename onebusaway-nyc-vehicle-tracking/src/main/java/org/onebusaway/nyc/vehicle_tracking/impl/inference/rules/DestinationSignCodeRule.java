@@ -100,7 +100,7 @@ public class DestinationSignCodeRule implements SensorModelRule {
         if (routeMatch)
           result.addResultAsAnd("in-service route-matching DSC", 0.9);
         else
-          result.addResultAsAnd("in-service non-route-matching DSC", 0.01);
+          result.addResultAsAnd("in-service non-route-matching DSC", 1e-5);
       }
     } else {
       result.addResultAsAnd("in-service no DSC predicted", 0.01);

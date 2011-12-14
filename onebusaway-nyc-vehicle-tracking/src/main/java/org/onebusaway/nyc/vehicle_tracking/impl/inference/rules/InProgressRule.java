@@ -15,17 +15,23 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
+import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InProgressRule implements SensorModelRule {
 
+  private DeviationModel _nearbyTripSigma = new DeviationModel(50.0);
+  
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
@@ -39,20 +45,45 @@ public class InProgressRule implements SensorModelRule {
     BlockState blockState = state.getBlockState();
 
     /**
-     * These probabilities only apply if are IN_PROGRESS and have a block state
+     * Basically, we say that in-progress states correspond
+     * more to nearby trips and good block locations.  As well,
+     * we're informed of the likelihood of not-in-progress states,
+     * by way of having more of the opposite properties.
      */
-    if (phase != EVehiclePhase.IN_PROGRESS || blockState == null)
+    if (!(phase == EVehiclePhase.IN_PROGRESS
+          || phase == EVehiclePhase.DEADHEAD_BEFORE
+          || phase == EVehiclePhase.DEADHEAD_DURING)
+         || blockState == null)
       return new SensorModelResult("pInProgress (n/a)");
 
     SensorModelResult result = new SensorModelResult("pInProgress");
-
+    
     /**
      * Rule: IN_PROGRESS => block location is close to gps location
      */
     double pBlockLocation = library.computeBlockLocationProbability(
         parentState, blockState, obs);
-    result.addResultAsAnd("pBlockLocation", pBlockLocation);
+    
+    /**
+     * Rule: IN_PROGRESS => trip in close range
+     */
+    CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
+    ProjectedPoint p2 = obs.getPoint();
 
+    double d = SphericalGeometryLibrary.distance(p1.getLat(), p1.getLon(),
+        p2.getLat(), p2.getLon());
+    
+    double pTripInRange = _nearbyTripSigma.probability(d);
+    
+    if (phase == EVehiclePhase.DEADHEAD_BEFORE
+        || phase == EVehiclePhase.DEADHEAD_DURING) {
+      double invResult = 1.0 - pBlockLocation*pTripInRange;
+      result.addResultAsAnd("pNotInProgress", invResult);
+    } else {
+      result.addResultAsAnd("pBlockLocation", pBlockLocation);
+      result.addResultAsAnd("pTripInRange", pTripInRange);
+    }
+    
     return result;
   }
 

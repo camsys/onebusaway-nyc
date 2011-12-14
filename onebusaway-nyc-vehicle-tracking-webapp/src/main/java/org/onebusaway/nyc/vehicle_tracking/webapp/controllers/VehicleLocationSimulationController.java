@@ -26,11 +26,14 @@ import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationSer
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
 import org.onebusaway.transit_data.model.blocks.BlockStatusBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
@@ -352,11 +355,22 @@ public class VehicleLocationSimulationController {
   }
   
   @RequestMapping(value = "/vehicle-location-simulation!points-for-trip-id.do", method = RequestMethod.GET)
-  public ModelAndView activeBlocksJson(@RequestParam(required=true) String tripId) {
+  public ModelAndView pointsForTripJson(@RequestParam(required=true) String tripId) {
     TripBean trip = _transitDataService.getTrip(tripId);
     EncodedPolylineBean polyline = _transitDataService.getShapeForId(trip.getShapeId());
     
     return new ModelAndView("json", "points", polyline.getPoints());
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!stops-for-trip-id.do", method = RequestMethod.GET)
+  public ModelAndView stopsForTripJson(@RequestParam(required=true) String tripId) {
+    
+    TripDetailsQueryBean query = new TripDetailsQueryBean();
+    query.setTripId(tripId);
+    TripDetailsBean trip = _transitDataService.getSingleTripDetails(query);
+    TripStopTimesBean stops = trip.getSchedule();
+    
+    return new ModelAndView("json", "stopTimes", stops.getStopTimes());
   }
   
   @RequestMapping(value = "/vehicle-location-simulation!map.do", method = RequestMethod.GET)

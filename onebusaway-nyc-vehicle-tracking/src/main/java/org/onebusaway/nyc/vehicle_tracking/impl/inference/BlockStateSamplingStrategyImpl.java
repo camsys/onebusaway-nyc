@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -41,8 +41,7 @@ import org.springframework.stereotype.Component;
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
-  private static Logger _log = LoggerFactory
-      .getLogger(BlockStateSamplingStrategyImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(BlockStateSamplingStrategyImpl.class);
 
   private DestinationSignCodeService _destinationSignCodeService;
 
@@ -66,7 +65,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   public void setRunService(RunService runService) {
     _runService = runService;
   }
-  
+
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -84,7 +83,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       OperatorAssignmentService operatorAssignmentService) {
     _operatorAssignmentService = operatorAssignmentService;
   }
-  
+
   @Autowired
   public void setObservationCache(ObservationCache observationCache) {
     _observationCache = observationCache;
@@ -92,15 +91,14 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   /**
    * 
-   * @param scheduleDeviationSigma
-   *          time, in seconds
+   * @param scheduleDeviationSigma time, in seconds
    */
   public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
     _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
   }
 
   @Override
-  public org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist<BlockState> cdfForJourneyAtStart(
+  public CategoricalDist<BlockState> cdfForJourneyAtStart(
       Observation observation) {
 
     CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
@@ -108,8 +106,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     if (cdf == null) {
 
-      Set<BlockState> potentialBlocks = _blocksFromObservationService
-          .determinePotentialBlockStatesForObservation(observation, false);
+      Set<BlockState> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
+          observation, false);
 
       cdf = new CategoricalDist<BlockState>();
 
@@ -152,8 +150,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     if (cdf == null) {
 
-      Set<BlockState> potentialBlocks = _blocksFromObservationService
-          .determinePotentialBlockStatesForObservation(observation, true);
+      Set<BlockState> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
+          observation, true);
 
       cdf = new CategoricalDist<BlockState>();
 
@@ -206,7 +204,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       ScheduledBlockLocation blockLocation = state.getBlockLocation();
       BlockInstance blockInstance = state.getBlockInstance();
       long serviceDate = blockInstance.getServiceDate();
-      score = scoreJourneyInProgressState(blockLocation, observation, serviceDate);
+      score = scoreJourneyInProgressState(blockLocation, observation,
+          serviceDate);
+      score *= scoreDestinationSignCode(state, observation);
     }
 
     /**
@@ -216,29 +216,38 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     boolean operatorHasAssignment = false;
     try {
       operatorHasAssignment = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
-              new ServiceDate(new Date(observation.getTime())),
-              observation.getRecord().getOperatorId()) != null;
+          new ServiceDate(new Date(observation.getTime())),
+          observation.getRecord().getOperatorId()) != null;
 
     } catch (Exception e) {
       _log.warn("Operator service was not available.");
     }
-    
-    boolean noStateButRunInfo = state == null 
-        && (operatorHasAssignment
-          || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
-    
-    boolean stateButNoRunMatch = state != null
-        && !state.getOpAssigned() && !state.getRunReported();
-        
+
+    boolean noStateButRunInfo = state == null
+        && (operatorHasAssignment || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
+
+    boolean stateButNoRunMatch = state != null && !state.getOpAssigned()
+        && !state.getRunReported();
+
+    /**
+     * Use only 10% of the score when a proposal doesn't use the run info
+     * provided. Also, sample closer fuzzy matches.
+     */
     if (noStateButRunInfo || stateButNoRunMatch) {
-      score *= 0.05;
+      score *= 0.10;
+    } else if (state != null) {
+      if (state.getRunReported()) {
+        if (observation.getFuzzyMatchDistance() > 0)
+          score *= 0.95;
+      }
     }
 
     return score;
   }
 
-  public double scoreJourneyInProgressState(ScheduledBlockLocation blockLocation,
-      Observation observation, long serviceDate) {
+  public double scoreJourneyInProgressState(
+      ScheduledBlockLocation blockLocation, Observation observation,
+      long serviceDate) {
 
     CoordinatePoint p1 = blockLocation.getLocation();
     ProjectedPoint p2 = observation.getPoint();
@@ -264,16 +273,15 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private double scoreJourneyStartState(BlockState state,
       Observation observation) {
-    return scoreJourneyStartDestinationSignCode(state, observation);
+    return scoreDestinationSignCode(state, observation);
   }
 
-  private double scoreJourneyStartDestinationSignCode(BlockState state,
+  private double scoreDestinationSignCode(BlockState state,
       Observation observation) {
 
     String observedDsc = observation.getLastValidDestinationSignCode();
 
-    boolean observedOutOfService = _destinationSignCodeService
-        .isOutOfServiceDestinationSignCode(observedDsc);
+    boolean observedOutOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
 
     // If we have an out-of-service DSC, then we favor it equally
     if (observedOutOfService) {
@@ -282,13 +290,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       // Favor in-service blocks that match the correct DSC
       String dsc = state.getDestinationSignCode();
       if (StringUtils.equals(observedDsc, dsc)) {
-        return 0.95;
+        return 1.0;
       } else {
         // Favor in-service blocks servicing the same route implied by the DSC
-        Set<AgencyAndId> dscRoutes = _destinationSignCodeService
-            .getRouteCollectionIdsForDestinationSignCode(dsc);
-        AgencyAndId thisRoute = state.getBlockLocation().getActiveTrip()
-            .getTrip().getRouteCollection().getId();
+        Set<AgencyAndId> dscRoutes = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(dsc);
+        AgencyAndId thisRoute = state.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
         boolean sameRoute = false;
         for (AgencyAndId route : dscRoutes) {
           if (thisRoute.equals(route)) {
@@ -298,9 +304,9 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         }
 
         if (sameRoute)
-          return 0.75;
+          return 0.85;
         else
-          return 0.10;
+          return 1e-5;
       }
     }
   }

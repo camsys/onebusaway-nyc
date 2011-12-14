@@ -73,7 +73,10 @@ public class RunRule implements SensorModelRule {
          */
         result.addResultAsAnd("operator assigned", 1.0);
       } else if (blockState.getRunReported()){
-        result.addResultAsAnd("run reported (fuzzy)", 0.1);
+        if (state.getObservation().getFuzzyMatchDistance() == 0)
+          result.addResultAsAnd("run reported (fuzzy)", 0.9);
+        else
+          result.addResultAsAnd("run reported (fuzzy)", 0.2);
       } else {
         result.addResultAsAnd("no run info matches", 0.01);
       }
