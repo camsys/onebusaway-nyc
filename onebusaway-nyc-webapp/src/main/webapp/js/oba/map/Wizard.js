@@ -33,7 +33,7 @@ OBA.Wizard = function(routeMap) {
 		theWindow = jQuery(window);	
 	
 	var search_title = 'Search',
-		search_text = '<p>Type a bus route, <a href="#" rel="popover" id="stop_code_popup">stop code</a> or nearby intersection in the search box & press enter.</p><br /><p>Or keep zooming the map in by double clicking on a location.</p>',
+		search_text = '<p>Type a bus route, <a rel="popover" id="stop_code_popup">stop code</a> or nearby intersection in the search box & press enter.</p><br /><p>Or keep zooming the map in by double clicking on a location.</p>',
 		
 		direction_title = 'Find Your Stop',
 		direction_text = '<p>Click on a direction (next to the <span class="ui-icon ui-icon-triangle-1-e"></span><br /> symbol) to open a bus stop list. Click again to close it.</p><br /><p>Scroll down to your stop & click on it to see it on the map.</p>',
