@@ -21,7 +21,20 @@ public class ServiceAlertsTestSupport {
   
     List<SituationAffectsBean> allAffects = new ArrayList<SituationAffectsBean>();
     serviceAlertBean.setAllAffects(allAffects);
+
+    allAffects.add(addAffects("MTA NYCT_B63", "0"));
+    allAffects.add(addAffects("MTA NYCT_B63", "1"));
+    allAffects.add(addAffects("MTA NYCT_S55", "0"));
+    allAffects.add(addAffects("MTA NYCT_S55", "1"));
+    
     return serviceAlertBean;
+  }
+
+  public static SituationAffectsBean addAffects(String route, String direction) {
+    SituationAffectsBean sab = new SituationAffectsBean();
+    sab.setRouteId(route);
+    sab.setDirectionId(direction);
+    return sab;
   }
 
   private static NaturalLanguageStringBean createNaturalLanguageStringBean(

@@ -38,7 +38,7 @@
 	<s:iterator value="destinations">
 		<div>
 			<p>
-				<a name="${directionId}"></a>
+				<a name="${directionId}"><!--prevent JSP minimization--></a>
 				<strong>
 					<s:property value="routeIdWithoutAgency" />&amp;nbsp;<s:property value="headsign" />
 				</strong> 
@@ -47,7 +47,7 @@
 
 			<ul>
 				<s:iterator value="serviceAlerts">
-					<li class="alert"><s:property value="value" /></li>
+					<li class="alert"><s:property value="value" escape="false"/></li>
 				</s:iterator>
 			</ul>
 

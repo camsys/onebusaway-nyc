@@ -38,9 +38,9 @@ OBA.Sign = function() {
 	}
 
 	function detectSize() {
-		var heightAndWidth = OBA.Util.getPageHeightAndWidth();
-		var h = heightAndWidth[0];
-		var w = heightAndWidth[1];
+		var wrappedWindow = jQuery(window);
+		var h = wrappedWindow.height();
+		var w = wrappedWindow.width();
 
 		// special mode for MTA TIS display
 		if(tisMode === "true") {
@@ -171,7 +171,7 @@ OBA.Sign = function() {
 		jQuery.each(applicableSituations, function(situationId, situation) {
 			var alert = jQuery("<p></p>")
 							.addClass("alert")
-							.text(situation.Description);
+							.html(situation.Description.replace(/\n/g, "<br/>"));
 			
 			stopTable.find("thead tr th.stop").append(alert);
 		});

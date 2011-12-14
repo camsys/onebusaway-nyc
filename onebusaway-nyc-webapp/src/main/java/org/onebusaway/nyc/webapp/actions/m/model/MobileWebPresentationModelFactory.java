@@ -10,6 +10,8 @@ import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
@@ -49,7 +51,19 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
     MobileWebRouteDestinationItem destination = new MobileWebRouteDestinationItem(group, null);
 
     // service alerts
-    destination.setServiceAlerts(_realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), destination.getDirectionId()));
+    List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+
+    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), destination.getDirectionId());
+    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
+        if(description.getValue() != null) {
+          description.setValue(description.getValue().replace("\n", "<br/>"));
+          serviceAlertDescriptions.add(description);
+        }
+      }
+    }
+    
+    destination.setServiceAlerts(serviceAlertDescriptions);
 
     // stop visits
     List<MonitoredStopVisitStructure> visits = _realtimeService.getMonitoredStopVisitsForStop(stop.getId(), 0);
@@ -87,7 +101,19 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
       return destination;
       
     // service alerts
-    destination.setServiceAlerts(_realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), group.getId()));    
+    List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+
+    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(route.getId(), group.getId());
+    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
+        if(description.getValue() != null) {
+          description.setValue(description.getValue().replace("\n", "<br/>"));
+          serviceAlertDescriptions.add(description);
+        }
+      }
+    }
+    
+    destination.setServiceAlerts(serviceAlertDescriptions);
     
     // stop visits
     List<VehicleActivityStructure> journeyList = 

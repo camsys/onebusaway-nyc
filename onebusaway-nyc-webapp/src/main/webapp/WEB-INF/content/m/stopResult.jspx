@@ -52,6 +52,12 @@
 						</a>
 						<br/>
 
+						<ul>
+							<s:iterator value="serviceAlerts">
+								<li class="alert"><s:property value="value" escape="false"/></li>
+							</s:iterator>
+						</ul>
+
 						<s:if test="%{distanceAwayStrings.size==0}">
 							<span class="noUpcomingService">
 								No buses en-route to your location. Please check back shortly for an update.
@@ -65,12 +71,6 @@
 							</c:forEach>
 						</s:else>
 					</p>
-
-					<ul>
-						<s:iterator value="serviceAlerts">
-							<li class="alert"><s:property value="value" /></li>
-						</s:iterator>
-					</ul>
 				</s:iterator>					
 			</s:iterator>
 		</s:else>

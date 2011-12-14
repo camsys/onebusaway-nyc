@@ -9,7 +9,6 @@ import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
 import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
-import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
@@ -28,7 +27,6 @@ import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -93,8 +91,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
 
     for(TripDetailsBean tripDetails : trips.getList()) {
-      // filter out interlined routes? sometimes OBA returns vehicles serving routes that are not the same one 
-      // we requested! not 100% sure why...
+      // filter out interlined routes
       if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
         continue;
 
@@ -165,12 +162,10 @@ public class RealtimeServiceImpl implements RealtimeService {
 
   @Override
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, int maximumOnwardCalls) {
-
     List<MonitoredStopVisitStructure> output = new ArrayList<MonitoredStopVisitStructure>();
 
     for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId)) {
       TripStatusBean statusBean = adBean.getTripStatus();
-
       if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
         continue;
 
@@ -185,7 +180,6 @@ public class RealtimeServiceImpl implements RealtimeService {
       for(TripDetailsBean tripDetails : tripDetailBeans.getList()) {
         // should be the same as the bean above, but just to double check:
         TripStatusBean otherStatusBean = tripDetails.getStatus();
-
         if(!_presentationService.include(otherStatusBean) || !_presentationService.include(adBean, otherStatusBean))
           continue;
         
@@ -217,63 +211,38 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
   
   @Override
-  public List<NaturalLanguageStringBean> getServiceAlertsForRoute(String routeId) {
+  public List<ServiceAlertBean> getServiceAlertsForRoute(String routeId) {
     return getServiceAlertsForRouteAndDirection(routeId, null); 
   }
   
   @Override
-  public List<NaturalLanguageStringBean> getServiceAlertsForRouteAndDirection(String routeId,
+  public List<ServiceAlertBean> getServiceAlertsForRouteAndDirection(String routeId,
       String directionId) {
 
-    HashMap<String, List<NaturalLanguageStringBean>> serviceAlertIdsToDescriptions =
-        new HashMap<String, List<NaturalLanguageStringBean>>();
+    HashMap<String, ServiceAlertBean> serviceAlertIdsToAlerts =
+        new HashMap<String, ServiceAlertBean>();
 
-    for (TripDetailsBean tripDetailsBean : getAllTripsForRoute(routeId).getList()) {
-      TripStatusBean tripStatusBean = tripDetailsBean.getStatus();
+    ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
+
+    for(TripDetailsBean tripDetails : trips.getList()) {
+      // filter out interlined routes
+      if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
+        continue;
+
+      // filtered out by user
+      if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
+        continue;
+      
+      TripStatusBean tripStatusBean = tripDetails.getStatus();
       if(tripStatusBean == null || tripStatusBean.getSituations() == null)
         continue;
       
-      if(directionId != null && !tripStatusBean.getActiveTrip().getDirectionId().equals(directionId))
-        continue;
-
       for(ServiceAlertBean serviceAlert : tripStatusBean.getSituations()) {
-        serviceAlertIdsToDescriptions.put(serviceAlert.getId(), serviceAlert.getDescriptions());
+        serviceAlertIdsToAlerts.put(serviceAlert.getId(), serviceAlert);
       }
     }
     
-    // merge lists from unique service alerts together
-    List<NaturalLanguageStringBean> output = new ArrayList<NaturalLanguageStringBean>();
-    for(Collection<NaturalLanguageStringBean> descriptions : serviceAlertIdsToDescriptions.values()) {
-      output.addAll(descriptions);
-    }
-
-    return output;
-  }
-  
-  @Override
-  public List<NaturalLanguageStringBean> getServiceAlertsForStop(String stopId) {
-    HashMap<String, List<NaturalLanguageStringBean>> serviceAlertIdsToDescriptions =
-        new HashMap<String, List<NaturalLanguageStringBean>>();
-    
-    List<ArrivalAndDepartureBean> arrivalsAndDepartures = getArrivalsAndDeparturesForStop(stopId);
-    
-    for (ArrivalAndDepartureBean arrivalAndDepartureBean : arrivalsAndDepartures) {
-      TripStatusBean tripStatusBean = arrivalAndDepartureBean.getTripStatus();
-      if(tripStatusBean == null || tripStatusBean.getSituations() == null)
-        continue;
-
-      for(ServiceAlertBean serviceAlert : tripStatusBean.getSituations()) {
-        serviceAlertIdsToDescriptions.put(serviceAlert.getId(), serviceAlert.getDescriptions());
-      }
-    }
-    
-    // merge lists from unique service alerts together
-    List<NaturalLanguageStringBean> output = new ArrayList<NaturalLanguageStringBean>();
-    for(Collection<NaturalLanguageStringBean> descriptions : serviceAlertIdsToDescriptions.values()) {
-      output.addAll(descriptions);
-    }
-
-    return output;
+    return new ArrayList<ServiceAlertBean>(serviceAlertIdsToAlerts.values());
   }
   
   private ListBean<TripDetailsBean> getAllTripsForRoute(String routeId) {

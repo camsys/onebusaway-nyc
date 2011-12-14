@@ -10,6 +10,9 @@ import org.junit.Test;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
+import uk.org.siri.siri.AffectedVehicleJourneyStructure;
+import uk.org.siri.siri.AffectsScopeStructure;
+import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
 import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
@@ -61,7 +64,11 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     DefaultedTextStructure summary = ptSituationElementStructure.getSummary();
     assertEquals("description", description.getValue());
     assertEquals("summary", summary.getValue());
-
+    AffectsScopeStructure affects = ptSituationElementStructure.getAffects();
+    VehicleJourneys journeys = affects.getVehicleJourneys();
+    assertNotNull(journeys);
+    List<AffectedVehicleJourneyStructure> list2 = journeys.getAffectedVehicleJourney();
+    assertEquals(4, list2.size());
   }
 
   /**
