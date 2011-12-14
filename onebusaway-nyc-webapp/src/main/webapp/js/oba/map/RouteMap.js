@@ -16,7 +16,7 @@
 
 var OBA = window.OBA || {};
 
-OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {	
+OBA.RouteMap = function(mapNode, initCallbackFn) {	
 	var mtaSubwayMapType = new google.maps.ImageMapType({
 		bounds: new google.maps.LatLngBounds(
 					new google.maps.LatLng(40.48801936882241,-74.28397178649902),
@@ -26,7 +26,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
 				return null;
 			}
-			
+
 			var zoomFactor = Math.pow(2, zoom);
 			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
 		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
@@ -139,9 +139,6 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			]
 		}];
 
-	var transitStyledMapType = 
-		new google.maps.StyledMapType(mutedTransitStylesArray, {name: "Transit"});
-	
 	var defaultMapOptions = {
 			zoom: 11,
 			mapTypeControl: false,
@@ -205,6 +202,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	  };
 	}
 
+	var initialized = false;
 	var map = null;
 	var mgr = null;
 	var infoWindow = null;
@@ -727,10 +725,8 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		
 		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
 		function(json) {
-
 			var vehiclesByIdInResponse = {};
 			jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
-
 				var latitude = activity.MonitoredVehicleJourney.VehicleLocation.Latitude;
 				var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;
 				var orientation = activity.MonitoredVehicleJourney.Bearing;
@@ -877,34 +873,22 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 	}
 		
 	//////////////////// CONSTRUCTOR /////////////////////
+
 	map = new google.maps.Map(mapNode, defaultMapOptions);
-	mgr = new MarkerManager(map);
 
 	// mta custom tiles
 	map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
 
 	// styled basemap
+	var transitStyledMapType = 
+		new google.maps.StyledMapType(mutedTransitStylesArray, {name: "Transit"});
+	
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
-		
-	// request list of stops in viewport when user stops moving map
-	google.maps.event.addListener(map, "idle", function() {
-		if(map.getZoom() < 16) {
-			removeStops("__VIEWPORT__", false);
-			return;
-		}
-		
-		jQuery.getJSON(OBA.Config.stopsWithinBoundsUrl + "?callback=?", { bounds: map.getBounds().toUrlValue() }, 
-		function(json) {
-			removeStops("__VIEWPORT__", true);
 
-			addStops("__VIEWPORT__", json.searchResults);
-		});
-	});
-	
 	// show subway tiles toggle control only at relevant zoom levels
 	var subwayTilesControl = new SubwayTilesControl(subwayControlDiv, map);
-	
+
 	function showSubwayToggle() {
 		var topRightControls = map.controls[google.maps.ControlPosition.TOP_RIGHT];
 		var length = map.controls[google.maps.ControlPosition.TOP_RIGHT].getLength();
@@ -931,7 +915,33 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		zoomSubwayCtrlTimeout = setTimeout(showSubwayToggle, 2000);
 	});
 	
-	// timer to update periodically
+	// when map is idle ("ready"), initialize the rest of the google maps stuff, if we haven't already.
+	// otherwise, refresh the stops on the map after the user is done panning.
+	google.maps.event.addListener(map, "idle", function() {
+		// start adding things to map once it's ready...
+		if(initialized === false) {
+			mgr = new MarkerManager(map);
+
+			if(typeof initCallbackFn === 'function') {
+				initCallbackFn();
+			}
+			
+			initialized = true;
+		}
+		
+		// request list of stops in viewport when user stops moving map
+		if(map.getZoom() < 16) {
+			removeStops("__VIEWPORT__", false);
+		} else {	
+			jQuery.getJSON(OBA.Config.stopsWithinBoundsUrl + "?callback=?", { bounds: map.getBounds().toUrlValue() }, 
+			function(json) {
+				removeStops("__VIEWPORT__", true);
+				addStops("__VIEWPORT__", json.searchResults);
+			});
+		}
+	});
+	
+	// timer to update data periodically on map and in popup bubble
 	setInterval(function() {
 		jQuery.each(vehiclesByRoute, function(routeId, vehicles) {
 			updateVehicles(routeId);
@@ -942,7 +952,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 		}
 	}, OBA.Config.refreshInterval);
 
-	// updates timestamp
+	// updates timestamp in popup bubble every second
 	setInterval(function() {
 		if(infoWindow !== null && typeof infoWindow.updateTimestamp === 'function') {
 			infoWindow.updateTimestamp();
@@ -1093,9 +1103,10 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			map.setZoom(16);
 		},
 		
+		// disambiguation
 		removeDisambiguationMarkers: removeDisambiguationMarkers,
 		
-		addDisambiguationMarkerWithContent: function(latlng, address, neighborhood) {				
+		addDisambiguationMarkerWithContent: function(latlng, address, neighborhood) {
 			var markerOptions = {
 					position: latlng,
 		            icon: normalLocationIcon,
@@ -1128,6 +1139,7 @@ OBA.RouteMap = function(mapNode, mapMoveCallbackFn) {
 			marker.setIcon(normalLocationIcon);
 		},
 		
+		// wizard
 		registerMapListener: function(listener, fx) {
 			return google.maps.event.addListener(map, listener, fx);
 		},

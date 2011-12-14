@@ -29,7 +29,7 @@ OBA.Sidebar = function () {
 		noResults = jQuery("#no-results"),
 		loading = jQuery("#loading");
 
-	var routeMap = OBA.RouteMap(document.getElementById("map"));
+	var routeMap = null;
 	var wizard = null;
 
 	function addSearchBehavior() {
@@ -54,7 +54,8 @@ OBA.Sidebar = function () {
 			if (w <= 1060) {
 				mainbox.css("width", "960px");
 			} else {
-				mainbox.css("width", w - 150); // 75px margin on each side
+				mainbox.css("width", w - 150); // 75px margin on each 
+											   // side for dropdown menus
 			}
 
 			// size set so we can have MTA menu items calculate their widths properly
@@ -111,7 +112,6 @@ OBA.Sidebar = function () {
 	// separate nearby routes from routes for a stop 
 	// (need to copy routes anyway to get service alerts field)
 	function reorderRoutes(routes, routesFirst) {	
-	
 		var nearbyRoutes = {}, routesForStop = [];	
 
 		jQuery.each(routes, function(_, route) {
@@ -403,20 +403,29 @@ OBA.Sidebar = function () {
 			addSearchBehavior();
 			addResizeBehavior();
 			
-			// deep link handler
-			jQuery.history.init(function(hash) {
-				if(hash !== null && hash !== "") {
-					var searchInput = jQuery("#searchbar form input[type=text]");
-					searchInput.val(hash);
+			// initialize map, and continue initialization of things that use the map
+			// on load only when google maps says it's ready.
+			routeMap = OBA.RouteMap(document.getElementById("map"), function() {
+				// deep link handler
+				jQuery.history.init(function(hash) {
+					if(hash !== null && hash !== "") {
+						var searchInput = jQuery("#searchbar form input[type=text]");
+						searchInput.val(hash);
 
-					doSearch(hash);
-				} else {
-					// Launch wizard
-					wizard = OBA.Wizard(routeMap);
-				}
+						doSearch(hash);
+					} else {
+						// Launch wizard
+						wizard = OBA.Wizard(routeMap);
+					}
+				});
 			});
 		}
 	};
 };
 
-jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
+// for IE: only start using google maps when the VML/SVG namespace is ready
+if(jQuery.browser.msie) {
+	window.onload = function() { OBA.Sidebar().initialize(); };
+} else {
+	jQuery(document).ready(function() { OBA.Sidebar().initialize(); });
+}
