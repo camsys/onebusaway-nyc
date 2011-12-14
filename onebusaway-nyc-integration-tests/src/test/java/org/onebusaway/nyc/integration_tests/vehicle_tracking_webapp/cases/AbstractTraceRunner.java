@@ -68,7 +68,7 @@ public class AbstractTraceRunner {
   /**
    * The max amount of time we should wait for a single record to process
    */
-  private long _maxTimeout = 20 * 1000;
+  private long _maxTimeout = 40 * 1000;
 
   private double _minPhaseRatioForConsideration = 0.05;
 
