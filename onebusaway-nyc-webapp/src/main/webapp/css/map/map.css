@@ -153,6 +153,10 @@
 	background-color: #FDEEF4;
 }
 
+#content #legend h2 ul li.legendItem .serviceAlertContainer p.serviceAlert:focus { 
+	outline: none; 
+} 
+
 #content #legend h2 ul li.legendItem .serviceAlertContainer p.serviceAlert span.click_info {
 	color: #D12020;
 	font-weight: normal;
@@ -315,14 +319,41 @@
 	font-weight: normal;
 	color: #999;
 }
+
+#subwayControlContainer { /* For IE box shadow */
+	margin: 10px;
+    z-index: 5px; /* IE bug */
+}
  
 #subwayControl {
-	padding: 10px;
+	padding: 0;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	margin: 3px;
+    background-color: rgb(100,100,100); /* Needed for IEs */
+    -moz-box-shadow: 1px 2px 2px rgba(100,100,100,0.6);
+    -webkit-box-shadow: 1px 2px 2px rgba(100,100,100,0.6);
+    box-shadow: 1px 2px 2px rgba(100,100,100,0.6);
+    filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=4,MakeShadow=true,ShadowOpacity=0.30);
+    -ms-filter: "progid:DXImageTransform.Microsoft.Blur(PixelRadius=4,MakeShadow=true,ShadowOpacity=0.30)";
+    z-index: 4px;  /* IE bug */
 }
 
 #subwayControl a {
 	background-color: #FFFFFF;
-	border: 1px solid #C0C0C0;
+	border: 1px solid #AAAAAA;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	display: block;
+	padding: 3px;
+	text-align: center;
 	text-decoration: none;
-	padding: 5px;
+	font-size: 12px;
+	width: 86px;
+	position: relative;
+	z-index: 3; /* IE bug */
 }
+
+#subwayControl a:focus { 
+	outline: none; 
+} 

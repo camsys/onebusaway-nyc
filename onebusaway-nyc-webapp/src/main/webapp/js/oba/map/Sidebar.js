@@ -204,7 +204,7 @@ OBA.Sidebar = function () {
 			});
 			
 			if (serviceAlerts.length > 0) {	
-				var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change</p>")
+				var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change for route</p>")
 												.append(jQuery("<span class='click_info'> + Click for info</span>"));
 				
 				serviceAlertContainer = jQuery("<div></div>")

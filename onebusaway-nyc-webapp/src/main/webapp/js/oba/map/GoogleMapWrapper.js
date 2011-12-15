@@ -153,26 +153,29 @@ OBA.GoogleMapWrapper = function(mapNode) {
 	
 	// *** subway tiles toggle button ***
 	var SubwayTilesControl = function() {
-	  var subwayControlWrapper = jQuery('<div id="subwayControl"></div>');
-
-	  var subwayControl = jQuery('<a href="#" title="Click to toggle subway lines">Hide Subway Map</a>')
-	  	.appendTo(subwayControlWrapper);	  
+	  var subwayControlContainer = jQuery('<div id="subwayControlContainer"></div>');
+	  var subwayControlWrapper = jQuery('<div id="subwayControl"></div>')
+	    .appendTo(subwayControlContainer);
+	  var subwayControl = jQuery('<a href="#" title="Click to toggle subway lines">Hide Subway</a>')
+	  	.appendTo(subwayControlWrapper);
+	  
 	  
 	  subwayControl.click(function(e) { 
 		  if(map.overlayMapTypes.length === 1) { 
 			  map.overlayMapTypes.removeAt(0, mtaSubwayMapType);
-			  subwayControl.text("Show Subway Map");
+			  subwayControl.text("Show Subway");
 		  } else {
 			  map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
-			  subwayControl.text("Hide Subway Map");
+			  subwayControl.text("Hide Subway");
+			  subwayControl.css('width', '86');
 		  }
 	  });
 
 	  var zoomUpdate = function() {
 		  if(map.getZoom() < 14 || map.getZoom() > 15) {
-			  subwayControlWrapper.hide();	
+			  subwayControlContainer.hide();	
 		  } else {
-			  subwayControlWrapper.show();
+			  subwayControlContainer.show();
 		  }
 	  };
 	  
@@ -183,8 +186,9 @@ OBA.GoogleMapWrapper = function(mapNode) {
 	  google.maps.event.addListener(map, 'idle', function() { 
 		  zoomUpdate();
 	  });
-
-	  return subwayControlWrapper.get(0);
+	  
+	 
+	  return subwayControlContainer.get(0);
 	};
 	
 	var subwayTilesControl = new SubwayTilesControl();
