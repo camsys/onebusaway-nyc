@@ -17,192 +17,8 @@
 var OBA = window.OBA || {};
 
 OBA.RouteMap = function(mapNode, initCallbackFn) {	
-	var mtaSubwayMapType = new google.maps.ImageMapType({
-		bounds: new google.maps.LatLngBounds(
-					new google.maps.LatLng(40.48801936882241,-74.28397178649902),
-					new google.maps.LatLng(40.92862373397717,-73.68182659149171)
-				),
-		getTileUrl: function(coord, zoom) {
-			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
-				return null;
-			}
-
-			var zoomFactor = Math.pow(2, zoom);
-			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
-		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
-
-		    if(!this.bounds.contains(center_ll)) {
-		    	return null;
-		    }
-		    
-			var quad = "", i;
-		    for(i = zoom; i > 0; i--) {
-		        var mask = 1 << (i - 1); 
-		        var cell = 0; 
-		        if ((coord.x & mask) != 0) {
-		            cell++; }
-		        if ((coord.y & mask) != 0) {
-		            cell += 2; }
-		        quad += cell; 
-		    } 
-			return 'http://tripplanner.mta.info/maps/SystemRoutes_New/' + quad + '.png'; 
-		},
-		tileSize: new google.maps.Size(256, 256),
-		opacity: 0.5,
-		maxZoom: 15,
-		minZoom: 14,
-		name: 'MTA Subway Map',
-		isPng: true,
-		alt: ''
-	});
-
-	var mutedTransitStylesArray = 
-		[{
-			featureType: "road.arterial",
-			elementType: "geometry",
-			stylers: [
-			          { saturation: -100 },
-			          { lightness: 100 },
-			          { visibility: "simplified" },
-			          { hue: "#ffffff" }
-			          ]
-		},{
-			featureType: "road.highway",
-			elementType: "geometry",
-			stylers: [
-			          { saturation: -80 },
-			          { lightness: 60 },
-			          { visibility: "on" },
-			          { hue: "#0011FF" }
-			          ]
-		},{
-			featureType: "road.local",
-			elementType: "geometry",
-			stylers: [
-			          { saturation: 0 },
-			          { lightness: 100 },
-			          { visibility: "on" },
-			          { hue: "#ffffff" }
-			          ]
-		},{
-			featureType: "road.arterial",
-			elementType: "labels",
-			stylers: [
-			          { lightness: 25 },
-			          { saturation: -25 },
-			          { visibility: "off" },
-			          { hue: "#ddff00" }
-			          ]
-		},{
-			featureType: "road.highway",
-			elementType: "labels",
-			stylers: [
-			          { lightness: 60 },
-			          { saturation: -70 },
-			          { hue: "#0011FF" },
-			          { visibility: "on" }
-			          ]
-		},{ 
-			featureType: "administrative.locality", 
-			elementyType: "labels",
-			stylers: [ { visibility: "on" }, 
-			           { lightness: 50 },
-			           { saturation: -80 }, 
-			           { hue: "#ffff00" } ] 
-		},{ 
-			featureType: "administrative.neighborhood", 
-			elementyType: "labels",
-			stylers: [ { visibility: "on" }, 
-			           { lightness: 50 },
-			           { saturation: -80 }, 
-			           { hue: "#ffffff" } ] 
-		},{
-			featureType: 'landscape',
-			elementType: 'labels',
-			stylers: [ {'visibility': 'on'},
-			           { lightness: 50 },
-			           { saturation: -80 },
-			           { hue: "#0099ff" }
-			           ]
-		},{
-			featureType: 'poi',
-			elementType: 'labels',
-			stylers: [ {'visibility': 'on'},
-			           { lightness: 50 },
-			           { saturation: -80 },
-			           { hue: "#0099ff" }
-			           ]
-		},{
-			featureType: 'water',
-			elementType: 'labels',
-			stylers: [ {'visibility': 'off'}
-			]
-		}];
-
-	var defaultMapOptions = {
-			zoom: 11,
-			mapTypeControl: false,
-			streetViewControl: false,
-			zoomControl: true,
-			zoomControlOptions: {
-				style: google.maps.ZoomControlStyle.LARGE
-			},
-			minZoom: 9, 
-			maxZoom: 19,
-			navigationControlOptions: { style: google.maps.NavigationControlStyle.DEFAULT },
-			center: new google.maps.LatLng(40.639228,-74.081154)
-	};
-
-	// Create Subway Tiles toggle button
-	var subwayControlDiv = document.createElement('DIV');
-	subwayControlDiv.index = 1;
-	 
-	// Adds a button control to toggle MTA Subway tiles
-	function SubwayTilesControl(controlDiv, map) {
-	  controlDiv.style.padding = '5px';
-	  
-	  var controlUI = document.createElement('DIV');
-	  controlUI.style.backgroundColor = 'white';
-	  controlUI.style.borderStyle = 'solid';
-	  controlUI.style.borderWidth = '1px';
-	  controlUI.style.cursor = 'pointer';
-	  controlUI.style.textAlign = 'center';
-	  controlUI.title = 'Click to toggle MTA Subway lines';
-	  controlUI.style.color = '#000000';
-	  controlDiv.appendChild(controlUI);
-
-	  var controlText = document.createElement('DIV');
-	  controlText.style.fontFamily = 'Arial,sans-serif';
-	  controlText.style.fontWeight = 'normal';
-	  controlText.style.fontSize = '12px';
-	  controlText.style.paddingLeft = '5px';
-	  controlText.style.paddingRight = '5px';
-	  controlText.style.paddingTop = '3px';
-	  controlText.style.paddingBottom = '3px';
-	  controlText.innerHTML = '<b>Subway</b>';
-	  controlUI.appendChild(controlText);
-	  
-	  // toggle map tiles and color of button text
-	  var toggleSubway = function () {
-			  (map.overlayMapTypes.length == 1) ? 
-					  map.overlayMapTypes.removeAt(0, mtaSubwayMapType) : map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
-
-			  controlText.style.color = (new RGBColor(controlText.style.color).toHex().toUpperCase() == "#CCCCCC") ?
-					  "#000000" : "#CCCCCC";
-			  
-			  controlUI.style.color = (new RGBColor(controlUI.style.color).toHex().toUpperCase() == "#CCCCCC") ?
-					  "#000000" : "#CCCCCC";
-	  };
-	  google.maps.event.addDomListener(controlUI, 'click', function() { toggleSubway(); });
-
-	  return { 
-		  toggleSubwayTiles: function() {
-			  toggleSubway();
-		  }
-	  };
-	}
-
 	var initialized = false;
+
 	var map = null;
 	var mgr = null;
 	var infoWindow = null;
@@ -226,10 +42,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
             new google.maps.Point(0,0),
             new google.maps.Point(0, 32));
             
-            
     // InfoWindow Listeners (for Wizard)
     var infoWindowListeners = [];
-     
+
     function registerInfoWindowListener(listener, fx) {
     	infoWindowListeners.push({'event': listener, 'func': fx, 'listener_ref': null});
     }
@@ -240,8 +55,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		var closeFn = function() {
 			if(infoWindow !== null) {
 				infoWindow.close();
-				infoWindow = null;
 			}
+
+			infoWindow = null;
 		};
 		closeFn();
 
@@ -260,7 +76,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	}
 	
 	function showPopupWithContent(marker, content) {
-		preparePopup(marker);
+		preparePopup(marker);	
 		
 		infoWindow.setContent(content);
 		infoWindow.open(map, marker);
@@ -391,9 +207,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	}
 	
 	function getZoomHereLink() {
-		var zoomHere;
+		var zoomHere = null;
 		
-		if ((map.maxZoom - 4) > map.getZoom()) {
+		if((map.maxZoom - 4) > map.getZoom()) {
 			zoomHere = '<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom Here</a></p>';
 		
 			jQuery('#zoomHere').live("click", function(e) { 
@@ -878,46 +694,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		
 	//////////////////// CONSTRUCTOR /////////////////////
 
-	map = new google.maps.Map(mapNode, defaultMapOptions);
-
-	// mta custom tiles
-	map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
-
-	// styled basemap
-	var transitStyledMapType = 
-		new google.maps.StyledMapType(mutedTransitStylesArray, {name: "Transit"});
-	
-	map.mapTypes.set('Transit', transitStyledMapType);
-	map.setMapTypeId('Transit');
-
-	// show subway tiles toggle control only at relevant zoom levels
-	var subwayTilesControl = new SubwayTilesControl(subwayControlDiv, map);
-
-	function showSubwayToggle() {
-		var topRightControls = map.controls[google.maps.ControlPosition.TOP_RIGHT];
-		var length = map.controls[google.maps.ControlPosition.TOP_RIGHT].getLength();
-		var currentZoom = map.getZoom();
-		var i = 0;
-		for (; i < length; i++) {
-			if (topRightControls.getAt(i) == subwayControlDiv) {
-				if (currentZoom < 14) {
-					subwayTilesControl.toggleSubwayTiles();
-					topRightControls.removeAt(i);
-				} 
-			}
-		}
-		if (currentZoom >= 14 && (i > length || i == 0)) {
-			topRightControls.push(subwayControlDiv);
-		} 
-	}
-	
-	var zoomSubwayCtrlTimeout = null;
-	google.maps.event.addListener(map, 'zoom_changed', function() {
-		if (zoomSubwayCtrlTimeout !== null) {
-			clearTimeout(zoomSubwayCtrlTimeout);
-		}
-		zoomSubwayCtrlTimeout = setTimeout(showSubwayToggle, 2000);
-	});
+	map = new OBA.GoogleMapWrapper(document.getElementById("map"));
 	
 	// when map is idle ("ready"), initialize the rest of the google maps stuff, if we haven't already.
 	// otherwise, refresh the stops on the map after the user is done panning.

@@ -356,6 +356,7 @@ OBA.Sidebar = function () {
 				noResults.show();
 				welcome.show();
 				//(wizard && wizard.enabled()) ? legend.trigger('no_results') : null;
+
 				return;
 			} else {
 				noResults.hide();
@@ -431,10 +432,10 @@ OBA.Sidebar = function () {
 					if(hash !== null && hash !== "") {
 						var searchInput = jQuery("#searchbar form input[type=text]");
 						searchInput.val(hash);
-
 						doSearch(hash);
+
+					// Launch wizard
 					} else {
-						// Launch wizard
 						wizard = OBA.Wizard(routeMap);
 					}
 				});
