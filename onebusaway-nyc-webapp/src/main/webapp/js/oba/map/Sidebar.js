@@ -192,29 +192,49 @@ OBA.Sidebar = function () {
 			// service alerts
 			var serviceAlertList = jQuery("<ul></ul>")
 							.addClass("alerts");
+			
+			var serviceAlerts = routeResult.serviceAlerts;
+			var serviceAlertContainer = jQuery("<div></div>");
 						
-			jQuery.each(routeResult.serviceAlerts, function(_, alert) {
+			jQuery.each(serviceAlerts, function(_, alert) {
 				var alertItem = jQuery("<li></li>")
 									.html(alert.value);
 				
 				serviceAlertList.append(alertItem);
 			});
+			
+			if (serviceAlerts.length > 0) {	
+				var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change</p>")
+												.append(jQuery("<span class='click_info'> + Click for info</span>"));
+				
+				serviceAlertContainer = jQuery("<div></div>")
+												.addClass("serviceAlertContainer")
+												.append(serviceAlertHeader)
+												.append(serviceAlertList);
+				
+				serviceAlertContainer.accordion({ header: 'p.serviceAlert', 
+					collapsible: true, 
+					active: false, 
+					autoHeight: false });
+			}
 
 			// legend item
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
 							.append(titleBox)
 							.append(descriptionBox)
-							.append(serviceAlertList);
+							.append(serviceAlertContainer);
 	
 			legendList.append(listItem);
 			
-			// on double click of title pan to route extent (unless zoomed in)
+			// on double click of title pan to route extent 
+			// (unless zoomed in or route is in current viewport)
 			titleBox.click(function(e) {
 				e.preventDefault();
 				
 				routeMap.panToRoute(routeResult);
 			});
+			titleBox.css("pointer", "default");
 
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {
@@ -261,7 +281,7 @@ OBA.Sidebar = function () {
 						routeMap.hideStopIcon(stop.stopId);
 					});
 				});
-
+				
 				// accordion-ize
 				destinationContainer.accordion({ header: 'p', 
 					collapsible: true, 

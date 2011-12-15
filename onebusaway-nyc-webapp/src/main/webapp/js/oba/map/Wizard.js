@@ -17,6 +17,9 @@
 var OBA = window.OBA || {};
 
 OBA.Wizard = function(routeMap) {	
+	
+	// change to false to disable wizard
+	 var wizard_enabled = true;
 			
 	var wizard = jQuery("#wizard"),
 		wizard_start = jQuery("#wizard_start"),
@@ -266,6 +269,11 @@ OBA.Wizard = function(routeMap) {
 	}
 
 	function hideDirectionPopoverAndShowFinalTips() {
+		if (! wizard_activated) {
+			closeWizard();
+			unbindLegend();
+			return;
+		}
 		hideSearchPopover();
 		wizard_inuse.popover('hide');
 		wizard_inuse.hide();
@@ -282,12 +290,22 @@ OBA.Wizard = function(routeMap) {
 	}
 	
 	function showClickOnRouteOrZoomFooter() {
+		if (! wizard_activated) {
+			closeWizard();
+			unbindLegend();
+			return;
+		}
 		hideSearchPopover();
 		wizard_inuse.show();
 		jQuery("#wizard_inuse .text_span").html(routeOrZoom_text);		
 	}
 	
 	function showFindStopOnMapFooter() {
+		if (! wizard_activated) {
+			closeWizard();
+			unbindLegend();
+			return;
+		}
 		hideSearchPopover();
 		jQuery("#wizard_inuse .text_span").html(dirOrStops_text);
 		wizard_inuse.show();
@@ -431,11 +449,13 @@ OBA.Wizard = function(routeMap) {
 	 
 	 function closeWizard() {
 		 wizardClose.trigger('click');
+		 wizard_enabled = false;
 	 }
 	 	 
 	 return  {
+		 
 		 enabled: function() {
-			 return wizard_activated;
+			 return wizard_enabled;
 		 }
 	 };
 };

@@ -33,8 +33,9 @@ body, html {
 	padding: 0px;
 }
 
-#content #legend h2 ul li.legendItem .destination p span {
-	padding: 0px;
+#content #legend h2 ul li.legendItem .serviceAlertContainer .alerts li {
+	clear: both;
+	padding: 5px;
 	margin: 0px;
 }
 
@@ -44,6 +45,12 @@ body, html {
 }
 
 /** Wizard Overrides **/
+
+#wizard-col1 {
+	background: url("img/wizard/ie6_look_arrow.png") no-repeat 3% 5%;
+	border: 0;
+	width: 50%;
+}
 
 .popover.above .arrow {
   bottom: 0;

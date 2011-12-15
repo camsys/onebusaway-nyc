@@ -132,19 +132,46 @@
 	cursor: pointer;
 }
 
-#content #legend h2 ul li.legendItem .alerts li {
-	padding-bottom: 10px;
-	color: #D12020;
-}
-
 #content #legend h2 ul li.legendItem .description {
 	margin-bottom: 5px;
 	font-size: 14px;
 	font-weight: normal;
 }
 
+#content #legend h2 ul li.legendItem .serviceAlertContainer {
+	font-size: 12px;
+	width: 300px;
+}
+
+#content #legend h2 ul li.legendItem .serviceAlertContainer p.serviceAlert {
+	color: #D12020;
+	font-weight: bold;
+	font-size: 13px;
+	padding: 5px 5px 5px 5px;
+	position: relative;
+	cursor: pointer;
+	background-color: #FDEEF4;
+}
+
+#content #legend h2 ul li.legendItem .serviceAlertContainer p.serviceAlert span.click_info {
+	color: #D12020;
+	font-weight: normal;
+	font-size: 12px;
+	padding-left: 12px;
+	cursor: pointer;
+	display: inline;
+}
+
+#content #legend h2 ul li.legendItem .serviceAlertContainer .alerts li {
+	padding: 10px 10px 10px 10px;
+	color: #D12020;
+	font-size: 13px;
+	background-color: #FDEEF4;
+	line-height: 1.2em;
+}
+
 #content #legend h2 ul li.legendItem .destination {
-	font-size: 11px;
+	font-size: 12px;
 	width: 280px;
 }
 
