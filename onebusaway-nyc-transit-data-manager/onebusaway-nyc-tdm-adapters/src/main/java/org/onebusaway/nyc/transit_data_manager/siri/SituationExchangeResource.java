@@ -14,6 +14,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,13 +58,18 @@ public class SituationExchangeResource {
   public Response handleGet() {
     _log.info("GET received, initiating re-subscribe.");
     try {
-      _siriService.sendSubscriptionAndServiceRequest();
+      for (AgencyWithCoverageBean agency: _siriService.getTransitDataService().getAgenciesWithCoverage()) {
+        _log.info("Clearing service alerts for agency " + agency.getAgency().getId());
+        _siriService.getTransitDataService().removeAllServiceAlertsForAgencyId(agency.getAgency().getId());
+      }
+      _log.info("Sending request.");
+      _siriService.sendAndProcessSubscriptionAndServiceRequest();
     } catch (Exception e) {
       String message = "Re-subscribe failed: " + e.getMessage();
       _log.error(message);
       return Response.ok(message).build();
     }
-    return Response.ok("Re-subscribed").build();
+    return Response.ok("Re-subscribed\n").build();
   }
   
   @POST
