@@ -6,13 +6,14 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.onebusaway.nyc.report_archive.api.json.JsonTool;
+import org.onebusaway.nyc.report_archive.api.json.LastKnownRecordMessage;
 import org.onebusaway.nyc.report_archive.api.json.LastKnownRecordsMessage;
-import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.slf4j.Logger;
@@ -40,6 +41,29 @@ public class LastKnownLocationResource {
 	public void set_jsonTool(JsonTool _jsonTool) {
 		this._jsonTool = _jsonTool;
 	}
+	
+	@Path("/vehicle/{vehicleId}")
+	@GET
+	@Produces("application/json")
+	public Response getlastLocationRecordForVehicle(@PathParam("vehicleId") Integer vehicleId) {
+		String outputJson;
+		
+		try {
+			CcAndInferredLocationRecord record = getLastKnownRecordForVehicleFromDao(vehicleId);
+			
+			LastKnownRecordMessage message = new LastKnownRecordMessage();
+			message.setRecord(record);
+			message.setStatus("OK");
+			
+			outputJson = getObjectAsJsonString(message);
+		} catch (Exception e) {
+			throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
+		}
+		
+		Response response = Response.ok(outputJson, "application/json").build();
+		
+		return response;
+	}
 
 	@Path("/list")
 	@GET
@@ -52,25 +76,13 @@ public class LastKnownLocationResource {
 		message.setRecords(lastKnownRecords);
 		message.setStatus("OK");
 
-		String outputJson = null;
-
+		String outputJson;
 		try {
-			StringWriter writer = new StringWriter();
-
-			_jsonTool.writeJson(writer, message);
-
-			outputJson = writer.toString();
-
-			writer.close();
-
-			if (outputJson == null)
-				throw new IOException(
-						"After calling writeJson, outputJson is still null.");
-		} catch (IOException e) {
-			throw new WebApplicationException(e,
-					Response.Status.INTERNAL_SERVER_ERROR);
+			outputJson = getObjectAsJsonString(message);
+		} catch (IOException e1) {
+			throw new WebApplicationException(e1, Response.Status.INTERNAL_SERVER_ERROR);
 		}
-
+		
 		Response response = Response.ok(outputJson, "application/json").build();
 
 		return response;
@@ -81,5 +93,36 @@ public class LastKnownLocationResource {
 				.getAllLastKnownRecords();
 
 		return lastKnownRecords;
+	}
+
+
+	private CcAndInferredLocationRecord getLastKnownRecordForVehicleFromDao(
+			Integer vehicleId) throws Exception {
+		CcAndInferredLocationRecord record = _locationDao.getLastKnownRecordForVehicle(vehicleId);
+		
+		return record;
+	}
+	
+	private String getObjectAsJsonString(Object object) throws IOException {
+		String outputJson = null;
+		
+		StringWriter writer = null;
+		
+		try {
+			writer = new StringWriter();
+			_jsonTool.writeJson(writer, object);
+			outputJson = writer.toString();
+		} catch (IOException e) {
+			throw new IOException("IOException while using jsonTool to write object as json.", e);
+		} finally {
+			if (writer != null)
+				try {
+					writer.close();
+				} catch (IOException e) { }
+		}
+		
+		if (outputJson == null) throw new IOException("After using jsontool to write json, output was still null.");
+		
+		return outputJson;
 	}
 }

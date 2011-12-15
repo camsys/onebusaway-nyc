@@ -7,16 +7,12 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
-import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
-import uk.org.siri.siri.Siri;
 
 public class NycSiriServiceClient extends NycSiriService {
 
-  private SiriXmlSerializer _siriXmlSerializer = new SiriXmlSerializer();
-  
   @Override
   void setupForMode() throws Exception, JAXBException {
       boolean setupDone = false;
@@ -25,11 +21,7 @@ public class NycSiriServiceClient extends NycSiriService {
         attempts += 1;
         try {
           _log.info("Setting up for client mode.");
-          String result = sendSubscriptionAndServiceRequest();
-          Siri siri = _siriXmlSerializer.fromXml(result);
-          SituationExchangeResults handleResult = new SituationExchangeResults();
-          handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
-          _log.info(handleResult.toString());
+          sendAndProcessSubscriptionAndServiceRequest();
           setupDone = true;
         } catch (Exception e) {
           _log.error("Setup for client failed, exception is: " + e.getMessage());
@@ -47,7 +39,6 @@ public class NycSiriServiceClient extends NycSiriService {
           "*********************************************************************");
     }
   
-
   @Override
   void addOrUpdateServiceAlert(SituationExchangeResults result,
       DeliveryResult deliveryResult, ServiceAlertBean serviceAlertBean,

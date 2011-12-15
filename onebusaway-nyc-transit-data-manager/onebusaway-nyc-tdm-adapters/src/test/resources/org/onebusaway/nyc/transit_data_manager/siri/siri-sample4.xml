@@ -10,7 +10,10 @@
                         <EndTime>2011-11-25T18:59:00-05:00</EndTime>
                     </PublicationWindow>
                     <Summary xml:lang="EN">X27, X28, X37 and X38 temporary bus stop change due a demonstration</Summary>
-                    <Description xml:lang="EN">Until further notice Brooklyn bound buses will not make the stop at the near side of Cedar St due to police barricades and will now make the stop at the far side of Cedar St. Please allow additional travel time.</Description>
+                    <Description xml:lang="EN">Until further notice Brooklyn bound buses will not make the
+stop at the near side of Cedar St due to police barricades and
+will now make the stop at the far side of Cedar St. Please
+allow additional travel time.</Description>
                     <Affects>
                         <VehicleJourneys>
                             <AffectedVehicleJourney>
