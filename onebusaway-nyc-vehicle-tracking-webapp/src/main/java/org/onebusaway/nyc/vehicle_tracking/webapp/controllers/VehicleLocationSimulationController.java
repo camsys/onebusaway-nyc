@@ -39,6 +39,8 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
 import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
+import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -92,12 +94,20 @@ public class VehicleLocationSimulationController {
 
   private BlockStatusBeanService _blockStatusBeanService;
 
+  private TransitGraphDao _transitGraphDao;
+
   @Autowired
   public void setVehicleLocationService(
       VehicleLocationInferenceService vehicleLocationService) {
     _vehicleLocationInferenceService = vehicleLocationService;
   }
 
+  @Autowired
+  public void setTransitGraphDao(
+      TransitGraphDao transitGraphDao) {
+    _transitGraphDao = transitGraphDao;
+  }
+  
   @Autowired
   public void setTransitDataService(
       TransitDataService transitDataService) {
@@ -192,7 +202,7 @@ public class VehicleLocationSimulationController {
         in = new GZIPInputStream(in);
 
       taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(
-          traceType, in, realtime, pauseOnStart, shiftStartTime,
+          name, traceType, in, realtime, pauseOnStart, shiftStartTime,
           minimumRecordInterval, bypassInference, fillActualProperties, loop);
     }
 
@@ -313,10 +323,8 @@ public class VehicleLocationSimulationController {
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!active-routes-json.do", method = RequestMethod.GET)
-  public ModelAndView activeRoutesJson(HttpSession session,
-      @RequestParam(required = false) Date time) {
+  public ModelAndView activeRoutesJson(HttpSession session) {
 
-    time = getTime(session, time);
 
     List<String> routeList = new ArrayList<String>();    
     for (String agencyId : _agencyService.getAllAgencyIds()) {
@@ -332,11 +340,15 @@ public class VehicleLocationSimulationController {
   }
   
   @RequestMapping(value = "/vehicle-location-simulation!active-blocks-for-route-json.do", method = RequestMethod.GET)
-  public ModelAndView activeBlocksForRouteJson(@RequestParam(required=true) String routeId) {
+  public ModelAndView activeBlocksForRouteJson(HttpSession session,
+     @RequestParam(required=true) String routeId,
+     @RequestParam(required=false) long timestamp) {
     Map<String, ArrayList<String>> m = new HashMap<String, ArrayList<String>>();
 
+    Date time = getTime(session, new Date(timestamp));
+    
     ListBean<BlockStatusBean> beans = _blockStatusBeanService.getBlocksForRoute(
-          AgencyAndIdLibrary.convertFromString(routeId), System.currentTimeMillis());
+          AgencyAndIdLibrary.convertFromString(routeId), time.getTime());
 
     for(BlockStatusBean blockBean : beans.getList()) {
       BlockBean block = blockBean.getBlock();

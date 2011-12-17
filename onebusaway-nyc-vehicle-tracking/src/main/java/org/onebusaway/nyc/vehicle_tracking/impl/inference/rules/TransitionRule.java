@@ -83,11 +83,11 @@ public class TransitionRule implements SensorModelRule {
 
     boolean pOutToInService = prevObs.isOutOfService() && !obs.isOutOfService();
 
-    double pTransitionFromBeforeToDuring = implies(p(transitionBeforeToDuring),
-        p(justLeftTerminal || pOutToInService));
-
-    result.addResultAsAnd("Transition Before to During => left terminal",
-        pTransitionFromBeforeToDuring);
+//    double pTransitionFromBeforeToDuring = implies(p(transitionBeforeToDuring),
+//        p(justLeftTerminal || pOutToInService));
+//
+//    result.addResultAsAnd("Transition Before to During => left terminal",
+//        pTransitionFromBeforeToDuring);
 
     /**
      * Transition During to Before => out of service or at base
@@ -133,12 +133,12 @@ public class TransitionRule implements SensorModelRule {
      * going through the last terminal with a valid dsc.
      * 
      */
-    if (!EVehiclePhase.isActiveAfterBlock(phase) && blockState != null) {
-      double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
-          p(EVehiclePhase.isActiveDuringBlock(phase)));
-      result.addResultAsAnd(
-          "just left terminal AND in-service => active during", pInService);
-    }
+//    if (!EVehiclePhase.isActiveAfterBlock(phase) && blockState != null) {
+//      double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
+//          p(EVehiclePhase.isActiveDuringBlock(phase)));
+//      result.addResultAsAnd(
+//          "just left terminal AND in-service => active during", pInService);
+//    }
 
     return result;
   }

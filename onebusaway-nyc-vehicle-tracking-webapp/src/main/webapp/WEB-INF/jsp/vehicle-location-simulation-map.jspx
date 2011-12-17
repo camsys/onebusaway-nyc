@@ -38,6 +38,8 @@ OBA.Debug = function() {
 	var routes = null;
 	var popup = null;
 	var feature = null;
+	var searchStartTime = null;
+	var searchEndTime = null;
 	
 	var tripsByBlockId = null;
 	
@@ -118,10 +120,20 @@ OBA.Debug = function() {
 					if(min_time !== null && max_time !== null 
 							&& min_time !== "" && max_time !== "") {
 						
-						  if(i < parseInt(min_time) || i > parseInt(max_time)) {
-							  return;
-						  }
-					}
+					  if(i < parseInt(min_time)) {
+						  return;
+					  }
+						if(i > parseInt(max_time)) {
+						  return;
+					  }
+					} 
+					
+				  if (searchEndTime === null
+						  || parseInt(record.timestampAsDate) > searchEndTime)
+					  searchEndTime = parseInt(record.timestampAsDate);
+				  if (searchStartTime === null
+						  || parseInt(record.timestampAsDate) < searchStartTime)
+					  searchStartTime = parseInt(record.timestampAsDate);
 					
           var size = new OpenLayers.Size(20,20);
           var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
@@ -148,6 +160,7 @@ OBA.Debug = function() {
           	schedDeviation: "NA",
           	other: "",
           	inferredLatLon: "",
+          	timestamp: "",
           	toString: function () {
           		return "record #: " + this.recordNum + "<br/>"
           		 + "inferredTripId:" + this.inferredTripId + "<br/>"
@@ -159,6 +172,7 @@ OBA.Debug = function() {
           		 + "inferredRunId: " + this.inferredRunId + "<br/>"
           		 + "schedDeviation: " + Math.round(this.schedDeviation) + "(mins)<br/>"
           		 + "inferredLatLon:" + this.inferredLatLon + "<br/>"
+          		 + "timestamp:" + this.timestamp + "<br/>"
           		 + this.other;
           	}
           };
@@ -178,6 +192,8 @@ OBA.Debug = function() {
 								currentTime = value;
 								formattedTime = new Date(value);
 								markerText.timestampAsDate = formattedTime;
+							} else if (property === "timestamp") {
+								markerText.timestamp = "<a name='trip_time_select' href='#'>" + value + "</a>";
 							} else if (property === "vehicleId"){
 								markerText.other += property + ": " + value.agencyId + "_" 
 								 + value.id + "<br/>";
@@ -258,6 +274,12 @@ OBA.Debug = function() {
 	          	selectTrip(jQuery(this).text(), serviceDate);
 	          });
 	          
+	          var tripLink = jQuery(popup.contentDiv).find("a[name='trip_time_select']");
+	          tripLink.click(function(e) {
+	          	e.preventDefault();
+	          	jQuery("#trip_time").val(jQuery(this).text());
+	          });
+	          
 	          var inferredLink = jQuery(popup.contentDiv).find("a[name='inferredLoc']");
 	          inferredLink.click(function(e) {
 	          	e.preventDefault();
@@ -303,7 +325,8 @@ OBA.Debug = function() {
 	}
 	
 	function selectTrip(selectedTripId, serviceDate) {
-		if(typeof selectedTripId === 'undefined') {
+		if(typeof selectedTripId === 'undefined' 
+				|| typeof selectedTripId === 'object') {
 			var selectedTrip = jQuery("#trips option:selected");
 			selectedTripId = selectedTrip.val();
 		}
@@ -360,13 +383,18 @@ OBA.Debug = function() {
           stopMarkers.addMarker(marker);
           
           var html = null;
-          if (serviceDate !== null) {
+          if (serviceDate !== null
+        		  && serviceDate !== undefined) {
 	          var dispTime = new Date(serviceDate + stop.arrivalTime*1000);
-	          html = "trip:" + selectedTripId + "<br/>" + "arrivalTime=" + dispTime; 
+	          html = "trip:" + selectedTripId + "<br/>";
+	          html += "arrivalTime=" + dispTime + "<br/>"; 
+	          html += "id:" + stop.stop.id + "<br/>";
           } else {
 	          var stopTimeHour = Math.round(stop.arrivalTime / 3600);
 	          var stopTimeMin = Math.round((stop.arrivalTime / 60)%60);
-	          html = "trip:" + selectedTripId + "<br/>" + "arrivalTime=" + stopTimeHour + ":" + stopTimeMin;
+	          html = "trip:" + selectedTripId + "<br/>";
+	          html += "arrivalTime=" + stopTimeHour + ":" + stopTimeMin + "<br/>";
+	          html += "id:" + stop.stop.id + "<br/>";
           }
           
           /*
@@ -410,8 +438,10 @@ OBA.Debug = function() {
 		var tripList = jQuery("#trips");
 		tripList.empty();
 
+		var time = jQuery("#trip_time").val();
 		jQuery.ajax({
-			url: "vehicle-location-simulation!active-blocks-for-route-json.do?routeId=" + selectedRouteId,
+			url: "vehicle-location-simulation!active-blocks-for-route-json.do?routeId=" + selectedRouteId 
+					+ "&timestamp=" + time,
 			success: function(data) {
 				tripsByBlockId = data.blocks;
 
@@ -475,6 +505,13 @@ OBA.Debug = function() {
 			    new OpenLayers.Projection("EPSG:900913"),
 			    map.getProjectionObject()
 			), 11);
+			
+			jQuery("#trip_button").click(function(e) {
+				e.preventDefault();
+				
+				var trip_name = jQuery("#trip_name").val();
+				selectTrip(trip_name, null);
+			});
 
 			jQuery("#filter_apply").click(function(e) {
 				e.preventDefault();
@@ -502,27 +539,37 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 <td style="width: 410px;">
 	All Routes:
 	<br/>
-	<select size="10" style="width: 400px;" id="routes">
+	<select size="10" style="width: 450px;" id="routes">
 		<option value="">Loading...</option>
 	</select>
 
 	Active Blocks For Selected Route:
 	<br/>
-	<select size="10" style="width: 400px;" id="blocks">
+	<select size="10" style="width: 450px;" id="blocks">
 		<option value="">Select a route first.</option>
 	</select>
 
 	Trips In Selected Block:
 	<br/>
-	<select size="10" style="width: 400px;" id="trips">
+	<select size="10" style="width: 450px;" id="trips">
 		<option value="">Select a block first.</option>
 	</select>
-	
+	<br/>
+	Show trips active for this time:
+	<br/>
+	<input type="text" id="trip_time" size="10"/> 
+	<br/>
 	Show Records Between:
 	<br/>
 	<input type="text" id="filter_start" size="10"/> (record #) and <input type="text" id="filter_end" size="10"/> (record #)
 	<br/>
 	<input type="submit" value="Refresh" id="filter_apply"/>
+	<br/>
+	Show this trip:
+	<br/>
+	<input type="text" id="trip_name" size="40"/> 
+	<br/>
+	<input type="submit" value="Show Trip" id="trip_button"/>
 </td>
 <td>
 	<div id="map" style="width: 1000px; height: 700px;"></div>

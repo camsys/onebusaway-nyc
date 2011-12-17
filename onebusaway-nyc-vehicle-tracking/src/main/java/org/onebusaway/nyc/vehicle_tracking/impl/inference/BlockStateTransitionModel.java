@@ -156,7 +156,8 @@ public class BlockStateTransitionModel {
           parentBlockState))
         return null;
 
-      if (EVehiclePhase.isActiveDuringBlock(parentPhase)) {
+      if (EVehiclePhase.isActiveDuringBlock(parentPhase)
+          || journeyState.getPhase() == EVehiclePhase.DEADHEAD_BEFORE) {
         potentialTransStates.addAll(advanceAlongBlock(parentPhase,
             parentBlockState, obs));
       } else {
@@ -266,6 +267,7 @@ public class BlockStateTransitionModel {
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
     Observation prevObs = obs.getPreviousObservation();
+    BlockState parentBlockState = parentState.getBlockState();
 
     /**
      * Have we just transitioned out of a terminal?
@@ -275,17 +277,16 @@ public class BlockStateTransitionModel {
        * If we were assigned a block, then use the block's terminals, otherwise,
        * all terminals.
        */
-      if (parentState.getBlockState() != null) {
+      if (parentBlockState == null) {
+        if (prevObs.isAtTerminal() && !obs.isAtTerminal())
+          return true;
+      } else if (parentBlockState != null) {
         boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-            prevObs.getRecord(), parentState.getBlockState().getBlockInstance());
+            prevObs.getRecord(), parentBlockState.getBlockInstance());
         boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-            obs.getRecord(), parentState.getBlockState().getBlockInstance());
+            obs.getRecord(), parentBlockState.getBlockInstance());
 
         if (wasAtBlockTerminal && !isAtBlockTerminal) {
-          return true;
-        }
-      } else {
-        if (prevObs.isAtTerminal() && !obs.isAtTerminal()) {
           return true;
         }
       }
@@ -310,6 +311,9 @@ public class BlockStateTransitionModel {
      * If the destination sign code has changed, we allow a block transition
      */
     if (hasDestinationSignCodeChangedBetweenObservations(obs))
+      return true;
+
+    if (!obs.isOutOfService() && parentBlockState == null)
       return true;
 
     return false;
