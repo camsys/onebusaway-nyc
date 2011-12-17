@@ -27,7 +27,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ 
-//    Trace_2711_20111208_054046_102329_IntegrationTest.class,
+    Trace_2711_20111208_054046_102329_IntegrationTest.class,
     Trace_7564_20101203T004633_with_runs_reported_IntegrationTest.class,
     Trace_7564_20101203T004633_IntegrationTest.class,
     Trace_0927_20101209T124742_IntegrationTest.class,
