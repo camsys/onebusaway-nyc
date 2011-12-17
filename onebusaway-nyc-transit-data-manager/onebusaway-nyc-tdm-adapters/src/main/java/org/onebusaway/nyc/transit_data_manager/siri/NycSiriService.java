@@ -15,6 +15,22 @@
  */
 package org.onebusaway.nyc.transit_data_manager.siri;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBException;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.xwork.StringUtils;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
@@ -36,9 +52,6 @@ import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDet
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString.Translation;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.xwork.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,22 +94,7 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBException;
-
+@SuppressWarnings("restriction")
 @Component
 public abstract class NycSiriService {
 
@@ -109,14 +107,12 @@ public abstract class NycSiriService {
 
   private String _subscriptionPath;
 
-  private Map<String, ServiceAlertBean> currentServiceAlerts = new HashMap<String, ServiceAlertBean>();
-
   private WebResourceWrapper _webResourceWrapper;
 
   private String _subscriptionUrl;
 
   private SiriXmlSerializer _siriXmlSerializer = new SiriXmlSerializer();
-  
+
   abstract void setupForMode() throws Exception, JAXBException;
 
   abstract List<String> getExistingAlertIds(Set<String> agencies);
@@ -165,7 +161,6 @@ public abstract class NycSiriService {
     }
     
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
-    // TODO This is not done yet.
     @SuppressWarnings("unchecked")
     Collection<String> deletedIds = CollectionUtils.subtract(preAlertIds, postAlertIds);
     postServiceDeliveryActions(result, deletedIds);
@@ -336,7 +331,6 @@ public abstract class NycSiriService {
 
       if (!endpointDetails.getDefaultAgencyIds().isEmpty()) {
         String agencyId = endpointDetails.getDefaultAgencyIds().get(0);
-        // TODO Check this
         serviceAlert.setId(AgencyAndId.convertToString(new AgencyAndId(agencyId,
             situationId)));
       } else {
@@ -613,6 +607,15 @@ public abstract class NycSiriService {
     return tsBuilder.build();
   }
 
+  protected void sendAndProcessSubscriptionAndServiceRequest()
+      throws Exception {
+        String result = sendSubscriptionAndServiceRequest();
+        Siri siri = _siriXmlSerializer.fromXml(result);
+        SituationExchangeResults handleResult = new SituationExchangeResults();
+        handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
+        _log.info(handleResult.toString());
+      }
+  
   String sendSubscriptionAndServiceRequest() throws Exception {
     Siri siri = createSubsAndSxRequest();
     String sendResult = getWebResourceWrapper().post(
@@ -695,6 +698,6 @@ public abstract class NycSiriService {
   public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
     this._webResourceWrapper = _webResourceWrapper;
   }
-  
+
 
 }

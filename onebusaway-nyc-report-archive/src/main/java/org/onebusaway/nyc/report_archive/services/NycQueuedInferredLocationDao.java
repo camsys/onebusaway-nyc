@@ -12,4 +12,6 @@ public interface NycQueuedInferredLocationDao {
   void saveOrUpdateRecords(ArchivedInferredLocationRecord... records);
 
   List<CcAndInferredLocationRecord> getAllLastKnownRecords();
+  
+  CcAndInferredLocationRecord getLastKnownRecordForVehicle(Integer vehicleId) throws Exception;
 }

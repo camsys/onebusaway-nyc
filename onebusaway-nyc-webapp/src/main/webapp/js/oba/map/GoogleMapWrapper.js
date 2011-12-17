@@ -161,6 +161,8 @@ OBA.GoogleMapWrapper = function(mapNode) {
 	  
 	  
 	  subwayControl.click(function(e) { 
+		  e.preventDefault();
+		  
 		  if(map.overlayMapTypes.length === 1) { 
 			  map.overlayMapTypes.removeAt(0, mtaSubwayMapType);
 			  subwayControl.text("Show Subway");
