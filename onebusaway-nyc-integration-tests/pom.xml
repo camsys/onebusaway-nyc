@@ -209,7 +209,8 @@
                         <configuration>
                             <executable>java</executable>
                             <arguments>
-                                <argument>-Xmx1500m</argument>
+                                <argument>-Xmx2G</argument>
+                                <argument>-XX:MaxPermSize=1G</argument>
                                 <argument>-classpath</argument>
                                 <classpath />
                                 <argument>-Donebusaway_prefix=${basedir}</argument>
