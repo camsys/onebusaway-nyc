@@ -129,7 +129,7 @@
 #content #legend h2 ul li.legendItem .name {
 	margin-bottom: 5px;
 	font-weight: bold;
-	cursor: pointer;
+	cursor: default;
 }
 
 #content #legend h2 ul li.legendItem .description {
@@ -356,4 +356,8 @@
 
 #subwayControl a:focus { 
 	outline: none; 
-} 
+}
+
+#subwayControl a:hover { 
+	background-color: #EEEEEE;
+}

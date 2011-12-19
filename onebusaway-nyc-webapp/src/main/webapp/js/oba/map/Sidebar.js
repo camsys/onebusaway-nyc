@@ -182,9 +182,7 @@ OBA.Sidebar = function () {
 			var titleBox = jQuery("<p></p>")
 							.addClass("name")
 							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
-							.css("border-bottom", "5px solid #" + routeResult.color)
-							.css("cursor", "pointer");
-
+							.css("border-bottom", "5px solid #" + routeResult.color);
 			var descriptionBox = jQuery("<p></p>")
 							.addClass("description")
 							.text(routeResult.description);
@@ -204,7 +202,7 @@ OBA.Sidebar = function () {
 			});
 			
 			if (serviceAlerts.length > 0) {	
-				var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change for route</p>")
+				var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change for Route</p>")
 												.append(jQuery("<span class='click_info'> + Click for info</span>"));
 				
 				serviceAlertContainer = jQuery("<div></div>")
@@ -234,7 +232,6 @@ OBA.Sidebar = function () {
 				
 				routeMap.panToRoute(routeResult);
 			});
-			titleBox.css("pointer", "default");
 
 			// directions
 			jQuery.each(routeResult.destinations, function(_, destination) {
