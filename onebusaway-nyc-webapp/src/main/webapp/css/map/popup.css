@@ -67,6 +67,7 @@
 .popup .service {
 	padding-top: 4px;
 	color: #666666;
+	font-weight: bold;
 }
 
 .popup p.otherRoutes {
@@ -79,8 +80,13 @@
 
 .popup .service-alert {
 	color: #d12020;
-	margin-top: 2px;  
+	margin-bottom: 3px;  
 	width: 400px;
+}
+
+.popup .service-alert.title {
+	font-weight:bold;
+	margin-top: 3px;
 }
 
 .popup ul li.route {

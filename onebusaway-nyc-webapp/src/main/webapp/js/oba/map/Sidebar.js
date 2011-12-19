@@ -125,9 +125,24 @@ OBA.Sidebar = function () {
 		
 		return [nearbyRoutes, routesForStop];
 	}
+	
+	
+	// display routes in one list
+	function showRoutesOnMap(routeResults) {
+		var nearby = jQuery("#legend > #nearby");
+		var for_stop = jQuery("#legend > #for_stop");
+		nearby.text('Routes:');
+		var routesLegend = jQuery("<ul></ul>").appendTo(nearby);
+		
+		addRoutesToLegend(routeResults, routesLegend);
+		
+		nearby.show();
+		for_stop.hide();
+		legend.show();
+	}
 
-	// display routes on map and in legend, order by 1) for stop, then 2) nearby
-	function showRoutesOnMap(routeResults, routesFirst) {
+	// display routes 1) for stop, then 2) nearby
+	function showRoutesOnMapForLocation(routeResults, routesFirst) {
 		var nearbyRoutes = routeResults;
 		var nearby = jQuery("#legend > #nearby");
 		var for_stop = jQuery("#legend > #for_stop");
@@ -161,7 +176,7 @@ OBA.Sidebar = function () {
 			addRoutesToLegend(nearbyRoutes, nearbyRoutesLegend);
 			
 			nearby.show();	
-			if (routesFirst !== undefined && routesFirst.length == 0) {
+			if (routesFirst == undefined || routesFirst.length == 0) {
 				for_stop.hide();
 			}
 		}
@@ -330,6 +345,7 @@ OBA.Sidebar = function () {
 		welcome.hide();
 		legend.hide();
 		results.hide();
+		noResults.html("<h2>No results.</h2>");
 		noResults.hide();
 		
 		jQuery("#results ul").remove();
@@ -338,6 +354,17 @@ OBA.Sidebar = function () {
 
 		routeMap.removeAllRoutes();
 		routeMap.removeDisambiguationMarkers();
+		routeMap.removeLocationMarker();
+		routeMap.closePopups();
+	}
+	
+	function noResultsAction(noResultsMsg) {
+		if (noResultsMsg !== undefined) { 
+			noResults.html("<h2>" + noResultsMsg + "</h2>"); 
+		}
+		noResults.show();
+		welcome.show();
+		//(wizard && wizard.enabled()) ? legend.trigger('no_results') : null;
 	}
 
 	// process search results
@@ -350,10 +377,7 @@ OBA.Sidebar = function () {
 
 			var resultCount = json.searchResults.length;
 			if(resultCount === 0) {
-				noResults.show();
-				welcome.show();
-				//(wizard && wizard.enabled()) ? legend.trigger('no_results') : null;
-
+				noResultsAction();
 				return;
 			} else {
 				noResults.hide();
@@ -367,19 +391,23 @@ OBA.Sidebar = function () {
 
 					// region (zip code or borough)
 					if(resultType === "LocationResult" && result.region === true) {
-						var bounds = result.bounds;
-						var latLngBounds = new google.maps.LatLngBounds(
-								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
-								new google.maps.LatLng(bounds.maxLat, bounds.maxLon));
 						
 						// location exists, but no nearby routes exist
 						var nearbyRoutes = result.nearbyRoutes;
 						if(nearbyRoutes.length === 0) {
-							noResults.show();
-							welcome.show();
-							return;							
+							if (result.formattedAddress !== null) {
+								var searchInput = jQuery("#searchbar form input[type=text]");
+								searchInput.val(result.formattedAddress);
+							}
+							routeMap.showLocation(result.latitude, result.longitude, false,
+													result.formattedAddress, result.neighborhood);
+							noResultsAction("Bus Time is not yet available here.");
+							return;
 						}
-						
+						var bounds = result.bounds;
+						var latLngBounds = new google.maps.LatLngBounds(
+								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
+								new google.maps.LatLng(bounds.maxLat, bounds.maxLon));
 						showRoutePickerList(result.nearbyRoutes);
 						routeMap.showBounds(latLngBounds);
 						
@@ -387,15 +415,28 @@ OBA.Sidebar = function () {
 
 					// intersection or stop ID
 					} else {									
-						var listFirst = result.routesAvailable;	
-						showRoutesOnMap(result.nearbyRoutes, listFirst);
-						routeMap.showLocation(result.latitude, result.longitude);
+						var allRoutes = result.nearbyRoutes;
+						
+						if (allRoutes.length == 0) { 
+							if (result.formattedAddress !== null) {
+								var searchInput = jQuery("#searchbar form input[type=text]");
+								searchInput.val(result.formattedAddress);
+							}
+							routeMap.showLocation(result.latitude, result.longitude, true,
+													result.formattedAddress, result.neighborhood);
+							noResultsAction("Bus Time is not yet available here.");
+							return;
+						}
+						var listFirst = result.routesAvailable;
+						showRoutesOnMapForLocation(allRoutes, listFirst);
 						
 						if(resultType === "StopResult") {
+							routeMap.showLocation(result.latitude, result.longitude);
 							routeMap.showPopupForStopId(result.stopId);
-							
 							(wizard && wizard.enabled()) ? legend.trigger('stop_result') : null;
 						} else {
+							routeMap.showLocation(result.latitude, result.longitude, true,
+														result.formattedAddress, result.neighborhood);
 							(wizard && wizard.enabled()) ? legend.trigger('intersection_result') : null;
 						}
 					}

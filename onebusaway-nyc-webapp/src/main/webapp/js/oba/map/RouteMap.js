@@ -22,6 +22,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	var map = null;
 	var mgr = null;
 	var infoWindow = null;
+	var locationMarker = null;
 
 	var disambiguationMarkers = [];
 	var vehiclesByRoute = {};
@@ -254,7 +255,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
         }
         
         if (html !== '') {
-            html = '<p class="service-alert">' + html + '</p>';
+            html = '<p class="service-alert title">Service Change:</p><p class="service-alert">' + html + '</p>';
         }
         
         return html;
@@ -878,10 +879,39 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 			map.fitBounds(bounds);
 		},
 
-		showLocation: function(lat, lng) {
+		showLocation: function(lat, lng, zoom, address, neighborhood) {
 			var location = new google.maps.LatLng(lat, lng);
 			map.panTo(location);
-			map.setZoom(16);
+			if (zoom !== false) {
+				map.setZoom(16);
+			}
+			
+			if (address !== undefined) {
+				var markerOptions = {
+					position: location,
+		            icon: normalLocationIcon,
+		            zIndex: 2,
+		            title: address,
+		            map: map
+				};
+				locationMarker = new google.maps.Marker(markerOptions);
+				
+				google.maps.event.addListener(locationMarker, "click", function(mouseEvent) {
+		    		var content = '<h3><b>' + address + '</b></h3>';
+		    		if (neighborhood !== null) {
+		    			content += neighborhood;
+		    		}
+	    			showPopupWithContent(locationMarker, content);
+	    		});
+			}
+			return locationMarker;
+		},
+		
+		removeLocationMarker: function() {
+			if (locationMarker !== null) {
+				locationMarker.setMap(null);
+				locationMarker = null;
+			}
 		},
 		
 		// disambiguation
@@ -949,6 +979,13 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 				delete infoWindowListeners[key];
 			}
 			infoWindowListeners = [];
+		},
+		
+		closePopups: function() {
+			if (infoWindow !== null) {
+				infoWindow.close();
+				infoWindow = null;
+			}	
 		}
 	};
 };
