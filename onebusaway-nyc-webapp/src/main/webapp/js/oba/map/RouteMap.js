@@ -29,19 +29,15 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	var vehiclesById = {};
 	var polylinesByRoute = {};
 	var hoverPolylines = [];
+	var polylinesCache = {};
 	var stopsById = {};
 	var stopsAddedForRoute = {};
 	var alreadyDisplayedStopIcons = {};
-
-	var normalLocationIcon = new google.maps.MarkerImage("img/location/beachflag.png",
-            new google.maps.Size(20, 32),
-            new google.maps.Point(0,0),
-            new google.maps.Point(0, 32));
-	
-	var activeLocationIcon = new google.maps.MarkerImage("img/location/beachflag_active.png",
-            new google.maps.Size(20, 32),
-            new google.maps.Point(0,0),
-            new google.maps.Point(0, 32));
+            
+    var locationIconArrays = OBA.Config.loadLocationIcons();
+    var locationIcons = locationIconArrays[0], activeLocationIcons = locationIconArrays[1], iconShadow = locationIconArrays[2];    
+    var normalLocationIcon = locationIcons[0], activeLocationIcon = activeLocationIcons[0];
+    
             
     // InfoWindow Listeners (for Wizard)
     var infoWindowListeners = [];
@@ -852,6 +848,56 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 			}	
 		},
 		
+		prepareCachedPolylines: function (encodedPolylines, color, routeId) {
+			
+			jQuery.each(encodedPolylines, function(_, encodedPolyline) {
+				var points = OBA.Util.decodePolyline(encodedPolyline);		
+				var latlngs = jQuery.map(points, function(x) {
+					return new google.maps.LatLng(x[0], x[1]);
+				});
+				var shape = new google.maps.Polyline({
+					path: latlngs,
+					strokeColor: "#" + color,
+					strokeOpacity: 0.6,
+					strokeWeight: 10
+				});
+			
+				if (polylinesCache[routeId] == null) {
+					polylinesCache[routeId] = [];
+				}
+				polylinesCache[routeId].push(shape); 
+			});		
+		},
+		
+		removeCachedPolylinesForRoute: function(routeId) {
+			delete polylinesCache[routeId];
+		},
+		
+		removeAllCachedPolylines: function() {
+			for(var routeId in polylinesCache) {
+				delete polylinesCache[routeId];
+			}
+			polylinesCache = {};
+		},
+		
+		showCachedPolylinesForRoute: function(routeId) {	
+
+			var polylines = polylinesCache[routeId];
+											
+			jQuery.each(polylines, function(_, polyline) {
+					polyline.setMap(map);
+			});
+		},
+		
+		hideCachedPolylinesForRoute: function(routeId) {
+		
+			if (polylinesCache[routeId] !== null) {
+				jQuery.each(polylinesCache[routeId], function(_, polyline) {
+					polyline.setMap(null);
+				});
+			}
+		},
+		
 		removeHoverPolyline: removeHoverPolyline,
 		
 		showHoverPolyline: function(encodedPolylines, color) {
@@ -892,7 +938,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		            icon: normalLocationIcon,
 		            zIndex: 2,
 		            title: address,
-		            map: map
+		            map: map,
+		            shadow: iconShadow
 				};
 				locationMarker = new google.maps.Marker(markerOptions);
 				
@@ -903,6 +950,13 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		    		}
 	    			showPopupWithContent(locationMarker, content);
 	    		});
+	    		google.maps.event.addListener(locationMarker, "mouseover", function(mouseEvent) {
+		    		locationMarker.setIcon(activeLocationIcon);
+	    		});
+	    		google.maps.event.addListener(locationMarker, "mouseout", function(mouseEvent) {
+		    		locationMarker.setIcon(normalLocationIcon);
+	    		});
+	    		
 			}
 			return locationMarker;
 		},
@@ -917,13 +971,16 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		// disambiguation
 		removeDisambiguationMarkers: removeDisambiguationMarkers,
 		
-		addDisambiguationMarkerWithContent: function(latlng, address, neighborhood) {
+		addDisambiguationMarkerWithContent: function(latlng, address, neighborhood, count) {
+			var locationIcon = (count !== undefined && count < 10) ? locationIcons[count] : normalLocationIcon;
+		
 			var markerOptions = {
 					position: latlng,
-		            icon: normalLocationIcon,
+		            icon: locationIcon,
 		            zIndex: 2,
 		            title: address,
-		            map: map
+		            map: map,
+		            shadow: iconShadow
 			};
 
 		    var marker = new google.maps.Marker(markerOptions);
@@ -942,12 +999,12 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	    	return marker;
 		},
 		
-		activateLocationIcon: function(marker) {
-			marker.setIcon(activeLocationIcon);
+		activateLocationIcon: function(marker, index) {
+			(index !== undefined) ? marker.setIcon(activeLocationIcons[index]) : marker.setIcon(activeLocationIcon);
 		},
 		
-		deactivateLocationIcon: function(marker) {
-			marker.setIcon(normalLocationIcon);
+		deactivateLocationIcon: function(marker, index) {
+			(index !== undefined) ? marker.setIcon(locationIcons[index]) : marker.setIcon(normalLocationIcon);
 		},
 		
 		// wizard event listeners

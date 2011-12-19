@@ -31,6 +31,8 @@ OBA.Sidebar = function () {
 
 	var routeMap = null;
 	var wizard = null;
+	
+	var highlightRouteOnHoverOn = true;
 
 	function addSearchBehavior() {
 		var searchForm = jQuery("#searchbar form"),
@@ -72,29 +74,37 @@ OBA.Sidebar = function () {
 		var resultsList = jQuery("<ul></ul>").appendTo(results);
 
 		var bounds = null;
+		var markerCount = 0;
+		
 		jQuery.each(locationResults, function(_, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
 			var address = location.formattedAddress;
 			var neighborhood = location.neighborhood;
 			
-			var marker = routeMap.addDisambiguationMarkerWithContent(latlng, address, neighborhood);
-
+			markerCount += 1;
+			var marker = routeMap.addDisambiguationMarkerWithContent(latlng, address, neighborhood, markerCount);	
+			
 		    // sidebar item
 			var link = jQuery("<a href='#" + address + "'></a>")
 							.text(address);
 
 			var listItem = jQuery("<li></li>")
 							.addClass("locationItem")
-							.append(link);
-
+							.append(link)
+							.css("background-image", "url('img/location/location_" + markerCount + ".png')");
 			resultsList.append(listItem);
-
-			link.hover(function() {
+			
+			var currentCount = markerCount;
+			listItem.hover(function() {
+				routeMap.activateLocationIcon(marker, currentCount);
 				marker.setAnimation(google.maps.Animation.BOUNCE);
-				routeMap.activateLocationIcon(marker);
+				listItem.css("background-image", "url('img/location/location_active_sidebar_" + currentCount + ".png')");
+				link.css("color", "#33CCFF");
 			}, function() {
+				routeMap.deactivateLocationIcon(marker, currentCount);
 				marker.setAnimation(null);
-				routeMap.deactivateLocationIcon(marker);
+				listItem.css("background-image", "url('img/location/location_" + currentCount + ".png')");
+				link.css("color", "#0189C7");
 			});
 
 			// calculate extent of all options
@@ -104,7 +114,6 @@ OBA.Sidebar = function () {
 				bounds.extend(latlng);
 			}
 		});
-		
 		routeMap.showBounds(bounds);
 		results.show();
 	}
@@ -198,6 +207,7 @@ OBA.Sidebar = function () {
 							.addClass("name")
 							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
 							.css("border-bottom", "5px solid #" + routeResult.color);
+			
 			var descriptionBox = jQuery("<p></p>")
 							.addClass("description")
 							.text(routeResult.description);
@@ -301,8 +311,31 @@ OBA.Sidebar = function () {
 					autoHeight: false });
 				
 				listItem.append(destinationContainer);
+				
+				// pre-cache highlight route lines for all polylines
+				if (highlightRouteOnHoverOn) {
+					routeMap.prepareCachedPolylines(destination.polylines, routeResult.color, 
+							routeResult.routeIdWithoutAgency);
+				}
 			});
-
+			
+			// hover on titleBox thickens route lines
+			if (highlightRouteOnHoverOn) {
+				titleBox.hover(function(e) {
+					titleBox.css("color", "#" + routeResult.color);
+				}, function(e) {
+					titleBox.css("color", "#000000");
+				});
+				
+				// add slight delay to hover
+				var onOver = function(e) { routeMap.showCachedPolylinesForRoute(routeResult.routeIdWithoutAgency); };
+				var onOut = function(e) { routeMap.hideCachedPolylinesForRoute(routeResult.routeIdWithoutAgency); };
+				titleBox.hoverIntent({
+					over: onOver,
+					out: onOut,
+					sensitivity: 10
+				});
+			}
 			routeMap.showRoute(routeResult);
 		});
 	}
@@ -352,6 +385,7 @@ OBA.Sidebar = function () {
 		jQuery("#legend #for_stop").children().empty();
 		jQuery("#legend #nearby").children().empty();
 
+		routeMap.removeAllCachedPolylines();
 		routeMap.removeAllRoutes();
 		routeMap.removeDisambiguationMarkers();
 		routeMap.removeLocationMarker();
@@ -401,7 +435,7 @@ OBA.Sidebar = function () {
 							}
 							routeMap.showLocation(result.latitude, result.longitude, false,
 													result.formattedAddress, result.neighborhood);
-							noResultsAction("Bus Time is not yet available here.");
+							noResultsAction("Bus Time is not yet available at this location.");
 							return;
 						}
 						var bounds = result.bounds;
@@ -424,7 +458,7 @@ OBA.Sidebar = function () {
 							}
 							routeMap.showLocation(result.latitude, result.longitude, true,
 													result.formattedAddress, result.neighborhood);
-							noResultsAction("Bus Time is not yet available here.");
+							noResultsAction("Bus Time is not yet available at this location.");
 							return;
 						}
 						var listFirst = result.routesAvailable;
