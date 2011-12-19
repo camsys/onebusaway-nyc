@@ -67,7 +67,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
   }
 
   @Test
-  public void test() {
+  public void test() throws Exception {
 
     assertEquals(0, getNumberOfRecords());
 
@@ -90,6 +90,24 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
     assertEquals(1, lastKnownRecords.size()); 
     assertEquals(record.getVehicleId(), lastKnownRecords.get(0).getVehicleId());
+    
+    Integer aVehicleId = new Integer(120);
+    
+    CcAndInferredLocationRecord latestRec = _dao.getLastKnownRecordForVehicle(aVehicleId);
+
+    // check that we received a non null value
+    assertNotNull(latestRec);
+    
+    // Now check to see that the single vehicle result matches the result in the getAllLastKnownRecords result for the same vehicle.
+    boolean foundMatch = false;
+    for (CcAndInferredLocationRecord rec : lastKnownRecords) {
+    	if (rec.getVehicleId().intValue() == aVehicleId.intValue()) {
+    		foundMatch = true;
+    		assertTrue(rec.getUUID() == latestRec.getUUID());
+    	}
+    }
+    
+    assertTrue(foundMatch);
   }
 
   private CcLocationReportRecord getCcRecord() {

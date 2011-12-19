@@ -95,6 +95,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   private boolean _loop;
 
+  private String _filename = null;
+
   public SimulatorTask() {
   }
 
@@ -223,6 +225,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   public VehicleLocationSimulationSummary getSummary() {
     VehicleLocationSimulationSummary summary = new VehicleLocationSimulationSummary();
+    summary.setFilename(_filename);
     summary.setId(_id);
     summary.setVehicleId(_vehicleId);
     summary.setNumberOfRecordsProcessed(_recordsProcessed.get());
@@ -527,5 +530,13 @@ public class SimulatorTask implements Runnable, EntityHandler {
       _details.removeFirst();
 
     return true;
+  }
+
+  public String getFilename() {
+    return _filename;
+  }
+  
+  public void setFilename(String filename) {
+    _filename = filename;
   }
 }

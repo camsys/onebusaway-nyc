@@ -61,7 +61,7 @@ public class RunRule implements SensorModelRule {
        */
       if (blockState.getOpAssigned() == null
           || blockState.getRunReported() == null) {
-        result.addResultAsAnd("run-info status was not determined", 0.01);
+        result.addResultAsAnd("run-info status was not determined", 0.5);
         return result;
       }
     
@@ -76,9 +76,9 @@ public class RunRule implements SensorModelRule {
         if (state.getObservation().getFuzzyMatchDistance() == 0)
           result.addResultAsAnd("run reported (fuzzy)", 0.9);
         else
-          result.addResultAsAnd("run reported (fuzzy)", 0.2);
+          result.addResultAsAnd("run reported (fuzzy)", 0.6);
       } else {
-        result.addResultAsAnd("no run info matches", 0.01);
+        result.addResultAsAnd("no run info matches", 0.5);
       }
     } else {
       
@@ -87,7 +87,7 @@ public class RunRule implements SensorModelRule {
         return result;
       }
     
-      result.addResultAsAnd("no run info provided", 0.01);
+      result.addResultAsAnd("no run info provided", 0.5);
     }
     
     return result;

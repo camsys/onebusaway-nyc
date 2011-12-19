@@ -172,13 +172,14 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public int simulateLocationsFromTrace(String traceType,
+  public int simulateLocationsFromTrace(String filename, String traceType,
       InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
       boolean bypassInference, boolean fillActualProperties, boolean loop)
       throws IOException {
 
     SimulatorTask task = new SimulatorTask();
+    task.setFilename(filename);
     task.setPauseOnStart(pauseOnStart);
     task.setRunInRealtime(runInRealtime);
     task.setShiftStartTime(shiftStartTime);

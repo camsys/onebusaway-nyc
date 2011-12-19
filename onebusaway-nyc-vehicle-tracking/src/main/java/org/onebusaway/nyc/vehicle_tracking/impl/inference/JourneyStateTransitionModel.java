@@ -64,7 +64,7 @@ public class JourneyStateTransitionModel {
       case AT_BASE:
         return moveAtBase(obs);
       case DEADHEAD_BEFORE:
-        return moveDeadheadBefore(parentJourneyState);
+        return moveDeadheadBefore(obs, parentJourneyState);
       case LAYOVER_BEFORE:
         return moveLayoverBefore(obs);
       case IN_PROGRESS:
@@ -117,7 +117,7 @@ public class JourneyStateTransitionModel {
         JourneyState.inProgress());
   }
 
-  private List<JourneyState> moveDeadheadBefore(JourneyState parentJourneyState) {
+  private List<JourneyState> moveDeadheadBefore(Observation obs, JourneyState parentJourneyState) {
 
     JourneyStartState start = parentJourneyState.getData();
 

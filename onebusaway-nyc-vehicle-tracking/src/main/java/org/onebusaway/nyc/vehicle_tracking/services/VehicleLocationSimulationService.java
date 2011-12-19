@@ -28,7 +28,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimula
 public interface VehicleLocationSimulationService {
 
   public int simulateLocationsFromTrace(String traceType,
-      InputStream traceInputStream, boolean runInRealtime,
+      String filename, InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
       boolean bypassInference, boolean fillActualProperties, boolean loop)
       throws IOException;

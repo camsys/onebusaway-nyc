@@ -37,6 +37,8 @@ public class VehicleLocationSimulationSummary {
    */
   private boolean particleFilterFailure;
 
+  private String filename;
+
   public int getId() {
     return id;
   }
@@ -91,5 +93,13 @@ public class VehicleLocationSimulationSummary {
 
   public void setParticleFilterFailure(boolean particleFilterFailure) {
     this.particleFilterFailure = particleFilterFailure;
+  }
+
+  public String getFilename() {
+    return this.filename;
+  }
+  
+  public void setFilename(String filename) {
+    this.filename = filename;
   }
 }

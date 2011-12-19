@@ -218,9 +218,9 @@ public class RunServiceImpl implements RunService {
   }
 
   private final Pattern realRunRouteIdPattern = Pattern.compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
-  private final Pattern reportedRunIdPattern = Pattern.compile("0*(\\d+)-0*(\\d+)");
+  private final Pattern reportedRunIdPattern = Pattern.compile("\\d(\\d+)-0*(\\d+)");
   private final Pattern routeIdPattern = Pattern.compile("[a-zA-Z]+(\\d{2})+");
-  private final Pattern multiRoutePattern = Pattern.compile("(?:0?)([1-9])(?:0?)([1-9])");
+  private final Pattern multiRoutePattern = Pattern.compile("(?:0([1-9]{1}))|([1-9]{1}0)|([1-9]{2})");
 
   @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
@@ -281,12 +281,14 @@ public class RunServiceImpl implements RunService {
           String thisRunRouteNumber = routeIdMatcher.group(2);
 
           Matcher multiRouteMatcher = multiRoutePattern.matcher(thisRunRouteNumber);
-          if (multiRouteMatcher.matches()) {
+          while (multiRouteMatcher.find()) {
             for (int i = 1; i <= multiRouteMatcher.groupCount(); ++i) {
-              runIdsToTry.add(RunTripEntry.createId(multiRouteMatcher.group(i),
-                  rte.getRunNumber()));
+              if (multiRouteMatcher.group(i) != null)
+                runIdsToTry.add(RunTripEntry.createId(multiRouteMatcher.group(i),
+                    rte.getRunNumber()));
             }
-          } else {
+          } 
+          if (runIdsToTry.isEmpty()){
             runIdsToTry.add(RunTripEntry.createId(thisRunRouteNumber,
                 rte.getRunNumber()));
           }

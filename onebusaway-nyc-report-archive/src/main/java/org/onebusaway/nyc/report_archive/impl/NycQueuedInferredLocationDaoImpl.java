@@ -90,4 +90,42 @@ class NycQueuedInferredLocationDaoImpl implements NycQueuedInferredLocationDao {
 	}
     return firstArchivedRecord;
   }
+
+@Override
+public CcAndInferredLocationRecord getLastKnownRecordForVehicle(Integer vehicleId) throws Exception {
+	
+	CcAndInferredLocationRecord rec = null;
+	
+	if (vehicleId == null) {
+		return null;
+	}
+	
+	String hql = 
+			  "select inferenceRecord, bhsRecord " +
+			  "from InferredLocationRecord map, " +
+			  "CcLocationReportRecord bhsRecord, " +
+			  "ArchivedInferredLocationRecord inferenceRecord " +
+			  "where map.currentRecord = inferenceRecord " +
+			  "and map.vehicleId = bhsRecord.vehicleId " +
+			  "and map.currentRecord.uuid = bhsRecord.uuid " +
+			  "and map.vehicleId = ?";
+	
+	List<Object[]> list = _template.find(hql, vehicleId);
+	
+	if (list.size() > 1) {
+		throw new Exception("Query for a single latest record of a single vehicle returned multiple records");
+	} else if (list.size() == 0){
+		rec = null;
+	} else {
+		List<CcAndInferredLocationRecord> firstArchivedRecords = new ArrayList<CcAndInferredLocationRecord>();
+		for (Object[] o : list) {
+			CcAndInferredLocationRecord record = new CcAndInferredLocationRecord((ArchivedInferredLocationRecord)o[0], (CcLocationReportRecord)o[1]);
+			firstArchivedRecords.add(record);
+		}
+		rec = firstArchivedRecords.get(0);
+	}
+	
+	
+	return rec;
+}
 }

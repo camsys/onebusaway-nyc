@@ -447,8 +447,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     for (BlockState blockState : statesToUpdate) {
       RunTripEntry rte = blockState.getRunTripEntry();
 
+      /**
+       * TODO this might need to be changed/updated to account for changes in
+       * operator-id or reported-run when the filter isn't reset.
+       */
       boolean opAssigned = StringUtils.equals(opAssignedRunId, rte.getRunId());
-      boolean runReported = (reportedRtes != null && reportedRtes.contains(rte));
+      boolean runReported = blockState.getRunReported() != null
+          ? blockState.getRunReported()
+          : (reportedRtes != null && reportedRtes.contains(rte));
 
       blockState.setRunReported(runReported);
       blockState.setOpAssigned(opAssigned);
