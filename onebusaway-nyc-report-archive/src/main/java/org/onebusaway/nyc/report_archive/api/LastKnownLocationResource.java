@@ -46,6 +46,8 @@ public class LastKnownLocationResource {
 	@GET
 	@Produces("application/json")
 	public Response getlastLocationRecordForVehicle(@PathParam("vehicleId") Integer vehicleId) {
+		_log.info("Starting getlastLocationRecordForVehicle.");
+		
 		String outputJson;
 		
 		try {
@@ -62,6 +64,7 @@ public class LastKnownLocationResource {
 		
 		Response response = Response.ok(outputJson, "application/json").build();
 		
+		_log.info("Returning ok response from getlastLocationRecordForVehicle");
 		return response;
 	}
 
@@ -70,6 +73,7 @@ public class LastKnownLocationResource {
 	@Produces("application/json")
 	public Response getAllLastLocationRecords() {
 
+		_log.info("Starting getAllLastLocationRecords");
 		List<CcAndInferredLocationRecord> lastKnownRecords = getLastKnownRecordsFromDao();
 		
 		LastKnownRecordsMessage message = new LastKnownRecordsMessage();
@@ -85,10 +89,12 @@ public class LastKnownLocationResource {
 		
 		Response response = Response.ok(outputJson, "application/json").build();
 
+		_log.info("Returning ok response in getAllLastLocationRecords");
 		return response;
 	}
 	
 	private List<CcAndInferredLocationRecord> getLastKnownRecordsFromDao() {
+		_log.info("Fetching all last known vehicle location records from dao.");
 		List<CcAndInferredLocationRecord> lastKnownRecords = _locationDao
 				.getAllLastKnownRecords();
 
@@ -98,12 +104,15 @@ public class LastKnownLocationResource {
 
 	private CcAndInferredLocationRecord getLastKnownRecordForVehicleFromDao(
 			Integer vehicleId) throws Exception {
+		_log.info("Fetching last known record for vehicle " + String.valueOf(vehicleId));
 		CcAndInferredLocationRecord record = _locationDao.getLastKnownRecordForVehicle(vehicleId);
 		
 		return record;
 	}
 	
 	private String getObjectAsJsonString(Object object) throws IOException {
+		_log.info("In getObjectAsJsonString, serializing input object as json.");
+		
 		String outputJson = null;
 		
 		StringWriter writer = null;
