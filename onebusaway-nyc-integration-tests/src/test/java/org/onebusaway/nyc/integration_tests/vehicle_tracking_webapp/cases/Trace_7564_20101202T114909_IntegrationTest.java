@@ -34,8 +34,10 @@ public class Trace_7564_20101202T114909_IntegrationTest extends AbstractTraceRun
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
     
     /*
-     * FIXME this has a potential bundle-conflict with the trace 
+     * FIXME unresolved deadhead/layover-before conflict.  need a 
+     * good decision on which is correct... 
      */
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.68);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.94);
   }
 }

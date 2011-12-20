@@ -266,7 +266,7 @@ public class VehicleInferenceInstance {
     boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
     // boolean atTerminal = _baseLocationService
     // .getTerminalNameForLocation(location) != null;
-    boolean atTerminal = _vehicleStateLibrary.isAtPotentialTerminal(record);
+    boolean atTerminal = _vehicleStateLibrary.isAtPotentialBlockTerminal(record);
     boolean outOfService = lastValidDestinationSignCode == null
         || _destinationSignCodeService
             .isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)

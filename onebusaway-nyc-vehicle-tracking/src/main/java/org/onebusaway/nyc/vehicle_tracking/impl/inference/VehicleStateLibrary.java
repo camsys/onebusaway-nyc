@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -140,21 +141,20 @@ public class VehicleStateLibrary {
   public boolean isAtPotentialLayoverSpot(BlockState blockState, Observation obs) {
 
     /**
-     * If there is no block assigned to this vehicle state,
-     * then we allow a layover spot the terminals of all blocks. 
+     * If there is no block assigned to this vehicle state, then we allow a
+     * layover spot the terminals of all blocks.
      */
     if (blockState == null) {
       return obs.isAtTerminal();
     }
 
     /**
-     * Otherwise, if there is a block assigned, then we need
-     * to be more specific and check only terminals for trips
-     * on this block.
+     * Otherwise, if there is a block assigned, then we need to be more specific
+     * and check only terminals for trips on this block. if
+     * (isAtPotentialTerminal(obs.getRecord(), blockState.getBlockInstance()))
+     * return true;
      */
-    if (isAtPotentialTerminal(obs.getRecord(), blockState.getBlockInstance()))
-      return true;
-   
+
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
     if (blockLocation == null)
@@ -168,9 +168,10 @@ public class VehicleStateLibrary {
   }
 
   /**
-   * This method determines if an observation record is within
-   * a certain radius, _terminalSearchRadius argument, of a stop at the
-   * start or end of a trip on a given block, blockInstance argument. 
+   * This method determines if an observation record is within a certain radius,
+   * _terminalSearchRadius argument, of a stop at the start or end of a given
+   * block.
+   * 
    * @param record
    * @param blockInstance
    * @return whether the observation is within the search radius
@@ -181,38 +182,84 @@ public class VehicleStateLibrary {
     CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
         record.getLongitude());
 
-    for (BlockTripEntry bte : blockInstance.getBlock().getTrips()) {
-      /*
-       * is this the first stop on this trip?
-       */
-      List<StopTimeEntry> stopsOnTrip = bte.getTrip().getStopTimes();
+    StopEntry firstStop = blockInstance.getBlock().getStopTimes().get(0).getStopTime().getStop();
 
-      double firstStopDist = SphericalGeometryLibrary.distance(loc, stopsOnTrip
-          .get(0).getStop().getStopLocation());
-      int lastStopIdx = stopsOnTrip.size() - 1;
-      double lastStopDist = SphericalGeometryLibrary.distance(loc, stopsOnTrip
-          .get(lastStopIdx).getStop().getStopLocation());
+    double firstStopDist = SphericalGeometryLibrary.distance(loc,
+        firstStop.getStopLocation());
 
-      if (firstStopDist <= _terminalSearchRadius
-          || lastStopDist <= _terminalSearchRadius) {
-        return true;
-      }
+    int lastStopIdx = blockInstance.getBlock().getStopTimes().size() - 1;
+
+    StopEntry lastStop = blockInstance.getBlock().getStopTimes().get(
+        lastStopIdx).getStopTime().getStop();
+    double lastStopDist = SphericalGeometryLibrary.distance(loc,
+        lastStop.getStopLocation());
+
+    if (firstStopDist <= _terminalSearchRadius
+        || lastStopDist <= _terminalSearchRadius) {
+      return true;
     }
 
     return false;
   }
-
+  
   /**
-   * This method determines if an observation record is within
-   * a certain radius, _terminalSearchRadius argument, of a stop at the
-   * start or end of a trip.
-   * <br>
+   * This method determines if an observation record is within a certain radius,
+   * _terminalSearchRadius argument, of a stop at the start or end of a block. <br>
    * Note: all trips' stops within the radius are checked.
-   *  
+   * 
    * @param record
    * @return whether the observation is within the search radius
    */
-  public boolean isAtPotentialTerminal(NycRawLocationRecord record) {
+  public boolean isAtPotentialBlockTerminal(NycRawLocationRecord record) {
+
+    CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
+        record.getLongitude());
+    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(loc,
+        _terminalSearchRadius);
+
+    List<BlockConfigurationEntry> blocks = new ArrayList<BlockConfigurationEntry>();
+    List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
+    for (StopEntry stop : stops) {
+      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
+      for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
+        blocks.addAll(stopTimeIndex.getBlockConfigs());
+      }
+    }
+
+    for (BlockConfigurationEntry block : blocks) {
+  
+      StopEntry firstStop = block.getStopTimes().get(0).getStopTime().getStop();
+  
+      double firstStopDist = SphericalGeometryLibrary.distance(loc,
+          firstStop.getStopLocation());
+  
+      int lastStopIdx = block.getStopTimes().size() - 1;
+  
+      StopEntry lastStop = block.getStopTimes().get(
+          lastStopIdx).getStopTime().getStop();
+      double lastStopDist = SphericalGeometryLibrary.distance(loc,
+          lastStop.getStopLocation());
+  
+      if (firstStopDist <= _terminalSearchRadius
+          || lastStopDist <= _terminalSearchRadius) {
+        return true;
+      }
+  
+    }
+    
+    return false;
+  }
+
+
+  /**
+   * This method determines if an observation record is within a certain radius,
+   * _terminalSearchRadius argument, of a stop at the start or end of a trip. <br>
+   * Note: all trips' stops within the radius are checked.
+   * 
+   * @param record
+   * @return whether the observation is within the search radius
+   */
+  public boolean isAtPotentialTripTerminal(NycRawLocationRecord record) {
 
     CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
         record.getLongitude());
@@ -221,8 +268,7 @@ public class VehicleStateLibrary {
 
     List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
     for (StopEntry stop : stops) {
-      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService
-          .getStopTimeIndicesForStop(stop);
+      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
       for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
         for (BlockTripEntry bte : stopTimeIndex.getTrips()) {
           /*
@@ -266,9 +312,10 @@ public class VehicleStateLibrary {
     /**
      * If the next stop is null, it means we're at the end of the block. Do we
      * consider this a layover spot? My sources say no.
+     * But now they say yes?
      */
     if (nextStop == null)
-      return null;
+      return closestStop;
 
     /**
      * Is the next stop the first stop on the block? Then we're potentially at a
@@ -297,15 +344,13 @@ public class VehicleStateLibrary {
     }
 
     if (nextStop.getBlockSequence() + 1 < stopTimes.size()) {
-      BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop
-          .getBlockSequence() + 1);
+      BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop.getBlockSequence() + 1);
       if (tripChangesBetweenPrevAndNextStop(stopTimes, nextNextStop, location))
         return nextNextStop;
     }
 
     if (nextStop.getBlockSequence() + 2 < stopTimes.size()) {
-      BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop
-          .getBlockSequence() + 2);
+      BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop.getBlockSequence() + 2);
       if (tripChangesBetweenPrevAndNextStop(stopTimes, nextNextStop, location))
         return nextNextStop;
     }
@@ -336,8 +381,7 @@ public class VehicleStateLibrary {
       List<BlockStopTimeEntry> stopTimes, BlockStopTimeEntry nextStop,
       ScheduledBlockLocation location) {
 
-    BlockStopTimeEntry previousStop = stopTimes
-        .get(nextStop.getBlockSequence() - 1);
+    BlockStopTimeEntry previousStop = stopTimes.get(nextStop.getBlockSequence() - 1);
     BlockTripEntry nextTrip = nextStop.getTrip();
     BlockTripEntry previousTrip = previousStop.getTrip();
 
