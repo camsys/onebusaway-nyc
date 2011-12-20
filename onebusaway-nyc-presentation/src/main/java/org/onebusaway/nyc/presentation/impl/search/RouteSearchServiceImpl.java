@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.presentation.impl.search;
 
 import org.onebusaway.container.cache.Cacheable;
+import org.onebusaway.exceptions.InvalidArgumentServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
@@ -125,9 +126,12 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     queryBean.setQuery(routeQuery);
     queryBean.setMaxCount(100);
 
-    RoutesBean routes = _transitDataService.getRoutes(queryBean);
-
-    return routesBeanToRouteSearchResults(routes, true);
+    try {
+      RoutesBean routes = _transitDataService.getRoutes(queryBean);
+      return routesBeanToRouteSearchResults(routes, true);
+    } catch(InvalidArgumentServiceException e) {
+      return Collections.emptyList();
+    }
   }
 
   private List<RouteResult> routesBeanToRouteSearchResults(RoutesBean routesBean, boolean includeStops) {
