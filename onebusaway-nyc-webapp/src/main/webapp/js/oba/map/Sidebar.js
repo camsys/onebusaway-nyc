@@ -398,7 +398,7 @@ OBA.Sidebar = function () {
 		}
 		noResults.show();
 		welcome.show();
-		//(wizard && wizard.enabled()) ? legend.trigger('no_results') : null;
+		(wizard && wizard.enabled()) ? legend.trigger('no_result') : null;
 	}
 
 	// process search results
@@ -478,8 +478,7 @@ OBA.Sidebar = function () {
 				// location disambiguation
 				if(resultType === "LocationResult") {
 					disambiguate(json.searchResults);
-					
-					//(wizard && wizard.enabled()) ? legend.trigger('disambiguation_result') : null;
+					(wizard && wizard.enabled()) ? legend.trigger('disambiguation_result') : null;
 					
 				// routes (e.g. S74 itself or S74 + S74 LTD)
 				} else if(resultType === "RouteResult") {

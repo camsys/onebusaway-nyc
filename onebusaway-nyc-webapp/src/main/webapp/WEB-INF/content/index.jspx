@@ -181,6 +181,10 @@
 		</ul>
 		<a class="close"><span class="close_txt">Close</span> ×</a>
 	</div>
+	<div id="wizard_didyoumean">
+		<a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
+		<a class="close"><span class="close_txt">Close</span> ×</a>
+	</div>
 	<div id="wizard_inuse">
 		<a data-placement="right" class="wizard_panel" rel="popover">&amp;nbsp;</a>
 		<span class="text_span">Follow the instructions above...</span>

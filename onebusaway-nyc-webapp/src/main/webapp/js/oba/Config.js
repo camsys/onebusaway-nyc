@@ -79,39 +79,30 @@ OBA.Config = {
 		},
 		
 		loadLocationIcons: function() {
-			var locationIcons = [];
-			var activeLocationIcons = [];
+			var locationIcons = [], activeLocationIcons = [];
+			var size = new google.maps.Size(24, 32), 
+				o_point = new google.maps.Point(0,0), 
+				mid_point = new google.maps.Point(12, 32);
 
 			var normalLocationIcon = new google.maps.MarkerImage("img/location/location.png",
-		            new google.maps.Size(24, 32),
-		            new google.maps.Point(0,0),
-		            new google.maps.Point(12, 32));
-			
+		            size, o_point, mid_point);
 			var activeLocationIcon = new google.maps.MarkerImage("img/location/location_active.png",
-		            new google.maps.Size(24, 32),
-		            new google.maps.Point(0,0),
-		            new google.maps.Point(12, 32));
+					size, o_point, mid_point);
 			
 			locationIcons[0] = normalLocationIcon;
 			activeLocationIcons[0] = activeLocationIcon;
 			
 			for (var i=1; i < 10; i++) {
 				var numberedLocationIcon = new google.maps.MarkerImage("img/location/location_" + i + ".png",
-			            new google.maps.Size(24, 32),
-			            new google.maps.Point(0,0),
-			            new google.maps.Point(12, 32));
+						size, o_point, mid_point);
 				var activeNumberedLocationIcon = new google.maps.MarkerImage("img/location/location_active_" + i + ".png",
-			            new google.maps.Size(24, 32),
-			            new google.maps.Point(0,0),
-			            new google.maps.Point(12, 32));
+						size, o_point, mid_point);
 				
 				locationIcons[i] = numberedLocationIcon;
 				activeLocationIcons[i] = activeNumberedLocationIcon;
 			}
 			var shadowImage = new google.maps.MarkerImage('img/location/shadow.png',
-					new google.maps.Size(24, 32),
-		            new google.maps.Point(0,0),
-		            new google.maps.Point(12, 32));
+					size, o_point, mid_point);
 			
 			return [locationIcons, activeLocationIcons, shadowImage];
 		}

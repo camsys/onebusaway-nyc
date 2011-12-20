@@ -160,9 +160,9 @@
 	display: inline;
 }
 
-/* Close button */
+/* Close buttons */
 
-#wizard_start a.close, #wizard_inuse a.close, #wizard_finaltip a.close {
+#wizard_start a.close, #wizard_didyoumean a.close, #wizard_inuse a.close, #wizard_finaltip a.close {
 	color: #000000;
 	font-size: 14px;
 	font-weight: bold;
@@ -180,7 +180,7 @@
 	cursor: pointer;
 	font-size: 20px;
 }
-#wizard_start a.close:hover, #wizard_inuse a.close:hover, #wizard_finaltip a.close:hover {
+#wizard_start a.close:hover, #wizard_didyoumean a.close:hover, #wizard_inuse a.close:hover, #wizard_finaltip a.close:hover {
 	color: #000000;
 	text-decoration: none;
 	filter: alpha(opacity=60);
@@ -188,11 +188,25 @@
 	-moz-opacity: 0.6;
 	opacity: 0.6; 
 }
-#wizard_start a.close .close_txt, #wizard_inuse a.close .close_txt, #wizard_finaltip a.close .close_txt  {
+#wizard_start a.close .close_txt, #wizard_didyoumean a.close .close_text, #wizard_inuse a.close .close_txt, 
+#wizard_finaltip a.close .close_txt  {
 	font-size: 13px;
 	font-weight: normal;
 }
+#wizard_didyoumean {
+	display: none;
+	font-weight: bold;
+	font-size: 12px;
+	line-height: 150%;
+	color: #000000;
+	text-align: center;
+	text-decoration: none;
+	padding-top: 3px;
+}
 
+#wizard_didyoumean a {
+	text-decoration: none;
+}
 #wizard_inuse {
 	display: none;
 	font-weight: bold;

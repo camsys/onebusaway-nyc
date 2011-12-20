@@ -97,7 +97,11 @@
 
         switch (placement) {
           case 'below':
-            tp = {top: pos.top + pos.height + this.options.offset, left: pos.left + pos.width / 2 - actualWidth / 2};
+        	if (this.options.left !== undefined) {
+          		tp = {top: this.options.offset, left: this.options.left};
+          	} else {
+          		tp = {top: pos.top + pos.height + this.options.offset, left: pos.left + pos.width / 2 - actualWidth / 2};
+          	}
             break;
           case 'above':
             tp = {top: pos.top - actualHeight - this.options.offset, left: pos.left + pos.width / 2 - actualWidth / 2};
@@ -105,14 +109,13 @@
           case 'left':
             tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth - this.options.offset};
             break;
-          /*
           case 'right':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width + this.options.offset};
+        	if (this.options.left !== undefined) {
+        		tp = {top: this.options.offset, left: this.options.left};
+        	} else {
+        		tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width + this.options.offset};
+        	}
             break;
-          */
-          case 'right':
-        	tp = {top: this.options.top_offset, left: this.options.left};
-          break;
         }
         
         $tip
@@ -125,7 +128,7 @@
           .addClass('in');
       }
     }
-
+  
   , setContent: function () {
       var $tip = this.tip();
       $tip.find('.twipsy-inner')[this.options.html ? 'html' : 'text'](this.getTitle());
@@ -415,7 +418,6 @@
       }
       return this.$tip
     }
-
   })
 
 

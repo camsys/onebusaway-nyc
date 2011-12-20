@@ -27,6 +27,8 @@ OBA.Wizard = function(routeMap) {
 		wizardClose = jQuery("#wizard .close"),
 		wizard_inuse = jQuery("#wizard_inuse"),
 		wizard_inuseClose = jQuery('#wizard_inuse .close'),
+		wizard_didyoumean = jQuery('#wizard_didyoumean'),
+		wizard_didyoumeanClose = jQuery('#wizard_didyoumean .close'),
 		wizard_finaltip = jQuery("#wizard_finaltip"),
 		wizard_finaltipClose = jQuery("#wizard_finaltip .close"),
 		searchBar = jQuery("#searchbar form"),
@@ -55,8 +57,10 @@ OBA.Wizard = function(routeMap) {
 		share_text = '<form><input id="url" type="text" size="25" style="font-weight:bold;height:20px;width=200px;" value="http://mta.info/bustime"></input></form>',
 		
 		stop_code_title = "What's my bus stop code?",
-		stop_pole_diagram = '<div class="pole"><img class="pole_img" src="css/map/img/wizard/bus_stop_pole.png" /><br /><div class="pole_caption">Find stop code here<br />(or enter a search at left).</div></div>';
-	
+		stop_pole_diagram = '<div class="pole"><img class="pole_img" src="css/map/img/wizard/bus_stop_pole.png" /><br /><div class="pole_caption">Find stop code here<br />(or enter a search at left).</div></div>',
+		
+		disambiguation_title = "Find a location",
+		disambiguation_text = "Hover to see these on the map, click to zoom in. If none are what you were looking for, try making your search more specific.";
 	
 	var stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
 						  + "<p>Option 2. Locate your stop code on a bus stop pole box:</p>" 
@@ -69,16 +73,16 @@ OBA.Wizard = function(routeMap) {
 		map_listener = null;
 		
 	/** 
-	 * Wizard Stages: 1. Search Start  2. Direction/Stop  3. Tips
+	 * Wizard Stages: 1. Search Start 2a. Search Help 2. Direction/Stop  3. Tips
 	 * 
 	 * Listen to following search result/map events:
 	 * 
 	 * stop_result  >> 3. Tips 
 	 * intersection_result >> 2. Direction/Stop or Stop Click >> 3. Tips 
 	 * location_result >> Hide 'Follow' >> ( ...for now waits until Direction/Stop)
-	 * disambiguation_result >> TODO
+	 * disambiguation_result >> 2a. More search hints
+	 * no_results >> just close other popups for now 
 	 * route_result >> 2. Direction/Stop > Stop Click >> 3. Tips
-	 * no_results >> TODO
 	 * map click >> 2. Direction/Stop in footer only
 	 * 
 	 * 
@@ -101,7 +105,7 @@ OBA.Wizard = function(routeMap) {
 		theWindow.resize(resize);
 	}
 	
-	// 1. Launch wizard on click
+	// 0. Launch wizard on click
 	
 	wizard_startLink.click(function(e) { 
 		 e.preventDefault(); 
@@ -136,6 +140,7 @@ OBA.Wizard = function(routeMap) {
 		if (wizard_activated) {
 			wizard_start.hide();
 			hideSearchPopover();
+			hideDidyoumeanPopover();
 			unbindLegend();
 			wizard.hide();
 			wizard_activated = false;
@@ -152,13 +157,12 @@ OBA.Wizard = function(routeMap) {
 		fallback: 'Enter a search term here',
 		html: true,
 		live: false,
-		offset: 10,
 		placement: 'right',
 		title: function() { return search_title; },
 		content: function() { return search_text; },
 		trigger: 'manual',
 		left: popover_left,
-		top_offset: mapHeader.offset().top + formElement.offset().top - 7
+		offset: mapHeader.offset().top + formElement.offset().top - 7
 	});
 	
 	function hideSearchPopover() {
@@ -175,12 +179,13 @@ OBA.Wizard = function(routeMap) {
 	});
 	
 	
-	// 2. Point out search bar
+	// 1. Point out search bar
 	// On loading event or map click close pop up
 	// Otherwise auto-close wizard if wizard not activated
 	searchBar.submit(function() {
 		if (wizard_activated) {
 			hideSearchPopover();
+			hideDidyoumeanPopover();
 		} else {
 			closeWizard();
 		}
@@ -189,6 +194,7 @@ OBA.Wizard = function(routeMap) {
 	map_listener = routeMap.registerMapListener('click', function() { 
 			if (wizard_activated) {
 				hideSearchPopover(); 
+				hideDidyoumeanPopover();
 				if (! showFindStopOnMapFooter_launched) {
 					showZoomMapFooter();
 				}
@@ -196,27 +202,121 @@ OBA.Wizard = function(routeMap) {
 				closeWizard();
 			}
 		});	
+			
+	// 2a. Hints for disambiguation	
+	var getTopOffset, getPlacement, getPopupLeft;
 	
-	// TODO - MORE SPECIFIC
-	// Hints for disambiguation
-	// function showFindLocation() {
-	// }
+	function prepareDisambiguationPopup() {
+		wizard_didyoumean.popover({
+			animate: true,
+			delayIn: 0,
+			delayOut: 200,
+			fallback: 'Hover over an address to see it on the map.',
+			html: true,
+			live: false,
+			offset: getTopOffset,
+			placement: getPlacement,
+			title: function() { return disambiguation_title; },
+			content: function() { return disambiguation_text; },
+			trigger: 'manual',
+			left: getPopupLeft
+		});
+		
+		wizard_didyoumeanClose.click(function(e) {
+			e.preventDefault();
+			hideSearchPopover();
+			hideDidyoumeanPopover();
+			wizard_inuse.hide();
+			wizard_start.popover('hide');
+			if (wizard_finaltip) {
+				wizard_finaltip.popover('hide');
+			}
+		});
+	}
 	
-	// 3. Click on direction headings & find stop
+	var disambiguationPopup = false;
+	var didyoumeanHidden = false;
+	
+	function hideDidyoumeanPopover() {
+		wizard_didyoumean.popover('hide');
+		wizard_didyoumean.hide();
+		if (disambiguationPopup) {
+			didyoumeanHidden = true;
+		}
+	}
+	
+	function showDisambiguationHelp() {
+		if (! wizard_activated) {
+			closeWizard();
+			unbindLegend();
+			return;
+		}
+		hideSearchPopover(); 		// check this is closed
+		hideDirectionPopover();
+		jQuery("#wizard_inuse .text_span").html("Find your location...");
+				
+		// pin to bottom of did you mean results, but if too low pin right
+		var popupOffset = 10, popupApproxHeight = 120;
+		var lowest_top_offset = theWindow.height() - popupOffset - popupApproxHeight;
+
+		getTopOffset = function() { 
+			didyoumean = jQuery("#results");
+			top_offset = didyoumean.offset().top + didyoumean.height() + popupOffset;
+			if (top_offset > lowest_top_offset) {
+				return didyoumean.offset().top + popupOffset;
+			} else {
+				return top_offset;
+			}
+		};
+
+		getPopupLeft = function() { 
+			didyoumean = jQuery("#results");
+			top_offset = didyoumean.offset().top + didyoumean.height() + popupOffset;
+			if (top_offset > lowest_top_offset) {
+				return didyoumean.offset().left + didyoumean.width() + popupOffset;  
+			} else {
+				return didyoumean.offset().left;
+			} 
+		};
+			
+		getPlacement = function() { 
+			didyoumean = jQuery("#results");
+			top_offset = didyoumean.offset().top + didyoumean.height() + popupOffset;
+			if (top_offset > lowest_top_offset) {
+				return 'right'; 
+			} else {
+				return 'below'; 
+			}
+		};
+		
+		if (!disambiguationPopup) {
+			prepareDisambiguationPopup();
+			disambiguationPopup = true;
+		}
+		if (!didyoumeanHidden) {		// once closed, don't show again
+			wizard_didyoumean.popover('show');	
+		}
+	}
+	
+	// 2. Click on direction headings & find stop
 	// Show when legend loads
 	
 	function bindLegend() {
+		legend.bind('disambiguation_result', showDisambiguationHelp);
 		legend.bind('stop_result', hideDirectionPopoverAndShowFinalTips);
 		legend.bind('intersection_result', showFindStopOnMapFooter);
 		legend.bind('route_result', showDirectionPopup);
 		legend.bind('location_result', showClickOnRouteOrZoomFooter);
+		legend.bind('no_result', noResultResponse);
 	}
 	
 	function unbindLegend() {
+		legend.unbind('disambiguation_result', showDisambiguationHelp);
 		legend.unbind('stop_result', hideDirectionPopoverAndShowFinalTips);
 		legend.unbind('intersection_result', showFindStopOnMapFooter);
 		legend.unbind('route_result', showDirectionPopup);
 		legend.unbind('location_result', showClickOnRouteOrZoomFooter);
+		legend.unbind('no_result', noResultResponse);
 		routeMap.unregisterInfoWindowListeners();
 		if (map_listener) {
 			routeMap.unregisterMapListener(map_listener);
@@ -229,7 +329,8 @@ OBA.Wizard = function(routeMap) {
 			unbindLegend();
 			return;
 		}
-		hideSearchPopover(); 		// check this is closed
+		hideSearchPopover(); 		// check these are closed
+		hideDidyoumeanPopover();
 		
 		wizard_inuse.popover({
 			animate: true,
@@ -238,13 +339,12 @@ OBA.Wizard = function(routeMap) {
 			fallback: 'Click on a route direction to find your stop',
 			html: true,
 			live: false,
-			offset: 20,
 			placement: 'right',
 			title: function() { return direction_title; },
 			content: function() { return direction_text; },
 			trigger: 'manual',
 			left: popover_left,
-			top_offset: (legend.offset().top + 30)
+			offset: (legend.offset().top + 30)
 		});
 		wizard_inuse.popover('show');
 		
@@ -275,11 +375,18 @@ OBA.Wizard = function(routeMap) {
 			return;
 		}
 		hideSearchPopover();
+		hideDidyoumeanPopover();
 		wizard_inuse.popover('hide');
 		wizard_inuse.hide();
 		if (wizard_activated) {
 			showFinalTips();
 		}
+	}
+	
+	function noResultResponse() {
+		hideSearchPopover();
+		hideDidyoumeanPopover();
+		jQuery("#wizard_inuse .text_span").html("Find your location...");
 	}
 	
 	function showZoomMapFooter() {
@@ -296,6 +403,7 @@ OBA.Wizard = function(routeMap) {
 			return;
 		}
 		hideSearchPopover();
+		hideDidyoumeanPopover();
 		wizard_inuse.show();
 		jQuery("#wizard_inuse .text_span").html(routeOrZoom_text);		
 	}
@@ -307,6 +415,7 @@ OBA.Wizard = function(routeMap) {
 			return;
 		}
 		hideSearchPopover();
+		hideDidyoumeanPopover();
 		jQuery("#wizard_inuse .text_span").html(dirOrStops_text);
 		wizard_inuse.show();
 		
@@ -315,7 +424,7 @@ OBA.Wizard = function(routeMap) {
 		showFindStopOnMapFooter_launched = true;
 	}
 	
-	// 4. Final tips & social web links
+	// 3. Final tips & social web links
 	function showFinalTips() {
 		wizard_inuse.hide();
 		reviseHeight(90);
