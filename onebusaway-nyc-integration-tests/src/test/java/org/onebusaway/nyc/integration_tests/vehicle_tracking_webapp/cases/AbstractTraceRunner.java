@@ -197,7 +197,7 @@ public class AbstractTraceRunner {
 
       System.out.println(label);
 
-      assertTrue(label, relativeRatio > minAccuracyRatio);
+      assertTrue(label, relativeRatio >= minAccuracyRatio);
     }
   }
 
