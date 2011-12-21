@@ -359,10 +359,7 @@ public class IndexAction extends SessionedIndexAction {
 
     _response = "";
     
-    if(results.size() > 1) {
-      _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here\n\n";
-    }
-    
+    String responseBody = "";
     List<String> routesWithAlerts = new ArrayList<String>();
     int c = 0;
     for(SearchResult _result : results) {
@@ -381,10 +378,10 @@ public class IndexAction extends SessionedIndexAction {
       
       // header of item
       if(results.size() > 1) {
-        _response += (c + 1) + ") " + result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
+        responseBody += result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
       } else {
-        _response += result.getStopIdWithoutAgency() + "\n"; 
-        _response += "Routes here:\n";
+        responseBody += result.getStopIdWithoutAgency() + "\n"; 
+        responseBody += "Routes here:\n";
       }
 
       // routes available at stop
@@ -393,19 +390,29 @@ public class IndexAction extends SessionedIndexAction {
           SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
             
           if(destination.getServiceAlerts().size() > 0) {
-            _response += "*";
+            responseBody += "*";
             routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
           }            
 
-          _response += routeHere.getRouteIdWithoutAgency() + "  ";
+          responseBody += routeHere.getRouteIdWithoutAgency() + "  ";
         }
       }
       
-      _response += "\n";
+      responseBody += "\n";
 
       c++;
     }
 
+    // if we have more than one page, include ordinal numbers 
+    if(offset + c < results.size() || offset > 0) {
+      _response += "Stops " + (offset + 1) + "-" + c + " of " + results.size() + "\n\n"; 
+    } else {
+      if(results.size() > 1) {
+        _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here\n\n";
+      }
+    }
+
+    _response += responseBody;    
     _response += "\n";
     _response += "Send:\n";
 
