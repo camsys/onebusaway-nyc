@@ -54,7 +54,8 @@ OBA.Wizard = function(routeMap) {
 		sms_text = 'Text your 6-digit bus stop code (also add bus route for best results) to <span style="font-weight:bold">511123</span>.',
 		
 		share_title = 'Copy this link',
-		share_text = '<form><input id="url" type="text" size="25" style="font-weight:bold;height:20px;width=200px;" value="http://mta.info/bustime"></input></form>',
+		share_text_prefix = '<form><input id="url" type="text" size="30" style="font-weight:bold;height:20px;width=250px;" value="http://mta.info/bustime/#',
+		share_text_postfix = '"></input></form>',
 		
 		stop_code_title = "What's my bus stop code?",
 		stop_pole_diagram = '<div class="pole"><img class="pole_img" src="css/map/img/wizard/bus_stop_pole.png" /><br /><div class="pole_caption">Find stop code here<br />(or enter a search at left).</div></div>',
@@ -511,20 +512,25 @@ OBA.Wizard = function(routeMap) {
 		trigger: 'hover',
 		close_btn: false
 	});
-
+	
+	function getSearchInputVal() {
+		var searchInput = jQuery("#searchbar form input[type=text]");
+		return searchInput.val();
+	}
+	
 	// Share link popup
 	var wizard_share  = jQuery("#wizard_share");
 	wizard_share.popover({
 		animate: true,
 		delayIn: 50,
 		delayOut: 100,
-		fallback: 'Copy this URL: <span style="font-weight:bold;text-decoration:none">http://mta.info/bustime</span>',
+		fallback: 'Copy this URL: <span style="font-weight:bold;text-decoration:none">http://mta.info/bustime/#' + getSearchInputVal() + '</span>',
 		html: true,
 		live: false,
 		offset: 10,
 		placement: 'above',
 		title: function() { return share_title; },
-		content: function() { return share_text; },
+		content: function() { return share_text_prefix + getSearchInputVal() + share_text_postfix; },
 		trigger: 'hover',
 		close_btn: false
 	});
