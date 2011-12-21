@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.presentation.impl.search;
 
+import org.onebusaway.exceptions.InvalidArgumentServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.presentation.impl.DefaultPresentationModelFactory;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -100,11 +102,12 @@ public class StopSearchServiceImpl implements StopSearchService {
     queryBean.setQuery(stopQuery);
     queryBean.setMaxCount(100);
 
-    StopsBean stops = _transitDataService.getStops(queryBean);
-
-    List<StopResult> results = stopsBeanToStopResults(stops);
-
-    return results;
+    try {
+      StopsBean stops = _transitDataService.getStops(queryBean);
+      return stopsBeanToStopResults(stops);
+    } catch(InvalidArgumentServiceException e) {
+      return Collections.emptyList();
+    }
   }
 
   private List<StopResult> stopsBeanToStopResults(StopsBean stopsBean) {

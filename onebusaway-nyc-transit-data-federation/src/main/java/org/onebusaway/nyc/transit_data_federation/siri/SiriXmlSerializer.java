@@ -28,7 +28,7 @@ public class SiriXmlSerializer {
   
   public String getXml(Siri siri) throws Exception {    
     Marshaller marshaller = context.createMarshaller();
-    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
     marshaller.setEventHandler(
         new ValidationEventHandler() {
             public boolean handleEvent(ValidationEvent event ) {
