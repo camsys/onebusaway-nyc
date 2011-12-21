@@ -34,8 +34,8 @@
 
 	<div id="header">
   	  		<div class="title">
-     			<s:url var="url" value="/"></s:url>
-  			<h1><a href="${url}">OneBusAway NYC</a></h1>
+     		<s:url var="url" value="/"></s:url>
+  			<h1><a href="${url}">MTA Bus Time</a></h1>
  	  		</div>
 
      	  	<ul>

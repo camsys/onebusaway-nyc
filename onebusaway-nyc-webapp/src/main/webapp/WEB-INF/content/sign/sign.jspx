@@ -50,8 +50,7 @@
 <body>
 
 <div id="branding" class="selfclear">
-	<h2>A City Transit Agency</h2> 
-    <h1>OneBusAway NYC</h1>
+    <h1>MTA Bus Time</h1>
 </div>
 
 <div id="error"><!-- //prevent jspx minimization --></div>
