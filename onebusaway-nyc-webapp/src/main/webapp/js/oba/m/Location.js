@@ -1,40 +1,33 @@
 var OBA = window.OBA || {};
 
 OBA.Mobile = (function() {
+	var locationField = null;
+
 	var turnOffButton = null;
 	var turnOnButton = null;
+	var nearbyButton = null;
 
-	var locationField = null;
 	var lastLatitude = null;
 	var lastLongitude = null; 
 	
-	function getParameterByName(name, defaultValue) {
-		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-		var regexS = "[\\?&]"+name+"=([^&#]*)";
-		var regex = new RegExp(regexS);
-		var results = regex.exec(window.location.href);
-		if(results == null) {
-			return defaultValue;
-		} else {
-			return decodeURIComponent(results[1].replace(/\+/g, " "));
-		}
-	}
-	
-	// add location toggle UI to DOM
-	var addToggleUI = function() {
-		var searchPanelForm = jQuery("#searchPanel form");		
+	var initLocationUI = function() {
+		var searchPanelForm = jQuery("#searchPanel form");
 
 		var toggleUI = jQuery("<p>Use my location:</p>")
 			.attr("id", "toggleUI");
 
 		turnOffButton = jQuery("<a href='#'>Turn Off</a>")
-			.click(function() {
+			.click(function(e) {
+				e.preventDefault();				
 				turnOffGeolocation();
+				return false;
 			});
 
 		turnOnButton = jQuery("<a href='#'>Turn On</a>")
-			.click(function() {
+			.click(function(e) {
+				e.preventDefault();
 				turnOnGeolocation();
+				return false;
 			});
 		
 		toggleUI.append(turnOffButton);
@@ -44,17 +37,18 @@ OBA.Mobile = (function() {
 		
 		// find nearby button
 		var welcomeDiv = jQuery(".welcome");
+
 		if(welcomeDiv.length > 0) {
 			var nearbyForm = jQuery("<form id='nearby'></form>");
-			var nearbyButton = jQuery("<input type='button' value='Find Stops Near Me'/>")
+
+			nearbyButton = jQuery("<input type='button' value='Finding your location...'/>")
+				.attr("disabled", "true")
 				.appendTo(nearbyForm);
 
 			nearbyButton.click(function(e) {
 				e.preventDefault();
-
-				searchPanelForm.find("input.q").val("");
+				searchPanelForm.find("#q").val("");
 				searchPanelForm.submit();
-				
 				return false;
 			});
 			
@@ -62,64 +56,44 @@ OBA.Mobile = (function() {
 		}
 	};
 	
-	// remove location toggle UI from DOM if location services are not available
-	var removeToggleUI = function() {
-		turnOffGeolocation();
-		
-		jQuery("#toggleUI")
-			.remove();
-	};
-	
-	// remove all instances of location being sent back to server
-	var removeLocationFields = function() {
-		if(locationField !== null) {
-			locationField.remove();
+	var updatePageState = function() {
+		var locationValue = "off";
+		if(lastLatitude !== null && lastLongitude !== null) {
+			locationValue = lastLatitude + "," + lastLongitude;
 		}
-		
-		// update links on this page to NOT include location
-		jQuery.each(jQuery.find("a"), function(_, _link) {
-			var link = jQuery(_link);
+
+		// update search field
+		if(locationField !== null) {
+			locationField.val(locationValue);
+		}
 			
+		// update links on this page to include location
+		jQuery.each(jQuery("body").find("a"), function(_, _link) {
+			var link = jQuery(_link);
 			var existingHref = link.attr("href");
 			if(typeof existingHref !== 'undefined' && existingHref.indexOf("&l=") > -1) {
-				var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "&l=off");
+				var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "&l=" + locationValue);
 				link.attr("href", newHref);
 			}
 		});
-
-	};
-	
-	// rewrite links to include location in query
-	var updateLocationFields = function() {
-		if(lastLatitude !== null && lastLongitude !== null) {
-			// add location field to form if not there already
-			if(locationField === null) {
-				locationField = jQuery("<input></input>")
-					.attr("type", "hidden")
-					.attr("name", "l");
-
-				jQuery("#searchPanel form")
-					.append(locationField);
-			}
 			
-			locationField.val(lastLatitude + "," + lastLongitude);
-
-			// update links on this page to include location
-			jQuery.each(jQuery.find("a"), function(_, _link) {
-				var link = jQuery(_link);
-				
-				var existingHref = link.attr("href");
-				if(typeof existingHref !== 'undefined' && existingHref.indexOf("&l=") > -1) {
-					var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "&l=" + lastLatitude + "%2C" + lastLongitude);
-					link.attr("href", newHref);
-				}
-			});
+		// update find stops nearby button
+		if(nearbyButton !== null) {
+			if(locationValue !== "off") {
+				nearbyButton.removeAttr("disabled");
+				nearbyButton.val("Find Stops Near Me");
+			} else {
+				nearbyButton.hide();
+			}
 		}
 	};
 
 	// event when user turns off location
 	var turnOffGeolocation = function() {
-		removeLocationFields();
+		lastLatitude = null;
+		lastLongitude = null;
+
+		updatePageState();
 		
 		turnOffButton.text("Is Off").css("font-weight", "bold");
 		turnOnButton.text("Turn On").css("font-weight", "normal");
@@ -127,12 +101,20 @@ OBA.Mobile = (function() {
 	
 	// event when user turns on location
 	var turnOnGeolocation = function() {
+		// show "finding location" message button to user while 
+		// location is being found
+		if(nearbyButton !== null) {
+			nearbyButton.attr("disabled", "true");
+			nearbyButton.val("Finding your location...");
+			nearbyButton.show();
+		}
+
 		navigator.geolocation.getCurrentPosition(function(location) {
 			lastLatitude = location.coords.latitude;
 			lastLongitude = location.coords.longitude;
 
-			updateLocationFields();
-		}, removeToggleUI);
+			updatePageState();
+		}, turnOffGeolocation);
 
 		turnOffButton.text("Turn Off").css("font-weight", "normal");
 		turnOnButton.text("Is On").css("font-weight", "bold");
@@ -140,15 +122,15 @@ OBA.Mobile = (function() {
 		
 	return {
 		initialize: function() {
+			locationField = jQuery("#l");
+			
 			if(navigator.geolocation) {
-				addToggleUI();
+				initLocationUI();					
 
-				var locationEnabled = getParameterByName("l");
-
-				if(locationEnabled === "off") {
-					turnOffGeolocation();
-				} else {
+				if(locationField.val() !== "off") {
 					turnOnGeolocation();
+				} else {
+					turnOffGeolocation();
 				}
 			}			
 		}

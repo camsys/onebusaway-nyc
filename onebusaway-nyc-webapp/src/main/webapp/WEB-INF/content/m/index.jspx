@@ -53,6 +53,8 @@
 	        <label for="q">Search for: </label>
 			<input type="text" name="q" class="q" value="${q}"/>
 			<input type="submit" class="s" value="Find" id="submitButton"/>
+
+			<input type="hidden" name="l" id="l" value="${l}"/>
 		</s:form>
 	</div>
 

@@ -299,7 +299,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if(_location != null) 
       return _location.getLat() + "," + _location.getLon();
     else
-      return null;
+      return "off";
   }
   
   public String getCacheBreaker() {
