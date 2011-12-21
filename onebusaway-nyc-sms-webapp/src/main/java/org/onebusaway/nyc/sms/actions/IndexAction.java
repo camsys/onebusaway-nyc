@@ -378,7 +378,11 @@ public class IndexAction extends SessionedIndexAction {
       
       // header of item
       if(results.size() > 1) {
-        responseBody += result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
+        if(result.getStopDirection() != null) {
+          responseBody += result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
+        } else {
+          responseBody += result.getStopIdWithoutAgency() + "\n";
+        }
       } else {
         responseBody += result.getStopIdWithoutAgency() + "\n"; 
         responseBody += "Routes here:\n";
