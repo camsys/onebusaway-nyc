@@ -181,7 +181,7 @@ OBA.Sign = function() {
 			if(distanceAways.length === 0) {
 				jQuery('<tr class="last">' + 
 						'<td colspan="3">' + 
-							'OneBusAway NYC is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
+							'MTA Bus Time is not tracking any buses en-route to this stop. Please check back shortly for an update.</li>' +
 						'</td>' +
 					   '</tr>')
 					   .appendTo(tableBody);
@@ -304,13 +304,19 @@ OBA.Sign = function() {
 				jQuery.each(json.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit, function(_, monitoredStopVisit) {
 					var journey = monitoredStopVisit.MonitoredVehicleJourney;
 
-					var headsign = journey.DestinationName;
+					var routeId = journey.LineRef;
+					var routeIdParts = routeId.split("_");
+					var routeIdWithoutAgency = routeIdParts[1];
+					
+					var headsign = routeIdWithoutAgency + ": " + journey.DestinationName;
 					if(typeof headsignToDistanceAways[headsign] === 'undefined') {
 						headsignToDistanceAways[headsign] = [];
 					}
 					
 					jQuery.each(journey.SituationRef, function(_, situationRef) {
-						applicableSituations[situationRef.SituationSimpleRef] = situationsById[situationRef.SituationSimpleRef];
+						if(typeof situationsById[situationRef.SituationSimpleRef] !== 'undefined') {
+							applicableSituations[situationRef.SituationSimpleRef] = situationsById[situationRef.SituationSimpleRef];
+						}
 					});
 					
 					var vehicleInfo = {};
