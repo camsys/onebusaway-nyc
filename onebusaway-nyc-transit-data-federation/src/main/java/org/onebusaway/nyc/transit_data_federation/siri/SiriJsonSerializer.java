@@ -120,7 +120,7 @@ public class SiriJsonSerializer {
   public String getJson(Siri siri, String callback) throws Exception {    
     ObjectMapper mapper = new ObjectMapper();    
     mapper.setSerializationInclusion(Inclusion.NON_NULL);
-    mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+    mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, false);
     mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);   
     
     mapper.setDateFormat(new RFC822SimpleDateFormat());
