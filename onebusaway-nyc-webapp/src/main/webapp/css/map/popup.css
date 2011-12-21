@@ -121,11 +121,12 @@
 	background-repeat: no-repeat;
 }
 
-#bustime .popup ul li.nextStop a.stopName {
+#bustime .popup ul li.nextStop span.stopName {
 	color: #000099;
+	cursor: pointer;
 }
 
-#bustime .popup ul li.nextStop a.stopName:hover {
+#bustime .popup ul li.nextStop span.stopName:hover {
 	color: #8FC743;
 }
 

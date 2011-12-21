@@ -26,7 +26,7 @@ public class Trace_4255_20111215_183433_183932_IntegrationTest extends AbstractT
 
   public Trace_4255_20111215_183433_183932_IntegrationTest() throws Exception {
     super("4255_20111215_183433_183932.csv.gz");
-    setBundle("si", "2011-12-07T00:00:00EDT");
+    setBundle("si", "2011-12-14T00:00:00EDT");
     setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 1.0);
   }
 }

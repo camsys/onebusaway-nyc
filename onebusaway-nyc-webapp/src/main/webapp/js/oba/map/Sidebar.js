@@ -31,7 +31,7 @@ OBA.Sidebar = function () {
 
 	var routeMap = null;
 	var wizard = null;
-	
+	var lastQuery = null;
 	var highlightRouteOnHoverOn = true;
 
 	function addSearchBehavior() {
@@ -41,7 +41,12 @@ OBA.Sidebar = function () {
 		searchForm.submit(function(e) {
 			e.preventDefault();
 			
-			jQuery.history.load(searchInput.val());
+			var currentQuery = searchInput.val();
+			if (currentQuery === lastQuery) {
+				jQuery.history.load("");	
+			}
+			lastQuery = currentQuery;
+			jQuery.history.load(currentQuery);
 		});
 	}
 
