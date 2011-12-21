@@ -442,10 +442,10 @@ public class IndexAction extends SessionedIndexAction {
     staticStuff += "INTERSECTION\n\n";
     
     staticStuff += "Add ROUTE for best results:\n";
-    staticStuff += "'S74 MAIN & CRAIG'\n";
+    staticStuff += "'S74 MAIN AND CRAIG'\n";
     staticStuff += "'200884 S44'\n\n";
     
-    staticStuff += "Find 6-digit stop code on bus stop pole box.";
+    staticStuff += "Find 6-digit stop code on bus stop pole.";
 
     if(message != null) {
       if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {
