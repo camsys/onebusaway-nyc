@@ -504,7 +504,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		var stopMarker = stopsById[stopId];
 		
 		if(typeof stopMarker === 'undefined') {
-			return;
+			return false;
 		}
 		if (stopMarker.getMap() !== null) {
 			stopMarker.setMap(map);
@@ -515,6 +515,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		google.maps.event.trigger(stopMarker, "click");
 		
 		alreadyDisplayedStopIcons[stopId] = true;
+		return true;
 	}
 	
 	// VEHICLES
@@ -741,7 +742,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		removeRoutesNotInSet: removeRoutesNotInSet,
 		
 		showPopupForStopId: function(stopId) {
-			mapShowPopupForStopId(stopId);
+			return mapShowPopupForStopId(stopId);
 		},
 		
 		showStopIcon: function(stopId) {
@@ -778,7 +779,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		showRoute: function(routeResult) {
 			// already on map
 			if(typeof polylinesByRoute[routeResult.routeId] !== 'undefined') {
-				return
+				return;
 			}
 			
 			jQuery.each(routeResult.destinations, function(_, destination) {
