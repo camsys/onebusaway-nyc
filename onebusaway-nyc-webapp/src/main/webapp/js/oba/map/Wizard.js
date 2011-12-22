@@ -43,7 +43,7 @@ OBA.Wizard = function(routeMap) {
 		direction_title = 'Find Your Stop',
 		direction_text = '<p>Click on a direction (next to the <span class="ui-icon ui-icon-triangle-1-e"></span><br /> symbol) to open a bus stop list. Click again to close it.</p><br /><p>Scroll down to your stop & click on it to see it on the map.</p>',
 
-		dirOrStops_text = '<span class="text_span">Click on a direction name (next to the <img src="css/map/img/wizard/arrow.png" /> symbol) to find your stop &nbsp; OR &nbsp; zoom the map until you see clickable <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-6px;" /> stop icons.</span>',	
+		dirOrStops_text = '<span class="text_span">Click on a direction name (next to the <img src="css/map/img/wizard/arrow.png" style="vertical-align:-2px;" /> symbol) to find your stop OR zoom the map until you see clickable <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-5px;" /> stop icons.</span>',	
 		routeOrZoom_text = '<span class="text_span">Click on a route on the left or zoom the map in until you see a clickable <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-6px;" /> stop icon.</span>',
 		zoomMap_text = '<span class="text_span">Keep zooming the map in until you see clicakble stop icons: <img src="css/map/img/wizard/stop-unknown.png" style="vertical-align:-6px;" /> or try a search in the left search bar.</span>',
 		
@@ -60,9 +60,12 @@ OBA.Wizard = function(routeMap) {
 		stop_code_title = "What's my bus stop code?",
 		stop_pole_diagram = '<div class="pole"><img class="pole_img" src="css/map/img/wizard/bus_stop_pole.png" /><br /><div class="pole_caption">Find stop code here<br />(or enter a search at left).</div></div>',
 		
-		disambiguation_title = "Find a location",
-		disambiguation_text = "Hover to see these on the map, click to zoom in. If none are what you were looking for, try making your search more specific.";
+		disambiguation_title = 'Find a location',
+		disambiguation_text = 'Hover over these locations to see them on the map, click to zoom in. If none are what you were looking for, try making your search <a rel="popover" id="more_specific_popup">more specific</a>.',
 	
+		more_specific_title = "Address Tips",
+		more_specific_text = "Add street types such as <strong>Ave</strong>, <strong>St</strong> or <strong>Blvd</strong>, and the borough or zip code. For intersections, include <strong>and</strong> or <strong>&</strong> between street names.";
+		
 	var stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
 						  + "<p>Option 2. Locate your stop code on a bus stop pole box:</p>" 
 						  + stop_pole_diagram;
@@ -91,8 +94,10 @@ OBA.Wizard = function(routeMap) {
 		
 	// Set wizard at footer
 	function reviseHeight(wizard_height) {	
+		wizard.hide();
 		wizard.css("height", wizard_height);
 		wizard.css("margin-top", -1 * wizard_height - 1);
+		wizard.show();
 		current_height = wizard_height;
 		popover_left = searchBar.offset().left + searchBar.width();
 	}
@@ -110,11 +115,11 @@ OBA.Wizard = function(routeMap) {
 	
 	wizard_startLink.click(function(e) { 
 		 e.preventDefault(); 
-		 reviseHeight(22);
 		 wizard_start.hide();
-		 wizard_inuse.show();
+		 reviseHeight(22);
 		 wizard_inuse.popover('hide');  // in case of previous search
 		 wizard_start.popover('show');
+		 wizard_inuse.show();
 		 wizard_activated = true;
 		 
 		 // Stop code inner popup
@@ -183,15 +188,17 @@ OBA.Wizard = function(routeMap) {
 	// 1. Point out search bar
 	// On loading event or map click close pop up
 	// Otherwise auto-close wizard if wizard not activated
-	searchBar.submit(function() {
+	bindLegend();
+	
+	function searchResponse() {
 		if (wizard_activated) {
 			hideSearchPopover();
 			hideDidyoumeanPopover();
 		} else {
 			closeWizard();
 		}
-	});
-	bindLegend();
+	}
+	
 	map_listener = routeMap.registerMapListener('click', function() { 
 			if (wizard_activated) {
 				hideSearchPopover(); 
@@ -254,7 +261,7 @@ OBA.Wizard = function(routeMap) {
 		}
 		hideSearchPopover(); 		// check this is closed
 		hideDirectionPopover();
-		jQuery("#wizard_inuse .text_span").html("Find your location...");
+		jQuery("#wizard_inuse .text_span").html("Find your location . . .");
 				
 		// pin to bottom of did you mean results, but if too low pin right
 		var popupOffset = 10, popupApproxHeight = 120;
@@ -295,7 +302,25 @@ OBA.Wizard = function(routeMap) {
 			disambiguationPopup = true;
 		}
 		if (!didyoumeanHidden) {		// once closed, don't show again
-			wizard_didyoumean.popover('show');	
+			wizard_didyoumean.popover('show');
+			
+			// disambiguation help inner popup
+			var more_specific_popup = jQuery("#more_specific_popup");
+			more_specific_popup.popover({
+					animate: true,
+					delayIn: 0,
+					delayOut: 200,
+					fallback: "Try adding street types like 'Ave', 'St' or 'Blvd', and borough or zip code, and use 'and' or '&' for intersections.",
+					html: true,
+					live: false,
+					offset: 0,
+					placement: 'above',
+					title: function() { return more_specific_title; },
+					content: function() { return more_specific_text; },
+					trigger: 'hover',
+					close_btn: false,
+					extraClass: true   // info popup within popover
+			});
 		}
 	}
 	
@@ -309,6 +334,7 @@ OBA.Wizard = function(routeMap) {
 		legend.bind('route_result', showDirectionPopup);
 		legend.bind('location_result', showClickOnRouteOrZoomFooter);
 		legend.bind('no_result', noResultResponse);
+		legend.bind('search_launched', searchResponse);
 	}
 	
 	function unbindLegend() {
@@ -387,7 +413,7 @@ OBA.Wizard = function(routeMap) {
 	function noResultResponse() {
 		hideSearchPopover();
 		hideDidyoumeanPopover();
-		jQuery("#wizard_inuse .text_span").html("Find your location...");
+		jQuery("#wizard_inuse .text_span").html("Currently only available for buses serving Staten Island and the B63 in Brooklyn.");
 	}
 	
 	function showZoomMapFooter() {

@@ -47,6 +47,8 @@ OBA.Sidebar = function () {
 			}
 			lastQuery = currentQuery;
 			jQuery.history.load(currentQuery);
+			
+			(wizard && wizard.enabled()) ? legend.trigger('search_launched') : null;
 		});
 	}
 
@@ -410,6 +412,7 @@ OBA.Sidebar = function () {
 	function doSearch(q) {
 		resetSearchPanelAndMap();
 		loading.show();
+		(wizard && wizard.enabled()) ? legend.trigger('search_launched') : null;
 		
 		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
 			loading.hide();
