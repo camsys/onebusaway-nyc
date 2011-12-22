@@ -21,6 +21,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.json.SignMessageF
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.DestinationSign;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DestinationSignMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DestinationSignsMessage;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.DscManualUploadDateTimestampFilePicker;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 
 import org.slf4j.Logger;
@@ -36,10 +38,16 @@ import tcip_final_3_0_5_1.CCDestinationSignMessage;
 @Scope("request")
 public class DscResource {
   
+  public DscResource() throws IOException {
+    mostRecentPicker = new DscManualUploadDateTimestampFilePicker(System.getProperty("tdm.dscFilesDir"));
+  }
+  
   private static Logger _log = LoggerFactory.getLogger(DscResource.class);
   
   @Autowired
   private JsonTool jsonTool;
+  
+  private MostRecentFilePicker mostRecentPicker;
   
   public void setJsonTool(JsonTool tool) {
     jsonTool = tool;
@@ -124,8 +132,7 @@ public class DscResource {
   }
   
   private SignCodeData getDataObject() throws IOException{
-    File inputFile = new File(System.getProperty("tdm.dataPath")
-        + System.getProperty("tdm.dscFilename"));
+    File inputFile = mostRecentPicker.getMostRecentSourceFile();
     
     _log.debug("Loading SignCodeData object from " + inputFile.getPath());
     

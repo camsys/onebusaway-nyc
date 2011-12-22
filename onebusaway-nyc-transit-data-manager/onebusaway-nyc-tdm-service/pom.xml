@@ -96,9 +96,9 @@
       <properties>
         <tdm.dataPath>src/resources/tdm_data/</tdm.dataPath>
         <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
-        <tdm.depotAssignFilename>depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+        <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
         <tdm.pipoFilename>UTSPUPUFULL.txt</tdm.pipoFilename>
-        <tdm.dscFilename>dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
         <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
         <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
@@ -109,9 +109,9 @@
       <properties>
         <tdm.dataPath>D:\tmp</tdm.dataPath>
         <tdm.crewAssignsUploadDir>${tdm.dataPath}\crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
-        <tdm.depotAssignFilename>depotassign.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignsDownloadDir>${tdm.dataPath}\depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+        <tdm.dscFilesDir>${tdm.dataPath}\dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
         <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
-        <tdm.dscFilename>dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
         <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
         <tdm.bundlePath>D:\tmp\bundles</tdm.bundlePath>
@@ -125,14 +125,12 @@
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
         <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
-        <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+        <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
-        <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
         <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
-        <!-- <tdm.config.configXmlFile>/opt/tdm-config/tdm_config.xml</tdm.config.configXmlFile> -->
         <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
-        <!-- <tdm.bundlePath>/opt/bundleservice/activebundles</tdm.bundlePath> -->
       </properties>
     </profile>
     <profile>
@@ -140,9 +138,9 @@
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
         <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
-        <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+        <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
-        <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
         <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
         <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
@@ -153,9 +151,9 @@
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
         <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
-        <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+        <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
-        <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
         <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
         <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
@@ -166,9 +164,9 @@
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
         <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
-        <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
+        <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
+        <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
-        <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
         <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
         <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
         <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
