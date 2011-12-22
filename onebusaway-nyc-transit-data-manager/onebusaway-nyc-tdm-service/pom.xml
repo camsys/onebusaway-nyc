@@ -95,7 +95,7 @@
       <id>local</id>
       <properties>
         <tdm.dataPath>src/resources/tdm_data/</tdm.dataPath>
-        <tdm.crewAssignFilename>CIS.txt</tdm.crewAssignFilename>
+        <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
         <tdm.depotAssignFilename>depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>dsc.csv</tdm.dscFilename>
@@ -107,8 +107,8 @@
     <profile>
       <id>local-windows</id>
       <properties>
-        <tdm.dataPath>d:\</tdm.dataPath>
-        <tdm.crewAssignFilename>CrewAssignSample.csv</tdm.crewAssignFilename>
+        <tdm.dataPath>D:\tmp</tdm.dataPath>
+        <tdm.crewAssignsUploadDir>${tdm.dataPath}\crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
         <tdm.depotAssignFilename>depotassign.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
         <tdm.dscFilename>dsc.csv</tdm.dscFilename>
@@ -124,7 +124,7 @@
       </activation>
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
-        <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+        <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
         <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
@@ -139,7 +139,7 @@
       <id>tdm-prod</id>
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
-        <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+        <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
         <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
@@ -152,7 +152,7 @@
       <id>tdm-dev</id>
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
-        <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+        <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
         <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
@@ -165,7 +165,7 @@
       <id>tdm-qa</id>
       <properties>
         <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
-        <tdm.crewAssignFilename>/crew_assign/CIS.txt</tdm.crewAssignFilename>
+        <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
         <tdm.depotAssignFilename>/depot_assigns/depot_assignments.xml</tdm.depotAssignFilename>
         <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
         <tdm.dscFilename>/dsc/dsc.csv</tdm.dscFilename>
@@ -282,9 +282,9 @@
       <!-- Transit data federation webapp offers the TDS -->
       <id>services-staging</id> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.staging.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
@@ -294,9 +294,9 @@
       <!-- Transit data federation webapp offers the TDS -->
       <id>services-dev</id> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
@@ -306,9 +306,9 @@
       <!-- Transit data federation webapp offers the TDS -->
       <id>services-replay</id> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.replay.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
@@ -318,9 +318,9 @@
       <!-- Transit data federation webapp offers the TDS -->
       <id>services-prod</id> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://localhost/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.prod.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
@@ -330,9 +330,9 @@
       <!-- Transit data federation webapp offers the TDS -->
       <id>services-qa</id> <!-- aka staging, production -->
       <properties>
-        <tds.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://app.qa.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.qa.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>

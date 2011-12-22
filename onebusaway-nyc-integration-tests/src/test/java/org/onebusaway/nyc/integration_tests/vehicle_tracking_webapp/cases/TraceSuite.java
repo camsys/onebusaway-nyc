@@ -30,7 +30,7 @@ import org.junit.runners.Suite;
     /*
      * current bundle traces
      */
-//    Trace_4255_20111215_183433_183932_IntegrationTest.class,
+    Trace_4255_20111215_183433_183932_IntegrationTest.class,
     Trace_6154_20111214_123000_143500_IntegrationTest.class,
     Trace_2711_20111208_054046_102329_IntegrationTest.class,
     Trace_7564_20101203T004633_with_runs_reported_IntegrationTest.class,

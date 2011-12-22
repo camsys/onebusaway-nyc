@@ -91,15 +91,6 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 				
 				infoWindow.setContent(contentFn(json, userData, popupContainerId));
 				infoWindow.open(map, marker);
-
-				var container = jQuery("#" + popupContainerId);
-
-				// resize bubble to fit (new) content
-				container.parent().parent().css("height", Math.min(Math.max(200, container.height()), 300));
-				container.parent().parent().css("width", Math.min(Math.max(300, container.width() + 25), 400)); // 25 = margin for close button 
-
-				container.parent().css("overflow", "hidden");
-				container.parent().parent().css("overflow", "hidden");
 			});
 		};
 		refreshFn();		
@@ -207,7 +198,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		var zoomHere = null;
 		
 		if((map.maxZoom - 4) > map.getZoom()) {
-			zoomHere = '<p id="zoomHere" style="line-height: 210%;"><a href="#">Zoom Here</a></p>';
+			zoomHere = '<p id="zoomHere"><a href="#">Zoom Here</a></p>';
 		
 			jQuery('#zoomHere').live("click", function(e) { 
 				e.preventDefault();
@@ -221,7 +212,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 				map.setZoom(map.maxZoom - 3);				
 			});
 		} else {
-			zoomHere = '<p id="zoomHere" style="line-height: 210%; color: #CCCCCC;">Zoom Here</p>';
+			zoomHere = '<p id="zoomHere">Zoom Here</p>';
 		}
 		
 		return zoomHere;

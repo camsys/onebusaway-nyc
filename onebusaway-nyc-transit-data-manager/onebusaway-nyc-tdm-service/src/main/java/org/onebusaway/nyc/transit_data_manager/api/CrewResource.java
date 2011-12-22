@@ -22,6 +22,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentD
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.OperatorAssignmentsMessage;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.UtsCrewUploadsFilePicker;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +41,16 @@ import com.sun.jersey.api.spring.Autowire;
 @Autowire
 public class CrewResource {
 
+  public CrewResource() throws IOException {
+    mostRecentPicker = new UtsCrewUploadsFilePicker(System.getProperty("tdm.crewAssignsUploadDir"));
+  }
+  
   private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
 
   @Autowired
   JsonTool jsonTool;
+  
+  private MostRecentFilePicker mostRecentPicker;
   
   public void setJsonTool(JsonTool jsonTool) {
     this.jsonTool = jsonTool;
@@ -66,8 +74,11 @@ public class CrewResource {
       throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
     }
 
-    File inputFile = new File(System.getProperty("tdm.dataPath")
-        + System.getProperty("tdm.crewAssignFilename"));
+    File inputFile = mostRecentPicker.getMostRecentSourceFile();
+    
+    if (inputFile == null) {
+      throw new WebApplicationException(new IOException("No Source file found."), Response.Status.INTERNAL_SERVER_ERROR);
+    }
 
     _log.debug("Generating OperatorAssignmentData object from file " + inputFile.getPath());
     // First create a OperatorAssignmentData object
