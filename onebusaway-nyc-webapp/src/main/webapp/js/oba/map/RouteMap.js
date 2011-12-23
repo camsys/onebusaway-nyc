@@ -507,7 +507,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 			return false;
 		}
 		// close any open popups
-		closeInfoWindow();
+		// closeInfoWindow();  // infoWindow refresh re-opens them so disabling for now
 		map.setCenter(stopMarker.getPosition());
 		map.setZoom(14);
 		if (stopMarker.getMap() !== null) {
