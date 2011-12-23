@@ -506,8 +506,6 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		if(typeof stopMarker === 'undefined') {
 			return false;
 		}
-		// close any open popups
-		// closeInfoWindow();  // infoWindow refresh re-opens them so disabling for now
 		map.setCenter(stopMarker.getPosition());
 		map.setZoom(14);
 		if (stopMarker.getMap() !== null) {
@@ -567,6 +565,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl + "?callback=?", 
 			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "2", VehicleMonitoringDetailLevel: "calls" }, 
 			    				getVehicleContentForResponse, null);
+			    				
+			    		// change to blank hash to enable reloading stops
+			    		jQuery.history.load("");
 			    	});
 				}
 

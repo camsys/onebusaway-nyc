@@ -54,7 +54,7 @@ OBA.Wizard = function(routeMap) {
 		sms_text = 'Text your 6-digit bus stop code (also add bus route for best results) to <span style="font-weight:bold">511123</span>.',
 		
 		share_title = 'Copy this link',
-		share_text_prefix = '<form><input id="url" type="text" size="30" style="font-weight:bold;height:20px;width=250px;" value="http://mta.info/bustime/#',
+		share_text_prefix = '<form><input id="url" type="text" size="30" style="font-weight:bold;height:20px;width=250px;" value="http://mta.info/bustime',
 		share_text_postfix = '"></input></form>',
 		
 		stop_code_title = "What's my bus stop code?",
@@ -97,9 +97,9 @@ OBA.Wizard = function(routeMap) {
 		wizard.hide();
 		wizard.css("height", wizard_height);
 		wizard.css("margin-top", -1 * wizard_height - 1);
-		wizard.show();
 		current_height = wizard_height;
 		popover_left = searchBar.offset().left + searchBar.width();
+		wizard.show();
 	}
 	reviseHeight(135);
 	
@@ -541,17 +541,20 @@ OBA.Wizard = function(routeMap) {
 	});
 	
 	function getSearchInputVal() {
-		var searchInput = jQuery("#searchbar form input[type=text]");
-		return searchInput.val();
+		var searchInput = jQuery("#searchbar form input[type=text]").val();
+		if (searchInput !== null && searchInput !== "") {
+			return "/#" + searchInput;
+		} 
+		return "";
 	}
-	
+		
 	// Share link popup
 	var wizard_share  = jQuery("#wizard_share");
 	wizard_share.popover({
 		animate: true,
 		delayIn: 50,
 		delayOut: 100,
-		fallback: 'Copy this URL: <span style="font-weight:bold;text-decoration:none">http://mta.info/bustime/#' + getSearchInputVal() + '</span>',
+		fallback: 'Copy this URL: <span style="font-weight:bold;text-decoration:none">http://mta.info/bustime' + getSearchInputVal() + '</span>',
 		html: true,
 		live: false,
 		offset: 10,
