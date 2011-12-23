@@ -47,16 +47,16 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
     }
 	
 	// POPUPS
+	function closeInfoWindow() {
+		if(infoWindow !== null) {
+			infoWindow.close();
+		}
+		infoWindow = null;
+	}
+	
 	function preparePopup(marker) {
 		// only one popup open at a time!
-		var closeFn = function() {
-			if(infoWindow !== null) {
-				infoWindow.close();
-			}
-
-			infoWindow = null;
-		};
-		closeFn();
+		closeInfoWindow();
 
 		// make a popup, but don't open it yet!
 		infoWindow = new google.maps.InfoWindow({
@@ -64,7 +64,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	    	disableAutoPan: false
 	    });
 
-		google.maps.event.addListener(infoWindow, "closeclick", closeFn);
+		google.maps.event.addListener(infoWindow, "closeclick", closeInfoWindow);
 				
 		// Register InfoWindow Listeners in waiting (for Wizard)
 		jQuery.each(infoWindowListeners, function(_, infoWindowListener) {
@@ -506,12 +506,14 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		if(typeof stopMarker === 'undefined') {
 			return false;
 		}
-		if (stopMarker.getMap() !== null) {
-			stopMarker.setMap(map);
-		}
-
+		// close any open popups
+		closeInfoWindow();
 		map.setCenter(stopMarker.getPosition());
 		map.setZoom(14);
+		if (stopMarker.getMap() !== null) {
+			stopMarker.setMap(map);
+			stopMarker.setZIndex(1);
+		}
 		google.maps.event.trigger(stopMarker, "click");
 		
 		alreadyDisplayedStopIcons[stopId] = true;
@@ -1031,10 +1033,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		},
 		
 		closePopups: function() {
-			if (infoWindow !== null) {
-				infoWindow.close();
-				infoWindow = null;
-			}	
+			closeInfoWindow();	
 		}
 	};
 };

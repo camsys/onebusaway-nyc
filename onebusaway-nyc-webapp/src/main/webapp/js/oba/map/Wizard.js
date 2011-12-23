@@ -110,6 +110,7 @@ OBA.Wizard = function(routeMap) {
 		}
 		theWindow.resize(resize);
 	}
+	addResizeBehavior();
 	
 	// 0. Launch wizard on click
 	
@@ -413,7 +414,7 @@ OBA.Wizard = function(routeMap) {
 	function noResultResponse() {
 		hideSearchPopover();
 		hideDidyoumeanPopover();
-		jQuery("#wizard_inuse .text_span").html("Bus Time is currently only available for buses serving Staten Island and the B63 in Brooklyn.");
+		jQuery("#wizard_inuse .text_span").html("Bus Time is currently available for buses serving Staten Island and the B63 in Brooklyn.");
 	}
 	
 	function showZoomMapFooter() {
