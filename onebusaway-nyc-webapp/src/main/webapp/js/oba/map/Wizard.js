@@ -94,12 +94,10 @@ OBA.Wizard = function(routeMap) {
 		
 	// Set wizard at footer
 	function reviseHeight(wizard_height) {	
-		wizard.hide();
 		wizard.css("height", wizard_height);
 		wizard.css("margin-top", -1 * wizard_height - 1);
 		current_height = wizard_height;
 		popover_left = searchBar.offset().left + searchBar.width();
-		wizard.show();
 	}
 	reviseHeight(135);
 	
@@ -115,12 +113,14 @@ OBA.Wizard = function(routeMap) {
 	// 0. Launch wizard on click
 	
 	wizard_startLink.click(function(e) { 
-		 e.preventDefault(); 
+		 e.preventDefault();
+		 wizard.hide();
 		 wizard_start.hide();
 		 reviseHeight(22);
 		 wizard_inuse.popover('hide');  // in case of previous search
 		 wizard_start.popover('show');
 		 wizard_inuse.show();
+		 wizard.show();
 		 wizard_activated = true;
 		 
 		 // Stop code inner popup
@@ -149,6 +149,7 @@ OBA.Wizard = function(routeMap) {
 			hideSearchPopover();
 			hideDidyoumeanPopover();
 			unbindLegend();
+			current_height = 0;
 			wizard.hide();
 			wizard_activated = false;
 		} else {
@@ -454,8 +455,10 @@ OBA.Wizard = function(routeMap) {
 	
 	// 3. Final tips & social web links
 	function showFinalTips() {
+		wizard.hide();
 		wizard_inuse.hide();
 		reviseHeight(90);
+		wizard.show();
 		wizard_finaltip.show();
 		unbindLegend();
 	}

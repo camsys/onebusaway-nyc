@@ -519,10 +519,12 @@ OBA.Sidebar = function () {
 						var searchInput = jQuery("#searchbar form input[type=text]");
 						searchInput.val(hash);
 						doSearch(hash);
+					} else {
+						// Launch wizard
+						(wizard !== null) ? null : wizard = OBA.Wizard(routeMap);
 					}
 				});
 			});
-			wizard = OBA.Wizard(routeMap);
 		}
 	};
 };
