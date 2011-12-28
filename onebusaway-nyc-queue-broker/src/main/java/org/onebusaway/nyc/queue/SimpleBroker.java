@@ -10,8 +10,8 @@ public class SimpleBroker {
     private static final int DEFAULT_IN_PORT = 5566;
     private static final int DEFAULT_OUT_PORT = 5567;
     private static final String DEFAULT_IN_TOPIC = "inference_queue";
-    private static final String DEFAULT_OUT_TOPIC = "output_queue";
-
+    private static final String DEFAULT_OUT_TOPIC = "inference_queue";
+  	private static final String HEARTBEAT_TOPIC = "heartbeat";
     private int inPort;
     private int outPort;
     private String inTopic;
@@ -56,7 +56,8 @@ public class SimpleBroker {
 	String inBind = "tcp://*:" + inPort;
 	System.out.println("subscribing to queue \"" + inTopic + "\" at " + inBind);
 	subscriber.bind(inBind);
-	subscriber.subscribe(inTopic.getBytes());
+	// subscribe to everything
+	subscriber.subscribe(new byte[0]); // was inTopic.getBytes()
 	
 	ZMQ.Socket publisher = context.socket(ZMQ.PUB);
 	String outBind = "tcp://*:" + outPort;
@@ -68,7 +69,11 @@ public class SimpleBroker {
 	    byte[] message;
 	    address = subscriber.recv(0);
 	    message = subscriber.recv(0);
-	    publisher.send(outTopic.getBytes(), ZMQ.SNDMORE);
+			if (HEARTBEAT_TOPIC.equals(address)) {
+					publisher.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
+				} else {
+					publisher.send(outTopic.getBytes(), ZMQ.SNDMORE);
+				}
 	    publisher.send(message, 0);
 	    System.out.println("got address=" + new String(address) + " and message=" + new String(message) + ", resent to " + outTopic);
 	} // while forever
