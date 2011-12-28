@@ -66,6 +66,8 @@ public class StifTask implements Runnable {
   private NycFederatedTransitDataBundle _bundle;
 
   private String logPath;
+  
+  private String tripsWoBlocksLogPath;
 
   private boolean fallBackToStifBlocks = false;
 
@@ -100,6 +102,10 @@ public class StifTask implements Runnable {
 
   public void setLogPath(String logPath) {
     this.logPath = logPath;
+  }
+  
+  public void setTripsWoBlocksLogPath(String tripsWoBlocksLogPath) {
+	  this.tripsWoBlocksLogPath = tripsWoBlocksLogPath;
   }
 
   public void run() {
@@ -358,25 +364,48 @@ public class StifTask implements Runnable {
         }
       }
     }
-
+    
     if (outputStream != null) {
-      boolean header = true;
-      for (Trip trip : _gtfsMutableRelationalDao.getAllTrips()) {
-        if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
-          if (header) {
-            printStream.println("Trips without blocks:");
-            header = false;
-          }
-          printStream.println(trip.getId().getId());
-        }
-      }
-
       try {
         outputStream.close();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
+
+    
+    if (tripsWoBlocksLogPath != null) {
+      FileOutputStream woBlocksOS = null;
+      PrintStream woBlocksPrintStream = null;
+      
+      try {
+        woBlocksOS = new FileOutputStream(new File(tripsWoBlocksLogPath));
+        woBlocksPrintStream = new PrintStream(woBlocksOS);
+
+        boolean header = true;
+        for (Trip trip : _gtfsMutableRelationalDao.getAllTrips()) {
+          if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
+            if (header) {
+              woBlocksPrintStream.println("Trips without blocks:");
+              header = false;
+            }
+            woBlocksPrintStream.println(trip.getId().getId());
+          }
+        }
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      } finally {
+        if (woBlocksOS != null) {
+          try {
+            woBlocksOS.close();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+
+    }
+
   }
 
   /**
