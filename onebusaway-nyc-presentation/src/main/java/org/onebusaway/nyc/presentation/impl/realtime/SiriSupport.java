@@ -23,7 +23,6 @@ import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
-import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -142,9 +141,14 @@ public final class SiriSupport {
     addSituations(monitoredVehicleJourney, tripDetails);
 
     // onward and monitored calls:
-    boolean includeNextTripStops = presentationService.isInLayover(tripDetails.getStatus());
-    List<TripStopTimeBean> stopTimes = getStopTimesForTripDetails(tripDetails, transitDataService, 
-        time, includeNextTripStops);
+    List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+    
+    // sort stop times--important!!
+    Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
+      public int compare(TripStopTimeBean arg0, TripStopTimeBean arg1) {
+        return (int) (arg0.getDistanceAlongTrip() - arg1.getDistanceAlongTrip());
+      }
+    });
 
     int i = 0;
     int o = 0;
@@ -278,38 +282,6 @@ public final class SiriSupport {
     visitNumberForStop.put(stop.getId(), visitNumber);
     
     return visitNumber;
-  }
-  
-  private static List<TripStopTimeBean> getStopTimesForTripDetails(TripDetailsBean tripDetails, 
-      TransitDataService transitDataService, long time, boolean includeNextTrip) {
-
-    List<TripStopTimeBean> output = tripDetails.getSchedule().getStopTimes();
-    
-    TripBean nextTrip = tripDetails.getSchedule().getNextTrip();    
-    if(nextTrip != null && includeNextTrip == true) {
-      TripDetailsQueryBean query = new TripDetailsQueryBean();
-      query.setTripId(nextTrip.getId());
-      query.setTime(time);
-      query.setVehicleId(tripDetails.getStatus().getVehicleId());
-      query.setServiceDate(tripDetails.getStatus().getServiceDate());
-        
-      TripDetailsBean nextTripDetails = transitDataService.getSingleTripDetails(query);
-
-      double offset = tripDetails.getStatus().getDistanceAlongTrip();
-      for(TripStopTimeBean stopTime : nextTripDetails.getSchedule().getStopTimes()) {
-        stopTime.setDistanceAlongTrip(stopTime.getDistanceAlongTrip() + offset);
-        output.add(stopTime);
-      }
-    }
-    
-    // sort stop times--important!!
-    Collections.sort(output, new Comparator<TripStopTimeBean>() {
-      public int compare(TripStopTimeBean arg0, TripStopTimeBean arg1) {
-        return (int) (arg0.getDistanceAlongTrip() - arg1.getDistanceAlongTrip());
-      }
-    });
-    
-    return output;
   }
   
   private static ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {

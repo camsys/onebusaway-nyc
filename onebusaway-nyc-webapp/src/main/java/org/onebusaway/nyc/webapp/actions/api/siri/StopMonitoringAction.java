@@ -19,6 +19,7 @@ import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.utility.DateLibrary;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,16 +55,31 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
   private HttpServletRequest _request;
   
-  private Date _now = new Date();
-
   private String _type = "xml";
 
+  private Date _now = null;
+  
+  public void setTime(String time) throws Exception {
+    Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);    
+    
+    _now = timeAsDate;
+  }
+
+  public Date getTime() {
+    if(_now != null)
+      return _now;
+    else
+      return new Date();
+  }
+  
   public void setType(String type) {
     _type = type;
   }
   
   @Override
-  public String execute() {  
+  public String execute() { 
+    _realtimeService.setTime(getTime());
+
     String directionId = _request.getParameter("DirectionRef");
     
     AgencyAndId stopId = null;
@@ -128,17 +144,17 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
   private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits) {
     StopMonitoringDeliveryStructure stopMonitoringDelivery = new StopMonitoringDeliveryStructure();
-    stopMonitoringDelivery.setResponseTimestamp(_now);
+    stopMonitoringDelivery.setResponseTimestamp(getTime());
     
     Calendar gregorianCalendar = new GregorianCalendar();
-    gregorianCalendar.setTime(_now);
+    gregorianCalendar.setTime(getTime());
     gregorianCalendar.add(Calendar.MINUTE, 1);
     stopMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
     
     stopMonitoringDelivery.getMonitoredStopVisit().addAll(visits);
 
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(_now);
+    serviceDelivery.setResponseTimestamp(getTime());
     serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
 
     _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _transitDataService);

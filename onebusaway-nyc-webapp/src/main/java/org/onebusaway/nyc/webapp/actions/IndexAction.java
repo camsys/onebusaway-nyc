@@ -15,11 +15,14 @@
  */
 package org.onebusaway.nyc.webapp.actions;
 
+import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Action for home page
@@ -28,24 +31,31 @@ import com.opensymphony.xwork2.ActionProxy;
 public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
-  
-  @Override
-	public String execute() throws Exception {
-	    ActionContext context = ActionContext.getContext();
-	    ActionInvocation invocation = context.getActionInvocation();
-	    ActionProxy proxy = invocation.getProxy();
 
-	    String name = proxy.getActionName().toLowerCase();
-	    String namespace = proxy.getNamespace().toLowerCase();
-	    
-	    // FIXME: since Struts doesn't seem to like wildcard namespaces (in wiki/IndexAction) and default
-	    // actions, we have to have this action check to see if it's being called as a "default" action and
-	    // return the 404 message if so. There has to be a better way than this? 
-	    if((name.equals("") || name.equals("index")) && 
-	    		(namespace.equals("") || namespace.equals("/")))
-	    	return SUCCESS;
-	    
-	    return "NotFound";
+  @Autowired
+  private ConfigurationService _configurationService;
+
+  public String getGoogleMapsClientId() {
+    return _configurationService.getConfigurationValueAsString("display.googleMapsClientId", "");    
+  }
+
+  @Override
+  public String execute() throws Exception {
+    ActionContext context = ActionContext.getContext();
+    ActionInvocation invocation = context.getActionInvocation();
+    ActionProxy proxy = invocation.getProxy();
+
+    String name = proxy.getActionName().toLowerCase();
+    String namespace = proxy.getNamespace().toLowerCase();
+
+    // FIXME: since Struts doesn't seem to like wildcard namespaces (in wiki/IndexAction) and default
+    // actions, we have to have this action check to see if it's being called as a "default" action and
+    // return the 404 message if so. There has to be a better way than this? 
+    if((name.equals("") || name.equals("index")) && (namespace.equals("") || namespace.equals("/"))) {
+      return SUCCESS;
+    }
+
+    return "NotFound";
   }
 
 }

@@ -33,10 +33,10 @@
     <property name="properties">
       <props>
         <prop key="tdm.dataPath">${tdm.dataPath}</prop>
-        <prop key="tdm.crewAssignFilename">${tdm.crewAssignFilename}</prop>
-        <prop key="tdm.depotAssignFilename">${tdm.depotAssignFilename}</prop>
+        <prop key="tdm.crewAssignsUploadDir">${tdm.crewAssignsUploadDir}</prop>
+        <prop key="tdm.depotAssignsDownloadDir">${tdm.depotAssignsDownloadDir}</prop>
+        <prop key="tdm.dscFilesDir">${tdm.dscFilesDir}</prop>
         <prop key="tdm.pipoFilename">${tdm.pipoFilename}</prop>
-        <prop key="tdm.dscFilename">${tdm.dscFilename}</prop>
         <prop key="tdm.prettyPrintOutput">${tdm.prettyPrintOutput}</prop>
       </props>
     </property>

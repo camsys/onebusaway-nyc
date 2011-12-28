@@ -22,6 +22,8 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.json.VehicleFromT
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DepotsMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclesMessage;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.DepotAssignmentsSoapDownloadsFilePicker;
+import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +38,16 @@ import tcip_final_3_0_5_1.CPTVehicleIden;
 @Scope("request")
 public class DepotResource {
 
+  public DepotResource() throws IOException {
+    mostRecentPicker = new DepotAssignmentsSoapDownloadsFilePicker(System.getProperty("tdm.depotAssignsDownloadDir"));
+  }
+  
   private static Logger _log = LoggerFactory.getLogger(DepotResource.class);
   
   @Autowired
   private JsonTool jsonTool;
+  
+  private MostRecentFilePicker mostRecentPicker;
   
   public void setJsonTool(JsonTool jsonTool) {
     this.jsonTool = jsonTool;
@@ -127,7 +135,7 @@ public class DepotResource {
   }
 
   private VehicleDepotData getVehicleDepotDataObject() throws WebApplicationException {
-    File inputFile = new File(getInputDepotAssignmentFilePath());
+    File inputFile = mostRecentPicker.getMostRecentSourceFile();
 
     _log.debug("Getting VehicleDepotData object in getVehicleDepotDataObject from " + inputFile.getPath());
     
@@ -139,7 +147,7 @@ public class DepotResource {
           inputFile);
       resultData = process.generateDataObject();
     } catch (IOException e) {
-      _log.info("Could not create data object from " + getInputDepotAssignmentFilePath());
+      _log.info("Could not create data object from " + inputFile.getPath());
       _log.info(e.getMessage());
       throw new WebApplicationException(e, Response.Status.INTERNAL_SERVER_ERROR);
     }
@@ -148,8 +156,4 @@ public class DepotResource {
     return resultData;
   }
 
-  private String getInputDepotAssignmentFilePath() {
-    return System.getProperty("tdm.dataPath")
-        + System.getProperty("tdm.depotAssignFilename");
-  }
 }

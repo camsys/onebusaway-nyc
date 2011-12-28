@@ -41,12 +41,14 @@ OBA.Sidebar = function () {
 		searchForm.submit(function(e) {
 			e.preventDefault();
 			
-			var currentQuery = searchInput.val();
+			var currentQuery = searchInput.val();			
 			if (currentQuery === lastQuery) {
 				jQuery.history.load("");	
 			}
 			lastQuery = currentQuery;
-			jQuery.history.load(currentQuery);
+			jQuery.history.load(currentQuery);	
+			
+			(wizard && wizard.enabled()) ? legend.trigger('search_launched') : null;
 		});
 	}
 
@@ -408,8 +410,16 @@ OBA.Sidebar = function () {
 
 	// process search results
 	function doSearch(q) {
+		
+		// Check for stop code search in already-loaded data
+		if (q.match(/^\d{6}$/) !== null && routeMap.showPopupForStopId("MTA NYCT_" + q)) {
+			return;
+		}
+		
 		resetSearchPanelAndMap();
 		loading.show();
+		
+		(wizard && wizard.enabled()) ? legend.trigger('search_launched') : null;
 		
 		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
 			loading.hide();
@@ -509,13 +519,10 @@ OBA.Sidebar = function () {
 						var searchInput = jQuery("#searchbar form input[type=text]");
 						searchInput.val(hash);
 						doSearch(hash);
-
-					// Launch wizard
-					} else {
-						wizard = OBA.Wizard(routeMap);
 					}
 				});
 			});
+			wizard = OBA.Wizard(routeMap);
 		}
 	};
 };

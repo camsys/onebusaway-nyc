@@ -21,6 +21,7 @@ import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.utility.DateLibrary;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +57,22 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   private HttpServletRequest _request;
 
-  private Date _now = new Date();
-
   private String _type = "xml";
+
+  private Date _now = null;
+
+  public void setTime(String time) throws Exception {
+    Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);    
+    
+    _now = timeAsDate;
+  }
+
+  public Date getTime() {
+    if(_now != null)
+      return _now;
+    else
+      return new Date();
+  }
 
   public void setType(String type) {
     _type = type;
@@ -66,6 +80,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   
   @Override
   public String execute() {
+    _realtimeService.setTime(getTime());
+
     String directionId = _request.getParameter("DirectionRef");
     String agencyId = _request.getParameter("OperatorRef");
         
@@ -137,7 +153,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     // *** CASE 3: all vehicles
     } else {
       ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(
-          agencyId, _now.getTime());
+          agencyId, getTime().getTime());
 
       for (VehicleStatusBean v : vehicles.getList()) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
@@ -157,17 +173,17 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   /** Generate a siri response for a set of VehicleActivities */
   private Siri generateSiriResponse(List<VehicleActivityStructure> activities) {
     VehicleMonitoringDeliveryStructure vehicleMonitoringDelivery = new VehicleMonitoringDeliveryStructure();
-    vehicleMonitoringDelivery.setResponseTimestamp(_now);
+    vehicleMonitoringDelivery.setResponseTimestamp(getTime());
 
     Calendar gregorianCalendar = new GregorianCalendar();
-    gregorianCalendar.setTime(_now);
+    gregorianCalendar.setTime(getTime());
     gregorianCalendar.add(Calendar.MINUTE, 1);
     vehicleMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 
     vehicleMonitoringDelivery.getVehicleActivity().addAll(activities);
 
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    serviceDelivery.setResponseTimestamp(_now);
+    serviceDelivery.setResponseTimestamp(getTime());
     serviceDelivery.getVehicleMonitoringDelivery().add(
         vehicleMonitoringDelivery);
 

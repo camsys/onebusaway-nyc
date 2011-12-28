@@ -35,6 +35,6 @@ public class Trace_7563_20101209T124732_IntegrationTest extends
 
     setLoops(4);
     // This test is noisy
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.85);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.83);
   }
 }

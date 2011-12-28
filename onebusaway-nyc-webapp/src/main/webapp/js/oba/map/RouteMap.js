@@ -47,16 +47,16 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
     }
 	
 	// POPUPS
+	function closeInfoWindow() {
+		if(infoWindow !== null) {
+			infoWindow.close();
+		}
+		infoWindow = null;
+	}
+	
 	function preparePopup(marker) {
 		// only one popup open at a time!
-		var closeFn = function() {
-			if(infoWindow !== null) {
-				infoWindow.close();
-			}
-
-			infoWindow = null;
-		};
-		closeFn();
+		closeInfoWindow();
 
 		// make a popup, but don't open it yet!
 		infoWindow = new google.maps.InfoWindow({
@@ -64,7 +64,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	    	disableAutoPan: false
 	    });
 
-		google.maps.event.addListener(infoWindow, "closeclick", closeFn);
+		google.maps.event.addListener(infoWindow, "closeclick", closeInfoWindow);
 				
 		// Register InfoWindow Listeners in waiting (for Wizard)
 		jQuery.each(infoWindowListeners, function(_, infoWindowListener) {
@@ -82,6 +82,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
 		preparePopup(marker);		
 
+		if(OBA.Config.time !== null) {
+			params.time = OBA.Config.time;
+		}
+		
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
@@ -504,17 +508,18 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		var stopMarker = stopsById[stopId];
 		
 		if(typeof stopMarker === 'undefined') {
-			return;
+			return false;
 		}
-		if (stopMarker.getMap() !== null) {
-			stopMarker.setMap(map);
-		}
-
 		map.setCenter(stopMarker.getPosition());
 		map.setZoom(14);
+		if (stopMarker.getMap() !== null) {
+			stopMarker.setMap(map);
+			stopMarker.setZIndex(1);
+		}
 		google.maps.event.trigger(stopMarker, "click");
 		
 		alreadyDisplayedStopIcons[stopId] = true;
+		return true;
 	}
 	
 	// VEHICLES
@@ -527,7 +532,13 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		var agencyId = routeIdParts[0];
 		var routeIdWithoutAgency = routeIdParts[1];
 		
-		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
+		var params = { OperatorRef: agencyId, LineRef: routeIdWithoutAgency };		
+
+		if(OBA.Config.time !== null) {
+			params.time = OBA.Config.time;
+		}
+		
+		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", params, 
 		function(json) {
 			var vehiclesByIdInResponse = {};
 			jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
@@ -564,6 +575,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 			    		showPopupWithContentFromRequest(this, OBA.Config.siriVMUrl + "?callback=?", 
 			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "2", VehicleMonitoringDetailLevel: "calls" }, 
 			    				getVehicleContentForResponse, null);
+			    				
+			    		// change to blank hash to enable reloading stops
+			    		jQuery.history.load("");
 			    	});
 				}
 
@@ -741,7 +755,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		removeRoutesNotInSet: removeRoutesNotInSet,
 		
 		showPopupForStopId: function(stopId) {
-			mapShowPopupForStopId(stopId);
+			return mapShowPopupForStopId(stopId);
 		},
 		
 		showStopIcon: function(stopId) {
@@ -778,7 +792,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		showRoute: function(routeResult) {
 			// already on map
 			if(typeof polylinesByRoute[routeResult.routeId] !== 'undefined') {
-				return
+				return;
 			}
 			
 			jQuery.each(routeResult.destinations, function(_, destination) {
@@ -1030,10 +1044,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		},
 		
 		closePopups: function() {
-			if (infoWindow !== null) {
-				infoWindow.close();
-				infoWindow = null;
-			}	
+			closeInfoWindow();	
 		}
 	};
 };

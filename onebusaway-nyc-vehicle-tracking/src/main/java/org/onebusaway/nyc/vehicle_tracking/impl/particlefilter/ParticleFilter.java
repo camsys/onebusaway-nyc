@@ -27,6 +27,9 @@ import java.util.Set;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 /**
  * Core particle filter implementation
  * 
@@ -242,10 +245,13 @@ public class ParticleFilter<OBS> {
      * We choose the "most likely" particle over the entire distribution w.r.t
      * the inferred trip.
      */
-    Map<String, Map<String, Double>> tripPhaseToProb = 
-        new HashMap<String, Map<String, Double>>();
+    Map<String, Double> tripPhaseToProb = 
+        new HashMap<String, Double>();
 
+    HashMultimap<String, Particle> particlesIdMap = HashMultimap.create();
     Set<Particle> bestParticles = new HashSet<Particle>();
+    String bestId = null;
+    
     if (!_maxLikelihoodParticle) {
       double highestTripProb = Double.MIN_VALUE;
       int index = 0;
@@ -258,37 +264,40 @@ public class ParticleFilter<OBS> {
           continue;
         
         VehicleState vs = p.getData();
-        String id = vs.getBlockState() == null ? "NA" : vs.getBlockState()
+        String tripId = vs.getBlockState() == null ? "NA" : vs.getBlockState()
             .getBlockLocation().getActiveTrip().getTrip().toString();
         String phase = vs.getJourneyState().toString();
+        String id = tripId + "." + phase;
   
-        Map<String, Double> tripsPhases = tripPhaseToProb.get(id);
+        Double tripPhaseProb = tripPhaseToProb.get(id);
   
         double newProb;
-        if (tripsPhases == null) {
-          tripsPhases = new HashMap<String, Double>();
-          tripsPhases.put(phase, w);
-          tripPhaseToProb.put(id, tripsPhases);
+        if (tripPhaseProb == null) {
           newProb = w;
         } else {
-          Double prob = tripsPhases.get(phase);
-          newProb = (prob == null ? 0.0 : prob) + w;
-          tripsPhases.put(phase, newProb);
+          newProb = (tripPhaseProb == null ? 0.0 : tripPhaseProb) + w;
         }
+        tripPhaseToProb.put(id, newProb);
+        particlesIdMap.put(id, p);
   
         /**
          * Check most likely new trip & phase pairs, then
          * find the most likely particle(s) within those. 
          */
-        if (bestParticles.isEmpty() || newProb > highestTripProb) {
-          bestParticles.add(p);
+        if (bestId == null || newProb > highestTripProb) {
+          bestId = id;
           highestTripProb = newProb;
         } 
       }
+      bestParticles.addAll(particlesIdMap.get(bestId));
     } else {
       bestParticles.addAll(particles);
     }
 
+    /**
+     * after we've found the best trip & phase pair, we
+     * choose the highest likelihood particle among those.
+     */
     Particle bestParticle = null;
     for (Particle p : bestParticles) {
       if (bestParticle == null 

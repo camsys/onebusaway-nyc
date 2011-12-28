@@ -22,7 +22,7 @@
 }
 
 #content.sidebar #text {
-	margin-left: 320px;
+	margin-left: 260px;
 	font-size: 14px;	
 }
 
@@ -37,7 +37,7 @@
 #content.sidebar #sidebar .wrapper {
 	padding: 20px;
 	padding-top: 0px;
-	width: 300px;
+	width: 240px;
 	padding-left: 0px;
 	line-height: 140%;	
 }
