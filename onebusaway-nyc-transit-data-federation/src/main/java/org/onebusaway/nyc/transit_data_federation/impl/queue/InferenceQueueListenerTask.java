@@ -64,7 +64,7 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
   @PostConstruct
   public void setup() {
-		super.setup();
+	super.setup();
     // use JAXB annotations so that we pick up anything from the auto-generated XML classes
     // generated from XSDs
     AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
@@ -94,7 +94,11 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
     }
     
     _log.info("queue listening on " + host + ":" + port + ", queue=" + queueName);
-    initializeQueue(host, queueName, port);
+		try {
+			initializeQueue(host, queueName, port);
+		} catch (InterruptedException ie) {
+			return;
+		}
 
     _initialized = true;
   }	

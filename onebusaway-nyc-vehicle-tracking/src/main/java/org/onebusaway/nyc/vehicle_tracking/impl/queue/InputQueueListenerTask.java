@@ -68,7 +68,11 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
     }
 
     _log.info("realtime archive listening on " + host + ":" + port + ", queue=" + queueName);
-    initializeQueue(host, queueName, port);
+		try {
+			initializeQueue(host, queueName, port);
+		} catch (InterruptedException ie) {
+			return;
+		}
   }
 
 

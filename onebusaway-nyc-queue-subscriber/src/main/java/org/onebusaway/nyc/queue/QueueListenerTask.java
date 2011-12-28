@@ -76,53 +76,57 @@ public abstract class QueueListenerTask {
 
     @Override
     public void run() {
-      while(true) {
-        _zmqPoller.poll();
-        if(_zmqPoller.pollin(0)) {
-          @SuppressWarnings("unused")
-          String address = new String(_zmqSocket.recv(0));
-          String contents = new String(_zmqSocket.recv(0));
+		while(!Thread.currentThread().isInterrupted()) {
+			_zmqPoller.poll();
+			if(_zmqPoller.pollin(0)) {
+				@SuppressWarnings("unused")
+					String address = new String(_zmqSocket.recv(0));
+				String contents = new String(_zmqSocket.recv(0));
 
-          processMessage(address, contents);		    	
+				processMessage(address, contents);		    	
 
-          Thread.yield();
-        }
+				Thread.yield();
+			}
 
-        if(processedCount > 50) {
-          _log.info(getQueueName() + " input queue: processed 50 messages in " 
-              + (new Date().getTime() - markTimestamp.getTime()) / 1000 + " seconds.");
+			if(processedCount > 50) {
+				_log.info(getQueueName() + " input queue: processed 50 messages in " 
+						  + (new Date().getTime() - markTimestamp.getTime()) / 1000 + " seconds.");
 
-          markTimestamp = new Date();
-          processedCount = 0;
-        }
+				markTimestamp = new Date();
+				processedCount = 0;
+			}
 
-        processedCount++;
-      }	    
+			processedCount++;
+		}	    
     }
   }
 
-  @PostConstruct
-  public void setup() {
-    _executorService = Executors.newFixedThreadPool(1);
-    startListenerThread();
+	@PostConstruct
+		public void setup() {
+		_executorService = Executors.newFixedThreadPool(1);
+		startListenerThread();
 		startDNSCheckThread();
-  }
+	}
 
-  @PreDestroy 
-  public void destroy() {
-    _executorService.shutdownNow();
-  }
+	@PreDestroy 
+		public void destroy() {
+		_executorService.shutdownNow();
+	}
 
 	protected void reinitializeQueue() {
-		initializeQueue(getQueueHost(),
-										getQueueName(),
-										getQueuePort());
+		try {
+			initializeQueue(getQueueHost(),
+							getQueueName(),
+							getQueuePort());
+		} catch (InterruptedException ie) {
+			return;
+		}
 	}
 
 	// (re)-initialize ZMQ with the given args
-  protected void initializeQueue(String host, String queueName, Integer port) {
-    String bind = "tcp://" + host + ":" + port;
-		_log.warn("binding to " + bind);
+	protected void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+		String bind = "tcp://" + host + ":" + port;
+		_log.warn("binding to " + bind + " with topic=" + queueName);
 
 		if (_context == null) {
 			_context = ZMQ.context(1);
@@ -131,6 +135,8 @@ public abstract class QueueListenerTask {
 		synchronized (_context) {
 			if (_socket != null) {
 				_executorService.shutdownNow();
+				Thread.sleep(1*1000);
+				_log.warn("_executorService.isTerminated=" + _executorService.isTerminated());
 				_socket.close();
 				_executorService = Executors.newFixedThreadPool(1);
 			}
@@ -146,12 +152,12 @@ public abstract class QueueListenerTask {
 			_log.debug("queue is listening on " + bind);
 			_initialized = true;
 		}
-  }
+	}
 
 	private class DNSCheckThread extends TimerTask {
 
 		@Override
-  	public void run() {
+			public void run() {
 			try {
 				if (_resolver.hasAddressChanged()) {
 					_log.warn("Resolver Changed");
@@ -159,6 +165,7 @@ public abstract class QueueListenerTask {
 				}
 			} catch (Exception e) {
 				_log.error(e.toString());
+				_resolver.reset();
 			}
 		}
 	}

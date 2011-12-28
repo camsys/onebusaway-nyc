@@ -43,27 +43,27 @@ import org.zeromq.ZMQ;
 
 public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
-  private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
+	private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
 
 	private static final long HEARTBEAT_INTERVAL = 1000l;
 
 	private static final String HEARTBEAT_TOPIC = "heartbeat";
 
-  private ExecutorService _executorService = null;
+	private ExecutorService _executorService = null;
 
-  private ExecutorService _heartbeatService = null;
+	private ExecutorService _heartbeatService = null;
 
-  private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
+	private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
 
-  private ArrayBlockingQueue<String> _heartbeatBuffer = new ArrayBlockingQueue<String>(10);
+	private ArrayBlockingQueue<String> _heartbeatBuffer = new ArrayBlockingQueue<String>(10);
 
-  private boolean _initialized = false;
+	private boolean _initialized = false;
 
-  public boolean _isPrimaryInferenceInstance = true;
+	public boolean _isPrimaryInferenceInstance = true;
 
-  public String _primaryHostname = null;
+	public String _primaryHostname = null;
 
-  private ObjectMapper _mapper = new ObjectMapper();		
+	private ObjectMapper _mapper = new ObjectMapper();		
 
 	protected DNSResolver _outputQueueResolver = null;
 
@@ -73,8 +73,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 	protected ZMQ.Socket _socket = null;
 
-  @Autowired
-  private ConfigurationService _configurationService;
+    @Autowired
+    private ConfigurationService _configurationService;
 
 	@Autowired
 	private ThreadPoolTaskScheduler _taskScheduler;
@@ -96,7 +96,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
     @Override
     public void run() {
-      while(true) {		    	
+      while(!Thread.currentThread().isInterrupted()) {		    	
         String r = _outputBuffer.poll();
         if(r == null)
           continue;
@@ -138,18 +138,18 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
     private byte[] _topicName = null;
 
-		private long _interval;
+	private long _interval;
 
     public HeartbeatThread(long interval) {
 			_interval = interval;
-    }
+  }
 
     @Override
     public void run() {
 			long markTimestamp = System.currentTimeMillis();
 
 			try {
-				while (true) {
+				while (!Thread.currentThread().isInterrupted()) {
 					if (_isPrimaryInferenceInstance) {
 						String msg = getHeartbeatMessage(getPrimaryHostname(),
 																						 markTimestamp,
@@ -171,7 +171,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 	private class OutputQueueCheckThread extends TimerTask {
 
-		@Override
+	@Override
   	public void run() {
 			try {
 				if (_outputQueueResolver.hasAddressChanged()) {
@@ -180,6 +180,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 				}
 			} catch (Exception e) {
 				_log.error(e.toString());
+				_outputQueueResolver.reset();
 			}
 		}
 	}
@@ -239,7 +240,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
   @PreDestroy 
   public void destroy() {
     _executorService.shutdownNow();
-		_heartbeatService.shutdownNow();
+	_heartbeatService.shutdownNow();
   }
 
   @Refreshable(dependsOn = {"inference-engine.outputQueueHost", 
@@ -259,20 +260,27 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
       return;
     }
 
+	try {
 		initializeQueue(host, queueName, port);
+	} catch (Exception any) {
+		_outputQueueResolver.reset();
+	}
 
   }
 
 	protected void reinitializeQueue() {
-		initializeQueue(getQueueHost(),
-										getQueueName(),
-										getQueuePort());
+		try {
+			initializeQueue(getQueueHost(),
+							getQueueName(),
+							getQueuePort());
+		} catch (InterruptedException ie) {
+			return;
+		}
 	}
 
-	protected void initializeQueue(String host, String queueName, Integer port) {
+	protected void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
     String bind = "tcp://" + host + ":" + port;
 		_log.warn("binding to " + bind);
-
 		if (_context == null) {
 			_context = ZMQ.context(1);
 		}
@@ -280,6 +288,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 			if (_socket != null) {
 				_executorService.shutdownNow();
 				_heartbeatService.shutdownNow();
+				Thread.sleep(1*1000);
+				_log.warn("_executorService.isTerminated=" + _executorService.isTerminated());
 				_socket.close();
 				_executorService = Executors.newFixedThreadPool(1);
 				_heartbeatService = Executors.newFixedThreadPool(1);
@@ -289,11 +299,12 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 			_socket.connect(bind);
 			_executorService.execute(new SendThread(_socket, queueName));
 			_heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
-
 		}
 
     _log.debug("Inference output queue is sending to " + bind);
     _initialized = true;
+
+
 	}
 
 	public String getQueueHost() {
@@ -318,15 +329,15 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
     return _isPrimaryInferenceInstance;
   }	
 
-	@Override
+  @Override
   public void setPrimaryHostname(String hostname) {
-		_primaryHostname = hostname;
-	}
+	_primaryHostname = hostname;
+  }
 
-	@Override
-	public String getPrimaryHostname() {
-		return _primaryHostname;
-	}
+  @Override
+  public String getPrimaryHostname() {
+	return _primaryHostname;
+  }
 
 
 }

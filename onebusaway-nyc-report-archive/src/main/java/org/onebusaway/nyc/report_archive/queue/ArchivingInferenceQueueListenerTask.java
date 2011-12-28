@@ -56,7 +56,11 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
       return;
     }
     _log.info("inference archive listening on " + host + ":" + port + ", queue=" + queueName);
-    initializeQueue(host, queueName, port);
+	try {
+		initializeQueue(host, queueName, port);
+	} catch (InterruptedException ie) {
+		return;
+	}
   }
 
   @Override

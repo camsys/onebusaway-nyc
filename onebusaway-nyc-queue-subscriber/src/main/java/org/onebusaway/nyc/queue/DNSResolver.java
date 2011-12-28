@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
  * Utility class to test if DNS resolution of a hostname has changed.
  */
 public class DNSResolver {
-  protected static Logger _log = LoggerFactory.getLogger(DNSResolver.class);
+	protected static Logger _log = LoggerFactory.getLogger(DNSResolver.class);
 	private InetAddress currentAddress = null;
 	private String host = null;
 
@@ -19,7 +19,19 @@ public class DNSResolver {
 		currentAddress = getInetAddressByName(host);
 	}
 
-	public boolean hasAddressChanged() {
+	/**
+	 * Reset any cached state.  Useful for forcing a comparison/state change in 
+	 * the next call.
+	 */
+	public synchronized void reset() {
+		currentAddress = null;
+	}
+
+	/**
+	 * test if the host this object was constructed with resolves to the same
+	 * IP.
+	 */
+	public synchronized boolean hasAddressChanged() {
 		InetAddress newAddress = getInetAddressByName(host);
 		// test if not previously resolved
 		if (currentAddress == null) {
@@ -36,6 +48,9 @@ public class DNSResolver {
 		return false;
 	}
 
+	/**
+	 * Tests if this host is at the IP corresponding to the DNS address.
+	 */
 	public boolean isPrimary() {
 		InetAddress newAddress = getInetAddressByName(host);
 		if (newAddress == null) {
@@ -53,6 +68,9 @@ public class DNSResolver {
 		return false;
 	}
 
+	/**
+	 * convenience null-safe wrapper for InetAddress.getLocalhost.
+	 */
 	public InetAddress getLocalHost() {
 		try {
 			return InetAddress.getLocalHost();
@@ -62,6 +80,9 @@ public class DNSResolver {
 		return null;
 	}
 
+	/**
+	 * null-safe toString of InetAddress.getLocalhost.
+	 */
 	public String getLocalHostString() {
 		InetAddress local = getLocalHost();
 		if (local != null) {
@@ -70,6 +91,9 @@ public class DNSResolver {
 		return "unknown";
 	}
 
+	/**
+	 * null-safe lookup of a host.
+	 */
 	public InetAddress getInetAddressByName(String host) {
 		InetAddress address = null;
 		try {
