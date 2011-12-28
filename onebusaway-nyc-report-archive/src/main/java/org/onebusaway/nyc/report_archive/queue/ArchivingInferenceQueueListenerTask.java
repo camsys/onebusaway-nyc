@@ -46,16 +46,17 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
       return;
     }
 
-    String host = _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
-    String queueName = _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
-    Integer port = _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5567);
+    String host = getQueueHost();
+    String queueName = getQueueName();
+    Integer port = getQueuePort();
+
 
     if(host == null || queueName == null || port == null) {
       _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
       return;
     }
     _log.info("inference archive listening on " + host + ":" + port + ", queue=" + queueName);
-    initializeZmq(host, queueName, port);
+    initializeQueue(host, queueName, port);
   }
 
   @Override
@@ -71,6 +72,21 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
       _log.error("Exception processing contents= " + contents, t);
     }
   }
+
+	@Override
+	public String getQueueHost() {
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+	}
+
+	@Override
+	public String getQueueName() {
+		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+	}
+
+	@Override
+	public Integer getQueuePort() {
+		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5567);
+	}
  
   private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
     // Extract next stop id and distance
