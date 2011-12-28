@@ -89,7 +89,7 @@ public abstract class QueueListenerTask {
         }
 
         if(processedCount > 50) {
-          _log.info("Inference input queue: processed 50 messages in " 
+          _log.info(getQueueName() + " input queue: processed 50 messages in " 
               + (new Date().getTime() - markTimestamp.getTime()) / 1000 + " seconds.");
 
           markTimestamp = new Date();

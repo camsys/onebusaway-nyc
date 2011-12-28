@@ -82,6 +82,7 @@
 	<!-- This option sends inference output to a local running TDF/TDS -->
   	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.${ie.output.queue}">
   		<property name="isPrimaryInferenceInstance" value="true"/>
+      <property name="primaryHostname" value=""/>
 	</bean>
 
 

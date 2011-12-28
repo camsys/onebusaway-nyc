@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DummyOutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 	public boolean _isPrimaryInferenceInstance = true;
+
+  public String _primaryHostname = null;
 	
 	@Autowired
 	private VehicleLocationListener _vehicleLocationListener;
@@ -49,4 +51,15 @@ public class DummyOutputQueueSenderServiceImpl implements OutputQueueSenderServi
 	public boolean getIsPrimaryInferenceInstance() {
 		return _isPrimaryInferenceInstance;
 	}
+
+	@Override
+  public void setPrimaryHostname(String hostname) {
+		_primaryHostname = hostname;
+	}
+
+	@Override
+	public String getPrimaryHostname() {
+		return _primaryHostname;
+	}
+
 }

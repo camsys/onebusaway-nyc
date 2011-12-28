@@ -33,6 +33,9 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 	@Override
 	public boolean processMessage(String address, String contents) {
 		try {
+			if (address == null || !address.equals(getQueueName())) {
+				return false;
+			}
 			NycQueuedInferredLocationBean inferredResult = 
 				_mapper.readValue(contents, NycQueuedInferredLocationBean.class);
 			processResult(inferredResult, contents);

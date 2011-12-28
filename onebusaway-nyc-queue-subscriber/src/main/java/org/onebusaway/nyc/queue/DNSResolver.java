@@ -36,7 +36,41 @@ public class DNSResolver {
 		return false;
 	}
 
-	public static InetAddress getInetAddressByName(String host) {
+	public boolean isPrimary() {
+		InetAddress newAddress = getInetAddressByName(host);
+		if (newAddress == null) {
+			_log.warn("Primary host did not resolve, assuming primary.  host=" + host);
+			return true;
+		}
+		try {
+			if (InetAddress.getLocalHost().equals(newAddress)) { // compares IP
+				return true;
+			}
+		} catch (UnknownHostException uhe) {
+			_log.error("misconfigured host, unable to resolve localhost");
+			_log.error(uhe.toString());
+		}
+		return false;
+	}
+
+	public InetAddress getLocalHost() {
+		try {
+			return InetAddress.getLocalHost();
+		} catch (UnknownHostException uhe) {
+			_log.error(uhe.toString());
+		}
+		return null;
+	}
+
+	public String getLocalHostString() {
+		InetAddress local = getLocalHost();
+		if (local != null) {
+			return local.toString();
+		}
+		return "unknown";
+	}
+
+	public InetAddress getInetAddressByName(String host) {
 		InetAddress address = null;
 		try {
 			address = InetAddress.getByName(host);
