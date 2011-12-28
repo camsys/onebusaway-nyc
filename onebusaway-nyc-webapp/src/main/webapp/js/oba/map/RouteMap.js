@@ -82,6 +82,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 	function showPopupWithContentFromRequest(marker, url, params, contentFn, userData) {
 		preparePopup(marker);		
 
+		if(OBA.Config.time !== null) {
+			params.time = OBA.Config.time;
+		}
+		
 		var popupContainerId = "container" + Math.floor(Math.random() * 1000000);
 		var refreshFn = function() {
 			jQuery.getJSON(url, params, function(json) {
@@ -528,7 +532,13 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		var agencyId = routeIdParts[0];
 		var routeIdWithoutAgency = routeIdParts[1];
 		
-		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", { OperatorRef: agencyId, LineRef: routeIdWithoutAgency }, 
+		var params = { OperatorRef: agencyId, LineRef: routeIdWithoutAgency };		
+
+		if(OBA.Config.time !== null) {
+			params.time = OBA.Config.time;
+		}
+		
+		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", params, 
 		function(json) {
 			var vehiclesByIdInResponse = {};
 			jQuery.each(json.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity, function(_, activity) {
