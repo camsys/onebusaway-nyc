@@ -55,6 +55,8 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
   private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
 
+  private ArrayBlockingQueue<String> _heartbeatBuffer = new ArrayBlockingQueue<String>(10);
+
   private boolean _initialized = false;
 
   public boolean _isPrimaryInferenceInstance = true;
@@ -104,6 +106,15 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 					_zmqSocket.send(r.getBytes(), 0);
 				}
 
+				r = _heartbeatBuffer.poll();
+				if (r != null) {
+					if (_isPrimaryInferenceInstance) {
+						_zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
+						_zmqSocket.send(r.getBytes(), 0);
+						_log.warn("heartbeat=" + r);
+					}
+				}
+
         Thread.yield();
 
         if(processedCount > 50) {
@@ -129,9 +140,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
 		private long _interval;
 
-    public HeartbeatThread(ZMQ.Socket socket, String topicName, long interval) {
-      _zmqSocket = socket;
-      _topicName = topicName.getBytes();
+    public HeartbeatThread(long interval) {
 			_interval = interval;
     }
 
@@ -139,19 +148,18 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
     public void run() {
 			long markTimestamp = System.currentTimeMillis();
 
-			while (true) {
-				if (_isPrimaryInferenceInstance) {
-					String msg = getHeartbeatMessage(getPrimaryHostname(),
-																					 markTimestamp,
-																					 _interval);
-					_zmqSocket.send(_topicName, ZMQ.SNDMORE);
-					_zmqSocket.send(msg.getBytes(), 0);
-				}
-				try {
+			try {
+				while (true) {
+					if (_isPrimaryInferenceInstance) {
+						String msg = getHeartbeatMessage(getPrimaryHostname(),
+																						 markTimestamp,
+																						 _interval);
+						_heartbeatBuffer.put(msg);
+					}
 					Thread.sleep(_interval);
-				} catch (InterruptedException ie) {
-					// bury
 				}
+			} catch (InterruptedException ie) {
+					// bury
 			}
     }
 
@@ -280,7 +288,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 			_socket = _context.socket(ZMQ.PUB);	    	
 			_socket.connect(bind);
 			_executorService.execute(new SendThread(_socket, queueName));
-			_heartbeatService.execute(new HeartbeatThread(_socket, HEARTBEAT_TOPIC, HEARTBEAT_INTERVAL));
+			_heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
 
 		}
 
