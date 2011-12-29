@@ -233,7 +233,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 			_taskScheduler.scheduleWithFixedDelay(primaryCheckThread, 10*1000);
 		}
     _executorService = Executors.newFixedThreadPool(1);
-		_heartbeatService = Executors.newFixedThreadPool(1);
+    _heartbeatService = Executors.newFixedThreadPool(1);
     startListenerThread();
   }
 
