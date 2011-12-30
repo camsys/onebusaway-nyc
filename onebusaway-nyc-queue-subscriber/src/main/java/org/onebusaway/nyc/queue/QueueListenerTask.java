@@ -30,17 +30,17 @@ public abstract class QueueListenerTask {
   protected static Logger _log = LoggerFactory.getLogger(QueueListenerTask.class);
   @Autowired
   protected ConfigurationService _configurationService;
-	@Autowired
-	private ThreadPoolTaskScheduler _taskScheduler;
+  @Autowired
+  private ThreadPoolTaskScheduler _taskScheduler;
   private ExecutorService _executorService = null;
   protected boolean _initialized = false;
   protected ObjectMapper _mapper = new ObjectMapper();
 
 
-	protected DNSResolver _resolver = null;
-	protected ZMQ.Context _context = null;
-	protected ZMQ.Socket _socket = null;
-	protected ZMQ.Poller _poller = null;
+  protected DNSResolver _resolver = null;
+  protected ZMQ.Context _context = null;
+  protected ZMQ.Socket _socket = null;
+  protected ZMQ.Poller _poller = null;
 
 
   public abstract boolean processMessage(String address, String contents);
@@ -124,7 +124,7 @@ public abstract class QueueListenerTask {
 	}
 
 	// (re)-initialize ZMQ with the given args
-	protected void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+	protected synchronized void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
 		String bind = "tcp://" + host + ":" + port;
 		_log.warn("binding to " + bind + " with topic=" + queueName);
 
@@ -132,26 +132,25 @@ public abstract class QueueListenerTask {
 			_context = ZMQ.context(1);
 		}
 
-		synchronized (_context) {
-			if (_socket != null) {
-				_executorService.shutdownNow();
-				Thread.sleep(1*1000);
-				_log.debug("_executorService.isTerminated=" + _executorService.isTerminated());
-				_socket.close();
-				_executorService = Executors.newFixedThreadPool(1);
-			}
-			_socket = _context.socket(ZMQ.SUB);	    	
-			_poller = _context.poller(2);
-			_poller.register(_socket, ZMQ.Poller.POLLIN);
+        if (_socket != null) {
+            _executorService.shutdownNow();
+            Thread.sleep(1*1000);
+            _log.debug("_executorService.isTerminated=" + _executorService.isTerminated());
+            _socket.close();
+            _executorService = Executors.newFixedThreadPool(1);
+        }
+        _socket = _context.socket(ZMQ.SUB);	    	
+        _poller = _context.poller(2);
+        _poller.register(_socket, ZMQ.Poller.POLLIN);
 
-			_socket.connect(bind);
-			_socket.subscribe(queueName.getBytes());
+        _socket.connect(bind);
+        _socket.subscribe(queueName.getBytes());
 
-			_executorService.execute(new ReadThread(_socket, _poller));
+        _executorService.execute(new ReadThread(_socket, _poller));
 
-			_log.debug("queue is listening on " + bind);
-			_initialized = true;
-		}
+        _log.debug("queue is listening on " + bind);
+        _initialized = true;
+
 	}
 
 	private class DNSCheckThread extends TimerTask {

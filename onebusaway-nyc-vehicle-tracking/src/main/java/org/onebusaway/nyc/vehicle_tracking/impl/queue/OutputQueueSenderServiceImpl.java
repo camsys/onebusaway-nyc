@@ -97,23 +97,24 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
     @Override
     public void run() {
       while(!Thread.currentThread().isInterrupted()) {		    	
+        String h = _heartbeatBuffer.poll();
+        if (h != null) {
+            if (_isPrimaryInferenceInstance) {
+                _zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
+                _zmqSocket.send(h.getBytes(), 0);
+                _log.debug("heartbeat=" + h);
+            }
+        }
+
         String r = _outputBuffer.poll();
         if(r == null)
           continue;
 
-				if (_isPrimaryInferenceInstance) {
-					_zmqSocket.send(_topicName, ZMQ.SNDMORE);
-					_zmqSocket.send(r.getBytes(), 0);
-				}
+        if (_isPrimaryInferenceInstance) {
+            _zmqSocket.send(_topicName, ZMQ.SNDMORE);
+            _zmqSocket.send(r.getBytes(), 0);
+        }
 
-				r = _heartbeatBuffer.poll();
-				if (r != null) {
-					if (_isPrimaryInferenceInstance) {
-						_zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
-						_zmqSocket.send(r.getBytes(), 0);
-						_log.debug("heartbeat=" + r);
-					}
-				}
 
         Thread.yield();
 
@@ -159,7 +160,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 					Thread.sleep(_interval);
 				}
 			} catch (InterruptedException ie) {
-					// bury
+                _log.error(ie.toString());
 			}
     }
 
@@ -278,33 +279,29 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 		}
 	}
 
-	protected void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
-    String bind = "tcp://" + host + ":" + port;
-		_log.warn("binding to " + bind);
+	protected synchronized void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
+        String bind = "tcp://" + host + ":" + port;
+        _log.warn("binding to " + bind);
 		if (_context == null) {
 			_context = ZMQ.context(1);
 		}
-		synchronized (_context) {
-			if (_socket != null) {
-				_executorService.shutdownNow();
-				_heartbeatService.shutdownNow();
-				Thread.sleep(1*1000);
-				_log.warn("_executorService.isTerminated=" + _executorService.isTerminated());
-				_socket.close();
-				_executorService = Executors.newFixedThreadPool(1);
-				_heartbeatService = Executors.newFixedThreadPool(1);
-			}
+        if (_socket != null) {
+            _executorService.shutdownNow();
+            _heartbeatService.shutdownNow();
+            Thread.sleep(1*1000);
+            _log.warn("_executorService.isTerminated=" + _executorService.isTerminated());
+            _socket.close();
+            _executorService = Executors.newFixedThreadPool(1);
+            _heartbeatService = Executors.newFixedThreadPool(1);
+        }
 
-			_socket = _context.socket(ZMQ.PUB);	    	
-			_socket.connect(bind);
-			_executorService.execute(new SendThread(_socket, queueName));
-			_heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
-		}
+        _socket = _context.socket(ZMQ.PUB);	    	
+        _socket.connect(bind);
+        _executorService.execute(new SendThread(_socket, queueName));
+        _heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
 
-    _log.debug("Inference output queue is sending to " + bind);
-    _initialized = true;
-
-
+        _log.debug("Inference output queue is sending to " + bind);
+        _initialized = true;
 	}
 
 	public String getQueueHost() {
