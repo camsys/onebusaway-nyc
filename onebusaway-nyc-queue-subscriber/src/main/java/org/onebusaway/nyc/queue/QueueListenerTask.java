@@ -136,7 +136,7 @@ public abstract class QueueListenerTask {
 			if (_socket != null) {
 				_executorService.shutdownNow();
 				Thread.sleep(1*1000);
-				_log.warn("_executorService.isTerminated=" + _executorService.isTerminated());
+				_log.debug("_executorService.isTerminated=" + _executorService.isTerminated());
 				_socket.close();
 				_executorService = Executors.newFixedThreadPool(1);
 			}
@@ -160,7 +160,7 @@ public abstract class QueueListenerTask {
 			public void run() {
 			try {
 				if (_resolver.hasAddressChanged()) {
-					_log.warn("Resolver Changed");
+					_log.warn("Resolver Changed -- re-binding queue connection");
 					reinitializeQueue();
 				}
 			} catch (Exception e) {

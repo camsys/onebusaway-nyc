@@ -36,8 +36,9 @@ public class Publisher implements IPublisher {
         context = ZMQ.context(1);
         // new envelope protocol
         envelopeSocket = context.socket(ZMQ.PUB);
-        envelopeSocket.bind(protocol + "://" + host + ":" + (port+1));
-
+        String bind = protocol + "://" + host + ":" + port;
+        envelopeSocket.bind(bind);
+        _log.warn("binding to " + bind);
         executorService = Executors.newFixedThreadPool(1);
         executorService.execute(new SendThread(envelopeSocket, topic));
 
@@ -47,6 +48,7 @@ public class Publisher implements IPublisher {
      * Ask ZeroMQ to close politely.
      */
     public synchronized void close() {
+        _log.warn("shutting down...");
         executorService.shutdownNow();
         try {
             Thread.sleep(1*1000);
@@ -125,7 +127,7 @@ public class Publisher implements IPublisher {
 
                 Thread.yield();
 
-                if(processedCount > 100) {
+                if(processedCount > 1000) {
                     _log.warn("HTTP Proxy output queue: processed 100 messages in " 
                               + (new Date().getTime() - markTimestamp.getTime()) / 1000 + 
                               " seconds; current queue length is " + outputBuffer.size());

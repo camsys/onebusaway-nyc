@@ -111,7 +111,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 					if (_isPrimaryInferenceInstance) {
 						_zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
 						_zmqSocket.send(r.getBytes(), 0);
-						_log.warn("heartbeat=" + r);
+						_log.debug("heartbeat=" + r);
 					}
 				}
 
@@ -146,10 +146,10 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
     @Override
     public void run() {
-			long markTimestamp = System.currentTimeMillis();
 
 			try {
 				while (!Thread.currentThread().isInterrupted()) {
+                    long markTimestamp = System.currentTimeMillis();
 					if (_isPrimaryInferenceInstance) {
 						String msg = getHeartbeatMessage(getPrimaryHostname(),
 																						 markTimestamp,
