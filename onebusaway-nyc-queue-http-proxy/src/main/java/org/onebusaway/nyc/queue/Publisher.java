@@ -36,7 +36,7 @@ public class Publisher implements IPublisher {
         context = ZMQ.context(1);
         // new envelope protocol
         envelopeSocket = context.socket(ZMQ.PUB);
-        String bind = protocol + "://" + host + ":" + port;
+        String bind = protocol + "://" + host + ":" + (port+1);
         envelopeSocket.bind(bind);
         _log.warn("binding to " + bind);
         executorService = Executors.newFixedThreadPool(1);
