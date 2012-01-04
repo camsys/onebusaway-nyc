@@ -24,9 +24,9 @@ public abstract interface PresentationModelFactory {
   public RouteResult getRouteModelForStop(RouteBean routeBean, List<RouteDestinationItem> destinations);
 
   // route direction at route (route being top level object)
-  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops);
+  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops, Boolean hasUpcomingScheduledService);
 
   // route available at stop (stop being top level object)
-  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop);
+  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop, Boolean hasUpcomingScheduledService);
 
 }

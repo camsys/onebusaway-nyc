@@ -20,7 +20,7 @@ public class DefaultPresentationModelFactory implements PresentationModelFactory
   public StopResult getStopModelForRoute(StopBean stopBean, RouteBean route) {
     List<RouteResult> routesAvailable = new ArrayList<RouteResult>();
     for(RouteBean routeBean : stopBean.getRoutes()) {
-      routesAvailable.add(getRouteModelForStop(routeBean, null));
+     routesAvailable.add(getRouteModelForStop(routeBean, null));
     }
     return new StopResult(stopBean, routesAvailable);
   }
@@ -33,12 +33,12 @@ public class DefaultPresentationModelFactory implements PresentationModelFactory
     return new RouteResult(routeBean, destinations);
   }
 
-  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops) {
-    return new RouteDestinationItem(group, stops);
+  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops, Boolean hasUpcomingScheduledService) {
+    return new RouteDestinationItem(group, stops, hasUpcomingScheduledService);
   }
 
-  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop) {
-    return new RouteDestinationItem(group, null);
+  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop, Boolean hasUpcomingScheduledService) {
+    return new RouteDestinationItem(group, null, hasUpcomingScheduledService);
   }
   
 }

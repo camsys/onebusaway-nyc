@@ -40,7 +40,7 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
 
   @Autowired
   private TransitDataService _transitDataService;
-  
+
   private List<StopResult> _results = new ArrayList<StopResult>();
 
   private CoordinateBounds _bounds = new CoordinateBounds();

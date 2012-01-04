@@ -27,9 +27,12 @@ public class RouteDestinationItem {
   
   private final List<StopResult> stops;
   
-  public RouteDestinationItem(StopGroupBean group, List<StopResult> stops) {
+  private final Boolean hasUpcomingScheduledService;
+  
+  public RouteDestinationItem(StopGroupBean group, List<StopResult> stops, Boolean hasUpcomingScheduledService) {
     this.group = group;
     this.stops = stops;
+    this.hasUpcomingScheduledService = hasUpcomingScheduledService;
   }
 
   public String getHeadsign() {
@@ -39,7 +42,11 @@ public class RouteDestinationItem {
   public String getDirectionId() {
     return group.getId();
   }
-  
+
+  public Boolean getHasUpcomingScheduledService() {
+    return hasUpcomingScheduledService;
+  }
+
   public List<String> getPolylines() {
     List<String> output = new ArrayList<String>();
     for(EncodedPolylineBean polyline : group.getPolylines()) {

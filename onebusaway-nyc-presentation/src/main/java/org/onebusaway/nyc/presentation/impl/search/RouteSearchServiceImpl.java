@@ -25,6 +25,7 @@ import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.PresentationModelFactory;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -58,7 +59,10 @@ public class RouteSearchServiceImpl implements RouteSearchService {
 
   @Autowired
   private TransitDataService _transitDataService;
-  
+
+  @Autowired
+  private PresentationService _presentationService;
+
   @Autowired
   private ServiceAreaService _serviceArea;
     
@@ -166,6 +170,8 @@ public class RouteSearchServiceImpl implements RouteSearchService {
         if (!type.equals("destination"))
           continue;
         
+        Boolean hasServiceForDirection = _presentationService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+        
         List<StopResult> stopItems = null;
         if(includeStops == true && !stopGroupBean.getStopIds().isEmpty()) {
           stopItems = new ArrayList<StopResult>();
@@ -175,7 +181,8 @@ public class RouteSearchServiceImpl implements RouteSearchService {
           }
         }
           
-        output.add(_modelFactory.getRouteDestinationModelForRoute(stopGroupBean, routeBean, stopItems));
+        output.add(_modelFactory.getRouteDestinationModelForRoute(stopGroupBean, routeBean, stopItems, 
+            hasServiceForDirection));
       }
     }
     

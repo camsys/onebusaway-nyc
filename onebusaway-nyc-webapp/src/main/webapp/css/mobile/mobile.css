@@ -157,6 +157,13 @@ strong {
 	margin-top: .6em;
 	margin-bottom: .6em;
 }
+p.noService {
+	font-weight: bold;
+	font-style: italic;
+}
+span.noService {
+	font-style: italic;
+}
 span.noUpcomingService {
 	font-style: italic;
 	color: #AAAAAA;
