@@ -75,6 +75,10 @@
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
         <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>apache-log4j-extras</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-siri-api-v13</artifactId>
             <version>${onebusaway.siri.version}</version>
