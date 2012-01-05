@@ -44,13 +44,13 @@ OBA.Sign = function() {
 
 		// special mode for MTA TIS display
 		if(tisMode === "true") {
-			vehiclesPerStop = 3;
+			vehiclesPerStop = 1;
 			jQuery('body').removeClass().addClass('landscape').addClass('sizeTIS');
 			return;
 		}
 		
 		if(w > h) {
-			vehiclesPerStop = 3;
+			vehiclesPerStop = 1;
 			if(h >= 1150) {
 				jQuery('body').removeClass().addClass('landscape').addClass('size1200');
 			} else if(h >= 1000) {
@@ -61,7 +61,7 @@ OBA.Sign = function() {
 				jQuery('body').removeClass().addClass('landscape');			
 			}			
 		} else {
-			vehiclesPerStop = 6;
+			vehiclesPerStop = 1;
 			if(h >= 1900) {
 				jQuery('body').removeClass().addClass('portrait').addClass('size1900');
 			} else if(h >= 1500) {
@@ -83,6 +83,8 @@ OBA.Sign = function() {
 		tisMode = getParameterByName("tisMode", tisMode);
 		
 		refreshInterval = getParameterByName("refresh", refreshInterval);
+
+		vehiclesPerStop = getParameterByName("vehiclesPerStop", vehiclesPerStop);
 
 		timeout = refreshInterval;
 			
