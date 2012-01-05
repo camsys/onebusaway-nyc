@@ -64,7 +64,7 @@ OBA.Wizard = function(routeMap) {
 		disambiguation_text = 'Hover over these locations to see them on the map, click to zoom in. If none are what you were looking for, try making your search <a rel="popover" id="more_specific_popup">more specific</a>.',
 	
 		more_specific_title = "Address Tips",
-		more_specific_text = "Add street types such as <strong>Ave</strong>, <strong>St</strong> or <strong>Blvd</strong>, and the borough or zip code. For intersections, include <strong>and</strong> or <strong>&</strong> between street names.";
+		more_specific_text = "Add street types such as <strong>Ave</strong>, <strong>St</strong> or <strong>Blvd</strong>, and the borough or ZIP code. For intersections, include <strong>and</strong> or <strong>&</strong> between intersecting streets.";
 		
 	var stop_code_content = "<p>Option 1. Type a location at left or zoom the map in as much as you can. Click on a bus stop name or stop icon <img src='css/map/img/wizard/stop-unknown.png' style='vertical-align:-6px;' /> to see the stop code &amp; bus info.</p>"
 						  + "<p>Option 2. Locate your stop code on a bus stop pole box:</p>" 
