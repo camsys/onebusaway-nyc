@@ -109,6 +109,57 @@ public class PublisherTest {
 			assertEquals(rtmessage, envelope);
 	}
 
+
+  @Test
+  public void testWrapNull() throws Exception {
+			
+			Publisher p = new Publisher("topic") {
+							String generateUUID() {
+									return "foo";
+							}
+							long getTimeReceived() {
+									return 1234567;
+							}
+					};
+
+      String envelope = p.wrap(null);
+      assertEquals(null, envelope);
+  }
+
+  @Test
+  public void testWrapEmpty() throws Exception {
+			
+			Publisher p = new Publisher("topic") {
+							String generateUUID() {
+									return "foo";
+							}
+							long getTimeReceived() {
+									return 1234567;
+							}
+					};
+
+      String envelope = p.wrap(new byte[0]);
+      assertEquals(null, envelope);
+  }
+
+  @Test
+  public void testWrapSingle() throws Exception {
+			
+			Publisher p = new Publisher("topic") {
+							String generateUUID() {
+									return "foo";
+							}
+							long getTimeReceived() {
+									return 1234567;
+							}
+					};
+
+      byte[] buff = " ".getBytes();
+      String envelope = p.wrap(buff);
+      assertEquals(null, envelope);
+  }
+
+
   private CcLocationReport buildCcLocationReport() {
       CcLocationReport m = new CcLocationReport();
       m.setRequestId(1205);
