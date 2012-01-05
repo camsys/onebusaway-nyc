@@ -64,7 +64,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   public void setup() {
     super.setup();
     _zoneOffset = 
-	_configurationService.getConfigurationValueAsString("tds.zoneOffset", "-04:00");
+	_configurationService.getConfigurationValueAsString("tds.zoneOffset", "-05:00");
   }
   
   @PreDestroy 
