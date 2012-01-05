@@ -30,7 +30,7 @@ OBA.Sign = function() {
 		var regexS = "[\\?&]"+name+"=([^&#]*)";
 		var regex = new RegExp(regexS);
 		var results = regex.exec(window.location.href);
-		if(results == null) {
+		if(results === null) {
 			return defaultValue;
 		} else {
 			return decodeURIComponent(results[1].replace(/\+/g, " "));
@@ -277,13 +277,7 @@ OBA.Sign = function() {
 
 			var stopTable = jQuery("table.stop" + stopIdWithoutAgency);
 			if(stopTable.length === 0) {
-				stopTable = getNewTableForStop(stopIdWithoutAgency, "Loading...");
-
-				jQuery.getJSON("../" + OBA.Config.searchUrl, { q: stopIdWithoutAgency }, function(json) {
-					stopName = json.searchResults[0].name;
-					stopTable.find(".name").text(stopName);
-				});
-				
+				stopTable = getNewTableForStop(stopIdWithoutAgency, "(Stop name not yet available)");
 				arrivalsDiv.append(stopTable.hide());
 			}
     		
@@ -304,6 +298,15 @@ OBA.Sign = function() {
 				jQuery.each(json.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit, function(_, monitoredStopVisit) {
 					var journey = monitoredStopVisit.MonitoredVehicleJourney;
 
+					if(typeof journey.MonitoredCall === 'undefined') {
+						return;
+					}
+
+					var stopName = journey.MonitoredCall.StopPointName;
+					if(stopName !== null) {
+						jQuery(".stop" + stopId + " .name").text(stopName);
+					}
+					
 					var routeId = journey.LineRef;
 					var routeIdParts = routeId.split("_");
 					var routeIdWithoutAgency = routeIdParts[1];
