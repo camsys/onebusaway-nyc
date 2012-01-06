@@ -276,9 +276,9 @@ OBA.Sidebar = function () {
 				if(destination.hasUpcomingScheduledService === false) {
 					var noServiceMessage = jQuery("<div></div>")
 												.addClass("no-service")
-												.text("No upcoming service for the " + 
+												.text("No scheduled service for the " + 
 														routeResult.routeIdWithoutAgency + 
-														" to " + destination.headsign);
+														" to " + destination.headsign + " at this time.");
 
 					directionHeader.append(noServiceMessage);
 				}
