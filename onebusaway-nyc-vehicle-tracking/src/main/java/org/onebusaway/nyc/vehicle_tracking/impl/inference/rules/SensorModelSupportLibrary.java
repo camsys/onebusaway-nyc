@@ -83,7 +83,7 @@ public class SensorModelSupportLibrary {
 
   private boolean _useBlockLocationDeviationModel = true;
 
-  private DeviationModel _scheduleDeviationModel = new DeviationModel(15 * 60);
+  private DeviationModel _scheduleDeviationModel = new DeviationModel(50 * 60);
 
   private double _propabilityOfBeingOutOfServiceWithAnOutOfServiceDSC = 0.95;
 

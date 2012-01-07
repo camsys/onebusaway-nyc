@@ -117,4 +117,36 @@ public final class BlockState {
   public void setRunReportedAssignedMismatch(Boolean isRunReportedUTSMismatch) {
     this.isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
   }
+
+  public static int compare(BlockState leftBs, BlockState rightBs) {
+    
+    if (leftBs == rightBs)
+      return 0;
+    
+    if (leftBs != null && rightBs == null) {
+      return 1;
+    } else if (rightBs != null && leftBs == null) {
+      return -1;
+    } 
+    
+    int distAlongComp = Double.compare(leftBs.getBlockLocation().getDistanceAlongBlock(),
+        rightBs.getBlockLocation().getDistanceAlongBlock());
+    
+    if (distAlongComp != 0)
+      return distAlongComp;
+    
+    int blockInstComp = leftBs.getBlockInstance().getBlock().getBlock().getId().compareTo(
+        rightBs.getBlockInstance().getBlock().getBlock().getId());
+    
+    if (blockInstComp != 0)
+      return blockInstComp;
+    
+    int tripIdComp = leftBs.getBlockLocation().getActiveTrip().getTrip().getId().compareTo(
+        rightBs.getBlockLocation().getActiveTrip().getTrip().getId());
+    
+    if (tripIdComp != 0)
+      return tripIdComp;
+    
+    return 0;
+  }
 }

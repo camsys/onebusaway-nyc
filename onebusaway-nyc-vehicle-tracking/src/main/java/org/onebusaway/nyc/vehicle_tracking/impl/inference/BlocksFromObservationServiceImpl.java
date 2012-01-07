@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
@@ -211,7 +212,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         observation, thisKey);
 
     if (potentialBlocks == null) {
-      potentialBlocks = new HashSet<BlockState>();
+      potentialBlocks = Collections.newSetFromMap(new ConcurrentHashMap<BlockState, Boolean>());
 
       /*
        * we compute the nearby blocks NOW, for any methods that might use it as
@@ -452,14 +453,18 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
        * operator-id or reported-run when the filter isn't reset.
        */
       boolean opAssigned = StringUtils.equals(opAssignedRunId, rte.getRunId());
-      boolean runReported = blockState.getRunReported() != null
-          ? blockState.getRunReported()
-          : (reportedRtes != null && reportedRtes.contains(rte));
+      Observation prevObs = observation.getPreviousObservation();
 
-      blockState.setRunReported(runReported);
+      if (blockState.getRunReported() != null
+          && prevObs != null
+          && observation.getFuzzyMatchDistance() <= prevObs.getFuzzyMatchDistance())
+        blockState.setRunReported(blockState.getRunReported());
+      else
+        blockState.setRunReported(reportedRtes != null
+            && reportedRtes.contains(rte));
+
       blockState.setOpAssigned(opAssigned);
       blockState.setRunReportedAssignedMismatch(assignedReportedRunMismatch);
-
     }
 
     return blockStates;
@@ -486,12 +491,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     /*
      * keep these flags alive TODO must be a better/more consistent way
      */
-    if (resStates != null && !resStates.isEmpty()
-        && blockState.getOpAssigned() != null) {
+    if (resStates != null && !resStates.isEmpty()) {
       for (BlockState state : resStates) {
-        state.setOpAssigned(blockState.getOpAssigned());
-        state.setRunReported(blockState.getRunReported());
-        state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+        transitionRunIdResults(observation, blockState, state);
       }
     }
 
@@ -499,8 +501,9 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   @Override
-  public BlockState advanceLayoverState(long timestamp, BlockState blockState) {
+  public BlockState advanceLayoverState(Observation obs, BlockState blockState) {
 
+    long timestamp = obs.getTime();
     BlockInstance instance = blockState.getBlockInstance();
 
     /**
@@ -556,9 +559,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     BlockState state = _blockStateService.getScheduledTimeAsState(instance,
         targetScheduleTime);
     if (state != null) {
-      state.setOpAssigned(blockState.getOpAssigned());
-      state.setRunReported(blockState.getRunReported());
-      state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+      transitionRunIdResults(obs, blockState, state);
     }
     return state;
   }
@@ -585,9 +586,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
      */
     if (resStates != null && !resStates.isEmpty()) {
       for (BlockState state : resStates) {
-        state.setOpAssigned(blockState.getOpAssigned());
-        state.setRunReported(blockState.getRunReported());
-        state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
+        transitionRunIdResults(observation, blockState, state);
       }
     }
     return resStates;
@@ -596,6 +595,35 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   /*****
    * Private Methods
    ****/
+  
+  /**
+   * This determines how we propagate the state's run's "quality". Generally, we
+   * use the previous state's values, however, since a new observation can
+   * introduce new runs, we want to ensure that things like fuzzy matches are
+   * still valid in light of the newly assessed runs.
+   * 
+   * @param obs
+   * @param parentState
+   * @param state
+   */
+  public static void transitionRunIdResults(Observation obs,
+      BlockState parentState, BlockState state) {
+    Observation prevObs = obs.getPreviousObservation();
+    if (state != null) {
+      state.setOpAssigned(parentState.getOpAssigned());
+      /*
+       * Basically, if best fuzzy match distances improve, remove old fuzzy
+       * match assignments.
+       */
+      if (prevObs != null && parentState.getRunReported() == Boolean.TRUE
+          && obs.getFuzzyMatchDistance() <= prevObs.getFuzzyMatchDistance())
+        state.setRunReported(true);
+      else
+        state.setRunReported(parentState.getRunReported());
+      state.setRunReportedAssignedMismatch(parentState.isRunReportedAssignedMismatch());
+    }
+  }
+  
 
   private void computePotentialBlocksFromDestinationSignCode(
       Observation observation, Set<BlockInstance> potentialBlocks) {

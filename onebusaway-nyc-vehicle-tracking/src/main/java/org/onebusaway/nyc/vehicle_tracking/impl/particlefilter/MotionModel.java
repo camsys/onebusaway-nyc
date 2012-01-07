@@ -15,6 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,6 +38,6 @@ public interface MotionModel<OBS> {
    * @param results TODO
    * @throws Exception TODO
    */
-  public void move(Particle parent, double timestamp, double timeElapsed,
-      OBS obs, List<Particle> results);
+  void move(Particle parent, double timestamp, double timeElapsed,
+      OBS obs, Collection<Particle> results);
 }

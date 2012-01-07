@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.math.FunctionEvaluationException;
 import org.apache.commons.math.MaxIterationsExceededException;
@@ -139,7 +140,7 @@ public class BlockStateService {
         observation, EObservationCacheKey.BLOCK_LOCATION);
 
     if (m == null) {
-      m = new HashMap<BlockStateService.BlockLocationKey, Set<BlockState>>();
+      m = new ConcurrentHashMap<BlockStateService.BlockLocationKey, Set<BlockState>>();
       _observationCache.putValueForObservation(observation,
           EObservationCacheKey.BLOCK_LOCATION, m);
     }

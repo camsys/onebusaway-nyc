@@ -17,12 +17,13 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
 import org.apache.commons.math.util.MathUtils;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 
 import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
@@ -36,20 +37,29 @@ public class CategoricalDist<T> {
   final static private Random rng = new Random();
 
   private List<Double> _objIdx = new ArrayList<Double>();
-  TreeMap<T, Double> _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
+//  TreeMap<T, Double> _entriesToProbs;
+  Map<T, Double> _entriesToProbs = new HashMap<T, Double>();
   private List<T> _entries;
 
   DiscreteDistribution emd;
+  
+//  public CategoricalDist() {
+//    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
+//  }
+//  
+//  public CategoricalDist(Ordering<T> order) {
+//    _entriesToProbs = new TreeMap<T, Double>(order);
+//  }
     
   static public void setSeed(long seed) {
     rng.setSeed(seed);
   }
 
-  public List<T> getSupport() {
+  synchronized public List<T> getSupport() {
     return new ArrayList<T>(_entriesToProbs.keySet());
   }
 
-  public void put(double prob, T object) {
+  synchronized public void put(double prob, T object) {
 
     _cumulativeProb += prob;
     Double currentProb = _entriesToProbs.get(object);
@@ -72,7 +82,7 @@ public class CategoricalDist<T> {
 
   }
 
-  public T sample() {
+  synchronized public T sample() {
 
     if (_entriesToProbs.isEmpty())
       throw new IllegalStateException("No entries in the CDF");
@@ -81,7 +91,8 @@ public class CategoricalDist<T> {
       throw new IllegalStateException("No cumulative probability in CDF");
 
     if (_entriesToProbs.size() == 1) {
-      return _entriesToProbs.firstKey();
+      return _entriesToProbs.keySet().iterator().next();
+//      return _entriesToProbs.firstKey();
     }
     
     if (emd == null) {
@@ -95,7 +106,7 @@ public class CategoricalDist<T> {
     return _entries.get(newIdx);
   }
 
-  public List<T> sample(int samples) {
+  synchronized public List<T> sample(int samples) {
 
     if (_entriesToProbs.isEmpty())
       throw new IllegalStateException("No entries in the CDF map");
@@ -136,7 +147,7 @@ public class CategoricalDist<T> {
     return _entriesToProbs.toString();
   }
 
-  public double density(T thisState) {
+  synchronized public double density(T thisState) {
     return _entriesToProbs.get(thisState);
   }
 }

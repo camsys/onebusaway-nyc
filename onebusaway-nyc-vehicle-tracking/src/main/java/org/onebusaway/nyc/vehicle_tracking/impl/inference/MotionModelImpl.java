@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
@@ -58,7 +59,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
   @Override
   public void move(Particle parent, double timestamp, double timeElapsed,
-      Observation obs, List<Particle> results) {
+      Observation obs, Collection<Particle> results) {
 
     VehicleState parentState = parent.getData();
     

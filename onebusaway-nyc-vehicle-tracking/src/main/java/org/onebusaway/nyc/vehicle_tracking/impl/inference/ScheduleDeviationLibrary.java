@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -86,7 +87,7 @@ public class ScheduleDeviationLibrary {
         obs, EObservationCacheKey.SCHEDULED_BLOCK_LOCATION);
 
     if (m == null) {
-      m = new HashMap<BlockInstance, ScheduledBlockLocation>();
+      m = new ConcurrentHashMap<BlockInstance, ScheduledBlockLocation>();
       _observationCache.putValueForObservation(obs,
           EObservationCacheKey.SCHEDULED_BLOCK_LOCATION, m);
     }

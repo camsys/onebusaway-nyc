@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -178,12 +179,13 @@ public class BlockStateTransitionModel {
      * If this state has no transitions, consider block changes. Otherwise, pick
      * the best transition.
      */
-    if ((potentialTransStates == null || potentialTransStates.isEmpty())) {
+    if (allowBlockChange || 
+        (potentialTransStates == null || potentialTransStates.isEmpty())) {
 
       /*
        * We're pretty much following the path set out in ParticleFactory...
        */
-      if (allowBlockChange && ParticleFactoryImpl.rng.nextDouble() >= 0.75) {
+      if (ParticleFactoryImpl.rng.nextDouble() >= 0.75) {
         /**
          * We're now considering that the driver may have been re-assigned, or
          * whatnot.
@@ -199,7 +201,7 @@ public class BlockStateTransitionModel {
             || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
                 updatedBlockState.getBlockInstance())) {
           updatedBlockState = _blocksFromObservationService.advanceLayoverState(
-              obs.getTime(), updatedBlockState);
+              obs, updatedBlockState);
         }
       } else {
         return null;
@@ -239,7 +241,7 @@ public class BlockStateTransitionModel {
         obs, EObservationCacheKey.CLOSEST_BLOCK_LOCATION);
 
     if (states == null) {
-      states = new HashMap<BlockInstance, Set<BlockState>>();
+      states = new ConcurrentHashMap<BlockInstance, Set<BlockState>>();
       _observationCache.putValueForObservation(obs,
           EObservationCacheKey.CLOSEST_BLOCK_LOCATION, states);
     }
@@ -278,7 +280,7 @@ public class BlockStateTransitionModel {
        * all terminals.
        */
       if (parentBlockState == null) {
-        if (prevObs.isAtTerminal() && !obs.isAtTerminal())
+//        if (prevObs.isAtTerminal() && !obs.isAtTerminal())
           return true;
       } else if (parentBlockState != null) {
         boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
@@ -349,7 +351,7 @@ public class BlockStateTransitionModel {
             obs.getRecord(), blockState.getBlockInstance()))) {
       for (BlockState state : updatedBlockStates) {
         state = _blocksFromObservationService.advanceLayoverState(
-            obs.getTime(), state);
+            obs, state);
       }
     }
 
@@ -392,19 +394,9 @@ public class BlockStateTransitionModel {
       }
     }
 
-    /*
-     * keep these flags alive TODO must be a better/more consistent way
-     */
-    if (!closestStates.isEmpty()) {
-      for (BlockState state : closestStates) {
-        state.setOpAssigned(blockState.getOpAssigned());
-        state.setRunReported(blockState.getRunReported());
-        state.setRunReportedAssignedMismatch(blockState.isRunReportedAssignedMismatch());
-      }
-    }
-
     return closestStates;
   }
+
 
   public static boolean hasDestinationSignCodeChangedBetweenObservations(
       Observation obs) {

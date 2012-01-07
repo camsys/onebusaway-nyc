@@ -18,6 +18,9 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.realtime.api.EVehiclePhase;
+
+import com.google.common.primitives.Longs;
 
 /**
  * We make this class immutable so that we don't have to worry about particle
@@ -85,5 +88,43 @@ public final class VehicleState {
   @Override
   public String toString() {
     return journeyState + " " + blockState + " " + observation;
+  }
+
+  public static int compare(VehicleState leftState, VehicleState rightState) {
+    
+    if (leftState == rightState)
+      return 0;
+    
+    int obsTimeComp = Longs.compare(leftState.observation.getTime(), 
+        rightState.observation.getTime());
+      
+    if (obsTimeComp != 0)
+      return obsTimeComp;
+      
+    BlockState leftBs = leftState.getBlockState();
+    BlockState rightBs = rightState.getBlockState();
+    
+    int bsComp = BlockState.compare(leftBs, rightBs);
+    
+    if (bsComp != 0)
+      return bsComp;
+    
+    EVehiclePhase leftPhase = leftState.journeyState.getPhase();
+    EVehiclePhase rightPhase = rightState.journeyState.getPhase();
+    
+    int phaseComp = leftPhase.compareTo(rightPhase);
+    
+    if (phaseComp != 0)
+      return phaseComp;
+    
+    MotionState leftMotion = leftState.motionState;
+    MotionState rightMotion = rightState.motionState;
+    
+    int motionComp = MotionState.compare(leftMotion, rightMotion);
+    
+    if (motionComp != 0)
+      return motionComp;
+    
+    return 0;
   }
 }

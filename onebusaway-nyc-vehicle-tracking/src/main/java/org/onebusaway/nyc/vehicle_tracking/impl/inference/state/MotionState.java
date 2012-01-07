@@ -17,6 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 
+import com.google.common.primitives.Longs;
+
 public final class MotionState {
 
   private final long lastInMotionTime;
@@ -34,5 +36,24 @@ public final class MotionState {
 
   public CoordinatePoint getLastInMotionLocation() {
     return lastInMotionLocation;
+  }
+
+  public static int compare(MotionState leftMotion, MotionState rightMotion) {
+    if (leftMotion == rightMotion)
+      return 0;
+    
+    int timeComp = Longs.compare(leftMotion.getLastInMotionTime(), 
+        rightMotion.getLastInMotionTime());
+    
+    if (timeComp != 0)
+      return timeComp;
+    
+    int coordComp = Double.compare(leftMotion.getLastInMotionLocation().getLat(),
+        rightMotion.getLastInMotionLocation().getLon());
+    
+    if (coordComp != 0)
+      return coordComp;
+    
+    return 0;
   }
 }
