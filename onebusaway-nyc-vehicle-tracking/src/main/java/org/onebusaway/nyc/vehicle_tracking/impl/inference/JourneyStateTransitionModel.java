@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
@@ -99,19 +100,23 @@ public class JourneyStateTransitionModel {
 
     for (JourneyState journeyState : journeyStates) {
 
-      BlockState blockState = _blockStateTransitionModel.transitionBlockState(
+      Set<BlockState> blockStates = _blockStateTransitionModel.transitionBlockState(
           parentState, motionState, journeyState, obs);
       
-      List<JourneyPhaseSummary> summaries = null;
-      if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
-        summaries = _journeyStatePhaseLibrary.extendSummaries(
-            parentState, blockState, journeyState, obs);
+      for (BlockState bs : blockStates) {
+        
+        @SuppressWarnings("unused")
+        List<JourneyPhaseSummary> summaries = null;
+        if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
+          summaries = _journeyStatePhaseLibrary.extendSummaries(
+              parentState, bs, journeyState, obs);
+        }
+  
+        VehicleState vehicleState = new VehicleState(motionState,
+            bs, journeyState, null, obs);
+  
+        results.add(vehicleState);
       }
-
-      VehicleState vehicleState = new VehicleState(motionState,
-          blockState, journeyState, null, obs);
-
-      results.add(vehicleState);
     }
   }
 

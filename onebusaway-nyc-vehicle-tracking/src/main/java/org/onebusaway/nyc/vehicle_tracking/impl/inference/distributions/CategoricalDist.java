@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,19 +38,19 @@ public class CategoricalDist<T> {
   final static private Random rng = new Random();
 
   private List<Double> _objIdx = new ArrayList<Double>();
-  TreeMap<T, Double> _entriesToProbs = new TreeMap<T, Double>();
+  TreeMap<T, Double> _entriesToProbs;
 //  Map<T, Double> _entriesToProbs = new HashMap<T, Double>();
   private List<T> _entries;
 
   DiscreteDistribution emd;
   
-//  public CategoricalDist() {
-//    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
-//  }
-//  
-//  public CategoricalDist(Ordering<T> order) {
-//    _entriesToProbs = new TreeMap<T, Double>(order);
-//  }
+  public CategoricalDist() {
+    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
+  }
+  
+  public CategoricalDist(Comparator<T> order) {
+    _entriesToProbs = new TreeMap<T, Double>(order);
+  }
     
   static public void setSeed(long seed) {
     rng.setSeed(seed);

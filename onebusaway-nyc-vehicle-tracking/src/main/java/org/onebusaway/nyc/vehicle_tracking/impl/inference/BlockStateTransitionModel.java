@@ -121,7 +121,7 @@ public class BlockStateTransitionModel {
    * @param obs
    * @return BlockState
    */
-  public BlockState transitionBlockState(VehicleState parentState,
+  public Set<BlockState> transitionBlockState(VehicleState parentState,
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
     BlockState parentBlockState = parentState.getBlockState();
@@ -173,8 +173,6 @@ public class BlockStateTransitionModel {
     // return null;
     // }
 
-    BlockState updatedBlockState = null;
-
     /**
      * If this state has no transitions, consider block changes. Otherwise, pick
      * the best transition.
@@ -190,19 +188,21 @@ public class BlockStateTransitionModel {
          * We're now considering that the driver may have been re-assigned, or
          * whatnot.
          */
-        CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
-
-        if (!cdf.canSample())
-          return null;
-
-        updatedBlockState = cdf.sample();
-
-        if (EVehiclePhase.isLayover(parentPhase)
-            || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
-                updatedBlockState.getBlockInstance())) {
-          updatedBlockState = _blocksFromObservationService.advanceLayoverState(
-              obs, updatedBlockState);
-        }
+        potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
+            obs, true));
+//        CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+//
+//        if (!cdf.canSample())
+//          return null;
+//
+//        updatedBlockState = cdf.sample();
+//
+//        if (EVehiclePhase.isLayover(parentPhase)
+//            || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
+//                updatedBlockState.getBlockInstance())) {
+//          updatedBlockState = _blocksFromObservationService.advanceLayoverState(
+//              obs, updatedBlockState);
+//        }
       } else {
         return null;
       }
@@ -212,26 +212,26 @@ public class BlockStateTransitionModel {
        * When we return multiple possible transitions, choose the best in terms
        * of schedDev and locDev. TODO consider more! why not all the rules!?
        */
-      if (potentialTransStates.size() == 1) {
-        updatedBlockState = potentialTransStates.iterator().next();
-      } else {
-        CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
-
-        for (BlockState state : potentialTransStates) {
-
-          double p = _blockStateSamplingStrategy.scoreState(state, obs, false);
-
-          cdf.put(p, state);
-        }
-
-        if (!cdf.canSample())
-          return null;
-
-        updatedBlockState = cdf.sample();
-      }
+//      if (potentialTransStates.size() == 1) {
+//        updatedBlockState = potentialTransStates.iterator().next();
+//      } else {
+//        CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
+//
+//        for (BlockState state : potentialTransStates) {
+//
+//          double p = _blockStateSamplingStrategy.scoreState(state, obs, false);
+//
+//          cdf.put(p, state);
+//        }
+//
+//        if (!cdf.canSample())
+//          return null;
+//
+//        updatedBlockState = cdf.sample();
+//      }
     }
 
-    return updatedBlockState;
+    return potentialTransStates;
   }
 
   public Set<BlockState> getClosestBlockStates(BlockState blockState,
