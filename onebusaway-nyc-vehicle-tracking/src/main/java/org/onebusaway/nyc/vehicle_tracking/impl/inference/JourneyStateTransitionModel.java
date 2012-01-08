@@ -24,6 +24,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartStat
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -99,12 +101,15 @@ public class JourneyStateTransitionModel {
 
       BlockState blockState = _blockStateTransitionModel.transitionBlockState(
           parentState, motionState, journeyState, obs);
-
-      List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
-          parentState, blockState, journeyState, obs);
+      
+      List<JourneyPhaseSummary> summaries = null;
+      if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
+        summaries = _journeyStatePhaseLibrary.extendSummaries(
+            parentState, blockState, journeyState, obs);
+      }
 
       VehicleState vehicleState = new VehicleState(motionState,
-          blockState, journeyState, summaries, obs);
+          blockState, journeyState, null, obs);
 
       results.add(vehicleState);
     }

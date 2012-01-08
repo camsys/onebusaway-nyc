@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,16 +39,14 @@ import com.google.common.collect.HashMultimap;
 
 /**
  * Core particle filter implementation.<br>
- * Note: This filter has an experimental multi-threading option that is
- * enabled by setting _threads > 1.
+ * Note: This filter has an experimental multi-threading option that is enabled
+ * by setting _threads > 1.
  * 
  * @author bwillard, bdferris
  * 
  * @param <OBS>
  */
 public class ParticleFilter<OBS> {
-
-  private static final boolean _maxLikelihoodParticle = false;
 
   private ParticleFactory<OBS> _particleFactory;
 
@@ -66,7 +66,14 @@ public class ParticleFilter<OBS> {
 
   private Particle _leastLikelyParticle;
 
-  final private static int _threads = Runtime.getRuntime().availableProcessors();
+  final private static int _threads = Math.max(
+      Runtime.getRuntime().availableProcessors() / 2, 1);
+
+  final private static Boolean _maxLikelihoodParticle = Boolean.FALSE;
+
+  final private static Boolean _debugEnabled = Boolean.FALSE;
+
+  private static final Boolean _moveAndWeight = Boolean.TRUE;
 
   private ExecutorService _executorService;
 
@@ -83,7 +90,7 @@ public class ParticleFilter<OBS> {
   public ParticleFilter(ParticleFactory<OBS> particleFactory,
       SensorModel<OBS> sensorModel, MotionModel<OBS> motionModel) {
     if (_threads > 1)
-       _executorService = Executors.newFixedThreadPool(_threads);
+      _executorService = Executors.newFixedThreadPool(_threads);
     _particleFactory = particleFactory;
     _sensorModel = sensorModel;
     _motionModel = motionModel;
@@ -227,15 +234,30 @@ public class ParticleFilter<OBS> {
 
     /**
      * 1. apply the motion model to each particle
-     */
-    if (moveParticles) {
-      particles = applyMotionModel(obs, timestamp);
-    }
-
-    /**
      * 2. apply the sensor model(likelihood) to each particle
      */
-    CategoricalDist<Particle> cdf = applySensorModel(particles, obs);
+    CategoricalDist<Particle> cdf;
+    if (_moveAndWeight && _threads > 1) {
+      
+      if (moveParticles) {
+        cdf = new CategoricalDist<Particle>();
+        particles = applyMotionAndSensorModel(obs, timestamp, cdf);
+      } else {
+        cdf = applySensorModel(particles, obs);
+      }
+      
+    } else {
+      
+      /*
+       * perform movement and weighing separately
+       */
+      if (moveParticles) {
+        particles = applyMotionModel(obs, timestamp);
+      }
+  
+      cdf = applySensorModel(particles, obs);
+      
+    }
 
     /**
      * 3. track the weighted particles (before resampling and normalization)
@@ -266,13 +288,93 @@ public class ParticleFilter<OBS> {
     _particles = reweighted;
   }
 
+  private List<Particle> applyMotionAndSensorModel(final OBS obs, 
+      final double timestamp, final CategoricalDist<Particle> cdf) throws ParticleFilterException {
+    final double elapsed = timestamp - _timeOfLastUpdate;
+    final Collection<Particle> results = 
+        new ConcurrentSkipListSet<Particle>(_particleComparator);
+    final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+    for (final Particle p : _particles) {
+      tasks.add(Executors.callable(new Runnable() {
+          class LocalMoveCache extends ThreadLocal<Collection<Particle>> {
+            @Override
+            protected Collection<Particle> initialValue() {
+              return new ArrayList<Particle>();
+            }
+          }
+          ThreadLocal<Collection<Particle>> threadLocal = new LocalMoveCache();
+          @Override
+          public void run() {
+            final Collection<Particle> moveCache = threadLocal.get();
+            _motionModel.move(p, timestamp, elapsed, obs, moveCache);
+            for (Particle pm : moveCache) {
+              results.add(pm);
+              SensorModelResult smr = getParticleLikelihood(pm, obs);
+              double likelihood = smr.getProbability();
+              if (Double.isNaN(likelihood))
+                throw new IllegalStateException("NaN likehood");
+              pm.setWeight(likelihood);
+              pm.setResult(smr);
+            }
+            moveCache.clear();
+          }
+        }));
+    }
+    try {
+      _executorService.invokeAll(tasks);
+      for (Particle particle : results) {
+        double likelihood = particle.getResult().getProbability();
+        cdf.put(likelihood, particle);
+      }
+    } catch (InterruptedException e) {
+      throw new ParticleFilterException(
+          "particle motion & sensor apply task interrupted: " + e.getMessage());
+    }
+    List<Particle> particles = new ArrayList<Particle>(results);
+    return particles;
+  }
+
+  /**
+   * This provides and ordering for particles; needed for
+   * reproducibility in sampling. <br>
+   * 
+   * FIXME this violates the generic contract of Particle by
+   * assuming VehicleState data.
+   * @author bwillard
+   *
+   */
+  class ParticleComparator implements Comparator<Particle> {
+
+    @Override
+    public int compare(Particle arg0, Particle arg1) {
+      if (arg0 == arg1)
+        return 0;
+
+      int partComp = arg0.compareTo(arg1);
+
+      if (partComp != 0)
+        return partComp;
+
+      int vehicleComp = ((VehicleState) arg0.getData()).compareTo((VehicleState) arg1.getData());
+
+      if (vehicleComp != 0)
+        return vehicleComp;
+
+      return 0;
+    }
+
+  }
+
+  final ParticleComparator _particleComparator = new ParticleComparator();
+
   @SuppressWarnings("unused")
-  private List<Particle> applyMotionModel(final OBS obs,
-      final double timestamp) throws ParticleFilterException {
-    List<Particle> particles; 
+  private List<Particle> applyMotionModel(final OBS obs, final double timestamp)
+      throws ParticleFilterException {
+    List<Particle> particles;
     final double elapsed = timestamp - _timeOfLastUpdate;
     if (_threads > 1) {
-      final Collection<Particle> results = new ConcurrentLinkedQueue<Particle>();
+      final Collection<Particle> results = new ConcurrentSkipListSet<Particle>(
+          _particleComparator);
       final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
       for (final Particle p : _particles) {
         tasks.add(Executors.callable(new Runnable() {
@@ -281,33 +383,26 @@ public class ParticleFilter<OBS> {
           }
         }));
       }
-//      List<Integer[]> taskSequence = getTaskSequence(_particles.size());
-//      List<ParticleMoveTask> tasks = new ArrayList<ParticleMoveTask>();
-//      for (Integer[] interval : taskSequence) {
-//        tasks.add(new ParticleMoveTask(interval[0], interval[1], obs, elapsed,
-//            timestamp));
-//      }
       try {
-//        List<Future<List<Particle>>> results = _executorService.invokeAll(tasks);
         _executorService.invokeAll(tasks);
-//        for (Future<List<Particle>> fut : results) {
-//          particles.addAll(fut.get());
-//        }
       } catch (InterruptedException e) {
         throw new ParticleFilterException(
             "particle sensor apply task interrupted: " + e.getMessage());
-      } 
+      }
       particles = new ArrayList<Particle>(results);
     } else {
       particles = new ArrayList<Particle>(_particles.size());
       for (int i = 0; i < _particles.size(); i++) {
-        _motionModel.move(_particles.get(i), timestamp, elapsed, obs,
-            particles);
+        _motionModel.move(_particles.get(i), timestamp, elapsed, obs, particles);
       }
     }
     return particles;
   }
 
+  /**
+   * Callable MotionModel task that operates on chunks of particles.
+   * 
+   */
   public class ParticleMoveTask implements Callable<List<Particle>> {
 
     private List<Particle> _newParticles;
@@ -338,6 +433,16 @@ public class ParticleFilter<OBS> {
 
   }
 
+  /**
+   * Finds the most likely/occurring trip & phase combination among
+   * the particles, then chooses the particle with highest likelihood
+   * of that pair. <br>
+   * 
+   * FIXME violates generic particle contract by assuming data
+   * is of type VehicleState
+   * 
+   * @param particles
+   */
   private void computeBestState(List<Particle> particles) {
     /**
      * We choose the "most likely" particle over the entire distribution w.r.t
@@ -416,52 +521,40 @@ public class ParticleFilter<OBS> {
       final OBS obs) throws ParticleFilterException {
 
     CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
-    
+
     if (_threads > 1) {
-  
-//      List<Integer[]> taskSequence = getTaskSequence(particles.size());
-//      final Collection<SensorModelTask> tasks = new ArrayList<SensorModelTask>();
-//      for (Integer[] interval : taskSequence) {
-//        tasks.add(new SensorModelTask(particles, interval[0], interval[1], obs));
-//      }
+
       final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-      final Collection<SensorModelParticleResult> results = 
-          new ConcurrentLinkedQueue<SensorModelParticleResult>();
+      final Collection<SensorModelParticleResult> results = new ConcurrentLinkedQueue<SensorModelParticleResult>();
       for (final Particle p : particles) {
         tasks.add(Executors.callable(new Runnable() {
           public void run() {
-            results.add(new SensorModelParticleResult(p, getParticleLikelihood(p,
-              obs)));
+            results.add(new SensorModelParticleResult(p, getParticleLikelihood(
+                p, obs)));
           }
         }));
       }
-  
+
       try {
-        
-//        List<Future<List<SensorModelParticleResult>>> results;
-//        results = _executorService.invokeAll(tasks);
+
         _executorService.invokeAll(tasks);
-//        for (Future<List<SensorModelParticleResult>> listRes : results) {
         for (SensorModelParticleResult res : results) {
-//          for (SensorModelParticleResult res : listRes.get()) {
-            Particle particle = res._particle;
-            SensorModelResult result = res._result;
-            double likelihood = result.getProbability();
-  
-            if (Double.isNaN(likelihood))
-              throw new IllegalStateException("NaN likehood");
-  
-            particle.setWeight(likelihood);
-            particle.setResult(result);
-  
-            cdf.put(likelihood, particle);
-  
-//          }
+          Particle particle = res._particle;
+          SensorModelResult result = res._result;
+          double likelihood = result.getProbability();
+
+          if (Double.isNaN(likelihood))
+            throw new IllegalStateException("NaN likehood");
+
+          particle.setWeight(likelihood);
+          particle.setResult(result);
+
+          cdf.put(likelihood, particle);
         }
       } catch (InterruptedException e) {
         throw new ParticleFilterException(
             "particle sensor apply task interrupted: " + e.getMessage());
-      } 
+      }
     } else {
       for (Particle particle : particles) {
         SensorModelResult result = getParticleLikelihood(particle, obs);
@@ -476,7 +569,7 @@ public class ParticleFilter<OBS> {
         cdf.put(likelihood, particle);
       }
     }
-  
+
     return cdf;
   }
 
@@ -491,6 +584,10 @@ public class ParticleFilter<OBS> {
 
   }
 
+  /**
+   * Callable SensorModel task that operates on chunks of particles.
+   * 
+   */
   public class SensorModelTask implements
       Callable<List<SensorModelParticleResult>> {
 
@@ -522,5 +619,9 @@ public class ParticleFilter<OBS> {
 
   private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) {
     return _sensorModel.likelihood(particle, obs);
+  }
+
+  public static Boolean getDebugEnabled() {
+    return _debugEnabled;
   }
 }

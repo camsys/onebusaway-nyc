@@ -19,7 +19,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTri
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
-public final class BlockState {
+public final class BlockState implements Comparable<BlockState> {
 
   /**
    * Our current block instance
@@ -118,30 +118,30 @@ public final class BlockState {
     this.isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
   }
 
-  public static int compare(BlockState leftBs, BlockState rightBs) {
+  /**
+   *  This compareTo method is for definite ordering
+   *  in CategoricalDist; such ordering allows for
+   *  reproducibility in testing. 
+   */
+  @Override
+  public int compareTo(BlockState rightBs) {
     
-    if (leftBs == rightBs)
+    if (this == rightBs)
       return 0;
     
-    if (leftBs != null && rightBs == null) {
-      return 1;
-    } else if (rightBs != null && leftBs == null) {
-      return -1;
-    } 
-    
-    int distAlongComp = Double.compare(leftBs.getBlockLocation().getDistanceAlongBlock(),
+    int distAlongComp = Double.compare(this.getBlockLocation().getDistanceAlongBlock(),
         rightBs.getBlockLocation().getDistanceAlongBlock());
     
     if (distAlongComp != 0)
       return distAlongComp;
     
-    int blockInstComp = leftBs.getBlockInstance().getBlock().getBlock().getId().compareTo(
+    int blockInstComp = this.getBlockInstance().getBlock().getBlock().getId().compareTo(
         rightBs.getBlockInstance().getBlock().getBlock().getId());
     
     if (blockInstComp != 0)
       return blockInstComp;
     
-    int tripIdComp = leftBs.getBlockLocation().getActiveTrip().getTrip().getId().compareTo(
+    int tripIdComp = this.getBlockLocation().getActiveTrip().getTrip().getId().compareTo(
         rightBs.getBlockLocation().getActiveTrip().getTrip().getId());
     
     if (tripIdComp != 0)
@@ -149,4 +149,5 @@ public final class BlockState {
     
     return 0;
   }
+
 }

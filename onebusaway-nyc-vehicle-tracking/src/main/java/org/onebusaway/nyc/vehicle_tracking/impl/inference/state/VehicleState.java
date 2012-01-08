@@ -29,7 +29,7 @@ import com.google.common.primitives.Longs;
  * @author bdferris
  * 
  */
-public final class VehicleState {
+public final class VehicleState implements Comparable<VehicleState> {
 
   private final MotionState motionState;
 
@@ -90,26 +90,24 @@ public final class VehicleState {
     return journeyState + " " + blockState + " " + observation;
   }
 
-  public static int compare(VehicleState leftState, VehicleState rightState) {
+  /**
+   *  This compareTo method is for definite ordering
+   *  in CategoricalDist; such ordering allows for
+   *  reproducibility in testing. 
+   */
+  @Override
+  public int compareTo(VehicleState rightState) {
     
-    if (leftState == rightState)
+    if (this == rightState)
       return 0;
     
-    int obsTimeComp = Longs.compare(leftState.observation.getTime(), 
+    int obsTimeComp = Longs.compare(this.observation.getTime(), 
         rightState.observation.getTime());
       
     if (obsTimeComp != 0)
       return obsTimeComp;
       
-    BlockState leftBs = leftState.getBlockState();
-    BlockState rightBs = rightState.getBlockState();
-    
-    int bsComp = BlockState.compare(leftBs, rightBs);
-    
-    if (bsComp != 0)
-      return bsComp;
-    
-    EVehiclePhase leftPhase = leftState.journeyState.getPhase();
+    EVehiclePhase leftPhase = this.journeyState.getPhase();
     EVehiclePhase rightPhase = rightState.journeyState.getPhase();
     
     int phaseComp = leftPhase.compareTo(rightPhase);
@@ -117,13 +115,27 @@ public final class VehicleState {
     if (phaseComp != 0)
       return phaseComp;
     
-    MotionState leftMotion = leftState.motionState;
+    MotionState leftMotion = this.motionState;
     MotionState rightMotion = rightState.motionState;
     
     int motionComp = MotionState.compare(leftMotion, rightMotion);
     
     if (motionComp != 0)
       return motionComp;
+    
+    BlockState leftBs = this.getBlockState();
+    BlockState rightBs = rightState.getBlockState();
+    
+    if (leftBs != null && rightBs == null) {
+      return 1;
+    } else if (rightBs != null && leftBs == null) {
+      return -1;
+    } 
+    
+    int bsComp = leftBs.compareTo(rightBs);
+    
+    if (bsComp != 0)
+      return bsComp;
     
     return 0;
   }

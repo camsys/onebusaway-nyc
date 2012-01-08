@@ -37,8 +37,8 @@ public class CategoricalDist<T> {
   final static private Random rng = new Random();
 
   private List<Double> _objIdx = new ArrayList<Double>();
-//  TreeMap<T, Double> _entriesToProbs;
-  Map<T, Double> _entriesToProbs = new HashMap<T, Double>();
+  TreeMap<T, Double> _entriesToProbs = new TreeMap<T, Double>();
+//  Map<T, Double> _entriesToProbs = new HashMap<T, Double>();
   private List<T> _entries;
 
   DiscreteDistribution emd;

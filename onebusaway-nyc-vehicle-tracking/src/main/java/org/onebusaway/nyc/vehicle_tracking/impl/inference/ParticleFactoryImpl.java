@@ -28,6 +28,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,9 +171,12 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private VehicleState vehicleState(MotionState motionState,
       BlockState blockState, JourneyState journeyState, Observation obs) {
-
-    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary
+    
+    List<JourneyPhaseSummary> summaries = null;
+    if (ParticleFilter.getDebugEnabled()) {
+     summaries = _journeyStatePhaseLibrary
         .extendSummaries(null, blockState, journeyState, obs);
+    }
 
     return new VehicleState(motionState, blockState, journeyState, summaries,
         obs);

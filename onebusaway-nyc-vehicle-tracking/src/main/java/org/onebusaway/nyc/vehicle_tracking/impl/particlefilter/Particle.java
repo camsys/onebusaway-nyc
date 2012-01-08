@@ -49,9 +49,7 @@ public class Particle implements Serializable, Comparable<Particle> {
   }
 
   public Particle(double timestamp, Particle parent, double weight) {
-    _timestamp = timestamp;
-    _parent = parent;
-    _weight = weight;
+    this(timestamp, parent, weight, null);
   }
   
   public Particle(double timestamp, Particle parent, double weight, Object data) {
@@ -59,6 +57,21 @@ public class Particle implements Serializable, Comparable<Particle> {
     _parent = parent;
     _weight = weight;
     _data = data;
+    
+    /*
+     * This is done so that we're not keeping
+     * the entire trajectory of particles in
+     * memory.  All we really need is a Markov
+     * chain.
+     * Debug mode will allow it for bookkeeping.
+     */
+    if (!ParticleFilter.getDebugEnabled()
+        && parent != null)
+      parent.clearParent();
+  }
+
+  private void clearParent() {
+    _parent = null;
   }
 
   public Particle(Particle particle) {
@@ -122,10 +135,7 @@ public class Particle implements Serializable, Comparable<Particle> {
   }
   
   public Particle advanceParticle(long timestamp) {
-    Particle p = new Particle(_timestamp);
-    p.setData(_data);
-    p.setParent(this);
-    p.setWeight(_weight);
+    Particle p = new Particle(timestamp, this, _weight, _data);
     return p;
   }
 
