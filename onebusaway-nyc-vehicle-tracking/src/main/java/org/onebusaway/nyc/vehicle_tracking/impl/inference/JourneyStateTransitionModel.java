@@ -103,19 +103,34 @@ public class JourneyStateTransitionModel {
       Set<BlockState> blockStates = _blockStateTransitionModel.transitionBlockState(
           parentState, motionState, journeyState, obs);
       
-      for (BlockState bs : blockStates) {
-        
+      if (blockStates == null) {
         @SuppressWarnings("unused")
         List<JourneyPhaseSummary> summaries = null;
         if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
           summaries = _journeyStatePhaseLibrary.extendSummaries(
-              parentState, bs, journeyState, obs);
+              parentState, null, journeyState, obs);
         }
   
         VehicleState vehicleState = new VehicleState(motionState,
-            bs, journeyState, null, obs);
+            null, journeyState, null, obs);
   
         results.add(vehicleState);
+        
+      } else {
+        for (BlockState bs : blockStates) {
+          
+          @SuppressWarnings("unused")
+          List<JourneyPhaseSummary> summaries = null;
+          if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
+            summaries = _journeyStatePhaseLibrary.extendSummaries(
+                parentState, bs, journeyState, obs);
+          }
+    
+          VehicleState vehicleState = new VehicleState(motionState,
+              bs, journeyState, null, obs);
+    
+          results.add(vehicleState);
+        }
       }
     }
   }

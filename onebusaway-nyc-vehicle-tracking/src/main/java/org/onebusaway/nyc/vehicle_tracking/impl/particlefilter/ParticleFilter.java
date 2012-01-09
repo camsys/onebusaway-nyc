@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
+import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Ordering;
 
@@ -65,8 +66,8 @@ public class ParticleFilter<OBS> {
 
   private Particle _leastLikelyParticle;
 
-  final private static int _threads = Math.max(
-      Runtime.getRuntime().availableProcessors() / 2, 1);
+  final private static int _threads = Runtime.getRuntime().availableProcessors();
+      //Math.max(Runtime.getRuntime().availableProcessors() / 2, 1);
 
   final private static Boolean _maxLikelihoodParticle = Boolean.FALSE;
 
@@ -239,8 +240,7 @@ public class ParticleFilter<OBS> {
     if (_moveAndWeight && _threads > 1) {
 
       if (moveParticles) {
-        cdf = new CategoricalDist<Particle>();
-//        cdf = new CategoricalDist<Particle>(_particleComparator);
+        cdf = new CategoricalDist<Particle>(_particleComparator);
         particles = applyMotionAndSensorModel(obs, timestamp, cdf);
       } else {
         cdf = applySensorModel(particles, obs);
@@ -353,29 +353,24 @@ public class ParticleFilter<OBS> {
       if (arg0 == arg1)
         return 0;
 
-      int partComp = arg0.compareTo(arg1);
-
-      if (partComp != 0)
-        return partComp;
-
-      int vehicleComp = ((VehicleState) arg0.getData()).compareTo((VehicleState) arg1.getData());
-
-      if (vehicleComp != 0)
-        return vehicleComp;
+      return ComparisonChain.start()
+          .compare(arg0, arg1)
+          .compare((VehicleState) arg0.getData(), (VehicleState) arg1.getData())
+          .result();
       
-      Particle parent0 = arg0.getParent();
-      Particle parent1 = arg1.getParent();
-      if (parent0 != null && parent1 != null) {
-        int pVehicleComp = ((VehicleState) parent0.getData()).compareTo((VehicleState) parent1.getData());
-        if (pVehicleComp != 0)
-          return pVehicleComp;
-      } else if (parent0 != null && parent1 == null) {
-        return 1;
-      } else if (parent0 == null && parent1 != null) {
-        return -1;
-      }
-
-      return 0;
+//      Particle parent0 = arg0.getParent();
+//      Particle parent1 = arg1.getParent();
+//      if (parent0 != null && parent1 != null) {
+//        int pVehicleComp = ((VehicleState) parent0.getData()).compareTo((VehicleState) parent1.getData());
+//        if (pVehicleComp != 0)
+//          return pVehicleComp;
+//      } else if (parent0 != null && parent1 == null) {
+//        return 1;
+//      } else if (parent0 == null && parent1 != null) {
+//        return -1;
+//      }
+//
+//      return 0;
     }
 
   }
@@ -533,9 +528,8 @@ public class ParticleFilter<OBS> {
   private CategoricalDist<Particle> applySensorModel(List<Particle> particles,
       final OBS obs) throws ParticleFilterException {
 
-    CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
-//    CategoricalDist<Particle> cdf = new CategoricalDist<Particle>(
-//        _particleComparator);
+    CategoricalDist<Particle> cdf = new CategoricalDist<Particle>(
+        _particleComparator);
 
     if (_threads > 1) {
 

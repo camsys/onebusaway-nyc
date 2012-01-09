@@ -166,19 +166,11 @@ public class BlockStateTransitionModel {
       }
     }
 
-    // if (obs.isOutOfService()) {
-    // /**
-    // * Operator just went out of service so forget the block
-    // */
-    // return null;
-    // }
-
     /**
      * If this state has no transitions, consider block changes. Otherwise, pick
      * the best transition.
      */
-    if (allowBlockChange || 
-        (potentialTransStates == null || potentialTransStates.isEmpty())) {
+    if (allowBlockChange || potentialTransStates.isEmpty()) {
 
       /*
        * We're pretty much following the path set out in ParticleFactory...

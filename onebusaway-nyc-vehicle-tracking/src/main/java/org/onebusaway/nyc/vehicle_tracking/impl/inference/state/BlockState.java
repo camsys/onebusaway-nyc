@@ -19,6 +19,14 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTri
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
+
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Longs;
+
+import org.apache.commons.lang.StringUtils;
+
+
 public final class BlockState implements Comparable<BlockState> {
 
   /**
@@ -129,23 +137,42 @@ public final class BlockState implements Comparable<BlockState> {
     if (this == rightBs)
       return 0;
     
-    int distAlongComp = Double.compare(this.getBlockLocation().getDistanceAlongBlock(),
-        rightBs.getBlockLocation().getDistanceAlongBlock());
+    /*
+     * Ordering.usingToString works, so mimic the contents of toString
+     * for comparison...
+     * start with blockInstance, then blockLocation
+     * blockLocation: activeTrip, scheduleTime, and distanceAlong.
+     * actually, let's try distance along block only, since
+     * i believe that should map well enough to trip and scheduledTime...
+     */
+    BlockInstance thisBi = this.getBlockInstance();
+    BlockInstance rightBi = rightBs.getBlockInstance();
+    int chainComp = ComparisonChain.start()
+        .compare(thisBi.getBlock().getBlock().getId().toString(),
+            rightBi.getBlock().getBlock().getId().toString())
+        .compare(this.destinationSignCode, rightBs.getDestinationSignCode())
+        .compare(this.isOpAssigned, rightBs.getOpAssigned())
+        .compare(this.isRunReported, rightBs.getRunReported())
+        .compare(this.isRunReportedAssignedMismatch, rightBs.getRunReported())
+        .compare(thisBi.getServiceDate(), rightBi.getServiceDate())
+        .compare(this.getBlockLocation().getDistanceAlongBlock(), 
+            rightBs.getBlockLocation().getDistanceAlongBlock())
+        .compare(thisBi.getFrequency() == null, rightBi.getFrequency() == null)
+        .result();
+    if (chainComp != 0)
+      return chainComp;
     
-    if (distAlongComp != 0)
-      return distAlongComp;
+    if (thisBi.getFrequency() != null && rightBi.getFrequency() != null) {
+      return ComparisonChain.start()
+          .compare(thisBi.getFrequency().getStartTime(), 
+              rightBi.getFrequency().getStartTime())
+          .compare(thisBi.getFrequency().getEndTime(), 
+              rightBi.getFrequency().getEndTime())
+          .compare(thisBi.getFrequency().getHeadwaySecs(), 
+              rightBi.getFrequency().getHeadwaySecs())
+          .result();
+    }
     
-    int blockInstComp = this.getBlockInstance().getBlock().getBlock().getId().compareTo(
-        rightBs.getBlockInstance().getBlock().getBlock().getId());
-    
-    if (blockInstComp != 0)
-      return blockInstComp;
-    
-    int tripIdComp = this.getBlockLocation().getActiveTrip().getTrip().getId().compareTo(
-        rightBs.getBlockLocation().getActiveTrip().getTrip().getId());
-    
-    if (tripIdComp != 0)
-      return tripIdComp;
     
     return 0;
   }

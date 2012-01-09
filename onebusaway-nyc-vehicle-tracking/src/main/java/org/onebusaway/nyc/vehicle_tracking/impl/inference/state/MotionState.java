@@ -17,9 +17,10 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 
+import com.google.common.collect.ComparisonChain;
 import com.google.common.primitives.Longs;
 
-public final class MotionState {
+public final class MotionState implements Comparable<MotionState> {
 
   private final long lastInMotionTime;
 
@@ -38,22 +39,18 @@ public final class MotionState {
     return lastInMotionLocation;
   }
 
-  public static int compare(MotionState leftMotion, MotionState rightMotion) {
-    if (leftMotion == rightMotion)
+  @Override
+  public int compareTo(MotionState rightMotion) {
+    if (this == rightMotion)
       return 0;
     
-    int timeComp = Longs.compare(leftMotion.getLastInMotionTime(), 
-        rightMotion.getLastInMotionTime());
-    
-    if (timeComp != 0)
-      return timeComp;
-    
-    int coordComp = Double.compare(leftMotion.getLastInMotionLocation().getLat(),
-        rightMotion.getLastInMotionLocation().getLon());
-    
-    if (coordComp != 0)
-      return coordComp;
-    
-    return 0;
+    return ComparisonChain.start()
+        .compare(this.lastInMotionTime, rightMotion.getLastInMotionTime())
+        .compare(this.lastInMotionLocation.getLat(), 
+            rightMotion.getLastInMotionLocation().getLat())
+        .compare(this.lastInMotionLocation.getLon(), 
+            rightMotion.getLastInMotionLocation().getLon())
+            .result();
   }
+
 }

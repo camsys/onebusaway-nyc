@@ -39,16 +39,17 @@ public class CategoricalDist<T> {
 
   private List<Double> _objIdx = new ArrayList<Double>();
   TreeMap<T, Double> _entriesToProbs;
-//  Map<T, Double> _entriesToProbs = new HashMap<T, Double>();
   private List<T> _entries;
 
   DiscreteDistribution emd;
   
   public CategoricalDist() {
-    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
+//    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
+    _entriesToProbs = new TreeMap<T, Double>();
   }
   
   public CategoricalDist(Comparator<T> order) {
+//    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
     _entriesToProbs = new TreeMap<T, Double>(order);
   }
     

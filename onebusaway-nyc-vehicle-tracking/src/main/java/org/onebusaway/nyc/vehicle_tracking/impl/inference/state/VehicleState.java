@@ -20,6 +20,8 @@ import java.util.List;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
 /**
@@ -101,42 +103,32 @@ public final class VehicleState implements Comparable<VehicleState> {
     if (this == rightState)
       return 0;
     
-    int obsTimeComp = Longs.compare(this.observation.getTime(), 
-        rightState.observation.getTime());
+    int compRes = ComparisonChain.start()
+        .compare(this.observation.getTime(), rightState.getObservation().getTime())
+        .compare(this.journeyState.getPhase(), rightState.getJourneyState().getPhase())
+        .compare(this.motionState, rightState.getMotionState())
+        .compare(this.blockState, rightState.getBlockState(), Ordering.natural().nullsLast())
+        .result();
+    
+    return compRes;
       
-    if (obsTimeComp != 0)
-      return obsTimeComp;
-      
-    EVehiclePhase leftPhase = this.journeyState.getPhase();
-    EVehiclePhase rightPhase = rightState.journeyState.getPhase();
-    
-    int phaseComp = leftPhase.compareTo(rightPhase);
-    
-    if (phaseComp != 0)
-      return phaseComp;
-    
-    MotionState leftMotion = this.motionState;
-    MotionState rightMotion = rightState.motionState;
-    
-    int motionComp = MotionState.compare(leftMotion, rightMotion);
-    
-    if (motionComp != 0)
-      return motionComp;
-    
-    BlockState leftBs = this.getBlockState();
-    BlockState rightBs = rightState.getBlockState();
-    
-    if (leftBs != null && rightBs == null) {
-      return 1;
-    } else if (rightBs != null && leftBs == null) {
-      return -1;
-    } 
-    
-    int bsComp = leftBs.compareTo(rightBs);
-    
-    if (bsComp != 0)
-      return bsComp;
-    
-    return 0;
+//    if (compRes != 0)
+//      return compRes;
+//    
+//    BlockState leftBs = this.getBlockState();
+//    BlockState rightBs = rightState.getBlockState();
+//    
+//    if (leftBs != null && rightBs == null) {
+//      return 1;
+//    } else if (rightBs != null && leftBs == null) {
+//      return -1;
+//    } 
+//    
+//    int bsComp = leftBs.compareTo(rightBs);
+//    
+//    if (bsComp != 0)
+//      return bsComp;
+//    
+//    return 0;
   }
 }

@@ -152,32 +152,32 @@ public class Particle implements Serializable, Comparable<Particle> {
     if (this == o)
       return 0;
     
-    int timeComp = Double.compare(this.getTimestamp(), o.getTimestamp());
-    if (timeComp != 0)
-      return timeComp;
-    
     int weightComp = Double.compare(_weight, o._weight);
     if (weightComp != 0)
       return weightComp;
     
-    Particle oParent = o.getParent();
-    if (this._parent != null && oParent != null) {
-      /*
-       * so we don't cause any crazy recursion...
-       */
-      int pTimeComp = Double.compare(this._parent.getTimestamp(), oParent.getTimestamp());
-      if (pTimeComp != 0)
-        return pTimeComp;
-      
-      int pWeightComp = Double.compare(this._parent.getWeight(), oParent.getWeight());
-      if (pWeightComp != 0)
-        return pWeightComp;
-      
-    } else if (this._parent != null && oParent == null) {
-      return 1;
-    } else if (this._parent == null && oParent != null) {
-      return -1;
-    }
+    int timeComp = Double.compare(this.getTimestamp(), o.getTimestamp());
+    if (timeComp != 0)
+      return timeComp;
+    
+//    Particle oParent = o.getParent();
+//    if (this._parent != null && oParent != null) {
+//      /*
+//       * so we don't cause any crazy recursion...
+//       */
+//      int pTimeComp = Double.compare(this._parent.getTimestamp(), oParent.getTimestamp());
+//      if (pTimeComp != 0)
+//        return pTimeComp;
+//      
+//      int pWeightComp = Double.compare(this._parent.getWeight(), oParent.getWeight());
+//      if (pWeightComp != 0)
+//        return pWeightComp;
+//      
+//    } else if (this._parent != null && oParent == null) {
+//      return 1;
+//    } else if (this._parent == null && oParent != null) {
+//      return -1;
+//    }
     
     return 0;
   }
