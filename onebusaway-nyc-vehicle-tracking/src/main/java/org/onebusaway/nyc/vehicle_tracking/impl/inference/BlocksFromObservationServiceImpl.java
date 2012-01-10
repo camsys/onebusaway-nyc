@@ -236,7 +236,12 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
             continue;
           }
         } else {
-          states.add(_blockStateService.getAsState(thisBIS, 0.0));
+          try {
+            states.add(_blockStateService.getAsState(thisBIS, 0.0));
+          } catch(Exception e) {
+            _log.warn(e.getMessage());
+            continue;
+          }
         }
         potentialBlocks.addAll(states);
       }
