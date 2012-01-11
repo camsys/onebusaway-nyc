@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCo
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
@@ -231,7 +233,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
         if (bestBlockLocation) {
           try {
             states.addAll(_blockStateService.getBestBlockLocations(observation,
-                thisBIS, 0, Double.POSITIVE_INFINITY));
+                thisBIS, 0, Double.POSITIVE_INFINITY).getAllStates());
           } catch (MissingShapePointsException e) {
             _log.warn(e.getMessage());
             continue;
@@ -415,18 +417,19 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
           continue;
         } else {
 
-          Set<BlockState> states = null;
+          List<BlockState> states = null;
           if (bestBlockLocation) {
             try {
               states = _blockStateService.getBestBlockLocations(observation,
-                  blockInstance, 0, Double.POSITIVE_INFINITY);
+                  blockInstance, 0, Double.POSITIVE_INFINITY).getAllStates();
             } catch (MissingShapePointsException e) {
               _log.warn(e.getMessage());
               continue;
             }
           } else {
-            states = new HashSet<BlockState>();
-            states.add(_blockStateService.getAsState(blockInstance, 0.0));
+//            states = new HashSet<BlockState>();
+//            states.add(_blockStateService.getAsState(blockInstance, 0.0));
+            states = Arrays.asList(_blockStateService.getAsState(blockInstance, 0.0));
           }
 
           for (BlockState state : states) {
@@ -471,14 +474,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   }
 
   @Override
-  public Set<BlockState> advanceState(Observation observation,
+  public BestBlockStates advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel) {
 
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
     double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
 
-    Set<BlockState> resStates = null;
+    BestBlockStates resStates = null;
     try {
       resStates = _blockStateService.getBestBlockLocations(observation,
           blockState.getBlockInstance(), currentDistanceAlongBlock
@@ -488,11 +491,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
       _log.warn(e.getMessage());
     }
 
-    /*
-     * keep these flags alive TODO must be a better/more consistent way
-     */
-    if (resStates != null && !resStates.isEmpty()) {
-      for (BlockState state : resStates) {
+    if (resStates != null) {
+      for (BlockState state : resStates.getAllStates()) {
         transitionRunIdResults(observation, blockState, state);
       }
     }
@@ -568,24 +568,21 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    * Finds the best block state assignments along the ENTIRE length of the block
    * (potentially expensive operation)
    */
-  public Set<BlockState> bestStates(Observation observation,
+  public BestBlockStates bestStates(Observation observation,
       BlockState blockState) {
 
     BlockInstance blockInstance = blockState.getBlockInstance();
     BlockConfigurationEntry blockConfig = blockInstance.getBlock();
 
-    Set<BlockState> resStates = null;
+    BestBlockStates resStates = null;
     try {
       resStates = _blockStateService.getBestBlockLocations(observation,
           blockInstance, 0, blockConfig.getTotalBlockDistance());
     } catch (MissingShapePointsException e) {
       _log.warn(e.getMessage());
     }
-    /*
-     * keep these flags alive TODO must be a better/more consistent way
-     */
-    if (resStates != null && !resStates.isEmpty()) {
-      for (BlockState state : resStates) {
+    if (resStates != null) {
+      for (BlockState state : resStates.getAllStates()) {
         transitionRunIdResults(observation, blockState, state);
       }
     }

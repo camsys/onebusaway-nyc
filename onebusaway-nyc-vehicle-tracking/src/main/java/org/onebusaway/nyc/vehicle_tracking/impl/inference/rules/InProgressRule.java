@@ -59,7 +59,7 @@ public class InProgressRule implements SensorModelRule {
     SensorModelResult result = new SensorModelResult("pInProgress");
     
     /**
-     * Rule: IN_PROGRESS => block location is close to gps location
+     * Rule: IN_PROGRESS => block location is close to the best possible?
      */
     double pBlockLocation = library.computeBlockLocationProbability(
         parentState, blockState, obs);

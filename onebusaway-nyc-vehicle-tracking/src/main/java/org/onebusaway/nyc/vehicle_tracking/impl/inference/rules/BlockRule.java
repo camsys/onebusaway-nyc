@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.*;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -105,10 +106,10 @@ public class BlockRule implements SensorModelRule {
       if (parentBlockState == null
           && parentState.getObservation() != null) {
         try {
-          Set<BlockState> parentBlockStates = _blockStateService.getBestBlockLocations(parentState.getObservation(), 
+          BestBlockStates parentBlockStates = _blockStateService.getBestBlockLocations(parentState.getObservation(), 
               blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY);
-          if (!parentBlockStates.isEmpty())
-            parentBlockState = parentBlockStates.iterator().next();
+          if (parentBlockStates != null)
+            parentBlockState = parentBlockStates.getBestLocation();
         } catch (MissingShapePointsException e) {
         }
       } 

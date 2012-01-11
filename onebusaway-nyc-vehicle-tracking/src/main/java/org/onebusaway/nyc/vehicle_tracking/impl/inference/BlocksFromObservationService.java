@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Set;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 
@@ -25,11 +26,11 @@ public interface BlocksFromObservationService {
   public Set<BlockInstance> determinePotentialBlocksForObservation(
       Observation observation, Set<BlockInstance> nearbyBlocks);
 
-  public Set<BlockState> advanceState(Observation observation,
+  public BestBlockStates advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel);
 
-  public Set<BlockState> bestStates(Observation observation, BlockState blockState);
+  public BestBlockStates bestStates(Observation observation, BlockState blockState);
 
   public Set<BlockState> getReportedBlockStates(Observation observation,
       Set<BlockInstance> potentialBlocks, boolean bestBlockLocation,

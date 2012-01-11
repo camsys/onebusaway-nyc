@@ -506,6 +506,10 @@ OBA.Debug = function() {
 			    map.getProjectionObject()
 			), 11);
 			
+			scale = new OpenLayers.Control.ScaleLine();
+			scale.geodesic = true;
+			map.addControl(scale);
+			
 			jQuery("#trip_button").click(function(e) {
 				e.preventDefault();
 				
@@ -572,7 +576,7 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<input type="submit" value="Show Trip" id="trip_button"/>
 </td>
 <td>
-	<div id="map" style="width: 1000px; height: 700px;"></div>
+	<div id="map" style="width: 1500px; height: 1000px;"></div>
 </td>
 </tr>
 </table>
