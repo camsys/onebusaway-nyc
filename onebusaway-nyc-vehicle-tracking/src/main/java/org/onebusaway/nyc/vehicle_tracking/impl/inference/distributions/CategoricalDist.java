@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.math.util.MathUtils;
 
@@ -35,13 +36,50 @@ public class CategoricalDist<T> {
 
   private double _cumulativeProb = 0.0;
 
-  final static private Random rng = new Random();
+  private static class LocalRandom extends ThreadLocal<Random> {
+    long _seed = 0;
+    
+    LocalRandom(long seed) {
+      _seed = seed;
+    }
+    
+    @Override
+    protected Random initialValue() {
+      if (_seed != 0)
+        return new Random(_seed);
+      else
+        return new Random();
+    }
+  }
+
+  private static ThreadLocal<Random> threadLocalRng = new LocalRandom(0);
+//  static class LocalRandom {
+//    Random rng;
+//    
+//    LocalRandom (long seed) {
+//      if (seed != 0)
+//        rng = new Random(seed);
+//      else
+//        rng = new Random();
+//    }
+//    
+//    public Random get() {
+//      return rng;
+//    }
+//  }
+//  
+//  private static LocalRandom threadLocalRng = new LocalRandom(0);
 
   private List<Double> _objIdx = new ArrayList<Double>();
   TreeMap<T, Double> _entriesToProbs;
   private List<T> _entries;
 
   DiscreteDistribution emd;
+  
+  synchronized public static void setSeed(long seed) {
+    threadLocalRng = new LocalRandom(seed);
+  }
+  
   
   public CategoricalDist() {
 //    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
@@ -52,16 +90,12 @@ public class CategoricalDist<T> {
 //    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
     _entriesToProbs = new TreeMap<T, Double>(order);
   }
-    
-  static public void setSeed(long seed) {
-    rng.setSeed(seed);
-  }
 
-  synchronized public List<T> getSupport() {
+  public List<T> getSupport() {
     return new ArrayList<T>(_entriesToProbs.keySet());
   }
 
-  synchronized public void put(double prob, T object) {
+  public void put(double prob, T object) {
 
     _cumulativeProb += prob;
     Double currentProb = _entriesToProbs.get(object);
@@ -84,7 +118,7 @@ public class CategoricalDist<T> {
 
   }
 
-  synchronized public T sample() {
+  public T sample() {
 
     if (_entriesToProbs.isEmpty())
       throw new IllegalStateException("No entries in the CDF");
@@ -102,13 +136,13 @@ public class CategoricalDist<T> {
       emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs, _objIdx.size());
     }
     
-    double u = rng.nextDouble();
+    double u = threadLocalRng.get().nextDouble();
     int newIdx = (int) emd.inverseF(u);
     
     return _entries.get(newIdx);
   }
 
-  synchronized public List<T> sample(int samples) {
+  public List<T> sample(int samples) {
 
     if (_entriesToProbs.isEmpty())
       throw new IllegalStateException("No entries in the CDF map");
@@ -149,7 +183,7 @@ public class CategoricalDist<T> {
     return _entriesToProbs.toString();
   }
 
-  synchronized public double density(T thisState) {
+  public double density(T thisState) {
     return _entriesToProbs.get(thisState);
   }
 }

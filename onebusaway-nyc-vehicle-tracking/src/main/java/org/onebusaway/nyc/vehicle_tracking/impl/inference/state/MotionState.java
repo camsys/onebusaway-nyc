@@ -50,7 +50,7 @@ public final class MotionState implements Comparable<MotionState> {
             rightMotion.getLastInMotionLocation().getLat())
         .compare(this.lastInMotionLocation.getLon(), 
             rightMotion.getLastInMotionLocation().getLon())
-            .result();
+        .result();
   }
 
 }

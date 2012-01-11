@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
@@ -65,10 +66,43 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private MotionModelImpl _motionModel;
   
-  final static Random rng = new Random();
+  private static class LocalRandom extends ThreadLocal<Random> {
+    long _seed = 0;
+    
+    LocalRandom(long seed) {
+      _seed = seed;
+    }
+    
+    @Override
+    protected Random initialValue() {
+      if (_seed != 0)
+        return new Random(_seed);
+      else
+        return new Random();
+    }
+  }
 
-  static public void setSeed(long seed) {
-    rng.setSeed(seed);
+  private static ThreadLocal<Random> threadLocalRng = new LocalRandom(0);
+
+//  static class LocalRandom {
+//    Random rng;
+//    
+//    LocalRandom (long seed) {
+//      if (seed != 0)
+//        rng = new Random(seed);
+//      else
+//        rng = new Random();
+//    }
+//    
+//    public Random get() {
+//      return rng;
+//    }
+//  }
+//  
+//  private static LocalRandom threadLocalRng = new LocalRandom(0);
+  
+  synchronized public static void setSeed(long seed) {
+    threadLocalRng = new LocalRandom(seed);
   }
   
   @Autowired
@@ -142,7 +176,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     // At this point, we could be dead heading before a block or actually on a
     // block in progress. We slightly favor blocks already in progress
-    if (rng.nextDouble() < 0.75) {
+    double progressSwitch = threadLocalRng.get().nextDouble();
+    if (progressSwitch < 0.75) {
 
       // No blocks? Jump to the deadhead-before state
       if (!inProgressCdf.canSample())
@@ -181,4 +216,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return new VehicleState(motionState, blockState, journeyState, summaries,
         obs);
   }
+
+//  public static double getNextDouble() {
+//    return threadLocalRng.get().nextDouble();
+//  }
+
 }

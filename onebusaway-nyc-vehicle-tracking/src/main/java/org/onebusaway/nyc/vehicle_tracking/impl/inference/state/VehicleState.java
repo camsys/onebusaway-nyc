@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
@@ -104,31 +105,25 @@ public final class VehicleState implements Comparable<VehicleState> {
       return 0;
     
     int compRes = ComparisonChain.start()
-        .compare(this.observation.getTime(), rightState.getObservation().getTime())
+        .compare(this.observation, rightState.getObservation(), Ordering.from(
+            new Comparator<Observation> () {
+              @Override
+              public int compare(Observation o1, Observation o2) {
+                return ComparisonChain.start()
+                    .compare(o1.getRecord().getTimeReceived(), o2.getRecord().getTimeReceived())
+                    .compare(o1.getRecord().getVehicleId(), o2.getRecord().getVehicleId())
+                    .compare(o1.getRecord().getLatitude(), o2.getRecord().getLatitude())
+                    .compare(o1.getRecord().getLongitude(), o2.getRecord().getLongitude())
+                    .compare(o1.getRecord().getDestinationSignCode(), 
+                        o2.getRecord().getDestinationSignCode())
+                    .result();
+              }
+            }).nullsLast())
         .compare(this.journeyState.getPhase(), rightState.getJourneyState().getPhase())
         .compare(this.motionState, rightState.getMotionState())
         .compare(this.blockState, rightState.getBlockState(), Ordering.natural().nullsLast())
         .result();
     
     return compRes;
-      
-//    if (compRes != 0)
-//      return compRes;
-//    
-//    BlockState leftBs = this.getBlockState();
-//    BlockState rightBs = rightState.getBlockState();
-//    
-//    if (leftBs != null && rightBs == null) {
-//      return 1;
-//    } else if (rightBs != null && leftBs == null) {
-//      return -1;
-//    } 
-//    
-//    int bsComp = leftBs.compareTo(rightBs);
-//    
-//    if (bsComp != 0)
-//      return bsComp;
-//    
-//    return 0;
   }
 }

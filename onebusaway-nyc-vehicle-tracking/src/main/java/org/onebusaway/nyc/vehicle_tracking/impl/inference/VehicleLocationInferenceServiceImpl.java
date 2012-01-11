@@ -51,6 +51,7 @@ import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignment
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
@@ -320,14 +321,11 @@ public class VehicleLocationInferenceServiceImpl implements
     }
 
   @Override
-  public void setPhaseSeed(long seed) {
-    ParticleFactoryImpl.setSeed(seed);
+  public void setSeeds(long cdfSeed, long factorySeed) {
+    ParticleFactoryImpl.setSeed(factorySeed);
+    CategoricalDist.setSeed(cdfSeed);
   }
 
-  @Override
-  public void setCdfSeed(long seed) {
-    CategoricalDist.setSeed(seed);
-  }
 
   @Override
   public void resetVehicleLocation(AgencyAndId vid) {

@@ -24,12 +24,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
@@ -66,8 +69,10 @@ public class ParticleFilter<OBS> {
 
   private Particle _leastLikelyParticle;
 
-  final private static int _threads = Runtime.getRuntime().availableProcessors();
-      //Math.max(Runtime.getRuntime().availableProcessors() / 2, 1);
+  final private static int _threads = 
+      1;
+//      Runtime.getRuntime().availableProcessors();
+//      Math.max(Runtime.getRuntime().availableProcessors() / 2, 1);
 
   final private static Boolean _maxLikelihoodParticle = Boolean.FALSE;
 
@@ -104,7 +109,7 @@ public class ParticleFilter<OBS> {
     _timeOfLastUpdate = 0L;
     _seenFirst = false;
   }
-
+  
   public List<Particle> getParticleList() {
     return Collections.unmodifiableList(_particles);
   }
@@ -196,6 +201,7 @@ public class ParticleFilter<OBS> {
    * @param totalTasks
    * @return
    */
+  @SuppressWarnings("unused")
   static private List<Integer[]> getTaskSequence(int totalTasks) {
     int stepSize = Math.max(totalTasks / _threads, 1);
     List<Integer[]> segments = new ArrayList<Integer[]>();
@@ -226,6 +232,7 @@ public class ParticleFilter<OBS> {
    * 
    * @param firstTime
    */
+  @SuppressWarnings("unused")
   private void runSingleTimeStep(double timestamp, OBS obs,
       boolean moveParticles) throws ParticleFilterException {
 
@@ -356,21 +363,14 @@ public class ParticleFilter<OBS> {
       return ComparisonChain.start()
           .compare(arg0, arg1)
           .compare((VehicleState) arg0.getData(), (VehicleState) arg1.getData())
+//          .compare(arg0.getParent(), 
+//              arg1.getParent(), Ordering.from(new Comparator<Particle> () {
+//                @Override
+//                public int compare(Particle arg0, Particle arg1) {
+//                  return arg0.compareTo(arg1);
+//                }
+//              }).nullsLast())
           .result();
-      
-//      Particle parent0 = arg0.getParent();
-//      Particle parent1 = arg1.getParent();
-//      if (parent0 != null && parent1 != null) {
-//        int pVehicleComp = ((VehicleState) parent0.getData()).compareTo((VehicleState) parent1.getData());
-//        if (pVehicleComp != 0)
-//          return pVehicleComp;
-//      } else if (parent0 != null && parent1 == null) {
-//        return 1;
-//      } else if (parent0 == null && parent1 != null) {
-//        return -1;
-//      }
-//
-//      return 0;
     }
 
   }
@@ -459,12 +459,13 @@ public class ParticleFilter<OBS> {
     Map<String, Double> tripPhaseToProb = new HashMap<String, Double>();
 
     HashMultimap<String, Particle> particlesIdMap = HashMultimap.create();
-    Set<Particle> bestParticles = new HashSet<Particle>();
+    SortedSet<Particle> bestParticles = new TreeSet<Particle>(_particleComparator);
     String bestId = null;
 
     if (!_maxLikelihoodParticle) {
       double highestTripProb = Double.MIN_VALUE;
       int index = 0;
+      Collections.sort(particles, _particleComparator);
       for (Particle p : particles) {
         p.setIndex(index++);
 
@@ -509,12 +510,13 @@ public class ParticleFilter<OBS> {
      * after we've found the best trip & phase pair, we choose the highest
      * likelihood particle among those.
      */
-    Particle bestParticle = null;
-    for (Particle p : bestParticles) {
-      if (bestParticle == null || p.getWeight() > bestParticle.getWeight()) {
-        bestParticle = p;
-      }
-    }
+//    Particle bestParticle = null;
+//    for (Particle p : bestParticles) {
+//      if (bestParticle == null || p.getWeight() > bestParticle.getWeight()) {
+//        bestParticle = p;
+//      }
+//    }
+    Particle bestParticle = bestParticles.last();
 
     _mostLikelyParticle = bestParticle.cloneParticle();
 

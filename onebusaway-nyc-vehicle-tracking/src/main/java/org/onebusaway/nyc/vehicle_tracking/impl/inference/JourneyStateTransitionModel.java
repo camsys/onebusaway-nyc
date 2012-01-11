@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,12 @@ public class JourneyStateTransitionModel {
     _blockStateTransitionModel = blockStateTransitionModel;
   }
 
+  private VehicleStateLibrary _vehicleStateLibrary;
+
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+    _vehicleStateLibrary = vehicleStateLibrary;
+  }
   /****
    * 
    * 
@@ -137,52 +144,84 @@ public class JourneyStateTransitionModel {
 
   private List<JourneyState> moveAtBase(Observation obs) {
 
-    return Arrays.asList(JourneyState.atBase(), JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.inProgress());
+    List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(JourneyState.layoverBefore(),
+        JourneyState.deadheadBefore(obs.getLocation())));
+    if (!obs.isOutOfService())
+      res.add(JourneyState.inProgress());
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      res.add(JourneyState.atBase());
+    return res;
   }
 
   private List<JourneyState> moveDeadheadBefore(Observation obs, JourneyState parentJourneyState) {
 
     JourneyStartState start = parentJourneyState.getData();
 
-    return Arrays.asList(JourneyState.atBase(), JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(start.getJourneyStart()),
-        JourneyState.inProgress());
+    List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(JourneyState.layoverBefore(),
+        JourneyState.deadheadBefore(start.getJourneyStart())));
+    if (!obs.isOutOfService())
+      res.add(JourneyState.inProgress());
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      res.add(JourneyState.atBase());
+    return res;
   }
 
   private List<JourneyState> moveLayoverBefore(Observation obs) {
-
-    return Arrays.asList(JourneyState.atBase(), JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.inProgress());
+    List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(JourneyState.layoverBefore(),
+            JourneyState.deadheadBefore(obs.getLocation())));
+    if (!obs.isOutOfService())
+      res.add(JourneyState.inProgress());
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      res.add(JourneyState.atBase());
+    return res;
   }
 
   private List<JourneyState> moveInProgress(Observation obs) {
 
-    return Arrays.asList(JourneyState.atBase(), JourneyState.inProgress(),
+    List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(
         JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.layoverBefore());
+        JourneyState.layoverBefore()));
+    if (!obs.isOutOfService())
+      res.add(JourneyState.inProgress());
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      res.add(JourneyState.atBase());
+    return res;
   }
 
   private List<JourneyState> moveDeadheadDuring(Observation obs,
       JourneyState parentJourneyState) {
 
     JourneyStartState start = parentJourneyState.getData();
-
-    return Arrays.asList(JourneyState.atBase(), JourneyState.inProgress(),
+    List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(
         JourneyState.deadheadDuring(start.getJourneyStart()),
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.layoverBefore());
+        JourneyState.layoverBefore()));
+    if (!obs.isOutOfService())
+      res.add(JourneyState.inProgress());
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      res.add(JourneyState.atBase());
+
+    return res;
   }
 
   private List<JourneyState> moveLayoverDuring(Observation obs) {
 
-    return Arrays.asList(JourneyState.atBase(), JourneyState.inProgress(),
+    List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(
         JourneyState.deadheadDuring(obs.getLocation()),
-        JourneyState.layoverDuring());
+        JourneyState.layoverDuring()));
+    if (!obs.isOutOfService())
+      res.add(JourneyState.inProgress());
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      res.add(JourneyState.atBase());
+    return res;
   }
 }

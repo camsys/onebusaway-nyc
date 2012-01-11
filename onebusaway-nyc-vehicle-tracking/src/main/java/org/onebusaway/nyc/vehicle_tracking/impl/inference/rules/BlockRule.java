@@ -17,6 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.*;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -24,10 +26,21 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 @Component
 public class BlockRule implements SensorModelRule {
+  
+  BlockStateService _blockStateService;
+  
+  @Autowired
+  public void setBlockStateService(BlockStateService blockStateService) {
+    _blockStateService = blockStateService;
+  }
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
@@ -83,6 +96,23 @@ public class BlockRule implements SensorModelRule {
         && blockState != null
         && activeDuringBlock) {
       BlockState parentBlockState = parentState.getBlockState();
+      /*
+       * if we don't have a previous state with which to determine
+       * direction, then estimate one now.
+       * TODO we might want to add probabilities for when we can't
+       * get a previous position along this block...
+       */
+      if (parentBlockState == null
+          && parentState.getObservation() != null) {
+        try {
+          Set<BlockState> parentBlockStates = _blockStateService.getBestBlockLocations(parentState.getObservation(), 
+              blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY);
+          if (!parentBlockStates.isEmpty())
+            parentBlockState = parentBlockStates.iterator().next();
+        } catch (MissingShapePointsException e) {
+        }
+      } 
+      
       if (parentBlockState != null
           && parentBlockState.getBlockInstance().equals(
               blockState.getBlockInstance())) {

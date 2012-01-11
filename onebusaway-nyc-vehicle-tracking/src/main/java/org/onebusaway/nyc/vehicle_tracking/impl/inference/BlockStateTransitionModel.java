@@ -172,56 +172,21 @@ public class BlockStateTransitionModel {
      */
     if (allowBlockChange || potentialTransStates.isEmpty()) {
 
-      /*
-       * We're pretty much following the path set out in ParticleFactory...
-       */
-      if (ParticleFactoryImpl.rng.nextDouble() >= 0.75) {
         /**
          * We're now considering that the driver may have been re-assigned, or
          * whatnot.
          */
         potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
             obs, true));
-//        CategoricalDist<BlockState> cdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
-//
-//        if (!cdf.canSample())
-//          return null;
-//
-//        updatedBlockState = cdf.sample();
-//
+        if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
+          potentialTransStates.add(null);
+        // TODO we used to do this.  what about now?
 //        if (EVehiclePhase.isLayover(parentPhase)
 //            || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
 //                updatedBlockState.getBlockInstance())) {
 //          updatedBlockState = _blocksFromObservationService.advanceLayoverState(
 //              obs, updatedBlockState);
-//        }
-      } else {
-        return null;
-      }
-
-    } else {
-      /**
-       * When we return multiple possible transitions, choose the best in terms
-       * of schedDev and locDev. TODO consider more! why not all the rules!?
-       */
-//      if (potentialTransStates.size() == 1) {
-//        updatedBlockState = potentialTransStates.iterator().next();
-//      } else {
-//        CategoricalDist<BlockState> cdf = new CategoricalDist<BlockState>();
-//
-//        for (BlockState state : potentialTransStates) {
-//
-//          double p = _blockStateSamplingStrategy.scoreState(state, obs, false);
-//
-//          cdf.put(p, state);
-//        }
-//
-//        if (!cdf.canSample())
-//          return null;
-//
-//        updatedBlockState = cdf.sample();
-//      }
-    }
+    } 
 
     return potentialTransStates;
   }

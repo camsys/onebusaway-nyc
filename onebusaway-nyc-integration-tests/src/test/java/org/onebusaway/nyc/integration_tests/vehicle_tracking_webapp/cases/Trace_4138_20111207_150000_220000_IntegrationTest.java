@@ -35,6 +35,6 @@ public class Trace_4138_20111207_150000_220000_IntegrationTest extends AbstractT
      * Whether it should be layover or deadhead is still a question,
      * but in general it doesn't hurt us (since it's a block-less state).
      */
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.97);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.95);
   }
 }

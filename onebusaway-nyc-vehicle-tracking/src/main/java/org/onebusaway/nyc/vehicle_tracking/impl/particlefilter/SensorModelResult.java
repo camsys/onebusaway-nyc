@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.apache.commons.math.util.FastMath;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class SensorModelResult {
 
   private String name;
 
-  private double probability = 1.0;
+  private double logProbability = 1.0;
 
   private List<SensorModelResult> results;
 
@@ -32,7 +34,7 @@ public class SensorModelResult {
 
   public SensorModelResult(String name, double probability) {
     this.name = name;
-    this.probability = probability;
+    this.logProbability = FastMath.log(probability);
   }
 
   public String getName() {
@@ -44,11 +46,19 @@ public class SensorModelResult {
   }
 
   public double getProbability() {
-    return probability;
+    return FastMath.exp(logProbability);
+  }
+  
+  public double getLogProbability() {
+    return logProbability;
   }
 
   public void setProbability(double probability) {
-    this.probability = probability;
+    this.logProbability = FastMath.log(probability);
+  }
+  
+  public void setLogProbability(double probability) {
+    this.logProbability = probability;
   }
 
   public List<SensorModelResult> getResults() {
@@ -77,7 +87,7 @@ public class SensorModelResult {
   }
 
   public SensorModelResult addResultAsAnd(SensorModelResult result) {
-    this.probability *= result.probability;
+    this.logProbability += result.logProbability;
     return addResult(result);
   }
 

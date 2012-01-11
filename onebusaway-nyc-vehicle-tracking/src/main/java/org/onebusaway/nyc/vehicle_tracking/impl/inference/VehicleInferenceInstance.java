@@ -98,6 +98,10 @@ public class VehicleInferenceInstance {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
 
+  public ParticleFilter<Observation> getFilter() {
+    return _particleFilter;
+  }
+  
   private VehicleStateLibrary _vehicleStateLibrary;
 
   @Autowired

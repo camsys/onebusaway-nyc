@@ -18,6 +18,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 
 import com.google.common.collect.ComparisonChain;
@@ -25,6 +27,8 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 
 import org.apache.commons.lang.StringUtils;
+
+import java.util.Comparator;
 
 
 public final class BlockState implements Comparable<BlockState> {
@@ -147,34 +151,43 @@ public final class BlockState implements Comparable<BlockState> {
      */
     BlockInstance thisBi = this.getBlockInstance();
     BlockInstance rightBi = rightBs.getBlockInstance();
-    int chainComp = ComparisonChain.start()
-        .compare(thisBi.getBlock().getBlock().getId().toString(),
-            rightBi.getBlock().getBlock().getId().toString())
-        .compare(this.destinationSignCode, rightBs.getDestinationSignCode())
-        .compare(this.isOpAssigned, rightBs.getOpAssigned())
-        .compare(this.isRunReported, rightBs.getRunReported())
-        .compare(this.isRunReportedAssignedMismatch, rightBs.getRunReported())
-        .compare(thisBi.getServiceDate(), rightBi.getServiceDate())
-        .compare(this.getBlockLocation().getDistanceAlongBlock(), 
-            rightBs.getBlockLocation().getDistanceAlongBlock())
-        .compare(thisBi.getFrequency() == null, rightBi.getFrequency() == null)
-        .result();
-    if (chainComp != 0)
-      return chainComp;
-    
-    if (thisBi.getFrequency() != null && rightBi.getFrequency() != null) {
-      return ComparisonChain.start()
-          .compare(thisBi.getFrequency().getStartTime(), 
-              rightBi.getFrequency().getStartTime())
-          .compare(thisBi.getFrequency().getEndTime(), 
-              rightBi.getFrequency().getEndTime())
-          .compare(thisBi.getFrequency().getHeadwaySecs(), 
-              rightBi.getFrequency().getHeadwaySecs())
-          .result();
-    }
-    
-    
-    return 0;
+    return ComparisonChain.start()
+      .compare(thisBi.getBlock().getBlock().getId().toString(),
+          rightBi.getBlock().getBlock().getId().toString())
+      .compare(this.getBlockLocation().getActiveTrip().getTrip(), 
+          rightBs.getBlockLocation().getActiveTrip().getTrip(),
+          Ordering.from(new Comparator<TripEntry> () {
+            @Override
+            public int compare(TripEntry o1, TripEntry o2) {
+              return o1.getId().compareTo(o2.getId());
+            }
+          }).nullsLast())
+      .compare(this.getRunId(), rightBs.getRunId(), 
+          Ordering.natural().nullsLast()) 
+      .compare(this.getBlockLocation().getDistanceAlongBlock(), 
+          rightBs.getBlockLocation().getDistanceAlongBlock())
+      .compare(this.getBlockLocation().getScheduledTime(), 
+          rightBs.getBlockLocation().getScheduledTime())
+      .compare(this.destinationSignCode, rightBs.getDestinationSignCode())
+      .compare(this.isOpAssigned, rightBs.getOpAssigned())
+      .compare(this.isRunReported, rightBs.getRunReported())
+      .compare(this.isRunReportedAssignedMismatch, rightBs.getRunReported())
+      .compare(thisBi.getServiceDate(), rightBi.getServiceDate())
+      .compare(thisBi.getFrequency(), rightBi.getFrequency(), 
+        Ordering.from(new Comparator<FrequencyEntry> () {
+          @Override
+          public int compare(FrequencyEntry o1, FrequencyEntry o2) {
+            return ComparisonChain.start()
+              .compare(o1.getStartTime(), 
+                  o2.getStartTime())
+              .compare(o1.getEndTime(), 
+                  o2.getEndTime())
+              .compare(o1.getHeadwaySecs(), 
+                  o2.getHeadwaySecs())
+              .result();
+          }
+        }).nullsLast())    
+      .result();
   }
 
 }
