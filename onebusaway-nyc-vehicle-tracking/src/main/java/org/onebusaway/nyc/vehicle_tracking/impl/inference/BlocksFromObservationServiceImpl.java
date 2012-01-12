@@ -40,6 +40,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.Best
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.transit_data_federation.services.RouteService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
@@ -87,7 +88,14 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
   private RunService _runService;
 
   private BlockCalendarService _blockCalendarService;
+  
+  private RouteService _routeService;
 
+  @Autowired
+  public void setRouteService(RouteService routeService) {
+    _routeService = routeService;
+  }
+  
   @Autowired
   public void setBlockIndexService(BlockIndexService blockIndexService) {
     _blockIndexService = blockIndexService;
@@ -124,7 +132,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    */
   private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
 
-  private boolean _includeNearbyBlocks = true;
+  private boolean _includeNearbyBlocks = false;
 
   private ObservationCache _observationCache;
 
@@ -221,7 +229,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
        * the support for a distribution.
        */
       Set<BlockInstance> consideredBlocks = new HashSet<BlockInstance>();
-      computeNearbyBlocks(observation, consideredBlocks);
+      if (_includeNearbyBlocks)
+        computeNearbyBlocks(observation, consideredBlocks);
 
       Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(
           observation, consideredBlocks);
@@ -692,8 +701,18 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     Set<BlockTripIndex> blockindices = new HashSet<BlockTripIndex>();
 
+    Set<AgencyAndId> dscRoutes = observation.getDscImpliedRouteCollections();
     List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
     for (StopEntry stop : stops) {
+      
+      /*
+       * when we can, restrict to stops that service the dsc-implied route
+       */
+      if (dscRoutes != null && !dscRoutes.isEmpty()) {
+        if (!_routeService.getRouteCollectionIdsForStop(stop.getId()).contains(dscRoutes))
+          continue;
+      }
+      
       List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
       for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
         // TODO perhaps "fix" this use of blockIndexFactoryService.
