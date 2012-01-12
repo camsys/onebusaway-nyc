@@ -550,6 +550,10 @@ public class IndexAction extends SessionedIndexAction {
   }
   
   public String findAndNormalizeCommandInQuery(String query) {
+    if(query == null) {
+      return null;
+    }
+    
     query = query.trim();
     
     if(query.toUpperCase().startsWith("C") || query.toUpperCase().startsWith("CHANGE")) {
