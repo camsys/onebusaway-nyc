@@ -130,7 +130,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     List<String> routesToFilterBy = new ArrayList<String>();
     for(String token : q.split(" ")) {
       if(_routeSearchService.isRoute(token)) {
-        routesToFilterBy.add(token);
+        routesToFilterBy.add(token.toUpperCase());
       }
     }
 

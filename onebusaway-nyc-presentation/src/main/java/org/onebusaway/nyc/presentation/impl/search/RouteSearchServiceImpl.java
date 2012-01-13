@@ -72,6 +72,10 @@ public class RouteSearchServiceImpl implements RouteSearchService {
   
   @Override
   public boolean isRoute(String value) {
+    if(value != null) {
+      value = value.toUpperCase();
+    }
+
     return getAllRouteIds().contains(value);
   }
   
