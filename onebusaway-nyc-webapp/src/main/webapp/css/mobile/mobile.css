@@ -203,6 +203,7 @@ span.noUpcomingService {
     background-color: #ffffff;
     color: #0358B6;
     padding: 0.6em 1.2em;
+    line-height: 1.6em;
 }
 #footer a:link, 
 #footer a:visited {
