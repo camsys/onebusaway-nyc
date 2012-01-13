@@ -167,14 +167,19 @@ public final class SiriSupport {
       // we're now hitting stops after the bus' location...
       if (afterStart) {
         i++;
-        
+
         StopBean stopBean = stopTime.getStop();
         int visitNumber = getVisitNumber(visitNumberForStopMap, stopBean);
 
+        // if MCSB is null, we have no specified monitored stop--
+        // so use the next stop this bus will approach
+        if(monitoredCallStopBean == null) {
+          monitoredCallStopBean = stopBean;
+        }
+          
         // set monitored call if we found the stop we're "monitoring"
         if(stopBean.getId().equals(monitoredCallStopBean.getId())) {          
-
-          if (monitoredCallStopBean != null && !presentationService.isOnDetour(tripDetails.getStatus())) {
+          if(!presentationService.isOnDetour(tripDetails.getStatus())) {
             monitoredVehicleJourney.setMonitoredCall(
                 getMonitoredCallStructure(stopBean, stopTime, presentationService, distance, visitNumber, i - 1));
           }

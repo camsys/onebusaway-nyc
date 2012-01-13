@@ -107,7 +107,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
       SiriSupport.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
-          tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
+          tripDetails.getTrip(), tripDetails, null, 
           _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
       
       output.add(activity);
@@ -151,7 +151,7 @@ public class RealtimeServiceImpl implements RealtimeService {
 
       output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
       SiriSupport.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
-          tripDetails.getTrip(), tripDetails, tripDetails.getStatus().getNextStop(), 
+          tripDetails.getTrip(), tripDetails, null, 
           _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
 
       return output;
