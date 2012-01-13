@@ -101,13 +101,16 @@
 
 	<div id="footer">
     	<p>
-			<s:url var="aboutUrl" namespace="/wiki" action="About"/>	
-    		<a href="${aboutUrl}">About</a> | 
+			<s:url var="mobileHelpUrl" namespace="/wiki" action="Mobile/Help"/>	
+    		<a href="${mobileHelpUrl}">Help</a> | 
+    		
+    		<s:url var="contactUrl" namespace="/wiki" action="ContactUs"/>	
+    		<a href="${contactUrl}">Contact</a> |
     		
 			<s:url var="desktopUrl" namespace="/" action="index"/>	
     		<a href="${desktopUrl}">Desktop Version</a> |
 
-			<a href="http://www.mta.info">MTA Home</a>
+			<a href="http://www.mta.info">MTA.info</a>
 		</p>
 	</div>
 
