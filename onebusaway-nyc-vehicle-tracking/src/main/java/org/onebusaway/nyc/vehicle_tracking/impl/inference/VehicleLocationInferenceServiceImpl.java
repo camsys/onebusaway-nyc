@@ -99,7 +99,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private ExecutorService _executorService;
 
-  private int _numberOfProcessingThreads = 1;
+  private int _numberOfProcessingThreads = 10;
 
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
