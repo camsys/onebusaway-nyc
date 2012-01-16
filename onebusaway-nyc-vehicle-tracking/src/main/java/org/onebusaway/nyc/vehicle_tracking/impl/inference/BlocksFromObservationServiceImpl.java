@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -53,6 +54,7 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -132,7 +134,7 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
    */
   private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
 
-  private boolean _includeNearbyBlocks = false;
+  private boolean _includeNearbyBlocks = true;
 
   private ObservationCache _observationCache;
 
@@ -692,6 +694,8 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
 
     NycRawLocationRecord record = observation.getRecord();
     long time = observation.getTime();
+    long timeFrom = time - _tripSearchTimeAfteLastStop;
+    long timeTo = time + _tripSearchTimeBeforeFirstStop;
 
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
@@ -705,22 +709,26 @@ class BlocksFromObservationServiceImpl implements BlocksFromObservationService {
     List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
     for (StopEntry stop : stops) {
       
-      /*
-       * when we can, restrict to stops that service the dsc-implied route
-       */
-      if (dscRoutes != null && !dscRoutes.isEmpty()) {
-        if (!_routeService.getRouteCollectionIdsForStop(stop.getId()).contains(dscRoutes))
-          continue;
-      }
-      
       List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
       for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
-        // TODO perhaps "fix" this use of blockIndexFactoryService.
-        blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
+        /*
+         * when we can, restrict to stops that service the dsc-implied route
+         */
+        if (dscRoutes != null && !dscRoutes.isEmpty()) {
+          for (BlockTripEntry bentry : stopTimeIndex.getTrips()) {
+            if (dscRoutes.contains(bentry.getTrip().getRouteCollection().getId())) {
+              blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
+              break;
+            }
+          }
+        } else {
+          // TODO perhaps "fix" this use of blockIndexFactoryService.
+          blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
+        }
       }
     }
     List<BlockInstance> nearbyBlocks = _blockCalendarService.getActiveBlocksInTimeRange(
-        blockindices, layoverIndices, frequencyIndices, time, time);
+        blockindices, layoverIndices, frequencyIndices, timeFrom, timeTo);
     potentialBlocks.addAll(nearbyBlocks);
   }
 }

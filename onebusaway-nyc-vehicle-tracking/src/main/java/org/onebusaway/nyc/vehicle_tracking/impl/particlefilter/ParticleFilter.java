@@ -353,7 +353,25 @@ public class ParticleFilter<OBS> {
    * @author bwillard
    * 
    */
-  class ParticleComparator implements Comparator<Particle> {
+  private static class ParticleComparator implements Comparator<Particle> {
+
+    @Override
+    public int compare(Particle arg0, Particle arg1) {
+      if (arg0 == arg1)
+        return 0;
+
+      int compRes = ComparisonChain.start()
+          .compare(arg0, arg1)
+          .compare((VehicleState) arg0.getData(), (VehicleState) arg1.getData())
+          .result();
+      return compRes;
+    }
+
+  }
+  
+  private static final ParticleComparator _particleComparator = new ParticleComparator();
+  
+  private static class ParticleWithParentComparator implements Comparator<Particle> {
 
     @Override
     public int compare(Particle arg0, Particle arg1) {
@@ -361,21 +379,14 @@ public class ParticleFilter<OBS> {
         return 0;
 
       return ComparisonChain.start()
-          .compare(arg0, arg1)
-          .compare((VehicleState) arg0.getData(), (VehicleState) arg1.getData())
-//          .compare(arg0.getParent(), 
-//              arg1.getParent(), Ordering.from(new Comparator<Particle> () {
-//                @Override
-//                public int compare(Particle arg0, Particle arg1) {
-//                  return arg0.compareTo(arg1);
-//                }
-//              }).nullsLast())
+          .compare(arg0, arg1, Ordering.from(_particleComparator))
+          .compare(arg0.getParent(), arg1.getParent(), 
+              Ordering.from(_particleComparator).nullsLast())
           .result();
     }
 
   }
 
-  final ParticleComparator _particleComparator = new ParticleComparator();
 
   @SuppressWarnings("unused")
   private List<Particle> applyMotionModel(final OBS obs, final double timestamp)

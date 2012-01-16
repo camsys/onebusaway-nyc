@@ -93,6 +93,21 @@ public final class VehicleState implements Comparable<VehicleState> {
     return journeyState + " " + blockState + " " + observation;
   }
 
+  private static class ObservationComparator implements Comparator<Observation> {
+    @Override
+    public int compare(Observation o1, Observation o2) {
+      return ComparisonChain.start()
+          .compare(o1.getRecord().getTimeReceived(), o2.getRecord().getTimeReceived())
+          .compare(o1.getRecord().getVehicleId(), o2.getRecord().getVehicleId())
+          .compare(o1.getRecord().getLatitude(), o2.getRecord().getLatitude())
+          .compare(o1.getRecord().getLongitude(), o2.getRecord().getLongitude())
+          .compare(o1.getRecord().getDestinationSignCode(), 
+              o2.getRecord().getDestinationSignCode())
+          .result();
+    }
+  }
+  
+  static private final ObservationComparator _observationComparator = new ObservationComparator();
   /**
    *  This compareTo method is for definite ordering
    *  in CategoricalDist; such ordering allows for
@@ -105,23 +120,12 @@ public final class VehicleState implements Comparable<VehicleState> {
       return 0;
     
     int compRes = ComparisonChain.start()
-        .compare(this.observation, rightState.getObservation(), Ordering.from(
-            new Comparator<Observation> () {
-              @Override
-              public int compare(Observation o1, Observation o2) {
-                return ComparisonChain.start()
-                    .compare(o1.getRecord().getTimeReceived(), o2.getRecord().getTimeReceived())
-                    .compare(o1.getRecord().getVehicleId(), o2.getRecord().getVehicleId())
-                    .compare(o1.getRecord().getLatitude(), o2.getRecord().getLatitude())
-                    .compare(o1.getRecord().getLongitude(), o2.getRecord().getLongitude())
-                    .compare(o1.getRecord().getDestinationSignCode(), 
-                        o2.getRecord().getDestinationSignCode())
-                    .result();
-              }
-            }).nullsLast())
         .compare(this.journeyState.getPhase(), rightState.getJourneyState().getPhase())
         .compare(this.motionState, rightState.getMotionState())
-        .compare(this.blockState, rightState.getBlockState(), Ordering.natural().nullsLast())
+        .compare(this.observation, rightState.getObservation(), 
+            Ordering.from(_observationComparator).nullsLast())
+        .compare(this.blockState, rightState.getBlockState(), 
+            Ordering.natural().nullsLast())
         .result();
     
     return compRes;

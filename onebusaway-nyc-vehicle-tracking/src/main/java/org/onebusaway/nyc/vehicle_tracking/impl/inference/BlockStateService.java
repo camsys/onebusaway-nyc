@@ -265,28 +265,31 @@ public class BlockStateService {
   }
 
   public static class BestBlockStates {
-   
+
     final private BlockState bestTime;
     final private BlockState bestLocation;
-    
-    public BestBlockStates (BlockState bestTime, BlockState bestLocation) {
+
+    public BestBlockStates(BlockState bestTime, BlockState bestLocation) {
+      if (bestTime == null || bestLocation == null)
+        throw new IllegalArgumentException("best block states cannot be null");
       this.bestLocation = bestLocation;
       this.bestTime = bestTime;
     }
-    
-    public BlockState getBestTime () {
+
+    public BlockState getBestTime() {
       return this.bestTime;
     }
-    
-    public BlockState getBestLocation () {
+
+    public BlockState getBestLocation() {
       return this.bestLocation;
     }
-    
+
     public List<BlockState> getAllStates() {
-      return Arrays.asList(bestTime, bestLocation);
+      return bestTime.equals(bestLocation) ? Arrays.asList(bestTime)
+          : Arrays.asList(bestTime, bestLocation);
     }
   }
-  
+
   private BestBlockStates getUncachedBestBlockLocations(
       Observation observation, BlockInstance blockInstance,
       double blockDistanceFrom, double blockDistanceTo)
@@ -364,8 +367,8 @@ public class BlockStateService {
       if (distanceAlongBlock > block.getTotalBlockDistance())
         distanceAlongBlock = block.getTotalBlockDistance();
 
-      ScheduledBlockLocation location = _scheduledBlockLocationService.
-          getScheduledBlockLocationFromDistanceAlongBlock(block, distanceAlongBlock);
+      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          block, distanceAlongBlock);
 
       if (location != null) {
         int scheduledTime = location.getScheduledTime();
@@ -378,9 +381,11 @@ public class BlockStateService {
     }
 
     PointAndIndex indexSched = bestSchedDev.getMinElement();
-    BlockState bestTimeState = getAsState(blockInstance, indexSched.distanceAlongShape);
+    BlockState bestTimeState = getAsState(blockInstance,
+        indexSched.distanceAlongShape);
     PointAndIndex indexLoc = bestLocDev.getMinElement();
-    BlockState bestLocState = getAsState(blockInstance, indexLoc.distanceAlongShape);
+    BlockState bestLocState = getAsState(blockInstance,
+        indexLoc.distanceAlongShape);
 
     return new BestBlockStates(bestTimeState, bestLocState);
   }

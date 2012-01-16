@@ -15,7 +15,10 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.FrequencyComparator;
+import org.onebusaway.transit_data_federation.impl.otp.TripSequence;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
@@ -129,7 +132,36 @@ public final class BlockState implements Comparable<BlockState> {
   public void setRunReportedAssignedMismatch(Boolean isRunReportedUTSMismatch) {
     this.isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
   }
+  
+//  final private FrequencyComparator _frequencyComparator = new FrequencyComparator();
+  
+  private static class TripIdComparator implements Comparator<TripEntry> {
+    @Override
+    public int compare(TripEntry o1, TripEntry o2) {
+      return o1.getId().compareTo(o2.getId());
+    }
+  }
+  
+  private static class BlockInstanceComparator implements Comparator<BlockInstance> {
 
+    @Override
+    public int compare(BlockInstance o1, BlockInstance o2) {
+      if (o1 == o2)
+        return 0;
+      
+      return ComparisonChain.start()
+          .compare(o1.getBlock().getServiceIds(), o2.getBlock().getServiceIds())
+          .compare(o1.getServiceDate(), o2.getServiceDate())
+  //      .compare(o1.getFrequency(), o2.getFrequency(), 
+  //        Ordering.from(_frequencyComparator).nullsLast())    
+          .result();
+    }
+    
+  }
+  
+  static final private TripIdComparator _tripIdComparator = new TripIdComparator(); 
+  static final private BlockInstanceComparator _blockInstanceComparator = new BlockInstanceComparator();
+  
   /**
    *  This compareTo method is for definite ordering
    *  in CategoricalDist; such ordering allows for
@@ -141,52 +173,22 @@ public final class BlockState implements Comparable<BlockState> {
     if (this == rightBs)
       return 0;
     
-    /*
-     * Ordering.usingToString works, so mimic the contents of toString
-     * for comparison...
-     * start with blockInstance, then blockLocation
-     * blockLocation: activeTrip, scheduleTime, and distanceAlong.
-     * actually, let's try distance along block only, since
-     * i believe that should map well enough to trip and scheduledTime...
-     */
-    BlockInstance thisBi = this.getBlockInstance();
-    BlockInstance rightBi = rightBs.getBlockInstance();
     return ComparisonChain.start()
-      .compare(thisBi.getBlock().getBlock().getId().toString(),
-          rightBi.getBlock().getBlock().getId().toString())
-      .compare(this.getBlockLocation().getActiveTrip().getTrip(), 
-          rightBs.getBlockLocation().getActiveTrip().getTrip(),
-          Ordering.from(new Comparator<TripEntry> () {
-            @Override
-            public int compare(TripEntry o1, TripEntry o2) {
-              return o1.getId().compareTo(o2.getId());
-            }
-          }).nullsLast())
-      .compare(this.getRunId(), rightBs.getRunId(), 
-          Ordering.natural().nullsLast()) 
-      .compare(this.getBlockLocation().getDistanceAlongBlock(), 
-          rightBs.getBlockLocation().getDistanceAlongBlock())
       .compare(this.getBlockLocation().getScheduledTime(), 
           rightBs.getBlockLocation().getScheduledTime())
       .compare(this.destinationSignCode, rightBs.getDestinationSignCode())
       .compare(this.isOpAssigned, rightBs.getOpAssigned())
       .compare(this.isRunReported, rightBs.getRunReported())
       .compare(this.isRunReportedAssignedMismatch, rightBs.getRunReported())
-      .compare(thisBi.getServiceDate(), rightBi.getServiceDate())
-      .compare(thisBi.getFrequency(), rightBi.getFrequency(), 
-        Ordering.from(new Comparator<FrequencyEntry> () {
-          @Override
-          public int compare(FrequencyEntry o1, FrequencyEntry o2) {
-            return ComparisonChain.start()
-              .compare(o1.getStartTime(), 
-                  o2.getStartTime())
-              .compare(o1.getEndTime(), 
-                  o2.getEndTime())
-              .compare(o1.getHeadwaySecs(), 
-                  o2.getHeadwaySecs())
-              .result();
-          }
-        }).nullsLast())    
+      .compare(this.getRunId(), rightBs.getRunId(), 
+          Ordering.natural().nullsLast()) 
+      .compare(this.getBlockLocation().getActiveTrip().getTrip(), 
+          rightBs.getBlockLocation().getActiveTrip().getTrip(),
+          Ordering.from(_tripIdComparator).nullsLast())
+      .compare(this.getBlockLocation().getDistanceAlongBlock(), 
+          rightBs.getBlockLocation().getDistanceAlongBlock())
+      .compare(this.getBlockInstance(), rightBs.getBlockInstance(), 
+          Ordering.from(_blockInstanceComparator))
       .result();
   }
 
