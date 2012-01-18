@@ -16,9 +16,12 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Particle motion model interface for defining the strategy for moving
@@ -38,6 +41,20 @@ public interface MotionModel<OBS> {
    * @param results TODO
    * @throws Exception TODO
    */
-  void move(Particle parent, double timestamp, double timeElapsed,
+  public void move(Particle parent, double timestamp, double timeElapsed,
       OBS obs, Collection<Particle> results);
+  
+  /**
+   * This version of move will utilize the passed cache to avoid
+   * recalculating results.  Especially useful for multiple null block-states.
+   * 
+   * @param parent
+   * @param timestamp
+   * @param timeElapsed
+   * @param obs
+   * @param results
+   * @param cache
+   */
+  public void move(Particle parent, double timestamp, double timeElapsed,
+      OBS obs, Collection<Particle> results, Map<VehicleState, Set<VehicleState>> cache);
 }

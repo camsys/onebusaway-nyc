@@ -15,8 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
@@ -43,6 +46,29 @@ public class SensorModelImpl implements SensorModel<Observation> {
   /****
    * {@link SensorModel} Interface
    ****/
+  @Override
+  public SensorModelResult likelihood(Particle particle, Observation observation,
+      Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache) {
+    
+    VehicleState state = particle.getData();
+    VehicleState parentState = null;
+    Particle parent = particle.getParent();
+
+    if (parent != null)
+      parentState = parent.getData();
+
+    Entry<VehicleState, VehicleState> key = 
+        new AbstractMap.SimpleImmutableEntry<VehicleState, VehicleState>(state, parentState);
+    SensorModelResult result = cache.get(key);
+    
+    if (result == null) {
+      result = likelihood(parentState, state, observation);
+      cache.put(key, result);
+    }
+
+    
+    return result;
+  }
 
   @Override
   public SensorModelResult likelihood(Particle particle, Observation observation) {

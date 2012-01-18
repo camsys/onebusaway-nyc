@@ -133,7 +133,7 @@ public final class BlockState implements Comparable<BlockState> {
     this.isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
   }
   
-//  final private FrequencyComparator _frequencyComparator = new FrequencyComparator();
+  static final private FrequencyComparator _frequencyComparator = new FrequencyComparator();
   
   private static class TripIdComparator implements Comparator<TripEntry> {
     @Override
@@ -152,8 +152,8 @@ public final class BlockState implements Comparable<BlockState> {
       return ComparisonChain.start()
           .compare(o1.getBlock().getServiceIds(), o2.getBlock().getServiceIds())
           .compare(o1.getServiceDate(), o2.getServiceDate())
-  //      .compare(o1.getFrequency(), o2.getFrequency(), 
-  //        Ordering.from(_frequencyComparator).nullsLast())    
+          .compare(o1.getFrequency(), o2.getFrequency(), 
+            Ordering.from(_frequencyComparator).nullsLast())    
           .result();
     }
     
@@ -177,9 +177,12 @@ public final class BlockState implements Comparable<BlockState> {
       .compare(this.getBlockLocation().getScheduledTime(), 
           rightBs.getBlockLocation().getScheduledTime())
       .compare(this.destinationSignCode, rightBs.getDestinationSignCode())
-      .compare(this.isOpAssigned, rightBs.getOpAssigned())
-      .compare(this.isRunReported, rightBs.getRunReported())
-      .compare(this.isRunReportedAssignedMismatch, rightBs.getRunReported())
+      .compare(this.isOpAssigned, rightBs.getOpAssigned(), 
+          Ordering.natural().nullsLast())
+      .compare(this.isRunReported, rightBs.getRunReported(),
+          Ordering.natural().nullsLast())
+      .compare(this.isRunReportedAssignedMismatch, rightBs.getRunReported(),
+          Ordering.natural().nullsLast())
       .compare(this.getRunId(), rightBs.getRunId(), 
           Ordering.natural().nullsLast()) 
       .compare(this.getBlockLocation().getActiveTrip().getTrip(), 
@@ -191,5 +194,78 @@ public final class BlockState implements Comparable<BlockState> {
           Ordering.from(_blockInstanceComparator))
       .result();
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result
+        + ((blockInstance == null) ? 0 : blockInstance.hashCode());
+    result = prime * result
+        + ((blockLocation == null) ? 0 : blockLocation.hashCode());
+    result = prime * result
+        + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
+    result = prime * result
+        + ((isOpAssigned == null) ? 0 : isOpAssigned.hashCode());
+    result = prime * result
+        + ((isRunReported == null) ? 0 : isRunReported.hashCode());
+    result = prime
+        * result
+        + ((isRunReportedAssignedMismatch == null) ? 0
+            : isRunReportedAssignedMismatch.hashCode());
+    result = prime * result + ((runTrip == null) ? 0 : runTrip.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof BlockState))
+      return false;
+    BlockState other = (BlockState) obj;
+    if (blockInstance == null) {
+      if (other.blockInstance != null)
+        return false;
+    } else if (!blockInstance.equals(other.blockInstance))
+      return false;
+    if (blockLocation == null) {
+      if (other.blockLocation != null)
+        return false;
+    } else if (!blockLocation.equals(other.blockLocation))
+      return false;
+    if (destinationSignCode == null) {
+      if (other.destinationSignCode != null)
+        return false;
+    } else if (!destinationSignCode.equals(other.destinationSignCode))
+      return false;
+    if (isOpAssigned == null) {
+      if (other.isOpAssigned != null)
+        return false;
+    } else if (!isOpAssigned.equals(other.isOpAssigned))
+      return false;
+    if (isRunReported == null) {
+      if (other.isRunReported != null)
+        return false;
+    } else if (!isRunReported.equals(other.isRunReported))
+      return false;
+    if (isRunReportedAssignedMismatch == null) {
+      if (other.isRunReportedAssignedMismatch != null)
+        return false;
+    } else if (!isRunReportedAssignedMismatch.equals(other.isRunReportedAssignedMismatch))
+      return false;
+    // TODO should verify that these objects aren't duplicated, or implement
+    // equals & hashCode
+    if (runTrip == null) {
+      if (other.runTrip != null)
+        return false;
+    } else if (!runTrip.equals(other.runTrip))
+      return false;
+    return true;
+  }
+  
+  
 
 }

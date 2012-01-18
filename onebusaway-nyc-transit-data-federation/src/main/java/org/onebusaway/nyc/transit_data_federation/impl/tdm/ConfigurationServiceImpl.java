@@ -12,6 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -52,7 +53,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 	
 	public void refreshConfiguration() throws Exception {
-	  ArrayList<JsonObject> configurationItems = 
+	  List<JsonObject> configurationItems = 
         _transitDataManagerApiLibrary.getItemsForRequest("config", "list");
 
     for(JsonObject configItem : configurationItems) {

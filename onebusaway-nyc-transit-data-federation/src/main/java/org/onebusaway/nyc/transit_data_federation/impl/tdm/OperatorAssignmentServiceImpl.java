@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
 import javax.annotation.PostConstruct;
@@ -56,7 +57,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(ServiceDate serviceDate) {
 		try {			
 		  String serviceDateUrlParameter = serviceDate.getYear() + "-" + serviceDate.getMonth() + "-" + serviceDate.getDay();
-		  ArrayList<JsonObject> operatorAssignments = _transitDataManagerApiLibrary.getItemsForRequest("crew", 
+		  List<JsonObject> operatorAssignments = _transitDataManagerApiLibrary.getItemsForRequest("crew", 
 		      serviceDateUrlParameter, "list");
 
 			HashMap<String, OperatorAssignmentItem> output = new HashMap<String, OperatorAssignmentItem>();

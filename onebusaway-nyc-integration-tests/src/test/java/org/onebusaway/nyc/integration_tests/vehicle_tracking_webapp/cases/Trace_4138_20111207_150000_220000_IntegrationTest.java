@@ -33,7 +33,7 @@ public class Trace_4138_20111207_150000_220000_IntegrationTest extends AbstractT
      * TODO records 120 onward should ideally be deadhead, but it's 
      * tough for the current filter.
      */
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.95);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.63);
     /**
      * Whether it should be layover or deadhead is still a question,
      * but in general it doesn't hurt us (since it's a block-less state).

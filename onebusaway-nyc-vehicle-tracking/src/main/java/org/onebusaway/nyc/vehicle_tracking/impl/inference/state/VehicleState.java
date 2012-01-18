@@ -130,4 +130,63 @@ public final class VehicleState implements Comparable<VehicleState> {
     
     return compRes;
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result
+        + ((blockState == null) ? 0 : blockState.hashCode());
+    // XXX we're only concerned with phase here
+    result = prime * result
+        + ((journeyState == null) ? 0 : journeyState.getPhase().hashCode());
+//    result = prime * result
+//        + ((journeySummaries == null) ? 0 : journeySummaries.hashCode());
+    result = prime * result
+        + ((motionState == null) ? 0 : motionState.hashCode());
+    result = prime * result
+        + ((observation == null) ? 0 : observation.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof VehicleState))
+      return false;
+    VehicleState other = (VehicleState) obj;
+    if (blockState == null) {
+      if (other.blockState != null)
+        return false;
+    } else if (!blockState.equals(other.blockState))
+      return false;
+    // XXX we're only concerned with phase here
+    if (journeyState == null) {
+      if (other.journeyState != null)
+        return false;
+    } else if (other.journeyState == null) {
+      return false;
+    } else if (!journeyState.getPhase().equals(other.journeyState.getPhase()))
+      return false;
+//    if (journeySummaries == null) {
+//      if (other.journeySummaries != null)
+//        return false;
+//    } else if (!journeySummaries.equals(other.journeySummaries))
+//      return false;
+    if (motionState == null) {
+      if (other.motionState != null)
+        return false;
+    } else if (!motionState.equals(other.motionState))
+      return false;
+    if (observation == null) {
+      if (other.observation != null)
+        return false;
+    } else if (!observation.equals(other.observation))
+      return false;
+    return true;
+  }
+  
 }

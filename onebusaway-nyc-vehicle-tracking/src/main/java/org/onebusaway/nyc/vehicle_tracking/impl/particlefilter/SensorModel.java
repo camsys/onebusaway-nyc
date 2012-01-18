@@ -15,6 +15,12 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
 /**
  * Sensor model strategy for evaluating the likelihood of a particle given an
  * observation.
@@ -28,4 +34,7 @@ public interface SensorModel<OBS> {
    * @return likelihood probability on the interval [0.0,1.0]
    */
   public SensorModelResult likelihood(Particle particle, OBS observation);
+
+  public SensorModelResult likelihood(Particle particle, OBS observation,
+      Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache);
 }

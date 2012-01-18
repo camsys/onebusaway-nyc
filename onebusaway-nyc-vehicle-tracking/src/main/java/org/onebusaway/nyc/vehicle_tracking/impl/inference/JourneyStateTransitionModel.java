@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -56,13 +57,13 @@ public class JourneyStateTransitionModel {
    ****/
 
   public void move(VehicleState parentState,  
-      MotionState motionState, Observation obs, List<VehicleState> results) {
+      MotionState motionState, Observation obs, Collection<VehicleState> vehicleStates) {
 
     List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
         obs);
 
     generateVehicleStates(parentState, motionState, journeyStates,
-        obs, results);
+        obs, vehicleStates);
   }
 
   public List<JourneyState> getTransitionJourneyStates(
@@ -103,7 +104,7 @@ public class JourneyStateTransitionModel {
    */
   private void generateVehicleStates(VehicleState parentState,
       MotionState motionState, List<JourneyState> journeyStates, 
-      Observation obs, List<VehicleState> results) {
+      Observation obs, Collection<VehicleState> results) {
 
     for (JourneyState journeyState : journeyStates) {
 

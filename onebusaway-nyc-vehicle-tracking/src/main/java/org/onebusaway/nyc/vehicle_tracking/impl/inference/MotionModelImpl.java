@@ -17,7 +17,10 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -57,6 +60,25 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return _motionThreshold;
   }
 
+  @Override
+  public void move(Particle parent, double timestamp, double timeElapsed,
+      Observation obs, Collection<Particle> results, Map<VehicleState, Set<VehicleState>> cache) {
+
+    VehicleState parentState = parent.getData();
+    MotionState motionState = updateMotionState(parentState, obs);
+
+    Set<VehicleState> vehicleStates = cache.get(parentState);
+        
+    if (vehicleStates == null) {
+      vehicleStates = new HashSet<VehicleState>();
+      _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
+      cache.put(parentState, vehicleStates);
+    }
+    
+    for (VehicleState vs : vehicleStates)
+      results.add(new Particle(timestamp, parent, 1.0, vs));
+  }
+  
   @Override
   public void move(Particle parent, double timestamp, double timeElapsed,
       Observation obs, Collection<Particle> results) {

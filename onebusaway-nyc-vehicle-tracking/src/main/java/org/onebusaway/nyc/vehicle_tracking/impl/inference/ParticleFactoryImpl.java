@@ -66,7 +66,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private MotionModelImpl _motionModel;
   
-  private static class LocalRandom extends ThreadLocal<Random> {
+  static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
     
     LocalRandom(long seed) {
@@ -81,28 +81,40 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         return new Random();
     }
   }
-
-  private static ThreadLocal<Random> threadLocalRng = new LocalRandom(0);
-
-//  static class LocalRandom {
-//    Random rng;
-//    
-//    LocalRandom (long seed) {
-//      if (seed != 0)
-//        rng = new Random(seed);
-//      else
-//        rng = new Random();
-//    }
-//    
-//    public Random get() {
-//      return rng;
-//    }
-//  }
-//  
-//  private static LocalRandom threadLocalRng = new LocalRandom(0);
+    
+  static class LocalRandomDummy extends ThreadLocal<Random> {
+    Random rng;
+    
+    LocalRandomDummy (long seed) {
+      if (seed != 0)
+        rng = new Random(seed);
+      else
+        rng = new Random();
+    }
+    
+    @Override
+    synchronized public Random get() {
+      return rng;
+    }
+  }
+  
+  static ThreadLocal<Random> threadLocalRng;
+  static {
+    if (!ParticleFilter.getTestingEnabled()) {
+      threadLocalRng = new LocalRandom(0);
+    } else {
+      threadLocalRng = new LocalRandomDummy(0);
+      
+    }
+  }
   
   synchronized public static void setSeed(long seed) {
-    threadLocalRng = new LocalRandom(seed);
+    if (!ParticleFilter.getTestingEnabled()) {
+      threadLocalRng = new LocalRandom(seed);
+    } else {
+      threadLocalRng = new LocalRandomDummy(seed);
+      
+    }
   }
   
   @Autowired

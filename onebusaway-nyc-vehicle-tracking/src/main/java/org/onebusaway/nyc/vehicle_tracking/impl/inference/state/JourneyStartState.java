@@ -29,4 +29,30 @@ public final class JourneyStartState {
     return journeyStart;
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result
+        + ((journeyStart == null) ? 0 : journeyStart.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof JourneyStartState))
+      return false;
+    JourneyStartState other = (JourneyStartState) obj;
+    if (journeyStart == null) {
+      if (other.journeyStart != null)
+        return false;
+    } else if (!journeyStart.equals(other.journeyStart))
+      return false;
+    return true;
+  }
+
 }

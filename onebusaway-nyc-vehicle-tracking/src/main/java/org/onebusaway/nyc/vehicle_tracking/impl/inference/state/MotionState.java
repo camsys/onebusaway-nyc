@@ -53,4 +53,35 @@ public final class MotionState implements Comparable<MotionState> {
         .result();
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime
+        * result
+        + ((lastInMotionLocation == null) ? 0 : lastInMotionLocation.hashCode());
+    result = prime * result
+        + (int) (lastInMotionTime ^ (lastInMotionTime >>> 32));
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof MotionState))
+      return false;
+    MotionState other = (MotionState) obj;
+    if (lastInMotionLocation == null) {
+      if (other.lastInMotionLocation != null)
+        return false;
+    } else if (!lastInMotionLocation.equals(other.lastInMotionLocation))
+      return false;
+    if (lastInMotionTime != other.lastInMotionTime)
+      return false;
+    return true;
+  }
+
 }
