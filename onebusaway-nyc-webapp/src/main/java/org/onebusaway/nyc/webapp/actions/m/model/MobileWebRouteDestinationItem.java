@@ -29,8 +29,8 @@ public class MobileWebRouteDestinationItem extends RouteDestinationItem {
   
   private List<String> distanceAwayStrings;
   
-  public MobileWebRouteDestinationItem(StopGroupBean group, List<StopResult> stops) {
-    super(group, stops);
+  public MobileWebRouteDestinationItem(StopGroupBean group, List<StopResult> stops, Boolean hasUpcomingScheduledService) {
+    super(group, stops, hasUpcomingScheduledService);
   }
 
   public List<NaturalLanguageStringBean> getServiceAlerts() {

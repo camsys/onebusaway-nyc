@@ -299,9 +299,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		html += '<ul>';
 		
 		var totalRouteCount = 0;
+		
 		var headsignsByRouteId = {};
     	jQuery.each(stopResult.routesAvailable, function(_, routeResult) {
-    		headsignsByRouteId[routeResult.routeId] = routeResult.routeIdWithoutAgency + " " + routeResult.longName;
+   			headsignsByRouteId[routeResult.routeId] = routeResult.routeIdWithoutAgency + " " + routeResult.longName;
     		totalRouteCount++;
     	});
 		
@@ -337,19 +338,21 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 					return false;
 				}
 					
-				var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
+				if(typeof monitoredVehicleJourney.MonitoredCall !== 'undefined') {
+					var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
 					
-				if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
-						monitoredVehicleJourney.ProgressStatus === "layover") {
-					distance += " (at terminal)";
+					if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
+							monitoredVehicleJourney.ProgressStatus === "layover") {
+						distance += " (at terminal)";
+					}
+					
+					html += '<li class="arrival">' + distance + '</li>';
 				}
-					
-				html += '<li class="arrival">' + distance + '</li>';
 			});
 		});
 		
-		// ...and the routes available with no upcoming service
-		var haveRoutesWithoutService = false;
+		// ...and the routes available with no en-route service
+		var haveRoutesNotEnRoute = false;
 		var j = 0;
 		jQuery.each(headsignsByRouteId, function(routeId, headsign) {
 			var routeIdParts = routeId.split("_");
@@ -364,11 +367,11 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 			html += '<a href="#' + routeIdWithoutAgency + '">' + headsign + '</a>';
 			html += '</li>';
 			
-			haveRoutesWithoutService = true;
+			haveRoutesNotEnRoute = true;
 			j++;
 		});
 
-		if(haveRoutesWithoutService === true) {
+		if(haveRoutesNotEnRoute === true) {
 			html += '<p class="service">No buses en-route. Check back shortly for an update.</p>';
 		}
 		

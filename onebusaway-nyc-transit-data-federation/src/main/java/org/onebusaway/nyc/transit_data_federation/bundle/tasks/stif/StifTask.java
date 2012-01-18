@@ -249,7 +249,7 @@ public class StifTask implements Runnable {
         outputStream = new FileOutputStream(new File(logPath));
         printStream = new PrintStream(outputStream);
         printStream.println("blockId,tripId,dsc,firstStop,firstStopTime,lastStop,lastStopTime,"+
-        "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq");
+        "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute");
       } catch (FileNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -447,8 +447,10 @@ public class StifTask implements Runnable {
     printStream.print(trip.firstTripInSequence);
     printStream.print(",");
     printStream.print(trip.lastTripInSequence);
-    printStream.print("\n");
+    printStream.print(",");
 
+    printStream.print(trip.getSignCodeRoute());
+    printStream.print("\n");
   }
 
   private void warnOnMissingTrips() {

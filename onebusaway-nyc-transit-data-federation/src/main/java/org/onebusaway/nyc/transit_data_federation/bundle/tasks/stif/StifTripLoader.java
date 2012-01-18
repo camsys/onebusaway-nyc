@@ -138,6 +138,7 @@ public class StifTripLoader {
           rawTrips.recoveryTime = tripRecord.getRecoveryTime();
           rawTrips.firstTripInSequence = tripRecord.isFirstTripInSequence();
           rawTrips.lastTripInSequence = tripRecord.isLastTripInSequence();
+          rawTrips.signCodeRoute = tripRecord.getSignCodeRoute();
           rawData.get(serviceCode).add(rawTrips);
 
           if (tripType == 2 || tripType == 3 || tripType == 4) {

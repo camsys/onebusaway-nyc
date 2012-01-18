@@ -71,7 +71,7 @@ public class BHSListenerServlet extends HttpServlet {
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
         throws ServletException, IOException {
-        service(request.getInputStream());
+      // do not respond to get requests
     }
 
     private void service(ServletInputStream stream) throws IOException {

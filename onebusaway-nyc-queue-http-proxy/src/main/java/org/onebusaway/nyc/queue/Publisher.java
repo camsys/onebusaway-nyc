@@ -73,6 +73,7 @@ public class Publisher implements IPublisher {
     }
 
     String wrap(byte[] message) {
+      if (message == null || message.length == 0) return null;
         long timeReceived = getTimeReceived();
         String realtime = new String(message);
         // we remove wrapping below, so check for min length acceptable

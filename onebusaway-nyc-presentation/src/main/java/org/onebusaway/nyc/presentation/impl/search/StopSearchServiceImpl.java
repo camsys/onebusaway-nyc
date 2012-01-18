@@ -23,6 +23,7 @@ import org.onebusaway.nyc.presentation.model.search.RouteDestinationItem;
 import org.onebusaway.nyc.presentation.model.search.RouteResult;
 import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.presentation.service.PresentationModelFactory;
+import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.search.StopSearchService;
 import org.onebusaway.presentation.services.ServiceAreaService;
 import org.onebusaway.transit_data.model.NameBean;
@@ -52,6 +53,9 @@ public class StopSearchServiceImpl implements StopSearchService {
   
   @Autowired
   private TransitDataService _transitDataService;
+
+  @Autowired
+  private PresentationService _presentationService;
 
   @Autowired
   private ServiceAreaService _serviceArea;
@@ -85,6 +89,7 @@ public class StopSearchServiceImpl implements StopSearchService {
       
       for(RouteBean routeBean : stopBean.getRoutes()) {
         List<RouteDestinationItem> destinations = getRouteDestinationItemsForRouteAndStop(routeBean, stopBean);      
+
         routesAvailable.add(_modelFactory.getRouteModelForStop(routeBean, destinations));      
       }
 
@@ -144,7 +149,8 @@ public class StopSearchServiceImpl implements StopSearchService {
         if(!stopIdsInGroup.contains(stopBean.getId()))
           continue;
         
-        destinations.add(_modelFactory.getRouteDestinationModelForStop(stopGroupBean, routeBean, stopBean));
+        destinations.add(_modelFactory.getRouteDestinationModelForStop(stopGroupBean, routeBean, stopBean, 
+            _presentationService.hasUpcomingScheduledService(routeBean, stopGroupBean)));
       }
     }
       

@@ -33,8 +33,8 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
   }
 
   @Override
-  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops) {
-    SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, stops);
+  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops, Boolean hasUpcomingScheduledService) {
+    SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, stops, hasUpcomingScheduledService);
 
     // service alerts
     List<NaturalLanguageStringBean> serviceAlertSummaries = new ArrayList<NaturalLanguageStringBean>();
@@ -52,8 +52,8 @@ public class SmsPresentationModelFactory extends DefaultPresentationModelFactory
   }
   
   @Override  
-  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop) {
-    SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, null);
+  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop, Boolean hasUpcomingScheduledService) {
+    SmsRouteDestinationItem item = new SmsRouteDestinationItem(group, null, hasUpcomingScheduledService);
 
     // service alerts
     List<NaturalLanguageStringBean> serviceAlertSummaries = new ArrayList<NaturalLanguageStringBean>();

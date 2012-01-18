@@ -47,8 +47,8 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
   }
   
   @Override
-  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop) {
-    MobileWebRouteDestinationItem destination = new MobileWebRouteDestinationItem(group, null);
+  public RouteDestinationItem getRouteDestinationModelForStop(StopGroupBean group, RouteBean route, StopBean stop, Boolean hasUpcomingScheduledService) {
+    MobileWebRouteDestinationItem destination = new MobileWebRouteDestinationItem(group, null, hasUpcomingScheduledService);
 
     // service alerts
     List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
@@ -94,8 +94,8 @@ public class MobileWebPresentationModelFactory extends DefaultPresentationModelF
   }
 
   @Override
-  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops) {
-    MobileWebRouteDestinationItem destination = new MobileWebRouteDestinationItem(group, stops);
+  public RouteDestinationItem getRouteDestinationModelForRoute(StopGroupBean group, RouteBean route, List<StopResult> stops, Boolean hasUpcomingScheduledService) {
+    MobileWebRouteDestinationItem destination = new MobileWebRouteDestinationItem(group, stops, hasUpcomingScheduledService);
 
     if(destination.getStops() == null)
       return destination;

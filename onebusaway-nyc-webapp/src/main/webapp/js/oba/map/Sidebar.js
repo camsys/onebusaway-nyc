@@ -272,7 +272,17 @@ OBA.Sidebar = function () {
 				jQuery("<span></span>")
 					.text("to " + destination.headsign)
 					.appendTo(directionHeader);
+				
+				if(destination.hasUpcomingScheduledService === false) {
+					var noServiceMessage = jQuery("<div></div>")
+												.addClass("no-service")
+												.text("No scheduled service for the " + 
+														routeResult.routeIdWithoutAgency + 
+														" to " + destination.headsign + " at this time.");
 
+					directionHeader.append(noServiceMessage);
+				}
+				
 				var stopsList = jQuery("<ul></ul>")
 											.addClass("stops");
 

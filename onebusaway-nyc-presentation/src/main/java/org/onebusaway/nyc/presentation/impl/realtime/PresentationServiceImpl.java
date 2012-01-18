@@ -4,8 +4,14 @@ import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
+import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +28,9 @@ public class PresentationServiceImpl implements PresentationService {
   @Autowired
   private ConfigurationService _configurationService;
 
+  @Autowired
+  private TransitDataService _transitDataService;
+
   private Date _now = null;
   
   @Override
@@ -34,6 +43,31 @@ public class PresentationServiceImpl implements PresentationService {
       return _now.getTime();
     else
       return System.currentTimeMillis();
+  }
+
+  @Override
+  public Boolean hasUpcomingScheduledService(RouteBean routeBean, StopGroupBean stopGroup) {
+    TripsForRouteQueryBean query = new TripsForRouteQueryBean();
+    query.setRouteId(routeBean.getId());
+    query.setTime(getTime());
+    
+    ListBean<TripDetailsBean> trips = _transitDataService.getTripsForRoute(query);
+
+    if(trips == null) {
+      return null;
+    }
+    
+    if(trips.getList().isEmpty() == true) {
+      return false;
+    }
+    
+    for(TripDetailsBean trip : trips.getList()) {
+      if(trip.getTrip().getDirectionId().equals(stopGroup.getId())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // NB: this means the vehicle is at *any* terminal in the block, not necessarily a terminal
@@ -240,4 +274,5 @@ public class PresentationServiceImpl implements PresentationService {
 
     return true;
   }
+
 }

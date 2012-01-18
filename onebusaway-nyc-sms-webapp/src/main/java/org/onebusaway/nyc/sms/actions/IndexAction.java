@@ -144,7 +144,7 @@ public class IndexAction extends SessionedIndexAction {
         boolean truncated = true;
         for(int i = 1; truncated == true; i++) {
           truncated = stopRealtimeResponse(_searchResults, i);            
-
+          
           if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
             if(i == 1) {
               _response = null;
@@ -192,6 +192,17 @@ public class IndexAction extends SessionedIndexAction {
         // still too long? sorry...
         if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
           errorResponse("Too general.");
+        }
+      } else if(_searchResults.getTypeOfResults().equals("RouteResult")) {
+        routeResponse(_searchResults, false);
+        
+        if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
+          routeResponse(_searchResults, true);
+        }
+
+        // still too long? sorry...
+        if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
+          errorResponse("Error.");
         }
       }
     }
@@ -241,6 +252,37 @@ public class IndexAction extends SessionedIndexAction {
     _response = StringUtils.join(alertValues, "\n\n");
     
     _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + routeResult.size() + "]");
+  }
+  
+  private void routeResponse(List<SearchResult> results, boolean truncate) {
+    _response = "";
+    
+    RouteResult result = (RouteResult)results.get(0);
+
+    _response += result.getRouteIdWithoutAgency() + "\n\n";
+    
+    for(RouteDestinationItem destination : result.getDestinations()) {
+      if(truncate) {
+        _response += destination.getHeadsign().substring(0, 15) + "...\n";
+      } else {
+        _response += destination.getHeadsign() + "\n";
+      }
+      
+      if(destination.getHasUpcomingScheduledService() == false) {
+        _response += "not scheduled\n";
+      } else {
+        _response += "is scheduled\n";        
+      }
+    }
+
+    _response += "\n";    
+    
+    _response += "Send:\n";
+    _response += "STOP CODE or INTERSECTION\n";
+      
+    _response += "Add '" + result.getRouteIdWithoutAgency() + "' for best results\n";
+    
+    _googleAnalytics.trackEvent("SMS", "Route Response", _query + " [" + _searchResults.size() + "]");
   }
   
   private void locationDisambiguationResponse(List<SearchResult> results, boolean compactMode) {
@@ -330,7 +372,11 @@ public class IndexAction extends SessionedIndexAction {
                 c++;
               }
             } else {
-              _response += prefix + "no bus en-route";
+              if(_destination.getHasUpcomingScheduledService() == false) {
+                _response += prefix + "not scheduled";                
+              } else {
+                _response += prefix + "no bus en-route";
+              }
             }
 
             _response += "\n";
@@ -361,6 +407,7 @@ public class IndexAction extends SessionedIndexAction {
     
     String responseBody = "";
     List<String> routesWithAlerts = new ArrayList<String>();
+    boolean haveNSSMRoute = false;
     int c = 0;
     for(SearchResult _result : results) {
       // pagination
@@ -393,6 +440,11 @@ public class IndexAction extends SessionedIndexAction {
         for(RouteDestinationItem _destination : routeHere.getDestinations()) {
           SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
             
+          if(_destination.getHasUpcomingScheduledService() == false) {
+            responseBody += "#";
+            haveNSSMRoute = true;
+          }
+          
           if(destination.getServiceAlerts().size() > 0) {
             responseBody += "*";
             routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
@@ -407,6 +459,10 @@ public class IndexAction extends SessionedIndexAction {
       c++;
     }
 
+    if(haveNSSMRoute) {
+      responseBody += "#=not scheduled\n";
+    }
+    
     // if we have more than one page, include ordinal numbers 
     if(offset + c < results.size() || offset > 0) {
       _response += "Stops " + (offset + 1) + "-" + c + " of " + results.size() + "\n\n"; 
@@ -494,6 +550,10 @@ public class IndexAction extends SessionedIndexAction {
   }
   
   public String findAndNormalizeCommandInQuery(String query) {
+    if(query == null) {
+      return null;
+    }
+    
     query = query.trim();
     
     if(query.toUpperCase().startsWith("C") || query.toUpperCase().startsWith("CHANGE")) {
@@ -565,10 +625,13 @@ public class IndexAction extends SessionedIndexAction {
     // try as stop ID
     _searchResults.addAll(_stopSearchService.resultsForQuery(q));
 
+    // try as route ID
+    if(_searchResults.size() == 0)
+      _searchResults.addAll(_routeSearchService.resultsForQuery(q));
+
     // nothing? geocode it!
-    if(_searchResults.size() == 0) {
+    if(_searchResults.size() == 0)
       _searchResults.addAll(generateResultsFromGeocode(q));        
-    }
     
     Collections.sort(_searchResults, new SearchResultComparator());
   } 

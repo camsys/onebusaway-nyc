@@ -35,7 +35,7 @@
 		</p>
 		
 		<s:if test="%{routesAvailable.size==0}">
-			<p>No upcoming service is available at this stop.</p>
+			<p>No service is available at this stop.</p>
 		</s:if>
 		<s:else>
 			<s:iterator value="routesAvailable">
@@ -59,10 +59,20 @@
 						</ul>
 
 						<s:if test="%{distanceAwayStrings.size==0}">
-							<span class="noUpcomingService">
-								No buses en-route to your location. Please check back shortly for an update.
-								<br/>
-							</span>
+							<c:choose>
+								<c:when test="${!hasUpcomingScheduledService}">
+									<span class="noService">
+										No scheduled service for the <s:property value="routeIdWithoutAgency" /> to <s:property value="headsign" /> at this time.
+										<br/>
+									</span>
+								</c:when>
+								<c:otherwise>
+									<span class="noUpcomingService">
+										No buses en-route to your location. Please check back shortly for an update.
+										<br/>	
+									</span>	
+								</c:otherwise>
+							</c:choose>
 						</s:if>
 						<s:else>
 							<c:forEach var="distanceAwayString" items="${distanceAwayStrings}">
