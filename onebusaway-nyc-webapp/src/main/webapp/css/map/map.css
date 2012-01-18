@@ -136,6 +136,14 @@
 	cursor: default;
 }
 
+#content #legend h2 ul li.legendItem .no-service {
+	font-weight: bold;
+	font-style: italic;
+	padding-top: 5px;
+	padding-left: 25px;
+	color: #000000;
+}
+
 #content #legend h2 ul li.legendItem .description {
 	margin-bottom: 5px;
 	font-size: 14px;

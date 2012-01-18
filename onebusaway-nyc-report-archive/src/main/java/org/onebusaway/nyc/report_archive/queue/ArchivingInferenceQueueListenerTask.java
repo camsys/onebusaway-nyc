@@ -68,7 +68,8 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   // listening
   protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
     try {
-	_log.info("vehicle=" + inferredResult.getVehicleId() + ":" + new Date(inferredResult.getRecordTimestamp()));
+      if (_log.isDebugEnabled())
+        _log.debug("vehicle=" + inferredResult.getVehicleId() + ":" + new Date(inferredResult.getRecordTimestamp()));
       ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(inferredResult, contents);
       postProcess(locationRecord);
       _locationDao.saveOrUpdateRecord(locationRecord);

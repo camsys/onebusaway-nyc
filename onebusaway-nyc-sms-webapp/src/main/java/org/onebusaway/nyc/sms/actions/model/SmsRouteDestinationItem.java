@@ -28,8 +28,8 @@ public class SmsRouteDestinationItem extends RouteDestinationItem {
   
   private List<String> distanceAwayStrings;
   
-  public SmsRouteDestinationItem(StopGroupBean group, List<StopResult> stops) {
-    super(group, stops);
+  public SmsRouteDestinationItem(StopGroupBean group, List<StopResult> stops, Boolean hasUpcomingScheduledService) {
+    super(group, stops, hasUpcomingScheduledService);
   }
 
   public List<NaturalLanguageStringBean> getServiceAlerts() {

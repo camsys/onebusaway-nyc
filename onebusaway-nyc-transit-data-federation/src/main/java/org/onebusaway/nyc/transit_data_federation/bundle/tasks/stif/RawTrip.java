@@ -25,6 +25,7 @@ public class RawTrip implements Comparable<RawTrip> {
   public boolean firstTripInSequence;
   public boolean lastTripInSequence;
   private String dsc;
+  public String signCodeRoute;
 
   public RawTrip(String runId, String reliefRunId, String nextRun,
       StifTripType type, String dsc) {
@@ -61,5 +62,9 @@ public class RawTrip implements Comparable<RawTrip> {
 
   public String getDsc() {
     return dsc;
+  }
+
+  public String getSignCodeRoute() {
+    return signCodeRoute;
   }
 }

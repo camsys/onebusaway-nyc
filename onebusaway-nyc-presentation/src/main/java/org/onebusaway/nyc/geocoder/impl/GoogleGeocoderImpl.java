@@ -23,6 +23,7 @@ import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 
+import org.apache.axis.utils.StringUtils;
 import org.apache.commons.digester.Digester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,12 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
   
   public List<NycGeocoderResult> nycGeocode(String location) {
     try {
+      String clientId = 
+          _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);    
+
+      String secretKey = 
+          _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", null);    
+      
       List<NycGeocoderResult> results = new ArrayList<NycGeocoderResult>();
 
       StringBuilder q = new StringBuilder();
@@ -88,19 +95,19 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
             _resultBiasingBounds.getMaxLon());
       }
     
-      String clientId = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);    
-
-      if(clientId != null) {
+      if(clientId != null && secretKey != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(secretKey)) {
         q.append("&client=").append(clientId);
       }
     
-      String secretKey = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", "");    
+      URL url = null;
+      if(secretKey != null && clientId != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(secretKey)) {
+        GoogleUrlAuthentication urlSigner = new GoogleUrlAuthentication(secretKey);
 
-      GoogleUrlAuthentication urlSigner = new GoogleUrlAuthentication(secretKey);
-      URL url = new URL(GEOCODE_URL_PREFIX + urlSigner.signRequest(GEOCODE_PATH + "?" + q.toString()));
-
+        url = new URL(GEOCODE_URL_PREFIX + urlSigner.signRequest(GEOCODE_PATH + "?" + q.toString()));
+      } else {
+        url = new URL(GEOCODE_URL_PREFIX + GEOCODE_PATH + "?" + q.toString());        
+      }
+      
       Digester digester = createDigester();
       digester.push(results);
 
