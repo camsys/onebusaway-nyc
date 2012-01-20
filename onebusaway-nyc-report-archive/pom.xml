@@ -72,6 +72,15 @@
       		<artifactId>jersey-spring</artifactId>
       		<version>1.9.1</version>
     	</dependency>
+
+        <dependency>
+             <groupId>org.slf4j</groupId>
+             <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>apache-log4j-extras</artifactId>
+        </dependency>
     
     </dependencies>
     <profiles>

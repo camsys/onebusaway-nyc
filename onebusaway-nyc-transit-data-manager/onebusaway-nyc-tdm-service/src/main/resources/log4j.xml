@@ -21,7 +21,7 @@
 	<!-- 0 or more logger/category elements -->
 	
 	<logger name="org.onebusaway.nyc.transit_data_manager" additivity="false">
-		<level value="debug"/>
+		<level value="info"/>
 		<appender-ref ref="ROLL" />
 	</logger>
 
