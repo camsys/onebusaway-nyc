@@ -37,7 +37,7 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
 
     JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    BlockState blockState = state.getBlockState(); 
 
     /**
      * Why do we check for a block state here? We assume a vehicle can't
@@ -52,8 +52,7 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
      * RULE: DEADHEAD_AFTER || LAYOVER_AFTER => reached the end of the block
      */
 
-    double pEndOfBlock = library.computeProbabilityOfEndOfBlock(state
-        .getBlockState());
+    double pEndOfBlock = library.computeProbabilityOfEndOfBlock(blockState);
     result.addResult("pEndOfBlock", pEndOfBlock);
 
     /**
@@ -65,7 +64,7 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
      * keep up.
      */
     double pServedSomePartOfBlock = library
-        .computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
+        .computeProbabilityOfServingSomePartOfBlock(blockState);
     double pOffBlock = library.computeOffBlockProbability(state, obs);
 //    double pOutOfService = library.computeOutOfServiceProbability(obs);
     double pOutOfService = obs.isOutOfService() ? 1.0 : 0.0;

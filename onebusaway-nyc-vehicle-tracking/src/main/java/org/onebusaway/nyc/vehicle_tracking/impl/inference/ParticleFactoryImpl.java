@@ -16,13 +16,16 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -83,7 +86,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
     
   static class LocalRandomDummy extends ThreadLocal<Random> {
-    Random rng;
+    private static Random rng;
     
     LocalRandomDummy (long seed) {
       if (seed != 0)
@@ -136,7 +139,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   public void setInitialNumberOfParticles(int initialNumberOfParticles) {
     _initialNumberOfParticles = initialNumberOfParticles;
   }
-
+  
   @Override
   public List<Particle> createParticles(double timestamp, Observation obs) {
 
@@ -144,10 +147,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // CDFMap<EdgeState> cdf =
     // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
-    CategoricalDist<BlockState> atStartCdf = _blockStateSamplingStrategy
+    CategoricalDist<BlockStateObservation> atStartCdf = _blockStateSamplingStrategy
         .cdfForJourneyAtStart(obs);
-
-    CategoricalDist<BlockState> inProgresCdf = _blockStateSamplingStrategy
+    
+    CategoricalDist<BlockStateObservation> inProgresCdf = _blockStateSamplingStrategy
         .cdfForJourneyInProgress(obs);
 
     List<Particle> particles = new ArrayList<Particle>(
@@ -172,10 +175,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   public VehicleState determineJourneyState(MotionState motionState,
-      CategoricalDist<BlockState> atStartCdf,
-      CategoricalDist<BlockState> inProgressCdf, Observation obs) {
+      CategoricalDist<BlockStateObservation> atStartCdf,
+      CategoricalDist<BlockStateObservation> inProgressCdf, Observation obs) {
 
-    BlockState blockState = null;
+    BlockStateObservation blockState = null;
 
     // If we're at a base to start, we favor that over all other possibilities
     if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
@@ -217,7 +220,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   private VehicleState vehicleState(MotionState motionState,
-      BlockState blockState, JourneyState journeyState, Observation obs) {
+      BlockStateObservation blockState, JourneyState journeyState, Observation obs) {
     
     List<JourneyPhaseSummary> summaries = null;
     if (ParticleFilter.getDebugEnabled()) {
@@ -227,6 +230,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     return new VehicleState(motionState, blockState, journeyState, summaries,
         obs);
+  }
+
+  public static ThreadLocal<Random> getThreadLocalRng() {
+    return threadLocalRng;
   }
 
 //  public static double getNextDouble() {

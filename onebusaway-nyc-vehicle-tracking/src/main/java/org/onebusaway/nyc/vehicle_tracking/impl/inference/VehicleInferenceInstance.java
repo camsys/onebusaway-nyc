@@ -33,6 +33,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTri
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -394,14 +395,14 @@ public class VehicleInferenceInstance {
       return null;
 
     VehicleState state = particle.getData();
-    BlockState blockState = state.getBlockState();
+    BlockStateObservation blockState = state.getBlockStateObservation();
     Observation obs = state.getObservation();
     NycRawLocationRecord nycRawRecord = obs.getRecord();
 
     record.setBearing(nycRawRecord.getBearing());
 
     if (blockState != null) {
-      ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+      ScheduledBlockLocation blockLocation = blockState.getBlockState().getBlockLocation();
 
       // set sched. dev. if we have a match in UTS and are therefore comfortable
       // saying that this schedule deviation is a true match to the schedule.
@@ -436,7 +437,7 @@ public class VehicleInferenceInstance {
     VehicleState state = particle.getData();
     Observation obs = state.getObservation();
     NycRawLocationRecord nycRawRecord = obs.getRecord();
-    BlockState blockState = state.getBlockState();
+    BlockStateObservation blockState = state.getBlockStateObservation();
 
 		record.setUUID(nycRawRecord.getUUID());
     record.setInferenceIsEnabled(_enabled);
@@ -448,9 +449,9 @@ public class VehicleInferenceInstance {
     record.setLastObservedLongitude(nycRawRecord.getLongitude());
     record.setEmergencyFlag(nycRawRecord.isEmergencyFlag());
     if (blockState != null) {
-      record.setLastInferredDestinationSignCode(blockState
+      record.setLastInferredDestinationSignCode(blockState.getBlockState()
           .getDestinationSignCode());
-      record.setInferredRunId(blockState.getRunId());
+      record.setInferredRunId(blockState.getBlockState().getRunId());
       record.setInferenceIsFormal(blockState.getOpAssigned() == null ? false
           : blockState.getOpAssigned());
     }
@@ -495,7 +496,7 @@ public class VehicleInferenceInstance {
     VehicleState state = particle.getData();
     MotionState motionState = state.getMotionState();
     JourneyState journeyState = state.getJourneyState();
-    BlockState blockState = state.getBlockState();
+    BlockStateObservation blockState = state.getBlockStateObservation();
     Observation obs = state.getObservation();
 
     CoordinatePoint location = obs.getLocation();
@@ -521,9 +522,9 @@ public class VehicleInferenceInstance {
 
     if (blockState != null) {
 
-      record.setInferredRunId(blockState.getRunId());
+      record.setInferredRunId(blockState.getBlockState().getRunId());
 
-      BlockInstance blockInstance = blockState.getBlockInstance();
+      BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();
       BlockConfigurationEntry blockConfig = blockInstance.getBlock();
       BlockEntry block = blockConfig.getBlock();
 
@@ -532,7 +533,7 @@ public class VehicleInferenceInstance {
 
       record.setInferredServiceDate(blockInstance.getServiceDate());
 
-      ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+      ScheduledBlockLocation blockLocation = blockState.getBlockState().getBlockLocation();
       record.setInferredDistanceAlongBlock(blockLocation
           .getDistanceAlongBlock());
       record.setInferredScheduleTime(blockLocation.getScheduledTime());
@@ -565,7 +566,7 @@ public class VehicleInferenceInstance {
           statusFields.add("stalled");
       }
 
-      record.setInferredDsc(blockState.getDestinationSignCode());
+      record.setInferredDsc(blockState.getBlockState().getDestinationSignCode());
     }
 
     if (StringUtils.isBlank(record.getInferredDsc()))

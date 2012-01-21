@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -108,7 +109,7 @@ public class JourneyStateTransitionModel {
 
     for (JourneyState journeyState : journeyStates) {
 
-      Set<BlockState> blockStates = _blockStateTransitionModel.transitionBlockState(
+      Set<BlockStateObservation> blockStates = _blockStateTransitionModel.transitionBlockState(
           parentState, motionState, journeyState, obs);
       
       if (blockStates == null) {
@@ -125,7 +126,7 @@ public class JourneyStateTransitionModel {
         results.add(vehicleState);
         
       } else {
-        for (BlockState bs : blockStates) {
+        for (BlockStateObservation bs : blockStates) {
           
           @SuppressWarnings("unused")
           List<JourneyPhaseSummary> summaries = null;

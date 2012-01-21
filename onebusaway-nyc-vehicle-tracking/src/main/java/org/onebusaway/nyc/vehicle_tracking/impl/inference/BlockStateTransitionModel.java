@@ -26,9 +26,11 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -112,7 +114,7 @@ public class BlockStateTransitionModel {
 
   /**
    * This method takes a parent VehicleState, parentState, and a potential
-   * JourneyState, journeyState, with which a new potential BlockState is
+   * JourneyState, journeyState, with which a new potential BlockStateObservation is
    * sampled/determined. This is where we consider a block, allow a block
    * change, or move along a block we're already tracking.
    * 
@@ -120,13 +122,13 @@ public class BlockStateTransitionModel {
    * @param motionState
    * @param journeyState
    * @param obs
-   * @return BlockState
+   * @return BlockStateObservation
    */
-  public Set<BlockState> transitionBlockState(VehicleState parentState,
+  public Set<BlockStateObservation> transitionBlockState(VehicleState parentState,
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
-    BlockState parentBlockState = parentState.getBlockState();
-    Set<BlockState> potentialTransStates = new HashSet<BlockState>();
+    BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
+    Set<BlockStateObservation> potentialTransStates = new HashSet<BlockStateObservation>();
 
     EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
 
@@ -155,7 +157,7 @@ public class BlockStateTransitionModel {
        * If we're off block, kill the block
        */
       if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
-          parentBlockState))
+          parentBlockState.getBlockState()))
         return null;
 
 //      if (EVehiclePhase.isActiveDuringBlock(parentPhase)
@@ -193,25 +195,25 @@ public class BlockStateTransitionModel {
     return potentialTransStates;
   }
 
-  public BestBlockStates getClosestBlockStates(BlockState blockState,
+  public BestBlockObservationStates getClosestBlockStates(BlockStateObservation blockStateObservation,
       Observation obs) {
 
-    Map<BlockInstance, BestBlockStates> states = _observationCache.getValueForObservation(
+    Map<BlockInstance, BestBlockObservationStates> states = _observationCache.getValueForObservation(
         obs, EObservationCacheKey.CLOSEST_BLOCK_LOCATION);
 
     if (states == null) {
-      states = new ConcurrentHashMap<BlockInstance, BestBlockStates>();
+      states = new ConcurrentHashMap<BlockInstance, BestBlockObservationStates>();
       _observationCache.putValueForObservation(obs,
           EObservationCacheKey.CLOSEST_BLOCK_LOCATION, states);
     }
 
-    BlockInstance blockInstance = blockState.getBlockInstance();
+    BlockInstance blockInstance = blockStateObservation.getBlockState().getBlockInstance();
 
-    BestBlockStates closestState = states.get(blockInstance);
+    BestBlockObservationStates closestState = states.get(blockInstance);
 
     if (closestState == null) {
 
-      closestState = getClosestBlockStateUncached(blockState, obs);
+      closestState = getClosestBlockStateUncached(blockStateObservation, obs);
 
       states.put(blockInstance, closestState);
     }
@@ -227,7 +229,7 @@ public class BlockStateTransitionModel {
       MotionState motionState, JourneyState journeyState, Observation obs) {
 
     Observation prevObs = obs.getPreviousObservation();
-    BlockState parentBlockState = parentState.getBlockState();
+    BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
 
 
     if (parentBlockState == null
@@ -248,9 +250,9 @@ public class BlockStateTransitionModel {
 //          return true;
       } else if (parentBlockState != null) {
         boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-            prevObs.getRecord(), parentBlockState.getBlockInstance());
+            prevObs.getRecord(), parentBlockState.getBlockState().getBlockInstance());
         boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-            obs.getRecord(), parentBlockState.getBlockInstance());
+            obs.getRecord(), parentBlockState.getBlockState().getBlockInstance());
 
         if (wasAtBlockTerminal && !isAtBlockTerminal) {
           return true;
@@ -288,12 +290,12 @@ public class BlockStateTransitionModel {
    * states are considered here.
    * 
    * @param phase
-   * @param blockState
+   * @param BlockStateObservation
    * @param obs
    * @return
    */
-  private BestBlockStates advanceAlongBlock(EVehiclePhase phase,
-      BlockState blockState, Observation obs) {
+  private BestBlockObservationStates advanceAlongBlock(EVehiclePhase phase,
+      BlockStateObservation blockStateObservation, Observation obs) {
 
     Observation prevObs = obs.getPreviousObservation();
 
@@ -304,13 +306,13 @@ public class BlockStateTransitionModel {
     /**
      * TODO: Should we allow a vehicle to travel backwards?
      */
-    BestBlockStates updatedBlockStates = _blocksFromObservationService.advanceState(
-        obs, blockState, 0, distanceToTravel);
+    BestBlockObservationStates updatedBlockStates = _blocksFromObservationService.advanceState(
+        obs, blockStateObservation, 0, distanceToTravel);
 
     if (updatedBlockStates != null
         && (EVehiclePhase.isLayover(phase) || _vehicleStateLibrary.isAtPotentialTerminal(
-            obs.getRecord(), blockState.getBlockInstance()))) {
-      for (BlockState state : updatedBlockStates.getAllStates()) {
+            obs.getRecord(), blockStateObservation.getBlockState().getBlockInstance()))) {
+      for (BlockStateObservation state : updatedBlockStates.getAllStates()) {
         state = _blocksFromObservationService.advanceLayoverState(
             obs, state);
       }
@@ -320,12 +322,12 @@ public class BlockStateTransitionModel {
   }
 
   /**
-   * Returns closest block state, spatially, to the passed blockState.
-   * @param blockState
+   * Returns closest block state, spatially, to the passed BlockStateObservation.
+   * @param blockStateObservation
    * @param obs
    * @return
    */
-  private BestBlockStates getClosestBlockStateUncached(BlockState blockState,
+  private BestBlockObservationStates getClosestBlockStateUncached(BlockStateObservation blockStateObservation,
       Observation obs) {
 
     double distanceToTravel = 400;
@@ -340,21 +342,21 @@ public class BlockStateTransitionModel {
               * _blockDistanceTravelScale);
     }
 
-    BestBlockStates advancedStates = _blocksFromObservationService.advanceState(
-        obs, blockState, -distanceToTravel, distanceToTravel);
+    BestBlockObservationStates advancedStates = _blocksFromObservationService.advanceState(
+        obs, blockStateObservation, -distanceToTravel, distanceToTravel);
 
     if (advancedStates == null)
       return null;
 
 
-    BestBlockStates closestStates;
-    ScheduledBlockLocation blockLocation = advancedStates.getBestLocation().getBlockLocation();
+    BestBlockObservationStates closestStates;
+    ScheduledBlockLocation blockLocation = advancedStates.getBestLocation().getBlockState().getBlockLocation();
     double d = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
         obs.getLocation());
 
     // TODO don't know about this...
     if (d > 400) {
-      closestStates = _blocksFromObservationService.bestStates(obs, blockState);
+      closestStates = _blocksFromObservationService.bestStates(obs, blockStateObservation);
     } else {
       closestStates = advancedStates;
     }
@@ -379,12 +381,13 @@ public class BlockStateTransitionModel {
 
   public static class BlockStateResult {
 
-    public BlockStateResult(BlockState blockState, boolean outOfService) {
-      this.blockState = blockState;
+    public BlockStateResult(BlockStateObservation BlockStateObservation, boolean outOfService) {
+      this.BlockStateObservation = BlockStateObservation;
       this.outOfService = outOfService;
     }
 
-    public BlockState blockState;
+    public BlockStateObservation BlockStateObservation;
     public boolean outOfService;
   }
+
 }

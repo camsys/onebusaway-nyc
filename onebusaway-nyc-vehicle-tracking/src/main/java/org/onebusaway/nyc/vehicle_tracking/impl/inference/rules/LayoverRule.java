@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -20,6 +20,7 @@ import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.*;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
@@ -88,7 +89,10 @@ public class LayoverRule implements SensorModelRule {
      */
 
     double pLayoverDuring = p(phase == EVehiclePhase.LAYOVER_DURING);
-    double pServedSomePartOfBlock = library.computeProbabilityOfServingSomePartOfBlock(blockState);
+
+    double pServedSomePartOfBlock = blockState != null
+        ? library.computeProbabilityOfServingSomePartOfBlock(blockState)
+        : 0;
 
     double p2 = implies(pLayoverDuring, pServedSomePartOfBlock);
 
@@ -110,8 +114,8 @@ public class LayoverRule implements SensorModelRule {
           ? blockState.getBlockLocation().getNextStop()
           : VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
 
-      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(), blockState,
-          nextStop);
+      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(),
+          blockState, nextStop);
     }
 
     result.addResultAsAnd(

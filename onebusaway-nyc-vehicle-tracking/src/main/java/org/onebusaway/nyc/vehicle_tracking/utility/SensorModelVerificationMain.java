@@ -323,18 +323,19 @@ public class SensorModelVerificationMain {
 
   private VehicleState getRecordAsVehicleState(NycTestInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
+        return prevState;
 
-    MotionState motionState = createMotionState(prevState, obs);
-
-    BlockState blockState = createBlockState(record, prevState, obs);
-
-    JourneyState journeyState = createJourneyState(record, prevState, obs);
-
-    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
-        prevState, blockState, journeyState, obs);
-
-    return new VehicleState(motionState, blockState, journeyState,
-        summaries, obs);
+//    MotionState motionState = createMotionState(prevState, obs);
+//
+//    BlockState blockState = createBlockState(record, prevState, obs);
+//
+//    JourneyState journeyState = createJourneyState(record, prevState, obs);
+//
+//    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
+//        prevState, blockState, journeyState, obs);
+//
+//    return new VehicleState(motionState, blockState, journeyState,
+//        summaries, obs);
   }
 
   private MotionState createMotionState(VehicleState prevState, Observation obs) {

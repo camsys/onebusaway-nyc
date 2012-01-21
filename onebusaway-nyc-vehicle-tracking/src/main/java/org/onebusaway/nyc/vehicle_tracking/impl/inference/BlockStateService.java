@@ -40,6 +40,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -268,6 +269,11 @@ public class BlockStateService {
 
     final private BlockState bestTime;
     final private BlockState bestLocation;
+    
+    public BestBlockStates(BestBlockObservationStates bestObsState) {
+      this.bestTime = bestObsState.getBestTime().getBlockState();
+      this.bestLocation = bestObsState.getBestLocation().getBlockState();
+    }
 
     public BestBlockStates(BlockState bestTime, BlockState bestLocation) {
       if (bestTime == null || bestLocation == null)

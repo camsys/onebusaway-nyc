@@ -36,6 +36,7 @@ import java.util.Comparator;
 
 public final class BlockState implements Comparable<BlockState> {
 
+  
   /**
    * Our current block instance
    */
@@ -46,13 +47,7 @@ public final class BlockState implements Comparable<BlockState> {
   private final ScheduledBlockLocation blockLocation;
 
   private final String destinationSignCode;
-
-  private Boolean isOpAssigned;
-
-  private Boolean isRunReported;
-
-  private Boolean isRunReportedAssignedMismatch;
-
+  
   public BlockState(BlockInstance blockInstance,
       ScheduledBlockLocation blockLocation, RunTripEntry runTrip,
       String destinationSignCode) {
@@ -95,10 +90,6 @@ public final class BlockState implements Comparable<BlockState> {
     b.append(blockLocation).append(",");
     b.append(runTrip).append(",");
     b.append(" {dsc=").append(destinationSignCode);
-    b.append(", isOpAssigned=").append(isOpAssigned);
-    b.append(", isRunReported=").append(isRunReported);
-    b.append(", isRunReportedAssignedMismatch=").append(
-        isRunReportedAssignedMismatch);
     b.append("})");
 
     return b.toString();
@@ -109,29 +100,6 @@ public final class BlockState implements Comparable<BlockState> {
     return runTrip == null ? null : runTrip.getRunId();
   }
 
-  public Boolean getRunReported() {
-    return isRunReported;
-  }
-
-  public void setRunReported(Boolean isRunReported) {
-    this.isRunReported = isRunReported;
-  }
-
-  public Boolean getOpAssigned() {
-    return isOpAssigned;
-  }
-
-  public void setOpAssigned(Boolean isUTSassigned) {
-    this.isOpAssigned = isUTSassigned;
-  }
-
-  public Boolean isRunReportedAssignedMismatch() {
-    return isRunReportedAssignedMismatch;
-  }
-
-  public void setRunReportedAssignedMismatch(Boolean isRunReportedUTSMismatch) {
-    this.isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
-  }
   
   static final private FrequencyComparator _frequencyComparator = new FrequencyComparator();
   
@@ -173,26 +141,21 @@ public final class BlockState implements Comparable<BlockState> {
     if (this == rightBs)
       return 0;
     
-    return ComparisonChain.start()
-      .compare(this.getBlockLocation().getScheduledTime(), 
-          rightBs.getBlockLocation().getScheduledTime())
-      .compare(this.destinationSignCode, rightBs.getDestinationSignCode())
-      .compare(this.isOpAssigned, rightBs.getOpAssigned(), 
-          Ordering.natural().nullsLast())
-      .compare(this.isRunReported, rightBs.getRunReported(),
-          Ordering.natural().nullsLast())
-      .compare(this.isRunReportedAssignedMismatch, rightBs.getRunReported(),
-          Ordering.natural().nullsLast())
-      .compare(this.getRunId(), rightBs.getRunId(), 
+    int res = ComparisonChain.start()
+      .compare(this.runTrip, rightBs.runTrip, 
           Ordering.natural().nullsLast()) 
+      .compare(this.destinationSignCode, rightBs.getDestinationSignCode())
+      .compare(this.getBlockLocation().getDistanceAlongBlock(), 
+          rightBs.getBlockLocation().getDistanceAlongBlock())
       .compare(this.getBlockLocation().getActiveTrip().getTrip(), 
           rightBs.getBlockLocation().getActiveTrip().getTrip(),
           Ordering.from(_tripIdComparator).nullsLast())
-      .compare(this.getBlockLocation().getDistanceAlongBlock(), 
-          rightBs.getBlockLocation().getDistanceAlongBlock())
+      .compare(this.getBlockLocation().getScheduledTime(), 
+          rightBs.getBlockLocation().getScheduledTime())
       .compare(this.getBlockInstance(), rightBs.getBlockInstance(), 
           Ordering.from(_blockInstanceComparator))
       .result();
+    return res;
   }
 
   @Override
@@ -201,18 +164,22 @@ public final class BlockState implements Comparable<BlockState> {
     int result = 1;
     result = prime * result
         + ((blockInstance == null) ? 0 : blockInstance.hashCode());
+    /*
+     * don't want/need to change OBA api, so do this...
+     */
     result = prime * result
-        + ((blockLocation == null) ? 0 : blockLocation.hashCode());
+        + ((blockLocation == null) ? 0 : blockLocation.getScheduledTime());
+    result = prime * result
+        + ((blockLocation == null) ? 0 : 
+            ((blockLocation.getActiveTrip() == null) ? 0 : 
+              blockLocation.getActiveTrip().getTrip().getId().hashCode()));
+    long temp = 0;
+    if (blockLocation != null)
+      temp = Double.doubleToLongBits(blockLocation.getDistanceAlongBlock());
+    result = (int) (prime * result + ((temp == 0) ? temp : (int) (temp ^ (temp >>> 32))));
+    
     result = prime * result
         + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
-    result = prime * result
-        + ((isOpAssigned == null) ? 0 : isOpAssigned.hashCode());
-    result = prime * result
-        + ((isRunReported == null) ? 0 : isRunReported.hashCode());
-    result = prime
-        * result
-        + ((isRunReportedAssignedMismatch == null) ? 0
-            : isRunReportedAssignedMismatch.hashCode());
     result = prime * result + ((runTrip == null) ? 0 : runTrip.hashCode());
     return result;
   }
@@ -225,39 +192,38 @@ public final class BlockState implements Comparable<BlockState> {
       return false;
     if (!(obj instanceof BlockState))
       return false;
+    
     BlockState other = (BlockState) obj;
+    
     if (blockInstance == null) {
       if (other.blockInstance != null)
         return false;
     } else if (!blockInstance.equals(other.blockInstance))
       return false;
+    
     if (blockLocation == null) {
       if (other.blockLocation != null)
         return false;
-    } else if (!blockLocation.equals(other.blockLocation))
-      return false;
+    } else {
+      if (other.blockLocation == null)
+        return false;
+      
+      if (blockLocation.getScheduledTime() != other.blockLocation.getScheduledTime())
+        return false;
+      if (!blockLocation.getActiveTrip().getTrip().getId().equals(
+            other.blockLocation.getActiveTrip().getTrip().getId()))
+        return false;
+      if (Double.compare(blockLocation.getDistanceAlongBlock(), 
+            other.blockLocation.getDistanceAlongBlock()) != 0)
+        return false;
+    }
+    
     if (destinationSignCode == null) {
       if (other.destinationSignCode != null)
         return false;
     } else if (!destinationSignCode.equals(other.destinationSignCode))
       return false;
-    if (isOpAssigned == null) {
-      if (other.isOpAssigned != null)
-        return false;
-    } else if (!isOpAssigned.equals(other.isOpAssigned))
-      return false;
-    if (isRunReported == null) {
-      if (other.isRunReported != null)
-        return false;
-    } else if (!isRunReported.equals(other.isRunReported))
-      return false;
-    if (isRunReportedAssignedMismatch == null) {
-      if (other.isRunReportedAssignedMismatch != null)
-        return false;
-    } else if (!isRunReportedAssignedMismatch.equals(other.isRunReportedAssignedMismatch))
-      return false;
-    // TODO should verify that these objects aren't duplicated, or implement
-    // equals & hashCode
+    
     if (runTrip == null) {
       if (other.runTrip != null)
         return false;

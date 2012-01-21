@@ -201,7 +201,7 @@ public class VehicleStateLibrary {
 
     return false;
   }
-  
+
   /**
    * This method determines if an observation record is within a certain radius,
    * _terminalSearchRadius argument, of a stop at the start or end of a block. <br>
@@ -227,29 +227,27 @@ public class VehicleStateLibrary {
     }
 
     for (BlockConfigurationEntry block : blocks) {
-  
+
       StopEntry firstStop = block.getStopTimes().get(0).getStopTime().getStop();
-  
+
       double firstStopDist = SphericalGeometryLibrary.distance(loc,
           firstStop.getStopLocation());
-  
+
       int lastStopIdx = block.getStopTimes().size() - 1;
-  
-      StopEntry lastStop = block.getStopTimes().get(
-          lastStopIdx).getStopTime().getStop();
+
+      StopEntry lastStop = block.getStopTimes().get(lastStopIdx).getStopTime().getStop();
       double lastStopDist = SphericalGeometryLibrary.distance(loc,
           lastStop.getStopLocation());
-  
+
       if (firstStopDist <= _terminalSearchRadius
           || lastStopDist <= _terminalSearchRadius) {
         return true;
       }
-  
+
     }
-    
+
     return false;
   }
-
 
   /**
    * This method determines if an observation record is within a certain radius,
@@ -311,8 +309,7 @@ public class VehicleStateLibrary {
 
     /**
      * If the next stop is null, it means we're at the end of the block. Do we
-     * consider this a layover spot? My sources say no.
-     * But now they say yes?
+     * consider this a layover spot? My sources say no. But now they say yes?
      */
     if (nextStop == null)
       return closestStop;

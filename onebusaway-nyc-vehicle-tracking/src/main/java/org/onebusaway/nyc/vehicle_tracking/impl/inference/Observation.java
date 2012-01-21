@@ -24,7 +24,11 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
-public class Observation {
+import com.google.common.base.Function;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
+
+public class Observation implements Comparable<Observation> {
 
   private final long _timestamp;
 
@@ -124,6 +128,101 @@ public class Observation {
   
   public int getFuzzyMatchDistance() {
     return _fuzzyMatchDistance;
+  }
+  
+  enum PointFunction implements Function<ProjectedPoint, Double> {
+    getY {
+      @Override
+      public Double apply(final ProjectedPoint p) {
+        return p.getY();
+      }
+    },
+    getX {
+      @Override
+      public Double apply(final ProjectedPoint p) {
+        return p.getX();
+      }
+    }
+  }
+  
+  static private final Ordering<ProjectedPoint> _orderByXandY = 
+      Ordering.natural().nullsLast().onResultOf(PointFunction.getX)
+      .compound(Ordering.natural().nullsLast().onResultOf(PointFunction.getY));
+  
+  @Override
+  public int compareTo(Observation o2) {
+    
+    if (this == o2)
+      return 0;
+    
+    int res = ComparisonChain.start()
+        .compare(outOfService, o2.outOfService)
+        .compare(atTerminal, o2.atTerminal)
+        .compare(atBase, o2.atBase)
+        .compare(_timestamp, o2._timestamp)
+        .compare(_record, o2._record)
+        .compare(_point, o2._point, _orderByXandY)
+        .compare(_lastValidDestinationSignCode, o2._lastValidDestinationSignCode, 
+            Ordering.natural().nullsLast())
+        .compare(_fuzzyMatchDistance, o2._fuzzyMatchDistance)
+        .result();
+    
+    return res;
+  }
+  
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + _fuzzyMatchDistance;
+    result = prime
+        * result
+        + ((_lastValidDestinationSignCode == null) ? 0
+            : _lastValidDestinationSignCode.hashCode());
+    result = prime * result + ((_point == null) ? 0 : _point.hashCode());
+    result = prime * result + ((_record == null) ? 0 : _record.hashCode());
+    result = prime * result + (int) (_timestamp ^ (_timestamp >>> 32));
+    result = prime * result + (atBase ? 1231 : 1237);
+    result = prime * result + (atTerminal ? 1231 : 1237);
+    result = prime * result + (outOfService ? 1231 : 1237);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof Observation))
+      return false;
+    Observation other = (Observation) obj;
+    if (_fuzzyMatchDistance != other._fuzzyMatchDistance)
+      return false;
+    if (_lastValidDestinationSignCode == null) {
+      if (other._lastValidDestinationSignCode != null)
+        return false;
+    } else if (!_lastValidDestinationSignCode.equals(other._lastValidDestinationSignCode))
+      return false;
+    if (_point == null) {
+      if (other._point != null)
+        return false;
+    } else if (!_point.equals(other._point))
+      return false;
+    if (_record == null) {
+      if (other._record != null)
+        return false;
+    } else if (!_record.equals(other._record))
+      return false;
+    if (_timestamp != other._timestamp)
+      return false;
+    if (atBase != other.atBase)
+      return false;
+    if (atTerminal != other.atTerminal)
+      return false;
+    if (outOfService != other.outOfService)
+      return false;
+    return true;
   }
 
 }

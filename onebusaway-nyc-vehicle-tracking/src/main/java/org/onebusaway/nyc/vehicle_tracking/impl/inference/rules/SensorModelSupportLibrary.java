@@ -22,10 +22,12 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -319,11 +321,11 @@ public class SensorModelSupportLibrary {
      * The idea here is that we look for the absolute best block location given
      * our current observation, even if it means traveling backwards
      */
-    BestBlockStates closestBlockStates = _blockStateTransitionModel.getClosestBlockStates(
-        blockState, obs);
+    BestBlockObservationStates closestBlockStates = _blockStateTransitionModel.getClosestBlockStates(
+        new BlockStateObservation(blockState), obs);
     
     double prob=0.0;
-    BlockState closestBlockState = closestBlockStates.getBestTime();
+    BlockState closestBlockState = closestBlockStates.getBestTime().getBlockState();
     ScheduledBlockLocation closestBlockLocation = closestBlockState.getBlockLocation();
 
     /**

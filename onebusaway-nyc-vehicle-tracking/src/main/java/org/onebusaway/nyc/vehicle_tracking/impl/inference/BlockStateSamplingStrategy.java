@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 
 public interface BlockStateSamplingStrategy {
 
@@ -24,9 +25,9 @@ public interface BlockStateSamplingStrategy {
    *
    ****/
 
-  public CategoricalDist<BlockState> cdfForJourneyAtStart(Observation observation);
+  public CategoricalDist<BlockStateObservation> cdfForJourneyAtStart(Observation observation);
 
-  public CategoricalDist<BlockState> cdfForJourneyInProgress(Observation observation);
+  public CategoricalDist<BlockStateObservation> cdfForJourneyInProgress(Observation observation);
 
-  public double scoreState(BlockState state, Observation observation, boolean atStart);
+  public double scoreState(BlockStateObservation state, Observation observation, boolean atStart);
 }

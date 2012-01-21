@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -35,7 +36,7 @@ import org.springframework.stereotype.Component;
 public class JourneyPhaseSummaryLibrary {
 
   public List<JourneyPhaseSummary> extendSummaries(VehicleState parentState,
-      BlockState blockState, JourneyState journeyState, Observation observation) {
+      BlockStateObservation blockState, JourneyState journeyState, Observation observation) {
 
     List<JourneyPhaseSummary> parentSummaries = Collections.emptyList();
 
@@ -46,17 +47,17 @@ public class JourneyPhaseSummaryLibrary {
         parentSummaries);
 
     if (summaries.isEmpty()) {
-      JourneyPhaseSummary summary = createJourneySummary(blockState,
+      JourneyPhaseSummary summary = createJourneySummary(blockState.getBlockState(),
           journeyState, observation);
       summaries.add(summary);
     } else {
       JourneyPhaseSummary previous = summaries.get(summaries.size() - 1);
-      JourneyPhaseSummary merged = createMergedJourneySummary(blockState,
+      JourneyPhaseSummary merged = createMergedJourneySummary(blockState.getBlockState(),
           journeyState, observation, previous);
       if (merged != null) {
         summaries.set(summaries.size() - 1, merged);
       } else {
-        JourneyPhaseSummary summary = createJourneySummary(blockState,
+        JourneyPhaseSummary summary = createJourneySummary(blockState.getBlockState(),
             journeyState, observation);
         summaries.add(summary);
       }

@@ -54,7 +54,15 @@
             </props>
         </property>
     </bean>
-
+    
+<!--   <bean id="particleFilterModel" class="org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterModel"> -->
+<!--     <property name="particleFactory" ref="particleFactory" /> -->
+<!--     <property name="motionModel" ref="motionModel" /> -->
+<!--     <property name="sensorModel" ref="sensorModel" /> -->
+<!-- <property name="testingEnabled"><value type="java.lang.Boolean">true</value></property>  -->
+<!--     <property name="threads" value="1" /> -->
+<!--   </bean> -->
+  
   	<bean id="inferenceOutputQueue" class="org.onebusaway.nyc.vehicle_tracking.impl.queue.DummyOutputQueueSenderServiceImpl">
   		<property name="isPrimaryInferenceInstance" value="true"/>
 	</bean>

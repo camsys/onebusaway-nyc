@@ -36,7 +36,7 @@ public final class VehicleState implements Comparable<VehicleState> {
 
   private final MotionState motionState;
 
-  private final BlockState blockState;
+  private final BlockStateObservation blockStateObservation;
 
   private final JourneyState journeyState;
 
@@ -46,14 +46,14 @@ public final class VehicleState implements Comparable<VehicleState> {
 
   public VehicleState(VehicleState state) {
     this.motionState = state.motionState;
-    this.blockState = state.blockState;
+    this.blockStateObservation = state.blockStateObservation;
     this.journeyState = state.journeyState;
     this.journeySummaries = state.journeySummaries;
     this.observation = state.observation;
   }
 
   public VehicleState(MotionState motionState,
-      BlockState blockState, JourneyState journeyState,
+      BlockStateObservation blockState, JourneyState journeyState,
       List<JourneyPhaseSummary> journeySummaries, Observation observation) {
     if (motionState == null)
       throw new IllegalArgumentException("motionState cannot be null");
@@ -62,7 +62,7 @@ public final class VehicleState implements Comparable<VehicleState> {
     if (observation == null)
       throw new IllegalArgumentException("observation cannot be null");
     this.motionState = motionState;
-    this.blockState = blockState;
+    this.blockStateObservation = blockState;
     this.journeyState = journeyState;
     this.journeySummaries = journeySummaries;
     this.observation = observation;
@@ -72,8 +72,12 @@ public final class VehicleState implements Comparable<VehicleState> {
     return motionState;
   }
 
+  public BlockStateObservation getBlockStateObservation() {
+    return blockStateObservation;
+  }
+  
   public BlockState getBlockState() {
-    return blockState;
+    return blockStateObservation != null ? blockStateObservation.getBlockState() : null;
   }
 
   public JourneyState getJourneyState() {
@@ -90,24 +94,9 @@ public final class VehicleState implements Comparable<VehicleState> {
 
   @Override
   public String toString() {
-    return journeyState + " " + blockState + " " + observation;
+    return journeyState + " " + blockStateObservation + " " + observation;
   }
 
-  private static class ObservationComparator implements Comparator<Observation> {
-    @Override
-    public int compare(Observation o1, Observation o2) {
-      return ComparisonChain.start()
-          .compare(o1.getRecord().getTimeReceived(), o2.getRecord().getTimeReceived())
-          .compare(o1.getRecord().getVehicleId(), o2.getRecord().getVehicleId())
-          .compare(o1.getRecord().getLatitude(), o2.getRecord().getLatitude())
-          .compare(o1.getRecord().getLongitude(), o2.getRecord().getLongitude())
-          .compare(o1.getRecord().getDestinationSignCode(), 
-              o2.getRecord().getDestinationSignCode())
-          .result();
-    }
-  }
-  
-  static private final ObservationComparator _observationComparator = new ObservationComparator();
   /**
    *  This compareTo method is for definite ordering
    *  in CategoricalDist; such ordering allows for
@@ -122,9 +111,8 @@ public final class VehicleState implements Comparable<VehicleState> {
     int compRes = ComparisonChain.start()
         .compare(this.journeyState.getPhase(), rightState.getJourneyState().getPhase())
         .compare(this.motionState, rightState.getMotionState())
-        .compare(this.observation, rightState.getObservation(), 
-            Ordering.from(_observationComparator).nullsLast())
-        .compare(this.blockState, rightState.getBlockState(), 
+        .compare(this.observation, rightState.getObservation())
+        .compare(this.blockStateObservation, rightState.getBlockStateObservation(), 
             Ordering.natural().nullsLast())
         .result();
     
@@ -136,7 +124,7 @@ public final class VehicleState implements Comparable<VehicleState> {
     final int prime = 31;
     int result = 1;
     result = prime * result
-        + ((blockState == null) ? 0 : blockState.hashCode());
+        + ((blockStateObservation == null) ? 0 : blockStateObservation.hashCode());
     // XXX we're only concerned with phase here
     result = prime * result
         + ((journeyState == null) ? 0 : journeyState.getPhase().hashCode());
@@ -158,10 +146,10 @@ public final class VehicleState implements Comparable<VehicleState> {
     if (!(obj instanceof VehicleState))
       return false;
     VehicleState other = (VehicleState) obj;
-    if (blockState == null) {
-      if (other.blockState != null)
+    if (blockStateObservation == null) {
+      if (other.blockStateObservation != null)
         return false;
-    } else if (!blockState.equals(other.blockState))
+    } else if (!blockStateObservation.equals(other.blockStateObservation))
       return false;
     // XXX we're only concerned with phase here
     if (journeyState == null) {

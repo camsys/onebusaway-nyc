@@ -19,27 +19,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Writer;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.TreeMap;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
+
 import org.onebusaway.collections.Counter;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
@@ -54,6 +58,7 @@ import cern.jet.stat.Descriptive;
 
 public class AbstractTraceRunner {
 
+  
   private static Logger _log = LoggerFactory
       .getLogger(AbstractTraceRunner.class);
 
@@ -74,7 +79,7 @@ public class AbstractTraceRunner {
 
   private double _minAccuracyRatio = 0.95;
 
-  private Map<EVehiclePhase, Double> _minAccuracyRatiosByPhase = new HashMap<EVehiclePhase, Double>();
+  private Map<EVehiclePhase, Double> _minAccuracyRatiosByPhase = new TreeMap<EVehiclePhase, Double>();
 
   private double _median = 10.0;
 
@@ -184,6 +189,7 @@ public class AbstractTraceRunner {
   public void test() throws Throwable {
     Map<EVehiclePhase, Double> results = runTest();
 
+    System.out.println("results of " + this.getClass().getSimpleName());
     for (Entry<EVehiclePhase, Double> result : results.entrySet()) {
       double relativeRatio = result.getValue();
 
@@ -192,7 +198,7 @@ public class AbstractTraceRunner {
       if (_minAccuracyRatiosByPhase.containsKey(result.getKey()))
         minAccuracyRatio = _minAccuracyRatiosByPhase.get(result.getKey());
 
-      String label = "average phase ratio " + result.getKey() + "="
+      String label = "\taverage phase ratio " + result.getKey() + "="
           + relativeRatio + " vs min of " + minAccuracyRatio;
 
       System.out.println(label);
@@ -201,6 +207,7 @@ public class AbstractTraceRunner {
     }
   }
 
+  
   /**
    * 
    * @return map of phases to average acceptance ratios
@@ -212,7 +219,7 @@ public class AbstractTraceRunner {
         .readRecords(trace);
 
     int successfulIterations = 0;
-    Map<EVehiclePhase, Double> phaseResults = new HashMap<EVehiclePhase, Double>();
+    Map<EVehiclePhase, Double> phaseResults = new TreeMap<EVehiclePhase, Double>();
 
     for (int i = 0; i < _loops; i++) {
 
@@ -229,6 +236,7 @@ public class AbstractTraceRunner {
 
         String asString = _traceSupport.getRecordsAsString(actual);
         _log.debug("actual records:\n" + asString);
+
 
         System.out.println("records=" + actual.size() + "/" + expected.size());
 
@@ -296,7 +304,7 @@ public class AbstractTraceRunner {
     int correctlyPredictedActiveTrips = 0;
     int falsePositiveCount = 0;
 
-    Map<EVehiclePhase, Double> phaseResults = new HashMap<EVehiclePhase, Double>();
+    Map<EVehiclePhase, Double> phaseResults = new TreeMap<EVehiclePhase, Double>();
 
     DoubleArrayList distanceAlongBlockDeviations = new DoubleArrayList();
 

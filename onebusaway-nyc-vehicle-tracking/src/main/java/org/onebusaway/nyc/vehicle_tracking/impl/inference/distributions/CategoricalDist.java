@@ -55,7 +55,7 @@ public class CategoricalDist<T> {
   }
     
   static class LocalRandomDummy extends ThreadLocal<Random> {
-    Random rng;
+    private static Random rng;
     
     LocalRandomDummy (long seed) {
       if (seed != 0)
@@ -86,6 +86,10 @@ public class CategoricalDist<T> {
 
   DiscreteDistribution emd;
   
+  public static ThreadLocal<Random> getThreadLocalRng() {
+    return threadLocalRng;
+  }
+  
   synchronized public static void setSeed(long seed) {
     if (!ParticleFilter.getTestingEnabled()) {
       threadLocalRng = new LocalRandom(seed);
@@ -113,6 +117,9 @@ public class CategoricalDist<T> {
 
     _cumulativeProb += prob;
     Double currentProb = _entriesToProbs.get(object);
+    
+    if (object == null)
+      throw new NullPointerException("entries to cdf cannot be null");
     
     if (currentProb == null) {
       _entriesToProbs.put(object, prob);
