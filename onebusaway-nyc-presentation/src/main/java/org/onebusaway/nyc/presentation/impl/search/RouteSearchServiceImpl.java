@@ -132,6 +132,7 @@ public class RouteSearchServiceImpl implements RouteSearchService {
     queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
     queryBean.setBounds(_serviceArea.getServiceArea());
     queryBean.setQuery(routeQuery);
+    queryBean.setMinScoreToKeep(0.90);
     queryBean.setMaxCount(100);
 
     try {
