@@ -149,7 +149,9 @@ public class JourneyStateTransitionModel {
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null)
+    if (!obs.isOutOfService() 
+        && obs.getPreviousObservation() != null
+        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
