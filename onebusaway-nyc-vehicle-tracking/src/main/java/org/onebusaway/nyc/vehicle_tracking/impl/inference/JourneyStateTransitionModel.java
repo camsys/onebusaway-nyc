@@ -149,7 +149,7 @@ public class JourneyStateTransitionModel {
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
-    if (!obs.isOutOfService())
+    if (!obs.isOutOfService() && obs.getPreviousObservation() != null)
       res.add(JourneyState.inProgress());
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
@@ -163,7 +163,9 @@ public class JourneyStateTransitionModel {
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(start.getJourneyStart())));
-    if (!obs.isOutOfService())
+    if (!obs.isOutOfService() 
+        && obs.getPreviousObservation() != null
+        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
@@ -174,7 +176,9 @@ public class JourneyStateTransitionModel {
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
             JourneyState.deadheadBefore(obs.getLocation())));
-    if (!obs.isOutOfService())
+    if (!obs.isOutOfService() 
+        && obs.getPreviousObservation() != null
+        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
@@ -189,7 +193,9 @@ public class JourneyStateTransitionModel {
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.layoverBefore()));
-    if (!obs.isOutOfService())
+    if (!obs.isOutOfService()  
+        && obs.getPreviousObservation() != null
+        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
@@ -206,7 +212,9 @@ public class JourneyStateTransitionModel {
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.layoverBefore()));
-    if (!obs.isOutOfService())
+    if (!obs.isOutOfService()  
+        && obs.getPreviousObservation() != null
+        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
@@ -220,7 +228,9 @@ public class JourneyStateTransitionModel {
     res.addAll(Arrays.asList(
         JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring()));
-    if (!obs.isOutOfService())
+    if (!obs.isOutOfService()  
+        && obs.getPreviousObservation() != null
+        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
