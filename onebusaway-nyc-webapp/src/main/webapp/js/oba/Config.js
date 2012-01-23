@@ -55,7 +55,7 @@ OBA.Config = {
 
 			if(type === "stop")	{
 				html += '<div class="footer">';
-				html += '<span class="header">At the bus stop... </strong></span>';
+				html += '<span class="header">While at the bus stop... </strong></span>';
 				html += '<br/>';
 
 				html += 'Send stop code <strong>' + query + '</strong> as a text to <strong>511123</strong>';
@@ -66,7 +66,7 @@ OBA.Config = {
 
 			} else if(type === "route") {
 				html += '<div class="footer">';
-				html += '<span class="header">At the bus stop... </strong></span>';
+				html += '<span class="header">While at the bus stop... </strong></span>';
 				html += '<br/>';
 				
 				html += 'Check <a href="m/?q=' + query + '">this route</a> on your smartphone.';
