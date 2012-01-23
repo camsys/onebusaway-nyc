@@ -322,7 +322,7 @@ public class SensorModelSupportLibrary {
      * our current observation, even if it means traveling backwards
      */
     BestBlockObservationStates closestBlockStates = _blockStateTransitionModel.getClosestBlockStates(
-        new BlockStateObservation(blockState), obs);
+        blockState, obs);
     
     double prob=0.0;
     BlockState closestBlockState = closestBlockStates.getBestTime().getBlockState();

@@ -2,6 +2,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +42,11 @@ import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdAc
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +63,10 @@ public class RunServiceImpl implements RunService {
   private TransitGraphDao transitGraph;
 
   private HashMap<String, List<RunTripEntry>> entriesByRun;
+  
+  private Multimap<String, AgencyAndId> runIdsToRoutes;
+  
+  private Multimap<String, AgencyAndId> runIdsToTripIds;
 
   private Map<String, List<RunTripEntry>> entriesByRunNumber;
 
@@ -121,6 +132,8 @@ public class RunServiceImpl implements RunService {
 
   public void transformRunData() {
     entriesByRun = new HashMap<String, List<RunTripEntry>>();
+    runIdsToRoutes = HashMultimap.create();
+    runIdsToTripIds = HashMultimap.create();
     entriesByTrip = new HashMap<AgencyAndId, List<RunTripEntry>>();
     entriesByRunNumber = new HashMap<String, List<RunTripEntry>>();
 
@@ -176,6 +189,8 @@ public class RunServiceImpl implements RunService {
         relief);
     entries.add(rte);
     entriesNum.add(rte);
+    runIdsToRoutes.put(rte.getRunId(), rte.getTripEntry().getRouteCollection().getId());
+    runIdsToTripIds.put(rte.getRunId(), rte.getTripEntry().getId());
 
     // add to index by trip
     AgencyAndId tripId = trip.getId();
@@ -223,6 +238,102 @@ public class RunServiceImpl implements RunService {
   private final Pattern multiRoutePattern = Pattern.compile("(?:0([1-9]{1}))|([1-9]{1}0)|([1-9]{2})");
 
   @Override
+  public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
+      String runAgencyAndId)
+      throws IllegalArgumentException {
+    
+    TreeMultimap<Integer, String> matchedRTEs = TreeMultimap.create();
+    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId);
+
+    if (!reportedIdMatcher.matches()) {
+      throw new IllegalArgumentException(
+          "reported-id does not have required format");
+    }
+
+    /*
+     * Get run-trips for nearby runTrips
+     */
+    String fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
+        reportedIdMatcher.group(2));
+    
+    /*
+     * In the following we strip the runEntry's id down to the format of the
+     * reported id's, as best we can. We allow matching to double-route
+     * route-id's, e.g. X0109 (match either 01 or 09 routes). Also, for MISC
+     * routes, we guess that they enter 00 or the route number of the trip.
+     */
+    for (String runId : entriesByRun.keySet()) {
+      String[] runPieces= runId.split("-");
+      String runRoute = runPieces[0];
+      String runNumber = runPieces[1];
+      Matcher routeIdMatcher = realRunRouteIdPattern.matcher(runRoute);
+      List<String> runIdsToTry = new ArrayList<String>();
+      if (routeIdMatcher.matches()) {
+        if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
+          String thisRunRouteNumber = routeIdMatcher.group(2);
+
+          Matcher multiRouteMatcher = multiRoutePattern.matcher(thisRunRouteNumber);
+          while (multiRouteMatcher.find()) {
+            for (int i = 1; i <= multiRouteMatcher.groupCount(); ++i) {
+              if (multiRouteMatcher.group(i) != null)
+                runIdsToTry.add(RunTripEntry.createId(multiRouteMatcher.group(i),
+                    runNumber));
+            }
+          } 
+          if (runIdsToTry.isEmpty()){
+            runIdsToTry.add(RunTripEntry.createId(thisRunRouteNumber,
+                runNumber));
+          }
+
+        } else {
+          /*
+           * there is no numeric part to the routeId. check for MISC value
+           */
+          if (StringUtils.equals(runRoute, "MISC")) {
+            /*
+             * they're allowed to enter anything, so we put this in there
+             */
+            runIdsToTry.add(RunTripEntry.createId("00", runNumber));
+
+            /*
+             * however, they often use the actual route number
+             */
+            Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
+            Matcher actualRouteIdMatcher;
+            for (AgencyAndId routeId : routeIds) {
+              actualRouteIdMatcher = routeIdPattern.matcher(routeId.getId());
+              if (actualRouteIdMatcher.matches()) {
+                for (int i = 1; i <= actualRouteIdMatcher.groupCount(); ++i) {
+                  runIdsToTry.add(RunTripEntry.createId(
+                      actualRouteIdMatcher.group(i), runNumber));
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (runIdsToTry.isEmpty()) {
+        _log.error("bundle-data runId does not have the required format:"
+            + runId);
+        continue;
+      }
+
+      int bestDist = Integer.MAX_VALUE;
+      for (String tryRunId : runIdsToTry) {
+        int ldist = StringUtils.getLevenshteinDistance(fuzzyRunId, tryRunId);
+        if (ldist <= bestDist) {
+          bestDist = ldist;
+        }
+      }
+
+      matchedRTEs.put(bestDist, runId);
+    }
+    
+    return matchedRTEs;
+  }
+  
+  @Override
   public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
       AgencyAndId runAgencyAndId, Set<BlockInstance> nearbyBlocks, long time)
       throws IllegalArgumentException {
@@ -267,82 +378,6 @@ public class RunServiceImpl implements RunService {
 //        runsToTry.add(runAtTime);
 //    }
 
-    /*
-     * In the following we strip the runEntry's id down to the format of the
-     * reported id's, as best we can. We allow matching to double-route
-     * route-id's, e.g. X0109 (match either 01 or 09 routes). Also, for MISC
-     * routes, we guess that they enter 00 or the route number of the trip.
-     */
-    for (RunTripEntry rte : runsToTry) {
-      Matcher routeIdMatcher = realRunRouteIdPattern.matcher(rte.getRunRoute());
-      List<String> runIdsToTry = new ArrayList<String>();
-      if (routeIdMatcher.matches()) {
-        if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
-          String thisRunRouteNumber = routeIdMatcher.group(2);
-
-          Matcher multiRouteMatcher = multiRoutePattern.matcher(thisRunRouteNumber);
-          while (multiRouteMatcher.find()) {
-            for (int i = 1; i <= multiRouteMatcher.groupCount(); ++i) {
-              if (multiRouteMatcher.group(i) != null)
-                runIdsToTry.add(RunTripEntry.createId(multiRouteMatcher.group(i),
-                    rte.getRunNumber()));
-            }
-          } 
-          if (runIdsToTry.isEmpty()){
-            runIdsToTry.add(RunTripEntry.createId(thisRunRouteNumber,
-                rte.getRunNumber()));
-          }
-
-        } else {
-          /*
-           * there is no numeric part to the routeId. check for MISC value
-           */
-          if (StringUtils.equals(rte.getRunRoute(), "MISC")) {
-            /*
-             * they're allowed to enter anything, so we put this in there
-             */
-            runIdsToTry.add(RunTripEntry.createId("00", rte.getRunNumber()));
-
-            /*
-             * however, they often use the actual route number
-             */
-            String routeId = rte.getTripEntry().getRouteCollection().getId().getId();
-            Matcher actualRouteIdMatcher = routeIdPattern.matcher(routeId);
-            if (actualRouteIdMatcher.matches()) {
-              for (int i = 1; i <= actualRouteIdMatcher.groupCount(); ++i) {
-                runIdsToTry.add(RunTripEntry.createId(
-                    actualRouteIdMatcher.group(i), rte.getRunNumber()));
-              }
-            }
-          }
-        }
-      }
-
-      if (runIdsToTry.isEmpty()) {
-        _log.error("bundle-data runId does not have the required format:"
-            + rte.getRunId());
-        continue;
-      }
-
-      int bestDist = Integer.MAX_VALUE;
-      for (String runId : runIdsToTry) {
-        int ldist = StringUtils.getLevenshteinDistance(fuzzyRunId, runId);
-        if (ldist <= bestDist) {
-          bestDist = ldist;
-        }
-      }
-
-      List<RunTripEntry> lrtes = matchedRTEs.get(bestDist);
-
-      if (lrtes != null) {
-        lrtes.add(rte);
-        matchedRTEs.put(bestDist, lrtes);
-      } else {
-        lrtes = new ArrayList<RunTripEntry>();
-        lrtes.add(rte);
-        matchedRTEs.put(bestDist, lrtes);
-      }
-    }
 
     return matchedRTEs;
   }
@@ -596,6 +631,11 @@ public class RunServiceImpl implements RunService {
   @Override
   public boolean isValidRunNumber(String runNumber) {
     return this.entriesByRunNumber.containsKey(runNumber);
+  }
+
+  @Override
+  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId) {
+    return runIdsToTripIds.get(runId);
   }
 
 }

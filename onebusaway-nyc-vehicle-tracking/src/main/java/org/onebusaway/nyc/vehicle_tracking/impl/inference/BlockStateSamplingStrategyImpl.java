@@ -211,21 +211,24 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       _log.warn("Operator service was not available.");
     }
 
-    boolean noStateButRunInfo = state == null
+    Boolean noStateButRunInfo = state == null
         && (operatorHasAssignment || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
 
-    boolean stateButNoRunMatch = state != null && !state.getOpAssigned()
-        && !state.getRunReported();
+    Boolean stateButNoRunMatch = state != null 
+        && state.getOpAssigned() == Boolean.FALSE
+        && state.getRunReported() == Boolean.FALSE;
 
     /**
      * Use only 10% of the score when a proposal doesn't use the run info
      * provided. Also, sample closer fuzzy matches.
      */
-    if (noStateButRunInfo || stateButNoRunMatch) {
+    if (noStateButRunInfo == Boolean.TRUE 
+        || stateButNoRunMatch == Boolean.TRUE) {
       score *= 0.10;
     } else if (state != null) {
-      if (state.getRunReported()) {
-        if (observation.getFuzzyMatchDistance() > 0)
+      if (state.getRunReported() == Boolean.TRUE) {
+        if (observation.getFuzzyMatchDistance() != null
+            && observation.getFuzzyMatchDistance() > 0)
           score *= 0.95;
       }
     }

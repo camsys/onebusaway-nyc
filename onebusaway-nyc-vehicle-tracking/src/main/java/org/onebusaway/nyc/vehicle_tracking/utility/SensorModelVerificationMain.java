@@ -318,7 +318,8 @@ public class SensorModelVerificationMain {
         || _dscService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
     return new Observation(record.getTimestamp(), r,
-        lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs, routeIds);
+        lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs, routeIds,
+        null);
   }
 
   private VehicleState getRecordAsVehicleState(NycTestInferredLocationRecord record,

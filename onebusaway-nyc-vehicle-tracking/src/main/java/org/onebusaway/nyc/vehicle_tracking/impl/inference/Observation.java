@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,11 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.List;
 import java.util.Set;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance.RunResults;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
@@ -48,22 +48,23 @@ public class Observation implements Comparable<Observation> {
 
   private final Set<AgencyAndId> _dscImpliedRouteCollections;
 
-  private int _fuzzyMatchDistance;
+  private RunResults _runResults;
 
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
       boolean outOfService, Observation previousObservation,
-      Set<AgencyAndId> dscImpliedRoutes) {
+      Set<AgencyAndId> dscImpliedRoutes, RunResults runResults) {
     _timestamp = timestamp;
     _record = record;
     _point = ProjectedPointFactory.forward(record.getLatitude(),
         record.getLongitude());
     _lastValidDestinationSignCode = lastValidDestinationSignCode;
     _dscImpliedRouteCollections = dscImpliedRoutes;
+    _runResults = runResults;
     this.atBase = atBase;
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
-    
+
     _previousObservation = previousObservation;
   }
 
@@ -122,14 +123,10 @@ public class Observation implements Comparable<Observation> {
     return _dscImpliedRouteCollections;
   }
 
-  public void setFuzzyMatchDistance(int bestDist) {
-    _fuzzyMatchDistance = bestDist;
+  public Integer getFuzzyMatchDistance() {
+    return _runResults.getBestFuzzyDist();
   }
-  
-  public int getFuzzyMatchDistance() {
-    return _fuzzyMatchDistance;
-  }
-  
+
   enum PointFunction implements Function<ProjectedPoint, Double> {
     getY {
       @Override
@@ -144,17 +141,17 @@ public class Observation implements Comparable<Observation> {
       }
     }
   }
-  
-  static private final Ordering<ProjectedPoint> _orderByXandY = 
-      Ordering.natural().nullsLast().onResultOf(PointFunction.getX)
-      .compound(Ordering.natural().nullsLast().onResultOf(PointFunction.getY));
-  
+
+  static private final Ordering<ProjectedPoint> _orderByXandY = Ordering.natural().nullsLast().onResultOf(
+      PointFunction.getX).compound(
+      Ordering.natural().nullsLast().onResultOf(PointFunction.getY));
+
   @Override
   public int compareTo(Observation o2) {
-    
+
     if (this == o2)
       return 0;
-    
+
     int res = ComparisonChain.start()
         .compare(outOfService, o2.outOfService)
         .compare(atTerminal, o2.atTerminal)
@@ -164,17 +161,17 @@ public class Observation implements Comparable<Observation> {
         .compare(_point, o2._point, _orderByXandY)
         .compare(_lastValidDestinationSignCode, o2._lastValidDestinationSignCode, 
             Ordering.natural().nullsLast())
-        .compare(_fuzzyMatchDistance, o2._fuzzyMatchDistance)
+        .compare(_runResults, o2._runResults)
         .result();
-    
+
     return res;
   }
-  
+
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + _fuzzyMatchDistance;
+    result = prime * result + ((_runResults == null) ? 0 : _runResults.hashCode());
     result = prime
         * result
         + ((_lastValidDestinationSignCode == null) ? 0
@@ -197,7 +194,10 @@ public class Observation implements Comparable<Observation> {
     if (!(obj instanceof Observation))
       return false;
     Observation other = (Observation) obj;
-    if (_fuzzyMatchDistance != other._fuzzyMatchDistance)
+    if (_runResults== null) {
+      if (other._runResults != null)
+        return false;
+    } else if (!_runResults.equals(other._runResults))
       return false;
     if (_lastValidDestinationSignCode == null) {
       if (other._lastValidDestinationSignCode != null)
@@ -223,6 +223,18 @@ public class Observation implements Comparable<Observation> {
     if (outOfService != other.outOfService)
       return false;
     return true;
+  }
+
+  public String getOpAssignedRunId() {
+    return _runResults.getAssignedRunId();
+  }
+
+  public Set<String> getBestFuzzyRunIds() {
+    return _runResults.getFuzzyMatches();
+  }
+
+  public RunResults getRunResults() {
+    return _runResults;
   }
 
 }

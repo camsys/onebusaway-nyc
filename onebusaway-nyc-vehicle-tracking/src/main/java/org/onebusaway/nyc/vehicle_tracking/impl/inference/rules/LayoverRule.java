@@ -39,7 +39,7 @@ public class LayoverRule implements SensorModelRule {
    * How long in minutes do we let a vehicle remain in layover past its
    * scheduled pull-out time?
    */
-  private DeviationModel _vehicleIsOnScheduleModel = new DeviationModel(7);
+  private DeviationModel _vehicleIsOnScheduleModel = new DeviationModel(40);
 
   private VehicleStateLibrary _vehicleStateLibrary;
 
