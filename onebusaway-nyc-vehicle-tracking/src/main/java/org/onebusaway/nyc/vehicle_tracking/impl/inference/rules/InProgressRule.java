@@ -66,7 +66,8 @@ public class InProgressRule implements SensorModelRule {
      * When we have no block-state, we use the best state with a 
      * route that matches the observations DSC-implied route, if any.
      */
-    if (blockState == null) {
+    if (blockState == null
+        || phase == EVehiclePhase.DEADHEAD_BEFORE) {
       BestBlockStates bestStates = _blockStateService.getBestBlockStateForRoute(obs);
       if (bestStates != null)
         blockState = bestStates.getBestLocation();
