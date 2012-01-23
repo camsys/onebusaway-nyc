@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -60,21 +61,25 @@ public class InProgressRule implements SensorModelRule {
      * and good block locations. As well, we're informed of the likelihood of
      * not-in-progress states, by way of having more of the opposite properties.
      */
+    
+    /*
+     * When we have no block-state, we use the best state with a 
+     * route that matches the observations DSC-implied route, if any.
+     */
+    if (blockState == null) {
+      BestBlockStates bestStates = _blockStateService.getBestBlockStateForRoute(obs);
+      if (bestStates != null)
+        blockState = bestStates.getBestLocation();
+    }
+    
     if (!(phase == EVehiclePhase.IN_PROGRESS
-        || phase == EVehiclePhase.DEADHEAD_BEFORE || phase == EVehiclePhase.DEADHEAD_DURING)
+        || phase == EVehiclePhase.DEADHEAD_BEFORE 
+        || phase == EVehiclePhase.DEADHEAD_DURING)
         || blockState == null)
       return new SensorModelResult("pInProgress (n/a)");
 
     SensorModelResult result = new SensorModelResult("pInProgress");
 
-    if (phase == EVehiclePhase.IN_PROGRESS) {
-      try {
-        blockState = _blockStateService.getBestBlockLocations(obs,
-            blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY).getBestLocation();
-      } catch (MissingShapePointsException e) {
-        throw new IllegalStateException("Block location with missing shapes?!");
-      }
-    }
     /**
      * Rule: IN_PROGRESS => block location is close to the best possible?
      */

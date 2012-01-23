@@ -33,6 +33,7 @@ import org.onebusaway.collections.MappingLibrary;
 import org.onebusaway.collections.Min;
 import org.onebusaway.collections.tuple.T2;
 import org.onebusaway.geospatial.model.XYPoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -148,9 +149,29 @@ public class BlockStateService {
       blockStates = getUncachedBestBlockLocations(observation, blockInstance,
           blockDistanceFrom, blockDistanceTo);
       m.put(key, blockStates);
+      
+      if (observation.getDscImpliedRouteCollections().contains(
+          blockStates.getBestLocation().getBlockLocation()
+          .getActiveTrip().getTrip().getRouteCollection().getId())) {
+        
+        BestBlockStates cachedBestStates = _observationCache.getValueForObservation(
+            observation, EObservationCacheKey.ROUTE_LOCATION);
+        
+        if (cachedBestStates == null 
+            || cachedBestStates.getLocDev() > blockStates.getLocDev()) {
+          _observationCache.putValueForObservation(observation,
+              EObservationCacheKey.ROUTE_LOCATION, blockStates);
+        }
+      }
     }
 
     return blockStates;
+  }
+  
+  public BestBlockStates getBestBlockStateForRoute(Observation observation) {
+    BestBlockStates bestState = _observationCache.getValueForObservation(
+        observation, EObservationCacheKey.ROUTE_LOCATION);
+    return bestState;
   }
 
   public BlockState getScheduledTimeAsState(BlockInstance blockInstance,
@@ -265,17 +286,22 @@ public class BlockStateService {
 
     final private BlockState bestTime;
     final private BlockState bestLocation;
+    final private Double locDev;
+    final private Long timeDev;
 
-    public BestBlockStates(BestBlockObservationStates bestObsState) {
-      this.bestTime = bestObsState.getBestTime().getBlockState();
-      this.bestLocation = bestObsState.getBestLocation().getBlockState();
-    }
+//    public BestBlockStates(BestBlockObservationStates bestObsState) {
+//      this.bestTime = bestObsState.getBestTime().getBlockState();
+//      this.bestLocation = bestObsState.getBestLocation().getBlockState();
+//    }
 
-    public BestBlockStates(BlockState bestTime, BlockState bestLocation) {
+    public BestBlockStates(BlockState bestTime, BlockState bestLocation, 
+        Long timeDev, Double locDev) {
       if (bestTime == null || bestLocation == null)
         throw new IllegalArgumentException("best block states cannot be null");
       this.bestLocation = bestLocation;
       this.bestTime = bestTime;
+      this.timeDev = timeDev;
+      this.locDev = locDev;
     }
 
     public BlockState getBestTime() {
@@ -289,6 +315,14 @@ public class BlockStateService {
     public List<BlockState> getAllStates() {
       return bestTime.equals(bestLocation) ? Arrays.asList(bestTime)
           : Arrays.asList(bestTime, bestLocation);
+    }
+    
+    public double getLocDev() {
+      return this.locDev;
+    }
+    
+    public double getTimeDev() {
+      return this.timeDev;
     }
   }
 
@@ -350,11 +384,31 @@ public class BlockStateService {
 
     if (assignments.size() == 0) {
       BlockState bs = getAsState(blockInstance, blockDistanceFrom);
-      return new BestBlockStates(bs, bs);
+      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          block, blockDistanceFrom);
+      Long delta = null;
+      if (location != null) {
+        int scheduledTime = location.getScheduledTime();
+        long scheduleTimestamp = blockInstance.getServiceDate() + scheduledTime
+            * 1000;
+        delta = Math.abs(scheduleTimestamp - timestamp);
+      }
+      double locDelta = SphericalGeometryLibrary.distance(observation.getLocation(),
+          location.getLocation());
+      return new BestBlockStates(bs, bs, delta, locDelta);
     } else if (assignments.size() == 1) {
       PointAndIndex pIndex = assignments.get(0);
+      ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          block, blockDistanceFrom);
+      Long delta = null;
+      if (location != null) {
+        int scheduledTime = location.getScheduledTime();
+        long scheduleTimestamp = blockInstance.getServiceDate() + scheduledTime
+            * 1000;
+        delta = Math.abs(scheduleTimestamp - timestamp);
+      }
       BlockState bs = getAsState(blockInstance, pIndex.distanceAlongShape);
-      return new BestBlockStates(bs, bs);
+      return new BestBlockStates(bs, bs, delta, pIndex.distanceFromTarget);
     }
 
     Min<PointAndIndex> bestSchedDev = new Min<PointAndIndex>();
@@ -389,7 +443,8 @@ public class BlockStateService {
     BlockState bestLocState = getAsState(blockInstance,
         indexLoc.distanceAlongShape);
 
-    return new BestBlockStates(bestTimeState, bestLocState);
+    return new BestBlockStates(bestTimeState, bestLocState, 
+        (long)indexSched.distanceFromTarget, indexLoc.distanceFromTarget);
   }
 
   private static class BlockLocationKey {
