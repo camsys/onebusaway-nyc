@@ -38,6 +38,8 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
@@ -189,7 +191,9 @@ public class RunServiceImpl implements RunService {
         relief);
     entries.add(rte);
     entriesNum.add(rte);
-    runIdsToRoutes.put(rte.getRunId(), rte.getTripEntry().getRouteCollection().getId());
+    // this will fail for unit tests otherwise
+    RouteEntry route = rte.getTripEntry().getRoute();
+    runIdsToRoutes.put(rte.getRunId(), (route != null) ? route.getParent().getId() : null);
     runIdsToTripIds.put(rte.getRunId(), rte.getTripEntry().getId());
 
     // add to index by trip
