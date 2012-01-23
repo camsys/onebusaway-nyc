@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -27,8 +27,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimula
 
 public interface VehicleLocationSimulationService {
 
-  public int simulateLocationsFromTrace(String traceType,
-      String filename, InputStream traceInputStream, boolean runInRealtime,
+  public int simulateLocationsFromTrace(String traceType, String filename,
+      InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
       boolean bypassInference, boolean fillActualProperties, boolean loop)
       throws IOException;
@@ -40,9 +40,8 @@ public interface VehicleLocationSimulationService {
   public VehicleLocationDetails getSimulationDetails(int taskId,
       int historyOffset);
 
-  public VehicleLocationDetails getParticleDetails(int taskId,
-      int particleId);
-  
+  public VehicleLocationDetails getParticleDetails(int taskId, int particleId);
+
   public List<NycTestInferredLocationRecord> getSimulationRecords(int taskId);
 
   public List<NycTestInferredLocationRecord> getResultRecords(int taskId);
@@ -62,8 +61,9 @@ public interface VehicleLocationSimulationService {
   public List<VehicleLocationSimulationSummary> getSimulationsForBlockInstance(
       AgencyAndId blockId, long serviceDate);
 
-  public int addSimulationForBlockInstance(AgencyAndId blockId, long serviceDate,
-      long actualTime, boolean bypassInference, boolean isRunBased,
-      boolean realtime, boolean fillActual, boolean reportsOperatorId,
-      boolean reportsRunId, boolean allowRunTransitions, Properties properties);
+  public int addSimulationForBlockInstance(AgencyAndId blockId,
+      long serviceDate, long actualTime, boolean bypassInference,
+      boolean isRunBased, boolean realtime, boolean fillActual,
+      boolean reportsOperatorId, boolean reportsRunId,
+      boolean allowRunTransitions, Properties properties);
 }

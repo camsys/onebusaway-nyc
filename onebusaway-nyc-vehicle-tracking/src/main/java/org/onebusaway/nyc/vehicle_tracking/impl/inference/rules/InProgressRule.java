@@ -95,7 +95,7 @@ public class InProgressRule implements SensorModelRule {
 
     if (phase == EVehiclePhase.DEADHEAD_BEFORE
         || phase == EVehiclePhase.DEADHEAD_DURING) {
-//      double invResult = 1.0 - pBlockLocation * pTripInRange;
+      // double invResult = 1.0 - pBlockLocation * pTripInRange;
       double invResult = 1.0 - pTripInRange;
       result.addResultAsAnd("pNotInProgress", invResult);
     } else {

@@ -152,17 +152,12 @@ public class Observation implements Comparable<Observation> {
     if (this == o2)
       return 0;
 
-    int res = ComparisonChain.start()
-        .compare(outOfService, o2.outOfService)
-        .compare(atTerminal, o2.atTerminal)
-        .compare(atBase, o2.atBase)
-        .compare(_timestamp, o2._timestamp)
-        .compare(_record, o2._record)
-        .compare(_point, o2._point, _orderByXandY)
-        .compare(_lastValidDestinationSignCode, o2._lastValidDestinationSignCode, 
-            Ordering.natural().nullsLast())
-        .compare(_runResults, o2._runResults)
-        .result();
+    int res = ComparisonChain.start().compare(outOfService, o2.outOfService).compare(
+        atTerminal, o2.atTerminal).compare(atBase, o2.atBase).compare(
+        _timestamp, o2._timestamp).compare(_record, o2._record).compare(_point,
+        o2._point, _orderByXandY).compare(_lastValidDestinationSignCode,
+        o2._lastValidDestinationSignCode, Ordering.natural().nullsLast()).compare(
+        _runResults, o2._runResults).result();
 
     return res;
   }
@@ -171,7 +166,8 @@ public class Observation implements Comparable<Observation> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_runResults == null) ? 0 : _runResults.hashCode());
+    result = prime * result
+        + ((_runResults == null) ? 0 : _runResults.hashCode());
     result = prime
         * result
         + ((_lastValidDestinationSignCode == null) ? 0
@@ -194,7 +190,7 @@ public class Observation implements Comparable<Observation> {
     if (!(obj instanceof Observation))
       return false;
     Observation other = (Observation) obj;
-    if (_runResults== null) {
+    if (_runResults == null) {
       if (other._runResults != null)
         return false;
     } else if (!_runResults.equals(other._runResults))

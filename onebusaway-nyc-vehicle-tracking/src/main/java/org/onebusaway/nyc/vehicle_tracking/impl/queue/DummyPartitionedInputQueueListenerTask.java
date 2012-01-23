@@ -5,8 +5,8 @@ import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueL
 /**
  * No-op implementation for inference engine
  */
-public class DummyPartitionedInputQueueListenerTask 
-  implements PartitionedInputQueueListener {
+public class DummyPartitionedInputQueueListenerTask implements
+    PartitionedInputQueueListener {
 
   @Override
   public String getDepotPartitionKey() {
@@ -14,13 +14,13 @@ public class DummyPartitionedInputQueueListenerTask
   }
 
   @Override
-  public void setDepotPartitionKey(String depotPartitionKey) {    
+  public void setDepotPartitionKey(String depotPartitionKey) {
 
   }
-  
+
   @Override
   public boolean processMessage(String address, String contents) {
     return true;
   }
-  
+
 }

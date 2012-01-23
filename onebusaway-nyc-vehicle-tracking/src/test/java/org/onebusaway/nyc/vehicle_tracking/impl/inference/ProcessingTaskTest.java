@@ -37,22 +37,27 @@ public class ProcessingTaskTest {
 
   @Test
   public void testRun() throws Exception {
-    
+
     VehicleInferenceInstance vehInfInst = mock(VehicleInferenceInstance.class);
-    when(vehInfInst.handleBypassUpdate(any(NycTestInferredLocationRecord.class))).thenReturn(true);
+    when(
+        vehInfInst.handleBypassUpdate(any(NycTestInferredLocationRecord.class))).thenReturn(
+        true);
     NycQueuedInferredLocationBean nqlb = mock(NycQueuedInferredLocationBean.class);
-    when(vehInfInst.getCurrentStateAsNycQueuedInferredLocationBean()).thenReturn(nqlb);
+    when(vehInfInst.getCurrentStateAsNycQueuedInferredLocationBean()).thenReturn(
+        nqlb);
 
     NycVehicleManagementStatusBean mgmtStatus = mock(NycVehicleManagementStatusBean.class);
 
     when(vehInfInst.getCurrentManagementState()).thenReturn(mgmtStatus);
-    when(appContext.getBean(VehicleInferenceInstance.class)).thenReturn(vehInfInst);
+    when(appContext.getBean(VehicleInferenceInstance.class)).thenReturn(
+        vehInfInst);
 
     NycTestInferredLocationRecord infLocationRec = mock(NycTestInferredLocationRecord.class);
     AgencyAndId vehicleId = mock(AgencyAndId.class);
     when(infLocationRec.getVehicleId()).thenReturn(vehicleId);
 
-    when(_vehicleAssignmentService.getAssignedDepotForVehicleId(vehicleId)).thenReturn(DEPOT);
+    when(_vehicleAssignmentService.getAssignedDepotForVehicleId(vehicleId)).thenReturn(
+        DEPOT);
 
     service.setApplicationContext(appContext);
 

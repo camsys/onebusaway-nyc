@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -38,8 +38,10 @@ public class CompileTestTracesMain {
       System.exit(-1);
     }
 
-    List<NycTestInferredLocationRecord> rawRecords = readRecords(new File(args[0]));
-    List<NycTestInferredLocationRecord> labeledRecords = readRecords(new File(args[1]));
+    List<NycTestInferredLocationRecord> rawRecords = readRecords(new File(
+        args[0]));
+    List<NycTestInferredLocationRecord> labeledRecords = readRecords(new File(
+        args[1]));
 
     if (rawRecords.size() != labeledRecords.size()) {
       throw new IllegalStateException("expected record counts to match: raw="
@@ -48,8 +50,8 @@ public class CompileTestTracesMain {
 
     CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
     FileWriter out = new FileWriter(args[2]);
-    EntityHandler handler = factory.createWriter(NycTestInferredLocationRecord.class,
-        out);
+    EntityHandler handler = factory.createWriter(
+        NycTestInferredLocationRecord.class, out);
 
     for (int i = 0; i < rawRecords.size(); i++) {
       NycTestInferredLocationRecord rawRecord = rawRecords.get(i);
@@ -74,7 +76,8 @@ public class CompileTestTracesMain {
     ListEntityHandler<NycTestInferredLocationRecord> handler = new ListEntityHandler<NycTestInferredLocationRecord>();
     reader.addEntityHandler(handler);
 
-    reader.readEntities(NycTestInferredLocationRecord.class, new FileReader(path));
+    reader.readEntities(NycTestInferredLocationRecord.class, new FileReader(
+        path));
 
     return handler.getValues();
   }

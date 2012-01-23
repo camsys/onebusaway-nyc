@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -37,7 +37,7 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
 
     JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState(); 
+    BlockState blockState = state.getBlockState();
 
     /**
      * Why do we check for a block state here? We assume a vehicle can't
@@ -63,10 +63,9 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
      * requirement), it can quickly go off-block if the block assignment doesn't
      * keep up.
      */
-    double pServedSomePartOfBlock = library
-        .computeProbabilityOfServingSomePartOfBlock(blockState);
+    double pServedSomePartOfBlock = library.computeProbabilityOfServingSomePartOfBlock(blockState);
     double pOffBlock = library.computeOffBlockProbability(state, obs);
-//    double pOutOfService = library.computeOutOfServiceProbability(obs);
+    // double pOutOfService = library.computeOutOfServiceProbability(obs);
     double pOutOfService = obs.isOutOfService() ? 1.0 : 0.0;
 
     double pOffRouteOrOutOfService = pServedSomePartOfBlock

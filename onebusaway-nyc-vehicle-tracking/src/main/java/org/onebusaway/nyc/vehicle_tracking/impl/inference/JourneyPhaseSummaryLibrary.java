@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -36,7 +36,8 @@ import org.springframework.stereotype.Component;
 public class JourneyPhaseSummaryLibrary {
 
   public List<JourneyPhaseSummary> extendSummaries(VehicleState parentState,
-      BlockStateObservation blockState, JourneyState journeyState, Observation observation) {
+      BlockStateObservation blockState, JourneyState journeyState,
+      Observation observation) {
 
     List<JourneyPhaseSummary> parentSummaries = Collections.emptyList();
 
@@ -47,18 +48,18 @@ public class JourneyPhaseSummaryLibrary {
         parentSummaries);
 
     if (summaries.isEmpty()) {
-      JourneyPhaseSummary summary = createJourneySummary(blockState.getBlockState(),
-          journeyState, observation);
+      JourneyPhaseSummary summary = createJourneySummary(
+          blockState.getBlockState(), journeyState, observation);
       summaries.add(summary);
     } else {
       JourneyPhaseSummary previous = summaries.get(summaries.size() - 1);
-      JourneyPhaseSummary merged = createMergedJourneySummary(blockState.getBlockState(),
-          journeyState, observation, previous);
+      JourneyPhaseSummary merged = createMergedJourneySummary(
+          blockState.getBlockState(), journeyState, observation, previous);
       if (merged != null) {
         summaries.set(summaries.size() - 1, merged);
       } else {
-        JourneyPhaseSummary summary = createJourneySummary(blockState.getBlockState(),
-            journeyState, observation);
+        JourneyPhaseSummary summary = createJourneySummary(
+            blockState.getBlockState(), journeyState, observation);
         summaries.add(summary);
       }
     }
@@ -79,15 +80,15 @@ public class JourneyPhaseSummaryLibrary {
     return mergeBackwardsSummariesWithSameBlock(summaries, summaries.size() - 1);
   }
 
-  public JourneyPhaseSummary getPreviousBlock(List<JourneyPhaseSummary> summaries,
-      JourneyPhaseSummary currentBlock) {
+  public JourneyPhaseSummary getPreviousBlock(
+      List<JourneyPhaseSummary> summaries, JourneyPhaseSummary currentBlock) {
 
     BlockInstance blockInstance = currentBlock.getBlockInstance();
 
     for (int i = summaries.size() - 1; i >= 0; i--) {
       JourneyPhaseSummary summary = summaries.get(i);
       if (summary.getBlockInstance() != null
-          && ! summary.getBlockInstance().equals(blockInstance))
+          && !summary.getBlockInstance().equals(blockInstance))
         return mergeBackwardsSummariesWithSameBlock(summaries, i);
     }
 

@@ -30,8 +30,8 @@ public class BlockStateObservation implements Comparable<BlockStateObservation> 
         ? obs.getOpAssignedRunId().equals(runId) : null;
     _isRunReported = (obs.getBestFuzzyRunIds() != null && !obs.getBestFuzzyRunIds().isEmpty())
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
-    _isRunReportedAssignedMismatch = _isOpAssigned != null && _isRunReported != null
-        ? _isOpAssigned && !_isRunReported : null;
+    _isRunReportedAssignedMismatch = _isOpAssigned != null
+        && _isRunReported != null ? _isOpAssigned && !_isRunReported : null;
   }
 
   public BlockStateObservation(BlockState blockState, Boolean isRunReported,

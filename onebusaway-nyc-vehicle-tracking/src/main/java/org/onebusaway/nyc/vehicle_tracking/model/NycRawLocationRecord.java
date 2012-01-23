@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -25,14 +25,14 @@ import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFact
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
-public class NycRawLocationRecord implements Comparable<NycRawLocationRecord>{
+public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
 
   private long id;
 
   /**
-	 * index to link the realtime record to the inference record.
-	 */
-  private String uuid; 
+   * index to link the realtime record to the inference record.
+   */
+  private String uuid;
 
   /**
    * The time on the bus when this record was sent to us.
@@ -95,12 +95,12 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord>{
   }
 
   public String getUUID() {
-		return uuid;
-	}
+    return uuid;
+  }
 
   public void setUUID(String uuid) {
-		this.uuid = uuid;
-	}
+    this.uuid = uuid;
+  }
 
   public void setTime(long time) {
     this.time = time;
@@ -230,7 +230,7 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord>{
     return (Double.isNaN(this.latitude) || Double.isNaN(this.longitude))
         || (this.latitude == 0.0 && this.longitude == 0.0);
   }
-  
+
   @Override
   public String toString() {
     return vehicleId + ": (" + latitude + "," + longitude + "), "
@@ -398,28 +398,23 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord>{
   public int compareTo(NycRawLocationRecord arg0) {
     if (this == arg0)
       return 0;
-    
-    int res = ComparisonChain.start()
-        .compare(uuid, arg0.uuid, Ordering.natural().nullsLast())
-        .compare(speed, arg0.speed)
-        .compare(runRouteId, arg0.runRouteId, Ordering.natural().nullsLast())
-        .compare(runNumber, arg0.runNumber, Ordering.natural().nullsLast())
-        .compare(rmc, arg0.rmc, Ordering.natural().nullsLast())
-        .compare(rawData, arg0.rawData, Ordering.natural().nullsLast())
-        .compare(operatorId, arg0.operatorId, Ordering.natural().nullsLast())
-        .compare(id, arg0.id)
-        .compare(gga, arg0.gga, Ordering.natural().nullsLast())
-        .compare(emergencyFlag, arg0.emergencyFlag)
-        .compare(deviceId, arg0.deviceId, Ordering.natural().nullsLast())
-        .compare(destinationSignCode, arg0.destinationSignCode, Ordering.natural().nullsLast())
-        .compare(bearing, arg0.bearing)
-        .compare(longitude, arg0.longitude)
-        .compare(latitude, arg0.latitude)
-        .compare(vehicleId, arg0.vehicleId, Ordering.natural().nullsLast())
-        .compare(timeReceived, arg0.timeReceived)
-        .compare(time, arg0.time)
-        .result();
-    
+
+    int res = ComparisonChain.start().compare(uuid, arg0.uuid,
+        Ordering.natural().nullsLast()).compare(speed, arg0.speed).compare(
+        runRouteId, arg0.runRouteId, Ordering.natural().nullsLast()).compare(
+        runNumber, arg0.runNumber, Ordering.natural().nullsLast()).compare(rmc,
+        arg0.rmc, Ordering.natural().nullsLast()).compare(rawData,
+        arg0.rawData, Ordering.natural().nullsLast()).compare(operatorId,
+        arg0.operatorId, Ordering.natural().nullsLast()).compare(id, arg0.id).compare(
+        gga, arg0.gga, Ordering.natural().nullsLast()).compare(emergencyFlag,
+        arg0.emergencyFlag).compare(deviceId, arg0.deviceId,
+        Ordering.natural().nullsLast()).compare(destinationSignCode,
+        arg0.destinationSignCode, Ordering.natural().nullsLast()).compare(
+        bearing, arg0.bearing).compare(longitude, arg0.longitude).compare(
+        latitude, arg0.latitude).compare(vehicleId, arg0.vehicleId,
+        Ordering.natural().nullsLast()).compare(timeReceived, arg0.timeReceived).compare(
+        time, arg0.time).result();
+
     return res;
   }
 }

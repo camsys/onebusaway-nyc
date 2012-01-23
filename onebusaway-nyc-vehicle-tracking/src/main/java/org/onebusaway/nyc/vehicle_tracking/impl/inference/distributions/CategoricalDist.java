@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -35,11 +35,11 @@ public class CategoricalDist<T> {
 
   static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
-    
+
     LocalRandom(long seed) {
       _seed = seed;
     }
-    
+
     @Override
     protected Random initialValue() {
       if (_seed != 0)
@@ -48,30 +48,30 @@ public class CategoricalDist<T> {
         return new Random();
     }
   }
-    
+
   static class LocalRandomDummy extends ThreadLocal<Random> {
     private static Random rng;
-    
-    LocalRandomDummy (long seed) {
+
+    LocalRandomDummy(long seed) {
       if (seed != 0)
         rng = new Random(seed);
       else
         rng = new Random();
     }
-    
+
     @Override
     synchronized public Random get() {
       return rng;
     }
   }
-  
+
   static ThreadLocal<Random> threadLocalRng;
   static {
     if (!ParticleFilter.getTestingEnabled()) {
       threadLocalRng = new LocalRandom(0);
     } else {
       threadLocalRng = new LocalRandomDummy(0);
-      
+
     }
   }
 
@@ -80,11 +80,11 @@ public class CategoricalDist<T> {
   private List<T> _entries;
 
   DiscreteDistribution emd;
-  
+
   public static ThreadLocal<Random> getThreadLocalRng() {
     return threadLocalRng;
   }
-  
+
   synchronized public static void setSeed(long seed) {
     if (!ParticleFilter.getTestingEnabled()) {
       threadLocalRng = new LocalRandom(seed);
@@ -92,15 +92,14 @@ public class CategoricalDist<T> {
       threadLocalRng = new LocalRandomDummy(seed);
     }
   }
-  
-  
+
   public CategoricalDist() {
-//    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
+    // _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
     _entriesToProbs = new TreeMap<T, Double>();
   }
-  
+
   public CategoricalDist(Comparator<T> order) {
-//    _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
+    // _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
     _entriesToProbs = new TreeMap<T, Double>(order);
   }
 
@@ -112,21 +111,21 @@ public class CategoricalDist<T> {
 
     _cumulativeProb += prob;
     Double currentProb = _entriesToProbs.get(object);
-    
+
     if (object == null)
       throw new NullPointerException("entries to cdf cannot be null");
-    
+
     if (currentProb == null) {
       _entriesToProbs.put(object, prob);
-      _objIdx.add((double)_objIdx.size());
-      _entries = getSupport(); 
+      _objIdx.add((double) _objIdx.size());
+      _entries = getSupport();
     } else {
       /*
        * allow duplicate entries' probability to compound
        */
       _entriesToProbs.put(object, prob + currentProb);
     }
-    
+
     /*
      * reset the underlying distribution for lazy reloading
      */
@@ -144,17 +143,19 @@ public class CategoricalDist<T> {
 
     if (_entriesToProbs.size() == 1) {
       return _entriesToProbs.keySet().iterator().next();
-//      return _entriesToProbs.firstKey();
+      // return _entriesToProbs.firstKey();
     }
-    
+
     if (emd == null) {
-      double[] probs = MathUtils.normalizeArray(Doubles.toArray(_entriesToProbs.values()), 1.0);
-      emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs, _objIdx.size());
+      double[] probs = MathUtils.normalizeArray(
+          Doubles.toArray(_entriesToProbs.values()), 1.0);
+      emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs,
+          _objIdx.size());
     }
-    
+
     double u = threadLocalRng.get().nextDouble();
     int newIdx = (int) emd.inverseF(u);
-    
+
     return _entries.get(newIdx);
   }
 

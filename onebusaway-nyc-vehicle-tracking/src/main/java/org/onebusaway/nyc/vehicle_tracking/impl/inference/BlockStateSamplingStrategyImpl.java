@@ -176,8 +176,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public double scoreState(BlockStateObservation state, Observation observation,
-      boolean atStart) {
+  public double scoreState(BlockStateObservation state,
+      Observation observation, boolean atStart) {
     double score;
 
     if (atStart) {
@@ -214,7 +214,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     Boolean noStateButRunInfo = state == null
         && (operatorHasAssignment || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
 
-    Boolean stateButNoRunMatch = state != null 
+    Boolean stateButNoRunMatch = state != null
         && state.getOpAssigned() == Boolean.FALSE
         && state.getRunReported() == Boolean.FALSE;
 
@@ -222,8 +222,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
      * Use only 10% of the score when a proposal doesn't use the run info
      * provided. Also, sample closer fuzzy matches.
      */
-    if (noStateButRunInfo == Boolean.TRUE 
-        || stateButNoRunMatch == Boolean.TRUE) {
+    if (noStateButRunInfo == Boolean.TRUE || stateButNoRunMatch == Boolean.TRUE) {
       score *= 0.10;
     } else if (state != null) {
       if (state.getRunReported() == Boolean.TRUE) {

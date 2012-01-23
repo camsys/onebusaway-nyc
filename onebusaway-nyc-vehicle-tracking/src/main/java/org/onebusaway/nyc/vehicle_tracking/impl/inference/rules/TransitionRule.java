@@ -68,11 +68,9 @@ public class TransitionRule implements SensorModelRule {
     boolean justLeftTerminal = false;
     if (parentState.getBlockState() != null) {
       boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-          prevObs.getRecord(),
-          parentState.getBlockState().getBlockInstance());
+          prevObs.getRecord(), parentState.getBlockState().getBlockInstance());
       boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-          obs.getRecord(),
-          parentState.getBlockState().getBlockInstance());
+          obs.getRecord(), parentState.getBlockState().getBlockInstance());
 
       justLeftTerminal = wasAtBlockTerminal && !isAtBlockTerminal;
     } else {

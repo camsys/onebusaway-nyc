@@ -90,8 +90,7 @@ public class LayoverRule implements SensorModelRule {
     double pLayoverDuring = p(phase == EVehiclePhase.LAYOVER_DURING);
 
     double pServedSomePartOfBlock = blockState != null
-        ? library.computeProbabilityOfServingSomePartOfBlock(blockState)
-        : 0;
+        ? library.computeProbabilityOfServingSomePartOfBlock(blockState) : 0;
 
     double p2 = implies(pLayoverDuring, pServedSomePartOfBlock);
 
@@ -113,8 +112,8 @@ public class LayoverRule implements SensorModelRule {
           ? blockState.getBlockLocation().getNextStop()
           : VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
 
-      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(),
-          blockState, nextStop);
+      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(), blockState,
+          nextStop);
     }
 
     result.addResultAsAnd(

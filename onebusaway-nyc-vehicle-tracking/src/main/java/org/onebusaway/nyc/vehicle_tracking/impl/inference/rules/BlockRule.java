@@ -104,8 +104,7 @@ public class BlockRule implements SensorModelRule {
       if (parentBlockState == null && parentState.getObservation() != null) {
         try {
           BestBlockStates parentBlockStates = _blockStateService.getBestBlockLocations(
-              parentState.getObservation(),
-              blockState.getBlockInstance(), 0,
+              parentState.getObservation(), blockState.getBlockInstance(), 0,
               Double.POSITIVE_INFINITY);
           if (parentBlockStates != null)
             parentBlockState = parentBlockStates.getBestLocation();

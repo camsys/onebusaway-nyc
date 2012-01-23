@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -50,8 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
-  private static Logger _log = LoggerFactory
-      .getLogger(ParticleFactoryImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
 
   private int _initialNumberOfParticles = 200;
 
@@ -62,14 +61,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private VehicleStateLibrary _vehicleStateLibrary;
 
   private MotionModelImpl _motionModel;
-  
+
   static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
-    
+
     LocalRandom(long seed) {
       _seed = seed;
     }
-    
+
     @Override
     protected Random initialValue() {
       if (_seed != 0)
@@ -78,42 +77,42 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         return new Random();
     }
   }
-    
+
   static class LocalRandomDummy extends ThreadLocal<Random> {
     private static Random rng;
-    
-    LocalRandomDummy (long seed) {
+
+    LocalRandomDummy(long seed) {
       if (seed != 0)
         rng = new Random(seed);
       else
         rng = new Random();
     }
-    
+
     @Override
     synchronized public Random get() {
       return rng;
     }
   }
-  
+
   static ThreadLocal<Random> threadLocalRng;
   static {
     if (!ParticleFilter.getTestingEnabled()) {
       threadLocalRng = new LocalRandom(0);
     } else {
       threadLocalRng = new LocalRandomDummy(0);
-      
+
     }
   }
-  
+
   synchronized public static void setSeed(long seed) {
     if (!ParticleFilter.getTestingEnabled()) {
       threadLocalRng = new LocalRandom(seed);
     } else {
       threadLocalRng = new LocalRandomDummy(seed);
-      
+
     }
   }
-  
+
   @Autowired
   public void setBlockStateSamplingStrategy(
       BlockStateSamplingStrategy blockStateSamplingStrategy) {
@@ -133,7 +132,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   public void setInitialNumberOfParticles(int initialNumberOfParticles) {
     _initialNumberOfParticles = initialNumberOfParticles;
   }
-  
+
   @Override
   public List<Particle> createParticles(double timestamp, Observation obs) {
 
@@ -141,11 +140,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // CDFMap<EdgeState> cdf =
     // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
-    CategoricalDist<BlockStateObservation> atStartCdf = _blockStateSamplingStrategy
-        .cdfForJourneyAtStart(obs);
-    
-    CategoricalDist<BlockStateObservation> inProgresCdf = _blockStateSamplingStrategy
-        .cdfForJourneyInProgress(obs);
+    CategoricalDist<BlockStateObservation> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
+
+    CategoricalDist<BlockStateObservation> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
 
     List<Particle> particles = new ArrayList<Particle>(
         _initialNumberOfParticles);
@@ -157,8 +154,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
       MotionState motionState = _motionModel.updateMotionState(obs);
 
-      VehicleState state = determineJourneyState(motionState,
-          atStartCdf, inProgresCdf, obs);
+      VehicleState state = determineJourneyState(motionState, atStartCdf,
+          inProgresCdf, obs);
 
       Particle p = new Particle(timestamp);
       p.setData(state);
@@ -192,10 +189,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       if (!inProgressCdf.canSample())
         return vehicleState(motionState, null,
             JourneyState.deadheadBefore(obs.getLocation()), obs);
-      
+
       if (blockState == null)
         blockState = inProgressCdf.sample();
-      
+
       return vehicleState(motionState, blockState, JourneyState.inProgress(),
           obs);
     } else {
@@ -214,12 +211,13 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   private VehicleState vehicleState(MotionState motionState,
-      BlockStateObservation blockState, JourneyState journeyState, Observation obs) {
-    
+      BlockStateObservation blockState, JourneyState journeyState,
+      Observation obs) {
+
     List<JourneyPhaseSummary> summaries = null;
     if (ParticleFilter.getDebugEnabled()) {
-     summaries = _journeyStatePhaseLibrary
-        .extendSummaries(null, blockState, journeyState, obs);
+      summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
+          journeyState, obs);
     }
 
     return new VehicleState(motionState, blockState, journeyState, summaries,
@@ -230,8 +228,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     return threadLocalRng;
   }
 
-//  public static double getNextDouble() {
-//    return threadLocalRng.get().nextDouble();
-//  }
+  // public static double getNextDouble() {
+  // return threadLocalRng.get().nextDouble();
+  // }
 
 }

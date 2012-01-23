@@ -317,7 +317,6 @@ public class BlocksFromObservationServiceImpl implements
     return potentialBlocks;
   }
 
-
   @Override
   public BestBlockObservationStates advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
@@ -330,17 +329,17 @@ public class BlocksFromObservationServiceImpl implements
     BestBlockStates foundStates = null;
     try {
       foundStates = _blockStateService.getBestBlockLocations(observation,
-          blockState.getBlockInstance(),
-          currentDistanceAlongBlock + minDistanceToTravel,
-          currentDistanceAlongBlock + maxDistanceToTravel);
+          blockState.getBlockInstance(), currentDistanceAlongBlock
+              + minDistanceToTravel, currentDistanceAlongBlock
+              + maxDistanceToTravel);
     } catch (MissingShapePointsException e) {
       _log.warn(e.getMessage());
     }
 
     if (foundStates != null) {
-      resStates = new BestBlockObservationStates(
-          new BlockStateObservation(foundStates.getBestTime(), observation), 
-          new BlockStateObservation(foundStates.getBestLocation(), observation));
+      resStates = new BestBlockObservationStates(new BlockStateObservation(
+          foundStates.getBestTime(), observation), new BlockStateObservation(
+          foundStates.getBestLocation(), observation));
     }
 
     return resStates;
@@ -406,7 +405,7 @@ public class BlocksFromObservationServiceImpl implements
     BlockStateObservation state = new BlockStateObservation(
         _blockStateService.getScheduledTimeAsState(instance, targetScheduleTime),
         obs);
-    
+
     return state;
   }
 
@@ -415,7 +414,8 @@ public class BlocksFromObservationServiceImpl implements
     final BlockStateObservation _bestTime;
     final BlockStateObservation _bestLocation;
 
-    public BestBlockObservationStates(BestBlockStates bestStates, Observation obs) {
+    public BestBlockObservationStates(BestBlockStates bestStates,
+        Observation obs) {
       this._bestTime = new BlockStateObservation(bestStates.getBestTime(), obs);
       this._bestLocation = new BlockStateObservation(
           bestStates.getBestLocation(), obs);
@@ -463,9 +463,9 @@ public class BlocksFromObservationServiceImpl implements
       _log.warn(e.getMessage());
     }
     if (foundStates != null) {
-      resStates = new BestBlockObservationStates(
-          new BlockStateObservation(foundStates.getBestTime(), observation), 
-          new BlockStateObservation(foundStates.getBestLocation(), observation));
+      resStates = new BestBlockObservationStates(new BlockStateObservation(
+          foundStates.getBestTime(), observation), new BlockStateObservation(
+          foundStates.getBestLocation(), observation));
     }
     return resStates;
   }

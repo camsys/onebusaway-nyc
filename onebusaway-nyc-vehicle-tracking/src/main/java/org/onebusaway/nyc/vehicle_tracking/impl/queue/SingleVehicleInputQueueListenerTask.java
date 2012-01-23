@@ -13,24 +13,24 @@ import tcip_final_3_0_5_1.CcLocationReport;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-public class SingleVehicleInputQueueListenerTask
-  extends InputQueueListenerTask 
-  implements PartitionedInputQueueListener {
+public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
+    implements PartitionedInputQueueListener {
 
   private String _vehicleId = "MTA NYCT_2827";
 
   private VehicleLocationInferenceService _vehicleLocationService;
-  
+
   @Autowired
-  public void setVehicleLocationService(VehicleLocationInferenceService vehicleLocationService) {
+  public void setVehicleLocationService(
+      VehicleLocationInferenceService vehicleLocationService) {
     _vehicleLocationService = vehicleLocationService;
   }
 
   @Override
   public boolean processMessage(String address, String contents) {
-		RealtimeEnvelope envelope = deserializeMessage(contents); 
+    RealtimeEnvelope envelope = deserializeMessage(contents);
 
-    if(acceptMessage(envelope)) {
+    if (acceptMessage(envelope)) {
       _vehicleLocationService.handleRealtimeEnvelopeRecord(envelope);
       return true;
     }
@@ -39,10 +39,10 @@ public class SingleVehicleInputQueueListenerTask
   }
 
   private boolean acceptMessage(RealtimeEnvelope envelope) {
-    if(envelope == null || envelope.getCcLocationReport() == null)
+    if (envelope == null || envelope.getCcLocationReport() == null)
       return false;
 
-		CcLocationReport message = envelope.getCcLocationReport();
+    CcLocationReport message = envelope.getCcLocationReport();
     CPTVehicleIden vehicleIdent = message.getVehicle();
     AgencyAndId vehicleId = new AgencyAndId(vehicleIdent.getAgencydesignator(),
         vehicleIdent.getVehicleId() + "");
@@ -55,9 +55,9 @@ public class SingleVehicleInputQueueListenerTask
   public void setup() {
     super.setup();
   }
-  
+
   @Override
-  @PreDestroy 
+  @PreDestroy
   public void destroy() {
     super.destroy();
   }
@@ -70,5 +70,5 @@ public class SingleVehicleInputQueueListenerTask
   @Override
   public void setDepotPartitionKey(String depotPartitionKey) {
   }
-  
+
 }

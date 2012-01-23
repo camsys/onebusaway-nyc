@@ -265,7 +265,7 @@ public class BlockStateService {
 
     final private BlockState bestTime;
     final private BlockState bestLocation;
-    
+
     public BestBlockStates(BestBlockObservationStates bestObsState) {
       this.bestTime = bestObsState.getBestTime().getBlockState();
       this.bestLocation = bestObsState.getBestLocation().getBlockState();

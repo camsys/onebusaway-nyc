@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -73,11 +73,9 @@ import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 public class VehicleLocationInferenceServiceImpl implements
     VehicleLocationInferenceService {
 
-  private static Logger _log = LoggerFactory
-      .getLogger(VehicleLocationInferenceServiceImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
 
-  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat
-      .dateTimeParser();
+  private static final DateTimeFormatter XML_DATE_TIME_FORMAT = ISODateTimeFormat.dateTimeParser();
 
   @Autowired
   private OutputQueueSenderService _outputQueueSenderService;
@@ -122,8 +120,7 @@ public class VehicleLocationInferenceServiceImpl implements
    * @return boolean: bundle changed or not
    */
   private boolean bundleHasChanged() {
-    BundleItem currentBundle = _bundleManagementService
-        .getCurrentBundleMetadata();
+    BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
 
     boolean result = false;
 
@@ -150,8 +147,7 @@ public class VehicleLocationInferenceServiceImpl implements
       return;
 
     for (AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
-      VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId
-          .get(vehicleId);
+      VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
       NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
 
       // no state
@@ -175,8 +171,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
       // trip or block matched have disappeared!
       TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
-      BlockBean block = _transitDataService.getBlockForId(state
-          .getInferredBlockId());
+      BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
 
       if (trip == null || block == null) {
         _log.info("Vehicle "
@@ -219,17 +214,17 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Override
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
-  	CcLocationReport message = envelope.getCcLocationReport();
+    CcLocationReport message = envelope.getCcLocationReport();
     verifyVehicleResultMappingToCurrentBundle();
 
-    if(_bundleManagementService.getCurrentBundleMetadata() == null) {
+    if (_bundleManagementService.getCurrentBundleMetadata() == null) {
       _log.warn("Bundle is not ready or none is loaded; skipping update message.");
       return;
     }
-    
+
     NycRawLocationRecord r = new NycRawLocationRecord();
-		r.setUUID(envelope.getUUID());
-		
+    r.setUUID(envelope.getUUID());
+
     r.setLatitude(message.getLatitude() / 1000000f);
     r.setLongitude(message.getLongitude() / 1000000f);
 
@@ -244,9 +239,9 @@ public class VehicleLocationInferenceServiceImpl implements
     r.setDestinationSignCode(message.getDestSignCode().toString());
     r.setDeviceId(message.getManufacturerData());
 
-    AgencyAndId vehicleId = new AgencyAndId(message.getVehicle()
-        .getAgencydesignator(), Long.toString(message.getVehicle()
-        .getVehicleId()));
+    AgencyAndId vehicleId = new AgencyAndId(
+        message.getVehicle().getAgencydesignator(),
+        Long.toString(message.getVehicle().getVehicleId()));
     r.setVehicleId(vehicleId);
 
     if (!StringUtils.isEmpty(message.getOperatorID().getDesignator()))
@@ -264,34 +259,33 @@ public class VehicleLocationInferenceServiceImpl implements
     else
       r.setEmergencyFlag(false);
 
-    tcip_3_0_5_local.CcLocationReport gpsData = message
-        .getLocalCcLocationReport();
+    tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
     if (gpsData != null) {
       NMEA nemaSentences = gpsData.getNMEA();
       List<String> sentenceStrings = nemaSentences.getSentence();
 
-      for(String sentence : sentenceStrings) {
-        if(sentence.startsWith("$GPGGA"))
+      for (String sentence : sentenceStrings) {
+        if (sentence.startsWith("$GPGGA"))
           r.setGga(sentence);
 
-        if(sentence.startsWith("$GPRMC"))
+        if (sentence.startsWith("$GPRMC"))
           r.setRmc(sentence);
       }
     }
 
-    DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());    
+    DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());
     r.setTime(time.getMillis());
     r.setTimeReceived(new Date().getTime());
 
     // validate timestamp from bus
     String RMCSentence = r.getRmc();
 
-    if(RMCSentence != null) {
+    if (RMCSentence != null) {
       String[] parts = RMCSentence.split(",");
-      if(parts.length == 13) {      
+      if (parts.length == 13) {
         String timePart = parts[1];
-        String datePart = parts[9];      
-        if(timePart.length() >= 6 && datePart.length() == 6) {
+        String datePart = parts[9];
+        if (timePart.length() >= 6 && datePart.length() == 6) {
           try {
             DateFormat formatter = new SimpleDateFormat("ddMMyy HHmmss");
             formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -299,14 +293,16 @@ public class VehicleLocationInferenceServiceImpl implements
             Date fromDRU = formatter.parse(datePart + " " + timePart);
             long differenceInSeconds = (fromDRU.getTime() - time.getMillis()) / 1000;
 
-            if(differenceInSeconds > 30 * 60) { // 30m
-              _log.debug("Vehicle " + vehicleId + " has significant time difference between time from DRU and time from record\n" +  
-                "Difference in seconds: " + differenceInSeconds + "\n" + 
-                "Difference in hours: " + (differenceInSeconds / 60 / 60) + "\n" + 
-                "Raw timestamp: " + message.getTimeReported() + "\n" + 
-                "From RMC: " + datePart + " " + timePart);
+            if (differenceInSeconds > 30 * 60) { // 30m
+              _log.debug("Vehicle "
+                  + vehicleId
+                  + " has significant time difference between time from DRU and time from record\n"
+                  + "Difference in seconds: " + differenceInSeconds + "\n"
+                  + "Difference in hours: " + (differenceInSeconds / 60 / 60)
+                  + "\n" + "Raw timestamp: " + message.getTimeReported() + "\n"
+                  + "From RMC: " + datePart + " " + timePart);
             }
-          } catch(ParseException e) {
+          } catch (ParseException e) {
             _log.debug("Unparseable date: " + datePart + " " + timePart);
           }
         }
@@ -315,14 +311,13 @@ public class VehicleLocationInferenceServiceImpl implements
 
     _executorService.execute(new ProcessingTask(r));
 
-    }
+  }
 
   @Override
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
   }
-
 
   @Override
   public void resetVehicleLocation(AgencyAndId vid) {
@@ -346,8 +341,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
     List<NycTestInferredLocationRecord> records = new ArrayList<NycTestInferredLocationRecord>();
 
-    for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId
-        .entrySet()) {
+    for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
       AgencyAndId vehicleId = entry.getKey();
       VehicleInferenceInstance instance = entry.getValue();
       if (instance != null) {
@@ -374,8 +368,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Override
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
-        .get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
     return instance.getCurrentParticles();
@@ -384,8 +377,7 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public List<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
-        .get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
     return instance.getCurrentSampledParticles();
@@ -394,8 +386,7 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
       AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
-        .get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return Collections.emptyList();
     return instance.getJourneySummaries();
@@ -403,8 +394,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Override
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
-        .get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
     VehicleLocationDetails details = instance.getDetails();
@@ -414,8 +404,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
   @Override
   public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
-        .get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
     VehicleLocationDetails details = instance.getBadParticleDetails();
@@ -467,12 +456,10 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
 
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId
-        .get(vehicleId);
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
 
     if (instance == null) {
-      VehicleInferenceInstance newInstance = _applicationContext
-          .getBean(VehicleInferenceInstance.class);
+      VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
       instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId,
           newInstance);
       if (instance == null)
@@ -509,21 +496,15 @@ public class VehicleLocationInferenceServiceImpl implements
         boolean passOnRecord = sendRecord(existing);
 
         if (passOnRecord) {
-          NycVehicleManagementStatusBean managementRecord = existing
-              .getCurrentManagementState();
-          managementRecord
-              .setInferenceEngineIsPrimary(_outputQueueSenderService
-                  .getIsPrimaryInferenceInstance());
-          managementRecord.setDepotId(_vehicleAssignmentService
-              .getAssignedDepotForVehicleId(_vehicleId));
+          NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
+          managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+          managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
 
-          BundleItem currentBundle = _bundleManagementService
-              .getCurrentBundleMetadata();
+          BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
           if (currentBundle != null)
             managementRecord.setActiveBundleId(currentBundle.getId());
 
-          NycQueuedInferredLocationBean record = existing
-              .getCurrentStateAsNycQueuedInferredLocationBean();
+          NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
           record.setVehicleId(_vehicleId.toString());
           record.setManagementRecord(managementRecord);
 

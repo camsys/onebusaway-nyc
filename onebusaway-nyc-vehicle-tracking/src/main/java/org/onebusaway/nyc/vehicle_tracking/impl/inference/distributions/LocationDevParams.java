@@ -7,16 +7,16 @@ public class LocationDevParams {
 
   private final Observation _obs;
   private final BlockState _blockState;
-  
+
   public LocationDevParams(Observation obs, BlockState blockState) {
     _obs = obs;
     _blockState = blockState;
   }
-  
+
   public Observation getObservation() {
     return _obs;
   }
-  
+
   public BlockState getBlockState() {
     return _blockState;
   }

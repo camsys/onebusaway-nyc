@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -58,10 +58,10 @@ public class DestinationSignCodeRule implements SensorModelRule {
         p(phase != EVehiclePhase.IN_PROGRESS));
 
     result.addResultAsAnd("out-of-service DSC => ! IN_PROGRESS", p1);
-    
+
     /**
-     * If it is out of service then the following route-based
-     * considerations can't be applied.
+     * If it is out of service then the following route-based considerations
+     * can't be applied.
      */
     if (obs.isOutOfService())
       return result;
@@ -76,12 +76,11 @@ public class DestinationSignCodeRule implements SensorModelRule {
         result.addResultAsAnd("in-service matching DSC", 1.0);
       } else {
         /*
-         * a dsc implies a route. even though the reported dsc may not match,
-         * we expect the general route to be the same...
+         * a dsc implies a route. even though the reported dsc may not match, we
+         * expect the general route to be the same...
          */
 
-        AgencyAndId thisRoute = bs.getBlockLocation().getActiveTrip()
-            .getTrip().getRouteCollection().getId();
+        AgencyAndId thisRoute = bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
 
         boolean routeMatch = false;
         for (AgencyAndId dscRoute : obs.getDscImpliedRouteCollections()) {

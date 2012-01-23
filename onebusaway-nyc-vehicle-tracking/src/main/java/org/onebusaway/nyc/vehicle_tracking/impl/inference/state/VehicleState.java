@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -71,9 +71,10 @@ public final class VehicleState implements Comparable<VehicleState> {
   public BlockStateObservation getBlockStateObservation() {
     return blockStateObservation;
   }
-  
+
   public BlockState getBlockState() {
-    return blockStateObservation != null ? blockStateObservation.getBlockState() : null;
+    return blockStateObservation != null
+        ? blockStateObservation.getBlockState() : null;
   }
 
   public JourneyState getJourneyState() {
@@ -94,24 +95,21 @@ public final class VehicleState implements Comparable<VehicleState> {
   }
 
   /**
-   *  This compareTo method is for definite ordering
-   *  in CategoricalDist; such ordering allows for
-   *  reproducibility in testing. 
+   * This compareTo method is for definite ordering in CategoricalDist; such
+   * ordering allows for reproducibility in testing.
    */
   @Override
   public int compareTo(VehicleState rightState) {
-    
+
     if (this == rightState)
       return 0;
-    
-    int compRes = ComparisonChain.start()
-        .compare(this.journeyState.getPhase(), rightState.getJourneyState().getPhase())
-        .compare(this.motionState, rightState.getMotionState())
-        .compare(this.observation, rightState.getObservation())
-        .compare(this.blockStateObservation, rightState.getBlockStateObservation(), 
-            Ordering.natural().nullsLast())
-        .result();
-    
+
+    int compRes = ComparisonChain.start().compare(this.journeyState.getPhase(),
+        rightState.getJourneyState().getPhase()).compare(this.motionState,
+        rightState.getMotionState()).compare(this.observation,
+        rightState.getObservation()).compare(this.blockStateObservation,
+        rightState.getBlockStateObservation(), Ordering.natural().nullsLast()).result();
+
     return compRes;
   }
 
@@ -119,13 +117,15 @@ public final class VehicleState implements Comparable<VehicleState> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result
-        + ((blockStateObservation == null) ? 0 : blockStateObservation.hashCode());
+    result = prime
+        * result
+        + ((blockStateObservation == null) ? 0
+            : blockStateObservation.hashCode());
     // XXX we're only concerned with phase here
     result = prime * result
         + ((journeyState == null) ? 0 : journeyState.getPhase().hashCode());
-//    result = prime * result
-//        + ((journeySummaries == null) ? 0 : journeySummaries.hashCode());
+    // result = prime * result
+    // + ((journeySummaries == null) ? 0 : journeySummaries.hashCode());
     result = prime * result
         + ((motionState == null) ? 0 : motionState.hashCode());
     result = prime * result
@@ -155,11 +155,11 @@ public final class VehicleState implements Comparable<VehicleState> {
       return false;
     } else if (!journeyState.getPhase().equals(other.journeyState.getPhase()))
       return false;
-//    if (journeySummaries == null) {
-//      if (other.journeySummaries != null)
-//        return false;
-//    } else if (!journeySummaries.equals(other.journeySummaries))
-//      return false;
+    // if (journeySummaries == null) {
+    // if (other.journeySummaries != null)
+    // return false;
+    // } else if (!journeySummaries.equals(other.journeySummaries))
+    // return false;
     if (motionState == null) {
       if (other.motionState != null)
         return false;
@@ -172,5 +172,5 @@ public final class VehicleState implements Comparable<VehicleState> {
       return false;
     return true;
   }
-  
+
 }

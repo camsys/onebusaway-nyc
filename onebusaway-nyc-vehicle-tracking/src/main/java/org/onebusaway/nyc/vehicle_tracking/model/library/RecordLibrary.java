@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -39,7 +39,7 @@ public class RecordLibrary {
       return timeReceived;
     return timeDevice;
   }
-  
+
   public static NycQueuedInferredLocationBean getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(
       NycTestInferredLocationRecord record) {
 
@@ -61,12 +61,12 @@ public class RecordLibrary {
 
     return qlr;
   }
-  
+
   public static VehicleLocationRecord getNycQueuedInferredLocationBeanAsVehicleLocationRecord(
-	  NycQueuedInferredLocationBean record) {
+      NycQueuedInferredLocationBean record) {
 
     VehicleLocationRecord vlr = new VehicleLocationRecord();
-    
+
     vlr.setTimeOfRecord(record.getRecordTimestamp());
     vlr.setTimeOfLocationUpdate(record.getRecordTimestamp());
     vlr.setBlockId(AgencyAndIdLibrary.convertFromString(record.getBlockId()));
@@ -78,8 +78,8 @@ public class RecordLibrary {
     vlr.setPhase(EVehiclePhase.valueOf(record.getPhase()));
     vlr.setStatus(record.getStatus());
     vlr.setVehicleId(AgencyAndIdLibrary.convertFromString(record.getVehicleId()));
-  	// TODO add operator, run?
-    
+    // TODO add operator, run?
+
     return vlr;
   }
 
@@ -87,7 +87,7 @@ public class RecordLibrary {
       NycTestInferredLocationRecord record) {
 
     NycRawLocationRecord vlr = new NycRawLocationRecord();
-    
+
     vlr.setDestinationSignCode(record.getDsc());
     vlr.setLatitude(record.getLat());
     vlr.setLongitude(record.getLon());
@@ -95,13 +95,14 @@ public class RecordLibrary {
     vlr.setTimeReceived(record.getTimestamp());
     vlr.setVehicleId(record.getVehicleId());
     vlr.setOperatorId(record.getOperatorId());
-    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "-");
+    String[] runInfo = StringUtils.splitByWholeSeparator(
+        record.getReportedRunId(), "-");
     if (runInfo != null && runInfo.length > 0) {
       vlr.setRunRouteId(runInfo[0]);
       if (runInfo.length > 1)
         vlr.setRunNumber(runInfo[1]);
     }
-    
+
     return vlr;
   }
 }

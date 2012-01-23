@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -195,8 +195,7 @@ public class VehicleLocationSimulationServiceImpl implements
       reader.setTokenizerStrategy(new TabTokenizerStrategy());
       reader.readEntities(NycRawLocationRecord.class, traceInputStream);
     } else if (traceType.equals("NycTestInferredLocationRecord")) {
-      reader
-          .readEntities(NycTestInferredLocationRecord.class, traceInputStream);
+      reader.readEntities(NycTestInferredLocationRecord.class, traceInputStream);
     }
     traceInputStream.close();
 
@@ -342,10 +341,8 @@ public class VehicleLocationSimulationServiceImpl implements
     public int compare(RunTripEntry rte1, RunTripEntry rte2) {
       TripEntry t1 = rte1.getTripEntry();
       TripEntry t2 = rte2.getTripEntry();
-      long sd1 = _bcs.getBlockInstance(t1.getBlock().getId(), _sd)
-          .getServiceDate();
-      long sd2 = _bcs.getBlockInstance(t2.getBlock().getId(), _sd)
-          .getServiceDate();
+      long sd1 = _bcs.getBlockInstance(t1.getBlock().getId(), _sd).getServiceDate();
+      long sd2 = _bcs.getBlockInstance(t2.getBlock().getId(), _sd).getServiceDate();
       sd1 += rte1.getStartTime() * 1000;
       sd2 += rte2.getStartTime() * 1000;
 
@@ -367,9 +364,9 @@ public class VehicleLocationSimulationServiceImpl implements
      */
     String runNumber = runTrip.getRunNumber();
     String runRoute = runTrip.getRunRoute();
-    
+
     if (StringUtils.equals(runRoute, "MISC")) {
-      //runRoute = "0" + random.nextInt(9) + random.nextInt(9);
+      // runRoute = "0" + random.nextInt(9) + random.nextInt(9);
       runRoute = "000";
     } else if (runRoute.length() >= 5) {
       String firstPart = runRoute.substring(1, 3);
@@ -377,21 +374,20 @@ public class VehicleLocationSimulationServiceImpl implements
       runRoute = "0" + (random.nextBoolean() ? firstPart : lastPart);
     } else {
       String firstPart = runRoute.substring(1, 3);
-      runRoute = "0" + firstPart; 
+      runRoute = "0" + firstPart;
     }
-    
+
     String reportedRunId = RunTripEntry.createId(runRoute, runNumber);
-    
+
     if (reportsRunId)
       _log.info("using reported runId=" + reportedRunId);
 
     String lastBlockId = null;
 
     List<RunTripEntry> rtes = new ArrayList<RunTripEntry>();
-    for (RunTripEntry rte : _runService.getRunTripEntriesForRun(runTrip
-        .getRunId())) {
-      if (_calendarService.isLocalizedServiceIdActiveOnDate(rte.getTripEntry()
-          .getServiceId(), new Date(serviceDate)))
+    for (RunTripEntry rte : _runService.getRunTripEntriesForRun(runTrip.getRunId())) {
+      if (_calendarService.isLocalizedServiceIdActiveOnDate(
+          rte.getTripEntry().getServiceId(), new Date(serviceDate)))
         rtes.add(rte);
     }
 
@@ -451,8 +447,7 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualTripId(AgencyAndIdLibrary.convertToString(tripId));
 
       // TODO dsc changes for new block/run?
-      String dsc = _destinationSignCodeService
-          .getDestinationSignCodeForTripId(tripId);
+      String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(tripId);
 
       if (StringUtils.isEmpty(dsc))
         dsc = "0";
@@ -506,10 +501,9 @@ public class VehicleLocationSimulationServiceImpl implements
       }
 
       // TODO when are there multiples and which do we choose when there are?
-      ScheduledBlockLocation blockLocation = _runService
-          .getSchedBlockLocForRunTripEntryAndTime(runTrip, unperturbedTimestamp);
-      BlockEntry blockEntry = blockLocation.getActiveTrip()
-          .getBlockConfiguration().getBlock();
+      ScheduledBlockLocation blockLocation = _runService.getSchedBlockLocForRunTripEntryAndTime(
+          runTrip, unperturbedTimestamp);
+      BlockEntry blockEntry = blockLocation.getActiveTrip().getBlockConfiguration().getBlock();
 
       if (blockLocation == null)
         break;
@@ -519,8 +513,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
       record.setActualRunId(runTrip.getRunId());
 
-      String currentBlockId = AgencyAndIdLibrary.convertToString(blockEntry
-          .getId());
+      String currentBlockId = AgencyAndIdLibrary.convertToString(blockEntry.getId());
       // if (_log.isDebugEnabled())
       if (lastBlockId != null
           && !StringUtils.equals(currentBlockId, lastBlockId)) {
@@ -709,8 +702,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
       NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
 
-      ScheduledBlockLocation blockLocation = _scheduledBlockLocationService
-          .getScheduledBlockLocationFromScheduledTime(block, scheduleTime);
+      ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+          block, scheduleTime);
 
       BlockTripEntry trip = blockLocation.getActiveTrip();
 
@@ -727,8 +720,7 @@ public class VehicleLocationSimulationServiceImpl implements
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
       int actualScheduleTime = blockLocation.getScheduledTime();
 
-      String dsc = _destinationSignCodeService
-          .getDestinationSignCodeForTripId(tripId);
+      String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(tripId);
       if (dsc == null)
         dsc = "0";
 
@@ -832,8 +824,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private int getShiftStartTimeProperty(Properties properties) {
     int shiftStartTime = 0;
     if (properties.containsKey(ARG_SHIFT_START_TIME))
-      shiftStartTime = Integer.parseInt(properties
-          .getProperty(ARG_SHIFT_START_TIME)) * 60;
+      shiftStartTime = Integer.parseInt(properties.getProperty(ARG_SHIFT_START_TIME)) * 60;
     return shiftStartTime;
   }
 
@@ -843,8 +834,7 @@ public class VehicleLocationSimulationServiceImpl implements
     AgencyAndId vehicleId = null;
 
     if (properties.containsKey(ARG_VEHICLE_ID))
-      vehicleId = AgencyAndIdLibrary.convertFromString(properties
-          .getProperty(ARG_VEHICLE_ID));
+      vehicleId = AgencyAndIdLibrary.convertFromString(properties.getProperty(ARG_VEHICLE_ID));
 
     if (vehicleId == null) {
       int vid = random.nextInt(9999);
@@ -856,8 +846,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private double getLocationSigma(Properties properties) {
     double locationSigma = 0.0;
     if (properties.containsKey(ARG_LOCATION_SIGMA))
-      locationSigma = Double.parseDouble(properties
-          .getProperty(ARG_LOCATION_SIGMA));
+      locationSigma = Double.parseDouble(properties.getProperty(ARG_LOCATION_SIGMA));
     return locationSigma;
   }
 

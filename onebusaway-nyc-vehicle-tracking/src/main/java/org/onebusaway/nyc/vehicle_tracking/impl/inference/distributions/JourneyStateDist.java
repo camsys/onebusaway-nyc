@@ -8,8 +8,8 @@ import umontreal.iro.lecuyer.randvarmulti.DirichletGen;
 import umontreal.iro.lecuyer.rng.RandomStream;
 
 /**
- * This class defines a distribution over the possible journey states
- * TODO this is really beta-binomial
+ * This class defines a distribution over the possible journey states TODO this
+ * is really beta-binomial
  * 
  * @author bwillard
  * 
@@ -18,21 +18,20 @@ public class JourneyStateDist implements
     ConjugateDist<JourneyStateParams, EVehiclePhase, Double> {
 
   /*
-   * 0: in-progress probability
-   * 1: not-in-progress probability
+   * 0: in-progress probability 1: not-in-progress probability
    */
-  private double[] _dscTypePriors = { 10 * 0.75, 10 * 0.25 };
+  private double[] _dscTypePriors = {10 * 0.75, 10 * 0.25};
   private double[] _currentDscTypeProbs = new double[2];
 
   private RandomStream _rng;
-  
+
   public JourneyStateDist(RandomStream rng) {
     _rng = rng;
   }
 
   @Override
   public EVehiclePhase sample(JourneyStateParams condParams) {
-    
+
     Double[] stateProbs = samplePrior();
 
     int inProgress = BinomialGen.nextInt(_rng, 1, stateProbs[0]);
@@ -44,7 +43,7 @@ public class JourneyStateDist implements
       return EVehiclePhase.DEADHEAD_BEFORE;
     }
   }
-  
+
   private int getIndexForObs(EVehiclePhase phase) {
     if (phase == EVehiclePhase.IN_PROGRESS) {
       return 0;
@@ -70,7 +69,7 @@ public class JourneyStateDist implements
   public Double[] samplePrior() {
     double[] sampleProbs = new double[2];
     DirichletGen.nextPoint(_rng, _dscTypePriors, sampleProbs);
-    _currentDscTypeProbs = sampleProbs; 
+    _currentDscTypeProbs = sampleProbs;
     return ArrayUtils.toObject(sampleProbs);
   }
 
