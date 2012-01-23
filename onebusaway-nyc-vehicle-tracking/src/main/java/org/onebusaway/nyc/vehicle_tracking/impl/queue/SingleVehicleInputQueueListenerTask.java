@@ -50,11 +50,13 @@ public class SingleVehicleInputQueueListenerTask
     return _vehicleId.equals(vehicleId.toString());
   }
 
+  @Override
   @PostConstruct
   public void setup() {
     super.setup();
   }
   
+  @Override
   @PreDestroy 
   public void destroy() {
     super.destroy();

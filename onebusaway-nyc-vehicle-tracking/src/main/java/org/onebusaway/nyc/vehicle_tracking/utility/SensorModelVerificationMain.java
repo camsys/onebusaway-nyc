@@ -54,7 +54,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;

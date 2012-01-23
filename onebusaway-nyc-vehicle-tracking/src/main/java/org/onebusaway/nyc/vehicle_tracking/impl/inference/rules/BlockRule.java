@@ -22,7 +22,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.Best
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
@@ -31,8 +30,6 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 @Component
 public class BlockRule implements SensorModelRule {

@@ -15,22 +15,15 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
-import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.FrequencyComparator;
-import org.onebusaway.transit_data_federation.impl.otp.TripSequence;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
-import com.google.common.primitives.Longs;
-
-import org.apache.commons.lang.StringUtils;
-
 import java.util.Comparator;
 
 

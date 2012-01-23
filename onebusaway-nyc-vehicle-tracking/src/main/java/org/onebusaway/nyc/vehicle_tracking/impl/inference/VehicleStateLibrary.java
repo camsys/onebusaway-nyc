@@ -16,11 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -33,14 +29,8 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialSer
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockSequenceIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopSequenceIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
-import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;

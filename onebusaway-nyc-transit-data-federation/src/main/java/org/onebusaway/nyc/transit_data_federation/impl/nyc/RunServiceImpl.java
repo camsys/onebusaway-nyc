@@ -9,13 +9,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +34,6 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
@@ -334,55 +329,6 @@ public class RunServiceImpl implements RunService {
       matchedRTEs.put(bestDist, runId);
     }
     
-    return matchedRTEs;
-  }
-  
-  @Override
-  public TreeMap<Integer, List<RunTripEntry>> getRunTripEntriesForFuzzyIdAndTime(
-      AgencyAndId runAgencyAndId, Set<BlockInstance> nearbyBlocks, long time)
-      throws IllegalArgumentException {
-
-    /*
-     * FIXME TODO really need to cache these search results...
-     */
-    TreeMap<Integer, List<RunTripEntry>> matchedRTEs = new TreeMap<Integer, List<RunTripEntry>>();
-
-    Matcher reportedIdMatcher = reportedRunIdPattern.matcher(runAgencyAndId.getId());
-
-    if (!reportedIdMatcher.matches()) {
-      throw new IllegalArgumentException(
-          "reported-id does not have required format");
-    }
-
-    /*
-     * Get run-trips for nearby runTrips
-     */
-    String fuzzyRunId = RunTripEntry.createId(reportedIdMatcher.group(1),
-        reportedIdMatcher.group(2));
-
-    Set<RunTripEntry> runsToTry = new HashSet<RunTripEntry>();
-    for (BlockInstance binst : nearbyBlocks) {
-      long serviceDate = binst.getServiceDate();
-      int scheduleTime = (int) ((time - serviceDate) / 1000);
-      RunTripEntry rte = getActiveRunTripEntryForBlockInstance(binst,
-          scheduleTime);
-      if (rte == null || StringUtils.isEmpty(rte.getRunId()))
-        continue;
-      runsToTry.add(rte);
-    }
-
-    /*
-     * Now, add all the runs with the same run-number
-     */
-//    for (RunTripEntry rte : entriesByRunNumber.get(reportedIdMatcher.group(2))) {
-//      RunTripEntry runAtTime = getActiveRunTripEntryForRunAndTime(
-//          new AgencyAndId(rte.getTripEntry().getId().getAgencyId(),
-//              rte.getRunId()), time);
-//      if (runAtTime != null)
-//        runsToTry.add(runAtTime);
-//    }
-
-
     return matchedRTEs;
   }
 

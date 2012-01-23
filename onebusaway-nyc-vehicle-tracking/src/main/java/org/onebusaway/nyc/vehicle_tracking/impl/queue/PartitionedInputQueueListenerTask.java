@@ -70,6 +70,7 @@ public class PartitionedInputQueueListenerTask
     return vehicleList.contains(vehicleId);
   }
 
+  @Override
   public String getDepotPartitionKey() {
     StringBuilder sb = new StringBuilder();
     for(String key : _depotPartitionKeys) {
@@ -80,6 +81,7 @@ public class PartitionedInputQueueListenerTask
     return sb.toString();
   }
 
+  @Override
   public void setDepotPartitionKey(String depotPartitionKey) {
     if(depotPartitionKey != null && !depotPartitionKey.isEmpty())
       _depotPartitionKeys = depotPartitionKey.split(",");
@@ -87,11 +89,13 @@ public class PartitionedInputQueueListenerTask
       _depotPartitionKeys = null;
   }
   
+  @Override
   @PostConstruct
   public void setup() {
     super.setup();
   }
   
+  @Override
   @PreDestroy 
   public void destroy() {
     super.destroy();

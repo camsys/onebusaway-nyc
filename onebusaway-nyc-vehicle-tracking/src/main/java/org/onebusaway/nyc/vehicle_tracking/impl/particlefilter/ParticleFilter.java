@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 

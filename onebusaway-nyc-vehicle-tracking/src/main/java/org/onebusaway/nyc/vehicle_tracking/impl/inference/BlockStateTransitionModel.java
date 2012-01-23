@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,10 +24,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;

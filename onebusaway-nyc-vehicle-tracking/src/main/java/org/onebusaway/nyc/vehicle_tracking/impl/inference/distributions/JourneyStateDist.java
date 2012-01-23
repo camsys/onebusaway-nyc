@@ -1,18 +1,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
-import umontreal.iro.lecuyer.probdistmulti.DirichletDist;
 import umontreal.iro.lecuyer.randvar.BinomialGen;
 import umontreal.iro.lecuyer.randvarmulti.DirichletGen;
 import umontreal.iro.lecuyer.rng.RandomStream;

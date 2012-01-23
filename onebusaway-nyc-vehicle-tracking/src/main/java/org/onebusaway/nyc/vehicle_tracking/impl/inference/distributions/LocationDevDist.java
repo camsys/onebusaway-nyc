@@ -2,19 +2,9 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
 import java.util.Arrays;
 
-import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-
 import umontreal.iro.lecuyer.probdist.HalfNormalDist;
-import umontreal.iro.lecuyer.probdist.InverseGammaDist;
-import umontreal.iro.lecuyer.probdist.NormalDist;
 import umontreal.iro.lecuyer.randvar.HalfNormalGen;
 import umontreal.iro.lecuyer.randvar.InverseGammaGen;
-import umontreal.iro.lecuyer.randvar.NormalGen;
 import umontreal.iro.lecuyer.rng.RandomStream;
 
 public class LocationDevDist implements ConjugateDist<LocationDevParams, Double, Double> {

@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 import java.util.Map;

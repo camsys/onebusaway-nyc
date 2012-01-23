@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,7 +22,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObse
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.transit_data_federation.impl.blocks.ScheduledBlockLocationLibrary;
-import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;

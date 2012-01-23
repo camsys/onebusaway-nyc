@@ -17,7 +17,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.Set;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;

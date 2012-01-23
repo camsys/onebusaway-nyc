@@ -15,15 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
-import java.util.Comparator;
 import java.util.List;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
-import org.onebusaway.realtime.api.EVehiclePhase;
-
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
-import com.google.common.primitives.Longs;
 
 /**
  * We make this class immutable so that we don't have to worry about particle

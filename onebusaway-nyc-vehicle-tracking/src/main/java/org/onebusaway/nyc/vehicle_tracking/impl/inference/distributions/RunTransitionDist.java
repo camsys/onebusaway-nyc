@@ -3,8 +3,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 import java.util.Set;
 
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-
 import umontreal.iro.lecuyer.rng.RandomStream;
 
 public class RunTransitionDist extends DirichletConjTransitionDist<RunTripEntry> {

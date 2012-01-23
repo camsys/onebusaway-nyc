@@ -18,21 +18,14 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.calendar.ServiceDate;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
@@ -53,15 +46,12 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
-
-import com.google.common.collect.TreeMultimap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -457,6 +447,7 @@ public class BlocksFromObservationServiceImpl implements
    * Finds the best block state assignments along the ENTIRE length of the block
    * (potentially expensive operation)
    */
+  @Override
   public BestBlockObservationStates bestStates(Observation observation,
       BlockStateObservation blockState) {
 

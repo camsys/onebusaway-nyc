@@ -18,8 +18,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.implies;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -27,8 +25,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

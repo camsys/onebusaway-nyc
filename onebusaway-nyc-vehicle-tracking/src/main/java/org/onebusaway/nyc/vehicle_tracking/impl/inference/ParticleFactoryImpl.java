@@ -16,15 +16,9 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;

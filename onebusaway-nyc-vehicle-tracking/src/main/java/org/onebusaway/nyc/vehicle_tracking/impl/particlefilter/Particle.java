@@ -17,11 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
-import com.google.common.primitives.Longs;
-
 import java.io.Serializable;
 
 /**

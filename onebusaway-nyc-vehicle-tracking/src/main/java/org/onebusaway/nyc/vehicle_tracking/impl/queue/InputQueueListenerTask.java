@@ -25,7 +25,6 @@ import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.queue.QueueListenerTask;
-import tcip_final_3_0_5_1.CcLocationReport;
 
 public abstract class InputQueueListenerTask extends QueueListenerTask {
 
@@ -50,6 +49,7 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
   }
   
 
+  @Override
   @Refreshable(dependsOn = {"inference-engine.inputQueueHost", "inference-engine.inputQueuePort", 
       "inference-engine.inputQueueName"})
   public void startListenerThread() {
@@ -76,23 +76,28 @@ public abstract class InputQueueListenerTask extends QueueListenerTask {
   }
 
 
-	public String getQueueHost() {
+	@Override
+  public String getQueueHost() {
 		return _configurationService.getConfigurationValueAsString("inference-engine.inputQueueHost", null);
 	}
 
-	public String getQueueName() {
+	@Override
+  public String getQueueName() {
 		return _configurationService.getConfigurationValueAsString("inference-engine.inputQueueName", null);
 	}
 
-	public Integer getQueuePort() {
+	@Override
+  public Integer getQueuePort() {
 		return _configurationService.getConfigurationValueAsInteger("inference-engine.inputQueuePort", 5563);
 	}
 
+  @Override
   @PostConstruct
   public void setup() {
     super.setup();
   }
   
+  @Override
   @PreDestroy 
   public void destroy() {
     super.destroy();

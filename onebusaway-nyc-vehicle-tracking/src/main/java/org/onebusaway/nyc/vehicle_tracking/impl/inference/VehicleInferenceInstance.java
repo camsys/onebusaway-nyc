@@ -15,13 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -41,7 +39,6 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationServi
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -64,13 +61,8 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.RouteCollectionEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultimap;
 
 import org.slf4j.Logger;

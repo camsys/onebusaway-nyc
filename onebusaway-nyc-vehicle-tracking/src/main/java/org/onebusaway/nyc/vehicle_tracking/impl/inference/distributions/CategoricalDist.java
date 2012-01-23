@@ -20,18 +20,13 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.commons.math.util.MathUtils;
 
 import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
-import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 
 public class CategoricalDist<T> {

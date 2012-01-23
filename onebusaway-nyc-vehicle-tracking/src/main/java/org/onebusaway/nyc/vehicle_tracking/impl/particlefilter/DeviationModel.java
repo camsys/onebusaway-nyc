@@ -23,6 +23,7 @@ public class DeviationModel implements ProbabilityFunction{
     _dist = new HalfNormal(sigma);
   }
 
+  @Override
   public double probability(double deviation) {
     return 1 - _dist.cdf(deviation);
   }

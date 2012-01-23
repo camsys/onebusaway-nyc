@@ -16,7 +16,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 
 public interface BlockStateSamplingStrategy {

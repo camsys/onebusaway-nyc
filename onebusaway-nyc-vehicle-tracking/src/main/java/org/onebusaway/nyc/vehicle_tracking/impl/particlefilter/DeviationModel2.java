@@ -36,6 +36,7 @@ public class DeviationModel2 implements ProbabilityFunction {
     _offset = offset;
   }
 
+  @Override
   public double probability(double deviation) {
     return _normal.cdf(_offset * (1 - deviation / _sigma));
   }

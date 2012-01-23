@@ -18,7 +18,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 
 import com.google.common.collect.ComparisonChain;
-import com.google.common.primitives.Longs;
 
 public final class MotionState implements Comparable<MotionState> {
 

@@ -19,10 +19,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -44,14 +42,12 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
@@ -221,6 +217,7 @@ public class VehicleLocationInferenceServiceImpl implements
     _executorService.execute(new ProcessingTask(record));
   }
 
+  @Override
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
   	CcLocationReport message = envelope.getCcLocationReport();
     verifyVehicleResultMappingToCurrentBundle();

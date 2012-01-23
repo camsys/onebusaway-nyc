@@ -149,7 +149,7 @@ public class JourneyPhaseSummaryLibrary {
     ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
     BlockConfigurationEntry blockConfig = blockInstance.getBlock();
 
-    return (double) blockLocation.getDistanceAlongBlock()
+    return blockLocation.getDistanceAlongBlock()
         / blockConfig.getTotalBlockDistance();
   }
 

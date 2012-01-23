@@ -8,14 +8,17 @@ import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueL
 public class DummyPartitionedInputQueueListenerTask 
   implements PartitionedInputQueueListener {
 
+  @Override
   public String getDepotPartitionKey() {
     return null;
   }
 
+  @Override
   public void setDepotPartitionKey(String depotPartitionKey) {    
 
   }
   
+  @Override
   public boolean processMessage(String address, String contents) {
     return true;
   }
