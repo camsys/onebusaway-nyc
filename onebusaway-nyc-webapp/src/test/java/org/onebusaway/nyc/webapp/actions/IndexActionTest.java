@@ -17,15 +17,17 @@ package org.onebusaway.nyc.webapp.actions;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.onebusaway.utility.DateLibrary;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionInvocation;
 import com.opensymphony.xwork2.ActionProxy;
+
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class IndexActionTest {
 
@@ -48,7 +50,39 @@ public class IndexActionTest {
     String response = action.execute();
     assertEquals("successful response", "success", response);
   }
+
+  @Test
+  public void testWeekenderLinkWeekday() throws Exception {
+    IndexAction action = new IndexAction();
+    action.setTime(DateLibrary.getIso8601StringAsTime("2012-01-25T00:00:00-05:00"));
+    
+    assertEquals(action.getShowWeekender(), false);
+  }
   
+  @Test
+  public void testWeekenderLinkFriday() throws Exception {
+    IndexAction action = new IndexAction();
+    action.setTime(DateLibrary.getIso8601StringAsTime("2012-01-20T18:00:00-05:00"));
+    
+    assertEquals(action.getShowWeekender(), true);
+  }
+
+  @Test
+  public void testWeekenderLinkWeekend() throws Exception {
+    IndexAction action = new IndexAction();
+    action.setTime(DateLibrary.getIso8601StringAsTime("2012-01-21T18:00:00-05:00"));
+    
+    assertEquals(action.getShowWeekender(), true);
+  }
+
+  @Test
+  public void testWeekenderLinkMonday() throws Exception {
+    IndexAction action = new IndexAction();
+    action.setTime(DateLibrary.getIso8601StringAsTime("2012-01-23T02:00:00-05:00"));
+    
+    assertEquals(action.getShowWeekender(), true);
+  }
+
   @Test
   public void test404() throws Exception {
 
