@@ -32,11 +32,15 @@
 <div class="welcome">
 	<p>Try these example searches:</p>
 	<ul>
-		<s:url var="url" namespace="/m" action="index">
+		<s:url var="S62url" namespace="/m" action="index">
 			<s:param name="q">S62</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Route: <a href="${url}">S62</a>
+		<s:url var="X10url" namespace="/m" action="index">
+			<s:param name="q">X10</s:param>
+			<s:param name="l"><s:property value="l" /></s:param>
+		</s:url>
+		<li>Route: <a href="${S62url}">S62</a> &amp;nbsp; <a href="${X10url}">X10</a>
 		</li>
 
 		<s:url var="url" namespace="/m" action="index">
@@ -58,6 +62,12 @@
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<li>Location: <a href="${url}">10304</a>
+		</li>
+		<li>(Add route for best results.)</li>
+		<br />
+
+		<s:url var="mobileM34Url" namespace="/wiki" action="Mobile/M34Pilot"/>
+		<li>Looking for the <a href="${mobileM34Url}">M34 or M34A?</a>
 		</li>
 	</ul>
 </div>

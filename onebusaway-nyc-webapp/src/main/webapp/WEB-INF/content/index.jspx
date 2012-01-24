@@ -134,6 +134,10 @@
 		 	<li>Intersection: &amp;nbsp; <a href="#Main%20St%20and%20Craig%20Ave">Main St and Craig Ave</a></li>
 		 	<li>Stop Code: &amp;nbsp; <a href="#200884">200884</a></li>
 		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a></li>
+		 	<br />
+			<s:url var="M34Url" namespace="/wiki" action="M34Pilot"/>
+			<li id="extra">Looking for the <a href="${M34Url}">M34 or M34A?</a>
+			</li>
 		 </ul>
 	   </div>
 	   
