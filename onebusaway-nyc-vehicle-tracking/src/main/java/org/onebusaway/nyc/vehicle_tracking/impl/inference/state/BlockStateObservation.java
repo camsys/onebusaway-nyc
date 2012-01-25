@@ -13,14 +13,14 @@ import com.google.common.collect.Ordering;
  * @author bwillard
  * 
  */
-public class BlockStateObservation implements Comparable<BlockStateObservation> {
+public final class BlockStateObservation implements Comparable<BlockStateObservation> {
   final private BlockState _blockState;
 
-  private Boolean _isOpAssigned;
+  private final Boolean _isOpAssigned;
 
-  private Boolean _isRunReported;
+  private final Boolean _isRunReported;
 
-  private Boolean _isRunReportedAssignedMismatch;
+  private final Boolean _isRunReportedAssignedMismatch;
 
   public BlockStateObservation(BlockState blockState, Observation obs) {
     _blockState = blockState;
@@ -55,24 +55,12 @@ public class BlockStateObservation implements Comparable<BlockStateObservation> 
     return _isRunReported;
   }
 
-  public void setRunReported(Boolean isRunReported) {
-    this._isRunReported = isRunReported;
-  }
-
   public Boolean getOpAssigned() {
     return _isOpAssigned;
   }
 
-  public void setOpAssigned(Boolean isUTSassigned) {
-    this._isOpAssigned = isUTSassigned;
-  }
-
   public Boolean isRunReportedAssignedMismatch() {
     return _isRunReportedAssignedMismatch;
-  }
-
-  public void setRunReportedAssignedMismatch(Boolean isRunReportedUTSMismatch) {
-    this._isRunReportedAssignedMismatch = isRunReportedUTSMismatch;
   }
 
   @Override

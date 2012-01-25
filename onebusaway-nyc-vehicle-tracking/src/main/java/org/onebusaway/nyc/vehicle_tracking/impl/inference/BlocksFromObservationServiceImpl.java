@@ -127,7 +127,7 @@ public class BlocksFromObservationServiceImpl implements
   /**
    * Default is 30 minutes
    */
-  private long _tripSearchTimeAfteLastStop = 30 * 60 * 1000;
+  private long _tripSearchTimeAfterLastStop = 30 * 60 * 1000;
 
   private boolean _includeNearbyBlocks = true;
 
@@ -195,7 +195,7 @@ public class BlocksFromObservationServiceImpl implements
   }
 
   public void setTripSearchTimeAfterLastStop(long tripSearchTimeAfteLastStop) {
-    _tripSearchTimeAfteLastStop = tripSearchTimeAfteLastStop;
+    _tripSearchTimeAfterLastStop = tripSearchTimeAfteLastStop;
   }
 
   public void setIncludeNearbyBlocks(boolean includeNearbyBlocks) {
@@ -515,7 +515,7 @@ public class BlocksFromObservationServiceImpl implements
      * from-base + to+base fudge factors, we just expand the current search time
      * interval instead.
      */
-    long timeFrom = time - _tripSearchTimeAfteLastStop;
+    long timeFrom = time - _tripSearchTimeAfterLastStop;
     long timeTo = time + _tripSearchTimeBeforeFirstStop;
 
     for (AgencyAndId tripId : dscTripIds) {
@@ -541,7 +541,7 @@ public class BlocksFromObservationServiceImpl implements
 
     NycRawLocationRecord record = observation.getRecord();
     long time = observation.getTime();
-    long timeFrom = time - _tripSearchTimeAfteLastStop;
+    long timeFrom = time - _tripSearchTimeAfterLastStop;
     long timeTo = time + _tripSearchTimeBeforeFirstStop;
 
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(

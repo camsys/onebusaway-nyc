@@ -143,16 +143,35 @@ public class JourneyStateTransitionModel {
     }
   }
 
+  /**
+   * Determine if observation satisfies conditions necessary to transition
+   * to states with non-zero probability.
+   * 
+   * @param res
+   * @param obs
+   */
+  private void includeConditionalStates(final List<JourneyState> res, final Observation obs) {
+    /*
+     * Cannot reasonably transition to in-progress if there isn't a previous
+     * observation with which we can determine the direction of travel.
+     */
+    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
+        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
+      res.add(JourneyState.inProgress());
+    
+    /*
+     * Has to be at-base to be at base, obviously.
+     */
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      res.add(JourneyState.atBase());
+  }
+  
   private List<JourneyState> moveAtBase(Observation obs) {
 
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
-        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
-      res.add(JourneyState.inProgress());
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
-      res.add(JourneyState.atBase());
+    includeConditionalStates(res, obs);
     return res;
   }
 
@@ -164,11 +183,7 @@ public class JourneyStateTransitionModel {
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(start.getJourneyStart())));
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
-        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
-      res.add(JourneyState.inProgress());
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
-      res.add(JourneyState.atBase());
+    includeConditionalStates(res, obs);
     return res;
   }
 
@@ -176,11 +191,7 @@ public class JourneyStateTransitionModel {
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
-        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
-      res.add(JourneyState.inProgress());
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
-      res.add(JourneyState.atBase());
+    includeConditionalStates(res, obs);
     return res;
   }
 
@@ -191,11 +202,7 @@ public class JourneyStateTransitionModel {
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.layoverBefore()));
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
-        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
-      res.add(JourneyState.inProgress());
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
-      res.add(JourneyState.atBase());
+    includeConditionalStates(res, obs);
     return res;
   }
 
@@ -209,11 +216,7 @@ public class JourneyStateTransitionModel {
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.layoverBefore()));
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
-        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
-      res.add(JourneyState.inProgress());
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
-      res.add(JourneyState.atBase());
+    includeConditionalStates(res, obs);
 
     return res;
   }
@@ -223,11 +226,7 @@ public class JourneyStateTransitionModel {
     List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring()));
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
-        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
-      res.add(JourneyState.inProgress());
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
-      res.add(JourneyState.atBase());
+    includeConditionalStates(res, obs);
     return res;
   }
 }

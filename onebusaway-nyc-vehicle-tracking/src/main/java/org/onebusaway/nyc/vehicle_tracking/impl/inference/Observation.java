@@ -48,7 +48,7 @@ public class Observation implements Comparable<Observation> {
 
   private final Set<AgencyAndId> _dscImpliedRouteCollections;
 
-  private RunResults _runResults;
+  private final RunResults _runResults;
 
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
@@ -162,8 +162,14 @@ public class Observation implements Comparable<Observation> {
     return res;
   }
 
+  private int _hash = 0;
+  
   @Override
   public int hashCode() {
+    
+    if (_hash != 0)
+      return _hash;
+    
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -178,6 +184,8 @@ public class Observation implements Comparable<Observation> {
     result = prime * result + (atBase ? 1231 : 1237);
     result = prime * result + (atTerminal ? 1231 : 1237);
     result = prime * result + (outOfService ? 1231 : 1237);
+    
+    _hash = result;
     return result;
   }
 

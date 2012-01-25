@@ -340,8 +340,6 @@ public class BlockStateTransitionModel {
               * _blockDistanceTravelScale);
     }
 
-    BlockStateObservation blockStateObservation = new BlockStateObservation(
-        blockState, obs);
     BestBlockObservationStates advancedStates = _blocksFromObservationService.advanceState(
         obs, blockState, -distanceToTravel, distanceToTravel);
 
@@ -355,6 +353,8 @@ public class BlockStateTransitionModel {
 
     // TODO don't know about this...
     if (d > 400) {
+      BlockStateObservation blockStateObservation = new BlockStateObservation(
+          blockState, obs);
       closestStates = _blocksFromObservationService.bestStates(obs,
           blockStateObservation);
     } else {

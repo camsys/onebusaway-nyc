@@ -104,11 +104,13 @@ public final class VehicleState implements Comparable<VehicleState> {
     if (this == rightState)
       return 0;
 
-    int compRes = ComparisonChain.start().compare(this.journeyState.getPhase(),
-        rightState.getJourneyState().getPhase()).compare(this.motionState,
-        rightState.getMotionState()).compare(this.observation,
-        rightState.getObservation()).compare(this.blockStateObservation,
-        rightState.getBlockStateObservation(), Ordering.natural().nullsLast()).result();
+    int compRes = ComparisonChain.start()
+        .compare(this.motionState, rightState.getMotionState())
+        .compare(this.observation, rightState.getObservation())
+        .compare(this.journeyState.getPhase(), rightState.getJourneyState().getPhase())
+        .compare(this.blockStateObservation, rightState.getBlockStateObservation(), 
+            Ordering.natural().nullsLast())
+        .result();
 
     return compRes;
   }

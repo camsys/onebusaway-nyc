@@ -394,8 +394,12 @@ public class VehicleInferenceInstance {
       return res;
     }
 
+    private int _hash = 0;
     @Override
     public int hashCode() {
+      if (_hash != 0)
+        return _hash;
+      
       final int prime = 31;
       int result = 1;
       result = prime * result
@@ -404,6 +408,7 @@ public class VehicleInferenceInstance {
           + ((bestFuzzyDist == null) ? 0 : bestFuzzyDist.hashCode());
       result = prime * result
           + ((fuzzyMatches == null) ? 0 : fuzzyMatches.hashCode());
+      _hash = result;
       return result;
     }
 

@@ -21,9 +21,12 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
+
+import javax.annotation.Nullable;
 
 public final class BlockState implements Comparable<BlockState> {
 
@@ -39,17 +42,12 @@ public final class BlockState implements Comparable<BlockState> {
   private final String destinationSignCode;
 
   public BlockState(BlockInstance blockInstance,
-      ScheduledBlockLocation blockLocation, RunTripEntry runTrip,
+      ScheduledBlockLocation blockLocation, @Nullable RunTripEntry runTrip,
       String destinationSignCode) {
-    if (blockInstance == null)
-      throw new IllegalArgumentException("blockInstance is null");
-    if (blockLocation == null)
-      throw new IllegalArgumentException("blockLocation is null");
-    if (destinationSignCode == null)
-      throw new IllegalArgumentException("dsc is null");
-    // TODO should we every allow null runTrips here?
-    // if (runTrip == null)
-    // throw new IllegalArgumentException("runTrip is null");
+    Preconditions.checkNotNull(blockInstance, "blockInstance");
+    Preconditions.checkNotNull(blockLocation, "blockLocation");
+    Preconditions.checkNotNull(destinationSignCode, "destinationSignCode");
+    
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;
@@ -143,8 +141,13 @@ public final class BlockState implements Comparable<BlockState> {
     return res;
   }
 
+  private int _hash = 0;
+  
   @Override
   public int hashCode() {
+    if (_hash != 0)
+      return _hash;
+    
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -168,6 +171,8 @@ public final class BlockState implements Comparable<BlockState> {
     result = prime * result
         + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
     result = prime * result + ((runTrip == null) ? 0 : runTrip.hashCode());
+    
+    _hash = result;
     return result;
   }
 
