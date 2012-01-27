@@ -1,29 +1,26 @@
 package org.onebusaway.nyc.report_archive.model;
 
-import org.hibernate.annotations.AccessType;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
-
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-
-import org.joda.time.format.ISODateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.DateTimeZone;
-
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.SPDataQuality;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.AccessType;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Index;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+
+import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_3_0_5_1.SPDataQuality;
 
 @Entity
 @Table(name = "obanyc_cclocationreport")
@@ -191,8 +188,31 @@ public class CcLocationReportRecord implements Serializable {
   // Instantaneous speed.  Per SAE J1587 speed is in half mph increments with an offset of -15mph.
   // For example, 002.642 knots (from RMC) is 3.04 mph, so (15*2) + (3 * 2) = 36
   // Valid range is [0,255], which equates to [-15mph, +112.5mph]
-  private BigDecimal convertSpeed(short speed) {
-    return new BigDecimal((speed / 2.0) - 30);
+    
+    /*
+     * From the TCIP documentation:
+     * 
+     * In accordance with J-1587, this data element is an unsigned byte whose 
+     * value is expressed in half mile per hour increments with an offset to 
+     * allow backing up to be expressed. A value of 0 indicates a speed of  
+     * -15mph, a value of 1 indicates -14.5mph and so on. Values in excess of 
+     * 112.5 mph cannot be expressed.
+     */
+    
+    /*
+     * Basically this means the following, where 'speed' (little 's') is the J1587 value and
+     * 'Speed' (big 's') is the actual speed value (in mph):
+     * 
+     * Speed = (speed - 30) / 2
+     * 
+     * speed = (Speed * 2) + 30
+     * 
+     * For this method, we want the first of those equations.
+     */
+  private BigDecimal convertSpeed(short saeSpeed) {
+    BigDecimal noOffsetSaeSpeed = new BigDecimal(saeSpeed - 30);
+
+    return noOffsetSaeSpeed.divide(new BigDecimal(2));
   }
 
   private BigDecimal convertMicrodegreesToDegrees(int latlong) {
