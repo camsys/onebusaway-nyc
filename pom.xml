@@ -260,6 +260,12 @@
                         <excludes>
                             <exclude>**/*IntegrationTest.java</exclude>
                         </excludes>
+                        <systemProperties>
+                          <property>
+                            <name>log4j.configuration</name>
+                            <value>log4j-stdout.xml</value>
+                          </property>
+                        </systemProperties>
                     </configuration>
                     <executions>
             <!-- Instead, we add a special integration-test execution that 

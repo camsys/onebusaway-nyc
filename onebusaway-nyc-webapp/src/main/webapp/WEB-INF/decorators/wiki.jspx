@@ -74,7 +74,9 @@
 		
 		<div id="search">
 			<ul id="topbar-links">
-				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/weekender.html">The Weekender</a></li>
+				<c:if test="${showWeekender}">
+					<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/weekender.html">The Weekender</a></li>
+				</c:if>			
 				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/accessibility">Accessibility</a></li>
 				<li class="list_h" style="margin-left:4px;"><a href="http://assistive.usablenet.com/tt/http://mta.info/index.html">Text-only</a></li>
 				<li class="list_h" style="margin-left:4px;"><a href="http://mta.info/faqs.htm">FAQs/Contact Us</a></li>

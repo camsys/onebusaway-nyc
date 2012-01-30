@@ -6,7 +6,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -15,7 +14,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
-import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.CsvCrewAssignsToDataCreator;
+import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.CsvSignCodeToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.SignCodeData;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.SignMessageFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.DestinationSign;
@@ -24,7 +23,6 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.messag
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.DscManualUploadDateTimestampFilePicker;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,8 +134,7 @@ public class DscResource {
     
     _log.debug("Loading SignCodeData object from " + inputFile.getPath());
     
-    CsvCrewAssignsToDataCreator process = new CsvCrewAssignsToDataCreator(
-        inputFile);
+    CsvSignCodeToDataCreator process = new CsvSignCodeToDataCreator(inputFile);
     
     SignCodeData data = process.generateDataObject();
     

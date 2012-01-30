@@ -21,6 +21,9 @@ import org.onebusaway.users.services.CurrentUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Map;
 
 /**
@@ -30,6 +33,20 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
 
   private static final long serialVersionUID = 1L;
 
+  private Date time = null;
+  
+  public void setTime(Date time) {
+    this.time = time;
+  }
+  
+  public Date getTime() {
+    if(time != null) {
+      return time;
+    } else {
+      return new Date();
+    }
+  }
+  
   @Autowired
   protected CurrentUserService _currentUserService;
   
@@ -50,6 +67,32 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
     _currentUserService = currentUserService;
   }
 
+  // hide or show MTA "weekender" link
+  public boolean getShowWeekender() {
+    Calendar calendar = new GregorianCalendar();
+    calendar.setTime(getTime());
+
+    int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+    int hour = calendar.get(Calendar.HOUR_OF_DAY);
+    
+    switch(dayOfWeek) {
+      case Calendar.SATURDAY:
+        return true;
+      case Calendar.SUNDAY:
+        return true;
+      case Calendar.FRIDAY:
+        if(hour >= 15) {
+          return true;
+        }                
+      case Calendar.MONDAY:
+        if(hour < 5) {
+          return true;
+        }        
+    }
+    
+    return false;
+  }
+  
   protected UserBean getCurrentUser() {
     UserBean user = _currentUserService.getCurrentUser();
     if (user == null)
