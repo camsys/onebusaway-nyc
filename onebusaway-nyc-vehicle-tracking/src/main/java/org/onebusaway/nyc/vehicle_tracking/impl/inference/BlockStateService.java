@@ -181,9 +181,16 @@ public class BlockStateService {
     ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
         blockConfig, scheduledTime);
 
-    if (blockLocation == null)
-      throw new IllegalStateException("no blockLocation for " + blockInstance
-          + " scheduleTime=" + scheduledTime);
+    /*
+     * The above method returns null when we're beyond the end of the block,
+     * so return the end point.
+     */
+    if (blockLocation == null) {
+      blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+          blockConfig, blockConfig.getTotalBlockDistance());
+//      throw new IllegalStateException("no blockLocation for " + blockInstance
+//          + " scheduleTime=" + scheduledTime);
+    }
 
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());

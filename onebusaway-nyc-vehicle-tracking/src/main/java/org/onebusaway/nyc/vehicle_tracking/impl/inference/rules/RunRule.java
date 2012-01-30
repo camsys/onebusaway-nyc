@@ -19,6 +19,8 @@ import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmen
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,28 +47,25 @@ public class RunRule implements SensorModelRule {
      * Weigh matched run's higher
      */
     if (blockState != null) {
-      /*
-       * TODO We might want to do something different the run info wasn't even
-       * determined.
-       */
       if (blockState.getOpAssigned() == null
-          || blockState.getRunReported() == null) {
+          && blockState.getRunReported() == null) {
         result.addResultAsAnd("run-info status was not determined", 0.5);
         return result;
       }
 
-      if (blockState.getOpAssigned()) {
+      if (blockState.getOpAssigned() == Boolean.TRUE) {
         /*
-         * if the run for this block matches the schedule, then it should not be
+         * If the run for this block matches the schedule, then it should not be
          * reduced in likelihood.
          */
         result.addResultAsAnd("operator assigned", 1.0);
-      } else if (blockState.getRunReported()) {
+      } else if (blockState.getRunReported() == Boolean.TRUE) {
         if (state.getObservation().getFuzzyMatchDistance() == 0)
           result.addResultAsAnd("run reported (fuzzy)", 0.9);
         else
           result.addResultAsAnd("run reported (fuzzy)", 0.6);
-      } else {
+      } else if (blockState.getRunReported() == Boolean.FALSE
+          && blockState.getOpAssigned() == Boolean.FALSE){
         result.addResultAsAnd("no run info matches", 0.5);
       }
     } else {
@@ -76,7 +75,17 @@ public class RunRule implements SensorModelRule {
         return result;
       }
 
-      result.addResultAsAnd("no run info provided", 0.5);
+      /*
+       * We were given run information, and we were able to find
+       * valid info for it, so we penalize for not using it. 
+       */
+      if (!StringUtils.isBlank(state.getObservation().getOpAssignedRunId())
+          || (state.getObservation().getFuzzyMatchDistance() != null
+              && state.getObservation().getFuzzyMatchDistance() <= 1)) {
+        result.addResultAsAnd("not using results from run info", 0.5);
+      } else {
+        result.addResultAsAnd("no good results from run info", 1.0);
+      }
     }
 
     return result;

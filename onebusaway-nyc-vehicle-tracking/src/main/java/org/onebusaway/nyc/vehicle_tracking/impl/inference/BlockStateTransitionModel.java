@@ -160,8 +160,8 @@ public class BlockStateTransitionModel {
 
       if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase())
           || journeyState.getPhase() == EVehiclePhase.DEADHEAD_BEFORE) {
-        potentialTransStates.addAll(advanceAlongBlock(parentPhase,
-            parentBlockState.getBlockState(), obs).getAllStates());
+        potentialTransStates.add(advanceAlongBlock(parentPhase,
+            parentBlockState.getBlockState(), obs));
       } else {
         potentialTransStates.add(parentBlockState);
       }
@@ -291,30 +291,28 @@ public class BlockStateTransitionModel {
    * @param obs
    * @return
    */
-  private BestBlockObservationStates advanceAlongBlock(EVehiclePhase phase,
+  private BlockStateObservation advanceAlongBlock(EVehiclePhase phase,
       BlockState blockState, Observation obs) {
 
-    Observation prevObs = obs.getPreviousObservation();
+//    Observation prevObs = obs.getPreviousObservation();
+//
+//    double distanceToTravel = 300
+//        + SphericalGeometryLibrary.distance(prevObs.getLocation(),
+//            obs.getLocation()) * _blockDistanceTravelScale;
 
-    double distanceToTravel = 300
-        + SphericalGeometryLibrary.distance(prevObs.getLocation(),
-            obs.getLocation()) * _blockDistanceTravelScale;
+    BlockStateObservation updatedBlockState = _blocksFromObservationService.advanceState(
+        obs, blockState, 0, Double.POSITIVE_INFINITY).getBestLocation();
 
-    /**
-     * TODO: Should we allow a vehicle to travel backwards?
-     */
-    BestBlockObservationStates updatedBlockStates = _blocksFromObservationService.advanceState(
-        obs, blockState, 0, distanceToTravel);
-
-    if (updatedBlockStates != null
+    BlockStateObservation state = updatedBlockState;
+    if (updatedBlockState != null
         && (EVehiclePhase.isLayover(phase) || _vehicleStateLibrary.isAtPotentialTerminal(
             obs.getRecord(), blockState.getBlockInstance()))) {
-      for (BlockStateObservation state : updatedBlockStates.getAllStates()) {
-        state = _blocksFromObservationService.advanceLayoverState(obs, state);
-      }
+//      for (BlockStateObservation state : updatedBlockStates.getAllStates()) {
+        state = _blocksFromObservationService.advanceLayoverState(obs, updatedBlockState);
+//      }
     }
 
-    return updatedBlockStates;
+    return state;
   }
 
   /**
