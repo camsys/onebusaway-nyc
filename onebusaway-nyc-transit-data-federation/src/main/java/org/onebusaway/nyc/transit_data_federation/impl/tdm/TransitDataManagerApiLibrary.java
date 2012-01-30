@@ -2,14 +2,17 @@ package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
 import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
 
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +42,10 @@ public class TransitDataManagerApiLibrary {
 
       _log.info("TDM hostname = " + _tdmHostname);
 
-      _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
+      if (!StringUtils.isBlank(_tdmHostname))
+        _restApiLibrary = new RestApiLibrary(_tdmHostname, _tdmPort, _apiEndpointPath);
+      else
+        _log.warn("No TDM URL given!");
   }
 
   private RestApiLibrary _restApiLibrary;
@@ -49,6 +55,8 @@ public class TransitDataManagerApiLibrary {
   }
     
   public void executeApiMethodWithNoResult(String baseObject, String... params) throws Exception {
+    if (_restApiLibrary == null)
+      return;
     URL requestUrl = buildUrl(baseObject, params);
     _log.info("Requesting " + requestUrl);
 
@@ -57,7 +65,9 @@ public class TransitDataManagerApiLibrary {
     }
   }
   
-  public ArrayList<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
+  public List<JsonObject> getItemsForRequest(String baseObject, String... params) throws Exception {		
+    if (_restApiLibrary == null)
+      return Collections.emptyList();
     URL requestUrl = _restApiLibrary.buildUrl(baseObject, params);
     _log.info("Requesting " + requestUrl);
 
@@ -70,8 +80,10 @@ public class TransitDataManagerApiLibrary {
    * Convenience method. Note this assumes all values coming back from the service are strings.
    */
   public List<Map<String, String>> getItems(String baseObject, String... params) throws Exception {
+    if (_restApiLibrary == null)
+      return Collections.emptyList();
     List<Map<String, String>> result = new ArrayList<Map<String, String>>();
-    ArrayList<JsonObject> items = getItemsForRequest(baseObject, params);
+    List<JsonObject> items = getItemsForRequest(baseObject, params);
     for(JsonObject item: items) {
       Map<String, String> m = new HashMap<String, String>();
       result.add(m);

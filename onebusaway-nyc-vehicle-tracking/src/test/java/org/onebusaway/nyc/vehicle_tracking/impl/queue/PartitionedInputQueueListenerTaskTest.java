@@ -35,9 +35,9 @@ public class PartitionedInputQueueListenerTaskTest {
     ArrayList<AgencyAndId> list = new ArrayList<AgencyAndId>();
     list.add(AgencyAndIdLibrary.convertFromString("MTA NYCT_7578"));
 
-    when(vehicleAssignmentService.getAssignedVehicleIdsForDepot("JG"))
-      .thenReturn(list);
-    
+    when(vehicleAssignmentService.getAssignedVehicleIdsForDepot("JG")).thenReturn(
+        list);
+
     service.setDepotPartitionKey("JG");
   }
 

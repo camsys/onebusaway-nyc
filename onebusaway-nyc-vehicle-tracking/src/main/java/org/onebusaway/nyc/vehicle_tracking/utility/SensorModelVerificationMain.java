@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -54,7 +54,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -101,7 +100,7 @@ public class SensorModelVerificationMain {
   public void setRunService(RunService runService) {
     _runService = runService;
   }
-  
+
   @Autowired
   public void setMotionModel(MotionModelImpl motionModel) {
     _motionModel = motionModel;
@@ -273,8 +272,8 @@ public class SensorModelVerificationMain {
     return handler.getValues();
   }
 
-  private Observation getRecordAsObservation(NycTestInferredLocationRecord record,
-      Observation prevObs) {
+  private Observation getRecordAsObservation(
+      NycTestInferredLocationRecord record, Observation prevObs) {
 
     String dsc = record.getDsc();
     String lastValidDestinationSignCode = null;
@@ -286,12 +285,13 @@ public class SensorModelVerificationMain {
     }
 
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
-    if (prevObs == null || !StringUtils.equals(lastValidDestinationSignCode, dsc)) {
+    if (prevObs == null
+        || !StringUtils.equals(lastValidDestinationSignCode, dsc)) {
       _dscService.getRouteCollectionIdsForDestinationSignCode(dsc);
-    } else if (prevObs != null){
+    } else if (prevObs != null) {
       routeIds = prevObs.getDscImpliedRouteCollections();
     }
-    
+
     NycRawLocationRecord r = new NycRawLocationRecord();
     r.setBearing(0);
     r.setDestinationSignCode(record.getDsc());
@@ -301,13 +301,14 @@ public class SensorModelVerificationMain {
     r.setTimeReceived(record.getTimestamp());
     r.setVehicleId(record.getVehicleId());
     r.setOperatorId(record.getOperatorId());
-    String[] runInfo = StringUtils.splitByWholeSeparator(record.getReportedRunId(), "-");
+    String[] runInfo = StringUtils.splitByWholeSeparator(
+        record.getReportedRunId(), "-");
     if (runInfo != null && runInfo.length > 0) {
       r.setRunRouteId(runInfo[0]);
       if (runInfo.length > 1)
         r.setRunNumber(runInfo[1]);
     }
-    
+
     CoordinatePoint location = new CoordinatePoint(record.getLat(),
         record.getLon());
 
@@ -318,23 +319,27 @@ public class SensorModelVerificationMain {
         || _dscService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
     return new Observation(record.getTimestamp(), r,
-        lastValidDestinationSignCode, atBase, atTerminal, outOfService, prevObs, routeIds);
+        lastValidDestinationSignCode, atBase, atTerminal, outOfService,
+        prevObs, routeIds, null);
   }
 
-  private VehicleState getRecordAsVehicleState(NycTestInferredLocationRecord record,
-      VehicleState prevState, Observation obs) {
+  private VehicleState getRecordAsVehicleState(
+      NycTestInferredLocationRecord record, VehicleState prevState,
+      Observation obs) {
+    return prevState;
 
-    MotionState motionState = createMotionState(prevState, obs);
-
-    BlockState blockState = createBlockState(record, prevState, obs);
-
-    JourneyState journeyState = createJourneyState(record, prevState, obs);
-
-    List<JourneyPhaseSummary> summaries = _journeyStatePhaseLibrary.extendSummaries(
-        prevState, blockState, journeyState, obs);
-
-    return new VehicleState(motionState, blockState, journeyState,
-        summaries, obs);
+    // MotionState motionState = createMotionState(prevState, obs);
+    //
+    // BlockState blockState = createBlockState(record, prevState, obs);
+    //
+    // JourneyState journeyState = createJourneyState(record, prevState, obs);
+    //
+    // List<JourneyPhaseSummary> summaries =
+    // _journeyStatePhaseLibrary.extendSummaries(
+    // prevState, blockState, journeyState, obs);
+    //
+    // return new VehicleState(motionState, blockState, journeyState,
+    // summaries, obs);
   }
 
   private MotionState createMotionState(VehicleState prevState, Observation obs) {
@@ -365,14 +370,16 @@ public class SensorModelVerificationMain {
 
     ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
         blockInstance.getBlock(), d);
-    
+
     Date today = new Date();
-    Calendar cal = Calendar.getInstance(); 
+    Calendar cal = Calendar.getInstance();
     cal.setTime(today);
     cal.set(Calendar.DATE, 0);
-    int scheduleTime = (int)(cal.getTimeInMillis()/1000);
-    RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(blockInstance, scheduleTime);
-    return new BlockState(blockInstance, location, rte, obs.getLastValidDestinationSignCode());
+    int scheduleTime = (int) (cal.getTimeInMillis() / 1000);
+    RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(
+        blockInstance, scheduleTime);
+    return new BlockState(blockInstance, location, rte,
+        obs.getLastValidDestinationSignCode());
   }
 
   private JourneyState createJourneyState(NycTestInferredLocationRecord record,

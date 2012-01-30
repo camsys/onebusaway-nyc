@@ -6,7 +6,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 public class BlockStateTransDistParams {
   Observation _obs;
   BlockState _blockState;
-  
+
   public BlockStateTransDistParams(Observation obs, BlockState blockState) {
     _obs = obs;
     _blockState = blockState;
@@ -15,7 +15,7 @@ public class BlockStateTransDistParams {
   BlockState getBlockState() {
     return _blockState;
   }
-  
+
   Observation getObservation() {
     return _obs;
   }

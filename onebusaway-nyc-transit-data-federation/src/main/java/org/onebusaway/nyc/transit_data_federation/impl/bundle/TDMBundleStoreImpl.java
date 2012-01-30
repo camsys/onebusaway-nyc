@@ -44,7 +44,7 @@ public class TDMBundleStoreImpl implements BundleStoreService {
     ArrayList<BundleItem> output = new ArrayList<BundleItem>();
     
     _log.info("Getting current bundle list from TDM...");	     
-	  ArrayList<JsonObject> bundles = _apiLibrary.getItemsForRequest("bundle", "list");
+	  List<JsonObject> bundles = _apiLibrary.getItemsForRequest("bundle", "list");
 	  
 	  for(JsonObject itemToAdd : bundles) {
 	    BundleItem item = new BundleItem();

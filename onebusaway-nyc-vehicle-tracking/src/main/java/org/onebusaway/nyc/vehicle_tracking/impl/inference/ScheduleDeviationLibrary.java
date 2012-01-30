@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,14 +15,13 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.transit_data_federation.impl.blocks.ScheduledBlockLocationLibrary;
-import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
@@ -50,15 +49,15 @@ public class ScheduleDeviationLibrary {
 
   public int computeScheduleDeviation(VehicleState state,
       Observation observation) {
-    
+
     BlockState blockState = state.getBlockState();
     ScheduledBlockLocation actualBlockLocation = blockState.getBlockLocation();
-    return computeScheduleDeviation(blockState.getBlockInstance(), actualBlockLocation, observation);
-  } 
-  
+    return computeScheduleDeviation(blockState.getBlockInstance(),
+        actualBlockLocation, observation);
+  }
+
   public int computeScheduleDeviation(BlockInstance blockInstance,
-      ScheduledBlockLocation actualBlockLocation,
-      Observation observation) {
+      ScheduledBlockLocation actualBlockLocation, Observation observation) {
 
     int scheduleTime = (int) ((observation.getTime() - blockInstance.getServiceDate()) / 1000);
 
@@ -86,7 +85,7 @@ public class ScheduleDeviationLibrary {
         obs, EObservationCacheKey.SCHEDULED_BLOCK_LOCATION);
 
     if (m == null) {
-      m = new HashMap<BlockInstance, ScheduledBlockLocation>();
+      m = new ConcurrentHashMap<BlockInstance, ScheduledBlockLocation>();
       _observationCache.putValueForObservation(obs,
           EObservationCacheKey.SCHEDULED_BLOCK_LOCATION, m);
     }
@@ -106,8 +105,8 @@ public class ScheduleDeviationLibrary {
         int t = blockConfig.getDepartureTimeForIndex(n - 1);
         scheduledBlockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
             blockConfig, t);
-        
-        if( scheduledBlockLocation.getNextStop() == null) {
+
+        if (scheduledBlockLocation.getNextStop() == null) {
           scheduledBlockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
               blockConfig, t);
         }

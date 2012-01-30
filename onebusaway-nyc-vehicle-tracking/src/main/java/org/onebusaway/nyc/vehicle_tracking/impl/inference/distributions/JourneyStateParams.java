@@ -12,6 +12,7 @@ public class JourneyStateParams {
     _obs = obs;
     _blockState = blockState;
   }
+
   public BlockState getBlockState() {
     return _blockState;
   }

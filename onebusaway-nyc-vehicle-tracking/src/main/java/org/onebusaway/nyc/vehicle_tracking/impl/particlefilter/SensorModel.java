@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -14,6 +14,11 @@
  * the License.
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
+
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Sensor model strategy for evaluating the likelihood of a particle given an
@@ -28,4 +33,7 @@ public interface SensorModel<OBS> {
    * @return likelihood probability on the interval [0.0,1.0]
    */
   public SensorModelResult likelihood(Particle particle, OBS observation);
+
+  public SensorModelResult likelihood(Particle particle, OBS observation,
+      Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache);
 }

@@ -18,8 +18,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.implies;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -27,8 +25,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -83,11 +79,12 @@ public class TransitionRule implements SensorModelRule {
 
     boolean pOutToInService = prevObs.isOutOfService() && !obs.isOutOfService();
 
-//    double pTransitionFromBeforeToDuring = implies(p(transitionBeforeToDuring),
-//        p(justLeftTerminal || pOutToInService));
-//
-//    result.addResultAsAnd("Transition Before to During => left terminal",
-//        pTransitionFromBeforeToDuring);
+    // double pTransitionFromBeforeToDuring =
+    // implies(p(transitionBeforeToDuring),
+    // p(justLeftTerminal || pOutToInService));
+    //
+    // result.addResultAsAnd("Transition Before to During => left terminal",
+    // pTransitionFromBeforeToDuring);
 
     /**
      * Transition During to Before => out of service or at base
@@ -103,20 +100,18 @@ public class TransitionRule implements SensorModelRule {
     boolean endOfBlock = false;
     BlockState blockState = state.getBlockState();
     if (blockState != null
-        && (blockState.getBlockLocation().getNextStop() == null
-          || library.computeProbabilityOfEndOfBlock(blockState) > 0.9)
-        )
+        && (blockState.getBlockLocation().getNextStop() == null || library.computeProbabilityOfEndOfBlock(blockState) > 0.9))
       endOfBlock = true;
 
     /**
      * Added this hack to allow no block transitions after finishing one.
      */
     boolean wasAtEndOfBlock = false;
-    BlockState parentBlockState = parentState.getBlockState();
+    BlockState parentBlockState = parentState.getBlockState() != null
+        ? parentState.getBlockState() : null;
     if (parentBlockState != null
         && blockState == null
-        && (parentBlockState.getBlockLocation().getNextStop() == null 
-            || library.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
+        && (parentBlockState.getBlockLocation().getNextStop() == null || library.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
       wasAtEndOfBlock = true;
 
     double pTransitionFromDuringToBefore = implies(p(transitionDuringToBefore),
@@ -133,12 +128,12 @@ public class TransitionRule implements SensorModelRule {
      * going through the last terminal with a valid dsc.
      * 
      */
-//    if (!EVehiclePhase.isActiveAfterBlock(phase) && blockState != null) {
-//      double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
-//          p(EVehiclePhase.isActiveDuringBlock(phase)));
-//      result.addResultAsAnd(
-//          "just left terminal AND in-service => active during", pInService);
-//    }
+    // if (!EVehiclePhase.isActiveAfterBlock(phase) && blockState != null) {
+    // double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
+    // p(EVehiclePhase.isActiveDuringBlock(phase)));
+    // result.addResultAsAnd(
+    // "just left terminal AND in-service => active during", pInService);
+    // }
 
     return result;
   }
