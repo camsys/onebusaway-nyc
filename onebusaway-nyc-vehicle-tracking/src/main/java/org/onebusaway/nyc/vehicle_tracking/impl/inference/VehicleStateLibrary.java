@@ -16,11 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -33,14 +29,8 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialSer
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockSequenceIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockStopSequenceIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
-import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
-import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
@@ -201,7 +191,7 @@ public class VehicleStateLibrary {
 
     return false;
   }
-  
+
   /**
    * This method determines if an observation record is within a certain radius,
    * _terminalSearchRadius argument, of a stop at the start or end of a block. <br>
@@ -227,29 +217,27 @@ public class VehicleStateLibrary {
     }
 
     for (BlockConfigurationEntry block : blocks) {
-  
+
       StopEntry firstStop = block.getStopTimes().get(0).getStopTime().getStop();
-  
+
       double firstStopDist = SphericalGeometryLibrary.distance(loc,
           firstStop.getStopLocation());
-  
+
       int lastStopIdx = block.getStopTimes().size() - 1;
-  
-      StopEntry lastStop = block.getStopTimes().get(
-          lastStopIdx).getStopTime().getStop();
+
+      StopEntry lastStop = block.getStopTimes().get(lastStopIdx).getStopTime().getStop();
       double lastStopDist = SphericalGeometryLibrary.distance(loc,
           lastStop.getStopLocation());
-  
+
       if (firstStopDist <= _terminalSearchRadius
           || lastStopDist <= _terminalSearchRadius) {
         return true;
       }
-  
+
     }
-    
+
     return false;
   }
-
 
   /**
    * This method determines if an observation record is within a certain radius,
@@ -311,8 +299,7 @@ public class VehicleStateLibrary {
 
     /**
      * If the next stop is null, it means we're at the end of the block. Do we
-     * consider this a layover spot? My sources say no.
-     * But now they say yes?
+     * consider this a layover spot? My sources say no. But now they say yes?
      */
     if (nextStop == null)
       return closestStop;

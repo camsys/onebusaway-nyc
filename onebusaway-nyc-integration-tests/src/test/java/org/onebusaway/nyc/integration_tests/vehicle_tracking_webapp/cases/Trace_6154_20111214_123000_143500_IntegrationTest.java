@@ -22,6 +22,7 @@ public class Trace_6154_20111214_123000_143500_IntegrationTest extends AbstractT
   public Trace_6154_20111214_123000_143500_IntegrationTest() throws Exception {
     super("6154_20111214_123000_143500.csv.gz");
     setBundle("si", "2011-12-07T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.92);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.37);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.93);
   }
 }

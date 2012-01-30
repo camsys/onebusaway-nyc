@@ -35,45 +35,46 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
    * elements of the support, and we want to insure reproducibility over seeds
    * in the random number generator.
    */
-  TreeBasedTable<SupportType, SupportType, Double> _transitionPriors = TreeBasedTable
-      .create(Ordering.usingToString(), Ordering.usingToString());
+  TreeBasedTable<SupportType, SupportType, Double> _transitionPriors = TreeBasedTable.create(
+      Ordering.usingToString(), Ordering.usingToString());
 
-  TreeBasedTable<SupportType, SupportType, Double> _currentTransProbs = TreeBasedTable
-      .create(Ordering.usingToString(), Ordering.usingToString());
+  TreeBasedTable<SupportType, SupportType, Double> _currentTransProbs = TreeBasedTable.create(
+      Ordering.usingToString(), Ordering.usingToString());
 
   private RandomStream _rng;
 
-  public DirichletConjTransitionDist(DirichletConjTransitionDist<SupportType> obj) {
+  public DirichletConjTransitionDist(
+      DirichletConjTransitionDist<SupportType> obj) {
     this._currentTransProbs = obj._currentTransProbs;
     this._transitionPriors = obj._transitionPriors;
     this._rng = obj._rng;
   }
-  
+
   public DirichletConjTransitionDist(RandomStream rng) {
     _rng = rng;
   }
 
   /**
-   * This method is implemented by the user, so as to allow
-   * more elaborate initial values.
+   * This method is implemented by the user, so as to allow more elaborate
+   * initial values.
    * 
    * @param missingEntries
    * @param condParams
    */
   protected abstract void addEntries(Set<SupportType> missingEntries,
       TransDistParams<SupportType> condParams);
-  
+
   /**
-   * Returns the probabilities for a form -> to transition, where
-   * "to" is only a subset of the possible transitions.
+   * Returns the probabilities for a form -> to transition, where "to" is only a
+   * subset of the possible transitions.
+   * 
    * @param condParams
    * @return
    */
   private SortedMap<SupportType, Double> getProbsOverSubset(
       TransDistParams<SupportType> condParams) {
 
-    Map<SupportType, Double> currRow = _currentTransProbs.row(condParams
-        .getCurrentState());
+    Map<SupportType, Double> currRow = _currentTransProbs.row(condParams.getCurrentState());
     Set<SupportType> thisSupport = condParams.getSupport();
     Set<SupportType> missingEntries = Sets.difference(thisSupport,
         currRow.keySet());
@@ -87,13 +88,13 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
      */
     SortedMap<SupportType, Double> retMap = new TreeMap<SupportType, Double>();
     for (SupportType rte : thisSupport) {
-      retMap
-          .put(rte, _currentTransProbs.get(condParams.getCurrentState(), rte));
+      retMap.put(rte, _currentTransProbs.get(condParams.getCurrentState(), rte));
     }
     return retMap;
   }
 
-  synchronized protected void updateTransProbs(TransDistParams<SupportType> condParams) {
+  synchronized protected void updateTransProbs(
+      TransDistParams<SupportType> condParams) {
     Map<SupportType, Double> newPriors = samplePrior(condParams);
     /*
      * update our current transition probabilities
@@ -110,16 +111,17 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
   @Override
   public double density(SupportType obsRunTrip,
       TransDistParams<SupportType> condParams) {
-    Double prob = _currentTransProbs.get(condParams.getCurrentState(), obsRunTrip);
+    Double prob = _currentTransProbs.get(condParams.getCurrentState(),
+        obsRunTrip);
     if (prob == null) {
       Set<SupportType> missingEntries = new HashSet<SupportType>();
-      
+
       missingEntries.add(obsRunTrip);
       missingEntries.add(condParams.getCurrentState());
-      
+
       addEntries(missingEntries, condParams);
       updateTransProbs(condParams);
-      
+
       prob = _currentTransProbs.get(condParams.getCurrentState(), obsRunTrip);
     }
     return prob;
@@ -146,17 +148,16 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
   }
 
   /*
-   * we only need to resample per row (e.g. from->to probs).
-   * TODO check this
+   * we only need to resample per row (e.g. from->to probs). TODO check this
    */
   public TreeMap<SupportType, Double> samplePrior(
       TransDistParams<SupportType> condParams) {
-    Map<SupportType, Double> currPriorsForSupport = _transitionPriors
-        .row(condParams.getCurrentState());
+    Map<SupportType, Double> currPriorsForSupport = _transitionPriors.row(condParams.getCurrentState());
     double[] sampleProbs = new double[currPriorsForSupport.size()];
-    DirichletGen.nextPoint(_rng, Doubles.toArray(currPriorsForSupport.values()),
-        sampleProbs);
-    TreeMap<SupportType, Double> retMap = new TreeMap<SupportType, Double>(Ordering.usingToString());
+    DirichletGen.nextPoint(_rng,
+        Doubles.toArray(currPriorsForSupport.values()), sampleProbs);
+    TreeMap<SupportType, Double> retMap = new TreeMap<SupportType, Double>(
+        Ordering.usingToString());
     int i = 0;
     for (SupportType rte : currPriorsForSupport.keySet()) {
       retMap.put(rte, sampleProbs[i]);

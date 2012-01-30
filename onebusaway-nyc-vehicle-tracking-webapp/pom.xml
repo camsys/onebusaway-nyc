@@ -124,7 +124,7 @@
                 <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
 				<ie.listener>PartitionedInputQueueListenerTask</ie.listener>
 				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
-                <tdm.host>tdm.staging.obanyc.com</tdm.host>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host> 
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
@@ -270,6 +270,26 @@
                 <service.alerts.url>http://tdm.qa.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
                 <siri.service.config>empty.xml</siri.service.config>
+            </properties>
+        </profile>
+        <profile>
+            <id>db-postgres-local-testing</id>
+            <properties>
+                <db.driverClassName>org.postgresql.Driver</db.driverClassName>
+                <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
+                <db.username>postgres</db.username>
+                <db.password>changeme</db.password>
+                <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
+                <!-- TODO Note sure about autocommit for postgres -->
+                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+        				<ie.listener>DummyPartitionedInputQueueListenerTask</ie.listener>
+        				<ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+                <tdm.host></tdm.host> 
+                <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
+                <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <!-- Set this to nyc-siri-service.xml if you do want the NycSiriService to run -->
+<!--                 <siri.service.config>nyc-siri-service.xml</siri.service.config> -->
+                 <siri.service.config>empty.xml</siri.service.config>
             </properties>
         </profile>
         

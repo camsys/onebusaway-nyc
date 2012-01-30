@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -111,8 +111,7 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
           File outputFile = new File(_outputDirectory, fileName);
           writer = new FileWriter(outputFile);
 
-          handler = _factory.createWriter(NycRawLocationRecord.class,
-              writer);
+          handler = _factory.createWriter(NycRawLocationRecord.class, writer);
           _entityHandlersByVehicleId.put(vehicleId, handler);
           _writersByVehicleId.put(vehicleId, writer);
         }
@@ -129,7 +128,8 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
     }
 
     private long getTimeForRecord(NycRawLocationRecord record) {
-      // This is more reliable, for grouping at least, than the actual device time
+      // This is more reliable, for grouping at least, than the actual device
+      // time
       return record.getTimeReceived();
     }
 

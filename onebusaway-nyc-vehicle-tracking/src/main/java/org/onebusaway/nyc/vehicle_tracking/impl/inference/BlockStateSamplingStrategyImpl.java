@@ -29,6 +29,7 @@ import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmen
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -98,18 +99,18 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public CategoricalDist<BlockState> cdfForJourneyAtStart(
+  public CategoricalDist<BlockStateObservation> cdfForJourneyAtStart(
       Observation observation) {
 
-    CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
+    CategoricalDist<BlockStateObservation> cdf = _observationCache.getValueForObservation(
         observation, EObservationCacheKey.JOURNEY_START_BLOCK_CDF);
 
     if (cdf == null) {
 
-      Set<BlockState> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
+      Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
           observation, false);
 
-      cdf = new CategoricalDist<BlockState>();
+      cdf = new CategoricalDist<BlockStateObservation>();
 
       StringBuilder b = null;
 
@@ -118,18 +119,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         b.append("potential blocks found: ").append(potentialBlocks.size());
       }
 
-      for (BlockState state : potentialBlocks) {
+      for (BlockStateObservation state : potentialBlocks) {
 
         double p = scoreState(state, observation, true);
 
         cdf.put(p, state);
-
-        if (_log.isDebugEnabled()) {
-          b.append("\n" + state.getBlockLocation().getDistanceAlongBlock()
-              + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-              + "\t" + state.getBlockInstance());
-
-        }
       }
 
       if (_log.isDebugEnabled())
@@ -142,18 +136,18 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public CategoricalDist<BlockState> cdfForJourneyInProgress(
+  public CategoricalDist<BlockStateObservation> cdfForJourneyInProgress(
       Observation observation) {
 
-    CategoricalDist<BlockState> cdf = _observationCache.getValueForObservation(
+    CategoricalDist<BlockStateObservation> cdf = _observationCache.getValueForObservation(
         observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK_CDF);
 
     if (cdf == null) {
 
-      Set<BlockState> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
+      Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
           observation, true);
 
-      cdf = new CategoricalDist<BlockState>();
+      cdf = new CategoricalDist<BlockStateObservation>();
 
       StringBuilder b = null;
       if (_log.isDebugEnabled()) {
@@ -161,17 +155,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         b.append("potential blocks found: " + potentialBlocks.size());
       }
 
-      for (BlockState state : potentialBlocks) {
+      for (BlockStateObservation state : potentialBlocks) {
 
         double p = scoreState(state, observation, false);
 
         cdf.put(p, state);
-
-        if (_log.isDebugEnabled()) {
-          b.append("\n" + state.getBlockLocation().getDistanceAlongBlock()
-              + "\t" + state.getBlockLocation().getScheduledTime() + "\t" + p
-              + "\t" + state.getBlockInstance());
-        }
       }
 
       if (_log.isDebugEnabled())
@@ -188,25 +176,25 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public double scoreState(BlockState state, Observation observation,
-      boolean atStart) {
+  public double scoreState(BlockStateObservation state,
+      Observation observation, boolean atStart) {
     double score;
 
     if (atStart) {
       /**
        * If it's at start, we judge it by it's dsc/route
        */
-      score = scoreJourneyStartState(state, observation);
+      score = scoreJourneyStartState(state.getBlockState(), observation);
     } else {
       /**
        * If it's in-progress, we use sched. time and location deviances
        */
-      ScheduledBlockLocation blockLocation = state.getBlockLocation();
-      BlockInstance blockInstance = state.getBlockInstance();
+      ScheduledBlockLocation blockLocation = state.getBlockState().getBlockLocation();
+      BlockInstance blockInstance = state.getBlockState().getBlockInstance();
       long serviceDate = blockInstance.getServiceDate();
       score = scoreJourneyInProgressState(blockLocation, observation,
           serviceDate);
-      score *= scoreDestinationSignCode(state, observation);
+      score *= scoreDestinationSignCode(state.getBlockState(), observation);
     }
 
     /**
@@ -223,21 +211,23 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       _log.warn("Operator service was not available.");
     }
 
-    boolean noStateButRunInfo = state == null
+    Boolean noStateButRunInfo = state == null
         && (operatorHasAssignment || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
 
-    boolean stateButNoRunMatch = state != null && !state.getOpAssigned()
-        && !state.getRunReported();
+    Boolean stateButNoRunMatch = state != null
+        && state.getOpAssigned() == Boolean.FALSE
+        && state.getRunReported() == Boolean.FALSE;
 
     /**
      * Use only 10% of the score when a proposal doesn't use the run info
      * provided. Also, sample closer fuzzy matches.
      */
-    if (noStateButRunInfo || stateButNoRunMatch) {
+    if (noStateButRunInfo == Boolean.TRUE || stateButNoRunMatch == Boolean.TRUE) {
       score *= 0.10;
     } else if (state != null) {
-      if (state.getRunReported()) {
-        if (observation.getFuzzyMatchDistance() > 0)
+      if (state.getRunReported() == Boolean.TRUE) {
+        if (observation.getFuzzyMatchDistance() != null
+            && observation.getFuzzyMatchDistance() > 0)
           score *= 0.95;
       }
     }

@@ -27,14 +27,17 @@ public class Trace_4138_20111207_150000_220000_IntegrationTest extends AbstractT
   public Trace_4138_20111207_150000_220000_IntegrationTest() throws Exception {
     super("4138_20111207_150000_220000.csv.gz");
     setBundle("si", "2011-12-14T00:00:00EDT");
-    setLoops(2);
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.86);
-//    setMinAccuracyRatioForPhase(EVehiclePhase.AT_BASE, 0.86);
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.93);
+    setLoops(1);
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.91);
+    /**
+     * TODO records 120 onward should ideally be deadhead, but it's 
+     * tough for the current filter.
+     */
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.54);
     /**
      * Whether it should be layover or deadhead is still a question,
      * but in general it doesn't hurt us (since it's a block-less state).
      */
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.5);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.95);
   }
 }

@@ -19,27 +19,31 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Writer;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.TreeMap;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
+
 import org.onebusaway.collections.Counter;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
@@ -54,6 +58,7 @@ import cern.jet.stat.Descriptive;
 
 public class AbstractTraceRunner {
 
+  
   private static Logger _log = LoggerFactory
       .getLogger(AbstractTraceRunner.class);
 
@@ -74,7 +79,7 @@ public class AbstractTraceRunner {
 
   private double _minAccuracyRatio = 0.95;
 
-  private Map<EVehiclePhase, Double> _minAccuracyRatiosByPhase = new HashMap<EVehiclePhase, Double>();
+  private Map<EVehiclePhase, Double> _minAccuracyRatiosByPhase = new TreeMap<EVehiclePhase, Double>();
 
   private double _median = 10.0;
 
@@ -161,12 +166,12 @@ public class AbstractTraceRunner {
 
     String port = System.getProperty(
         "org.onebusaway.transit_data_federation_webapp.port", "9905");
-    String phaseSeed = "298763210";
+    String factorySeed = "298763210";
     String cdfSeed = "184970829";
     String urlStr = "http://localhost:"
         + port
-        + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!set-seeds.do?phaseSeed="
-        + phaseSeed + "&cdfSeed=" + cdfSeed;
+        + "/onebusaway-nyc-vehicle-tracking-webapp/vehicle-location-simulation!set-seeds.do?factorySeed="
+        + factorySeed + "&cdfSeed=" + cdfSeed;
 
     HttpClient client = new HttpClient();
     GetMethod get = new GetMethod(urlStr);
@@ -176,7 +181,7 @@ public class AbstractTraceRunner {
     if (!response.equals("OK"))
       throw new Exception("Failed trying to execute:" + urlStr);
 
-    System.out.println("Successfully set seeds: phase=" + phaseSeed + ", cdf="
+    System.out.println("Successfully set seeds: phase=" + factorySeed + ", cdf="
         + cdfSeed);
   }
 
@@ -184,6 +189,7 @@ public class AbstractTraceRunner {
   public void test() throws Throwable {
     Map<EVehiclePhase, Double> results = runTest();
 
+    System.out.println("results of " + this.getClass().getSimpleName());
     for (Entry<EVehiclePhase, Double> result : results.entrySet()) {
       double relativeRatio = result.getValue();
 
@@ -192,7 +198,7 @@ public class AbstractTraceRunner {
       if (_minAccuracyRatiosByPhase.containsKey(result.getKey()))
         minAccuracyRatio = _minAccuracyRatiosByPhase.get(result.getKey());
 
-      String label = "average phase ratio " + result.getKey() + "="
+      String label = "\taverage phase ratio " + result.getKey() + "="
           + relativeRatio + " vs min of " + minAccuracyRatio;
 
       System.out.println(label);
@@ -201,6 +207,7 @@ public class AbstractTraceRunner {
     }
   }
 
+  
   /**
    * 
    * @return map of phases to average acceptance ratios
@@ -212,7 +219,7 @@ public class AbstractTraceRunner {
         .readRecords(trace);
 
     int successfulIterations = 0;
-    Map<EVehiclePhase, Double> phaseResults = new HashMap<EVehiclePhase, Double>();
+    Map<EVehiclePhase, Double> phaseResults = new TreeMap<EVehiclePhase, Double>();
 
     for (int i = 0; i < _loops; i++) {
 
@@ -229,6 +236,7 @@ public class AbstractTraceRunner {
 
         String asString = _traceSupport.getRecordsAsString(actual);
         _log.debug("actual records:\n" + asString);
+
 
         System.out.println("records=" + actual.size() + "/" + expected.size());
 
@@ -289,64 +297,84 @@ public class AbstractTraceRunner {
       List<NycTestInferredLocationRecord> expected,
       List<NycTestInferredLocationRecord> actual) {
 
-    Counter<EVehiclePhase> expPhaseCounts = new Counter<EVehiclePhase>();
-    Counter<EVehiclePhase> actPhaseCounts = new Counter<EVehiclePhase>();
+    Counter<EVehiclePhase> truePhaseCounts = new Counter<EVehiclePhase>();
+    Counter<EVehiclePhase> infPhaseCounts = new Counter<EVehiclePhase>();
 
     int actuallyActiveTrips = 0;
     int correctlyPredictedActiveTrips = 0;
     int falsePositiveCount = 0;
 
-    Map<EVehiclePhase, Double> phaseResults = new HashMap<EVehiclePhase, Double>();
+    Map<EVehiclePhase, Double> phaseResults = new TreeMap<EVehiclePhase, Double>();
 
     DoubleArrayList distanceAlongBlockDeviations = new DoubleArrayList();
 
     for (int i = 0; i < expected.size(); i++) {
 
-      NycTestInferredLocationRecord expRecord = expected.get(i);
-      NycTestInferredLocationRecord actRecord = actual.get(i);
+      NycTestInferredLocationRecord trueRecord = expected.get(i);
+      NycTestInferredLocationRecord infRecord = actual.get(i);
 
-      assertTrue(StringUtils.isNotEmpty(actRecord.getInferredStatus()));
+      assertTrue(StringUtils.isNotEmpty(infRecord.getInferredStatus()));
 
       /*
        * Check that we don't register a trip for an out-of-service DSC
        */
-      String dsc = actRecord.getInferredDsc();
-      if (StringUtils.isNotBlank(actRecord.getInferredTripId())) {
+      String dsc = infRecord.getInferredDsc();
+      if (StringUtils.isNotBlank(infRecord.getInferredTripId())) {
         assertTrue(!_vehicleTrackingManagementService
             .isOutOfServiceDestinationSignCode(dsc)
             && !_vehicleTrackingManagementService
                 .isUnknownDestinationSignCode(dsc));
       }
 
-      EVehiclePhase expPhase = EVehiclePhase
-          .valueOf(expRecord.getActualPhase());
+      EVehiclePhase truePhase = EVehiclePhase
+          .valueOf(trueRecord.getActualPhase());
 
-      assertTrue(expPhase != null);
+      assertTrue(truePhase != null);
 
-      EVehiclePhase actPhase = EVehiclePhase.valueOf(actRecord
+      EVehiclePhase infPhase = EVehiclePhase.valueOf(infRecord
           .getInferredPhase());
 
-      expPhaseCounts.increment(expPhase);
+      truePhaseCounts.increment(truePhase);
 
       /**
        * Notice that we allow deadhead-after <=> deadhead-before,
        * due to 
        */
-      if (expPhase.equals(actPhase)
-          || (expPhase.equals(EVehiclePhase.DEADHEAD_AFTER)
-              && actPhase.equals(EVehiclePhase.DEADHEAD_BEFORE)))
-        actPhaseCounts.increment(expPhase);
+      if (truePhase.equals(infPhase)
+          /*
+           * we allow an equivalence between deadhead-after
+           * and before due to possible future implementations
+           * of deadhead-after, and due to old tests created
+           * when deadhead-after was implemented.
+           */
+          || (truePhase.equals(EVehiclePhase.DEADHEAD_AFTER)
+              && infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE))
+          /*
+           * we allow an equivalence between deadhead-before and
+           * layover-before without an associated block, since
+           * layover-before is more likely without a block
+           * (a terminal, in that case, is defined as the first
+           * or last stop of a trip). 
+           */
+          || (truePhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
+              && infPhase.equals(EVehiclePhase.LAYOVER_BEFORE)
+              && StringUtils.isBlank(infRecord.getInferredBlockId()))
+          || (infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
+              && truePhase.equals(EVehiclePhase.LAYOVER_BEFORE)
+              && StringUtils.isBlank(trueRecord.getInferredBlockId()))
+              )
+        infPhaseCounts.increment(truePhase);
 
-      if (EVehiclePhase.isActiveDuringBlock(expPhase)
-          && EVehiclePhase.isActiveDuringBlock(actPhase)) {
-        String expectedBlockId = expRecord.getActualBlockId();
-        String actualBlockId = actRecord.getInferredBlockId();
+      if (EVehiclePhase.isActiveDuringBlock(truePhase)
+          && EVehiclePhase.isActiveDuringBlock(infPhase)) {
+        String expectedBlockId = trueRecord.getActualBlockId();
+        String actualBlockId = infRecord.getInferredBlockId();
 
         // FIXME it's weird to sometimes check this, no?
         if (StringUtils.equals(expectedBlockId, actualBlockId)) {
-          double expectedDistanceAlongBlock = expRecord
+          double expectedDistanceAlongBlock = trueRecord
               .getActualDistanceAlongBlock();
-          double actualDistanceAlongBlock = actRecord
+          double actualDistanceAlongBlock = infRecord
               .getInferredDistanceAlongBlock();
           double delta = Math.abs(expectedDistanceAlongBlock
               - actualDistanceAlongBlock);
@@ -358,11 +386,11 @@ public class AbstractTraceRunner {
       /*
        * here we tally the number of correctly identified (truly) active trips.
        */
-      if (EVehiclePhase.isActiveDuringBlock(expPhase)) {
+      if (EVehiclePhase.isActiveDuringBlock(truePhase)) {
         ++actuallyActiveTrips;
 
-        if (StringUtils.equals(actRecord.getActualTripId(),
-            actRecord.getInferredTripId())) {
+        if (StringUtils.equals(infRecord.getActualTripId(),
+            infRecord.getInferredTripId())) {
           ++correctlyPredictedActiveTrips;
         }
       }
@@ -370,8 +398,8 @@ public class AbstractTraceRunner {
       /*
        * record the false positives
        */
-      if (!EVehiclePhase.isActiveDuringBlock(expPhase)
-          && EVehiclePhase.isActiveDuringBlock(actPhase)) {
+      if (!EVehiclePhase.isActiveDuringBlock(truePhase)
+          && EVehiclePhase.isActiveDuringBlock(infPhase)) {
         ++falsePositiveCount;
       }
       
@@ -383,13 +411,13 @@ public class AbstractTraceRunner {
 
     for (EVehiclePhase phase : EVehiclePhase.values()) {
 
-      double expectedCount = expPhaseCounts.getCount(phase);
+      double expectedCount = truePhaseCounts.getCount(phase);
       double expRatio = expectedCount / expected.size();
 
       if (expRatio < _minPhaseRatioForConsideration)
         continue;
 
-      double relativeRatio = actPhaseCounts.getCount(phase) / expectedCount;
+      double relativeRatio = infPhaseCounts.getCount(phase) / expectedCount;
 
       double minAccuracyRatio = _minAccuracyRatio;
 

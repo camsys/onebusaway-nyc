@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -43,41 +43,43 @@ import org.zeromq.ZMQ;
 
 public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
-	private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
+  private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
 
-	private static final long HEARTBEAT_INTERVAL = 1000l;
+  private static final long HEARTBEAT_INTERVAL = 1000l;
 
-	private static final String HEARTBEAT_TOPIC = "heartbeat";
+  private static final String HEARTBEAT_TOPIC = "heartbeat";
 
-	private ExecutorService _executorService = null;
+  private ExecutorService _executorService = null;
 
-	private ExecutorService _heartbeatService = null;
+  private ExecutorService _heartbeatService = null;
 
-	private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(100);
+  private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(
+      100);
 
-	private ArrayBlockingQueue<String> _heartbeatBuffer = new ArrayBlockingQueue<String>(10);
+  private ArrayBlockingQueue<String> _heartbeatBuffer = new ArrayBlockingQueue<String>(
+      10);
 
-	private boolean _initialized = false;
+  private boolean _initialized = false;
 
-	public boolean _isPrimaryInferenceInstance = true;
+  public boolean _isPrimaryInferenceInstance = true;
 
-	public String _primaryHostname = null;
+  public String _primaryHostname = null;
 
-	private ObjectMapper _mapper = new ObjectMapper();		
+  private ObjectMapper _mapper = new ObjectMapper();
 
-	protected DNSResolver _outputQueueResolver = null;
+  protected DNSResolver _outputQueueResolver = null;
 
-	protected DNSResolver _primaryResolver = null;
+  protected DNSResolver _primaryResolver = null;
 
-	protected ZMQ.Context _context = null;
+  protected ZMQ.Context _context = null;
 
-	protected ZMQ.Socket _socket = null;
+  protected ZMQ.Socket _socket = null;
 
-    @Autowired
-    private ConfigurationService _configurationService;
+  @Autowired
+  private ConfigurationService _configurationService;
 
-	@Autowired
-	private ThreadPoolTaskScheduler _taskScheduler;
+  @Autowired
+  private ThreadPoolTaskScheduler _taskScheduler;
 
   private class SendThread implements Runnable {
 
@@ -96,42 +98,41 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
     @Override
     public void run() {
-      while(!Thread.currentThread().isInterrupted()) {		    	
+      while (!Thread.currentThread().isInterrupted()) {
         String h = _heartbeatBuffer.poll();
         if (h != null) {
-            if (_isPrimaryInferenceInstance) {
-                _zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
-                _zmqSocket.send(h.getBytes(), 0);
-                _log.debug("heartbeat=" + h);
-            }
+          if (_isPrimaryInferenceInstance) {
+            _zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
+            _zmqSocket.send(h.getBytes(), 0);
+            _log.debug("heartbeat=" + h);
+          }
         }
 
         String r = _outputBuffer.poll();
-        if(r == null)
+        if (r == null)
           continue;
 
         if (_isPrimaryInferenceInstance) {
-            _zmqSocket.send(_topicName, ZMQ.SNDMORE);
-            _zmqSocket.send(r.getBytes(), 0);
+          _zmqSocket.send(_topicName, ZMQ.SNDMORE);
+          _zmqSocket.send(r.getBytes(), 0);
         }
-
 
         Thread.yield();
 
-        if(processedCount > 50) {
-          _log.warn("Inference output queue(primary=" + _isPrimaryInferenceInstance 
-							+ "): processed 50 messages in " 
-              + (new Date().getTime() - markTimestamp.getTime()) / 1000 + 
-              " seconds; current queue length is " + _outputBuffer.size());
+        if (processedCount > 50) {
+          _log.warn("Inference output queue(primary="
+              + _isPrimaryInferenceInstance + "): processed 50 messages in "
+              + (new Date().getTime() - markTimestamp.getTime()) / 1000
+              + " seconds; current queue length is " + _outputBuffer.size());
 
           markTimestamp = new Date();
           processedCount = 0;
         }
 
-        processedCount++;		    	
+        processedCount++;
       }
     }
-  }	
+  }
 
   private class HeartbeatThread implements Runnable {
 
@@ -139,68 +140,68 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
     private byte[] _topicName = null;
 
-	private long _interval;
+    private long _interval;
 
     public HeartbeatThread(long interval) {
-			_interval = interval;
-  }
+      _interval = interval;
+    }
 
     @Override
     public void run() {
 
-			try {
-				while (!Thread.currentThread().isInterrupted()) {
-                    long markTimestamp = System.currentTimeMillis();
-					if (_isPrimaryInferenceInstance) {
-						String msg = getHeartbeatMessage(getPrimaryHostname(),
-																						 markTimestamp,
-																						 _interval);
-						_heartbeatBuffer.put(msg);
-					}
-					Thread.sleep(_interval);
-				}
-			} catch (InterruptedException ie) {
-                _log.error(ie.toString());
-			}
+      try {
+        while (!Thread.currentThread().isInterrupted()) {
+          long markTimestamp = System.currentTimeMillis();
+          if (_isPrimaryInferenceInstance) {
+            String msg = getHeartbeatMessage(getPrimaryHostname(),
+                markTimestamp, _interval);
+            _heartbeatBuffer.put(msg);
+          }
+          Thread.sleep(_interval);
+        }
+      } catch (InterruptedException ie) {
+        _log.error(ie.toString());
+      }
     }
 
-		private String getHeartbeatMessage(String hostname, long timestamp, long interval) {
-			final String msg = "{\"heartbeat\": {\"hostname\":\"%1$s\",\"heartbeat_timestamp\":%2$s,\"heartbeat_interval\":%3$s}}";
-			return String.format(msg, getPrimaryHostname(), timestamp, interval);
-		}
-  }	
+    private String getHeartbeatMessage(String hostname, long timestamp,
+        long interval) {
+      final String msg = "{\"heartbeat\": {\"hostname\":\"%1$s\",\"heartbeat_timestamp\":%2$s,\"heartbeat_interval\":%3$s}}";
+      return String.format(msg, getPrimaryHostname(), timestamp, interval);
+    }
+  }
 
-	private class OutputQueueCheckThread extends TimerTask {
+  private class OutputQueueCheckThread extends TimerTask {
 
-	@Override
-  	public void run() {
-			try {
-				if (_outputQueueResolver.hasAddressChanged()) {
-					_log.warn("Resolver Changed");
-					reinitializeQueue();
-				}
-			} catch (Exception e) {
-				_log.error(e.toString());
-				_outputQueueResolver.reset();
-			}
-		}
-	}
+    @Override
+    public void run() {
+      try {
+        if (_outputQueueResolver.hasAddressChanged()) {
+          _log.warn("Resolver Changed");
+          reinitializeQueue();
+        }
+      } catch (Exception e) {
+        _log.error(e.toString());
+        _outputQueueResolver.reset();
+      }
+    }
+  }
 
-	private class PrimaryCheckThread extends TimerTask {
+  private class PrimaryCheckThread extends TimerTask {
 
-		@Override
-		public void run() {
-			try {
-				boolean primaryValue = _primaryResolver.isPrimary();
-				if (primaryValue != _isPrimaryInferenceInstance) {
-					_log.warn("Primary inference status changed to " + primaryValue);
-					_isPrimaryInferenceInstance = primaryValue;
-				}
-			} catch (Exception e) {
-				_log.error(e.toString());
-			}
-		}
-	}
+    @Override
+    public void run() {
+      try {
+        boolean primaryValue = _primaryResolver.isPrimary();
+        if (primaryValue != _isPrimaryInferenceInstance) {
+          _log.warn("Primary inference status changed to " + primaryValue);
+          _isPrimaryInferenceInstance = primaryValue;
+        }
+      } catch (Exception e) {
+        _log.error(e.toString());
+      }
+    }
+  }
 
   @Override
   public void enqueue(NycQueuedInferredLocationBean r) {
@@ -209,12 +210,13 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
       MappingJsonFactory jsonFactory = new MappingJsonFactory();
       JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       _mapper.writeValue(jsonGenerator, r);
-      sw.close();			
+      sw.close();
 
       _outputBuffer.put(sw.toString());
-    } catch(IOException e) {
-      _log.info("Could not serialize inferred location record: " + e.getMessage()); 
-    } catch(InterruptedException e) {
+    } catch (IOException e) {
+      _log.info("Could not serialize inferred location record: "
+          + e.getMessage());
+    } catch (InterruptedException e) {
       // discard if thread is interrupted or serialization fails
       return;
     }
@@ -222,32 +224,35 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
   @PostConstruct
   public void setup() {
-		_outputQueueResolver = new DNSResolver(getQueueHost());
-		OutputQueueCheckThread outputQueueCheckThread = new OutputQueueCheckThread();
-		// every 10 seconds
-		_taskScheduler.scheduleWithFixedDelay(outputQueueCheckThread, 10*1000);
+    _outputQueueResolver = new DNSResolver(getQueueHost());
+    OutputQueueCheckThread outputQueueCheckThread = new OutputQueueCheckThread();
+    // every 10 seconds
+    _taskScheduler.scheduleWithFixedDelay(outputQueueCheckThread, 10 * 1000);
 
-		if (getPrimaryHostname() != null && getPrimaryHostname().length() > 0) {
-			_primaryResolver = new DNSResolver(getPrimaryHostname());
-			_log.warn("Primary Inference instance configured to be " + getPrimaryHostname() + " on " + _primaryResolver.getLocalHostString());
-			PrimaryCheckThread primaryCheckThread = new PrimaryCheckThread();
-			_taskScheduler.scheduleWithFixedDelay(primaryCheckThread, 10*1000);
-		}
+    if (getPrimaryHostname() != null && getPrimaryHostname().length() > 0) {
+      _primaryResolver = new DNSResolver(getPrimaryHostname());
+      _log.warn("Primary Inference instance configured to be "
+          + getPrimaryHostname() + " on "
+          + _primaryResolver.getLocalHostString());
+      PrimaryCheckThread primaryCheckThread = new PrimaryCheckThread();
+      _taskScheduler.scheduleWithFixedDelay(primaryCheckThread, 10 * 1000);
+    }
     _executorService = Executors.newFixedThreadPool(1);
     _heartbeatService = Executors.newFixedThreadPool(1);
     startListenerThread();
   }
 
-  @PreDestroy 
+  @PreDestroy
   public void destroy() {
     _executorService.shutdownNow();
-	_heartbeatService.shutdownNow();
+    _heartbeatService.shutdownNow();
   }
 
-  @Refreshable(dependsOn = {"inference-engine.outputQueueHost", 
-      "inference-engine.outputQueuePort", "inference-engine.outputQueueName"})
+  @Refreshable(dependsOn = {
+      "inference-engine.outputQueueHost", "inference-engine.outputQueuePort",
+      "inference-engine.outputQueueName"})
   public void startListenerThread() {
-    if(_initialized == true) {
+    if (_initialized == true) {
       _log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
       return;
     }
@@ -256,85 +261,87 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
     String queueName = getQueueName();
     Integer port = getQueuePort();
 
-    if(host == null || queueName == null || port == null) {
+    if (host == null || queueName == null || port == null) {
       _log.info("Inference output queue is not attached; output hostname was not available via configuration service.");
       return;
     }
 
-	try {
-		initializeQueue(host, queueName, port);
-	} catch (Exception any) {
-		_outputQueueResolver.reset();
-	}
+    try {
+      initializeQueue(host, queueName, port);
+    } catch (Exception any) {
+      _outputQueueResolver.reset();
+    }
 
   }
 
-	protected void reinitializeQueue() {
-		try {
-			initializeQueue(getQueueHost(),
-							getQueueName(),
-							getQueuePort());
-		} catch (InterruptedException ie) {
-			return;
-		}
-	}
+  protected void reinitializeQueue() {
+    try {
+      initializeQueue(getQueueHost(), getQueueName(), getQueuePort());
+    } catch (InterruptedException ie) {
+      return;
+    }
+  }
 
-	protected synchronized void initializeQueue(String host, String queueName, Integer port) throws InterruptedException {
-        String bind = "tcp://" + host + ":" + port;
-        _log.warn("binding to " + bind);
-		if (_context == null) {
-			_context = ZMQ.context(1);
-		}
-        if (_socket != null) {
-            _executorService.shutdownNow();
-            _heartbeatService.shutdownNow();
-            Thread.sleep(1*1000);
-            _log.warn("_executorService.isTerminated=" + _executorService.isTerminated());
-            _socket.close();
-            _executorService = Executors.newFixedThreadPool(1);
-            _heartbeatService = Executors.newFixedThreadPool(1);
-        }
+  protected synchronized void initializeQueue(String host, String queueName,
+      Integer port) throws InterruptedException {
+    String bind = "tcp://" + host + ":" + port;
+    _log.warn("binding to " + bind);
+    if (_context == null) {
+      _context = ZMQ.context(1);
+    }
+    if (_socket != null) {
+      _executorService.shutdownNow();
+      _heartbeatService.shutdownNow();
+      Thread.sleep(1 * 1000);
+      _log.warn("_executorService.isTerminated="
+          + _executorService.isTerminated());
+      _socket.close();
+      _executorService = Executors.newFixedThreadPool(1);
+      _heartbeatService = Executors.newFixedThreadPool(1);
+    }
 
-        _socket = _context.socket(ZMQ.PUB);	    	
-        _socket.connect(bind);
-        _executorService.execute(new SendThread(_socket, queueName));
-        _heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
+    _socket = _context.socket(ZMQ.PUB);
+    _socket.connect(bind);
+    _executorService.execute(new SendThread(_socket, queueName));
+    _heartbeatService.execute(new HeartbeatThread(HEARTBEAT_INTERVAL));
 
-        _log.debug("Inference output queue is sending to " + bind);
-        _initialized = true;
-	}
+    _log.debug("Inference output queue is sending to " + bind);
+    _initialized = true;
+  }
 
-	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString("inference-engine.outputQueueHost", null);
-	}
+  public String getQueueHost() {
+    return _configurationService.getConfigurationValueAsString(
+        "inference-engine.outputQueueHost", null);
+  }
 
-	public String getQueueName() {
-		return _configurationService.getConfigurationValueAsString("inference-engine.outputQueueName", null);
-	}
+  public String getQueueName() {
+    return _configurationService.getConfigurationValueAsString(
+        "inference-engine.outputQueueName", null);
+  }
 
-	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger("inference-engine.outputQueuePort", 5566);
-	}
+  public Integer getQueuePort() {
+    return _configurationService.getConfigurationValueAsInteger(
+        "inference-engine.outputQueuePort", 5566);
+  }
 
   @Override
   public void setIsPrimaryInferenceInstance(boolean isPrimary) {
-    _isPrimaryInferenceInstance = isPrimary;		
+    _isPrimaryInferenceInstance = isPrimary;
   }
 
   @Override
   public boolean getIsPrimaryInferenceInstance() {
     return _isPrimaryInferenceInstance;
-  }	
+  }
 
   @Override
   public void setPrimaryHostname(String hostname) {
-	_primaryHostname = hostname;
+    _primaryHostname = hostname;
   }
 
   @Override
   public String getPrimaryHostname() {
-	return _primaryHostname;
+    return _primaryHostname;
   }
-
 
 }

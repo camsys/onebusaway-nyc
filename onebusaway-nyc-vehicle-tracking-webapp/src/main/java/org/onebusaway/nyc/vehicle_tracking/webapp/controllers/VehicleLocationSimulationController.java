@@ -165,14 +165,9 @@ public class VehicleLocationSimulationController {
   @RequestMapping(value = "/vehicle-location-simulation!set-seeds.do", method = RequestMethod.GET)
   public ModelAndView setSeeds(HttpSession session,
       @RequestParam(value = "cdfSeed", required = false, defaultValue = "0") long cdfSeed,
-      @RequestParam(value = "phaseSeed", required = false, defaultValue = "0") long phaseSeed) {
-    if (cdfSeed != 0) {
-      _vehicleLocationInferenceService.setCdfSeed(cdfSeed);
-    }
+      @RequestParam(value = "factorySeed", required = false, defaultValue = "0") long factorySeed) {
     
-    if (phaseSeed != 0) {
-      _vehicleLocationInferenceService.setPhaseSeed(phaseSeed);
-    }
+    _vehicleLocationInferenceService.setSeeds(cdfSeed, factorySeed);
 
     return new ModelAndView("vehicle-location-simulation-set-seeds.jspx");
   }

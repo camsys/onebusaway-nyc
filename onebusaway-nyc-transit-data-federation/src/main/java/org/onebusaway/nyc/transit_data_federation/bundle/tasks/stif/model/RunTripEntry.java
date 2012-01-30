@@ -6,6 +6,8 @@ import org.apache.commons.lang.StringUtils;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
+import com.google.common.collect.ComparisonChain;
+
 /**
  * This represents the part of a trip which is on a single run
  * 
@@ -69,7 +71,18 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
 
   @Override
   public int compareTo(RunTripEntry other) {
-    return getStartTime() - other.getStartTime();
+    
+    if (this == other)
+      return 0;
+    
+    int res = ComparisonChain.start()
+        .compare(entry.getId(), other.getTripEntry().getId())
+        .compare(runId, other.runId)
+        .compare(reliefTime, other.reliefTime)
+        .compare(relief, other.relief)
+        .result();
+    
+    return res;
   }
 
   public TripEntry getTripEntry() {
@@ -98,5 +111,36 @@ public class RunTripEntry implements Comparable<RunTripEntry> {
 
   public String toString() {
     return "RunTripEntry(" + entry + "," + runId + ")";
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((entry == null) ? 0 : entry.hashCode());
+    result = prime * result + ((runId == null) ? 0 : runId.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof RunTripEntry))
+      return false;
+    RunTripEntry other = (RunTripEntry) obj;
+    if (entry == null) {
+      if (other.entry != null)
+        return false;
+    } else if (!entry.equals(other.entry))
+      return false;
+    if (runId == null) {
+      if (other.runId != null)
+        return false;
+    } else if (!runId.equals(other.runId))
+      return false;
+    return true;
   }
 }

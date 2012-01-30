@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -48,7 +48,8 @@ public class SplitTestTracesMain {
     reader.addEntityHandler(handler);
 
     for (int i = 0; i < args.length - 1; i++)
-      reader.readEntities(NycTestInferredLocationRecord.class, new FileReader(args[i]));
+      reader.readEntities(NycTestInferredLocationRecord.class, new FileReader(
+          args[i]));
 
     handler.close();
   }
@@ -92,8 +93,8 @@ public class SplitTestTracesMain {
           _outputWriter = new FileWriter(outputFile);
 
           CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
-          _entityWriter = factory.createWriter(NycTestInferredLocationRecord.class,
-              _outputWriter);
+          _entityWriter = factory.createWriter(
+              NycTestInferredLocationRecord.class, _outputWriter);
         }
 
         _entityWriter.handleEntity(record);
