@@ -27,7 +27,7 @@ public class Trace_4138_20111207_150000_220000_IntegrationTest extends AbstractT
   public Trace_4138_20111207_150000_220000_IntegrationTest() throws Exception {
     super("4138_20111207_150000_220000.csv.gz");
     setBundle("si", "2011-12-14T00:00:00EDT");
-    setLoops(1);
+    setLoops(2);
     setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.91);
     /**
      * TODO records 120 onward should ideally be deadhead, but it's 
