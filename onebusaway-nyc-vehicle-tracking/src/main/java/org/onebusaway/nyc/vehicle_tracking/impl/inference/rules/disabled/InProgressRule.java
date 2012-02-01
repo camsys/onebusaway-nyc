@@ -35,7 +35,7 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class InProgressRule implements SensorModelRule {
 
   private DeviationModel _nearbyTripSigma = new DeviationModel(50.0);

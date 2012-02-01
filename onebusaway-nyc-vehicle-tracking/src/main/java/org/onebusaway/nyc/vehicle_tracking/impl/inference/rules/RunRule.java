@@ -65,7 +65,7 @@ public class RunRule implements SensorModelRule {
         else
           result.addResultAsAnd("run reported (fuzzy)", 0.6);
       } else if (blockState.getRunReported() == Boolean.FALSE
-          && blockState.getOpAssigned() == Boolean.FALSE){
+          || blockState.getOpAssigned() == Boolean.FALSE){
         result.addResultAsAnd("no run info matches", 0.5);
       }
     } else {

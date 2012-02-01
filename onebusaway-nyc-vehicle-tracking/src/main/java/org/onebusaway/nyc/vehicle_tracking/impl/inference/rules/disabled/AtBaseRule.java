@@ -29,7 +29,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class AtBaseRule implements SensorModelRule {
 
   private VehicleStateLibrary _vehicleStateLibrary;

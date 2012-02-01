@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -150,29 +151,32 @@ public class BlockStateService {
           blockDistanceFrom, blockDistanceTo);
       m.put(key, blockStates);
       
+      /*
+       * Keep the best (minimal location deviation) block state
+       * with a route matching the dsc.
+       */
       if (observation.getDscImpliedRouteCollections().contains(
-          blockStates.getBestLocation().getBlockLocation()
-          .getActiveTrip().getTrip().getRouteCollection().getId())) {
-        
-        BestBlockStates cachedBestStates = _observationCache.getValueForObservation(
-            observation, EObservationCacheKey.ROUTE_LOCATION);
-        
-        if (cachedBestStates == null 
-            || cachedBestStates.getLocDev() > blockStates.getLocDev()) {
-          _observationCache.putValueForObservation(observation,
-              EObservationCacheKey.ROUTE_LOCATION, blockStates);
+          blockStates.getBestLocation().getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId())) {
+
+        if (_bestObsRouteLocation == null
+            || observation.getTime() > _bestObsRouteLocation.getKey().getTime()
+            || _bestObsRouteLocation.getValue().getLocDev() > blockStates.getLocDev()) {
+          _bestObsRouteLocation = new AbstractMap.SimpleImmutableEntry<Observation, BestBlockStates>(observation, blockStates);
         }
       }
     }
 
     return blockStates;
   }
+
+  private static Map.Entry<Observation, BestBlockStates> _bestObsRouteLocation;
   
-  public BestBlockStates getBestBlockStateForRoute(Observation observation) {
-    BestBlockStates bestState = _observationCache.getValueForObservation(
-        observation, EObservationCacheKey.ROUTE_LOCATION);
-    return bestState;
-  }
+  public static BestBlockStates getBestBlockStateForRoute(Observation observation) {
+    if (_bestObsRouteLocation != null
+        && observation.equals(_bestObsRouteLocation.getKey()))
+      return _bestObsRouteLocation.getValue();
+    return null;
+  } 
 
   public BlockState getScheduledTimeAsState(BlockInstance blockInstance,
       RunTripEntry rte, int scheduledTime) {
@@ -181,16 +185,9 @@ public class BlockStateService {
     ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
         blockConfig, scheduledTime);
 
-    /*
-     * The above method returns null when we're beyond the end of the block,
-     * so return the end point.
-     */
-    if (blockLocation == null) {
-      blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-          blockConfig, blockConfig.getTotalBlockDistance());
-//      throw new IllegalStateException("no blockLocation for " + blockInstance
-//          + " scheduleTime=" + scheduledTime);
-    }
+    if (blockLocation == null)
+      throw new IllegalStateException("no blockLocation for " + blockInstance
+          + " scheduleTime=" + scheduledTime);
 
     BlockTripEntry activeTrip = blockLocation.getActiveTrip();
     String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());

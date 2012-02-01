@@ -77,7 +77,7 @@ public class DistAlongDevDist implements
      * update if it hasn't already been, since this value is necessary for
      * learning
      */
-    if (_lastDevSample == _distAlongDevSample)
+    if (_lastDevSample.equals(_distAlongDevSample))
       _distAlongDevSample = HalfNormalGen.nextDouble(_rng, _distAlongDevSample,
           Math.sqrt(_distAlongDevTransVarSample));
 

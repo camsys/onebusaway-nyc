@@ -34,7 +34,9 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
+import java.util.concurrent.ExecutionException;
+
+//@Component
 public class BlockRule implements SensorModelRule {
 
   BlockStateService _blockStateService;

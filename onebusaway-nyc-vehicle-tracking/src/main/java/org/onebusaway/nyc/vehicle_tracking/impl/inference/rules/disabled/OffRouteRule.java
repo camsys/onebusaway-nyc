@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * @author bdferris
  * 
  */
-@Component
+//@Component
 public class OffRouteRule implements SensorModelRule {
 
   private VehicleStateLibrary _vehicleStateLibrary;

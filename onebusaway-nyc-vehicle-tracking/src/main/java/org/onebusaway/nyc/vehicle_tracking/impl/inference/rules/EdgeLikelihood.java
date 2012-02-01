@@ -28,26 +28,23 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSuppo
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
+
+import com.google.common.collect.Iterables;
 
 import org.apache.commons.math.util.FastMath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.print.attribute.standard.PDLOverrideSupported;
+import java.util.concurrent.ExecutionException;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import umontreal.iro.lecuyer.probdist.NormalDist;
 
 @Component
 public class EdgeLikelihood implements SensorModelRule {
-
-//  private DeviationModel _nearbyTripSigma = new DeviationModel(50.0);
-  private final FoldedNormalDist _gpsDist = new FoldedNormalDist(20.0, 50.0);
-  private final NormalDist _schedDevDist = new NormalDist(10.0, 30.0);
 
   private BlockStateService _blockStateService;
   private ScheduleDeviationLibrary _scheduleDeviationLibrary;
@@ -74,25 +71,26 @@ public class EdgeLikelihood implements SensorModelRule {
     JourneyState js = state.getJourneyState();
     EVehiclePhase phase = js.getPhase();
     BlockState blockState = state.getBlockState();
+    
+    SensorModelResult result = new SensorModelResult("pInProgress");
+    
+    if (!(phase == EVehiclePhase.IN_PROGRESS
+        || phase == EVehiclePhase.DEADHEAD_BEFORE 
+        || phase == EVehiclePhase.DEADHEAD_DURING))
+      return result;
 
     /*
      * When we have no block-state, we use the best state with a 
      * route that matches the observations DSC-implied route, if any.
      */
     if (blockState == null
-        || phase == EVehiclePhase.DEADHEAD_BEFORE) {
+        || phase != EVehiclePhase.IN_PROGRESS) {
       BestBlockStates bestStates = _blockStateService.getBestBlockStateForRoute(obs);
       if (bestStates != null)
         blockState = bestStates.getBestLocation();
+      else
+        return result;
     }
-    
-    SensorModelResult result = new SensorModelResult("pInProgress");
-    
-    if (!(phase == EVehiclePhase.IN_PROGRESS
-        || phase == EVehiclePhase.DEADHEAD_BEFORE 
-        || phase == EVehiclePhase.DEADHEAD_DURING)
-        || blockState == null)
-      return result;
     
     /*
      * GPS Error
@@ -123,11 +121,12 @@ public class EdgeLikelihood implements SensorModelRule {
     if (parentState != null) {
       BlockState pBlockState = parentState.getBlockState();
       
-      if ((pBlockState == null 
-            && obs.getPreviousObservation() != null)
+      if ((pBlockState == null)
           || (pBlockState != null 
-              &&!pBlockState.getBlockInstance().equals(blockState.getBlockInstance()))
-              ) {
+              && !pBlockState.getBlockInstance().equals(blockState.getBlockInstance()))) {
+        if  (obs.getPreviousObservation() == null)
+          return phase == EVehiclePhase.IN_PROGRESS ? result.addResultAsAnd("no previous observation", 0.0)
+                                                    : result.addResultAsAnd("no previous observation", 1.0);
         try {
           pBlockState = _blockStateService.getBestBlockLocations(obs.getPreviousObservation(),
               blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY).getBestLocation();
@@ -142,8 +141,15 @@ public class EdgeLikelihood implements SensorModelRule {
       
       actualDabDelta = currentDab - prevDab;
       
-      int expSchedTime = (int) (pBlockState.getBlockLocation().getScheduledTime()
-          + (obs.getTime() - obs.getPreviousObservation().getTime())/1000);
+      /*
+       * Use whichever comes first: previous time incremented by observed change in time,
+       * or last stop departure time.
+       */
+      int expSchedTime = Math.min((int) (pBlockState.getBlockLocation().getScheduledTime()
+          + (obs.getTime() - obs.getPreviousObservation().getTime())/1000), 
+          Iterables.getLast(pBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime());
+      
+      // FIXME need to compensate for distances over the end of a trip...
       BlockState expState = _blockStateService.getScheduledTimeAsState(blockState.getBlockInstance(), expSchedTime); 
       
       expectedDabDelta = expState.getBlockLocation().getDistanceAlongBlock()
@@ -155,15 +161,19 @@ public class EdgeLikelihood implements SensorModelRule {
       actualDabDelta = 0.0;
     }
     
+    double distStdDev = 250.0;
+//        Math.max(400,
+//        SphericalGeometryLibrary.distance(obs.getLocation(),
+//            obs.getPreviousObservation().getLocation()) * 1.5);
+    double pInP1 = 1.0 - FoldedNormalDist.cdf(10.0, 50.0, d);
+    double pInP2 = 1.0 - FoldedNormalDist.cdf(5.0, 40.0, obsSchedDev/60.0);
+    double pInP3 = NormalDist.density(expectedDabDelta, distStdDev, actualDabDelta)/NormalDist.density(expectedDabDelta, distStdDev, expectedDabDelta);
 
-    double pInProgress = FastMath.log(1.0 - FoldedNormalDist.cdf(10.0, 50.0, d)) 
-        + FastMath.log(1.0 - FoldedNormalDist.cdf(5.0, 40.0, obsSchedDev)) 
-        + FastMath.log(1.0 - NormalDist.cdf(expectedDabDelta, 10.0, actualDabDelta));
-//    double pInProgress = FastMath.log(pGpsDist) + FastMath.log(pSchedDev) + FastMath.log(pMovement);
+    double pInProgress = FastMath.log(pInP1) + FastMath.log(pInP2) + FastMath.log(pInP3);
     
-    result.addResult("gps", 1.0 - FoldedNormalDist.cdf(10.0, 50.0, d));
-    result.addResult("schedule", 1.0 - FoldedNormalDist.cdf(5.0, 40.0, obsSchedDev));
-    result.addResult("distance", 1.0 - NormalDist.cdf(expectedDabDelta, 10.0, actualDabDelta));
+    result.addResult("gps", pInP1);
+    result.addResult("schedule", pInP2);
+    result.addResult("distance", pInP3);
       
     if (phase != EVehiclePhase.IN_PROGRESS) {
       double invResult = 1.0 - FastMath.exp(pInProgress);

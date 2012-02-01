@@ -77,7 +77,7 @@ public class ScheduleDevDist implements
      * update if it hasn't already been, since this value is necessary for
      * learning
      */
-    if (_lastDevSample == _currentDevSample)
+    if (_lastDevSample.equals(_currentDevSample))
       _currentDevSample = NormalGen.nextDouble(_rng, _currentDevSample,
           Math.sqrt(_currentDevTransVarSample));
 
