@@ -19,10 +19,11 @@
         <!-- 0 or 1 root elements -->
 
         <root>
-                <priority value="debug" />
+                <priority value="info" />
                 <appender-ref ref="stdout" />
         </root>
 
         <!-- 0 or 1 categoryFactory elements -->
 
 </log4j:configuration>
+
