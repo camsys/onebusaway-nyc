@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -458,7 +459,7 @@ public class BlocksFromObservationServiceImpl implements
     BestBlockStates foundStates = null;
     try {
       foundStates = _blockStateService.getBestBlockLocations(observation,
-          blockInstance, 0, blockConfig.getTotalBlockDistance());
+          blockInstance, 0, Double.POSITIVE_INFINITY);
     } catch (MissingShapePointsException e) {
       _log.warn(e.getMessage());
     }
@@ -489,7 +490,8 @@ public class BlocksFromObservationServiceImpl implements
      * Step 1: Figure out the set of all possible trip ids given the destination
      * sign code
      */
-    List<AgencyAndId> dscTripIds = _destinationSignCodeService.getTripIdsForDestinationSignCode(dsc);
+    List<AgencyAndId> dscTripIds = new ArrayList<AgencyAndId>();
+    dscTripIds.addAll(_destinationSignCodeService.getTripIdsForDestinationSignCode(dsc));
     List<String> runIds = new ArrayList<String>();
     runIds.add(observation.getOpAssignedRunId());
     runIds.addAll(observation.getBestFuzzyRunIds());
@@ -497,7 +499,7 @@ public class BlocksFromObservationServiceImpl implements
       dscTripIds.addAll(_runService.getTripIdsForRunId(runId));
     }
 
-    if (dscTripIds == null) {
+    if (dscTripIds.isEmpty()) {
       _log.info("no trips found for dsc: " + dsc);
       return;
     }
