@@ -40,7 +40,7 @@ public class ObservationCache {
   }
 
   /*
-   * This is a vehicle-id cache, with unique entries and timed expiration, that holds
+   * This is a vehicle-id cache, with timed expiration, that holds
    * an observation cache per vehicle-id.  The observation caches hold only the last two
    * entries.
    * 
@@ -48,7 +48,6 @@ public class ObservationCache {
   private Cache<AgencyAndId, Cache<Observation, ObservationContents>> _contentsByVehicleId = 
       CacheBuilder.newBuilder()
       .concurrencyLevel(4)
-      .maximumSize(1)
       .expireAfterWrite(30, TimeUnit.MINUTES)
       .build(
              new CacheLoader<AgencyAndId, Cache<Observation, ObservationContents>>() {
@@ -66,7 +65,7 @@ public class ObservationCache {
                             @Override
                             public ObservationContents load(Observation key)
                                 throws Exception {
-                              return new ObservationContents(key);
+                              return new ObservationContents();
                             }
                            }
                          );
@@ -80,14 +79,7 @@ public class ObservationCache {
   public <T> T getValueForObservation(Observation observation,
       EObservationCacheKey key) {
     NycRawLocationRecord record = observation.getRecord();
-    Cache<Observation, ObservationContents> contentsCache;
-    try {
-      contentsCache = _contentsByVehicleId.get(record.getVehicleId());
-    } catch (ExecutionException e) {
-      e.printStackTrace();
-      return null;
-    }
-    
+    Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
     ObservationContents contents = contentsCache.getUnchecked(observation);
     
     if (contents == null)
@@ -102,27 +94,14 @@ public class ObservationCache {
     Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
     
     ObservationContents contents = contentsCache.getUnchecked(observation);
-    if (contents == null) {
-      contents = new ObservationContents(observation);
-      contentsCache.asMap().put(observation, contents);
-    }
+    
     contents.putValueForValueType(key, value);
   }
 
   private static class ObservationContents {
 
-    private final Observation _observation;
-
     private EnumMap<EObservationCacheKey, Object> _contents = new EnumMap<EObservationCacheKey, Object>(
         EObservationCacheKey.class);
-
-    public ObservationContents(Observation observation) {
-      _observation = observation;
-    }
-
-    public Observation getObservation() {
-      return _observation;
-    }
 
     @SuppressWarnings("unchecked")
     public <T> T getValueForValueType(EObservationCacheKey key) {

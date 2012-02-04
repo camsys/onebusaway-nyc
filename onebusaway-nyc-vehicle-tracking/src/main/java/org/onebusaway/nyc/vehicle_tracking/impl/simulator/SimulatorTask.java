@@ -39,6 +39,10 @@ import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetail
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultiset;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -248,13 +252,13 @@ public class SimulatorTask implements Runnable, EntityHandler {
     VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
     details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
-    List<Particle> particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);
+    Multiset<Particle> particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);
     if (particles != null) {
       for (Particle p : particles) {
         if (p.getIndex() == particleId) {
-          List<Particle> history = new ArrayList<Particle>();
+          Multiset<Particle> history = HashMultiset.create();
           while (p != null) {
-            history.add(p);
+            history.add(p, particles.count(p));
             p = p.getParent();
           }
           details.setParticles(history);
@@ -497,20 +501,21 @@ public class SimulatorTask implements Runnable, EntityHandler {
     details.setVehicleId(_vehicleId);
     details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record));
 
-    List<Particle> weightedParticles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);
-    if (weightedParticles != null) {
-      Collections.sort(weightedParticles, ParticleComparator.INSTANCE);
+    Multiset<Particle> weightedParticles = TreeMultiset.create(ParticleComparator.INSTANCE);
+    weightedParticles.addAll(_vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId));
+    if (!weightedParticles.isEmpty()) {
       details.setParticles(weightedParticles);
+      details.setSampledParticles(weightedParticles);
     }
 
-    List<Particle> sampledParticles = _vehicleLocationInferenceService.getCurrentSampledParticlesForVehicleId(_vehicleId);
-    if (sampledParticles != null) {
-      Collections.sort(sampledParticles, ParticleComparator.INSTANCE);
-      details.setSampledParticles(sampledParticles);
-    }
+//    Multiset<Particle> sampledParticles = TreeMultiset.create(ParticleComparator.INSTANCE);
+//    sampledParticles.addAll(_vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId));
+//    if (!sampledParticles.isEmpty()) {
+//      details.setSampledParticles(sampledParticles);
+//    }
 
-    List<JourneyPhaseSummary> summaries = _vehicleLocationInferenceService.getCurrentJourneySummariesForVehicleId(_vehicleId);
-    details.setSummaries(summaries);
+//    List<JourneyPhaseSummary> summaries = _vehicleLocationInferenceService.getCurrentJourneySummariesForVehicleId(_vehicleId);
+//    details.setSummaries(summaries);
 
     _details.add(details);
     while (_details.size() > 5)

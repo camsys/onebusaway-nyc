@@ -28,6 +28,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+
+import com.google.common.collect.Multimap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,21 +65,19 @@ public class MotionModelImpl implements MotionModel<Observation> {
   @Override
   public void move(Particle parent, double timestamp, double timeElapsed,
       Observation obs, Collection<Particle> results,
-      Map<VehicleState, Set<VehicleState>> cache) {
+      Multimap<VehicleState, VehicleState> cache) {
 
     VehicleState parentState = parent.getData();
     MotionState motionState = updateMotionState(parentState, obs);
 
-    Set<VehicleState> vehicleStates = cache.get(parentState);
+    Collection<VehicleState> vehicleStates = cache.get(parentState);
 
-    if (vehicleStates == null) {
-      vehicleStates = new HashSet<VehicleState>();
+    if (vehicleStates.isEmpty()) {
       _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
-      cache.put(parentState, vehicleStates);
+      for (VehicleState vs : vehicleStates)
+        results.add(new Particle(timestamp, parent, 1.0, vs));
     }
 
-    for (VehicleState vs : vehicleStates)
-      results.add(new Particle(timestamp, parent, 1.0, vs));
   }
 
   @Override

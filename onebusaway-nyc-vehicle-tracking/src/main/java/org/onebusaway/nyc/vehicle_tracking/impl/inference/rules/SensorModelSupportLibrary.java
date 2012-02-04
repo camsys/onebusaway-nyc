@@ -19,11 +19,11 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateTransitionModel;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -37,6 +37,8 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import umontreal.iro.lecuyer.stat.Tally;
 
 @Component
 public class SensorModelSupportLibrary {
@@ -313,47 +315,52 @@ public class SensorModelSupportLibrary {
     if (!_useBlockLocationDeviationModel)
       return 1.0;
 
+    Tally avg = new Tally();
+    
     /**
      * The idea here is that we look for the absolute best block location given
      * our current observation, even if it means traveling backwards
      */
-    BestBlockObservationStates closestBlockStates = _blockStateTransitionModel.getClosestBlockStates(
-        blockState, obs);
+    for (BlockStateObservation bso : _blockStateTransitionModel.getClosestBlockStates(
+        blockState, obs)) { 
 
-    double prob = 0.0;
-    BlockState closestBlockState = closestBlockStates.getBestTime().getBlockState();
-    ScheduledBlockLocation closestBlockLocation = closestBlockState.getBlockLocation();
-
-    /**
-     * We compare this against our best block location assuming a bus generally
-     * travels forward
-     */
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-
-    /**
-     * If we're just coming out of a layover, there is some chance that the
-     * block location was allowed to shift to the end of the layover to match
-     * the underlying schedule and may be slightly ahead of our current block
-     * location. We're ok with that.
-     */
-    if (parentState != null
-        && EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())) {
-      double delta = blockLocation.getDistanceAlongBlock()
-          - closestBlockLocation.getDistanceAlongBlock();
-
-      if (0 <= delta && delta < 300)
-        return 1.0;
+      double prob = 0.0;
+      BlockState closestBlockState = bso.getBlockState();
+      ScheduledBlockLocation closestBlockLocation = closestBlockState.getBlockLocation();
+  
+      /**
+       * We compare this against our best block location assuming a bus generally
+       * travels forward
+       */
+      ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+  
+      /**
+       * If we're just coming out of a layover, there is some chance that the
+       * block location was allowed to shift to the end of the layover to match
+       * the underlying schedule and may be slightly ahead of our current block
+       * location. We're ok with that.
+       */
+      if (parentState != null
+          && EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())) {
+        double delta = blockLocation.getDistanceAlongBlock()
+            - closestBlockLocation.getDistanceAlongBlock();
+  
+        if (0 <= delta && delta < 300)
+          return 1.0;
+      }
+  
+      /**
+       * If the distance between the two points is high, that means that our block
+       * location isn't great and might suggest we've been assigned a block that
+       * is moving in the wrong direction
+       */
+      double blockLocationDelta = SphericalGeometryLibrary.distance(
+          closestBlockLocation.getLocation(), blockLocation.getLocation());
+      prob = _blockLocationDeviationModel.probability(blockLocationDelta);
+      avg.add(prob);
     }
-
-    /**
-     * If the distance between the two points is high, that means that our block
-     * location isn't great and might suggest we've been assigned a block that
-     * is moving in the wrong direction
-     */
-    double blockLocationDelta = SphericalGeometryLibrary.distance(
-        closestBlockLocation.getLocation(), blockLocation.getLocation());
-    prob = _blockLocationDeviationModel.probability(blockLocationDelta);
-    return prob;
+    
+    return avg.average();
   }
 
   public double computeScheduleDeviationProbability(VehicleState state,

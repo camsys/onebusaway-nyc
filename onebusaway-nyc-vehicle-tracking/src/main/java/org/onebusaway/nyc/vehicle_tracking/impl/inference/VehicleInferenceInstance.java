@@ -63,7 +63,10 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.TreeMultiset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +101,7 @@ public class VehicleInferenceInstance {
 
   private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
-  private List<Particle> _badParticles;
+  private Multiset<Particle> _badParticles;
 
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
@@ -519,8 +522,8 @@ public class VehicleInferenceInstance {
     if (_badParticles != null)
       details.setParticleFilterFailure(true);
 
-    List<Particle> particles = getCurrentParticles();
-    Collections.sort(particles, ParticleComparator.INSTANCE);
+    Multiset<Particle> particles = TreeMultiset.create(ParticleComparator.INSTANCE);
+    particles.addAll(getCurrentParticles());
     details.setParticles(particles);
 
     return details;
@@ -535,7 +538,7 @@ public class VehicleInferenceInstance {
     if (_badParticles != null)
       details.setParticleFilterFailure(true);
 
-    List<Particle> particles = new ArrayList<Particle>();
+    Multiset<Particle> particles = HashMultiset.create();
     if (_badParticles != null)
       particles.addAll(_badParticles);
     details.setParticles(particles);
@@ -626,16 +629,16 @@ public class VehicleInferenceInstance {
     _enabled = enabled;
   }
 
-  public synchronized List<Particle> getPreviousParticles() {
-    return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
+  public synchronized Multiset<Particle> getPreviousParticles() {
+    return HashMultiset.create(_particleFilter.getWeightedParticles());
   }
 
-  public synchronized List<Particle> getCurrentParticles() {
-    return new ArrayList<Particle>(_particleFilter.getWeightedParticles());
+  public synchronized Multiset<Particle> getCurrentParticles() {
+    return HashMultiset.create(_particleFilter.getWeightedParticles());
   }
 
-  public synchronized List<Particle> getCurrentSampledParticles() {
-    return new ArrayList<Particle>(_particleFilter.getSampledParticles());
+  public synchronized Multiset<Particle> getCurrentSampledParticles() {
+    return HashMultiset.create(_particleFilter.getSampledParticles());
   }
 
   public synchronized List<JourneyPhaseSummary> getJourneySummaries() {

@@ -34,6 +34,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+
+import com.google.common.base.Preconditions;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +97,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
    * 
    * @param scheduleDeviationSigma time, in seconds
    */
-  public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
+  static public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
     _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
   }
 
@@ -178,6 +181,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   @Override
   public double scoreState(BlockStateObservation state,
       Observation observation, boolean atStart) {
+    
+    Preconditions.checkNotNull(state);
     double score;
 
     if (atStart) {
@@ -197,39 +202,19 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       score *= scoreDestinationSignCode(state.getBlockState(), observation);
     }
 
-    /**
-     * In all cases we use the run info, when available, to determine a
-     * preference
-     */
-    boolean operatorHasAssignment = false;
-    try {
-      operatorHasAssignment = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
-          new ServiceDate(new Date(observation.getTime())),
-          observation.getRecord().getOperatorId()) != null;
-
-    } catch (Exception e) {
-      _log.warn("Operator service was not available.");
-    }
-
-    Boolean noStateButRunInfo = state == null
-        && (operatorHasAssignment || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
-
-    Boolean stateButNoRunMatch = state != null
-        && state.getOpAssigned() == Boolean.FALSE
+    Boolean stateButNoRunMatch = state.getOpAssigned() == Boolean.FALSE
         && state.getRunReported() == Boolean.FALSE;
 
     /**
      * Use only 10% of the score when a proposal doesn't use the run info
      * provided. Also, sample closer fuzzy matches.
      */
-    if (noStateButRunInfo == Boolean.TRUE || stateButNoRunMatch == Boolean.TRUE) {
+    if (stateButNoRunMatch == Boolean.TRUE) {
       score *= 0.10;
-    } else if (state != null) {
-      if (state.getRunReported() == Boolean.TRUE) {
-        if (observation.getFuzzyMatchDistance() != null
-            && observation.getFuzzyMatchDistance() > 0)
-          score *= 0.95;
-      }
+    } else if (state.getRunReported() == Boolean.TRUE) {
+      if (observation.getFuzzyMatchDistance() != null
+          && observation.getFuzzyMatchDistance() > 0)
+        score *= 0.95;
     }
 
     return score;

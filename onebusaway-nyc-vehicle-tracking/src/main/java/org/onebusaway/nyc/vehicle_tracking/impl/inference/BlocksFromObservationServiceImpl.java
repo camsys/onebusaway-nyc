@@ -15,18 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.calendar.LocalizedServiceId;
+import org.onebusaway.gtfs.model.calendar.ServiceInterval;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
@@ -36,17 +29,23 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObse
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.transit_data_federation.impl.blocks.BlockSequence;
+import org.onebusaway.transit_data_federation.services.ExtendedCalendarService;
 import org.onebusaway.transit_data_federation.services.RouteService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockLayoverIndex;
+import org.onebusaway.transit_data_federation.services.blocks.BlockSequenceIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
 import org.onebusaway.transit_data_federation.services.blocks.BlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.FrequencyBlockTripIndex;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.ServiceIntervalBlock;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
@@ -54,10 +53,23 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
+import com.google.common.collect.ImmutableSet;
+
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class BlocksFromObservationServiceImpl implements
@@ -76,6 +88,7 @@ public class BlocksFromObservationServiceImpl implements
   private BlockStateService _blockStateService;
 
   private BlockIndexService _blockIndexService;
+  
 
   private VehicleStateLibrary _vehicleStateLibrary;
 
@@ -89,11 +102,25 @@ public class BlocksFromObservationServiceImpl implements
 
   private RouteService _routeService;
 
+  private BlockGeospatialService _blockGeospatialService;
+
+  private ExtendedCalendarService _calendarService;
+
+  @Autowired
+  public void setCalendarService(ExtendedCalendarService calendarService) {
+    _calendarService = calendarService;
+  }
+  
   @Autowired
   public void setRouteService(RouteService routeService) {
     _routeService = routeService;
   }
 
+  @Autowired
+  public void setBlockGeospatialService(BlockGeospatialService blockGeospatialService) {
+    _blockGeospatialService = blockGeospatialService;
+  }
+  
   @Autowired
   public void setBlockIndexService(BlockIndexService blockIndexService) {
     _blockIndexService = blockIndexService;
@@ -212,38 +239,33 @@ public class BlocksFromObservationServiceImpl implements
   public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
       Observation observation, boolean bestBlockLocation) {
 
-    EObservationCacheKey thisKey = bestBlockLocation
+    final EObservationCacheKey thisKey = bestBlockLocation
         ? EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK
         : EObservationCacheKey.JOURNEY_START_BLOCK;
 
-    Set<BlockStateObservation> potentialBlocks = _observationCache.getValueForObservation(
+    Set<BlockStateObservation> potentialBlockStates = _observationCache.getValueForObservation(
         observation, thisKey);
 
-    if (potentialBlocks == null) {
-      potentialBlocks = Collections.newSetFromMap(new ConcurrentHashMap<BlockStateObservation, Boolean>());
+    if (potentialBlockStates == null) {
+      potentialBlockStates = Collections.newSetFromMap(new ConcurrentHashMap<BlockStateObservation, Boolean>());
 
       /*
        * we compute the nearby blocks NOW, for any methods that might use it as
        * the support for a distribution.
        */
-      Set<BlockInstance> consideredBlocks = new HashSet<BlockInstance>();
-      if (_includeNearbyBlocks)
-        computeNearbyBlocks(observation, consideredBlocks);
+      final Set<BlockInstance> consideredBlocks = new HashSet<BlockInstance>();
 
-      Set<BlockInstance> bisSet = determinePotentialBlocksForObservation(
-          observation, consideredBlocks);
+      determinePotentialBlocksForObservation(observation, consideredBlocks);
 
-      consideredBlocks.addAll(bisSet);
-
-      for (BlockInstance thisBIS : bisSet) {
-        Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
+      for (final BlockInstance thisBIS : consideredBlocks) {
+        final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
         if (bestBlockLocation) {
           try {
-            for (BlockState bs : _blockStateService.getBestBlockLocations(
+            for (final BlockState bs : _blockStateService.getBestBlockLocations(
                 observation, thisBIS, 0, Double.POSITIVE_INFINITY).getAllStates()) {
               states.add(new BlockStateObservation(bs, observation));
             }
-          } catch (MissingShapePointsException e) {
+          } catch (final MissingShapePointsException e) {
             _log.warn(e.getMessage());
             continue;
           }
@@ -251,41 +273,19 @@ public class BlocksFromObservationServiceImpl implements
           try {
             states.add(new BlockStateObservation(_blockStateService.getAsState(
                 thisBIS, 0.0), observation));
-          } catch (Exception e) {
+          } catch (final Exception e) {
             _log.warn(e.getMessage());
             continue;
           }
         }
-        potentialBlocks.addAll(states);
-      }
-
-      // /*
-      // * NOTE: this will also set the run-state flags
-      // */
-      // potentialBlocks.addAll(getReportedBlockStates(observation,
-      // consideredBlocks, bestBlockLocation, potentialBlocks));
-
-      if (!potentialBlocks.isEmpty()) {
-        if (_log.isDebugEnabled()) {
-          for (BlockStateObservation reportedState : potentialBlocks) {
-            _log.debug("vehicle=" + observation.getRecord().getVehicleId()
-                + " reported block=" + reportedState + " for operator="
-                + observation.getRecord().getOperatorId() + " run="
-                + observation.getRecord().getRunNumber());
-          }
-        }
-
-        /*
-         * These reported/assigned runs -> blocks are now guaranteed to be
-         * present in the particle set.
-         */
+        potentialBlockStates.addAll(states);
       }
 
       _observationCache.putValueForObservation(observation, thisKey,
-          potentialBlocks);
+          potentialBlockStates);
     }
 
-    return potentialBlocks;
+    return potentialBlockStates;
 
   }
 
@@ -294,10 +294,8 @@ public class BlocksFromObservationServiceImpl implements
    ****/
 
   @Override
-  public Set<BlockInstance> determinePotentialBlocksForObservation(
-      Observation observation, Set<BlockInstance> nearbyBlocks) {
-
-    Set<BlockInstance> potentialBlocks = new HashSet<BlockInstance>();
+  public void determinePotentialBlocksForObservation(Observation observation,
+      Set<BlockInstance> potentialBlocks) {
 
     /**
      * Second source of trips: the destination sign code
@@ -312,60 +310,59 @@ public class BlocksFromObservationServiceImpl implements
      * Third source of trips: trips nearby the current gps location
      */
     if (_includeNearbyBlocks) {
-      potentialBlocks.addAll(nearbyBlocks);
+      computeNearbyBlocks(observation, potentialBlocks);
     }
 
-    return potentialBlocks;
   }
 
   @Override
-  public BestBlockObservationStates advanceState(Observation observation,
-      BlockState blockState, double minDistanceToTravel,
-      double maxDistanceToTravel) {
+  public ImmutableSet<BlockStateObservation> advanceState(
+      Observation observation, BlockState blockState,
+      double minDistanceToTravel, double maxDistanceToTravel) {
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-    double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
 
-    BestBlockObservationStates resStates = null;
+    final Set<BlockStateObservation> resStates = new HashSet<BlockStateObservation>();
     BestBlockStates foundStates = null;
     try {
       foundStates = _blockStateService.getBestBlockLocations(observation,
           blockState.getBlockInstance(), currentDistanceAlongBlock
               + minDistanceToTravel, currentDistanceAlongBlock
               + maxDistanceToTravel);
-    } catch (MissingShapePointsException e) {
+    } catch (final MissingShapePointsException e) {
       _log.warn(e.getMessage());
     }
 
     if (foundStates != null) {
-      resStates = new BestBlockObservationStates(new BlockStateObservation(
-          foundStates.getBestTime(), observation), new BlockStateObservation(
-          foundStates.getBestLocation(), observation));
+      for (final BlockState bs : foundStates.getAllStates()) {
+        resStates.add(new BlockStateObservation(bs, observation));
+      }
     }
 
-    return resStates;
+    return new ImmutableSet.Builder<BlockStateObservation>().addAll(resStates).build();
   }
 
   @Override
   public BlockStateObservation advanceLayoverState(Observation obs,
       BlockStateObservation blockState) {
 
-    long timestamp = obs.getTime();
-    BlockInstance instance = blockState.getBlockState().getBlockInstance();
+    final long timestamp = obs.getTime();
+    final BlockInstance instance = blockState.getBlockState().getBlockInstance();
 
     /**
      * The targetScheduleTime is the schedule time we SHOULD be at
      */
     int targetScheduleTime = (int) ((timestamp - instance.getServiceDate()) / 1000);
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockState().getBlockLocation();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockState().getBlockLocation();
 
-    int scheduledTime = blockLocation.getScheduledTime();
+    final int scheduledTime = blockLocation.getScheduledTime();
 
     /**
      * First, we must actually be in a layover location
      */
-    BlockStopTimeEntry layoverSpot = VehicleStateLibrary.getPotentialLayoverSpot(blockLocation);
+    final BlockStopTimeEntry layoverSpot = VehicleStateLibrary.getPotentialLayoverSpot(blockLocation);
 
     if (layoverSpot == null)
       return blockState;
@@ -374,7 +371,7 @@ public class BlocksFromObservationServiceImpl implements
      * The layover spot is the location between the last stop in the previous
      * trip and the first stop of the next trip
      */
-    StopTimeEntry stopTime = layoverSpot.getStopTime();
+    final StopTimeEntry stopTime = layoverSpot.getStopTime();
 
     /**
      * We only adjust our layover schedule time if our current location is
@@ -391,8 +388,8 @@ public class BlocksFromObservationServiceImpl implements
         stopTime.getDepartureTime());
 
     if (layoverSpot.getBlockSequence() > 0) {
-      BlockConfigurationEntry blockConfig = instance.getBlock();
-      int minArrivalTime = blockConfig.getArrivalTimeForIndex(layoverSpot.getBlockSequence() - 1);
+      final BlockConfigurationEntry blockConfig = instance.getBlock();
+      final int minArrivalTime = blockConfig.getArrivalTimeForIndex(layoverSpot.getBlockSequence() - 1);
       if (scheduledTime + 5 * 60 < minArrivalTime)
         return blockState;
 
@@ -403,45 +400,11 @@ public class BlocksFromObservationServiceImpl implements
       targetScheduleTime = Math.max(targetScheduleTime, minArrivalTime);
     }
 
-    BlockStateObservation state = new BlockStateObservation(
+    final BlockStateObservation state = new BlockStateObservation(
         _blockStateService.getScheduledTimeAsState(instance, targetScheduleTime),
         obs);
 
     return state;
-  }
-
-  public static class BestBlockObservationStates {
-
-    final BlockStateObservation _bestTime;
-    final BlockStateObservation _bestLocation;
-
-    public BestBlockObservationStates(BestBlockStates bestStates,
-        Observation obs) {
-      this._bestTime = new BlockStateObservation(bestStates.getBestTime(), obs);
-      this._bestLocation = new BlockStateObservation(
-          bestStates.getBestLocation(), obs);
-    }
-
-    public BestBlockObservationStates(BlockStateObservation bestTime,
-        BlockStateObservation bestLocation) {
-      if (bestTime == null || bestLocation == null)
-        throw new IllegalArgumentException("best block states cannot be null");
-      this._bestLocation = bestLocation;
-      this._bestTime = bestTime;
-    }
-
-    public BlockStateObservation getBestTime() {
-      return _bestTime;
-    }
-
-    public BlockStateObservation getBestLocation() {
-      return _bestLocation;
-    }
-
-    public List<BlockStateObservation> getAllStates() {
-      return _bestTime.equals(_bestLocation) ? Arrays.asList(_bestTime)
-          : Arrays.asList(_bestTime, _bestLocation);
-    }
   }
 
   /**
@@ -449,26 +412,26 @@ public class BlocksFromObservationServiceImpl implements
    * (potentially expensive operation)
    */
   @Override
-  public BestBlockObservationStates bestStates(Observation observation,
-      BlockStateObservation blockState) {
+  public ImmutableSet<BlockStateObservation> bestStates(
+      Observation observation, BlockStateObservation blockState) {
 
-    BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();
-    BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+    final BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();
+    blockInstance.getBlock();
 
-    BestBlockObservationStates resStates = null;
+    final Set<BlockStateObservation> resStates = new HashSet<BlockStateObservation>();
     BestBlockStates foundStates = null;
     try {
       foundStates = _blockStateService.getBestBlockLocations(observation,
           blockInstance, 0, Double.POSITIVE_INFINITY);
-    } catch (MissingShapePointsException e) {
+    } catch (final MissingShapePointsException e) {
       _log.warn(e.getMessage());
     }
     if (foundStates != null) {
-      resStates = new BestBlockObservationStates(new BlockStateObservation(
-          foundStates.getBestTime(), observation), new BlockStateObservation(
-          foundStates.getBestLocation(), observation));
+      for (final BlockState bs : foundStates.getAllStates()) {
+        resStates.add(new BlockStateObservation(bs, observation));
+      }
     }
-    return resStates;
+    return new ImmutableSet.Builder<BlockStateObservation>().addAll(resStates).build();
   }
 
   /*****
@@ -478,24 +441,24 @@ public class BlocksFromObservationServiceImpl implements
   private void computePotentialBlocksFromDestinationSignCodeAndRunId(
       Observation observation, Set<BlockInstance> potentialBlocks) {
 
-    long time = observation.getTime();
+    final long time = observation.getTime();
 
     /**
      * We use the last valid DSC, which will be the current DSC if it's not 0000
      * or the most recent good DSC otherwise
      */
-    String dsc = observation.getLastValidDestinationSignCode();
+    final String dsc = observation.getLastValidDestinationSignCode();
 
     /**
      * Step 1: Figure out the set of all possible trip ids given the destination
      * sign code
      */
-    List<AgencyAndId> dscTripIds = new ArrayList<AgencyAndId>();
+    final List<AgencyAndId> dscTripIds = new ArrayList<AgencyAndId>();
     dscTripIds.addAll(_destinationSignCodeService.getTripIdsForDestinationSignCode(dsc));
-    List<String> runIds = new ArrayList<String>();
+    final List<String> runIds = new ArrayList<String>();
     runIds.add(observation.getOpAssignedRunId());
     runIds.addAll(observation.getBestFuzzyRunIds());
-    for (String runId : runIds) {
+    for (final String runId : runIds) {
       dscTripIds.addAll(_runService.getTripIdsForRunId(runId));
     }
 
@@ -517,54 +480,104 @@ public class BlocksFromObservationServiceImpl implements
      * from-base + to+base fudge factors, we just expand the current search time
      * interval instead.
      */
-    long timeFrom = time - _tripSearchTimeAfterLastStop;
-    long timeTo = time + _tripSearchTimeBeforeFirstStop;
+    final long timeFrom = time - _tripSearchTimeAfterLastStop;
+    final long timeTo = time + _tripSearchTimeBeforeFirstStop;
 
-    for (AgencyAndId tripId : dscTripIds) {
+    for (final AgencyAndId tripId : dscTripIds) {
 
       /**
        * Only consider a trip if it exists and has stop times
        */
-      TripEntry trip = _transitGraphDao.getTripEntryForId(tripId);
+      final TripEntry trip = _transitGraphDao.getTripEntryForId(tripId);
       if (trip == null)
         continue;
 
       // TODO : Are we getting back more than we want as blocks will be active
       // longer than their corresponding trips?
-      List<BlockInstance> instances = _activeCalendarService.getActiveBlocks(
+      final List<BlockInstance> instances = _activeCalendarService.getActiveBlocks(
           trip.getBlock().getId(), timeFrom, timeTo);
       potentialBlocks.addAll(instances);
     }
 
   }
 
-  private void computeNearbyBlocks(Observation observation,
+  private Set<BlockTripEntry> computeNearbyBlocks(Observation observation,
+      Set<BlockInstance> potentialBlocks) {
+    
+    final NycRawLocationRecord record = observation.getRecord();
+    final long time = observation.getTime();
+    final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
+    final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
+    final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
+        record.getLatitude(), record.getLongitude(), _tripSearchRadius);
+    
+    Set<BlockSequenceIndex> blockSequenceIdxs = _blockGeospatialService.getBlockSequenceIndexPassingThroughBounds(bounds);
+    Set<BlockTripEntry> blockTripsForObs = new HashSet<BlockTripEntry>();
+    
+    for (BlockSequenceIndex blockSequenceIdx : blockSequenceIdxs) {
+      ServiceIntervalBlock intervals = blockSequenceIdx.getServiceIntervalBlock();
+      ServiceInterval range = intervals.getRange();
+      Collection<Date> serviceDates = _calendarService.getServiceDatesWithinRange(
+          blockSequenceIdx.getServiceIds(), range, timeFrom, timeTo);
+      if (serviceDates.isEmpty())
+        continue;
+      
+      for (Date serviceDate : serviceDates) {
+        int scheduledTimeFrom = (int) ((timeFrom.getTime() - serviceDate.getTime()) / 1000);
+        int scheduledTimeTo = (int) ((timeTo.getTime() - serviceDate.getTime()) / 1000);
+    
+        int indexFrom = index(Arrays.binarySearch(intervals.getMaxDepartures(),
+            scheduledTimeFrom));
+        int indexTo = index(Arrays.binarySearch(intervals.getMinArrivals(),
+            scheduledTimeTo));
+        for (int in = indexFrom; in < indexTo; in++) {
+          BlockSequence bs = blockSequenceIdx.getSequences().get(in);
+          blockTripsForObs.addAll(bs.getBlockConfig().getTrips());
+          BlockConfigurationEntry block = bs.getBlockConfig();
+          BlockInstance instance = new BlockInstance(block, serviceDate.getTime());
+          potentialBlocks.add(instance);
+        }
+      }
+    }
+    
+    return blockTripsForObs;
+  }
+  
+  private int index(int index) {
+    if (index < 0)
+      return -(index + 1);
+    return index;
+  }
+  
+  @SuppressWarnings("unused")
+  @Deprecated
+  private void computeNearbyBlocksOld(Observation observation,
       Set<BlockInstance> potentialBlocks) {
 
-    NycRawLocationRecord record = observation.getRecord();
-    long time = observation.getTime();
-    long timeFrom = time - _tripSearchTimeAfterLastStop;
-    long timeTo = time + _tripSearchTimeBeforeFirstStop;
+    final NycRawLocationRecord record = observation.getRecord();
+    final long time = observation.getTime();
+    final long timeFrom = time - _tripSearchTimeAfterLastStop;
+    final long timeTo = time + _tripSearchTimeBeforeFirstStop;
 
-    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
+    final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
         record.getLatitude(), record.getLongitude(), _tripSearchRadius);
 
-    List<BlockLayoverIndex> layoverIndices = Collections.emptyList();
-    List<FrequencyBlockTripIndex> frequencyIndices = Collections.emptyList();
+    final List<BlockLayoverIndex> layoverIndices = Collections.emptyList();
+    final List<FrequencyBlockTripIndex> frequencyIndices = Collections.emptyList();
 
-    Set<BlockTripIndex> blockindices = new HashSet<BlockTripIndex>();
+    final Set<BlockTripIndex> blockindices = new HashSet<BlockTripIndex>();
 
-    Set<AgencyAndId> dscRoutes = observation.getDscImpliedRouteCollections();
-    List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
-    for (StopEntry stop : stops) {
+    final Set<AgencyAndId> dscRoutes = observation.getDscImpliedRouteCollections();
+    final List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
+    for (final StopEntry stop : stops) {
 
-      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
-      for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
+      final List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
+      for (final BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
         /*
          * when we can, restrict to stops that service the dsc-implied route
          */
         if (dscRoutes != null && !dscRoutes.isEmpty()) {
-          for (BlockTripEntry bentry : stopTimeIndex.getTrips()) {
+          for (final BlockTripEntry bentry : stopTimeIndex.getTrips()) {
             if (dscRoutes.contains(bentry.getTrip().getRouteCollection().getId())) {
               blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
               break;
@@ -576,7 +589,7 @@ public class BlocksFromObservationServiceImpl implements
         }
       }
     }
-    List<BlockInstance> nearbyBlocks = _blockCalendarService.getActiveBlocksInTimeRange(
+    final List<BlockInstance> nearbyBlocks = _blockCalendarService.getActiveBlocksInTimeRange(
         blockindices, layoverIndices, frequencyIndices, timeFrom, timeTo);
     potentialBlocks.addAll(nearbyBlocks);
   }

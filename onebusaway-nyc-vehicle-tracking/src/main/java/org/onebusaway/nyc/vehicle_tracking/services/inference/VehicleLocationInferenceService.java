@@ -25,6 +25,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 
+import com.google.common.collect.Multiset;
+
 public interface VehicleLocationInferenceService {
 
   public void handleNycRawLocationRecord(NycRawLocationRecord record);
@@ -49,9 +51,9 @@ public interface VehicleLocationInferenceService {
   /**
    * These are primarily here for debugging
    */
-  public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
+  public Multiset<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
 
-  public List<Particle> getCurrentSampledParticlesForVehicleId(
+  public Multiset<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId);
 
   public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(

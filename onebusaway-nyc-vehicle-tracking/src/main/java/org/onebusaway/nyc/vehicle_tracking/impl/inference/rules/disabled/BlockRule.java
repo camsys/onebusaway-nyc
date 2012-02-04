@@ -111,8 +111,8 @@ public class BlockRule implements SensorModelRule {
           BestBlockStates parentBlockStates = _blockStateService.getBestBlockLocations(
               parentState.getObservation(), blockState.getBlockInstance(), 0,
               Double.POSITIVE_INFINITY);
-          if (parentBlockStates != null)
-            parentBlockState = parentBlockStates.getBestLocation();
+//          if (parentBlockStates != null)
+//            parentBlockState = parentBlockStates.getBestLocation();
         } catch (MissingShapePointsException e) {
         }
       }

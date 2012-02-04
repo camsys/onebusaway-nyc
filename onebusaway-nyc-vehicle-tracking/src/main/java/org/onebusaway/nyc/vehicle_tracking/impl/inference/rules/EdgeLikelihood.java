@@ -21,6 +21,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
@@ -38,17 +40,23 @@ import org.apache.commons.math.util.FastMath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import umontreal.iro.lecuyer.probdist.NormalDist;
+import umontreal.iro.lecuyer.stat.Tally;
 
 @Component
 public class EdgeLikelihood implements SensorModelRule {
 
   private BlockStateService _blockStateService;
   private ScheduleDeviationLibrary _scheduleDeviationLibrary;
+  private ObservationCache _observationCache;
 
+  final private double distStdDev = 250.0;
+  
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
@@ -59,85 +67,103 @@ public class EdgeLikelihood implements SensorModelRule {
       ScheduleDeviationLibrary scheduleDeviationLibrary) {
     _scheduleDeviationLibrary = scheduleDeviationLibrary;
   }
+  
+  @Autowired
+  public void setObservationCache(ObservationCache observationCache) {
+    _observationCache = observationCache;
+  }
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState parentState = context.getParentState();
+    
     VehicleState state = context.getState();
     Observation obs = context.getObservation();
-
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
-    
+    EVehiclePhase phase = state.getJourneyState().getPhase();
     SensorModelResult result = new SensorModelResult("pInProgress");
     
     if (!(phase == EVehiclePhase.IN_PROGRESS
         || phase == EVehiclePhase.DEADHEAD_BEFORE 
         || phase == EVehiclePhase.DEADHEAD_DURING))
       return result;
-
+    
+    VehicleState parentState = context.getParentState();
+    if (obs.getPreviousObservation() == null || parentState == null)
+      return phase == EVehiclePhase.IN_PROGRESS ? 
+          result.addResultAsAnd("no previous observation/vehicle-state", 0.0)
+         : result.addResultAsAnd("no previous observation/vehicle-state", 1.0);
+          
+    BlockState blockState = state.getBlockState();
     /*
      * When we have no block-state, we use the best state with a 
      * route that matches the observations DSC-implied route, if any.
      */
     if (blockState == null
         || phase != EVehiclePhase.IN_PROGRESS) {
-      BestBlockStates bestStates = _blockStateService.getBestBlockStateForRoute(obs);
-      if (bestStates != null)
-        blockState = bestStates.getBestLocation();
+      Double bestInProgressProb = _observationCache.getValueForObservation(obs, 
+          EObservationCacheKey.ROUTE_LOCATION);
+      
+      double invResult;
+      
+      if (bestInProgressProb == null)
+        invResult = 1.0;
       else
-        return result;
+        invResult = 1.0 - bestInProgressProb;
+      
+      result.addResultAsAnd("pNotInProgress", invResult);
+      return result;
     }
     
+    Set<BlockState> prevBlockStates = new HashSet<BlockState>();
+    if (parentState.getBlockState() != null
+        && parentState.getBlockState().getBlockInstance().equals(blockState.getBlockInstance()))
+      prevBlockStates.add(parentState.getBlockState());
+    
+    if (prevBlockStates.isEmpty()
+        || !EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase())) {
+      try {
+        prevBlockStates.addAll(_blockStateService.getBestBlockLocations(obs.getPreviousObservation(),
+            blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY).getAllStates());
+      } catch (MissingShapePointsException e) {
+        e.printStackTrace();
+        return result.addResultAsAnd("missing shapepoints", 0.0);
+      }
+    } 
+       
     /*
      * GPS Error
      */
     CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
-
     ProjectedPoint p2 = obs.getPoint();
 
     double d = SphericalGeometryLibrary.distance(p1.getLat(), p1.getLon(),
         p2.getLat(), p2.getLon());
-//    double pGpsDist = _gpsDist.density(d);
-    
     
     /*
      * Schedule Deviation
      */
-    
     int obsSchedDev = _scheduleDeviationLibrary.computeScheduleDeviation(blockState.getBlockInstance(),
         blockState.getBlockLocation(), obs);
-//    double pSchedDev = _schedDevDist.density(obsSchedDev);
     
     /*
      * Edge Movement
      */
     Double expectedDabDelta = null;
     Double actualDabDelta = null;
-//    double pMovement = 0.0;
-    if (parentState != null) {
-      BlockState pBlockState = parentState.getBlockState();
-      
-      if ((pBlockState == null)
-          || (pBlockState != null 
-              && !pBlockState.getBlockInstance().equals(blockState.getBlockInstance()))) {
-        if  (obs.getPreviousObservation() == null)
-          return phase == EVehiclePhase.IN_PROGRESS ? result.addResultAsAnd("no previous observation", 0.0)
-                                                    : result.addResultAsAnd("no previous observation", 1.0);
-        try {
-          pBlockState = _blockStateService.getBestBlockLocations(obs.getPreviousObservation(),
-              blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY).getBestLocation();
-        } catch (MissingShapePointsException e) {
-          e.printStackTrace();
-          return result.addResultAsAnd("missing shapepoints", 0.0);
-        }
-      } 
-      
-      double prevDab = pBlockState.getBlockLocation().getDistanceAlongBlock();
-      double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
+
+    double pInP1 = 1.0 - FoldedNormalDist.cdf(10.0, 50.0, d);
+    double pInP2 = 1.0 - FoldedNormalDist.cdf(5.0, 40.0, obsSchedDev/60.0);
+    double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
+    
+    Tally avgRes = new Tally();
+    
+    /*
+     * When there are multiple (potential) previously in-progress block-states,
+     * we need to average over them to determine 
+     */
+    for (BlockState prevBlockState : prevBlockStates) {
+      double prevDab = prevBlockState.getBlockLocation().getDistanceAlongBlock();
       
       actualDabDelta = currentDab - prevDab;
       
@@ -145,43 +171,50 @@ public class EdgeLikelihood implements SensorModelRule {
        * Use whichever comes first: previous time incremented by observed change in time,
        * or last stop departure time.
        */
-      int expSchedTime = Math.min((int) (pBlockState.getBlockLocation().getScheduledTime()
+      int expSchedTime = Math.min((int) (prevBlockState.getBlockLocation().getScheduledTime()
           + (obs.getTime() - obs.getPreviousObservation().getTime())/1000), 
-          Iterables.getLast(pBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime());
+          Iterables.getLast(prevBlockState.getBlockInstance().getBlock()
+              .getStopTimes()).getStopTime().getDepartureTime());
       
       // FIXME need to compensate for distances over the end of a trip...
-      BlockState expState = _blockStateService.getScheduledTimeAsState(blockState.getBlockInstance(), expSchedTime); 
+      BlockState expState = _blockStateService.getScheduledTimeAsState(blockState.getBlockInstance(), 
+          expSchedTime); 
       
       expectedDabDelta = expState.getBlockLocation().getDistanceAlongBlock()
           - prevDab;
       
-//      pMovement = NormalDist.density(expectedDabDelta, 10.0, actualDabDelta);
-    } else {
-      expectedDabDelta = 0.0;
-      actualDabDelta = 0.0;
+      double pInP3Tmp = NormalDist.density(expectedDabDelta, distStdDev, actualDabDelta)
+          / NormalDist.density(expectedDabDelta, distStdDev, expectedDabDelta);
+  
+      avgRes.add(pInP3Tmp);
     }
-    
-    double distStdDev = 250.0;
-//        Math.max(400,
-//        SphericalGeometryLibrary.distance(obs.getLocation(),
-//            obs.getPreviousObservation().getLocation()) * 1.5);
-    double pInP1 = 1.0 - FoldedNormalDist.cdf(10.0, 50.0, d);
-    double pInP2 = 1.0 - FoldedNormalDist.cdf(5.0, 40.0, obsSchedDev/60.0);
-    double pInP3 = NormalDist.density(expectedDabDelta, distStdDev, actualDabDelta)/NormalDist.density(expectedDabDelta, distStdDev, expectedDabDelta);
-
-    double pInProgress = FastMath.log(pInP1) + FastMath.log(pInP2) + FastMath.log(pInP3);
+  
+    double pInP3 = avgRes.average();
+    double pLogInProgress = FastMath.log(pInP1) + FastMath.log(pInP2) + FastMath.log(pInP3);
     
     result.addResult("gps", pInP1);
     result.addResult("schedule", pInP2);
     result.addResult("distance", pInP3);
       
-    if (phase != EVehiclePhase.IN_PROGRESS) {
-      double invResult = 1.0 - FastMath.exp(pInProgress);
-      result.addResultAsAnd("pNotInProgress", invResult);
-    } else {
-      result.addResultAsAnd("pInProgress", FastMath.exp(pInProgress));
-    }
+    double pInProgress = FastMath.exp(pLogInProgress);
+    
+    /*
+     * Keep the best (minimal location deviation) block state
+     * with a route matching the dsc.
+     */
+    if (obs.getDscImpliedRouteCollections().contains(
+        blockState.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId())) {
 
+      Double bestInProgressProb = _observationCache.getValueForObservation(obs, 
+          EObservationCacheKey.ROUTE_LOCATION);
+      
+      if (bestInProgressProb == null
+          || bestInProgressProb < pInProgress) {
+        _observationCache.putValueForObservation(obs, EObservationCacheKey.ROUTE_LOCATION, pInProgress);
+      }
+    }
+    
+    result.addResultAsAnd("pInProgress", pInProgress);
     return result;
   }
 

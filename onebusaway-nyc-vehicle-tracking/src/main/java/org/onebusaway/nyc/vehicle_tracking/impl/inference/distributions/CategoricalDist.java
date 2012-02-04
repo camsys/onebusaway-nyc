@@ -27,6 +27,9 @@ import org.apache.commons.math.util.MathUtils;
 
 import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.primitives.Doubles;
 
 public class CategoricalDist<T> {
@@ -108,17 +111,18 @@ public class CategoricalDist<T> {
   }
 
   public void put(double prob, T object) {
+    
+    Preconditions.checkNotNull(object);
+    
+    if (Double.compare(prob, 0.0) <= 0)
+      return;
 
     _cumulativeProb += prob;
     Double currentProb = _entriesToProbs.get(object);
 
-    if (object == null)
-      throw new NullPointerException("entries to cdf cannot be null");
-
     if (currentProb == null) {
       _entriesToProbs.put(object, prob);
       _objIdx.add((double) _objIdx.size());
-      _entries = getSupport();
     } else {
       /*
        * allow duplicate entries' probability to compound
@@ -151,6 +155,7 @@ public class CategoricalDist<T> {
           Doubles.toArray(_entriesToProbs.values()), 1.0);
       emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs,
           _objIdx.size());
+      _entries = getSupport();
     }
 
     double u = threadLocalRng.get().nextDouble();
@@ -159,18 +164,13 @@ public class CategoricalDist<T> {
     return _entries.get(newIdx);
   }
 
-  public List<T> sample(int samples) {
+  public Multiset<T> sample(int samples) {
 
-    if (_entriesToProbs.isEmpty())
-      throw new IllegalStateException("No entries in the CDF map");
+    Preconditions.checkState(!_entriesToProbs.isEmpty());
+    Preconditions.checkState(_cumulativeProb > 0.0);
+    Preconditions.checkArgument(samples > 0);
 
-    if (_cumulativeProb == 0.0)
-      throw new IllegalStateException("No cumulative probability in CDF");
-
-    if (samples == 0)
-      return Collections.emptyList();
-
-    List<T> sampled = new ArrayList<T>(samples);
+    Multiset<T> sampled = HashMultiset.create(samples);
 
     for (int i = 0; i < samples; ++i) {
       sampled.add(sample());

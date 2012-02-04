@@ -503,10 +503,12 @@ public class VehicleLocationSimulationServiceImpl implements
       // TODO when are there multiples and which do we choose when there are?
       ScheduledBlockLocation blockLocation = _runService.getSchedBlockLocForRunTripEntryAndTime(
           runTrip, unperturbedTimestamp);
-      BlockEntry blockEntry = blockLocation.getActiveTrip().getBlockConfiguration().getBlock();
-
+      
       if (blockLocation == null)
         break;
+      
+      BlockEntry blockEntry = blockLocation.getActiveTrip().getBlockConfiguration().getBlock();
+
 
       _log.debug("sim blockLocation: " + blockLocation.toString());
       CoordinatePoint location = blockLocation.getLocation();
@@ -704,16 +706,17 @@ public class VehicleLocationSimulationServiceImpl implements
 
       ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
           block, scheduleTime);
-
-      BlockTripEntry trip = blockLocation.getActiveTrip();
-
-      AgencyAndId tripId = trip.getTrip().getId();
-
+      
       /**
        * Not in service?
        */
       if (blockLocation == null)
         return -1;
+
+      BlockTripEntry trip = blockLocation.getActiveTrip();
+
+      AgencyAndId tripId = trip.getTrip().getId();
+
 
       CoordinatePoint location = blockLocation.getLocation();
       record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockId));

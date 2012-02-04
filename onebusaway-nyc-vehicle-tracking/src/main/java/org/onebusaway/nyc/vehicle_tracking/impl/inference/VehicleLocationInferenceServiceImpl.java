@@ -63,6 +63,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 import com.jhlabs.map.proj.ProjectionException;
 
 import tcip_3_0_5_local.NMEA;
@@ -367,7 +370,7 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
+  public Multiset<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
@@ -375,7 +378,7 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public List<Particle> getCurrentSampledParticlesForVehicleId(
+  public Multiset<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
@@ -436,13 +439,14 @@ public class VehicleLocationInferenceServiceImpl implements
    ****/
   private VehicleLocationDetails findParticle(VehicleLocationDetails details,
       int particleId) {
-    List<Particle> particles = details.getParticles();
+    List<Entry<Particle>> particles = details.getParticles();
     if (particles != null) {
-      for (Particle p : particles) {
+      for (Entry<Particle> pEntry : particles) {
+        Particle p = pEntry.getElement();
         if (p.getIndex() == particleId) {
-          List<Particle> history = new ArrayList<Particle>();
+          Multiset<Particle> history = HashMultiset.create();
           while (p != null) {
-            history.add(p);
+            history.add(p, pEntry.getCount());
             p = p.getParent();
           }
           details.setParticles(history);
@@ -496,19 +500,21 @@ public class VehicleLocationInferenceServiceImpl implements
         boolean passOnRecord = sendRecord(existing);
 
         if (passOnRecord) {
-          NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-          managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
-          managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
-
-          BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-          if (currentBundle != null)
-            managementRecord.setActiveBundleId(currentBundle.getId());
-
-          NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
-          record.setVehicleId(_vehicleId.toString());
-          record.setManagementRecord(managementRecord);
-
-          _outputQueueSenderService.enqueue(record);
+          synchronized(existing) {
+            NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
+            managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+            managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
+  
+            BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+            if (currentBundle != null)
+              managementRecord.setActiveBundleId(currentBundle.getId());
+  
+            NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
+            record.setVehicleId(_vehicleId.toString());
+            record.setManagementRecord(managementRecord);
+  
+            _outputQueueSenderService.enqueue(record);
+          }
         }
       } catch (ProjectionException e) {
         // discard

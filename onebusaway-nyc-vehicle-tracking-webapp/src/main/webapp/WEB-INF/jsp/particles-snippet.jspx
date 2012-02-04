@@ -26,7 +26,7 @@
     <h2>Sensor Model Result</h2>
     <ul>
         <c:set var="sensorModelResult"
-            value="${details.particles[0].result}" scope="request" />
+            value="${details.particles[0].element.result}" scope="request" />
         <jsp:include
             page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
     </ul>
@@ -37,6 +37,7 @@
             <tr>
                 <td>#</td>
                 <td>Time</td>
+                <td>Count</td>
                 <td>P</td>
                 <td>Phase</td>
                 <td>FromReportedRun</td>
@@ -53,8 +54,10 @@
         </thead>
         <tbody>
 
-            <c:forEach var="p" items="${details.particles}">
+            <c:forEach var="pEntry" items="${details.particles}">
                 <tr>
+                    <c:set var="p"
+                        value="${pEntry.element}" />
                     <c:set var="motionState"
                         value="${p.data.motionState}" />
                     <c:set var="journeyState"
@@ -67,6 +70,7 @@
                     <td><c:out value="${p.index}" /></td>
                     <td><fmt:formatDate pattern="HH:mm"
                         value="${p.data.observation.record.timeAsDate}" /></td>
+                    <td><c:out value="${pEntry.count}" /></td>
                     <td>
                         <c:if test="${details.particleFilterFailureActive}">
                             <c:set var="particleDetailsUrl" value="bad-particle-details"/>

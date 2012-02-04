@@ -17,9 +17,9 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
+import com.google.common.collect.Multimap;
+
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Particle motion model interface for defining the strategy for moving
@@ -53,7 +53,7 @@ public interface MotionModel<OBS> {
    * @param results
    * @param cache
    */
-  public void move(Particle parent, double timestamp, double timeElapsed,
+  void move(Particle parent, double timestamp, double timeElapsed,
       OBS obs, Collection<Particle> results,
-      Map<VehicleState, Set<VehicleState>> cache);
+      Multimap<VehicleState, VehicleState> cache);
 }

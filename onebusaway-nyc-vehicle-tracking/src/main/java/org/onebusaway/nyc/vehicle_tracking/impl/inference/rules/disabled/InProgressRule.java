@@ -71,9 +71,9 @@ public class InProgressRule implements SensorModelRule {
      */
     if (blockState == null
         || phase == EVehiclePhase.DEADHEAD_BEFORE) {
-      BestBlockStates bestStates = _blockStateService.getBestBlockStateForRoute(obs);
-      if (bestStates != null)
-        blockState = bestStates.getBestLocation();
+//      BestBlockStates bestStates = _blockStateService.getBestBlockStateForRoute(obs);
+//      if (bestStates != null)
+//        blockState = bestStates.getBestLocation();
     }
     
     if (!(phase == EVehiclePhase.IN_PROGRESS
