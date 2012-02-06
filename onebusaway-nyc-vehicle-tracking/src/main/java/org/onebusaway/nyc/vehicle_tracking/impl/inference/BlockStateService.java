@@ -609,6 +609,7 @@ public class BlockStateService {
               } else {
                 currentStates.getAllStates().add(state);
               }
+              mb.put(key, currentStates);
             }
           }
         }
