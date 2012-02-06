@@ -54,6 +54,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import org.junit.Ignore;
 import org.slf4j.Logger;
@@ -157,7 +158,7 @@ public class BlocksFromObservationServiceImpl implements
    */
   private long _tripSearchTimeAfterLastStop = 30 * 60 * 1000;
 
-  private boolean _includeNearbyBlocks = true;
+  private boolean _includeNearbyBlocks = false;
 
   private ObservationCache _observationCache;
 
@@ -248,35 +249,29 @@ public class BlocksFromObservationServiceImpl implements
 
     if (potentialBlockStates == null) {
       potentialBlockStates = Collections.newSetFromMap(new ConcurrentHashMap<BlockStateObservation, Boolean>());
+      final Set<BlockInstance> consideredBlocks = Sets.newHashSet();
+      
+      for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
+        if (bestBlockLocation)
+          potentialBlockStates.add(new BlockStateObservation(bs, observation));
+        consideredBlocks.add(bs.getBlockInstance());
+      }
 
       /*
        * we compute the nearby blocks NOW, for any methods that might use it as
        * the support for a distribution.
        */
-      final Set<BlockInstance> consideredBlocks = new HashSet<BlockInstance>();
 
       determinePotentialBlocksForObservation(observation, consideredBlocks);
-
+      
       for (final BlockInstance thisBIS : consideredBlocks) {
         final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
-        if (bestBlockLocation) {
-          try {
-            for (final BlockState bs : _blockStateService.getBestBlockLocations(
-                observation, thisBIS, 0, Double.POSITIVE_INFINITY).getAllStates()) {
-              states.add(new BlockStateObservation(bs, observation));
-            }
-          } catch (final MissingShapePointsException e) {
-            _log.warn(e.getMessage());
-            continue;
-          }
-        } else {
-          try {
-            states.add(new BlockStateObservation(_blockStateService.getAsState(
-                thisBIS, 0.0), observation));
-          } catch (final Exception e) {
-            _log.warn(e.getMessage());
-            continue;
-          }
+        try {
+          states.add(new BlockStateObservation(_blockStateService.getAsState(
+              thisBIS, 0.0), observation));
+        } catch (final Exception e) {
+          _log.warn(e.getMessage());
+          continue;
         }
         potentialBlockStates.addAll(states);
       }

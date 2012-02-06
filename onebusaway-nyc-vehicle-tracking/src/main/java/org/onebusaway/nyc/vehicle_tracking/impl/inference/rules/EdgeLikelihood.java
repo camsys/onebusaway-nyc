@@ -123,8 +123,15 @@ public class EdgeLikelihood implements SensorModelRule {
     if (prevBlockStates.isEmpty()
         || !EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase())) {
       try {
-        prevBlockStates.addAll(_blockStateService.getBestBlockLocations(obs.getPreviousObservation(),
-            blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY).getAllStates());
+        
+        BestBlockStates prevBestStates = _blockStateService.getBestBlockLocations(obs.getPreviousObservation(),
+            blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY);
+        
+        if (prevBestStates == null || prevBestStates.getAllStates().isEmpty())
+          return result.addResultAsAnd("pNoPrevState", 0.0);
+        
+        prevBlockStates.addAll(prevBestStates.getAllStates());
+        
       } catch (MissingShapePointsException e) {
         e.printStackTrace();
         return result.addResultAsAnd("missing shapepoints", 0.0);
