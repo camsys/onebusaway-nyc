@@ -146,6 +146,9 @@ public class StifTripLoader {
             continue;
           }
           String code = tripRecord.getSignCode();
+          if (rawTrips.type == StifTripType.REVENUE && (code == null || code.length() == 0)) {
+            _log.warn("Revenue trip " + rawTrips + " did not have a DSC");
+          }
 
           TripIdentifier id = support.getIdentifierForTripRecord(tripRecord);
           List<Trip> trips = support.getTripsForIdentifier(id);
