@@ -368,8 +368,14 @@ public class StifTask implements Runnable {
           dumpBlockDataForTrip(printStream, lastTrip, "pullin", blockId);
         }
       }
+
       for (RawTrip trip : unmatchedTrips) {
-        _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey() + " must not have an associated pullout");
+        _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey() + " trip type " + trip.type + " must not have an associated pullout");
+        for (Trip gtfsTrip : trip.getGtfsTrips()) {
+          blockNo++;
+          String blockId = gtfsTrip.getServiceId() + "_" + trip.firstStop + "_" + trip.firstStopTime + "_" + trip.runId.replace("-","_") + "_orphan_" + blockNo;
+          gtfsTrip.setBlockId(blockId);
+        }
       }
     }
     
