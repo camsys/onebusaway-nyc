@@ -3,6 +3,7 @@ package org.onebusaway.nyc.queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.Date;
 
 import com.eaio.uuid.UUID;
@@ -119,12 +120,18 @@ public class Publisher implements IPublisher {
         @Override
         public void run() {
             while(!Thread.currentThread().isInterrupted()) {		    	
-                String r = outputBuffer.poll();
-                if (r == null)
-                    continue;
+                try {
+                    String r = outputBuffer.poll(100, TimeUnit.MILLISECONDS);
+                    if (r == null) {
+                        Thread.yield();
+                        continue;
+                    }
+                    envelopeSocket.send(topicName, ZMQ.SNDMORE);
+                    envelopeSocket.send(r.getBytes(), 0);
 
-                envelopeSocket.send(topicName, ZMQ.SNDMORE);
-                envelopeSocket.send(r.getBytes(), 0);
+                } catch (InterruptedException ie) {
+                    return;
+                }
 
                 Thread.yield();
 
