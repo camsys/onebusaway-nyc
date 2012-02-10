@@ -1,15 +1,23 @@
 package org.onebusaway.nyc.transit_data_federation.impl.bundle;
 
-import org.onebusaway.container.cache.CacheableMethodManager;
 import org.onebusaway.container.refresh.RefreshService;
+import org.onebusaway.exceptions.ServiceException;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
+import org.onebusaway.transit_data.model.AgencyBean;
+import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
+import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -17,7 +25,6 @@ import net.sf.ehcache.CacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -29,23 +36,31 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.TimerTask;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 
 public class BundleManagementServiceImpl implements BundleManagementService {
 
+  private static final int INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS = 60;
+  
   private static Logger _log = LoggerFactory.getLogger(BundleManagementServiceImpl.class);
 
   private List<BundleItem> _allBundles = new ArrayList<BundleItem>();
   
   private HashMap<String, BundleItem> _applicableBundles = new HashMap<String, BundleItem>();
 
+  private volatile List<Future> _inferenceProcessingThreads = new ArrayList<Future>();
+  
   protected String _currentBundleId = null;
 
   private ServiceDate _currentServiceDate = null;
+  
+  private boolean _bundleIsReady = false;
   
   private boolean _standaloneMode = true;
 
@@ -54,11 +69,17 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   protected BundleStoreService _bundleStore = null;
 
   @Autowired
+  private TransitDataService _service;
+
+  @Autowired
+  private CacheManager _cacheManager;
+
+  @Autowired
+  private TransitGraphDao _transitGraphDao;
+  
+  @Autowired
   private TransitDataManagerApiLibrary _apiLibrary;
 
-	@Autowired
-  private ApplicationContext _applicationContext;
-	
 	@Autowired
 	private NycFederatedTransitDataBundle _nycBundle;
 	
@@ -198,6 +219,23 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     return _applicableBundles.get(_currentBundleId);
   }
 
+  // Can messages be processed using this bundle and current state?
+  @Override
+  public synchronized Boolean bundleIsReady() {
+    return _bundleIsReady;
+  }
+
+  // register inference processing thread 
+  @Override
+  public synchronized void registerInferenceProcessingThread(Future thread) {
+    _inferenceProcessingThreads.add(thread);
+    
+    // keep our thread list from getting /too/ big unnecessarily
+    if(_inferenceProcessingThreads.size() > 500) {
+      removeDeadInferenceThreads();
+    }
+  }
+  
 	@Override
 	public void changeBundle(String bundleId) throws Exception {
 	  if(bundleId == null || !_applicableBundles.containsKey(bundleId)) {
@@ -208,11 +246,41 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	    _log.info("Received command to change to " + bundleId + "; bundle is already active.");
 	    return;
 	  }
-	  
-	  File path = new File(_bundleRootPath, bundleId);
+	  	  
+	  _log.info("Switching to bundle " + bundleId + "...");   
+	  _bundleIsReady = false;
+	  	  
+	  // wait until all inference processing threads have exited...
+	  int t = INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS / 5;
+	  while(t-- >= 0) {
+	    removeDeadInferenceThreads();
+	    _log.info("Waiting for all inference processing threads to exit... " + _inferenceProcessingThreads.size() + " thread(s) left.");     
+	    
+	    // have all inference threads finished yet?
+	    if(allInferenceThreadsHaveExited()) {
+	      break;
+	      
+	    // forcefully cancel threads when we timeout
+	    } else if(t == 0) {
+	      for(Future thread : _inferenceProcessingThreads) {
+	        if(!thread.isDone() && !thread.isCancelled()) {
+	          thread.cancel(true);
+	        }
+	      }
+	      
+	      _inferenceProcessingThreads.clear();
 
-	  _log.info("Switching to bundle " + bundleId + "...");
-		
+	      break;
+	    }
+	    
+	    Thread.yield();
+	    Thread.sleep(5 * 1000);
+	  }
+	  
+	  _log.info("All inference processing threads have now exited--changing bundle...");
+	  
+	  // switch bundle files
+    File path = new File(_bundleRootPath, bundleId);
 		_bundle.setPath(path);
     _nycBundle.setPath(path);
 
@@ -243,43 +311,106 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		  return;
 		}
 		
-    // attempt to cleanup any dereferenced data--is old data really cleaned up? FIXME?
-		System.gc();
-		System.gc();
-
-		// set cache name prefix FIXME--can we avoid the ref. to app context? and or use brian's
-		// cacheable key pluggable architecture to do this?
-		Map<String, CacheableMethodManager> cacheMethodBeans = _applicationContext.getBeansOfType(
-		    CacheableMethodManager.class);
+    _log.info("Refresh/reload of bundle data complete.");
 		
-		for(String beanId : cacheMethodBeans.keySet()) {
-		  CacheableMethodManager bean = cacheMethodBeans.get(beanId);
-		  bean.setCacheNamePrefix(bundleId);
-		}
+    // attempt to cleanup any dereferenced data--I know this is a debate in the Java space--
+    // do you let the magic GC do it's thing or force its hand? With a profiler, I found this helps
+    // keep memory use more consistently under 2x initial heap size. FWIW.
+		System.gc();
+		System.gc();
+    _log.info("Garbage collection after bundle switch complete.");
 
-		// clear in-memory caches
-		List<CacheManager> cacheManagers = CacheManager.ALL_CACHE_MANAGERS;
-		for(CacheManager cacheManager : cacheManagers) {
-		  for(String cacheName : cacheManager.getCacheNames()) {
-		    Cache cache = cacheManager.getCache(cacheName);
-		    if(cache != null) {
-		      _log.info("Clearing cache with ID " + cacheName);
-		      cache.removeAll();
-		    }
-		  }
-		}
-				
+    removeAndRebuildCache();
+    _log.info("Cache rebuild complete.");
+    						
 		_currentBundleId = bundleId;
+    _bundleIsReady = true;	
+    _log.info("New bundle is now ready.");
+
 		return;
 	}
 
 	/*****
 	 * Private helper things
 	 *****/
+	private void removeAndRebuildCache() {
+    // Clear all existing cache elements
+    for (String cacheName : _cacheManager.getCacheNames()) {
+      _log.info("Clearing cache with ID " + cacheName);
+      Cache cache = _cacheManager.getCache(cacheName);
+      cache.removeAll();
+    }
+
+    // Rebuild cache
+    try {
+      List<AgencyWithCoverageBean> agenciesWithCoverage = _service.getAgenciesWithCoverage();
+
+      for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
+
+        AgencyBean agency = agencyWithCoverage.getAgency();
+        System.out.println("agency=" + agency.getId());
+
+        ListBean<String> stopIds = _service.getStopIdsForAgencyId(agency.getId());
+        for (String stopId : stopIds.getList()) {
+          System.out.println("  stop=" + stopId);
+          _service.getStop(stopId);
+        }
+
+        ListBean<String> routeIds = _service.getRouteIdsForAgencyId(agency.getId());
+        for (String routeId : routeIds.getList()) {
+          System.out.println("  route=" + routeId);
+          _service.getStopsForRoute(routeId);
+        }
+      }
+
+      Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
+      for (TripEntry trip : _transitGraphDao.getAllTrips()) {
+        AgencyAndId shapeId = trip.getShapeId();
+        if (shapeId != null && shapeId.hasValues())
+          shapeIds.add(shapeId);
+      }
+
+      for (AgencyAndId shapeId : shapeIds) {
+        System.out.println("shape=" + shapeId);
+        _service.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
+      }
+    } catch (ServiceException ex) {
+      _log.error("service exception", ex);
+    }
+    
+//    for (String cacheName : _cacheManager.getCacheNames()) {
+//      _log.info("Flushing cache with ID " + cacheName + " to disk.");
+//      Cache cache = _cacheManager.getCache(cacheName);
+//      cache.flush();
+//    }
+	}
+	
+	private void removeDeadInferenceThreads() {
+	  List<Future> finishedThreads = new ArrayList<Future>();
+    
+    // find all threads that are not running...
+    for(Future thread : _inferenceProcessingThreads) {
+      if(thread.isDone() || thread.isCancelled()) {
+        finishedThreads.add(thread);
+      }
+    }
+
+    // ...and then remove them from our list of processing threads
+    for(Future deadThread : finishedThreads) {
+      _inferenceProcessingThreads.remove(deadThread);
+    }
+	}
+	
+	private boolean allInferenceThreadsHaveExited() {
+	  removeDeadInferenceThreads();
+	  
+	  return (_inferenceProcessingThreads.size() == 0);
+	}
+	
   private class BundleSwitchUpdateThread extends TimerTask implements Trigger {
     @Override
     public void run() {     
-      try {       
+      try {
         refreshApplicableBundles();
         reevaluateBundleAssignment();  
       } catch(Exception e) {

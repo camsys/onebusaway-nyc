@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -95,6 +96,8 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _numberOfProcessingThreads = 10;
 
+  private int _skippedUpdateLogCounter = 0;
+  
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
@@ -147,39 +150,48 @@ public class VehicleLocationInferenceServiceImpl implements
       return;
 
     for (AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
-      VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
-      NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
-
-      // no state
-      if (state == null) {
-        _log.info("Vehicle " + vehicleId
-            + " reset on bundle change: no state available.");
-
-        this.resetVehicleLocation(vehicleId);
-        continue;
-      }
-
-      // no match to any trip
-      if (state.getInferredBlockId() == null
-          || state.getInferredTripId() == null) {
-        _log.info("Vehicle " + vehicleId
-            + " reset on bundle change: no matched trip/block.");
-
-        this.resetVehicleLocation(vehicleId);
-        continue;
-      }
-
-      // trip or block matched have disappeared!
-      TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
-      BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
-
-      if (trip == null || block == null) {
+      try {
+        VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
+        NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
+  
+        // no state
+        if (state == null) {
+          _log.info("Vehicle " + vehicleId
+              + " reset on bundle change: no state available.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+  
+        // no match to any trip
+        if (state.getInferredBlockId() == null
+            || state.getInferredTripId() == null) {
+          _log.info("Vehicle " + vehicleId
+              + " reset on bundle change: no matched trip/block.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+  
+        // trip or block matched have disappeared!
+        TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
+        BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
+  
+        if (trip == null || block == null) {
+          _log.info("Vehicle "
+              + vehicleId
+              + " reset on bundle change: trip/block is no longer present in new bundle.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+      } catch(Exception e) {
+        // if something goes wrong, reset inference state
         _log.info("Vehicle "
             + vehicleId
-            + " reset on bundle change: trip/block is no longer present in new bundle.");
+            + " reset on bundle change: exception thrown: " + e.getMessage());
 
         this.resetVehicleLocation(vehicleId);
-        continue;
       }
     }
   }
@@ -215,12 +227,20 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
     CcLocationReport message = envelope.getCcLocationReport();
-    verifyVehicleResultMappingToCurrentBundle();
 
-    if (_bundleManagementService.getCurrentBundleMetadata() == null) {
-      _log.warn("Bundle is not ready or none is loaded; skipping update message.");
+    if(!_bundleManagementService.bundleIsReady()) {
+      _skippedUpdateLogCounter++;
+
+      // only print this every 25 times so we don't fill up the logs!
+      if(_skippedUpdateLogCounter > 25) {
+        _log.warn("Bundle is not ready or none is loaded--we've skipped 25 messages since last log event.");
+        _skippedUpdateLogCounter = 0;
+      }
+      
       return;
     }
+    
+    verifyVehicleResultMappingToCurrentBundle();
 
     NycRawLocationRecord r = new NycRawLocationRecord();
     r.setUUID(envelope.getUUID());
@@ -309,8 +329,8 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    _executorService.execute(new ProcessingTask(r));
-
+    Future result = _executorService.submit(new ProcessingTask(r));
+    _bundleManagementService.registerInferenceProcessingThread(result);
   }
 
   @Override
@@ -489,7 +509,6 @@ public class VehicleLocationInferenceServiceImpl implements
 
     @Override
     public void run() {
-
       try {
         VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
 
@@ -523,6 +542,7 @@ public class VehicleLocationInferenceServiceImpl implements
       } else if (_nycTestInferredLocationRecord != null) {
         return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
       }
+      
       return false;
     }
   }
