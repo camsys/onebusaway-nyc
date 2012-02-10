@@ -1,10 +1,9 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.input;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
-import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup.GroupMembers;
@@ -13,55 +12,66 @@ import tcip_final_3_0_5_1.CPTVehicleIden;
 
 public class MtaDepotMapToTcipAssignmentConverter {
 
-  UtsMappingTool mappingTool = null;
-
+  private static String DATASOURCE_SYSTEM = "SPEAR";
+  
   public MtaDepotMapToTcipAssignmentConverter() {
   }
+  
+  private DepotIdTranslator depotIdTranslator = null;
 
   /***
    * 
    * @param list
    * @return
    */
-  public CPTFleetSubsetGroup ConvertToOutput(String depotStr,
-      List<MtaBusDepotAssignment> list) {
+  public CPTFleetSubsetGroup ConvertToOutput(String mtaSourceDepotIdStr,
+      List<MtaBusDepotAssignment> sourceMtaBusDepotAssigns) {
 
     CPTFleetSubsetGroup outputGroup = new CPTFleetSubsetGroup();
 
     outputGroup.setGroupId(new Long(0));
+    outputGroup.setGroupName(getMappedId(mtaSourceDepotIdStr));
 
-    outputGroup.setGroupName(depotStr);
-
+    // Add the group-garage block
     CPTTransitFacilityIden depotFacility = new CPTTransitFacilityIden();
     depotFacility.setFacilityId(new Long(0));
-    depotFacility.setFacilityName(depotStr);
+    depotFacility.setFacilityName(getMappedId(mtaSourceDepotIdStr));
     outputGroup.setGroupGarage(depotFacility);
 
-    outputGroup.setGroupMembers(generateGroupMembers(list));
+    outputGroup.setGroupMembers(generateGroupMembers(sourceMtaBusDepotAssigns));
 
     return outputGroup;
   }
 
   private GroupMembers generateGroupMembers(
-      List<MtaBusDepotAssignment> bdAssigns) {
+      List<MtaBusDepotAssignment> mtaBDAssigns) {
     GroupMembers gMembers = new GroupMembers();
 
-    Iterator<MtaBusDepotAssignment> bdIt = bdAssigns.iterator();
-
-    CPTVehicleIden bus = null;
-    MtaBusDepotAssignment bdAssignment = null;
-
-    while (bdIt.hasNext()) {
-      bdAssignment = bdIt.next();
-      bus = new CPTVehicleIden();
-
-      bus.setAgencyId(bdAssignment.getAgencyId());
-      bus.setVehicleId(bdAssignment.getBusNumber());
-      // bus.setName("Mercedes Benz");
-
-      gMembers.getGroupMember().add(bus);
+    for (MtaBusDepotAssignment mtaSourceDepotAssignment : mtaBDAssigns) {
+      gMembers.getGroupMember().add(makeTcipVehicleFromMtaAssignment(mtaSourceDepotAssignment));
     }
 
     return gMembers;
+  }
+  
+  private CPTVehicleIden makeTcipVehicleFromMtaAssignment (MtaBusDepotAssignment mtaAssignment) {
+    CPTVehicleIden vehicle = new CPTVehicleIden();
+    
+    vehicle.setAgencyId(mtaAssignment.getAgencyId());
+    vehicle.setVehicleId(mtaAssignment.getBusNumber());
+    
+    return vehicle;
+  }
+  
+  private String getMappedId(String fromId) {
+    if (depotIdTranslator != null) {
+      return depotIdTranslator.getMappedId(DATASOURCE_SYSTEM, fromId);
+    } else {
+      return fromId;
+    }
+  }
+  
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator; 
   }
 }

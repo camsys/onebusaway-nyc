@@ -11,6 +11,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPCrewAssignment
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CSVCrewAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.CrewAssignsInputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,23 +23,25 @@ public class UtsCrewAssignsToDataCreator {
 
   private File inputFile;
 
+  private DepotIdTranslator depotIdTranslator;
+
   public UtsCrewAssignsToDataCreator(File inputFile) {
     this.inputFile = inputFile;
   }
 
   public OperatorAssignmentData generateDataObject() throws FileNotFoundException  {
 
-    List<MtaUtsCrewAssignment> crewAssignments;
-
     _log.debug("Importing crew assignments from source data file using CSVCrewAssignsInputConverter.");
     CrewAssignsInputConverter inConv = new CSVCrewAssignsInputConverter(
         inputFile);
 
-    crewAssignments = inConv.getCrewAssignments();
+    List<MtaUtsCrewAssignment> crewAssignments = inConv.getCrewAssignments();
 
     _log.debug("Converting List<MtaUtsCrewAssignment> imported from source data to TCIP List<SCHOperatorAssignment> using TCIPCrewAssignmentsOutputConverter.");
     CrewAssignmentsOutputConverter converter = new TCIPCrewAssignmentsOutputConverter(
         crewAssignments);
+    converter.setDepotIdTranslator(depotIdTranslator);
+    
     List<SCHOperatorAssignment> opAssignments = converter.convertAssignments();
 
     // Set up a data object to interface with the tcip data.
@@ -47,5 +50,10 @@ public class UtsCrewAssignsToDataCreator {
 
     _log.debug("Returning OperatorAssignmentData object.");
     return data;
+  }
+
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator;
+    
   }
 }

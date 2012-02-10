@@ -44,6 +44,7 @@ public class UtsCrewAssignsToTcipXmlProcess extends FileToFileConverterProcess {
   public void executeProcess() throws IOException {
 
     UtsCrewAssignsToDataCreator dataCreator = new UtsCrewAssignsToDataCreator(inputFile);
+    dataCreator.setDepotIdTranslator(depotIdTranslator);
     
     OperatorAssignmentData data = dataCreator.generateDataObject();
 

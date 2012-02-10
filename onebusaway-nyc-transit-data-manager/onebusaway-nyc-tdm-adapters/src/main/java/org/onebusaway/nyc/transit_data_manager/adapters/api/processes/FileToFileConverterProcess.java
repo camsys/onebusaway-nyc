@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
+
 public abstract class FileToFileConverterProcess {
 
   protected File inputFile = null;
   protected File outputFile = null;
+  
+  protected DepotIdTranslator depotIdTranslator = null;
 
   protected FileWriter outputFileWriter = null;
 
@@ -26,6 +30,10 @@ public abstract class FileToFileConverterProcess {
     outputFileWriter.write(this.output);
 
     outputFileWriter.close();
+  }
+  
+  public void setupDepotIdTranslator(File configFile) throws IOException {
+    depotIdTranslator = new DepotIdTranslator(configFile);
   }
 
 }

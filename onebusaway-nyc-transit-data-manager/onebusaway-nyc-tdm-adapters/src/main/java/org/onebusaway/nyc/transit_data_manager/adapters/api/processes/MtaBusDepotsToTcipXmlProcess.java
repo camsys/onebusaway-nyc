@@ -30,6 +30,8 @@ public class MtaBusDepotsToTcipXmlProcess extends FileToFileConverterProcess {
     MtaBusDepotFileToDataCreator dataCreator = new MtaBusDepotFileToDataCreator(
         inputFile);
     
+    dataCreator.setDepotIdTranslator(depotIdTranslator);
+    
     VehicleDepotData data = dataCreator.generateDataObject();
     
     List<CPTFleetSubsetGroup> allDefinedGroups = new ArrayList<CPTFleetSubsetGroup>();
