@@ -15,12 +15,18 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.simulator;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 public class VehicleLocationDetails {
 
@@ -36,9 +42,9 @@ public class VehicleLocationDetails {
    */
   private boolean history;
 
-  private List<Particle> particles;
+  private Multiset<Particle> particles;
 
-  private List<Particle> sampledParticles;
+  private Multiset<Particle> sampledParticles;
 
   private List<JourneyPhaseSummary> summaries;
 
@@ -84,20 +90,20 @@ public class VehicleLocationDetails {
     this.history = history;
   }
 
-  public List<Particle> getParticles() {
-    return particles;
+  public List<Entry<Particle>> getParticles() {
+    return Lists.newArrayList(particles.entrySet());
   }
 
-  public void setParticles(List<Particle> particles) {
+  public void setParticles(Multiset<Particle> particles) {
     this.particles = particles;
   }
 
-  public List<Particle> getSampledParticles() {
-    return sampledParticles;
+  public List<Entry<Particle>> getSampledParticles() {
+    return Lists.newArrayList(sampledParticles.entrySet());
   }
 
-  public void setSampledParticles(List<Particle> sampledParticles) {
-    this.sampledParticles = sampledParticles;
+  public void setSampledParticles(Multiset<Particle> sampledParticles2) {
+    this.sampledParticles = sampledParticles2;
   }
 
   public List<JourneyPhaseSummary> getSummaries() {

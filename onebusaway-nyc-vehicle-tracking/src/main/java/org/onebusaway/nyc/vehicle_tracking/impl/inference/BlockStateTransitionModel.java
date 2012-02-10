@@ -24,7 +24,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
@@ -35,6 +34,9 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+
+import com.google.common.collect.ImmutableSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,37 +135,14 @@ public class BlockStateTransitionModel {
     boolean allowBlockChange = allowBlockTransition(parentState, motionState,
         journeyState, obs);
 
-    /**
-     * Do we explicitly allow a block change? If not, we just advance along our
-     * current block.
-     * 
-     * Note that we are considering the parentPhase, not the newly proposed
-     * phase here. I think that makes sense, since the proposed journeyPhase is
-     * just an iteration over all phases with no real consideration of
-     * likelihood yet.
-     */
     if (!allowBlockChange) {
-
-      /**
-       * There isn't actually a block to this particle, so no progressing
-       * possible.
-       */
-      if (parentBlockState == null)
-        return null;
-
-      /**
-       * If we're off block, kill the block
-       */
-      if (_vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
-          parentBlockState.getBlockState()))
-        return null;
-
-      if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase())
-          || journeyState.getPhase() == EVehiclePhase.DEADHEAD_BEFORE) {
-        potentialTransStates.addAll(advanceAlongBlock(parentPhase,
-            parentBlockState.getBlockState(), obs).getAllStates());
-      } else {
-        potentialTransStates.add(parentBlockState);
+      if (parentBlockState != null) {
+        if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase())) {
+          potentialTransStates.addAll(advanceAlongBlock(parentPhase,
+              parentBlockState, obs));
+        } else {
+          potentialTransStates.add(parentBlockState);
+        }
       }
     }
 
@@ -172,15 +151,15 @@ public class BlockStateTransitionModel {
      * the best transition.
      */
     if (allowBlockChange || potentialTransStates.isEmpty()) {
-
       /**
-       * We're now considering that the driver may have been re-assigned, or
-       * whatnot.
+       * We're now considering that the driver may have been re-assigned.
        */
       potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
           obs, true));
+      
       if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
         potentialTransStates.add(null);
+      
       // TODO we used to do this. what about now?
       // if (EVehiclePhase.isLayover(parentPhase)
       // || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(),
@@ -192,21 +171,21 @@ public class BlockStateTransitionModel {
     return potentialTransStates;
   }
 
-  public BestBlockObservationStates getClosestBlockStates(
+  public Set<BlockStateObservation> getClosestBlockStates(
       BlockState blockState, Observation obs) {
 
-    Map<BlockInstance, BestBlockObservationStates> states = _observationCache.getValueForObservation(
+    Map<BlockInstance, Set<BlockStateObservation>> states = _observationCache.getValueForObservation(
         obs, EObservationCacheKey.CLOSEST_BLOCK_LOCATION);
 
     if (states == null) {
-      states = new ConcurrentHashMap<BlockInstance, BestBlockObservationStates>();
+      states = new ConcurrentHashMap<BlockInstance, Set<BlockStateObservation>>();
       _observationCache.putValueForObservation(obs,
           EObservationCacheKey.CLOSEST_BLOCK_LOCATION, states);
     }
 
     BlockInstance blockInstance = blockState.getBlockInstance();
 
-    BestBlockObservationStates closestState = states.get(blockInstance);
+    Set<BlockStateObservation> closestState = states.get(blockInstance);
 
     if (closestState == null) {
 
@@ -233,6 +212,14 @@ public class BlockStateTransitionModel {
       return true;
 
     /**
+     * If we're off block
+     */
+    if (parentBlockState != null
+        && _vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
+          parentBlockState.getBlockState()))
+      return true;
+
+    /**
      * Have we just transitioned out of a terminal?
      */
     if (prevObs != null) {
@@ -240,10 +227,7 @@ public class BlockStateTransitionModel {
        * If we were assigned a block, then use the block's terminals, otherwise,
        * all terminals.
        */
-      if (parentBlockState == null) {
-        // if (prevObs.isAtTerminal() && !obs.isAtTerminal())
-        // return true;
-      } else if (parentBlockState != null) {
+      if (parentBlockState != null) {
         boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
             prevObs.getRecord(),
             parentBlockState.getBlockState().getBlockInstance());
@@ -291,30 +275,23 @@ public class BlockStateTransitionModel {
    * @param obs
    * @return
    */
-  private BestBlockObservationStates advanceAlongBlock(EVehiclePhase phase,
-      BlockState blockState, Observation obs) {
+  private Set<BlockStateObservation> advanceAlongBlock(EVehiclePhase phase,
+      BlockStateObservation blockState, Observation obs) {
 
-    Observation prevObs = obs.getPreviousObservation();
+    Set<BlockStateObservation> results = new HashSet<BlockStateObservation>();
+    
+    for (BlockStateObservation updatedBlockState : _blocksFromObservationService.bestStates(
+        obs, blockState)) {
 
-    double distanceToTravel = 300
-        + SphericalGeometryLibrary.distance(prevObs.getLocation(),
-            obs.getLocation()) * _blockDistanceTravelScale;
-
-    /**
-     * TODO: Should we allow a vehicle to travel backwards?
-     */
-    BestBlockObservationStates updatedBlockStates = _blocksFromObservationService.advanceState(
-        obs, blockState, 0, distanceToTravel);
-
-    if (updatedBlockStates != null
-        && (EVehiclePhase.isLayover(phase) || _vehicleStateLibrary.isAtPotentialTerminal(
-            obs.getRecord(), blockState.getBlockInstance()))) {
-      for (BlockStateObservation state : updatedBlockStates.getAllStates()) {
-        state = _blocksFromObservationService.advanceLayoverState(obs, state);
+      if (updatedBlockState != null
+          && (EVehiclePhase.isLayover(phase) 
+              || _vehicleStateLibrary.isAtPotentialTerminal(obs.getRecord(), 
+                  blockState.getBlockState().getBlockInstance()))) {
+        results.add(_blocksFromObservationService.advanceLayoverState(obs, updatedBlockState));
       }
     }
 
-    return updatedBlockStates;
+    return results;
   }
 
   /**
@@ -325,7 +302,7 @@ public class BlockStateTransitionModel {
    * @param obs
    * @return
    */
-  private BestBlockObservationStates getClosestBlockStateUncached(
+  private Set<BlockStateObservation> getClosestBlockStateUncached(
       BlockState blockState, Observation obs) {
 
     double distanceToTravel = 400;
@@ -340,28 +317,25 @@ public class BlockStateTransitionModel {
               * _blockDistanceTravelScale);
     }
 
-    BestBlockObservationStates advancedStates = _blocksFromObservationService.advanceState(
-        obs, blockState, -distanceToTravel, distanceToTravel);
+    Set<BlockStateObservation> results = new HashSet<BlockStateObservation>();
+    for (BlockStateObservation bso : _blocksFromObservationService.advanceState(
+        obs, blockState, -distanceToTravel, distanceToTravel)) {
 
-    if (advancedStates == null)
-      return null;
-
-    BestBlockObservationStates closestStates;
-    ScheduledBlockLocation blockLocation = advancedStates.getBestLocation().getBlockState().getBlockLocation();
-    double d = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
-        obs.getLocation());
-
-    // TODO don't know about this...
-    if (d > 400) {
-      BlockStateObservation blockStateObservation = new BlockStateObservation(
-          blockState, obs);
-      closestStates = _blocksFromObservationService.bestStates(obs,
-          blockStateObservation);
-    } else {
-      closestStates = advancedStates;
+      ScheduledBlockLocation blockLocation = bso.getBlockState().getBlockLocation();
+      double d = SphericalGeometryLibrary.distance(blockLocation.getLocation(),
+          obs.getLocation());
+  
+      if (d > 400) {
+        BlockStateObservation blockStateObservation = new BlockStateObservation(
+            blockState, obs);
+        results.addAll(_blocksFromObservationService.bestStates(obs,
+            blockStateObservation));
+      } else {
+        results.add(bso);
+      }
     }
 
-    return closestStates;
+    return results;
   }
 
   public static boolean hasDestinationSignCodeChangedBetweenObservations(

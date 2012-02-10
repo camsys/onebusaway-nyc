@@ -504,7 +504,7 @@ public class RunServiceImpl implements RunService {
         blockLocation.getScheduledTime());
   }
 
-  private Date getTimestampAsDate(long timestamp) {
+  public static Date getTimestampAsDate(long timestamp) {
     Calendar cd = Calendar.getInstance();
     cd.setTimeInMillis(timestamp);
     cd.set(Calendar.HOUR_OF_DAY, 0);

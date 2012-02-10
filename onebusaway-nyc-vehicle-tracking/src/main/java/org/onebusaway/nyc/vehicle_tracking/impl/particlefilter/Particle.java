@@ -36,7 +36,7 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   private double _weight = 1.0;
 
-  private SensorModelResult _result;
+  transient private SensorModelResult _result;
 
   private Particle _parent;
 
@@ -173,9 +173,11 @@ public class Particle implements Serializable, Comparable<Particle> {
       return 1;
     }
 
-    int particleComp = ComparisonChain.start().compare(t.getData(),
-        o.getData(), _particleDataOrdering.nullsLast()).compare(t.getWeight(),
-        o.getWeight()).compare(t.getTimestamp(), o.getTimestamp()).result();
+    int particleComp = ComparisonChain.start()
+        .compare(t.getData(), o.getData(), _particleDataOrdering.nullsLast())
+        .compare(t.getTimestamp(), o.getTimestamp())
+        .compare(t.getWeight(), o.getWeight())
+        .result();
     return particleComp;
   }
 
@@ -195,7 +197,7 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   private static int oneParticleHashCode(Particle p) {
     final int prime = 31;
-    int result = 0;
+    int result = 1;
 
     int pdataHashCode = 0;
     long temp1 = 0;
@@ -211,7 +213,7 @@ public class Particle implements Serializable, Comparable<Particle> {
       temp1 = Double.doubleToLongBits(p._timestamp);
       temp2 = Double.doubleToLongBits(p._weight);
     }
-    result = pdataHashCode;
+    result = prime * result + pdataHashCode;
     result = prime * result + (int) (temp1 ^ (temp1 >>> 32));
     result = prime * result + (int) (temp2 ^ (temp2 >>> 32));
     return result;
@@ -222,8 +224,8 @@ public class Particle implements Serializable, Comparable<Particle> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * oneParticleHashCode(this);
-    result = prime * oneParticleHashCode(this._parent);
+    result = prime * result + oneParticleHashCode(this);
+    result = prime * result + oneParticleHashCode(this._parent);
     return result;
   }
 
@@ -242,6 +244,12 @@ public class Particle implements Serializable, Comparable<Particle> {
       return false;
     }
     Particle other = (Particle) obj;
+    if (Double.doubleToLongBits(thisObj._timestamp) != Double.doubleToLongBits(other._timestamp)) {
+      return false;
+    }
+    if (Double.doubleToLongBits(thisObj._weight) != Double.doubleToLongBits(other._weight)) {
+      return false;
+    }
     if (thisObj._data == null) {
       if (other._data != null) {
         return false;
@@ -259,13 +267,6 @@ public class Particle implements Serializable, Comparable<Particle> {
       }
 
     } else {
-      return false;
-    }
-
-    if (Double.doubleToLongBits(thisObj._timestamp) != Double.doubleToLongBits(other._timestamp)) {
-      return false;
-    }
-    if (Double.doubleToLongBits(thisObj._weight) != Double.doubleToLongBits(other._weight)) {
       return false;
     }
 

@@ -2,6 +2,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
@@ -23,7 +24,9 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
   private final Boolean _isRunReportedAssignedMismatch;
 
   public BlockStateObservation(BlockState blockState, Observation obs) {
-    _blockState = blockState;
+    
+    Preconditions.checkNotNull(obs);
+    _blockState = Preconditions.checkNotNull(blockState);
 
     String runId = blockState.getRunId();
     _isOpAssigned = obs.getOpAssignedRunId() != null
@@ -34,7 +37,7 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
         && _isRunReported != null ? _isOpAssigned && !_isRunReported : null;
   }
 
-  public BlockStateObservation(BlockState blockState, Boolean isRunReported,
+  private BlockStateObservation(BlockState blockState, Boolean isRunReported,
       Boolean isUTSassigned, Boolean isRunAM) {
     _blockState = blockState;
     this._isRunReported = isRunReported;
@@ -92,8 +95,12 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
     return b.toString();
   }
 
+  private int _hash = 0;
   @Override
   public int hashCode() {
+    if (_hash != 0)
+      return _hash;
+      
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -106,6 +113,7 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
         * result
         + ((_isRunReportedAssignedMismatch == null) ? 0
             : _isRunReportedAssignedMismatch.hashCode());
+    _hash = result;
     return result;
   }
 
