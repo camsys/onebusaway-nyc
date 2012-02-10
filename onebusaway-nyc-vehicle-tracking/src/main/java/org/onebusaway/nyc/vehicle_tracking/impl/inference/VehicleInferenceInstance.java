@@ -291,8 +291,6 @@ public class VehicleInferenceInstance {
     }
 
     boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-    // boolean atTerminal = _baseLocationService
-    // .getTerminalNameForLocation(location) != null;
     boolean atTerminal = _vehicleStateLibrary.isAtPotentialBlockTerminal(record);
     boolean outOfService = lastValidDestinationSignCode == null
         || _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)
@@ -385,16 +383,17 @@ public class VehicleInferenceInstance {
 
     @Override
     public int compareTo(RunResults o2) {
-
       if (this == o2)
         return 0;
 
       int res = new CompareToBuilder().append(assignedRunId, o2.assignedRunId).append(
           fuzzyMatches, o2.fuzzyMatches).append(bestFuzzyDist, o2.bestFuzzyDist).toComparison();
+
       return res;
     }
 
     private int _hash = 0;
+
     @Override
     public int hashCode() {
       if (_hash != 0)
@@ -449,11 +448,11 @@ public class VehicleInferenceInstance {
     }
   }
 
-  public synchronized boolean handleBypassUpdate(
-      NycTestInferredLocationRecord record) {
+  public synchronized boolean handleBypassUpdate(NycTestInferredLocationRecord record) {
     _previousObservation = null;
     _nycTestInferredLocationRecord = record;
     _lastUpdateTime = record.getTimestamp();
+
     if (!record.locationDataIsMissing())
       _lastLocationUpdateTime = record.getTimestamp();
 
@@ -466,8 +465,8 @@ public class VehicleInferenceInstance {
     String opAssignedRunId = null;
     String operatorId = observation.getOperatorId();
 
-    boolean noOperatorIdGiven = StringUtils.isEmpty(operatorId)
-        || StringUtils.containsOnly(operatorId, "0");
+    boolean noOperatorIdGiven = 
+        StringUtils.isEmpty(operatorId) || StringUtils.containsOnly(operatorId, "0");
 
     if (!noOperatorIdGiven) {
       try {
@@ -557,6 +556,7 @@ public class VehicleInferenceInstance {
     NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(tilr);
 
     Particle particle = _particleFilter.getMostLikelyParticle();
+
     if (particle == null)
       return null;
 
@@ -574,7 +574,7 @@ public class VehicleInferenceInstance {
       // saying that this schedule deviation is a true match to the schedule.
       Boolean opAssigned = blockState.getOpAssigned();
       if (opAssigned != null && opAssigned) {
-        int deviation = (int) ((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
+        int deviation = (int)((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
 
         record.setScheduleDeviation(deviation);
       } else {
@@ -583,8 +583,8 @@ public class VehicleInferenceInstance {
 
       // distance along trip
       BlockTripEntry activeTrip = blockLocation.getActiveTrip();
-      double distanceAlongTrip = blockLocation.getDistanceAlongBlock()
-          - activeTrip.getDistanceAlongBlock();
+      double distanceAlongTrip = 
+          blockLocation.getDistanceAlongBlock() - activeTrip.getDistanceAlongBlock();
 
       record.setDistanceAlongTrip(distanceAlongTrip);
     }
@@ -603,15 +603,18 @@ public class VehicleInferenceInstance {
     Observation obs = state.getObservation();
     NycRawLocationRecord nycRawRecord = obs.getRecord();
     BlockStateObservation blockState = state.getBlockStateObservation();
-
+    
     record.setUUID(nycRawRecord.getUUID());
     record.setInferenceIsEnabled(_enabled);
     record.setLastUpdateTime(_lastUpdateTime);
     record.setLastLocationUpdateTime(_lastLocationUpdateTime);
+    // FIXME: do we need to do best-fit distance matching on this string to cleanup "fat fingering"? 
+    record.setLastInferredOperatorId(nycRawRecord.getOperatorId());
     record.setMostRecentObservedDestinationSignCode(nycRawRecord.getDestinationSignCode());
     record.setLastObservedLatitude(nycRawRecord.getLatitude());
     record.setLastObservedLongitude(nycRawRecord.getLongitude());
     record.setEmergencyFlag(nycRawRecord.isEmergencyFlag());
+
     if (blockState != null) {
       record.setLastInferredDestinationSignCode(blockState.getBlockState().getDestinationSignCode());
       record.setInferredRunId(blockState.getBlockState().getRunId());
@@ -668,8 +671,8 @@ public class VehicleInferenceInstance {
     NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setLat(location.getLat());
     record.setLon(location.getLon());
-    record.setReportedRunId(RunTripEntry.createId(nycRecord.getRunRouteId(),
-        nycRecord.getRunNumber()));
+    record.setReportedRunId(
+        RunTripEntry.createId(nycRecord.getRunRouteId(),nycRecord.getRunNumber()));
     record.setOperatorId(nycRecord.getOperatorId());
 
     record.setTimestamp((long) particle.getTimestamp());

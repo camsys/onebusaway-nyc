@@ -346,19 +346,15 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       List<AgencyWithCoverageBean> agenciesWithCoverage = _service.getAgenciesWithCoverage();
 
       for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
-
         AgencyBean agency = agencyWithCoverage.getAgency();
-        System.out.println("agency=" + agency.getId());
 
         ListBean<String> stopIds = _service.getStopIdsForAgencyId(agency.getId());
         for (String stopId : stopIds.getList()) {
-          System.out.println("  stop=" + stopId);
           _service.getStop(stopId);
         }
 
         ListBean<String> routeIds = _service.getRouteIdsForAgencyId(agency.getId());
         for (String routeId : routeIds.getList()) {
-          System.out.println("  route=" + routeId);
           _service.getStopsForRoute(routeId);
         }
       }
@@ -366,23 +362,17 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
       for (TripEntry trip : _transitGraphDao.getAllTrips()) {
         AgencyAndId shapeId = trip.getShapeId();
-        if (shapeId != null && shapeId.hasValues())
+        if (shapeId != null && shapeId.hasValues()) {
           shapeIds.add(shapeId);
+        }
       }
 
       for (AgencyAndId shapeId : shapeIds) {
-        System.out.println("shape=" + shapeId);
         _service.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
       }
-    } catch (ServiceException ex) {
-      _log.error("service exception", ex);
+    } catch (ServiceException e) {
+      _log.error("Exception during cache rebuild: ", e.getMessage());
     }
-    
-//    for (String cacheName : _cacheManager.getCacheNames()) {
-//      _log.info("Flushing cache with ID " + cacheName + " to disk.");
-//      Cache cache = _cacheManager.getCache(cacheName);
-//      cache.flush();
-//    }
 	}
 	
 	private void removeDeadInferenceThreads() {
