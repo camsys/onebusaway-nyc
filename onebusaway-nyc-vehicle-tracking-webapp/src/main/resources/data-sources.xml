@@ -43,8 +43,7 @@
         </property>
     </bean>
 
-    <!--  TODO This duplicated in several data-source.xml files.  Need to refactor out. -->
-    <!-- Database Configuration -->
+    <!-- Bundle Database Configuration; always HSQLDB -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${db.driverClassName}" />
         <property name="url" value="${db.url}" />
@@ -52,6 +51,7 @@
         <property name="password" value="${db.password}" />
     </bean>
     
+<!--
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
         <property name="properties">
@@ -60,7 +60,7 @@
             </props> 
         </property> 
     </bean> 
-
+-->
     <alias name="dataSource" alias="mutableDataSource" />
 
     <!-- define which TDM to use -->

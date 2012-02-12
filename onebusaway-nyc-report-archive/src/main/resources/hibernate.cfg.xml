@@ -17,14 +17,20 @@
         <property name="connection.shutdown">true</property>
  -->
         <!-- SQL dialect -->
+<!-- try out auto-detect -->
+<!--
         <property name="dialect">${db.hibernate.dialect}</property>
+-->
 
         <!-- Database connection settings -->
+        <!-- use data source instead -->
+        <!--
         <property name="connection.driver_class">${db.driverClassName}</property>
         <property name="connection.url">${db.url}</property>
         <property name="connection.username">${db.username}</property>
         <property name="connection.password">${db.password}</property>
-
+        -->
+        <property name="connection.datasource">java:comp/env/jdbc/archiveDB</property>
         <!-- JDBC connection pool (use the built-in one) -->
         <property name="connection.pool_size">1</property>
 
