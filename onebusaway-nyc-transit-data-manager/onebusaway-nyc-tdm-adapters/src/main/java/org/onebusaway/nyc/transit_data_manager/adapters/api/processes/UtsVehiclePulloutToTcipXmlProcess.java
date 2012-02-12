@@ -31,6 +31,8 @@ public class UtsVehiclePulloutToTcipXmlProcess extends
   public void executeProcess() throws IOException {
     UtsPulloutsToDataCreator dataCreator = new UtsPulloutsToDataCreator(inputFile);
 
+    dataCreator.setDepotIdTranslator(depotIdTranslator);
+    
     PulloutData data = dataCreator.generateDataObject();
     
     List<SCHPullInOutInfo> allPullouts = data.getAllPullouts();

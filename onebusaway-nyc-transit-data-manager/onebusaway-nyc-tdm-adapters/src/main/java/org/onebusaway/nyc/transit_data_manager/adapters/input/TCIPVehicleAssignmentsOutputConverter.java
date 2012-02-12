@@ -5,11 +5,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsVehiclePullInPullOut;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
 import tcip_final_3_0_5_1.SCHPullInOutInfo;
 
 public class TCIPVehicleAssignmentsOutputConverter implements
     VehicleAssignmentsOutputConverter {
+  
+  private DepotIdTranslator depotIdTranslator = null;
 
   private List<MtaUtsVehiclePullInPullOut> vehicleAssignInputData = null;
 
@@ -20,9 +23,8 @@ public class TCIPVehicleAssignmentsOutputConverter implements
 
   public List<SCHPullInOutInfo> convertAssignments() {
 
-    // MtaUtsToTcipAssignmentConverter dataConverter = new
-    // MtaUtsToTcipAssignmentConverter();
     MtaUtsToTcipVehicleAssignmentConverter dataConverter = new MtaUtsToTcipVehicleAssignmentConverter();
+    dataConverter.setDepotIdTranslator(depotIdTranslator);
 
     List<SCHPullInOutInfo> vehAssigns = new ArrayList<SCHPullInOutInfo>();
 
@@ -41,5 +43,9 @@ public class TCIPVehicleAssignmentsOutputConverter implements
     }
 
     return vehAssigns;
+  }
+
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator;    
   }
 }

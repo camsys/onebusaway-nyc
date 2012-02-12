@@ -23,6 +23,12 @@ public class GenericConverter {
   private String mtaUtsPipoToTcipXml = "utsPipo2tcipxml";
   private String mtaDscToTcipXml = "dsccsv2tcipxml";
 
+  public GenericConverter(String convType, File inputFile, File outputFile, File depotIdTransFile) throws IOException {
+    this(convType, inputFile, outputFile);
+    
+    conv.setupDepotIdTranslator(depotIdTransFile);
+  }
+  
   public GenericConverter(String convType, File inputFile, File outputFile) {
     if (mtaBusDepotToTcipXml.equals(convType)) {
       conv = new MtaBusDepotsToTcipXmlProcess(inputFile, outputFile);
@@ -53,6 +59,8 @@ public class GenericConverter {
     File inputFile = null;
     File outputFile = null;
 
+    File depotIdConfigFile = null;
+    
     GenericOptions ops = null;
     
     String conversionTypeStr = null;
@@ -63,17 +71,29 @@ public class GenericConverter {
       outputFile = ops.getFiles().get(1);
       
       conversionTypeStr = ops.getType();
+      
+      depotIdConfigFile = ops.getDepotIdConfig();
     } catch (ArgumentValidationException e1) {
       System.out.print(e1.getMessage());
     }
 
     if (conversionTypeStr != null) {
-      ex = new GenericConverter(conversionTypeStr, inputFile, outputFile);
+      try {
+        if (depotIdConfigFile == null) {
+          ex = new GenericConverter(conversionTypeStr, inputFile, outputFile);
+        } else {
+          ex = new GenericConverter(conversionTypeStr, inputFile, outputFile, depotIdConfigFile);
+        }
+      } catch (IOException e) {
+        System.out.print("Could not initialize Generic Converter: " + e.getMessage());
+        return;
+      }
       
       try {
         ex.runConversion();
       } catch (IOException e1) {
         System.out.println("Had trouble writing output file to disk. Please investigate output file.");
+        return;
       }
     }
 

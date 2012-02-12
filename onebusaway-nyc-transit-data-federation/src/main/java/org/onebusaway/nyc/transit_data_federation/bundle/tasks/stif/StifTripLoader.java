@@ -127,25 +127,28 @@ public class StifTripLoader {
           String run2 = tripRecord.getReliefRunId();
           String run3 = tripRecord.getNextTripOperatorRunId();
 
-          RawTrip rawTrips = new RawTrip(tripRecord.getRunId(),
+          RawTrip rawTrip = new RawTrip(tripRecord.getRunId(),
               tripRecord.getReliefRunId(), tripRecord.getNextTripOperatorRunId(),
               StifTripType.byValue(tripType), tripRecord.getSignCode());
-          rawTrips.serviceCode = serviceCode;
-          rawTrips.firstStopTime = tripRecord.getOriginTime();
-          rawTrips.lastStopTime = tripRecord.getDestinationTime();
-          rawTrips.firstStop = support.getStopIdForLocation(tripRecord.getOriginLocation());
-          rawTrips.lastStop = support.getStopIdForLocation(tripRecord.getDestinationLocation());
-          rawTrips.recoveryTime = tripRecord.getRecoveryTime();
-          rawTrips.firstTripInSequence = tripRecord.isFirstTripInSequence();
-          rawTrips.lastTripInSequence = tripRecord.isLastTripInSequence();
-          rawTrips.signCodeRoute = tripRecord.getSignCodeRoute();
-          rawData.get(serviceCode).add(rawTrips);
+          rawTrip.serviceCode = serviceCode;
+          rawTrip.firstStopTime = tripRecord.getOriginTime();
+          rawTrip.lastStopTime = tripRecord.getDestinationTime();
+          rawTrip.firstStop = support.getStopIdForLocation(tripRecord.getOriginLocation());
+          rawTrip.lastStop = support.getStopIdForLocation(tripRecord.getDestinationLocation());
+          rawTrip.recoveryTime = tripRecord.getRecoveryTime();
+          rawTrip.firstTripInSequence = tripRecord.isFirstTripInSequence();
+          rawTrip.lastTripInSequence = tripRecord.isLastTripInSequence();
+          rawTrip.signCodeRoute = tripRecord.getSignCodeRoute();
+          rawData.get(serviceCode).add(rawTrip);
 
           if (tripType == 2 || tripType == 3 || tripType == 4) {
             // deadhead or to/from depot
             continue;
           }
           String code = tripRecord.getSignCode();
+          if (rawTrip.type == StifTripType.REVENUE && (code == null || code.length() == 0)) {
+            _log.warn("Revenue trip " + rawTrip + " did not have a DSC");
+          }
 
           TripIdentifier id = support.getIdentifierForTripRecord(tripRecord);
           List<Trip> trips = support.getTripsForIdentifier(id);
@@ -201,7 +204,7 @@ public class StifTripLoader {
 
             if (trip != null) {
 
-              rawTrips.addGtfsTrip(trip);
+              rawTrip.addGtfsTrip(trip);
 
               int reliefTime = tripRecord.getReliefTime();
               String block = tripRecord.getBlockNumber();

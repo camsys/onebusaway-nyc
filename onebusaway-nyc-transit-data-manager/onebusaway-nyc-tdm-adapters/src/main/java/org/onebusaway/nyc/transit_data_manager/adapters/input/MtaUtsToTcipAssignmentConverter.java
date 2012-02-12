@@ -3,6 +3,7 @@ package org.onebusaway.nyc.transit_data_manager.adapters.input;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsCrewAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 import tcip_final_3_0_5_1.CPTOperatorIden;
@@ -25,7 +26,10 @@ public class MtaUtsToTcipAssignmentConverter {
     mappingTool = new UtsMappingTool();
   }
   
+  private static String DATASOURCE_SYSTEM = "UTS";
+  
   private UtsMappingTool mappingTool;
+  private DepotIdTranslator depotIdTranslator;
 
   public void setMappingTool(UtsMappingTool mappingTool) {
     this.mappingTool = mappingTool;
@@ -59,7 +63,7 @@ public class MtaUtsToTcipAssignmentConverter {
     outputAssignment.setRun(run);
 
     CPTTransitFacilityIden depot = new CPTTransitFacilityIden();
-    depot.setFacilityName(inputAssignment.getDepot());
+    depot.setFacilityName(getMappedDepotId(inputAssignment));
     depot.setFacilityId(new Long(0));
     outputAssignment.setOperatorBase(depot);
 
@@ -93,6 +97,18 @@ public class MtaUtsToTcipAssignmentConverter {
     outputAssignment.setLocalSCHOperatorAssignment(localOpAssignment);
 
     return outputAssignment;
+  }
+
+  private String getMappedDepotId(MtaUtsCrewAssignment inputAssignment) {
+    if (depotIdTranslator != null) {
+      return depotIdTranslator.getMappedId(DATASOURCE_SYSTEM, inputAssignment.getDepot());
+    } else {
+      return inputAssignment.getDepot();
+    }
+  }
+  
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator;    
   }
 
 }
