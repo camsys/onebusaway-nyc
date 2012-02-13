@@ -374,6 +374,7 @@ public class StifTask implements Runnable {
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
           String blockId = gtfsTrip.getServiceId() + "_" + trip.firstStop + "_" + trip.firstStopTime + "_" + trip.runId.replace("-","_") + "_orphan_" + blockNo;
+          _log.warn("Generating single-trip block id for GTFS trip: " + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
         }
       }
