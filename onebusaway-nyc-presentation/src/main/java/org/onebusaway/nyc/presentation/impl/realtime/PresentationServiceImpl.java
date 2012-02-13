@@ -62,6 +62,10 @@ public class PresentationServiceImpl implements PresentationService {
     }
     
     for(TripDetailsBean trip : trips.getList()) {
+      // filter out interlined routes
+      if(routeBean.getId() != null && !trip.getTrip().getRoute().getId().equals(routeBean.getId()))
+        continue;
+      
       if(trip.getTrip().getDirectionId().equals(stopGroup.getId())) {
         return true;
       }
