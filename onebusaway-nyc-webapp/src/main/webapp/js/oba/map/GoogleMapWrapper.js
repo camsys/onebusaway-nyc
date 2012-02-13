@@ -58,8 +58,6 @@ OBA.GoogleMapWrapper = function(mapNode) {
 		isPng: true,
 		alt: ''
 	});
-	
-	map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
 
 	
 	// *** custom google styled basemap ***
@@ -156,7 +154,7 @@ OBA.GoogleMapWrapper = function(mapNode) {
 	  var subwayControlContainer = jQuery('<div id="subwayControlContainer"></div>');
 	  var subwayControlWrapper = jQuery('<div id="subwayControl"></div>')
 	    .appendTo(subwayControlContainer);
-	  var subwayControl = jQuery('<a href="#" title="Click to toggle subway lines">Hide Subway</a>')
+	  var subwayControl = jQuery('<a href="#" title="Click to toggle subway lines">Show Subway</a>')
 	  	.appendTo(subwayControlWrapper);
 	  
 	  
