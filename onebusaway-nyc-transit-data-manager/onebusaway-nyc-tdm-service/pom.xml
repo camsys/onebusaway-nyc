@@ -107,6 +107,7 @@
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+                <tdm.depotIdTranslationConfigFile></tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
             </properties>
         </profile>
@@ -121,6 +122,8 @@
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
+                <tdm.depotIdTranslationConfigFile>/tmp/depidtrans.config</tdm.depotIdTranslationConfigFile>
+                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
             </properties>
         </profile>
         <profile>
@@ -133,6 +136,7 @@
                 <tdm.pipoFilename>CrewAssignSample.csv</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
+                <tdm.depotIdTranslationConfigFile></tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>D:\tmp\bundles</tdm.bundlePath>
             </properties>
         </profile>
@@ -155,6 +159,7 @@
                 <tdm.pipoFilename>/vehicle_pipo/UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>false</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
+                <tdm.depotIdTranslationConfigFile></tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
             </properties>
         </profile>
@@ -252,7 +257,7 @@
                 <configuration>
                     <connectors>
                         <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-                            <port>${jetty.port}</port>
+                            <port>8083</port>
                         </connector>
                     </connectors>
                     <webAppConfig>

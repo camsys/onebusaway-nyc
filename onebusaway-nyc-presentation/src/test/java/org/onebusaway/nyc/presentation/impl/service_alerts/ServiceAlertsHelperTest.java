@@ -35,7 +35,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   public void testAddSituationExchangeEmpty() {
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-    addSituationExchangeToSiri(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(0, list.size());
   }
@@ -53,7 +53,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
     createActivity(activities, "MTA NYCT_100");
 
-    addSituationExchangeToSiri(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(1, list.size());
@@ -90,7 +90,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
     createActivity(activities, "MTA NYCT_100", SKIP_JOURNEY);
 
-    addSituationExchangeToSiri(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(0, list.size());
@@ -109,7 +109,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     createActivity(activities, "MTA NYCT_100");
     createActivity(activities, "MTA NYCT_100");
 
-    addSituationExchangeToSiri(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(1, list.size());
@@ -136,7 +136,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     createStopActivity(activities, "MTA NYCT_100");
 
     addSituationExchangeToSiriForStops(serviceDelivery, activities,
-        transitDataService);
+        transitDataService, null);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(1, list.size());

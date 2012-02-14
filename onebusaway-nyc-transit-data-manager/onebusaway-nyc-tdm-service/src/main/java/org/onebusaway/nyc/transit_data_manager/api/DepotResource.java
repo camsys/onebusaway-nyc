@@ -22,6 +22,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.json.VehicleFromT
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DepotsMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclesMessage;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.DepotAssignmentsSoapDownloadsFilePicker;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
@@ -40,17 +41,30 @@ public class DepotResource {
 
   public DepotResource() throws IOException {
     mostRecentPicker = new DepotAssignmentsSoapDownloadsFilePicker(System.getProperty("tdm.depotAssignsDownloadDir"));
+    
+    try {
+      depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
+    } catch (IOException e) {
+      // Set depotIdTranslator to null and otherwise do nothing.
+      // Everything works fine without the depot id translator.
+      depotIdTranslator = null;
+    }
   }
   
   private static Logger _log = LoggerFactory.getLogger(DepotResource.class);
   
   @Autowired
   private JsonTool jsonTool;
+  @Autowired(required=false)
+  private DepotIdTranslator depotIdTranslator = null;
   
   private MostRecentFilePicker mostRecentPicker;
   
   public void setJsonTool(JsonTool jsonTool) {
     this.jsonTool = jsonTool;
+  }
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator;
   }
 
   @Path("/list")
@@ -145,6 +159,14 @@ public class DepotResource {
     try {
       process = new MtaBusDepotFileToDataCreator(
           inputFile);
+      
+      if (depotIdTranslator == null) {
+        _log.info("Depot ID translation has not been enabled properly. Depot ids will not be translated.");
+      } else {
+        _log.info("Using depot ID translation.");
+      }
+      process.setDepotIdTranslator(depotIdTranslator);
+      
       resultData = process.generateDataObject();
     } catch (IOException e) {
       _log.info("Could not create data object from " + inputFile.getPath());
