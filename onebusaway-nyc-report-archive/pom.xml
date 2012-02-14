@@ -97,7 +97,8 @@
         <profile>
             <id>local-front-end</id>
             <properties>
-                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <jetty.port>8082</jetty.port>
+                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
