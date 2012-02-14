@@ -1,0 +1,70 @@
+#{extends 'main.html' /} #{set title:'Enter ATIS Data' /} #{form
+@Application.sendToTds()}
+<fieldset>
+	<legend>ATIS Data</legend>
+	<div class="clearfix">
+		<label for="title">Title</label>
+		<div class="input">
+			<input type="text" name="title" id="titleField" class="span12" />
+		</div>
+	</div>
+    <div class="clearfix">
+        <label for="statusType">Status Type</label>
+        <div class="input">
+            <input type="text" name="statusType" id="statusType" value="altered"/>
+             <span class="help-block">altered, for now.  ATIS final mapping still TBD.</span>
+        </div>
+    </div>
+	<div class="clearfix">
+		<label for="id">Id</label>
+		<div class="input">
+			<input type="text" name="id" id="id" /> <span class="help-block">Agency
+				and numeric ID, e.g. MTA NYCT_167</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="begins">Begins</label>
+		<div class="input">
+			<input type="text" name="begins" id="begins" class="span6" /> <span
+				class="help-block">Full ISO-8601 Time, e.g.
+				yyyy-mm-ddThh:mm:ss.zzzt</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="expires">Expires</label>
+		<div class="input">
+			<input type="text" name="expires" id="expires" class="span6" /> <span
+				class="help-block">Full ISO-8601 Time, e.g.
+				yyyy-mm-ddThh:mm:ss.zzzt</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="affected">Affected</label>
+		<div class="input">
+			<input type="text" name="affected" id="affected" /> <span
+				class="help-block">Comma-separated list of <b>full</b> route
+				IDs, e.g. "MTA NYCT_B63,MTA NYCT_X17".  To include direction, add with ":", e.g. "MTA NYCT_B63:0,MTA NYCT_X17:1 0=N/E, 1=S/W 
+			</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<label for="text">Text</label>
+		<div class="input">
+			<textarea name="text" id="text" class="span6" rows="10"></textarea>
+		</div>
+	</div>
+	<h3>Non-ATIS</h3>
+	<div class="clearfix">
+		<label for="tdm">TDS URL</label>
+		<div class="input">
+			<input type="text" name="tdsUrl" id="tdsUrl" class="span12"
+				value="http://app.staging.obanyc.com/onebusaway-nyc-transit-data-federation-webapp/remoting/transit-data-service" />
+				<span class="help-block">http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp/remoting/transit-data-service</span>
+		</div>
+	</div>
+	<div class="clearfix">
+		<div class="input">
+			<input type="submit" value="Send to TDS" class="btn primary" />
+		</div>
+</fieldset>
+#{/form}
