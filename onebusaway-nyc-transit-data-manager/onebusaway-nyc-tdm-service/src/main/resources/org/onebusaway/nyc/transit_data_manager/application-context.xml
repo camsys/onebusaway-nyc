@@ -37,6 +37,7 @@
         <prop key="tdm.depotAssignsDownloadDir">${tdm.depotAssignsDownloadDir}</prop>
         <prop key="tdm.dscFilesDir">${tdm.dscFilesDir}</prop>
         <prop key="tdm.pipoFilename">${tdm.pipoFilename}</prop>
+        <prop key="tdm.depotIdTranslationFile">${tdm.depotIdTranslationConfigFile}</prop>
         <prop key="tdm.prettyPrintOutput">${tdm.prettyPrintOutput}</prop>
       </props>
     </property>
