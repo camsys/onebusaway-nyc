@@ -18,12 +18,15 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 import org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl;
 import org.onebusaway.utility.DateLibrary;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Date;
 
 @Controller
 public class BundleManagementController {
@@ -36,8 +39,10 @@ public class BundleManagementController {
   public ModelAndView index(@RequestParam String bundleId, 
       @RequestParam(required=false) String time) throws Exception {
 
-    if(time != null && !time.equals("")) {
+    if(time != null && !StringUtils.isEmpty(time)) {
 	    _bundleManager.setTime(DateLibrary.getIso8601StringAsTime(time));
+	  } else {
+	    _bundleManager.setTime(new Date());
 	  }
 
 	  _bundleManager.changeBundle(bundleId);
