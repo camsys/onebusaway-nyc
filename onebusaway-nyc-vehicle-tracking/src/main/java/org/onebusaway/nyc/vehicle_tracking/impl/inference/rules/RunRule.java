@@ -39,9 +39,9 @@ public class RunRule implements SensorModelRule {
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState state = context.getState();
-    BlockStateObservation blockState = state.getBlockStateObservation();
-    SensorModelResult result = new SensorModelResult("pRun");
+    final VehicleState state = context.getState();
+    final BlockStateObservation blockState = state.getBlockStateObservation();
+    final SensorModelResult result = new SensorModelResult("pRun");
 
     /**
      * Weigh matched run's higher
@@ -65,7 +65,7 @@ public class RunRule implements SensorModelRule {
         else
           result.addResultAsAnd("run reported (fuzzy)", 0.6);
       } else if (blockState.getRunReported() == Boolean.FALSE
-          || blockState.getOpAssigned() == Boolean.FALSE){
+          || blockState.getOpAssigned() == Boolean.FALSE) {
         result.addResultAsAnd("no run info matches", 0.5);
       }
     } else {
@@ -76,12 +76,11 @@ public class RunRule implements SensorModelRule {
       }
 
       /*
-       * We were given run information, and we were able to find
-       * valid info for it, so we penalize for not using it. 
+       * We were given run information, and we were able to find valid info for
+       * it, so we penalize for not using it.
        */
       if (!StringUtils.isBlank(state.getObservation().getOpAssignedRunId())
-          || (state.getObservation().getFuzzyMatchDistance() != null
-              && state.getObservation().getFuzzyMatchDistance() <= 1)) {
+          || (state.getObservation().getFuzzyMatchDistance() != null && state.getObservation().getFuzzyMatchDistance() <= 1)) {
         result.addResultAsAnd("not using results from run info", 0.5);
       } else {
         result.addResultAsAnd("no good results from run info", 1.0);

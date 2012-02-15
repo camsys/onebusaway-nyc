@@ -1,23 +1,23 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
+import com.google.common.collect.TreeBasedTable;
+import com.google.common.primitives.Doubles;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.math.util.MathUtils;
+
+import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
+import umontreal.iro.lecuyer.randvarmulti.DirichletGen;
+import umontreal.iro.lecuyer.rng.RandomStream;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.math.util.MathUtils;
-
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
-import com.google.common.collect.TreeBasedTable;
-import com.google.common.primitives.Doubles;
-
-import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
-import umontreal.iro.lecuyer.randvarmulti.DirichletGen;
-import umontreal.iro.lecuyer.rng.RandomStream;
 
 /**
  * This is a generic, sparse, conjugate Dirichlet distributed transition
@@ -41,7 +41,7 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
   TreeBasedTable<SupportType, SupportType, Double> _currentTransProbs = TreeBasedTable.create(
       Ordering.usingToString(), Ordering.usingToString());
 
-  private RandomStream _rng;
+  private final RandomStream _rng;
 
   public DirichletConjTransitionDist(
       DirichletConjTransitionDist<SupportType> obj) {
@@ -74,9 +74,9 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
   private SortedMap<SupportType, Double> getProbsOverSubset(
       TransDistParams<SupportType> condParams) {
 
-    Map<SupportType, Double> currRow = _currentTransProbs.row(condParams.getCurrentState());
-    Set<SupportType> thisSupport = condParams.getSupport();
-    Set<SupportType> missingEntries = Sets.difference(thisSupport,
+    final Map<SupportType, Double> currRow = _currentTransProbs.row(condParams.getCurrentState());
+    final Set<SupportType> thisSupport = condParams.getSupport();
+    final Set<SupportType> missingEntries = Sets.difference(thisSupport,
         currRow.keySet());
     /*
      * if some entries don't exist in the table, initialize them
@@ -86,8 +86,8 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
     /*
      * now, just return a map of the support TODO use Maps.filterKeys?
      */
-    SortedMap<SupportType, Double> retMap = new TreeMap<SupportType, Double>();
-    for (SupportType rte : thisSupport) {
+    final SortedMap<SupportType, Double> retMap = new TreeMap<SupportType, Double>();
+    for (final SupportType rte : thisSupport) {
       retMap.put(rte, _currentTransProbs.get(condParams.getCurrentState(), rte));
     }
     return retMap;
@@ -95,11 +95,11 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
 
   synchronized protected void updateTransProbs(
       TransDistParams<SupportType> condParams) {
-    Map<SupportType, Double> newPriors = samplePrior(condParams);
+    final Map<SupportType, Double> newPriors = samplePrior(condParams);
     /*
      * update our current transition probabilities
      */
-    for (Entry<SupportType, Double> entry : newPriors.entrySet()) {
+    for (final Entry<SupportType, Double> entry : newPriors.entrySet()) {
       _currentTransProbs.put(condParams.getCurrentState(), entry.getKey(),
           entry.getValue());
     }
@@ -114,7 +114,7 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
     Double prob = _currentTransProbs.get(condParams.getCurrentState(),
         obsRunTrip);
     if (prob == null) {
-      Set<SupportType> missingEntries = new HashSet<SupportType>();
+      final Set<SupportType> missingEntries = new HashSet<SupportType>();
 
       missingEntries.add(obsRunTrip);
       missingEntries.add(condParams.getCurrentState());
@@ -133,7 +133,7 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
     Double prob = _transitionPriors.get(condParams.getCurrentState(),
         obsRunTrip);
     if (prob == null) {
-      Set<SupportType> missingEntries = new HashSet<SupportType>();
+      final Set<SupportType> missingEntries = new HashSet<SupportType>();
       missingEntries.add(obsRunTrip);
       missingEntries.add(condParams.getCurrentState());
       addEntries(missingEntries, condParams);
@@ -152,14 +152,14 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
    */
   public TreeMap<SupportType, Double> samplePrior(
       TransDistParams<SupportType> condParams) {
-    Map<SupportType, Double> currPriorsForSupport = _transitionPriors.row(condParams.getCurrentState());
-    double[] sampleProbs = new double[currPriorsForSupport.size()];
+    final Map<SupportType, Double> currPriorsForSupport = _transitionPriors.row(condParams.getCurrentState());
+    final double[] sampleProbs = new double[currPriorsForSupport.size()];
     DirichletGen.nextPoint(_rng,
         Doubles.toArray(currPriorsForSupport.values()), sampleProbs);
-    TreeMap<SupportType, Double> retMap = new TreeMap<SupportType, Double>(
+    final TreeMap<SupportType, Double> retMap = new TreeMap<SupportType, Double>(
         Ordering.usingToString());
     int i = 0;
-    for (SupportType rte : currPriorsForSupport.keySet()) {
+    for (final SupportType rte : currPriorsForSupport.keySet()) {
       retMap.put(rte, sampleProbs[i]);
       ++i;
     }
@@ -174,18 +174,18 @@ public abstract class DirichletConjTransitionDist<SupportType> implements
   @SuppressWarnings("unchecked")
   @Override
   public SupportType sample(TransDistParams<SupportType> condParams) {
-    Map<SupportType, Double> currProbsForSupport = getProbsOverSubset(condParams);
-    double[] probs = MathUtils.normalizeArray(
+    final Map<SupportType, Double> currProbsForSupport = getProbsOverSubset(condParams);
+    final double[] probs = MathUtils.normalizeArray(
         Doubles.toArray(currProbsForSupport.values()), 1.0);
-    double[] objIdx = new double[currProbsForSupport.size()];
+    final double[] objIdx = new double[currProbsForSupport.size()];
     // TODO ugh. do something better
     for (int i = 0; i < currProbsForSupport.size(); ++i)
       objIdx[i] = i;
-    DiscreteDistribution emd = new DiscreteDistribution(objIdx, probs,
+    final DiscreteDistribution emd = new DiscreteDistribution(objIdx, probs,
         objIdx.length);
 
-    double u = _rng.nextDouble();
-    int newIdx = (int) emd.inverseF(u);
+    final double u = _rng.nextDouble();
+    final int newIdx = (int) emd.inverseF(u);
 
     // TODO another ugh.
     return (SupportType) condParams.getSupport().toArray()[newIdx];

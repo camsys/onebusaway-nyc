@@ -15,14 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
+
+import java.io.Serializable;
+import java.util.Date;
 
 public class NycTestInferredLocationRecord implements Serializable {
 

@@ -15,22 +15,17 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.EnumMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.Weighers;
 
 import org.springframework.stereotype.Component;
+
+import java.util.EnumMap;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ObservationCache {
@@ -40,67 +35,55 @@ public class ObservationCache {
   }
 
   /*
-   * This is a vehicle-id cache, with timed expiration, that holds
-   * an observation cache per vehicle-id.  The observation caches hold only the last two
-   * entries.
-   * 
+   * This is a vehicle-id cache, with timed expiration, that holds an
+   * observation cache per vehicle-id. The observation caches hold only the last
+   * two entries.
    */
-  private Cache<AgencyAndId, Cache<Observation, ObservationContents>> _contentsByVehicleId = 
-      CacheBuilder.newBuilder()
-      .concurrencyLevel(4)
-      .expireAfterWrite(30, TimeUnit.MINUTES)
-      .build(
-             new CacheLoader<AgencyAndId, Cache<Observation, ObservationContents>>() {
+  private final Cache<AgencyAndId, Cache<Observation, ObservationContents>> _contentsByVehicleId = CacheBuilder.newBuilder().concurrencyLevel(
+      4).expireAfterWrite(30, TimeUnit.MINUTES).build(
+      new CacheLoader<AgencyAndId, Cache<Observation, ObservationContents>>() {
 
-              @Override
-              public Cache<Observation, ObservationContents> load(AgencyAndId key)
-                  throws Exception {
-                return CacheBuilder.newBuilder()
-                    .concurrencyLevel(1)
-                    .weakKeys()
-                    .maximumSize(2)
-                    .build(
-                           new CacheLoader<Observation, ObservationContents> () {
+        @Override
+        public Cache<Observation, ObservationContents> load(AgencyAndId key)
+            throws Exception {
+          return CacheBuilder.newBuilder().concurrencyLevel(1).weakKeys().maximumSize(
+              2).build(new CacheLoader<Observation, ObservationContents>() {
 
-                            @Override
-                            public ObservationContents load(Observation key)
-                                throws Exception {
-                              return new ObservationContents();
-                            }
-                           }
-                         );
-              }
-               
-             }
-           );
-  
+            @Override
+            public ObservationContents load(Observation key) throws Exception {
+              return new ObservationContents();
+            }
+          });
+        }
+
+      });
 
   @SuppressWarnings("unchecked")
   public <T> T getValueForObservation(Observation observation,
       EObservationCacheKey key) {
-    NycRawLocationRecord record = observation.getRecord();
-    Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
-    ObservationContents contents = contentsCache.getUnchecked(observation);
-    
+    final NycRawLocationRecord record = observation.getRecord();
+    final Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
+    final ObservationContents contents = contentsCache.getUnchecked(observation);
+
     if (contents == null)
       return null;
-    
+
     return (T) contents.getValueForValueType(key);
   }
 
   public void putValueForObservation(Observation observation,
       EObservationCacheKey key, Object value) {
-    NycRawLocationRecord record = observation.getRecord();
-    Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
-    
-    ObservationContents contents = contentsCache.getUnchecked(observation);
-    
+    final NycRawLocationRecord record = observation.getRecord();
+    final Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
+
+    final ObservationContents contents = contentsCache.getUnchecked(observation);
+
     contents.putValueForValueType(key, value);
   }
 
   private static class ObservationContents {
 
-    private EnumMap<EObservationCacheKey, Object> _contents = new EnumMap<EObservationCacheKey, Object>(
+    private final EnumMap<EObservationCacheKey, Object> _contents = new EnumMap<EObservationCacheKey, Object>(
         EObservationCacheKey.class);
 
     @SuppressWarnings("unchecked")
@@ -112,5 +95,5 @@ public class ObservationCache {
       _contents.put(key, value);
     }
   }
-  
+
 }

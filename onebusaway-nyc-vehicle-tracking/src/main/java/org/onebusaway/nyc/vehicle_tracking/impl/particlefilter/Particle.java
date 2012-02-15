@@ -19,6 +19,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
+
 import java.io.Serializable;
 
 /**
@@ -136,7 +137,7 @@ public class Particle implements Serializable, Comparable<Particle> {
   }
 
   public Particle advanceParticle(long timestamp) {
-    Particle p = new Particle(timestamp, this, _weight, _data);
+    final Particle p = new Particle(timestamp, this, _weight, _data);
     return p;
   }
 
@@ -151,8 +152,8 @@ public class Particle implements Serializable, Comparable<Particle> {
     @Override
     public int compare(Object arg0, Object arg1) {
       if ((arg0 instanceof VehicleState) && (arg1 instanceof VehicleState)) {
-        VehicleState vstate0 = (VehicleState) arg0;
-        VehicleState vstate1 = (VehicleState) arg1;
+        final VehicleState vstate0 = (VehicleState) arg0;
+        final VehicleState vstate1 = (VehicleState) arg1;
         return vstate0.compareTo(vstate1);
       }
       return 0;
@@ -173,11 +174,10 @@ public class Particle implements Serializable, Comparable<Particle> {
       return 1;
     }
 
-    int particleComp = ComparisonChain.start()
-        .compare(t.getData(), o.getData(), _particleDataOrdering.nullsLast())
-        .compare(t.getTimestamp(), o.getTimestamp())
-        .compare(t.getWeight(), o.getWeight())
-        .result();
+    final int particleComp = ComparisonChain.start().compare(t.getTimestamp(),
+        o.getTimestamp(), Ordering.natural().reverse()).compare(t.getWeight(),
+        o.getWeight(), Ordering.natural().reverse()).compare(t.getData(),
+        o.getData(), _particleDataOrdering.nullsLast()).result();
     return particleComp;
   }
 
@@ -189,8 +189,8 @@ public class Particle implements Serializable, Comparable<Particle> {
     if (res != 0)
       return res;
 
-    if (o != null)
-      res = oneParticleCompareTo(this._parent, o._parent);
+    final Particle oParent = (o != null ? o._parent : null);
+    res = oneParticleCompareTo(this._parent, oParent);
 
     return res;
   }
@@ -243,7 +243,7 @@ public class Particle implements Serializable, Comparable<Particle> {
     if (!(obj instanceof Particle)) {
       return false;
     }
-    Particle other = (Particle) obj;
+    final Particle other = (Particle) obj;
     if (Double.doubleToLongBits(thisObj._timestamp) != Double.doubleToLongBits(other._timestamp)) {
       return false;
     }
@@ -256,8 +256,8 @@ public class Particle implements Serializable, Comparable<Particle> {
       }
     } else if (other._data != null) {
       if (thisObj._data instanceof VehicleState) {
-        VehicleState vdata = (VehicleState) thisObj._data;
-        VehicleState vother = (VehicleState) other._data;
+        final VehicleState vdata = (VehicleState) thisObj._data;
+        final VehicleState vother = (VehicleState) other._data;
 
         if (!vdata.equals(vother)) {
           return false;
@@ -279,13 +279,9 @@ public class Particle implements Serializable, Comparable<Particle> {
     if (!oneParticleEquals(this, obj))
       return false;
 
-    Particle other = (Particle) obj;
-    if (this._parent == null) {
-      if (other._parent != null)
-        return false;
-    } else if (!oneParticleEquals(this._parent, other._parent)) {
+    final Particle other = (Particle) obj;
+    if (!oneParticleEquals(this._parent, other._parent))
       return false;
-    }
 
     return true;
   }

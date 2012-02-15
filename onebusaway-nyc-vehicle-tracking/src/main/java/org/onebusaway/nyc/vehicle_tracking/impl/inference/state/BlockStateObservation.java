@@ -14,7 +14,8 @@ import com.google.common.collect.Ordering;
  * @author bwillard
  * 
  */
-public final class BlockStateObservation implements Comparable<BlockStateObservation> {
+public final class BlockStateObservation implements
+    Comparable<BlockStateObservation> {
   final private BlockState _blockState;
 
   private final Boolean _isOpAssigned;
@@ -24,11 +25,11 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
   private final Boolean _isRunReportedAssignedMismatch;
 
   public BlockStateObservation(BlockState blockState, Observation obs) {
-    
+
     Preconditions.checkNotNull(obs);
     _blockState = Preconditions.checkNotNull(blockState);
 
-    String runId = blockState.getRunId();
+    final String runId = blockState.getRunId();
     _isOpAssigned = obs.getOpAssignedRunId() != null
         ? obs.getOpAssignedRunId().equals(runId) : null;
     _isRunReported = (obs.getBestFuzzyRunIds() != null && !obs.getBestFuzzyRunIds().isEmpty())
@@ -72,7 +73,7 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
     if (this == rightBs)
       return 0;
 
-    int res = ComparisonChain.start().compare(
+    final int res = ComparisonChain.start().compare(
         this._isRunReportedAssignedMismatch,
         rightBs.isRunReportedAssignedMismatch(), Ordering.natural().nullsLast()).compare(
         this._isRunReported, rightBs.getRunReported(),
@@ -84,7 +85,7 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
 
   @Override
   public String toString() {
-    StringBuilder b = new StringBuilder();
+    final StringBuilder b = new StringBuilder();
     b.append("BlockStateObservation(");
     b.append(_blockState).append(",");
     b.append(", isOpAssigned=").append(_isOpAssigned);
@@ -96,11 +97,12 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
   }
 
   private int _hash = 0;
+
   @Override
   public int hashCode() {
     if (_hash != 0)
       return _hash;
-      
+
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -128,7 +130,7 @@ public final class BlockStateObservation implements Comparable<BlockStateObserva
     if (!(obj instanceof BlockStateObservation)) {
       return false;
     }
-    BlockStateObservation other = (BlockStateObservation) obj;
+    final BlockStateObservation other = (BlockStateObservation) obj;
     if (_blockState == null) {
       if (other._blockState != null) {
         return false;

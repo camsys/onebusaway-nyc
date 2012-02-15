@@ -37,7 +37,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -62,36 +61,23 @@ public class ParticleFilter<OBS> {
    * 
    */
   /*
-  public class ParticleMoveTask implements Callable<List<Particle>> {
-
-    private double _elapsed;
-    private int _endIdx;
-    private List<Particle> _newParticles;
-    private OBS _obs;
-    private int _startIdx;
-    private double _timestamp;
-
-    ParticleMoveTask(int startIdx, int endIdx, OBS obs, double elapsed,
-        double timestamp) {
-      _newParticles = new ArrayList<Particle>(endIdx - startIdx);
-      _obs = obs;
-      _elapsed = elapsed;
-      _startIdx = startIdx;
-      _endIdx = endIdx;
-      _timestamp = timestamp;
-    }
-
-    @Override
-    public List<Particle> call() {
-      for (int i = _startIdx; i < _endIdx; i++) {
-        _motionModel.move(_particles.get(i), _timestamp, _elapsed, _obs,
-            _newParticles);
-      }
-      return _newParticles;
-    }
-
-  }
-  */
+   * public class ParticleMoveTask implements Callable<List<Particle>> {
+   * 
+   * private double _elapsed; private int _endIdx; private List<Particle>
+   * _newParticles; private OBS _obs; private int _startIdx; private double
+   * _timestamp;
+   * 
+   * ParticleMoveTask(int startIdx, int endIdx, OBS obs, double elapsed, double
+   * timestamp) { _newParticles = new ArrayList<Particle>(endIdx - startIdx);
+   * _obs = obs; _elapsed = elapsed; _startIdx = startIdx; _endIdx = endIdx;
+   * _timestamp = timestamp; }
+   * 
+   * @Override public List<Particle> call() { for (int i = _startIdx; i <
+   * _endIdx; i++) { _motionModel.move(_particles.get(i), _timestamp, _elapsed,
+   * _obs, _newParticles); } return _newParticles; }
+   * 
+   * }
+   */
 
   public class SensorModelParticleResult {
     public Particle _particle;
@@ -109,35 +95,25 @@ public class ParticleFilter<OBS> {
    * 
    */
   /*
-  public class SensorModelTask implements
-      Callable<List<SensorModelParticleResult>> {
-
-    private int _endIdx;
-    private List<Particle> _newParticles;
-    private OBS _obs;
-    private int _startIdx;
-
-    SensorModelTask(List<Particle> newParticles, int startIdx, int endIdx,
-        OBS obs) {
-      _newParticles = newParticles;
-      _obs = obs;
-      _startIdx = startIdx;
-      _endIdx = endIdx;
-    }
-
-    @Override
-    public List<SensorModelParticleResult> call() {
-      List<SensorModelParticleResult> results = new ArrayList<SensorModelParticleResult>();
-      for (int i = _startIdx; i < _endIdx; i++) {
-        Particle p = _newParticles.get(i);
-        results.add(new SensorModelParticleResult(p, getParticleLikelihood(p,
-            _obs)));
-      }
-      return results;
-    }
-
-  }
-  */
+   * public class SensorModelTask implements
+   * Callable<List<SensorModelParticleResult>> {
+   * 
+   * private int _endIdx; private List<Particle> _newParticles; private OBS
+   * _obs; private int _startIdx;
+   * 
+   * SensorModelTask(List<Particle> newParticles, int startIdx, int endIdx, OBS
+   * obs) { _newParticles = newParticles; _obs = obs; _startIdx = startIdx;
+   * _endIdx = endIdx; }
+   * 
+   * @Override public List<SensorModelParticleResult> call() {
+   * List<SensorModelParticleResult> results = new
+   * ArrayList<SensorModelParticleResult>(); for (int i = _startIdx; i <
+   * _endIdx; i++) { Particle p = _newParticles.get(i); results.add(new
+   * SensorModelParticleResult(p, getParticleLikelihood(p, _obs))); } return
+   * results; }
+   * 
+   * }
+   */
 
   /**
    * Flag for operations that keep particle trajectory information, etc.
@@ -218,11 +194,9 @@ public class ParticleFilter<OBS> {
 
   private SensorModel<OBS> _sensorModel;
 
-  private final Map<Entry<VehicleState, VehicleState>, SensorModelResult> _sensorModelResultCache = 
-      new ConcurrentHashMap<Entry<VehicleState, VehicleState>, SensorModelResult>();
+  private final Map<Entry<VehicleState, VehicleState>, SensorModelResult> _sensorModelResultCache = new ConcurrentHashMap<Entry<VehicleState, VehicleState>, SensorModelResult>();
 
-  private final Multimap<VehicleState, VehicleState> _stateTransitionCache = 
-      HashMultimap.create();
+  private final Multimap<VehicleState, VehicleState> _stateTransitionCache = HashMultimap.create();
 
   private double _timeOfLastUpdate = 0L;
 
@@ -255,12 +229,12 @@ public class ParticleFilter<OBS> {
 
   public Multiset<Particle> getParticleList() {
     return Multisets.unmodifiableMultiset(_particles);
-//    return HashMultiset.create(_particles);
+    // return HashMultiset.create(_particles);
   }
 
   public Multiset<Particle> getSampledParticles() {
     return Multisets.unmodifiableMultiset(_particles);
-//    return HashMultiset.create(_particles);
+    // return HashMultiset.create(_particles);
   }
 
   /**
@@ -272,7 +246,7 @@ public class ParticleFilter<OBS> {
 
   public Multiset<Particle> getWeightedParticles() {
     return Multisets.unmodifiableMultiset(_weightedParticles);
-//    return HashMultiset.create(_weightedParticles);
+    // return HashMultiset.create(_weightedParticles);
   }
 
   /**
@@ -336,9 +310,10 @@ public class ParticleFilter<OBS> {
         @Override
         public void run() {
           final Multiset<Particle> moveCache = threadLocal.get();
-          cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs, moveCache);
+          cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs,
+              moveCache);
           for (final Multiset.Entry<Particle> pEntry : moveCache.entrySet()) {
-            Particle p = pEntry.getElement();
+            final Particle p = pEntry.getElement();
             results.add(p);
             final SensorModelResult smr = getCachedParticleLikelihood(p, obs);
             final double likelihood = smr.getProbability() * pEntry.getCount();
@@ -353,9 +328,9 @@ public class ParticleFilter<OBS> {
     }
     try {
       _executorService.invokeAll(tasks);
-      
+
       for (final Multiset.Entry<Particle> pEntry : results.entrySet()) {
-        Particle particle = pEntry.getElement();
+        final Particle particle = pEntry.getElement();
         final double likelihood = particle.getResult().getProbability()
             * pEntry.getCount();
         cdf.put(likelihood, particle);
@@ -371,8 +346,8 @@ public class ParticleFilter<OBS> {
   }
 
   @SuppressWarnings("unused")
-  private Multiset<Particle> applyMotionModel(final OBS obs, final double timestamp)
-      throws ParticleFilterException {
+  private Multiset<Particle> applyMotionModel(final OBS obs,
+      final double timestamp) throws ParticleFilterException {
     Multiset<Particle> particles;
     final double elapsed = timestamp - _timeOfLastUpdate;
     if (_threads > 1) {
@@ -382,7 +357,8 @@ public class ParticleFilter<OBS> {
         tasks.add(Executors.callable(new Runnable() {
           @Override
           public void run() {
-            cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs, results);
+            cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs,
+                results);
           }
         }));
       }
@@ -397,7 +373,8 @@ public class ParticleFilter<OBS> {
     } else {
       particles = HashMultiset.create(_particles.entrySet().size());
       for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
-        cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs, particles);
+        cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs,
+            particles);
       }
       _stateTransitionCache.clear();
     }
@@ -489,10 +466,10 @@ public class ParticleFilter<OBS> {
       for (final Particle particle : nullSortedParticles) {
         final SensorModelResult result = getCachedParticleLikelihood(particle,
             obs);
-        
+
         if (result == null)
           continue;
-        
+
         final double likelihood = result.getProbability()
             * particles.count(particle);
 
@@ -566,7 +543,7 @@ public class ParticleFilter<OBS> {
       double highestTripProb = Double.MIN_VALUE;
       int index = 0;
       for (final Multiset.Entry<Particle> pEntry : particles.entrySet()) {
-        Particle p = pEntry.getElement();
+        final Particle p = pEntry.getElement();
         p.setIndex(index++);
 
         final double w = p.getWeight() * pEntry.getCount();
@@ -603,16 +580,16 @@ public class ParticleFilter<OBS> {
      * after we've found the best trip & phase pair, we choose the highest
      * likelihood particle among those.
      */
-    final Particle bestParticle = bestParticles.last();
+    final Particle bestParticle = bestParticles.first();
 
     _mostLikelyParticle = bestParticle.cloneParticle();
 
   }
 
   /**
-   * XXX Only returns new results, with already performed calculations
-   * signified by a null return result.
-   * TODO Returning null is kinda lame.
+   * XXX Only returns new results, with already performed calculations signified
+   * by a null return result. TODO Returning null is kinda lame.
+   * 
    * @param particle
    * @param obs
    * @return
@@ -692,7 +669,7 @@ public class ParticleFilter<OBS> {
     final Multiset<Particle> reweighted = HashMultiset.create(resampled.size());
     for (final Multiset.Entry<Particle> pEntry : resampled.entrySet()) {
       final Particle p = pEntry.getElement().cloneParticle();
-      p.setWeight(((double)pEntry.getCount()) / resampled.size());
+      p.setWeight(((double) pEntry.getCount()) / resampled.size());
       reweighted.add(p, pEntry.getCount());
     }
 

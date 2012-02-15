@@ -47,7 +47,7 @@ public final class JourneyState {
   }
 
   public static JourneyState deadheadBefore(CoordinatePoint journeyStart) {
-    JourneyStartState jss = new JourneyStartState(journeyStart);
+    final JourneyStartState jss = new JourneyStartState(journeyStart);
     return new JourneyState(EVehiclePhase.DEADHEAD_BEFORE, jss);
   }
 
@@ -64,7 +64,7 @@ public final class JourneyState {
   }
 
   public static JourneyState deadheadDuring(CoordinatePoint journeyStart) {
-    JourneyStartState jss = new JourneyStartState(journeyStart);
+    final JourneyStartState jss = new JourneyStartState(journeyStart);
     return new JourneyState(EVehiclePhase.DEADHEAD_DURING, jss);
   }
 
@@ -93,7 +93,7 @@ public final class JourneyState {
       return false;
     if (!(obj instanceof JourneyState))
       return false;
-    JourneyState other = (JourneyState) obj;
+    final JourneyState other = (JourneyState) obj;
     if (data == null) {
       if (other.data != null)
         return false;

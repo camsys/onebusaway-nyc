@@ -35,6 +35,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -59,46 +60,49 @@ public class SensorModelSupportLibrary {
    * Parameters
    ****/
 
-  private DeviationModel _travelToStartOfBlockRatioModel = new DeviationModel(
+  private final DeviationModel _travelToStartOfBlockRatioModel = new DeviationModel(
       0.5);
 
-  private DeviationModel _travelToStartOfBlockDistanceModel = new DeviationModel(
+  private final DeviationModel _travelToStartOfBlockDistanceModel = new DeviationModel(
       500);
 
   /**
    * We penalize if you aren't going to start your block on time
    */
-  private DeviationModel _startBlockOnTimeModel = new DeviationModel(20);
+  private final DeviationModel _startBlockOnTimeModel = new DeviationModel(20);
 
   /**
    * 30 mph = 48.28032 kph = 13.4112 m/sec
    */
-  private double _averageSpeed = 13.4112;
+  private final double _averageSpeed = 13.4112;
 
   /**
    * In minutes
    */
-  private int _maxLayover = 30;
+  private final int _maxLayover = 30;
 
-  private DeviationModel _blockLocationDeviationModel = new DeviationModel(50);
+  private final DeviationModel _blockLocationDeviationModel = new DeviationModel(
+      50);
 
-  private boolean _useBlockLocationDeviationModel = true;
+  private final boolean _useBlockLocationDeviationModel = true;
 
-  private DeviationModel _scheduleDeviationModel = new DeviationModel(50 * 60);
+  private final DeviationModel _scheduleDeviationModel = new DeviationModel(
+      50 * 60);
 
-  private double _propabilityOfBeingOutOfServiceWithAnOutOfServiceDSC = 0.95;
+  private final double _propabilityOfBeingOutOfServiceWithAnOutOfServiceDSC = 0.95;
 
-  private double _propabilityOfBeingOutOfServiceWithAnInServiceDSC = 0.1;
+  private final double _propabilityOfBeingOutOfServiceWithAnInServiceDSC = 0.1;
 
-  private double _shortRangeProgressDistance = 500;
+  private final double _shortRangeProgressDistance = 500;
 
   /**
    * If we're more than X meters off our block path, then we really don't think
    * we're serving the block any more
    */
-  private double _offBlockDistance = 1000;
+  private final double _offBlockDistance = 1000;
 
-  private DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(200);
+  private final DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(
+      200);
 
   /****
    * Service Setters
@@ -133,10 +137,10 @@ public class SensorModelSupportLibrary {
 
   public double computeAtBaseProbability(VehicleState state, Observation obs) {
 
-    boolean isAtBase = _vehicleStateLibrary.isAtBase(obs.getLocation());
+    final boolean isAtBase = _vehicleStateLibrary.isAtBase(obs.getLocation());
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
 
     /**
      * If we are in progress, then it's ok if we accidentally go by the base
@@ -157,19 +161,20 @@ public class SensorModelSupportLibrary {
   public double computeDestinationSignCodeProbability(VehicleState state,
       Observation obs) {
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
 
-    NycRawLocationRecord record = obs.getRecord();
-    String observedDsc = record.getDestinationSignCode();
+    final NycRawLocationRecord record = obs.getRecord();
+    final String observedDsc = record.getDestinationSignCode();
 
-    boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
+    final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
 
     /**
      * Rule: out-of-service DSC => ! IN_PROGRESS
      */
 
-    double p1 = implies(p(outOfService), p(phase != EVehiclePhase.IN_PROGRESS));
+    final double p1 = implies(p(outOfService),
+        p(phase != EVehiclePhase.IN_PROGRESS));
 
     return p1;
   }
@@ -180,17 +185,17 @@ public class SensorModelSupportLibrary {
 
   public double computeBlockProbabilities(VehicleState state, Observation obs) {
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
 
     /**
      * Rule: vehicle in active phase => block assigned and not past the end of
      * the block
      */
-    boolean activeDuringBlock = EVehiclePhase.isActiveDuringBlock(phase);
+    final boolean activeDuringBlock = EVehiclePhase.isActiveDuringBlock(phase);
 
-    double p1 = implies(p(activeDuringBlock), p(blockState != null
+    final double p1 = implies(p(activeDuringBlock), p(blockState != null
         && blockState.getBlockLocation().getNextStop() != null));
 
     /**
@@ -212,9 +217,9 @@ public class SensorModelSupportLibrary {
   public double computeDeadheadBeforeProbabilities(VehicleState parentState,
       VehicleState state, Observation obs) {
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
 
     if (phase != EVehiclePhase.DEADHEAD_BEFORE || blockState == null)
       return 1.0;
@@ -223,7 +228,7 @@ public class SensorModelSupportLibrary {
      * Rule: DEADHEAD_BEFORE => making progress towards start of the block
      */
 
-    double pLongTermProgressTowardsStartOfBlock = computeLongRangeProgressTowardsStartOfBlockProbability(
+    final double pLongTermProgressTowardsStartOfBlock = computeLongRangeProgressTowardsStartOfBlockProbability(
         state, obs);
 
     double pShortTermProgressTowardsStartOfBlock = 1.0;
@@ -231,7 +236,7 @@ public class SensorModelSupportLibrary {
       pShortTermProgressTowardsStartOfBlock = computeShortRangeProgressTowardsStartOfBlockProbability(
           parentState, state, obs);
 
-    double pProgressTowardsStartOfBlock = or(
+    final double pProgressTowardsStartOfBlock = or(
         pLongTermProgressTowardsStartOfBlock,
         pShortTermProgressTowardsStartOfBlock);
 
@@ -239,7 +244,7 @@ public class SensorModelSupportLibrary {
      * Rule: DEADHEAD_BEFORE => start block on time
      */
 
-    double pStartBlockOnTime = computeStartOrResumeBlockOnTimeProbability(
+    final double pStartBlockOnTime = computeStartOrResumeBlockOnTimeProbability(
         state, obs);
 
     return pProgressTowardsStartOfBlock * pStartBlockOnTime;
@@ -255,9 +260,9 @@ public class SensorModelSupportLibrary {
   public double computeVehicelHasNotMovedProbability(MotionState motionState,
       Observation obs) {
 
-    long currentTime = obs.getTime();
-    long lastInMotionTime = motionState.getLastInMotionTime();
-    int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
+    final long currentTime = obs.getTime();
+    final long lastInMotionTime = motionState.getLastInMotionTime();
+    final int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
 
     if (120 <= secondsSinceLastMotion) {
       return 1.0;
@@ -275,9 +280,9 @@ public class SensorModelSupportLibrary {
   public double computeInProgressProbabilities(VehicleState parentState,
       VehicleState state, Observation obs) {
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
 
     /**
      * These probabilities only apply if are IN_PROGRESS and have a block state
@@ -297,12 +302,12 @@ public class SensorModelSupportLibrary {
     /**
      * Rule: IN_PROGRESS => on route
      */
-    double pOnRoute = computeOnRouteProbability(state, obs);
+    final double pOnRoute = computeOnRouteProbability(state, obs);
 
     /**
      * Rule: IN_PROGRESS => block location is close to gps location
      */
-    double pBlockLocation = computeBlockLocationProbability(parentState,
+    final double pBlockLocation = computeBlockLocationProbability(parentState,
         blockState, obs);
 
     return pNotMakingShortRangeProgressTowardsStartOfBlock * pOnRoute
@@ -315,25 +320,25 @@ public class SensorModelSupportLibrary {
     if (!_useBlockLocationDeviationModel)
       return 1.0;
 
-    Tally avg = new Tally();
-    
+    final Tally avg = new Tally();
+
     /**
      * The idea here is that we look for the absolute best block location given
      * our current observation, even if it means traveling backwards
      */
-    for (BlockStateObservation bso : _blockStateTransitionModel.getClosestBlockStates(
-        blockState, obs)) { 
+    for (final BlockStateObservation bso : _blockStateTransitionModel.getClosestBlockStates(
+        blockState, obs)) {
 
       double prob = 0.0;
-      BlockState closestBlockState = bso.getBlockState();
-      ScheduledBlockLocation closestBlockLocation = closestBlockState.getBlockLocation();
-  
+      final BlockState closestBlockState = bso.getBlockState();
+      final ScheduledBlockLocation closestBlockLocation = closestBlockState.getBlockLocation();
+
       /**
-       * We compare this against our best block location assuming a bus generally
-       * travels forward
+       * We compare this against our best block location assuming a bus
+       * generally travels forward
        */
-      ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-  
+      final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+
       /**
        * If we're just coming out of a layover, there is some chance that the
        * block location was allowed to shift to the end of the layover to match
@@ -342,31 +347,31 @@ public class SensorModelSupportLibrary {
        */
       if (parentState != null
           && EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())) {
-        double delta = blockLocation.getDistanceAlongBlock()
+        final double delta = blockLocation.getDistanceAlongBlock()
             - closestBlockLocation.getDistanceAlongBlock();
-  
+
         if (0 <= delta && delta < 300)
           return 1.0;
       }
-  
+
       /**
-       * If the distance between the two points is high, that means that our block
-       * location isn't great and might suggest we've been assigned a block that
-       * is moving in the wrong direction
+       * If the distance between the two points is high, that means that our
+       * block location isn't great and might suggest we've been assigned a
+       * block that is moving in the wrong direction
        */
-      double blockLocationDelta = SphericalGeometryLibrary.distance(
+      final double blockLocationDelta = SphericalGeometryLibrary.distance(
           closestBlockLocation.getLocation(), blockLocation.getLocation());
       prob = _blockLocationDeviationModel.probability(blockLocationDelta);
       avg.add(prob);
     }
-    
+
     return avg.average();
   }
 
   public double computeScheduleDeviationProbability(VehicleState state,
       Observation observation) {
 
-    int delta = _scheduleDeviationLibrary.computeScheduleDeviation(state,
+    final int delta = _scheduleDeviationLibrary.computeScheduleDeviation(state,
         observation);
 
     return _scheduleDeviationModel.probability(delta);
@@ -374,7 +379,7 @@ public class SensorModelSupportLibrary {
 
   public double computeOnRouteProbability(VehicleState state, Observation obs) {
 
-    double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
+    final double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
         obs, state.getBlockState());
 
     if (distanceToBlock <= _offBlockDistance)
@@ -390,9 +395,9 @@ public class SensorModelSupportLibrary {
   public double computeDeadheadDuringProbabilities(VehicleState state,
       Observation obs) {
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
 
     if (phase != EVehiclePhase.DEADHEAD_DURING || blockState == null)
       return 1.0;
@@ -401,30 +406,30 @@ public class SensorModelSupportLibrary {
      * Rule: DEADHEAD_DURING <=> Vehicle has moved AND at layover location
      */
 
-    double pMoved = not(computeVehicelHasNotMovedProbability(
+    final double pMoved = not(computeVehicelHasNotMovedProbability(
         state.getMotionState(), obs));
 
-    double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
+    final double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
         state, obs));
 
-    double p1 = pMoved * pAtLayoverLocation;
+    final double p1 = pMoved * pAtLayoverLocation;
 
     /**
      * Rule: DEADHEAD_DURING => not right on block
      */
-    double pDistanceFromBlock = computeDeadheadDistanceFromBlockProbability(
+    final double pDistanceFromBlock = computeDeadheadDistanceFromBlockProbability(
         obs, blockState);
 
     /**
      * Rule: DEADHEAD_DURING => resume block on time
      */
-    double pStartBlockOnTime = computeStartOrResumeBlockOnTimeProbability(
+    final double pStartBlockOnTime = computeStartOrResumeBlockOnTimeProbability(
         state, obs);
 
     /**
      * Rule: DEADHEAD_DURING => served some part of block
      */
-    double pServedSomePartOfBlock = computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
+    final double pServedSomePartOfBlock = computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
 
     return p1 * pDistanceFromBlock * pStartBlockOnTime * pServedSomePartOfBlock;
   }
@@ -436,9 +441,9 @@ public class SensorModelSupportLibrary {
   public double computeDeadheadOrLayoverAfterProbabilities(VehicleState state,
       Observation obs) {
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
 
     /**
      * Why do we check for a block state here? We assume a vehicle can't
@@ -451,7 +456,7 @@ public class SensorModelSupportLibrary {
      * RULE: DEADHEAD_AFTER || LAYOVER_AFTER => reached the end of the block
      */
 
-    double pEndOfBlock = computeProbabilityOfEndOfBlock(state.getBlockState());
+    final double pEndOfBlock = computeProbabilityOfEndOfBlock(state.getBlockState());
 
     /**
      * There is always some chance that the vehicle has served some part of the
@@ -461,11 +466,11 @@ public class SensorModelSupportLibrary {
      * requirement), it can quickly go off-block if the block assignment doesn't
      * keep up.
      */
-    double pServedSomePartOfBlock = computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
-    double pOffBlock = computeOffBlockProbability(state, obs);
-    double pOutOfService = computeOutOfServiceProbability(obs);
+    final double pServedSomePartOfBlock = computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
+    final double pOffBlock = computeOffBlockProbability(state, obs);
+    final double pOutOfService = computeOutOfServiceProbability(obs);
 
-    double offRouteOrOutOfService = pServedSomePartOfBlock
+    final double offRouteOrOutOfService = pServedSomePartOfBlock
         * or(pOffBlock, pOutOfService);
 
     return or(pEndOfBlock, offRouteOrOutOfService);
@@ -477,8 +482,8 @@ public class SensorModelSupportLibrary {
 
   public double computePriorProbability(VehicleState state) {
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
 
     /**
      * Technically, we might better weight these from prior training data, but
@@ -500,11 +505,11 @@ public class SensorModelSupportLibrary {
     if (parentState == null)
       return 1.0;
 
-    JourneyState parentJourneyState = parentState.getJourneyState();
-    JourneyState journeyState = state.getJourneyState();
+    final JourneyState parentJourneyState = parentState.getJourneyState();
+    final JourneyState journeyState = state.getJourneyState();
 
-    EVehiclePhase parentPhase = parentJourneyState.getPhase();
-    EVehiclePhase phase = journeyState.getPhase();
+    final EVehiclePhase parentPhase = parentJourneyState.getPhase();
+    final EVehiclePhase phase = journeyState.getPhase();
 
     /**
      * Right now, we disallow this transition, but we will eventually re-enable
@@ -532,10 +537,11 @@ public class SensorModelSupportLibrary {
     if (blockState == null)
       return 0.5;
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-    CoordinatePoint location = blockLocation.getLocation();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final CoordinatePoint location = blockLocation.getLocation();
 
-    double d = SphericalGeometryLibrary.distance(location, obs.getLocation());
+    final double d = SphericalGeometryLibrary.distance(location,
+        obs.getLocation());
 
     if (d > 100)
       return 1.0;
@@ -546,27 +552,27 @@ public class SensorModelSupportLibrary {
   public double computeLongRangeProgressTowardsStartOfBlockProbability(
       VehicleState state, Observation obs) {
 
-    JourneyState js = state.getJourneyState();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final BlockState blockState = state.getBlockState();
 
-    JourneyStartState startState = js.getData();
-    CoordinatePoint journeyStartLocation = startState.getJourneyStart();
+    final JourneyStartState startState = js.getData();
+    final CoordinatePoint journeyStartLocation = startState.getJourneyStart();
 
-    CoordinatePoint currentLocation = obs.getLocation();
+    final CoordinatePoint currentLocation = obs.getLocation();
 
     // If we don't have a block assignment, are we really making progress?
     if (blockState == null)
       return 0.5;
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-    CoordinatePoint blockStart = blockLocation.getLocation();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final CoordinatePoint blockStart = blockLocation.getLocation();
 
     // Are we making progress towards the start of the block?
-    double directDistance = SphericalGeometryLibrary.distance(
+    final double directDistance = SphericalGeometryLibrary.distance(
         journeyStartLocation, blockStart);
-    double traveledDistance = SphericalGeometryLibrary.distance(
+    final double traveledDistance = SphericalGeometryLibrary.distance(
         currentLocation, journeyStartLocation);
-    double remainingDistance = SphericalGeometryLibrary.distance(
+    final double remainingDistance = SphericalGeometryLibrary.distance(
         currentLocation, blockStart);
 
     /**
@@ -577,13 +583,14 @@ public class SensorModelSupportLibrary {
       return 0.0;
 
     if (directDistance < 500) {
-      double delta = remainingDistance - 500;
+      final double delta = remainingDistance - 500;
       return _travelToStartOfBlockDistanceModel.probability(delta);
     } else {
       // Ratio should be 1 if we drove directly from the depot to the start of
       // the
       // block but will increase as we go further out of our way
-      double ratio = (traveledDistance + remainingDistance) / directDistance;
+      final double ratio = (traveledDistance + remainingDistance)
+          / directDistance;
 
       // This might not be the most mathematically appropriate model, but it's
       // close
@@ -604,7 +611,7 @@ public class SensorModelSupportLibrary {
   public double computeShortRangeProgressTowardsStartOfBlockProbability(
       VehicleState parentState, VehicleState state, Observation obs) {
 
-    BlockState blockState = state.getBlockState();
+    final BlockState blockState = state.getBlockState();
 
     /**
      * If we don't have a block state, we can't be making progress towards the
@@ -613,7 +620,7 @@ public class SensorModelSupportLibrary {
     if (blockState == null)
       return 0.0;
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
     /**
      * If we don't have a parent state, we've just started and can be making
@@ -625,7 +632,7 @@ public class SensorModelSupportLibrary {
     /**
      * This method only applies if we haven't already started the block
      */
-    EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
+    final EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
     if (!EVehiclePhase.isActiveBeforeBlock(parentPhase))
       return 0.0;
 
@@ -635,13 +642,13 @@ public class SensorModelSupportLibrary {
     if (blockLocation.getDistanceAlongBlock() > 200)
       return 0.0;
 
-    NycRawLocationRecord prev = obs.getPreviousRecord();
-    CoordinatePoint prevLocation = new CoordinatePoint(prev.getLatitude(),
-        prev.getLongitude());
+    final NycRawLocationRecord prev = obs.getPreviousRecord();
+    final CoordinatePoint prevLocation = new CoordinatePoint(
+        prev.getLatitude(), prev.getLongitude());
 
-    double dParent = SphericalGeometryLibrary.distance(prevLocation,
+    final double dParent = SphericalGeometryLibrary.distance(prevLocation,
         blockLocation.getLocation());
-    double dNow = _vehicleStateLibrary.getDistanceToBlockLocation(obs,
+    final double dNow = _vehicleStateLibrary.getDistanceToBlockLocation(obs,
         blockState);
 
     /**
@@ -660,8 +667,8 @@ public class SensorModelSupportLibrary {
   public double computeDeadheadDestinationSignCodeProbability(
       BlockState blockState, Observation observation) {
 
-    NycRawLocationRecord record = observation.getRecord();
-    String observedDsc = record.getDestinationSignCode();
+    final NycRawLocationRecord record = observation.getRecord();
+    final String observedDsc = record.getDestinationSignCode();
 
     // If the driver hasn't set an in-service DSC yet, we can't punish too much
     if (_destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc))
@@ -683,27 +690,27 @@ public class SensorModelSupportLibrary {
   public double computeStartOrResumeBlockOnTimeProbability(VehicleState state,
       Observation obs) {
 
-    CoordinatePoint currentLocation = obs.getLocation();
+    final CoordinatePoint currentLocation = obs.getLocation();
 
-    BlockState blockState = state.getBlockState();
+    final BlockState blockState = state.getBlockState();
 
     // If we don't have an assigned block yet, we hedge our bets on whether
     // we're starting on time or not
     if (blockState == null)
       return 0.5;
 
-    BlockInstance blockInstance = blockState.getBlockInstance();
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-    CoordinatePoint blockStart = blockLocation.getLocation();
+    final BlockInstance blockInstance = blockState.getBlockInstance();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final CoordinatePoint blockStart = blockLocation.getLocation();
 
     // in meters
-    double distanceToBlockStart = SphericalGeometryLibrary.distance(
+    final double distanceToBlockStart = SphericalGeometryLibrary.distance(
         currentLocation, blockStart);
     // in seconds
-    int timeToStart = (int) (distanceToBlockStart / _averageSpeed);
+    final int timeToStart = (int) (distanceToBlockStart / _averageSpeed);
 
-    long estimatedStart = obs.getTime() + timeToStart * 1000;
-    long scheduledStart = blockInstance.getServiceDate()
+    final long estimatedStart = obs.getTime() + timeToStart * 1000;
+    final long scheduledStart = blockInstance.getServiceDate()
         + blockLocation.getScheduledTime() * 1000;
 
     int minutesDiff = (int) ((scheduledStart - estimatedStart) / (1000 * 60));
@@ -719,7 +726,7 @@ public class SensorModelSupportLibrary {
 
   public double computeOffBlockProbability(VehicleState state, Observation obs) {
 
-    double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
+    final double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
         obs, state.getBlockState());
 
     if (_offBlockDistance < distanceToBlock)
@@ -734,7 +741,7 @@ public class SensorModelSupportLibrary {
     if (blockState == null)
       return 0.0;
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
     // How much of a block do we need to run to consider ourselves started?
     if (blockLocation.getDistanceAlongBlock() > 500)
@@ -749,22 +756,22 @@ public class SensorModelSupportLibrary {
     if (blockState == null)
       return 0.0;
 
-    BlockInstance blockInstance = blockState.getBlockInstance();
-    BlockConfigurationEntry blockConfig = blockInstance.getBlock();
-    double totalBlockDistance = blockConfig.getTotalBlockDistance();
+    final BlockInstance blockInstance = blockState.getBlockInstance();
+    final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+    final double totalBlockDistance = blockConfig.getTotalBlockDistance();
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-    double distanceAlongBlock = blockLocation.getDistanceAlongBlock();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final double distanceAlongBlock = blockLocation.getDistanceAlongBlock();
 
-    double delta = totalBlockDistance - distanceAlongBlock;
+    final double delta = totalBlockDistance - distanceAlongBlock;
     return _endOfBlockDeviationModel.probability(delta);
   }
 
   public double computeOutOfServiceProbability(Observation observation) {
 
-    NycRawLocationRecord record = observation.getRecord();
-    String dsc = record.getDestinationSignCode();
-    boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
+    final NycRawLocationRecord record = observation.getRecord();
+    final String dsc = record.getDestinationSignCode();
+    final boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(dsc);
 
     /**
      * Note that these two probabilities don't have to add up to 1, as they are
@@ -785,8 +792,8 @@ public class SensorModelSupportLibrary {
    */
   public boolean isOutOfServiceDestinationSignCode(Observation obs) {
 
-    NycRawLocationRecord record = obs.getRecord();
-    String observedDsc = record.getDestinationSignCode();
+    final NycRawLocationRecord record = obs.getRecord();
+    final String observedDsc = record.getDestinationSignCode();
 
     return _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
   }
@@ -797,10 +804,10 @@ public class SensorModelSupportLibrary {
    */
   public boolean isOnRoute(Context context) {
 
-    Observation obs = context.getObservation();
-    VehicleState state = context.getState();
+    final Observation obs = context.getObservation();
+    final VehicleState state = context.getState();
 
-    double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
+    final double distanceToBlock = _vehicleStateLibrary.getDistanceToBlockLocation(
         obs, state.getBlockState());
 
     return distanceToBlock <= _offBlockDistance;

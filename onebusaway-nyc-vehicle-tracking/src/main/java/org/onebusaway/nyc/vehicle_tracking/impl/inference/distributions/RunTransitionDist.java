@@ -1,9 +1,10 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
-import java.util.Set;
-
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+
 import umontreal.iro.lecuyer.rng.RandomStream;
+
+import java.util.Set;
 
 public class RunTransitionDist extends
     DirichletConjTransitionDist<RunTripEntry> {
@@ -28,7 +29,7 @@ public class RunTransitionDist extends
   @Override
   synchronized protected void addEntries(Set<RunTripEntry> missingEntries,
       TransDistParams<RunTripEntry> condParams) {
-    for (RunTripEntry rte : missingEntries) {
+    for (final RunTripEntry rte : missingEntries) {
       Double prob = 0.0;
       if (rte.equals(condParams.getCurrentState())) {
         prob = _initialPriorDiagVal;

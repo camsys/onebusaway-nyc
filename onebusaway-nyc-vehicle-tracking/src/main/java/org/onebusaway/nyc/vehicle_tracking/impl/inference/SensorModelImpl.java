@@ -15,12 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
@@ -28,8 +22,15 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @Component
 public class SensorModelImpl implements SensorModel<Observation> {
@@ -51,18 +52,19 @@ public class SensorModelImpl implements SensorModel<Observation> {
       Observation observation,
       Map<Entry<VehicleState, VehicleState>, SensorModelResult> cache) {
 
-    VehicleState state = particle.getData();
+    final VehicleState state = particle.getData();
     VehicleState parentState = null;
-    Particle parent = particle.getParent();
+    final Particle parent = particle.getParent();
 
     if (parent != null)
       parentState = parent.getData();
 
-    Entry<VehicleState, VehicleState> key = new AbstractMap.SimpleImmutableEntry<VehicleState, VehicleState>(
+    final Entry<VehicleState, VehicleState> key = new AbstractMap.SimpleImmutableEntry<VehicleState, VehicleState>(
         state, parentState);
-    
+
     if (!cache.containsKey(key)) {
-      SensorModelResult result = likelihood(parentState, state, observation);
+      final SensorModelResult result = likelihood(parentState, state,
+          observation);
       cache.put(key, result);
       return result;
     }
@@ -73,14 +75,14 @@ public class SensorModelImpl implements SensorModel<Observation> {
   @Override
   public SensorModelResult likelihood(Particle particle, Observation observation) {
 
-    VehicleState state = particle.getData();
+    final VehicleState state = particle.getData();
     VehicleState parentState = null;
-    Particle parent = particle.getParent();
+    final Particle parent = particle.getParent();
 
     if (parent != null)
       parentState = parent.getData();
 
-    SensorModelResult result = likelihood(parentState, state, observation);
+    final SensorModelResult result = likelihood(parentState, state, observation);
 
     return result;
   }
@@ -97,12 +99,12 @@ public class SensorModelImpl implements SensorModel<Observation> {
   public SensorModelResult likelihood(VehicleState parentState,
       VehicleState state, Observation obs) {
 
-    SensorModelResult result = new SensorModelResult("pTotal", 1.0);
+    final SensorModelResult result = new SensorModelResult("pTotal", 1.0);
 
-    Context context = new Context(parentState, state, obs);
+    final Context context = new Context(parentState, state, obs);
 
-    for (SensorModelRule rule : _rules) {
-      SensorModelResult r = rule.likelihood(_sensorModelLibrary, context);
+    for (final SensorModelRule rule : _rules) {
+      final SensorModelResult r = rule.likelihood(_sensorModelLibrary, context);
       result.addResultAsAnd(r);
     }
 

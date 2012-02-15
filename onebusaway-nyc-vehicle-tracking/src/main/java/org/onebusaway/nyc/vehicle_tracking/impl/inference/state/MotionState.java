@@ -71,7 +71,7 @@ public final class MotionState implements Comparable<MotionState> {
       return false;
     if (!(obj instanceof MotionState))
       return false;
-    MotionState other = (MotionState) obj;
+    final MotionState other = (MotionState) obj;
     if (lastInMotionLocation == null) {
       if (other.lastInMotionLocation != null)
         return false;

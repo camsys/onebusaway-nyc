@@ -16,15 +16,14 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.FrequencyComparator;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.ScheduledBlockLocationComparator;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
-import java.util.Comparator;
 
 import javax.annotation.Nullable;
 
@@ -42,12 +41,12 @@ public final class BlockState implements Comparable<BlockState> {
   private final String destinationSignCode;
 
   public BlockState(BlockInstance blockInstance,
-      ScheduledBlockLocation blockLocation, @Nullable RunTripEntry runTrip,
-      String destinationSignCode) {
+      ScheduledBlockLocation blockLocation, @Nullable
+      RunTripEntry runTrip, String destinationSignCode) {
     Preconditions.checkNotNull(blockInstance, "blockInstance");
     Preconditions.checkNotNull(blockLocation, "blockLocation");
     Preconditions.checkNotNull(destinationSignCode, "destinationSignCode");
-    
+
     this.blockInstance = blockInstance;
     this.blockLocation = blockLocation;
     this.destinationSignCode = destinationSignCode;
@@ -72,7 +71,7 @@ public final class BlockState implements Comparable<BlockState> {
 
   @Override
   public String toString() {
-    StringBuilder b = new StringBuilder();
+    final StringBuilder b = new StringBuilder();
     b.append("BlockState(");
     b.append(blockInstance).append(",");
     b.append(blockLocation).append(",");
@@ -88,34 +87,6 @@ public final class BlockState implements Comparable<BlockState> {
     return runTrip == null ? null : runTrip.getRunId();
   }
 
-  static final private FrequencyComparator _frequencyComparator = new FrequencyComparator();
-
-  private static class TripIdComparator implements Comparator<TripEntry> {
-    @Override
-    public int compare(TripEntry o1, TripEntry o2) {
-      return o1.getId().compareTo(o2.getId());
-    }
-  }
-
-  private static class BlockInstanceComparator implements
-      Comparator<BlockInstance> {
-
-    @Override
-    public int compare(BlockInstance o1, BlockInstance o2) {
-      if (o1 == o2)
-        return 0;
-
-      return ComparisonChain.start().compare(o1.getBlock().getServiceIds(),
-          o2.getBlock().getServiceIds()).compare(o1.getServiceDate(),
-          o2.getServiceDate()).compare(o1.getFrequency(), o2.getFrequency(),
-          Ordering.from(_frequencyComparator).nullsLast()).result();
-    }
-
-  }
-
-  static final private TripIdComparator _tripIdComparator = new TripIdComparator();
-  static final private BlockInstanceComparator _blockInstanceComparator = new BlockInstanceComparator();
-
   /**
    * This compareTo method is for definite ordering in CategoricalDist; such
    * ordering allows for reproducibility in testing.
@@ -126,28 +97,22 @@ public final class BlockState implements Comparable<BlockState> {
     if (this == rightBs)
       return 0;
 
-    int res = ComparisonChain.start().compare(this.runTrip, rightBs.runTrip,
-        Ordering.natural().nullsLast()).compare(this.destinationSignCode,
-        rightBs.getDestinationSignCode()).compare(
-        this.getBlockLocation().getDistanceAlongBlock(),
-        rightBs.getBlockLocation().getDistanceAlongBlock()).compare(
-        this.getBlockLocation().getActiveTrip().getTrip(),
-        rightBs.getBlockLocation().getActiveTrip().getTrip(),
-        Ordering.from(_tripIdComparator).nullsLast()).compare(
-        this.getBlockLocation().getScheduledTime(),
-        rightBs.getBlockLocation().getScheduledTime()).compare(
-        this.getBlockInstance(), rightBs.getBlockInstance(),
-        Ordering.from(_blockInstanceComparator)).result();
+    final int res = ComparisonChain.start().compare(this.destinationSignCode,
+        rightBs.destinationSignCode).compare(this.blockInstance,
+        rightBs.blockInstance, Ordering.from(BlockInstanceComparator.INSTANCE)).compare(
+        this.blockLocation, rightBs.blockLocation,
+        Ordering.from(ScheduledBlockLocationComparator.INSTANCE)).compare(
+        this.runTrip, rightBs.runTrip, Ordering.natural().nullsLast()).result();
     return res;
   }
 
   private int _hash = 0;
-  
+
   @Override
   public int hashCode() {
     if (_hash != 0)
       return _hash;
-    
+
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -162,16 +127,16 @@ public final class BlockState implements Comparable<BlockState> {
         + ((blockLocation == null) ? 0
             : ((blockLocation.getActiveTrip() == null) ? 0
                 : blockLocation.getActiveTrip().getTrip().getId().hashCode()));
-    long temp = 0;
-    if (blockLocation != null)
-      temp = Double.doubleToLongBits(blockLocation.getDistanceAlongBlock());
-    result = (int) (prime * result + ((temp == 0) ? temp
-        : (int) (temp ^ (temp >>> 32))));
+    // long temp = 0;
+    // if (blockLocation != null)
+    // temp = Double.doubleToLongBits(blockLocation.getDistanceAlongBlock());
+    // result = (int) (prime * result + ((temp == 0) ? temp
+    // : (int) (temp ^ (temp >>> 32))));
 
     result = prime * result
         + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
     result = prime * result + ((runTrip == null) ? 0 : runTrip.hashCode());
-    
+
     _hash = result;
     return result;
   }
@@ -185,7 +150,7 @@ public final class BlockState implements Comparable<BlockState> {
     if (!(obj instanceof BlockState))
       return false;
 
-    BlockState other = (BlockState) obj;
+    final BlockState other = (BlockState) obj;
 
     if (blockInstance == null) {
       if (other.blockInstance != null)
@@ -205,9 +170,9 @@ public final class BlockState implements Comparable<BlockState> {
       if (!blockLocation.getActiveTrip().getTrip().getId().equals(
           other.blockLocation.getActiveTrip().getTrip().getId()))
         return false;
-      if (Double.compare(blockLocation.getDistanceAlongBlock(),
-          other.blockLocation.getDistanceAlongBlock()) != 0)
-        return false;
+      // if (Double.compare(blockLocation.getDistanceAlongBlock(),
+      // other.blockLocation.getDistanceAlongBlock()) != 0)
+      // return false;
     }
 
     if (destinationSignCode == null) {

@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
-import java.util.Arrays;
-
 import umontreal.iro.lecuyer.probdist.NormalDist;
 import umontreal.iro.lecuyer.randvar.InverseGammaGen;
 import umontreal.iro.lecuyer.randvar.NormalGen;
 import umontreal.iro.lecuyer.rng.RandomStream;
+
+import java.util.Arrays;
 
 /**
  * The real working of this is through distance along the block (meters).
@@ -48,7 +48,7 @@ public class ScheduleDevDist implements
 
   public ScheduleDevDist(RandomStream rnd) {
     _rng = rnd;
-    Double[] priorSample = samplePrior();
+    final Double[] priorSample = samplePrior();
     _currentDevVarSample = priorSample[0];
     _currentDevTransVarSample = priorSample[1];
     _currentDevSample = sample(null);
@@ -86,13 +86,13 @@ public class ScheduleDevDist implements
     /*
      * predictive variance
      */
-    double Q_t = _scheduleDevKalmanParams[1] + _currentDevTransVarSample
+    final double Q_t = _scheduleDevKalmanParams[1] + _currentDevTransVarSample
         + _currentDevVarSample;
 
     /*
      * Kalman gain "matrix"
      */
-    double A_t = (_scheduleDevKalmanParams[1] + _currentDevTransVarSample)
+    final double A_t = (_scheduleDevKalmanParams[1] + _currentDevTransVarSample)
         / Q_t;
 
     /*
@@ -110,14 +110,14 @@ public class ScheduleDevDist implements
     /*
      * off-line-able suff. stat. propagation
      */
-    Double[] priorSample = samplePrior();
+    final Double[] priorSample = samplePrior();
     _currentDevVarSample = priorSample[0];
     _currentDevTransVarSample = priorSample[1];
   }
 
   @Override
   public Double[] samplePrior() {
-    Double[] res = new Double[2];
+    final Double[] res = new Double[2];
     res[0] = InverseGammaGen.nextDouble(_rng, _scheduleDevVarParams[0] / 2.0,
         _scheduleDevVarParams[1] / 2.0);
     res[1] = InverseGammaGen.nextDouble(_rng,
@@ -136,7 +136,7 @@ public class ScheduleDevDist implements
 
   @Override
   public String toString() {
-    StringBuilder b = new StringBuilder();
+    final StringBuilder b = new StringBuilder();
     b.append("SchedulDevDist(");
     b.append("scheduleDevVarParams=").append(
         Arrays.toString(_scheduleDevVarParams)).append(",");

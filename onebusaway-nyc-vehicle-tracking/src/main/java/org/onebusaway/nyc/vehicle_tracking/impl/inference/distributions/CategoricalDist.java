@@ -17,20 +17,20 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
-import java.util.TreeMap;
-import org.apache.commons.math.util.MathUtils;
-
-import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.primitives.Doubles;
+
+import org.apache.commons.math.util.MathUtils;
+
+import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
+import java.util.TreeMap;
 
 public class CategoricalDist<T> {
 
@@ -78,7 +78,7 @@ public class CategoricalDist<T> {
     }
   }
 
-  private List<Double> _objIdx = new ArrayList<Double>();
+  private final List<Double> _objIdx = new ArrayList<Double>();
   TreeMap<T, Double> _entriesToProbs;
   private List<T> _entries;
 
@@ -111,14 +111,14 @@ public class CategoricalDist<T> {
   }
 
   public void put(double prob, T object) {
-    
+
     Preconditions.checkNotNull(object);
-    
+
     if (Double.compare(prob, 0.0) <= 0)
       return;
 
     _cumulativeProb += prob;
-    Double currentProb = _entriesToProbs.get(object);
+    final Double currentProb = _entriesToProbs.get(object);
 
     if (currentProb == null) {
       _entriesToProbs.put(object, prob);
@@ -151,15 +151,15 @@ public class CategoricalDist<T> {
     }
 
     if (emd == null) {
-      double[] probs = MathUtils.normalizeArray(
+      final double[] probs = MathUtils.normalizeArray(
           Doubles.toArray(_entriesToProbs.values()), 1.0);
       emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs,
           _objIdx.size());
       _entries = getSupport();
     }
 
-    double u = threadLocalRng.get().nextDouble();
-    int newIdx = (int) emd.inverseF(u);
+    final double u = threadLocalRng.get().nextDouble();
+    final int newIdx = (int) emd.inverseF(u);
 
     return _entries.get(newIdx);
   }
@@ -170,7 +170,7 @@ public class CategoricalDist<T> {
     Preconditions.checkState(_cumulativeProb > 0.0);
     Preconditions.checkArgument(samples > 0);
 
-    Multiset<T> sampled = HashMultiset.create(samples);
+    final Multiset<T> sampled = HashMultiset.create(samples);
 
     for (int i = 0; i < samples; ++i) {
       sampled.add(sample());

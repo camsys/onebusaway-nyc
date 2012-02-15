@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.collections.Min;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
@@ -26,6 +27,7 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCo
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
@@ -43,12 +45,14 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
+import com.google.common.collect.TreeMultimap;
+import com.google.common.math.DoubleMath;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -64,6 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -79,9 +84,9 @@ public class BlockStateService {
 
   private static final double _tripSearchRadius = 60;
 
-  private static final long _tripSearchTimeAfterLastStop = 2 * 60 * 60 * 1000;
+  private static final long _tripSearchTimeAfterLastStop = 5 * 60 * 60 * 1000;
 
-  private static final long _tripSearchTimeBeforeFirstStop = 1 * 60 * 60 * 1000;
+  private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
 
   /**
    * This will sound weird, but DON'T REMOVE THIS
@@ -120,10 +125,10 @@ public class BlockStateService {
 
   @PostConstruct
   @Refreshable(dependsOn = {
+      // RefreshableResources.SHAPE_GEOSPATIAL_INDEX,
       RefreshableResources.TRANSIT_GRAPH,
-      RefreshableResources.BLOCK_INDEX_DATA,
-      RefreshableResources.CALENDAR_DATA,
-      RefreshableResources.SHAPE_GEOSPATIAL_INDEX})
+      // RefreshableResources.BLOCK_INDEX_DATA,
+      RefreshableResources.CALENDAR_DATA, RefreshableResources.NARRATIVE_DATA})
   public void setup() throws IOException, ClassNotFoundException {
     buildShapeSpatialIndex();
   }
@@ -202,36 +207,30 @@ public class BlockStateService {
     final BlockLocationKey key = new BlockLocationKey(blockInstance, 0,
         Double.POSITIVE_INFINITY);
 
-    Map<BlockLocationKey, BestBlockStates> m = _observationCache.getValueForObservation(
+    Map<BlockLocationKey, BestBlockStates> mb = _observationCache.getValueForObservation(
         observation, EObservationCacheKey.BLOCK_LOCATION);
 
-    if (m == null) {
-      m = Maps.newConcurrentMap();
+    if (mb == null) {
+      mb = computeBlockStatesForObservation(observation);
       _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BLOCK_LOCATION, m);
+          EObservationCacheKey.BLOCK_LOCATION, mb);
+
+      final Set<BlockState> m = Sets.newHashSet();
+      for (final BestBlockStates bbs : mb.values()) {
+        m.addAll(bbs.getAllStates());
+      }
+      _observationCache.putValueForObservation(observation,
+          EObservationCacheKey.BEST_BLOCK_STATES, m);
     }
 
-    BestBlockStates blockStates = m.get(key);
+    BestBlockStates blockStates = mb.get(key);
 
     if (blockStates == null) {
-      computeBlockStatesForObservation(observation);
-      /*
-       * Should be populated now, so try again...
-       */
-      blockStates = m.get(key);
-      if (blockStates == null)
-        blockStates = new BestBlockStates(Collections.<BlockState> emptySet());
+      blockStates = new BestBlockStates(Collections.<BlockState> emptySet());
     }
 
     return blockStates;
   }
-
-  // public BestBlockStates getBestBlockStateForRoute(Observation observation) {
-  // BestBlockStates bestRouteStates =
-  // _observationCache.getValueForObservation(observation,
-  // EObservationCacheKey.ROUTE_LOCATION);
-  // return bestRouteStates;
-  // }
 
   public BlockState getScheduledTimeAsState(BlockInstance blockInstance,
       int scheduledTime) {
@@ -306,94 +305,6 @@ public class BlockStateService {
     // return this.timeDev;
     // }
   }
-
-  // private BestBlockStates getUncachedBestBlockLocations(
-  // Observation observation, BlockInstance blockInstance,
-  // double blockDistanceFrom, double blockDistanceTo)
-  // throws MissingShapePointsException {
-  //
-  // ProjectedPoint targetPoint = observation.getPoint();
-  //
-  // BlockConfigurationEntry block = blockInstance.getBlock();
-  //
-  // List<AgencyAndId> shapePointIds = MappingLibrary.map(block.getTrips(),
-  // "trip.shapeId");
-  //
-  // if (shapePointIds.removeAll(Collections.singleton(null))) {
-  // if (shapePointIds.isEmpty())
-  // throw new MissingShapePointsException("block has no shape points: "
-  // + block.getBlock().getId());
-  // else
-  // _log.warn("block missing some shape points: "
-  // + block.getBlock().getId());
-  // }
-  //
-  // T2<List<XYPoint>, double[]> tuple =
-  // _projectedShapePointService.getProjectedShapePoints(
-  // shapePointIds, targetPoint.getSrid());
-  //
-  // List<XYPoint> projectedShapePoints = tuple.getFirst();
-  // double[] distances = tuple.getSecond();
-  //
-  // int fromIndex = 0;
-  // int toIndex = distances.length;
-  //
-  // if (blockDistanceFrom > 0) {
-  // fromIndex = Arrays.binarySearch(distances, blockDistanceFrom);
-  // if (fromIndex < 0) {
-  // fromIndex = -(fromIndex + 1);
-  // // Include the previous point if we didn't get an exact match
-  // if (fromIndex > 0)
-  // fromIndex--;
-  // }
-  // }
-  //
-  // if (blockDistanceTo < distances[distances.length - 1]) {
-  // toIndex = Arrays.binarySearch(distances, blockDistanceTo);
-  // if (toIndex < 0) {
-  // toIndex = -(toIndex + 1);
-  // // Include the previous point if we didn't get an exact match
-  // if (toIndex < distances.length)
-  // toIndex++;
-  // }
-  // }
-  //
-  // XYPoint xyPoint = new XYPoint(targetPoint.getX(), targetPoint.getY());
-  //
-  // List<PointAndIndex> assignments =
-  // _shapePointsLibrary.computePotentialAssignments(
-  // projectedShapePoints, distances, xyPoint, fromIndex, toIndex);
-  //
-  // Set<BlockState> results = Sets.newHashSet();
-  // if (assignments.size() == 0) {
-  // BlockState bs = getAsState(blockInstance, blockDistanceFrom);
-  // return new BestBlockStates(Sets.newHashSet(bs));
-  // }
-  //
-  //
-  // Max<BlockState> best = new Max<BlockState>();
-  // for (PointAndIndex index : assignments) {
-  //
-  // double distanceAlongBlock = index.distanceAlongShape;
-  //
-  // if (distanceAlongBlock > block.getTotalBlockDistance())
-  // distanceAlongBlock = block.getTotalBlockDistance();
-  //
-  // BlockState blockState = getAsState(blockInstance, distanceAlongBlock);
-  // int obsSchedDev =
-  // _scheduleDeviationLibrary.computeScheduleDeviation(blockState.getBlockInstance(),
-  // blockState.getBlockLocation(), observation);
-  //
-  // double pInP1 = 1.0 - FoldedNormalDist.cdf(10.0, 50.0,
-  // index.distanceFromTarget);
-  // double pInP2 = 1.0 - FoldedNormalDist.cdf(5.0, 40.0, obsSchedDev/60.0);
-  // best.add(pInP1*pInP2, blockState);
-  // }
-  //
-  // results.add(best.getMaxElement());
-  //
-  // return new BestBlockStates(results);
-  // }
 
   private static class BlockLocationKey {
     private final BlockInstance blockInstance;
@@ -474,50 +385,33 @@ public class BlockStateService {
         EObservationCacheKey.BEST_BLOCK_STATES);
 
     if (m == null) {
+      final Map<BlockLocationKey, BestBlockStates> res = computeBlockStatesForObservation(observation);
+      _observationCache.putValueForObservation(observation,
+          EObservationCacheKey.BLOCK_LOCATION, res);
+
       m = Sets.newHashSet();
+      for (final BestBlockStates bbs : res.values()) {
+        m.addAll(bbs.getAllStates());
+      }
       _observationCache.putValueForObservation(observation,
           EObservationCacheKey.BEST_BLOCK_STATES, m);
-      computeBlockStatesForObservation(observation);
     }
     return m;
   }
 
   /**
-   * New method that does an STR-tree-based lookup of block-locations.
-   * XXX: Still very experimental!  
-   * Run integration tests Trace_4138_20111207_150000_220000_IntegrationTest
-   * and see what I mean.  There is a bug somewhere that doesn't catch block
-   * MTA NYCT_MTA NYCT_20110904EE_YU_51600_MISC-158_2161 as associated
-   * with any lines.
+   * New method that does an STR-tree-based lookup of block-locations. XXX:
+   * Still very experimental! Run integration tests
+   * Trace_4138_20111207_150000_220000_IntegrationTest and see what I mean.
+   * There is a bug somewhere that doesn't catch block MTA NYCT_MTA
+   * NYCT_20110904EE_YU_51600_MISC-158_2161 as associated with any lines.
    * 
    * @param observation
    */
-  public void computeBlockStatesForObservation(Observation observation) {
+  public Map<BlockLocationKey, BestBlockStates> computeBlockStatesForObservation(
+      Observation observation) {
 
-    Set<BlockState> m = _observationCache.getValueForObservation(observation,
-        EObservationCacheKey.BEST_BLOCK_STATES);
-
-    if (m != null && !m.isEmpty()) {
-      return;
-    } else if (m == null) {
-      m = Sets.newHashSet();
-    }
-
-    /*
-     * As a temp hack for transitioning this code, we populate the caches that
-     * the other methods usually used.
-     */
-    Map<BlockLocationKey, BestBlockStates> mb = _observationCache.getValueForObservation(
-        observation, EObservationCacheKey.BLOCK_LOCATION);
-
-    /*
-     * FIXME this is redundant
-     */
-    if (mb == null) {
-      mb = Maps.newConcurrentMap();
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.BLOCK_LOCATION, mb);
-    }
+    final Map<BlockLocationKey, BestBlockStates> results = Maps.newHashMap();
 
     final NycRawLocationRecord record = observation.getRecord();
     final long time = observation.getTime();
@@ -533,11 +427,11 @@ public class BlockStateService {
         bounds.getMaxLon(), bounds.getMinLat(), bounds.getMaxLat());
 
     @SuppressWarnings("unchecked")
-    final List<LocationIndexedLine> lineMatches = _index.query(searchEnv);
-    final Set<BlockState> blockStates = Sets.newHashSet();
+    final List<Collection<LocationIndexedLine>> lineMatches = _index.query(searchEnv);
     final Multimap<AgencyAndId, BlockInstance> blockToActiveInstances = HashMultimap.create();
-    for (final LocationIndexedLine line : lineMatches) {
-
+    final Multimap<BlockInstance, Double> instancesToDists = TreeMultimap.create(
+        BlockInstanceComparator.INSTANCE, Ordering.natural());
+    for (final LocationIndexedLine line : Iterables.concat(lineMatches)) {
       final LinearLocation here = line.project(obsPoint);
       final Coordinate pointOnLine = line.extractPoint(here);
       final double dist = SphericalGeometryLibrary.distance(pointOnLine.y,
@@ -552,73 +446,125 @@ public class BlockStateService {
 
       for (final TripInfo tripInfo : _linesToTripInfo.get(line)) {
         for (final BlockEntry block : tripInfo.getBlocks()) {
-          final Collection<BlockInstance> instances = blockToActiveInstances.get(block.getId());
 
-          if (instances.isEmpty()) {
-            instances.addAll(_blockCalendarService.getActiveBlocks(block.getId(),
-                timeFrom.getTime(), timeTo.getTime()));
+          /*
+           * Avoid getting active blockInstances when there are none for this
+           * block (since the multimap will return an empty set when it has no
+           * entry and when there are no active blockInstances).
+           */
+          final Collection<BlockInstance> instances;
+          if (!blockToActiveInstances.containsKey(block.getId())) {
+            instances = blockToActiveInstances.get(block.getId());
+            instances.addAll(_blockCalendarService.getActiveBlocks(
+                block.getId(), timeFrom.getTime(), timeTo.getTime()));
+          } else {
+            instances = blockToActiveInstances.get(block.getId());
           }
 
           for (final BlockInstance instance : instances) {
 
-            final BlockTripEntry blockTrip = _shapesAndBlockConfigsToBlockTrips.get(
-                tripInfo.getShapeAndIdx().getShapeId(), instance.getBlock());
+            final Collection<BlockTripEntry> blockTrips = _shapesAndBlockConfigsToBlockTrips.get(Maps.immutableEntry(
+                tripInfo.getShapeAndIdx().getShapeId(), instance.getBlock()));
 
-            /*
-             * XXX:
-             * This is still questionable, however, ScheduledBlockLocationServiceImpl.java
-             * appears to do something similar, where it assumes the block's distance-along
-             * can be related to the shape's (for the particular BlockTripEntry).
-             * (see ScheduledBlockLocationServiceImpl.getLocationAlongShape)
-             * 
-             * Anyway, what we're doing is using the blockTrip's getDistanceAlongBlock to 
-             * find out what the distance-along the block is for the start of the shape,
-             * then we're using our computed distance along shape for the snapped point
-             * to find the total distanceAlongBlock.
-             */
             final double distanceAlongShape = tripInfo.getDistanceFrom()
                 + distTraveledOnLine;
-            final double distanceAlongBlock = blockTrip.getDistanceAlongBlock()
-                + distanceAlongShape;
-            final ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
-                instance.getBlock(), distanceAlongBlock);
 
-            if (location == null
-                || !observation.getDscImpliedRouteCollections().contains(
-                    location.getActiveTrip().getTrip().getRouteCollection().getId()))
-              continue;
-
-            final int searchTimeFrom = (int) (timeFrom.getTime() - instance.getServiceDate()) / 1000;
-            final int searchTimeTo = (int) (timeTo.getTime() - instance.getServiceDate()) / 1000;
-
-            final int schedTime = location.getScheduledTime();
-            if (searchTimeFrom < schedTime && schedTime < searchTimeTo) {
-              final BlockTripEntry activeTrip = location.getActiveTrip();
-              final String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
-              final RunTripEntry rte = _runService.getRunTripEntryForTripAndTime(
-                  activeTrip.getTrip(), schedTime);
-              final BlockState state = new BlockState(instance, location, rte,
-                  dsc);
-              blockStates.add(state);
-
-              final BlockLocationKey key = new BlockLocationKey(instance, 0,
-                  Double.POSITIVE_INFINITY);
-              BestBlockStates currentStates = mb.get(key);
-              if (currentStates == null) {
-                currentStates = new BestBlockStates(Sets.newHashSet(state));
-              } else {
-                currentStates.getAllStates().add(state);
+            for (final BlockTripEntry blockTrip : blockTrips) {
+              /*
+               * XXX: This is still questionable, however,
+               * ScheduledBlockLocationServiceImpl.java appears to do something
+               * similar, where it assumes the block's distance-along can be
+               * related to the shape's (for the particular BlockTripEntry).
+               * (see ScheduledBlockLocationServiceImpl.getLocationAlongShape)
+               * 
+               * Anyway, what we're doing is using the blockTrip's
+               * getDistanceAlongBlock to find out what the distance-along the
+               * block is for the start of the shape, then we're using our
+               * computed distance along shape for the snapped point to find the
+               * total distanceAlongBlock.
+               */
+              double distanceAlongBlock = blockTrip.getDistanceAlongBlock()
+                  + distanceAlongShape;
+              /*
+               * We concern ourselves with only a meter's precision.
+               */
+              distanceAlongBlock = DoubleMath.roundToLong(distanceAlongBlock,
+                  RoundingMode.HALF_UP);
+              if (distanceAlongBlock > instance.getBlock().getTotalBlockDistance()) {
+                distanceAlongBlock = instance.getBlock().getTotalBlockDistance();
               }
-              mb.put(key, currentStates);
+
+              instancesToDists.put(instance, distanceAlongBlock);
             }
           }
         }
       }
     }
 
-    m.addAll(blockStates);
-    _observationCache.putValueForObservation(observation,
-        EObservationCacheKey.BEST_BLOCK_STATES, m);
+    for (final Entry<BlockInstance, Collection<Double>> biEntry : instancesToDists.asMap().entrySet()) {
+      final BlockInstance instance = biEntry.getKey();
+      final int searchTimeFrom = (int) (timeFrom.getTime() - instance.getServiceDate()) / 1000;
+      final int searchTimeTo = (int) (timeTo.getTime() - instance.getServiceDate()) / 1000;
+
+      final Map<Map.Entry<BlockTripEntry, String>, Min<ScheduledBlockLocation>> tripToDists = Maps.newHashMap();
+
+      /*
+       * TODO could do some really easy improved traversing of these
+       * distances...
+       */
+      for (final Double distanceAlongBlock : biEntry.getValue()) {
+        final ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+            instance.getBlock(), distanceAlongBlock);
+        final int schedTime = location.getScheduledTime();
+
+        /*
+         * Should be increasing time for increasing distanceAlongBlock...
+         */
+        if (schedTime > searchTimeTo)
+          break;
+
+        if (!observation.getDscImpliedRouteCollections().contains(
+            location.getActiveTrip().getTrip().getRouteCollection().getId())
+            || schedTime < searchTimeFrom)
+          continue;
+
+        final BlockTripEntry activeTrip = location.getActiveTrip();
+
+        final Map.Entry<BlockTripEntry, String> tripDistEntry = Maps.immutableEntry(
+            activeTrip, activeTrip.getTrip().getDirectionId());
+
+        Min<ScheduledBlockLocation> thisMin = tripToDists.get(tripDistEntry);
+
+        if (thisMin == null) {
+          thisMin = new Min<ScheduledBlockLocation>();
+          tripToDists.put(tripDistEntry, thisMin);
+        }
+        final double dist = SphericalGeometryLibrary.distance(
+            observation.getLocation(), location.getLocation());
+        thisMin.add(dist, location);
+      }
+
+      for (final Min<ScheduledBlockLocation> thisMin : tripToDists.values()) {
+        final ScheduledBlockLocation location = thisMin.getMinElement();
+        final BlockTripEntry activeTrip = location.getActiveTrip();
+        final String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(activeTrip.getTrip().getId());
+        final RunTripEntry rte = _runService.getRunTripEntryForTripAndTime(
+            activeTrip.getTrip(), location.getScheduledTime());
+
+        final BlockState state = new BlockState(instance, location, rte, dsc);
+
+        final BlockLocationKey key = new BlockLocationKey(instance, 0,
+            Double.POSITIVE_INFINITY);
+        BestBlockStates currentStates = results.get(key);
+        if (currentStates == null) {
+          currentStates = new BestBlockStates(Sets.newHashSet(state));
+          results.put(key, currentStates);
+        } else {
+          currentStates.getAllStates().add(state);
+        }
+      }
+    }
+    return results;
   }
 
   private static class TripInfo {
@@ -672,7 +618,7 @@ public class BlockStateService {
 
   }
 
-  private Table<AgencyAndId, BlockConfigurationEntry, BlockTripEntry> _shapesAndBlockConfigsToBlockTrips;
+  private Multimap<Entry<AgencyAndId, BlockConfigurationEntry>, BlockTripEntry> _shapesAndBlockConfigsToBlockTrips;
 
   /**
    * 
@@ -682,44 +628,36 @@ public class BlockStateService {
   private void buildShapeSpatialIndex() throws IOException,
       ClassNotFoundException {
     try {
-      _shapesAndBlockConfigsToBlockTrips = HashBasedTable.create();
+      _shapesAndBlockConfigsToBlockTrips = HashMultimap.create();
+      _linesToTripInfo = HashMultimap.create();
       final Multimap<AgencyAndId, BlockEntry> allUniqueShapePoints = HashMultimap.create();
-  
+      final GeometryFactory gf = new GeometryFactory();
+      final Multimap<Envelope, LocationIndexedLine> envToLines = HashMultimap.create();
+
       _log.info("generating shapeId & blockConfig to block trips map...");
+      System.out.println("generating shapeId & blockConfig to block trips map...");
       for (final BlockEntry blockEntry : _transitGraphDao.getAllBlocks()) {
+        System.out.println(blockEntry.getId());
         for (final BlockConfigurationEntry blockConfig : blockEntry.getConfigurations()) {
           for (final BlockTripEntry blockTrip : blockConfig.getTrips()) {
             final TripEntry trip = blockTrip.getTrip();
             final AgencyAndId shapeId = trip.getShapeId();
             if (shapeId != null) {
-              _shapesAndBlockConfigsToBlockTrips.put(shapeId, blockConfig,
-                  blockTrip);
+              _shapesAndBlockConfigsToBlockTrips.put(
+                  Maps.immutableEntry(shapeId, blockConfig), blockTrip);
               allUniqueShapePoints.put(shapeId, blockEntry);
             }
           }
         }
       }
-      
-      _linesToTripInfo = HashMultimap.create();
-      final GeometryFactory gf = new GeometryFactory();
 
-
-      _log.info("creating location indexed trip-lines index...");
-      _log.info("trips=" + _transitGraphDao.getAllTrips().size());
-      for (final TripEntry trip : _transitGraphDao.getAllTrips()) {
-        final AgencyAndId shapeId = trip.getShapeId();
-        if (shapeId == null) {
-          continue;
-        }
-
-      }
-
-      final Multimap<ShapePoints, Entry<Envelope, LocationIndexedLine>> shapePointsToLines = HashMultimap.create();
       _log.info("\tshapePoints=" + allUniqueShapePoints.keySet().size());
       for (final Entry<AgencyAndId, Collection<BlockEntry>> shapePointsEntry : allUniqueShapePoints.asMap().entrySet()) {
-        
+
         final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapePointsEntry.getKey());
         if (shapePoints == null || shapePoints.isEmpty()) {
+          System.out.println("blocks with no shapes: "
+              + shapePointsEntry.getValue());
           continue;
         }
 
@@ -743,17 +681,15 @@ public class BlockStateService {
           _linesToTripInfo.put(line, new TripInfo(distanceFrom, distanceTo,
               blocks, new ShapeIdxAndId(shapePoints.getShapeId(), i)));
 
-          shapePointsToLines.put(shapePoints, Maps.immutableEntry(env, line));
+          envToLines.put(env, line);
         }
       }
 
-      if (shapePointsToLines.size() > 0) {
-        _log.info("\tshapePoint lines=" + shapePointsToLines.size());
-        _index = new STRtree(shapePointsToLines.size());
-        for (final Entry<ShapePoints, Collection<Entry<Envelope, LocationIndexedLine>>> shapePointsEntry : shapePointsToLines.asMap().entrySet()) {
-          for (final Entry<Envelope, LocationIndexedLine> envLine : shapePointsEntry.getValue()) {
-            _index.insert(envLine.getKey(), envLine.getValue());
-          }
+      if (envToLines.size() > 0) {
+        _log.info("\ttree size=" + envToLines.keySet().size());
+        _index = new STRtree(envToLines.keySet().size());
+        for (final Entry<Envelope, Collection<LocationIndexedLine>> envLines : envToLines.asMap().entrySet()) {
+          _index.insert(envLines.getKey(), envLines.getValue());
         }
       }
     } catch (final Exception ex) {

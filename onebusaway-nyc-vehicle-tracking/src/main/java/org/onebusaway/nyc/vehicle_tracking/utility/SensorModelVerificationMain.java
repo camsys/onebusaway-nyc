@@ -15,28 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.utility;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.ContainerLibrary;
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.csv_entities.ListEntityHandler;
@@ -59,16 +37,39 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 public class SensorModelVerificationMain {
 
@@ -90,7 +91,7 @@ public class SensorModelVerificationMain {
 
   private ScheduledBlockLocationService _scheduledBlockLocationService;
 
-  private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
+  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   private BaseLocationService _baseLocationService;
 
@@ -137,10 +138,10 @@ public class SensorModelVerificationMain {
   public static void main(String[] args) throws ParseException,
       ClassNotFoundException, CsvEntityIOException, IOException {
 
-    Options options = new Options();
+    final Options options = new Options();
     options.addOption(ARG_RULE, true, "sensor model rule class");
-    GnuParser parser = new GnuParser();
-    CommandLine cli = parser.parse(options, args);
+    final GnuParser parser = new GnuParser();
+    final CommandLine cli = parser.parse(options, args);
 
     args = cli.getArgs();
 
@@ -149,34 +150,34 @@ public class SensorModelVerificationMain {
       System.exit(-1);
     }
 
-    ConfigurableApplicationContext context = ContainerLibrary.createContext(
+    final ConfigurableApplicationContext context = ContainerLibrary.createContext(
         "classpath:org/onebusaway/nyc/vehicle_tracking/application-context.xml",
         "classpath:org/onebusaway/transit_data_federation/application-context.xml",
         args[0]);
 
-    SensorModelVerificationMain m = new SensorModelVerificationMain();
+    final SensorModelVerificationMain m = new SensorModelVerificationMain();
     context.getAutowireCapableBeanFactory().autowireBean(m);
 
     Collection<SensorModelRule> rules = Collections.emptyList();
 
     if (cli.hasOption(ARG_RULE)) {
-      Class<?> ruleClass = Class.forName(cli.getOptionValue(ARG_RULE));
+      final Class<?> ruleClass = Class.forName(cli.getOptionValue(ARG_RULE));
       rules = Arrays.asList((SensorModelRule) context.getBean(ruleClass));
     } else {
-      Map<String, SensorModelRule> rulesByName = context.getBeansOfType(SensorModelRule.class);
+      final Map<String, SensorModelRule> rulesByName = context.getBeansOfType(SensorModelRule.class);
       rules = rulesByName.values();
     }
 
     m.setRules(rules);
 
-    File tracePath = new File(args[1]);
-    List<File> traces = new ArrayList<File>();
+    final File tracePath = new File(args[1]);
+    final List<File> traces = new ArrayList<File>();
     getAllTraces(tracePath, traces);
     m.setTraces(traces);
 
     try {
       m.run();
-    } catch (Throwable ex) {
+    } catch (final Throwable ex) {
       ex.printStackTrace();
       System.exit(-1);
     }
@@ -194,34 +195,35 @@ public class SensorModelVerificationMain {
 
   public void run() throws CsvEntityIOException, IOException {
 
-    for (SensorModelRule rule : _rules) {
+    for (final SensorModelRule rule : _rules) {
 
       System.out.println(rule);
 
-      for (File trace : _traces) {
+      for (final File trace : _traces) {
 
         System.out.println(trace);
 
-        List<NycTestInferredLocationRecord> records = readRecords(trace);
+        final List<NycTestInferredLocationRecord> records = readRecords(trace);
 
         VehicleState prevState = null;
         Observation prevObs = null;
 
         int index = 1;
 
-        for (NycTestInferredLocationRecord record : records) {
+        for (final NycTestInferredLocationRecord record : records) {
           try {
-            Observation obs = getRecordAsObservation(record, prevObs);
-            VehicleState state = getRecordAsVehicleState(record, prevState, obs);
+            final Observation obs = getRecordAsObservation(record, prevObs);
+            final VehicleState state = getRecordAsVehicleState(record,
+                prevState, obs);
 
-            Context context = new Context(prevState, state, obs);
-            SensorModelResult result = rule.likelihood(
+            final Context context = new Context(prevState, state, obs);
+            final SensorModelResult result = rule.likelihood(
                 _sensorModelSupportLibrary, context);
 
-            double p = result.getProbability();
+            final double p = result.getProbability();
 
             if (p <= 0.1) {
-              String label = _format.format(p);
+              final String label = _format.format(p);
               System.out.println(label + " " + index);
 
               rule.likelihood(_sensorModelSupportLibrary, context);
@@ -231,7 +233,7 @@ public class SensorModelVerificationMain {
             prevState = state;
             index++;
 
-          } catch (Throwable ex) {
+          } catch (final Throwable ex) {
             throw new IllegalStateException("problem with " + trace.getName()
                 + " line " + index, ex);
           }
@@ -243,10 +245,10 @@ public class SensorModelVerificationMain {
 
   private static void getAllTraces(File tracePath, List<File> traces) {
     if (tracePath.isDirectory()) {
-      for (File child : tracePath.listFiles())
+      for (final File child : tracePath.listFiles())
         getAllTraces(child, traces);
     } else {
-      String name = tracePath.getName();
+      final String name = tracePath.getName();
       if (name.endsWith(".csv.gz") || name.endsWith(".csv")) {
         traces.add(tracePath);
       }
@@ -260,9 +262,9 @@ public class SensorModelVerificationMain {
     if (path.getName().endsWith(".gz"))
       in = new GZIPInputStream(in);
 
-    CsvEntityReader reader = new CsvEntityReader();
+    final CsvEntityReader reader = new CsvEntityReader();
 
-    ListEntityHandler<NycTestInferredLocationRecord> handler = new ListEntityHandler<NycTestInferredLocationRecord>();
+    final ListEntityHandler<NycTestInferredLocationRecord> handler = new ListEntityHandler<NycTestInferredLocationRecord>();
     reader.addEntityHandler(handler);
 
     reader.readEntities(NycTestInferredLocationRecord.class, in);
@@ -275,7 +277,7 @@ public class SensorModelVerificationMain {
   private Observation getRecordAsObservation(
       NycTestInferredLocationRecord record, Observation prevObs) {
 
-    String dsc = record.getDsc();
+    final String dsc = record.getDsc();
     String lastValidDestinationSignCode = null;
 
     if (dsc != null && !_dscService.isMissingDestinationSignCode(dsc)) {
@@ -292,7 +294,7 @@ public class SensorModelVerificationMain {
       routeIds = prevObs.getDscImpliedRouteCollections();
     }
 
-    NycRawLocationRecord r = new NycRawLocationRecord();
+    final NycRawLocationRecord r = new NycRawLocationRecord();
     r.setBearing(0);
     r.setDestinationSignCode(record.getDsc());
     r.setLatitude(record.getLat());
@@ -301,7 +303,7 @@ public class SensorModelVerificationMain {
     r.setTimeReceived(record.getTimestamp());
     r.setVehicleId(record.getVehicleId());
     r.setOperatorId(record.getOperatorId());
-    String[] runInfo = StringUtils.splitByWholeSeparator(
+    final String[] runInfo = StringUtils.splitByWholeSeparator(
         record.getReportedRunId(), "-");
     if (runInfo != null && runInfo.length > 0) {
       r.setRunRouteId(runInfo[0]);
@@ -309,12 +311,12 @@ public class SensorModelVerificationMain {
         r.setRunNumber(runInfo[1]);
     }
 
-    CoordinatePoint location = new CoordinatePoint(record.getLat(),
+    final CoordinatePoint location = new CoordinatePoint(record.getLat(),
         record.getLon());
 
-    boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
-    boolean atTerminal = _baseLocationService.getTerminalNameForLocation(location) != null;
-    boolean outOfService = lastValidDestinationSignCode == null
+    final boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
+    final boolean atTerminal = _baseLocationService.getTerminalNameForLocation(location) != null;
+    final boolean outOfService = lastValidDestinationSignCode == null
         || _dscService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)
         || _dscService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
@@ -351,32 +353,32 @@ public class SensorModelVerificationMain {
   private BlockState createBlockState(NycTestInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
 
-    String blockId = record.getActualBlockId();
+    final String blockId = record.getActualBlockId();
 
     if (blockId == null)
       return null;
 
-    long serviceDate = record.getActualServiceDate();
+    final long serviceDate = record.getActualServiceDate();
 
-    AgencyAndId bid = AgencyAndIdLibrary.convertFromString(blockId);
+    final AgencyAndId bid = AgencyAndIdLibrary.convertFromString(blockId);
 
-    BlockInstance blockInstance = _blockCalendarService.getBlockInstance(bid,
-        serviceDate);
+    final BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
+        bid, serviceDate);
 
     if (blockInstance == null)
       throw new IllegalStateException("bad");
 
-    double d = record.getActualDistanceAlongBlock();
+    final double d = record.getActualDistanceAlongBlock();
 
-    ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
+    final ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
         blockInstance.getBlock(), d);
 
-    Date today = new Date();
-    Calendar cal = Calendar.getInstance();
+    final Date today = new Date();
+    final Calendar cal = Calendar.getInstance();
     cal.setTime(today);
     cal.set(Calendar.DATE, 0);
-    int scheduleTime = (int) (cal.getTimeInMillis() / 1000);
-    RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(
+    final int scheduleTime = (int) (cal.getTimeInMillis() / 1000);
+    final RunTripEntry rte = _runService.getActiveRunTripEntryForBlockInstance(
         blockInstance, scheduleTime);
     return new BlockState(blockInstance, location, rte,
         obs.getLastValidDestinationSignCode());
@@ -384,9 +386,9 @@ public class SensorModelVerificationMain {
 
   private JourneyState createJourneyState(NycTestInferredLocationRecord record,
       VehicleState prevState, Observation obs) {
-    String phase = record.getActualPhase();
-    JourneyState journeyState = getTransitionJourneyStates(prevState, obs,
-        EVehiclePhase.valueOf(phase));
+    final String phase = record.getActualPhase();
+    final JourneyState journeyState = getTransitionJourneyStates(prevState,
+        obs, EVehiclePhase.valueOf(phase));
     return journeyState;
   }
 
@@ -419,10 +421,10 @@ public class SensorModelVerificationMain {
       Observation obs) {
     if (parentState == null)
       return obs.getLocation();
-    JourneyState js = parentState.getJourneyState();
+    final JourneyState js = parentState.getJourneyState();
     if (js == null)
       return obs.getLocation();
-    JourneyStartState start = js.getData();
+    final JourneyStartState start = js.getData();
     if (start == null)
       return obs.getLocation();
     return start.getJourneyStart();

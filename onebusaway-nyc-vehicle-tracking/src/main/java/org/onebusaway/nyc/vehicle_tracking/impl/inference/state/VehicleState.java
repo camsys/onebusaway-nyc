@@ -15,11 +15,12 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
-import java.util.List;
-
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
+
+import java.util.List;
 
 /**
  * We make this class immutable so that we don't have to worry about particle
@@ -104,24 +105,23 @@ public final class VehicleState implements Comparable<VehicleState> {
     if (this == rightState)
       return 0;
 
-    int compRes = ComparisonChain.start()
-        .compare(this.motionState, rightState.getMotionState())
-        .compare(this.observation, rightState.getObservation())
-        .compare(this.journeyState.getPhase(), rightState.getJourneyState().getPhase())
-        .compare(this.blockStateObservation, rightState.getBlockStateObservation(), 
-            Ordering.natural().nullsLast())
-        .result();
+    final int compRes = ComparisonChain.start().compare(
+        this.journeyState.getPhase(), rightState.getJourneyState().getPhase()).compare(
+        this.blockStateObservation, rightState.getBlockStateObservation(),
+        Ordering.natural().nullsLast()).compare(this.motionState,
+        rightState.getMotionState()).compare(this.observation,
+        rightState.getObservation()).result();
 
     return compRes;
   }
 
   private int _hash = 0;
-  
+
   @Override
   public int hashCode() {
     if (_hash != 0)
       return _hash;
-    
+
     final int prime = 31;
     int result = 1;
     result = prime
@@ -149,7 +149,7 @@ public final class VehicleState implements Comparable<VehicleState> {
       return false;
     if (!(obj instanceof VehicleState))
       return false;
-    VehicleState other = (VehicleState) obj;
+    final VehicleState other = (VehicleState) obj;
     if (blockStateObservation == null) {
       if (other.blockStateObservation != null)
         return false;

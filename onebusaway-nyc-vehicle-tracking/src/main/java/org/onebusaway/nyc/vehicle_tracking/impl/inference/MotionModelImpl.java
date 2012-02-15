@@ -15,13 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -32,6 +25,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import com.google.common.collect.Multimap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Motion model implementation for vehicle location inference. Determine if the
@@ -67,14 +64,14 @@ public class MotionModelImpl implements MotionModel<Observation> {
       Observation obs, Collection<Particle> results,
       Multimap<VehicleState, VehicleState> cache) {
 
-    VehicleState parentState = parent.getData();
-    MotionState motionState = updateMotionState(parentState, obs);
+    final VehicleState parentState = parent.getData();
+    final MotionState motionState = updateMotionState(parentState, obs);
 
-    Collection<VehicleState> vehicleStates = cache.get(parentState);
+    final Collection<VehicleState> vehicleStates = cache.get(parentState);
 
     if (vehicleStates.isEmpty()) {
       _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
-      for (VehicleState vs : vehicleStates)
+      for (final VehicleState vs : vehicleStates)
         results.add(new Particle(timestamp, parent, 1.0, vs));
     }
 
@@ -84,14 +81,14 @@ public class MotionModelImpl implements MotionModel<Observation> {
   public void move(Particle parent, double timestamp, double timeElapsed,
       Observation obs, Collection<Particle> results) {
 
-    VehicleState parentState = parent.getData();
+    final VehicleState parentState = parent.getData();
 
-    MotionState motionState = updateMotionState(parentState, obs);
+    final MotionState motionState = updateMotionState(parentState, obs);
 
-    List<VehicleState> vehicleStates = new ArrayList<VehicleState>();
+    final List<VehicleState> vehicleStates = new ArrayList<VehicleState>();
     _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
 
-    for (VehicleState vs : vehicleStates)
+    for (final VehicleState vs : vehicleStates)
       results.add(new Particle(timestamp, parent, 1.0, vs));
   }
 
@@ -106,9 +103,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     if (parentState != null) {
 
-      MotionState motionState = parentState.getMotionState();
+      final MotionState motionState = parentState.getMotionState();
 
-      double d = SphericalGeometryLibrary.distance(
+      final double d = SphericalGeometryLibrary.distance(
           motionState.getLastInMotionLocation(), obs.getLocation());
 
       if (d <= _motionThreshold) {

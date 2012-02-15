@@ -15,10 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.simulator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
@@ -27,6 +23,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
+
+import java.util.List;
 
 public class VehicleLocationDetails {
 

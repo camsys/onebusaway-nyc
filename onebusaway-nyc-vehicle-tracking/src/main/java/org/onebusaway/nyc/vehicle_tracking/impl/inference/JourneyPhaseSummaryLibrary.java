@@ -15,22 +15,23 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary.Builder;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary.Builder;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JourneyPhaseSummaryLibrary {
@@ -44,21 +45,21 @@ public class JourneyPhaseSummaryLibrary {
     if (parentState != null)
       parentSummaries = parentState.getJourneySummaries();
 
-    List<JourneyPhaseSummary> summaries = new ArrayList<JourneyPhaseSummary>(
+    final List<JourneyPhaseSummary> summaries = new ArrayList<JourneyPhaseSummary>(
         parentSummaries);
 
     if (summaries.isEmpty()) {
-      JourneyPhaseSummary summary = createJourneySummary(
+      final JourneyPhaseSummary summary = createJourneySummary(
           blockState.getBlockState(), journeyState, observation);
       summaries.add(summary);
     } else {
-      JourneyPhaseSummary previous = summaries.get(summaries.size() - 1);
-      JourneyPhaseSummary merged = createMergedJourneySummary(
+      final JourneyPhaseSummary previous = summaries.get(summaries.size() - 1);
+      final JourneyPhaseSummary merged = createMergedJourneySummary(
           blockState.getBlockState(), journeyState, observation, previous);
       if (merged != null) {
         summaries.set(summaries.size() - 1, merged);
       } else {
-        JourneyPhaseSummary summary = createJourneySummary(
+        final JourneyPhaseSummary summary = createJourneySummary(
             blockState.getBlockState(), journeyState, observation);
         summaries.add(summary);
       }
@@ -72,7 +73,7 @@ public class JourneyPhaseSummaryLibrary {
     if (summaries.isEmpty())
       return null;
 
-    JourneyPhaseSummary summary = summaries.get(summaries.size() - 1);
+    final JourneyPhaseSummary summary = summaries.get(summaries.size() - 1);
 
     if (!EVehiclePhase.isActiveDuringBlock(summary.getPhase()))
       return null;
@@ -83,10 +84,10 @@ public class JourneyPhaseSummaryLibrary {
   public JourneyPhaseSummary getPreviousBlock(
       List<JourneyPhaseSummary> summaries, JourneyPhaseSummary currentBlock) {
 
-    BlockInstance blockInstance = currentBlock.getBlockInstance();
+    final BlockInstance blockInstance = currentBlock.getBlockInstance();
 
     for (int i = summaries.size() - 1; i >= 0; i--) {
-      JourneyPhaseSummary summary = summaries.get(i);
+      final JourneyPhaseSummary summary = summaries.get(i);
       if (summary.getBlockInstance() != null
           && !summary.getBlockInstance().equals(blockInstance))
         return mergeBackwardsSummariesWithSameBlock(summaries, i);
@@ -102,16 +103,16 @@ public class JourneyPhaseSummaryLibrary {
   private JourneyPhaseSummary createJourneySummary(BlockState blockState,
       JourneyState journeyState, Observation obs) {
 
-    Builder b = JourneyPhaseSummary.builder();
+    final Builder b = JourneyPhaseSummary.builder();
     b.setTimeFrom(obs.getTime());
     b.setTimeTo(obs.getTime());
     b.setPhase(journeyState.getPhase());
 
     if (blockState != null) {
-      BlockInstance blockInstance = blockState.getBlockInstance();
+      final BlockInstance blockInstance = blockState.getBlockInstance();
       b.setBlockInstance(blockInstance);
 
-      double blockCompletionRatio = getBlockCompletionRatio(blockState);
+      final double blockCompletionRatio = getBlockCompletionRatio(blockState);
 
       b.setBlockCompletionRatioFrom(blockCompletionRatio);
       b.setBlockCompletionRatioTo(blockCompletionRatio);
@@ -133,11 +134,11 @@ public class JourneyPhaseSummaryLibrary {
     if (!ObjectUtils.equals(previous.getBlockInstance(), blockInstance))
       return null;
 
-    Builder b = JourneyPhaseSummary.builder(previous);
+    final Builder b = JourneyPhaseSummary.builder(previous);
     b.setTimeTo(obs.getTime());
 
     if (blockState != null) {
-      double blockCompletionRatio = getBlockCompletionRatio(blockState);
+      final double blockCompletionRatio = getBlockCompletionRatio(blockState);
       b.setBlockCompletionRatioTo(blockCompletionRatio);
     }
 
@@ -146,9 +147,9 @@ public class JourneyPhaseSummaryLibrary {
 
   private double getBlockCompletionRatio(BlockState blockState) {
 
-    BlockInstance blockInstance = blockState.getBlockInstance();
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-    BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+    final BlockInstance blockInstance = blockState.getBlockInstance();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
 
     return blockLocation.getDistanceAlongBlock()
         / blockConfig.getTotalBlockDistance();
@@ -157,11 +158,11 @@ public class JourneyPhaseSummaryLibrary {
   private JourneyPhaseSummary mergeBackwardsSummariesWithSameBlock(
       List<JourneyPhaseSummary> summaries, int indexFrom) {
 
-    JourneyPhaseSummary summary = summaries.get(indexFrom);
-    Builder b = JourneyPhaseSummary.builder(summary);
+    final JourneyPhaseSummary summary = summaries.get(indexFrom);
+    final Builder b = JourneyPhaseSummary.builder(summary);
 
     for (int i = indexFrom - 1; i >= 0; i--) {
-      JourneyPhaseSummary prev = summaries.get(i);
+      final JourneyPhaseSummary prev = summaries.get(i);
       if (!ObjectUtils.equals(summary.getBlockInstance(),
           prev.getBlockInstance()))
         break;

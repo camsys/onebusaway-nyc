@@ -15,31 +15,31 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Date;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.TimerTask;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.MappingJsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
+
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.MappingJsonFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-
 import org.zeromq.ZMQ;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Date;
+import java.util.TimerTask;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
@@ -53,10 +53,10 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
   private ExecutorService _heartbeatService = null;
 
-  private ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(
+  private final ArrayBlockingQueue<String> _outputBuffer = new ArrayBlockingQueue<String>(
       100);
 
-  private ArrayBlockingQueue<String> _heartbeatBuffer = new ArrayBlockingQueue<String>(
+  private final ArrayBlockingQueue<String> _heartbeatBuffer = new ArrayBlockingQueue<String>(
       10);
 
   private boolean _initialized = false;
@@ -65,7 +65,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
   public String _primaryHostname = null;
 
-  private ObjectMapper _mapper = new ObjectMapper();
+  private final ObjectMapper _mapper = new ObjectMapper();
 
   protected DNSResolver _outputQueueResolver = null;
 
@@ -99,7 +99,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
     @Override
     public void run() {
       while (!Thread.currentThread().isInterrupted()) {
-        String h = _heartbeatBuffer.poll();
+        final String h = _heartbeatBuffer.poll();
         if (h != null) {
           if (_isPrimaryInferenceInstance) {
             _zmqSocket.send(HEARTBEAT_TOPIC.getBytes(), ZMQ.SNDMORE);
@@ -108,7 +108,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
           }
         }
 
-        String r = _outputBuffer.poll();
+        final String r = _outputBuffer.poll();
         if (r == null)
           continue;
 
@@ -136,11 +136,11 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
   private class HeartbeatThread implements Runnable {
 
-    private ZMQ.Socket _zmqSocket = null;
+    private final ZMQ.Socket _zmqSocket = null;
 
-    private byte[] _topicName = null;
+    private final byte[] _topicName = null;
 
-    private long _interval;
+    private final long _interval;
 
     public HeartbeatThread(long interval) {
       _interval = interval;
@@ -151,15 +151,15 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
       try {
         while (!Thread.currentThread().isInterrupted()) {
-          long markTimestamp = System.currentTimeMillis();
+          final long markTimestamp = System.currentTimeMillis();
           if (_isPrimaryInferenceInstance) {
-            String msg = getHeartbeatMessage(getPrimaryHostname(),
+            final String msg = getHeartbeatMessage(getPrimaryHostname(),
                 markTimestamp, _interval);
             _heartbeatBuffer.put(msg);
           }
           Thread.sleep(_interval);
         }
-      } catch (InterruptedException ie) {
+      } catch (final InterruptedException ie) {
         _log.error(ie.toString());
       }
     }
@@ -180,7 +180,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
           _log.warn("Resolver Changed");
           reinitializeQueue();
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         _log.error(e.toString());
         _outputQueueResolver.reset();
       }
@@ -192,12 +192,12 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
     @Override
     public void run() {
       try {
-        boolean primaryValue = _primaryResolver.isPrimary();
+        final boolean primaryValue = _primaryResolver.isPrimary();
         if (primaryValue != _isPrimaryInferenceInstance) {
           _log.warn("Primary inference status changed to " + primaryValue);
           _isPrimaryInferenceInstance = primaryValue;
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         _log.error(e.toString());
       }
     }
@@ -206,17 +206,17 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
   @Override
   public void enqueue(NycQueuedInferredLocationBean r) {
     try {
-      StringWriter sw = new StringWriter();
-      MappingJsonFactory jsonFactory = new MappingJsonFactory();
-      JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
+      final StringWriter sw = new StringWriter();
+      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
+      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       _mapper.writeValue(jsonGenerator, r);
       sw.close();
 
       _outputBuffer.put(sw.toString());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       _log.info("Could not serialize inferred location record: "
           + e.getMessage());
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       // discard if thread is interrupted or serialization fails
       return;
     }
@@ -225,7 +225,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
   @PostConstruct
   public void setup() {
     _outputQueueResolver = new DNSResolver(getQueueHost());
-    OutputQueueCheckThread outputQueueCheckThread = new OutputQueueCheckThread();
+    final OutputQueueCheckThread outputQueueCheckThread = new OutputQueueCheckThread();
     // every 10 seconds
     _taskScheduler.scheduleWithFixedDelay(outputQueueCheckThread, 10 * 1000);
 
@@ -234,7 +234,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
       _log.warn("Primary Inference instance configured to be "
           + getPrimaryHostname() + " on "
           + _primaryResolver.getLocalHostString());
-      PrimaryCheckThread primaryCheckThread = new PrimaryCheckThread();
+      final PrimaryCheckThread primaryCheckThread = new PrimaryCheckThread();
       _taskScheduler.scheduleWithFixedDelay(primaryCheckThread, 10 * 1000);
     }
     _executorService = Executors.newFixedThreadPool(1);
@@ -257,9 +257,9 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
       return;
     }
 
-    String host = getQueueHost();
-    String queueName = getQueueName();
-    Integer port = getQueuePort();
+    final String host = getQueueHost();
+    final String queueName = getQueueName();
+    final Integer port = getQueuePort();
 
     if (host == null || queueName == null || port == null) {
       _log.info("Inference output queue is not attached; output hostname was not available via configuration service.");
@@ -268,7 +268,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
     try {
       initializeQueue(host, queueName, port);
-    } catch (Exception any) {
+    } catch (final Exception any) {
       _outputQueueResolver.reset();
     }
 
@@ -277,14 +277,14 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
   protected void reinitializeQueue() {
     try {
       initializeQueue(getQueueHost(), getQueueName(), getQueuePort());
-    } catch (InterruptedException ie) {
+    } catch (final InterruptedException ie) {
       return;
     }
   }
 
   protected synchronized void initializeQueue(String host, String queueName,
       Integer port) throws InterruptedException {
-    String bind = "tcp://" + host + ":" + port;
+    final String bind = "tcp://" + host + ":" + port;
     _log.warn("binding to " + bind);
     if (_context == null) {
       _context = ZMQ.context(1);

@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model;
 
-import java.util.Date;
-
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
@@ -24,6 +22,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFact
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
+
+import java.util.Date;
 
 public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
 
@@ -296,7 +296,7 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     if (!(obj instanceof NycRawLocationRecord)) {
       return false;
     }
-    NycRawLocationRecord other = (NycRawLocationRecord) obj;
+    final NycRawLocationRecord other = (NycRawLocationRecord) obj;
     if (time != other.time) {
       return false;
     }
@@ -399,21 +399,20 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     if (this == arg0)
       return 0;
 
-    int res = ComparisonChain.start().compare(uuid, arg0.uuid,
-        Ordering.natural().nullsLast()).compare(speed, arg0.speed).compare(
+    final int res = ComparisonChain.start().compare(vehicleId, arg0.vehicleId,
+        Ordering.natural().nullsLast()).compare(time, arg0.time).compare(
+        timeReceived, arg0.timeReceived).compare(latitude, arg0.latitude).compare(
+        longitude, arg0.longitude).compare(destinationSignCode,
+        arg0.destinationSignCode, Ordering.natural().nullsLast()).compare(
         runRouteId, arg0.runRouteId, Ordering.natural().nullsLast()).compare(
         runNumber, arg0.runNumber, Ordering.natural().nullsLast()).compare(rmc,
         arg0.rmc, Ordering.natural().nullsLast()).compare(rawData,
         arg0.rawData, Ordering.natural().nullsLast()).compare(operatorId,
         arg0.operatorId, Ordering.natural().nullsLast()).compare(id, arg0.id).compare(
         gga, arg0.gga, Ordering.natural().nullsLast()).compare(emergencyFlag,
-        arg0.emergencyFlag).compare(deviceId, arg0.deviceId,
-        Ordering.natural().nullsLast()).compare(destinationSignCode,
-        arg0.destinationSignCode, Ordering.natural().nullsLast()).compare(
-        bearing, arg0.bearing).compare(longitude, arg0.longitude).compare(
-        latitude, arg0.latitude).compare(vehicleId, arg0.vehicleId,
-        Ordering.natural().nullsLast()).compare(timeReceived, arg0.timeReceived).compare(
-        time, arg0.time).result();
+        arg0.emergencyFlag).compare(bearing, arg0.bearing).compare(deviceId,
+        arg0.deviceId, Ordering.natural().nullsLast()).compare(uuid, arg0.uuid,
+        Ordering.natural().nullsLast()).compare(speed, arg0.speed).result();
 
     return res;
   }

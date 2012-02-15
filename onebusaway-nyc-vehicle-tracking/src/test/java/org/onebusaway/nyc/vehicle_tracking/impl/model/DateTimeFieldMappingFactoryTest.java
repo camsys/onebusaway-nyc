@@ -17,36 +17,36 @@ package org.onebusaway.nyc.vehicle_tracking.impl.model;
 
 import static org.junit.Assert.assertEquals;
 
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Test;
-
 import org.onebusaway.csv_entities.schema.BeanWrapper;
 import org.onebusaway.csv_entities.schema.BeanWrapperFactory;
 import org.onebusaway.csv_entities.schema.FieldMapping;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
+import org.junit.Test;
+
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class DateTimeFieldMappingFactoryTest {
 
   @Test
   public void test() throws ParseException {
 
-    DateTimeFieldMappingFactory factory = new DateTimeFieldMappingFactory();
-    FieldMapping mapping = factory.createFieldMapping(null,
+    final DateTimeFieldMappingFactory factory = new DateTimeFieldMappingFactory();
+    final FieldMapping mapping = factory.createFieldMapping(null,
         NycTestInferredLocationRecord.class, "dt", "timestamp", Long.class,
         true);
 
-    NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
+    final NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
     record.setTimestamp(1284377940000L);
-    BeanWrapper obj = BeanWrapperFactory.wrap(record);
-    Map<String, Object> csvValues = new HashMap<String, Object>();
+    final BeanWrapper obj = BeanWrapperFactory.wrap(record);
+    final Map<String, Object> csvValues = new HashMap<String, Object>();
 
     mapping.translateFromObjectToCSV(null, obj, csvValues);
 
-    Object value = csvValues.get("dt");
+    final Object value = csvValues.get("dt");
     assertEquals("2010-09-13 07:39:00", value);
   }
 }

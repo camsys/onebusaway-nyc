@@ -15,10 +15,10 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.disabled;
 
-import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.*;
+import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.implies;
+import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
@@ -32,11 +32,8 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ExecutionException;
-
-//@Component
+// @Component
 public class BlockRule implements SensorModelRule {
 
   BlockStateService _blockStateService;
@@ -50,22 +47,22 @@ public class BlockRule implements SensorModelRule {
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState parentState = context.getParentState();
-    VehicleState state = context.getState();
-    Observation obs = context.getObservation();
+    final VehicleState parentState = context.getParentState();
+    final VehicleState state = context.getState();
+    final Observation obs = context.getObservation();
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
 
-    SensorModelResult result = new SensorModelResult("pBlock");
+    final SensorModelResult result = new SensorModelResult("pBlock");
 
-    boolean activeDuringBlock = EVehiclePhase.isActiveDuringBlock(phase);
+    final boolean activeDuringBlock = EVehiclePhase.isActiveDuringBlock(phase);
 
     /**
      * Rule: active during block => block assigned
      */
-    double pBlockAssignedWhenActiveDuring = implies(p(activeDuringBlock),
+    final double pBlockAssignedWhenActiveDuring = implies(p(activeDuringBlock),
         p(blockState != null));
     result.addResultAsAnd("active during block => block assigned",
         pBlockAssignedWhenActiveDuring);
@@ -99,7 +96,7 @@ public class BlockRule implements SensorModelRule {
     double pNoReverseTravel = 1.0;
 
     if (parentState != null && blockState != null && activeDuringBlock) {
-      BlockState parentBlockState = parentState.getBlockState() != null
+      final BlockState parentBlockState = parentState.getBlockState() != null
           ? parentState.getBlockState() : null;
       /*
        * if we don't have a previous state with which to determine direction,
@@ -108,20 +105,18 @@ public class BlockRule implements SensorModelRule {
        */
       if (parentBlockState == null && parentState.getObservation() != null) {
         try {
-          BestBlockStates parentBlockStates = _blockStateService.getBestBlockLocations(
+          _blockStateService.getBestBlockLocations(
               parentState.getObservation(), blockState.getBlockInstance(), 0,
               Double.POSITIVE_INFINITY);
-//          if (parentBlockStates != null)
-//            parentBlockState = parentBlockStates.getBestLocation();
-        } catch (MissingShapePointsException e) {
+        } catch (final MissingShapePointsException e) {
         }
       }
 
       if (parentBlockState != null
           && parentBlockState.getBlockInstance().equals(
               blockState.getBlockInstance())) {
-        ScheduledBlockLocation parentLocation = parentBlockState.getBlockLocation();
-        ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+        final ScheduledBlockLocation parentLocation = parentBlockState.getBlockLocation();
+        final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
         if (blockLocation.getDistanceAlongBlock() + 20 < parentLocation.getDistanceAlongBlock())
           pNoReverseTravel = 0.05;
       }

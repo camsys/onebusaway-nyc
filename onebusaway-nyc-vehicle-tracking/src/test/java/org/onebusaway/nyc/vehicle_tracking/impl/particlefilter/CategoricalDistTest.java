@@ -16,29 +16,31 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+
 import org.onebusaway.collections.Counter;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+
+import org.junit.Test;
 
 public class CategoricalDistTest {
 
   @Test
   public void testSampleA() {
 
-    CategoricalDist<String> cdf = new CategoricalDist<String>();
+    final CategoricalDist<String> cdf = new CategoricalDist<String>();
     cdf.put(0.1, "a");
     cdf.put(0.2, "b");
     cdf.put(0.3, "c");
 
-    Counter<String> counter = new Counter<String>();
-    double iterations = 1000;
+    final Counter<String> counter = new Counter<String>();
+    final double iterations = 1000;
 
     for (int i = 0; i < iterations; i++)
       counter.increment(cdf.sample());
 
-    double a = counter.getCount("a") / iterations;
-    double b = counter.getCount("b") / iterations;
-    double c = counter.getCount("c") / iterations;
+    final double a = counter.getCount("a") / iterations;
+    final double b = counter.getCount("b") / iterations;
+    final double c = counter.getCount("c") / iterations;
 
     assertEquals(a, 0.1 / 0.6, .05);
     assertEquals(b, 0.2 / 0.6, .05);

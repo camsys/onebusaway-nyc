@@ -53,7 +53,6 @@ public interface MotionModel<OBS> {
    * @param results
    * @param cache
    */
-  void move(Particle parent, double timestamp, double timeElapsed,
-      OBS obs, Collection<Particle> results,
-      Multimap<VehicleState, VehicleState> cache);
+  void move(Particle parent, double timestamp, double timeElapsed, OBS obs,
+      Collection<Particle> results, Multimap<VehicleState, VehicleState> cache);
 }

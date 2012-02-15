@@ -28,8 +28,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * If we get far enough off route, we should go out of service. The problem is
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * @author bdferris
  * 
  */
-//@Component
+// @Component
 public class OffRouteRule implements SensorModelRule {
 
   private VehicleStateLibrary _vehicleStateLibrary;
@@ -52,26 +52,26 @@ public class OffRouteRule implements SensorModelRule {
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState parentState = context.getParentState();
-    VehicleState state = context.getState();
-    Observation obs = context.getObservation();
+    final VehicleState parentState = context.getParentState();
+    final VehicleState state = context.getState();
+    final Observation obs = context.getObservation();
 
     if (parentState == null)
       return new SensorModelResult("pOffRoute (n/a)");
 
-    BlockState parentBlockState = parentState.getBlockState();
+    final BlockState parentBlockState = parentState.getBlockState();
 
     if (parentBlockState == null)
       return new SensorModelResult("pOffRoute (n/a)");
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
 
-    boolean offRoute = _vehicleStateLibrary.isOffBlock(
+    final boolean offRoute = _vehicleStateLibrary.isOffBlock(
         obs.getPreviousObservation(), parentBlockState);
-    boolean outOfService = EVehiclePhase.isActiveBeforeBlock(phase);
+    final boolean outOfService = EVehiclePhase.isActiveBeforeBlock(phase);
 
-    double pOffRoute = implies(p(offRoute), p(outOfService));
+    final double pOffRoute = implies(p(offRoute), p(outOfService));
 
     return new SensorModelResult("pOffRoute", pOffRoute);
   }

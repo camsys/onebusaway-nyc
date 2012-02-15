@@ -15,9 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
@@ -31,6 +28,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Create particles from an observation.
@@ -54,7 +55,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private int _initialNumberOfParticles = 200;
 
-  private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
+  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
@@ -140,11 +141,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     // CDFMap<EdgeState> cdf =
     // _edgeStateLibrary.calculatePotentialEdgeStates(point);
 
-    CategoricalDist<BlockStateObservation> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
+    final CategoricalDist<BlockStateObservation> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
 
-    CategoricalDist<BlockStateObservation> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+    final CategoricalDist<BlockStateObservation> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
 
-    List<Particle> particles = new ArrayList<Particle>(
+    final List<Particle> particles = new ArrayList<Particle>(
         _initialNumberOfParticles);
 
     if (atStartCdf.isEmpty() && inProgresCdf.isEmpty())
@@ -152,12 +153,12 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     for (int i = 0; i < _initialNumberOfParticles; i++) {
 
-      MotionState motionState = _motionModel.updateMotionState(obs);
+      final MotionState motionState = _motionModel.updateMotionState(obs);
 
-      VehicleState state = determineJourneyState(motionState, atStartCdf,
+      final VehicleState state = determineJourneyState(motionState, atStartCdf,
           inProgresCdf, obs);
 
-      Particle p = new Particle(timestamp);
+      final Particle p = new Particle(timestamp);
       p.setData(state);
       particles.add(p);
     }
@@ -182,7 +183,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     // At this point, we could be dead heading before a block or actually on a
     // block in progress. We slightly favor blocks already in progress
-    double progressSwitch = threadLocalRng.get().nextDouble();
+    final double progressSwitch = threadLocalRng.get().nextDouble();
     if (progressSwitch < 0.75) {
 
       // No blocks? Jump to the deadhead-before state

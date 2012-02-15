@@ -18,8 +18,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.disabled;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
@@ -33,12 +31,11 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-//@Component
+// @Component
 public class InProgressRule implements SensorModelRule {
 
-  private DeviationModel _nearbyTripSigma = new DeviationModel(50.0);
+  private final DeviationModel _nearbyTripSigma = new DeviationModel(50.0);
 
   BlockStateService _blockStateService;
 
@@ -51,61 +48,60 @@ public class InProgressRule implements SensorModelRule {
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState parentState = context.getParentState();
-    VehicleState state = context.getState();
-    Observation obs = context.getObservation();
+    final VehicleState parentState = context.getParentState();
+    final VehicleState state = context.getState();
+    final Observation obs = context.getObservation();
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
-    BlockState blockState = state.getBlockState();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
 
     /**
      * Basically, we say that in-progress states correspond more to nearby trips
      * and good block locations. As well, we're informed of the likelihood of
      * not-in-progress states, by way of having more of the opposite properties.
      */
-    
+
     /*
-     * When we have no block-state, we use the best state with a 
-     * route that matches the observations DSC-implied route, if any.
+     * When we have no block-state, we use the best state with a route that
+     * matches the observations DSC-implied route, if any.
      */
-    if (blockState == null
-        || phase == EVehiclePhase.DEADHEAD_BEFORE) {
-//      BestBlockStates bestStates = _blockStateService.getBestBlockStateForRoute(obs);
-//      if (bestStates != null)
-//        blockState = bestStates.getBestLocation();
+    if (blockState == null || phase == EVehiclePhase.DEADHEAD_BEFORE) {
+      // BestBlockStates bestStates =
+      // _blockStateService.getBestBlockStateForRoute(obs);
+      // if (bestStates != null)
+      // blockState = bestStates.getBestLocation();
     }
-    
+
     if (!(phase == EVehiclePhase.IN_PROGRESS
-        || phase == EVehiclePhase.DEADHEAD_BEFORE 
-        || phase == EVehiclePhase.DEADHEAD_DURING)
+        || phase == EVehiclePhase.DEADHEAD_BEFORE || phase == EVehiclePhase.DEADHEAD_DURING)
         || blockState == null)
       return new SensorModelResult("pInProgress (n/a)");
 
-    SensorModelResult result = new SensorModelResult("pInProgress");
+    final SensorModelResult result = new SensorModelResult("pInProgress");
 
     /**
      * Rule: IN_PROGRESS => block location is close to the best possible?
      */
-    double pBlockLocation = library.computeBlockLocationProbability(
+    final double pBlockLocation = library.computeBlockLocationProbability(
         parentState, blockState, obs);
 
     /**
      * Rule: IN_PROGRESS => trip in close range
      */
-    CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
+    final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
 
-    ProjectedPoint p2 = obs.getPoint();
+    final ProjectedPoint p2 = obs.getPoint();
 
-    double d = SphericalGeometryLibrary.distance(p1.getLat(), p1.getLon(),
-        p2.getLat(), p2.getLon());
+    final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+        p1.getLon(), p2.getLat(), p2.getLon());
 
-    double pTripInRange = _nearbyTripSigma.probability(d);
+    final double pTripInRange = _nearbyTripSigma.probability(d);
 
     if (phase == EVehiclePhase.DEADHEAD_BEFORE
         || phase == EVehiclePhase.DEADHEAD_DURING) {
       // double invResult = 1.0 - pBlockLocation * pTripInRange;
-      double invResult = 1.0 - pTripInRange;
+      final double invResult = 1.0 - pTripInRange;
       result.addResultAsAnd("pNotInProgress", invResult);
     } else {
       result.addResultAsAnd("pBlockLocation", pBlockLocation);

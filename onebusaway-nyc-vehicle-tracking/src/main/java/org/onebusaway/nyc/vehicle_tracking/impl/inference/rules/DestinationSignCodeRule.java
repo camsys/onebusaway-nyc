@@ -25,6 +25,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,13 +35,13 @@ public class DestinationSignCodeRule implements SensorModelRule {
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState state = context.getState();
-    Observation obs = context.getObservation();
+    final VehicleState state = context.getState();
+    final Observation obs = context.getObservation();
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
 
-    String observedDsc = obs.getLastValidDestinationSignCode();
+    final String observedDsc = obs.getLastValidDestinationSignCode();
 
     /**
      * If we haven't yet seen a valid DSC
@@ -48,13 +49,14 @@ public class DestinationSignCodeRule implements SensorModelRule {
     if (observedDsc == null)
       return new SensorModelResult("pDestinationSignCode: no DSC set", 1.0);
 
-    SensorModelResult result = new SensorModelResult("pDestinationSignCode");
+    final SensorModelResult result = new SensorModelResult(
+        "pDestinationSignCode");
 
     /**
      * Rule: out-of-service DSC => ! IN_PROGRESS
      */
 
-    double p1 = implies(p(obs.isOutOfService()),
+    final double p1 = implies(p(obs.isOutOfService()),
         p(phase != EVehiclePhase.IN_PROGRESS));
 
     result.addResultAsAnd("out-of-service DSC => ! IN_PROGRESS", p1);
@@ -66,7 +68,7 @@ public class DestinationSignCodeRule implements SensorModelRule {
     if (obs.isOutOfService())
       return result;
 
-    BlockState bs = state.getBlockState();
+    final BlockState bs = state.getBlockState();
     if (bs != null) {
       /*
        * If we're in service and have a matching dsc, then we want to be 20%
@@ -80,10 +82,10 @@ public class DestinationSignCodeRule implements SensorModelRule {
          * expect the general route to be the same...
          */
 
-        AgencyAndId thisRoute = bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
+        final AgencyAndId thisRoute = bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
 
         boolean routeMatch = false;
-        for (AgencyAndId dscRoute : obs.getDscImpliedRouteCollections()) {
+        for (final AgencyAndId dscRoute : obs.getDscImpliedRouteCollections()) {
           if (thisRoute.equals(dscRoute)) {
             routeMatch = true;
             break;

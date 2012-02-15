@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Set;
-
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleInferenceInstance.RunResults;
@@ -27,6 +25,8 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import com.google.common.base.Function;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
+
+import java.util.Set;
 
 public class Observation implements Comparable<Observation> {
 
@@ -152,24 +152,24 @@ public class Observation implements Comparable<Observation> {
     if (this == o2)
       return 0;
 
-    int res = ComparisonChain.start().compare(outOfService, o2.outOfService).compare(
-        atTerminal, o2.atTerminal).compare(atBase, o2.atBase).compare(
-        _timestamp, o2._timestamp).compare(_record, o2._record).compare(_point,
-        o2._point, _orderByXandY).compare(_lastValidDestinationSignCode,
-        o2._lastValidDestinationSignCode, Ordering.natural().nullsLast()).compare(
-        _runResults, o2._runResults).result();
+    final int res = ComparisonChain.start().compare(_timestamp, o2._timestamp).compare(
+        _point, o2._point, _orderByXandY).compare(
+        _lastValidDestinationSignCode, o2._lastValidDestinationSignCode,
+        Ordering.natural().nullsLast()).compare(_record, o2._record).compare(
+        outOfService, o2.outOfService).compare(atTerminal, o2.atTerminal).compare(
+        atBase, o2.atBase).compare(_runResults, o2._runResults).result();
 
     return res;
   }
 
   private int _hash = 0;
-  
+
   @Override
   public int hashCode() {
-    
+
     if (_hash != 0)
       return _hash;
-    
+
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -184,7 +184,7 @@ public class Observation implements Comparable<Observation> {
     result = prime * result + (atBase ? 1231 : 1237);
     result = prime * result + (atTerminal ? 1231 : 1237);
     result = prime * result + (outOfService ? 1231 : 1237);
-    
+
     _hash = result;
     return result;
   }
@@ -197,7 +197,7 @@ public class Observation implements Comparable<Observation> {
       return false;
     if (!(obj instanceof Observation))
       return false;
-    Observation other = (Observation) obj;
+    final Observation other = (Observation) obj;
     if (_runResults == null) {
       if (other._runResults != null)
         return false;

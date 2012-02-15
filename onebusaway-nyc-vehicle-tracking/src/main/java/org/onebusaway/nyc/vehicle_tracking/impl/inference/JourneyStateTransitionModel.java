@@ -15,12 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
@@ -32,10 +26,16 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 @Component
 public class JourneyStateTransitionModel {
 
-  private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
+  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   private BlockStateTransitionModel _blockStateTransitionModel;
 
@@ -60,8 +60,8 @@ public class JourneyStateTransitionModel {
   public void move(VehicleState parentState, MotionState motionState,
       Observation obs, Collection<VehicleState> vehicleStates) {
 
-    List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
-        obs);
+    final List<JourneyState> journeyStates = getTransitionJourneyStates(
+        parentState, obs);
 
     generateVehicleStates(parentState, motionState, journeyStates, obs,
         vehicleStates);
@@ -70,7 +70,7 @@ public class JourneyStateTransitionModel {
   public List<JourneyState> getTransitionJourneyStates(
       VehicleState parentState, Observation obs) {
 
-    JourneyState parentJourneyState = parentState.getJourneyState();
+    final JourneyState parentJourneyState = parentState.getJourneyState();
 
     switch (parentJourneyState.getPhase()) {
       case AT_BASE:
@@ -106,35 +106,35 @@ public class JourneyStateTransitionModel {
       MotionState motionState, List<JourneyState> journeyStates,
       Observation obs, Collection<VehicleState> results) {
 
-    for (JourneyState journeyState : journeyStates) {
+    for (final JourneyState journeyState : journeyStates) {
 
-      Set<BlockStateObservation> blockStates = _blockStateTransitionModel.transitionBlockState(
+      final Set<BlockStateObservation> blockStates = _blockStateTransitionModel.transitionBlockState(
           parentState, motionState, journeyState, obs);
 
       if (blockStates == null) {
         @SuppressWarnings("unused")
         List<JourneyPhaseSummary> summaries = null;
-        if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
+        if (ParticleFilter.getDebugEnabled()) {
           summaries = _journeyStatePhaseLibrary.extendSummaries(parentState,
               null, journeyState, obs);
         }
 
-        VehicleState vehicleState = new VehicleState(motionState, null,
+        final VehicleState vehicleState = new VehicleState(motionState, null,
             journeyState, null, obs);
 
         results.add(vehicleState);
 
       } else {
-        for (BlockStateObservation bs : blockStates) {
+        for (final BlockStateObservation bs : blockStates) {
 
           @SuppressWarnings("unused")
           List<JourneyPhaseSummary> summaries = null;
-          if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
+          if (ParticleFilter.getDebugEnabled()) {
             summaries = _journeyStatePhaseLibrary.extendSummaries(parentState,
                 bs, journeyState, obs);
           }
 
-          VehicleState vehicleState = new VehicleState(motionState, bs,
+          final VehicleState vehicleState = new VehicleState(motionState, bs,
               journeyState, null, obs);
 
           results.add(vehicleState);
@@ -144,13 +144,14 @@ public class JourneyStateTransitionModel {
   }
 
   /**
-   * Determine if observation satisfies conditions necessary to transition
-   * to states with non-zero probability.
+   * Determine if observation satisfies conditions necessary to transition to
+   * states with non-zero probability.
    * 
    * @param res
    * @param obs
    */
-  private void includeConditionalStates(final List<JourneyState> res, final Observation obs) {
+  private void includeConditionalStates(final List<JourneyState> res,
+      final Observation obs) {
     /*
      * Cannot reasonably transition to in-progress if there isn't a previous
      * observation with which we can determine the direction of travel.
@@ -158,17 +159,17 @@ public class JourneyStateTransitionModel {
     if (!obs.isOutOfService() && obs.getPreviousObservation() != null
         && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
-    
+
     /*
      * Has to be at-base to be at base, obviously.
      */
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
   }
-  
+
   private List<JourneyState> moveAtBase(Observation obs) {
 
-    List<JourneyState> res = new ArrayList<JourneyState>();
+    final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
     includeConditionalStates(res, obs);
@@ -178,9 +179,9 @@ public class JourneyStateTransitionModel {
   private List<JourneyState> moveDeadheadBefore(Observation obs,
       JourneyState parentJourneyState) {
 
-    JourneyStartState start = parentJourneyState.getData();
+    final JourneyStartState start = parentJourneyState.getData();
 
-    List<JourneyState> res = new ArrayList<JourneyState>();
+    final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(start.getJourneyStart())));
     includeConditionalStates(res, obs);
@@ -188,7 +189,7 @@ public class JourneyStateTransitionModel {
   }
 
   private List<JourneyState> moveLayoverBefore(Observation obs) {
-    List<JourneyState> res = new ArrayList<JourneyState>();
+    final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
     includeConditionalStates(res, obs);
@@ -197,7 +198,7 @@ public class JourneyStateTransitionModel {
 
   private List<JourneyState> moveInProgress(Observation obs) {
 
-    List<JourneyState> res = new ArrayList<JourneyState>();
+    final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
@@ -209,8 +210,8 @@ public class JourneyStateTransitionModel {
   private List<JourneyState> moveDeadheadDuring(Observation obs,
       JourneyState parentJourneyState) {
 
-    JourneyStartState start = parentJourneyState.getData();
-    List<JourneyState> res = new ArrayList<JourneyState>();
+    final JourneyStartState start = parentJourneyState.getData();
+    final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(
         JourneyState.deadheadDuring(start.getJourneyStart()),
         JourneyState.layoverDuring(),
@@ -223,7 +224,7 @@ public class JourneyStateTransitionModel {
 
   private List<JourneyState> moveLayoverDuring(Observation obs) {
 
-    List<JourneyState> res = new ArrayList<JourneyState>();
+    final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.deadheadDuring(obs.getLocation()),
         JourneyState.layoverDuring()));
     includeConditionalStates(res, obs);

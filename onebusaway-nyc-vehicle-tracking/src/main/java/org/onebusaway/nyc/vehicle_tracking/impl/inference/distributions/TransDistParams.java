@@ -1,7 +1,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
-import java.util.Set;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+
+import java.util.Set;
 
 public class TransDistParams<SupportType> {
 

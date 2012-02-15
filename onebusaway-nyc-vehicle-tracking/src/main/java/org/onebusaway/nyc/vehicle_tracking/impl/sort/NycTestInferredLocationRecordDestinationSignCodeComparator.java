@@ -15,10 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.sort;
 
-import java.util.Comparator;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+
+import java.util.Comparator;
 
 public class NycTestInferredLocationRecordDestinationSignCodeComparator
     implements Comparator<NycTestInferredLocationRecord> {
