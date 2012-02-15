@@ -41,10 +41,14 @@ import org.onebusaway.transit_data_federation.services.shapes.ProjectedShapePoin
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.onebusaway.utility.InterpolationLibrary;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -567,6 +571,88 @@ public class BlockStateService {
     return results;
   }
 
+  /**
+   * Computes distance along a blockConfigEntry for a given
+   * starting stop-time index.<br>
+   * Here's an example of how to get the index:<br>
+   * 
+   * <pre>
+   * {@code
+   * List<BlockStopTimeEntry> stopTimes = blockConfig.getStopTimes();
+   * int n = stopTimes.size();
+   * int index = GenericBinarySearch.search(blockConfig, n, scheduleTime,
+   *     IndexAdapters.BLOCK_STOP_TIME_DEPARTURE_INSTANCE);
+   * }
+   * </pre>
+   * <br>
+   * Code taken from ScheduledBlockLocationServiceImpl.
+   * 
+   * @param blockEntry
+   * @param fromStopTimeIndex
+   * @param scheduleTime
+   * @return
+   */
+  public double getDistanceAlongBlock(BlockConfigurationEntry blockEntry, int fromStopTimeIndex, 
+      int scheduleTime) {
+
+    List<BlockStopTimeEntry> stopTimes = blockEntry.getStopTimes();
+
+    Preconditions.checkElementIndex(fromStopTimeIndex, stopTimes.size()+1);
+    
+    double distanceAlongBlock = Double.NaN;
+    if (fromStopTimeIndex == 0) {
+      BlockStopTimeEntry blockStopTime = stopTimes.get(0);
+      StopTimeEntry stopTime = blockStopTime.getStopTime();
+  
+  
+      /**
+       * If we have more than one stop time in the block (we'd hope!), then we
+       * attempt to interpolate the distance along the block
+       */
+      if (stopTimes.size() > 1) {
+  
+        BlockStopTimeEntry secondBlockStopTime = stopTimes.get(1);
+        StopTimeEntry secondStopTime = secondBlockStopTime.getStopTime();
+  
+        distanceAlongBlock = InterpolationLibrary.interpolatePair(
+            stopTime.getDepartureTime(), blockStopTime.getDistanceAlongBlock(),
+            secondStopTime.getArrivalTime(),
+            secondBlockStopTime.getDistanceAlongBlock(), scheduleTime);
+  
+        if (distanceAlongBlock < 0)
+          distanceAlongBlock = 0.0;
+      }
+    } else if (fromStopTimeIndex == stopTimes.size()) {
+      distanceAlongBlock = blockEntry.getTotalBlockDistance();
+    } else {
+      while (fromStopTimeIndex < stopTimes.size()) {
+        int t = blockEntry.getDepartureTimeForIndex(fromStopTimeIndex);
+        if (scheduleTime <= t)
+          break;
+        fromStopTimeIndex++;
+      }
+  
+      BlockStopTimeEntry blockBefore = stopTimes.get(fromStopTimeIndex - 1);
+      BlockStopTimeEntry blockAfter = stopTimes.get(fromStopTimeIndex);
+  
+      StopTimeEntry before = blockBefore.getStopTime();
+      StopTimeEntry after = blockAfter.getStopTime();
+      
+      int fromTime = before.getDepartureTime();
+      int toTime = after.getArrivalTime();
+      
+      double ratio = (scheduleTime - fromTime) / ((double) (toTime - fromTime));
+  
+      double fromDistance = blockBefore.getDistanceAlongBlock();
+      double toDistance = blockAfter.getDistanceAlongBlock();
+  
+      distanceAlongBlock = ratio * (toDistance - fromDistance)
+          + fromDistance;
+    }
+    
+    return distanceAlongBlock;
+  }
+  
   private static class TripInfo {
     final double _distanceFrom;
     final double _distanceTo;

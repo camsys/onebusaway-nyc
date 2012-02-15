@@ -17,24 +17,36 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 
+import gnu.trove.map.TObjectDoubleMap;
+import gnu.trove.map.hash.TObjectDoubleHashMap;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Ints;
 
 import org.apache.commons.math.util.MathUtils;
 
 import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-public class CategoricalDist<T> {
+public class CategoricalDist<T extends Comparable<T>> {
 
+  private static final boolean _sort = true;
   private double _cumulativeProb = 0.0;
+  private double[] probCache;
 
   static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
@@ -78,8 +90,8 @@ public class CategoricalDist<T> {
     }
   }
 
-  private final List<Double> _objIdx = new ArrayList<Double>();
-  TreeMap<T, Double> _entriesToProbs;
+  private final List<Integer> _objIdx = Lists.newArrayList();
+  TObjectDoubleMap<T> _entriesToProbs;
   private List<T> _entries;
 
   DiscreteDistribution emd;
@@ -97,13 +109,7 @@ public class CategoricalDist<T> {
   }
 
   public CategoricalDist() {
-    // _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
-    _entriesToProbs = new TreeMap<T, Double>();
-  }
-
-  public CategoricalDist(Comparator<T> order) {
-    // _entriesToProbs = new TreeMap<T, Double>(Ordering.usingToString());
-    _entriesToProbs = new TreeMap<T, Double>(order);
+    _entriesToProbs = new TObjectDoubleHashMap<T>();
   }
 
   public List<T> getSupport() {
@@ -118,43 +124,56 @@ public class CategoricalDist<T> {
       return;
 
     _cumulativeProb += prob;
-    final Double currentProb = _entriesToProbs.get(object);
+    double newProb = _entriesToProbs.adjustOrPutValue(object, prob, prob);
 
-    if (currentProb == null) {
-      _entriesToProbs.put(object, prob);
-      _objIdx.add((double) _objIdx.size());
-    } else {
-      /*
-       * allow duplicate entries' probability to compound
-       */
-      _entriesToProbs.put(object, prob + currentProb);
-    }
+    if (Double.compare(prob, newProb) == 0) {
+      _objIdx.add(_objIdx.size());
+    } 
 
     /*
      * reset the underlying distribution for lazy reloading
      */
     emd = null;
-
   }
 
   public T sample() {
 
-    if (_entriesToProbs.isEmpty())
-      throw new IllegalStateException("No entries in the CDF");
-
-    if (_cumulativeProb == 0.0)
-      throw new IllegalStateException("No cumulative probability in CDF");
+    Preconditions.checkState(!_entriesToProbs.isEmpty(), "No entries in the CDF");
+    Preconditions.checkState(_cumulativeProb > 0.0, "No cumulative probability in CDF");
 
     if (_entriesToProbs.size() == 1) {
-      return _entriesToProbs.keySet().iterator().next();
-      // return _entriesToProbs.firstKey();
+      return Iterables.getOnlyElement(_entriesToProbs.keySet());
     }
 
     if (emd == null) {
-      final double[] probs = MathUtils.normalizeArray(
-          Doubles.toArray(_entriesToProbs.values()), 1.0);
-      emd = new DiscreteDistribution(Doubles.toArray(_objIdx), probs,
-          _objIdx.size());
+      probCache = MathUtils.normalizeArray(_entriesToProbs.values(), 1.0);
+      if (_sort) {
+        final List<T> mapKeys = Lists.newArrayList(_entriesToProbs.keySet());
+        /*
+         * Sort the key index by key value, then
+         * reorder the prob value array with sorted
+         * index.
+         */
+        Collections.sort(_objIdx, new Comparator<Integer>() {
+          @Override
+          public int compare(Integer arg0, Integer arg1) {
+            return mapKeys.get(arg0).compareTo(mapKeys.get(arg1));
+          }
+        });
+        double[] newProbs = new double[probCache.length];
+        for (int i = 0; i < probCache.length; ++i) {
+          newProbs[i] = probCache[_objIdx.get(i)];
+        }
+        probCache = newProbs;
+      }
+      /*
+       * Need a double array for DiscreteDistribution.  Lame. 
+       */
+      double[] doubleObjIdx = new double[_objIdx.size()];
+      for (int i = 0; i < _objIdx.size(); ++i) {
+        doubleObjIdx[i] = _objIdx.get(i);
+      }
+      emd = new DiscreteDistribution(doubleObjIdx, probCache, _objIdx.size());
       _entries = getSupport();
     }
 
@@ -166,8 +185,6 @@ public class CategoricalDist<T> {
 
   public Multiset<T> sample(int samples) {
 
-    Preconditions.checkState(!_entriesToProbs.isEmpty());
-    Preconditions.checkState(_cumulativeProb > 0.0);
     Preconditions.checkArgument(samples > 0);
 
     final Multiset<T> sampled = HashMultiset.create(samples);

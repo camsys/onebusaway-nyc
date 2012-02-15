@@ -62,14 +62,13 @@ public class SensorModelImpl implements SensorModel<Observation> {
     final Entry<VehicleState, VehicleState> key = new AbstractMap.SimpleImmutableEntry<VehicleState, VehicleState>(
         state, parentState);
 
-    if (!cache.containsKey(key)) {
-      final SensorModelResult result = likelihood(parentState, state,
-          observation);
+    SensorModelResult result = cache.get(key);
+    if (result == null) {
+      result = likelihood(parentState, state, observation);
       cache.put(key, result);
-      return result;
     }
 
-    return null;
+    return result;
   }
 
   @Override

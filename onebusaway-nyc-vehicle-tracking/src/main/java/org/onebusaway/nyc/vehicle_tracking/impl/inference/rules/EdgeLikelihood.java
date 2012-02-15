@@ -29,6 +29,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 
 import com.google.common.collect.Iterables;
 
@@ -51,10 +53,17 @@ public class EdgeLikelihood implements SensorModelRule {
   private ObservationCache _observationCache;
 
   final private double distStdDev = 250.0;
+  private ScheduledBlockLocationService _scheduledBlockLocationService;
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
+  }
+
+  @Autowired
+  public void setScheduledBlockService(
+      ScheduledBlockLocationService scheduledBlockLocationService) {
+    _scheduledBlockLocationService = scheduledBlockLocationService;
   }
 
   @Autowired
@@ -82,10 +91,14 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
 
     final VehicleState parentState = context.getParentState();
-    if (obs.getPreviousObservation() == null || parentState == null)
-      return phase == EVehiclePhase.IN_PROGRESS ? result.addResultAsAnd(
-          "no previous observation/vehicle-state", 0.0)
-          : result.addResultAsAnd("no previous observation/vehicle-state", 1.0);
+    if (obs.getPreviousObservation() == null || parentState == null) {
+      if (phase == EVehiclePhase.IN_PROGRESS) {
+        result.addResultAsAnd("no previous observation/vehicle-state", 0.0);
+      } else {
+        result.addResultAsAnd("no previous observation/vehicle-state", 1.0);
+      }
+      return result;
+    }
 
     final BlockState blockState = state.getBlockState();
     /*
@@ -179,11 +192,12 @@ public class EdgeLikelihood implements SensorModelRule {
               prevBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime());
 
       // FIXME need to compensate for distances over the end of a trip...
-      final BlockState expState = _blockStateService.getScheduledTimeAsState(
-          blockState.getBlockInstance(), expSchedTime);
-
-      expectedDabDelta = expState.getBlockLocation().getDistanceAlongBlock()
-          - prevDab;
+//      final ScheduledBlockLocation blockLocation = 
+//          _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+//              blockState.getBlockInstance().getBlock(), expSchedTime);
+      double distanceAlongBlock = _blockStateService.getDistanceAlongBlock(blockState.getBlockInstance().getBlock(),
+          prevBlockState.getBlockLocation().getStopTimeIndex(), expSchedTime);
+      expectedDabDelta = distanceAlongBlock - prevDab;
 
       final double pInP3Tmp = NormalDist.density(expectedDabDelta, distStdDev,
           actualDabDelta)

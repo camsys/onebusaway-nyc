@@ -85,7 +85,7 @@ import javax.annotation.PreDestroy;
 public class VehicleLocationSimulationServiceImpl implements
     VehicleLocationSimulationService {
 
-  private final Logger _log = LoggerFactory.getLogger(RunServiceImpl.class);
+  private final Logger _log = LoggerFactory.getLogger(VehicleLocationSimulationServiceImpl.class);
 
   private static final String ARG_VEHICLE_ID = "vehicle_id";
 

@@ -25,10 +25,12 @@ import gnu.trove.map.hash.TObjectDoubleHashMap;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
+import com.google.common.collect.Ordering;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,29 +58,6 @@ import java.util.concurrent.Executors;
  */
 public class ParticleFilter<OBS> {
 
-  /**
-   * Callable MotionModel task that operates on chunks of particles.
-   * 
-   */
-  /*
-   * public class ParticleMoveTask implements Callable<List<Particle>> {
-   * 
-   * private double _elapsed; private int _endIdx; private List<Particle>
-   * _newParticles; private OBS _obs; private int _startIdx; private double
-   * _timestamp;
-   * 
-   * ParticleMoveTask(int startIdx, int endIdx, OBS obs, double elapsed, double
-   * timestamp) { _newParticles = new ArrayList<Particle>(endIdx - startIdx);
-   * _obs = obs; _elapsed = elapsed; _startIdx = startIdx; _endIdx = endIdx;
-   * _timestamp = timestamp; }
-   * 
-   * @Override public List<Particle> call() { for (int i = _startIdx; i <
-   * _endIdx; i++) { _motionModel.move(_particles.get(i), _timestamp, _elapsed,
-   * _obs, _newParticles); } return _newParticles; }
-   * 
-   * }
-   */
-
   public class SensorModelParticleResult {
     public Particle _particle;
     public SensorModelResult _result;
@@ -89,31 +68,6 @@ public class ParticleFilter<OBS> {
     }
 
   }
-
-  /**
-   * Callable SensorModel task that operates on chunks of particles.
-   * 
-   */
-  /*
-   * public class SensorModelTask implements
-   * Callable<List<SensorModelParticleResult>> {
-   * 
-   * private int _endIdx; private List<Particle> _newParticles; private OBS
-   * _obs; private int _startIdx;
-   * 
-   * SensorModelTask(List<Particle> newParticles, int startIdx, int endIdx, OBS
-   * obs) { _newParticles = newParticles; _obs = obs; _startIdx = startIdx;
-   * _endIdx = endIdx; }
-   * 
-   * @Override public List<SensorModelParticleResult> call() {
-   * List<SensorModelParticleResult> results = new
-   * ArrayList<SensorModelParticleResult>(); for (int i = _startIdx; i <
-   * _endIdx; i++) { Particle p = _newParticles.get(i); results.add(new
-   * SensorModelParticleResult(p, getParticleLikelihood(p, _obs))); } return
-   * results; }
-   * 
-   * }
-   */
 
   /**
    * Flag for operations that keep particle trajectory information, etc.
@@ -148,36 +102,6 @@ public class ParticleFilter<OBS> {
     return _testingEnabled;
   }
 
-  /**
-   * Simply returns an integer sequence of step size totalTasks/_threads, within
-   * [0, totalTasks-1]
-   * 
-   * @param totalTasks
-   * @return
-   */
-  @SuppressWarnings("unused")
-  private List<Integer[]> getTaskSequence(int totalTasks) {
-    final int stepSize = Math.max(totalTasks / _threads, 1);
-    final List<Integer[]> segments = new ArrayList<Integer[]>();
-    int runAmt = 0;
-    for (int i = 0; i < _threads; ++i) {
-      final Integer[] interval = new Integer[2];
-      interval[0] = runAmt;
-      runAmt += stepSize;
-      interval[1] = runAmt;
-      segments.add(interval);
-    }
-
-    /*
-     * add remainder of tasks to last group
-     */
-    if (segments.get(segments.size() - 1)[1] < totalTasks - 1) {
-      segments.get(segments.size() - 1)[1] = totalTasks - 1;
-    }
-
-    return segments;
-  }
-
   private ExecutorService _executorService;
 
   volatile private Particle _leastLikelyParticle;
@@ -194,7 +118,8 @@ public class ParticleFilter<OBS> {
 
   private SensorModel<OBS> _sensorModel;
 
-  private final Map<Entry<VehicleState, VehicleState>, SensorModelResult> _sensorModelResultCache = new ConcurrentHashMap<Entry<VehicleState, VehicleState>, SensorModelResult>();
+  private final Map<Entry<VehicleState, VehicleState>, SensorModelResult> _sensorModelResultCache = 
+      new ConcurrentHashMap<Entry<VehicleState, VehicleState>, SensorModelResult>();
 
   private final Multimap<VehicleState, VehicleState> _stateTransitionCache = HashMultimap.create();
 
@@ -229,12 +154,14 @@ public class ParticleFilter<OBS> {
 
   public Multiset<Particle> getParticleList() {
     return Multisets.unmodifiableMultiset(_particles);
-    // return HashMultiset.create(_particles);
   }
 
   public Multiset<Particle> getSampledParticles() {
     return Multisets.unmodifiableMultiset(_particles);
-    // return HashMultiset.create(_particles);
+  }
+
+  public Multiset<Particle> getWeightedParticles() {
+    return Multisets.unmodifiableMultiset(_weightedParticles);
   }
 
   /**
@@ -242,11 +169,6 @@ public class ParticleFilter<OBS> {
    */
   public double getTimeOfLastUpdated() {
     return _timeOfLastUpdate;
-  }
-
-  public Multiset<Particle> getWeightedParticles() {
-    return Multisets.unmodifiableMultiset(_weightedParticles);
-    // return HashMultiset.create(_weightedParticles);
   }
 
   /**
@@ -381,7 +303,7 @@ public class ParticleFilter<OBS> {
     return particles;
   }
 
-  private static final Comparator<Particle> _nullBlockStateComparator = new Comparator<Particle>() {
+  private static final Ordering<Particle> _nullBlockStateComparator = new Ordering<Particle>() {
 
     @Override
     public int compare(Particle o1, Particle o2) {
@@ -424,8 +346,7 @@ public class ParticleFilter<OBS> {
      * Sort particles in block-state "null order". Used to determine maximum
      * probabilities for non-null states.
      */
-    final List<Particle> nullSortedParticles = Lists.newArrayList(particles.elementSet());
-    Collections.sort(nullSortedParticles, _nullBlockStateComparator);
+    final List<Particle> nullSortedParticles = _nullBlockStateComparator.immutableSortedCopy(particles.elementSet());
 
     if (_threads > 1) {
 
@@ -467,8 +388,8 @@ public class ParticleFilter<OBS> {
         final SensorModelResult result = getCachedParticleLikelihood(particle,
             obs);
 
-        if (result == null)
-          continue;
+//        if (result == null)
+//          continue;
 
         final double likelihood = result.getProbability()
             * particles.count(particle);
