@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
@@ -22,6 +23,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+import org.onebusaway.transit_data_federation.impl.RefreshableResources;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
+
 @Component
 public class SensorModelImpl implements SensorModel<Observation> {
 
@@ -39,6 +44,12 @@ public class SensorModelImpl implements SensorModel<Observation> {
 
   private SensorModelSupportLibrary _sensorModelLibrary;
 
+  @PostConstruct
+  @Refreshable(dependsOn = {
+      RefreshableResources.NARRATIVE_DATA})
+  public void setup()  {
+  }
+  
   @Autowired
   public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
     _sensorModelLibrary = sensorModelLibrary;

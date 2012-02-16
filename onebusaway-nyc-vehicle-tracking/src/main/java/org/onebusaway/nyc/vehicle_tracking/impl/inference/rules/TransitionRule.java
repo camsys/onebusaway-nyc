@@ -60,33 +60,6 @@ public class TransitionRule implements SensorModelRule {
     SensorModelResult result = new SensorModelResult("pTransition");
 
     /**
-     * Transition Before to During => left terminal || transitioned to in
-     * service
-     */
-    boolean transitionBeforeToDuring = EVehiclePhase.isActiveBeforeBlock(parentPhase)
-        && EVehiclePhase.isActiveDuringBlock(phase);
-    boolean justLeftTerminal = false;
-    if (parentState.getBlockState() != null) {
-      boolean wasAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-          prevObs.getRecord(), parentState.getBlockState().getBlockInstance());
-      boolean isAtBlockTerminal = _vehicleStateLibrary.isAtPotentialTerminal(
-          obs.getRecord(), parentState.getBlockState().getBlockInstance());
-
-      justLeftTerminal = wasAtBlockTerminal && !isAtBlockTerminal;
-    } else {
-      justLeftTerminal = prevObs.isAtTerminal() && !obs.isAtTerminal();
-    }
-
-    boolean pOutToInService = prevObs.isOutOfService() && !obs.isOutOfService();
-
-    // double pTransitionFromBeforeToDuring =
-    // implies(p(transitionBeforeToDuring),
-    // p(justLeftTerminal || pOutToInService));
-    //
-    // result.addResultAsAnd("Transition Before to During => left terminal",
-    // pTransitionFromBeforeToDuring);
-
-    /**
      * Transition During to Before => out of service or at base
      */
     boolean transitionDuringToBefore = EVehiclePhase.isActiveDuringBlock(parentPhase)
@@ -100,7 +73,8 @@ public class TransitionRule implements SensorModelRule {
     boolean endOfBlock = false;
     BlockState blockState = state.getBlockState();
     if (blockState != null
-        && (blockState.getBlockLocation().getNextStop() == null || library.computeProbabilityOfEndOfBlock(blockState) > 0.9))
+        && (blockState.getBlockLocation().getNextStop() == null 
+          || library.computeProbabilityOfEndOfBlock(blockState) > 0.9))
       endOfBlock = true;
 
     /**
@@ -111,7 +85,8 @@ public class TransitionRule implements SensorModelRule {
         ? parentState.getBlockState() : null;
     if (parentBlockState != null
         && blockState == null
-        && (parentBlockState.getBlockLocation().getNextStop() == null || library.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
+        && (parentBlockState.getBlockLocation().getNextStop() == null 
+          || library.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
       wasAtEndOfBlock = true;
 
     double pTransitionFromDuringToBefore = implies(p(transitionDuringToBefore),
@@ -121,19 +96,6 @@ public class TransitionRule implements SensorModelRule {
     result.addResultAsAnd(
         "Transition During to Before => out of service OR at base OR was off route OR just finished block",
         pTransitionFromDuringToBefore);
-
-    /**
-     * just left terminal AND in-service => active during. the following
-     * condition essentially means we allow a bus to deadhead toward base after
-     * going through the last terminal with a valid dsc.
-     * 
-     */
-    // if (!EVehiclePhase.isActiveAfterBlock(phase) && blockState != null) {
-    // double pInService = implies(p(justLeftTerminal && !obs.isOutOfService()),
-    // p(EVehiclePhase.isActiveDuringBlock(phase)));
-    // result.addResultAsAnd(
-    // "just left terminal AND in-service => active during", pInService);
-    // }
 
     return result;
   }

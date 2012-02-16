@@ -46,7 +46,6 @@ public class CategoricalDist<T extends Comparable<T>> {
 
   private static final boolean _sort = true;
   private double _cumulativeProb = 0.0;
-  private double[] probCache;
 
   static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
@@ -146,25 +145,9 @@ public class CategoricalDist<T extends Comparable<T>> {
     }
 
     if (emd == null) {
-      probCache = MathUtils.normalizeArray(_entriesToProbs.values(), 1.0);
+      double[] probVector = MathUtils.normalizeArray(_entriesToProbs.values(), 1.0);
       if (_sort) {
-        final List<T> mapKeys = Lists.newArrayList(_entriesToProbs.keySet());
-        /*
-         * Sort the key index by key value, then
-         * reorder the prob value array with sorted
-         * index.
-         */
-        Collections.sort(_objIdx, new Comparator<Integer>() {
-          @Override
-          public int compare(Integer arg0, Integer arg1) {
-            return mapKeys.get(arg0).compareTo(mapKeys.get(arg1));
-          }
-        });
-        double[] newProbs = new double[probCache.length];
-        for (int i = 0; i < probCache.length; ++i) {
-          newProbs[i] = probCache[_objIdx.get(i)];
-        }
-        probCache = newProbs;
+        probVector = handleSort(probVector);
       }
       /*
        * Need a double array for DiscreteDistribution.  Lame. 
@@ -173,7 +156,7 @@ public class CategoricalDist<T extends Comparable<T>> {
       for (int i = 0; i < _objIdx.size(); ++i) {
         doubleObjIdx[i] = _objIdx.get(i);
       }
-      emd = new DiscreteDistribution(doubleObjIdx, probCache, _objIdx.size());
+      emd = new DiscreteDistribution(doubleObjIdx, probVector, _objIdx.size());
       _entries = getSupport();
     }
 
@@ -181,6 +164,30 @@ public class CategoricalDist<T extends Comparable<T>> {
     final int newIdx = (int) emd.inverseF(u);
 
     return _entries.get(newIdx);
+  }
+
+  /**
+   * Sorts _objIdx and returns the reordered probabilities vector.
+   * 
+   */
+  private double[] handleSort(double[] probs) {
+    final List<T> mapKeys = Lists.newArrayList(_entriesToProbs.keySet());
+    /*
+     * Sort the key index by key value, then
+     * reorder the prob value array with sorted
+     * index.
+     */
+    Collections.sort(_objIdx, new Comparator<Integer>() {
+      @Override
+      public int compare(Integer arg0, Integer arg1) {
+        return mapKeys.get(arg0).compareTo(mapKeys.get(arg1));
+      }
+    });
+    double[] newProbs = new double[probs.length];
+    for (int i = 0; i < probs.length; ++i) {
+      newProbs[i] = probs[_objIdx.get(i)];
+    }
+    return newProbs;
   }
 
   public Multiset<T> sample(int samples) {

@@ -32,7 +32,11 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 import org.apache.commons.math.util.FastMath;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,32 +48,32 @@ import umontreal.iro.lecuyer.stat.Tally;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class EdgeLikelihood implements SensorModelRule {
 
   private BlockStateService _blockStateService;
-  private ScheduleDeviationLibrary _scheduleDeviationLibrary;
   private ObservationCache _observationCache;
 
   final private double distStdDev = 250.0;
-  private ScheduledBlockLocationService _scheduledBlockLocationService;
 
+  private final Cache<EdgeLikelihoodContext, SensorModelResult> _cache = 
+      CacheBuilder.newBuilder()
+      .concurrencyLevel(1)
+      .expireAfterWrite(30, TimeUnit.MINUTES)
+      .build(
+      new CacheLoader<EdgeLikelihoodContext, SensorModelResult>() {
+        @Override
+        public SensorModelResult load(EdgeLikelihoodContext key)
+            throws Exception {
+          return likelihood(key);
+        }
+      });
+  
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
-  }
-
-  @Autowired
-  public void setScheduledBlockService(
-      ScheduledBlockLocationService scheduledBlockLocationService) {
-    _scheduledBlockLocationService = scheduledBlockLocationService;
-  }
-
-  @Autowired
-  public void setScheduleDeviationLibrary(
-      ScheduleDeviationLibrary scheduleDeviationLibrary) {
-    _scheduleDeviationLibrary = scheduleDeviationLibrary;
   }
 
   @Autowired
@@ -80,18 +84,13 @@ public class EdgeLikelihood implements SensorModelRule {
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
-
+    
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
     final EVehiclePhase phase = state.getJourneyState().getPhase();
-    final SensorModelResult result = new SensorModelResult("pInProgress");
-
-    if (!(phase == EVehiclePhase.IN_PROGRESS
-        || phase == EVehiclePhase.DEADHEAD_BEFORE || phase == EVehiclePhase.DEADHEAD_DURING))
-      return result;
-
     final VehicleState parentState = context.getParentState();
     if (obs.getPreviousObservation() == null || parentState == null) {
+      final SensorModelResult result = new SensorModelResult("pInProgress", 0.0);
       if (phase == EVehiclePhase.IN_PROGRESS) {
         result.addResultAsAnd("no previous observation/vehicle-state", 0.0);
       } else {
@@ -99,8 +98,26 @@ public class EdgeLikelihood implements SensorModelRule {
       }
       return result;
     }
+    
+    if (state.getBlockState() == null
+        || !(phase == EVehiclePhase.IN_PROGRESS
+          || phase == EVehiclePhase.DEADHEAD_BEFORE 
+          || phase == EVehiclePhase.DEADHEAD_DURING))
+      return new SensorModelResult("pInProgress", 0.0);
+    
+    EdgeLikelihoodContext edgeContext = new EdgeLikelihoodContext(context);
+    return _cache.getUnchecked(edgeContext);
+  }
 
-    final BlockState blockState = state.getBlockState();
+  public SensorModelResult likelihood(EdgeLikelihoodContext context) {
+    final Observation obs = context.getObservation();
+    final EVehiclePhase phase = context.getPhase();
+    final SensorModelResult result = new SensorModelResult("pInProgress", 1.0);
+    final BlockState blockState = context.getBlockState();
+    Set<BlockState> prevBlockStates = Sets.newHashSet();
+    if (context.getPreviousBlockState() != null)
+      prevBlockStates.add(context.getPreviousBlockState());
+    
     /*
      * When we have no block-state, we use the best state with a route that
      * matches the observations DSC-implied route, if any.
@@ -120,14 +137,8 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
 
-    final Set<BlockState> prevBlockStates = new HashSet<BlockState>();
-    if (parentState.getBlockState() != null
-        && parentState.getBlockState().getBlockInstance().equals(
-            blockState.getBlockInstance()))
-      prevBlockStates.add(parentState.getBlockState());
 
-    if (prevBlockStates.isEmpty()
-        || !EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase())) {
+    if (prevBlockStates.isEmpty()) {
       try {
 
         final BestBlockStates prevBestStates = _blockStateService.getBestBlockLocations(
@@ -157,15 +168,12 @@ public class EdgeLikelihood implements SensorModelRule {
     /*
      * Schedule Deviation
      */
-    final int obsSchedDev = _scheduleDeviationLibrary.computeScheduleDeviation(
-        blockState.getBlockInstance(), blockState.getBlockLocation(), obs);
+    final long obsSchedDev = (obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000
+        - blockState.getBlockLocation().getScheduledTime();
 
     /*
      * Edge Movement
      */
-    Double expectedDabDelta = null;
-    Double actualDabDelta = null;
-
     final double pInP1 = 1.0 - FoldedNormalDist.cdf(10.0, 50.0, d);
     final double pInP2 = 1.0 - FoldedNormalDist.cdf(5.0, 40.0,
         obsSchedDev / 60.0);
@@ -179,25 +187,23 @@ public class EdgeLikelihood implements SensorModelRule {
      */
     for (final BlockState prevBlockState : prevBlockStates) {
       final double prevDab = prevBlockState.getBlockLocation().getDistanceAlongBlock();
-
-      actualDabDelta = currentDab - prevDab;
+      final double actualDabDelta = currentDab - prevDab;
 
       /*
        * Use whichever comes first: previous time incremented by observed change
        * in time, or last stop departure time.
        */
       final int expSchedTime = Math.min(
-          (int) (prevBlockState.getBlockLocation().getScheduledTime() + (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000),
+          (int) (prevBlockState.getBlockLocation().getScheduledTime() 
+              + (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000),
           Iterables.getLast(
               prevBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime());
 
       // FIXME need to compensate for distances over the end of a trip...
-//      final ScheduledBlockLocation blockLocation = 
-//          _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
-//              blockState.getBlockInstance().getBlock(), expSchedTime);
-      double distanceAlongBlock = _blockStateService.getDistanceAlongBlock(blockState.getBlockInstance().getBlock(),
+      final double distanceAlongBlock = _blockStateService.getDistanceAlongBlock(
+          blockState.getBlockInstance().getBlock(),
           prevBlockState.getBlockLocation().getStopTimeIndex(), expSchedTime);
-      expectedDabDelta = distanceAlongBlock - prevDab;
+      final double expectedDabDelta = distanceAlongBlock - prevDab;
 
       final double pInP3Tmp = NormalDist.density(expectedDabDelta, distStdDev,
           actualDabDelta)
@@ -236,4 +242,94 @@ public class EdgeLikelihood implements SensorModelRule {
     return result;
   }
 
+  private static class EdgeLikelihoodContext {
+    private final EVehiclePhase _phase;
+    private final Observation _obs;
+    private final BlockState _blockState;
+    private final BlockState _previousBlockState;
+
+    public EdgeLikelihoodContext(Context context) {
+      _obs = context.getObservation();
+      VehicleState parentState = context.getParentState();
+      _phase = context.getState().getJourneyState().getPhase();
+      _blockState = context.getState().getBlockState();
+      boolean previouslyInactive = 
+          !parentState.getBlockState().getBlockInstance().equals(_blockState.getBlockInstance())
+          || !EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase());
+      if (!previouslyInactive)
+        _previousBlockState = context.getParentState().getBlockState();
+      else
+        _previousBlockState = null;
+    }
+
+    public Observation getObservation() {
+      return _obs;
+    }
+
+    public EVehiclePhase getPhase() {
+      return _phase;
+    }
+
+    public BlockState getBlockState() {
+      return _blockState;
+    }
+
+    public BlockState getPreviousBlockState() {
+      return _previousBlockState;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+          + ((_blockState == null) ? 0 : _blockState.hashCode());
+      result = prime * result + ((_obs == null) ? 0 : _obs.hashCode());
+      result = prime * result + ((_phase == null) ? 0 : _phase.hashCode());
+      result = prime
+          * result
+          + ((_previousBlockState == null) ? 0 : _previousBlockState.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (!(obj instanceof EdgeLikelihoodContext)) {
+        return false;
+      }
+      EdgeLikelihoodContext other = (EdgeLikelihoodContext) obj;
+      if (_blockState == null) {
+        if (other._blockState != null) {
+          return false;
+        }
+      } else if (!_blockState.equals(other._blockState)) {
+        return false;
+      }
+      if (_obs == null) {
+        if (other._obs != null) {
+          return false;
+        }
+      } else if (!_obs.equals(other._obs)) {
+        return false;
+      }
+      if (_phase != other._phase) {
+        return false;
+      }
+      if (_previousBlockState == null) {
+        if (other._previousBlockState != null) {
+          return false;
+        }
+      } else if (!_previousBlockState.equals(other._previousBlockState)) {
+        return false;
+      }
+      return true;
+    }
+    
+  }
 }
