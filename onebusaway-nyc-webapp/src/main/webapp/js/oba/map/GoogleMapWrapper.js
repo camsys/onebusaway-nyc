@@ -66,10 +66,19 @@ OBA.GoogleMapWrapper = function(mapNode) {
 			featureType: "road.arterial",
 			elementType: "geometry",
 			stylers: [
-			          { saturation: -100 },
-			          { lightness: 100 },
-			          { visibility: "simplified" },
-			          { hue: "#ffffff" }
+			          { saturation: -80 },
+			          { lightness: 60 },
+			          { visibility: "on" },
+			          { hue: "#0011FF" }
+			          ]
+		},{
+			featureType: "road.arterial",
+			elementType: "labels",
+			stylers: [
+			          { saturation: -80 },
+			          { lightness: 40 },
+			          { visibility: "on" },
+			          { hue: "#0011FF" }
 			          ]
 		},{
 			featureType: "road.highway",
@@ -81,24 +90,6 @@ OBA.GoogleMapWrapper = function(mapNode) {
 			          { hue: "#0011FF" }
 			          ]
 		},{
-			featureType: "road.local",
-			elementType: "geometry",
-			stylers: [
-			          { saturation: 0 },
-			          { lightness: 100 },
-			          { visibility: "on" },
-			          { hue: "#ffffff" }
-			          ]
-		},{
-			featureType: "road.arterial",
-			elementType: "labels",
-			stylers: [
-			          { lightness: 25 },
-			          { saturation: -25 },
-			          { visibility: "off" },
-			          { hue: "#ddff00" }
-			          ]
-		},{
 			featureType: "road.highway",
 			elementType: "labels",
 			stylers: [
@@ -106,6 +97,13 @@ OBA.GoogleMapWrapper = function(mapNode) {
 			          { saturation: -70 },
 			          { hue: "#0011FF" },
 			          { visibility: "on" }
+			          ]
+		},{
+			featureType: "road.local",
+			elementType: "all",
+			stylers: [
+			          { saturation: -100 },
+			          { lightness: 32 }
 			          ]
 		},{ 
 			featureType: "administrative.locality", 
@@ -139,6 +137,11 @@ OBA.GoogleMapWrapper = function(mapNode) {
 			           ]
 		},{
 			featureType: 'water',
+			elementType: 'labels',
+			stylers: [ {'visibility': 'off'}
+			]
+		},{
+			featureType: 'transit.station.bus',
 			elementType: 'labels',
 			stylers: [ {'visibility': 'off'}
 			]
