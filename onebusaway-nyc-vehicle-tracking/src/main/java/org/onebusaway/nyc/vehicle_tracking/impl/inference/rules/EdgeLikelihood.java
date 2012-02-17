@@ -35,6 +35,7 @@ import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLoca
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -58,9 +59,10 @@ public class EdgeLikelihood implements SensorModelRule {
 
   final private double distStdDev = 250.0;
 
-  private final Cache<EdgeLikelihoodContext, SensorModelResult> _cache = 
+  private final LoadingCache<EdgeLikelihoodContext, SensorModelResult> _cache = 
       CacheBuilder.newBuilder()
       .concurrencyLevel(1)
+      .initialCapacity(9000)
       .expireAfterWrite(30, TimeUnit.MINUTES)
       .build(
       new CacheLoader<EdgeLikelihoodContext, SensorModelResult>() {
@@ -88,9 +90,15 @@ public class EdgeLikelihood implements SensorModelRule {
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
     final EVehiclePhase phase = state.getJourneyState().getPhase();
+    
+    if (!(phase == EVehiclePhase.IN_PROGRESS
+          || phase == EVehiclePhase.DEADHEAD_BEFORE 
+          || phase == EVehiclePhase.DEADHEAD_DURING))
+      return new SensorModelResult("pInProgress", 1.0);
+    
     final VehicleState parentState = context.getParentState();
     if (obs.getPreviousObservation() == null || parentState == null) {
-      final SensorModelResult result = new SensorModelResult("pInProgress", 0.0);
+      final SensorModelResult result = new SensorModelResult("pInProgress", 1.0);
       if (phase == EVehiclePhase.IN_PROGRESS) {
         result.addResultAsAnd("no previous observation/vehicle-state", 0.0);
       } else {
@@ -99,11 +107,6 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
     
-    if (state.getBlockState() == null
-        || !(phase == EVehiclePhase.IN_PROGRESS
-          || phase == EVehiclePhase.DEADHEAD_BEFORE 
-          || phase == EVehiclePhase.DEADHEAD_DURING))
-      return new SensorModelResult("pInProgress", 0.0);
     
     EdgeLikelihoodContext edgeContext = new EdgeLikelihoodContext(context);
     return _cache.getUnchecked(edgeContext);
@@ -254,12 +257,14 @@ public class EdgeLikelihood implements SensorModelRule {
       _phase = context.getState().getJourneyState().getPhase();
       _blockState = context.getState().getBlockState();
       boolean previouslyInactive = 
-          !parentState.getBlockState().getBlockInstance().equals(_blockState.getBlockInstance())
+          _blockState == null
+          || parentState.getBlockState() == null 
+          || !parentState.getBlockState().getBlockInstance().equals(_blockState.getBlockInstance())
           || !EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase());
-      if (!previouslyInactive)
-        _previousBlockState = context.getParentState().getBlockState();
-      else
+      if (previouslyInactive)
         _previousBlockState = null;
+      else
+        _previousBlockState = context.getParentState().getBlockState();
     }
 
     public Observation getObservation() {

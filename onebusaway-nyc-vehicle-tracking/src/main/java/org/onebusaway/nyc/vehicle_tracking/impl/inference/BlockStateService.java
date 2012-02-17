@@ -622,8 +622,6 @@ public class BlockStateService {
         if (distanceAlongBlock < 0)
           distanceAlongBlock = 0.0;
       }
-    } else if (fromStopTimeIndex == stopTimes.size()) {
-      distanceAlongBlock = blockEntry.getTotalBlockDistance();
     } else {
       while (fromStopTimeIndex < stopTimes.size()) {
         int t = blockEntry.getDepartureTimeForIndex(fromStopTimeIndex);
@@ -632,22 +630,26 @@ public class BlockStateService {
         fromStopTimeIndex++;
       }
   
-      BlockStopTimeEntry blockBefore = stopTimes.get(fromStopTimeIndex - 1);
-      BlockStopTimeEntry blockAfter = stopTimes.get(fromStopTimeIndex);
-  
-      StopTimeEntry before = blockBefore.getStopTime();
-      StopTimeEntry after = blockAfter.getStopTime();
-      
-      int fromTime = before.getDepartureTime();
-      int toTime = after.getArrivalTime();
-      
-      double ratio = (scheduleTime - fromTime) / ((double) (toTime - fromTime));
-  
-      double fromDistance = blockBefore.getDistanceAlongBlock();
-      double toDistance = blockAfter.getDistanceAlongBlock();
-  
-      distanceAlongBlock = ratio * (toDistance - fromDistance)
-          + fromDistance;
+      if (fromStopTimeIndex < stopTimes.size()) {
+        BlockStopTimeEntry blockBefore = stopTimes.get(fromStopTimeIndex - 1);
+        BlockStopTimeEntry blockAfter = stopTimes.get(fromStopTimeIndex);
+    
+        StopTimeEntry before = blockBefore.getStopTime();
+        StopTimeEntry after = blockAfter.getStopTime();
+        
+        int fromTime = before.getDepartureTime();
+        int toTime = after.getArrivalTime();
+        
+        double ratio = (scheduleTime - fromTime) / ((double) (toTime - fromTime));
+    
+        double fromDistance = blockBefore.getDistanceAlongBlock();
+        double toDistance = blockAfter.getDistanceAlongBlock();
+    
+        distanceAlongBlock = ratio * (toDistance - fromDistance)
+            + fromDistance;
+      } else {
+        distanceAlongBlock = blockEntry.getTotalBlockDistance();
+      }
     }
     
     return distanceAlongBlock;

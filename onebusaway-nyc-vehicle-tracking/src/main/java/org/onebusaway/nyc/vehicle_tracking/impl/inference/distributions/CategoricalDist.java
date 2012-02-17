@@ -19,28 +19,23 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
+import gov.sandia.cognition.statistics.DiscreteSamplingUtil;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
-import com.google.common.primitives.Doubles;
-import com.google.common.primitives.Ints;
 
 import org.apache.commons.math.util.MathUtils;
 
 import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
 
 public class CategoricalDist<T extends Comparable<T>> {
 
@@ -91,9 +86,10 @@ public class CategoricalDist<T extends Comparable<T>> {
 
   private final List<Integer> _objIdx = Lists.newArrayList();
   TObjectDoubleMap<T> _entriesToProbs;
-  private List<T> _entries;
+  private Object[] _entries;
 
   DiscreteDistribution emd;
+  private double[] _cummulativeDist;
 
   public static ThreadLocal<Random> getThreadLocalRng() {
     return threadLocalRng;
@@ -123,11 +119,11 @@ public class CategoricalDist<T extends Comparable<T>> {
       return;
 
     _cumulativeProb += prob;
-    double newProb = _entriesToProbs.adjustOrPutValue(object, prob, prob);
+    final double newProb = _entriesToProbs.adjustOrPutValue(object, prob, prob);
 
     if (Double.compare(prob, newProb) == 0) {
       _objIdx.add(_objIdx.size());
-    } 
+    }
 
     /*
      * reset the underlying distribution for lazy reloading
@@ -135,69 +131,104 @@ public class CategoricalDist<T extends Comparable<T>> {
     emd = null;
   }
 
+  @SuppressWarnings("unchecked")
   public T sample() {
 
-    Preconditions.checkState(!_entriesToProbs.isEmpty(), "No entries in the CDF");
-    Preconditions.checkState(_cumulativeProb > 0.0, "No cumulative probability in CDF");
+    Preconditions.checkState(!_entriesToProbs.isEmpty(),
+        "No entries in the CDF");
+    Preconditions.checkState(_cumulativeProb > 0.0,
+        "No cumulative probability in CDF");
 
     if (_entriesToProbs.size() == 1) {
       return Iterables.getOnlyElement(_entriesToProbs.keySet());
     }
 
     if (emd == null) {
-      double[] probVector = MathUtils.normalizeArray(_entriesToProbs.values(), 1.0);
-      if (_sort) {
-        probVector = handleSort(probVector);
-      }
-      /*
-       * Need a double array for DiscreteDistribution.  Lame. 
-       */
-      double[] doubleObjIdx = new double[_objIdx.size()];
-      for (int i = 0; i < _objIdx.size(); ++i) {
-        doubleObjIdx[i] = _objIdx.get(i);
-      }
-      emd = new DiscreteDistribution(doubleObjIdx, probVector, _objIdx.size());
-      _entries = getSupport();
+      initializeDistribution();
     }
+    
 
     final double u = threadLocalRng.get().nextDouble();
     final int newIdx = (int) emd.inverseF(u);
 
-    return _entries.get(newIdx);
+    return (T)_entries[newIdx];
   }
 
+  private double[] initializeDistribution() {
+    double[] probVector = MathUtils.normalizeArray(_entriesToProbs.values(),
+        1.0);
+    if (_sort) {
+      probVector = handleSort(probVector);
+    }
+    /*
+     * Need a double array for DiscreteDistribution. Lame.
+     */
+    final double[] cummulativeDist = new double[_objIdx.size()];
+    final double[] doubleObjIdx = new double[_objIdx.size()];
+    double prevVal = 0.0;
+    for (int i = 0; i < _objIdx.size(); ++i) {
+      cummulativeDist[i] = probVector[i] + prevVal;
+      prevVal = cummulativeDist[i];
+      doubleObjIdx[i] = _objIdx.get(i);
+    }
+    emd = new DiscreteDistribution(doubleObjIdx, probVector, _objIdx.size());
+    _entries = _entriesToProbs.keys();
+    return cummulativeDist;
+  }
+  
   /**
    * Sorts _objIdx and returns the reordered probabilities vector.
    * 
    */
   private double[] handleSort(double[] probs) {
-    final List<T> mapKeys = Lists.newArrayList(_entriesToProbs.keySet());
+    final Object[] mapKeys = _entriesToProbs.keys();
     /*
-     * Sort the key index by key value, then
-     * reorder the prob value array with sorted
-     * index.
+     * Sort the key index by key value, then reorder the prob value array with
+     * sorted index.
      */
     Collections.sort(_objIdx, new Comparator<Integer>() {
+      @SuppressWarnings("unchecked")
       @Override
       public int compare(Integer arg0, Integer arg1) {
-        return mapKeys.get(arg0).compareTo(mapKeys.get(arg1));
+        T p0 = (T)mapKeys[arg0];
+        T p1 = (T)mapKeys[arg1];
+        int probComp = Double.compare(_entriesToProbs.get(p0), _entriesToProbs.get(p1));
+        if(probComp == 0)
+          probComp = p0.compareTo(p1); 
+        return probComp;
       }
     });
-    double[] newProbs = new double[probs.length];
+    final double[] newProbs = new double[probs.length];
     for (int i = 0; i < probs.length; ++i) {
       newProbs[i] = probs[_objIdx.get(i)];
     }
     return newProbs;
   }
 
+  @SuppressWarnings("unchecked")
   public Multiset<T> sample(int samples) {
-
+    
     Preconditions.checkArgument(samples > 0);
+    Preconditions.checkState(!_entriesToProbs.isEmpty(),
+        "No entries in the CDF");
+    Preconditions.checkState(_cumulativeProb > 0.0,
+        "No cumulative probability in CDF");
 
     final Multiset<T> sampled = HashMultiset.create(samples);
+    if (_entriesToProbs.size() == 1) {
+      sampled.add(Iterables.getOnlyElement(_entriesToProbs.keySet()));
+    } else {
 
-    for (int i = 0; i < samples; ++i) {
-      sampled.add(sample());
+      if (emd == null) {
+        _cummulativeDist = initializeDistribution();
+      }
+      
+      int[] sampleIdxs = DiscreteSamplingUtil.sampleIndicesFromCumulativeProportions(
+          threadLocalRng.get(), _cummulativeDist, samples);
+      
+      for (int i = 0; i < sampleIdxs.length; ++i) {
+        sampled.add((T)_entries[_objIdx.get(sampleIdxs[i])]);
+      }
     }
 
     return sampled;
