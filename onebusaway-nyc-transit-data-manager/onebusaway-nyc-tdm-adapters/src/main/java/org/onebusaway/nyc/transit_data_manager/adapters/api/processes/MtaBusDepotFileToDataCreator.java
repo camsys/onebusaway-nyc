@@ -17,12 +17,14 @@ import org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPBusDepotAssign
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.BusDepotAssignsInputConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.readers.XMLBusDepotAssignsInputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 
 public class MtaBusDepotFileToDataCreator {
 
   private File inputFile;
+  private DepotIdTranslator depotIdTranslator;
   
   public MtaBusDepotFileToDataCreator(File mtaBusDepotFile) throws FileNotFoundException {
     super();
@@ -43,6 +45,8 @@ public class MtaBusDepotFileToDataCreator {
 
     BusDepotAssignmentsOutputConverter converter = new TCIPBusDepotAssignmentsOutputConverter(
         depotBusesMap);
+    converter.setDepotIdTranslator(depotIdTranslator);
+    
     List<CPTFleetSubsetGroup> fleetSSGroups = converter.convertAssignments();
 
     // At this point I've got a list of CPTFleetSubsetGroup, so create the data
@@ -64,5 +68,9 @@ public class MtaBusDepotFileToDataCreator {
   
   private void setInputFile(File inputFile) throws FileNotFoundException {
     this.inputFile = inputFile;
+  }
+
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator;
   }
 }

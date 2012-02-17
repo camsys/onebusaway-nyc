@@ -7,6 +7,13 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 
+/**
+ * Methods to assist testing Service Alerts.
+ * 
+ * Note that although this is really a test support class, it needs to be in
+ * src/main/java (not src/test/java) so it can be used by other modules.
+ *
+ */
 public class ServiceAlertsTestSupport {
 
   public static ServiceAlertBean createServiceAlertBean(String id) {
@@ -37,12 +44,19 @@ public class ServiceAlertsTestSupport {
     return sab;
   }
 
-  private static NaturalLanguageStringBean createNaturalLanguageStringBean(
+  public static NaturalLanguageStringBean createNaturalLanguageStringBean(
       String string) {
     NaturalLanguageStringBean n = new NaturalLanguageStringBean();
     n.setValue(string);
     n.setLang("EN");
     return n;
+  }
+
+  public static List<NaturalLanguageStringBean> createNaturalLanguageStringBeanList(
+      String string) {
+    List<NaturalLanguageStringBean> l = new ArrayList<NaturalLanguageStringBean>();
+    l.add(createNaturalLanguageStringBean(string));
+    return l ;
   }
 
 }

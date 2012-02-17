@@ -23,8 +23,16 @@ import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+
 import org.apache.axis.utils.StringUtils;
 import org.apache.commons.digester.Digester;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +49,8 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
 
   private static Logger _log = LoggerFactory.getLogger(GoogleGeocoderImpl.class);
 
+  private static GeometryFactory _geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
   private static final String GEOCODE_URL_PREFIX = "http://maps.googleapis.com";
   
   private static final String GEOCODE_PATH = "/maps/api/geocode/xml";
@@ -51,8 +61,8 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
   private boolean _sensor = false;
 
   private CoordinateBounds _resultBiasingBounds = null;
-
-  private String _usStateFilter = null;
+  
+  private Polygon _wktFilterPolygon = null;
   
   public void setSensor(boolean sensor) {
     _sensor = sensor;
@@ -62,8 +72,9 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     _resultBiasingBounds = bounds;
   }
   
-  public void setUsStateFilter(String state) {
-    _usStateFilter = state;
+  public void setWktFilterPolygon(String wkt) throws ParseException {
+    WKTReader reader = new WKTReader();
+    _wktFilterPolygon = (Polygon)reader.read(wkt);
   }
 
   // (method to make legacy OBA components that use the geocoder happy...)
@@ -73,12 +84,6 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
   
   public List<NycGeocoderResult> nycGeocode(String location) {
     try {
-      String clientId = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);    
-
-      String secretKey = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", null);    
-      
       List<NycGeocoderResult> results = new ArrayList<NycGeocoderResult>();
 
       StringBuilder q = new StringBuilder();
@@ -94,7 +99,12 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
             _resultBiasingBounds.getMaxLat() + "," + 
             _resultBiasingBounds.getMaxLon());
       }
-    
+
+      String clientId = 
+          _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);    
+      String secretKey = 
+          _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", null);    
+      
       if(clientId != null && secretKey != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(secretKey)) {
         q.append("&client=").append(clientId);
       }
@@ -102,7 +112,6 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
       URL url = null;
       if(secretKey != null && clientId != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(secretKey)) {
         GoogleUrlAuthentication urlSigner = new GoogleUrlAuthentication(secretKey);
-
         url = new URL(GEOCODE_URL_PREFIX + urlSigner.signRequest(GEOCODE_PATH + "?" + q.toString()));
       } else {
         url = new URL(GEOCODE_URL_PREFIX + GEOCODE_PATH + "?" + q.toString());        
@@ -111,16 +120,17 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
       Digester digester = createDigester();
       digester.push(results);
 
-      _log.info("Requesting " + url.toString());
+      _log.debug("Requesting " + url.toString());
+
       InputStream inputStream = url.openStream();
       digester.parse(inputStream);    
-      _log.info("Got " + results.size() + " geocoder results.");
+      _log.debug("Got " + results.size() + " geocoder results.");
 
       results = filterResults(results);
-      _log.info("Have " + results.size() + " geocoder results AFTER filtering.");
+      _log.debug("Have " + results.size() + " geocoder results AFTER filtering.");
 
       results = deDuplicateResults(results);
-      _log.info("Have " + results.size() + " geocoder results AFTER deduplicating.");
+      _log.debug("Have " + results.size() + " geocoder results AFTER deduplicating.");
 
       return results;
     } catch (Exception e) {
@@ -130,7 +140,7 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
   }
 
   // FIXME: google's returning two "Staten Island, NY, USA" results for the 
-  // search "Staten Island". filter them!
+  // search "Staten Island". Filter those out.
   private List<NycGeocoderResult> deDuplicateResults(List<NycGeocoderResult> input) {
     if(input == null || (input != null && input.size() == 1)) {
       return input;
@@ -145,13 +155,16 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
   }
   
   private List<NycGeocoderResult> filterResults(List<NycGeocoderResult> input) {
-    if(_usStateFilter == null) {
+    if(_wktFilterPolygon == null) {
       return input;
     }
     
     List<NycGeocoderResult> output = new ArrayList<NycGeocoderResult>();
     for(NycGeocoderResult result : input) {
-      if(result.getAdministrativeArea() != null && result.getAdministrativeArea().equals(_usStateFilter)) {
+      Coordinate coordinate = new Coordinate(result.getLongitude(), result.getLatitude());
+      Geometry point = _geometryFactory.createPoint(coordinate);
+      
+      if(_wktFilterPolygon.intersects(point)) {
         output.add(result);
       }
     }

@@ -5,6 +5,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsVehiclePullInPullOut;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 import tcip_final_3_0_5_1.CPTOperatorIden;
@@ -14,11 +15,15 @@ import tcip_final_3_0_5_1.SCHBlockIden;
 import tcip_final_3_0_5_1.SCHPullInOutInfo;
 
 public class MtaUtsToTcipVehicleAssignmentConverter {
+  
+  private static String DATASOURCE_SYSTEM = "UTS"; 
 
   public MtaUtsToTcipVehicleAssignmentConverter() {
     setMappingTool(new UtsMappingTool());
   }
 
+  private DepotIdTranslator depotIdTranslator = null;
+  
   UtsMappingTool mappingTool = null;
 
   public void setMappingTool(UtsMappingTool mappingTool) {
@@ -84,7 +89,7 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
 
     // Set the garage to a new CPTTransitFacilityIden representing a depot.
     CPTTransitFacilityIden depot = new CPTTransitFacilityIden();
-    depot.setFacilityName(inputAssignment.getDepot());
+    depot.setFacilityName(getMappedDepotId(inputAssignment));
     depot.setFacilityId(new Long(0));
     outputAssignment.setGarage(depot);
 
@@ -110,7 +115,7 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     String pullOutTimeHHMM = poTimeDTF.print(pullOutTime);
 
     String concatPODateTime = serviceDateMMDDYYYY + "_" + pullOutTimeHHMM;
-    String blockDesignator = inputAssignment.getDepot() + "_"
+    String blockDesignator = getMappedDepotId(inputAssignment) + "_"
         + inputAssignment.getRoute() + "_"
         + inputAssignment.getRunNumberField() + "_" + concatPODateTime;
     block.setBlockDesignator(blockDesignator);
@@ -122,6 +127,14 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     outputAssignment.setLocalSCHPullInOutInfo(localInfo);
 
     return outputAssignment;
+  }
+  
+  private String getMappedDepotId(MtaUtsVehiclePullInPullOut utsPullout) {
+    if (depotIdTranslator != null) {
+      return depotIdTranslator.getMappedId(DATASOURCE_SYSTEM, utsPullout.getDepot());
+    } else {
+      return utsPullout.getDepot();
+    }
   }
 
   private DateTime getSchedDateAsCalByType(
@@ -135,5 +148,9 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
         inputAssign.getServiceDate(), timeStr);
 
     return result;
+  }
+
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator; 
   }
 }

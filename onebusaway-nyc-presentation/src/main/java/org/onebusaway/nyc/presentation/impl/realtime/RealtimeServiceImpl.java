@@ -10,6 +10,7 @@ import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
+import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
@@ -216,33 +217,19 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
   
   @Override
-  public List<ServiceAlertBean> getServiceAlertsForRouteAndDirection(String routeId,
-      String directionId) {
+  public List<ServiceAlertBean> getServiceAlertsForRouteAndDirection(
+      String routeId, String directionId) {
 
-    HashMap<String, ServiceAlertBean> serviceAlertIdsToAlerts =
-        new HashMap<String, ServiceAlertBean>();
-
-    ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
-
-    for(TripDetailsBean tripDetails : trips.getList()) {
-      // filter out interlined routes
-      if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
-        continue;
-
-      // filtered out by user
-      if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
-        continue;
-      
-      TripStatusBean tripStatusBean = tripDetails.getStatus();
-      if(tripStatusBean == null || tripStatusBean.getSituations() == null)
-        continue;
-      
-      for(ServiceAlertBean serviceAlert : tripStatusBean.getSituations()) {
-        serviceAlertIdsToAlerts.put(serviceAlert.getId(), serviceAlert);
-      }
+    SituationQueryBean query = new SituationQueryBean();
+    if (directionId == null) {
+      query.addRoute(routeId.toString(), "0");
+      query.addRoute(routeId.toString(), "1");
+    } else {
+      query.addRoute(routeId.toString(), directionId);
     }
-    
-    return new ArrayList<ServiceAlertBean>(serviceAlertIdsToAlerts.values());
+    ListBean<ServiceAlertBean> serviceAlerts = _transitDataService.getServiceAlerts(query);
+
+    return serviceAlerts.getList();
   }
   
   private ListBean<TripDetailsBean> getAllTripsForRoute(String routeId) {

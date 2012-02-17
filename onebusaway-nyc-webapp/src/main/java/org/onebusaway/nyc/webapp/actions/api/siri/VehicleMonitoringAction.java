@@ -52,7 +52,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private RealtimeService _realtimeService;
 
   private Siri _response;
-  
+
   private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
 
   private HttpServletRequest _request;
@@ -62,13 +62,13 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private Date _now = null;
 
   public void setTime(String time) throws Exception {
-    Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);    
-    
+    Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);
+
     _now = timeAsDate;
   }
 
   public Date getTime() {
-    if(_now != null)
+    if (_now != null)
       return _now;
     else
       return new Date();
@@ -77,31 +77,31 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   public void setType(String type) {
     _type = type;
   }
-  
+
   @Override
   public String execute() {
     _realtimeService.setTime(getTime());
 
     String directionId = _request.getParameter("DirectionRef");
     String agencyId = _request.getParameter("OperatorRef");
-        
+
     AgencyAndId vehicleId = null;
     try {
       vehicleId = AgencyAndIdLibrary.convertFromString(_request.getParameter("VehicleRef"));
     } catch (Exception e) {
       vehicleId = new AgencyAndId(agencyId, _request.getParameter("VehicleRef"));
     }
-    
+
     AgencyAndId routeId = null;
     try {
       routeId = AgencyAndIdLibrary.convertFromString(_request.getParameter("LineRef"));
     } catch (Exception e) {
       routeId = new AgencyAndId(agencyId, _request.getParameter("LineRef"));
     }
-    
+
     String detailLevel = _request.getParameter("VehicleMonitoringDetailLevel");
-    
-    int maximumOnwardCalls = 0;        
+
+    int maximumOnwardCalls = 0;
     if (detailLevel != null && detailLevel.equals("calls")) {
       maximumOnwardCalls = Integer.MAX_VALUE;
 
@@ -113,28 +113,28 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     }
 
     // *** CASE 1: by route
-    if(routeId != null && routeId.hasValues()) {
+    if (routeId != null && routeId.hasValues()) {
       List<VehicleActivityStructure> activities = _realtimeService.getVehicleActivityForRoute(
           routeId.toString(), directionId, maximumOnwardCalls);
-      
-      if(vehicleId != null && vehicleId.hasValues()) {
+
+      if (vehicleId != null && vehicleId.hasValues()) {
         List<VehicleActivityStructure> filteredActivities = new ArrayList<VehicleActivityStructure>();
 
-        for(VehicleActivityStructure activity : activities) {
+        for (VehicleActivityStructure activity : activities) {
           MonitoredVehicleJourneyStructure journey = activity.getMonitoredVehicleJourney();
           AgencyAndId thisVehicleId = AgencyAndIdLibrary.convertFromString(journey.getVehicleRef().getValue());
-          
+
           // user filtering
-          if(!thisVehicleId.equals(vehicleId))
+          if (!thisVehicleId.equals(vehicleId))
             continue;
-          
+
           filteredActivities.add(activity);
         }
 
         activities = filteredActivities;
       }
-      
-      _response = generateSiriResponse(activities);
+
+      _response = generateSiriResponse(activities, routeId);
 
       return SUCCESS;
     }
@@ -142,15 +142,16 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
 
     // *** CASE 2: single vehicle--no route specified (that's the case above)
-    if((vehicleId != null && vehicleId.hasValues()) && (routeId == null || !routeId.hasValues())) {      
+    if ((vehicleId != null && vehicleId.hasValues())
+        && (routeId == null || !routeId.hasValues())) {
       VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
           vehicleId.toString(), maximumOnwardCalls);
 
-      if(activity != null) {
+      if (activity != null) {
         activities.add(activity);
       }
 
-    // *** CASE 3: all vehicles
+      // *** CASE 3: all vehicles
     } else {
       ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(
           agencyId, getTime().getTime());
@@ -158,8 +159,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       for (VehicleStatusBean v : vehicles.getList()) {
         VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
             v.getVehicleId(), maximumOnwardCalls);
-        
-        if(activity != null) {
+
+        if (activity != null) {
           activities.add(activity);
         }
       }
@@ -170,8 +171,20 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     return SUCCESS;
   }
 
-  /** Generate a siri response for a set of VehicleActivities */
+  /**
+   * Generate a siri response for a set of VehicleActivities
+   */
   private Siri generateSiriResponse(List<VehicleActivityStructure> activities) {
+    return generateSiriResponse(activities, null);
+  }
+
+  /**
+   * Generate a siri response for a set of VehicleActivities
+   * 
+   * @param routeId
+   */
+  private Siri generateSiriResponse(List<VehicleActivityStructure> activities,
+      AgencyAndId routeId) {
     VehicleMonitoringDeliveryStructure vehicleMonitoringDelivery = new VehicleMonitoringDeliveryStructure();
     vehicleMonitoringDelivery.setResponseTimestamp(getTime());
 
@@ -187,7 +200,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     serviceDelivery.getVehicleMonitoringDelivery().add(
         vehicleMonitoringDelivery);
 
-    _serviceAlertsHelper.addSituationExchangeToSiri(serviceDelivery, activities, _transitDataService);
+    _serviceAlertsHelper.addSituationExchangeToServiceDelivery(serviceDelivery,
+        activities, _transitDataService, routeId);
 
     Siri siri = new Siri();
     siri.setServiceDelivery(serviceDelivery);
@@ -197,11 +211,12 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   public String getVehicleMonitoring() {
     try {
-      if(_type.equals("xml"))
+      if (_type.equals("xml"))
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
       else
-        return _realtimeService.getSiriJsonSerializer().getJson(_response, _request.getParameter("callback"));
-    } catch(Exception e) {
+        return _realtimeService.getSiriJsonSerializer().getJson(_response,
+            _request.getParameter("callback"));
+    } catch (Exception e) {
       return e.getMessage();
     }
   }

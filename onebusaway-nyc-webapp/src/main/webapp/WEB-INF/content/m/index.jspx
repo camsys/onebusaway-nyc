@@ -56,6 +56,8 @@
 
 			<input type="hidden" name="l" id="l" value="${l}"/>
 		</s:form>
+
+		<small>TIP: Enter an intersection, bus route or bus stop code.</small>
 	</div>
 
 	<s:if test="%{searchResults.size==0}">

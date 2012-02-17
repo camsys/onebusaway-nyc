@@ -28,37 +28,53 @@ public class NycVehicleManagementStatusBean implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  // record identifier
 	private String uuid;
 
+	// is inference enabled?
   private boolean inferenceIsEnabled;
 
+  // last filter update time for this vehicle
   private Long lastUpdateTime;
 	
+  // last time a valid (non 0) location update was provided
   private Long lastLocationUpdateTime;
 
+  // last latitude observed
   private Double lastObservedLatitude;
 	
+  // lat longitude observed
   private Double lastObservedLongitude;
 	
+  // most recent DSC from the bus
   private String mostRecentObservedDestinationSignCode;
 
+  // most recent inferred DSC
   private String lastInferredDestinationSignCode;
 
-  private String inferenceEngineHostname;
-  
+  // is this inference engine the primary?
   private boolean inferenceEngineIsPrimary;
-  
+
+  // the bundle ID this result was generated with
   private String activeBundleId;
   
+  // is inference formal? e.g. comes from an assigned run? 
   private boolean inferenceIsFormal;
 
+  // the depot this vehicle is assigned to in the vehicle assignment service
   private String depotId;
 
+  // the bus' in-emergency flag.
   private boolean emergencyFlag;
 
+  // the last observed operator ID from the bus. 
   private String lastInferredOperatorId;
 
+  // the run ID calculated by the system
   private String inferredRunId;
+  
+  // the run ID provided by the operator assignment service
+  private String assignedRunId;
 
 	public String getUUID() {
 		return uuid;
@@ -112,8 +128,7 @@ public class NycVehicleManagementStatusBean implements Serializable {
     return mostRecentObservedDestinationSignCode;
   }
 
-  public void setMostRecentObservedDestinationSignCode(
-      String mostRecentDestinationSignCode) {
+  public void setMostRecentObservedDestinationSignCode(String mostRecentDestinationSignCode) {
     this.mostRecentObservedDestinationSignCode = mostRecentDestinationSignCode;
   }
 
@@ -125,22 +140,12 @@ public class NycVehicleManagementStatusBean implements Serializable {
     this.lastInferredDestinationSignCode = inferredDestinationSignCode;
   }
 
-
   public boolean isInferenceIsFormal() {
-	return inferenceIsFormal;
+    return inferenceIsFormal;
   }
 
-  
   public void setInferenceIsFormal(boolean inferenceIsFormal) {
-	this.inferenceIsFormal = inferenceIsFormal;
-  }
-
-  public String getInferenceEngineHostname() {
-    return inferenceEngineHostname;
-  }
-
-  public void setInferenceEngineHostname(String inferenceEngineHostname) {
-    this.inferenceEngineHostname = inferenceEngineHostname;
+    this.inferenceIsFormal = inferenceIsFormal;
   }
 
   public boolean isInferenceEngineIsPrimary() {
@@ -189,6 +194,14 @@ public class NycVehicleManagementStatusBean implements Serializable {
 
   public String getInferredRunId() {
     return inferredRunId;
+  }
+
+  public String getAssignedRunId() {
+    return assignedRunId;
+  }
+
+  public void setAssignedRunId(String assignedRunId) {
+    this.assignedRunId = assignedRunId;
   }
 
 }

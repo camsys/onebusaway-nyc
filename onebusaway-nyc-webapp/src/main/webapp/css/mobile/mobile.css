@@ -120,9 +120,12 @@ div {
 p {
     margin: 0 0 0.6em
 }
-small{
-    font-size: 80%;
+small {
+	display: block;
+	padding-top: 5px;
+	font-size: 80%;
     color: #666666;
+    font-style: italic;
 }
 .alert {
     color: #cc0000;

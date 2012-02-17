@@ -258,10 +258,12 @@ public class StifTask implements Runnable {
     int blockNo = 0;
 
     Map<ServiceCode, List<RawTrip>> rawData = loader.getRawStifData();
-    for (List<RawTrip> rawTrips : rawData.values()) {
+    for (Map.Entry<ServiceCode, List<RawTrip>> entry : rawData.entrySet()) {
+      List<RawTrip> rawTrips = entry.getValue();
       // this is a monster -- we want to group these by run and find the
       // pullouts
       HashMap<String, List<RawTrip>> tripsByRun = new HashMap<String, List<RawTrip>>();
+      HashSet<RawTrip> unmatchedTrips = new HashSet<RawTrip>();
       ArrayList<RawTrip> pullouts = new ArrayList<RawTrip>();
       for (RawTrip trip : rawTrips) {
         List<RawTrip> byRun = tripsByRun.get(trip.runId);
@@ -269,6 +271,7 @@ public class StifTask implements Runnable {
           byRun = new ArrayList<RawTrip>();
           tripsByRun.put(trip.runId, byRun);
         }
+        unmatchedTrips.add(trip);
         byRun.add(trip);
         if (trip.type == StifTripType.PULLOUT) {
           pullouts.add(trip);
@@ -284,6 +287,7 @@ public class StifTask implements Runnable {
         int i = 0;
         HashSet<String> blockIds = new HashSet<String>();
         while (lastTrip.type != StifTripType.PULLIN) {
+          unmatchedTrips.remove(lastTrip);
           if (++i > 200) {
             _log.warn("We seem to be caught in an infinite loop; this is usually caused\n"
                 + "by two trips on the same run having the same start time.  Since nobody\n"
@@ -343,7 +347,6 @@ public class StifTask implements Runnable {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
             String blockId = gtfsTrip.getServiceId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.runId + "_" + blockNo;
 
-
             blockId = blockId.intern();
             blockIds.add(blockId);
             gtfsTrip.setBlockId(blockId);
@@ -358,9 +361,21 @@ public class StifTask implements Runnable {
             }
           }
         }
+        unmatchedTrips.remove(lastTrip);
+
         for (String blockId : blockIds) {
           dumpBlockDataForTrip(printStream, pullout, "pullout", blockId);
           dumpBlockDataForTrip(printStream, lastTrip, "pullin", blockId);
+        }
+      }
+
+      for (RawTrip trip : unmatchedTrips) {
+        _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey() + " trip type " + trip.type + " must not have an associated pullout");
+        for (Trip gtfsTrip : trip.getGtfsTrips()) {
+          blockNo++;
+          String blockId = gtfsTrip.getServiceId() + "_" + trip.firstStop + "_" + trip.firstStopTime + "_" + trip.runId.replace("-","_") + "_orphan_" + blockNo;
+          _log.warn("Generating single-trip block id for GTFS trip: " + gtfsTrip.getId() + " : " + blockId);
+          gtfsTrip.setBlockId(blockId);
         }
       }
     }

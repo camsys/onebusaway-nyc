@@ -85,154 +85,42 @@
     </dependencies>
     <profiles>
         <profile>
-	  <!-- for testing only -->
-            <id>db-hsqldb-local</id>
+            <id>cloud</id> <!-- aka staging, production -->
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
-                <db.driverClassName>org.hsqldb.jdbcDriver</db.driverClassName>
-                <db.url>jdbc:hsqldb:local-hsqldb-db/onebusaway_nyc;shutdown=true</db.url>
-                <db.username>sa</db.username>
-                <db.password></db.password>
-                <db.hibernate.dialect>org.hibernate.dialect.HSQLDialect</db.hibernate.dialect>
-                <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
+                <tds.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path><!-- assumes domain is set in resolv.conf -->
+                <tdm.host>tdm</tdm.host>
             </properties>
         </profile>
-      <profile>
-	<id>db-postgres-local</id>
-	<activation>
-	  <activeByDefault>true</activeByDefault>
-	</activation>
-	<properties>
-	  <db.driverClassName>org.postgresql.Driver</db.driverClassName>
-	  <db.url>jdbc:postgresql://localhost/org_onebusaway_nyc</db.url>
-	  <db.username>postgres</db.username>
-	  <db.password>changeme</db.password>
-	  <db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</db.hibernate.dialect>
-	  <!-- TODO Note sure about autocommit for postgres -->
-	  <db.hibernate.connection.autocommit>false</db.hibernate.connection.autocommit>
-	</properties>
-      </profile>
-      <profile>
-	<id>db-mysql-local</id>
-	<properties>
-	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-	  <db.url>jdbc:mysql://localhost:3306/onebusaway_nyc</db.url>
-	  <db.username>root</db.username>
-	  <db.password></db.password>
-	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
-	</properties>
-      </profile>
-      <profile>
-	<id>db-staging</id>
-	<properties>
-	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-	  <db.url>jdbc:mysql://db.staging.obanyc.com:3306/onebusaway_nyc</db.url>
-	  <db.username>obanyc</db.username>
-	  <db.password>blueceilingbrick</db.password>
-	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
-	</properties>
-      </profile>
-      <profile>
-	<id>db-dev</id>
-	<properties>
-	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-	  <db.url>jdbc:mysql://db.dev.obanyc.com:3306/onebusaway_nyc</db.url>
-	  <db.username>obanyc</db.username>
-	  <db.password>blueceilingbrick</db.password>
-	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
-	</properties>
-      </profile>
-      <profile>
-	<id>db-replay</id>
-	<properties>
-	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-	  <db.url>jdbc:mysql://db.replay.obanyc.com:3306/onebusaway_nyc</db.url>
-	  <db.username>obanyc</db.username>
-	  <db.password>blueceilingbrick</db.password>
-	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
-	</properties>
-      </profile>
-      <profile>
-	<id>db-prod</id>
-	<properties>
-	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-	  <db.url>jdbc:mysql://db.prod.obanyc.com:3306/onebusaway_nyc</db.url>
-	  <db.username>reporting</db.username>
-	  <db.password>changeme</db.password>
-	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
-	</properties>
-      </profile>
-      <profile>
-	<id>db-qa</id>
-	<properties>
-	  <db.driverClassName>com.mysql.jdbc.Driver</db.driverClassName>
-	  <db.url>jdbc:mysql://db.qa.obanyc.com:3306/onebusaway_nyc</db.url>
-	  <db.username>obanyc</db.username>
-	  <db.password>blueceilingbrick</db.password>
-	  <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
-	</properties>
-      </profile>
+        <profile>
+            <id>local-front-end</id>
+            <properties>
+                <jetty.port>8082</jetty.port>
+                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+                <tdm.host>tdm.dev.obanyc.com</tdm.host>
+            </properties>
+        </profile>
+<!-- archive can't run single port because zeromq can't be shared (classloader issues) -->
         <profile>
             <!-- Transit data federation webapp offers the TDS -->
-            <id>services-tdf-as-tds</id> <!-- aka staging, production -->
+            <id>local-single-port</id><!-- akaservices-tdf-as-tds --> <!-- aka staging, production -->
             <properties>
+                <jetty.port>8085</jetty.port>
                 <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
-            <!-- Transit data federation webapp offers the TDS -->
-            <id>services-staging</id> <!-- aka staging, production -->
-            <properties>
-                <tds.path>http://sms.staging.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.staging.obanyc.com</tdm.host>
-            </properties>
-        </profile>
-        <profile>
-            <!-- Transit data federation webapp offers the TDS -->
-            <id>services-prod</id> <!-- aka staging, production -->
-            <properties>
-                <tds.path>http://sms.prod.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.prod.obanyc.com</tdm.host>
-            </properties>
-        </profile>
-        <profile>
-            <!-- Transit data federation webapp offers the TDS -->
-            <id>services-dev</id> <!-- aka staging, production -->
-            <properties>
-                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.dev.obanyc.com</tdm.host>
-            </properties>
-        </profile>
-        <profile>
-            <!-- Transit data federation webapp offers the TDS -->
-            <id>services-replay</id> <!-- aka staging, production -->
-            <properties>
-                <tds.path>http://sms.replay.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.replay.obanyc.com</tdm.host>
-            </properties>
-        </profile>
-        <profile>
-            <!-- Transit data federation webapp offers the TDS -->
-            <id>services-qa</id> <!-- aka staging, production -->
-            <properties>
-                <tds.path>http://sms.qa.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-                <tdm.host>tdm.qa.obanyc.com</tdm.host>
-            </properties>
-        </profile>
-        <profile>
-            <!-- Vehicle tracking webapp offers the TDS -->
-            <id>services-vtw-as-tds</id> <!-- single port, aka development -->
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <id>local-ie</id> <!-- aka services-vtw-as-tds --> <!-- single port, aka development -->
             <properties>
                 <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
             </properties>
         </profile>
         <profile>
-            <id>services-vtw-as-tds-multiport</id> <!-- multi port, also for development -->
-            <!-- assumes we're running on 8082, so vtw is on a different port -->
+            <id>local-multi-port</id> <!-- services-vtw-as-tds-multiport --><!-- multi port, also for development -->
             <properties>
                 <jetty.port>8082</jetty.port>
                 <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>

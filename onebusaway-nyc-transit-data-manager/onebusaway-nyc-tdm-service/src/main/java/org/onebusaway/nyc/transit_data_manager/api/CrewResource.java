@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_manager.api;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentD
 import org.onebusaway.nyc.transit_data_manager.adapters.output.json.OperatorAssignmentFromTcip;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.OperatorAssignment;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.OperatorAssignmentsMessage;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.UtsCrewUploadsFilePicker;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
@@ -43,12 +45,23 @@ public class CrewResource {
 
   public CrewResource() throws IOException {
     mostRecentPicker = new UtsCrewUploadsFilePicker(System.getProperty("tdm.crewAssignsUploadDir"));
+    
+    try {
+      depotIdTranslator = new DepotIdTranslator(new File(System.getProperty("tdm.depotIdTranslationFile")));
+    } catch (IOException e) {
+      // Set depotIdTranslator to null and otherwise do nothing.
+      // Everything works fine without the depot id translator.
+      depotIdTranslator = null;
+    }
   }
   
   private static Logger _log = LoggerFactory.getLogger(CrewResource.class);
 
   @Autowired
   JsonTool jsonTool;
+  
+  
+  private DepotIdTranslator depotIdTranslator = null;
   
   private MostRecentFilePicker mostRecentPicker;
   
@@ -82,12 +95,11 @@ public class CrewResource {
 
     _log.debug("Generating OperatorAssignmentData object from file " + inputFile.getPath());
     // First create a OperatorAssignmentData object
-    UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(
-        inputFile);
-
+    
     OperatorAssignmentData data;
+    
     try {
-      data = process.generateDataObject();
+      data = getOpAssignDataObjectForFile(inputFile);
     } catch (IOException e1) {
       _log.info("Exception loading data. Verify input file " + inputFile.toString());
       _log.debug(e1.getMessage());
@@ -132,6 +144,20 @@ public class CrewResource {
 
   }
 
+  private OperatorAssignmentData getOpAssignDataObjectForFile(File inputFile) throws FileNotFoundException {
+    UtsCrewAssignsToDataCreator process = new UtsCrewAssignsToDataCreator(
+        inputFile);
+    
+    // If depotIdTranslator is null, print a message saying the depot id translation tool is not set up.
+    if (depotIdTranslator == null) {
+      _log.info("DepotIdTranslator has not been set up. Depot IDs will not be translated.");
+    } else {
+      _log.info("Using depot ID translation.");
+    }
+    process.setDepotIdTranslator(depotIdTranslator);
+    
+    return process.generateDataObject();
+  }
   /*
    * This method also exists in the same form in
    * UtsCrewAssignsToJsonOutputProcess

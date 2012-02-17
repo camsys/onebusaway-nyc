@@ -14,6 +14,10 @@ public interface GenericOptions {
   // This specifies an option for the command line named type with a string value ie '$ <cmd> --type value'
   @Option
   String getType();
+  
+  // Make an option for the name of the depot id translation file.
+  @Option(shortName="d",defaultToNull=true)
+  File getDepotIdConfig();
 
   @Unparsed
   List<File> getFiles();

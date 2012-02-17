@@ -25,6 +25,12 @@
             <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
             <version>${onebusaway.nyc.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
 	  	
         <!-- This needs to be more than just test scope so we can use it run the bundle builder -->
         <dependency>
