@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -24,9 +22,6 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationServi
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockGeospatialService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockIndexFactoryService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.BlockStopTimeIndex;
@@ -37,8 +32,12 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEn
 import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class VehicleStateLibrary {
@@ -58,36 +57,6 @@ public class VehicleStateLibrary {
   private TransitGraphDao _transitGraphDao;
 
   private BlockIndexService _blockIndexService;
-
-  private BlockGeospatialService _blockGeospatialService;
-
-  private BlockStateService _blockStateService;
-
-  private BlockCalendarService _blockCalendarService;
-
-  private BlockIndexFactoryService _blockIndexFactoryService;
-
-  @Autowired
-  public void setBlockIndexFactoryService(
-      BlockIndexFactoryService blockIndexFactoryService) {
-    _blockIndexFactoryService = blockIndexFactoryService;
-  }
-
-  @Autowired
-  public void setBlockStateService(BlockStateService blockStateService) {
-    _blockStateService = blockStateService;
-  }
-
-  @Autowired
-  public void setBlockCalendarService(BlockCalendarService blockCalendarService) {
-    _blockCalendarService = blockCalendarService;
-  }
-
-  @Autowired
-  public void setBlockGeospatialService(
-      BlockGeospatialService blockGeospatialService) {
-    _blockGeospatialService = blockGeospatialService;
-  }
 
   @Autowired
   public void setBlockIndexService(BlockIndexService blockIndexService) {
