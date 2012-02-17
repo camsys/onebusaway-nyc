@@ -31,6 +31,7 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.MobileWebLocationResult;
 import org.onebusaway.nyc.webapp.actions.m.model.MobileWebPresentationModelFactory;
 
+import org.apache.commons.lang.xwork.StringEscapeUtils;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -292,7 +293,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if((_q == null || _q.isEmpty()) && _location != null)
       return CURRENT_LOCATION_TEXT;
     else
-      return _q;
+      return StringEscapeUtils.escapeHtml(_q);
   }
   
   public String getL() {

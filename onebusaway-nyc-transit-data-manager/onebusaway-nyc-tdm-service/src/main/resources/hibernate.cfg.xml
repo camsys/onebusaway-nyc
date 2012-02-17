@@ -15,11 +15,13 @@
     <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
     <!-- Database connection settings -->
+<!--
     <property name="connection.driver_class">${db.driverClassName}</property>
     <property name="connection.url">${db.url}</property>
     <property name="connection.username">${db.username}</property>
     <property name="connection.password">${db.password}</property>
-
+-->
+    <property name="connection.datasource">java:comp/env/jdbc/appDB</property>
     <!-- JDBC connection pool (use the built-in one) -->
     <property name="connection.pool_size">1</property>
 

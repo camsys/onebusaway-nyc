@@ -110,7 +110,6 @@ public class NycVehicleManagementStatusRecord implements Serializable {
     setLastObservedLongitude(new BigDecimal(message.getLastObservedLongitude()));
     setMostRecentObservedDestinationSignCode(message.getMostRecentObservedDestinationSignCode());
     setLastInferredDestinationSignCode(message.getLastInferredDestinationSignCode());
-    setInferenceEngineHostname(message.getInferenceEngineHostname());
     setInferenceIsEnabled(message.isInferenceIsEnabled());
     setInferenceEngineIsPrimary(message.isInferenceEngineIsPrimary());
     setInferenceIsFormal(message.isInferenceIsFormal());

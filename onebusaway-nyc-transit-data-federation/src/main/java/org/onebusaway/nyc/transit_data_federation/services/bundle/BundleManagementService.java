@@ -3,6 +3,7 @@ package org.onebusaway.nyc.transit_data_federation.services.bundle;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 public interface BundleManagementService {
   
@@ -14,5 +15,11 @@ public interface BundleManagementService {
 
   public boolean bundleWithIdExists(String bundleId);
 
+  // is bundle finished loading? 
+  public Boolean bundleIsReady();
+
+  // thread reference keepers
+  public void registerInferenceProcessingThread(Future thread);
+  
 }
 

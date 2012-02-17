@@ -15,6 +15,41 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
+import org.onebusaway.transit_data.model.blocks.BlockBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.services.TransitDataService;
+
+import com.jhlabs.map.proj.ProjectionException;
+
+import org.apache.axis.utils.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
+import tcip_3_0_5_local.NMEA;
+import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,50 +63,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import lrms_final_09_07.Angle;
 
-import org.apache.axis.utils.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
-import org.onebusaway.transit_data.model.blocks.BlockBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.services.TransitDataService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-
-import com.jhlabs.map.proj.ProjectionException;
-
-import tcip_3_0_5_local.NMEA;
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
-
 @Component
-public class VehicleLocationInferenceServiceImpl implements
-    VehicleLocationInferenceService {
+public class VehicleLocationInferenceServiceImpl implements VehicleLocationInferenceService {
 
   private static Logger _log = LoggerFactory.getLogger(VehicleLocationInferenceServiceImpl.class);
 
@@ -95,7 +95,10 @@ public class VehicleLocationInferenceServiceImpl implements
 
   private int _numberOfProcessingThreads = 10;
 
-  private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
+  private int _skippedUpdateLogCounter = 0;
+  
+  private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
+      new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
 
@@ -114,74 +117,10 @@ public class VehicleLocationInferenceServiceImpl implements
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
 
-  /**
-   * Has the bundle changed since the last time we returned a result?
-   * 
-   * @return boolean: bundle changed or not
-   */
-  private boolean bundleHasChanged() {
-    BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-
-    boolean result = false;
-
-    // active bundle was removed from BMS' list of active bundles
-    if (currentBundle == null)
-      return true;
-
-    if (_lastBundle != null) {
-      result = !_lastBundle.getId().equals(currentBundle.getId());
-    }
-
-    _lastBundle = currentBundle;
-    return result;
-  }
-
-  /**
-   * If the bundle has changed, verify that all vehicle results are present in
-   * the current bundle. If not, reset the inference to map them to the current
-   * reference data (bundle). Also reset vehicles with no current match, as they
-   * may have a match in the new bundle.
-   */
-  private synchronized void verifyVehicleResultMappingToCurrentBundle() {
-    if (!bundleHasChanged())
-      return;
-
-    for (AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
-      VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
-      NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
-
-      // no state
-      if (state == null) {
-        _log.info("Vehicle " + vehicleId
-            + " reset on bundle change: no state available.");
-
-        this.resetVehicleLocation(vehicleId);
-        continue;
-      }
-
-      // no match to any trip
-      if (state.getInferredBlockId() == null
-          || state.getInferredTripId() == null) {
-        _log.info("Vehicle " + vehicleId
-            + " reset on bundle change: no matched trip/block.");
-
-        this.resetVehicleLocation(vehicleId);
-        continue;
-      }
-
-      // trip or block matched have disappeared!
-      TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
-      BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
-
-      if (trip == null || block == null) {
-        _log.info("Vehicle "
-            + vehicleId
-            + " reset on bundle change: trip/block is no longer present in new bundle.");
-
-        this.resetVehicleLocation(vehicleId);
-        continue;
-      }
-    }
+  @Override
+  public void setSeeds(long cdfSeed, long factorySeed) {
+    ParticleFactoryImpl.setSeed(factorySeed);
+    CategoricalDist.setSeed(cdfSeed);
   }
 
   @PostConstruct
@@ -197,6 +136,10 @@ public class VehicleLocationInferenceServiceImpl implements
     _executorService.shutdownNow();
   }
 
+  /****
+   * Service Methods
+   ****/
+  
   @Override
   public void handleNycRawLocationRecord(NycRawLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
@@ -205,8 +148,7 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   @Override
-  public void handleNycTestInferredLocationRecord(
-      NycTestInferredLocationRecord record) {
+  public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
 
     _executorService.execute(new ProcessingTask(record));
@@ -215,13 +157,22 @@ public class VehicleLocationInferenceServiceImpl implements
   @Override
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope envelope) {
     CcLocationReport message = envelope.getCcLocationReport();
-    verifyVehicleResultMappingToCurrentBundle();
 
-    if (_bundleManagementService.getCurrentBundleMetadata() == null) {
-      _log.warn("Bundle is not ready or none is loaded; skipping update message.");
+    if(!_bundleManagementService.bundleIsReady()) {
+      _skippedUpdateLogCounter++;
+
+      // only print this every 25 times so we don't fill up the logs!
+      if(_skippedUpdateLogCounter > 25) {
+        _log.warn("Bundle is not ready or none is loaded--we've skipped 25 messages since last log event.");
+        _skippedUpdateLogCounter = 0;
+      }
+      
       return;
     }
+    
+    verifyVehicleResultMappingToCurrentBundle();
 
+    // construct raw record
     NycRawLocationRecord r = new NycRawLocationRecord();
     r.setUUID(envelope.getUUID());
 
@@ -234,6 +185,7 @@ public class VehicleLocationInferenceServiceImpl implements
       if (degrees != null)
         r.setBearing(degrees);
     }
+    
     r.setSpeed(message.getSpeed());
 
     r.setDestinationSignCode(message.getDestSignCode().toString());
@@ -277,7 +229,7 @@ public class VehicleLocationInferenceServiceImpl implements
     r.setTime(time.getMillis());
     r.setTimeReceived(new Date().getTime());
 
-    // validate timestamp from bus
+    // validate timestamp from bus--for debugging only
     String RMCSentence = r.getRmc();
 
     if (RMCSentence != null) {
@@ -298,8 +250,8 @@ public class VehicleLocationInferenceServiceImpl implements
                   + vehicleId
                   + " has significant time difference between time from DRU and time from record\n"
                   + "Difference in seconds: " + differenceInSeconds + "\n"
-                  + "Difference in hours: " + (differenceInSeconds / 60 / 60)
-                  + "\n" + "Raw timestamp: " + message.getTimeReported() + "\n"
+                  + "Difference in hours: " + (differenceInSeconds / 60 / 60) + "\n" 
+                  + "Raw timestamp: " + message.getTimeReported() + "\n"
                   + "From RMC: " + datePart + " " + timePart);
             }
           } catch (ParseException e) {
@@ -309,19 +261,10 @@ public class VehicleLocationInferenceServiceImpl implements
       }
     }
 
-    _executorService.execute(new ProcessingTask(r));
-
-  }
-
-  @Override
-  public void setSeeds(long cdfSeed, long factorySeed) {
-    ParticleFactoryImpl.setSeed(factorySeed);
-    CategoricalDist.setSeed(cdfSeed);
-  }
-
-  @Override
-  public void resetVehicleLocation(AgencyAndId vid) {
-    _vehicleInstancesByVehicleId.remove(vid);
+    // process message
+    @SuppressWarnings("rawtypes")
+    Future result = _executorService.submit(new ProcessingTask(r));
+    _bundleManagementService.registerInferenceProcessingThread(result);
   }
 
   @Override
@@ -335,6 +278,23 @@ public class VehicleLocationInferenceServiceImpl implements
       record.setVehicleId(vid);
     return record;
   }
+
+  @Override
+  public void resetVehicleLocation(AgencyAndId vid) {
+    _vehicleInstancesByVehicleId.remove(vid);
+  }
+
+  @Override
+  public void setVehicleStatus(AgencyAndId vid, boolean enabled) {
+    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
+    if (instance == null)
+      return;
+    instance.setVehicleStatus(enabled);
+  }
+
+  /****
+   * Debugging Methods
+   ****/
 
   @Override
   public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords() {
@@ -357,15 +317,7 @@ public class VehicleLocationInferenceServiceImpl implements
 
     return records;
   }
-
-  @Override
-  public void setVehicleStatus(AgencyAndId vid, boolean enabled) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vid);
-    if (instance == null)
-      return;
-    instance.setVehicleStatus(enabled);
-  }
-
+  
   @Override
   public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
@@ -434,6 +386,86 @@ public class VehicleLocationInferenceServiceImpl implements
   /****
    * Private Methods
    ****/
+  
+  /**
+   * Has the bundle changed since the last time we returned a result?
+   * 
+   * @return boolean: bundle changed or not
+   */
+  private boolean bundleHasChanged() {
+    boolean result = false;
+
+    BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+
+    // active bundle was removed from BMS' list of active bundles
+    if (currentBundle == null)
+      return true;
+
+    if (_lastBundle != null) {
+      result = !_lastBundle.getId().equals(currentBundle.getId());
+    }
+
+    _lastBundle = currentBundle;
+    return result;
+  }
+
+  /**
+   * If the bundle has changed, verify that all vehicle results are present in
+   * the current bundle. If not, reset the inference to map them to the current
+   * reference data (bundle). Also reset vehicles with no current match, as they
+   * may have a match in the new bundle.
+   */
+  private synchronized void verifyVehicleResultMappingToCurrentBundle() {
+    if (!bundleHasChanged())
+      return;
+
+    for (AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
+      try {
+        VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
+        NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
+  
+        // no state
+        if (state == null) {
+          _log.info("Vehicle " + vehicleId
+              + " reset on bundle change: no state available.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+  
+        // no match to any trip
+        if (state.getInferredBlockId() == null
+            || state.getInferredTripId() == null) {
+          _log.info("Vehicle " + vehicleId
+              + " reset on bundle change: no matched trip/block.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+  
+        // trip or block matched have disappeared!
+        TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
+        BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
+  
+        if (trip == null || block == null) {
+          _log.info("Vehicle "
+              + vehicleId
+              + " reset on bundle change: trip/block is no longer present in new bundle.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+      } catch(Exception e) {
+        // if something goes wrong, reset inference state
+        _log.info("Vehicle "
+            + vehicleId
+            + " reset on bundle change: exception thrown: " + e.getMessage());
+
+        this.resetVehicleLocation(vehicleId);
+      }
+    }
+  }
+
   private VehicleLocationDetails findParticle(VehicleLocationDetails details,
       int particleId) {
     List<Particle> particles = details.getParticles();
@@ -455,13 +487,13 @@ public class VehicleLocationInferenceServiceImpl implements
   }
 
   private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
-
     VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
 
     if (instance == null) {
       VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
-      instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId,
-          newInstance);
+
+      instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
+      
       if (instance == null)
         instance = newInstance;
     }
@@ -489,21 +521,22 @@ public class VehicleLocationInferenceServiceImpl implements
 
     @Override
     public void run() {
-
       try {
         VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
 
         boolean passOnRecord = sendRecord(existing);
-
         if (passOnRecord) {
+          // management bean (becomes part of inference bean)
           NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
           managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
           managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
-
+          
           BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-          if (currentBundle != null)
+          if (currentBundle != null) {
             managementRecord.setActiveBundleId(currentBundle.getId());
-
+          }
+                    
+          // inference result bean
           NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
           record.setVehicleId(_vehicleId.toString());
           record.setManagementRecord(managementRecord);
@@ -523,6 +556,7 @@ public class VehicleLocationInferenceServiceImpl implements
       } else if (_nycTestInferredLocationRecord != null) {
         return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
       }
+      
       return false;
     }
   }

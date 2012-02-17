@@ -23,6 +23,20 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <!-- Database Connection Configuration -->
+    <!-- Database Configuration -->
+    <bean id="dataSource"
+          class="org.springframework.jndi.JndiObjectFactoryBean">
+      <property name="jndiName"
+                value="java:comp/env/jdbc/archiveDB"/>   
+      <property name="lookupOnStartup"
+                value="true"/>   
+      <property name="cache"
+                value="true"/>   
+      <property name="proxyInterface"
+                value="javax.sql.DataSource"/>   
+      <property name="resourceRef"
+                value="true" />
+    </bean>
     
 <!--      <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
@@ -45,12 +59,21 @@
         <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="${db.driverClassName}" />
-        <property name="url" value="${db.url}" />
-        <property name="username" value="${db.username}" />
-        <property name="password" value="${db.password}" />
-    </bean>
+<bean id="dataSource"
+      class="org.springframework.jndi.JndiObjectFactoryBean">
+      <property name="jndiName"
+                  value="java:comp/env/jdbc/archiveDB"/>   
+      <property name="lookupOnStartup"
+                  value="true"/>   
+      <property name="cache"
+                  value="true"/>   
+      <property name="proxyInterface"
+                  value="javax.sql.DataSource"/>   
+      <property name="resourceRef"
+                  value="true" />
+</bean>
+<!-- try out autodetect dialect -->
+<!--
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
         <property name="properties">
@@ -60,7 +83,7 @@
             </props> 
         </property> 
     </bean> 
-
+-->
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary" >
       <constructor-arg type="java.lang.String" value="${tdm.host}"/>
       <constructor-arg type="java.lang.Integer" value="80" />

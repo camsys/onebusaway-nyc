@@ -104,7 +104,7 @@ public class ServiceAlertSubscription implements Serializable {
     Siri s = new Siri();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     
-    h.addSituationExchangeToSiri(serviceDelivery, collection);
+    h.addSituationExchangeToServiceDelivery(serviceDelivery, collection);
     h.addClosedSituationExchangesToSiri(serviceDelivery, deletedIds);
     
     s.setServiceDelivery(serviceDelivery);

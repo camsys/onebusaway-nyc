@@ -265,7 +265,7 @@ public abstract class NycSiriService {
       Siri responseSiri) {
     ServiceAlertsHelper helper = new ServiceAlertsHelper();
     ServiceDelivery serviceDelivery = new ServiceDelivery();
-    helper.addSituationExchangeToSiri(serviceDelivery,
+    helper.addSituationExchangeToServiceDelivery(serviceDelivery,
         getPersister().getAllActiveServiceAlerts());
     responseSiri.setServiceDelivery(serviceDelivery);
     return;

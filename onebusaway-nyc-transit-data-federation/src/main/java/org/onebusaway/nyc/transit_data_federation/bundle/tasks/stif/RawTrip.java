@@ -67,4 +67,8 @@ public class RawTrip implements Comparable<RawTrip> {
   public String getSignCodeRoute() {
     return signCodeRoute;
   }
+
+  public String toString() {
+    return "Trip on run (" + runId + ") at " + firstStopTime + " with dsc '" + dsc + "'";
+  }
 }

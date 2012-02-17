@@ -6,36 +6,46 @@ import java.util.List;
 import java.util.Map;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaBusDepotAssignment;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 
 import tcip_final_3_0_5_1.CPTFleetSubsetGroup;
 
 public class TCIPBusDepotAssignmentsOutputConverter implements
     BusDepotAssignmentsOutputConverter {
 
-  private Map<String, List<MtaBusDepotAssignment>> assignInputMap = null;
+  private Map<String, List<MtaBusDepotAssignment>> mtaDepotToBusesAtDepotMap = null;
+  private DepotIdTranslator depotIdTranslator;
 
   public TCIPBusDepotAssignmentsOutputConverter(
       Map<String, List<MtaBusDepotAssignment>> data) {
-    assignInputMap = data;
+    mtaDepotToBusesAtDepotMap = data;
   }
 
   public List<CPTFleetSubsetGroup> convertAssignments() {
-    // MtaUtsToTcipAssignmentConverter dataConverter = new
-    // MtaUtsToTcipAssignmentConverter();
+
     MtaDepotMapToTcipAssignmentConverter dataConverter = new MtaDepotMapToTcipAssignmentConverter();
+    dataConverter.setDepotIdTranslator(depotIdTranslator);
 
     List<CPTFleetSubsetGroup> assigns = new ArrayList<CPTFleetSubsetGroup>();
 
-    Iterator<String> itr = assignInputMap.keySet().iterator();
-
     CPTFleetSubsetGroup opAssign = null;
-    String depot = null;
-    while (itr.hasNext()) {
-      depot = itr.next();
-      opAssign = dataConverter.ConvertToOutput(depot, assignInputMap.get(depot));
+    String mtaDepotStr = null;
+    
+    Iterator<String> mtaDepotItr = mtaDepotToBusesAtDepotMap.keySet().iterator();
+
+    while (mtaDepotItr.hasNext()) {
+      mtaDepotStr = mtaDepotItr.next();
+      // Note that in dataConverter, the depot ids will get translated. I will stick with the source IDs here
+      // So that all the translation happens in the same class.
+      opAssign = dataConverter.ConvertToOutput(mtaDepotStr, mtaDepotToBusesAtDepotMap.get(mtaDepotStr));
       assigns.add(opAssign);
     }
-
+    
+    
     return assigns;
+  }
+
+  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+    this.depotIdTranslator = depotIdTranslator;
   }
 }

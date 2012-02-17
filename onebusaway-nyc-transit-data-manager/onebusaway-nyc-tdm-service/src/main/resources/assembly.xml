@@ -13,7 +13,7 @@
       <excludes>
 	<exclude>
 	</exclude>
-      </exclude>
+      </excludes>
     </dependencySet>
   </dependencySets>
   <fileSets>

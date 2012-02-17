@@ -7,17 +7,19 @@ import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInf
 import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueListener;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ServletContextAware;
 
 import java.util.ArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.servlet.ServletContext;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcLocationReport;
 
 public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
-    implements PartitionedInputQueueListener {
+  implements PartitionedInputQueueListener, ServletContextAware {
 
   private String[] _depotPartitionKeys = null;
 
@@ -35,6 +37,17 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   public void setVehicleLocationService(
       VehicleLocationInferenceService vehicleLocationService) {
     _vehicleLocationService = vehicleLocationService;
+  }
+
+  public void setServletContext(ServletContext servletContext) {
+    // check for depot partition keys in the servlet context
+    if (servletContext != null) {
+      String key = (String)servletContext.getInitParameter("depot.partition.key");
+      _log.info("servlet context provied depot.partition.key=" + key);
+      if (key != null) {
+        setDepotPartitionKey(key);
+      }
+    }
   }
 
   @Override
@@ -85,6 +98,7 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
 
   @Override
   public void setDepotPartitionKey(String depotPartitionKey) {
+    _log.info("depotPartitionKey=" + depotPartitionKey);
     if (depotPartitionKey != null && !depotPartitionKey.isEmpty())
       _depotPartitionKeys = depotPartitionKey.split(",");
     else
@@ -94,6 +108,8 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   @Override
   @PostConstruct
   public void setup() {
+    // test is depotPartitionKeys is overridden in context
+    //XXXX
     super.setup();
   }
 
