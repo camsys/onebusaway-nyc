@@ -18,6 +18,8 @@ package org.onebusaway.nyc.sms.actions;
 import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
 import org.onebusaway.presentation.impl.NextActionSupport;
 
+import com.dmurph.tracking.VisitorData;
+
 import org.apache.struts2.convention.annotation.InterceptorRef;
 import org.apache.struts2.convention.annotation.InterceptorRefs;
 import org.apache.struts2.interceptor.SessionAware;
@@ -25,9 +27,12 @@ import org.apache.struts2.interceptor.SessionAware;
 import java.util.Map;
 
 @InterceptorRefs({@InterceptorRef("onebusaway-nyc-sms-webapp-stack")})
-public abstract class SessionedIndexAction extends NextActionSupport implements SessionAware {
-  
+public abstract class SessionedIndexAction extends NextActionSupport 
+  implements SessionAware, GoogleAnalyticsSessionAware {
+    
   private static final long serialVersionUID = 1L;
+  
+  private static final int SESSION_RESET_WINDOW_IN_SECONDS = 60 * 20; // 20m
   
   private Map<String, Object> _session;
     
@@ -39,7 +44,13 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
 
   protected String _query = null;
   
-  protected String _sessionId = null;
+  protected VisitorData _visitorCookie;
+  
+  public void initializeSession(String sessionId) {
+    _searchResults = new SearchResultCollection();
+    _searchResultsCursor = 0; 
+    _visitorCookie = VisitorData.newVisitor();
+  }
   
   public void setSession(Map<String, Object> session) {
     this._session = session;
@@ -48,13 +59,17 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
       _searchResults = (SearchResultCollection)session.get("searchResults");
       _searchResultsCursor = (Integer)session.get("searchResultsCursor");
       _lastQuery = (String)session.get("lastQuery");
-      _sessionId = (String)session.get("sessionId");
-      
-      if(_searchResults == null)
-        _searchResults = new SearchResultCollection();
-      
-      if(_searchResultsCursor == null)
-        _searchResultsCursor = 0;
+      _visitorCookie = (VisitorData)session.get("visitorData");
+
+      // if another request comes in before SESSION_RESET_WINDOW_IN_SECONDS, 
+      // count it as another request in the same session--otherwise a new session from
+      // an existing visitor.
+      if(_visitorCookie != null) {
+        if(_visitorCookie.getTimestampCurrent() - _visitorCookie.getTimestampPrevious() > SESSION_RESET_WINDOW_IN_SECONDS)
+          _visitorCookie.resetSession();
+        else
+          _visitorCookie.newRequest();
+      }
     }
   }
   
@@ -62,6 +77,7 @@ public abstract class SessionedIndexAction extends NextActionSupport implements 
     _session.put("searchResults", _searchResults);
     _session.put("searchResultsCursor", _searchResultsCursor);
     _session.put("lastQuery", _lastQuery);
+    _session.put("visitorData", _visitorCookie);
   }
   
   // user input/query

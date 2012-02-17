@@ -21,4 +21,6 @@ public interface SessionManager {
 
   public Map<String, Object> getContext(String sessionId);
 
+  public boolean contextExistsFor(String sessionId);
+  
 }

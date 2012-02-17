@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.sms.impl;
 
+import org.onebusaway.nyc.sms.actions.GoogleAnalyticsSessionAware;
 import org.onebusaway.nyc.sms.services.SessionManager;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
 
@@ -48,12 +49,10 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
 
   @Override
   public String intercept(ActionInvocation invocation) throws Exception {
-
     ActionContext context = invocation.getInvocationContext();
     Map<String, Object> parameters = context.getParameters();
 
     Object rawSessionId = parameters.get(_sessionIdParameterName);
-
     if (rawSessionId == null)
       return invocation.invoke();
 
@@ -65,6 +64,7 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
     }
 
     String sessionId = rawSessionId.toString();
+    boolean sessionIsNew = !_sessionManager.contextExistsFor(sessionId);
     Map<String, Object> persistentSession = _sessionManager.getContext(sessionId);
 
     Map<String, Object> originalSession = context.getSession();
@@ -75,14 +75,15 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
     RequestContextHolder.setRequestAttributes(attributes);
 
     Object action = invocation.getAction();
-    if (action instanceof SessionAware) {
-      if(persistentSession != null) {
-        persistentSession.put("sessionId", sessionId);
-      }
-      
+    if(action instanceof SessionAware) {
       ((SessionAware)action).setSession(persistentSession);
     }
-    
+
+    if(action instanceof GoogleAnalyticsSessionAware) {
+      if(sessionIsNew)
+        ((GoogleAnalyticsSessionAware)action).initializeSession(sessionId);
+    }
+
     try {
       return invocation.invoke();
     } finally {

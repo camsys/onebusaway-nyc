@@ -72,10 +72,15 @@ public class IndexAction extends SessionedIndexAction {
   private String _response = null;
 
   public String execute() throws Exception {
-    AnalyticsConfigData config = new AnalyticsConfigData(
-        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null));
-    _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
-
+    String googleAnalyticsSiteId = 
+        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
+        
+    if(googleAnalyticsSiteId != null) {    
+      AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, _visitorCookie);
+      _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
+      _googleAnalytics.trackPageView("/sms", "New SMS Session", "");
+    }
+    
     SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService, _configurationService);
     _stopSearchService.setModelFactory(factory);
     _routeSearchService.setModelFactory(factory);    
@@ -134,7 +139,8 @@ public class IndexAction extends SessionedIndexAction {
     if(_searchResults.size() == 0) {
       errorResponse("No matches.");
       
-      _googleAnalytics.trackEvent("SMS", "No Results", _query);
+      if(_googleAnalytics != null)
+        _googleAnalytics.trackEvent("SMS", "No Results", _query);
       
     } else {
       if(_searchResults.getTypeOfResults().equals("StopResult")) {
@@ -251,7 +257,8 @@ public class IndexAction extends SessionedIndexAction {
     
     _response = StringUtils.join(alertValues, "\n\n");
     
-    _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + routeResult.size() + "]");
+    if(_googleAnalytics != null)
+      _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + routeResult.size() + "]");
   }
   
   private void routeResponse(List<SearchResult> results, boolean truncate) {
@@ -282,7 +289,8 @@ public class IndexAction extends SessionedIndexAction {
       
     _response += "Add '" + result.getRouteIdWithoutAgency() + "' for best results\n";
     
-    _googleAnalytics.trackEvent("SMS", "Route Response", _query + " [" + _searchResults.size() + "]");
+    if(_googleAnalytics != null)
+      _googleAnalytics.trackEvent("SMS", "Route Response", _query + " [" + _searchResults.size() + "]");
   }
   
   private void locationDisambiguationResponse(List<SearchResult> results, boolean compactMode) {
@@ -319,7 +327,8 @@ public class IndexAction extends SessionedIndexAction {
     _response += "Send:\n";
     _response += "1-" + (i - 1) + "\n";
       
-    _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.size() + "]");
+    if(_googleAnalytics != null)
+      _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.size() + "]");
   }
   
   private boolean stopRealtimeResponse(List<SearchResult> results, int realtimeObservationCount) {
@@ -395,7 +404,8 @@ public class IndexAction extends SessionedIndexAction {
       _response += "'C' + ROUTE service change (*)\n";
     }
     
-    _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query + " [" + results.size() + "]");
+    if(_googleAnalytics != null)
+      _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query + " [" + results.size() + "]");
 
     return truncated;
   }
@@ -486,7 +496,8 @@ public class IndexAction extends SessionedIndexAction {
       _response += "'C' + ROUTE service change (*)\n";
     }
         
-    _googleAnalytics.trackEvent("SMS", "Stop Disambiguation", _query + " [" + results.size() + "]");
+    if(_googleAnalytics != null)
+      _googleAnalytics.trackEvent("SMS", "Stop Disambiguation", _query + " [" + results.size() + "]");
 
     return truncated;
   }
