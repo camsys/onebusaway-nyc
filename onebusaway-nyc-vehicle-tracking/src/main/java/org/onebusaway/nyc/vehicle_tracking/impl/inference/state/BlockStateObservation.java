@@ -1,10 +1,13 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This class represents the combination of an observation and a BlockState.
@@ -23,8 +26,18 @@ public final class BlockStateObservation implements
   private final Boolean _isRunReported;
 
   private final Boolean _isRunReportedAssignedMismatch;
+  
+  private final boolean _isAtPotentialLayoverSpot;
 
-  public BlockStateObservation(BlockState blockState, Observation obs) {
+  private VehicleStateLibrary _vehicleStateLibrary;
+
+  @Autowired
+  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+    _vehicleStateLibrary = vehicleStateLibrary;
+  }
+  
+  public BlockStateObservation(BlockState blockState, Observation obs, 
+      boolean isAtPotentialLayoverSpot) {
 
     Preconditions.checkNotNull(obs);
     _blockState = Preconditions.checkNotNull(blockState);
@@ -36,19 +49,21 @@ public final class BlockStateObservation implements
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
     _isRunReportedAssignedMismatch = _isOpAssigned != null
         && _isRunReported != null ? _isOpAssigned && !_isRunReported : null;
+    _isAtPotentialLayoverSpot = isAtPotentialLayoverSpot;
   }
 
   private BlockStateObservation(BlockState blockState, Boolean isRunReported,
-      Boolean isUTSassigned, Boolean isRunAM) {
+      Boolean isUTSassigned, Boolean isRunAM, boolean isAtLayoverSpot) {
     _blockState = blockState;
     this._isRunReported = isRunReported;
     this._isOpAssigned = isUTSassigned;
     this._isRunReportedAssignedMismatch = isRunAM;
+    this._isAtPotentialLayoverSpot = isAtLayoverSpot;
   }
 
   public BlockStateObservation(BlockStateObservation state) {
-    this(state.getBlockState(), state.getRunReported(), state.getOpAssigned(),
-        state.isRunReportedAssignedMismatch());
+    this(state._blockState, state._isRunReported, state._isOpAssigned,
+        state._isRunReportedAssignedMismatch, state._isAtPotentialLayoverSpot);
   }
 
   public BlockState getBlockState() {
@@ -160,5 +175,9 @@ public final class BlockStateObservation implements
       return false;
     }
     return true;
+  }
+
+  public boolean isAtPotentialLayoverSpot() {
+    return _isAtPotentialLayoverSpot;
   }
 }

@@ -316,8 +316,10 @@ public class BlockStateTransitionModel {
           blockLocation.getLocation(), obs.getLocation());
 
       if (d > 400) {
-        final BlockStateObservation blockStateObservation = new BlockStateObservation(
+        boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
             blockState, obs);
+        final BlockStateObservation blockStateObservation = new BlockStateObservation(
+            blockState, obs, isAtPotentialLayoverSpot);
         results.addAll(_blocksFromObservationService.bestStates(obs,
             blockStateObservation));
       } else {

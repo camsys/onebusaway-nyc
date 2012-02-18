@@ -247,8 +247,11 @@ public class BlocksFromObservationServiceImpl implements
       final Set<BlockInstance> consideredBlocks = Sets.newHashSet();
 
       for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-        if (bestBlockLocation)
-          potentialBlockStates.add(new BlockStateObservation(bs, observation));
+        if (bestBlockLocation) {
+          boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+              bs, observation);
+          potentialBlockStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
+        }
         consideredBlocks.add(bs.getBlockInstance());
       }
 
@@ -270,8 +273,10 @@ public class BlocksFromObservationServiceImpl implements
       for (final BlockInstance thisBIS : consideredBlocks) {
         final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
         try {
-          states.add(new BlockStateObservation(_blockStateService.getAsState(
-              thisBIS, 0.0), observation));
+          BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
+          boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+              bs, observation);
+          states.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
         } catch (final Exception e) {
           _log.warn(e.getMessage());
           continue;
@@ -334,7 +339,9 @@ public class BlocksFromObservationServiceImpl implements
 
     if (foundStates != null) {
       for (final BlockState bs : foundStates.getAllStates()) {
-        resStates.add(new BlockStateObservation(bs, observation));
+        boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+            bs, observation);
+        resStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
       }
     }
 
@@ -398,9 +405,10 @@ public class BlocksFromObservationServiceImpl implements
       targetScheduleTime = Math.max(targetScheduleTime, minArrivalTime);
     }
 
-    final BlockStateObservation state = new BlockStateObservation(
-        _blockStateService.getScheduledTimeAsState(instance, targetScheduleTime),
-        obs);
+    BlockState bs = _blockStateService.getScheduledTimeAsState(instance, targetScheduleTime);
+    boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+        bs, obs);
+    final BlockStateObservation state = new BlockStateObservation(bs, obs, isAtPotentialLayoverSpot);
 
     return state;
   }
@@ -426,7 +434,9 @@ public class BlocksFromObservationServiceImpl implements
     }
     if (foundStates != null) {
       for (final BlockState bs : foundStates.getAllStates()) {
-        resStates.add(new BlockStateObservation(bs, observation));
+        boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+            bs, observation);
+        resStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
       }
     }
     return Sets.newHashSet(resStates);

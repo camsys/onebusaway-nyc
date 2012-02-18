@@ -735,6 +735,21 @@ public class SensorModelSupportLibrary {
       return 0.0;
   }
 
+  static public boolean hasServedSomePartOfBlock(BlockState blockState) {
+
+    // If we don't have a block, then we haven't made progress on a block
+    if (blockState == null)
+      return false;
+
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+
+    // How much of a block do we need to run to consider ourselves started?
+    if (blockLocation.getDistanceAlongBlock() > 500)
+      return true;
+    else
+      return false;
+  }
+  
   public double computeProbabilityOfServingSomePartOfBlock(BlockState blockState) {
 
     // If we don't have a block, then we haven't made progress on a block

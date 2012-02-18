@@ -62,12 +62,8 @@ public class DeadheadDuringRule implements SensorModelRule {
     final double pMoved = not(library.computeVehicelHasNotMovedProbability(
         state.getMotionState(), obs));
 
-    final double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
-        state, obs));
-
-    final double p1 = pMoved * pAtLayoverLocation;
     result.addResultAsAnd(
-        "DEADHEAD_DURING <=> Vehicle has moved AND at layover location", p1);
+        "DEADHEAD_DURING <=> Vehicle has moved", pMoved);
 
     /**
      * Rule: DEADHEAD_DURING => not right on block
@@ -85,12 +81,12 @@ public class DeadheadDuringRule implements SensorModelRule {
     result.addResultAsAnd("DEADHEAD_DURING => resume block on time",
         pStartBlockOnTime);
 
-    /**
-     * Rule: DEADHEAD_DURING => served some part of block
-     */
-    final double pServedSomePartOfBlock = library.computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
-    result.addResultAsAnd("DEADHEAD_DURING => served some part of block",
-        pServedSomePartOfBlock);
+//    /**
+//     * Rule: DEADHEAD_DURING => served some part of block
+//     */
+//    final double pServedSomePartOfBlock = library.computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
+//    result.addResultAsAnd("DEADHEAD_DURING => served some part of block",
+//        pServedSomePartOfBlock);
 
     return result;
   }

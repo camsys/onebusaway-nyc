@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
@@ -74,17 +75,17 @@ public class JourneyStateTransitionModel {
 
     switch (parentJourneyState.getPhase()) {
       case AT_BASE:
-        return moveAtBase(obs);
+        return moveAtBase(parentState);
       case DEADHEAD_BEFORE:
-        return moveDeadheadBefore(obs, parentJourneyState);
+        return moveDeadheadBefore(parentState, parentJourneyState);
       case LAYOVER_BEFORE:
-        return moveLayoverBefore(obs);
+        return moveLayoverBefore(parentState);
       case IN_PROGRESS:
-        return moveInProgress(obs);
+        return moveInProgress(parentState);
       case DEADHEAD_DURING:
-        return moveDeadheadDuring(obs, parentJourneyState);
+        return moveDeadheadDuring(parentState, parentJourneyState);
       case LAYOVER_DURING:
-        return moveLayoverDuring(obs);
+        return moveLayoverDuring(parentState);
       default:
         throw new IllegalStateException("unknown journey state: "
             + parentJourneyState.getPhase());
@@ -151,7 +152,9 @@ public class JourneyStateTransitionModel {
    * @param obs
    */
   private void includeConditionalStates(final List<JourneyState> res,
-      final Observation obs) {
+      final VehicleState parentState) {
+    final Observation obs = parentState.getObservation();
+    
     /*
      * Cannot reasonably transition to in-progress if there isn't a previous
      * observation with which we can determine the direction of travel.
@@ -165,69 +168,99 @@ public class JourneyStateTransitionModel {
      */
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
       res.add(JourneyState.atBase());
+    
   }
 
-  private List<JourneyState> moveAtBase(Observation obs) {
+  private List<JourneyState> moveAtBase(VehicleState parentState) {
 
+    final Observation obs = parentState.getObservation();
     final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, obs);
+    includeConditionalStates(res, parentState);
     return res;
   }
 
-  private List<JourneyState> moveDeadheadBefore(Observation obs,
+  private List<JourneyState> moveDeadheadBefore(VehicleState parentState,
       JourneyState parentJourneyState) {
 
     final JourneyStartState start = parentJourneyState.getData();
-
     final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(start.getJourneyStart())));
-    includeConditionalStates(res, obs);
+    includeConditionalStates(res, parentState);
     return res;
   }
 
-  private List<JourneyState> moveLayoverBefore(Observation obs) {
+  private List<JourneyState> moveLayoverBefore(VehicleState parentState) {
+    final Observation obs = parentState.getObservation();
     final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(JourneyState.layoverBefore(),
         JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, obs);
+    includeConditionalStates(res, parentState);
     return res;
   }
 
-  private List<JourneyState> moveInProgress(Observation obs) {
+  private List<JourneyState> moveInProgress(VehicleState parentState) {
 
-    final List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.deadheadDuring(obs.getLocation()),
-        JourneyState.layoverDuring(),
-        JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.layoverBefore()));
-    includeConditionalStates(res, obs);
-    return res;
-  }
-
-  private List<JourneyState> moveDeadheadDuring(Observation obs,
-      JourneyState parentJourneyState) {
-
-    final JourneyStartState start = parentJourneyState.getData();
+    final Observation obs = parentState.getObservation();
     final List<JourneyState> res = new ArrayList<JourneyState>();
     res.addAll(Arrays.asList(
-        JourneyState.deadheadDuring(start.getJourneyStart()),
-        JourneyState.layoverDuring(),
         JourneyState.deadheadBefore(obs.getLocation()),
         JourneyState.layoverBefore()));
-    includeConditionalStates(res, obs);
+    includeConditionalStates(res, parentState);
+    /*
+     * Have to serve some part of a block to have any -during state
+     */
+    if (parentState.getBlockState() != null
+        && SensorModelSupportLibrary.hasServedSomePartOfBlock(parentState.getBlockState())) {
+      if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
+        res.add(JourneyState.deadheadDuring(obs.getLocation()));
+      else if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
+        res.add(JourneyState.layoverDuring());
+    }
+    return res;
+  }
+
+  private List<JourneyState> moveDeadheadDuring(VehicleState parentState,
+      JourneyState parentJourneyState) {
+
+    final Observation obs = parentState.getObservation();
+//    final JourneyStartState start = parentJourneyState.getData();
+    final List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(
+        JourneyState.deadheadBefore(obs.getLocation()),
+        JourneyState.layoverBefore()));
+    includeConditionalStates(res, parentState);
+    /*
+     * Have to serve some part of a block to have any -during state
+     */
+    if (parentState.getBlockState() != null
+        && SensorModelSupportLibrary.hasServedSomePartOfBlock(parentState.getBlockState())) {
+      if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
+        res.add(JourneyState.deadheadDuring(obs.getLocation()));
+      else if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
+        res.add(JourneyState.layoverDuring());
+    }
 
     return res;
   }
 
-  private List<JourneyState> moveLayoverDuring(Observation obs) {
+  private List<JourneyState> moveLayoverDuring(VehicleState parentState) {
 
+    final Observation obs = parentState.getObservation();
     final List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.deadheadDuring(obs.getLocation()),
-        JourneyState.layoverDuring()));
-    includeConditionalStates(res, obs);
+    includeConditionalStates(res, parentState);
+    /*
+     * Have to serve some part of a block to have any -during state
+     */
+    if (parentState.getBlockState() != null
+        && SensorModelSupportLibrary.hasServedSomePartOfBlock(parentState.getBlockState())) {
+      if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
+        res.add(JourneyState.deadheadDuring(obs.getLocation()));
+      else if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
+        res.add(JourneyState.layoverDuring());
+    }
     return res;
   }
 }

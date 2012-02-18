@@ -190,6 +190,7 @@ public class AbstractTraceRunner {
     Map<EVehiclePhase, Double> results = runTest();
 
     System.out.println("results of " + this.getClass().getSimpleName());
+    String failedLabels = "";
     for (Entry<EVehiclePhase, Double> result : results.entrySet()) {
       double relativeRatio = result.getValue();
 
@@ -203,8 +204,12 @@ public class AbstractTraceRunner {
 
       System.out.println(label);
 
-      assertTrue(label, relativeRatio >= minAccuracyRatio);
+      if (relativeRatio < minAccuracyRatio) {
+        failedLabels += label + "\n";
+      }
     }
+    
+    assertTrue(failedLabels, StringUtils.isBlank(failedLabels));
   }
 
   

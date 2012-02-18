@@ -65,44 +65,44 @@ public class LayoverRule implements SensorModelRule {
 
     final SensorModelResult result = new SensorModelResult("pLayover");
 
-    /**
-     * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
-     */
+//    /**
+//     * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
+//     */
+//
+//    final double pNotMoved = library.computeVehicelHasNotMovedProbability(
+//        state.getMotionState(), obs);
+//
+//    final double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
+//        state, obs));
+//
+//    final double pLayoverState = p(EVehiclePhase.isLayover(phase));
+//
+//    final double p1 = biconditional(pNotMoved * pAtLayoverLocation,
+//        pLayoverState);
+//
+//    final SensorModelResult p1Result = result.addResultAsAnd(
+//        "LAYOVER <=> Vehicle has not moved AND at layover location", p1);
+//
+//    // For diagnostics
+//    p1Result.addResult("pNotMoved", pNotMoved);
+//    p1Result.addResult("pAtLayoverLocation", pAtLayoverLocation);
+//    p1Result.addResult("pLayoverState", pLayoverState);
 
-    final double pNotMoved = library.computeVehicelHasNotMovedProbability(
-        state.getMotionState(), obs);
-
-    final double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
-        state, obs));
-
-    final double pLayoverState = p(EVehiclePhase.isLayover(phase));
-
-    final double p1 = biconditional(pNotMoved * pAtLayoverLocation,
-        pLayoverState);
-
-    final SensorModelResult p1Result = result.addResultAsAnd(
-        "LAYOVER <=> Vehicle has not moved AND at layover location", p1);
-
-    // For diagnostics
-    p1Result.addResult("pNotMoved", pNotMoved);
-    p1Result.addResult("pAtLayoverLocation", pAtLayoverLocation);
-    p1Result.addResult("pLayoverState", pLayoverState);
-
-    /**
-     * Rule: LAYOVER_DURING => made some progress on the block
-     */
-
-    final double pLayoverDuring = p(phase == EVehiclePhase.LAYOVER_DURING);
-
-    final double pServedSomePartOfBlock = blockState != null
-        ? library.computeProbabilityOfServingSomePartOfBlock(blockState) : 0;
-
-    final double p2 = implies(pLayoverDuring, pServedSomePartOfBlock);
-
-    final SensorModelResult p2Result = result.addResultAsAnd(
-        "LAYOVER_DURING => made some progress on the block", p2);
-    p2Result.addResult("pLayoverDuring", pLayoverDuring);
-    p2Result.addResult("pServedSomePartOfBlock", pServedSomePartOfBlock);
+//    /**
+//     * Rule: LAYOVER_DURING => made some progress on the block
+//     */
+//
+//    final double pLayoverDuring = p(phase == EVehiclePhase.LAYOVER_DURING);
+//
+//    final double pServedSomePartOfBlock = blockState != null
+//        ? library.computeProbabilityOfServingSomePartOfBlock(blockState) : 0;
+//
+//    final double p2 = implies(pLayoverDuring, pServedSomePartOfBlock);
+//
+//    final SensorModelResult p2Result = result.addResultAsAnd(
+//        "LAYOVER_DURING => made some progress on the block", p2);
+//    p2Result.addResult("pLayoverDuring", pLayoverDuring);
+//    p2Result.addResult("pServedSomePartOfBlock", pServedSomePartOfBlock);
 
     /**
      * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule
