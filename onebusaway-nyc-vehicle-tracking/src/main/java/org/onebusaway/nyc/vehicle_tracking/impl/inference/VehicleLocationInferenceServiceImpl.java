@@ -15,6 +15,30 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
+import lrms_final_09_07.Angle;
+
+import org.apache.axis.utils.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -100,8 +124,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
   private int _skippedUpdateLogCounter = 0;
   
-  private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
-      new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
+  private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
 
@@ -120,10 +143,83 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
 
-  @Override
-  public void setSeeds(long cdfSeed, long factorySeed) {
-    ParticleFactoryImpl.setSeed(factorySeed);
-    CategoricalDist.setSeed(cdfSeed);
+  /**
+   * Has the bundle changed since the last time we returned a result?
+   * 
+   * @return boolean: bundle changed or not
+   */
+  private boolean bundleHasChanged() {
+    BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+
+    boolean result = false;
+
+    // active bundle was removed from BMS' list of active bundles
+    if (currentBundle == null)
+      return true;
+
+    if (_lastBundle != null) {
+      result = !_lastBundle.getId().equals(currentBundle.getId());
+    }
+
+    _lastBundle = currentBundle;
+    return result;
+  }
+
+  /**
+   * If the bundle has changed, verify that all vehicle results are present in
+   * the current bundle. If not, reset the inference to map them to the current
+   * reference data (bundle). Also reset vehicles with no current match, as they
+   * may have a match in the new bundle.
+   */
+  private synchronized void verifyVehicleResultMappingToCurrentBundle() {
+    if (!bundleHasChanged())
+      return;
+
+    for (AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
+      try {
+        VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
+        NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
+  
+        // no state
+        if (state == null) {
+          _log.info("Vehicle " + vehicleId
+              + " reset on bundle change: no state available.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+  
+        // no match to any trip
+        if (state.getInferredBlockId() == null
+            || state.getInferredTripId() == null) {
+          _log.info("Vehicle " + vehicleId
+              + " reset on bundle change: no matched trip/block.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+  
+        // trip or block matched have disappeared!
+        TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
+        BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
+  
+        if (trip == null || block == null) {
+          _log.info("Vehicle "
+              + vehicleId
+              + " reset on bundle change: trip/block is no longer present in new bundle.");
+  
+          this.resetVehicleLocation(vehicleId);
+          continue;
+        }
+      } catch(Exception e) {
+        // if something goes wrong, reset inference state
+        _log.info("Vehicle "
+            + vehicleId
+            + " reset on bundle change: exception thrown: " + e.getMessage());
+
+        this.resetVehicleLocation(vehicleId);
+      }
+    }
   }
 
   @PostConstruct
@@ -264,8 +360,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       }
     }
 
-    // process message
-    @SuppressWarnings("rawtypes")
     Future result = _executorService.submit(new ProcessingTask(r));
     _bundleManagementService.registerInferenceProcessingThread(result);
   }
