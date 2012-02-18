@@ -160,19 +160,24 @@ OBA.RouteMap = function(mapNode, initCallbackFn) {
 		
 		// service available at stop
 		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' 
-			|| typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
-			|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined') {
+			&& (typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
+			|| typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall === 'undefined')) {
 
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
 		} else {
 			var nextStops = [];
 			nextStops.push(activity.MonitoredVehicleJourney.MonitoredCall);
-			jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
-				if(nextStops.length >= 3) {
-					return false;
-				}
-				nextStops.push(onwardCall);
-			});
+			
+			if(typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined'
+				&& typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall !== 'undefined') {
+
+				jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
+					if(nextStops.length >= 3) {
+						return false;
+					}
+					nextStops.push(onwardCall);
+				});
+			}
 		
 			html += '<p class="service">Next stops:</p>';
 			html += '<ul>';			
