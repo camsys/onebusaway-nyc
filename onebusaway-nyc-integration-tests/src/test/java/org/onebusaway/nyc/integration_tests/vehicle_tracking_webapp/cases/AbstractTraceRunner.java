@@ -205,7 +205,7 @@ public class AbstractTraceRunner {
       System.out.println(label);
 
       if (relativeRatio < minAccuracyRatio) {
-        failedLabels += label + "\n";
+        failedLabels += "\n" + label;
       }
     }
     

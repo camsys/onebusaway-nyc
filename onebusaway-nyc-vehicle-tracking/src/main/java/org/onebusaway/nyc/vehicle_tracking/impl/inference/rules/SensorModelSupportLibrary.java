@@ -101,7 +101,7 @@ public class SensorModelSupportLibrary {
    */
   private final double _offBlockDistance = 1000;
 
-  private final DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(
+  private final static DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(
       200);
 
   /****
@@ -250,14 +250,10 @@ public class SensorModelSupportLibrary {
     return pProgressTowardsStartOfBlock * pStartBlockOnTime;
   }
 
-  /****
-   * 
-   ****/
-
   /**
    * @return the probability that the vehicle has not moved in a while
    */
-  public double computeVehicelHasNotMovedProbability(MotionState motionState,
+  static public double computeVehicelHasNotMovedProbability(MotionState motionState,
       Observation obs) {
 
     final long currentTime = obs.getTime();
@@ -765,7 +761,7 @@ public class SensorModelSupportLibrary {
       return 0.0;
   }
 
-  public double computeProbabilityOfEndOfBlock(BlockState blockState) {
+  public static double computeProbabilityOfEndOfBlock(BlockState blockState){
 
     // If we don't have a block, we can't be at the end of a block
     if (blockState == null)

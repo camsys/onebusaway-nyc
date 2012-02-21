@@ -65,28 +65,25 @@ public class LayoverRule implements SensorModelRule {
 
     final SensorModelResult result = new SensorModelResult("pLayover");
 
-//    /**
-//     * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
-//     */
-//
-//    final double pNotMoved = library.computeVehicelHasNotMovedProbability(
-//        state.getMotionState(), obs);
-//
-//    final double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(
-//        state, obs));
-//
-//    final double pLayoverState = p(EVehiclePhase.isLayover(phase));
-//
-//    final double p1 = biconditional(pNotMoved * pAtLayoverLocation,
-//        pLayoverState);
-//
-//    final SensorModelResult p1Result = result.addResultAsAnd(
-//        "LAYOVER <=> Vehicle has not moved AND at layover location", p1);
+    /**
+     * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
+     */
+
+    final double pNotMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(
+        state.getMotionState(), obs);
+
+    final double pLayoverState = p(EVehiclePhase.isLayover(phase));
+
+    final double p1 = biconditional(pNotMoved,
+        pLayoverState);
+
+    final SensorModelResult p1Result = result.addResultAsAnd(
+        "LAYOVER <=> Vehicle has not moved AND at layover location", p1);
 //
 //    // For diagnostics
-//    p1Result.addResult("pNotMoved", pNotMoved);
+    p1Result.addResult("pNotMoved", pNotMoved);
 //    p1Result.addResult("pAtLayoverLocation", pAtLayoverLocation);
-//    p1Result.addResult("pLayoverState", pLayoverState);
+    p1Result.addResult("pLayoverState", pLayoverState);
 
 //    /**
 //     * Rule: LAYOVER_DURING => made some progress on the block

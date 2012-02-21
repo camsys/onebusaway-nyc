@@ -88,25 +88,19 @@ public class EdgeLikelihood implements SensorModelRule {
       Context context) {
     
     final VehicleState state = context.getState();
+    final VehicleState parentState = context.getParentState();
     final Observation obs = context.getObservation();
     final EVehiclePhase phase = state.getJourneyState().getPhase();
     
-    if (!(phase == EVehiclePhase.IN_PROGRESS
-          || phase == EVehiclePhase.DEADHEAD_BEFORE 
-          || phase == EVehiclePhase.DEADHEAD_DURING))
-      return new SensorModelResult("pInProgress", 1.0);
-    
-    final VehicleState parentState = context.getParentState();
     if (obs.getPreviousObservation() == null || parentState == null) {
       final SensorModelResult result = new SensorModelResult("pInProgress", 1.0);
-      if (phase == EVehiclePhase.IN_PROGRESS) {
+      if (EVehiclePhase.isActiveDuringBlock(phase)) {
         result.addResultAsAnd("no previous observation/vehicle-state", 0.0);
       } else {
         result.addResultAsAnd("no previous observation/vehicle-state", 1.0);
       }
       return result;
     }
-    
     
     EdgeLikelihoodContext edgeContext = new EdgeLikelihoodContext(context);
     return _cache.getUnchecked(edgeContext);
@@ -131,7 +125,7 @@ public class EdgeLikelihood implements SensorModelRule {
 
       double invResult;
 
-      if (bestInProgressProb == null)
+      if (bestInProgressProb == null || obs.isAtBase())
         invResult = 1.0;
       else
         invResult = 1.0 - bestInProgressProb;

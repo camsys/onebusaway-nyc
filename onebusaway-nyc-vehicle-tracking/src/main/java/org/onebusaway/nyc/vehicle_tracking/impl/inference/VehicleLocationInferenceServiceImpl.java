@@ -143,84 +143,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
 
-  /**
-   * Has the bundle changed since the last time we returned a result?
-   * 
-   * @return boolean: bundle changed or not
-   */
-  private boolean bundleHasChanged() {
-    BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-
-    boolean result = false;
-
-    // active bundle was removed from BMS' list of active bundles
-    if (currentBundle == null)
-      return true;
-
-    if (_lastBundle != null) {
-      result = !_lastBundle.getId().equals(currentBundle.getId());
-    }
-
-    _lastBundle = currentBundle;
-    return result;
-  }
-
-  /**
-   * If the bundle has changed, verify that all vehicle results are present in
-   * the current bundle. If not, reset the inference to map them to the current
-   * reference data (bundle). Also reset vehicles with no current match, as they
-   * may have a match in the new bundle.
-   */
-  private synchronized void verifyVehicleResultMappingToCurrentBundle() {
-    if (!bundleHasChanged())
-      return;
-
-    for (AgencyAndId vehicleId : _vehicleInstancesByVehicleId.keySet()) {
-      try {
-        VehicleInferenceInstance vehicleInstance = _vehicleInstancesByVehicleId.get(vehicleId);
-        NycTestInferredLocationRecord state = vehicleInstance.getCurrentState();
-  
-        // no state
-        if (state == null) {
-          _log.info("Vehicle " + vehicleId
-              + " reset on bundle change: no state available.");
-  
-          this.resetVehicleLocation(vehicleId);
-          continue;
-        }
-  
-        // no match to any trip
-        if (state.getInferredBlockId() == null
-            || state.getInferredTripId() == null) {
-          _log.info("Vehicle " + vehicleId
-              + " reset on bundle change: no matched trip/block.");
-  
-          this.resetVehicleLocation(vehicleId);
-          continue;
-        }
-  
-        // trip or block matched have disappeared!
-        TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
-        BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
-  
-        if (trip == null || block == null) {
-          _log.info("Vehicle "
-              + vehicleId
-              + " reset on bundle change: trip/block is no longer present in new bundle.");
-  
-          this.resetVehicleLocation(vehicleId);
-          continue;
-        }
-      } catch(Exception e) {
-        // if something goes wrong, reset inference state
-        _log.info("Vehicle "
-            + vehicleId
-            + " reset on bundle change: exception thrown: " + e.getMessage());
-
-        this.resetVehicleLocation(vehicleId);
-      }
-    }
-  }
 
   @PostConstruct
   public void start() {
@@ -658,5 +580,11 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       
       return false;
     }
+  }
+
+  @Override
+  public void setSeeds(long cdfSeed, long factorySeed) {
+    ParticleFactoryImpl.setSeed(factorySeed);
+    CategoricalDist.setSeed(cdfSeed);
   }
 }

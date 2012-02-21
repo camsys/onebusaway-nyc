@@ -21,6 +21,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 import org.springframework.stereotype.Component;
 
@@ -39,12 +40,12 @@ public class ObservationCache {
    * observation cache per vehicle-id. The observation caches hold only the last
    * two entries.
    */
-  private final Cache<AgencyAndId, Cache<Observation, ObservationContents>> _contentsByVehicleId = CacheBuilder.newBuilder().concurrencyLevel(
+  private final LoadingCache<AgencyAndId, LoadingCache<Observation, ObservationContents>> _contentsByVehicleId = CacheBuilder.newBuilder().concurrencyLevel(
       4).expireAfterWrite(30, TimeUnit.MINUTES).build(
-      new CacheLoader<AgencyAndId, Cache<Observation, ObservationContents>>() {
+      new CacheLoader<AgencyAndId, LoadingCache<Observation, ObservationContents>>() {
 
         @Override
-        public Cache<Observation, ObservationContents> load(AgencyAndId key)
+        public LoadingCache<Observation, ObservationContents> load(AgencyAndId key)
             throws Exception {
           return CacheBuilder.newBuilder().concurrencyLevel(1).weakKeys().maximumSize(
               2).build(new CacheLoader<Observation, ObservationContents>() {
@@ -62,7 +63,7 @@ public class ObservationCache {
   public <T> T getValueForObservation(Observation observation,
       EObservationCacheKey key) {
     final NycRawLocationRecord record = observation.getRecord();
-    final Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
+    final LoadingCache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
     final ObservationContents contents = contentsCache.getUnchecked(observation);
 
     if (contents == null)
@@ -74,7 +75,7 @@ public class ObservationCache {
   public void putValueForObservation(Observation observation,
       EObservationCacheKey key, Object value) {
     final NycRawLocationRecord record = observation.getRecord();
-    final Cache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
+    final LoadingCache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
 
     final ObservationContents contents = contentsCache.getUnchecked(observation);
 

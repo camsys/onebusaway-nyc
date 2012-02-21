@@ -15,15 +15,20 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.implies;
+import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
+
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -152,14 +157,56 @@ public class BlockStateTransitionModel {
       /**
        * We're now considering that the driver may have been re-assigned.
        */
-      potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
-          obs, true));
+      for (BlockStateObservation newBlockState : _blocksFromObservationService.determinePotentialBlockStatesForObservation(
+          obs, true)) {
+        if (isTransitionAllowed(parentState, obs, newBlockState, journeyState))
+          potentialTransStates.add(newBlockState);
+      }
 
       if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
         potentialTransStates.add(null);
     }
 
     return potentialTransStates;
+  }
+
+  private boolean isTransitionAllowed(VehicleState parentState,
+      Observation obs, BlockStateObservation state, JourneyState journeyState) {
+
+    Observation prevObs = obs.getPreviousObservation();
+
+    if (parentState == null || prevObs == null)
+      return true;
+
+    JourneyState parentJourneyState = parentState.getJourneyState();
+
+    EVehiclePhase parentPhase = parentJourneyState.getPhase();
+    EVehiclePhase phase = journeyState.getPhase();
+
+    /**
+     * Transition During to Before => check things like: out of service or at base
+     */
+    if(!(EVehiclePhase.isActiveDuringBlock(parentPhase)
+        && EVehiclePhase.isActiveBeforeBlock(phase)))
+      return true;
+
+    BlockState blockState = state.getBlockState();
+    if (!(blockState != null
+        && (blockState.getBlockLocation().getNextStop() == null 
+          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState) > 0.9)))
+      return false;
+
+    /**
+     * Added this hack to allow no block transitions after finishing one.
+     */
+    BlockState parentBlockState = parentState.getBlockState() != null
+        ? parentState.getBlockState() : null;
+    if (!(parentBlockState != null
+        && (parentBlockState.getBlockLocation().getNextStop() == null 
+          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9)))
+      return false;
+
+    return true;
   }
 
   public Set<BlockStateObservation> getClosestBlockStates(
