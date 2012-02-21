@@ -72,6 +72,12 @@ public class LayoverRule implements SensorModelRule {
     final double pNotMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(
         state.getMotionState(), obs);
 
+    /*
+     * We're choosing to give priority to at-base...
+     */
+    if (EVehiclePhase.AT_BASE.equals(phase))
+      return result.addResultAsAnd("at-base", 1.0);
+    
     final double pLayoverState = p(EVehiclePhase.isLayover(phase));
 
     final double p1 = biconditional(pNotMoved,

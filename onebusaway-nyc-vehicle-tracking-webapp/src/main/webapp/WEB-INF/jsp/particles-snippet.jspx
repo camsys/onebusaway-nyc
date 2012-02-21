@@ -40,16 +40,16 @@
                 <td>Count</td>
                 <td>P</td>
                 <td>Phase</td>
-                <td>FromReportedRun</td>
-                <td>OperatorAssigned</td>
+                <td>From Reported Run</td>
+                <td>Operator Assigned</td>
                 <td>RunId</td>
                 <td>BlockId</td>
                 <td>TripId</td>
                 <td>Dsc</td>
-                <td>BlockLocation</td>
-                <td>DistanceAlongBlock</td>
-                <td>ScheduledTime</td>
-                <td>LastMotionLocation</td>
+                <td>Block Location</td>
+                <td>Distance Along Block</td>
+                <td>Scheduled Time</td>
+                <td>Last Motion Location</td>
             </tr>
         </thead>
         <tbody>

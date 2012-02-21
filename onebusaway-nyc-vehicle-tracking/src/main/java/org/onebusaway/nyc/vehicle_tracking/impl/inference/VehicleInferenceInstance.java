@@ -487,7 +487,7 @@ public class VehicleInferenceInstance {
             break;
           }
           
-          nextStop = nextStop.getNextStop();
+          nextStop = nextStop.hasNextStop() ? nextStop.getNextStop() : null;
         }
       }
       
