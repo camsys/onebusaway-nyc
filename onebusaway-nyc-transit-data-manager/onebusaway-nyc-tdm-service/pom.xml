@@ -96,9 +96,6 @@
     <profiles>
         <profile>
             <id>default-paths</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <tdm.dataPath>/mnt/data/tdm_input/upload/mta</tdm.dataPath>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
@@ -123,7 +120,6 @@
                 <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
                 <tdm.depotIdTranslationConfigFile>/tmp/depidtrans.config</tdm.depotIdTranslationConfigFile>
-                <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
             </properties>
         </profile>
         <profile>
@@ -199,9 +195,6 @@
         <profile>
       <!-- Vehicle tracking webapp offers the TDS -->
             <id>local-multi-port</id> <!-- services-vtw-as-tds --> <!-- single port, aka development -->
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
                 <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
