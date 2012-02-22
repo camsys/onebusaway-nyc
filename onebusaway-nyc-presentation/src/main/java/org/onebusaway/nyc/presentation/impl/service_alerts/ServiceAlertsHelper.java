@@ -24,7 +24,6 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.service_alerts.ServiceAlertLibrary;
 
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
@@ -261,12 +260,14 @@ public class ServiceAlertsHelper {
 
     if (serviceAlert == null)
       return;
-    for (NaturalLanguageStringBean summary : serviceAlert.getSummaries()) {
-      ptSituation.setSummary(createDefaultedTextStructure(summary));
-    }
-    for (NaturalLanguageStringBean description : serviceAlert.getDescriptions()) {
-      ptSituation.setDescription(createDefaultedTextStructure(description));
-    }
+    if (serviceAlert.getSummaries() != null)
+      for (NaturalLanguageStringBean summary : serviceAlert.getSummaries()) {
+        ptSituation.setSummary(createDefaultedTextStructure(summary));
+      }
+    if (serviceAlert.getDescriptions() != null)
+      for (NaturalLanguageStringBean description : serviceAlert.getDescriptions()) {
+        ptSituation.setDescription(createDefaultedTextStructure(description));
+      }
   }
 
   private DefaultedTextStructure createDefaultedTextStructure(
