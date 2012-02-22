@@ -176,6 +176,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
       return;
     }
 
+    record.setRecordNumber(_records.size() + 1);
     _records.add(record);
     final AgencyAndId vid = record.getVehicleId();
     if (_vehicleId != null) {
@@ -460,6 +461,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     if (rr == null || rr.getTimestamp() < record.getTimestamp())
       return false;
 
+    rr.setRecordNumber(_results.size()+1);
     rr.setVehicleId(_vehicleId);
 
     if (_fillActualProperties) {

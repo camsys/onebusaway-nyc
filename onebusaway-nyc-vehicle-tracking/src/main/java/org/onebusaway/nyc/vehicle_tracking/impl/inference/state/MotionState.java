@@ -51,8 +51,11 @@ public final class MotionState implements Comparable<MotionState> {
         rightMotion.getLastInMotionLocation().getLon()).result();
   }
 
+  int _hash = 0;
   @Override
   public int hashCode() {
+    if (_hash != 0)
+      return _hash;
     final int prime = 31;
     int result = 1;
     result = prime
@@ -60,6 +63,7 @@ public final class MotionState implements Comparable<MotionState> {
         + ((lastInMotionLocation == null) ? 0 : lastInMotionLocation.hashCode());
     result = prime * result
         + (int) (lastInMotionTime ^ (lastInMotionTime >>> 32));
+    _hash = result;
     return result;
   }
 

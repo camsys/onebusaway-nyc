@@ -295,7 +295,7 @@ public class ParticleFilter<OBS> {
     } else {
       particles = HashMultiset.create(_particles.entrySet().size());
       for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
-        cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs,
+        cachedParticleMove(pEntry, timestamp, elapsed, obs,
             particles);
       }
       _stateTransitionCache.clear();
@@ -418,7 +418,7 @@ public class ParticleFilter<OBS> {
    * @param obs
    * @param particles
    */
-  private void cachedParticleMove(Particle particle, final double timestamp,
+  private void cachedParticleMove(Multiset.Entry<Particle> particle, final double timestamp,
       final double elapsed, final OBS obs, Multiset<Particle> particles) {
     _motionModel.move(particle, timestamp, elapsed, obs, particles,
         _stateTransitionCache);

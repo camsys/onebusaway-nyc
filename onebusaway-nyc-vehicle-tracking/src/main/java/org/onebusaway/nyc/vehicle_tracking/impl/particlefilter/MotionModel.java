@@ -15,9 +15,12 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 import java.util.Collection;
 
@@ -53,6 +56,7 @@ public interface MotionModel<OBS> {
    * @param results
    * @param cache
    */
-  void move(Particle parent, double timestamp, double timeElapsed, OBS obs,
-      Collection<Particle> results, Multimap<VehicleState, VehicleState> cache);
+  void move(Entry<Particle> parent, double timestamp, double timeElapsed,
+      OBS obs, Multiset<Particle> results,
+      Multimap<VehicleState, VehicleState> cache);
 }

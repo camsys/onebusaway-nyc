@@ -19,9 +19,17 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
+import gov.sandia.cognition.math.matrix.Vector;
+import gov.sandia.cognition.math.matrix.VectorEntry;
+import gov.sandia.cognition.math.matrix.VectorFactory;
+import gov.sandia.cognition.math.matrix.mtj.DenseVector;
+import gov.sandia.cognition.math.matrix.mtj.DenseVectorFactoryMTJ;
 import gov.sandia.cognition.statistics.DiscreteSamplingUtil;
+import gov.sandia.cognition.statistics.distribution.MultinomialDistribution;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -88,7 +96,7 @@ public class CategoricalDist<T extends Comparable<T>> {
   TObjectDoubleMap<T> _entriesToProbs;
   private Object[] _entries;
 
-  DiscreteDistribution emd;
+  MultinomialDistribution _emd;
   private double[] _cummulativeDist;
 
   public static ThreadLocal<Random> getThreadLocalRng() {
@@ -128,7 +136,7 @@ public class CategoricalDist<T extends Comparable<T>> {
     /*
      * reset the underlying distribution for lazy reloading
      */
-    emd = null;
+    _emd = null;
   }
 
   @SuppressWarnings("unchecked")
@@ -143,15 +151,24 @@ public class CategoricalDist<T extends Comparable<T>> {
       return Iterables.getOnlyElement(_entriesToProbs.keySet());
     }
 
-    if (emd == null) {
+    if (_emd == null) {
       initializeDistribution();
     }
     
 
-    final double u = threadLocalRng.get().nextDouble();
-    final int newIdx = (int) emd.inverseF(u);
+    _emd.setNumTrials(1);
+    final Vector sampleRes = _emd.sample(threadLocalRng.get());
+    final int newIdx = (int)Iterables.find(sampleRes, new Predicate<VectorEntry> () {
+      @Override
+      public boolean apply(VectorEntry input) {
+        return input.getValue() > 0.0;
+      }
+    }).getValue();
+    
+//    final double u = threadLocalRng.get().nextDouble();
+//    final int newIdx = (int) emd.inverseF(u);
 
-    return (T)_entries[newIdx];
+    return (T)_entries[_objIdx.get(newIdx)];
   }
 
   private double[] initializeDistribution() {
@@ -164,14 +181,12 @@ public class CategoricalDist<T extends Comparable<T>> {
      * Need a double array for DiscreteDistribution. Lame.
      */
     final double[] cummulativeDist = new double[_objIdx.size()];
-    final double[] doubleObjIdx = new double[_objIdx.size()];
     double prevVal = 0.0;
     for (int i = 0; i < _objIdx.size(); ++i) {
       cummulativeDist[i] = probVector[i] + prevVal;
       prevVal = cummulativeDist[i];
-      doubleObjIdx[i] = _objIdx.get(i);
     }
-    emd = new DiscreteDistribution(doubleObjIdx, probVector, _objIdx.size());
+    _emd = new MultinomialDistribution(DenseVectorFactoryMTJ.INSTANCE.copyArray(probVector), 1);
     _entries = _entriesToProbs.keys();
     return cummulativeDist;
   }
@@ -216,18 +231,21 @@ public class CategoricalDist<T extends Comparable<T>> {
 
     final Multiset<T> sampled = HashMultiset.create(samples);
     if (_entriesToProbs.size() == 1) {
-      sampled.add(Iterables.getOnlyElement(_entriesToProbs.keySet()));
+      sampled.add(Iterables.getOnlyElement(_entriesToProbs.keySet()), samples);
     } else {
 
-      if (emd == null) {
+      if (_emd == null) {
         _cummulativeDist = initializeDistribution();
       }
       
-      int[] sampleIdxs = DiscreteSamplingUtil.sampleIndicesFromCumulativeProportions(
-          threadLocalRng.get(), _cummulativeDist, samples);
+      _emd.setNumTrials(samples);
+      final Vector sampleRes = _emd.sample(threadLocalRng.get());
       
-      for (int i = 0; i < sampleIdxs.length; ++i) {
-        sampled.add((T)_entries[_objIdx.get(sampleIdxs[i])]);
+      int i = 0;
+      for (VectorEntry ventry : sampleRes) {
+        if (ventry.getValue() > 0.0)
+          sampled.add((T)_entries[_objIdx.get(i)], (int)ventry.getValue());
+        i++;
       }
     }
 

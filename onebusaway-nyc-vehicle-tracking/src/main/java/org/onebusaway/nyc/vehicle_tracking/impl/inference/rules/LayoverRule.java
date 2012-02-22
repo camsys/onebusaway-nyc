@@ -65,19 +65,18 @@ public class LayoverRule implements SensorModelRule {
 
     final SensorModelResult result = new SensorModelResult("pLayover");
 
+    if (blockState == null || !state.getBlockStateObservation().isAtPotentialLayoverSpot()) {
+      result.addResult("not a layover spot", 1.0);
+      return result;
+    }
+    
     /**
      * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
      */
 
-    final double pNotMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(
+    final double pNotMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
         state.getMotionState(), obs);
 
-    /*
-     * We're choosing to give priority to at-base...
-     */
-    if (EVehiclePhase.AT_BASE.equals(phase))
-      return result.addResultAsAnd("at-base", 1.0);
-    
     final double pLayoverState = p(EVehiclePhase.isLayover(phase));
 
     final double p1 = biconditional(pNotMoved,

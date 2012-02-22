@@ -23,6 +23,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,11 +62,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
   }
 
   @Override
-  public void move(Particle parent, double timestamp, double timeElapsed,
-      Observation obs, Collection<Particle> results,
+  public void move(Entry<Particle> parent, double timestamp, double timeElapsed,
+      Observation obs, Multiset<Particle> results,
       Multimap<VehicleState, VehicleState> cache) {
 
-    final VehicleState parentState = parent.getData();
+    final VehicleState parentState = parent.getElement().getData();
     final MotionState motionState = updateMotionState(parentState, obs);
 
     final Collection<VehicleState> vehicleStates = cache.get(parentState);
@@ -72,7 +74,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
     if (vehicleStates.isEmpty()) {
       _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
       for (final VehicleState vs : vehicleStates)
-        results.add(new Particle(timestamp, parent, 1.0, vs));
+        results.add(new Particle(timestamp, parent.getElement(), 1.0, vs), parent.getCount());
     }
 
   }

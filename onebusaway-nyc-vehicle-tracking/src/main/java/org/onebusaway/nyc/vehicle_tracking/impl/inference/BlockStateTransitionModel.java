@@ -140,12 +140,10 @@ public class BlockStateTransitionModel {
 
     if (!allowBlockChange) {
       if (parentBlockState != null) {
-        if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase())) {
-          potentialTransStates.addAll(advanceAlongBlock(parentPhase,
-              parentBlockState, obs));
-        } else {
-          potentialTransStates.add(parentBlockState);
-        }
+        potentialTransStates.addAll(advanceAlongBlock(parentPhase,
+            parentBlockState, obs));
+      } else {
+        potentialTransStates.add(null);
       }
     }
 
@@ -153,19 +151,20 @@ public class BlockStateTransitionModel {
      * If this state has no transitions, consider block changes. Otherwise, pick
      * the best transition.
      */
-    if (allowBlockChange || potentialTransStates.isEmpty()) {
-      /**
-       * We're now considering that the driver may have been re-assigned.
-       */
-      for (BlockStateObservation newBlockState : _blocksFromObservationService.determinePotentialBlockStatesForObservation(
-          obs, true)) {
-        if (isTransitionAllowed(parentState, obs, newBlockState, journeyState))
-          potentialTransStates.add(newBlockState);
-      }
-
+    if (allowBlockChange) {
+      potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
+          obs, true));
       if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
         potentialTransStates.add(null);
     }
+    /**
+     * We're now considering that the driver may have been re-assigned.
+     */
+    for (BlockStateObservation newBlockState : potentialTransStates) {
+      if (isTransitionAllowed(parentState, obs, newBlockState, journeyState))
+        potentialTransStates.add(newBlockState);
+    }
+
 
     return potentialTransStates;
   }
@@ -175,7 +174,7 @@ public class BlockStateTransitionModel {
 
     Observation prevObs = obs.getPreviousObservation();
 
-    if (parentState == null || prevObs == null)
+    if (parentState == null || prevObs == null || state == null)
       return true;
 
     JourneyState parentJourneyState = parentState.getJourneyState();
@@ -249,14 +248,6 @@ public class BlockStateTransitionModel {
       return true;
 
     /**
-     * If we're off block
-     */
-    if (parentBlockState != null
-        && _vehicleStateLibrary.isOffBlock(obs.getPreviousObservation(),
-            parentBlockState.getBlockState()))
-      return true;
-
-    /**
      * Have we just transitioned out of a terminal?
      */
     if (prevObs != null) {
@@ -319,12 +310,11 @@ public class BlockStateTransitionModel {
 
     for (final BlockStateObservation updatedBlockState : _blocksFromObservationService.bestStates(
         obs, blockState)) {
-
       if (updatedBlockState != null
-          && (EVehiclePhase.isLayover(phase) || _vehicleStateLibrary.isAtPotentialTerminal(
-              obs.getRecord(), blockState.getBlockState().getBlockInstance()))) {
-        results.add(_blocksFromObservationService.advanceLayoverState(obs,
-            updatedBlockState));
+          && (EVehiclePhase.isLayover(phase))) {
+        results.add(_blocksFromObservationService.advanceLayoverState(obs, updatedBlockState));
+      } else {
+        results.add(updatedBlockState);
       }
     }
 

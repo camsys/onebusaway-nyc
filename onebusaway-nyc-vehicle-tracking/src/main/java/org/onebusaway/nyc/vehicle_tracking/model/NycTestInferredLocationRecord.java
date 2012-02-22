@@ -37,6 +37,9 @@ public class NycTestInferredLocationRecord implements Serializable {
   private AgencyAndId vehicleId;
 
   @CsvField(optional = true)
+  private Integer recordNumber;
+  
+  @CsvField(optional = true)
   private double lat;
 
   @CsvField(optional = true)
@@ -435,5 +438,13 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setReportedRunId(String reportedRunId) {
     this.reportedRunId = reportedRunId;
+  }
+
+  public Integer getRecordNumber() {
+    return recordNumber;
+  }
+
+  public void setRecordNumber(Integer recordNumber) {
+    this.recordNumber = recordNumber;
   }
 }

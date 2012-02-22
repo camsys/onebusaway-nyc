@@ -39,6 +39,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import umontreal.iro.lecuyer.stat.Tally;
 
 @Component
@@ -253,20 +254,27 @@ public class SensorModelSupportLibrary {
   /**
    * @return the probability that the vehicle has not moved in a while
    */
-  static public double computeVehicelHasNotMovedProbability(MotionState motionState,
+  static public double computeVehicleHasNotMovedProbability(MotionState motionState,
       Observation obs) {
 
-    final long currentTime = obs.getTime();
-    final long lastInMotionTime = motionState.getLastInMotionTime();
-    final int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
-
-    if (120 <= secondsSinceLastMotion) {
+    Observation prevObs = obs.getPreviousObservation();
+    if (prevObs == null)
       return 1.0;
-    } else if (60 <= secondsSinceLastMotion) {
-      return 0.9;
-    } else {
-      return 0.0;
-    }
+    
+    final double d = SphericalGeometryLibrary.distance(
+        prevObs.getLocation(), obs.getLocation());
+    return 1-FoldedNormalDist.cdf(10.0, 6, d);
+//    final long currentTime = obs.getTime();
+//    final long lastInMotionTime = motionState.getLastInMotionTime();
+//    final int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
+//
+//    if (120 <= secondsSinceLastMotion) {
+//      return 1.0;
+//    } else if (60 <= secondsSinceLastMotion) {
+//      return 0.9;
+//    } else {
+//      return 0.0;
+//    }
   }
 
   /*****
@@ -402,7 +410,7 @@ public class SensorModelSupportLibrary {
      * Rule: DEADHEAD_DURING <=> Vehicle has moved AND at layover location
      */
 
-    final double pMoved = not(computeVehicelHasNotMovedProbability(
+    final double pMoved = not(computeVehicleHasNotMovedProbability(
         state.getMotionState(), obs));
 
     final double pAtLayoverLocation = p(_vehicleStateLibrary.isAtPotentialLayoverSpot(

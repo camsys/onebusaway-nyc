@@ -73,6 +73,15 @@ public class JourneyStateTransitionModel {
 
     final JourneyState parentJourneyState = parentState.getJourneyState();
 
+    /*
+     * short-circuit on at-base when we definitely haven't moved and
+     * are within a base geom. 
+     */
+    boolean vehicleDefinitelyNotMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs) == 1.0;
+    if (vehicleDefinitelyNotMoved && obs.isAtBase()) {
+      return Arrays.asList(JourneyState.atBase());
+    }
+    
     switch (parentJourneyState.getPhase()) {
       case AT_BASE:
         return moveAtBase(parentState, obs, motionState);
@@ -144,9 +153,91 @@ public class JourneyStateTransitionModel {
     }
   }
 
+  private List<JourneyState> moveAtBase(VehicleState parentState, Observation obs, MotionState motionState) {
+    final List<JourneyState> res = new ArrayList<JourneyState>();
+    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs) == 0.0;
+    res.addAll(Arrays.asList(JourneyState.deadheadBefore(obs.getLocation())));
+    includeConditionalStates(res, parentState, obs);
+    if (!vehicleDefinitelyMoved)
+        res.add(JourneyState.layoverBefore());
+    return res;
+  }
+
+  private List<JourneyState> moveDeadheadBefore(VehicleState parentState,
+      Observation obs, JourneyState parentJourneyState, MotionState motionState) {
+    final JourneyStartState start = parentJourneyState.getData();
+    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs) == 0.0;
+    final List<JourneyState> res = new ArrayList<JourneyState>();
+    res.addAll(Arrays.asList(JourneyState.deadheadBefore(start.getJourneyStart())));
+    includeConditionalStates(res, parentState, obs);
+    if (!vehicleDefinitelyMoved)
+        res.add(JourneyState.layoverBefore());
+    return res;
+  }
+
+  private List<JourneyState> moveLayoverBefore(VehicleState parentState, Observation obs, MotionState motionState) {
+    final List<JourneyState> res = new ArrayList<JourneyState>();
+    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs) == 0.0;
+    res.addAll(Arrays.asList(JourneyState.deadheadBefore(obs.getLocation())));
+    includeConditionalStates(res, parentState, obs);
+    if (!vehicleDefinitelyMoved)
+        res.add(JourneyState.layoverBefore());
+    return res;
+  }
+
+  private List<JourneyState> moveInProgress(VehicleState parentState, Observation obs, MotionState motionState) {
+    final List<JourneyState> res = new ArrayList<JourneyState>();
+    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs) == 0.0;
+    res.addAll(Arrays.asList(
+        JourneyState.deadheadBefore(obs.getLocation())));
+    includeConditionalStates(res, parentState, obs);
+    if (!vehicleDefinitelyMoved)
+        res.add(JourneyState.layoverBefore());
+    includeDuring(res, parentState, vehicleDefinitelyMoved, obs);
+    return res;
+  }
+
+  private List<JourneyState> moveDeadheadDuring(VehicleState parentState,
+      Observation obs, JourneyState parentJourneyState, MotionState motionState) {
+    final List<JourneyState> res = new ArrayList<JourneyState>();
+    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs) == 0.0;
+    res.addAll(Arrays.asList(
+        JourneyState.deadheadBefore(obs.getLocation())));
+    includeConditionalStates(res, parentState, obs);
+    if (!vehicleDefinitelyMoved)
+        res.add(JourneyState.layoverBefore());
+    includeDuring(res, parentState, vehicleDefinitelyMoved, obs);
+    return res;
+  }
+
+  private List<JourneyState> moveLayoverDuring(VehicleState parentState, Observation obs, MotionState motionState) {
+    final List<JourneyState> res = new ArrayList<JourneyState>();
+    includeConditionalStates(res, parentState, obs);
+    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs) == 0.0;
+    if (!vehicleDefinitelyMoved)
+        res.add(JourneyState.layoverBefore());
+    includeDuring(res, parentState, vehicleDefinitelyMoved, obs);
+    return res;
+  }
+  
+  private void includeDuring(List<JourneyState> res, VehicleState parentState,
+      boolean vehicleDefinitelyMoved, Observation obs) {
+    /*
+     * Have to serve some part of a block to have any -during state
+     */
+    if (parentState.getBlockState() != null
+        && SensorModelSupportLibrary.hasServedSomePartOfBlock(parentState.getBlockState())) {
+      if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot()) {
+        res.add(JourneyState.deadheadDuring(obs.getLocation()));
+        if (!vehicleDefinitelyMoved)
+          res.add(JourneyState.layoverDuring());
+      }
+    }
+  }
+  
   /**
    * Determine if observation satisfies conditions necessary to transition to
-   * states with non-zero probability.
+   * certain states with non-zero probability.
    * 
    * @param res
    * @param obs2 
@@ -170,102 +261,5 @@ public class JourneyStateTransitionModel {
     
   }
 
-  private List<JourneyState> moveAtBase(VehicleState parentState, Observation obs, MotionState motionState) {
-    final List<JourneyState> res = new ArrayList<JourneyState>();
-    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(motionState, obs) == 1.0;
-    res.addAll(Arrays.asList(JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, parentState, obs);
-    if (!vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverBefore());
-    return res;
-  }
 
-  private List<JourneyState> moveDeadheadBefore(VehicleState parentState,
-      Observation obs, JourneyState parentJourneyState, MotionState motionState) {
-    final JourneyStartState start = parentJourneyState.getData();
-    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(motionState, obs) == 1.0;
-    final List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.deadheadBefore(start.getJourneyStart())));
-    includeConditionalStates(res, parentState, obs);
-    if (!vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverBefore());
-    return res;
-  }
-
-  private List<JourneyState> moveLayoverBefore(VehicleState parentState, Observation obs, MotionState motionState) {
-    final List<JourneyState> res = new ArrayList<JourneyState>();
-    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(motionState, obs) == 1.0;
-    res.addAll(Arrays.asList(JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, parentState, obs);
-    if (!vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverBefore());
-    return res;
-  }
-
-  private List<JourneyState> moveInProgress(VehicleState parentState, Observation obs, MotionState motionState) {
-    final List<JourneyState> res = new ArrayList<JourneyState>();
-    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(motionState, obs) == 1.0;
-    res.addAll(Arrays.asList(
-        JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, parentState, obs);
-    if (!vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverBefore());
-    /*
-     * Have to serve some part of a block to have any -during state
-     */
-    if (parentState.getBlockState() != null
-        && SensorModelSupportLibrary.hasServedSomePartOfBlock(parentState.getBlockState())) {
-      if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
-        res.add(JourneyState.deadheadDuring(obs.getLocation()));
-      else if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot()
-          && !vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverDuring());
-    }
-    return res;
-  }
-
-  private List<JourneyState> moveDeadheadDuring(VehicleState parentState,
-      Observation obs, JourneyState parentJourneyState, MotionState motionState) {
-    final List<JourneyState> res = new ArrayList<JourneyState>();
-    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(motionState, obs) == 1.0;
-    res.addAll(Arrays.asList(
-        JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, parentState, obs);
-    if (!vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverBefore());
-    /*
-     * Have to serve some part of a block to have any -during state
-     */
-    if (parentState.getBlockState() != null
-        && SensorModelSupportLibrary.hasServedSomePartOfBlock(parentState.getBlockState())) {
-      if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
-        res.add(JourneyState.deadheadDuring(obs.getLocation()));
-      else if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot()
-          && !vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverDuring());
-    }
-    
-
-    return res;
-  }
-
-  private List<JourneyState> moveLayoverDuring(VehicleState parentState, Observation obs, MotionState motionState) {
-    final List<JourneyState> res = new ArrayList<JourneyState>();
-    includeConditionalStates(res, parentState, obs);
-    boolean vehicleDefinitelyMoved = SensorModelSupportLibrary.computeVehicelHasNotMovedProbability(motionState, obs) == 1.0;
-    if (!vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverBefore());
-    /*
-     * Have to serve some part of a block to have any -during state
-     */
-    if (parentState.getBlockState() != null
-        && SensorModelSupportLibrary.hasServedSomePartOfBlock(parentState.getBlockState())) {
-      if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot())
-        res.add(JourneyState.deadheadDuring(obs.getLocation()));
-      else if (parentState.getBlockStateObservation().isAtPotentialLayoverSpot()
-          && !vehicleDefinitelyMoved)
-        res.add(JourneyState.layoverDuring());
-    }
-    return res;
-  }
 }
