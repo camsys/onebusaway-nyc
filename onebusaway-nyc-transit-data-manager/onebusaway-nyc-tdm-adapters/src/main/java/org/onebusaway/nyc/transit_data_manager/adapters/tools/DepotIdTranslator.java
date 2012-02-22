@@ -13,6 +13,10 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class DepotIdTranslator {
 
+  private static String DATASOURCE_NAME_HEADER_STRING = "datasource_name";
+  private static String FROM_HEADER_STRING = "from";
+  private static String TO_HEADER_STRING  = "to";
+  
   private static Logger _log = LoggerFactory.getLogger(DepotIdTranslator.class);
   
   private Map<String, Map<String, String>> datasourceToIdMappingsMap = null;
@@ -80,17 +84,17 @@ public class DepotIdTranslator {
       // parse the header line to get index of each field.
       for (int i = 0; i < nextLine.length; i++) {
         String cellValue = nextLine[i];
-        if ("datasource_name".equalsIgnoreCase(cellValue)) {
+        if (DATASOURCE_NAME_HEADER_STRING.equalsIgnoreCase(cellValue)) {
           if (datasourceNameIdx != -1)
             isConfigFileValid = false;
           else
             datasourceNameIdx = i;
-        } else if ("from".equalsIgnoreCase(cellValue)) {
+        } else if (FROM_HEADER_STRING.equalsIgnoreCase(cellValue)) {
           if (fromIdx != -1)
             isConfigFileValid = false;
           else
             fromIdx = i;
-        } else if ("to".equalsIgnoreCase(cellValue)) {
+        } else if (TO_HEADER_STRING.equalsIgnoreCase(cellValue)) {
           if (toIdx != -1)
             isConfigFileValid = false;
           else
@@ -107,7 +111,7 @@ public class DepotIdTranslator {
             "Config file does not have required columns, or has a duplicated column.");
       }
       
-      // Add this to skip over empty lines and avoid potential index outoutbounds exception later.
+      // Add this to skip over empty lines and avoid potential indexoutofboundsexception later.
       int maxColIdx = datasourceNameIdx > fromIdx ? datasourceNameIdx : fromIdx ;
       maxColIdx = maxColIdx > toIdx ? maxColIdx : toIdx ;
 
@@ -121,6 +125,12 @@ public class DepotIdTranslator {
           String fromStr = nextLine[fromIdx];
           String toStr = nextLine[toIdx];
 
+          // ignore lines that have an empty "from" or "to"
+          // They should not be added to the map, that way later they will be passed through unchanged. 
+          if (fromStr.isEmpty() || toStr.isEmpty()) { 
+            continue; 
+          }
+          
           if (datasourceToIdMappingsMap.containsKey(datasourceName)) {
             datasourceToIdMappingsMap.get(datasourceName).put(fromStr, toStr);
           } else {
