@@ -119,7 +119,7 @@
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
-                <tdm.depotIdTranslationConfigFile>/tmp/depidtrans.config</tdm.depotIdTranslationConfigFile>
+                <tdm.depotIdTranslationConfigFile>src/resources/depot_ids.csv</tdm.depotIdTranslationConfigFile>
             </properties>
         </profile>
         <profile>
