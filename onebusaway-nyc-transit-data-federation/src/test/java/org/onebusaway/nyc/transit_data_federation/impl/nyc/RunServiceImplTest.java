@@ -8,6 +8,7 @@ import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.stopTime;
 import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.trip;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,8 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarServi
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdActivation;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+
+import com.google.common.collect.Iterables;
 
 public class RunServiceImplTest {
 
@@ -110,12 +113,12 @@ public class RunServiceImplTest {
     assertEquals("run-2", _service.getReliefRunForTrip(tripB.getId()));
     assertEquals("run-2", _service.getInitialRunForTrip(tripD.getId()));
 
-    List<RunTripEntry> entities = _service.getRunTripEntriesForRun("run-1");
+    Collection<RunTripEntry> entities = _service.getRunTripEntriesForRun("run-1");
     assertEquals(3, entities.size());
 
-    RunTripEntry rte0 = entities.get(0);
-    RunTripEntry rte1 = entities.get(1);
-    RunTripEntry rte2 = entities.get(2);
+    RunTripEntry rte0 = Iterables.get(entities, 0);
+    RunTripEntry rte1 = Iterables.get(entities, 1);
+    RunTripEntry rte2 = Iterables.get(entities, 2);
 
     assertEquals(rte2, _service.getPreviousEntry(rte0, 0));
     assertEquals(rte0, _service.getPreviousEntry(rte1, 0));

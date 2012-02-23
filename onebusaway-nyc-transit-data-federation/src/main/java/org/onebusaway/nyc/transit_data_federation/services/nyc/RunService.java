@@ -12,40 +12,42 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import com.google.common.collect.TreeMultimap;
 
 public interface RunService {
-  String getInitialRunForTrip(AgencyAndId trip);
+  public String getInitialRunForTrip(AgencyAndId trip);
 
-  String getReliefRunForTrip(AgencyAndId trip);
+  public String getReliefRunForTrip(AgencyAndId trip);
 
-  int getReliefTimeForTrip(AgencyAndId trip);
+  public int getReliefTimeForTrip(AgencyAndId trip);
 
-  List<RunTripEntry> getRunTripEntriesForRun(String runId);
+  public Collection<RunTripEntry> getRunTripEntriesForRun(String runId);
 
-  RunTripEntry getActiveRunTripEntryForRunAndTime(AgencyAndId runAgencyAndId,
+  public RunTripEntry getActiveRunTripEntryForRunAndTime(AgencyAndId runAgencyAndId,
       long time);
 
-  List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(String agencyId,
+  public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(String agencyId,
       long time);
 
-  RunTripEntry getPreviousEntry(RunTripEntry entry, long date);
+  public RunTripEntry getPreviousEntry(RunTripEntry entry, long date);
 
-  RunTripEntry getNextEntry(RunTripEntry entry, long date);
+  public RunTripEntry getNextEntry(RunTripEntry entry, long date);
 
-  RunTripEntry getActiveRunTripEntryForBlockInstance(
+  public RunTripEntry getActiveRunTripEntryForBlockInstance(
       BlockInstance blockInstance, int scheduleTime);
 
-  ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
+  public ScheduledBlockLocation getSchedBlockLocForRunTripEntryAndTime(
       RunTripEntry runTrip, long timestamp);
 
-  BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
+  public BlockInstance getBlockInstanceForRunTripEntry(RunTripEntry rte,
       Date serviceDate);
 
-  RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip, int scheduledTime);
+  public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip, int scheduledTime);
 
   public boolean isValidRunNumber(String runNumber);
 
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
       String runAgencyAndId) throws IllegalArgumentException;
 
-  Collection<? extends AgencyAndId> getTripIdsForRunId(String runId);
+  public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId);
+
+  public boolean isValidRunId(String runId);
 
 }

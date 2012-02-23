@@ -10,7 +10,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 import tcip_final_3_0_5_1.SCHOperatorAssignment;
 
 /**
- * Contains convert function to convert TCIP Ooperator assignments
+ * Contains convert function to convert TCIP Operator assignments
  * (SCHOperatorAssignment) to Json model operator assignments
  * (OperatorAssignment).
  * 
@@ -30,11 +30,13 @@ public class OperatorAssignmentFromTcip implements
     OperatorAssignment opAssign = new OperatorAssignment();
 
     opAssign.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(input.getOperator().getAgencyId()));
-    opAssign.setPassId(String.valueOf(input.getOperator().getOperatorId()));
+    opAssign.setPassId(mappingTool.cutPassIdFromOperatorDesignator(input.getOperator().getDesignator()));
+    
     opAssign.setRunRoute(input.getLocalSCHOperatorAssignment().getRunRoute());
-    //opAssign.setRunId(input.getRun().getDesignator());
     opAssign.setRunNumber(mappingTool.cutRunNumberFromTcipRunDesignator(input.getRun().getDesignator()));
 
+    opAssign.setDepot(input.getOperatorBase().getFacilityName());
+    
     DateTimeFormatter xmlDTF = TcipMappingTool.TCIP_DATETIME_FORMATTER;
     DateTime serviceDate = xmlDTF.parseDateTime(input.getMetadata().getEffective());
 

@@ -32,6 +32,13 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   private TransitDataService transitDataService;
 
   @Test
+  public void testGetServiceAlertBeanAsPtSituationElementStructure() {
+    ServiceAlertBean serviceAlertBean = new ServiceAlertBean();
+    PtSituationElementStructure structure = getServiceAlertBeanAsPtSituationElementStructure(serviceAlertBean);
+    assertNotNull(structure);
+  }
+  
+  @Test
   public void testAddSituationExchangeEmpty() {
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();

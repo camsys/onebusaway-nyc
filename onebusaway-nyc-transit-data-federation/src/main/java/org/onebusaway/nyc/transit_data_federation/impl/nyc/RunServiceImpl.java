@@ -41,6 +41,9 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -57,23 +60,23 @@ public class RunServiceImpl implements RunService {
 
   private Map<AgencyAndId, RunData> runDataByTrip;
 
-  private TransitGraphDao transitGraph;
-
-  private HashMap<String, List<RunTripEntry>> entriesByRun;
+  private Multimap<String, RunTripEntry> entriesByRun;
   
   private Multimap<String, AgencyAndId> runIdsToRoutes;
   
   private Multimap<String, AgencyAndId> runIdsToTripIds;
 
-  private Map<String, List<RunTripEntry>> entriesByRunNumber;
+  private Multimap<String, RunTripEntry> entriesByRunNumber;
 
+  private Multimap<AgencyAndId, RunTripEntry> entriesByTrip;
+  
   private BlockCalendarService blockCalendarService;
 
+  private TransitGraphDao transitGraph;
+  
   private CalendarService calendarService;
 
   private ScheduledBlockLocationService scheduledBlockLocationService;
-
-  private Map<AgencyAndId, List<RunTripEntry>> entriesByTrip;
 
   private ExtendedCalendarService extCalendarService;
 
@@ -128,11 +131,11 @@ public class RunServiceImpl implements RunService {
   }
 
   public void transformRunData() {
-    entriesByRun = new HashMap<String, List<RunTripEntry>>();
+    entriesByRun = TreeMultimap.create();
     runIdsToRoutes = HashMultimap.create();
     runIdsToTripIds = HashMultimap.create();
-    entriesByTrip = new HashMap<AgencyAndId, List<RunTripEntry>>();
-    entriesByRunNumber = new HashMap<String, List<RunTripEntry>>();
+    entriesByTrip = HashMultimap.create();
+    entriesByRunNumber = HashMultimap.create();
 
     for (Map.Entry<AgencyAndId, RunData> entry : runDataByTrip.entrySet()) {
       TripEntry trip = transitGraph.getTripEntryForId(entry.getKey());
@@ -151,10 +154,6 @@ public class RunServiceImpl implements RunService {
         _log.warn("null trip found for entry=" + entry.toString());
       }
     }
-    // sort RTEs by time
-    for (List<RunTripEntry> entries : entriesByRun.values()) {
-      Collections.sort(entries);
-    }
   }
 
   private void processTripEntry(TripEntry trip, String runId, int reliefTime,
@@ -164,41 +163,25 @@ public class RunServiceImpl implements RunService {
     String runNumber = null;
     String runRoute = null;
 
-    // TODO FIXME we should be using RunID objects
     if (runInfo != null && runInfo.length > 0) {
       runRoute = runInfo[0];
       if (runInfo.length > 1)
         runNumber = runInfo[1];
     }
 
-    // add to index by run
-    List<RunTripEntry> entries = entriesByRun.get(runId);
-    if (entries == null) {
-      entries = new ArrayList<RunTripEntry>();
-      entriesByRun.put(runId, entries);
-    }
-    List<RunTripEntry> entriesNum = entriesByRunNumber.get(runNumber);
-    if (entriesNum == null) {
-      entriesNum = new ArrayList<RunTripEntry>();
-      entriesByRunNumber.put(runNumber, entriesNum);
-    }
     RunTripEntry rte = new RunTripEntry(trip, runNumber, runRoute, reliefTime,
         relief);
-    entries.add(rte);
-    entriesNum.add(rte);
+    entriesByRun.put(runId, rte);
+    entriesByRunNumber.put(runNumber, rte);
     // this will fail for unit tests otherwise
     RouteEntry route = rte.getTripEntry().getRoute();
-    runIdsToRoutes.put(rte.getRunId(), (route != null) ? route.getParent().getId() : null);
+    if (route != null)
+      runIdsToRoutes.put(rte.getRunId(), route.getParent().getId());
     runIdsToTripIds.put(rte.getRunId(), rte.getTripEntry().getId());
 
     // add to index by trip
     AgencyAndId tripId = trip.getId();
-    entries = entriesByTrip.get(tripId);
-    if (entries == null) {
-      entries = new ArrayList<RunTripEntry>(2);
-      entriesByTrip.put(tripId, entries);
-    }
-    entries.add(rte);
+    entriesByTrip.put(tripId, rte);
   }
 
   @Override
@@ -227,7 +210,7 @@ public class RunServiceImpl implements RunService {
   }
 
   @Override
-  public List<RunTripEntry> getRunTripEntriesForRun(String runId) {
+  public Collection<RunTripEntry> getRunTripEntriesForRun(String runId) {
     return entriesByRun.get(runId);
   }
 
@@ -371,7 +354,7 @@ public class RunServiceImpl implements RunService {
   @Override
   public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(
       String agencyId, long time) {
-    ArrayList<RunTripEntry> out = new ArrayList<RunTripEntry>();
+    ArrayList<RunTripEntry> out = Lists.newArrayList();
     List<BlockInstance> activeBlocks = blockCalendarService.getActiveBlocksForAgencyInTimeRange(
         agencyId, time, time);
     for (BlockInstance blockInstance : activeBlocks) {
@@ -384,10 +367,7 @@ public class RunServiceImpl implements RunService {
 
       if (blockLocation != null) {
         BlockTripEntry trip = blockLocation.getActiveTrip();
-        List<RunTripEntry> rtes = entriesByTrip.get(trip.getTrip().getId());
-
-        if (rtes != null)
-          out.addAll(rtes);
+        out.addAll(entriesByTrip.get(trip.getTrip().getId()));
       }
     }
 
@@ -400,7 +380,7 @@ public class RunServiceImpl implements RunService {
     calendar.setTimeInMillis(serviceDate);
     Date date = calendar.getTime();
 
-    List<RunTripEntry> entries = entriesByRun.get(before.getRunId());
+    List<RunTripEntry> entries = Lists.newArrayList(entriesByRun.get(before.getRunId()));
     ListIterator<RunTripEntry> listIterator = entries.listIterator(entries.size());
 
     boolean found = false;
@@ -438,7 +418,7 @@ public class RunServiceImpl implements RunService {
 
   @Override
   public RunTripEntry getNextEntry(RunTripEntry after, long serviceDate) {
-    List<RunTripEntry> entries = entriesByRun.get(after.getRunId());
+    Collection<RunTripEntry> entries = entriesByRun.get(after.getRunId());
     boolean found = false;
     GregorianCalendar calendar = new GregorianCalendar();
     calendar.setTimeInMillis(serviceDate);
@@ -560,15 +540,15 @@ public class RunServiceImpl implements RunService {
   public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,
       int scheduleTime) {
 
-    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
+    Collection<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
 
-    if (bothTrips != null && !bothTrips.isEmpty()) {
+    if (!bothTrips.isEmpty()) {
 
-      RunTripEntry firstTrip = bothTrips.get(0);
+      RunTripEntry firstTrip = Iterables.get(bothTrips, 0, null);
       if (bothTrips.size() == 1) {
         return firstTrip;
       } else {
-        RunTripEntry secondTrip = bothTrips.get(1);
+        RunTripEntry secondTrip = Iterables.get(bothTrips, 1, null);
         if (secondTrip.getStartTime() <= scheduleTime)
           return secondTrip;
       }
@@ -578,6 +558,11 @@ public class RunServiceImpl implements RunService {
     return null;
   }
 
+  @Override
+  public boolean isValidRunId(String runId) {
+    return this.entriesByRun.containsKey(runId);
+  }
+  
   @Override
   public boolean isValidRunNumber(String runNumber) {
     return this.entriesByRunNumber.containsKey(runNumber);
