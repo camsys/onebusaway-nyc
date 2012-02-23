@@ -207,7 +207,7 @@
     </profiles>
 
     <build>
-        <finalName>onebusaway-nyc-tdm-service</finalName>
+        <finalName>onebusaway-nyc-tdm-webapp</finalName>
         <plugins>
 
             <plugin>
