@@ -17,7 +17,7 @@
 
 	<modules>
 		<module>onebusaway-nyc-tdm-adapters</module>
-		<module>onebusaway-nyc-tdm-service</module>
+		<module>onebusaway-nyc-tdm-webapp</module>
 	</modules>
 
 </project>

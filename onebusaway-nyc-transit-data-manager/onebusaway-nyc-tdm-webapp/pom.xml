@@ -8,9 +8,9 @@
         <version>2.0.3-SNAPSHOT</version>
     </parent>
     <groupId>org.onebusaway</groupId>
-    <artifactId>onebusaway-nyc-tdm-service</artifactId>
+    <artifactId>onebusaway-nyc-tdm-webapp</artifactId>
     <version>2.0.3-SNAPSHOT</version>
-    <name>onebusaway-nyc-tdm-service</name>
+    <name>onebusaway-nyc-tdm-webapp</name>
     <description>TDM API</description>
     <packaging>war</packaging>
 
