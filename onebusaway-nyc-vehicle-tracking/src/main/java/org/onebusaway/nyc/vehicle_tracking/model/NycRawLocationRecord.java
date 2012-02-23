@@ -20,6 +20,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFactory;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
@@ -233,8 +234,13 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
 
   @Override
   public String toString() {
-    return vehicleId + ": (" + latitude + "," + longitude + "), "
-        + destinationSignCode + ", " + timeReceived;
+    return Objects.toStringHelper("NycRawLocationRecord")
+        .add("vehicleId", vehicleId)
+        .add("latitude", latitude)
+        .add("longitude", longitude)
+        .add("destinationSignCode", destinationSignCode)
+        .add("timeReceived", timeReceived)
+        .toString();
   }
 
   public void setSpeed(short speed) {

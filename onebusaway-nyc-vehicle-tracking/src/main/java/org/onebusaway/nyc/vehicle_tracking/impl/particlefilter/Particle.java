@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
@@ -143,8 +144,11 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   @Override
   public String toString() {
-    return "Particle(time=" + _timestamp + " weight=" + _weight + " data="
-        + _data + ")";
+    return Objects.toStringHelper("Particle")
+        .add("time", _timestamp)
+        .add("weight", _weight)
+        .add("data", _data)
+        .toString();
   }
 
   private static class ParticleDataOrdering extends Ordering<Object> {

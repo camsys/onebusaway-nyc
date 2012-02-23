@@ -15,9 +15,12 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import com.google.common.base.Objects;
+
 import org.apache.commons.math.util.FastMath;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SensorModelResult {
@@ -110,6 +113,18 @@ public class SensorModelResult {
     this.logProbability += result.logProbability;
     this.refresh = true;
     return addResult(result);
+  }
+
+  @Override
+  public String toString() {
+    Objects.ToStringHelper toStringHelper = Objects.toStringHelper("SensorModelResult");
+    toStringHelper.add(name, getProbability());
+    if (results != null) {
+      for (SensorModelResult res : results) {
+        toStringHelper.add("\n\t" + res.name, res.getProbability());
+      }
+    }
+    return toStringHelper.toString();
   }
 
 }

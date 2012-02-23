@@ -232,7 +232,7 @@ public class ParticleFilter<OBS> {
         @Override
         public void run() {
           final Multiset<Particle> moveCache = threadLocal.get();
-          cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs,
+          cachedParticleMove(pEntry, timestamp, elapsed, obs,
               moveCache);
           for (final Multiset.Entry<Particle> pEntry : moveCache.entrySet()) {
             final Particle p = pEntry.getElement();
@@ -279,7 +279,7 @@ public class ParticleFilter<OBS> {
         tasks.add(Executors.callable(new Runnable() {
           @Override
           public void run() {
-            cachedParticleMove(pEntry.getElement(), timestamp, elapsed, obs,
+            cachedParticleMove(pEntry, timestamp, elapsed, obs,
                 results);
           }
         }));
