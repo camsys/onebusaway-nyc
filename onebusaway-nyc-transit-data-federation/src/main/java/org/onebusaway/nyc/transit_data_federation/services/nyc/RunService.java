@@ -48,4 +48,6 @@ public interface RunService {
 
   Collection<? extends AgencyAndId> getTripIdsForRunId(String runId);
 
+  public boolean isValidRunId(String runId);
+
 }

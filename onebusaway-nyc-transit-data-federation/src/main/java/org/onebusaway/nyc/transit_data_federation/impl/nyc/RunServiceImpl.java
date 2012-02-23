@@ -579,6 +579,11 @@ public class RunServiceImpl implements RunService {
   }
 
   @Override
+  public boolean isValidRunId(String runId) {
+    return this.entriesByRun.containsKey(runId);
+  }
+  
+  @Override
   public boolean isValidRunNumber(String runNumber) {
     return this.entriesByRunNumber.containsKey(runNumber);
   }

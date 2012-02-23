@@ -577,7 +577,7 @@ public class VehicleInferenceInstance {
             new ServiceDate(obsDate), operatorId);
 
         if (oai != null) {
-          if (_runService.isValidRunNumber(oai.getRunId()))
+          if (_runService.isValidRunId(oai.getRunId()))
             opAssignedRunId = oai.getRunId();
         }
       } catch (Exception e) {
