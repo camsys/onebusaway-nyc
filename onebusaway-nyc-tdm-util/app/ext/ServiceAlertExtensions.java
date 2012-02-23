@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
@@ -61,4 +62,23 @@ public class ServiceAlertExtensions extends JavaExtensions {
   public static String formatAffect(SituationAffectsBean b) {
       return b.getRouteId() + ":" + b.getDirectionId();
     }
+  
+  public static String formatMultivaluedString(ServiceAlertBean serviceAlert, String fieldName) {
+    String result;
+    if (fieldName=="summaries") {
+      return formatMultivalued(serviceAlert.getSummaries());
+    } else if (fieldName=="descriptions") {
+      return formatMultivalued(serviceAlert.getDescriptions());
+    }
+    throw new RuntimeException("Unknown field name: " + fieldName);
+  }
+
+  private static String formatMultivalued(
+      List<NaturalLanguageStringBean> values) {
+    if (values == null || values.isEmpty())
+      return "(none)";
+    if (values.get(0) != null)
+      return values.get(0).getValue();
+    return "(none)";
+  }
 }
