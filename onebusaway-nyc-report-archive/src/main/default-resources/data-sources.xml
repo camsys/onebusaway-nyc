@@ -59,19 +59,6 @@
         <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
-<bean id="dataSource"
-      class="org.springframework.jndi.JndiObjectFactoryBean">
-      <property name="jndiName"
-                  value="java:comp/env/jdbc/archiveDB"/>   
-      <property name="lookupOnStartup"
-                  value="true"/>   
-      <property name="cache"
-                  value="true"/>   
-      <property name="proxyInterface"
-                  value="javax.sql.DataSource"/>   
-      <property name="resourceRef"
-                  value="true" />
-</bean>
 <!-- try out autodetect dialect -->
 <!--
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">

@@ -32,7 +32,7 @@ public class OperatorAssignmentServiceImplTest {
   @Before
   public void setupApiLibrary() throws Exception {
     RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");
-    String json = "{\"crew\": [{\"agency-id\": \"MTA NYCT\",\"pass-id\": \"123456\",\"run-route\": \"63\",\"run-number\": \"200\",\"service-date\": \"2011-11-02\",\"updated\": \"2011-11-02T10:11:10-05:00\"}],\"status\": \"OK\"}";
+    String json = "{\"crew\": [{\"agency-id\": \"MTA NYCT\",\"pass-id\": \"123456\",\"depot\": \"JG\",\"run-route\": \"63\",\"run-number\": \"200\",\"service-date\": \"2011-11-02\",\"updated\": \"2011-11-02T10:11:10-05:00\"}],\"status\": \"OK\"}";
 
     when(mockApiLibrary.getItemsForRequest("crew", "2011-10-14", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
@@ -50,6 +50,7 @@ public class OperatorAssignmentServiceImplTest {
     assertEquals(item.getAgencyId(), "MTA NYCT");
     assertEquals(item.getRunRoute(), "63");
     assertEquals(item.getRunNumber(), "200");
+    assertEquals(item.getDepot(), "JG");
   }
 
   @Test
@@ -61,6 +62,7 @@ public class OperatorAssignmentServiceImplTest {
     assertEquals(item.getAgencyId(), "MTA NYCT");
     assertEquals(item.getRunRoute(), "63");
     assertEquals(item.getRunNumber(), "200");
+    assertEquals(item.getDepot(), "JG");
   }
 
 }
