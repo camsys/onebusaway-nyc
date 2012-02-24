@@ -235,7 +235,7 @@ public class AbstractTraceRunner {
             .getSimulationResults(taskId);
 
         String asString = _traceSupport.getRecordsAsString(actual);
-        _log.debug("actual records:\n" + asString);
+        //_log.debug("actual records:\n" + asString);
 
 
         System.out.println("records=" + actual.size() + "/" + expected.size());
