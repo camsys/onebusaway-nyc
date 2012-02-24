@@ -44,9 +44,9 @@
 
 			<td>${serviceAlert.reason}</td>
 
-			<td>${serviceAlert.summaries.get(0).value}</td>
+			<td>${serviceAlert.formatMultivaluedString("summaries")}</td>
 
-			<td>${serviceAlert.descriptions.get(0).value}</td>
+			<td>${serviceAlert.formatMultivaluedString("descriptions")}</td>
 
 			<td>${serviceAlert.urls}</td>
 

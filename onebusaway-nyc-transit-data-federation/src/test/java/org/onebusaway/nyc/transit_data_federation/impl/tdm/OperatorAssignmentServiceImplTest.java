@@ -3,6 +3,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
@@ -56,7 +57,7 @@ public class OperatorAssignmentServiceImplTest {
   @Test
   public void getForServiceDate() throws Exception {
     ServiceDate date = ServiceDate.parseString("20111014");
-    OperatorAssignmentItem item = service.getOperatorAssignmentItemForServiceDate(date, "123456");
+    OperatorAssignmentItem item = service.getOperatorAssignmentItemForServiceDate(date, new AgencyAndId("MTA NYCT", "123456"));
 
     assertEquals(item.getPassId(), "123456");
     assertEquals(item.getAgencyId(), "MTA NYCT");

@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.services.tdm;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 
@@ -20,7 +21,7 @@ public interface OperatorAssignmentService {
   public Collection<OperatorAssignmentItem> getOperatorsForServiceDate(ServiceDate serviceDate) 
       throws Exception;
 
-  public OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(ServiceDate serviceDate, 
-      String operatorId) throws Exception;
+  public OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(
+      ServiceDate serviceDate, AgencyAndId operatorId) throws Exception;
 
 }

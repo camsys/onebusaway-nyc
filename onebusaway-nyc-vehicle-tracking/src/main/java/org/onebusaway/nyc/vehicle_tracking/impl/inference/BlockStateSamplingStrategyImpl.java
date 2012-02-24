@@ -200,7 +200,26 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       score *= scoreDestinationSignCode(state.getBlockState(), observation);
     }
 
-    final Boolean stateButNoRunMatch = state.getOpAssigned() == Boolean.FALSE
+    /**
+     * In all cases we use the run info, when available, to determine a
+     * preference
+     */
+    boolean operatorHasAssignment = false;
+    try {
+      operatorHasAssignment = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
+          new ServiceDate(new Date(observation.getTime())),
+          new AgencyAndId(observation.getRecord().getVehicleId().getAgencyId(), 
+              observation.getRecord().getOperatorId())) != null;
+
+    } catch (Exception e) {
+      _log.warn("Operator service was not available.");
+    }
+
+    Boolean noStateButRunInfo = state == null
+        && (operatorHasAssignment || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
+
+    Boolean stateButNoRunMatch = state != null
+        && state.getOpAssigned() == Boolean.FALSE
         && state.getRunReported() == Boolean.FALSE;
 
     /**

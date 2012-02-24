@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
 import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
@@ -21,6 +22,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -54,6 +57,8 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
     this._transitDataManagerApiLibrary = apiLibrary;
   }
 	
+  private final Pattern operatorIdPattern = Pattern.compile("^0*[a-zA-Z]*0*(\\d+)$");
+  
 	private HashMap<String, OperatorAssignmentItem> getOperatorMapForServiceDate(ServiceDate serviceDate) {
 		try {			
 		  String serviceDateUrlParameter = serviceDate.getYear() + "-" + serviceDate.getMonth() + "-" + serviceDate.getDay();
@@ -71,8 +76,15 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         item.setDepot(itemToAdd.get("depot").getAsString());
         item.setServiceDate(ServiceDate.parseString(itemToAdd.get("service-date").getAsString().replace("-", "")));
         item.setUpdated(_updatedDateFormatter.parseDateTime(itemToAdd.get("updated").getAsString()));
-			  
-			  output.put(item.getPassId(), item);
+        
+        Matcher operatorIdMatcher = operatorIdPattern.matcher(item.getPassId());
+
+        if (!operatorIdMatcher.matches()) {
+          _log.error("Couldn't parse operator-id: " + item.getPassId());
+          break;
+        } 
+        String tailoredId = operatorIdMatcher.group(1);
+			  output.put(item.getAgencyId() + "_" + tailoredId, item);
 			}
 			
 			return output;
@@ -159,7 +171,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
 	}
 
   @Override
-  public OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(ServiceDate serviceDate, String operatorId) 
+  public OperatorAssignmentItem getOperatorAssignmentItemForServiceDate(ServiceDate serviceDate, AgencyAndId operatorId) 
       throws Exception {
     
     if(serviceDate == null) {
@@ -184,7 +196,7 @@ public class OperatorAssignmentServiceImpl implements OperatorAssignmentService 
         }
       }      
 
-      return list.get(operatorId);
+      return list.get(operatorId.toString());
     }
   }
 }
