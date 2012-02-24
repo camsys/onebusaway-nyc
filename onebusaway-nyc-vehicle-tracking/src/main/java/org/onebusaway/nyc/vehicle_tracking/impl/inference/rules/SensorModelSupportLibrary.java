@@ -259,7 +259,7 @@ public class SensorModelSupportLibrary {
 
     Observation prevObs = obs.getPreviousObservation();
     if (prevObs == null)
-      return 1.0;
+      return 0.5;
     
     final double d = SphericalGeometryLibrary.distance(
         prevObs.getLocation(), obs.getLocation());

@@ -119,7 +119,7 @@ public class Observation implements Comparable<Observation> {
     return Objects.toStringHelper("Observation")
         .add("atBase", atBase)
         .add("atTerminal", atTerminal)
-        .add(null, _record.toString())
+        .addValue(_record.toString())
         .toString();
   }
 

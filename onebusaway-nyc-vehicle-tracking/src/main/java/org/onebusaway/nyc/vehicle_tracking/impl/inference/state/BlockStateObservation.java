@@ -3,6 +3,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
@@ -100,15 +101,11 @@ public final class BlockStateObservation implements
 
   @Override
   public String toString() {
-    final StringBuilder b = new StringBuilder();
-    b.append("BlockStateObservation(");
-    b.append(_blockState).append(",");
-    b.append(", isOpAssigned=").append(_isOpAssigned);
-    b.append(", isRunReported=").append(_isRunReported);
-    b.append(", isRunReportedAssignedMismatch=").append(
-        _isRunReportedAssignedMismatch);
-    b.append(")");
-    return b.toString();
+    return Objects.toStringHelper("BlockStateObservation")
+        .addValue(_blockState)
+        .add("isOpAssigned", _isOpAssigned)
+        .add("isRunReported", _isRunReported)
+        .toString();
   }
 
   private int _hash = 0;

@@ -148,6 +148,7 @@ public class Particle implements Serializable, Comparable<Particle> {
         .add("time", _timestamp)
         .add("weight", _weight)
         .add("data", _data)
+        .add("parentState", _parent != null ? _parent.getData() : null)
         .toString();
   }
 

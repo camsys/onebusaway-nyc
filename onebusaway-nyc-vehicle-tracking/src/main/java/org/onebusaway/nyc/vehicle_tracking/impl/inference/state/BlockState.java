@@ -15,12 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.ScheduledBlockLocationComparator;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
@@ -71,15 +73,18 @@ public final class BlockState implements Comparable<BlockState> {
 
   @Override
   public String toString() {
-    final StringBuilder b = new StringBuilder();
-    b.append("BlockState(");
-    b.append(blockInstance).append(",");
-    b.append(blockLocation).append(",");
-    b.append(runTrip).append(",");
-    b.append(" {dsc=").append(destinationSignCode);
-    b.append("})");
-
-    return b.toString();
+    AgencyAndId tripId = blockLocation.getActiveTrip() != null ?
+        blockLocation.getActiveTrip().getTrip().getId() : null;;
+    Boolean runTripMatches = (tripId != null && runTrip != null) ? tripId.equals(runTrip.getTripEntry().getId())
+            : null;
+    return Objects.toStringHelper("BlockState")
+        .add("blockId", blockInstance.getBlock().getBlock().getId())
+        .add("scheduledTime", blockLocation.getScheduledTime())
+        .add("distanceAlongBlock", blockLocation.getDistanceAlongBlock())
+        .add("tripId", tripId.toString())
+        .add("dsc", destinationSignCode)
+        .add("runTripMatchesActiveTrip", runTripMatches)
+        .toString();
   }
 
   public String getRunId() {

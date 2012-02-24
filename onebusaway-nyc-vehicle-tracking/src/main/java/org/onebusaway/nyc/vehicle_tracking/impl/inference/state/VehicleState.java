@@ -17,6 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
@@ -52,17 +54,11 @@ public final class VehicleState implements Comparable<VehicleState> {
   public VehicleState(MotionState motionState,
       BlockStateObservation blockState, JourneyState journeyState,
       List<JourneyPhaseSummary> journeySummaries, Observation observation) {
-    if (motionState == null)
-      throw new IllegalArgumentException("motionState cannot be null");
-    if (journeyState == null)
-      throw new IllegalArgumentException("journeyPhase cannot be null");
-    if (observation == null)
-      throw new IllegalArgumentException("observation cannot be null");
-    this.motionState = motionState;
+    this.motionState = Preconditions.checkNotNull(motionState);
+    this.journeyState = Preconditions.checkNotNull(journeyState);
+    this.observation = Preconditions.checkNotNull(observation);
     this.blockStateObservation = blockState;
-    this.journeyState = journeyState;
     this.journeySummaries = journeySummaries;
-    this.observation = observation;
   }
 
   public MotionState getMotionState() {
@@ -92,7 +88,10 @@ public final class VehicleState implements Comparable<VehicleState> {
 
   @Override
   public String toString() {
-    return journeyState + " " + blockStateObservation + " " + observation;
+    return Objects.toStringHelper("VehicleState")
+        .add("journeyState", journeyState)
+        .addValue(blockStateObservation)
+        .toString();
   }
 
   /**

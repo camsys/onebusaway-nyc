@@ -34,6 +34,8 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
+import com.google.common.collect.Sets;
+
 import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,13 +160,12 @@ public class BlockStateTransitionModel {
         potentialTransStates.add(null);
     }
     /**
-     * We're now considering that the driver may have been re-assigned.
+     * We're now considering things like a driver re-assignment, and whatnot.
      */
     for (BlockStateObservation newBlockState : potentialTransStates) {
       if (isTransitionAllowed(parentState, obs, newBlockState, journeyState))
         potentialTransStates.add(newBlockState);
     }
-
 
     return potentialTransStates;
   }
@@ -306,7 +307,7 @@ public class BlockStateTransitionModel {
   private Set<BlockStateObservation> advanceAlongBlock(EVehiclePhase phase,
       BlockStateObservation blockState, Observation obs) {
 
-    final Set<BlockStateObservation> results = new HashSet<BlockStateObservation>();
+    final Set<BlockStateObservation> results = Sets.newHashSet();
 
     for (final BlockStateObservation updatedBlockState : _blocksFromObservationService.bestStates(
         obs, blockState)) {
@@ -317,6 +318,12 @@ public class BlockStateTransitionModel {
         results.add(updatedBlockState);
       }
     }
+    
+    /*
+     * Could be off the block.
+     */
+    if (results.isEmpty())
+      results.add(null);
 
     return results;
   }

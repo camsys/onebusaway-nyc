@@ -121,7 +121,7 @@ public class SensorModelResult {
     toStringHelper.add(name, getProbability());
     if (results != null) {
       for (SensorModelResult res : results) {
-        toStringHelper.add("\n\t" + res.name, res.getProbability());
+        toStringHelper.addValue("\n\t" + res.toString());
       }
     }
     return toStringHelper.toString();

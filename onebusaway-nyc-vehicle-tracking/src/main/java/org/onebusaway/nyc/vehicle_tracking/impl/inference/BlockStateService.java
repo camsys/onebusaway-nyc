@@ -723,9 +723,9 @@ public class BlockStateService {
       final Multimap<Envelope, LocationIndexedLine> envToLines = HashMultimap.create();
 
       _log.info("generating shapeId & blockConfig to block trips map...");
-      System.out.println("generating shapeId & blockConfig to block trips map...");
+      _log.debug("generating shapeId & blockConfig to block trips map...");
       for (final BlockEntry blockEntry : _transitGraphDao.getAllBlocks()) {
-        System.out.println(blockEntry.getId());
+        _log.debug(blockEntry.getId().toString());
         for (final BlockConfigurationEntry blockConfig : blockEntry.getConfigurations()) {
           for (final BlockTripEntry blockTrip : blockConfig.getTrips()) {
             final TripEntry trip = blockTrip.getTrip();
@@ -744,8 +744,7 @@ public class BlockStateService {
 
         final ShapePoints shapePoints = _shapePointService.getShapePointsForShapeId(shapePointsEntry.getKey());
         if (shapePoints == null || shapePoints.isEmpty()) {
-          System.out.println("blocks with no shapes: "
-              + shapePointsEntry.getValue());
+          _log.debug("blocks with no shapes: " + shapePointsEntry.getValue());
           continue;
         }
 
