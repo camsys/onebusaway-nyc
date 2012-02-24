@@ -216,8 +216,7 @@ public class RunServiceImpl implements RunService {
 
   private final Pattern realRunRouteIdPattern = Pattern.compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
   private final Pattern reportedRunIdPattern = Pattern.compile("\\d(\\d+)-0*(\\d+)");
-  private final Pattern routeIdPattern = Pattern.compile("[a-zA-Z]+(\\d{2})+");
-  private final Pattern multiRoutePattern = Pattern.compile("(?:0([1-9]{1}))|([1-9]{1}0)|([1-9]{2})");
+  private final Pattern multiRoutePattern = Pattern.compile("([1-9]{1}$)|(?:0([1-9]{1}))|([1-9]{1}0)|([1-9]{2})");
 
   @Override
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
@@ -283,13 +282,14 @@ public class RunServiceImpl implements RunService {
             Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
             Matcher actualRouteIdMatcher;
             for (AgencyAndId routeId : routeIds) {
-              actualRouteIdMatcher = routeIdPattern.matcher(routeId.getId());
-              if (actualRouteIdMatcher.matches()) {
+              actualRouteIdMatcher = multiRoutePattern.matcher(routeId.getId());
+              while (actualRouteIdMatcher.find()) {
                 for (int i = 1; i <= actualRouteIdMatcher.groupCount(); ++i) {
-                  runIdsToTry.add(RunTripEntry.createId(
-                      actualRouteIdMatcher.group(i), runNumber));
+                  if (actualRouteIdMatcher.group(i) != null)
+                    runIdsToTry.add(RunTripEntry.createId(
+                        actualRouteIdMatcher.group(i), runNumber));
                 }
-              }
+              } 
             }
           }
         }
