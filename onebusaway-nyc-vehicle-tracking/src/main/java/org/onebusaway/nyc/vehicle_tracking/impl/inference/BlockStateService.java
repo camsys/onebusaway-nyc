@@ -48,6 +48,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.InterpolationLibrary;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -261,53 +262,25 @@ public class BlockStateService {
 
   public static class BestBlockStates {
 
-    // final private BlockState bestTime;
-    // final private BlockState bestLocation;
-    // final private Double locDev;
-    // final private Long timeDev;
-
     final private Set<BlockState> _bestStates;
-
-    // public BestBlockStates(BestBlockObservationStates bestObsState) {
-    // this.bestTime = bestObsState.getBestTime().getBlockState();
-    // this.bestLocation = bestObsState.getBestLocation().getBlockState();
-    // }
 
     public BestBlockStates(Set<BlockState> hashSet) {
       _bestStates = hashSet;
     }
-
-    // public BestBlockStates(BlockState bestTime, BlockState bestLocation,
-    // Long timeDev, Double locDev) {
-    // if (bestTime == null || bestLocation == null)
-    // throw new IllegalArgumentException("best block states cannot be null");
-    // this.bestLocation = bestLocation;
-    // this.bestTime = bestTime;
-    // this.timeDev = timeDev;
-    // this.locDev = locDev;
-    // }
-
-    // public BlockState getBestTime() {
-    // return this.bestTime;
-    // }
-    //
-    // public BlockState getBestLocation() {
-    // return this.bestLocation;
-    // }
 
     public Set<BlockState> getAllStates() {
       // return bestTime.equals(bestLocation) ? Arrays.asList(bestTime)
       // : Arrays.asList(bestTime, bestLocation);
       return _bestStates;
     }
+    
+    @Override
+    public String toString() {
+      return Objects.toStringHelper("BestBlockStates")
+          .add("bestStates", _bestStates)
+          .toString();
+    }
 
-    // public double getLocDev() {
-    // return this.locDev;
-    // }
-    //
-    // public double getTimeDev() {
-    // return this.timeDev;
-    // }
   }
 
   private static class BlockLocationKey {
