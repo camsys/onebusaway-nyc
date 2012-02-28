@@ -207,7 +207,7 @@ public class ParticleFilter<OBS> {
    * subclasses to determine what kind of particles to create, and where to
    * place them.
    */
-  protected List<Particle> createInitialParticlesFromObservation(
+  protected Multiset<Particle> createInitialParticlesFromObservation(
       double timestamp, OBS observation) {
     return _particleFactory.createParticles(timestamp, observation);
   }

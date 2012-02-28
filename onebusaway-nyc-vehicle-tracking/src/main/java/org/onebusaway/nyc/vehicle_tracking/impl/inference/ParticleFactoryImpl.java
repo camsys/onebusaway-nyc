@@ -25,6 +25,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Create particles from an observation.
@@ -52,7 +56,6 @@ import java.util.Random;
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
-
   private int _initialNumberOfParticles = 200;
 
   private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
@@ -62,6 +65,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private VehicleStateLibrary _vehicleStateLibrary;
 
   private MotionModelImpl _motionModel;
+  
+  private BlocksFromObservationService _blocksFromObservationService;
+  private JourneyStateTransitionModel _journeyStateTransitionModel;
 
   static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
@@ -121,6 +127,18 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Autowired
+  public void setJourneyStateTransitionModel(
+      JourneyStateTransitionModel journeyStateTransitionModel) {
+    _journeyStateTransitionModel = journeyStateTransitionModel;
+  }
+  
+  @Autowired
+  public void setBlocksFromObservationService(
+      BlocksFromObservationService blocksFromObservationService) {
+    _blocksFromObservationService = blocksFromObservationService;
+  }
+
+  @Autowired
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
   }
@@ -135,7 +153,30 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Override
-  public List<Particle> createParticles(double timestamp, Observation obs) {
+  public Multiset<Particle> createParticles(double timestamp, Observation obs) {
+    
+    final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
+        obs);
+    
+    Multiset<Particle> particles = HashMultiset.create();
+    
+    for (BlockStateObservation blockState : potentialBlocks) {
+      final MotionState motionState = _motionModel.updateMotionState(obs);
+      
+      List<JourneyState> jStates = _journeyStateTransitionModel.getTransitionJourneyStates(null, obs, motionState);
+      
+      for (JourneyState jstate : jStates) {
+        VehicleState state = vehicleState(motionState, blockState, jstate, obs);
+        final Particle p = new Particle(timestamp);
+        p.setData(state);
+        particles.add(p);
+      }
+    }
+    
+    return particles;
+  }
+  
+  public List<Particle> createParticlesOld(double timestamp, Observation obs) {
 
     // ProjectedPoint point = obs.getPoint();
     // CDFMap<EdgeState> cdf =

@@ -51,6 +51,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEnt
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 import org.slf4j.Logger;
@@ -225,7 +226,7 @@ public class BlocksFromObservationServiceImpl implements
   public void setIncludeNearbyBlocks(boolean includeNearbyBlocks) {
     _includeNearbyBlocks = includeNearbyBlocks;
   }
-
+  
   /****
    * {@link BlocksFromObservationService} Interface Returns "initialized"-only
    * BlockStates for an observation.
@@ -234,61 +235,102 @@ public class BlocksFromObservationServiceImpl implements
   @Override
   public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
       Observation observation, boolean bestBlockLocation) {
-
+    
     final EObservationCacheKey thisKey = bestBlockLocation
         ? EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK
         : EObservationCacheKey.JOURNEY_START_BLOCK;
-
-    Set<BlockStateObservation> potentialBlockStates = _observationCache.getValueForObservation(
+    
+    Set<BlockStateObservation> potentialBlockStates= _observationCache.getValueForObservation(
         observation, thisKey);
 
-    if (potentialBlockStates == null) {
-      potentialBlockStates = Sets.newHashSet();
-      final Set<BlockInstance> consideredBlocks = Sets.newHashSet();
+    if (potentialBlockStates== null) {
+      unCachedDeterminePotentialBlockStatesForObservation(observation);
+      potentialBlockStates= _observationCache.getValueForObservation(
+          observation, thisKey);
+    }
+    
+    return potentialBlockStates;
+  }
 
-      for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-        if (bestBlockLocation) {
-          boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          potentialBlockStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
-        }
-        consideredBlocks.add(bs.getBlockInstance());
-      }
+  /**
+   * Returns the support for the current observation.<br>
+   * This includes
+   * <ul>
+   *  <li> "Snapped", in-progress blocks.
+   *  <li> DSC and run-id inferred blocks (location is 0 meters along the block, 
+   *    i.e. start of the block).
+   *  <li> Empty-block vehicle state (when none of the above are found).
+   * </ul>
+   * 
+   * @param observation
+   * @return
+   */
+  @Override
+  public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
+      Observation observation) {
+    
+    final Set<BlockStateObservation> potentialBlockStates;
+    
+    Set<BlockStateObservation> inProgressStates = _observationCache.getValueForObservation(
+        observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
+    Set<BlockStateObservation> notInProgressStates = _observationCache.getValueForObservation(
+        observation, EObservationCacheKey.JOURNEY_START_BLOCK);
 
-      /*
-       * short-circuit this when we're only interested in "snapped" locations.
-       */
-      if (bestBlockLocation) {
-        _observationCache.putValueForObservation(observation, thisKey,
-            potentialBlockStates);
-        return potentialBlockStates;
-      }
+    if (inProgressStates== null || notInProgressStates == null) {
+      potentialBlockStates = unCachedDeterminePotentialBlockStatesForObservation(observation);
+    } else {
+      potentialBlockStates = Sets.newHashSet(Iterables.concat(inProgressStates, notInProgressStates));
+    }
+    
+    if (potentialBlockStates.isEmpty())
+      potentialBlockStates.add(null);
+    
+    return potentialBlockStates;
+    
+  }
+  
+  private Set<BlockStateObservation> unCachedDeterminePotentialBlockStatesForObservation(
+      Observation observation) {
 
-      /*
-       * now, use dsc, run-id and whatnot to determine blocks potentially being
-       * started (i.e. 0 distance-along-block).
-       */
-      determinePotentialBlocksForObservation(observation, consideredBlocks);
+    final Set<BlockStateObservation> potentialBlockStatesInProgress = Sets.newHashSet();
+    final Set<BlockStateObservation> potentialBlockStatesNotInProgress = Sets.newHashSet();
+    final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
 
-      for (final BlockInstance thisBIS : consideredBlocks) {
-        final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
-        try {
-          BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
-          boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
-              bs, observation);
-          states.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
-        } catch (final Exception e) {
-          _log.warn(e.getMessage());
-          continue;
-        }
-        potentialBlockStates.addAll(states);
-      }
-
-      _observationCache.putValueForObservation(observation, thisKey,
-          potentialBlockStates);
+    for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
+      boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+          bs, observation);
+      potentialBlockStatesInProgress.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
+      snappedBlocks.add(bs.getBlockInstance());
     }
 
-    return potentialBlockStates;
+    _observationCache.putValueForObservation(observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK,
+        potentialBlockStatesInProgress);
+
+    /*
+     * now, use dsc, run-id and whatnot to determine blocks potentially being
+     * started (i.e. 0 distance-along-block).
+     */
+    final Set<BlockInstance> notSnappedBlocks = Sets.newHashSet();
+    determinePotentialBlocksForObservation(observation, notSnappedBlocks);
+    notSnappedBlocks.removeAll(snappedBlocks);
+    for (final BlockInstance thisBIS : notSnappedBlocks) {
+      final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
+      try {
+        BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
+        boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+            bs, observation);
+        states.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
+      } catch (final Exception e) {
+        _log.warn(e.getMessage());
+        continue;
+      }
+      potentialBlockStatesNotInProgress.addAll(states);
+    }
+
+    _observationCache.putValueForObservation(observation, EObservationCacheKey.JOURNEY_START_BLOCK,
+        potentialBlockStatesNotInProgress);
+
+    return Sets.newHashSet(Iterables.concat(potentialBlockStatesInProgress, potentialBlockStatesNotInProgress));
 
   }
 

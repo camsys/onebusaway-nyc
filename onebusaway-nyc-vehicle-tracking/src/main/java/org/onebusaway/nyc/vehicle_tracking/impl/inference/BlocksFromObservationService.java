@@ -38,4 +38,7 @@ public interface BlocksFromObservationService {
   public Set<BlockStateObservation> advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel);
+
+  public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
+      Observation observation);
 }

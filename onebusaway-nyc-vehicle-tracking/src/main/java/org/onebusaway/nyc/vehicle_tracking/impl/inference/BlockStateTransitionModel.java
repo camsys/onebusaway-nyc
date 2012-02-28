@@ -135,14 +135,12 @@ public class BlockStateTransitionModel {
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
     final Set<BlockStateObservation> potentialTransStates = new HashSet<BlockStateObservation>();
 
-    final EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
-
     final boolean allowBlockChange = allowBlockTransition(parentState,
         motionState, journeyState, obs);
 
     if (!allowBlockChange) {
       if (parentBlockState != null) {
-        potentialTransStates.addAll(advanceAlongBlock(parentPhase,
+        potentialTransStates.addAll(advanceAlongBlock(journeyState.getPhase(),
             parentBlockState, obs));
       } else {
         potentialTransStates.add(null);
@@ -155,9 +153,9 @@ public class BlockStateTransitionModel {
      */
     if (allowBlockChange) {
       potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
-          obs, true));
-      if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
-        potentialTransStates.add(null);
+          obs));
+      if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
+        potentialTransStates.remove(null);
     }
     /**
      * We're now considering things like a driver re-assignment, and whatnot.
@@ -320,10 +318,11 @@ public class BlockStateTransitionModel {
     }
     
     /*
-     * Could be off the block.
+     * There are no new snapped locations to transition to.  Stay put.
      */
-    if (results.isEmpty())
-      results.add(null);
+    if (results.isEmpty()) {
+      results.add(blockState);
+    }
 
     return results;
   }

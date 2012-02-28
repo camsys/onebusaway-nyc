@@ -59,7 +59,7 @@ public class DeadheadDuringRule implements SensorModelRule {
      * Rule: DEADHEAD_DURING <=> Vehicle has moved AND at layover location
      */
 
-    final double pMoved = not(library.computeVehicleHasNotMovedProbability(
+    final double pMoved = not(SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
         state.getMotionState(), obs));
 
     result.addResultAsAnd(
