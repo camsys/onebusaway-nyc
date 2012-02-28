@@ -551,10 +551,10 @@ public class VehicleInferenceInstance {
     if (!noOperatorIdGiven) {
       try {
         OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
-            new ServiceDate(obsDate), operatorId);
+            new ServiceDate(obsDate), new AgencyAndId(observation.getVehicleId().getAgencyId(), operatorId));
 
         if (oai != null) {
-          if (_runService.isValidRunNumber(oai.getRunId()))
+          if (_runService.isValidRunId(oai.getRunId()))
             opAssignedRunId = oai.getRunId();
         }
       } catch (Exception e) {

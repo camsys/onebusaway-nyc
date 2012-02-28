@@ -22,6 +22,8 @@ public class OperatorAssignmentItem implements Serializable {
 	private DateTime updated;
 
   private String runNumber;
+  
+  private String depot;
 	
 	public OperatorAssignmentItem() {}
 
@@ -77,4 +79,12 @@ public class OperatorAssignmentItem implements Serializable {
     this.updated = updated;
   }
 
+  public void setDepot(String depot) {
+    this.depot = depot;
+  }
+  
+  public String getDepot() {
+    return depot;
+  }
+  
 }

@@ -3,6 +3,7 @@ package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
@@ -32,7 +33,7 @@ public class OperatorAssignmentServiceImplTest {
   @Before
   public void setupApiLibrary() throws Exception {
     RestApiLibrary ral = new RestApiLibrary("localhost", null, "api");
-    String json = "{\"crew\": [{\"agency-id\": \"MTA NYCT\",\"pass-id\": \"123456\",\"run-route\": \"63\",\"run-number\": \"200\",\"service-date\": \"2011-11-02\",\"updated\": \"2011-11-02T10:11:10-05:00\"}],\"status\": \"OK\"}";
+    String json = "{\"crew\": [{\"agency-id\": \"MTA NYCT\",\"pass-id\": \"123456\",\"depot\": \"JG\",\"run-route\": \"63\",\"run-number\": \"200\",\"service-date\": \"2011-11-02\",\"updated\": \"2011-11-02T10:11:10-05:00\"}],\"status\": \"OK\"}";
 
     when(mockApiLibrary.getItemsForRequest("crew", "2011-10-14", "list"))
       .thenReturn(ral.getJsonObjectsForString(json));
@@ -50,17 +51,19 @@ public class OperatorAssignmentServiceImplTest {
     assertEquals(item.getAgencyId(), "MTA NYCT");
     assertEquals(item.getRunRoute(), "63");
     assertEquals(item.getRunNumber(), "200");
+    assertEquals(item.getDepot(), "JG");
   }
 
   @Test
   public void getForServiceDate() throws Exception {
     ServiceDate date = ServiceDate.parseString("20111014");
-    OperatorAssignmentItem item = service.getOperatorAssignmentItemForServiceDate(date, "123456");
+    OperatorAssignmentItem item = service.getOperatorAssignmentItemForServiceDate(date, new AgencyAndId("MTA NYCT", "123456"));
 
     assertEquals(item.getPassId(), "123456");
     assertEquals(item.getAgencyId(), "MTA NYCT");
     assertEquals(item.getRunRoute(), "63");
     assertEquals(item.getRunNumber(), "200");
+    assertEquals(item.getDepot(), "JG");
   }
 
 }

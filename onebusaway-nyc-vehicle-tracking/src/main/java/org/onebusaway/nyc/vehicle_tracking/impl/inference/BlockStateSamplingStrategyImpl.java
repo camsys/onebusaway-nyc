@@ -205,7 +205,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     try {
       operatorHasAssignment = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
           new ServiceDate(new Date(observation.getTime())),
-          observation.getRecord().getOperatorId()) != null;
+          new AgencyAndId(observation.getRecord().getVehicleId().getAgencyId(), 
+              observation.getRecord().getOperatorId())) != null;
 
     } catch (Exception e) {
       _log.warn("Operator service was not available.");
