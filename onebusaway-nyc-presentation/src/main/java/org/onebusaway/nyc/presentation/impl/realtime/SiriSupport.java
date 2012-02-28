@@ -18,11 +18,13 @@ import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -142,6 +144,33 @@ public final class SiriSupport {
 
     // onward and monitored calls:
     List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+
+    // if in layover, add the next trip in the block's stops
+    if(tripDetails.getStatus().getPhase().toUpperCase().startsWith("LAYOVER_")) {
+      TripBean nextTrip = tripDetails.getSchedule().getNextTrip();
+      
+      if(nextTrip != null) {      
+        TripDetailsQueryBean query = new TripDetailsQueryBean();
+        query.setTripId(nextTrip.getId());
+        query.setVehicleId(tripDetails.getStatus().getVehicleId());
+        
+        ListBean<TripDetailsBean> details = transitDataService.getTripDetails(query);
+        for(TripDetailsBean possibleNextTripDetails : details.getList()) {
+          // next trip must be on same block
+          if(!possibleNextTripDetails.getTrip().getBlockId().equals(tripDetails.getTrip().getBlockId()))
+            continue;
+
+          double offset = tripDetails.getStatus().getTotalDistanceAlongTrip();          
+
+          if(offset > 0 && !Double.isNaN(offset)) {
+            for(TripStopTimeBean stopTime : possibleNextTripDetails.getSchedule().getStopTimes()) {
+              stopTime.setDistanceAlongTrip(stopTime.getDistanceAlongTrip() + offset);
+              stopTimes.add(stopTime);
+            }
+          }
+        }
+      }
+    }
     
     // sort stop times--important!!
     Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
@@ -154,7 +183,7 @@ public final class SiriSupport {
     int o = 0;
 
     boolean afterStart = false;
-    boolean afterStop = (tripDetails.getStatus().getNextStop() == null);
+    boolean afterStop = false;
     
     double distance = tripDetails.getStatus().getDistanceAlongTrip();
     HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();

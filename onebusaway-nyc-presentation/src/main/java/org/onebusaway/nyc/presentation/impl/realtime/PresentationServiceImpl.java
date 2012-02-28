@@ -263,12 +263,13 @@ public class PresentationServiceImpl implements PresentationService {
       // the trip this arrival and departure is for), filter that out.
       if(activeTrip != null
             && !tripBean.getId().equals(activeTrip.getId())
-            && ((adBean.getBlockTripSequence() - 1) != status.getBlockTripSequence() && ratio > 0.50)) {
+            && !((adBean.getBlockTripSequence() - 1) == status.getBlockTripSequence() && ratio > 0.50)) {
         _log.debug("  " + status.getVehicleId() + " filtered out due to at terminal/ratio");
         return false;
       }
     } else {
-      // if the bus isn't serving the trip this arrival and departure is for, filter out.
+      // if the bus isn't serving the trip this arrival and departure is for, filter out--
+      // since the bus is not in layover now.
       if (activeTrip != null
           && !tripBean.getId().equals(activeTrip.getId())) {
         _log.debug("  " + status.getVehicleId() + " filtered out due to not serving trip for A/D");
