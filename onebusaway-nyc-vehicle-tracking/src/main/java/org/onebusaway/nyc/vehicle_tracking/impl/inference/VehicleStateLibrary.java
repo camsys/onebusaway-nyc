@@ -44,7 +44,7 @@ public class VehicleStateLibrary {
 
   private BaseLocationService _baseLocationService;
 
-  static private double _layoverStopDistance = 400;
+  private final static double _layoverStopDistance = 400;
 
   /**
    * If we're more than X meters off our block, then we really don't think we're
@@ -52,7 +52,7 @@ public class VehicleStateLibrary {
    */
   private final double _offBlockDistance = 1000;
 
-  private final double _terminalSearchRadius = 150;
+  private final static double _terminalSearchRadius = 150;
 
   private TransitGraphDao _transitGraphDao;
 
@@ -97,7 +97,7 @@ public class VehicleStateLibrary {
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
-  public boolean isAtPotentialLayoverSpot(BlockState blockState, Observation obs) {
+  public static boolean isAtPotentialLayoverSpot(BlockState blockState, Observation obs) {
 
     /**
      * If there is no block assigned to this vehicle state, then we allow a
@@ -119,7 +119,13 @@ public class VehicleStateLibrary {
     if (blockLocation == null)
       return false;
 
-    return getPotentialLayoverSpot(blockLocation) != null;
+    BlockStopTimeEntry layoverSpot = getPotentialLayoverSpot(blockLocation);
+    if (layoverSpot == null)
+      return false;
+    
+    final double dist = SphericalGeometryLibrary.distance(obs.getLocation(),
+        layoverSpot.getStopTime().getStop().getStopLocation());
+    return  dist <= _layoverStopDistance;
   }
 
   /**
@@ -131,7 +137,7 @@ public class VehicleStateLibrary {
    * @param blockInstance
    * @return whether the observation is within the search radius
    */
-  public boolean isAtPotentialTerminal(NycRawLocationRecord record,
+  public static boolean isAtPotentialTerminal(NycRawLocationRecord record,
       BlockInstance blockInstance) {
 
     final CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),

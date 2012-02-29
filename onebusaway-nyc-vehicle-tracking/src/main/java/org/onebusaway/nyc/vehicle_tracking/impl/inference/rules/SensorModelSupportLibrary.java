@@ -272,6 +272,8 @@ public class SensorModelSupportLibrary {
       return 1.0;
     } else if (60 <= secondsSinceLastMotion) {
       return 0.9;
+    } else if (secondsSinceLastMotion == 0) {
+      return 0.5;
     } else {
       return 0.0;
     }

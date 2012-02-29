@@ -253,8 +253,7 @@ public class EdgeLikelihood implements SensorModelRule {
       boolean previouslyInactive = 
           _blockState == null
           || parentState.getBlockState() == null 
-          || !parentState.getBlockState().getBlockInstance().equals(_blockState.getBlockInstance())
-          || !EVehiclePhase.isActiveDuringBlock(parentState.getJourneyState().getPhase());
+          || !parentState.getBlockState().getBlockInstance().equals(_blockState.getBlockInstance());
       if (previouslyInactive)
         _previousBlockState = null;
       else

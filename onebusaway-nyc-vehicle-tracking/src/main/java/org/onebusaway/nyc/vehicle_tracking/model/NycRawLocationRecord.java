@@ -239,7 +239,7 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
         .add("latitude", latitude)
         .add("longitude", longitude)
         .add("destinationSignCode", destinationSignCode)
-        .add("timeReceived", timeReceived)
+        .add("timeReceived", new Date(timeReceived))
         .toString();
   }
 

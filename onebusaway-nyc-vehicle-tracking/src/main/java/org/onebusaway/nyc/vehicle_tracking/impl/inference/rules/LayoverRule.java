@@ -61,15 +61,10 @@ public class LayoverRule implements SensorModelRule {
     final JourneyState js = state.getJourneyState();
     final EVehiclePhase phase = js.getPhase();
 
-    final BlockState blockState = state.getBlockState();
-
     final SensorModelResult result = new SensorModelResult("pLayover");
 
-    if (blockState == null || !state.getBlockStateObservation().isAtPotentialLayoverSpot()) {
-      result.addResult("not a layover spot", 1.0);
-      return result;
-    }
-    
+    if (EVehiclePhase.AT_BASE == phase)
+      return result.addResultAsAnd("at-base", 1.0);
     /**
      * Rule: LAYOVER <=> Vehicle has not moved AND at layover location
      */
@@ -84,70 +79,52 @@ public class LayoverRule implements SensorModelRule {
 
     final SensorModelResult p1Result = result.addResultAsAnd(
         "LAYOVER <=> Vehicle has not moved AND at layover location", p1);
-//
-//    // For diagnostics
+    
     p1Result.addResult("pNotMoved", pNotMoved);
-//    p1Result.addResult("pAtLayoverLocation", pAtLayoverLocation);
     p1Result.addResult("pLayoverState", pLayoverState);
 
 //    /**
-//     * Rule: LAYOVER_DURING => made some progress on the block
+//     * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule
 //     */
 //
-//    final double pLayoverDuring = p(phase == EVehiclePhase.LAYOVER_DURING);
+//    double p3 = 1.0;
+//    final boolean isActiveLayoverState = EVehiclePhase.isActiveLayover(phase);
 //
-//    final double pServedSomePartOfBlock = blockState != null
-//        ? library.computeProbabilityOfServingSomePartOfBlock(blockState) : 0;
+//    if (isActiveLayoverState && blockState != null) {
 //
-//    final double p2 = implies(pLayoverDuring, pServedSomePartOfBlock);
+//      final BlockStopTimeEntry nextStop = phase == EVehiclePhase.LAYOVER_BEFORE
+//          ? blockState.getBlockLocation().getNextStop()
+//          : VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
 //
-//    final SensorModelResult p2Result = result.addResultAsAnd(
-//        "LAYOVER_DURING => made some progress on the block", p2);
-//    p2Result.addResult("pLayoverDuring", pLayoverDuring);
-//    p2Result.addResult("pServedSomePartOfBlock", pServedSomePartOfBlock);
-
-    /**
-     * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule
-     */
-
-    double p3 = 1.0;
-    final boolean isActiveLayoverState = EVehiclePhase.isActiveLayover(phase);
-
-    if (isActiveLayoverState && blockState != null) {
-
-      final BlockStopTimeEntry nextStop = phase == EVehiclePhase.LAYOVER_BEFORE
-          ? blockState.getBlockLocation().getNextStop()
-          : VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
-
-      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(), blockState,
-          nextStop);
-    }
-
-    result.addResultAsAnd(
-        "LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule", p3);
+//      p3 = computeVehicleIsOnScheduleProbability(obs.getTime(), blockState,
+//          nextStop);
+//    }
+//
+//    result.addResultAsAnd(
+//        "LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule", p3);
 
     return result;
   }
 
-  private double computeVehicleIsOnScheduleProbability(long timestamp,
-      BlockState blockState, BlockStopTimeEntry layoverStop) {
-
-    final BlockInstance blockInstance = blockState.getBlockInstance();
-
-    // No next stop? Could just be sitting...
-    if (layoverStop == null) {
-      return 0.5;
-    }
-
-    final StopTimeEntry stopTime = layoverStop.getStopTime();
-    final long arrivalTime = blockInstance.getServiceDate()
-        + stopTime.getArrivalTime() * 1000;
-
-    // If we still have time to spare, then no problem!
-    if (timestamp < arrivalTime)
-      return 1.0;
-
-    final int minutesLate = (int) ((timestamp - arrivalTime) / (60 * 1000));
-    return _vehicleIsOnScheduleModel.probability(minutesLate);
-  }
+//  private double computeVehicleIsOnScheduleProbability(long timestamp,
+//      BlockState blockState, BlockStopTimeEntry layoverStop) {
+//
+//    final BlockInstance blockInstance = blockState.getBlockInstance();
+//
+//    // No next stop? Could just be sitting...
+//    if (layoverStop == null) {
+//      return 0.5;
+//    }
+//
+//    final StopTimeEntry stopTime = layoverStop.getStopTime();
+//    final long arrivalTime = blockInstance.getServiceDate()
+//        + stopTime.getArrivalTime() * 1000;
+//
+//    // If we still have time to spare, then no problem!
+//    if (timestamp < arrivalTime)
+//      return 1.0;
+//
+//    final int minutesLate = (int) ((timestamp - arrivalTime) / (60 * 1000));
+//    return _vehicleIsOnScheduleModel.probability(minutesLate);
+//  }
 }

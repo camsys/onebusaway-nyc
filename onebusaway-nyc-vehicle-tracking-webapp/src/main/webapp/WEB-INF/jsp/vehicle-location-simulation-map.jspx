@@ -35,6 +35,7 @@ OBA.Debug = function() {
 	var markers = null;
 	var stopMarkers = null;
 	var inferredMarkers = null;
+	var addedMarkers = null;
 	var routes = null;
 	var popup = null;
 	var feature = null;
@@ -100,6 +101,9 @@ OBA.Debug = function() {
 		if (inferredMarkers !== null) {
 			inferredMarkers.clearMarkers();
 		}
+		if (addedMarkers !== null) {
+			addedMarkers.clearMarkers();
+		}
 		
 		var	points = [];
 		
@@ -161,18 +165,21 @@ OBA.Debug = function() {
           	other: "",
           	inferredLatLon: "",
           	timestamp: "",
+          	inferredSchedTime: "",
+          	inferredDAB: "",
           	toString: function () {
           		return "record #: " + this.recordNum + "<br/>"
-          		 + "inferredTripId:" + this.inferredTripId + "<br/>"
-          		 + "timestampAsDate:" + this.timestampAsDate + "<br/>"
-          		 + "inferredPhase: " + this.inferredPhase + "<br/>"
+          		 + "timestamp:" + this.timestampAsDate + "<br/>"
           		 + "dsc: " + this.dsc + "<br/>"
-          		 + "inferredDsc: " + this.inferredDsc + "<br/>"
           		 + "reportedRunId: " + this.reportedRunId + "<br/>"
+          		 + "inferredTripId:" + this.inferredTripId + "<br/>"
+          		 + "inferredPhase: " + this.inferredPhase + "<br/>"
+          		 + "inferredDsc: " + this.inferredDsc + "<br/>"
           		 + "inferredRunId: " + this.inferredRunId + "<br/>"
-          		 + "schedDeviation: " + Math.round(this.schedDeviation) + "(mins)<br/>"
-          		 + "inferredLatLon:" + this.inferredLatLon + "<br/>"
-          		 + "timestamp:" + this.timestamp + "<br/>"
+          		 + "inferredSchedTime: " + this.inferredSchedTime + "<br/>"
+          		 + "schedDeviation: " + Math.round(this.schedDeviation) + " (mins)<br/>"
+          		 + "inferredLatLon: " + this.inferredLatLon + "<br/>"
+          		 + "inferredDAB: " + this.inferredDAB + "<br/>"
           		 + this.other;
           	}
           };
@@ -221,24 +228,24 @@ OBA.Debug = function() {
 									inferredLat = value;
 								} else if (property === "inferredBlockLon" && value != record.lon) {
 									inferredLon = value;
-								} 
-								
-								if (property === "inferredServiceDate") {
+								} else if (property === "inferredDistanceAlongBlock") {
+									markerText.inferredDAB = value;
+								} else if (property === "inferredServiceDate") {
 									schedTime = value;
 									serviceDate = value;
 								} else if (property === "inferredScheduleTime") {
 									schedTime += value*1000;
-								}
-								
-								markerText.other += property + ": " + value + "<br/>";
+								} 
 							} 
 							
 						}
 					});
 					
 					if (currentTime !== null) {
-						markerText.schedDeviation = (currentTime - schedTime)/(1000*60);
+						markerText.schedDeviation = (schedTime - currentTime)/(1000*60);
 					}
+					var schedAsDate = new Date(schedTime); 
+					markerText.inferredSchedTime = schedAsDate.toString();
 					
           var icon = new OpenLayers.Icon(icon_url,size,offset);
           var marker = new OpenLayers.Marker(point, icon);
@@ -262,7 +269,7 @@ OBA.Debug = function() {
           
           marker.events.register("mousedown", marker, function(event) {
 	          feature = new OpenLayers.Feature(markers, point);	
-						feature.data.popupSize = new OpenLayers.Size(500, 100);
+						feature.data.popupSize = new OpenLayers.Size(500, 300);
 	          popup = feature.createPopup(true);
 	          popup.setContentHTML(markerText.toString());
 	          markers.map.addPopup(popup);
@@ -324,6 +331,17 @@ OBA.Debug = function() {
 		});
 	}
 	
+	function addPoint(lat, lon) {
+     var size = new OpenLayers.Size(40,40);
+     var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+     var point = new OpenLayers.LonLat(lon, lat);
+     var proj = new OpenLayers.Projection("EPSG:4326");
+     point.transform(proj, map.getProjectionObject());
+     var icon = new OpenLayers.Icon('http://maps.google.com/mapfiles/ms/icons/orange-dot.png',size,offset);
+     addedMarker = new OpenLayers.Marker(point, icon);
+     addedMarkers.addMarker(addedMarker);
+	}
+	
 	function selectTrip(selectedTripId, serviceDate) {
 		if(typeof selectedTripId === 'undefined' 
 				|| typeof selectedTripId === 'object') {
@@ -367,7 +385,7 @@ OBA.Debug = function() {
 			success: function(data) {
 				
 	      for(var i = 0; i < data.stopTimes.length; i++) {
-	        var size = new OpenLayers.Size(16,16);
+	        var size = new OpenLayers.Size(26,26);
 	        var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
 	    	  var stop = data.stopTimes[i];
           var point = new OpenLayers.LonLat(stop.stop.lon, stop.stop.lat);
@@ -383,19 +401,18 @@ OBA.Debug = function() {
           stopMarkers.addMarker(marker);
           
           var html = null;
+          html = "trip:" + selectedTripId + "<br/>";
           if (serviceDate !== null
         		  && serviceDate !== undefined) {
 	          var dispTime = new Date(serviceDate + stop.arrivalTime*1000);
-	          html = "trip:" + selectedTripId + "<br/>";
 	          html += "arrivalTime=" + dispTime + "<br/>"; 
-	          html += "id:" + stop.stop.id + "<br/>";
           } else {
 	          var stopTimeHour = Math.round(stop.arrivalTime / 3600);
 	          var stopTimeMin = Math.round((stop.arrivalTime / 60)%60);
-	          html = "trip:" + selectedTripId + "<br/>";
 	          html += "arrivalTime=" + stopTimeHour + ":" + stopTimeMin + "<br/>";
-	          html += "id:" + stop.stop.id + "<br/>";
           }
+          html += "id:" + stop.stop.id + "<br/>";
+          html += "distance:" + stop.distanceAlongTrip + "<br/>";
           
           /*
           * wtf, closure issue in for loop...
@@ -488,6 +505,7 @@ OBA.Debug = function() {
 			map = new OpenLayers.Map('map');
       stopMarkers = new OpenLayers.Layer.Markers("StopMarkers");
       inferredMarkers = new OpenLayers.Layer.Markers("InferredMarkers");
+      addedMarkers = new OpenLayers.Layer.Markers("AddedMarkers");
       markers = new OpenLayers.Layer.Markers("Markers");
       routes = new OpenLayers.Layer.Vector("Routes");
       obslines = new OpenLayers.Layer.Vector("ObsLines");
@@ -498,7 +516,7 @@ OBA.Debug = function() {
 			    metadataParams: {mapVersion: "v1"}
 			});
       
-			map.addLayers([road, routes, obslines, stopMarkers, inferredMarkers, markers]);
+			map.addLayers([road, routes, obslines, stopMarkers, inferredMarkers, addedMarkers, markers]);
 			map.addControl(new OpenLayers.Control.LayerSwitcher());
 			
 			map.setCenter(new OpenLayers.LonLat(-74.081154, 40.639228).transform(
@@ -509,6 +527,21 @@ OBA.Debug = function() {
 			scale = new OpenLayers.Control.ScaleLine();
 			scale.geodesic = true;
 			map.addControl(scale);
+			
+			jQuery("#latlon_clear_button").click(function(e) {
+				e.preventDefault();
+				
+				addedMarkers.clearMarkers();
+			});
+			
+			jQuery("#latlon_button").click(function(e) {
+				e.preventDefault();
+				
+				var latlon_string = jQuery("#add_latlon").val();
+				var latlon_split = latlon_string.split(",", 2);
+				if (latlon_split.length == 2)
+					addPoint(latlon_split[0], latlon_split[1]);
+			});
 			
 			jQuery("#trip_button").click(function(e) {
 				e.preventDefault();
@@ -574,6 +607,11 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<input type="text" id="trip_name" size="40"/> 
 	<br/>
 	<input type="submit" value="Show Trip" id="trip_button"/>
+	<br/>
+	<input type="text" id="add_latlon" size="40"/> 
+	<br/>
+	<input type="submit" value="Add LatLon" id="latlon_button"/>
+	<input type="submit" value="Clear" id="latlon_clear_button"/>
 </td>
 <td>
 	<div id="map" style="width: 1500px; height: 1000px;"></div>

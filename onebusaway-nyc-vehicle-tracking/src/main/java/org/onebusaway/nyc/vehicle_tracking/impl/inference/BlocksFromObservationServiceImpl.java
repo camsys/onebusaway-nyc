@@ -86,8 +86,6 @@ public class BlocksFromObservationServiceImpl implements
 
   private BlockIndexService _blockIndexService;
 
-  private VehicleStateLibrary _vehicleStateLibrary;
-
   private VehicleAssignmentService _vehicleAssignmentService;
 
   private OperatorAssignmentService _operatorAssignmentService;
@@ -188,11 +186,6 @@ public class BlocksFromObservationServiceImpl implements
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
-  }
-
-  @Autowired
-  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
   }
 
   @Autowired
@@ -297,7 +290,7 @@ public class BlocksFromObservationServiceImpl implements
     final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
 
     for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
-      boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+      boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
           bs, observation);
       potentialBlockStatesInProgress.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
       snappedBlocks.add(bs.getBlockInstance());
@@ -317,7 +310,7 @@ public class BlocksFromObservationServiceImpl implements
       final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
       try {
         BlockState bs = _blockStateService.getAsState(thisBIS, 0.0);
-        boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+        boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
             bs, observation);
         states.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
       } catch (final Exception e) {
@@ -381,7 +374,7 @@ public class BlocksFromObservationServiceImpl implements
 
     if (foundStates != null) {
       for (final BlockState bs : foundStates.getAllStates()) {
-        boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+        boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
             bs, observation);
         resStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
       }
@@ -448,7 +441,7 @@ public class BlocksFromObservationServiceImpl implements
     }
 
     BlockState bs = _blockStateService.getScheduledTimeAsState(instance, targetScheduleTime);
-    boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+    boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
         bs, obs);
     final BlockStateObservation state = new BlockStateObservation(bs, obs, isAtPotentialLayoverSpot);
 
@@ -476,7 +469,7 @@ public class BlocksFromObservationServiceImpl implements
     }
     if (foundStates != null) {
       for (final BlockState bs : foundStates.getAllStates()) {
-        boolean isAtPotentialLayoverSpot = _vehicleStateLibrary.isAtPotentialLayoverSpot(
+        boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
             bs, observation);
         resStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot));
       }
