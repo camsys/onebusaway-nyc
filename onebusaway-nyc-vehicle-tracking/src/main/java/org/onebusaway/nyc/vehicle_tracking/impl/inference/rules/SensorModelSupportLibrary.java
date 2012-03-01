@@ -257,9 +257,9 @@ public class SensorModelSupportLibrary {
   static public double computeVehicleHasNotMovedProbability(MotionState motionState,
       Observation obs) {
 
-//    Observation prevObs = obs.getPreviousObservation();
-//    if (prevObs == null)
-//      return 0.5;
+    Observation prevObs = obs.getPreviousObservation();
+    if (prevObs == null)
+      return 0.5;
 //    
 //    final double d = SphericalGeometryLibrary.distance(
 //        prevObs.getLocation(), obs.getLocation());
@@ -272,8 +272,6 @@ public class SensorModelSupportLibrary {
       return 1.0;
     } else if (60 <= secondsSinceLastMotion) {
       return 0.9;
-    } else if (secondsSinceLastMotion == 0) {
-      return 0.5;
     } else {
       return 0.0;
     }
