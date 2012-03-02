@@ -275,6 +275,11 @@ OBA.Sign = function() {
 			var signPosition = url.indexOf("/sign/sign");
 			var baseUrl = url.substring(0, signPosition);
 
+			var hostname = window.location.hostname;
+			var hostnamePosition = url.indexOf(hostname);
+			var obaApiBaseUrlPosition = url.indexOf("/", hostnamePosition);
+			var obaApiBaseUrl = url.substring(0, obaApiBaseUrlPosition);
+			
 			var agencyId = "MTA NYCT";
 			var stopIdWithoutAgency = stopId;
 
@@ -349,8 +354,8 @@ OBA.Sign = function() {
 					var stopElement = jQuery(".stop" + stopId + " .name");
 
 					if(stopElement.hasClass("loading")) {
-						jQuery.getJSON(baseUrl + "/" + OBA.Config.searchUrl, { q: stopIdWithoutAgency }, function(json) {
-							stopName = json.searchResults[0].name;
+						jQuery.getJSON(obaApiBaseUrl + "/onebusaway-nyc-api-webapp/api/where/stop/" + agencyId + "_" + stopIdWithoutAgency + ".json", { key: "TEST" }, function(json) {
+							stopName = json.data.name;
 							stopTable.find(".name").removeClass("loading").text(stopName);
 						});
 					}
