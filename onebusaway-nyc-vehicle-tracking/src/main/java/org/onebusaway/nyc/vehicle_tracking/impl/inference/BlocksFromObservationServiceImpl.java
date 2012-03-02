@@ -271,11 +271,13 @@ public class BlocksFromObservationServiceImpl implements
 
     if (inProgressStates== null || notInProgressStates == null) {
       potentialBlockStates = unCachedDeterminePotentialBlockStatesForObservation(observation);
+      inProgressStates = _observationCache.getValueForObservation(
+        observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK);
     } else {
       potentialBlockStates = Sets.newHashSet(Iterables.concat(inProgressStates, notInProgressStates));
     }
     
-    if (potentialBlockStates.isEmpty())
+    if (inProgressStates.isEmpty() || potentialBlockStates.isEmpty())
       potentialBlockStates.add(null);
     
     return potentialBlockStates;
