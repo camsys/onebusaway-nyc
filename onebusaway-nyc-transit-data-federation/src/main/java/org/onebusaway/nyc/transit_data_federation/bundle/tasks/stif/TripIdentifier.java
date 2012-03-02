@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
+import java.util.Formatter;
+
 public class TripIdentifier {
   public int startTime;
   public String routeName;
@@ -30,9 +32,20 @@ public class TripIdentifier {
     this.run = run;
   }
 
+  private String gtfsAndStifTimeFormat(int time) {
+    StringBuilder sb = new StringBuilder();
+    Formatter formatter = new Formatter(sb);
+    int hours = time / 3600;
+    int minutes = (time - hours * 3600) / 60;
+    int seconds = time % 60;
+    int centiminutes = (time * 100) / 60;
+    formatter.format("%02d:%02d:%02d or %d", hours, minutes, seconds, centiminutes);
+    return sb.toString();
+  }
+
   @Override
   public String toString() {
-    return "TripIdentifier(" + routeName + "," + startTime + "," + endTime + "," + startStop
+    return "TripIdentifier(" + routeName + "," + gtfsAndStifTimeFormat(startTime) + "," + gtfsAndStifTimeFormat(endTime) + "," + startStop
         + "," + run + ")";
   }
 
