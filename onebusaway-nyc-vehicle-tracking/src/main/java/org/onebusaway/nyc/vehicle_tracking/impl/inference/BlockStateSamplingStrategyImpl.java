@@ -115,22 +115,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       cdf = new CategoricalDist<BlockStateObservation>();
 
-      StringBuilder b = null;
-
-      if (_log.isDebugEnabled()) {
-        b = new StringBuilder();
-        b.append("potential blocks found: ").append(potentialBlocks.size());
-      }
-
       for (final BlockStateObservation state : potentialBlocks) {
 
         final double p = scoreState(state, observation, true);
 
         cdf.put(p, state);
       }
-
-      if (_log.isDebugEnabled())
-        _log.debug(b.toString());
 
       _observationCache.putValueForObservation(observation,
           EObservationCacheKey.JOURNEY_START_BLOCK_CDF, cdf);
@@ -152,21 +142,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
       cdf = new CategoricalDist<BlockStateObservation>();
 
-      StringBuilder b = null;
-      if (_log.isDebugEnabled()) {
-        b = new StringBuilder();
-        b.append("potential blocks found: " + potentialBlocks.size());
-      }
-
       for (final BlockStateObservation state : potentialBlocks) {
 
         final double p = scoreState(state, observation, false);
 
         cdf.put(p, state);
       }
-
-      if (_log.isDebugEnabled())
-        _log.debug(b.toString());
 
       /**
        * Cache the result

@@ -20,7 +20,6 @@ import com.google.common.base.Objects;
 import org.apache.commons.math.util.FastMath;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class SensorModelResult {

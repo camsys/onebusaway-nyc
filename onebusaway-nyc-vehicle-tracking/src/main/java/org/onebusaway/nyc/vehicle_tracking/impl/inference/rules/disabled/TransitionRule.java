@@ -29,7 +29,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 //@Component
 public class TransitionRule implements SensorModelRule {
@@ -77,7 +76,7 @@ public class TransitionRule implements SensorModelRule {
     BlockState blockState = state.getBlockState();
     if (blockState != null
         && (blockState.getBlockLocation().getNextStop() == null 
-          || library.computeProbabilityOfEndOfBlock(blockState) > 0.9))
+          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState) > 0.9))
       endOfBlock = true;
 
     /**
@@ -89,7 +88,7 @@ public class TransitionRule implements SensorModelRule {
     if (parentBlockState != null
         && blockState == null
         && (parentBlockState.getBlockLocation().getNextStop() == null 
-          || library.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
+          || SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(parentBlockState) > 0.9))
       wasAtEndOfBlock = true;
 
     double pTransitionFromDuringToBefore = implies(p(transitionDuringToBefore),

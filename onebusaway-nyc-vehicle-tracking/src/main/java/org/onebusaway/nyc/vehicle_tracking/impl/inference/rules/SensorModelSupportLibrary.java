@@ -39,7 +39,6 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import umontreal.iro.lecuyer.stat.Tally;
 
 @Component

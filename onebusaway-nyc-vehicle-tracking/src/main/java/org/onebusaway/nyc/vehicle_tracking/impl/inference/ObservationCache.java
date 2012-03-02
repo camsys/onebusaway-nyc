@@ -18,7 +18,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

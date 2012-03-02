@@ -21,13 +21,9 @@ import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gov.sandia.cognition.math.matrix.Vector;
 import gov.sandia.cognition.math.matrix.VectorEntry;
-import gov.sandia.cognition.math.matrix.VectorFactory;
-import gov.sandia.cognition.math.matrix.mtj.DenseVector;
 import gov.sandia.cognition.math.matrix.mtj.DenseVectorFactoryMTJ;
-import gov.sandia.cognition.statistics.DiscreteSamplingUtil;
 import gov.sandia.cognition.statistics.distribution.MultinomialDistribution;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
@@ -36,8 +32,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 
 import org.apache.commons.math.util.MathUtils;
-
-import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -81,7 +81,7 @@ public final class BlockState implements Comparable<BlockState> {
         .add("blockId", blockInstance.getBlock().getBlock().getId())
         .add("scheduledTime", blockLocation.getScheduledTime())
         .add("distanceAlongBlock", blockLocation.getDistanceAlongBlock())
-        .add("tripId", tripId.toString())
+        .add("tripId", tripId)
         .add("dsc", destinationSignCode)
         .add("runTripMatchesActiveTrip", runTripMatches)
         .toString();

@@ -16,8 +16,6 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.not;
-import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
-
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;

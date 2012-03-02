@@ -17,8 +17,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import com.google.common.collect.Multiset;
 
-import java.util.List;
-
 /**
  * Factory interface for creating an initial set of particles from an initial
  * observation

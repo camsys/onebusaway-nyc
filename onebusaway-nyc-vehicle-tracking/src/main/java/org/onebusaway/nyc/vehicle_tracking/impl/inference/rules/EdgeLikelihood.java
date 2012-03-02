@@ -23,16 +23,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsExce
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -47,7 +42,6 @@ import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import umontreal.iro.lecuyer.probdist.NormalDist;
 import umontreal.iro.lecuyer.stat.Tally;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -59,20 +53,6 @@ public class EdgeLikelihood implements SensorModelRule {
 
   final private double distStdDev = 250.0;
 
-  private final LoadingCache<EdgeLikelihoodContext, SensorModelResult> _cache = 
-      CacheBuilder.newBuilder()
-      .concurrencyLevel(1)
-      .initialCapacity(9000)
-      .expireAfterWrite(30, TimeUnit.MINUTES)
-      .build(
-      new CacheLoader<EdgeLikelihoodContext, SensorModelResult>() {
-        @Override
-        public SensorModelResult load(EdgeLikelihoodContext key)
-            throws Exception {
-          return likelihood(key);
-        }
-      });
-  
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
     _blockStateService = blockStateService;
@@ -102,18 +82,15 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
     
-    EdgeLikelihoodContext edgeContext = new EdgeLikelihoodContext(context);
-    return _cache.getUnchecked(edgeContext);
-  }
-
-  public SensorModelResult likelihood(EdgeLikelihoodContext context) {
-    final Observation obs = context.getObservation();
-    final EVehiclePhase phase = context.getPhase();
     final SensorModelResult result = new SensorModelResult("pInProgress", 1.0);
-    final BlockState blockState = context.getBlockState();
+    final BlockState blockState = state.getBlockState();
     Set<BlockState> prevBlockStates = Sets.newHashSet();
-    if (context.getPreviousBlockState() != null)
-      prevBlockStates.add(context.getPreviousBlockState());
+    boolean previouslyInactive = 
+        blockState == null
+        || parentState.getBlockState() == null 
+        || !parentState.getBlockState().getBlockInstance().equals(blockState.getBlockInstance());
+    if (!previouslyInactive)
+      prevBlockStates.add(context.getParentState().getBlockState());
     
     /*
      * When we have no block-state, we use the best state with a route that
@@ -134,7 +111,6 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
 
-
     if (prevBlockStates.isEmpty()) {
       try {
 
@@ -143,9 +119,10 @@ public class EdgeLikelihood implements SensorModelRule {
             Double.POSITIVE_INFINITY);
 
         if (prevBestStates == null || prevBestStates.getAllStates().isEmpty())
-          return result.addResultAsAnd("pNoPrevState", 0.0);
-
-        prevBlockStates.addAll(prevBestStates.getAllStates());
+//          prevBlockStates.add(_blockStateService.getAsState(blockState.getBlockInstance(), 0.0));
+          return result.addResultAsAnd("pNoPrevState", 0.5);
+        else
+          prevBlockStates.addAll(prevBestStates.getAllStates());
 
       } catch (final MissingShapePointsException e) {
         e.printStackTrace();
@@ -165,59 +142,63 @@ public class EdgeLikelihood implements SensorModelRule {
     /*
      * Schedule Deviation
      */
-    final long obsSchedDev = (obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000
-        - blockState.getBlockLocation().getScheduledTime();
+    final long obsSchedDev = FastMath.abs((obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000
+        - blockState.getBlockLocation().getScheduledTime());
 
     /*
      * Edge Movement
      */
     final double pInP1 = 1.0 - FoldedNormalDist.cdf(10.0, 50.0, d);
-    final double pInP2 = 1.0 - FoldedNormalDist.cdf(5.0, 40.0,
+    final double pInP2 = 1.0 - FoldedNormalDist.cdf(15.0, 80.0,
         obsSchedDev / 60.0);
     final double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
 
     final Tally avgRes = new Tally();
 
+    final double obsDelta = SphericalGeometryLibrary.distance(obs.getLocation(), 
+        obs.getPreviousObservation().getLocation());
     /*
      * When there are multiple (potential) previously in-progress block-states,
      * we need to average over them to determine
      */
     for (final BlockState prevBlockState : prevBlockStates) {
       final double prevDab = prevBlockState.getBlockLocation().getDistanceAlongBlock();
-      final double actualDabDelta = currentDab - prevDab;
+      final double dabDelta = currentDab - prevDab;
 
-      /*
-       * Use whichever comes first: previous time incremented by observed change
-       * in time, or last stop departure time.
-       */
-      final int expSchedTime = Math.min(
-          (int) (prevBlockState.getBlockLocation().getScheduledTime() 
-              + (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000),
-          Iterables.getLast(
-              prevBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime());
+//      /*
+//       * Use whichever comes first: previous time incremented by observed change
+//       * in time, or last stop departure time.
+//       */
+//      final int expSchedTime = Math.min(
+//          (int) (prevBlockState.getBlockLocation().getScheduledTime() 
+//              + (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000),
+//          Iterables.getLast(
+//              prevBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime());
+//
+//      // FIXME need to compensate for distances over the end of a trip...
+//      final double distanceAlongBlock = _blockStateService.getDistanceAlongBlock(
+//          blockState.getBlockInstance().getBlock(),
+//          prevBlockState.getBlockLocation().getStopTimeIndex(), expSchedTime);
+//      final double expectedDabDelta = distanceAlongBlock - prevDab;
 
-      // FIXME need to compensate for distances over the end of a trip...
-      final double distanceAlongBlock = _blockStateService.getDistanceAlongBlock(
-          blockState.getBlockInstance().getBlock(),
-          prevBlockState.getBlockLocation().getStopTimeIndex(), expSchedTime);
-      final double expectedDabDelta = distanceAlongBlock - prevDab;
-
-      final double pInP3Tmp = NormalDist.density(expectedDabDelta, distStdDev,
-          actualDabDelta)
-          / NormalDist.density(expectedDabDelta, distStdDev, expectedDabDelta);
+      
+      final double pInP3Tmp = NormalDist.density(obsDelta, distStdDev,
+          dabDelta)
+          / NormalDist.density(obsDelta, distStdDev, obsDelta);
 
       avgRes.add(pInP3Tmp);
     }
 
     final double pInP3 = avgRes.average();
-    final double pLogInProgress = FastMath.log(pInP1) + FastMath.log(pInP2)
-        + FastMath.log(pInP3);
+//    final double pLogInProgress = FastMath.log(pInP1) + FastMath.log(pInP2)
+//        + FastMath.log(pInP3);
 
-    result.addResult("gps", pInP1);
-    result.addResult("schedule", pInP2);
-    result.addResult("distance", pInP3);
+    result.addResultAsAnd("gps", pInP1);
+    result.addResultAsAnd("schedule", pInP2);
+    result.addResultAsAnd("distance", pInP3);
 
-    final double pInProgress = FastMath.exp(pLogInProgress);
+//    final double pInProgress = FastMath.exp(pLogInProgress);
+    final double pInProgress = result.getProbability();
 
     /*
      * Keep the best (minimal location deviation) block state with a route
@@ -235,99 +216,6 @@ public class EdgeLikelihood implements SensorModelRule {
       }
     }
 
-    result.addResultAsAnd("pInProgress", pInProgress);
     return result;
-  }
-
-  private static class EdgeLikelihoodContext {
-    private final EVehiclePhase _phase;
-    private final Observation _obs;
-    private final BlockState _blockState;
-    private final BlockState _previousBlockState;
-
-    public EdgeLikelihoodContext(Context context) {
-      _obs = context.getObservation();
-      VehicleState parentState = context.getParentState();
-      _phase = context.getState().getJourneyState().getPhase();
-      _blockState = context.getState().getBlockState();
-      boolean previouslyInactive = 
-          _blockState == null
-          || parentState.getBlockState() == null 
-          || !parentState.getBlockState().getBlockInstance().equals(_blockState.getBlockInstance());
-      if (previouslyInactive)
-        _previousBlockState = null;
-      else
-        _previousBlockState = context.getParentState().getBlockState();
-    }
-
-    public Observation getObservation() {
-      return _obs;
-    }
-
-    public EVehiclePhase getPhase() {
-      return _phase;
-    }
-
-    public BlockState getBlockState() {
-      return _blockState;
-    }
-
-    public BlockState getPreviousBlockState() {
-      return _previousBlockState;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result
-          + ((_blockState == null) ? 0 : _blockState.hashCode());
-      result = prime * result + ((_obs == null) ? 0 : _obs.hashCode());
-      result = prime * result + ((_phase == null) ? 0 : _phase.hashCode());
-      result = prime
-          * result
-          + ((_previousBlockState == null) ? 0 : _previousBlockState.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (!(obj instanceof EdgeLikelihoodContext)) {
-        return false;
-      }
-      EdgeLikelihoodContext other = (EdgeLikelihoodContext) obj;
-      if (_blockState == null) {
-        if (other._blockState != null) {
-          return false;
-        }
-      } else if (!_blockState.equals(other._blockState)) {
-        return false;
-      }
-      if (_obs == null) {
-        if (other._obs != null) {
-          return false;
-        }
-      } else if (!_obs.equals(other._obs)) {
-        return false;
-      }
-      if (_phase != other._phase) {
-        return false;
-      }
-      if (_previousBlockState == null) {
-        if (other._previousBlockState != null) {
-          return false;
-        }
-      } else if (!_previousBlockState.equals(other._previousBlockState)) {
-        return false;
-      }
-      return true;
-    }
-    
   }
 }

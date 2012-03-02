@@ -27,8 +27,6 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
-import org.springframework.stereotype.Component;
-
 //@Component
 public class DeadheadOrLayoverAfterRule implements SensorModelRule {
 
@@ -56,7 +54,7 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
      * RULE: DEADHEAD_AFTER || LAYOVER_AFTER => reached the end of the block
      */
 
-    final double pEndOfBlock = library.computeProbabilityOfEndOfBlock(blockState);
+    final double pEndOfBlock = SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState);
     result.addResult("pEndOfBlock", pEndOfBlock);
 
     /**

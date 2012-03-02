@@ -22,7 +22,6 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;

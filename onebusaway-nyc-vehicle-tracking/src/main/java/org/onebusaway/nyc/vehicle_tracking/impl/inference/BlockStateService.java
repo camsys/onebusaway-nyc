@@ -500,8 +500,12 @@ public class BlockStateService {
         if (schedTime > searchTimeTo)
           break;
 
-        if (!observation.getDscImpliedRouteCollections().contains(
-            location.getActiveTrip().getTrip().getRouteCollection().getId())
+        /*
+         * XXX we might not want to snap these if the dsc is out-of-service
+         */
+        if ((!observation.getDscImpliedRouteCollections().isEmpty()
+            && !observation.getDscImpliedRouteCollections().contains(
+                location.getActiveTrip().getTrip().getRouteCollection().getId()))
             || schedTime < searchTimeFrom)
           continue;
 

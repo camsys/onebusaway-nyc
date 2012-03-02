@@ -63,10 +63,6 @@ import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.TreeMultiset;
 import com.jhlabs.map.proj.ProjectionException;
 
-import org.apache.axis.utils.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,26 +72,6 @@ import org.springframework.stereotype.Component;
 import tcip_3_0_5_local.NMEA;
 import tcip_final_3_0_5_1.CcLocationReport;
 import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import lrms_final_09_07.Angle;
 
 @Component
 public class VehicleLocationInferenceServiceImpl implements VehicleLocationInferenceService {

@@ -332,10 +332,14 @@ public class BlockStateTransitionModel {
     }
     
     /*
-     * There are no new snapped locations to transition to.  Stay put.
+     * There are no new snapped locations to transition to.  
+     * Stay put or be done.
      */
     if (results.isEmpty()) {
-      results.add(blockState);
+      if (SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState.getBlockState()) > 0.9)
+        results.add(null);
+      else
+        results.add(blockState);
     }
 
   }

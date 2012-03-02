@@ -39,10 +39,11 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     _vehicleLocationService = vehicleLocationService;
   }
 
+  @Override
   public void setServletContext(ServletContext servletContext) {
     // check for depot partition keys in the servlet context
     if (servletContext != null) {
-      String key = (String)servletContext.getInitParameter("depot.partition.key");
+      String key = servletContext.getInitParameter("depot.partition.key");
       _log.info("servlet context provied depot.partition.key=" + key);
       if (key != null) {
         setDepotPartitionKey(key);

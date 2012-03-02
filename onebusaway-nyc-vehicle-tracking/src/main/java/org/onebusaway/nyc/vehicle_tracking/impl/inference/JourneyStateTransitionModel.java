@@ -261,8 +261,7 @@ public class JourneyStateTransitionModel {
      * Cannot reasonably transition to in-progress if there isn't a previous
      * observation with which we can determine the direction of travel.
      */
-    if (parentState.getBlockStateObservation() != null
-        && !obs.isOutOfService() 
+    if (!obs.isOutOfService() 
         && obs.getPreviousObservation() != null
         && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
       res.add(JourneyState.inProgress());
