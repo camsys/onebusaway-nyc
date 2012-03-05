@@ -78,7 +78,9 @@
                         <c:if test="${!details.particleFilterFailureActive}">
                             <c:set var="particleDetailsUrl" value="particle-details"/>
                         </c:if>
-                        <a href="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"><c:out value="${p.weight}"/></a>
+                        <a href="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}">
+                        <fmt:formatNumber var="weight" value="${p.weight/details.sampleSize}" pattern="#.####E0"/>
+                        <c:out value="${weight}"/></a>
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>
                     <td><c:out value="${runReported == null?'NA':runReported}" /></td>
@@ -94,8 +96,9 @@
                     <td><c:out
                         value="${blockLocation.location.lat}" /><jsp:text>
                     </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
-                    <td><c:out
-                        value="${blockLocation.distanceAlongBlock}" /></td>
+                    <td>
+                      <fmt:formatNumber var="dab" value="${blockLocation.distanceAlongBlock}" maxFractionDigits="2"/>
+	                    <c:out value="${dab}" /></td>
                     <jsp:useBean id="scheduleTime"
                         class="java.util.Date" />
                     <jsp:setProperty name="scheduleTime" property="time"

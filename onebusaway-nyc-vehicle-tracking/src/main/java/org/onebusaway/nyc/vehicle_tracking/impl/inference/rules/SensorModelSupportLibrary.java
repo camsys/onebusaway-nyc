@@ -69,17 +69,17 @@ public class SensorModelSupportLibrary {
   /**
    * We penalize if you aren't going to start your block on time
    */
-  private final DeviationModel _startBlockOnTimeModel = new DeviationModel(20);
+  private final static DeviationModel _startBlockOnTimeModel = new DeviationModel(20);
 
   /**
    * 30 mph = 48.28032 kph = 13.4112 m/sec
    */
-  private final double _averageSpeed = 13.4112;
+  private final static double _averageSpeed = 13.4112;
 
   /**
    * In minutes
    */
-  private final int _maxLayover = 30;
+  private final static int _maxLayover = 30;
 
   private final DeviationModel _blockLocationDeviationModel = new DeviationModel(
       50);
@@ -690,17 +690,11 @@ public class SensorModelSupportLibrary {
     }
   }
 
-  public double computeStartOrResumeBlockOnTimeProbability(VehicleState state,
+  static public int startOrResumeBlockOnTimeDev(VehicleState state,
       Observation obs) {
-
     final CoordinatePoint currentLocation = obs.getLocation();
 
     final BlockState blockState = state.getBlockState();
-
-    // If we don't have an assigned block yet, we hedge our bets on whether
-    // we're starting on time or not
-    if (blockState == null)
-      return 0.5;
 
     final BlockInstance blockInstance = blockState.getBlockInstance();
     final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
@@ -723,6 +717,19 @@ public class SensorModelSupportLibrary {
       // Allow for a layover
       minutesDiff = Math.max(0, minutesDiff - _maxLayover);
     }
+    return minutesDiff;
+  }
+  
+  static public double computeStartOrResumeBlockOnTimeProbability(VehicleState state,
+      Observation obs) {
+
+    final BlockState blockState = state.getBlockState();
+    // If we don't have an assigned block yet, we hedge our bets on whether
+    // we're starting on time or not
+    if (blockState == null)
+      return 0.5;
+
+    int minutesDiff = startOrResumeBlockOnTimeDev(state, obs);
 
     return _startBlockOnTimeModel.probability(Math.abs(minutesDiff));
   }

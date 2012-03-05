@@ -56,7 +56,7 @@ import java.util.Set;
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
-  private int _initialNumberOfParticles = 200;
+  private static int _initialNumberOfParticles = 200;
 
   private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
@@ -268,6 +268,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   public static ThreadLocal<Random> getThreadLocalRng() {
     return threadLocalRng;
+  }
+
+  public static int getInitialNumberOfParticles() {
+    return _initialNumberOfParticles;
   }
 
   // public static double getNextDouble() {

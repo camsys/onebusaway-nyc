@@ -20,30 +20,35 @@ import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LayoverRule implements SensorModelRule {
 
-  /**
-   * How long in minutes do we let a vehicle remain in layover past its
-   * scheduled pull-out time?
-   */
-  private final DeviationModel _vehicleIsOnScheduleModel = new DeviationModel(
-      40);
-
-  private VehicleStateLibrary _vehicleStateLibrary;
-
-  @Autowired
-  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
-  }
+//  /**
+//   * How long in minutes do we let a vehicle remain in layover past its
+//   * scheduled pull-out time?
+//   */
+//  private final DeviationModel _vehicleIsOnScheduleModel = new DeviationModel(
+//      40);
+//
+//  private VehicleStateLibrary _vehicleStateLibrary;
+//
+//  @Autowired
+//  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
+//    _vehicleStateLibrary = vehicleStateLibrary;
+//  }
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
@@ -56,6 +61,8 @@ public class LayoverRule implements SensorModelRule {
     final EVehiclePhase phase = js.getPhase();
 
     final SensorModelResult result = new SensorModelResult("pLayover");
+    result.addResult("isAtPotentialLayover", state.getBlockState() != null ? 
+        p(state.getBlockStateObservation().isAtPotentialLayoverSpot()) : Double.NaN);
 
     if (EVehiclePhase.AT_BASE == phase)
       return result.addResultAsAnd("at-base", 1.0);
@@ -77,13 +84,14 @@ public class LayoverRule implements SensorModelRule {
     p1Result.addResult("pNotMoved", pNotMoved);
     p1Result.addResult("pLayoverState", pLayoverState);
 
-//    /**
-//     * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule
-//     */
-//
+    /**
+     * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule
+     */
+
 //    double p3 = 1.0;
 //    final boolean isActiveLayoverState = EVehiclePhase.isActiveLayover(phase);
 //
+//    BlockState blockState = state.getBlockState();
 //    if (isActiveLayoverState && blockState != null) {
 //
 //      final BlockStopTimeEntry nextStop = phase == EVehiclePhase.LAYOVER_BEFORE
@@ -100,6 +108,8 @@ public class LayoverRule implements SensorModelRule {
     return result;
   }
 
+//  final private double schedStdDev = 80.0;
+//  final private double schedMean = 15.0;
 //  private double computeVehicleIsOnScheduleProbability(long timestamp,
 //      BlockState blockState, BlockStopTimeEntry layoverStop) {
 //
@@ -119,6 +129,9 @@ public class LayoverRule implements SensorModelRule {
 //      return 1.0;
 //
 //    final int minutesLate = (int) ((timestamp - arrivalTime) / (60 * 1000));
-//    return _vehicleIsOnScheduleModel.probability(minutesLate);
+//    final double pSched = 1.0 - FoldedNormalDist.cdf(schedMean, schedStdDev,
+//        minutesLate / 60.0);
+////    return _vehicleIsOnScheduleModel.probability(minutesLate);
+//    return pSched;
 //  }
 }

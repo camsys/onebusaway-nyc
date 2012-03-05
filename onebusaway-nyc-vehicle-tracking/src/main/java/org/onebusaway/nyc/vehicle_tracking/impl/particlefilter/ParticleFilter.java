@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -182,7 +183,7 @@ public class ParticleFilter<OBS> {
 
   public void reset() {
     _particles.clear();
-    _particles = HashMultiset.create();
+    _particles = HashMultiset.create(200);
     _timeOfLastUpdate = 0L;
     _seenFirst = false;
   }
@@ -534,7 +535,6 @@ public class ParticleFilter<OBS> {
   private void runSingleTimeStep(double timestamp, OBS obs,
       boolean moveParticles) throws ParticleFilterException {
 
-    final int numberOfParticles = _particles.size();
     Multiset<Particle> particles = _particles;
 
     /**
@@ -581,7 +581,7 @@ public class ParticleFilter<OBS> {
      * 5. resample (use the CDF of unevenly weighted particles to create an
      * equal number of equally-weighted ones)
      */
-    final Multiset<Particle> resampled = cdf.sample(numberOfParticles);
+    final Multiset<Particle> resampled = cdf.sample(ParticleFactoryImpl.getInitialNumberOfParticles());
     // TODO why create a new multiset?
     final Multiset<Particle> reweighted = HashMultiset.create(resampled.size());
     for (final Multiset.Entry<Particle> pEntry : resampled.entrySet()) {

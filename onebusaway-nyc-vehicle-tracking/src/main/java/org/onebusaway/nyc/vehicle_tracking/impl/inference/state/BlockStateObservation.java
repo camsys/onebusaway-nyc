@@ -30,41 +30,40 @@ public final class BlockStateObservation implements
   
   private final boolean _isAtPotentialLayoverSpot;
 
-  private VehicleStateLibrary _vehicleStateLibrary;
-
-  @Autowired
-  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
-  }
+  private final boolean _isSnapped;
   
-  public BlockStateObservation(BlockState blockState, Observation obs, 
-      boolean isAtPotentialLayoverSpot) {
+  private BlockStateObservation(BlockState blockState, Boolean isRunReported,
+      Boolean isUTSassigned, Boolean isRunAM, boolean isAtLayoverSpot, boolean isSnapped) {
+    _blockState = blockState;
+    this._isRunReported = isRunReported;
+    this._isOpAssigned = isUTSassigned;
+    this._isRunReportedAssignedMismatch = isRunAM;
+    this._isAtPotentialLayoverSpot = isAtLayoverSpot;
+    this._isSnapped = isSnapped;
+  }
 
+  public BlockStateObservation(BlockStateObservation state) {
+    this(state._blockState, state._isRunReported, state._isOpAssigned,
+        state._isRunReportedAssignedMismatch, state._isAtPotentialLayoverSpot,
+        state._isSnapped);
+  }
+
+  public BlockStateObservation(BlockState blockState, Observation obs,
+      boolean isAtPotentialLayoverSpot, boolean isSnapped) {
     Preconditions.checkNotNull(obs);
     _blockState = Preconditions.checkNotNull(blockState);
 
     final String runId = blockState.getRunId();
     _isOpAssigned = obs.getOpAssignedRunId() != null
         ? obs.getOpAssignedRunId().equals(runId) : null;
-    _isRunReported = (obs.getBestFuzzyRunIds() != null && !obs.getBestFuzzyRunIds().isEmpty())
+    _isRunReported = (runId != null && 
+        obs.getBestFuzzyRunIds() != null && !obs.getBestFuzzyRunIds().isEmpty())
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
     _isRunReportedAssignedMismatch = _isOpAssigned != null
         && _isRunReported != null ? _isOpAssigned && !_isRunReported : null;
     _isAtPotentialLayoverSpot = isAtPotentialLayoverSpot;
-  }
-
-  private BlockStateObservation(BlockState blockState, Boolean isRunReported,
-      Boolean isUTSassigned, Boolean isRunAM, boolean isAtLayoverSpot) {
-    _blockState = blockState;
-    this._isRunReported = isRunReported;
-    this._isOpAssigned = isUTSassigned;
-    this._isRunReportedAssignedMismatch = isRunAM;
-    this._isAtPotentialLayoverSpot = isAtLayoverSpot;
-  }
-
-  public BlockStateObservation(BlockStateObservation state) {
-    this(state._blockState, state._isRunReported, state._isOpAssigned,
-        state._isRunReportedAssignedMismatch, state._isAtPotentialLayoverSpot);
+    _isSnapped = isSnapped;
+    
   }
 
   public BlockState getBlockState() {
@@ -177,4 +176,9 @@ public final class BlockStateObservation implements
   public boolean isAtPotentialLayoverSpot() {
     return _isAtPotentialLayoverSpot;
   }
+
+  public boolean isSnapped() {
+    return _isSnapped;
+  }
+
 }

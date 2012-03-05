@@ -198,7 +198,7 @@ OBA.Debug = function() {
 							} else if(property === "timestampAsDate") {
 								currentTime = value;
 								formattedTime = new Date(value);
-								markerText.timestampAsDate = formattedTime;
+								markerText.timestampAsDate = formattedTime.toISOString();
 							} else if (property === "timestamp") {
 								markerText.timestamp = "<a name='trip_time_select' href='#'>" + value + "</a>";
 							} else if (property === "vehicleId"){
@@ -245,7 +245,7 @@ OBA.Debug = function() {
 						markerText.schedDeviation = (schedTime - currentTime)/(1000*60);
 					}
 					var schedAsDate = new Date(schedTime); 
-					markerText.inferredSchedTime = schedAsDate.toString();
+					markerText.inferredSchedTime = schedAsDate.toISOString();
 					
           var icon = new OpenLayers.Icon(icon_url,size,offset);
           var marker = new OpenLayers.Marker(point, icon);
@@ -405,7 +405,7 @@ OBA.Debug = function() {
           if (serviceDate !== null
         		  && serviceDate !== undefined) {
 	          var dispTime = new Date(serviceDate + stop.arrivalTime*1000);
-	          html += "arrivalTime=" + dispTime + "<br/>"; 
+	          html += "arrivalTime=" + dispTime.toISOString() + "<br/>"; 
           } else {
 	          var stopTimeHour = Math.round(stop.arrivalTime / 3600);
 	          var stopTimeMin = Math.round((stop.arrivalTime / 60)%60);
@@ -439,11 +439,13 @@ OBA.Debug = function() {
 
 		var selectedBlockId = selectedBlock.val();
 		
-		jQuery.each(tripsByBlockId[selectedBlockId], function(_, tripId) {
-			var option = jQuery("<option>" + tripId + "</option>");
-			option.attr("value", tripId);
-			tripList.append(option);
-		})
+		if (!(selectedBlockId === undefined)) {
+			jQuery.each(tripsByBlockId[selectedBlockId], function(_, tripId) {
+				var option = jQuery("<option>" + tripId + "</option>");
+				option.attr("value", tripId);
+				tripList.append(option);
+			})
+		}
 
 		tripList.change(selectTrip);				
 	}
@@ -456,9 +458,13 @@ OBA.Debug = function() {
 		tripList.empty();
 
 		var time = jQuery("#trip_time").val();
+		if (time === "")
+			return;
+    var ts = new Date(time.replace(" ", "T"));
+    var msepoch = ts.getTime();
 		jQuery.ajax({
 			url: "vehicle-location-simulation!active-blocks-for-route-json.do?routeId=" + selectedRouteId 
-					+ "&timestamp=" + time,
+					+ "&timestamp=" + msepoch,
 			success: function(data) {
 				tripsByBlockId = data.blocks;
 
@@ -594,7 +600,7 @@ jQuery(document).ready(function() { new OBA.Debug().initialize(); });
 	<br/>
 	Show trips active for this time:
 	<br/>
-	<input type="text" id="trip_time" size="10"/> 
+	<input type="text" id="trip_time" size="25"/> 
 	<br/>
 	Show Records Between:
 	<br/>

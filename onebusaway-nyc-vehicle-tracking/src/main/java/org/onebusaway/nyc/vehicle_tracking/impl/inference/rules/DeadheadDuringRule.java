@@ -63,21 +63,21 @@ public class DeadheadDuringRule implements SensorModelRule {
     result.addResultAsAnd(
         "DEADHEAD_DURING <=> Vehicle has moved", pMoved);
 
-    /**
-     * Rule: DEADHEAD_DURING => not right on block
-     */
-    final double pDistanceFromBlock = library.computeDeadheadDistanceFromBlockProbability(
-        obs, blockState);
-    result.addResultAsAnd("DEADHEAD_DURING => not right on block",
-        pDistanceFromBlock);
+//    /**
+//     * Rule: DEADHEAD_DURING => not right on block
+//     */
+//    final double pDistanceFromBlock = library.computeDeadheadDistanceFromBlockProbability(
+//        obs, blockState);
+//    result.addResultAsAnd("DEADHEAD_DURING => not right on block",
+//        pDistanceFromBlock);
 
-    /**
-     * Rule: DEADHEAD_DURING => resume block on time
-     */
-    final double pStartBlockOnTime = library.computeStartOrResumeBlockOnTimeProbability(
-        state, obs);
-    result.addResultAsAnd("DEADHEAD_DURING => resume block on time",
-        pStartBlockOnTime);
+//    /**
+//     * Rule: DEADHEAD_DURING => resume block on time
+//     */
+//    final double pStartBlockOnTime = library.computeStartOrResumeBlockOnTimeProbability(
+//        state, obs);
+//    result.addResultAsAnd("DEADHEAD_DURING => resume block on time",
+//        pStartBlockOnTime);
 
 //    /**
 //     * Rule: DEADHEAD_DURING => served some part of block

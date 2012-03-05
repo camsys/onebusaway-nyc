@@ -29,6 +29,7 @@ import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 import com.google.common.collect.Sets;
 
@@ -68,10 +69,17 @@ public class BlockStateTransitionModel {
    */
   private double _blockDistanceTravelScale = 1.5;
 
+  private BlockStateService _blockStateService;
+
   /****
    * Setters
    ****/
 
+  @Autowired
+  public void setBlockStateService(BlockStateService blockStateService) {
+    _blockStateService = blockStateService;
+  }
+  
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
@@ -119,13 +127,11 @@ public class BlockStateTransitionModel {
     final boolean allowBlockChange = allowBlockTransition(parentState,
         motionState, journeyState, obs);
 
-    if (!allowBlockChange) {
-      if (parentBlockState != null) {
-        advanceAlongBlock(potentialTransStates, journeyState.getPhase(),
-            parentBlockState, obs);
-      } else {
-        potentialTransStates.add(null);
-      }
+    if (parentBlockState != null) {
+      advanceAlongBlock(potentialTransStates, journeyState.getPhase(),
+          parentBlockState, obs);
+    } else if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase())){
+      potentialTransStates.add(null);
     }
 
     /**
@@ -189,7 +195,8 @@ public class BlockStateTransitionModel {
         || EVehiclePhase.LAYOVER_DURING == phase) {
       if (state == null
           || !hasServedSomePart
-          || !state.isAtPotentialLayoverSpot()) {
+          || (EVehiclePhase.LAYOVER_DURING == phase 
+            && !state.isAtPotentialLayoverSpot())) {
         return false;
       }
     }
@@ -321,25 +328,57 @@ public class BlockStateTransitionModel {
   private void advanceAlongBlock(final Set<BlockStateObservation> results, EVehiclePhase phase,
       BlockStateObservation blockState, Observation obs) {
 
-    for (final BlockStateObservation updatedBlockState : _blocksFromObservationService.bestStates(
-        obs, blockState)) {
-      if (updatedBlockState != null
-          && (EVehiclePhase.isLayover(phase))) {
-        results.add(_blocksFromObservationService.advanceLayoverState(obs, updatedBlockState));
-      } else {
-        results.add(updatedBlockState);
-      }
+    Set<BlockStateObservation> updatedStates = _blocksFromObservationService.bestStates(
+        obs, blockState);
+    Set<BlockStateObservation> newStates = Sets.newHashSet();
+    for (final BlockStateObservation updatedBlockState : updatedStates) {
+      /*
+       * We don't allow movements backward along a block.
+       * So we hang on to our current position.
+       */
+//      int compRes = Double.compare(blockState.getBlockState().getBlockLocation().getDistanceAlongBlock(),
+//            updatedBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock());
+//      if (compRes > 0) {
+//        newStates.add(blockState);
+//      } else {
+        newStates.add(updatedBlockState);
+//      }
     }
     
-    /*
-     * There are no new snapped locations to transition to.  
-     * Stay put or be done.
-     */
-    if (results.isEmpty()) {
-      if (SensorModelSupportLibrary.computeProbabilityOfEndOfBlock(blockState.getBlockState()) > 0.9)
-        results.add(null);
+    
+//    BlockTripEntry blockTrip = blockState.getBlockState().getBlockLocation().getActiveTrip();
+//    double distAlongTrip = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
+//      - blockTrip.getDistanceAlongBlock();
+//    
+//    /*
+//     * If the movement takes us pass the trip we were doing, then
+//     * propose then next.
+//     */
+//    if (distTraveled + distAlongTrip > blockTrip.getTrip().getTotalTripDistance()) {
+//      BlockState nextState = _blockStateService.getAsState(blockState.getBlockState().getBlockInstance(), 
+//          blockTrip.getNextTrip().getDistanceAlongBlock());
+//      boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+//          nextState, obs);
+//      newStates.add(new BlockStateObservation(nextState, obs, isAtPotentialLayoverSpot, false));
+//      
+//    }
+    
+    if (updatedStates.isEmpty()) {
+      double distTraveled = SphericalGeometryLibrary.distance(obs.getLocation(),
+          obs.getPreviousObservation().getLocation());
+      BlockState nextState = _blockStateService.getAsState(blockState.getBlockState().getBlockInstance(), 
+          blockState.getBlockState().getBlockLocation().getDistanceAlongBlock() + distTraveled);
+      boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+          nextState, obs);
+      newStates.add(new BlockStateObservation(nextState, obs, isAtPotentialLayoverSpot, false));
+//      newStates.add(blockState);
+    }
+    
+    for (BlockStateObservation newState : newStates) {
+      if (EVehiclePhase.isLayover(phase))
+        results.add(_blocksFromObservationService.advanceLayoverState(obs, newState));
       else
-        results.add(blockState);
+        results.add(newState);
     }
 
   }
@@ -379,7 +418,7 @@ public class BlockStateTransitionModel {
         boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
             blockState, obs);
         final BlockStateObservation blockStateObservation = new BlockStateObservation(
-            blockState, obs, isAtPotentialLayoverSpot);
+            blockState, obs, isAtPotentialLayoverSpot, true);
         results.addAll(_blocksFromObservationService.bestStates(obs,
             blockStateObservation));
       } else {
