@@ -170,6 +170,15 @@ public class EdgeLikelihood implements SensorModelRule {
 
     final double obsDelta = SphericalGeometryLibrary.distance(obs.getLocation(), 
         obs.getPreviousObservation().getLocation());
+    
+    /*
+     * If the movement is too small, then there's a fair chance 
+     * that it's not really moving at all, so we can't really tell
+     * if the observed movement is indicative of this trip or not.
+    */
+    if (obsDelta < 10)
+      return 0.5;
+    
     /*
      * When there are multiple (potential) previously in-progress block-states,
      * we need to average over them to determine

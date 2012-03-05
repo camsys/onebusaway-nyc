@@ -71,7 +71,7 @@ public class RunRule implements SensorModelRule {
     } else {
 
       if (state.getObservation().isOutOfService()) {
-        result.addResultAsAnd("NA (out-of-service)", 1.0);
+        result.addResultAsAnd("NA (out-of-service)", 0.5);
         return result;
       }
 
