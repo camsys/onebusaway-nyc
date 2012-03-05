@@ -69,7 +69,7 @@ public class EdgeLikelihood implements SensorModelRule {
     final EVehiclePhase phase = state.getJourneyState().getPhase();
     final BlockState blockState = state.getBlockState();
     
-    SensorModelResult result = new SensorModelResult("pInProgress", 1.0);
+    SensorModelResult result = new SensorModelResult("pEdge", 1.0);
     
     if (obs.getPreviousObservation() == null || parentState == null) {
       if (EVehiclePhase.isActiveDuringBlock(phase)) {
@@ -92,15 +92,26 @@ public class EdgeLikelihood implements SensorModelRule {
     /*
      * GPS Error
      */
-    final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
-    final ProjectedPoint p2 = obs.getPoint();
-
-    final double d = SphericalGeometryLibrary.distance(p1.getLat(),
-        p1.getLon(), p2.getLat(), p2.getLon());
-    final double pGps = 1.0 - FoldedNormalDist.cdf(gpsMean, gpsStdDev, d);
+    final double pGps;
+    if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
+      pGps = 0.5;
+    } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
+      final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
+      final ProjectedPoint p2 = obs.getPoint();
   
+      final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+          p1.getLon(), p2.getLat(), p2.getLon());
+      pGps = FoldedNormalDist.cdf(gpsMean, gpsStdDev, d);
+    } else {
+      final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
+      final ProjectedPoint p2 = obs.getPoint();
+  
+      final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+          p1.getLon(), p2.getLat(), p2.getLon());
+      pGps = 1.0 - FoldedNormalDist.cdf(gpsMean, gpsStdDev, d);
+    }
     result.addResult("gps", pGps);
-      
+    
     /*
      * Edge Movement
      */
@@ -127,37 +138,29 @@ public class EdgeLikelihood implements SensorModelRule {
     }
     
     final double pDistAlong;
-    if (!prevBlockStates.isEmpty()){
-      pDistAlong = computeEdgeMovementProb(blockState, obs, prevBlockStates);
-      result.addResult("distance", pDistAlong);
+    if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
+      pDistAlong = 1.0 - FoldedNormalDist.cdf(0.0, gpsStdDev, 
+          blockState.getBlockLocation().getDistanceAlongBlock());
+      
+    } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
+      if (!prevBlockStates.isEmpty()){
+        pDistAlong = 1.0 - computeEdgeMovementProb(blockState, obs, prevBlockStates);
+        result.addResult("distance", pDistAlong);
+      } else {
+        pDistAlong = 0.5;
+        result.addResult("pNoPrevState", 0.5);
+      }
     } else {
-      pDistAlong = 0.5;
-      result.addResult("pNoPrevState", 0.5);
+      if (!prevBlockStates.isEmpty()){
+        pDistAlong = computeEdgeMovementProb(blockState, obs, prevBlockStates);
+        result.addResult("distance", pDistAlong);
+      } else {
+        pDistAlong = 0.5;
+        result.addResult("pNoPrevState", 0.5);
+      }
     }
     
-    final double totalProb;
-    if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
-//      /*
-//       * If we're deadheading to the start of a block, then we want
-//       * to make sure we're not actually on it already.
-//       */
-//      if (Double.compare(blockState.getBlockLocation().getDistanceAlongBlock(),
-//          0.0) == 0) {
-//        totalProb = 1.0-pGps;
-        totalProb = FastMath.exp(FastMath.log(1.0-pGps) + FastMath.log(1-pDistAlong));
-//      } else {
-//        totalProb = pGps;
-//      }
-    } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
-      /*
-       * As well, deadhead-durings are supposed to be
-       * between trips and not actually on a geometry
-       */
-      totalProb = FastMath.exp(FastMath.log(1.0-pGps) + FastMath.log(1-pDistAlong));
-    } else {
-      totalProb = FastMath.exp(FastMath.log(pDistAlong) + FastMath.log(pGps));
-    }
-
+    final double totalProb = FastMath.exp(FastMath.log(pGps) + FastMath.log(pDistAlong));
     result.setProbability(totalProb);
     return result;
   }
