@@ -66,6 +66,11 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data-federation-builder</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-users</artifactId>
             <version>${onebusaway.app-modules.version}</version>
         </dependency>
