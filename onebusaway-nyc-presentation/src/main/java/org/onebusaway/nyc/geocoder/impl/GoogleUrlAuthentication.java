@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.geocoder.impl;
 
-import org.postgresql.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -20,7 +20,7 @@ public class GoogleUrlAuthentication {
     keyString = keyString.replace('-', '+');
     keyString = keyString.replace('_', '/');
 
-    this.key = Base64.decode(keyString);
+    this.key = Base64.decodeBase64(keyString.getBytes());
   }
 
   public String signRequest(String resource) throws NoSuchAlgorithmException,
@@ -37,7 +37,7 @@ public class GoogleUrlAuthentication {
     byte[] sigBytes = mac.doFinal(resource.getBytes());
 
     // base 64 encode the binary signature
-    String signature = Base64.encodeBytes(sigBytes);
+    String signature = new String(Base64.encodeBase64(sigBytes));
     
     // convert the signature to 'web safe' base 64
     signature = signature.replace('+', '-');

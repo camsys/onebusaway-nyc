@@ -1,15 +1,16 @@
 package org.onebusaway.nyc.queue;
 
+import com.eaio.uuid.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zeromq.ZMQ;
+
+import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.Date;
-
-import com.eaio.uuid.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.zeromq.ZMQ;
 
 /**
  * Encapsulate ZeroMQ queue operations.  ZeroMQ prefers to be on its own
@@ -117,7 +118,6 @@ public class Publisher implements IPublisher {
             this.topicName = topicName.getBytes();
         }
 
-        @Override
         public void run() {
             while(!Thread.currentThread().isInterrupted()) {		    	
                 try {

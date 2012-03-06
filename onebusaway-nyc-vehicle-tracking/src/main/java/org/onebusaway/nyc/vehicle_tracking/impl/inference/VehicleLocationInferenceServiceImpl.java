@@ -36,7 +36,7 @@ import org.onebusaway.transit_data.services.TransitDataService;
 
 import com.jhlabs.map.proj.ProjectionException;
 
-import org.apache.axis.utils.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;

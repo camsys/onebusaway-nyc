@@ -30,8 +30,8 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-import org.apache.axis.utils.StringUtils;
 import org.apache.commons.digester.Digester;
+import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

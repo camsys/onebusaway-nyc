@@ -16,9 +16,10 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.transit_data_federation.bundle.tasks.transit_graph.FrequencyComparator;
+import org.onebusaway.transit_data_federation.impl.blocks.FrequencyComparator;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.base.Preconditions;
@@ -105,9 +106,17 @@ public final class BlockState implements Comparable<BlockState> {
       if (o1 == o2)
         return 0;
 
+      FrequencyEntry f1 = null;
+      if(o1.getState() != null)
+        f1 = o1.getState().getFrequency();
+
+      FrequencyEntry f2 = null;
+      if(o2.getState() != null)
+        f2 = o2.getState().getFrequency();
+            
       return ComparisonChain.start().compare(o1.getBlock().getServiceIds(),
           o2.getBlock().getServiceIds()).compare(o1.getServiceDate(),
-          o2.getServiceDate()).compare(o1.getFrequency(), o2.getFrequency(),
+          o2.getServiceDate()).compare(f1, f2,
           Ordering.from(_frequencyComparator).nullsLast()).result();
     }
 
