@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
@@ -23,6 +24,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+
+import com.google.common.base.Preconditions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -259,5 +263,55 @@ public class JourneyStateTransitionModel {
     
   }
 
+  /*
+   * A deterministic journey state logic.
+   */
+  public JourneyState getJourneyState(BlockStateObservation blockState, Observation obs, boolean vehicleNotMoved) {
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      return JourneyState.atBase();
+    if (blockState != null) {
+      final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
+      if (distanceAlong <= 0.0) {
+        if (vehicleNotMoved && blockState.isAtPotentialLayoverSpot()) {
+          return JourneyState.layoverBefore(); 
+        } else {
+          return JourneyState.deadheadBefore(null); 
+        }
+      } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
+          return JourneyState.deadheadAfter(); 
+      } else {
+        /*
+         * In the middle of a block.
+         */
+        if (vehicleNotMoved && blockState.isAtPotentialLayoverSpot()) {
+          return JourneyState.layoverDuring();
+        } else {
+          boolean isOnTrip = isLocationOnATrip(blockState.getBlockState());
+          if (isOnTrip) {
+            return JourneyState.inProgress();
+          } else {
+            return JourneyState.deadheadDuring(null);
+          }
+        }
+      }
+    } else {
+      if (vehicleNotMoved && obs.isAtTerminal())
+        return JourneyState.layoverBefore();
+      else
+        return JourneyState.deadheadBefore(null);
+    }
+  }
+
+  public boolean isLocationOnATrip(BlockState blockState) {
+    final double distanceAlong = blockState.getBlockLocation().getDistanceAlongBlock();
+    BlockTripEntry trip = blockState.getBlockLocation().getActiveTrip();
+    final double tripDistFrom = trip.getDistanceAlongBlock();
+    final double tripDistTo = tripDistFrom + trip.getTrip().getTotalTripDistance();
+    
+    if (tripDistFrom < distanceAlong && distanceAlong <= tripDistTo)
+      return true;
+    else
+      return false;
+  }
 
 }

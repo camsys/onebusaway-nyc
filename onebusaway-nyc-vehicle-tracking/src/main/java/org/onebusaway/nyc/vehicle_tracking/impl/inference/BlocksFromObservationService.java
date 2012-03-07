@@ -41,4 +41,12 @@ public interface BlocksFromObservationService {
 
   public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
       Observation observation);
+
+  public BlockStateObservation getBlockStateObservation(Observation obs,
+      BlockInstance blockInstance, double distanceAlong);
+
+  public Set<BlockStateObservation> getSnappedBlockStates(Observation obs);
+
+  public BlockStateObservation getBlockStateObservationFromTime(
+      Observation obs, BlockInstance blockInstance, int newSchedTime);
 }

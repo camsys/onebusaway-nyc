@@ -79,7 +79,7 @@
                             <c:set var="particleDetailsUrl" value="particle-details"/>
                         </c:if>
                         <a href="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}">
-                        <fmt:formatNumber var="weight" value="${p.weight/details.sampleSize}" pattern="#.####E0"/>
+                        <fmt:formatNumber var="weight" value="${p.weight/details.sampleSize}" pattern="0.###E0"/>
                         <c:out value="${weight}"/></a>
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>

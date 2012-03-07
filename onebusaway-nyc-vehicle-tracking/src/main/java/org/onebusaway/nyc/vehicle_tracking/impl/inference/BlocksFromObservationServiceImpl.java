@@ -334,6 +334,15 @@ public class BlocksFromObservationServiceImpl implements
     return Sets.newHashSet(Iterables.concat(potentialBlockStatesInProgress, potentialBlockStatesNotInProgress));
 
   }
+  
+  @Override
+  public BlockStateObservation getBlockStateObservation(Observation obs, 
+      BlockInstance blockInstance, double distanceAlong) {
+      BlockState bs = _blockStateService.getAsState(blockInstance, distanceAlong);
+      boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+          bs, obs);
+      return new BlockStateObservation(bs, obs, isAtPotentialLayoverSpot, false);
+  }
 
   /****
    * {@link BlocksFromObservationService} Interface
@@ -548,98 +557,25 @@ public class BlocksFromObservationServiceImpl implements
 
   }
 
-//  private Set<BlockTripEntry> computeNearbyBlocks(Observation observation,
-//      Set<BlockInstance> potentialBlocks) {
-//
-//    final NycRawLocationRecord record = observation.getRecord();
-//    final long time = observation.getTime();
-//    final Date timeFrom = new Date(time - _tripSearchTimeAfterLastStop);
-//    final Date timeTo = new Date(time + _tripSearchTimeBeforeFirstStop);
-//    final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
-//        record.getLatitude(), record.getLongitude(), _tripSearchRadius);
-//
-//    final Set<BlockSequenceIndex> blockSequenceIdxs = _blockGeospatialService.getBlockSequenceIndexPassingThroughBounds(bounds);
-//    final Set<BlockTripEntry> blockTripsForObs = new HashSet<BlockTripEntry>();
-//
-//    for (final BlockSequenceIndex blockSequenceIdx : blockSequenceIdxs) {
-//      final ServiceIntervalBlock intervals = blockSequenceIdx.getServiceIntervalBlock();
-//      final ServiceInterval range = intervals.getRange();
-//      final Collection<Date> serviceDates = _calendarService.getServiceDatesWithinRange(
-//          blockSequenceIdx.getServiceIds(), range, timeFrom, timeTo);
-//      if (serviceDates.isEmpty())
-//        continue;
-//
-//      for (final Date serviceDate : serviceDates) {
-//        final int scheduledTimeFrom = (int) ((timeFrom.getTime() - serviceDate.getTime()) / 1000);
-//        final int scheduledTimeTo = (int) ((timeTo.getTime() - serviceDate.getTime()) / 1000);
-//
-//        final int indexFrom = index(Arrays.binarySearch(
-//            intervals.getMaxDepartures(), scheduledTimeFrom));
-//        final int indexTo = index(Arrays.binarySearch(
-//            intervals.getMinArrivals(), scheduledTimeTo));
-//        for (int in = indexFrom; in < indexTo; in++) {
-//          final BlockSequence bs = blockSequenceIdx.getSequences().get(in);
-//          blockTripsForObs.addAll(bs.getBlockConfig().getTrips());
-//          final BlockConfigurationEntry block = bs.getBlockConfig();
-//          final BlockInstance instance = new BlockInstance(block,
-//              serviceDate.getTime());
-//          potentialBlocks.add(instance);
-//        }
-//      }
-//    }
-//
-//    return blockTripsForObs;
-//  }
-
-  private int index(int index) {
-    if (index < 0)
-      return -(index + 1);
-    return index;
+  @Override
+  public Set<BlockStateObservation> getSnappedBlockStates(Observation obs) {
+    Set<BlockState> blockStates = _blockStateService.getBlockStatesForObservation(obs);
+    Set<BlockStateObservation> results = Sets.newHashSet();
+    for (BlockState blockState : blockStates) {
+      boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+          blockState, obs);
+      results.add(new BlockStateObservation(blockState, obs, isAtPotentialLayoverSpot, true));
+    }
+    return results;
   }
 
-  @SuppressWarnings("unused")
-  @Deprecated
-  private void computeNearbyBlocksOld(Observation observation,
-      Set<BlockInstance> potentialBlocks) {
-
-    final NycRawLocationRecord record = observation.getRecord();
-    final long time = observation.getTime();
-    final long timeFrom = time - _tripSearchTimeAfterLastStop;
-    final long timeTo = time + _tripSearchTimeBeforeFirstStop;
-
-    final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(
-        record.getLatitude(), record.getLongitude(), _tripSearchRadius);
-
-    final List<BlockLayoverIndex> layoverIndices = Collections.emptyList();
-    final List<FrequencyBlockTripIndex> frequencyIndices = Collections.emptyList();
-
-    final Set<BlockTripIndex> blockindices = new HashSet<BlockTripIndex>();
-
-    final Set<AgencyAndId> dscRoutes = observation.getDscImpliedRouteCollections();
-    final List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
-    for (final StopEntry stop : stops) {
-
-      final List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
-      for (final BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
-        /*
-         * when we can, restrict to stops that service the dsc-implied route
-         */
-        if (dscRoutes != null && !dscRoutes.isEmpty()) {
-          for (final BlockTripEntry bentry : stopTimeIndex.getTrips()) {
-            if (dscRoutes.contains(bentry.getTrip().getRouteCollection().getId())) {
-              blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
-              break;
-            }
-          }
-        } else {
-          // TODO perhaps "fix" this use of blockIndexFactoryService.
-          blockindices.add(_blockIndexFactoryService.createTripIndexForGroupOfBlockTrips(stopTimeIndex.getTrips()));
-        }
-      }
-    }
-    final List<BlockInstance> nearbyBlocks = _blockCalendarService.getActiveBlocksInTimeRange(
-        blockindices, layoverIndices, frequencyIndices, timeFrom, timeTo);
-    potentialBlocks.addAll(nearbyBlocks);
+  @Override
+  public BlockStateObservation getBlockStateObservationFromTime(
+      Observation obs, BlockInstance blockInstance, int newSchedTime) {
+    BlockState blockState = _blockStateService.getScheduledTimeAsState(blockInstance, newSchedTime);
+    boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+        blockState, obs);
+    return new BlockStateObservation(blockState, obs, isAtPotentialLayoverSpot, false);
   }
 
 }

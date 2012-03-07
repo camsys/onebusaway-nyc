@@ -104,6 +104,10 @@ public class SensorModelSupportLibrary {
   private final static DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(
       200);
 
+  public static final double distanceAlongStdDev = 100;
+
+  public static final double schedDevStdDev = 80.0;
+
   /****
    * Service Setters
    ****/

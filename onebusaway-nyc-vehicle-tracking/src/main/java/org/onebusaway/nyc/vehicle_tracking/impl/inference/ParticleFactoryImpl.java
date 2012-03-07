@@ -16,6 +16,8 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -28,9 +30,17 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import org.apache.commons.math.distribution.NormalDistributionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import umontreal.iro.lecuyer.probdist.NormalDist;
+import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
+import umontreal.iro.lecuyer.randvar.NormalGen;
+import umontreal.iro.lecuyer.rng.MRG32k3a;
+import umontreal.iro.lecuyer.rng.RandomStream;
+import umontreal.iro.lecuyer.rng.RandomStreamManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +79,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private BlocksFromObservationService _blocksFromObservationService;
   private JourneyStateTransitionModel _journeyStateTransitionModel;
 
-  static class LocalRandom extends ThreadLocal<Random> {
+  static class LocalRandom extends ThreadLocal<RandomStream> {
     long _seed = 0;
 
     LocalRandom(long seed) {
@@ -77,31 +87,30 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     }
 
     @Override
-    protected Random initialValue() {
+    protected RandomStream initialValue() {
       if (_seed != 0)
-        return new Random(_seed);
+        return new MRG32k3a();
       else
-        return new Random();
+        return new MRG32k3a();
     }
   }
 
-  static class LocalRandomDummy extends ThreadLocal<Random> {
-    private static Random rng;
+  static class LocalRandomDummy extends ThreadLocal<RandomStream> {
+    private static MRG32k3a rng;
 
     LocalRandomDummy(long seed) {
+      rng = new MRG32k3a();
       if (seed != 0)
-        rng = new Random(seed);
-      else
-        rng = new Random();
+        rng.setSeed(new long[]{seed, seed, seed, seed, seed, seed});
     }
 
     @Override
-    synchronized public Random get() {
+    synchronized public RandomStream get() {
       return rng;
     }
   }
 
-  static ThreadLocal<Random> threadLocalRng;
+  static ThreadLocal<RandomStream> threadLocalRng;
   static {
     if (!ParticleFilter.getTestingEnabled()) {
       threadLocalRng = new LocalRandom(0);
@@ -119,7 +128,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     }
   }
-
+  
   @Autowired
   public void setBlockStateSamplingStrategy(
       BlockStateSamplingStrategy blockStateSamplingStrategy) {
@@ -163,93 +172,31 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     for (BlockStateObservation blockState : potentialBlocks) {
       final MotionState motionState = _motionModel.updateMotionState(obs);
       
-      List<JourneyState> jStates = _journeyStateTransitionModel.getTransitionJourneyStates(null, obs, motionState);
+      final double inMotionSample = threadLocalRng.get().nextDouble();
+      boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs);
+      JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(blockState, obs, vehicleNotMoved);
       
-      for (JourneyState jstate : jStates) {
-        VehicleState state = vehicleState(motionState, blockState, jstate, obs);
-        final Particle p = new Particle(timestamp);
-        p.setData(state);
-        particles.add(p);
+      BlockStateObservation sampledBlockState;
+      if (blockState != null) {
+        /*
+         * Sample a distance along the block using the snapped observation
+         * results as priors. 
+         */
+        double distanceAlongPrior = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
+        double distanceAlongSample = FoldedNormalGen.nextDouble(threadLocalRng.get(), 
+            distanceAlongPrior, SensorModelSupportLibrary.distanceAlongStdDev);
+        sampledBlockState = _blocksFromObservationService.getBlockStateObservation(obs,
+            blockState.getBlockState().getBlockInstance(), distanceAlongSample);
+      } else {
+        sampledBlockState = null;
       }
-    }
-    
-    return particles;
-  }
-  
-  public List<Particle> createParticlesOld(double timestamp, Observation obs) {
-
-    // ProjectedPoint point = obs.getPoint();
-    // CDFMap<EdgeState> cdf =
-    // _edgeStateLibrary.calculatePotentialEdgeStates(point);
-
-    final CategoricalDist<BlockStateObservation> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
-
-    final CategoricalDist<BlockStateObservation> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
-
-    final List<Particle> particles = new ArrayList<Particle>(
-        _initialNumberOfParticles);
-
-    if (atStartCdf.isEmpty() && inProgresCdf.isEmpty())
-      _log.warn("no blocks to sample for obs=" + obs);
-
-    for (int i = 0; i < _initialNumberOfParticles; i++) {
-
-      final MotionState motionState = _motionModel.updateMotionState(obs);
-
-      final VehicleState state = determineJourneyState(motionState, atStartCdf,
-          inProgresCdf, obs);
-
+      VehicleState state = vehicleState(motionState, sampledBlockState, journeyState, obs);
       final Particle p = new Particle(timestamp);
       p.setData(state);
       particles.add(p);
     }
-
+    
     return particles;
-  }
-
-  public VehicleState determineJourneyState(MotionState motionState,
-      CategoricalDist<BlockStateObservation> atStartCdf,
-      CategoricalDist<BlockStateObservation> inProgressCdf, Observation obs) {
-
-    BlockStateObservation blockState = null;
-
-    // If we're at a base to start, we favor that over all other possibilities
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
-
-      if (blockState == null && atStartCdf.canSample())
-        blockState = atStartCdf.sample();
-
-      return vehicleState(motionState, blockState, JourneyState.atBase(), obs);
-    }
-
-    // At this point, we could be dead heading before a block or actually on a
-    // block in progress. We slightly favor blocks already in progress
-    final double progressSwitch = threadLocalRng.get().nextDouble();
-    if (progressSwitch < 0.75) {
-
-      // No blocks? Jump to the deadhead-before state
-      if (!inProgressCdf.canSample())
-        return vehicleState(motionState, null,
-            JourneyState.deadheadBefore(obs.getLocation()), obs);
-
-      if (blockState == null)
-        blockState = inProgressCdf.sample();
-
-      return vehicleState(motionState, blockState, JourneyState.inProgress(),
-          obs);
-    } else {
-
-      // No blocks? Jump to the deadhead-before state
-      if (!atStartCdf.canSample())
-        return vehicleState(motionState, null,
-            JourneyState.deadheadBefore(obs.getLocation()), obs);
-
-      if (blockState == null)
-        blockState = atStartCdf.sample();
-
-      return vehicleState(motionState, blockState,
-          JourneyState.deadheadBefore(obs.getLocation()), obs);
-    }
   }
 
   private VehicleState vehicleState(MotionState motionState,
@@ -266,16 +213,12 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         obs);
   }
 
-  public static ThreadLocal<Random> getThreadLocalRng() {
+  public static ThreadLocal<RandomStream> getThreadLocalRng() {
     return threadLocalRng;
   }
 
   public static int getInitialNumberOfParticles() {
     return _initialNumberOfParticles;
   }
-
-  // public static double getNextDouble() {
-  // return threadLocalRng.get().nextDouble();
-  // }
 
 }

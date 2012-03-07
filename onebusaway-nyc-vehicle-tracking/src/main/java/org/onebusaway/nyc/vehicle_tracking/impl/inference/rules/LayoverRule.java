@@ -61,8 +61,8 @@ public class LayoverRule implements SensorModelRule {
     final EVehiclePhase phase = js.getPhase();
 
     final SensorModelResult result = new SensorModelResult("pLayover");
-    result.addResult("isAtPotentialLayover", state.getBlockState() != null ? 
-        p(state.getBlockStateObservation().isAtPotentialLayoverSpot()) : Double.NaN);
+    final double pAtLayoverSpot = state.getBlockState() != null ? 
+        p(state.getBlockStateObservation().isAtPotentialLayoverSpot()) : p(obs.isAtTerminal());
 
     if (EVehiclePhase.AT_BASE == phase)
       return result.addResultAsAnd("at-base", 1.0);
@@ -75,7 +75,7 @@ public class LayoverRule implements SensorModelRule {
 
     final double pLayoverState = p(EVehiclePhase.isLayover(phase));
 
-    final double p1 = biconditional(pNotMoved,
+    final double p1 = biconditional(pNotMoved * pAtLayoverSpot,
         pLayoverState);
 
     final SensorModelResult p1Result = result.addResultAsAnd(
@@ -83,6 +83,7 @@ public class LayoverRule implements SensorModelRule {
     
     p1Result.addResult("pNotMoved", pNotMoved);
     p1Result.addResult("pLayoverState", pLayoverState);
+    p1Result.addResult("isAtPotentialLayover", pAtLayoverSpot);
 
     /**
      * Rule: LAYOVER_BEFORE OR LAYOVER_DURING => vehicle_is_on_schedule

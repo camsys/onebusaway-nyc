@@ -25,6 +25,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -62,6 +64,56 @@ public class BlockStateTransitionModel {
    * Parameters
    ****/
 
+  static class LocalRandom extends ThreadLocal<Random> {
+    long _seed = 0;
+
+    LocalRandom(long seed) {
+      _seed = seed;
+    }
+
+    @Override
+    protected Random initialValue() {
+      if (_seed != 0)
+        return new Random(_seed);
+      else
+        return new Random();
+    }
+  }
+
+  static class LocalRandomDummy extends ThreadLocal<Random> {
+    private static Random rng;
+
+    LocalRandomDummy(long seed) {
+      if (seed != 0)
+        rng = new Random(seed);
+      else
+        rng = new Random();
+    }
+
+    @Override
+    synchronized public Random get() {
+      return rng;
+    }
+  }
+
+  static ThreadLocal<Random> threadLocalRng;
+  static {
+    if (!ParticleFilter.getTestingEnabled()) {
+      threadLocalRng = new LocalRandom(0);
+    } else {
+      threadLocalRng = new LocalRandomDummy(0);
+
+    }
+  }
+
+  synchronized public static void setSeed(long seed) {
+    if (!ParticleFilter.getTestingEnabled()) {
+      threadLocalRng = new LocalRandom(seed);
+    } else {
+      threadLocalRng = new LocalRandomDummy(seed);
+
+    }
+  }
   /**
    * Given a potential distance to travel in physical / street-network space, a
    * fudge factor that determines how far ahead we will look along the block of
@@ -139,10 +191,15 @@ public class BlockStateTransitionModel {
      * the best transition.
      */
     if (allowBlockChange) {
-      potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
-          obs));
-      if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
-        potentialTransStates.remove(null);
+      if (parentBlockState == null) {
+        potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
+            obs));
+        if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
+          potentialTransStates.remove(null);
+      } else {
+        if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
+          potentialTransStates.add(null);
+      }
     }
     
     Set<BlockStateObservation> actualTrans = Sets.newHashSet();
@@ -211,6 +268,9 @@ public class BlockStateTransitionModel {
         && EVehiclePhase.isActiveBeforeBlock(phase)))
       return true;
 
+    if (EVehiclePhase.AT_BASE == phase)
+      return true;
+    
     BlockState blockState = state != null ? state.getBlockState() : null;
     if (!(blockState != null
         && (blockState.getBlockLocation().getNextStop() == null 
@@ -269,27 +329,27 @@ public class BlockStateTransitionModel {
     if (parentBlockState == null && !obs.isOutOfService())
       return true;
 
-    /**
-     * Have we just transitioned out of a terminal?
-     */
-    if (prevObs != null) {
-      /**
-       * If we were assigned a block, then use the block's terminals, otherwise,
-       * all terminals.
-       */
-      if (parentBlockState != null) {
-        final boolean wasAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
-            prevObs.getRecord(),
-            parentBlockState.getBlockState().getBlockInstance());
-        final boolean isAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
-            obs.getRecord(),
-            parentBlockState.getBlockState().getBlockInstance());
-
-        if (wasAtBlockTerminal && !isAtBlockTerminal) {
-          return true;
-        }
-      }
-    }
+//    /**
+//     * Have we just transitioned out of a terminal?
+//     */
+//    if (prevObs != null) {
+//      /**
+//       * If we were assigned a block, then use the block's terminals, otherwise,
+//       * all terminals.
+//       */
+//      if (parentBlockState != null) {
+//        final boolean wasAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
+//            prevObs.getRecord(),
+//            parentBlockState.getBlockState().getBlockInstance());
+//        final boolean isAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
+//            obs.getRecord(),
+//            parentBlockState.getBlockState().getBlockInstance());
+//
+//        if (wasAtBlockTerminal && !isAtBlockTerminal) {
+//          return true;
+//        }
+//      }
+//    }
 
     final NycRawLocationRecord record = obs.getRecord();
     final String dsc = record.getDestinationSignCode();
@@ -333,7 +393,9 @@ public class BlockStateTransitionModel {
       Set<BlockStateObservation> updatedStates = _blocksFromObservationService.bestStates(
           obs, blockState);
       for (final BlockStateObservation updatedBlockState : updatedStates) {
-        newStates.add(updatedBlockState);
+        if (updatedBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
+            > blockState.getBlockState().getBlockLocation().getDistanceAlongBlock())
+          newStates.add(updatedBlockState);
       }
     }
     

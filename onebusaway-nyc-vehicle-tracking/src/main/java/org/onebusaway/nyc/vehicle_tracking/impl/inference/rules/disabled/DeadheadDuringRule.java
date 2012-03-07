@@ -13,11 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
+package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.disabled;
 
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.not;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
@@ -27,7 +30,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class DeadheadDuringRule implements SensorModelRule {
 
   private VehicleStateLibrary _vehicleStateLibrary;

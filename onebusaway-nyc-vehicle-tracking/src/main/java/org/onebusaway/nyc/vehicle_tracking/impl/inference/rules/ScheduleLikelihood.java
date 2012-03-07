@@ -50,7 +50,7 @@ import umontreal.iro.lecuyer.stat.Tally;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@Component
+//@Component
 public class ScheduleLikelihood implements SensorModelRule {
 
   private BlockStateService _blockStateService;
@@ -170,7 +170,7 @@ public class ScheduleLikelihood implements SensorModelRule {
       return 1.0;
 
     final int minutesLate = (int) ((timestamp - arrivalTime) / (60 * 1000));
-    final double pSched = 1.0 - FoldedNormalDist.cdf(during?layoverDuringMean:layoverBeforeMean, 
+    final double pSched = NormalDist.density(during?layoverDuringMean:layoverBeforeMean, 
         during?layoverDuringStdDev:layoverBeforeStdDev, minutesLate);
     return pSched;
   }

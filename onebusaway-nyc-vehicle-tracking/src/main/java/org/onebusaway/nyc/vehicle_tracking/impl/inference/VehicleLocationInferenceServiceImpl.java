@@ -561,6 +561,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Override
   public void setSeeds(long cdfSeed, long factorySeed) {
     ParticleFactoryImpl.setSeed(factorySeed);
+    BlockStateTransitionModel.setSeed(factorySeed);
     CategoricalDist.setSeed(cdfSeed);
   }
 }
