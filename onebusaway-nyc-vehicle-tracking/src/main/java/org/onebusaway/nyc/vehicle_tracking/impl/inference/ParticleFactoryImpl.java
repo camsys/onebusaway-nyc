@@ -15,9 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -30,21 +28,14 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
-import org.apache.commons.math.distribution.NormalDistributionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import umontreal.iro.lecuyer.probdist.NormalDist;
-import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
-import umontreal.iro.lecuyer.randvar.NormalGen;
 import umontreal.iro.lecuyer.rng.MRG32k3a;
 import umontreal.iro.lecuyer.rng.RandomStream;
-import umontreal.iro.lecuyer.rng.RandomStreamManager;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -70,14 +61,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
-  private BlockStateSamplingStrategy _blockStateSamplingStrategy;
-
-  private VehicleStateLibrary _vehicleStateLibrary;
-
   private MotionModelImpl _motionModel;
-  
+
   private BlocksFromObservationService _blocksFromObservationService;
   private JourneyStateTransitionModel _journeyStateTransitionModel;
+  private BlockStateSamplingStrategy _blockStateSamplingStrategy;
 
   static class LocalRandom extends ThreadLocal<RandomStream> {
     long _seed = 0;
@@ -101,7 +89,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     LocalRandomDummy(long seed) {
       rng = new MRG32k3a();
       if (seed != 0)
-        rng.setSeed(new long[]{seed, seed, seed, seed, seed, seed});
+        rng.setSeed(new long[] {seed, seed, seed, seed, seed, seed});
     }
 
     @Override
@@ -128,7 +116,13 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     }
   }
-  
+
+  @Autowired
+  public void setBlocksFromObservationService(
+      BlocksFromObservationService blocksFromObservationService) {
+    _blocksFromObservationService = blocksFromObservationService;
+  }
+
   @Autowired
   public void setBlockStateSamplingStrategy(
       BlockStateSamplingStrategy blockStateSamplingStrategy) {
@@ -139,17 +133,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   public void setJourneyStateTransitionModel(
       JourneyStateTransitionModel journeyStateTransitionModel) {
     _journeyStateTransitionModel = journeyStateTransitionModel;
-  }
-  
-  @Autowired
-  public void setBlocksFromObservationService(
-      BlocksFromObservationService blocksFromObservationService) {
-    _blocksFromObservationService = blocksFromObservationService;
-  }
-
-  @Autowired
-  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
   }
 
   @Autowired
@@ -163,39 +146,43 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   @Override
   public Multiset<Particle> createParticles(double timestamp, Observation obs) {
-    
-    final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
-        obs);
-    
-    Multiset<Particle> particles = HashMultiset.create();
-    
-    for (BlockStateObservation blockState : potentialBlocks) {
+
+    final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(obs);
+
+    final Multiset<Particle> particles = HashMultiset.create();
+
+    for (final BlockStateObservation blockState : potentialBlocks) {
       final MotionState motionState = _motionModel.updateMotionState(obs);
-      
+
       final double inMotionSample = threadLocalRng.get().nextDouble();
-      boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs);
-      JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(blockState, obs, vehicleNotMoved);
-      
+      final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
+          motionState, obs);
+      final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+          blockState, obs, vehicleNotMoved);
+
       BlockStateObservation sampledBlockState;
       if (blockState != null) {
         /*
          * Sample a distance along the block using the snapped observation
-         * results as priors. 
+         * results as priors.
          */
-        double distanceAlongPrior = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
-        double distanceAlongSample = FoldedNormalGen.nextDouble(threadLocalRng.get(), 
-            distanceAlongPrior, SensorModelSupportLibrary.distanceAlongStdDev);
-        sampledBlockState = _blocksFromObservationService.getBlockStateObservation(obs,
-            blockState.getBlockState().getBlockInstance(), distanceAlongSample);
+        if (blockState.isSnapped()
+            || JourneyStateTransitionModel.isLocationActive(blockState.getBlockState())) {
+          sampledBlockState = _blockStateSamplingStrategy.samplePropagatedDistanceState(
+              vehicleNotMoved, obs, blockState);
+        } else {
+          sampledBlockState = blockState;
+        }
       } else {
         sampledBlockState = null;
       }
-      VehicleState state = vehicleState(motionState, sampledBlockState, journeyState, obs);
+      final VehicleState state = vehicleState(motionState, sampledBlockState,
+          journeyState, obs);
       final Particle p = new Particle(timestamp);
       p.setData(state);
       particles.add(p);
     }
-    
+
     return particles;
   }
 

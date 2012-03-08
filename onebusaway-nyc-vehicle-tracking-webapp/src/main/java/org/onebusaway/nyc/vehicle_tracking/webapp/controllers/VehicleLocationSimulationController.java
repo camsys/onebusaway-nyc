@@ -347,6 +347,8 @@ public class VehicleLocationSimulationController {
 
     for(BlockStatusBean blockBean : beans.getList()) {
       BlockBean block = blockBean.getBlock();
+      if (block == null)
+        continue;
         
       ArrayList<String> trips = new ArrayList<String>();
       for(BlockConfigurationBean config : block.getConfigurations()) {

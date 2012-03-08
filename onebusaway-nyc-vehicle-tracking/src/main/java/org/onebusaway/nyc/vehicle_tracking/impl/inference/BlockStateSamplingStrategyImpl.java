@@ -24,20 +24,28 @@ import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.EdgeLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
+import umontreal.iro.lecuyer.randvar.NormalGen;
 
 import java.util.Date;
 import java.util.Set;
@@ -99,6 +107,80 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
    */
   static public void setScheduleDeviationSigma(int scheduleDeviationSigma) {
     _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
+  }
+
+  @Override
+  public BlockStateObservation samplePropagatedDistanceState(boolean vehicleNotMoved, Observation obs, 
+      BlockStateObservation parentBlockStateObs) {
+      double distAlongSample;
+      BlockState parentBlockState = parentBlockStateObs.getBlockState();
+      final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
+      if (!vehicleNotMoved) {
+        /*
+         * If we snapped, then sample some gps error.
+         * Otherwise, sample a movement along the block
+         * (conflated with gps error).
+         * TODO should use Kalman filter for motions/gps...
+         */
+        if (parentBlockStateObs.isSnapped()) {
+          distAlongSample = FoldedNormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
+              parentDistAlong, GpsLikelihood.inProgressGpsStdDev);
+        } else {
+          double distAlongPrior = SphericalGeometryLibrary.distance(obs.getLocation(),
+                obs.getPreviousObservation().getLocation());
+          distAlongSample = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
+              distAlongPrior, EdgeLikelihood.distStdDev);
+          distAlongSample += parentDistAlong;
+        }
+      } else {
+        distAlongSample = parentDistAlong;
+      }
+      
+      if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
+        distAlongSample = parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
+      else if (distAlongSample < 0.0)
+        distAlongSample = 0.0;
+      
+      BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservation(obs, 
+          parentBlockState.getBlockInstance(), distAlongSample);
+      return distState;
+    }
+  
+  @Override
+  public BlockStateObservation samplePropagatedScheduleState(BlockState parentBlockState, Observation obs) {
+    int prevTime = (int)(obs.getPreviousObservation().getTime() - parentBlockState.getBlockInstance().getServiceDate())/1000;
+    int prevSchedTime = parentBlockState.getBlockLocation().getScheduledTime(); 
+    
+    /*
+     * In seconds
+     */
+    double prevSchedDev = (prevTime - prevSchedTime)/60.0;
+    
+    double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime())/1000.0;
+    double newSchedDev = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
+        prevSchedDev, obsTimeDiff/60.0 * ScheduleLikelihood.schedTransStdDev);
+    
+    int startSchedTime = Iterables.getFirst(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
+        .getArrivalTime();
+    int endSchedTime = Iterables.getLast(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
+        .getDepartureTime();
+    int currentTime = (int)(obs.getTime() - parentBlockState.getBlockInstance().getServiceDate())/1000;
+    int newSchedTime = currentTime - (int)(newSchedDev*60.0);
+    
+    BlockStateObservation schedState;
+    if (newSchedTime < startSchedTime) {
+      schedState = _blocksFromObservationService.getBlockStateObservation(obs, 
+          parentBlockState.getBlockInstance(), 0.0);
+    } else if (endSchedTime < newSchedTime) {
+      schedState = _blocksFromObservationService.getBlockStateObservation(obs, 
+          parentBlockState.getBlockInstance(), 
+          parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
+    } else {
+      schedState = _blocksFromObservationService.getBlockStateObservationFromTime(obs, 
+          parentBlockState.getBlockInstance(), newSchedTime);
+    }
+    
+    return schedState;
   }
 
   @Override

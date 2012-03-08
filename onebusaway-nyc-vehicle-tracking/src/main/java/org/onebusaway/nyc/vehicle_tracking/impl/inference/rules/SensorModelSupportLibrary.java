@@ -19,6 +19,7 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
@@ -69,7 +70,8 @@ public class SensorModelSupportLibrary {
   /**
    * We penalize if you aren't going to start your block on time
    */
-  private final static DeviationModel _startBlockOnTimeModel = new DeviationModel(20);
+  private final static DeviationModel _startBlockOnTimeModel = new DeviationModel(
+      20);
 
   /**
    * 30 mph = 48.28032 kph = 13.4112 m/sec
@@ -104,10 +106,6 @@ public class SensorModelSupportLibrary {
   private final static DeviationModel2 _endOfBlockDeviationModel = new DeviationModel2(
       200);
 
-  public static final double distanceAlongStdDev = 100;
-
-  public static final double schedDevStdDev = 80.0;
-
   /****
    * Service Setters
    ****/
@@ -115,6 +113,11 @@ public class SensorModelSupportLibrary {
   @Autowired
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
     _vehicleStateLibrary = vehicleStateLibrary;
+  }
+
+  @Autowired
+  public void setBlocksFromObservationService(
+      BlocksFromObservationService blocksFromObservationService) {
   }
 
   @Autowired
@@ -257,16 +260,16 @@ public class SensorModelSupportLibrary {
   /**
    * @return the probability that the vehicle has not moved in a while
    */
-  static public double computeVehicleHasNotMovedProbability(MotionState motionState,
-      Observation obs) {
+  static public double computeVehicleHasNotMovedProbability(
+      MotionState motionState, Observation obs) {
 
-    Observation prevObs = obs.getPreviousObservation();
+    final Observation prevObs = obs.getPreviousObservation();
     if (prevObs == null)
       return 0.5;
-//    
-//    final double d = SphericalGeometryLibrary.distance(
-//        prevObs.getLocation(), obs.getLocation());
-//    return 1-FoldedNormalDist.cdf(10.0, 6, d);
+    //
+    // final double d = SphericalGeometryLibrary.distance(
+    // prevObs.getLocation(), obs.getLocation());
+    // return 1-FoldedNormalDist.cdf(10.0, 6, d);
     final long currentTime = obs.getTime();
     final long lastInMotionTime = motionState.getLastInMotionTime();
     final int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
@@ -721,11 +724,11 @@ public class SensorModelSupportLibrary {
       // Allow for a layover
       minutesDiff = Math.max(0, minutesDiff - _maxLayover);
     }
-    return minutesDiff;
+    return Math.abs(minutesDiff);
   }
-  
-  static public double computeStartOrResumeBlockOnTimeProbability(VehicleState state,
-      Observation obs) {
+
+  static public double computeStartOrResumeBlockOnTimeProbability(
+      VehicleState state, Observation obs) {
 
     final BlockState blockState = state.getBlockState();
     // If we don't have an assigned block yet, we hedge our bets on whether
@@ -733,9 +736,9 @@ public class SensorModelSupportLibrary {
     if (blockState == null)
       return 0.5;
 
-    int minutesDiff = startOrResumeBlockOnTimeDev(state, obs);
+    final int minutesDiff = startOrResumeBlockOnTimeDev(state, obs);
 
-    return _startBlockOnTimeModel.probability(Math.abs(minutesDiff));
+    return _startBlockOnTimeModel.probability(minutesDiff);
   }
 
   public double computeOffBlockProbability(VehicleState state, Observation obs) {
@@ -763,7 +766,7 @@ public class SensorModelSupportLibrary {
     else
       return false;
   }
-  
+
   public double computeProbabilityOfServingSomePartOfBlock(BlockState blockState) {
 
     // If we don't have a block, then we haven't made progress on a block
@@ -779,7 +782,7 @@ public class SensorModelSupportLibrary {
       return 0.0;
   }
 
-  public static double computeProbabilityOfEndOfBlock(BlockState blockState){
+  public static double computeProbabilityOfEndOfBlock(BlockState blockState) {
 
     // If we don't have a block, we can't be at the end of a block
     if (blockState == null)

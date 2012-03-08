@@ -27,13 +27,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.HalfNormal;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
@@ -41,14 +38,9 @@ import com.google.common.collect.Sets;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
-import umontreal.iro.lecuyer.randvar.HalfNormalGen;
-import umontreal.iro.lecuyer.randvar.NormalGen;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -62,7 +54,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   private JourneyStateTransitionModel _journeyMotionModel;
 
   private BlocksFromObservationService _blocksFromObservationService;
-  
+
   /**
    * Distance, in meters, that a bus has to travel to be considered "in motion"
    */
@@ -73,7 +65,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       JourneyStateTransitionModel journeyMotionModel) {
     _journeyMotionModel = journeyMotionModel;
   }
-  
+
   @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
@@ -92,150 +84,155 @@ public class MotionModelImpl implements MotionModel<Observation> {
   ScheduleLikelihood schedLikelihood = new ScheduleLikelihood();
 
   private JourneyStateTransitionModel _journeyStateTransitionModel;
-  
+
+  private BlockStateSamplingStrategy _blockStateSamplingStrategy;
+
   @Autowired
   public void setJourneyStateTransitionModel(
       JourneyStateTransitionModel journeyStateTransitionModel) {
     _journeyStateTransitionModel = journeyStateTransitionModel;
   }
-  
+
+  @Autowired
+  public void setBlockStateSamplingStrategy(
+      BlockStateSamplingStrategy blockStateSamplingStrategy) {
+    _blockStateSamplingStrategy = blockStateSamplingStrategy;
+  }
+
   @Override
-  public void move(Entry<Particle> parent, double timestamp, double timeElapsed,
-      Observation obs, Multiset<Particle> results,
+  public void move(Entry<Particle> parent, double timestamp,
+      double timeElapsed, Observation obs, Multiset<Particle> results,
       Multimap<VehicleState, VehicleState> cache) {
 
     final VehicleState parentState = parent.getElement().getData();
     final MotionState motionState = updateMotionState(parentState, obs);
 
-    BlockState parentBlockState = parentState.getBlockState();
-    BlockStateObservation distState;
-    Set<BlockStateObservation> transitions = Sets.newHashSet();
-    for (int i = 0 ; i < parent.getCount(); ++i) {
-      transitions.clear();
+    final BlockState parentBlockState = parentState.getBlockState();
+    final Set<BlockStateObservation> transitions = Sets.newHashSet();
+    if (parentBlockState == null) {
+      /*
+       * These are all the snapped and DSC/run blocks
+       */
+      transitions.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(obs));
+    } else {
+      transitions.addAll(_blocksFromObservationService.getSnappedBlockStates(obs));
+
+      // boolean blockHasSnappedState = Iterables.any(transitions, new
+      // Predicate<BlockStateObservation>() {
+      // @Override
+      // public boolean apply(BlockStateObservation input) {
+      // return input == null ? false
+      // :
+      // input.getBlockState().getBlockInstance().equals(parentBlockState.getBlockInstance());
+      // }
+      // });
+      //
+      // if (!blockHasSnappedState)
+      transitions.add(parentState.getBlockStateObservation());
+    }
+    final double vehicleHasNotMovedProb = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
+        motionState, obs);
+
+    if (transitions.isEmpty()
+        || (transitions.size() == 1 && transitions.contains(null))) {
       final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
-      boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(motionState, obs);
-      if (parentBlockState == null) {
-        
+      final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
+          motionState, obs);
+      final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+          null, obs, vehicleNotMoved);
+      final VehicleState nullState = new VehicleState(motionState, null,
+          journeyState, null, obs);
+      results.add(new Particle(timestamp, parent.getElement(), 1.0, nullState));
+      return;
+    }
+
+    for (int i = 0; i < parent.getCount(); ++i) {
+      final CategoricalDist<VehicleState> transitionProb = new CategoricalDist<VehicleState>();
+      for (final BlockStateObservation proposalEdge : transitions) {
+
+        final SensorModelResult transProb = new SensorModelResult("transition");
         /*
-         * These are all the snapped and DSC/run blocks
+         * Block/Trip transition
          */
-        transitions.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
-                obs));
-        
-      } else {
-        
-        transitions.addAll(_blocksFromObservationService.getSnappedBlockStates(obs));
-        
-        /*
-         * For our two-part proposal transition distribution,
-         * start with our observed movement. 
-         */
-        transitions.add(samplePropagatedDistanceState(vehicleNotMoved, obs, parentBlockState));
-        
-        /*
-         * Now, sample a change in our schedule deviation
-         */
-        transitions.add(samplePropagatedScheduleState(parentState, parentBlockState, obs));
-        
-      }
-      
-      CategoricalDist<VehicleState> transitionProb = new CategoricalDist<VehicleState>();
-      for (BlockStateObservation newEdge : transitions) {
-        SensorModelResult transProb = new SensorModelResult("transition");
-        JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(newEdge, obs, vehicleNotMoved);
-        VehicleState newState = new VehicleState(motionState, newEdge, journeyState, null, obs);
-        Context context = new Context(parentState, newState, obs);
-        
-        /*
-         * Block/Trip transition 
-         */
-  //      transProb.addResultAsAnd(BlockTransition.likelihood(null, context));
+        // TODO make this happen
+        // transProb.addResultAsAnd(BlockTransition.likelihood(null, context));
         if (parentBlockState != null
-            && !parentBlockState.getBlockInstance().equals(newEdge.getBlockState().getBlockInstance())) {
+            && !parentBlockState.getBlockInstance().equals(
+                proposalEdge.getBlockState().getBlockInstance())) {
           transProb.addResultAsAnd("no block transitions", 0.0);
           continue;
         }
-        
+
+        final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
+        final boolean vehicleNotMoved = inMotionSample < vehicleHasNotMovedProb;
+
+        BlockStateObservation newEdge;
+        if (proposalEdge != null) {
+          if (proposalEdge.isSnapped()
+              || JourneyStateTransitionModel.isLocationActive(proposalEdge.getBlockState()))
+//            newEdge = _blockStateSamplingStrategy.samplePropagatedDistanceState(
+//                vehicleNotMoved, obs, proposalEdge);
+            newEdge = _blockStateSamplingStrategy.samplePropagatedScheduleState(
+                proposalEdge.getBlockState(), obs);
+          else
+            newEdge = proposalEdge;
+        } else {
+          newEdge = null;
+        }
+        final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+            newEdge, obs, vehicleNotMoved);
+        final VehicleState newState = new VehicleState(motionState, newEdge,
+            journeyState, null, obs);
+        final Context context = new Context(parentState, newState, obs);
+
         /*
-         * Edge movement 
+         * Edge movement
          */
         transProb.addResultAsAnd(edgeLikelihood.likelihood(null, context));
-        
+
         /*
          * Schedule Dev
          */
         transProb.addResultAsAnd(schedLikelihood.likelihood(null, context));
-        
-        
+
         transitionProb.put(transProb.getProbability(), newState);
       }
-      
+
       if (transitionProb.canSample()) {
-        results.add(new Particle(timestamp, parent.getElement(), 1.0, transitionProb.sample()));
+        results.add(new Particle(timestamp, parent.getElement(), 1.0,
+            transitionProb.sample()));
       } else {
-        results.add(new Particle(timestamp, parent.getElement(), 1.0, null));
+        final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
+        final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
+            motionState, obs);
+        final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+            null, obs, vehicleNotMoved);
+        final VehicleState nullState = new VehicleState(motionState, null,
+            journeyState, null, obs);
+        results.add(new Particle(timestamp, parent.getElement(), 1.0, nullState));
       }
     }
   }
-  
-private BlockStateObservation samplePropagatedScheduleState(VehicleState parentState, BlockState parentBlockState, Observation obs) {
-    int prevSchedTime = (int)(obs.getPreviousObservation().getTime() - parentBlockState.getBlockInstance().getServiceDate())/1000;
-    int startSchedTime = Iterables.getFirst(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
-        .getArrivalTime();
-    int endSchedTime = Iterables.getLast(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
-        .getDepartureTime();
-    int newSchedTime = prevSchedTime + (int)NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-        0.0, SensorModelSupportLibrary.schedDevStdDev);
-    
-    BlockStateObservation schedState;
-    if (newSchedTime >= startSchedTime
-        && endSchedTime >= newSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromTime(obs, 
-          parentBlockState.getBlockInstance(), newSchedTime);
-    } else {
-      schedState = parentState.getBlockStateObservation();
-    }
-    
-    return schedState;
-  }
 
-private BlockStateObservation samplePropagatedDistanceState(boolean vehicleNotMoved, Observation obs, BlockState parentBlockState) {
-    double distAlongSample;
-    if (!vehicleNotMoved) {
-      double distAlongPrior = SphericalGeometryLibrary.distance(obs.getLocation(),
-          obs.getPreviousObservation().getLocation());
-      distAlongSample = FoldedNormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-          distAlongPrior, SensorModelSupportLibrary.distanceAlongStdDev);
-    } else {
-      distAlongSample = parentBlockState.getBlockLocation().getDistanceAlongBlock();
-    }
-    
-    if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
-      distAlongSample = parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
-    
-    BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservation(obs, 
-        parentBlockState.getBlockInstance(), parentBlockState.getBlockLocation().getDistanceAlongBlock()
-        + distAlongSample);
-    return distState;
-  }
-
-//  @Override
-//  public void move(Entry<Particle> parent, double timestamp, double timeElapsed,
-//      Observation obs, Multiset<Particle> results,
-//      Multimap<VehicleState, VehicleState> cache) {
-//
-//    final VehicleState parentState = parent.getElement().getData();
-//    final MotionState motionState = updateMotionState(parentState, obs);
-//
-//    final Collection<VehicleState> vehicleStates = cache.get(parentState);
-//
-//    if (vehicleStates.isEmpty()) {
-//      _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
-//      for (final VehicleState vs : vehicleStates)
-//        results.add(new Particle(timestamp, parent.getElement(), 1.0, vs), parent.getCount());
-//    }
-//
-//  }
+  // @Override
+  // public void move(Entry<Particle> parent, double timestamp, double
+  // timeElapsed,
+  // Observation obs, Multiset<Particle> results,
+  // Multimap<VehicleState, VehicleState> cache) {
+  //
+  // final VehicleState parentState = parent.getElement().getData();
+  // final MotionState motionState = updateMotionState(parentState, obs);
+  //
+  // final Collection<VehicleState> vehicleStates = cache.get(parentState);
+  //
+  // if (vehicleStates.isEmpty()) {
+  // _journeyMotionModel.move(parentState, motionState, obs, vehicleStates);
+  // for (final VehicleState vs : vehicleStates)
+  // results.add(new Particle(timestamp, parent.getElement(), 1.0, vs),
+  // parent.getCount());
+  // }
+  //
+  // }
 
   @Override
   public void move(Particle parent, double timestamp, double timeElapsed,

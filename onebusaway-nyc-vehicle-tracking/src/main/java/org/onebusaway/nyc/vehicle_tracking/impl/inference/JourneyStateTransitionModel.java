@@ -302,7 +302,7 @@ public class JourneyStateTransitionModel {
     }
   }
 
-  public boolean isLocationOnATrip(BlockState blockState) {
+  static public boolean isLocationOnATrip(BlockState blockState) {
     final double distanceAlong = blockState.getBlockLocation().getDistanceAlongBlock();
     BlockTripEntry trip = blockState.getBlockLocation().getActiveTrip();
     final double tripDistFrom = trip.getDistanceAlongBlock();
@@ -314,4 +314,13 @@ public class JourneyStateTransitionModel {
       return false;
   }
 
+  static public boolean isLocationActive(BlockState blockState) {
+    final double distanceAlong = blockState.getBlockLocation().getDistanceAlongBlock();
+    
+    if (0.0 < distanceAlong 
+        && distanceAlong < blockState.getBlockInstance().getBlock().getTotalBlockDistance())
+      return true;
+    else
+      return false;
+  }
 }

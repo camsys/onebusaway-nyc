@@ -50,7 +50,12 @@ public class EdgeLikelihood implements SensorModelRule {
 
   private BlockStateService _blockStateService;
 
-  final private static double distStdDev = 50.0;
+  /*
+   * This std. dev. is supposed to represent our between-stops
+   * interpolation error.
+   * TODO should be time-diff dependent, really.
+   */
+  final public static double distStdDev = 30.0;
   final private double startBlockStdDev = 50.0;
 
   @Autowired
@@ -119,7 +124,6 @@ public class EdgeLikelihood implements SensorModelRule {
   
   static private final double computeEdgeMovementProb(BlockState blockState, Observation obs,
       BlockState prevBlockState) {
-    final double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
     final double obsDelta = SphericalGeometryLibrary.distance(obs.getLocation(), 
         obs.getPreviousObservation().getLocation());
     
@@ -127,6 +131,7 @@ public class EdgeLikelihood implements SensorModelRule {
      * When there are multiple (potential) previously in-progress block-states,
      * we need to average over them to determine
      */
+    final double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
     final double prevDab = prevBlockState.getBlockLocation().getDistanceAlongBlock();
     double dabDelta = currentDab - prevDab;
       
@@ -146,7 +151,7 @@ public class EdgeLikelihood implements SensorModelRule {
 //        prevBlockState.getBlockLocation().getStopTimeIndex(), expSchedTime);
 //    final double expectedDabDelta = distanceAlongBlock - prevDab;
 
-    final double pInP3Tmp = FoldedNormalDist.density(obsDelta, distStdDev, dabDelta);
+    final double pInP3Tmp = NormalDist.density(dabDelta, distStdDev, obsDelta);
 
     return pInP3Tmp;
   }

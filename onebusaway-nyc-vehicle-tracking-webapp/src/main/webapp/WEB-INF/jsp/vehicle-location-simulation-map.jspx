@@ -198,9 +198,7 @@ OBA.Debug = function() {
 							} else if(property === "timestampAsDate") {
 								currentTime = value;
 								formattedTime = new Date(value);
-								markerText.timestampAsDate = formattedTime.toISOString();
-							} else if (property === "timestamp") {
-								markerText.timestamp = "<a name='trip_time_select' href='#'>" + value + "</a>";
+								markerText.timestampAsDate = "<a name='trip_time_select' href='#'>" + formattedTime.toISOString() + "</a>";
 							} else if (property === "vehicleId"){
 								markerText.other += property + ": " + value.agencyId + "_" 
 								 + value.id + "<br/>";
@@ -347,6 +345,8 @@ OBA.Debug = function() {
 				|| typeof selectedTripId === 'object') {
 			var selectedTrip = jQuery("#trips option:selected");
 			selectedTripId = selectedTrip.val();
+			if (typeof selectedTripId === 'undefined')
+				return;
 		}
 		
 		jQuery.ajax({
