@@ -174,7 +174,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
     // construct raw record
     NycRawLocationRecord r = new NycRawLocationRecord();
-    r.setUUID(envelope.getUUID());
+    r.setUuid(envelope.getUUID());
 
     r.setLatitude(message.getLatitude() / 1000000f);
     r.setLongitude(message.getLongitude() / 1000000f);

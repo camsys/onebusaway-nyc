@@ -94,11 +94,11 @@ public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
     return id;
   }
 
-  public String getUUID() {
+  public String getUuid() {
     return uuid;
   }
 
-  public void setUUID(String uuid) {
+  public void setUuid(String uuid) {
     this.uuid = uuid;
   }
 
