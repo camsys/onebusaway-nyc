@@ -42,6 +42,8 @@ public class PriorRule implements SensorModelRule {
       return new SensorModelResult("pPrior", 1.0);
     else if (phase == EVehiclePhase.DEADHEAD_BEFORE)
       return new SensorModelResult("pPrior", 0.5);
+    else if (phase == EVehiclePhase.DEADHEAD_AFTER)
+      return new SensorModelResult("pPrior", 0.5);
     else if (phase == EVehiclePhase.LAYOVER_BEFORE)
       return new SensorModelResult("pPrior", 0.5);
     else if (phase == EVehiclePhase.LAYOVER_DURING)

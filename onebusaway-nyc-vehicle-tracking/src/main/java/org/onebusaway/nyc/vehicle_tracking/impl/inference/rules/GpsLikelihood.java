@@ -76,6 +76,10 @@ public class GpsLikelihood implements SensorModelRule {
       final double pGps = FoldedNormalDist.density(inProgressGpsMean, inProgressGpsStdDev, inProgressGpsMean);
       result.addResultAsAnd("gps(no state)", 0.5*pGps);
       
+    } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
+      final double pGps = FoldedNormalDist.density(inProgressGpsMean, inProgressGpsStdDev, inProgressGpsMean);
+      result.addResultAsAnd("gps(deadhead-after)", 0.5*pGps);
+      
     } else if (EVehiclePhase.AT_BASE == phase) {
       
       result.addResultAsAnd("gps(at-base)", 1.0);

@@ -55,7 +55,7 @@ public class EdgeLikelihood implements SensorModelRule {
    * interpolation error.
    * TODO should be time-diff dependent, really.
    */
-  final public static double distStdDev = 30.0;
+  final public static double distStdDev = 400.0;
   final private double startBlockStdDev = 50.0;
 
   @Autowired
@@ -86,10 +86,13 @@ public class EdgeLikelihood implements SensorModelRule {
     }
     
     if (blockState == null) {
-      if (obs.isAtBase())
+      if (obs.isAtBase()) {
         result.addResultAsAnd("pNotInProgress(base)", 1.0);
-      else 
-        result.addResultAsAnd("pNotInProgress(prior)", 0.5);
+      } else {
+        final double pDistAlong = FoldedNormalDist.density(0.0, startBlockStdDev, 
+            0.0);
+        result.addResultAsAnd("pNotInProgress(prior)", pDistAlong);
+      }
       return result;
     }
 
@@ -108,14 +111,25 @@ public class EdgeLikelihood implements SensorModelRule {
       if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
         pDistAlong = FoldedNormalDist.density(0.0, startBlockStdDev, 
             blockState.getBlockLocation().getDistanceAlongBlock());
+      } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
+        if (parentState.getBlockState().getBlockLocation().getDistanceAlongBlock() <
+            blockState.getBlockLocation().getDistanceAlongBlock()) {
+          // TODO do something special to account for excess distance after the block?
+          pDistAlong = computeEdgeMovementProb(blockState, obs, parentState.getBlockState());
+        } else {
+          pDistAlong = FoldedNormalDist.density(0.0, startBlockStdDev, 
+              0.0);
+        }
       } else {
         pDistAlong = computeEdgeMovementProb(blockState, obs, parentState.getBlockState());
       }
-      
       result.addResultAsAnd("moveAlong", pDistAlong);
     } else if (previouslyInactive){
-      result.addResultAsAnd("previouslyInactive", 0.5);
+      pDistAlong = FoldedNormalDist.density(0.0, startBlockStdDev, 
+          0.0);
+      result.addResultAsAnd("previouslyInactive", pDistAlong);
     } else if (newBlock){
+      // TODO transition stuff
       result.addResultAsAnd("newBlock", 0.5);
     }
     

@@ -31,21 +31,25 @@ public final class BlockStateObservation implements
   private final boolean _isAtPotentialLayoverSpot;
 
   private final boolean _isSnapped;
+
+  private final double _scheduleDeviation;
   
   private BlockStateObservation(BlockState blockState, Boolean isRunReported,
-      Boolean isUTSassigned, Boolean isRunAM, boolean isAtLayoverSpot, boolean isSnapped) {
+      Boolean isUTSassigned, Boolean isRunAM, boolean isAtLayoverSpot, 
+      boolean isSnapped, double scheduleDev) {
     _blockState = blockState;
     this._isRunReported = isRunReported;
     this._isOpAssigned = isUTSassigned;
     this._isRunReportedAssignedMismatch = isRunAM;
     this._isAtPotentialLayoverSpot = isAtLayoverSpot;
     this._isSnapped = isSnapped;
+    this._scheduleDeviation = scheduleDev;
   }
 
   public BlockStateObservation(BlockStateObservation state) {
     this(state._blockState, state._isRunReported, state._isOpAssigned,
         state._isRunReportedAssignedMismatch, state._isAtPotentialLayoverSpot,
-        state._isSnapped);
+        state._isSnapped, state._scheduleDeviation);
   }
 
   public BlockStateObservation(BlockState blockState, Observation obs,
@@ -63,6 +67,8 @@ public final class BlockStateObservation implements
         && _isRunReported != null ? _isOpAssigned && !_isRunReported : null;
     _isAtPotentialLayoverSpot = isAtPotentialLayoverSpot;
     _isSnapped = isSnapped;
+    _scheduleDeviation = ((obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000.0 
+        - blockState.getBlockLocation().getScheduledTime())/60.0;
     
   }
 
@@ -104,6 +110,7 @@ public final class BlockStateObservation implements
         .addValue(_blockState)
         .add("isOpAssigned", _isOpAssigned)
         .add("isRunReported", _isRunReported)
+        .add("schedDev", _scheduleDeviation)
         .toString();
   }
 
@@ -179,6 +186,10 @@ public final class BlockStateObservation implements
 
   public boolean isSnapped() {
     return _isSnapped;
+  }
+
+  public double getScheduleDeviation() {
+    return _scheduleDeviation;
   }
 
 }

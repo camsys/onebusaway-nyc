@@ -123,7 +123,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
          * TODO should use Kalman filter for motions/gps...
          */
         if (parentBlockStateObs.isSnapped()) {
-          distAlongSample = FoldedNormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
+          distAlongSample = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
               parentDistAlong, GpsLikelihood.inProgressGpsStdDev);
         } else {
           double distAlongPrior = SphericalGeometryLibrary.distance(obs.getLocation(),
@@ -141,24 +141,27 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       else if (distAlongSample < 0.0)
         distAlongSample = 0.0;
       
-      BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservation(obs, 
+      BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
           parentBlockState.getBlockInstance(), distAlongSample);
       return distState;
     }
   
   @Override
-  public BlockStateObservation samplePropagatedScheduleState(BlockState parentBlockState, Observation obs) {
-    int prevTime = (int)(obs.getPreviousObservation().getTime() - parentBlockState.getBlockInstance().getServiceDate())/1000;
-    int prevSchedTime = parentBlockState.getBlockLocation().getScheduledTime(); 
+  public BlockStateObservation samplePropagatedScheduleState(BlockStateObservation parentBlockStateObs,
+      BlockStateObservation refBlockState, Observation obs) {
+    BlockState parentBlockState = parentBlockStateObs.getBlockState();
+    // TODO how to use the proposal state?
+//    int prevTime = (int)(obs.getPreviousObservation().getTime() - parentBlockState.getBlockInstance().getServiceDate())/1000;
+//    int prevSchedTime = parentBlockState.getBlockLocation().getScheduledTime(); 
     
     /*
      * In seconds
      */
-    double prevSchedDev = (prevTime - prevSchedTime)/60.0;
+//    double prevSchedDev = (prevTime - prevSchedTime)/60.0;
     
     double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime())/1000.0;
     double newSchedDev = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-        prevSchedDev, obsTimeDiff/60.0 * ScheduleLikelihood.schedTransStdDev);
+        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff/60.0 * ScheduleLikelihood.schedTransStdDev);
     
     int startSchedTime = Iterables.getFirst(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
         .getArrivalTime();
@@ -169,10 +172,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     
     BlockStateObservation schedState;
     if (newSchedTime < startSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservation(obs, 
+      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
           parentBlockState.getBlockInstance(), 0.0);
     } else if (endSchedTime < newSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservation(obs, 
+      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
           parentBlockState.getBlockInstance(), 
           parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
     } else {

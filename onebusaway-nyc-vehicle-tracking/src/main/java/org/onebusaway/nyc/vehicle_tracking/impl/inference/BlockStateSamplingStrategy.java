@@ -39,5 +39,6 @@ public interface BlockStateSamplingStrategy {
       Observation obs, BlockStateObservation parentBlockStateObs);
 
   public BlockStateObservation samplePropagatedScheduleState(
-      BlockState parentBlockState, Observation obs);
+      BlockStateObservation parentBlockStateObs,
+      BlockStateObservation refBlockState, Observation obs);
 }

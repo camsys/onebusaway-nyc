@@ -168,14 +168,27 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
         BlockStateObservation newEdge;
         if (proposalEdge != null) {
-          if (proposalEdge.isSnapped()
-              || JourneyStateTransitionModel.isLocationActive(proposalEdge.getBlockState()))
-//            newEdge = _blockStateSamplingStrategy.samplePropagatedDistanceState(
-//                vehicleNotMoved, obs, proposalEdge);
-            newEdge = _blockStateSamplingStrategy.samplePropagatedScheduleState(
-                proposalEdge.getBlockState(), obs);
-          else
+          if (JourneyStateTransitionModel.isLocationActive(proposalEdge.getBlockState())) {
+            if (parentBlockState != null) {
+              /*
+               * We sample the a schedule propagation when there
+               * are no snapped states, otherwise, we sample "true' 
+               * locations from the GPS's error range. 
+               */
+              if (!proposalEdge.isSnapped()) {
+                newEdge = _blockStateSamplingStrategy.samplePropagatedScheduleState(
+                    parentState.getBlockStateObservation(), null, obs);
+              } else {
+                newEdge = _blockStateSamplingStrategy.samplePropagatedDistanceState(vehicleNotMoved,
+                    obs, proposalEdge);
+              }
+            } else {
+              newEdge = _blockStateSamplingStrategy.samplePropagatedDistanceState(vehicleNotMoved,
+                  obs, proposalEdge);
+            }
+          } else {
             newEdge = proposalEdge;
+          }
         } else {
           newEdge = null;
         }

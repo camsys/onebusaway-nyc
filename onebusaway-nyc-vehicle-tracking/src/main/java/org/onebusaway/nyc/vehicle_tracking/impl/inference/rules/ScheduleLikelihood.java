@@ -25,6 +25,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Component;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import umontreal.iro.lecuyer.probdist.NormalDist;
+import umontreal.iro.lecuyer.probdist.TruncatedDist;
 import umontreal.iro.lecuyer.stat.Tally;
 
 import java.util.Set;
@@ -60,6 +62,7 @@ public class ScheduleLikelihood implements SensorModelRule {
    */
   final static public double schedMean = 15.0;
   final static public double schedStdDev = 80.0;
+  final static public double schedStdDevPrior = 100.0;
   final static public double schedTransStdDev = 1.0;
   final private double layoverDuringMean = 15.0;
   final private double layoverDuringStdDev = 80.0;
@@ -80,13 +83,23 @@ public class ScheduleLikelihood implements SensorModelRule {
     final EVehiclePhase phase = state.getJourneyState().getPhase();
     final SensorModelResult result = new SensorModelResult("pSchedule", 1.0);
     final BlockState blockState = state.getBlockState();
+    final VehicleState parentState = context.getParentState();
     
     if (blockState == null) {
       /*
        * 50/50 on this one
        */
       final double pSched = FoldedNormalDist.density(schedMean, schedStdDev, schedMean);
-      result.addResultAsAnd("sched", 0.5*pSched);
+      result.addResultAsAnd("sched", pSched);
+    } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
+      
+      final double pDevTrans = computeSchedDevTransProb(
+          parentState != null ? parentState.getBlockStateObservation() : null, 
+              state.getBlockStateObservation(), obs);
+      result.addResultAsAnd("deadhead after(dev-trans)", pDevTrans);
+      final double pSched = FoldedNormalDist.density(schedMean, schedStdDev, schedMean);
+      result.addResultAsAnd("deadhead after", pSched);
+      
     } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
       
       final double pSched;
@@ -100,9 +113,13 @@ public class ScheduleLikelihood implements SensorModelRule {
         pSched = FoldedNormalDist.density(schedMean, schedStdDev,
             startDev);
         
-        result.addResultAsAnd("deadhead (before block)", pSched);
+        result.addResultAsAnd("deadhead before(before block)", pSched);
       } else {
       
+        final double pDevTrans = computeSchedDevTransProb(
+            parentState != null ? parentState.getBlockStateObservation() : null, 
+                state.getBlockStateObservation(), obs);
+        result.addResultAsAnd("deadhead before(dev-trans)", pDevTrans);
         /*
          * On the block, but still not started...
          * measure, inversely, how likely it is to be 
@@ -114,11 +131,15 @@ public class ScheduleLikelihood implements SensorModelRule {
             - blockState.getBlockLocation().getScheduledTime());
         pSched = FoldedNormalDist.density(schedMean, schedStdDev,
             obsSchedDev / 60.0);
-        result.addResultAsAnd("deadhead (on block)", 1-pSched);
+        result.addResultAsAnd("deadhead before(on block)", 1-pSched);
       }
       
     } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
       
+      final double pDevTrans = computeSchedDevTransProb(
+          parentState != null ? parentState.getBlockStateObservation() : null, 
+              state.getBlockStateObservation(), obs);
+      result.addResultAsAnd("deadhead during(dev-trans)", pDevTrans);
       double startDev = SensorModelSupportLibrary.startOrResumeBlockOnTimeDev(state, obs);
       final double pSched = FoldedNormalDist.density(schedMean, schedStdDev,
           startDev);
@@ -126,6 +147,10 @@ public class ScheduleLikelihood implements SensorModelRule {
       
     } else if (EVehiclePhase.LAYOVER_DURING == phase) {
       
+      final double pDevTrans = computeSchedDevTransProb(
+          parentState != null ? parentState.getBlockStateObservation() : null, 
+              state.getBlockStateObservation(), obs);
+      result.addResultAsAnd("layover during(dev-trans)", pDevTrans);
       final BlockStopTimeEntry nextStop = 
           VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
 
@@ -134,6 +159,10 @@ public class ScheduleLikelihood implements SensorModelRule {
       result.addResultAsAnd("layover during", pLayoverDuring);
       
     } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
+      final double pDevTrans = computeSchedDevTransProb(
+          parentState != null ? parentState.getBlockStateObservation() : null, 
+              state.getBlockStateObservation(), obs);
+      result.addResultAsAnd("layover before(dev-trans)", pDevTrans);
       final BlockStopTimeEntry nextStop = 
           VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
 
@@ -142,6 +171,10 @@ public class ScheduleLikelihood implements SensorModelRule {
       result.addResultAsAnd("layover before", pLayoverBefore);
       
     } else if (EVehiclePhase.IN_PROGRESS == phase) {
+      final double pDevTrans = computeSchedDevTransProb(
+          parentState != null ? parentState.getBlockStateObservation() : null, 
+              state.getBlockStateObservation(), obs);
+      result.addResultAsAnd("in progress(dev-trans)", pDevTrans);
       final long obsSchedDev = FastMath.abs((obs.getTime() 
           - blockState.getBlockInstance().getServiceDate())/1000
           - blockState.getBlockLocation().getScheduledTime());
@@ -152,6 +185,20 @@ public class ScheduleLikelihood implements SensorModelRule {
     }
 
     return result;
+  }
+  
+  private double computeSchedDevTransProb(BlockStateObservation parentBlockState,
+      BlockStateObservation blockState, Observation obs) {
+    final double prob;
+    if (parentBlockState == null) {
+      prob = NormalDist.density(0.0, schedStdDevPrior,
+          blockState.getScheduleDeviation());
+    } else {
+      double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime())/1000.0;
+      prob = NormalDist.density(parentBlockState.getScheduleDeviation(), 
+          obsTimeDiff/60.0 * schedTransStdDev, blockState.getScheduleDeviation());
+    }
+    return prob;
   }
   
   private double computeVehicleIsOnScheduleProbability(long timestamp,

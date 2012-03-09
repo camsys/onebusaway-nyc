@@ -336,7 +336,7 @@ public class BlocksFromObservationServiceImpl implements
   }
   
   @Override
-  public BlockStateObservation getBlockStateObservation(Observation obs, 
+  public BlockStateObservation getBlockStateObservationFromDist(Observation obs, 
       BlockInstance blockInstance, double distanceAlong) {
       BlockState bs = _blockStateService.getAsState(blockInstance, distanceAlong);
       boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
