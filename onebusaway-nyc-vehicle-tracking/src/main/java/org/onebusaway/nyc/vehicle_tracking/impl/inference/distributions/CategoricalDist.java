@@ -152,12 +152,12 @@ public class CategoricalDist<T extends Comparable<T>> {
 
     _emd.setNumTrials(1);
     final Vector sampleRes = _emd.sample(threadLocalRng.get());
-    final int newIdx = (int)Iterables.find(sampleRes, new Predicate<VectorEntry> () {
+    final int newIdx = Iterables.indexOf(sampleRes, new Predicate<VectorEntry> () {
       @Override
       public boolean apply(VectorEntry input) {
-        return input.getValue() > 0.0;
+        return Double.compare(input.getValue(), 0.0) >= 1;
       }
-    }).getValue();
+    });
     
 //    final double u = threadLocalRng.get().nextDouble();
 //    final int newIdx = (int) emd.inverseF(u);

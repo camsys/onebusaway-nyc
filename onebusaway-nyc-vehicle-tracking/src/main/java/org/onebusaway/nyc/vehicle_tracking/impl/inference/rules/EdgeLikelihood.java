@@ -77,10 +77,9 @@ public class EdgeLikelihood implements SensorModelRule {
     
     if (obs.getPreviousObservation() == null || parentState == null) {
       if (EVehiclePhase.isActiveDuringBlock(phase)) {
-        result.addResultAsAnd("no prev. obs./vehicle-state", 0.0);
-      } else if (blockState == null 
-          || !state.getBlockStateObservation().isSnapped()){
-        result.addResultAsAnd("no prev. obs./vehicle-state nor blockState or snapped loc.", 1.0);
+        result.addResultAsAnd("no prev. obs./vehicle-state(in-progress)", 1.0);
+      } else {
+        result.addResultAsAnd("no prev. obs./vehicle-state", 1.0);
       }
       return result;
     }

@@ -286,4 +286,12 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     return new MotionState(lastInMotionTime, lastInMotionLocation);
   }
+
+  public EdgeLikelihood getEdgeLikelihood() {
+    return edgeLikelihood;
+  }
+
+  public ScheduleLikelihood getSchedLikelihood() {
+    return schedLikelihood;
+  }
 }

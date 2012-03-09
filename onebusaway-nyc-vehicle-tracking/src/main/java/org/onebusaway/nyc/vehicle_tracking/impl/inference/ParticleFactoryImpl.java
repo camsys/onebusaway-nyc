@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
@@ -24,6 +26,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -151,36 +154,59 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     final Multiset<Particle> particles = HashMultiset.create();
 
-    for (final BlockStateObservation blockState : potentialBlocks) {
-      final MotionState motionState = _motionModel.updateMotionState(obs);
-
-      final double inMotionSample = threadLocalRng.get().nextDouble();
-      final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
-          motionState, obs);
-      final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-          blockState, obs, vehicleNotMoved);
-
-      BlockStateObservation sampledBlockState;
-      if (blockState != null) {
-        /*
-         * Sample a distance along the block using the snapped observation
-         * results as priors.
-         */
-        if (blockState.isSnapped()
-            || JourneyStateTransitionModel.isLocationActive(blockState.getBlockState())) {
-          sampledBlockState = _blockStateSamplingStrategy.samplePropagatedDistanceState(
-              vehicleNotMoved, obs, blockState);
+    final MotionState motionState = _motionModel.updateMotionState(obs);
+    for (int i = 0; i < _initialNumberOfParticles; ++i) {
+      final CategoricalDist<VehicleState> transitionProb = new CategoricalDist<VehicleState>();
+ 
+      for (final BlockStateObservation blockState : potentialBlocks) {
+        final SensorModelResult transProb = new SensorModelResult("transition");
+        final double inMotionSample = threadLocalRng.get().nextDouble();
+        final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
+            motionState, obs);
+  
+        BlockStateObservation sampledBlockState;
+        if (blockState != null) {
+          /*
+           * Sample a distance along the block using the snapped observation
+           * results as priors.
+           */
+          if (blockState.isSnapped()
+              || JourneyStateTransitionModel.isLocationActive(blockState.getBlockState())) {
+            sampledBlockState = _blockStateSamplingStrategy.samplePropagatedDistanceState(
+                vehicleNotMoved, obs, blockState);
+          } else {
+            sampledBlockState = blockState;
+          }
         } else {
-          sampledBlockState = blockState;
+          sampledBlockState = null;
         }
-      } else {
-        sampledBlockState = null;
+        final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+            blockState, obs, vehicleNotMoved);
+  
+        final VehicleState state = vehicleState(motionState, sampledBlockState,
+            journeyState, obs);
+        final Context context = new Context(null, state, obs);
+        
+        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(null, context));
+
+        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(null, context));
+
+        transitionProb.put(transProb.getProbability(), state);
       }
-      final VehicleState state = vehicleState(motionState, sampledBlockState,
-          journeyState, obs);
-      final Particle p = new Particle(timestamp);
-      p.setData(state);
-      particles.add(p);
+
+      if (transitionProb.canSample()) {
+        particles.add(new Particle(timestamp, null, 1.0,
+            transitionProb.sample()));
+      } else {
+        final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
+        final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
+            motionState, obs);
+        final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+            null, obs, vehicleNotMoved);
+        final VehicleState nullState = new VehicleState(motionState, null,
+            journeyState, null, obs);
+        particles.add(new Particle(timestamp, null, 1.0, nullState));
+      }
     }
 
     return particles;

@@ -161,7 +161,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     
     double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime())/1000.0;
     double newSchedDev = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff/60.0 * ScheduleLikelihood.schedTransStdDev);
+        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff/60.0 * ScheduleLikelihood.schedTransStdDev/2);
     
     int startSchedTime = Iterables.getFirst(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
         .getArrivalTime();
