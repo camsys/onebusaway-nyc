@@ -15,25 +15,15 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
-import org.onebusaway.nyc.presentation.impl.sort.SearchResultComparator;
-import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
-import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.search.RouteSearchService;
-import org.onebusaway.nyc.presentation.service.search.SearchResult;
-import org.onebusaway.nyc.presentation.service.search.StopSearchService;
+import org.onebusaway.nyc.presentation.model.SearchResultCollection;
+import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
+import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebLocationResult;
-import org.onebusaway.nyc.webapp.actions.api.model.DesktopWebPresentationModelFactory;
+import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @ParentPackage("json-default")
 @Result(type="json", params={"callbackParameter", "callback"})
@@ -42,80 +32,40 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
-  private RouteSearchService _routeSearchService;
+  private SearchService _searchService;
 
   @Autowired
-  private StopSearchService _stopSearchService;
+  private TransitDataService _transitDataService;
 
   @Autowired
-  private RealtimeService _realtimeService;
+  private ScheduledServiceService _scheduledServiceService;
 
-  @Autowired
-  private NycGeocoderService _geocoderService;
+  private SearchResultCollection _results = null;
   
-  private SearchResultCollection _searchResults = new SearchResultCollection();
-  
-  private String _q;
+  private String _q = null;
 
   public void setQ(String query) {
-    if(query != null)
+    if(query != null) {
       _q = query.trim();
-    else
-      _q = null;
+    }
   }
 
   @Override
   public String execute() {    
     if(_q == null || _q.isEmpty())
       return SUCCESS;
-
-    DesktopWebPresentationModelFactory factory = new DesktopWebPresentationModelFactory(_realtimeService, _routeSearchService);
-    _stopSearchService.setModelFactory(factory);
-    _routeSearchService.setModelFactory(factory);
     
-    // try as stop ID
-    _searchResults.addAll(_stopSearchService.resultsForQuery(_q));
-
-    // try as route ID
-    if(_searchResults.size() == 0)
-      _searchResults.addAll(_routeSearchService.resultsForQuery(_q));
-
-    // nothing? geocode it!
-    if(_searchResults.size() == 0)
-      _searchResults.addAll(generateResultsFromGeocode(_q));        
-
-    Collections.sort(_searchResults, new SearchResultComparator());
+    _results = _searchService.getSearchResults(_q, new SearchResultFactoryImpl(_transitDataService, 
+            _searchService, _scheduledServiceService));
 
     return SUCCESS;
   }   
-
-
-  private List<SearchResult> generateResultsFromGeocode(String q) {
-    List<SearchResult> results = new ArrayList<SearchResult>();
-    
-    List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(q);
-
-    for(NycGeocoderResult result : geocoderResults) {
-      DesktopWebLocationResult locationSearchResult = new DesktopWebLocationResult(result);
-
-      if(result.isRegion()) {
-        locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getBounds()));
-      } else {
-        locationSearchResult.setNearbyRoutes(_routeSearchService.resultsForLocation(result.getLatitude(), 
-            result.getLongitude()));
-      }
-      
-      results.add(locationSearchResult);
-    }
-
-    return results;
-  }  
   
   /** 
    * VIEW METHODS
    */
   public SearchResultCollection getSearchResults() {
-    return _searchResults;
+    return _results;
   }
 
 }

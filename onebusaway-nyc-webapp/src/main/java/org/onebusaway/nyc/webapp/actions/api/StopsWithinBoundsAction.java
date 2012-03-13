@@ -16,10 +16,8 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.presentation.model.search.RouteResult;
-import org.onebusaway.nyc.presentation.model.search.StopResult;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
@@ -41,20 +39,26 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
   @Autowired
   private TransitDataService _transitDataService;
 
-  private List<StopResult> _results = new ArrayList<StopResult>();
+  private List<StopOnRoute> _stops = new ArrayList<StopOnRoute>();
 
-  private CoordinateBounds _bounds = new CoordinateBounds();
+  private CoordinateBounds _bounds = null;
   
   public void setBounds(String bounds) {
     String[] coordinates = bounds.split(",");
     if(coordinates.length == 4) {
-      _bounds = new CoordinateBounds(Double.parseDouble(coordinates[0]), Double.parseDouble(coordinates[1]),
-          Double.parseDouble(coordinates[2]), Double.parseDouble(coordinates[3]));
+      _bounds = new CoordinateBounds(
+          Double.parseDouble(coordinates[0]), Double.parseDouble(coordinates[1]),
+          Double.parseDouble(coordinates[2]), Double.parseDouble(coordinates[3])
+      );
     }
   }
   
   @Override
   public String execute() {    
+    if(_bounds == null) {
+      return SUCCESS;
+    }
+    
     SearchQueryBean queryBean = new SearchQueryBean();
     queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
     queryBean.setBounds(_bounds);
@@ -63,15 +67,7 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
     StopsBean stops = _transitDataService.getStops(queryBean);
     
     for(StopBean stop : stops.getStops()) {
-      List<RouteResult> routesAvailable = new ArrayList<RouteResult>();
-      for(RouteBean routeBean : stop.getRoutes()) {
-        RouteResult routeResult = new RouteResult(routeBean, null);
-        routesAvailable.add(routeResult);
-      }
-      
-      StopResult result = new StopResult(stop, routesAvailable);
-      
-      _results.add(result);
+      _stops.add(new StopOnRoute(stop));
     }
     
     return SUCCESS;
@@ -80,8 +76,8 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
   /** 
    * VIEW METHODS
    */
-  public List<StopResult> getSearchResults() {
-    return _results;
+  public List<StopOnRoute> getStops() {
+    return _stops;
   }
 
 }

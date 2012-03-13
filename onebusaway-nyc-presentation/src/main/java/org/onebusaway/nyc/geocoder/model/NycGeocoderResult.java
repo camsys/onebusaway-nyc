@@ -17,11 +17,12 @@ package org.onebusaway.nyc.geocoder.model;
 
 import org.onebusaway.geocoder.impl.GoogleAddressComponent;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.nyc.presentation.model.SearchResult;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
-public class NycGeocoderResult implements Serializable {
+public class NycGeocoderResult implements Serializable, SearchResult {
 
   private static final long serialVersionUID = 1L;
   
@@ -95,37 +96,6 @@ public class NycGeocoderResult implements Serializable {
   public String getFormattedAddress() {
     return this.formattedAddress;
   }
-
-  public String getAddress() {
-    String address = getFormattedAddress();
-    
-    if(address != null)
-      return address.substring(0, address.indexOf(","));
-    else
-      return null;
-  }
-
-  public String getCity() {
-    String output = addressComponentMap.get("sublocality");
-
-    if(output != null)
-      return output;
-    else
-      return addressComponentMap.get("locality");
-
-  }
-
-  public String getAdministrativeArea() {
-    return addressComponentMap.get("administrative_area_level_1");
-  }
-
-  public String getPostalCode() {
-    return addressComponentMap.get("postal_code");
-  }
-
-  public String getCountry() {
-    return addressComponentMap.get("country");
-  }
   
   public CoordinateBounds getBounds() {
     if(northeastLatitude != null && northeastLongitude != null 
@@ -139,6 +109,6 @@ public class NycGeocoderResult implements Serializable {
   }
   
   public boolean isRegion() {
-    return getBounds() != null;
+    return (getBounds() != null);
   }
 }

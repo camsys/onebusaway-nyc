@@ -33,34 +33,9 @@
 	</p>
 	
 	<p>
-		<s:url var="url" namespace="/admin" action="vehicles"></s:url>
-		<a title="vehicles" href="${url}">Vehicles</a>
-		<br/>A list of all vehicles that are sending data to the system, and the current status and location of each.
-	</p>
-	
-	<p>
 		<s:url var="url" namespace="/admin" action="barcode"></s:url>
 		<a title="barcode" href="${url}">QR Code Generation</a>
 		<br/>Generate QR Barcodes.
-	</p>
-	
-	<p>
-		<s:url var="url" namespace="/admin" action="last-known-vehicle"></s:url>
-		<a title="vehicles" href="${url}">Vehicle Status</a>
-		<br/>
-		Most recent vehicle status
-	</p>
-	
-	<p>
-		<s:url var="url" namespace="/admin" action="edit-parameters"></s:url>
-		<a title="edit parameters" href="${url}">Parameters</a>
-		<br/>View and edit system parameters that affect UI logic and API results.
-	</p>
-	
-	<p>
-		<s:url var="url" namespace="/admin" action="api-keys"></s:url>
-		<a title="api keys" href="${url}">API Keys</a>
-		<br/>View and edit API keys.
 	</p>
 	
 	<p>

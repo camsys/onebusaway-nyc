@@ -112,8 +112,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       }
     }
 
+    List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
+
     if(stopId != null && stopId.hasValues()) {
-      List<MonitoredStopVisitStructure> visits = 
+       visits =
           _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls);
 
       if((routeId != null && routeId.hasValues()) || directionId != null) {
@@ -137,10 +139,10 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
         visits = filteredVisits;
       }
-      
-      _response = generateSiriResponse(visits, stopId);
     }
-    
+
+    _response = generateSiriResponse(visits, stopId);
+
     return SUCCESS;
   }
   
@@ -155,7 +157,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       gregorianCalendar.setTime(getTime());
       gregorianCalendar.add(Calendar.MINUTE, 1);
       stopMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
-      
+
       stopMonitoringDelivery.getMonitoredStopVisit().addAll(visits);
 
       serviceDelivery.setResponseTimestamp(getTime());

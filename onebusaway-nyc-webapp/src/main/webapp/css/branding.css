@@ -36,6 +36,10 @@
 	color: #0189c7;
 }
 
+#bustime a:hover {
+	color: #33CCFF;
+}
+
 /* header on wiki pages */
 #bustime #header {
 	padding-top: 10px;
