@@ -64,11 +64,12 @@
 }
 
 #content #no-results,
-#content #results,
-#content #legend {
+#content #suggestions,
+#content #matches {
 	width: 280px;
 	display: none;
 	font-size: 16px;
+	clear: both;
 }
 
 #content #welcome {
@@ -77,8 +78,8 @@
 
 #content #no-results h2,
 #content #welcome h2,
-#content #results h2,
-#content #legend h2 {
+#content #suggestions h2,
+#content #matches h2 {
 	font-weight: bold;
 	color: #818181;	
 	font-size: 1em;
@@ -98,7 +99,7 @@
 
 /* result types */
 
-#content #results ul li.routeItem {
+#content #suggestions ul li.routeItem {
 	width: 65px;
 	height: 25px;
 	display: block;
@@ -106,7 +107,7 @@
 	text-align: center;
 }
 
-#content #results ul li.locationItem {
+#content #suggestions ul li.locationItem {
 	padding-left: 2.5em;
 	margin-top: .5em;
 	background-position: 0 .3em;
@@ -114,15 +115,7 @@
 	height: 2.5em;
 }
 
-#content #legend #for_stop {
-	display: none;
-}
-
-#content #legend #nearby {
-	display: none;
-}
-
-#content #legend h2 ul li.legendItem {
+#content #matches ul li.legendItem {
 	margin-top: 5px;
 	margin-bottom: 10px;
 	position: relative;
@@ -130,32 +123,35 @@
 	color: #000;
 }
 
-#content #legend h2 ul li.legendItem .name {
+#content #matches ul li.legendItem .name {
 	margin-bottom: 5px;
 	font-weight: bold;
-	cursor: default;
+	cursor: pointer;
 }
 
-#content #legend h2 ul li.legendItem .no-service {
+#content #matches ul li.legendItem .no-service {
 	font-weight: bold;
-	font-style: italic;
-	padding-top: 5px;
-	padding-left: 25px;
-	color: #000000;
+	margin-top: 5px;
+	margin-left: 20px;
+	padding: 5px;
+	color: #1C75BC;
+	background-color: #DCF0F7;
 }
 
-#content #legend h2 ul li.legendItem .description {
+#content #matches ul li.legendItem .description {
 	margin-bottom: 5px;
 	font-size: 14px;
 	font-weight: normal;
 }
 
-#content #legend h2 ul li.legendItem .serviceAlertContainer {
+#content #matches ul li.legendItem .serviceAlertContainer {
 	font-size: 12px;
 	width: 300px;
+	padding-bottom: 5px;
+	display: none;
 }
 
-#content #legend h2 ul li.legendItem .serviceAlertContainer p.serviceAlert {
+#content #matches ul li.legendItem .serviceAlertContainer p.serviceAlert {
 	color: #D12020;
 	font-weight: bold;
 	font-size: 13px;
@@ -165,11 +161,11 @@
 	background-color: #FDEEF4;
 }
 
-#content #legend h2 ul li.legendItem .serviceAlertContainer p.serviceAlert:focus { 
+#content #matches ul li.legendItem .serviceAlertContainer p.serviceAlert:focus { 
 	outline: none; 
 } 
 
-#content #legend h2 ul li.legendItem .serviceAlertContainer p.serviceAlert span.click_info {
+#content #matches ul li.legendItem .serviceAlertContainer p.serviceAlert span.click_info {
 	color: #D12020;
 	font-weight: normal;
 	font-size: 12px;
@@ -178,7 +174,7 @@
 	display: inline;
 }
 
-#content #legend h2 ul li.legendItem .serviceAlertContainer .alerts li {
+#content #matches ul li.legendItem .serviceAlertContainer .alerts li {
 	padding: 10px 10px 10px 10px;
 	color: #D12020;
 	font-size: 13px;
@@ -186,27 +182,25 @@
 	line-height: 1.2em;
 }
 
-#content #legend h2 ul li.legendItem .destination {
+#content #matches ul li.legendItem .destination {
 	font-size: 12px;
 	width: 280px;
 }
 
-#content #legend h2 ul li.legendItem .destination p {
+#content #matches ul li.legendItem .destination p {
 	color: #1c75bc;
-	font-weight: bold;
-
 	padding: 4px;
-	
+	font-weight: bold;
 	position: relative;
 	cursor: pointer;
 }
 
-#content #legend h2 ul li.legendItem .destination p span {
+#content #matches ul li.legendItem .destination p span {
 	display: block;
-	padding-left: 25px;
+	padding-left: 20px;
 }
 
-#content #legend h2 ul li.legendItem p.destination p span.ui-icon-triangle-1-s {
+#content #matches ul li.legendItem p.destination p span.ui-icon-triangle-1-s {
 	background-image: url("img/arrows.png");
 	background-position: 0px -20px;
 	width: 20px;
@@ -218,7 +212,7 @@
 	left: 0px;
 }
 
-#content #legend h2 ul li.legendItem p.destination p span.ui-icon-triangle-1-e {
+#content #matches ul li.legendItem p.destination p span.ui-icon-triangle-1-e {
 	background-image: url("img/arrows.png");
 	background-position: 0px 0px;
 	width: 20px;
@@ -230,107 +224,65 @@
 	left: 0px;
 }
 
-#content #legend h2 ul li.legendItem p.destination ul.stops {
+#content #matches ul li.legendItem p.destination ul.stops {
 	margin-top: 5px;
+	margin-bottom: 20px;
 }
 
-#content #legend h2 ul li.legendItem p.destination ul.stops li {
+#content #matches ul li.legendItem p.destination ul.stops li {
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 3px;
 	padding-left: 40px;
 }
 
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00A651 {
-	background-image: url('img/stop_on_route_background_green.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00A651:hover {
-	background-image: url('img/stop_on_route_background_green_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_006CB7 {
-	background-image: url('img/stop_on_route_background_blue.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_006CB7:hover {
-	background-image: url('img/stop_on_route_background_blue_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00AEEF {
-	background-image: url('img/stop_on_route_background_ltblue.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_00AEEF:hover {
-	background-image: url('img/stop_on_route_background_ltblue_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_9A258F {
-	background-image: url('img/stop_on_route_background_purple.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_9A258F:hover {
-	background-image: url('img/stop_on_route_background_purple_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_FAA61A {
-	background-image: url('img/stop_on_route_background_orange.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_FAA61A:hover {
-	background-image: url('img/stop_on_route_background_orange_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_ED1C24 {
-	background-image: url('img/stop_on_route_background_red.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_ED1C24:hover {
-	background-image: url('img/stop_on_route_background_red_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_72BF44 {
-	background-image: url('img/stop_on_route_background_ltgreen.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_72BF44:hover {
-	background-image: url('img/stop_on_route_background_ltgreen_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_none {
+/* default--this is overrideen  by javascript */
+#content #matches ul li.legendItem p.destination ul.stops li.r_none {
 	background-image: url('img/stop_on_route_background.png');
 }
 
-#content #legend h2 ul li.legendItem p.destination ul.stops li.r_none:hover {
-	background-image: url('img/stop_on_route_background_big.png');
-}
-
-#content #legend h2 ul li.legendItem p.destination ul.stops li a {
+#content #matches ul li.legendItem p.destination ul.stops li a {
 	height: 20px;
 	color: #000000;
 	text-decoration: none;
 	font-weight: normal;
 }
 
-#content #legend h2 ul li.legendItem p.destination ul.stops li a:hover {
-	font-size: 120%;
+#content #matches ul li.legendItem p.destination ul.stops li a:hover {
 	font-weight: bold;
-	padding-left: 1%;
 }
+
+/* loading indicators */
 
 #content #searchbar #loading {
+	padding-left: 40px;	
+	padding-top: 25px;
 	display: none;
-	background-image: url('img/ajax-loader.gif');
-	background-repeat: no-repeat;
-	background-position: 25% 95%;
 }
 
-#content #searchbar #loading p {
-	padding: 10% 0 0 35%;
-	font-size: 100%;
+.destination .loading {
+	display: none;
+	margin-left: 25px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.loading {
+	text-align: center;
+	width: 200px;
+	padding-top: 25px;
+	background-image: url('img/ajax-loader.gif');
+	background-repeat: no-repeat;
+	background-position: 50% 0;
+}
+
+.loading span {
+	font-size: 16px;
 	font-weight: normal;
 	color: #999;
 }
+
+/* subway map control */
 
 #subwayControlContainer { /* For IE box shadow */
 	margin: 10px;

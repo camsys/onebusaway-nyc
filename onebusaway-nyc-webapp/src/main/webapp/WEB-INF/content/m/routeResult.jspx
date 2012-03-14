@@ -19,28 +19,30 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
 	xmlns:wiki="/oba-wiki-tags">
 
-<s:iterator value="searchResults">
+<s:iterator value="results.matches">
+	<!--  table of contents -->
 	<div>
-		<!--  table of contents -->
 		<p>
-			<strong>Shortcut To...</strong>
+			<strong>
+				Routes:
+			</strong>
 		</p>
 
-		<s:iterator value="destinations">
+		<s:iterator value="directions">
 			<s:url var="url" value="" anchor="%{directionId}"></s:url>
 			<a href="${url}">
-				<s:property value="routeIdWithoutAgency" />&amp;nbsp;<s:property value="headsign" />
+				<s:property value="shortName" />&amp;nbsp;<s:property value="destination" />
 			</a>
 			<br />
 		</s:iterator>
 	</div>
 
-	<s:iterator value="destinations">
+	<s:iterator value="directions">
 		<div>
 			<p>
 				<a name="${directionId}"><!--prevent JSP minimization--></a>
 				<strong>
-					<s:property value="routeIdWithoutAgency" />&amp;nbsp;<s:property value="headsign" />
+					<s:property value="shortName" />&amp;nbsp;<s:property value="destination" />
 				</strong> 
 				<br />
 			</p>
@@ -48,7 +50,7 @@
 			<c:choose>
 				<c:when test="${!hasUpcomingScheduledService}">
 					<p class="noService">
-						No scheduled service for the <s:property value="routeIdWithoutAgency" /> to <s:property value="headsign" /> at this time.
+						No scheduled service for the <s:property value="shortName" /> to <s:property value="destination" /> at this time.
 					</p>
 				</c:when>
 			</c:choose>
@@ -63,10 +65,10 @@
 				<s:iterator value="stops">
 					<li>
 						<c:choose>
-							<c:when test="${!empty distanceAwayString}">
+							<c:when test="${!empty distanceAways}">
 								<s:url var="url" namespace="/m" action="index">
 									<s:param name="q">
-										<s:property value="stopIdWithoutAgency" />
+										<s:property value="idWithoutAgency" />
 									</s:param>
 									<s:param name="l"><s:property value="l" /></s:param>
 								</s:url>
@@ -75,12 +77,12 @@
 										<s:property value="name" />
 									</a> 
 								</strong>
-								&amp;nbsp;<s:property value="distanceAwayString" />
+								&amp;nbsp;<s:property value="distanceAways" />
 							</c:when>
 							<c:otherwise>
 								<s:url var="url" namespace="/m" action="index">
 									<s:param name="q">
-										<s:property value="stopIdWithoutAgency" />
+										<s:property value="idWithoutAgency" />
 									</s:param>
 									<s:param name="l"><s:property value="l" /></s:param>
 								</s:url>

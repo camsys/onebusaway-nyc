@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
-import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
+import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.presentation.impl.NextActionSupport;
 
 import com.dmurph.tracking.VisitorData;

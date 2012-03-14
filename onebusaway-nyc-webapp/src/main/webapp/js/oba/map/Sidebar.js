@@ -18,37 +18,37 @@ var OBA = window.OBA || {};
 
 OBA.Sidebar = function () {
 	var theWindow = jQuery(window),
-		mapDiv = jQuery("#map"), 
 		topBarDiv = jQuery("#topbar"), 
-		searchBarDiv = jQuery("#searchbar"), 
 		mainbox = jQuery("#mainbox"),
 		menuBar = jQuery("#cssmenu1"),
-		welcome = jQuery("#welcome"),
-		legend = jQuery("#legend"),
-		results = jQuery("#results"),
+		mapDiv = jQuery("#map");
+
+	var searchBarDiv = jQuery("#searchbar"), 
+		matches = jQuery("#matches"),
+		suggestions = jQuery("#suggestions"),
 		noResults = jQuery("#no-results"),
+		welcome = jQuery("#welcome"),
 		loading = jQuery("#loading");
 
 	var routeMap = null;
 	var wizard = null;
-	var lastQuery = null;
-	var highlightRouteOnHoverOn = true;
 
 	function addSearchBehavior() {
-		var searchForm = jQuery("#searchbar form"),
-			searchInput = jQuery("#searchbar form input[type=text]");
+		var searchForm = jQuery("#searchbar form");
 		
 		searchForm.submit(function(e) {
 			e.preventDefault();
 			
-			var currentQuery = searchInput.val();			
-			if (currentQuery === lastQuery) {
-				jQuery.history.load("");	
+			var searchInput = jQuery("#searchbar form input[type=text]");
+
+			// if search hasn't changed, force the search again to make panning, etc. happen
+			if(window.location.hash !== "#" + searchInput.val()) {
+				jQuery.history.load(searchInput.val());	
+			} else {
+				doSearch(searchInput.val());
 			}
-			lastQuery = currentQuery;
-			jQuery.history.load(currentQuery);	
 			
-			(wizard && wizard.enabled()) ? legend.trigger('search_launched') : null;
+			(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
 		});
 	}
 
@@ -77,19 +77,17 @@ OBA.Sidebar = function () {
 	}
 
 	// show user list of addresses
-	function disambiguate(locationResults) {	
-		var resultsList = jQuery("<ul></ul>").appendTo(results);
+	function disambiguateLocations(locations) {	
+		suggestions.find("h2")
+			.text("Did you mean?");
+
+		var resultsList = suggestions.find("ul");
 
 		var bounds = null;
-		var markerCount = 0;
-		
-		jQuery.each(locationResults, function(_, location) {
+		jQuery.each(locations, function(i, location) {
 			var latlng = new google.maps.LatLng(location.latitude, location.longitude);
 			var address = location.formattedAddress;
 			var neighborhood = location.neighborhood;
-			
-			markerCount += 1;
-			var marker = routeMap.addDisambiguationMarkerWithContent(latlng, address, neighborhood, markerCount);	
 			
 		    // sidebar item
 			var link = jQuery("<a href='#" + address + "'></a>")
@@ -97,21 +95,20 @@ OBA.Sidebar = function () {
 
 			var listItem = jQuery("<li></li>")
 							.addClass("locationItem")
-							.append(link)
-							.css("background-image", "url('img/location/location_" + markerCount + ".png')");
+							.css("background-image", "url('img/location/location_" + (i + 1) + ".png')")
+							.append(link);
+
 			resultsList.append(listItem);
-			
-			var currentCount = markerCount;
+
+			// marker
+			var marker = routeMap.addDisambiguationMarker(latlng, address, neighborhood, (i + 1));			
+
 			listItem.hover(function() {
-				routeMap.activateLocationIcon(marker, currentCount);
-				marker.setAnimation(google.maps.Animation.BOUNCE);
-				listItem.css("background-image", "url('img/location/location_active_sidebar_" + currentCount + ".png')");
-				link.css("color", "#33CCFF");
+				routeMap.highlightDisambiguationMarker(marker, (i + 1));
+				listItem.css("background-image", "url('img/location/location_active_sidebar_" + (i + 1) + ".png')");
 			}, function() {
-				routeMap.deactivateLocationIcon(marker, currentCount);
-				marker.setAnimation(null);
-				listItem.css("background-image", "url('img/location/location_" + currentCount + ".png')");
-				link.css("color", "#0189C7");
+				routeMap.unhighlightDisambiguationMarker(marker, (i + 1));
+				listItem.css("background-image", "url('img/location/location_" + (i + 1) + ".png')");
 			});
 
 			// calculate extent of all options
@@ -121,204 +118,162 @@ OBA.Sidebar = function () {
 				bounds.extend(latlng);
 			}
 		});
+		
 		routeMap.showBounds(bounds);
-		results.show();
+		
+		suggestions.show();
 	}
-	
-	// separate nearby routes from routes for a stop 
-	// (need to copy routes anyway to get service alerts field)
-	function reorderRoutes(routes, routesFirst) {	
-		var nearbyRoutes = {}, routesForStop = [];	
-
-		jQuery.each(routes, function(_, route) {
-			nearbyRoutes[route.routeIdWithoutAgency] = route;
-		});
 		
-		jQuery.each(routesFirst, function(_, routeFirst) {
-			routesForStop.push(nearbyRoutes[routeFirst.routeIdWithoutAgency]);
-			delete nearbyRoutes[routeFirst.routeIdWithoutAgency];
-		});
+	function loadStopsForRouteAndDirection(routeResult, direction, destinationContainer) {
+		var stopsList = destinationContainer.find("ul");
 		
-		return [nearbyRoutes, routesForStop];
-	}
-	
-	
-	// display routes in one list
-	function showRoutesOnMap(routeResults) {
-		var nearby = jQuery("#legend > #nearby");
-		var for_stop = jQuery("#legend > #for_stop");
-		nearby.text('Routes:');
-		var routesLegend = jQuery("<ul></ul>").appendTo(nearby);
-		
-		addRoutesToLegend(routeResults, routesLegend);
-		
-		nearby.show();
-		for_stop.hide();
-		legend.show();
-	}
-
-	// display routes 1) for stop, then 2) nearby
-	function showRoutesOnMapForLocation(routeResults, routesFirst) {
-		var nearbyRoutes = routeResults;
-		var nearby = jQuery("#legend > #nearby");
-		var for_stop = jQuery("#legend > #for_stop");
-
-		if (routesFirst !== undefined && routesFirst.length !== 0) {	
-			// case 0: some routes for stop -> sort & list them 1st
-			if (routeResults.length !== routesFirst.length) {
-				var routelists = reorderRoutes(routeResults, routesFirst);
-				nearbyRoutes = routelists[0];
-				routesFirst = routelists[1];
-			} else {
-			// case 1: routes for stop equals all routes -> list all as 1st
-				routesFirst = routeResults;
-				nearbyRoutes = null;
-			}
-			// Add as "routes for this stop"
-			for_stop.text("Routes for this stop:");
-			
-			var routesAtStopLegend = jQuery("<ul></ul>").appendTo(for_stop);
-			addRoutesToLegend(routesFirst, routesAtStopLegend);
-
-			for_stop.show();
-			nearby.hide();
+		// if stops are already loaded, don't request them again
+		if(! stopsList.hasClass("not-loaded")) {
+			return;
 		}
-		
-		// case 2: no routes for stop -> Add all as "nearby"
-		if (nearbyRoutes !== null && nearbyRoutes.length !== 0) {
-			nearby.text("Nearby routes:");
+
+		var loading = destinationContainer.find(".loading");
+		loading.show();
+
+		jQuery.getJSON(OBA.Config.stopsOnRouteForDirection + "?callback=?", { routeId: routeResult.id, directionId: direction.directionId }, 
+		function(json) { 
+			loading.hide();
+
+			stopsList.removeClass("not-loaded");
+
+			jQuery.each(json.stops, function(_, stop) {
+				routeMap.addStop(stop, null);
+				
+				var stopLink = jQuery("<a href='#'></a>")
+									.text(stop.name);
+					
+				var imagePiece = "middle";
+				if(_ === 0) {
+					imagePiece = "start";
+				} else if(_ === json.stops.length - 1) {
+					imagePiece = "end";
+				}
+				
+				var stopItem = jQuery('<li></li>')
+								.css("background-image", "url(img/stop-on-route/stop_on_route_" + imagePiece + "_" + routeResult.color + ".png)")
+								.append(stopLink);
+
+				stopsList.append(stopItem);
+				
+				stopLink.click(function(e) {
+					e.preventDefault();
+					
+					routeMap.showPopupForStopId(stop.id);
+				});
+				
+				stopLink.hover(function() {
+					routeMap.highlightStop(stop);
+				}, function() {
+					routeMap.unhighlightStop();					
+				});
+			});
 			
-			var nearbyRoutesLegend = jQuery("<ul></ul>").appendTo(nearby);	
-			addRoutesToLegend(nearbyRoutes, nearbyRoutesLegend);
-			
-			nearby.show();	
-			if (routesFirst == undefined || routesFirst.length == 0) {
-				for_stop.hide();
-			}
-		}
-		
-		// pan to extent of first few routes in legend
-		if (routeResults.length > 0) {
-			if (routesFirst !== undefined) {
-				routeMap.panToRoute(routesFirst[0]);
-			} else {
-				routeMap.panToRoute(nearbyRoutes[0]);
-			}
-		}	
-		legend.show();
+		});
 	}
-		
-	function addRoutesToLegend(routeResults, legendList) {
+	
+	function addRoutesToLegend(routeResults, title) {
+		if(typeof title !== "undefined" && title !== null) {
+			matches.find("h2").text(title);
+		}
+
+		var resultsList = matches.find("ul");
+
 		jQuery.each(routeResults, function(_, routeResult) {				
+			// service alerts
+			var serviceAlertList = jQuery("<ul></ul>")
+							.addClass("alerts");
+			
+			var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change for Route</p>")
+											.append(jQuery("<span class='click_info'> + Click for info</span>"));
+			
+			var serviceAlertContainer = jQuery("<div></div>")
+											.attr("id", "alerts-" + routeResult.id.replace(" ", "_"))
+											.addClass("serviceAlertContainer")
+											.append(serviceAlertHeader)
+											.append(serviceAlertList);
+			
+			serviceAlertContainer.accordion({ header: 'p.serviceAlert', 
+				collapsible: true, 
+				active: false, 
+				autoHeight: false });
+
+			// sidebar item
 			var titleBox = jQuery("<p></p>")
 							.addClass("name")
-							.text(routeResult.routeIdWithoutAgency + " " + routeResult.longName)
+							.text(routeResult.shortName + " " + routeResult.longName)
 							.css("border-bottom", "5px solid #" + routeResult.color);
 			
 			var descriptionBox = jQuery("<p></p>")
 							.addClass("description")
 							.text(routeResult.description);
 
-			// service alerts
-			var serviceAlertList = jQuery("<ul></ul>")
-							.addClass("alerts");
-			
-			var serviceAlerts = routeResult.serviceAlerts;
-			var serviceAlertContainer = jQuery("<div></div>");
-						
-			jQuery.each(serviceAlerts, function(_, alert) {
-				var alertItem = jQuery("<li></li>")
-									.html(alert.value);
-				
-				serviceAlertList.append(alertItem);
-			});
-			
-			if (serviceAlerts.length > 0) {	
-				var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change for Route</p>")
-												.append(jQuery("<span class='click_info'> + Click for info</span>"));
-				
-				serviceAlertContainer = jQuery("<div></div>")
-												.addClass("serviceAlertContainer")
-												.append(serviceAlertHeader)
-												.append(serviceAlertList);
-				
-				serviceAlertContainer.accordion({ header: 'p.serviceAlert', 
-					collapsible: true, 
-					active: false, 
-					autoHeight: false });
-			}
-
-			// legend item
 			var listItem = jQuery("<li></li>")
 							.addClass("legendItem")
 							.append(titleBox)
 							.append(descriptionBox)
 							.append(serviceAlertContainer);
 	
-			legendList.append(listItem);
+			resultsList.append(listItem);
 			
-			// on double click of title pan to route extent 
-			// (unless zoomed in or route is in current viewport)
+			// on click of title, pan to route extent 
 			titleBox.click(function(e) {
 				e.preventDefault();
 				
-				routeMap.panToRoute(routeResult);
+				routeMap.panToRoute(routeResult.id);
 			});
 
-			// directions
-			jQuery.each(routeResult.destinations, function(_, destination) {
+			// hover polylines
+			titleBox.hover(function(e) {
+				titleBox.css("color", "#" + routeResult.color);
+			}, function(e) {
+				titleBox.css("color", "");
+			});
+
+			titleBox.hoverIntent({
+				over: function(e) { routeMap.highlightRoute(routeResult.id); },
+				out: function(e) { routeMap.unhighlightRoute(routeResult.id); },
+				sensitivity: 10
+			});
+
+			// direction picker
+			jQuery.each(routeResult.directions, function(_, direction) {
 				var directionHeader = jQuery("<p></p>");
 				
 				jQuery("<span></span>")
-					.text("to " + destination.headsign)
+					.text("to " + direction.destination)
 					.appendTo(directionHeader);
 				
-				if(destination.hasUpcomingScheduledService === false) {
+				if(direction.hasUpcomingScheduledService === false) {
 					var noServiceMessage = jQuery("<div></div>")
 												.addClass("no-service")
 												.text("No scheduled service for the " + 
-														routeResult.routeIdWithoutAgency + 
-														" to " + destination.headsign + " at this time.");
+														routeResult.shortName + 
+														" to " + direction.destination + " at this time.");
 
 					directionHeader.append(noServiceMessage);
 				}
-				
+
 				var stopsList = jQuery("<ul></ul>")
-											.addClass("stops");
+											.addClass("stops")
+											.addClass("not-loaded");
+
+				var loading = jQuery("<div><span>Loading...</span></div>")
+											.addClass("loading");
 
 				var destinationContainer = jQuery("<p></p>")
 											.addClass("destination")
 											.append(directionHeader)
-											.append(stopsList);
-
-				// stops for this destination
-				jQuery.each(destination.stops, function(__, stop) {
-					var stopLink = jQuery("<a href='#'></a>")
-									.text(stop.name);
-					
-					var routeColor = (routeResult.color !== null) ? routeResult.color : "none";
-					var stopItem = jQuery('<li class="r_' + routeColor + '"></li>')
-									.append(stopLink);
-	
-					stopsList.append(stopItem);
-
-					stopLink.click(function(e) {
-						e.preventDefault();
-
-						routeMap.showPopupForStopId(stop.stopId);
-					});
-					
-					stopLink.mouseenter(function(e) {
-						e.preventDefault();
-						
-						routeMap.showStopIcon(stop.stopId);
-					});
-					
-					stopLink.mouseout(function(e) {
-						e.preventDefault();
-						
-						routeMap.hideStopIcon(stop.stopId);
-					});
+											.append(stopsList)
+											.append(loading);
+				
+				// load stops when user expands stop list
+				directionHeader.click(function(e) {
+					loadStopsForRouteAndDirection(routeResult, direction, destinationContainer);
 				});
 				
 				// accordion-ize
@@ -328,43 +283,24 @@ OBA.Sidebar = function () {
 					autoHeight: false });
 				
 				listItem.append(destinationContainer);
-				
-				// pre-cache highlight route lines for all polylines
-				if (highlightRouteOnHoverOn) {
-					routeMap.prepareCachedPolylines(destination.polylines, routeResult.color, 
-							routeResult.routeIdWithoutAgency);
-				}
 			});
 			
-			// hover on titleBox thickens route lines
-			if (highlightRouteOnHoverOn) {
-				titleBox.hover(function(e) {
-					titleBox.css("color", "#" + routeResult.color);
-				}, function(e) {
-					titleBox.css("color", "#000000");
-				});
-				
-				// add slight delay to hover
-				var onOver = function(e) { routeMap.showCachedPolylinesForRoute(routeResult.routeIdWithoutAgency); };
-				var onOut = function(e) { routeMap.hideCachedPolylinesForRoute(routeResult.routeIdWithoutAgency); };
-				titleBox.hoverIntent({
-					over: onOver,
-					out: onOut,
-					sensitivity: 10
-				});
-			}
-			routeMap.showRoute(routeResult);
+			// add to map
+			routeMap.addRoute(routeResult);
 		});
+
+		matches.show();
 	}
 
-	// show many (too many to show on map) routes to user
+	// show multiple route choices to user
 	function showRoutePickerList(routeResults) {	
-		var resultsList = jQuery("<ul></ul>")
-							.appendTo(results);
+		suggestions.find("h2").text("Did you mean?");
+
+		var resultsList = suggestions.find("ul");
 
 		jQuery.each(routeResults, function(_, route) {
-			var link = jQuery("<a href='#" + route.name + "'></a>")
-							.text(route.name)
+			var link = jQuery("<a href='#" + route.shortName + "'></a>")
+							.text(route.shortName)
 							.attr("title", route.description);
 
 			var listItem = jQuery("<li></li>")
@@ -373,143 +309,158 @@ OBA.Sidebar = function () {
 			
 			resultsList.append(listItem);
 
-			// polyline hover
+			// polyline hovers
 			var allPolylines = [];
-			jQuery.each(route.destinations, function(__, destination) {
-				jQuery.each(destination.polylines, function(___, polyline) {
+
+			// "region" routes (searches for a zip code, etc.)
+			if(typeof route.polylines !== "undefined") {
+				jQuery.each(route.polylines, function(__, polyline) {
 					allPolylines.push(polyline);
 				});
-			});
 			
-			link.hover(function() {
-				routeMap.showHoverPolyline(allPolylines, route.color);
-			}, function() {
-				routeMap.removeHoverPolyline();
-			});
+			// "did you mean" route suggestions--ex. X17 suggests X17J,A,C
+			} else if(route.directions !== "undefined") {
+				jQuery.each(route.directions, function(__, direction) {
+					jQuery.each(direction.polylines, function(___, polyline) {
+						allPolylines.push(polyline);						
+					});
+				});
+			}
+
+			if(allPolylines.length > 0) {
+				link.hover(function() {
+					routeMap.showHoverPolyline(allPolylines, route.color);
+				}, function() {
+					routeMap.removeHoverPolyline();
+				});
+			}
 		});
 		
-		results.show();
+		suggestions.show();
 	}
 	
 	function resetSearchPanelAndMap() {
 		welcome.hide();
-		legend.hide();
-		results.hide();
-		noResults.html("<h2>No results.</h2>");
 		noResults.hide();
-		
-		jQuery("#results ul").remove();
-		jQuery("#legend #for_stop").children().empty();
-		jQuery("#legend #nearby").children().empty();
 
-		routeMap.removeAllCachedPolylines();
-		routeMap.removeAllRoutes();
-		routeMap.removeDisambiguationMarkers();
-		routeMap.removeLocationMarker();
-		routeMap.closePopups();
+		matches.hide();		
+		matches.children().empty();
+
+		suggestions.hide();		
+		suggestions.children().empty();
+
+		routeMap.reset();
 	}
 	
-	function noResultsAction(noResultsMsg) {
-		if (noResultsMsg !== undefined) { 
-			noResults.html("<h2>" + noResultsMsg + "</h2>"); 
+	function showNoResults(message) {
+		if (typeof message !== "undefined") { 
+			noResults.html("<h2>" + message + "</h2>"); 
+			noResults.show();
 		}
-		noResults.show();
+
 		welcome.show();
-		(wizard && wizard.enabled()) ? legend.trigger('no_result') : null;
+
+		(wizard && wizard.enabled()) ? results.trigger('no_result') : null;
 	}
 
 	// process search results
 	function doSearch(q) {
+		resetSearchPanelAndMap();		
+
+		(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
 		
-		// Check for stop code search in already-loaded data
-		if (q.match(/^\d{6}$/) !== null && routeMap.showPopupForStopId("MTA NYCT_" + q)) {
-			return;
-		}
-		
-		resetSearchPanelAndMap();
-		loading.show();
-		
-		(wizard && wizard.enabled()) ? legend.trigger('search_launched') : null;
-		
+		loading.show();		
 		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
 			loading.hide();
 
-			var resultCount = json.searchResults.length;
-			if(resultCount === 0) {
-				noResultsAction();
+			var resultType = json.searchResults.resultType;
+			var empty = json.searchResults.empty;
+			
+			var matches = json.searchResults.matches;
+			var suggestions = json.searchResults.suggestions;
+
+			OBA.Config.analyticsFunction("Search", q + " [M:" + matches.length + " S:" + suggestions.length + "]");
+			
+			if(empty === true) {
+				showNoResults("No matches.");
 				return;
 			} else {
 				noResults.hide();
 			}
 
-			OBA.Config.analyticsFunction("Search", q + " [" + resultCount + "]");
-			
-			var resultType = json.searchResults[0].resultType;			
-			if(resultCount === 1 && (resultType === "LocationResult" || resultType === "StopResult")) {
-					var result = json.searchResults[0];
-
-					// region (zip code or borough)
-					if(resultType === "LocationResult" && result.region === true) {
-						
-						// location exists, but no nearby routes exist
-						var nearbyRoutes = result.nearbyRoutes;
-						if(nearbyRoutes.length === 0) {
-							if (result.formattedAddress !== null) {
-								var searchInput = jQuery("#searchbar form input[type=text]");
-								searchInput.val(result.formattedAddress);
+			// direct matches
+			if(matches.length === 1) {
+				switch(resultType) {
+					case "GeocodeResult":
+						// result is a region
+						if(matches[0].isRegion === true) {
+							if(matches[0].nearbyRoutes.length === 0) {
+								showNoResults("No stops nearby.");
+							} else {
+								showRoutePickerList(matches[0].nearbyRoutes);								
 							}
-							routeMap.showLocation(result.latitude, result.longitude, false,
-													result.formattedAddress, result.neighborhood);
-							noResultsAction("Bus Time is not yet available at this location.");
-							return;
-						}
-						var bounds = result.bounds;
-						var latLngBounds = new google.maps.LatLngBounds(
-								new google.maps.LatLng(bounds.minLat, bounds.minLon), 
-								new google.maps.LatLng(bounds.maxLat, bounds.maxLon));
-						showRoutePickerList(result.nearbyRoutes);
-						routeMap.showBounds(latLngBounds);
-						
-						(wizard && wizard.enabled()) ? legend.trigger('location_result') : null;
 
-					// intersection or stop ID
-					} else {									
-						var allRoutes = result.nearbyRoutes;
-						
-						if (allRoutes.length == 0) { 
-							if (result.formattedAddress !== null) {
-								var searchInput = jQuery("#searchbar form input[type=text]");
-								searchInput.val(result.formattedAddress);
-							}
-							routeMap.showLocation(result.latitude, result.longitude, true,
-													result.formattedAddress, result.neighborhood);
-							noResultsAction("Bus Time is not yet available at this location.");
-							return;
-						}
-						var listFirst = result.routesAvailable;
-						showRoutesOnMapForLocation(allRoutes, listFirst);
-						
-						if(resultType === "StopResult") {
-							routeMap.showLocation(result.latitude, result.longitude);
-							routeMap.showPopupForStopId(result.stopId);
-							(wizard && wizard.enabled()) ? legend.trigger('stop_result') : null;
+							var latLngBounds = new google.maps.LatLngBounds(
+									new google.maps.LatLng(matches[0].bounds.minLat, matches[0].bounds.minLon), 
+									new google.maps.LatLng(matches[0].bounds.maxLat, matches[0].bounds.maxLon));
+
+							routeMap.showBounds(latLngBounds);
+							
+						// result is a point--intersection or address
 						} else {
-							routeMap.showLocation(result.latitude, result.longitude, true,
-														result.formattedAddress, result.neighborhood);
-							(wizard && wizard.enabled()) ? legend.trigger('intersection_result') : null;
+							if(matches[0].nearbyRoutes.length === 0) {
+								showNoResults("No stops nearby.");
+							} else {
+								addRoutesToLegend(matches[0].nearbyRoutes, "Nearby routes:");
+							}
+							
+							var latlng = new google.maps.LatLng(matches[0].latitude, matches[0].longitude);
+							
+							routeMap.showLocation(latlng);
+							routeMap.addLocationMarker(latlng, matches[0].formattedAddress, matches[0].neighborhood);
 						}
-					}
-			} else {
-				// location disambiguation
-				if(resultType === "LocationResult") {
-					disambiguate(json.searchResults);
-					(wizard && wizard.enabled()) ? legend.trigger('disambiguation_result') : null;
+
+						(wizard && wizard.enabled()) ? results.trigger('location_result') : null;
+						break;
+				
+					case "RouteResult":
+						addRoutesToLegend(matches, "Routes:");
+
+						routeMap.panToRoute(matches[0].id);
+						
+						(wizard && wizard.enabled()) ? results.trigger('route_result') : null;
+						break;
 					
-				// routes (e.g. S74 itself or S74 + S74 LTD)
-				} else if(resultType === "RouteResult") {
-					showRoutesOnMap(json.searchResults);
-					
-					(wizard && wizard.enabled()) ? legend.trigger('route_result') : null;
+					case "StopResult":
+						addRoutesToLegend(matches[0].routesAvailable, "Routes available:");
+
+						var latlng = new google.maps.LatLng(matches[0].latitude, matches[0].longitude);
+						routeMap.addStop(matches[0], function(marker) {
+							routeMap.showPopupForStopId(matches[0].id);							
+						});
+						
+						routeMap.showLocation(latlng);
+						
+						(wizard && wizard.enabled()) ? results.trigger('stop_result') : null;
+						break;
+				}				
+			} 
+			
+			// did you mean suggestions
+			if(suggestions.length > 0){
+				switch(resultType) {
+					case "GeocodeResult":					
+						disambiguateLocations(suggestions)
+						
+						(wizard && wizard.enabled()) ? results.trigger('disambiguation_result') : null;
+						break;
+
+					// a route query with no direct matches
+					case "RouteResult":
+						showRoutePickerList(suggestions);								
+
+						(wizard && wizard.enabled()) ? results.trigger('route_result') : null;
+						break;
 				}
 			}
 		});
@@ -531,9 +482,28 @@ OBA.Sidebar = function () {
 						doSearch(hash);
 					} else {
 						// Launch wizard
-						(wizard !== null) ? null : wizard = OBA.Wizard(routeMap);
+						//(wizard !== null) ? null : wizard = OBA.Wizard(routeMap);
 					}
 				});
+			}, function(routeId, serviceAlerts) { // service alert notification handler
+				var serviceAlertsContainer = jQuery("#alerts-" + routeId.replace(" ", "_"));
+				if(serviceAlertsContainer.length === 0) {
+					return;
+				}
+
+				if(serviceAlerts.length === 0) {
+					serviceAlertsContainer.hide();
+				} else {
+					serviceAlertsContainer.show();
+					
+					var serviceAlertsList = serviceAlertsContainer.find("ul");
+					serviceAlertsList.empty();
+
+					jQuery.each(serviceAlerts, function(_, serviceAlert) {
+	                    var description = serviceAlert.Description.replace(/\n/g, "<br/>");
+						serviceAlertsList.append(jQuery("<li></li>").text(description));
+					});
+				}
 			});
 		}
 	};

@@ -24,6 +24,8 @@ OBA.Config = {
 		searchUrl: "api/search",
 		configUrl: "api/config",
 		stopsWithinBoundsUrl: "api/stops-within-bounds",
+		stopsOnRouteForDirection: "api/stops-on-route-for-direction",
+		stopForId: "api/stop-for-id",
 		
 		siriSMUrl: "api/siri/stop-monitoring.json",
 		siriVMUrl: "api/siri/vehicle-monitoring.json",

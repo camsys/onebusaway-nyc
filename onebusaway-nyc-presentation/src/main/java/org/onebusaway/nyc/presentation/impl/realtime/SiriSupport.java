@@ -140,7 +140,7 @@ public final class SiriSupport {
     monitoredVehicleJourney.setVehicleLocation(location);
 
     // situation refs
-    addSituations(monitoredVehicleJourney, tripDetails);
+    fillSituations(monitoredVehicleJourney, tripDetails);
 
     // onward and monitored calls:
     List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
@@ -242,6 +242,26 @@ public final class SiriSupport {
     return;
   }
 
+  /***
+   * PRIVATE STATIC METHODS
+   */
+  
+  private static void fillSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripDetailsBean trip) {
+    if (trip == null || CollectionUtils.isEmpty(trip.getSituations())) {
+      return;
+    }
+
+    List<SituationRefStructure> situationRef = monitoredVehicleJourney.getSituationRef();
+
+    for (ServiceAlertBean situation : trip.getSituations()) {
+      SituationRefStructure sitRef = new SituationRefStructure();
+      SituationSimpleRefStructure sitSimpleRef = new SituationSimpleRefStructure();
+      sitSimpleRef.setValue(situation.getId());
+      sitRef.setSituationSimpleRef(sitSimpleRef);
+      situationRef.add(sitRef);
+    }
+  }
+
   private static OnwardCallStructure getOnwardCallStructure(StopBean stopBean, TripStopTimeBean stopTime, 
       PresentationService presentationService, double distance, int visitNumber, int index) {
     
@@ -304,6 +324,7 @@ public final class SiriSupport {
     return monitoredCallStructure;
   }
   
+  
   private static int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
     int visitNumber;
    
@@ -317,6 +338,7 @@ public final class SiriSupport {
     
     return visitNumber;
   }
+  
   
   private static ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {
     if (phase == null) {
@@ -340,20 +362,4 @@ public final class SiriSupport {
     return ProgressRateEnumeration.UNKNOWN;
   }
   
-  private static void addSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripDetailsBean trip) {
-    if (trip == null || CollectionUtils.isEmpty(trip.getSituations())) {
-      return;
-    }
-
-    List<SituationRefStructure> situationRef = monitoredVehicleJourney.getSituationRef();
-
-    for (ServiceAlertBean situation : trip.getSituations()) {
-      SituationRefStructure sitRef = new SituationRefStructure();
-      SituationSimpleRefStructure sitSimpleRef = new SituationSimpleRefStructure();
-      sitSimpleRef.setValue(situation.getId());
-      sitRef.setSituationSimpleRef(sitSimpleRef);
-      situationRef.add(sitRef);
-    }
-  }
-
 }

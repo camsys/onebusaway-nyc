@@ -41,9 +41,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
 
@@ -121,16 +119,13 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
       digester.push(results);
 
       _log.debug("Requesting " + url.toString());
-
       InputStream inputStream = url.openStream();
+
       digester.parse(inputStream);    
       _log.debug("Got " + results.size() + " geocoder results.");
 
-      results = filterResults(results);
+      results = filterResultsByWktPolygon(results);
       _log.debug("Have " + results.size() + " geocoder results AFTER filtering.");
-
-      results = deDuplicateResults(results);
-      _log.debug("Have " + results.size() + " geocoder results AFTER deduplicating.");
 
       return results;
     } catch (Exception e) {
@@ -139,22 +134,7 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     }
   }
 
-  // FIXME: google's returning two "Staten Island, NY, USA" results for the 
-  // search "Staten Island". Filter those out.
-  private List<NycGeocoderResult> deDuplicateResults(List<NycGeocoderResult> input) {
-    if(input == null || (input != null && input.size() == 1)) {
-      return input;
-    }
-    
-    Map<String, NycGeocoderResult> output = new HashMap<String, NycGeocoderResult>();
-    for(NycGeocoderResult result : input) {
-      output.put(result.getAddress(), result);
-    }
-
-    return new ArrayList<NycGeocoderResult>(output.values());
-  }
-  
-  private List<NycGeocoderResult> filterResults(List<NycGeocoderResult> input) {
+  private List<NycGeocoderResult> filterResultsByWktPolygon(List<NycGeocoderResult> input) {
     if(_wktFilterPolygon == null) {
       return input;
     }

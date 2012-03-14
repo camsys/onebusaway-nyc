@@ -20,6 +20,7 @@ public interface RealtimeService {
   
   public SiriXmlSerializer getSiriXmlSerializer();
   
+  
   public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
       String directionId, int maximumOnwardCalls);
     
@@ -29,6 +30,7 @@ public interface RealtimeService {
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
       int maximumOnwardCalls);  
 
+  
   // FIXME TODO: refactor these to receive a passed in collection of MonitoredStopVisits or VehicleActivities?
   public List<ServiceAlertBean> getServiceAlertsForRoute(String routeId);
 
