@@ -22,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.EdgeLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunTransitionLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -30,6 +31,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+import org.onebusaway.realtime.api.EVehiclePhase;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
@@ -55,6 +57,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
   private BlocksFromObservationService _blocksFromObservationService;
 
+  private BlockStateTransitionModel _blockStateTransitionModel;
+
   /**
    * Distance, in meters, that a bus has to travel to be considered "in motion"
    */
@@ -71,6 +75,12 @@ public class MotionModelImpl implements MotionModel<Observation> {
       BlocksFromObservationService blocksFromObservationService) {
     _blocksFromObservationService = blocksFromObservationService;
   }
+  
+  @Autowired
+  public void setBlocksStateTransitionModel(
+      BlockStateTransitionModel blockStateTransitionModel) {
+    _blockStateTransitionModel = blockStateTransitionModel;
+  }
 
   static public void setMotionThreshold(double motionThreshold) {
     _motionThreshold = motionThreshold;
@@ -82,6 +92,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
   EdgeLikelihood edgeLikelihood = new EdgeLikelihood();
   ScheduleLikelihood schedLikelihood = new ScheduleLikelihood();
+  RunTransitionLikelihood transitionLikelihood = new RunTransitionLikelihood();
 
   private JourneyStateTransitionModel _journeyStateTransitionModel;
 
@@ -109,7 +120,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     final BlockState parentBlockState = parentState.getBlockState();
     final Set<BlockStateObservation> transitions = Sets.newHashSet();
-    if (parentBlockState == null) {
+    boolean allowBlockTransition = _blockStateTransitionModel.allowBlockTransition(parentState, obs);
+    if (parentBlockState == null || allowBlockTransition) {
       /*
        * These are all the snapped and DSC/run blocks
        */
@@ -151,43 +163,37 @@ public class MotionModelImpl implements MotionModel<Observation> {
       for (final BlockStateObservation proposalEdge : transitions) {
 
         final SensorModelResult transProb = new SensorModelResult("transition");
-        /*
-         * Block/Trip transition
-         */
-        // TODO make this happen
-        // transProb.addResultAsAnd(BlockTransition.likelihood(null, context));
-        if (parentBlockState != null
-            && !parentBlockState.getBlockInstance().equals(
-                proposalEdge.getBlockState().getBlockInstance())) {
-          transProb.addResultAsAnd("no block transitions", 0.0);
-          continue;
-        }
-
         final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
         final boolean vehicleNotMoved = inMotionSample < vehicleHasNotMovedProb;
 
+        final boolean runChanged = hasRunChanged(parentState.getBlockStateObservation(), proposalEdge);
         BlockStateObservation newEdge;
         if (proposalEdge != null) {
-          if (JourneyStateTransitionModel.isLocationActive(proposalEdge.getBlockState())) {
-            if (parentBlockState != null) {
-              /*
-               * We sample the a schedule propagation when there
-               * are no snapped states, otherwise, we sample "true' 
-               * locations from the GPS's error range. 
-               */
-              if (!proposalEdge.isSnapped()) {
-                newEdge = _blockStateSamplingStrategy.samplePropagatedScheduleState(
-                    parentState.getBlockStateObservation(), null, obs);
-              } else {
-                newEdge = _blockStateSamplingStrategy.samplePropagatedDistanceState(vehicleNotMoved,
-                    obs, proposalEdge);
-              }
+          if (parentBlockState != null) {
+            /*
+             * We sample the a schedule propagation when there
+             * are no snapped states, otherwise, we sample "true' 
+             * locations from the GPS's error range. 
+             */
+            if (proposalEdge.isSnapped()) {
+              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
+            } else if (runChanged) {
+              newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
+                  proposalEdge.getBlockState().getBlockInstance(), obs);
             } else {
-              newEdge = _blockStateSamplingStrategy.samplePropagatedDistanceState(vehicleNotMoved,
-                  obs, proposalEdge);
+//              newEdge = _blockStateSamplingStrategy.sampleTransitionScheduleDev(
+//                  parentState.getBlockStateObservation(), obs);
+              newEdge = _blockStateSamplingStrategy.sampleTransitionDistanceState(
+                  parentState.getBlockStateObservation(), obs, vehicleNotMoved, 
+                  parentState.getJourneyState().getPhase());
             }
           } else {
-            newEdge = proposalEdge;
+            if (proposalEdge.isSnapped()) {
+              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
+            } else {
+              newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
+                  proposalEdge.getBlockState().getBlockInstance(), obs);
+            }
           }
         } else {
           newEdge = null;
@@ -207,13 +213,18 @@ public class MotionModelImpl implements MotionModel<Observation> {
          * Schedule Dev
          */
         transProb.addResultAsAnd(schedLikelihood.likelihood(null, context));
+        
+        /*
+         * Transition
+         */
+        transProb.addResultAsAnd(transitionLikelihood.likelihood(null, context));
 
         transitionProb.put(transProb.getProbability(), newState);
       }
 
       if (transitionProb.canSample()) {
-        results.add(new Particle(timestamp, parent.getElement(), 1.0,
-            transitionProb.sample()));
+        VehicleState sampledState = transitionProb.sample();
+        results.add(new Particle(timestamp, parent.getElement(), 1.0, sampledState));
       } else {
         final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
         final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
@@ -246,6 +257,26 @@ public class MotionModelImpl implements MotionModel<Observation> {
   // }
   //
   // }
+
+  public static boolean hasRunChanged(BlockStateObservation parentEdge,
+      BlockStateObservation proposalEdge) {
+    if (proposalEdge != null) {
+      if (parentEdge != null) {
+        if (!proposalEdge.getBlockState().getRunId()
+            .equals(parentEdge.getBlockState().getRunId())) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return true;
+      }
+    } else if (parentEdge != null){
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   @Override
   public void move(Particle parent, double timestamp, double timeElapsed,

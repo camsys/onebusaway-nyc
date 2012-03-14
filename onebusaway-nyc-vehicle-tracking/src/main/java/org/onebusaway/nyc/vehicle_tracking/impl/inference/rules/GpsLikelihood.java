@@ -51,10 +51,10 @@ public class GpsLikelihood implements SensorModelRule {
 
   private BlockStateService _blockStateService;
 
-  final static public double inProgressGpsStdDev = 50.0;
+  final static public double gpsStdDev = 35.0;
 
-  private static final double deadheadBeforeGpsStdDevScale = 1.0;
-  final private double inProgressGpsMean = 10.0;
+  private static final double deadheadBeforeGpsStdDev = 100.0;
+  final private double inProgressGpsMean = 3.0;
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
@@ -73,12 +73,14 @@ public class GpsLikelihood implements SensorModelRule {
     SensorModelResult result = new SensorModelResult("pGps", 1.0);
     
     if (blockState == null) {
-      final double pGps = FoldedNormalDist.density(inProgressGpsMean, inProgressGpsStdDev, inProgressGpsMean);
-      result.addResultAsAnd("gps(no state)", 0.5*pGps);
+      final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.01);
+      final double pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, x);
+      result.addResultAsAnd("gps(no state)", pGps);
       
     } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
-      final double pGps = FoldedNormalDist.density(inProgressGpsMean, inProgressGpsStdDev, inProgressGpsMean);
-      result.addResultAsAnd("gps(deadhead-after)", 0.5*pGps);
+      final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.01);
+      final double pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, x);
+      result.addResultAsAnd("gps(deadhead-after)", pGps);
       
     } else if (EVehiclePhase.AT_BASE == phase) {
       
@@ -90,28 +92,35 @@ public class GpsLikelihood implements SensorModelRule {
       final ProjectedPoint p2 = obs.getPoint();
       final double d = SphericalGeometryLibrary.distance(p1.getLat(),
           p1.getLon(), p2.getLat(), p2.getLon());
-      final double pGps = FoldedNormalDist.density(inProgressGpsMean, inProgressGpsStdDev, d);
+      final double pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
+      result.addResult("d", d);
       result.addResultAsAnd("gps(in-progress)", pGps);
       
     } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
       
-      final double pGps = computeBeforeGpsProb(blockState, obs);
+      final double pGps = computeBeforeGpsProb(blockState.getBlockLocation().getLocation(), obs);
       result.addResultAsAnd("gps(deadhead-before)", pGps);
       
     } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
       
-      final double pGps = computeBeforeGpsProb(blockState, obs);
+      final double pGps = computeBeforeGpsProb(blockState.getBlockLocation().getLocation(), obs);
       result.addResultAsAnd("gps(layover-before)", pGps);
       
     } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
       
-      final CoordinatePoint pNextStop = blockState.getBlockLocation().getNextStop()
-          .getStopTime().getStop().getStopLocation();
-      final double expectedDistFromStop = blockState.getBlockLocation().getNextStop().getDistanceAlongBlock()
-          - blockState.getBlockLocation().getDistanceAlongBlock();
-      final CoordinatePoint pNow = obs.getLocation();
-      final double obsDistToStop = SphericalGeometryLibrary.distance(pNow, pNextStop);
-      final double pGps = FoldedNormalDist.density(expectedDistFromStop, inProgressGpsStdDev, obsDistToStop);
+//      final CoordinatePoint pNextStop = blockState.getBlockLocation().getNextStop()
+//          .getStopTime().getStop().getStopLocation();
+//      final double expectedDistFromStop = blockState.getBlockLocation().getNextStop().getDistanceAlongBlock()
+//          - blockState.getBlockLocation().getDistanceAlongBlock();
+//      final CoordinatePoint pNow = obs.getLocation();
+//      final double obsDistToStop = SphericalGeometryLibrary.distance(pNow, pNextStop);
+//      final double pGps = FoldedNormalDist.density(expectedDistFromStop, deadheadBeforeGpsStdDev, 
+//          obsDistToStop);
+      result.addResult("nextStop=" + blockState.getBlockLocation().getNextStop()
+          .getStopTime().getStop().toString(), 0.0);
+//      result.addResult("expectedDistFromStop", expectedDistFromStop);
+//      result.addResult("obsDistToStop", obsDistToStop);
+      final double pGps = computeBeforeGpsProb(blockState.getBlockLocation().getLocation(), obs);
       result.addResultAsAnd("gps(deadhead-during)", pGps);
       
     } else if (EVehiclePhase.LAYOVER_DURING == phase) {
@@ -120,7 +129,7 @@ public class GpsLikelihood implements SensorModelRule {
       final ProjectedPoint p2 = obs.getPoint();
       final double d = SphericalGeometryLibrary.distance(p1.getLat(),
           p1.getLon(), p2.getLat(), p2.getLon());
-      final double pGps = FoldedNormalDist.density(inProgressGpsMean, inProgressGpsStdDev, d);
+      final double pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
       result.addResultAsAnd("gps(layover-during)", pGps);
       
     }
@@ -128,25 +137,23 @@ public class GpsLikelihood implements SensorModelRule {
     return result;
   }
   
-  private double computeBeforeGpsProb(BlockState blockState, Observation obs) {
+  private double computeBeforeGpsProb(CoordinatePoint pDest, Observation obs) {
     /*
      * Check if we're inching toward the start
      */
-    final CoordinatePoint pDest = blockState.getBlockLocation().getLocation();
     final CoordinatePoint pNow = obs.getLocation();
     
     final double pGps;
     if (obs.getPreviousObservation() != null) {
       final CoordinatePoint pLast= obs.getPreviousObservation().getLocation();
+      final double distMoved = SphericalGeometryLibrary.distance(pNow, pLast);
       
       final double distLast = SphericalGeometryLibrary.distance(pDest, pLast);
       final double distNow = SphericalGeometryLibrary.distance(pDest, pNow);
-      pGps = FoldedNormalDist.density(0.0, 
-          distLast * deadheadBeforeGpsStdDevScale, distLast - distNow);
+      pGps = NormalDist.density(distMoved, deadheadBeforeGpsStdDev, distLast - distNow);
     } else {
-      final double distNow = SphericalGeometryLibrary.distance(pDest, pNow);
-      pGps = FoldedNormalDist.density(0.0, 
-          distNow * deadheadBeforeGpsStdDevScale, distNow);
+      final double x = FoldedNormalDist.inverseF(0.0, deadheadBeforeGpsStdDev, 0.01);
+      pGps = FoldedNormalDist.density(0.0, deadheadBeforeGpsStdDev, x);
     }
     
     return pGps;

@@ -72,7 +72,7 @@
                         href="vehicle-location-simulation!step.do?taskId=${s.id}">step</a></td>
                     <td>
                     <form action="vehicle-location-simulation!step-to.do">
-                    <input id="stepRecordIndex" type="text" name="recordIndex" size="20"/>
+                    <input id="stepRecordIndex" type="text" name="recordIndex" size="60"/>
                     <input type="hidden" name="taskId" value="${s.id}"/>
                     <input type="submit" value="Go"/>
                     </form>

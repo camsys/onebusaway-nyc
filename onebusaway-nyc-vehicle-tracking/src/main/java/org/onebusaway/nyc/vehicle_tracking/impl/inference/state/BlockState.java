@@ -77,9 +77,12 @@ public final class BlockState implements Comparable<BlockState> {
         blockLocation.getActiveTrip().getTrip().getId() : null;;
     Boolean runTripMatches = (tripId != null && runTrip != null) ? tripId.equals(runTrip.getTripEntry().getId())
             : null;
+    int mins = blockLocation.getScheduledTime()/60;
     return Objects.toStringHelper("BlockState")
         .add("blockId", blockInstance.getBlock().getBlock().getId())
-        .add("scheduledTime", blockLocation.getScheduledTime())
+        .add("scheduledTime", Integer.toString(mins/60) 
+            + ":" + Integer.toString(mins % 60) 
+            + " (" + Integer.toString(blockLocation.getScheduledTime()) + ")")
         .add("distanceAlongBlock", blockLocation.getDistanceAlongBlock())
         .add("tripId", tripId)
         .add("dsc", destinationSignCode)

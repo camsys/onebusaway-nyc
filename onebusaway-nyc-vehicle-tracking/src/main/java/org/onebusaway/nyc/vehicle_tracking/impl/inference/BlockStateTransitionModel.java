@@ -176,8 +176,7 @@ public class BlockStateTransitionModel {
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
     final Set<BlockStateObservation> potentialTransStates = Sets.newHashSet();
 
-    final boolean allowBlockChange = allowBlockTransition(parentState,
-        motionState, journeyState, obs);
+    final boolean allowBlockChange = allowBlockTransition(parentState, obs);
 
     if (parentBlockState != null) {
       advanceAlongBlock(potentialTransStates, journeyState.getPhase(),
@@ -320,8 +319,7 @@ public class BlockStateTransitionModel {
    * Private Methods
    ****/
 
-  private boolean allowBlockTransition(VehicleState parentState,
-      MotionState motionState, JourneyState journeyState, Observation obs) {
+  public boolean allowBlockTransition(VehicleState parentState, Observation obs) {
 
     final Observation prevObs = obs.getPreviousObservation();
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();

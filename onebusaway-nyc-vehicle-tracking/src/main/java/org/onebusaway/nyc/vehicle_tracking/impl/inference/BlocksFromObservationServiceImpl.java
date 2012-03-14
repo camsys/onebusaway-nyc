@@ -278,9 +278,9 @@ public class BlocksFromObservationServiceImpl implements
       potentialBlockStates = Sets.newHashSet(Iterables.concat(inProgressStates, notInProgressStates));
     }
     
-    if (potentialBlockStates.isEmpty() 
-        || inProgressStates == null
-        || inProgressStates.isEmpty())
+    if (inProgressStates == null 
+        || inProgressStates.isEmpty() 
+        || potentialBlockStates.isEmpty())
       potentialBlockStates.add(null);
     
     return potentialBlockStates;
@@ -313,7 +313,7 @@ public class BlocksFromObservationServiceImpl implements
      */
     final Set<BlockInstance> notSnappedBlocks = Sets.newHashSet();
     determinePotentialBlocksForObservation(observation, notSnappedBlocks);
-    notSnappedBlocks.removeAll(snappedBlocks);
+//    notSnappedBlocks.removeAll(snappedBlocks);
     for (final BlockInstance thisBIS : notSnappedBlocks) {
       final Set<BlockStateObservation> states = new HashSet<BlockStateObservation>();
       try {

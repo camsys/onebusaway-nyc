@@ -198,6 +198,12 @@ public class ParticleFilter<OBS> {
     runSingleTimeStep(timestamp, observation, !firstTime);
     _timeOfLastUpdate = timestamp;
   }
+  
+  private void resample(double timestamp, OBS observation) 
+      throws ParticleFilterException {
+    reset();
+    updateFilter(timestamp, observation);
+  }
 
   /*
    * Returns an ArrayList, each entry of which is a Particle. This allows

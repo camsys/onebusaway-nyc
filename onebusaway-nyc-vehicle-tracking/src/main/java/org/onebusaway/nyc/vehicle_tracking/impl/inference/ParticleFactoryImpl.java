@@ -39,6 +39,7 @@ import umontreal.iro.lecuyer.rng.MRG32k3a;
 import umontreal.iro.lecuyer.rng.RandomStream;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -111,13 +112,27 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     }
   }
 
+  static private Random localRandom = new Random();
+  
   synchronized public static void setSeed(long seed) {
     if (!ParticleFilter.getTestingEnabled()) {
       threadLocalRng = new LocalRandom(seed);
     } else {
       threadLocalRng = new LocalRandomDummy(seed);
-
     }
+    localRandom.setSeed(seed);
+  }
+  
+  public static Random getLocalRng() {
+    return localRandom;
+  }
+  
+  public static ThreadLocal<RandomStream> getThreadLocalRng() {
+    return threadLocalRng;
+  }
+
+  public static int getInitialNumberOfParticles() {
+    return _initialNumberOfParticles;
   }
 
   @Autowired
@@ -170,18 +185,21 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
            * Sample a distance along the block using the snapped observation
            * results as priors.
            */
-          if (blockState.isSnapped()
-              || JourneyStateTransitionModel.isLocationActive(blockState.getBlockState())) {
-            sampledBlockState = _blockStateSamplingStrategy.samplePropagatedDistanceState(
-                vehicleNotMoved, obs, blockState);
+          if (blockState.isSnapped()) {
+            sampledBlockState = _blockStateSamplingStrategy.sampleGpsObservationState(blockState, 
+                obs);
+//          } else if (JourneyStateTransitionModel.isLocationActive(blockState.getBlockState())) {
+//            sampledBlockState = _blockStateSamplingStrategy.sampleTransitionDistanceState(blockState, 
+//                obs, vehicleNotMoved);
           } else {
-            sampledBlockState = blockState;
+            sampledBlockState = _blockStateSamplingStrategy.samplePriorScheduleState(
+                blockState.getBlockState().getBlockInstance(), obs);
           }
         } else {
           sampledBlockState = null;
         }
         final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
-            blockState, obs, vehicleNotMoved);
+            sampledBlockState, obs, vehicleNotMoved);
   
         final VehicleState state = vehicleState(motionState, sampledBlockState,
             journeyState, obs);
@@ -226,12 +244,5 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         obs);
   }
 
-  public static ThreadLocal<RandomStream> getThreadLocalRng() {
-    return threadLocalRng;
-  }
-
-  public static int getInitialNumberOfParticles() {
-    return _initialNumberOfParticles;
-  }
 
 }

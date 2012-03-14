@@ -278,7 +278,7 @@ public class JourneyStateTransitionModel {
           return JourneyState.deadheadBefore(null); 
         }
       } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
-          return JourneyState.deadheadAfter(); 
+        return JourneyState.deadheadAfter(); 
       } else {
         /*
          * In the middle of a block.
