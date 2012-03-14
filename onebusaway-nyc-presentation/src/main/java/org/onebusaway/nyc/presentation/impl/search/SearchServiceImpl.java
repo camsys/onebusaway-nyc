@@ -67,7 +67,7 @@ public class SearchServiceImpl implements SearchService {
   @PostConstruct
   public void setup() {
     Thread bootstrapThread = new BootstrapThread();
-    bootstrapThread.run();
+    bootstrapThread.start();
   }
   
   @Override
