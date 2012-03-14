@@ -16,15 +16,19 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import java.util.Date;
+import java.util.TimeZone;
 
 public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
+  private static final int COUNT_INTERVAL = 6000;
 
   @Autowired
   private CcLocationReportDao _dao;
 
-  private String _zoneOffset;
+  private String _zoneOffset = null;
+  private String _systemTimeZone = null;
+  private int count = 0;
 
   @Override
   // this method can't throw exceptions or it will stop the queue
@@ -33,6 +37,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
     RealtimeEnvelope envelope = null;
     try {    
 	envelope = deserializeMessage(contents);
+	count++;
 
 	if (envelope == null || envelope.getCcLocationReport() == null) {
 	    _log.error("Message discarded, probably corrupted, contents= " + contents);
@@ -41,9 +46,14 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 	    return false;
 	}
 
-      CcLocationReportRecord record = new CcLocationReportRecord(envelope, contents, _zoneOffset);
+	CcLocationReportRecord record = new CcLocationReportRecord(envelope, contents, getZoneOffset());
       if (record != null) {
         _dao.saveOrUpdateReport(record);
+      }
+      // re-calculate zoneOffset periodically
+      if (count > COUNT_INTERVAL) {
+	  _zoneOffset = null;
+	  count = 0;
       }
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);
@@ -63,8 +73,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   @PostConstruct
   public void setup() {
     super.setup();
-    _zoneOffset = 
-	_configurationService.getConfigurationValueAsString("tds.zoneOffset", "-05:00");
+    _systemTimeZone =  _configurationService.getConfigurationValueAsString("archive.systemTimeZone", "America/New_York");
   }
   
   @PreDestroy 
@@ -72,6 +81,41 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
     super.destroy();
   }
 
+  /**
+   * Return the offset in an tz-offset string ("-04:00" or "-5:00") 
+   * based on the daylight savings rules in effect during the given date.
+   * This method assumes timezone is a standard hour boundary away from GMT.
+   *
+   * Package private for unit tests.
+   * @param date when to consider the zoneoffset.  Now makes the most sense, 
+   * but can be historical/future for unit testing
+   * @param systemTimeZone the java string representing a timezone, such as
+   * "America/New_York"
+   */
+  String getZoneOffset(Date date, String systemTimeZone) {
+    if (date == null) return null;
+    if (_zoneOffset == null) {
+      long millisecondOffset;
+      if (systemTimeZone != null) {
+	 millisecondOffset = TimeZone.getTimeZone(systemTimeZone).getOffset(date.getTime());
+      } else {
+	millisecondOffset = TimeZone.getDefault().getOffset(date.getTime());
+      }
+      String plusOrMinus = (millisecondOffset <= 0 ? "-" : "+");
+      if (millisecondOffset == 0) {
+	_zoneOffset = plusOrMinus + "00:00";
+      } else {
+	// format 1st arg 0-padded to a width of 2
+	_zoneOffset = plusOrMinus + String.format("%1$02d", Math.abs(millisecondOffset/(1000*60*60))) + ":00";
+      }
+    }
+    return _zoneOffset;
+
+  }
+
+  private String getZoneOffset() {
+    return getZoneOffset(new Date(), _systemTimeZone);
+  }
 
 
 }
