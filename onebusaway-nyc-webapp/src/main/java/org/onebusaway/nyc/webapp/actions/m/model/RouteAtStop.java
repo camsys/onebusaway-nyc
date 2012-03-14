@@ -5,7 +5,7 @@ import org.onebusaway.transit_data.model.RouteBean;
 import java.util.List;
 
 /**
- * Route available at a stop, the top being the top-level result.
+ * Route available at a stop, the stop being the top-level result.
  * @author jmaki
  *
  */

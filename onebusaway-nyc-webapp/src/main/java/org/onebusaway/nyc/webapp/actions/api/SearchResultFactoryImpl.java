@@ -146,10 +146,10 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     List<SearchResult> routesNearby = null;
     
     if(geocodeResult.isRegion()) {
-       routesNearby = _searchService.getRouteResultsStoppingWithinRegion(geocodeResult.getBounds(), this);
+       routesNearby = _searchService.findRoutesStoppingWithinRegion(geocodeResult.getBounds(), this).getMatches();
     } else {
-      routesNearby = _searchService.getRouteResultsStoppingNearPoint(geocodeResult.getLatitude(), 
-          geocodeResult.getLongitude(), this);
+      routesNearby = _searchService.findRoutesStoppingNearPoint(geocodeResult.getLatitude(), 
+          geocodeResult.getLongitude(), this).getMatches();
     }
     
     return new GeocodeResult(geocodeResult, routesNearby);   

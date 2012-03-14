@@ -82,8 +82,12 @@
 
 .popup .service-alert {
 	color: #d12020;
-	margin-bottom: 3px;  
-	width: 400px;
+	margin-bottom: 3px;
+	width: 400px;  
+}
+
+.popup .service-alert li {
+	margin-bottom: 6px;
 }
 
 .popup .service-alert.title {

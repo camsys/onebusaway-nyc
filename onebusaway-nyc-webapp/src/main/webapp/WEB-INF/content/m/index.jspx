@@ -78,13 +78,8 @@
 		<s:if test="%{results.suggestions.size&gt;0}">
 			<!-- route search with no direct matches -->
 			<s:if test="results.resultType.equals('RouteResult')">
-				<c:import url="routePicker.jspx"/>
+				<c:import url="routeSuggestionPicker.jspx"/>
 			</s:if>
-
-			<!-- a region location (e.g. 10009) -->
-			<s:elseif test="results.resultType.equals('RouteInRegionResult')">
-					<c:import url="routePicker.jspx"/>
-			</s:elseif>
 
 			<!-- amigbuous address -->
 			<s:elseif test="results.resultType.equals('GeocodeResult')">
@@ -96,6 +91,9 @@
 			<s:if test="results.resultType.equals('RouteResult')">
 				<c:import url="routeResult.jspx"/>
 			</s:if>
+			<s:elseif test="results.resultType.equals('RouteInRegionResult')">
+					<c:import url="routeInRegionPicker.jspx"/>
+			</s:elseif>
 			<s:elseif test="results.resultType.equals('StopResult')">
 				<c:import url="stopResult.jspx"/>
 			</s:elseif>

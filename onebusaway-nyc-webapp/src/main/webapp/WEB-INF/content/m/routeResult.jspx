@@ -24,43 +24,49 @@
 	<div>
 		<p>
 			<strong>
-				Routes:
+				Jump To:
 			</strong>
 		</p>
 
 		<s:iterator value="directions">
 			<s:url var="url" value="" anchor="%{directionId}"></s:url>
 			<a href="${url}">
-				<s:property value="shortName" />&amp;nbsp;<s:property value="destination" />
+				<s:property value="shortName" />&amp;nbsp;to&amp;nbsp;<s:property value="destination" />
 			</a>
 			<br />
 		</s:iterator>
 	</div>
-
-	<s:iterator value="directions">
+		<s:iterator value="directions">
 		<div>
 			<p>
 				<a name="${directionId}"><!--prevent JSP minimization--></a>
 				<strong>
-					<s:property value="shortName" />&amp;nbsp;<s:property value="destination" />
+					<s:property value="shortName" />&amp;nbsp;to&amp;nbsp;<s:property value="destination" />
 				</strong> 
 				<br />
 			</p>
 
 			<c:choose>
-				<c:when test="${!hasUpcomingScheduledService}">
+				<c:when test="${hasUpcomingScheduledService==false}">
 					<p class="noService">
 						No scheduled service for the <s:property value="shortName" /> to <s:property value="destination" /> at this time.
 					</p>
 				</c:when>
 			</c:choose>
 			
-			<ul>
-				<s:iterator value="serviceAlerts">
-					<li class="alert"><s:property value="value" escape="false"/></li>
-				</s:iterator>
-			</ul>
-
+			<s:if test="%{serviceAlerts.size&gt;0}">
+			<div class="alerts">
+				<p>
+					<strong>Service Change For Route:</strong>
+				</p>
+				<ul class="alerts">
+					<s:iterator value="serviceAlerts">
+						<li><s:property value="value" escape="false"/></li>
+					</s:iterator>
+				</ul>
+			</div>
+			</s:if>
+						
 			<ul>
 				<s:iterator value="stops">
 					<li>

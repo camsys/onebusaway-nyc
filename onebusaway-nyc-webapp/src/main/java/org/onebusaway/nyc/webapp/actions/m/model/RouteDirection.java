@@ -6,7 +6,7 @@ import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBea
 import java.util.List;
 
 /**
- * Route destination--without stops.
+ * Route destination
  * @author jmaki
  *
  */

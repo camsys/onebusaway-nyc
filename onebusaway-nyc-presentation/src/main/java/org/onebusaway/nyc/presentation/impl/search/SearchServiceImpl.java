@@ -7,7 +7,6 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
-import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
@@ -67,7 +66,7 @@ public class SearchServiceImpl implements SearchService {
   }
   
   @Override
-  public List<SearchResult> getStopResultsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
+  public SearchResultCollection findStopsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_STOPS);
 
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -77,16 +76,17 @@ public class SearchServiceImpl implements SearchService {
     
     StopsBean stops = _transitDataService.getStops(queryBean);
 
-    List<SearchResult> results = new ArrayList<SearchResult>();
+    SearchResultCollection results = new SearchResultCollection();
+
     for(StopBean stop : stops.getStops()) {
-      results.add(resultFactory.getStopResult(stop));
+      results.addMatch(resultFactory.getStopResult(stop));
     }
     
     return results;    
   }
 
   @Override
-  public List<SearchResult> getRouteResultsStoppingWithinRegion(CoordinateBounds bounds, SearchResultFactory resultFactory) {
+  public SearchResultCollection findRoutesStoppingWithinRegion(CoordinateBounds bounds, SearchResultFactory resultFactory) {
     SearchQueryBean queryBean = new SearchQueryBean();
     queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
     queryBean.setBounds(bounds);
@@ -94,16 +94,17 @@ public class SearchServiceImpl implements SearchService {
     
     RoutesBean routes = _transitDataService.getRoutes(queryBean);
 
-    List<SearchResult> results = new ArrayList<SearchResult>();
+    SearchResultCollection results = new SearchResultCollection();
+
     for(RouteBean route : routes.getRoutes()) {
-      results.add(resultFactory.getRouteResultForRegion(route));
+      results.addMatch(resultFactory.getRouteResultForRegion(route));
     }
     
     return results;
   }
   
   @Override
-  public List<SearchResult> getRouteResultsStoppingNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
+  public SearchResultCollection findRoutesStoppingNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_ROUTES);
 
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -113,9 +114,10 @@ public class SearchServiceImpl implements SearchService {
     
     RoutesBean routes = _transitDataService.getRoutes(queryBean);
 
-    List<SearchResult> results = new ArrayList<SearchResult>();
+    SearchResultCollection results = new SearchResultCollection();
+
     for(RouteBean route : routes.getRoutes()) {
-      results.add(resultFactory.getRouteResult(route));
+      results.addMatch(resultFactory.getRouteResult(route));
     }
     
     return results;

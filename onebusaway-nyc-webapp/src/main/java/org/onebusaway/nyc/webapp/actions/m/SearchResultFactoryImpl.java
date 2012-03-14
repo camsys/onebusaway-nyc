@@ -171,7 +171,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           // arrivals in this direction
           List<String> arrivalsForRouteAndDirection = getDistanceAwayStringsForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
           
-          directions.add(new RouteDirection(stopGroupBean, null, null, serviceAlertDescriptions, arrivalsForRouteAndDirection));
+          // service in this direction
+          Boolean hasUpcomingScheduledService = 
+              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+
+          directions.add(new RouteDirection(stopGroupBean, null, hasUpcomingScheduledService, 
+              serviceAlertDescriptions, arrivalsForRouteAndDirection));
         }
       }
 
@@ -212,7 +217,9 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         continue;
       }
 
-      result.add(getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
+      if(result.size() <= 3) {
+        result.add(getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
+      }
     }
     
     return result;

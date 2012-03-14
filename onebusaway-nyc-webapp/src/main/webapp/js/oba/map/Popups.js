@@ -110,14 +110,14 @@ OBA.Popups = (function() {
                 jQuery.each(r.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
                     var situationId = ptSituationElement.SituationNumber;
                     if (situationRefs == null || situationIds[situationId] === true) {
-                        html += ptSituationElement.Description.replace(/\n/g, "<br/>");
+                        html += '<li>' + ptSituationElement.Description.replace(/\n/g, "<br/>") + '</li>';
                     }
                 });
             }
         }
         
         if (html !== '') {
-            html = '<p class="service-alert title">Service Change:</p><p class="service-alert">' + html + '</p>';
+            html = '<p class="service-alert title">Service Change:</p><ul class="service-alert">' + html + '</ul>';
         }
         
         return html;
@@ -306,7 +306,7 @@ OBA.Popups = (function() {
 				html += '</li>';
 
 				jQuery.each(mvjs, function(_, monitoredVehicleJourney) {
-					if(_ >= 2) {
+					if(_ >= 3) {
 						return false;
 					}
 
