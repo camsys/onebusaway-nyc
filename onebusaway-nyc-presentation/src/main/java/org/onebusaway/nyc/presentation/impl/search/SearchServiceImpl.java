@@ -52,8 +52,7 @@ public class SearchServiceImpl implements SearchService {
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
 
   @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH )
-  @PostConstruct
-  public void setup() {
+  public void refreshCaches() {
     _routeShortNameToIdMap.clear();
     
     for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
@@ -62,7 +61,13 @@ public class SearchServiceImpl implements SearchService {
         _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
         _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
       }
-    }
+    }    
+  }
+  
+  @PostConstruct
+  public void setup() {
+    Thread bootstrapThread = new BootstrapThread();
+    bootstrapThread.run();
   }
   
   @Override
@@ -227,6 +232,16 @@ public class SearchServiceImpl implements SearchService {
         _results.addSuggestion(resultFactory.getGeocoderResult(result));
       }
     }
+  }
+  
+  // a thread that can block for network IO while tomcat starts
+  private class BootstrapThread extends Thread {
+
+    @Override
+    public void run() {     
+      refreshCaches();
+    }   
+
   }
   
 }

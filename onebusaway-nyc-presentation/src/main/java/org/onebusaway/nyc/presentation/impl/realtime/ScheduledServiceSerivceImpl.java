@@ -75,6 +75,7 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
   }
   
   // FIXME: there's got to be a better way to do this--move to TDF for access to the graphdao? 
+  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH) 
   private void rebuildServiceCache() {
     _log.info("Rebuilding service cache for scheduled service service...");
     
@@ -112,18 +113,26 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
     }
   }
   
-  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH) 
-  public void refresh() {
-    rebuildServiceCache();    
-  }
-  
   @PostConstruct
   protected void setup() throws Exception {
+    Thread bootstrapThread = new BootstrapThread();
+    bootstrapThread.run();
+
     if(_taskScheduler != null) {
       UpdateThread updateThread = new UpdateThread();
       _taskScheduler.schedule(updateThread, updateThread);
     }
   } 
+  
+  // a thread that can block for network IO while tomcat starts
+  private class BootstrapThread extends Thread {
+
+    @Override
+    public void run() {     
+      rebuildServiceCache();
+    }   
+
+  }
   
   private class UpdateThread extends TimerTask implements Trigger {
 
@@ -134,18 +143,9 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
     
     @Override
     public Date nextExecutionTime(TriggerContext arg0) {
-      // hack: run 2 m after startup to give tomcat time to start before running...
       Date lastTime = arg0.lastScheduledExecutionTime();
       if(lastTime == null) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(new Date());
-        calendar.set(Calendar.MILLISECOND, 0);
-        calendar.set(Calendar.SECOND, 0);
-        
-        int minute = calendar.get(Calendar.MINUTE);
-        calendar.set(Calendar.MINUTE, minute + 2);
-        
-        return calendar.getTime();
+        return new Date();
       }
 
       Calendar calendar = new GregorianCalendar();

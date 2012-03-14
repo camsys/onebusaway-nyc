@@ -26,7 +26,7 @@
 		</strong>
 	</p>
 	
-	<s:iterator value="results.suggestions" status="searchResultsStatus">
+	<s:iterator value="results.suggestions">
 		<p>
 			<s:url var="url" namespace="/m" action="index">
 				<s:param name="q">
@@ -35,7 +35,6 @@
 				<s:param name="l"><s:property value="l" /></s:param>
 			</s:url>
 
-			<c:out value="${searchResultsStatus.count}" />) 
 			<a href="${url}">
 				<s:property value="formattedAddress" />
 			</a> 

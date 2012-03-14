@@ -217,7 +217,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         continue;
       }
 
-      if(result.size() <= 3) {
+      if(result.size() < 3) {
         result.add(getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
       }
     }
