@@ -389,7 +389,7 @@ OBA.Sidebar = function () {
 			}
 
 			// direct matches
-			if(matches.length == 1) {
+			if(matches.length === 1) {
 				switch(resultType) {
 					case "GeocodeResult":
 						// result is a region

@@ -2,6 +2,7 @@ package org.onebusaway.nyc.webapp.actions.m.model;
 
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import java.util.List;
 
@@ -25,6 +26,10 @@ public class StopResult implements SearchResult {
     return stop.getId();
   }
   
+  public String getIdWithoutAgency() {
+    return AgencyAndIdLibrary.convertFromString(getId()).getId();
+  }
+
   public String getName() {
     return stop.getName();
   }

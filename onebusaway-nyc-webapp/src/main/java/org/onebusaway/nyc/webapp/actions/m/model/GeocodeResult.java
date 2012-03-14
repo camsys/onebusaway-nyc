@@ -4,8 +4,6 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 
-import java.util.List;
-
 /**
  * Ambiguous address top-level search result.
  * @author jmaki
@@ -15,13 +13,10 @@ public class GeocodeResult implements SearchResult {
 
   private NycGeocoderResult result;
   
-  private List<SearchResult> nearbyRoutes;
-  
-  public GeocodeResult(NycGeocoderResult result, List<SearchResult> nearbyRoutes) {
+  public GeocodeResult(NycGeocoderResult result) {
     this.result = result;
-    this.nearbyRoutes = nearbyRoutes;
   }
-  
+
   public String getFormattedAddress() {
     return result.getFormattedAddress();
   }
@@ -44,9 +39,5 @@ public class GeocodeResult implements SearchResult {
   
   public CoordinateBounds getBounds() {
     return result.getBounds();
-  }
-  
-  public List<SearchResult> getNearbyRoutes() {
-    return nearbyRoutes;
   }
 }

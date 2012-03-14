@@ -16,12 +16,15 @@
 package org.onebusaway.nyc.webapp.actions.m;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
+import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.lang.xwork.StringEscapeUtils;
@@ -29,6 +32,7 @@ import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,17 +83,52 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if(_q == null)
       return SUCCESS;
 
+    SearchResultFactory factory = new SearchResultFactoryImpl(_transitDataService,
+        _scheduledServiceService, _realtimeService, _configurationService);
+    
     // empty query with location means search for current location
     if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT)))) {
-      // location search
-      
+      List<SearchResult> stopsNearLocation = 
+          _searchService.getStopResultsNearPoint(_location.getLat(), _location.getLon(), factory);
+
+      for(SearchResult stopNearLocation : stopsNearLocation) {
+        _results.addMatch(stopNearLocation);
+      }          
     } else {
       if(_q.isEmpty()) {
         return SUCCESS;
       }
 
-      _results = _searchService.getSearchResults(_q, new SearchResultFactoryImpl(_transitDataService, 
-          _searchService, _scheduledServiceService, _realtimeService, _configurationService));
+      _results = _searchService.getSearchResults(_q, factory);
+
+      // do a bit of a hack with location matches--since we have no map to show locations on,
+      // find things that are actionable near/within/etc. the result
+      if(_results.getMatches().size() == 1 && _results.getResultType().equals("GeocodeResult")) {
+        GeocodeResult result = (GeocodeResult)_results.getMatches().get(0);
+        
+        SearchResultCollection newResults = new SearchResultCollection();
+        
+        // if we got a region back, list routes that pass through it
+        if(result.getIsRegion()) {
+          List<SearchResult> routesInRegion = 
+              _searchService.getRouteResultsStoppingWithinRegion(result.getBounds(), factory);
+
+          for(SearchResult routeInRegionResult : routesInRegion) {
+            newResults.addSuggestion(routeInRegionResult);
+          }
+          
+        // if we got a location (point) back, find stops nearby
+        } else {
+          List<SearchResult> stopsNearLocation = 
+              _searchService.getStopResultsNearPoint(result.getLatitude(), result.getLongitude(), factory);
+
+          for(SearchResult stopNearLocation : stopsNearLocation) {
+            newResults.addMatch(stopNearLocation);
+          }          
+        }  
+        
+        _results = newResults;
+      }
     }
 
     return SUCCESS;
@@ -111,55 +150,44 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       // referrer
       HttpServletRequest request = ServletActionContext.getRequest();      
       String referer = request.getHeader("referer");	
-
       if (referer == null || referer.isEmpty()) {
         referer = "-";
       }
-
       url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
 
       // event tracking
       String label = getQ();	      
-      
       if(label == null) {
         label = "";
       }
-      
-      label += " [";
-      label += _results.getMatches().size();	      
-
+      label += " [M: " + _results.getMatches().size() + " S: " + _results.getSuggestions().size();
       if(_location != null) {
         label += " - with location";
-      }
-      
+      }      
       label += "]";
       label = label.trim();
 
       String action = "Unknown";
-//      if(_searchResults != null && !_searchResults.isEmpty()) {
-//        if(_searchResults.getTypeOfResults().equals("RouteItem")) {
-//          action = "Region Search";
-//
-//        } else if(_searchResults.getTypeOfResults().equals("RouteResult")) {
-//          action = "Route Search";
-//
-//        } else if(_searchResults.getTypeOfResults().equals("LocationResult")) {
-//          action = "Location Disambiguation";
-//
-//        } else if(_searchResults.getTypeOfResults().equals("StopResult")) {
-//          if(_searchResults.size() > 1) {
-//            action = "Intersection Search";
-//          } else {
-//            action = "Stop Search";
-//          }          
-//        }	    	  
-//      }	else {
-//        if(getQueryIsEmpty()) {
-//          action = "Home";
-//        } else {
-//          action = "No Search Results";	    		  
-//        }
-//      }
+      if(_results != null && !_results.isEmpty()) {
+        if(_results.getResultType().equals("RouteInRegionResult")) {
+          action = "Region Search";
+
+        } else if(_results.getResultType().equals("RouteResult")) {
+          action = "Route Search";
+
+        } else if(_results.getResultType().equals("GeocodeResult")) {
+          action = "Location Disambiguation";
+
+        } else if(_results.getResultType().equals("StopResult")) {
+          action = "Stop or Intersection Search";
+        }	    	  
+      }	else {
+        if(getQueryIsEmpty()) {
+          action = "Home";
+        } else {
+          action = "No Search Results";	    		  
+        }
+      }
 
       // page view on homepage hit, "event" for everything else.
       if(action.equals("Home")) {
@@ -192,10 +220,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 	  return String.valueOf((int)Math.ceil((Math.random() * 100000)));
   }
   
-  public String getLastUpdateTime() {
-    return "FIXME";
-  } 
-  
   public boolean getQueryIsEmpty() {
     return (_q == null || _q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT))) 
         && _location == null;
@@ -210,17 +234,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getTitle() {
-    String title = this._q;
-	
-//    if(_results.getMatches().size() == 1) {
-//      SearchResult result = _searchResults.get(0);
-// 
-//      if(result != null) {
-//        title = result.getName() + " (" + title + ")";
-//      }
-//    }
-//	
-    return title;
+    if(!getQueryIsEmpty()) {
+      return ":" + this._q;
+    } else {
+      return "";
+    }
   }
 
 }

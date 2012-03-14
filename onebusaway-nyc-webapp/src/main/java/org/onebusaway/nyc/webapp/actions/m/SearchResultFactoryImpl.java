@@ -15,13 +15,11 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
-import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
-import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
@@ -57,18 +55,15 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   private TransitDataService _transitDataService;
 
-  private SearchService _searchService;
-
   private ConfigurationService _configurationService;
 
   private RealtimeService _realtimeService;
 
   private ScheduledServiceService _scheduledServiceService;
 
-  public SearchResultFactoryImpl(TransitDataService transitDataService, SearchService searchService, ScheduledServiceService scheduledServiceService, 
+  public SearchResultFactoryImpl(TransitDataService transitDataService, ScheduledServiceService scheduledServiceService, 
       RealtimeService realtimeService, ConfigurationService configurationService) {
     _transitDataService = transitDataService;
-    _searchService = searchService;
     _scheduledServiceService = scheduledServiceService;
     _realtimeService = realtimeService;
     _configurationService = configurationService;
@@ -76,26 +71,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   @Override
   public SearchResult getRouteResultForRegion(RouteBean routeBean) { 
-    List<String> polylines = new ArrayList<String>();
-    
-    StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
-
-    List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
-    for (StopGroupingBean stopGroupingBean : stopGroupings) {
-      for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {
-        NameBean name = stopGroupBean.getName();
-        String type = name.getType();
-
-        if (!type.equals("destination"))
-          continue;
-        
-        for(EncodedPolylineBean polyline : stopGroupBean.getPolylines()) {
-          polylines.add(polyline.getPoints());
-        }
-      }
-    }
-
-    return new RouteInRegionResult(routeBean, polylines);
+    return new RouteInRegionResult(routeBean);
   }
   
   @Override
@@ -208,16 +184,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   @Override
   public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult) {
-    List<SearchResult> routesNearby = null;
-    
-    if(geocodeResult.isRegion()) {
-       routesNearby = _searchService.getRouteResultsStoppingWithinRegion(geocodeResult.getBounds(), this);
-    } else {
-       routesNearby = _searchService.getRouteResultsStoppingNearPoint(geocodeResult.getLatitude(), 
-          geocodeResult.getLongitude(), this);
-    }
-    
-    return new GeocodeResult(geocodeResult, routesNearby);   
+    return new GeocodeResult(geocodeResult);   
   }
 
   /*** 

@@ -24,7 +24,7 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=.90,user-scalable=no"/>  
 
-	<title>MTA Bus Time <s:property value="title"/></title>
+	<title>MTA Bus Time<s:property value="title"/></title>
 	
   	<link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
 
@@ -80,14 +80,19 @@
 			<s:if test="results.resultType.equals('RouteResult')">
 				<c:import url="routePicker.jspx"/>
 			</s:if>
-			
+
+			<!-- a region location (e.g. 10009) -->
+			<s:elseif test="results.resultType.equals('RouteInRegionResult')">
+					<c:import url="routePicker.jspx"/>
+			</s:elseif>
+
 			<!-- amigbuous address -->
 			<s:elseif test="results.resultType.equals('GeocodeResult')">
 					<c:import url="geocodeResult.jspx"/>
 			</s:elseif>
 		</s:if>	
 
-		<s:if test="%{results.matches.size==1}">
+		<s:if test="%{results.matches.size&gt;0}">
 			<s:if test="results.resultType.equals('RouteResult')">
 				<c:import url="routeResult.jspx"/>
 			</s:if>

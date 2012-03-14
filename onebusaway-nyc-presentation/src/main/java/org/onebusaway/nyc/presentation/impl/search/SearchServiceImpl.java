@@ -16,6 +16,7 @@ import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
+import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 
@@ -35,7 +36,10 @@ public class SearchServiceImpl implements SearchService {
 
   // when querying for routes from a lat/lng, use this distance in meters
   private static final double DISTANCE_TO_ROUTES = 100;
-  
+
+  // when querying for stops from a lat/lng, use this distance in meters
+  private static final double DISTANCE_TO_STOPS = 100;
+
   @Autowired
   private NycGeocoderService _geocoderService;
   
@@ -62,6 +66,25 @@ public class SearchServiceImpl implements SearchService {
     }
   }
   
+  @Override
+  public List<SearchResult> getStopResultsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
+    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_STOPS);
+
+    SearchQueryBean queryBean = new SearchQueryBean();
+    queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
+    queryBean.setBounds(bounds);
+    queryBean.setMaxCount(100);
+    
+    StopsBean stops = _transitDataService.getStops(queryBean);
+
+    List<SearchResult> results = new ArrayList<SearchResult>();
+    for(StopBean stop : stops.getStops()) {
+      results.add(resultFactory.getStopResult(stop));
+    }
+    
+    return results;    
+  }
+
   @Override
   public List<SearchResult> getRouteResultsStoppingWithinRegion(CoordinateBounds bounds, SearchResultFactory resultFactory) {
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -105,11 +128,11 @@ public class SearchServiceImpl implements SearchService {
     tryAsStop(normalizeQuery(query), resultFactory);
     
     if(_results.isEmpty()) {
-      tryAsRoute(query, resultFactory);
+      tryAsRoute(normalizeQuery(query), resultFactory);
     }
 
     if(_results.isEmpty()) {
-      tryAsGeocode(query, resultFactory);
+      tryAsGeocode(normalizeQuery(query), resultFactory);
     }
     
     return _results;

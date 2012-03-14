@@ -14,4 +14,6 @@ public interface SearchService {
 
   public List<SearchResult> getRouteResultsStoppingWithinRegion(CoordinateBounds bounds, SearchResultFactory resultFactory);
 
+  public List<SearchResult> getStopResultsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory);
+
 }
