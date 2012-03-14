@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQForwarder;
 import java.util.concurrent.ExecutorService;
@@ -10,6 +12,8 @@ import java.util.concurrent.Executors;
  * Listen for anything on one socket, and send it back out on another socket.
  */
 public class SimpleBroker {
+  Logger logger = LoggerFactory.getLogger(SimpleBroker.class);
+  
     private static final int DEFAULT_IN_PORT = 5566;
     private static final int DEFAULT_OUT_PORT = 5567;
     private static final String DEFAULT_IN_TOPIC = "inference_queue";
@@ -49,7 +53,7 @@ public class SimpleBroker {
     }
 
     public SimpleBroker() {
-		System.out.println("Starting up SimpleBroker");
+		logger.info("Starting up SimpleBroker");
     }
 
     public void run() {
@@ -58,14 +62,16 @@ public class SimpleBroker {
 
 		ZMQ.Socket subscriber = context.socket(ZMQ.SUB);
 		String inBind = "tcp://*:" + inPort;
-		System.out.println("subscribing to queue \"" + inTopic + "\" at " + inBind);
+
+		logger.info("subscribing to queue \"" + inTopic + "\" at " + inBind);
 		subscriber.bind(inBind);
 		// subscribe to everything
 		subscriber.subscribe(new byte[0]); // was inTopic.getBytes()
 	
 		ZMQ.Socket publisher = context.socket(ZMQ.PUB);
 		String outBind = "tcp://*:" + outPort;
-		System.out.println("publishing to queue \"" + outTopic + "\" at " + outBind);
+
+		logger.info("publishing to queue \"" + outTopic + "\" at " + outBind);
 		publisher.bind(outBind);
 
 		_executorService = Executors.newFixedThreadPool(1);
