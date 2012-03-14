@@ -20,12 +20,13 @@ import java.util.TimeZone;
 
 public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 
+  public static final int COUNT_INTERVAL = 6000;
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
-  private static final int COUNT_INTERVAL = 6000;
 
   @Autowired
   private CcLocationReportDao _dao;
 
+  // offset of timezone (-04:00 or -05:00)
   private String _zoneOffset = null;
   private String _systemTimeZone = null;
   private int count = 0;
@@ -73,6 +74,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   @PostConstruct
   public void setup() {
     super.setup();
+    // set a resonable default
     _systemTimeZone =  _configurationService.getConfigurationValueAsString("archive.systemTimeZone", "America/New_York");
   }
   
@@ -82,7 +84,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
   }
 
   /**
-   * Return the offset in an tz-offset string ("-04:00" or "-5:00") 
+   * Return the offset in an tz-offset string fragment ("-04:00" or "-5:00") 
    * based on the daylight savings rules in effect during the given date.
    * This method assumes timezone is a standard hour boundary away from GMT.
    *
@@ -94,11 +96,14 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
    */
   String getZoneOffset(Date date, String systemTimeZone) {
     if (date == null) return null;
+    // cache _zoneOffset
     if (_zoneOffset == null) {
       long millisecondOffset;
+      // use systemTimeZone if available
       if (systemTimeZone != null) {
 	 millisecondOffset = TimeZone.getTimeZone(systemTimeZone).getOffset(date.getTime());
       } else {
+	// use JVM default otherwise
 	millisecondOffset = TimeZone.getDefault().getOffset(date.getTime());
       }
       String plusOrMinus = (millisecondOffset <= 0 ? "-" : "+");
