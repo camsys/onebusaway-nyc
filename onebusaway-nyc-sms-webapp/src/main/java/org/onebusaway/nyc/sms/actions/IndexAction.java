@@ -431,7 +431,7 @@ public class IndexAction extends SessionedIndexAction {
       _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query);
     }
     
-    if(i < _searchResults.getMatches().size() - 1) {
+    if(i < _searchResults.getMatches().size()) {
       return header + body + moreFooter;
     } else {
       return header + body + footer;

@@ -318,7 +318,8 @@ OBA.Popups = (function() {
 							distance += " (at terminal)";
 						}
 
-						html += '<li class="arrival">' + distance + '</li>';
+						var lastClass = ((_ === 2 || _ === mvjs.length - 1) ? " last" : "");
+						html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
 					}
 				});
 			});
