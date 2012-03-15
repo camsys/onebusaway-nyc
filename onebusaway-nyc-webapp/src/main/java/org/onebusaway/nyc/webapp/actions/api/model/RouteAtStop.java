@@ -27,7 +27,19 @@ public class RouteAtStop {
   public String getShortName() {
     return route.getShortName();
   }
+
+  public String getLongName() {
+    return route.getLongName();
+  }
   
+  public String getDescription() {
+    return route.getDescription();
+  }
+
+  public String getColor() {
+    return route.getColor();
+  }  
+
   public List<RouteDirection> getDirections() {
     return directions;
   }  

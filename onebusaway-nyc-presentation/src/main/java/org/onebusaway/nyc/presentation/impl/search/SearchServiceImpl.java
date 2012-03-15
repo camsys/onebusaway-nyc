@@ -18,6 +18,8 @@ import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,8 @@ import javax.annotation.PostConstruct;
 
 @Component
 public class SearchServiceImpl implements SearchService {
+
+  private static Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
   // when querying for routes from a lat/lng, use this distance in meters
   private static final double DISTANCE_TO_ROUTES = 100;
@@ -50,15 +54,18 @@ public class SearchServiceImpl implements SearchService {
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
 
   public void refreshCaches() {
-    _routeShortNameToIdMap.clear();
-    
-    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
-      for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
-        RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
-        _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
-        _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
-      }
-    }    
+    synchronized(_routeShortNameToIdMap) {
+      _routeShortNameToIdMap.clear();
+      _routeLongNameToIdMap.clear();
+      
+      for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+        for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
+          RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
+          _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
+          _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
+        }
+      }    
+    }
   }
   
   @PostConstruct
@@ -236,7 +243,11 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public void run() {     
-      refreshCaches();
+      try {
+        refreshCaches();
+      } catch (Exception e) {
+        _log.error("Error updating cache: " + e.getMessage());
+      }
     }   
 
   }

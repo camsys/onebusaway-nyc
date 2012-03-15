@@ -1,15 +1,14 @@
 package org.onebusaway.nyc.presentation.impl.search;
 
-import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsInclusionBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +18,14 @@ import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimerTask;
 
 import javax.annotation.PostConstruct;
@@ -35,7 +35,7 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
   
   private static Logger _log = LoggerFactory.getLogger(ScheduledServiceSerivceImpl.class);
 
-  private Map<String, ArrayList<String>> _routeIdToDirectionIdsWithServiceMap = new HashMap<String,ArrayList<String>>();
+  private Map<String, HashSet<String>> _routeIdToDirectionIdsWithServiceMap = new HashMap<String,HashSet<String>>();
   
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
@@ -64,7 +64,7 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
     }
     
     if(_routeIdToDirectionIdsWithServiceMap.containsKey(routeBean.getId())) {
-      ArrayList<String> directionsWithService = _routeIdToDirectionIdsWithServiceMap.get(routeBean.getId());
+      Set<String> directionsWithService = _routeIdToDirectionIdsWithServiceMap.get(routeBean.getId());
       
       if(directionsWithService.contains(stopGroup.getId())) {
         return true;
@@ -78,36 +78,46 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
   private void rebuildServiceCache() {
     _log.info("Rebuilding service cache for scheduled service service...");
     
-    _routeIdToDirectionIdsWithServiceMap.clear();
-    
-    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
-      List<String> routeIds = _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList();
-
-      int i = 0;
-      for(String routeId : routeIds) {
-        TripsForRouteQueryBean query = new TripsForRouteQueryBean();
-        query.setRouteId(routeId);
-        query.setTime(getTime());
-        
-        _log.info("Getting trips for " + routeId + "(" + i + "/" + routeIds.size() + ")");
-        ListBean<TripDetailsBean> trips = _transitDataService.getTripsForRoute(query);
-        
-        if(trips == null || trips.getList().isEmpty() == true) {
-          continue;
-        }
+    synchronized(_routeIdToDirectionIdsWithServiceMap) {
+      _routeIdToDirectionIdsWithServiceMap.clear();
+      
+      for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+        List<String> routeIds = _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList();
+  
+        int i = 0;
+        for(String routeId : routeIds) {
+          i++;
           
-        ArrayList<String> directionsWithService = new ArrayList<String>();
-
-        for(TripDetailsBean trip : trips.getList()) {
-          // filter out interlined routes
-          if(routeId != null && !trip.getTrip().getRoute().getId().equals(routeId))
-            continue;
+          TripsForRouteQueryBean query = new TripsForRouteQueryBean();
+          query.setRouteId(routeId);
+          query.setTime(getTime());
+  
+          TripDetailsInclusionBean inclusionBean = new TripDetailsInclusionBean();
+          inclusionBean.setIncludeTripBean(true);
+          inclusionBean.setIncludeTripSchedule(false);
+          inclusionBean.setIncludeTripStatus(false);
+          query.setInclusion(inclusionBean);
             
-          directionsWithService.add(trip.getTrip().getDirectionId());
+          _log.info("Getting trips for " + routeId + "(" + i + "/" + routeIds.size() + ")");
+          ListBean<TripDetailsBean> trips = _transitDataService.getTripsForRoute(query);
+          
+          if(trips == null || trips.getList().isEmpty() == true) {
+            continue;
+          }
+            
+          HashSet<String> directionsWithService = new HashSet<String>();
+  
+          for(TripDetailsBean trip : trips.getList()) {
+            // filter out interlined routes
+            if(routeId != null && !trip.getTrip().getRoute().getId().equals(routeId)) {
+              continue;
+            }
+              
+            directionsWithService.add(trip.getTrip().getDirectionId());
+          }
+          
+          _routeIdToDirectionIdsWithServiceMap.put(routeId, directionsWithService);
         }
-        
-        _routeIdToDirectionIdsWithServiceMap.put(routeId, directionsWithService);
-        i++;
       }
     }
   }
@@ -128,7 +138,11 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
 
     @Override
     public void run() {     
-      rebuildServiceCache();
+      try {
+        rebuildServiceCache();
+      } catch (Exception e) {
+        _log.error("Error updating cache: " + e.getMessage());
+      }
     }   
 
   }
@@ -137,7 +151,11 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
 
     @Override
     public void run() {  
-      rebuildServiceCache();
+      try {
+        rebuildServiceCache();
+      } catch (Exception e) {
+        _log.error("Error updating cache: " + e.getMessage());
+      }
     }
     
     @Override
