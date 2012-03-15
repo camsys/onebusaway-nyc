@@ -179,7 +179,7 @@ public class SearchServiceImpl implements SearchService {
       if(_routeShortNameToIdMap.containsKey(token)) {
         // if a route is included as part of another type of query, then it's a filter--
         // so remove it from the normalized query sent to the geocoder or stop service
-        if(!_routeShortNameToIdMap.containsKey(lastItem) || !_routeShortNameToIdMap.containsKey(nextItem)) {
+        if((lastItem != null && !_routeShortNameToIdMap.containsKey(lastItem)) || (nextItem != null && !_routeShortNameToIdMap.containsKey(nextItem))) {
           _results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
           continue;
         }

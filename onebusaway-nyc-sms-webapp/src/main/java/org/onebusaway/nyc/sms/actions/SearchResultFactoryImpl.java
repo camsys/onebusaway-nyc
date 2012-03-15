@@ -54,7 +54,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   private ConfigurationService _configurationService;
 
   private RealtimeService _realtimeService;
-
+    
   private ScheduledServiceService _scheduledServiceService;
 
   public SearchResultFactoryImpl(TransitDataService transitDataService, ScheduledServiceService scheduledServiceService, 
@@ -207,8 +207,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
     SiriDistanceExtension distanceExtension = wrapper.getDistances();    
     
-    String message = "";
-    String distance = distanceExtension.getPresentableDistance();
+    String message = "";    
+    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "apprch.", "stop", "stops", "mi.", "mi.");
 
     // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
