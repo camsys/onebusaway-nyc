@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.m.model;
+package org.onebusaway.nyc.sms.actions.model;
 
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
@@ -15,30 +15,18 @@ public class RouteResult implements SearchResult {
   private RouteBean route;
   
   private List<RouteDirection> directions;
-    
+      
   public RouteResult(RouteBean route, List<RouteDirection> directions) {
     this.route = route;
     this.directions = directions;
-  }
-  
-  public String getId() {
-    return route.getId();
   }
   
   public String getShortName() {
     return route.getShortName();
   }
   
-  public String getLongName() {
-    return route.getLongName();
-  }
-  
-  public String getDescription() {
-    return route.getDescription();
-  }
-
   public List<RouteDirection> getDirections() {
     return directions;
   }  
-
+  
 }

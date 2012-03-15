@@ -15,15 +15,31 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
-import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.nyc.presentation.model.SearchResult;
+import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
+import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
+import org.onebusaway.nyc.presentation.service.search.SearchService;
+import org.onebusaway.nyc.sms.actions.model.GeocodeResult;
+import org.onebusaway.nyc.sms.actions.model.RouteAtStop;
+import org.onebusaway.nyc.sms.actions.model.RouteDirection;
+import org.onebusaway.nyc.sms.actions.model.RouteResult;
+import org.onebusaway.nyc.sms.actions.model.ServiceAlertResult;
+import org.onebusaway.nyc.sms.actions.model.StopResult;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class IndexAction extends SessionedIndexAction {
   
@@ -38,613 +54,493 @@ public class IndexAction extends SessionedIndexAction {
   private ConfigurationService _configurationService;
 
   @Autowired
-  private NycGeocoderService _geocoderService;
-  
+  private SearchService _searchService;
+
+  @Autowired
+  private ScheduledServiceService _scheduledServiceService;
+
+  @Autowired
+  private TransitDataService _transitDataService;
+
   private JGoogleAnalyticsTracker _googleAnalytics = null;
   
-  /* response to user */
   private String _response = null;
-
+  
   public String execute() throws Exception {
+    
+    SearchResultFactory _resultFactory = new SearchResultFactoryImpl(_transitDataService,
+        _scheduledServiceService, _realtimeService, _configurationService);
+
+    // send an initial visit to google analytics to tie our events to
     String googleAnalyticsSiteId = 
         _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
         
-    if(googleAnalyticsSiteId != null) {    
-      AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, _visitorCookie);
-      _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
-      _googleAnalytics.trackPageView("/sms", "New SMS Session", "");
+    try {
+      if(googleAnalyticsSiteId != null) {    
+        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, _visitorCookie);
+        _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
+        _googleAnalytics.trackPageView("/sms", "New SMS Session", "");
+      }
+    } catch(Exception e) {
+      // discard
     }
     
-//    SmsPresentationModelFactory factory = new SmsPresentationModelFactory(_realtimeService, _configurationService);
-//    _stopSearchService.setModelFactory(factory);
-//    _routeSearchService.setModelFactory(factory);    
-    
-    /**
-     * INPUT PARSING
-     */  
-//    String commandString = findAndNormalizeCommandInQuery(_query);
-//    
-//    if(commandString != null) {
-//      // (service) change
-//      if(commandString.equals("C")) {
-//        serviceAlertResponse(_query);
-//        return SUCCESS;
-//
-//      // help
-//      } else if(commandString.equals("H")) {
-//        errorResponse(null);
-//        return SUCCESS;
-//
-//      // refresh: just re-run the last query!
-//      } else if(commandString.equals("R")) {
-//        _query = _lastQuery;
-//        generateNewSearchResults(_query);
-//        
-//      // more: (handled as part of regular logic)
-//      } else if(commandString.equals("M")) {
-////        if(_searchResultsCursor >= _searchResults.size()) {
-//          errorResponse("No more.");
-//          return SUCCESS;
-//        }
-//
-//        // (fall through)
-//
-//      // 1-X: ambiguous location choice
-//      } else {
-//        // (the command will always be a number if we're here)
-//        Integer choice = Integer.parseInt(commandString);
-////        LocationResult pickedResult = (LocationResult)_searchResults.get(choice - 1);
-//
-////        _query = pickedResult.getFormattedAddress();
-//        generateNewSearchResults(_query);
-//      }
+    String commandString = getCommand(_query);    
+    String queryString = getQuery(_query);
 
-    // if not a command, we must be a query
-//    } else
-//      generateNewSearchResults(_query);
+    if(queryString != null && !queryString.isEmpty()) {
+      _searchResults = _searchService.getSearchResults(queryString, _resultFactory);
+    }
+          
+    while(true) {
+      if(_searchResults.getMatches().size() > 0) {
+        if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("RouteResult")) {
+          RouteResult route = (RouteResult)_searchResults.getMatches().get(0);
 
-    // filter results
-//    _searchResults = filterResults(_searchResults, _query);
+          // service alerts for the route
+          if(commandString != null && commandString.equals("C")) {
+            // find a unique set of service alerts
+            Set<String> alerts = new HashSet<String>();
+            for(RouteDirection direction : route.getDirections()) {
+              for(NaturalLanguageStringBean alert : direction.getSerivceAlerts()) {
+                alerts.add(alert.getValue());
+              }
+            }
+
+            // make the alerts into results
+            SearchResultCollection newResults = new SearchResultCollection();                        
+            for(String alert : alerts) {
+              newResults.addMatch(new ServiceAlertResult(alert));
+            }
+
+            _searchResults = newResults;
+            continue;
+          
+          // route schedule status
+          } else {
+            _response = routeResponse(route);
+            break;
+          }
+          
+        // paginated service alerts
+        } else if(_searchResults.getResultType().equals("ServiceAlertResult")) {
+          if(commandString != null && commandString.equals("M")) {
+            _response = serviceAlertResponse(_searchResultsCursor);
+          } else {
+            _response = serviceAlertResponse(0);
+          }
+          break;
+          
+        // one or more paginated stops
+        } else if(_searchResults.getResultType().equals("StopResult")) {
+          if(commandString != null && commandString.equals("M")) {
+            _response = stopResponse(_searchResultsCursor);
+          } else {
+            _response = stopResponse(0);
+          }
+          break;
+          
+        // an exact match for a location--i.e. location isn't ambiguous
+        } else if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("GeocodeResult")) {
+          GeocodeResult geocodeResult = (GeocodeResult)_searchResults.getMatches().get(0);
+
+          // we don't do anything with regions--too much information to show via SMS.
+          if(geocodeResult.isRegion()) {
+            _response = errorResponse("Too general.");
+            break;
+
+          // find stops near the point/address/intersection the user provided
+          } else {
+            _searchResults = _searchService.findStopsNearPoint(geocodeResult.getLatitude(), geocodeResult.getLongitude(), _resultFactory);
+            continue;
+            
+          }
+        }
+      }
     
-    /**
-     * GIVEN RESULTS, DISPLAY THEM TO THE USER
-     */    
-    // display results to user
-//    if(_searchResults.size() == 0) {
-//      errorResponse("No matches.");
-//      
-//      if(_googleAnalytics != null)
-//        _googleAnalytics.trackEvent("SMS", "No Results", _query);
-//      
-//    } else {
-//      if(_searchResults.getTypeOfResults().equals("StopResult")) {
-//
-//        // try to fill the most space in the SMS with realtime data; if we can't even get
-//        // one observation for each route available in there, then punt to stop disambiguation.
-//        boolean truncated = true;
-//        for(int i = 1; truncated == true; i++) {
-//          truncated = stopRealtimeResponse(_searchResults, i);            
-//          
-//          if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
-//            if(i == 1) {
-//              _response = null;
-//            } else {
-//              truncated = stopRealtimeResponse(_searchResults, i - 1);            
-//            }
-//
-//            break;
-//          }
-//        }
-//
-//        // okay, so we have to disambiguate--now find the maximum page size we can fit into 
-//        // one SMS!
-//        if(_response == null) {
-//          truncated = true;
-//          int i = 0;
-//          for(i = 1; truncated == true; i++) {
-//            truncated = stopDisambiguationResponse(_searchResults, _searchResultsCursor, i);
-//
-//            if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
-//              if(i == 1) {
-//                _response = null;
-//              } else {
-//                truncated = stopDisambiguationResponse(_searchResults, _searchResultsCursor, i - 1);
-//              }
-//              break;
-//            }
-//          }
-//
-//          _searchResultsCursor = i;
-//        }
-//                  
-//        // shouldn't get here!
-//        if(_response == null)
-//          errorResponse("Too general.");
-//
-//      } else if(_searchResults.getTypeOfResults().equals("LocationResult")) {
-//        locationDisambiguationResponse(_searchResults, false);
-//        
-//        // too long? try compact mode!
-//        if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
-//          locationDisambiguationResponse(_searchResults, true); 
-//        }
-//
-//        // still too long? sorry...
-//        if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
-//          errorResponse("Too general.");
-//        }
-//      } else if(_searchResults.getTypeOfResults().equals("RouteResult")) {
-//        routeResponse(_searchResults, false);
-//        
-//        if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
-//          routeResponse(_searchResults, true);
-//        }
-//
-//        // still too long? sorry...
-//        if(_response.length() > MAX_SMS_CHARACTER_COUNT) {
-//          errorResponse("Error.");
-//        }
-//      }
-//    }
-//    
+      // process suggestions: suggestions can be ambiguous locations, or 
+      // multiple routes--e.g. X17 -> X17A,C,J
+      if(_searchResults.getSuggestions().size() > 0) {
+        if(_searchResults.getResultType().equals("RouteResult")) {
+          _response = didYouMeanResponse();
+
+        // if we get a geocode result, the user is choosing among multiple
+        // ambiguous addresses. if they send "M" for more, we start displaying where we left
+        // off, otherwise start at the beginning. we also recognize a numeric input that
+        // represents which ambiguous location number the user wants to use.
+        } else if(_searchResults.getResultType().equals("GeocodeResult")) {
+          if(commandString != null) {
+            if(commandString.equals("M")) {
+              _response = locationDisambiguationResponse(_searchResultsCursor);
+              break;
+              
+            // choosing an ambiguous choice by number
+            } else if(StringUtils.isNumeric(commandString)) {
+              GeocodeResult chosenLocation = (GeocodeResult)_searchResults.getSuggestions().get(Integer.parseInt(commandString) - 1);
+
+              if(chosenLocation != null) {
+                _searchResults = _searchService.findStopsNearPoint(chosenLocation.getLatitude(), chosenLocation.getLongitude(), _resultFactory);
+                continue;
+              }
+            }
+
+          } else {
+            _response = locationDisambiguationResponse(0);            
+            break;
+          }
+        }
+      }
+      
+      break;
+    }
+ 
+    // no response generated--no results or unrecognized query
+    if(StringUtils.isEmpty(_response)) {
+      _response = errorResponse("No results.");
+        
+      if(_googleAnalytics != null) {
+        _googleAnalytics.trackEvent("SMS", "No Results", _query);
+      }
+    }
+      
     return SUCCESS;
   }
 
   /**
    * RESPONSE GENERATION METHODS
    */
-//  private void serviceAlertResponse(String _q) throws Exception {
-//    List<String> routeTokens = findRouteTokensInQuery(_q);
-//    
-//    if(routeTokens.size() != 1) {
-//      errorResponse("Not found.");
-//      return;      
-//    }
+  private String serviceAlertResponse(int offset) throws Exception {
+    if(offset >= _searchResults.getMatches().size()) {
+      return errorResponse("No more.");
+    }
+    
+    // worst case in terms of footer length
+    String footer = "Send:\n";
+    footer += "'M' for more\n";
 
-//    List<RouteResult> routeResult = _routeSearchService.resultsForQuery(routeTokens.get(0));
-//    
-//    if(routeResult.size() == 0) {
-//      errorResponse("Not found.");
-//      return;
-//    }
-//
-//    List<NaturalLanguageStringBean> alerts = new ArrayList<NaturalLanguageStringBean>();
-//      
-//    for(SearchResult _result : routeResult) {
-//      RouteResult result = (RouteResult)_result;
-//      for(RouteDestinationItem _destination : result.getDestinations()) {
-//        SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
-//        alerts.addAll(destination.getServiceAlerts());
-//      }
-//    }
-//    
-//    if(alerts.size() == 0) {
-//      errorResponse("No alerts.");
-//      return;
-//    }
-//
-//    // Note we use a set here so that the list gets deduped.
-//    Set<String> alertValues = new HashSet<String>(alerts.size());
-//    for (NaturalLanguageStringBean alert: alerts) {
-//      alertValues.add(alert.getValue());
-//    }
-//    
-//    _response = StringUtils.join(alertValues, "\n\n");
-//    
-//    if(_googleAnalytics != null)
-//      _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + routeResult.size() + "]");
-//  }
+    String body = ""; 
+    int i = offset;
+    while(i < _searchResults.getMatches().size()) {
+      ServiceAlertResult serviceAlert = (ServiceAlertResult)_searchResults.getMatches().get(i);
+      String textToAdd = serviceAlert.getAlert() + "\n\n";      
+
+      // if the alert alone is too long, we have to chop it
+      if(textToAdd.length() > MAX_SMS_CHARACTER_COUNT - footer.length() - 3) {
+        textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - footer.length() - 3) + "...";
+      }
+      
+      if(body.length() + footer.length() + textToAdd.length() < MAX_SMS_CHARACTER_COUNT) {
+        body += textToAdd;
+      } else {
+        break;
+      }
+      
+      i++;
+    }
+    _searchResultsCursor = i;    
+    
+    if(_googleAnalytics != null) {
+      _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + _searchResults.getMatches().size() + "]");
+    }
+    
+    if(i < _searchResults.getMatches().size()) {
+      return body + footer;
+    } else {
+      return body;
+    }    
+  }
   
-//  private void routeResponse(List<SearchResult> results, boolean truncate) {
-//    _response = "";
-//    
-//    RouteResult result = (RouteResult)results.get(0);
-//
-//    _response += result.getRouteIdWithoutAgency() + "\n\n";
-//    
-//    for(RouteDestinationItem destination : result.getDestinations()) {
-//      if(truncate) {
-//        _response += destination.getHeadsign().substring(0, 15) + "...\n";
-//      } else {
-//        _response += destination.getHeadsign() + "\n";
-//      }
-//      
-//      if(destination.getHasUpcomingScheduledService() == false) {
-//        _response += "not scheduled\n";
-//      } else {
-//        _response += "is scheduled\n";        
-//      }
-//    }
-//
-//    _response += "\n";    
-//    
-//    _response += "Send:\n";
-//    _response += "STOP CODE or INTERSECTION\n";
-//      
-//    _response += "Add '" + result.getRouteIdWithoutAgency() + "' for best results\n";
-//    
-//    if(_googleAnalytics != null)
-//      _googleAnalytics.trackEvent("SMS", "Route Response", _query + " [" + _searchResults.size() + "]");
-//  }
-//  
-//  private void locationDisambiguationResponse(List<SearchResult> results, boolean compactMode) {
-//    _response = "Did you mean\n\n";
-//    
-//    int i = 1;
-//    for(SearchResult _result : results) {
-//      LocationResult result = (LocationResult)_result;
-//      
-//      // compact mode omits neighborhood, city/borough and whitespace to save space!
-//      if(compactMode) {
-//        _response += i + ") " + result.getAddress() + " " + result.getPostalCode() + "\n";
-//      } else {
-//        _response += i + ") " + result.getAddress() + "\n";        
-//        _response += result.getCity() + " " + result.getPostalCode() + "\n";
-//
-//        if(results.size() <= 2) {
-//          if(result.getNeighborhood() != null) {
-//            _response += "(" + result.getNeighborhood() + ")\n";
-//          }
-//
-//          // if we have few results, throw some whitespace in for nicer formatting
-//          if(results.iterator().hasNext()) {
-//            _response += "\n";
-//          }
-//        }
-//      }
-//      
-//      i++;
-//    }
-//
-//    _response += "\n";    
-//    
-//    _response += "Send:\n";
-//    _response += "1-" + (i - 1) + "\n";
-//      
-//    if(_googleAnalytics != null)
-//      _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.size() + "]");
-//  }
-//  
-//  private boolean stopRealtimeResponse(List<SearchResult> results, int realtimeObservationCount) {
-//    boolean truncated = false;
-//
-//    _response = "";
-//    
-//    if(results.size() > 1) {
-//      _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here\n\n";
-//    }
-//    
-//    List<String> routesWithAlerts = new ArrayList<String>();
-//    for(SearchResult _result : results) {
-//      StopResult result = (StopResult)_result;
-//
-//      if(results.size() > 1) {
-//        _response += result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
-//      } else {
-//        _response += result.getStopIdWithoutAgency() + "\n";
-//      }
-//      
-//      if(result.getRoutesAvailable().size() > 0) {
-//        for(RouteResult routeHere : result.getRoutesAvailable()) {
-//          for(RouteDestinationItem _destination : routeHere.getDestinations()) {
-//            SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
-//
-//            String prefix = "";
-//
-//            if(destination.getServiceAlerts().size() > 0) {
-//              prefix += "*";
-//              routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
-//            }            
-//
-//            prefix += routeHere.getRouteIdWithoutAgency() + " ";
-//
-//            if(destination.getDistanceAwayStrings().size() > 0) {
-//              int c = 0;
-//              for(String distanceAway : destination.getDistanceAwayStrings()) {
-//                if(c > realtimeObservationCount) {
-//                  truncated = true;
-//                  break;
-//                }
-//
-//                if(c > 0) {
-//                  _response += "\n";
-//                } 
-//
-//                _response += prefix + distanceAway;
-//
-//                c++;
-//              }
-//            } else {
-//              if(_destination.getHasUpcomingScheduledService() == false) {
-//                _response += prefix + "not scheduled";                
-//              } else {
-//                _response += prefix + "no bus en-route";
-//              }
-//            }
-//
-//            _response += "\n";
-//          } // for destinations
-//        } // for routes
-//      } else {
-//        _response += "No matches.\n";
-//      }
-//    }
-//    
-//    _response += "\n";
-//    _response += "Send:\n";
-//    _response += "STOP CODE + ROUTE realtime info\n";
-//
-//    if(routesWithAlerts.size() > 0) {
-//      _response += "'C' + ROUTE service change (*)\n";
-//    }
-//    
-//    if(_googleAnalytics != null)
-//      _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query + " [" + results.size() + "]");
-//
-//    return truncated;
-//  }
-//  
-//  private boolean stopDisambiguationResponse(List<SearchResult> results, int offset, int count) {
-//    boolean truncated = false;
-//
-//    _response = "";
-//    
-//    String responseBody = "";
-//    List<String> routesWithAlerts = new ArrayList<String>();
-//    boolean haveNSSMRoute = false;
-//    int c = 0;
-//    for(SearchResult _result : results) {
-//      // pagination
-//      if(c < offset) {
-//        c++;
-//        continue;
-//      }
-//      
-//      if(c > count) {
-//        truncated = true;
-//        break;
-//      }
-//      
-//      StopResult result = (StopResult)_result;
-//      
-//      // header of item
-//      if(results.size() > 1) {
-//        if(result.getStopDirection() != null) {
-//          responseBody += result.getStopDirection() + "-bound: " + result.getStopIdWithoutAgency() + "\n";
-//        } else {
-//          responseBody += result.getStopIdWithoutAgency() + "\n";
-//        }
-//      } else {
-//        responseBody += result.getStopIdWithoutAgency() + "\n"; 
-//        responseBody += "Routes here:\n";
-//      }
-//
-//      // routes available at stop
-//      for(RouteResult routeHere : result.getRoutesAvailable()) {
-//        for(RouteDestinationItem _destination : routeHere.getDestinations()) {
-//          SmsRouteDestinationItem destination = (SmsRouteDestinationItem)_destination;
-//            
-//          if(_destination.getHasUpcomingScheduledService() == false) {
-//            responseBody += "#";
-//            haveNSSMRoute = true;
-//          }
-//          
-//          if(destination.getServiceAlerts().size() > 0) {
-//            responseBody += "*";
-//            routesWithAlerts.add(routeHere.getRouteIdWithoutAgency());
-//          }            
-//
-//          responseBody += routeHere.getRouteIdWithoutAgency() + "  ";
-//        }
-//      }
-//      
-//      responseBody += "\n";
-//
-//      c++;
-//    }
-//
-//    if(haveNSSMRoute) {
-//      responseBody += "#=not scheduled\n";
-//    }
-//    
-//    // if we have more than one page, include ordinal numbers 
-//    if(offset + c < results.size() || offset > 0) {
-//      _response += "Stops " + (offset + 1) + "-" + c + " of " + results.size() + "\n\n"; 
-//    } else {
-//      if(results.size() > 1) {
-//        _response += results.size() + " stop" + ((results.size() != 1) ? "s" : "") + " here\n\n";
-//      }
-//    }
-//
-//    _response += responseBody;    
-//    _response += "\n";
-//    _response += "Send:\n";
-//
-//    if(offset + c < results.size()) {
-//      _response += "MORE more stops\n";
-//    }
-//    
-//    _response += "STOP CODE + ROUTE realtime info\n";
-//
-//    if(routesWithAlerts.size() > 0) {
-//      _response += "'C' + ROUTE service change (*)\n";
-//    }
-//        
-//    if(_googleAnalytics != null)
-//      _googleAnalytics.trackEvent("SMS", "Stop Disambiguation", _query + " [" + results.size() + "]");
-//
-//    return truncated;
-//  }
-//      
-//  private void errorResponse(String message) throws Exception {
-//    String staticStuff = "Text your:\n\n";
-//    
-//    staticStuff += "STOP CODE or\n";
-//    staticStuff += "INTERSECTION\n\n";
-//    
-//    staticStuff += "Add ROUTE for best results:\n";
-//    staticStuff += "'S74 MAIN AND CRAIG'\n";
-//    staticStuff += "'200884 S44'\n\n";
-//    
-//    staticStuff += "Find 6-digit stop code on bus stop pole.";
-//
-//    if(message != null) {
-//      if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {
-//        throw new Exception("Error message text is too long.");
-//      }
-//
-//      _response = message + " " + staticStuff;
-//    } else
-//      _response = staticStuff;
-//  }
-//
-//  /**
-//   * PRIVATE HELPER METHODS
-//   */
-//  private SearchResultCollection filterResults(SearchResultCollection results, String q) {    
-//    List<String> routesToFilterBy = findRouteTokensInQuery(q);
-//
-//    if(routesToFilterBy.size() == 0) {
-//      return results;
-//    }
-//
-//    SearchResultCollection newResults = new SearchResultCollection();
-//    for(SearchResult _result : results) {
-//      if (_result instanceof StopResult) {
-//        StopResult result = (StopResult)_result;
-//        
-//        List<RouteResult> newRoutesAvailable = new ArrayList<RouteResult>();
-//        for(RouteResult routeAvailable : result.getRoutesAvailable()) {
-//          if(routesToFilterBy.contains(routeAvailable.getRouteIdWithoutAgency())) {
-//            newRoutesAvailable.add(routeAvailable);
-//          }
-//        }
-//        
-//        result.getRoutesAvailable().clear();
-//        result.getRoutesAvailable().addAll(newRoutesAvailable);
-//        
-//        newResults.add(result);
-//
-//      // pass through
-//      } else {
-//        newResults.add(_result);
-//      }
-//    }
-//       
-//    return newResults;
-//  }
-//  
-//  public String findAndNormalizeCommandInQuery(String query) {
-//    if(query == null) {
-//      return null;
-//    }
-//    
-//    query = query.trim();
-//    
-//    if(query.toUpperCase().startsWith("C") || query.toUpperCase().startsWith("CHANGE")) {
-//      return "C";
-//    }
-//
-//    if(query.toUpperCase().equals("R") || query.toUpperCase().equals("REFRESH")) {
-//      return "R";
-//    }
-//
-//    if(query.toUpperCase().equals("M") || query.toUpperCase().equals("MORE")) {
-//      return "M";
-//    }
-//
-//    if(query.toUpperCase().equals("H") || query.toUpperCase().equals("HELP")) {
-//      return "H";
-//    }
-//
-//    // try as ambiguous location result choice:
-//    try {
-//      // no results means this can't be a pick from ambiguous location results
-//      if(_searchResults == null || _searchResults.size() == 0) {
-//        return null;
-//      }
-//      
-//      // a list of things other than location results can't be a pick from ambiguous locations.
-//      if(!(_searchResults.getTypeOfResults().equals("LocationResult"))) {
-//        return null;
-//      }
-//      
-//      // is the choice within the bounds of the number of things we have?
-//      Integer choice = Integer.parseInt(query);
-//      if(choice >= 1 && choice <= _searchResults.size()) {
-//        return choice.toString();
-//      }
-//    } catch (NumberFormatException e) {
-//      return null;
-//    }
-//
-//    return null;
-//  }
-//  
-//  private List<String> findRouteTokensInQuery(String q) {
-//    List<String> output = new ArrayList<String>();
-//    
-//    if(q == null) {
-//      return output;
-//    }
-//    
-//    for(String token : q.split(" ")) {
-//      if(_routeSearchService.isRoute(token)) {
-//        output.add(token);
-//      }
-//    }
-//
-//    return output;
-//  }
-//  
-//  private void generateNewSearchResults(String q) {
-//    _searchResults.clear();
-//    _searchResultsCursor = 0;
-//
-//    if(q == null || q.isEmpty()) {
-//      return;
-//    }
-//
-//    _lastQuery = q;
-//
-//    // try as stop ID
-//    _searchResults.addAll(_stopSearchService.resultsForQuery(q));
-//
-//    // try as route ID
-//    if(_searchResults.size() == 0)
-//      _searchResults.addAll(_routeSearchService.resultsForQuery(q));
-//
-//    // nothing? geocode it!
-//    if(_searchResults.size() == 0)
-//      _searchResults.addAll(generateResultsFromGeocode(q));        
-//    
-//    Collections.sort(_searchResults, new SearchResultComparator());
-//  } 
-//  
-//  private List<SearchResult> generateResultsFromGeocode(String q) {
-//    List<SearchResult> results = new ArrayList<SearchResult>();
-//
-//    List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(q);
-//    
-//    // if we got a location that is a point, return stops nearby
-//    if(geocoderResults.size() == 1) {
-//      NycGeocoderResult result = geocoderResults.get(0);
-//
-//      if(!result.isRegion()) {
-//        results.addAll(_stopSearchService.resultsForLocation(result.getLatitude(), result.getLongitude()));
-//      }
-//
-//    // prompt the user to choose from non-regional locations.
-//    } else {
-//      for(NycGeocoderResult result : geocoderResults) {
-//        if(!result.isRegion()) {
-//          results.add(new LocationResult(result));
-//        }
-//      }
-//    }
-//
-//    return results;
-//  }
+  // whether a route has scheduled service or not--always returns a message that fits into one SMS.
+  private String routeResponse(RouteResult result) throws Exception {
+    String header = result.getShortName() + "\n";
+
+    String footer = "\nSend:\n";
+    footer += "STOP CODE or INTERSECTION\n";      
+    footer += "Add '" + result.getShortName() + "' for best results\n";
+    
+    // find biggest headsign
+    int routeDirectionTruncationLength = -1;
+    for(RouteDirection direction : result.getDirections()) {
+      routeDirectionTruncationLength = Math.max(routeDirectionTruncationLength, direction.getDestination().length());
+    }
+
+    // try to fit the entire headsign, but if we can't, start chopping from the longest one down
+    String body = null;    
+    while(body == null || header.length() + body.length() + footer.length() >= MAX_SMS_CHARACTER_COUNT) {
+      body = "";
+      for(RouteDirection direction : result.getDirections()) {
+        String headsign = direction.getDestination();
+        
+        if(headsign.length() > routeDirectionTruncationLength) {
+          body += "to " + headsign.substring(0, Math.min(routeDirectionTruncationLength, headsign.length())) + "... ";
+        } else {
+          body += "to " + headsign + " ";
+        }
+        
+        body += "\n";
+        
+        if(direction.hasUpcomingScheduledService() == false) {
+          body += "not scheduled\n";
+        } else {
+          body += "is scheduled\n";        
+        }
+      }
+      routeDirectionTruncationLength--;
+    }
+    
+    if(routeDirectionTruncationLength <= 0) {
+      throw new Exception("Couldn't fit any route names!?");
+    }
+    
+    if(_googleAnalytics != null) {
+      _googleAnalytics.trackEvent("SMS", "Route Response", _query);
+    }
+    
+    return header + body + footer;
+  }
+  
+  
+  
+  private String locationDisambiguationResponse(int offset) throws Exception {
+    if(offset >= _searchResults.getSuggestions().size()) {
+      return errorResponse("No more.");
+    }
+    
+    String header = "Did you mean?\n\n";
+    
+    String footer = "\n";        
+    footer += "Send:\n";
+    footer += "1-" + _searchResults.getSuggestions().size() + "\n";
+
+    // the worst case in terms of length for footer
+    String moreFooter = footer + "'M' for more\n";
+    
+    String body = ""; 
+    int i = offset;
+    while(i < _searchResults.getSuggestions().size()) {
+      GeocodeResult serviceAlert = (GeocodeResult)_searchResults.getSuggestions().get(i);
+
+      String textToAdd = (i + 1) + ") " + serviceAlert.getFormattedAddress() + "\n";
+      textToAdd += "(" + serviceAlert.getNeighborhood() + ")\n";
+
+      if(header.length() + body.length() + moreFooter.length() + textToAdd.length() < MAX_SMS_CHARACTER_COUNT) {
+        body += textToAdd;
+      } else {
+        break;
+      }
+      
+      i++;
+    }
+    _searchResultsCursor = i;    
+          
+    if(_googleAnalytics != null) {
+      _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.getSuggestions().size() + "]");
+    }
+    
+    if(i < _searchResults.getSuggestions().size()) {
+      return header + body + moreFooter;
+    } else {
+      return header + body + footer;
+    }
+  }
+    
+  private String stopResponse(int offset) throws Exception {
+    if(offset >= _searchResults.getMatches().size()) {
+      return errorResponse("No more.");
+    }
+
+    String header = "";
+    if(_searchResults.getMatches().size() > 1) {
+      header += _searchResults.getMatches().size() + " stop" + ((_searchResults.getMatches().size() != 1) ? "s" : "") + " here\n\n";
+    }
+    
+    String footer = "\nSend:\n";
+    footer += "STOP CODE + ROUTE for realtime info\n";
+
+    String alertsFooter = footer + "'C' + ROUTE for service change (*)\n";
+
+    // the worst case in terms of length for footer
+    String moreFooter = alertsFooter + "'M' for more\n";
+
+    String body = ""; 
+    int i = offset;
+    while(i < _searchResults.getMatches().size()) {
+      StopResult stopResult = (StopResult)_searchResults.getMatches().get(i);
+
+      String fixedPartToAdd = "";
+      if(_searchResults.getMatches().size() > 1) {
+        fixedPartToAdd += stopResult.getStopDirection() + "-bound: " + stopResult.getIdWithoutAgency() + "\n";
+      } else {
+        fixedPartToAdd += stopResult.getIdWithoutAgency() + "\n";
+      }
+
+      // with realtime info
+      String realtimePartToAdd = "";
+      // without realtime info
+      String routesOnlyPartToAdd = "";
+
+      if(stopResult.getRoutesAvailable().size() == 0) {
+        fixedPartToAdd += "No routes.\n";
+      } else {
+        for(RouteAtStop routeHere : stopResult.getRoutesAvailable()) {
+          for(RouteDirection direction : routeHere.getDirections()) {
+            String prefix = "";
+            if(!direction.getSerivceAlerts().isEmpty()) {
+              footer = alertsFooter;
+              prefix += "*";
+            }            
+            prefix += routeHere.getShortName();
+
+            if(!direction.hasUpcomingScheduledService()) {
+              realtimePartToAdd += prefix + " not sched.";                
+            } else {
+              if(direction.getDistanceAways().size() > 0) {
+                realtimePartToAdd += prefix + " " + direction.getDistanceAways().get(0);
+              } else {
+                realtimePartToAdd += prefix + " not en-route";
+              }
+            }
+            
+            realtimePartToAdd += "\n";
+          }
+
+          routesOnlyPartToAdd += routeHere.getShortName() + " ";
+        } // for routes here realtime
+      } // if routes available
+
+      int remainingSpace = MAX_SMS_CHARACTER_COUNT - header.length() - body.length() - moreFooter.length() - fixedPartToAdd.length();
+
+      // we can fit realtime for this stop
+      if(realtimePartToAdd.length() < remainingSpace) {
+        body += fixedPartToAdd + realtimePartToAdd;
+
+      // we can fit only routes for this stop
+      } else if(routesOnlyPartToAdd.length() + 1 < remainingSpace) {
+        body += fixedPartToAdd + routesOnlyPartToAdd + "\n";
+
+      // out of space!      
+      } else {
+        break;
+      }
+      
+      i++;
+    }
+    _searchResultsCursor = i; 
+
+    if(_googleAnalytics != null) {
+      _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query);
+    }
+    
+    if(i < _searchResults.getMatches().size() - 1) {
+      return header + body + moreFooter;
+    } else {
+      return header + body + footer;
+    }
+  }
+      
+  private String didYouMeanResponse() {
+    String header = "Did you mean?\n\n";
+
+    String footer = "\nSend:\n";
+    footer += "ROUTE for schedule info\n";      
+
+    String body = "";
+    for(SearchResult _route : _searchResults.getSuggestions()) {
+      RouteResult route = (RouteResult)_route;
+      body += route.getShortName() + " ";
+    }
+    body = body.trim();
+    body += "\n";
+    
+    return header + body + footer;
+  }
+  
+  private String errorResponse(String message) throws Exception {
+    String staticStuff = "Text your:\n\n";
+    
+    staticStuff += "STOP CODE or\n";
+    staticStuff += "INTERSECTION\n\n";
+    
+    staticStuff += "Add ROUTE for best results:\n";
+    staticStuff += "'S74 MAIN AND CRAIG'\n";
+    staticStuff += "'200884 S44'\n\n";
+    
+    staticStuff += "Find 6-digit stop code on bus stop pole.";
+
+    if(message != null) {
+      if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {
+        throw new Exception("Error message text is too long.");
+      }
+
+      return message + " " + staticStuff;
+    } else
+      return staticStuff;
+  }
+
+  /**
+   * PRIVATE HELPER METHODS
+   */
+  private String getQuery(String query) {
+    if(query == null) {
+      return null;
+    }
+    
+    query = query.trim();
+
+    if(query.toUpperCase().startsWith("C ")) {        
+      return query.substring(2);
+    }
+
+    if(getCommand(query) != null) {
+      return null;
+    }
+    
+    return query;
+  }
+  
+  private String getCommand(String query) {
+    if(query == null) {
+      return null;
+    }
+    
+    query = query.trim();
+    
+    if(query.toUpperCase().equals("R")) {
+      return "R";
+    }
+
+    if(query.toUpperCase().equals("M")) {
+      return "M";
+    }
+
+    if(query.toUpperCase().startsWith("C ")) {
+      return "C";
+    }
+
+    // try as ambiguous location result choice:
+    try {
+      // no results means this can't be a pick from ambiguous location results
+      if(_searchResults == null || _searchResults.isEmpty()) {
+        return null;
+      }
+      
+      // a list of things other than location results can't be a pick from ambiguous locations.
+      if(!(_searchResults.getResultType().equals("GeocodeResult"))) {
+        return null;
+      }
+      
+      // is the choice within the bounds of the number of things we have?
+      Integer choice = Integer.parseInt(query);
+      if(choice >= 1 && choice <= _searchResults.getSuggestions().size()) {
+        return choice.toString();
+      }
+    } catch (NumberFormatException e) {
+      return null;
+    }
+
+    return null;
+  }
+  
     
   /**
    * METHODS FOR VIEWS

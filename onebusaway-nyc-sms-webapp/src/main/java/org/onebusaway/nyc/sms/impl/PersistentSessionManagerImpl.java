@@ -26,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class PersistentSessionManagerImpl implements SessionManager {
 
-  private ConcurrentHashMap<String, ContextEntry> _contextEntriesByKey = new ConcurrentHashMap<String, ContextEntry>();
+  private ConcurrentHashMap<String, ContextEntry> _contextEntriesByKey = 
+      new ConcurrentHashMap<String, ContextEntry>();
 
   /****
    * {@link SessionManager} Interface
@@ -56,7 +57,6 @@ public class PersistentSessionManagerImpl implements SessionManager {
   }
 
   private static class ContextEntry {
-    
     private Map<String, Object> _context = new HashMap<String, Object>();
 
     public Map<String, Object> getContext() {

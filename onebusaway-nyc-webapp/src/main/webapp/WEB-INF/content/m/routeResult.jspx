@@ -24,19 +24,24 @@
 	<div>
 		<p>
 			<strong>
-				Jump To:
+				<s:property value="shortName" />&amp;nbsp;<s:property value="longName" />
 			</strong>
+		<br/>
+		<s:property value="description" />
 		</p>
 
+		<p>
 		<s:iterator value="directions">
 			<s:url var="url" value="" anchor="%{directionId}"></s:url>
 			<a href="${url}">
-				<s:property value="shortName" />&amp;nbsp;to&amp;nbsp;<s:property value="destination" />
+				to&amp;nbsp;<s:property value="destination" />
 			</a>
 			<br />
 		</s:iterator>
+		</p>
 	</div>
-		<s:iterator value="directions">
+	
+	<s:iterator value="directions">
 		<div>
 			<p>
 				<a name="${directionId}"><!--prevent JSP minimization--></a>

@@ -251,6 +251,7 @@
 }
 
 #content #matches ul li.legendItem p.destination ul.stops li a:hover {
+	font-size: 125%;
 	font-weight: bold;
 }
 

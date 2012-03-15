@@ -25,10 +25,6 @@ public class RouteInRegionResult implements SearchResult {
     return route.getId();
   }
   
-  public String getDescription() {
-    return route.getDescription();
-  }
-  
   public String getShortName() {
     return route.getShortName();
   }

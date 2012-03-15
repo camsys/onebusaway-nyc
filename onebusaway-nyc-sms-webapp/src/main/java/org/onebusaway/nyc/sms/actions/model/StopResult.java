@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.webapp.actions.m.model;
+package org.onebusaway.nyc.sms.actions.model;
 
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
@@ -21,18 +21,14 @@ public class StopResult implements SearchResult {
     this.stop = stop;
     this.routesAvailable = routesAvailable;
   }
-  
-  public String getId() {
-    return stop.getId();
-  }
-  
+
   public String getIdWithoutAgency() {
-    return AgencyAndIdLibrary.convertFromString(getId()).getId();
+    return AgencyAndIdLibrary.convertFromString(stop.getId()).getId();
   }
 
-  public String getName() {
-    return stop.getName();
-  }
+  public String getStopDirection() {
+   return stop.getDirection();
+  }  
   
   public List<RouteAtStop> getRoutesAvailable() {
     return routesAvailable;
