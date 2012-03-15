@@ -22,7 +22,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class PriorRule implements SensorModelRule {
 
   @Override
@@ -41,11 +41,11 @@ public class PriorRule implements SensorModelRule {
     if (phase == EVehiclePhase.DEADHEAD_DURING)
       return new SensorModelResult("pPrior", 1.0);
     else if (phase == EVehiclePhase.DEADHEAD_BEFORE)
-      return new SensorModelResult("pPrior", 0.5);
+      return new SensorModelResult("pPrior", 0.8);
     else if (phase == EVehiclePhase.DEADHEAD_AFTER)
-      return new SensorModelResult("pPrior", 0.5);
+      return new SensorModelResult("pPrior", 0.8);
     else if (phase == EVehiclePhase.LAYOVER_BEFORE)
-      return new SensorModelResult("pPrior", 0.5);
+      return new SensorModelResult("pPrior", 0.8);
     else if (phase == EVehiclePhase.LAYOVER_DURING)
       return new SensorModelResult("pPrior", 1.0);
     else if (phase == EVehiclePhase.IN_PROGRESS)

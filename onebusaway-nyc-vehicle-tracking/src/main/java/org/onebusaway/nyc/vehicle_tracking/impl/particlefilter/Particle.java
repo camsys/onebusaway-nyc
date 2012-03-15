@@ -46,6 +46,8 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   private Object _data;
 
+  transient private SensorModelResult _transResult;
+
   public Particle(double timestamp) {
     this(timestamp, null);
   }
@@ -289,5 +291,13 @@ public class Particle implements Serializable, Comparable<Particle> {
       return false;
 
     return true;
+  }
+
+  public void setTransResult(SensorModelResult transResult) {
+    this._transResult = transResult;
+  }
+  
+  public SensorModelResult getTransResult() {
+    return this._transResult;
   }
 }

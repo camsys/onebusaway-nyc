@@ -367,29 +367,37 @@ public class BlocksFromObservationServiceImpl implements
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel) {
 
-    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
-    final double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
-
-    final Set<BlockStateObservation> resStates = new HashSet<BlockStateObservation>();
+    
     BestBlockStates foundStates = null;
     try {
       foundStates = _blockStateService.getBestBlockLocations(observation,
-          blockState.getBlockInstance(), currentDistanceAlongBlock
-              + minDistanceToTravel, currentDistanceAlongBlock
-              + maxDistanceToTravel);
+          blockState.getBlockInstance(), 0, Double.POSITIVE_INFINITY);
     } catch (final MissingShapePointsException e) {
       _log.warn(e.getMessage());
     }
 
+    final Set<BlockStateObservation> resStates;
     if (foundStates != null) {
+      final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+      final double currentDistanceAlongBlock = blockLocation.getDistanceAlongBlock();
+  
+      final double maxDab = currentDistanceAlongBlock + maxDistanceToTravel;
+      final double minDab = currentDistanceAlongBlock + minDistanceToTravel;
+      resStates = Sets.newHashSet();
+      
       for (final BlockState bs : foundStates.getAllStates()) {
-        boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-            bs, observation);
-        resStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot, true));
+        final double dab = bs.getBlockLocation().getDistanceAlongBlock();
+        if (dab < maxDab && dab > minDab) {
+          boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
+              bs, observation);
+          resStates.add(new BlockStateObservation(bs, observation, isAtPotentialLayoverSpot, true));
+        }
       }
+    } else {
+      resStates = Collections.emptySet();
     }
 
-    return Sets.newHashSet(resStates);
+    return resStates;
   }
 
   @Override

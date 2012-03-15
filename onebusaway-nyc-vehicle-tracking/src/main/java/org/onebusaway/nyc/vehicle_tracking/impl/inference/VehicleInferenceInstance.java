@@ -208,29 +208,20 @@ public class VehicleInferenceInstance {
        */
       final long delta = Math.abs(timestamp - _previousObservation.getTime());
 
-      final NycRawLocationRecord lastRecord = _previousObservation.getRecord();
+//      final NycRawLocationRecord lastRecord = _previousObservation.getRecord();
+//
+//      final boolean dscChange = false;
+//      final boolean dscChange = !ObjectUtils.equals(
+//          lastRecord.getDestinationSignCode(), record.getDestinationSignCode());
+//
+//      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(),
+//          record.getRunId());
+//
+//      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(),
+//          record.getOperatorId());
 
-      final boolean dscChange = !ObjectUtils.equals(
-          lastRecord.getDestinationSignCode(), record.getDestinationSignCode());
-
-      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(),
-          record.getRunId());
-
-      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(),
-          record.getOperatorId());
-
-      /**
-       * If we observe that either operatorId or runId has changed, then we need
-       * to resample. Especially for the case in which we obtain more reliable
-       * run info (e.g. reported runId + UTS match).
-       */
-      if (reportedRunIdChange || operatorIdChange) {
-        _log.info("resetting inference for vid=" + record.getVehicleId()
-            + ": operatorId or reported runId has changed");
-        _previousObservation = null;
-        _particleFilter.reset();
-      } else if (delta > _automaticResetWindow
-          || (dscChange && delta > _optionalResetWindow)) {
+      if (delta > _automaticResetWindow) {
+//          || (dscChange && delta > _optionalResetWindow)) {
         _log.info("resetting inference for vid=" + record.getVehicleId()
             + " since it's been " + (delta / 1000)
             + " seconds since the previous update");

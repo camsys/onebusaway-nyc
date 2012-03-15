@@ -66,9 +66,9 @@ public class ScheduleLikelihood implements SensorModelRule {
   final static public double schedDevDuringStdDevPrior = 30.0/2;
   final static public double schedTransScale = 1.5;
   final private double layoverDuringMean = 0.0;
-  final private double layoverDuringStdDev = 80.0;
+  final private double layoverDuringStdDev = 80.0/2;
   final private double layoverBeforeMean = 0.0;
-  final private double layoverBeforeStdDev = 80.0;
+  final private double layoverBeforeStdDev = 80.0/2;
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
@@ -109,43 +109,25 @@ public class ScheduleLikelihood implements SensorModelRule {
     final SensorModelResult result = new SensorModelResult("pSchedule", 1.0);
     if (blockState == null) {
       
-      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.05);
+      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.5);
       final double pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior, x);
       result.addResultAsAnd("sched", pSched);
       
     } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
       
-      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.01);
+      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.5);
       final double pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior, x);
       result.addResultAsAnd("deadhead after", pSched);
       
     } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
       
-      final double pSched;
-      if (Double.compare(blockState.getBlockLocation().getDistanceAlongBlock(), 0.0)
-          == 0) {
-        /*
-         * Actually before the block...
-         * measure how likely it is to start on time.
-         */
-        final double startDev = SensorModelSupportLibrary.startOrResumeBlockOnTimeDev(state, obs);
-        pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior,
-            startDev);
-        
-        result.addResultAsAnd("deadhead before(before block)", pSched);
-      } else {
+      final double pStartDev = getStartSchedDev(state, obs);
+      result.addResultAsAnd("deadhead before", pStartDev);
       
-        /*
-         * On the block, but still not started...
-         * measure, inversely, how likely it is to be 
-         * riding along the trip until it gets to where it
-         * wants to go in-service.
-         */
-        final double schedDev = state.getBlockStateObservation().getScheduleDeviation() < 0.0 ? 0.0
-            : state.getBlockStateObservation().getScheduleDeviation();
-        pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior, schedDev);
-        result.addResultAsAnd("deadhead before(on block)", pSched);
-      }
+    } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
+      
+      final double pStartDev = getStartSchedDev(state, obs);
+      result.addResultAsAnd("layover before", pStartDev);
       
     } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
       
@@ -159,17 +141,10 @@ public class ScheduleLikelihood implements SensorModelRule {
       final BlockStopTimeEntry nextStop = 
           VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
 
-      final double pLayoverDuring = computeLayoverSchedDevProb(obs.getTime(), blockState,
+      final double pLayoverDuring = computeBetweenStopsDevProb(obs.getTime(), blockState,
           nextStop, true);
       result.addResultAsAnd("layover during", pLayoverDuring);
       
-    } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
-      final BlockStopTimeEntry nextStop = 
-          VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
-
-      final double pLayoverBefore = computeLayoverSchedDevProb(obs.getTime(), blockState,
-          nextStop, false);
-      result.addResultAsAnd("layover before", pLayoverBefore);
       
     } else if (EVehiclePhase.IN_PROGRESS == phase) {
       final double pSched = NormalDist.density(schedDevMeanPrior, schedDevStdDevPrior,
@@ -180,7 +155,29 @@ public class ScheduleLikelihood implements SensorModelRule {
     return result;
   }
 
-  private double computeLayoverSchedDevProb(long timestamp,
+  private double getStartSchedDev(VehicleState state, Observation obs) {
+    final double pSched;
+//    if (Double.compare(state.getBlockState().getBlockLocation().getDistanceAlongBlock(), 0.0)
+//        == 0) {
+//      /*
+//       * Actually before the block...
+//       * measure how likely it is to start on time.
+//       */
+//      final double startDev = SensorModelSupportLibrary.startOrResumeBlockOnTimeDev(state, obs);
+//      pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior,
+//          startDev);
+//      
+//    } else {
+    
+      final double schedDev = state.getBlockStateObservation().getScheduleDeviation() < 0.0 ? 
+          FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.5)
+            : state.getBlockStateObservation().getScheduleDeviation();
+      pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior, schedDev);
+//    }
+    return pSched;
+  }
+
+  private double computeBetweenStopsDevProb(long timestamp,
       BlockState blockState, BlockStopTimeEntry layoverStop, boolean during) {
 
     final double mean = during?layoverDuringMean:layoverBeforeMean;
@@ -190,21 +187,38 @@ public class ScheduleLikelihood implements SensorModelRule {
 
     // No next stop? Could just be sitting...
     if (layoverStop == null) {
-      final double x = FoldedNormalDist.inverseF(mean, stdDev, 0.05);
+      final double x = FoldedNormalDist.inverseF(mean, stdDev, 0.5);
       final double pSched = FoldedNormalDist.density(mean, stdDev, x);
       return pSched;
     }
 
-    final StopTimeEntry stopTime = layoverStop.getStopTime();
+    final StopTimeEntry nextStopTime = layoverStop.getStopTime();
+    
+    final long departureTime;
+    if (layoverStop.hasPreviousStop()) {
+      final int departureSchedTime = blockState.getBlockInstance().getBlock()
+          .getDepartureTimeForIndex(layoverStop.getBlockSequence()-1);
+      departureTime = blockInstance.getServiceDate()
+        + departureSchedTime * 1000;
+    } else {
+      departureTime = Long.MIN_VALUE;
+    }
+    
     final long arrivalTime = blockInstance.getServiceDate()
-        + stopTime.getArrivalTime() * 1000;
+        + nextStopTime.getArrivalTime() * 1000;
 
-    // If we still have time to spare, then no problem!
+    /*
+     * We truncate between the departure of the last stop
+     * and the start of the next.
+     */
     final int minutesLate;
-    if (timestamp <= arrivalTime)
-      minutesLate = 0;
-    else
+    if (timestamp > arrivalTime) {
       minutesLate = (int) ((timestamp - arrivalTime) / (60 * 1000));
+    } else if (timestamp < departureTime) {
+      minutesLate = (int) ((departureTime - timestamp) / (60 * 1000));
+    } else {
+      minutesLate = 0;
+    }
 
     final double pSched = FoldedNormalDist.density(mean, stdDev, minutesLate);
     return pSched;

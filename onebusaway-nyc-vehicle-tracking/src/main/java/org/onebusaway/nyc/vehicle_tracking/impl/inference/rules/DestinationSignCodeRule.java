@@ -19,18 +19,33 @@ import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.imp
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
+import com.google.common.collect.Sets;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 @Component
 public class DestinationSignCodeRule implements SensorModelRule {
 
+  private DestinationSignCodeService _destinationSignCodeService;
+
+  @Autowired
+  public void setDestinationSignCodeService(
+      DestinationSignCodeService destinationSignCodeService) {
+    _destinationSignCodeService = destinationSignCodeService;
+  }
+  
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
@@ -70,11 +85,30 @@ public class DestinationSignCodeRule implements SensorModelRule {
 
     final BlockState bs = state.getBlockState();
     if (bs != null) {
+      Set<String> dscs = Sets.newHashSet();
+      dscs.add(bs.getDestinationSignCode());
+      Set<AgencyAndId> routes = Sets.newHashSet();
+      routes.add(bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId());
       /*
-       * If we're in service and have a matching dsc, then we want to be 20%
-       * more likely.
+       * DSC changes occur between parts of a block, so
+       * account for that
        */
-      if (bs.getDestinationSignCode().equals(observedDsc)) {
+      
+      if (EVehiclePhase.LAYOVER_DURING == phase
+          || EVehiclePhase.DEADHEAD_DURING == phase) {
+        BlockTripEntry nextTrip = bs.getBlockLocation().getActiveTrip()
+                  .getNextTrip();
+        
+        if (nextTrip != null) {
+          final String dsc = _destinationSignCodeService
+              .getDestinationSignCodeForTripId(nextTrip.getTrip().getId());
+          if (dsc != null)
+            dscs.add(dsc);
+          routes.add(nextTrip.getTrip().getRouteCollection().getId());
+        }
+      }
+        
+      if (dscs.contains(observedDsc)) {
         result.addResultAsAnd("in-service matching DSC", 1.0);
       } else {
         /*
@@ -82,11 +116,10 @@ public class DestinationSignCodeRule implements SensorModelRule {
          * expect the general route to be the same...
          */
 
-        final AgencyAndId thisRoute = bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
 
         boolean routeMatch = false;
         for (final AgencyAndId dscRoute : obs.getDscImpliedRouteCollections()) {
-          if (thisRoute.equals(dscRoute)) {
+          if (routes.contains(dscRoute)) {
             routeMatch = true;
             break;
           }

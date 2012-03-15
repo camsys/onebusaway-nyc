@@ -29,6 +29,10 @@
             value="${details.particles[0].element.result}" scope="request" />
         <jsp:include
             page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
+        <c:set var="sensorModelResult"
+            value="${details.particles[0].element.transResult}" scope="request" />
+        <jsp:include
+            page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
     </ul>
 </c:if>
 
@@ -48,8 +52,7 @@
                 <td>Dsc</td>
                 <td>Block Location</td>
                 <td>Distance Along Block</td>
-                <td>Scheduled Time</td>
-                <td>Last Motion Location</td>
+                <td>Scheduled Dev</td>
             </tr>
         </thead>
         <tbody>
@@ -93,23 +96,16 @@
                         value="${blockLocation.activeTrip.trip.id}" /></td>
                     <td><c:out
                         value="${blockState.destinationSignCode}" /></td>
-                    <td><c:out
-                        value="${blockLocation.location.lat}" /><jsp:text>
-                    </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
+                    <td>
+                      <fmt:formatNumber var="lat" value="${blockLocation.location.lat}" maxFractionDigits="6"/>
+                      <fmt:formatNumber var="lon" value="${blockLocation.location.lon}" maxFractionDigits="6"/>
+                    <c:out value="${lat},${lon}" />
+                    </td>
                     <td>
                       <fmt:formatNumber var="dab" value="${blockLocation.distanceAlongBlock}" maxFractionDigits="2"/>
-	                    <c:out value="${dab}" /></td>
-                    <jsp:useBean id="scheduleTime"
-                        class="java.util.Date" />
-                    <jsp:setProperty name="scheduleTime" property="time"
-                        value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}" />
-                    <td><fmt:formatDate pattern="HH:mm"
-                        value="${scheduleTime}" /><jsp:text> (</jsp:text><c:out
-                        value="${blockLocation.scheduledTime}" />)</td>
-                    <td><c:out
-                        value="${motionState.lastInMotionLocation.lat}" /><jsp:text>
-                    </jsp:text><c:out
-                        value="${motionState.lastInMotionLocation.lon}" /></td>
+	                    <c:out value="${dab} m" /></td>
+                      <fmt:formatNumber var="schedDev" value="${p.data.blockStateObservation.scheduleDeviation}" maxFractionDigits="2"/>
+                    <td><c:out value="${schedDev} mins" /></td>
                 </tr>
             </c:forEach>
         </tbody>

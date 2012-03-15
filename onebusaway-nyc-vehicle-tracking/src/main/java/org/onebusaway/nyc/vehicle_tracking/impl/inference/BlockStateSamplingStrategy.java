@@ -28,15 +28,6 @@ public interface BlockStateSamplingStrategy {
    *
    ****/
 
-  public CategoricalDist<BlockStateObservation> cdfForJourneyAtStart(
-      Observation observation);
-
-  public CategoricalDist<BlockStateObservation> cdfForJourneyInProgress(
-      Observation observation);
-
-  public double scoreState(BlockStateObservation state,
-      Observation observation, boolean atStart);
-
   public BlockStateObservation sampleTransitionDistanceState(BlockStateObservation parentBlockStateObs,
       Observation obs, boolean vehicleNotMoved, EVehiclePhase eVehiclePhase);
 

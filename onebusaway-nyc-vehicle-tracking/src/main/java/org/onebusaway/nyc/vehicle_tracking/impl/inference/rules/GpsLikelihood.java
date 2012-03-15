@@ -24,11 +24,14 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsExce
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -73,12 +76,12 @@ public class GpsLikelihood implements SensorModelRule {
     SensorModelResult result = new SensorModelResult("pGps", 1.0);
     
     if (blockState == null) {
-      final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.01);
+      final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.25);
       final double pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, x);
       result.addResultAsAnd("gps(no state)", pGps);
       
     } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
-      final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.01);
+      final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.25);
       final double pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, x);
       result.addResultAsAnd("gps(deadhead-after)", pGps);
       
@@ -108,29 +111,44 @@ public class GpsLikelihood implements SensorModelRule {
       
     } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
       
-//      final CoordinatePoint pNextStop = blockState.getBlockLocation().getNextStop()
-//          .getStopTime().getStop().getStopLocation();
-//      final double expectedDistFromStop = blockState.getBlockLocation().getNextStop().getDistanceAlongBlock()
-//          - blockState.getBlockLocation().getDistanceAlongBlock();
-//      final CoordinatePoint pNow = obs.getLocation();
-//      final double obsDistToStop = SphericalGeometryLibrary.distance(pNow, pNextStop);
-//      final double pGps = FoldedNormalDist.density(expectedDistFromStop, deadheadBeforeGpsStdDev, 
-//          obsDistToStop);
-      result.addResult("nextStop=" + blockState.getBlockLocation().getNextStop()
-          .getStopTime().getStop().toString(), 0.0);
-//      result.addResult("expectedDistFromStop", expectedDistFromStop);
-//      result.addResult("obsDistToStop", obsDistToStop);
-      final double pGps = computeBeforeGpsProb(blockState.getBlockLocation().getLocation(), obs);
-      result.addResultAsAnd("gps(deadhead-during)", pGps);
+      /*
+       * What if the bus turned around?  This attempts to handle that.
+       */
+      final double pGps;
+//      if (context.getParentState() == null
+//          || context.getParentState().getJourneyState().getPhase() != phase) {
+        final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.1);
+        pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, x);
+        result.addResultAsAnd("gps(deadhead-during initial)", pGps);
+        
+//      } else {
+//        final BlockStopTimeEntry nextStop = blockState.getBlockLocation().getNextStop();
+//        result.addResult("nextStop=" + nextStop
+//            .getStopTime().getStop().toString(), 0.0);
+//        pGps = computeBeforeGpsProb(
+//            nextStop.getStopTime().getStop().getStopLocation(), obs);
+//        result.addResultAsAnd("gps(deadhead-during)", pGps);
+//        
+//      }
       
     } else if (EVehiclePhase.LAYOVER_DURING == phase) {
       
-      final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
-      final ProjectedPoint p2 = obs.getPoint();
-      final double d = SphericalGeometryLibrary.distance(p1.getLat(),
-          p1.getLon(), p2.getLat(), p2.getLon());
-      final double pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
-      result.addResultAsAnd("gps(layover-during)", pGps);
+      final double pGps;
+//      if (context.getParentState() == null
+//          || context.getParentState().getJourneyState().getPhase() != phase) {
+        final double x = FoldedNormalDist.inverseF(inProgressGpsMean, gpsStdDev, 0.1);
+        pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, x);
+        result.addResultAsAnd("gps(layover-during initial)", pGps);
+        
+//      } else {
+//        final BlockStopTimeEntry nextStop = blockState.getBlockLocation().getNextStop();
+//        result.addResult("nextStop=" + nextStop
+//            .getStopTime().getStop().toString(), 0.0);
+//        pGps = computeBeforeGpsProb(
+//            nextStop.getStopTime().getStop().getStopLocation(), obs);
+//        result.addResultAsAnd("gps(layover-during)", pGps);
+//        
+//      }
       
     }
     
@@ -152,7 +170,7 @@ public class GpsLikelihood implements SensorModelRule {
       final double distNow = SphericalGeometryLibrary.distance(pDest, pNow);
       pGps = NormalDist.density(distMoved, deadheadBeforeGpsStdDev, distLast - distNow);
     } else {
-      final double x = FoldedNormalDist.inverseF(0.0, deadheadBeforeGpsStdDev, 0.01);
+      final double x = FoldedNormalDist.inverseF(0.0, deadheadBeforeGpsStdDev, 0.1);
       pGps = FoldedNormalDist.density(0.0, deadheadBeforeGpsStdDev, x);
     }
     

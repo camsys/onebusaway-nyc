@@ -15,50 +15,34 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.EdgeLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
 import umontreal.iro.lecuyer.randvar.NormalGen;
-
-import java.util.Date;
-import java.util.Set;
 
 @Component
 class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private static Logger _log = LoggerFactory.getLogger(BlockStateSamplingStrategyImpl.class);
-
-  private DestinationSignCodeService _destinationSignCodeService;
 
   /**
    * We need some way of scoring nearby trips
@@ -70,21 +54,18 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
   private BlocksFromObservationService _blocksFromObservationService;
 
-  private ObservationCache _observationCache;
-
-  private OperatorAssignmentService _operatorAssignmentService;
-
-  private RunService _runService;
-
   @Autowired
   public void setRunService(RunService runService) {
-    _runService = runService;
   }
 
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
-    _destinationSignCodeService = destinationSignCodeService;
+  }
+
+  @Autowired
+  public void setBlocksStateTransitionModel(
+      BlockStateTransitionModel blockStateTransitionModel) {
   }
 
   @Autowired
@@ -96,12 +77,15 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   @Autowired
   public void setOperatorAssignmentService(
       OperatorAssignmentService operatorAssignmentService) {
-    _operatorAssignmentService = operatorAssignmentService;
   }
 
   @Autowired
   public void setObservationCache(ObservationCache observationCache) {
-    _observationCache = observationCache;
+  }
+
+  @Autowired
+  public void setJourneyStateTransitionModel(
+      JourneyStateTransitionModel journeyStateTransitionModel) {
   }
 
   /**
@@ -113,309 +97,132 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   }
 
   @Override
-  public BlockStateObservation sampleGpsObservationState(BlockStateObservation parentBlockStateObs,
-      Observation obs) {
-    
-      double distAlongSample;
-      BlockState parentBlockState = parentBlockStateObs.getBlockState();
-      final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
-      distAlongSample = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-          parentDistAlong, GpsLikelihood.gpsStdDev/2);
-      
-      if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
-        distAlongSample = parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
-      else if (distAlongSample < 0.0)
-        distAlongSample = 0.0;
-      
-      BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
-          parentBlockState.getBlockInstance(), distAlongSample);
-      return distState;
-    
+  public BlockStateObservation sampleGpsObservationState(
+      BlockStateObservation parentBlockStateObs, Observation obs) {
+
+    double distAlongSample;
+    final BlockState parentBlockState = parentBlockStateObs.getBlockState();
+    final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
+    distAlongSample = NormalGen.nextDouble(
+        ParticleFactoryImpl.getThreadLocalRng().get(), parentDistAlong,
+        GpsLikelihood.gpsStdDev / 2);
+
+    if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
+      distAlongSample = parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
+    else if (distAlongSample < 0.0)
+      distAlongSample = 0.0;
+
+    final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
+        obs, parentBlockState.getBlockInstance(), distAlongSample);
+    return distState;
+
   }
-  
+
   @Override
-  public BlockStateObservation sampleTransitionDistanceState(BlockStateObservation parentBlockStateObs,
-      Observation obs, boolean vehicleNotMoved, EVehiclePhase phase) {
-      double distAlongSample;
-      BlockState parentBlockState = parentBlockStateObs.getBlockState();
-      final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
-      if (!vehicleNotMoved) {
-        double distAlongPrior = SphericalGeometryLibrary.distance(obs.getLocation(),
-              obs.getPreviousObservation().getLocation());
-        final double stdDev = EVehiclePhase.DEADHEAD_DURING == phase ? EdgeLikelihood.deadheadDuringStdDev :
-          EdgeLikelihood.inProgressStdDev;
-        distAlongSample = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-            distAlongPrior, stdDev);
-        distAlongSample += parentDistAlong;
-      } else {
-        return parentBlockStateObs;
-      }
-      
-      if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
-        distAlongSample = parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
-      else if (distAlongSample < 0.0)
-        distAlongSample = 0.0;
-      
-      BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
-          parentBlockState.getBlockInstance(), distAlongSample);
-      return distState;
+  public BlockStateObservation sampleTransitionDistanceState(
+      BlockStateObservation parentBlockStateObs, Observation obs,
+      boolean vehicleNotMoved, EVehiclePhase phase) {
+    double distAlongSample;
+    final BlockState parentBlockState = parentBlockStateObs.getBlockState();
+    final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
+    if (!vehicleNotMoved) {
+      final double distAlongPrior = SphericalGeometryLibrary.distance(
+          obs.getLocation(), obs.getPreviousObservation().getLocation());
+      final double stdDev = EVehiclePhase.DEADHEAD_DURING == phase
+          ? EdgeLikelihood.deadheadDuringStdDev
+          : EdgeLikelihood.inProgressStdDev;
+      distAlongSample = NormalGen.nextDouble(
+          ParticleFactoryImpl.getThreadLocalRng().get(), distAlongPrior, stdDev);
+      distAlongSample += parentDistAlong;
+    } else {
+      return parentBlockStateObs;
     }
-  
-  
+
+    if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
+      distAlongSample = parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance();
+    else if (distAlongSample < 0.0)
+      distAlongSample = 0.0;
+
+    final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
+        obs, parentBlockState.getBlockInstance(), distAlongSample);
+    return distState;
+  }
+
   @Override
-  public BlockStateObservation samplePriorScheduleState(BlockInstance blockInstance,
-      Observation obs) {
-    
+  public BlockStateObservation samplePriorScheduleState(
+      BlockInstance blockInstance, Observation obs) {
+
     /*
-     * Our initial block proposals will yield 0 d.a.b. in some cases.  It could be
-     * that there is no snapped position for a block, yet it isn't actually deadheading-before, 
-     * it could be deadheading-during.  That is why we sample schedule deviations 
-     * around the current obs time when the obs time is after the block's start.
+     * Our initial block proposals will yield 0 d.a.b. in some cases. It could
+     * be that there is no snapped position for a block, yet it isn't actually
+     * deadheading-before, it could be deadheading-during. That is why we sample
+     * schedule deviations around the current obs time when the obs time is
+     * after the block's start.
      */
-    double currentTime = (obs.getTime() - blockInstance.getServiceDate())/1000;
+    final double currentTime = (obs.getTime() - blockInstance.getServiceDate()) / 1000;
     // TODO rounding?
-//    double newSchedTimeMins = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-//        currentTime/60.0, ScheduleLikelihood.schedDevStdDevPrior/2);
-    
-    final StudentTDistribution priorSchedDevDist = new StudentTDistribution(5, currentTime/60.0, 1/(2.0*2.0));
-    double newSchedTimeMins = priorSchedDevDist.sample(ParticleFactoryImpl.getLocalRng());
-    
-    int newSchedTime = (int)(newSchedTimeMins*60.0);
-    int startSchedTime = Iterables.getFirst(blockInstance.getBlock().getStopTimes(), null).getStopTime()
-        .getArrivalTime();
-    int endSchedTime = Iterables.getLast(blockInstance.getBlock().getStopTimes(), null).getStopTime()
-        .getDepartureTime();
-    
+    // double newSchedTimeMins =
+    // NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(),
+    // currentTime/60.0, ScheduleLikelihood.schedDevStdDevPrior/2);
+
+    final StudentTDistribution priorSchedDevDist = new StudentTDistribution(5,
+        currentTime / 60.0, 1 / (2.0 * 2.0));
+    final double newSchedTimeMins = priorSchedDevDist.sample(ParticleFactoryImpl.getLocalRng());
+
+    final int newSchedTime = (int) (newSchedTimeMins * 60.0);
+    final int startSchedTime = Iterables.getFirst(
+        blockInstance.getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
+    final int endSchedTime = Iterables.getLast(
+        blockInstance.getBlock().getStopTimes(), null).getStopTime().getDepartureTime();
+
     BlockStateObservation schedState;
     if (newSchedTime < startSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
-          blockInstance, 0.0);
+      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+          obs, blockInstance, 0.0);
     } else if (endSchedTime < newSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
-          blockInstance, 
-          blockInstance.getBlock().getTotalBlockDistance());
+      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+          obs, blockInstance, blockInstance.getBlock().getTotalBlockDistance());
     } else {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromTime(obs, 
-          blockInstance, newSchedTime);
+      schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
+          obs, blockInstance, newSchedTime);
     }
-    
+
     return schedState;
   }
-  
+
   @Override
-  public BlockStateObservation sampleTransitionScheduleDev(BlockStateObservation parentBlockStateObs,
-      Observation obs) {
-    BlockState parentBlockState = parentBlockStateObs.getBlockState();
-    
-    double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime())/1000.0;
-    double newSchedDev = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(), 
-        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff/60.0 * ScheduleLikelihood.schedTransScale);
-    
-    int currentTime = (int)(obs.getTime() - parentBlockState.getBlockInstance().getServiceDate())/1000;
-    int newSchedTime = currentTime - (int)(newSchedDev*60.0);
-    
-    int startSchedTime = Iterables.getFirst(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
-        .getArrivalTime();
-    int endSchedTime = Iterables.getLast(parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime()
-        .getDepartureTime();
+  public BlockStateObservation sampleTransitionScheduleDev(
+      BlockStateObservation parentBlockStateObs, Observation obs) {
+    final BlockState parentBlockState = parentBlockStateObs.getBlockState();
+
+    final double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000.0;
+    final double newSchedDev = NormalGen.nextDouble(
+        ParticleFactoryImpl.getThreadLocalRng().get(),
+        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff / 60.0
+            * ScheduleLikelihood.schedTransScale);
+
+    final int currentTime = (int) (obs.getTime() - parentBlockState.getBlockInstance().getServiceDate()) / 1000;
+    final int newSchedTime = currentTime - (int) (newSchedDev * 60.0);
+
+    final int startSchedTime = Iterables.getFirst(
+        parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
+    final int endSchedTime = Iterables.getLast(
+        parentBlockState.getBlockInstance().getBlock().getStopTimes(), null).getStopTime().getDepartureTime();
     BlockStateObservation schedState;
     if (newSchedTime < startSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
-          parentBlockState.getBlockInstance(), 0.0);
+      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+          obs, parentBlockState.getBlockInstance(), 0.0);
     } else if (endSchedTime < newSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(obs, 
-          parentBlockState.getBlockInstance(), 
+      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+          obs,
+          parentBlockState.getBlockInstance(),
           parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
     } else {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromTime(obs, 
-          parentBlockState.getBlockInstance(), newSchedTime);
+      schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
+          obs, parentBlockState.getBlockInstance(), newSchedTime);
     }
-    
+
     return schedState;
   }
 
-  @Override
-  public CategoricalDist<BlockStateObservation> cdfForJourneyAtStart(
-      Observation observation) {
-
-    CategoricalDist<BlockStateObservation> cdf = _observationCache.getValueForObservation(
-        observation, EObservationCacheKey.JOURNEY_START_BLOCK_CDF);
-
-    if (cdf == null) {
-
-      final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
-          observation, false);
-
-      cdf = new CategoricalDist<BlockStateObservation>();
-
-      for (final BlockStateObservation state : potentialBlocks) {
-
-        final double p = scoreState(state, observation, true);
-
-        cdf.put(p, state);
-      }
-
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.JOURNEY_START_BLOCK_CDF, cdf);
-    }
-    return cdf;
-  }
-
-  @Override
-  public CategoricalDist<BlockStateObservation> cdfForJourneyInProgress(
-      Observation observation) {
-
-    CategoricalDist<BlockStateObservation> cdf = _observationCache.getValueForObservation(
-        observation, EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK_CDF);
-
-    if (cdf == null) {
-
-      final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(
-          observation, true);
-
-      cdf = new CategoricalDist<BlockStateObservation>();
-
-      for (final BlockStateObservation state : potentialBlocks) {
-
-        final double p = scoreState(state, observation, false);
-
-        cdf.put(p, state);
-      }
-
-      /**
-       * Cache the result
-       */
-      _observationCache.putValueForObservation(observation,
-          EObservationCacheKey.JOURNEY_IN_PROGRESS_BLOCK_CDF, cdf);
-    }
-
-    return cdf;
-  }
-
-  @Override
-  public double scoreState(BlockStateObservation state,
-      Observation observation, boolean atStart) {
-
-    Preconditions.checkNotNull(state);
-    double score;
-
-    if (atStart) {
-      /**
-       * If it's at start, we judge it by it's dsc/route
-       */
-      score = scoreJourneyStartState(state.getBlockState(), observation);
-    } else {
-      /**
-       * If it's in-progress, we use sched. time and location deviances
-       */
-      final ScheduledBlockLocation blockLocation = state.getBlockState().getBlockLocation();
-      final BlockInstance blockInstance = state.getBlockState().getBlockInstance();
-      final long serviceDate = blockInstance.getServiceDate();
-      score = scoreJourneyInProgressState(blockLocation, observation,
-          serviceDate);
-      score *= scoreDestinationSignCode(state.getBlockState(), observation);
-    }
-
-    /**
-     * In all cases we use the run info, when available, to determine a
-     * preference
-     */
-    boolean operatorHasAssignment = false;
-    try {
-      operatorHasAssignment = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
-          new ServiceDate(new Date(observation.getTime())),
-          new AgencyAndId(observation.getRecord().getVehicleId().getAgencyId(), 
-              observation.getRecord().getOperatorId())) != null;
-
-    } catch (Exception e) {
-      _log.warn("Operator service was not available.");
-    }
-
-    Boolean noStateButRunInfo = state == null
-        && (operatorHasAssignment || _runService.isValidRunNumber(observation.getRecord().getRunNumber()));
-
-    Boolean stateButNoRunMatch = state != null
-        && state.getOpAssigned() == Boolean.FALSE
-        && state.getRunReported() == Boolean.FALSE;
-
-    /**
-     * Use only 10% of the score when a proposal doesn't use the run info
-     * provided. Also, sample closer fuzzy matches.
-     */
-    if (stateButNoRunMatch == Boolean.TRUE) {
-      score *= 0.10;
-    } else if (state.getRunReported() == Boolean.TRUE) {
-      if (observation.getFuzzyMatchDistance() != null
-          && observation.getFuzzyMatchDistance() > 0)
-        score *= 0.95;
-    }
-
-    return score;
-  }
-
-  public double scoreJourneyInProgressState(
-      ScheduledBlockLocation blockLocation, Observation observation,
-      long serviceDate) {
-
-    final CoordinatePoint p1 = blockLocation.getLocation();
-    final ProjectedPoint p2 = observation.getPoint();
-
-    final double d = SphericalGeometryLibrary.distance(p1.getLat(),
-        p1.getLon(), p2.getLat(), p2.getLon());
-    final double prob1 = _nearbyTripSigma.probability(d);
-
-    final int scheduledTime = blockLocation.getScheduledTime();
-
-    final long time = serviceDate + scheduledTime * 1000;
-    final long recordTime = observation.getTime();
-
-    final long timeDelta = Math.abs(time - recordTime) / 1000;
-    final double prob2 = _scheduleDeviationSigma.probability(timeDelta);
-
-    return prob1 * prob2;
-  }
-
-  /****
-   * Private Methods
-   ****/
-
-  private double scoreJourneyStartState(BlockState state,
-      Observation observation) {
-    return scoreDestinationSignCode(state, observation);
-  }
-
-  private double scoreDestinationSignCode(BlockState state,
-      Observation observation) {
-
-    final String observedDsc = observation.getLastValidDestinationSignCode();
-
-    final boolean observedOutOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(observedDsc);
-
-    // If we have an out-of-service DSC, then we favor it equally
-    if (observedOutOfService) {
-      return 0.5;
-    } else {
-      // Favor in-service blocks that match the correct DSC
-      final String dsc = state.getDestinationSignCode();
-      if (StringUtils.equals(observedDsc, dsc)) {
-        return 1.0;
-      } else {
-        // Favor in-service blocks servicing the same route implied by the DSC
-        final Set<AgencyAndId> dscRoutes = _destinationSignCodeService.getRouteCollectionIdsForDestinationSignCode(dsc);
-        final AgencyAndId thisRoute = state.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId();
-        boolean sameRoute = false;
-        for (final AgencyAndId route : dscRoutes) {
-          if (thisRoute.equals(route)) {
-            sameRoute = true;
-            break;
-          }
-        }
-
-        if (sameRoute)
-          return 0.85;
-        else
-          return 1e-5;
-      }
-    }
-  }
 }
