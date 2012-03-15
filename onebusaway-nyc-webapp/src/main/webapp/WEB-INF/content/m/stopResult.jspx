@@ -35,7 +35,12 @@
 		</p>
 		
 		<s:if test="%{routesAvailable.size==0}">
-			<p class="noService">No service is available at this stop.</p>
+			<s:if test="%{results.routeIdFilter.size&gt;0}">
+				<p class="noService">No service matching your filter is available at this stop.</p>
+			</s:if>
+			<s:else>
+				<p class="noService">No service is available at this stop.</p>
+			</s:else>
 		</s:if>
 		<s:else>
 			<s:iterator value="routesAvailable">

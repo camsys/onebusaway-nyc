@@ -86,7 +86,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     
     // empty query with location means search for stops near current location
     if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT)))) {
-      _results = _searchService.findStopsNearPoint(_location.getLat(), _location.getLon(), factory);
+      _results = _searchService.findStopsNearPoint(_location.getLat(), _location.getLon(), factory, _results.getRouteIdFilter());
 
     } else {
       if(_q.isEmpty()) {
@@ -107,7 +107,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
         // if we got a location (point) back, find stops nearby
         } else {
           _results = 
-              _searchService.findStopsNearPoint(result.getLatitude(), result.getLongitude(), factory);
+              _searchService.findStopsNearPoint(result.getLatitude(), result.getLongitude(), factory, _results.getRouteIdFilter());
         }  
       }
     }

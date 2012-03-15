@@ -151,7 +151,8 @@ public class IndexAction extends SessionedIndexAction {
 
           // find stops near the point/address/intersection the user provided
           } else {
-            _searchResults = _searchService.findStopsNearPoint(geocodeResult.getLatitude(), geocodeResult.getLongitude(), _resultFactory);
+            _searchResults = _searchService.findStopsNearPoint(geocodeResult.getLatitude(), geocodeResult.getLongitude(), 
+                _resultFactory, _searchResults.getRouteIdFilter());
             continue;
             
           }
@@ -179,7 +180,8 @@ public class IndexAction extends SessionedIndexAction {
               GeocodeResult chosenLocation = (GeocodeResult)_searchResults.getSuggestions().get(Integer.parseInt(commandString) - 1);
 
               if(chosenLocation != null) {
-                _searchResults = _searchService.findStopsNearPoint(chosenLocation.getLatitude(), chosenLocation.getLongitude(), _resultFactory);
+                _searchResults = _searchService.findStopsNearPoint(chosenLocation.getLatitude(), chosenLocation.getLongitude(), 
+                    _resultFactory, _searchResults.getRouteIdFilter());
                 continue;
               }
             }
@@ -380,7 +382,11 @@ public class IndexAction extends SessionedIndexAction {
       String routesOnlyPartToAdd = "";
 
       if(stopResult.getRoutesAvailable().size() == 0) {
-        fixedPartToAdd += "No routes.\n";
+        if(_searchResults.getRouteIdFilter().size() > 0) {
+          fixedPartToAdd += "No filter matches.\n";
+        } else {
+          fixedPartToAdd += "No routes.\n";
+        }
       } else {
         for(RouteAtStop routeHere : stopResult.getRoutesAvailable()) {
           for(RouteDirection direction : routeHere.getDirections()) {

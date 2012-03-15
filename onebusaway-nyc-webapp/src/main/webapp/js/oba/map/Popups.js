@@ -263,10 +263,10 @@ OBA.Popups = (function() {
 	    jQuery.each(stopResult.routesAvailable, function(_, route) {
 	    	jQuery.each(route.directions, function(__, direction) {
 	    		if(direction.hasUpcomingScheduledService === false) {
-	    			routeAndDirectionWithoutSerivce[route.id + "_" + direction.directionId] = { "id":route.id, "short":route.shortName, "destination":direction.destination };
+	    			routeAndDirectionWithoutSerivce[route.id + "_" + direction.directionId] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
 	    			routeAndDirectionWithoutSerivceCount++;
 	    		} else {
-	    			routeAndDirectionWithoutArrivals[route.id + "_" + direction.directionId] = { "id":route.id, "short":route.shortName, "destination":direction.destination };
+	    			routeAndDirectionWithoutArrivals[route.id + "_" + direction.directionId] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
 	    			routeAndDirectionWithoutArrivalsCount++;
 	    		}
 	    	});
@@ -328,12 +328,8 @@ OBA.Popups = (function() {
 		if(routeAndDirectionWithoutArrivalsCount > 0) {
 			html += '<ul>';
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
-				var routeId = d.id;
-				var routeIdParts = routeId.split("_");
-				var routeIdWithoutAgency = routeIdParts[1];
-
 				html += '<li class="route">';
-				html += '<a href="#' + routeIdWithoutAgency + '">' + d.short + " " + d.destination + '</a>';
+				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
 				html += '</li>';
 			});
 			html += '</ul>';
@@ -343,12 +339,8 @@ OBA.Popups = (function() {
 		if(routeAndDirectionWithoutSerivceCount > 0) {
 			html += '<ul>';
 			jQuery.each(routeAndDirectionWithoutSerivce, function(_, d) {
-				var routeId = d.id;
-				var routeIdParts = routeId.split("_");
-				var routeIdWithoutAgency = routeIdParts[1];
-
 				html += '<li class="route">';
-				html += '<a href="#' + routeIdWithoutAgency + '">' + d.short + " " + d.destination + '</a>';
+				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
 				html += '</li>';
 			});
 			html += '</ul>';

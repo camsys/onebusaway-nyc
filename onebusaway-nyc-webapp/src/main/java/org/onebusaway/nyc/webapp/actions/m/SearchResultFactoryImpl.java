@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -133,12 +134,16 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean) {
+  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
     StopBean stop = _transitDataService.getStop(stopBean.getId());    
 
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
     for(RouteBean routeBean : stop.getRoutes()) {
+      if(routeIdFilter != null && !routeIdFilter.isEmpty() && !routeIdFilter.contains(routeBean.getId())) {
+          continue;
+      }
+      
       StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
       
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
@@ -188,7 +193,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeShortNameFilter) {
     return new GeocodeResult(geocodeResult);   
   }
 

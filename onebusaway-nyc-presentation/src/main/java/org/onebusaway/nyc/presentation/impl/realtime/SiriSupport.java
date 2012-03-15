@@ -76,9 +76,9 @@ public final class SiriSupport {
     directionRef.setValue(tripBean.getDirectionId());
     monitoredVehicleJourney.setDirectionRef(directionRef);
 
-    NaturalLanguageStringStructure routeLongName = new NaturalLanguageStringStructure();
-    routeLongName.setValue(tripBean.getRoute().getLongName());
-    monitoredVehicleJourney.setPublishedLineName(routeLongName);
+    NaturalLanguageStringStructure routeShortName = new NaturalLanguageStringStructure();
+    routeShortName.setValue(tripBean.getRoute().getShortName());
+    monitoredVehicleJourney.setPublishedLineName(routeShortName);
 
     JourneyPatternRefStructure journeyPattern = new JourneyPatternRefStructure();
     journeyPattern.setValue(tripBean.getShapeId());
