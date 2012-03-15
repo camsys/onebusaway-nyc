@@ -164,21 +164,21 @@ public class SearchServiceImpl implements SearchService {
     String[] tokens = q.split(" ");
     for(int i = 0; i < tokens.length; i++) {
       String token = tokens[i].trim().toUpperCase();
+
+      String lastItem = null;
+      String nextItem = null;
+      if(i - 1 >= 0) {
+        lastItem = tokens[i - 1].trim().toUpperCase();
+      }
+      
+      if(i + 1 < tokens.length) {
+        nextItem = tokens[i + 1].trim().toUpperCase();
+      }
       
       // keep track of route tokens we found when parsing
       if(_routeShortNameToIdMap.containsKey(token)) {
         // if a route is included as part of another type of query, then it's a filter--
-        // remove it from the normalized query
-        String lastItem = null;
-        String nextItem = null;
-        if(i - 1 >= 0) {
-          lastItem = tokens[i - 1].trim().toUpperCase();
-        }
-        
-        if(i + 1 < tokens.length) {
-          nextItem = tokens[i + 1].trim().toUpperCase();
-        }
-
+        // so remove it from the normalized query sent to the geocoder or stop service
         if(!_routeShortNameToIdMap.containsKey(lastItem) || !_routeShortNameToIdMap.containsKey(nextItem)) {
           _results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
           continue;
@@ -187,6 +187,12 @@ public class SearchServiceImpl implements SearchService {
 
       // allow the plus sign instead of "and"
       if(token.equals("+")) {
+        // if a user is prepending a route filter with a plus sign, chop it off
+        // e.g. main and craig + B63
+        if(_routeShortNameToIdMap.containsKey(nextItem)) {
+          continue;
+        }
+
         token = "and";
       }
       
