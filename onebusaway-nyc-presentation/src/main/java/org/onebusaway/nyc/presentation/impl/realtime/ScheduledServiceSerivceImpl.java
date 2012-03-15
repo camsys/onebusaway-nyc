@@ -116,7 +116,7 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
   @PostConstruct
   protected void setup() throws Exception {
     Thread bootstrapThread = new BootstrapThread();
-    bootstrapThread.run();
+    bootstrapThread.start();
 
     if(_taskScheduler != null) {
       UpdateThread updateThread = new UpdateThread();
