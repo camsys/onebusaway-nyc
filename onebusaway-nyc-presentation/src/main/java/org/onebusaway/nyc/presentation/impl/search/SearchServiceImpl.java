@@ -1,6 +1,5 @@
 package org.onebusaway.nyc.presentation.impl.search;
 
-import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
@@ -17,7 +16,6 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +49,6 @@ public class SearchServiceImpl implements SearchService {
 
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
 
-  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH )
   public void refreshCaches() {
     _routeShortNameToIdMap.clear();
     

@@ -29,6 +29,10 @@ public class RouteInRegionResult implements SearchResult {
     return route.getShortName();
   }
     
+  public String getDescription() {
+    return route.getDescription();
+  }
+
   public String getColor() {
    return route.getColor();
   }  

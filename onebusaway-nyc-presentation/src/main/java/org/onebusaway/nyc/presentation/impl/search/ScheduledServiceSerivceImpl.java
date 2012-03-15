@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.presentation.impl.realtime;
+package org.onebusaway.nyc.presentation.impl.search;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
@@ -75,7 +75,6 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
   }
   
   // FIXME: there's got to be a better way to do this--move to TDF for access to the graphdao? 
-  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH) 
   private void rebuildServiceCache() {
     _log.info("Rebuilding service cache for scheduled service service...");
     
@@ -145,7 +144,7 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
     public Date nextExecutionTime(TriggerContext arg0) {
       Date lastTime = arg0.lastScheduledExecutionTime();
       if(lastTime == null) {
-        return new Date();
+        lastTime = new Date();
       }
 
       Calendar calendar = new GregorianCalendar();
