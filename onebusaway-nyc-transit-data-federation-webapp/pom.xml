@@ -112,6 +112,16 @@
             </properties>
         </profile>
         <profile>
+            <id>local-ie-testing</id>
+            <properties>
+                <tdm.host></tdm.host>
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                <bundle.mode.standalone>true</bundle.mode.standalone>
+                <service.alerts.url></service.alerts.url>
+                <service.alerts.subscription.path></service.alerts.subscription.path>
+            </properties>
+        </profile>
+        <profile>
             <id>local-ie</id>
             <properties>
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
