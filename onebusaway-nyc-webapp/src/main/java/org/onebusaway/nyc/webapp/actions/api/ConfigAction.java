@@ -20,6 +20,10 @@ import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+/*
+ * A service to expose certain TDM configuration values to the front-end
+ * for handling there.
+ */
 public class ConfigAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;

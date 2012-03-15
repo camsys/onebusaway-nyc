@@ -19,13 +19,13 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
 	xmlns:wiki="/oba-wiki-tags">
 
-<s:iterator value="searchResults">
+<s:iterator value="results.matches">
 	<div>
 		<p>
 			<strong> 
 				<s:url var="url" namespace="/m" action="index">
 					<s:param name="q">
-						<s:property value="stopIdWithoutAgency" />
+						<s:property value="idWithoutAgency" />
 					</s:param>
 					<s:param name="l"><s:property value="l" /></s:param>
 				</s:url> 
@@ -35,52 +35,59 @@
 		</p>
 		
 		<s:if test="%{routesAvailable.size==0}">
-			<p>No service is available at this stop.</p>
+			<p class="noService">No service is available at this stop.</p>
 		</s:if>
 		<s:else>
 			<s:iterator value="routesAvailable">
-				<s:iterator value="destinations">
-					<p>
+				<s:iterator value="directions">
+					<div class="direction">
 						<s:url var="url" namespace="/m" action="index" anchor="%{directionId}">
 							<s:param name="q">
-								<s:property value="routeIdWithoutAgency" />
+								<s:property value="shortName" />
 							</s:param>
 							<s:param name="l"><s:property value="l" /></s:param>
 						</s:url>
 						<a href="${url}">
-							<s:property value="routeIdWithoutAgency" />&amp;nbsp;<s:property value="headsign" />
+							<s:property value="shortName" />&amp;nbsp;to&amp;nbsp;<s:property value="destination" />
 						</a>
 						<br/>
-
-						<ul>
-							<s:iterator value="serviceAlerts">
-								<li class="alert"><s:property value="value" escape="false"/></li>
-							</s:iterator>
-						</ul>
-
-						<s:if test="%{distanceAwayStrings.size==0}">
+	
+						<s:if test="%{serviceAlerts.size&gt;0}">
+						<div class="alerts">
+							<p>
+								<strong>Service Change:</strong>
+							</p>
+							<ul class="alerts">
+								<s:iterator value="serviceAlerts">
+									<li><s:property value="value" escape="false"/></li>
+								</s:iterator>
+							</ul>
+						</div>
+						</s:if>
+						
+						<s:if test="%{distanceAways.size==0}">
 							<c:choose>
-								<c:when test="${!hasUpcomingScheduledService}">
-									<span class="noService">
-										No scheduled service for the <s:property value="routeIdWithoutAgency" /> to <s:property value="headsign" /> at this time.
+								<c:when test="${hasUpcomingScheduledService==false}">
+									<p class="noService">
+										No scheduled service for the <s:property value="shortName" /> to <s:property value="destination" /> at this time.
 										<br/>
-									</span>
+									</p>
 								</c:when>
 								<c:otherwise>
-									<span class="noUpcomingService">
+									<p class="noBusEnRoute">
 										No buses en-route to your location. Please check back shortly for an update.
 										<br/>	
-									</span>	
+									</p>	
 								</c:otherwise>
 							</c:choose>
 						</s:if>
 						<s:else>
-							<c:forEach var="distanceAwayString" items="${distanceAwayStrings}">
-								<c:out value="${distanceAwayString}" />
+							<c:forEach var="distanceAway" items="${distanceAways}">
+								<c:out value="${distanceAway}" />
 								<br />
 							</c:forEach>
 						</s:else>
-					</p>
+					</div>
 				</s:iterator>					
 			</s:iterator>
 		</s:else>

@@ -22,6 +22,11 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-gtfs-hibernate-spring</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-nyc-transit-data</artifactId>
             <version>${onebusaway.nyc.version}</version>
         </dependency>

@@ -13,9 +13,9 @@ import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.bundle.model.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
@@ -303,6 +303,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		  _refreshService.refresh(NycRefreshableResources.TERMINAL_DATA);
 		  _refreshService.refresh(NycRefreshableResources.RUN_DATA);
 		} catch(Exception e) {
+		  _log.error("Bundle switch threw exception: " + e.getMessage());
 		  _log.error("Bundle " + bundleId + " failed to load. Disabling for this session...");
 		  
 		  _applicableBundles.remove(bundleId);

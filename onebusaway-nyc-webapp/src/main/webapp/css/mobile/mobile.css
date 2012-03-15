@@ -127,9 +127,21 @@ small {
     color: #666666;
     font-style: italic;
 }
-.alert {
+.alerts {
     color: #cc0000;
-    padding-bottom: 0.6em;
+	padding: .5em;
+	margin: 0;
+	margin-bottom: .3em;
+	margin-top: .3em;
+	background-color: #FDEEF4;
+}
+.alerts ul {
+	padding: 0;
+	margin: 0;
+}
+.alerts ul li {
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
 }
 ul {
 	margin: 0;
@@ -155,21 +167,26 @@ strong {
 }
 .routeList a {
 	display: inline-block;
-	text-align: center;
 	width: 30%;
 	margin-top: .6em;
 	margin-bottom: .6em;
 }
 p.noService {
+    color: #1C75BC;
+	padding: .5em;
+	margin: 0;
+	margin-bottom: .3em;
+	margin-top: .3em;
+	background-color: #DCF0F7;
 	font-weight: bold;
-	font-style: italic;
 }
-span.noService {
-	font-style: italic;
-}
-span.noUpcomingService {
-	font-style: italic;
+p.noBusEnRoute {
 	color: #AAAAAA;
+}
+div.direction {
+	padding: 0;
+	margin: 0;
+	padding-bottom: 1em;
 }
 .refresh {
     background-color: #aaaaaa;

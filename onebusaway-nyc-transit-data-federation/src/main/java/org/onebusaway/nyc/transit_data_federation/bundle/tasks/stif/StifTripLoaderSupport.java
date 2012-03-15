@@ -25,7 +25,8 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.onebusaway.gtfs.impl.HibernateGtfsRelationalDaoImpl;
+
+import org.onebusaway.gtfs.impl.SpringHibernateGtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
@@ -136,8 +137,8 @@ public class StifTripLoaderSupport {
      * those StopTimes. Instead, we just grab the first departure and last
      * arrival times.
      */
-    if (gtfsDao instanceof HibernateGtfsRelationalDaoImpl) {
-      HibernateGtfsRelationalDaoImpl dao = (HibernateGtfsRelationalDaoImpl) gtfsDao;
+    if (gtfsDao instanceof SpringHibernateGtfsRelationalDaoImpl) {
+      SpringHibernateGtfsRelationalDaoImpl dao = (SpringHibernateGtfsRelationalDaoImpl) gtfsDao;
       List<?> rows = (List<?>) dao.execute(new HibernateOperation() {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,

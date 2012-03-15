@@ -455,28 +455,6 @@ public class VehicleInferenceInstance {
       } else {
         record.setScheduleDeviation(null);
       }
-
-//      /*
-//       * If we're in layover at the end of a trip, report the
-//       * next trip in the block (if one exists).
-//       */
-//      if (record.getPhase() != null && record.getPhase().startsWith("LAYOVER_")) {
-//        BlockStopTimeEntry nextStop = blockLocation.getNextStop();
-//
-//        int stopSearchWindow = 2;
-//        while(stopSearchWindow-- > 0 && nextStop != null) {
-//          // trip changed: advance the bus to the first stop on this next trip
-//          if(!nextStop.getTrip().getTrip().getId().toString().equals(record.getTripId())) {
-//            record.setTripId(nextStop.getTrip().getTrip().getId().toString());
-//            record.setDistanceAlongBlock(nextStop.getDistanceAlongBlock());
-//            record.setDistanceAlongTrip(0.0);
-//
-//            break;
-//          }
-//
-//          nextStop = nextStop.hasNextStop() ? nextStop.getNextStop() : null;
-//        }
-//      }
       
       // distance along trip
       BlockTripEntry activeTrip = blockLocation.getActiveTrip();
@@ -500,7 +478,7 @@ public class VehicleInferenceInstance {
     NycRawLocationRecord nycRawRecord = obs.getRecord();
     BlockStateObservation blockState = state.getBlockStateObservation();
     
-    record.setUUID(nycRawRecord.getUUID());
+    record.setUUID(nycRawRecord.getUuid());
     record.setInferenceIsEnabled(_enabled);
     record.setLastUpdateTime(_lastUpdateTime);
     record.setLastLocationUpdateTime(_lastLocationUpdateTime);

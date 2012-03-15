@@ -61,6 +61,7 @@ public class SiriSupportTest {
     TripStatusBean status = new TripStatusBean();
     CoordinatePoint location = new CoordinatePoint(90.0, 90.0);
     status.setLocation(location );
+    status.setPhase("IN_PROGRESS");
     status.setStatus("normal");
     status.setDistanceAlongTrip(TRIP_STATUS_BEAN_DISTANCE_ALONG_TRIP);
     tripDetails.setStatus(status);

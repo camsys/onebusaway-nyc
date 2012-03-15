@@ -18,8 +18,7 @@ OBA.GoogleMapWrapper = function(mapNode) {
 
 	var map = new google.maps.Map(mapNode, defaultMapOptions);
 
-	
-	// *** add custom subway tiles to map ***
+	// CUSTOM SUBWAY TILES
 	var mtaSubwayMapType = new google.maps.ImageMapType({
 		bounds: new google.maps.LatLngBounds(
 					new google.maps.LatLng(40.48801936882241,-74.28397178649902),
@@ -30,6 +29,7 @@ OBA.GoogleMapWrapper = function(mapNode) {
 				return null;
 			}
 
+			// is the tile we're requesting out of the map's bounds?
 			var zoomFactor = Math.pow(2, zoom);
 			var center_p = new google.maps.Point((coord.x * 256 + 128) / zoomFactor, (((coord.y + 1) * 256) + 128) / zoomFactor);
 		    var center_ll = map.getProjection().fromPointToLatLng(center_p);
@@ -37,7 +37,8 @@ OBA.GoogleMapWrapper = function(mapNode) {
 		    if(!this.bounds.contains(center_ll)) {
 		    	return null;
 		    }
-		    
+
+		    // if not, calculate the quadtree value and request the graphic
 			var quad = "", i;
 		    for(i = zoom; i > 0; i--) {
 		        var mask = 1 << (i - 1); 
@@ -59,8 +60,54 @@ OBA.GoogleMapWrapper = function(mapNode) {
 		alt: ''
 	});
 
+	// SUBWAY TILES TOGGLE BUTTON
+	var SubwayTilesControl = function() {
+	  var subwayControlContainer = jQuery('<div id="subwayControlContainer"></div>');
+
+	  var subwayControlWrapper = jQuery('<div id="subwayControl"></div>')
+	  								.appendTo(subwayControlContainer);
+	  
+	  var subwayControl = jQuery('<a href="#" title="Click to toggle subway lines">Show Subway</a>')
+	  								.appendTo(subwayControlWrapper);
+	  
+	  subwayControl.click(function(e) { 
+		  e.preventDefault();
+		  
+		  if(map.overlayMapTypes.length === 1) { 
+			  map.overlayMapTypes.removeAt(0, mtaSubwayMapType);
+			  subwayControl.text("Show Subway");
+		  } else {
+			  map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
+			  subwayControl.text("Hide Subway");
+
+			  // fix for IE
+			  subwayControl.css('width', '86');
+		  }
+	  });
+
+	  var zoomUpdate = function() {
+		  if(map.getZoom() < 14 || map.getZoom() > 15) {
+			  subwayControlContainer.hide();	
+		  } else {
+			  subwayControlContainer.show();
+		  }
+	  };
+	  
+	  google.maps.event.addListener(map, 'zoom_changed', function() { 
+		  zoomUpdate();
+	  });
+
+	  google.maps.event.addListener(map, 'idle', function() { 
+		  zoomUpdate();
+	  });
+	 
+	  return subwayControlContainer.get(0);
+	};
 	
-	// *** custom google styled basemap ***
+	var subwayTilesControl = new SubwayTilesControl();
+	map.controls[google.maps.ControlPosition.TOP_RIGHT].push(subwayTilesControl);
+	
+	// CUSTOM STYLED BASEMAP
 	var mutedTransitStylesArray = 
 		[{
 			featureType: "road.arterial",
@@ -150,54 +197,7 @@ OBA.GoogleMapWrapper = function(mapNode) {
 	var transitStyledMapType = new google.maps.StyledMapType(mutedTransitStylesArray, {name: "Transit"});
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
-
 	
-	// *** subway tiles toggle button ***
-	var SubwayTilesControl = function() {
-	  var subwayControlContainer = jQuery('<div id="subwayControlContainer"></div>');
-	  var subwayControlWrapper = jQuery('<div id="subwayControl"></div>')
-	    .appendTo(subwayControlContainer);
-	  var subwayControl = jQuery('<a href="#" title="Click to toggle subway lines">Show Subway</a>')
-	  	.appendTo(subwayControlWrapper);
-	  
-	  
-	  subwayControl.click(function(e) { 
-		  e.preventDefault();
-		  
-		  if(map.overlayMapTypes.length === 1) { 
-			  map.overlayMapTypes.removeAt(0, mtaSubwayMapType);
-			  subwayControl.text("Show Subway");
-		  } else {
-			  map.overlayMapTypes.insertAt(0, mtaSubwayMapType);
-			  subwayControl.text("Hide Subway");
-			  subwayControl.css('width', '86');
-		  }
-	  });
-
-	  var zoomUpdate = function() {
-		  if(map.getZoom() < 14 || map.getZoom() > 15) {
-			  subwayControlContainer.hide();	
-		  } else {
-			  subwayControlContainer.show();
-		  }
-	  };
-	  
-	  google.maps.event.addListener(map, 'zoom_changed', function() { 
-		  zoomUpdate();
-	  });
-
-	  google.maps.event.addListener(map, 'idle', function() { 
-		  zoomUpdate();
-	  });
-	  
-	 
-	  return subwayControlContainer.get(0);
-	};
-	
-	var subwayTilesControl = new SubwayTilesControl();
-	map.controls[google.maps.ControlPosition.TOP_RIGHT].push(subwayTilesControl);
-
-	
-	// *** return google object back to caller ***
+	// RETURN OBJECT BACK TO CALLER
 	return map;
 };

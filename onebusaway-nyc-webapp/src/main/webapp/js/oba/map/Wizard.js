@@ -19,7 +19,7 @@ var OBA = window.OBA || {};
 OBA.Wizard = function(routeMap) {	
 	
 	// change to false to disable wizard
-	 var wizard_enabled = true;
+	var wizard_enabled = false;
 			
 	var wizard = jQuery("#wizard"),
 		wizard_start = jQuery("#wizard_start"),
@@ -214,7 +214,7 @@ OBA.Wizard = function(routeMap) {
 		});	
 			
 	// 2a. Hints for disambiguation	
-	var getTopOffset, getPlacement, getPopupLeft;
+	var getTopOffset = 0, getPlacement = 0, getPopupLeft = 0;
 	
 	function prepareDisambiguationPopup() {
 		wizard_didyoumean.popover({
@@ -346,6 +346,7 @@ OBA.Wizard = function(routeMap) {
 		legend.unbind('route_result', showDirectionPopup);
 		legend.unbind('location_result', showClickOnRouteOrZoomFooter);
 		legend.unbind('no_result', noResultResponse);
+
 		routeMap.unregisterInfoWindowListeners();
 		if (map_listener) {
 			routeMap.unregisterMapListener(map_listener);

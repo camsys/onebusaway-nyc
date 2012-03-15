@@ -21,6 +21,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.ScheduledBlockLocationComparator;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.impl.blocks.FrequencyComparator;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.transit_graph.FrequencyEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;

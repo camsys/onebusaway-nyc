@@ -1,23 +1,5 @@
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.lang.StringUtils;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.services.calendar.CalendarService;
@@ -42,15 +24,30 @@ import org.onebusaway.utility.ObjectSerializationLibrary;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
 
 @Component
 public class RunServiceImpl implements RunService {
@@ -504,8 +501,7 @@ public class RunServiceImpl implements RunService {
     BlockInstance activeBlock = getBlockInstanceForRunTripEntry(runTrip,
         serviceDate);
     int scheduleTime = (int) ((timestamp - serviceDate.getTime()) / 1000);
-    BlockTripEntry bte = blockCalendarService.getTargetBlockTrip(activeBlock,
-        runTrip.getTripEntry());
+    BlockTripEntry bte = getTargetBlockTrip(activeBlock, runTrip.getTripEntry());
     ScheduledBlockLocation sbl = scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
         bte.getBlockConfiguration(), scheduleTime);
 
@@ -573,4 +569,15 @@ public class RunServiceImpl implements RunService {
     return runIdsToTripIds.get(runId);
   }
 
+  private static BlockTripEntry getTargetBlockTrip(BlockInstance blockInstance,
+      TripEntry trip) {
+
+    BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+
+    for (BlockTripEntry blockTrip : blockConfig.getTrips()) {
+      if (blockTrip.getTrip().equals(trip))
+        return blockTrip;
+    }
+    return null;
+  }
 }

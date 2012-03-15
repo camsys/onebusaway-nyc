@@ -74,6 +74,9 @@
 <s:url var="url" value="/js/oba/map/GoogleMapWrapper.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
+<s:url var="url" value="/js/oba/map/Popups.js"/>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 <s:url var="url" value="/js/oba/map/RouteMap.js"/>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
@@ -115,16 +118,23 @@
          <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
        </form>
        
-       <div id="results">
-       	 <h2>Did you mean...</h2>
-       </div>
+       <div id="suggestions">
+       	 <h2>Did You Mean?</h2>
+       	 <ul></ul>
+	   </div>
 	            
-	   <div id="legend">
-	   	 <h2 id="for_stop">&amp;nbsp;</h2>
-       	 <h2 id="nearby">&amp;nbsp;</h2>
+       <div id="matches">
+       	 <h2>Results:</h2>
+       	 <ul></ul>
 	   </div>
 
 	   <div id="no-results">&amp;nbsp;</div>
+
+	   <div id="loading">
+		   	<div class="loading">
+		   		<span>Loading...</span>
+	   		</div>
+	   </div>
 
 	   <div id="welcome">
 		 <h2>Try these example searches:</h2>
@@ -141,10 +151,6 @@
 		 </ul>
 	   </div>
 	   
-	   <div id="loading">
-	   		<p>Loading...</p>
-	   </div>
-
     </div>
 
 	<div id="map"></div>

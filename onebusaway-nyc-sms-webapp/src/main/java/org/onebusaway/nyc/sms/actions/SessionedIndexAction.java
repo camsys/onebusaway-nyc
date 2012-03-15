@@ -15,7 +15,8 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
-import org.onebusaway.nyc.presentation.model.search.SearchResultCollection;
+import org.onebusaway.nyc.presentation.model.SearchResultCollection;
+import org.onebusaway.nyc.sms.services.GoogleAnalyticsSessionAware;
 import org.onebusaway.presentation.impl.NextActionSupport;
 
 import com.dmurph.tracking.VisitorData;
@@ -65,10 +66,11 @@ public abstract class SessionedIndexAction extends NextActionSupport
       // count it as another request in the same session--otherwise a new session from
       // an existing visitor.
       if(_visitorCookie != null) {
-        if(_visitorCookie.getTimestampCurrent() - _visitorCookie.getTimestampPrevious() > SESSION_RESET_WINDOW_IN_SECONDS)
+        if(_visitorCookie.getTimestampCurrent() - _visitorCookie.getTimestampPrevious() > SESSION_RESET_WINDOW_IN_SECONDS) {
           _visitorCookie.resetSession();
-        else
+        } else {
           _visitorCookie.newRequest();
+        }
       }
     }
   }

@@ -2,8 +2,6 @@ package org.onebusaway.nyc.transit_data_federation.bundle.model;
 
 import java.io.File;
 
-import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
-
 /**
  * Captures the file structure of various file artifacts of a federated transit
  * data bundle. All artifact file paths are relative to a base path.

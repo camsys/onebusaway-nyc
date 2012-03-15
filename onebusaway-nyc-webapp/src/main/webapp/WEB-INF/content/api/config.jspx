@@ -25,5 +25,4 @@ if(typeof OBA !== 'undefined' &amp;&amp; typeof OBA.Config !== 'undefined') {
 
 	OBA.Config.configurationHasLoaded();
 }
-
 </jsp:root>

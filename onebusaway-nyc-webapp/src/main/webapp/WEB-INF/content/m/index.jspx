@@ -24,7 +24,7 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=.90,user-scalable=no"/>  
 
-	<title>MTA Bus Time: <s:property value="title"/></title>
+	<title>MTA Bus Time<s:property value="title"/></title>
 	
   	<link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
 
@@ -48,6 +48,7 @@
 		</s:url>
 	    <h1><a href="${url}">MTA Bus Time</a></h1>
 	</div>
+
 	<div id="searchPanel">
 		<s:form namespace="/m" action="index" method="GET">
 	        <label for="q">Search for: </label>
@@ -60,7 +61,7 @@
 		<small>TIP: Enter an intersection, bus route or bus stop code.</small>
 	</div>
 
-	<s:if test="%{searchResults.size==0}">
+	<s:if test="%{results.empty}">
 		<c:import url="welcome.jspx"/>
 	</s:if>
 	<s:else>
@@ -71,25 +72,34 @@
 				<s:param name="l"><s:property value="l" /></s:param>
 				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 			</s:url>
-	    	<a href="${url}">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}">Refresh Results</a>
 		</div>
 
-		<s:if test="resultType.equals('StopResult')">
-			<c:import url="stopResult.jspx"/>
+		<s:if test="%{results.suggestions.size&gt;0}">
+			<!-- route search with no direct matches -->
+			<s:if test="results.resultType.equals('RouteResult')">
+				<c:import url="routeSuggestionPicker.jspx"/>
+			</s:if>
+
+			<!-- amigbuous address -->
+			<s:elseif test="results.resultType.equals('GeocodeResult')">
+					<c:import url="geocodeResult.jspx"/>
+			</s:elseif>
+		</s:if>	
+
+		<s:if test="%{results.matches.size&gt;0}">
+			<s:if test="results.resultType.equals('RouteResult')">
+				<c:import url="routeResult.jspx"/>
+			</s:if>
+			<s:elseif test="results.resultType.equals('RouteInRegionResult')">
+					<c:import url="routeInRegionPicker.jspx"/>
+			</s:elseif>
+			<s:elseif test="results.resultType.equals('StopResult')">
+				<c:import url="stopResult.jspx"/>
+			</s:elseif>
 		</s:if>
-				
-		<s:elseif test="resultType.equals('RouteResult')">
-			<c:import url="routeResult.jspx"/>
-		</s:elseif>
-
-		<s:elseif test="resultType.equals('RouteItem')">
-			<c:import url="routeItem.jspx"/>
-		</s:elseif>
-
-		<s:elseif test="resultType.equals('LocationResult')">
-			<c:import url="locationResult.jspx"/>
-		</s:elseif>
-
+		
+		
 		<a name="bottom"></a>
 		<div class="refresh">
 			<s:url var="url" namespace="/m" action="index" anchor="bottom">				
@@ -97,7 +107,7 @@
 				<s:param name="l"><s:property value="l" /></s:param>
 				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 			</s:url>
-	    	<a href="${url}">Refresh Results (updated <s:property value="lastUpdateTime" />)</a>
+	    	<a href="${url}">Refresh Results</a>
 		</div>
 	</s:else>
 

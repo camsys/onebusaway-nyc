@@ -18,11 +18,13 @@ import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
+import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
+import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -138,10 +140,37 @@ public final class SiriSupport {
     monitoredVehicleJourney.setVehicleLocation(location);
 
     // situation refs
-    addSituations(monitoredVehicleJourney, tripDetails);
+    fillSituations(monitoredVehicleJourney, tripDetails);
 
     // onward and monitored calls:
     List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
+
+    // if in layover, add the next trip in the block's stops
+    if(tripDetails.getStatus().getPhase().toUpperCase().startsWith("LAYOVER_")) {
+      TripBean nextTrip = tripDetails.getSchedule().getNextTrip();
+      
+      if(nextTrip != null) {      
+        TripDetailsQueryBean query = new TripDetailsQueryBean();
+        query.setTripId(nextTrip.getId());
+        query.setVehicleId(tripDetails.getStatus().getVehicleId());
+        
+        ListBean<TripDetailsBean> details = transitDataService.getTripDetails(query);
+        for(TripDetailsBean possibleNextTripDetails : details.getList()) {
+          // next trip must be on same block
+          if(!possibleNextTripDetails.getTrip().getBlockId().equals(tripDetails.getTrip().getBlockId()))
+            continue;
+
+          double offset = tripDetails.getStatus().getTotalDistanceAlongTrip();          
+
+          if(offset > 0 && !Double.isNaN(offset)) {
+            for(TripStopTimeBean stopTime : possibleNextTripDetails.getSchedule().getStopTimes()) {
+              stopTime.setDistanceAlongTrip(stopTime.getDistanceAlongTrip() + offset);
+              stopTimes.add(stopTime);
+            }
+          }
+        }
+      }
+    }
     
     // sort stop times--important!!
     Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
@@ -154,7 +183,7 @@ public final class SiriSupport {
     int o = 0;
 
     boolean afterStart = false;
-    boolean afterStop = (tripDetails.getStatus().getNextStop() == null);
+    boolean afterStop = false;
     
     double distance = tripDetails.getStatus().getDistanceAlongTrip();
     HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();
@@ -211,6 +240,26 @@ public final class SiriSupport {
     }    
 
     return;
+  }
+
+  /***
+   * PRIVATE STATIC METHODS
+   */
+  
+  private static void fillSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripDetailsBean trip) {
+    if (trip == null || CollectionUtils.isEmpty(trip.getSituations())) {
+      return;
+    }
+
+    List<SituationRefStructure> situationRef = monitoredVehicleJourney.getSituationRef();
+
+    for (ServiceAlertBean situation : trip.getSituations()) {
+      SituationRefStructure sitRef = new SituationRefStructure();
+      SituationSimpleRefStructure sitSimpleRef = new SituationSimpleRefStructure();
+      sitSimpleRef.setValue(situation.getId());
+      sitRef.setSituationSimpleRef(sitSimpleRef);
+      situationRef.add(sitRef);
+    }
   }
 
   private static OnwardCallStructure getOnwardCallStructure(StopBean stopBean, TripStopTimeBean stopTime, 
@@ -275,6 +324,7 @@ public final class SiriSupport {
     return monitoredCallStructure;
   }
   
+  
   private static int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
     int visitNumber;
    
@@ -288,6 +338,7 @@ public final class SiriSupport {
     
     return visitNumber;
   }
+  
   
   private static ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {
     if (phase == null) {
@@ -311,20 +362,4 @@ public final class SiriSupport {
     return ProgressRateEnumeration.UNKNOWN;
   }
   
-  private static void addSituations(MonitoredVehicleJourneyStructure monitoredVehicleJourney, TripDetailsBean trip) {
-    if (trip == null || CollectionUtils.isEmpty(trip.getSituations())) {
-      return;
-    }
-
-    List<SituationRefStructure> situationRef = monitoredVehicleJourney.getSituationRef();
-
-    for (ServiceAlertBean situation : trip.getSituations()) {
-      SituationRefStructure sitRef = new SituationRefStructure();
-      SituationSimpleRefStructure sitSimpleRef = new SituationSimpleRefStructure();
-      sitSimpleRef.setValue(situation.getId());
-      sitRef.setSituationSimpleRef(sitSimpleRef);
-      situationRef.add(sitRef);
-    }
-  }
-
 }

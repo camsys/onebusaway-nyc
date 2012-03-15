@@ -14,14 +14,14 @@
     <name>onebusaway-nyc</name>
 
     <properties>
-        <onebusaway.gtfs.version>1.2.4</onebusaway.gtfs.version>
-        <onebusaway.siri.version>1.0.0</onebusaway.siri.version>
-        <onebusaway.csv-entities.version>1.0.2-SNAPSHOT</onebusaway.csv-entities.version>
-        <struts.version>2.2.1.1</struts.version>
+    	<onebusaway.gtfs.version>1.2.7-SNAPSHOT</onebusaway.gtfs.version>
+    	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
+    	<onebusaway.csv-entities.version>1.0.3-SNAPSHOT</onebusaway.csv-entities.version>
+    	<struts.version>2.2.1.1</struts.version>
         <jetty.version>6.1.26</jetty.version>
         <spring.version>3.0.3.RELEASE</spring.version>
         <onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
-        <onebusaway.app-modules.version>2.0.18-SNAPSHOT</onebusaway.app-modules.version>
+        <onebusaway.app-modules.version>2.0.20-SNAPSHOT</onebusaway.app-modules.version>
         <onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
         <gitDescribe>99999</gitDescribe>
     </properties>
@@ -128,7 +128,9 @@
         <module>onebusaway-nyc-vehicle-tracking-webapp</module>
         <module>onebusaway-nyc-webapp</module>
         <module>onebusaway-nyc-presentation</module>
+<!--
         <module>onebusaway-nyc-sms-webapp</module>
+-->
         <module>onebusaway-nyc-transit-data</module>
         <module>onebusaway-nyc-transit-data-manager</module>
         <module>onebusaway-nyc-transit-data-federation</module>
@@ -156,7 +158,9 @@
                 <module>onebusaway-nyc-vehicle-tracking-webapp</module>
                 <module>onebusaway-nyc-webapp</module>
                 <module>onebusaway-nyc-presentation</module>
+<!--
                 <module>onebusaway-nyc-sms-webapp</module>
+-->
                 <module>onebusaway-nyc-transit-data</module>
                 <module>onebusaway-nyc-transit-data-manager</module>
                 <module>onebusaway-nyc-transit-data-federation</module>
