@@ -299,7 +299,7 @@ OBA.Sidebar = function () {
 		var resultsList = suggestions.find("ul");
 
 		jQuery.each(routeResults, function(_, route) {
-			var link = jQuery("<a href='#" + route.shortName + "'></a>")
+			var link = jQuery('<a href="#' + route.shortName + '"></a>')
 							.text(route.shortName)
 							.attr("title", route.description);
 
