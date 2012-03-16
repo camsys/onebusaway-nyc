@@ -380,6 +380,7 @@ public class IndexAction extends SessionedIndexAction {
 
     String body = ""; 
     int i = offset;
+    int routesInThisPage = 0;
     while(i < _searchResults.getMatches().size()) {
       StopResult stopResult = (StopResult)_searchResults.getMatches().get(i);
 
@@ -446,12 +447,19 @@ public class IndexAction extends SessionedIndexAction {
       // we can fit realtime for this stop
       if(realtimePartToAdd.length() + 1 < remainingSpace) {
         body += fixedPartToAdd + realtimePartToAdd;
-
+        routesInThisPage++;
+        
       // we can fit only routes for this stop
       } else if(routesOnlyPartToAdd.length() + 1 < remainingSpace) {
         body += fixedPartToAdd + routesOnlyPartToAdd;
+        routesInThisPage++;
 
-      // out of space!      
+      // can't fit the "fallback case"
+      } else if(routesInThisPage == 0 && routesOnlyPartToAdd.length() + 1 > remainingSpace) {
+        body += fixedPartToAdd + "(too many routes to show)\n";
+        routesInThisPage++;
+
+      // out of space in this message, break to next page    
       } else {
         break;
       }
