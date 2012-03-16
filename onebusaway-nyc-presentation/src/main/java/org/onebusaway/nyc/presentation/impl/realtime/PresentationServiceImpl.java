@@ -67,12 +67,12 @@ public class PresentationServiceImpl implements PresentationService {
   
   @Override
   public String getPresentableDistance(SiriDistanceExtension distances) {
-    return getPresentableDistance(distances, "approaching", "stop", "stops", "mile", "miles");
+    return getPresentableDistance(distances, "approaching", "stop", "stops", "mile", "miles", "away");
   }
   
   @Override
   public String getPresentableDistance(SiriDistanceExtension distances, String approachingText, 
-      String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord) {
+      String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord, String awayWord) {
 
     int atStopThresholdInFeet = 
         _configurationService.getConfigurationValueAsInteger("display.atStopThresholdInFeet", 100);    
@@ -106,15 +106,15 @@ public class PresentationServiceImpl implements PresentationService {
           || feetAway <= distanceAsStopsThresholdInFeet)) {
         
         if(distances.getStopsFromCall() == 0)
-          r = "< 1 " + oneStopWord + " away";
+          r = "< 1 " + oneStopWord + " " + awayWord;
         else
           r = distances.getStopsFromCall() == 1
-          ? "1 " + oneStopWord + " away"
-              : distances.getStopsFromCall() + " " + multipleStopsWord + " away";
+          ? "1 " + oneStopWord + " " + awayWord
+              : distances.getStopsFromCall() + " " + multipleStopsWord + " " + awayWord;
 
       } else {
         double milesAway = (float)feetAway / 5280;
-        r = String.format("%1.1f " + multipleMilesWord + " away", milesAway);
+        r = String.format("%1.1f " + multipleMilesWord + " " + awayWord, milesAway);
       }
     }
     
