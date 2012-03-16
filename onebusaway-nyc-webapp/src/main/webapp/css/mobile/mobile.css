@@ -131,7 +131,7 @@ strong {
 #searchPanel form {
 	padding-top: 0;
 	padding-bottom: 0;
-    background-image: url("../map/img/search_background.png");
+    background-image: url("img/search_background.png");
     background-repeat: no-repeat;
     display: block;
     position: relative;
@@ -139,7 +139,7 @@ strong {
     height: 40px;
 }
 #searchPanel .s {
-    background: url("../map/img/search_icon.png") no-repeat scroll 0 0 transparent;
+    background: url("img/search_icon.png") no-repeat scroll 0 0 transparent;
     border: 0 none;
     cursor: pointer;
     height: 30px;
@@ -211,15 +211,25 @@ small {
 	padding: 0;
 	margin: 0;
 }
+.stopsOnRoute {
+	margin-left: .25em;
+}
 .stopsOnRoute li {
 	padding: 0;
 	margin: 0;
 	padding: .3em;
-	padding-left: 40px;
+	padding-left: 20px;
+}
+.arrivalsAtStop li {
+	padding-left: 20px;
+	background-image: url('img/bullet_bus.png');
+	background-repeat: no-repeat;
+	background-position: center left;
 }
 .routeList a {
 	display: inline-block;
-	width: 30%;
+	text-align: center;
+	width: 20%;
 	margin-top: .6em;
 	margin-bottom: .6em;
 }

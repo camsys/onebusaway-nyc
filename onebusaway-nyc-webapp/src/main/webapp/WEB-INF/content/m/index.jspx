@@ -97,7 +97,7 @@
     		<a href="${mobileHelpUrl}">Help</a> | 
     		
     		<s:url var="desktopUrl" namespace="/" action="index"/>	
-    		<a href="${desktopUrl}">Desktop Version</a> |
+    		<a href="${desktopUrl}">Desktop Site</a> |
     		
     		<s:url var="contactUrl" namespace="/wiki" action="ContactUs"/>	
     		<a href="${contactUrl}">Contact</a> |

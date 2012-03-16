@@ -84,7 +84,7 @@
 							</c:choose>
 						</s:if>
 						<s:else>
-							<ol>
+							<ol class="arrivalsAtStop">
 								<c:forEach var="distanceAway" items="${distanceAways}">
 									<li><c:out value="${distanceAway}" /></li>
 								</c:forEach>

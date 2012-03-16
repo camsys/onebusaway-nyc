@@ -229,13 +229,14 @@
 #content #matches ul li.legendItem p.destination ul.stops {
 	margin-top: 5px;
 	margin-bottom: 20px;
+	margin-left: 25px;
 }
 
 #content #matches ul li.legendItem p.destination ul.stops li {
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 3px;
-	padding-left: 40px;
+	padding-left: 20px;
 }
 
 /* default--this is overrideen  by javascript */
