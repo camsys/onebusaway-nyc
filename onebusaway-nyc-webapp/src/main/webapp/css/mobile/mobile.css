@@ -77,73 +77,38 @@ body table {
 -------------------------------------------------------------- */
 /* turn off iOS auto test zooming */
 body {
-    background-color: #eaeaea;
-    font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
-    -webkit-text-size-adjust: none;
-}
-a:link, 
-a:visited {
-    color: #0358B6;
-    text-decoration: none;
-}
-a:hover,
-a:focus {
-    color: #000;
-    text-decoration: underline;
-}
-a:active {
-    color: red;
-    text-decoration: underline;
-}
-#branding {
     background-color: #ffffff;
-    color: #c0c0c0;
-    padding: 0.6em 1.2em;
+    font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+    padding: 1.5em;
+	-webkit-text-size-adjust: none;
 }
-#branding a {
-	color: #666666;
+a:visited,
+a:active,
+a {
+	color: #0189c7;
 	text-decoration: none;
 }
+a:hover {
+	color: #33CCFF;
+}
 h1 {
-    color: #fff;
+	font-size: 100%;
+	font-weight: normal;
+	color: #666666;
 }
 h2 {
 	font-size: 100%;
 	font-weight: normal;
 }
-
-div {
-    margin: 0.4em;
-    padding: 1.2em;
-    background: #ffffff;
+h3 {
+    font-size: 100%;
+    font-weight: bold;
+	color: #818181;
 }
-p {
+div, p {
     margin: 0 0 0.6em
 }
-small {
-	display: block;
-	padding-top: 5px;
-	font-size: 80%;
-    color: #666666;
-    font-style: italic;
-}
-.alerts {
-    color: #cc0000;
-	padding: .5em;
-	margin: 0;
-	margin-bottom: .3em;
-	margin-top: .3em;
-	background-color: #FDEEF4;
-}
-.alerts ul {
-	padding: 0;
-	margin: 0;
-}
-.alerts ul li {
-    padding-top: 0.3em;
-    padding-bottom: 0.3em;
-}
-ul {
+ol, ul {
 	margin: 0;
     padding: 0;
     line-height: 1;
@@ -157,61 +122,59 @@ li {
 strong {
     font-weight: bold;
 }
+
+/* search panel */
+#searchPanel {
+	padding: 0;
+	margin: 0;
+}
+#searchPanel form {
+	padding-top: 0;
+	padding-bottom: 0;
+    background-image: url("../map/img/search_background.png");
+    background-repeat: no-repeat;
+    display: block;
+    position: relative;
+    width: 302px;
+    height: 40px;
+}
+#searchPanel .s {
+    background: url("../map/img/search_icon.png") no-repeat scroll 0 0 transparent;
+    border: 0 none;
+    cursor: pointer;
+    height: 30px;
+    margin: 3px 6px 0 0;
+    position: absolute;
+    text-indent: -9999px;
+	right: 0;
+    top: 0;
+    width: 30px;
+}
+#searchPanel .q {
+    background-color: transparent;
+    border: 0 none;
+    font-family: inherit;
+    font-size: 120%;
+    font-weight: bold;
+    height: 25px;
+    width: 252px;
+	margin-left: 8px;
+    margin-top: 6px;
+}
+small {
+	display: block;
+	font-size: 75%;
+    color: #666666;
+}
+
 #toggleUI {
-	padding-bottom: 10px;	
+	margin: 0;
+	padding: 0;
 }
 #toggleUI a {
 	display: inline-block;
 	text-align: center;
 	margin: .6em;
-}
-.routeList a {
-	display: inline-block;
-	width: 30%;
-	margin-top: .6em;
-	margin-bottom: .6em;
-}
-p.noService {
-    color: #1C75BC;
-	padding: .5em;
-	margin: 0;
-	margin-bottom: .3em;
-	margin-top: .3em;
-	background-color: #DCF0F7;
-	font-weight: bold;
-}
-p.noBusEnRoute {
-	color: #AAAAAA;
-}
-div.direction {
-	padding: 0;
-	margin: 0;
-	padding-bottom: 1em;
-}
-.refresh {
-    background-color: #aaaaaa;
-    color: #eaeaea;
-    padding: 0;
-    text-align: center;
-    font-size: 80%;
-    text-transform: uppercase;
-}
-.refresh a:link, 
-.refresh a:visited {
-    display: block;
-    padding: 0.6em 1.2em;
-    color: #eaeaea;
-    font-weight: bold;
-    text-decoration: none;
-}
-.refresh a:hover,
-.refresh a:focus {
-    color: #ffffff;
-    text-decoration: none;
-}
-.refresh a:active {
-    color: red;
-    text-decoration: none;
 }
 #nearby {
 	padding-top: 15px;
@@ -219,27 +182,79 @@ div.direction {
 #nearby input {
 	width: 280px;
 }
+
+/* content panel */
+#content {
+	padding-top: 1em;
+}
+
+.ambiguousLocations,
+.examples,
+.routeList,
+.stop,
+.route {
+	padding-top: 1em;
+}
+.directionForRoute {
+	margin-top: 2em;
+}
+.directionAtStop {
+	margin-bottom: 2em;
+}
+.routeDescription {
+	padding-top: .25em;
+}
+.noMatches {
+	padding-bottom: 1em;
+}
+.routeHeader {
+	padding: 0;
+	margin: 0;
+}
+.stopsOnRoute li {
+	padding: 0;
+	margin: 0;
+	padding: .3em;
+	padding-left: 40px;
+}
+.routeList a {
+	display: inline-block;
+	width: 30%;
+	margin-top: .6em;
+	margin-bottom: .6em;
+}
+
+.alerts {
+    color: #cc0000;
+	background-color: #FDEEF4;
+	padding: .75em;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+}
+.alerts ul {
+	padding: 0;
+	margin: 0;
+}
+.alerts ul li {
+	margin: 0;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+}
+
+.noService {
+    color: #1C75BC;
+	background-color: #DCF0F7;
+	padding: .75em;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+	font-weight: bold;
+}
+.noBusEnRoute {
+	color: #AAAAAA;
+}
+
 #footer {
-    background-color: #ffffff;
-    color: #0358B6;
-    padding: 0.6em 1.2em;
+	margin-top: 2em;
+	padding-top: .5em;
     line-height: 1.6em;
-}
-#footer a:link, 
-#footer a:visited {
-    color: #0358B6;
-    font-weight: bold;
-}
-#footer a:hover,
-#footer a:focus {
-    color: #0358B6;
-    text-decoration: underline;
-}
-#footer a:active {
-    color: red;
-    text-decoration: underline;
-}
-#credit {
-    color: #666666;
-    font-size: 80%;
 }

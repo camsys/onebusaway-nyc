@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.webapp.actions.m;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
@@ -24,13 +25,17 @@ import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
+import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
 import org.onebusaway.transit_data.services.TransitDataService;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.xwork.StringEscapeUtils;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -195,6 +200,16 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       return _location.getLat() + "," + _location.getLon();
     else
       return "off";
+  }
+  
+  public String getRouteColors() {
+    Set<String> routeColors = new HashSet<String>();
+    for(SearchResult _result : _results.getMatches()) {
+      RouteResult result = (RouteResult)_result;
+      routeColors.add(result.getColor());
+    }
+
+    return StringUtils.join(routeColors, ",");
   }
   
   public String getCacheBreaker() {

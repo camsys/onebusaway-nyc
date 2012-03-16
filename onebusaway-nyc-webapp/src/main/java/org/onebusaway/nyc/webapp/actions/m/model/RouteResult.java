@@ -37,6 +37,10 @@ public class RouteResult implements SearchResult {
     return route.getDescription();
   }
 
+  public String getColor() {
+    return route.getColor();
+  }
+  
   public List<RouteDirection> getDirections() {
     return directions;
   }  
