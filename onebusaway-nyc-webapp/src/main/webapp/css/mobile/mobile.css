@@ -190,7 +190,6 @@ small {
 
 .ambiguousLocations,
 .examples,
-.routeList,
 .stop,
 .route {
 	padding-top: 1em;
@@ -201,6 +200,7 @@ small {
 .directionAtStop {
 	margin-bottom: 2em;
 }
+.routeList,
 .routeDescription {
 	padding-top: .25em;
 }
@@ -254,7 +254,6 @@ small {
 }
 
 #footer {
-	margin-top: 2em;
-	padding-top: .5em;
+	padding-top: 1em;
     line-height: 1.6em;
 }

@@ -135,14 +135,14 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
       // referrer
       HttpServletRequest request = ServletActionContext.getRequest();      
-      String referer = request.getHeader("referer");	
+      String referer = request.getHeader("referer");  
       if (referer == null || referer.isEmpty()) {
         referer = "-";
       }
       url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
 
       // event tracking
-      String label = getQ();	      
+      String label = getQ();        
       if(label == null) {
         label = "";
       }
@@ -166,28 +166,24 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
         } else if(_results.getResultType().equals("StopResult")) {
           action = "Stop or Intersection Search";
-        }	    	  
-      }	else {
+        }         
+      } else {
         if(getQueryIsEmpty()) {
           action = "Home";
         } else {
-          action = "No Search Results";	    		  
+          action = "No Search Results";           
         }
       }
 
-      // page view on homepage hit, "event" for everything else.
-      if(action.equals("Home")) {
-        url.append("&utmp=/m/index");
-      } else {
-        url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");	    	  
-      }
+      //url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");          
+      url.append("&utmp=/m/index#" + action + "/" + label);
 
       return url.toString().replace("&", "&amp;"); 
     } catch(Exception e) {
       return null;
     }
   }
-
+  
   public String getQ() {
     if((_q == null || _q.isEmpty()) && _location != null)
       return CURRENT_LOCATION_TEXT;
