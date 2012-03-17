@@ -391,9 +391,6 @@ public class ParticleFilter<OBS> {
         final SensorModelResult result = getCachedParticleLikelihood(particle,
             obs);
 
-//        if (result == null)
-//          continue;
-
         final double likelihood = result.getProbability()
             * particles.count(particle);
 

@@ -20,13 +20,24 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
+import gov.sandia.cognition.evaluator.Evaluator;
+import gov.sandia.cognition.learning.algorithm.tree.CategorizationTreeNode;
+import gov.sandia.cognition.learning.algorithm.tree.DecisionTreeNode;
+import gov.sandia.cognition.learning.function.categorization.AbstractBinaryCategorizer;
+import gov.sandia.cognition.learning.function.categorization.BinaryCategorizer;
+
 import com.google.common.base.Objects;
+import com.google.common.collect.Sets;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Collection;
+import java.util.Set;
 
 // @Component
 public class RunTransitionLikelihood implements SensorModelRule {
@@ -39,87 +50,62 @@ public class RunTransitionLikelihood implements SensorModelRule {
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
   }
+  
+  public static enum RUN_TRANSITION_STATE {
+    RUN_CHANGE_INFO_DIFF,
+    RUN_CHANGE_FROM_OOS,
+    RUN_CHANGE_FROM_IS,
+    RUN_NOT_CHANGED
+  }
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
+    final SensorModelResult result = new SensorModelResult("pTransition", 1.0);
+    
+    RUN_TRANSITION_STATE state = getRunTransitionState(context);
+    
+    switch(state) {
+      case RUN_CHANGE_INFO_DIFF:
+        return result.addResultAsAnd("changed reported run or operator id", 0.9/2d);
+      case RUN_CHANGE_FROM_OOS:
+        return result.addResultAsAnd("change from o.o.s.", 0.1*(3d/4d));
+      case RUN_CHANGE_FROM_IS:
+        return result.addResultAsAnd("change not from o.o.s.", 0.1/4d);
+      case RUN_NOT_CHANGED:
+        return result.addResultAsAnd("not-changed run", 0.9/2d);
+      default:
+        return null;
+    }
+  }
 
+  public RUN_TRANSITION_STATE getRunTransitionState(Context context) {
     final VehicleState state = context.getState();
     final VehicleState parentState = context.getParentState();
     final Observation obs = context.getObservation();
     final Observation prevObs = obs.getPreviousObservation();
-    final EVehiclePhase phase = state.getJourneyState().getPhase();
-    final BlockState blockState = state.getBlockState();
 
-    final SensorModelResult result = new SensorModelResult("pTransition", 1.0);
 
-    if (parentState != null) {
-      if (!obs.getRecord().getRunId().equals(prevObs.getRecord().getRunId())) {
-        result.addResultAsAnd("changed reported run", 1.0);
-      } else if (!Objects.equal(obs.getRecord().getOperatorId(),
-          prevObs.getRecord().getOperatorId())) {
-        result.addResultAsAnd("changed operator id", 1.0);
-        // } else if
-        // (_destinationSignCodeService.isUnknownDestinationSignCode(obs.getRecord().getDestinationSignCode()))
-        // {
-        // result.addResultAsAnd("unknown dsc", 1.0);
-      } else if (blockState == null) {
-        if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-            || EVehiclePhase.isDeadhead(parentState.getJourneyState().getPhase())) {
-          result.addResultAsAnd("trans to null(prior)", 0.2);
-        } else {
-          result.addResultAsAnd("trans to null(active)", 0.01);
-        }
+    if (parentState != null
+        && MotionModelImpl.hasRunChanged(parentState.getBlockStateObservation(),
+          state.getBlockStateObservation())) {
+      if (!Objects.equal(obs.getRecord().getRunId(), prevObs.getRecord().getRunId())
+           || !Objects.equal(obs.getRecord().getOperatorId(), prevObs.getRecord().getOperatorId())) {
+        
+        return RUN_TRANSITION_STATE.RUN_CHANGE_INFO_DIFF;
       } else {
-        result.addResultAsAnd("trans to not-null(prior)", 0.9);
-        /*
-         * Everything is fine regarding the observed values, now, how does the
-         * inferred info fare? First, consider if run is correct.
-         */
-        if (MotionModelImpl.hasRunChanged(
-            parentState.getBlockStateObservation(),
-            state.getBlockStateObservation())) {
-          result.addResultAsAnd("changed runs(prior)", 0.05);
-
-          if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-              || EVehiclePhase.isDeadhead(parentState.getJourneyState().getPhase())) {
-            // result.addResultAsAnd("trans non-active(prior)", 0.8);
-            /*
-             * Transitioning right into deadhead-after?
-             */
-            if (EVehiclePhase.DEADHEAD_AFTER == phase) {
-              result.addResultAsAnd("trans to deadhead-after", 0.001);
-            } else {
-              // result.addResultAsAnd("trans to not-deadhead-after", 0.99);
-            }
-          } else {
-            result.addResultAsAnd("trans active(prior)", 0.001);
-          }
-
-          // final boolean wasAtBlockTerminal =
-          // VehicleStateLibrary.isAtPotentialTerminal(
-          // prevObs.getRecord(),
-          // parentBlockState.getBlockInstance());
-          // final boolean isAtBlockTerminal =
-          // VehicleStateLibrary.isAtPotentialTerminal(
-          // obs.getRecord(),
-          // parentBlockState.getBlockInstance());
-          // boolean throughTerminal = wasAtBlockTerminal && !isAtBlockTerminal;
-          //
-          // if (throughTerminal) {
-          // // result.addResultAsAnd("through-terminal", 0.9);
-          // } else {
-          // result.addResultAsAnd("not through-terminal", 0.25);
-          // }
+        if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
+            || EVehiclePhase.DEADHEAD_AFTER == parentState.getJourneyState().getPhase()
+            || EVehiclePhase.DEADHEAD_BEFORE == parentState.getJourneyState().getPhase()
+            || EVehiclePhase.DEADHEAD_DURING == parentState.getJourneyState().getPhase()) {
+          
+          return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS;
         } else {
-          result.addResultAsAnd("didn't change runs(prior)", 0.95);
+          return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_IS;
         }
-
       }
     } else {
-      result.addResultAsAnd("no parent", 1.0);
+      return RUN_TRANSITION_STATE.RUN_NOT_CHANGED;
     }
-
-    return result;
   }
 }

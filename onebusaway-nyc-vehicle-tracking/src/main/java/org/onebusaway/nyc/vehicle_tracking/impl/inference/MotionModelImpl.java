@@ -35,6 +35,9 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
+import gov.sandia.cognition.statistics.distribution.DataCountTreeSetBinnedMapHistogram;
+import gov.sandia.cognition.statistics.distribution.DefaultDataDistribution;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
@@ -154,7 +157,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
     }
 
     for (int i = 0; i < parent.getCount(); ++i) {
+      
       final CategoricalDist<Particle> transitionDist = new CategoricalDist<Particle>();
+      
       for (final BlockStateObservation proposalEdge : transitions) {
 
         final SensorModelResult transProb = new SensorModelResult("transition");
@@ -170,9 +175,10 @@ public class MotionModelImpl implements MotionModel<Observation> {
              * are no snapped states, otherwise, we sample "true' 
              * locations from the GPS's error range. 
              */
-            if (proposalEdge.isSnapped()) {
-              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
-//              newEdge = proposalEdge;
+            if (proposalEdge != parentState.getBlockStateObservation() 
+                && proposalEdge.isSnapped()) {
+//              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
+              newEdge = proposalEdge;
             } else if (runChanged) {
               newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
                   proposalEdge.getBlockState().getBlockInstance(), obs);
@@ -184,9 +190,10 @@ public class MotionModelImpl implements MotionModel<Observation> {
                   parentState.getJourneyState().getPhase());
             }
           } else {
-            if (proposalEdge.isSnapped()) {
-              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
-//              newEdge = proposalEdge;
+            if (proposalEdge != parentState.getBlockStateObservation()
+                && proposalEdge.isSnapped()) {
+//              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
+              newEdge = proposalEdge;
             } else {
               newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
                   proposalEdge.getBlockState().getBlockInstance(), obs);

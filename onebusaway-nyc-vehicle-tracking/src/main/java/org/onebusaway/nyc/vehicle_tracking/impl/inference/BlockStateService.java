@@ -21,7 +21,6 @@ import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.services.calendar.CalendarService;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
@@ -33,11 +32,9 @@ import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.impl.shapes.ShapePointsLibrary;
 import org.onebusaway.transit_data_federation.model.ShapePoints;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockIndexService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.shapes.ProjectedShapePointService;
 import org.onebusaway.transit_data_federation.services.shapes.ShapePointService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
@@ -108,15 +105,7 @@ public class BlockStateService {
 
   private ShapePointsLibrary _shapePointsLibrary;
 
-  private ProjectedShapePointService _projectedShapePointService;
-
-  private final double _threshold = 50;
-
-  private ScheduleDeviationLibrary _scheduleDeviationLibrary;
-
   private SpatialIndex _index;
-
-  private BlockIndexService _blockIndexService;
 
   private BlockCalendarService _blockCalendarService;
 
@@ -126,21 +115,12 @@ public class BlockStateService {
 
   private ShapePointService _shapePointService;
 
-  private CalendarService _calendarService;
-
   @PostConstruct
   @Refreshable(dependsOn = {
-      // RefreshableResources.SHAPE_GEOSPATIAL_INDEX,
-      RefreshableResources.TRANSIT_GRAPH,
-      // RefreshableResources.BLOCK_INDEX_DATA,
-      RefreshableResources.CALENDAR_DATA, RefreshableResources.NARRATIVE_DATA})
+      RefreshableResources.TRANSIT_GRAPH, 
+      RefreshableResources.NARRATIVE_DATA})
   public void setup() throws IOException, ClassNotFoundException {
     buildShapeSpatialIndex();
-  }
-
-  @Autowired
-  public void setCalendarService(CalendarService calendarService) {
-    _calendarService = calendarService;
   }
 
   @Autowired
@@ -149,24 +129,8 @@ public class BlockStateService {
   }
 
   @Autowired
-  public void setProjected(ProjectedShapePointService projectedShapePointService) {
-    _projectedShapePointService = projectedShapePointService;
-  }
-
-  @Autowired
   public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
     _transitGraphDao = transitGraphDao;
-  }
-
-  @Autowired
-  public void setBlockIndexService(BlockIndexService blockIndexService) {
-    _blockIndexService = blockIndexService;
-  }
-
-  @Autowired
-  public void setScheduleDeviationLibrary(
-      ScheduleDeviationLibrary scheduleDeviationLibrary) {
-    _scheduleDeviationLibrary = scheduleDeviationLibrary;
   }
 
   @Autowired
@@ -273,12 +237,11 @@ public class BlockStateService {
       // : Arrays.asList(bestTime, bestLocation);
       return _bestStates;
     }
-    
+
     @Override
     public String toString() {
-      return Objects.toStringHelper("BestBlockStates")
-          .add("bestStates", _bestStates)
-          .toString();
+      return Objects.toStringHelper("BestBlockStates").add("bestStates",
+          _bestStates).toString();
     }
 
   }
@@ -503,9 +466,8 @@ public class BlockStateService {
         /*
          * XXX we might not want to snap these if the dsc is out-of-service
          */
-        if ((!observation.getDscImpliedRouteCollections().isEmpty()
-            && !observation.getDscImpliedRouteCollections().contains(
-                location.getActiveTrip().getTrip().getRouteCollection().getId()))
+        if ((!observation.getDscImpliedRouteCollections().isEmpty() && !observation.getDscImpliedRouteCollections().contains(
+            location.getActiveTrip().getTrip().getRouteCollection().getId()))
             || schedTime < searchTimeFrom)
           continue;
 
@@ -549,8 +511,8 @@ public class BlockStateService {
   }
 
   /**
-   * Computes distance along a blockConfigEntry for a given
-   * starting stop-time index.<br>
+   * Computes distance along a blockConfigEntry for a given starting stop-time
+   * index.<br>
    * Here's an example of how to get the index:<br>
    * 
    * <pre>
@@ -561,6 +523,7 @@ public class BlockStateService {
    *     IndexAdapters.BLOCK_STOP_TIME_DEPARTURE_INSTANCE);
    * }
    * </pre>
+   * 
    * <br>
    * Code taken from ScheduledBlockLocationServiceImpl.
    * 
@@ -569,69 +532,68 @@ public class BlockStateService {
    * @param scheduleTime
    * @return
    */
-  public double getDistanceAlongBlock(BlockConfigurationEntry blockEntry, int fromStopTimeIndex, 
-      int scheduleTime) {
+  public double getDistanceAlongBlock(BlockConfigurationEntry blockEntry,
+      int fromStopTimeIndex, int scheduleTime) {
 
-    List<BlockStopTimeEntry> stopTimes = blockEntry.getStopTimes();
+    final List<BlockStopTimeEntry> stopTimes = blockEntry.getStopTimes();
 
-    Preconditions.checkElementIndex(fromStopTimeIndex, stopTimes.size()+1);
-    
+    Preconditions.checkElementIndex(fromStopTimeIndex, stopTimes.size() + 1);
+
     double distanceAlongBlock = Double.NaN;
     if (fromStopTimeIndex == 0) {
-      BlockStopTimeEntry blockStopTime = stopTimes.get(0);
-      StopTimeEntry stopTime = blockStopTime.getStopTime();
-  
-  
+      final BlockStopTimeEntry blockStopTime = stopTimes.get(0);
+      final StopTimeEntry stopTime = blockStopTime.getStopTime();
+
       /**
        * If we have more than one stop time in the block (we'd hope!), then we
        * attempt to interpolate the distance along the block
        */
       if (stopTimes.size() > 1) {
-  
-        BlockStopTimeEntry secondBlockStopTime = stopTimes.get(1);
-        StopTimeEntry secondStopTime = secondBlockStopTime.getStopTime();
-  
+
+        final BlockStopTimeEntry secondBlockStopTime = stopTimes.get(1);
+        final StopTimeEntry secondStopTime = secondBlockStopTime.getStopTime();
+
         distanceAlongBlock = InterpolationLibrary.interpolatePair(
             stopTime.getDepartureTime(), blockStopTime.getDistanceAlongBlock(),
             secondStopTime.getArrivalTime(),
             secondBlockStopTime.getDistanceAlongBlock(), scheduleTime);
-  
+
         if (distanceAlongBlock < 0)
           distanceAlongBlock = 0.0;
       }
     } else {
       while (fromStopTimeIndex < stopTimes.size()) {
-        int t = blockEntry.getDepartureTimeForIndex(fromStopTimeIndex);
+        final int t = blockEntry.getDepartureTimeForIndex(fromStopTimeIndex);
         if (scheduleTime <= t)
           break;
         fromStopTimeIndex++;
       }
-  
+
       if (fromStopTimeIndex < stopTimes.size()) {
-        BlockStopTimeEntry blockBefore = stopTimes.get(fromStopTimeIndex - 1);
-        BlockStopTimeEntry blockAfter = stopTimes.get(fromStopTimeIndex);
-    
-        StopTimeEntry before = blockBefore.getStopTime();
-        StopTimeEntry after = blockAfter.getStopTime();
-        
-        int fromTime = before.getDepartureTime();
-        int toTime = after.getArrivalTime();
-        
-        double ratio = (scheduleTime - fromTime) / ((double) (toTime - fromTime));
-    
-        double fromDistance = blockBefore.getDistanceAlongBlock();
-        double toDistance = blockAfter.getDistanceAlongBlock();
-    
-        distanceAlongBlock = ratio * (toDistance - fromDistance)
-            + fromDistance;
+        final BlockStopTimeEntry blockBefore = stopTimes.get(fromStopTimeIndex - 1);
+        final BlockStopTimeEntry blockAfter = stopTimes.get(fromStopTimeIndex);
+
+        final StopTimeEntry before = blockBefore.getStopTime();
+        final StopTimeEntry after = blockAfter.getStopTime();
+
+        final int fromTime = before.getDepartureTime();
+        final int toTime = after.getArrivalTime();
+
+        final double ratio = (scheduleTime - fromTime)
+            / ((double) (toTime - fromTime));
+
+        final double fromDistance = blockBefore.getDistanceAlongBlock();
+        final double toDistance = blockAfter.getDistanceAlongBlock();
+
+        distanceAlongBlock = ratio * (toDistance - fromDistance) + fromDistance;
       } else {
         distanceAlongBlock = blockEntry.getTotalBlockDistance();
       }
     }
-    
+
     return distanceAlongBlock;
   }
-  
+
   private static class TripInfo {
     final double _distanceFrom;
     final double _distanceTo;
@@ -654,10 +616,6 @@ public class BlockStateService {
       return _distanceFrom;
     }
 
-    public double getDistanceTo() {
-      return _distanceTo;
-    }
-
     public ShapeIdxAndId getShapeAndIdx() {
       return _shapeAndIdx;
     }
@@ -675,10 +633,6 @@ public class BlockStateService {
 
     public AgencyAndId getShapeId() {
       return _shapeId;
-    }
-
-    public int getShapePointIndex() {
-      return _shapePointIndex;
     }
 
   }
@@ -759,6 +713,8 @@ public class BlockStateService {
     } catch (final Exception ex) {
       ex.printStackTrace();
     }
+    
+    _log.info("done.");
   }
 
 }

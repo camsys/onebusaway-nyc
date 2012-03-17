@@ -63,7 +63,7 @@ public class ScheduleLikelihood implements SensorModelRule {
    */
   final static public double schedDevMeanPrior = 0.0;
   final static public double schedDevStdDevPrior = 80.0/2;
-  final static public double schedDevDuringStdDevPrior = 30.0/2;
+  final static public double schedDevDuringStdDevPrior = 80.0/2;
   final static public double schedTransScale = 1.5;
   final private double layoverDuringMean = 0.0;
   final private double layoverDuringStdDev = 80.0/2;
@@ -109,13 +109,13 @@ public class ScheduleLikelihood implements SensorModelRule {
     final SensorModelResult result = new SensorModelResult("pSchedule", 1.0);
     if (blockState == null) {
       
-      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.5);
+      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.95);
       final double pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior, x);
       result.addResultAsAnd("sched", pSched);
       
     } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
       
-      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.5);
+      final double x = FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.95);
       final double pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior, x);
       result.addResultAsAnd("deadhead after", pSched);
       
@@ -131,19 +131,23 @@ public class ScheduleLikelihood implements SensorModelRule {
       
     } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
       
-      final double startDev = SensorModelSupportLibrary.startOrResumeBlockOnTimeDev(state, obs);
-      final double pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevDuringStdDevPrior,
-          startDev);
+//      final double startDev = SensorModelSupportLibrary.startOrResumeBlockOnTimeDev(state, obs);
+//      final double pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevDuringStdDevPrior,
+//          startDev);
+      final double pSched = NormalDist.density(schedDevMeanPrior, schedDevStdDevPrior,
+          state.getBlockStateObservation().getScheduleDeviation());
       result.addResultAsAnd("deadhead during", pSched);
       
     } else if (EVehiclePhase.LAYOVER_DURING == phase) {
       
-      final BlockStopTimeEntry nextStop = 
-          VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
-
-      final double pLayoverDuring = computeBetweenStopsDevProb(obs.getTime(), blockState,
-          nextStop, true);
-      result.addResultAsAnd("layover during", pLayoverDuring);
+//      final BlockStopTimeEntry nextStop = 
+//          VehicleStateLibrary.getPotentialLayoverSpot(blockState.getBlockLocation());
+//
+//      final double pLayoverDuring = computeBetweenStopsDevProb(obs.getTime(), blockState,
+//          nextStop, true);
+      final double pSched = NormalDist.density(schedDevMeanPrior, schedDevStdDevPrior,
+          state.getBlockStateObservation().getScheduleDeviation());
+      result.addResultAsAnd("layover during", pSched);
       
       
     } else if (EVehiclePhase.IN_PROGRESS == phase) {
@@ -170,7 +174,7 @@ public class ScheduleLikelihood implements SensorModelRule {
 //    } else {
     
       final double schedDev = state.getBlockStateObservation().getScheduleDeviation() < 0.0 ? 
-          FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.5)
+          FoldedNormalDist.inverseF(schedDevMeanPrior, schedDevStdDevPrior, 0.95)
             : state.getBlockStateObservation().getScheduleDeviation();
       pSched = FoldedNormalDist.density(schedDevMeanPrior, schedDevStdDevPrior, schedDev);
 //    }
@@ -187,7 +191,7 @@ public class ScheduleLikelihood implements SensorModelRule {
 
     // No next stop? Could just be sitting...
     if (layoverStop == null) {
-      final double x = FoldedNormalDist.inverseF(mean, stdDev, 0.5);
+      final double x = FoldedNormalDist.inverseF(mean, stdDev, 0.95);
       final double pSched = FoldedNormalDist.density(mean, stdDev, x);
       return pSched;
     }

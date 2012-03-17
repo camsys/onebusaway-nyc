@@ -46,10 +46,42 @@ public class DestinationSignCodeRule implements SensorModelRule {
     _destinationSignCodeService = destinationSignCodeService;
   }
   
+  public static enum DSC_STATE {
+    DSC_OOS_IP,
+    DSC_OOS_NOT_IP,
+    DSC_IS_NO_BLOCK,
+    DSC_MATCH,
+    DSC_ROUTE_MATCH,
+    DSC_NO_ROUTE_MATCH
+  }
+  
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
+    
+    final SensorModelResult result = new SensorModelResult(
+        "pDestinationSignCode");
+    DSC_STATE state = getDscState(context);
+    switch(state) {
+      case DSC_OOS_IP:
+        return result.addResultAsAnd("in-progress o.o.s. dsc", 0.0);
+      case DSC_OOS_NOT_IP:
+        return result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95/2d);
+      case DSC_IS_NO_BLOCK:
+        return result.addResultAsAnd("not o.o.s. dsc null-block", 0.01);
+      case DSC_MATCH:
+        return result.addResultAsAnd("in-service matching DSC", 0.95/2d);
+      case DSC_ROUTE_MATCH:
+        return result.addResultAsAnd("in-service route-matching DSC", 0.04);
+      case DSC_NO_ROUTE_MATCH:
+        return result.addResultAsAnd("in-service non-route-matching DSC", 0.0);
+      default:
+        return null;
+    }
+  
+  }
 
+  public DSC_STATE getDscState(final Context context) { 
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
 
@@ -57,84 +89,68 @@ public class DestinationSignCodeRule implements SensorModelRule {
     final EVehiclePhase phase = js.getPhase();
 
     final String observedDsc = obs.getLastValidDestinationSignCode();
+    
 
-    /**
-     * If we haven't yet seen a valid DSC
-     */
-    if (observedDsc == null)
-      return new SensorModelResult("pDestinationSignCode: no DSC set", 1.0);
-
-    final SensorModelResult result = new SensorModelResult(
-        "pDestinationSignCode");
-
-    /**
-     * Rule: out-of-service DSC => ! IN_PROGRESS
-     */
-
-    final double p1 = implies(p(obs.isOutOfService()),
-        p(phase != EVehiclePhase.IN_PROGRESS));
-
-    result.addResultAsAnd("out-of-service DSC => ! IN_PROGRESS", p1);
-
-    /**
-     * If it is out of service then the following route-based considerations
-     * can't be applied.
-     */
-    if (obs.isOutOfService())
-      return result;
-
-    final BlockState bs = state.getBlockState();
-    if (bs != null) {
-      Set<String> dscs = Sets.newHashSet();
-      dscs.add(bs.getDestinationSignCode());
-      Set<AgencyAndId> routes = Sets.newHashSet();
-      routes.add(bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId());
-      /*
-       * DSC changes occur between parts of a block, so
-       * account for that
+    if (observedDsc == null || obs.isOutOfService()) {
+      /**
+       * If we haven't yet seen a valid DSC, or it's out of service
        */
-      
-      if (EVehiclePhase.LAYOVER_DURING == phase
-          || EVehiclePhase.DEADHEAD_DURING == phase) {
-        BlockTripEntry nextTrip = bs.getBlockLocation().getActiveTrip()
-                  .getNextTrip();
-        
-        if (nextTrip != null) {
-          final String dsc = _destinationSignCodeService
-              .getDestinationSignCodeForTripId(nextTrip.getTrip().getId());
-          if (dsc != null)
-            dscs.add(dsc);
-          routes.add(nextTrip.getTrip().getRouteCollection().getId());
-        }
-      }
-        
-      if (dscs.contains(observedDsc)) {
-        result.addResultAsAnd("in-service matching DSC", 1.0);
+      if (EVehiclePhase.IN_PROGRESS == phase) {
+        return DSC_STATE.DSC_OOS_IP; 
       } else {
-        /*
-         * a dsc implies a route. even though the reported dsc may not match, we
-         * expect the general route to be the same...
-         */
-
-
-        boolean routeMatch = false;
-        for (final AgencyAndId dscRoute : obs.getDscImpliedRouteCollections()) {
-          if (routes.contains(dscRoute)) {
-            routeMatch = true;
-            break;
-          }
-        }
-
-        if (routeMatch)
-          result.addResultAsAnd("in-service route-matching DSC", 0.9);
-        else
-          result.addResultAsAnd("in-service non-route-matching DSC", 1e-5);
+        return DSC_STATE.DSC_OOS_NOT_IP; 
       }
     } else {
-      result.addResultAsAnd("in-service no DSC predicted", 1.0);
+      final BlockState bs = state.getBlockState();
+      if (bs == null) {
+        return DSC_STATE.DSC_IS_NO_BLOCK; 
+      } else {
+        Set<String> dscs = Sets.newHashSet();
+        dscs.add(bs.getDestinationSignCode());
+        Set<AgencyAndId> routes = Sets.newHashSet();
+        routes.add(bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId());
+        
+        /*
+         * dsc changes occur between parts of a block, so
+         * account for that
+         */
+        if (EVehiclePhase.LAYOVER_DURING == phase
+            || EVehiclePhase.DEADHEAD_DURING == phase) {
+          BlockTripEntry nextTrip = bs.getBlockLocation().getActiveTrip()
+                    .getNextTrip();
+          
+          if (nextTrip != null) {
+            final String dsc = _destinationSignCodeService
+                .getDestinationSignCodeForTripId(nextTrip.getTrip().getId());
+            if (dsc != null)
+              dscs.add(dsc);
+            routes.add(nextTrip.getTrip().getRouteCollection().getId());
+          }
+        }
+        
+        if (dscs.contains(observedDsc)) {
+          return DSC_STATE.DSC_MATCH;
+        } else {
+          /*
+           * a dsc implies a route. even though the reported dsc may not match, we
+           * expect the general route to be the same...
+           */
+          boolean routeMatch = false;
+          for (final AgencyAndId dscRoute : obs.getDscImpliedRouteCollections()) {
+            if (routes.contains(dscRoute)) {
+              routeMatch = true;
+              break;
+            }
+          }
+  
+          if (routeMatch)
+            return DSC_STATE.DSC_ROUTE_MATCH;
+          else
+            return DSC_STATE.DSC_NO_ROUTE_MATCH;
+        }
+        
+      }
     }
-
-    return result;
   }
 
 }

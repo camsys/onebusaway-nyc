@@ -208,17 +208,16 @@ public class VehicleInferenceInstance {
        */
       final long delta = Math.abs(timestamp - _previousObservation.getTime());
 
-//      final NycRawLocationRecord lastRecord = _previousObservation.getRecord();
-//
-//      final boolean dscChange = false;
+      final NycRawLocationRecord lastRecord = _previousObservation.getRecord();
+
 //      final boolean dscChange = !ObjectUtils.equals(
 //          lastRecord.getDestinationSignCode(), record.getDestinationSignCode());
-//
-//      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(),
-//          record.getRunId());
-//
-//      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(),
-//          record.getOperatorId());
+
+      reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(),
+          record.getRunId());
+
+      operatorIdChange = !StringUtils.equals(lastRecord.getOperatorId(),
+          record.getOperatorId());
 
       if (delta > _automaticResetWindow) {
 //          || (dscChange && delta > _optionalResetWindow)) {

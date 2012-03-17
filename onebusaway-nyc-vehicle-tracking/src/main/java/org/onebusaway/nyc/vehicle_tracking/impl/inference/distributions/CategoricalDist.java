@@ -266,6 +266,10 @@ public class CategoricalDist<T extends Comparable<T>> {
   public String toString() {
     return _entriesToProbs.toString();
   }
+  
+  public double getCummulativeProb() {
+    return _cumulativeProb;
+  }
 
   public double density(T thisState) {
     return _entriesToProbs.get(thisState);
