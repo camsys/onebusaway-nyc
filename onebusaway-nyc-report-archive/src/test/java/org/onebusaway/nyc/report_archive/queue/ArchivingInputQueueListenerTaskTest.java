@@ -27,21 +27,15 @@ public class ArchivingInputQueueListenerTaskTest {
   @InjectMocks
   ArchivingInputQueueListenerTask t = new ArchivingInputQueueListenerTask();
 
-  //@Before
-  public void initMocks() {
-    //MockitoAnnotations.initMocks(this); // conversely use MockitoJunitRunner
-  }
-  
   @Test
   public void testProcessMessage() throws IOException {
     String contents = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("sample-message.json"))).readLine();
-    // TODO This is a no-op test for now.
-//    t.processMessage("this is the address", contents);
+    // This is a no-op test for now.
+    t.processMessage("this is the address", contents);
   }
 
   @Test
   public void testGetZoneOffset() {
-    // mockito
     
     Calendar c = Calendar.getInstance();
     c.set(2012, 2, 8, 0, 0, 0); // 1 week before DST
@@ -68,5 +62,15 @@ public class ArchivingInputQueueListenerTaskTest {
     assertEquals("-04:00", t.getZoneOffset(c.getTime(), "America/New_York"));
   }
 
+  // @Test
+  // public void testConvertTime() {
+  //   // time reported may be invalid from bus on startup, test logic that 
+  //   // corrects it
+  //   String badTimeStr = "2011-10-15T03:26:19";
+  //   CcLocationReportRecord cc = new Cc
+  //   assertEquals("2011-10-15T03:26:19.000-04-00", t.convertTimeStr(badTimeStr));
+  // }    
+
   private static final String ccLocationStr = "{\"RealtimeEnvelope\": {\"UUID\":\"foo\",\"timeReceived\": 1234567,\"CcLocationReport\": {\"request-id\" : 528271,\"vehicle\": {\"vehicle-id\": 7579,\"agency-id\": 2008,\"agencydesignator\": \"MTA NYCT\"},\"status-info\": 0,\"time-reported\": \"2011-10-15T03:26:19.000-00:00\",\"latitude\": 40612060,\"longitude\": -74035771,\"direction\": {\"deg\": 128.77},\"speed\": 0,\"manufacturer-data\": \"VFTP123456789\",\"operatorID\": {\"operator-id\": 0,\"designator\": \"\"},\"runID\": {\"run-id\": 0,\"designator\": \"\"},\"destSignCode\": 4631,\"routeID\": {\"route-id\": 0,\"route-designator\": \"\"},\"localCcLocationReport\": {\"NMEA\": {\"sentence\": [\"\",\"\"]}}}}}";
+
 }
