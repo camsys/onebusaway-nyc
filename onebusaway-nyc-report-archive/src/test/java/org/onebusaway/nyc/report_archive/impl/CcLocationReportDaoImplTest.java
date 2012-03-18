@@ -142,8 +142,13 @@ public class CcLocationReportDaoImplTest {
       CcLocationReportRecord r = new CcLocationReportRecord(envelope, contents, "-04:00");
       assertEquals((int)r.getRequestId(), (int)m.getRequestId());
       // todo test others
-      assertEquals(m.getLocalCcLocationReport().getNMEA().getSentence().get(0), r.getNmeaSentenceGPGGA());
-      assertEquals(m.getLocalCcLocationReport().getNMEA().getSentence().get(1), r.getNmeaSentenceGPRMC());
+      for (String s : m.getLocalCcLocationReport().getNMEA().getSentence()) {
+	  if (s.indexOf("$GPGGA") != -1) {
+	      assertEquals(s, r.getNmeaSentenceGPGGA());
+	  } else if (s.indexOf("$GPRMC") != -1) {
+	      assertEquals(s, r.getNmeaSentenceGPRMC());
+	  }
+      }
   }
 
     @Test

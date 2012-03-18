@@ -152,12 +152,21 @@ public class CcLocationReportRecord implements Serializable {
     // Check for localCcLocationReport and extract sentences if available
     String gpggaSentence = null;
     String gprmcSentence = null;
+    String sentence1 = null;
+    String sentence2 = null;
     
     if ((message.getLocalCcLocationReport() != null) 
 	&& (message.getLocalCcLocationReport().getNMEA() != null)
 	&& (message.getLocalCcLocationReport().getNMEA().getSentence() != null)) {
-	gpggaSentence = message.getLocalCcLocationReport().getNMEA().getSentence().get(0);
-	gprmcSentence = message.getLocalCcLocationReport().getNMEA().getSentence().get(1);
+      for (String s: message.getLocalCcLocationReport().getNMEA().getSentence()) {
+	if (s != null) {
+	  if (s.indexOf("$GPGGA") != -1) {
+	    gpggaSentence = s;
+	  } else if (s.indexOf("$GPRMC") != -1) {
+	    gprmcSentence = s;
+	  }
+	}
+      }
     }
     setNmeaSentenceGPGGA(gpggaSentence);
     setNmeaSentenceGPRMC(gprmcSentence);
