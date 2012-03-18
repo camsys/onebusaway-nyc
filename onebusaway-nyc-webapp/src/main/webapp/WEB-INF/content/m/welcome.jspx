@@ -60,11 +60,15 @@
 		<li>Stop ID: <a href="${url}">200884</a>
 		</li>
 
-		<s:url var="url" namespace="/m" action="index">
+		<s:url var="zipCodeUrl" namespace="/m" action="index">
 			<s:param name="q">10304</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Location: <a href="${url}">10304</a>
+		<s:url var="streetUrl" namespace="/m" action="index">
+			<s:param name="q">Hylan Blvd</s:param>
+			<s:param name="l"><s:property value="l" /></s:param>
+		</s:url>
+		<li>Location: <a href="${zipCodeUrl}">10304</a>  &amp;nbsp; <a href="${streetUrl}">Hylan Blvd</a>
 		</li>
 		<li>(Add route for best results)</li>
 		<br />

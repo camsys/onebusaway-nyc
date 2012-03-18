@@ -140,10 +140,10 @@ public class SearchServiceImpl implements SearchService {
     
     String normalizedQuery = normalizeQuery(query);
     
-    tryAsStop(normalizedQuery, resultFactory);
+    tryAsRoute(normalizedQuery, resultFactory);
     
-    if(_results.isEmpty()) {
-      tryAsRoute(normalizedQuery, resultFactory);
+    if(_results.isEmpty() && StringUtils.isNumeric(normalizedQuery)) {
+      tryAsStop(normalizedQuery, resultFactory);
     }
 
     if(_results.isEmpty()) {

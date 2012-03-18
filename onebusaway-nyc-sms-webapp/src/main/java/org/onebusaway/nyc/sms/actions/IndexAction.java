@@ -201,7 +201,11 @@ public class IndexAction extends SessionedIndexAction {
       _response = errorResponse("No results.");
         
       if(_googleAnalytics != null) {
-        _googleAnalytics.trackEvent("SMS", "No Results", _query);
+        try {
+          _googleAnalytics.trackEvent("SMS", "No Results", _query);
+        } catch(Exception e) {
+          //discard
+        }
       }
     }
       
@@ -242,7 +246,11 @@ public class IndexAction extends SessionedIndexAction {
     _searchResultsCursor = i;    
     
     if(_googleAnalytics != null) {
+      try {
       _googleAnalytics.trackEvent("SMS", "Service Alert", _query + " [" + _searchResults.getMatches().size() + "]");
+      } catch(Exception e) {
+        //discard
+      }
     }
     
     if(i < _searchResults.getMatches().size()) {
@@ -257,7 +265,7 @@ public class IndexAction extends SessionedIndexAction {
     String header = result.getShortName() + "\n";
 
     String footer = "\nSend:\n";
-    footer += "STOP CODE or INTERSECTION\n";      
+    footer += "STOP ID or INTERSECTION\n";      
     footer += "Add '" + result.getShortName() + "' for best results\n";
     
     // find biggest headsign
@@ -282,9 +290,9 @@ public class IndexAction extends SessionedIndexAction {
         body += "\n";
         
         if(direction.hasUpcomingScheduledService() == false) {
-          body += "not scheduled\n";
+          body += "not sched.\n";
         } else {
-          body += "is scheduled\n";        
+          body += "is sched.\n";        
         }
       }
       routeDirectionTruncationLength--;
@@ -295,13 +303,15 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     if(_googleAnalytics != null) {
-      _googleAnalytics.trackEvent("SMS", "Route Response", _query);
+      try {
+        _googleAnalytics.trackEvent("SMS", "Route Response", _query);
+      } catch(Exception e) {
+        //discard
+      }
     }
     
     return header + body + footer;
   }
-  
-  
   
   private String locationDisambiguationResponse(int offset) throws Exception {
     if(offset >= _searchResults.getSuggestions().size()) {
@@ -336,7 +346,11 @@ public class IndexAction extends SessionedIndexAction {
     _searchResultsCursor = i;    
           
     if(_googleAnalytics != null) {
-      _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.getSuggestions().size() + "]");
+      try {
+        _googleAnalytics.trackEvent("SMS", "Location Disambiguation", _query + " [" + _searchResults.getSuggestions().size() + "]");
+      } catch(Exception e) {
+        //discard
+      }
     }
     
     if(i < _searchResults.getSuggestions().size()) {
@@ -357,15 +371,16 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     String footer = "\nSend:\n";
-    footer += "STOP CODE + ROUTE for realtime info\n";
+    footer += "STOP ID+ROUTE for info\n";
 
-    String alertsFooter = footer + "'C' + ROUTE for service change (*)\n";
+    String alertsFooter = footer + "C+ROUTE for alerts (*)\n";
 
     // the worst case in terms of length for footer
-    String moreFooter = alertsFooter + "'M' for more\n";
+    String moreFooter = alertsFooter + "M for more\n";
 
     String body = ""; 
     int i = offset;
+    int routesInThisPage = 0;
     while(i < _searchResults.getMatches().size()) {
       StopResult stopResult = (StopResult)_searchResults.getMatches().get(i);
 
@@ -383,11 +398,16 @@ public class IndexAction extends SessionedIndexAction {
 
       if(stopResult.getRoutesAvailable().size() == 0) {
         if(_searchResults.getRouteIdFilter().size() > 0) {
-          fixedPartToAdd += "No filter matches.\n";
+          fixedPartToAdd += "No filter matches\n";
         } else {
-          fixedPartToAdd += "No routes.\n";
+          fixedPartToAdd += "No routes\n";
         }
       } else {
+        Set<String> notScheduledRoutes = new HashSet<String>();
+        Set<String> notEnRouteRoutes = new HashSet<String>();
+
+        Set<String> routeList = new HashSet<String>();
+
         for(RouteAtStop routeHere : stopResult.getRoutesAvailable()) {
           for(RouteDirection direction : routeHere.getDirections()) {
             String prefix = "";
@@ -397,34 +417,49 @@ public class IndexAction extends SessionedIndexAction {
             }            
             prefix += routeHere.getShortName();
 
+            routeList.add(prefix);
+            
             if(!direction.hasUpcomingScheduledService()) {
-              realtimePartToAdd += prefix + " not sched.";                
+              notScheduledRoutes.add(prefix);
             } else {
               if(direction.getDistanceAways().size() > 0) {
-                realtimePartToAdd += prefix + " " + direction.getDistanceAways().get(0);
+                realtimePartToAdd += prefix + " " + direction.getDistanceAways().get(0) + "\n";
               } else {
-                realtimePartToAdd += prefix + " not en-route";
+                notEnRouteRoutes.add(prefix);
               }
             }
-            
-            realtimePartToAdd += "\n";
           }
-
-          routesOnlyPartToAdd += routeHere.getShortName() + " ";
         } // for routes here realtime
-      } // if routes available
 
+        if(notEnRouteRoutes.size() > 0) {
+          realtimePartToAdd += StringUtils.join(notEnRouteRoutes, ",") + " not en-rt.\n";
+        }
+        
+        if(notScheduledRoutes.size() > 0) {
+          realtimePartToAdd += StringUtils.join(notScheduledRoutes, ",") + " not sched.\n";
+        }
+
+        routesOnlyPartToAdd += StringUtils.join(routeList, ",") + "\n";
+      } // if routes available
+      
       int remainingSpace = MAX_SMS_CHARACTER_COUNT - header.length() - body.length() - moreFooter.length() - fixedPartToAdd.length();
 
       // we can fit realtime for this stop
-      if(realtimePartToAdd.length() < remainingSpace) {
+      if(realtimePartToAdd.length() + 1 < remainingSpace) {
         body += fixedPartToAdd + realtimePartToAdd;
-
+        routesInThisPage++;
+        
       // we can fit only routes for this stop
       } else if(routesOnlyPartToAdd.length() + 1 < remainingSpace) {
-        body += fixedPartToAdd + routesOnlyPartToAdd + "\n";
+        body += fixedPartToAdd + routesOnlyPartToAdd;
+        routesInThisPage++;
 
-      // out of space!      
+      // can't fit the "fallback case"
+      } else if(routesInThisPage == 0 && routesOnlyPartToAdd.length() + 1 > remainingSpace) {
+        body += fixedPartToAdd + "(too many routes to show)\n";
+        routesInThisPage++;
+
+      // out of space in this message, break to next page    
       } else {
         break;
       }
@@ -434,7 +469,11 @@ public class IndexAction extends SessionedIndexAction {
     _searchResultsCursor = i; 
 
     if(_googleAnalytics != null) {
-      _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query);
+      try {
+        _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query);
+      } catch(Exception e) {
+        //discard
+      }
     }
     
     if(i < _searchResults.getMatches().size()) {
@@ -462,16 +501,16 @@ public class IndexAction extends SessionedIndexAction {
   }
   
   private String errorResponse(String message) throws Exception {
-    String staticStuff = "Text your:\n\n";
+    String staticStuff = "Send:\n\n";
     
-    staticStuff += "STOP CODE or\n";
+    staticStuff += "STOP ID or\n";
     staticStuff += "INTERSECTION\n\n";
     
     staticStuff += "Add ROUTE for best results:\n";
-    staticStuff += "'S74 MAIN AND CRAIG'\n";
-    staticStuff += "'200884 S44'\n\n";
+    staticStuff += "S74 MAIN AND CRAIG\n";
+    staticStuff += "200884 S44\n\n";
     
-    staticStuff += "Find 6-digit stop code on bus stop pole.";
+    staticStuff += "Find your 6-digit stop ID on bus stop pole";
 
     if(message != null) {
       if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {
@@ -493,7 +532,7 @@ public class IndexAction extends SessionedIndexAction {
     
     query = query.trim();
 
-    if(query.toUpperCase().startsWith("C ")) {        
+    if(query.toUpperCase().startsWith("C ") || query.toUpperCase().startsWith("C+")) {        
       return query.substring(2);
     }
 
@@ -519,7 +558,7 @@ public class IndexAction extends SessionedIndexAction {
       return "M";
     }
 
-    if(query.toUpperCase().startsWith("C ")) {
+    if(query.toUpperCase().startsWith("C ") || query.toUpperCase().startsWith("C+")) {        
       return "C";
     }
 
@@ -554,6 +593,6 @@ public class IndexAction extends SessionedIndexAction {
   public String getResponse() {
     syncSession();
     
-    return _response;
+    return _response.trim();
   }
 }

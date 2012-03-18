@@ -110,11 +110,9 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   @Override
   public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
-    StopBean stop = _transitDataService.getStop(stopBean.getId());    
-
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
-    for(RouteBean routeBean : stop.getRoutes()) {
+    for(RouteBean routeBean : stopBean.getRoutes()) {
       if(routeIdFilter != null && !routeIdFilter.isEmpty() && !routeIdFilter.contains(routeBean.getId())) {
         continue;
       }
@@ -161,7 +159,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
       routesAtStop.add(routeAtStop);
     }
 
-    return new StopResult(stop, routesAtStop);
+    return new StopResult(stopBean, routesAtStop);
   }
 
   @Override
@@ -208,12 +206,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     SiriDistanceExtension distanceExtension = wrapper.getDistances();    
     
     String message = "";    
-    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "apprch.", "stop", "stops", "mi.", "mi.");
+    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mi.", "mi.", "");
 
     // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
     if(isStopContext && progressStatus != null && progressStatus.getValue().equals("layover")) {
-      message += "at terminal";
+      message += "@term.";
     }
     
     int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
@@ -224,7 +222,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         message += ", ";
       }
       
-      message += "old data";
+      message += "old";
     }
 
     if(message.length() > 0)
