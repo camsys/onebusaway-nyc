@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.sms.actions;
+package org.onebusaway.nyc.sms.services;
 
 public interface GoogleAnalyticsSessionAware {
 

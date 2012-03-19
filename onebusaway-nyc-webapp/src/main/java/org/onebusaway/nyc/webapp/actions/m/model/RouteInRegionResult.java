@@ -16,20 +16,8 @@ public class RouteInRegionResult implements SearchResult {
     this.route = route;
   }
   
-  public String getId() {
-    return route.getId();
-  }
-  
-  public String getDescription() {
-    return route.getDescription();
-  }
-  
   public String getShortName() {
     return route.getShortName();
   }
     
-  public String getColor() {
-   return route.getColor();
-  }  
-  
 }

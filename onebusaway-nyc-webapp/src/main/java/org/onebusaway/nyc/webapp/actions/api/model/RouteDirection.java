@@ -5,7 +5,7 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import java.util.List;
 
 /**
- * Route destination--without stops.
+ * Route destination
  * @author jmaki
  *
  */

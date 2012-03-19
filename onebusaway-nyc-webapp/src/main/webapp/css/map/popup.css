@@ -72,18 +72,18 @@
 	font-weight: bold;
 }
 
-.popup p.otherRoutes {
-	padding-top: 7px;
-}
-
 .popup .meta.stale {
   	color: #d12020;
 }
 
 .popup .service-alert {
 	color: #d12020;
-	margin-bottom: 3px;  
-	width: 400px;
+	margin-bottom: 3px;
+	width: 400px;  
+}
+
+.popup .service-alert li {
+	margin-bottom: 6px;
 }
 
 .popup .service-alert.title {
@@ -95,7 +95,6 @@
 	whitespace: no-wrap;
 	color: #000099;
 	font-weight: bold;
-	margin-top: 5px;
 }
 
 .popup ul li.route.no-padding {
@@ -110,6 +109,10 @@
 	background: url("img/bullet_bus.png");
 	background-position: left top;
 	background-repeat: no-repeat;
+}
+
+.popup ul li.arrival.last {
+	padding-bottom: 4px;
 }
 
 .popup ul li.nextStop {

@@ -5,7 +5,7 @@ import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 
 /**
- * Ambiguous address top-level search result.
+ * Location search result.
  * @author jmaki
  *
  */

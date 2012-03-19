@@ -16,7 +16,7 @@ public interface PresentationService {
    
   
   public String getPresentableDistance(SiriDistanceExtension distances, String approachingText, 
-      String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord);
+      String oneStopWord, String multipleStopsWord, String oneMileWord, String multipleMilesWord, String awayWord);
 
   public String getPresentableDistance(SiriDistanceExtension distances);
  

@@ -15,3 +15,14 @@
  */
  
 /* Insert agency-specific branding overrides here */
+
+#branding h1 a {
+	display: block;
+	text-indent: -9999px;
+	background-image: url("../img/bustime.png");
+	background-repeat: no-repeat;
+	width: 302px;
+	height: 58px;
+}
+
+

@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -133,12 +134,14 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean) {
-    StopBean stop = _transitDataService.getStop(stopBean.getId());    
-
+  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
-    for(RouteBean routeBean : stop.getRoutes()) {
+    for(RouteBean routeBean : stopBean.getRoutes()) {
+      if(routeIdFilter != null && !routeIdFilter.isEmpty() && !routeIdFilter.contains(routeBean.getId())) {
+          continue;
+      }
+      
       StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
       
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
@@ -171,7 +174,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           // arrivals in this direction
           List<String> arrivalsForRouteAndDirection = getDistanceAwayStringsForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
           
-          directions.add(new RouteDirection(stopGroupBean, null, null, serviceAlertDescriptions, arrivalsForRouteAndDirection));
+          // service in this direction
+          Boolean hasUpcomingScheduledService = 
+              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+
+          directions.add(new RouteDirection(stopGroupBean, null, hasUpcomingScheduledService, 
+              serviceAlertDescriptions, arrivalsForRouteAndDirection));
         }
       }
 
@@ -179,11 +187,11 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
       routesAtStop.add(routeAtStop);
     }
 
-    return new StopResult(stop, routesAtStop);
+    return new StopResult(stopBean, routesAtStop);
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeShortNameFilter) {
     return new GeocodeResult(geocodeResult);   
   }
 
@@ -212,7 +220,9 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         continue;
       }
 
-      result.add(getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
+      if(result.size() < 3) {
+        result.add(getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
+      }
     }
     
     return result;

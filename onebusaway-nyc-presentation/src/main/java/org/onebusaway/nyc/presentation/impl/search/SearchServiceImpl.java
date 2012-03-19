@@ -1,13 +1,11 @@
 package org.onebusaway.nyc.presentation.impl.search;
 
-import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
-import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
@@ -18,9 +16,10 @@ import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,11 +27,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 @Component
 public class SearchServiceImpl implements SearchService {
+
+  private static Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
   // when querying for routes from a lat/lng, use this distance in meters
   private static final double DISTANCE_TO_ROUTES = 100;
@@ -52,22 +54,29 @@ public class SearchServiceImpl implements SearchService {
 
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
 
-  @Refreshable(dependsOn = RefreshableResources.TRANSIT_GRAPH )
-  @PostConstruct
-  public void setup() {
-    _routeShortNameToIdMap.clear();
-    
-    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
-      for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
-        RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
-        _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
-        _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
-      }
+  public void refreshCaches() {
+    synchronized(_routeShortNameToIdMap) {
+      _routeShortNameToIdMap.clear();
+      _routeLongNameToIdMap.clear();
+      
+      for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+        for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
+          RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
+          _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
+          _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
+        }
+      }    
     }
   }
   
+  @PostConstruct
+  public void setup() {
+    Thread bootstrapThread = new BootstrapThread();
+    bootstrapThread.start();
+  }
+  
   @Override
-  public List<SearchResult> getStopResultsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
+  public SearchResultCollection findStopsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory, Set<String> routeIdFilter) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_STOPS);
 
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -77,16 +86,18 @@ public class SearchServiceImpl implements SearchService {
     
     StopsBean stops = _transitDataService.getStops(queryBean);
 
-    List<SearchResult> results = new ArrayList<SearchResult>();
+    SearchResultCollection results = new SearchResultCollection();
+    results.addRouteIdFilters(routeIdFilter);
+    
     for(StopBean stop : stops.getStops()) {
-      results.add(resultFactory.getStopResult(stop));
+      results.addMatch(resultFactory.getStopResult(stop, routeIdFilter));
     }
     
     return results;    
   }
 
   @Override
-  public List<SearchResult> getRouteResultsStoppingWithinRegion(CoordinateBounds bounds, SearchResultFactory resultFactory) {
+  public SearchResultCollection findRoutesStoppingWithinRegion(CoordinateBounds bounds, SearchResultFactory resultFactory) {
     SearchQueryBean queryBean = new SearchQueryBean();
     queryBean.setType(SearchQueryBean.EQueryType.BOUNDS_OR_CLOSEST);
     queryBean.setBounds(bounds);
@@ -94,16 +105,17 @@ public class SearchServiceImpl implements SearchService {
     
     RoutesBean routes = _transitDataService.getRoutes(queryBean);
 
-    List<SearchResult> results = new ArrayList<SearchResult>();
+    SearchResultCollection results = new SearchResultCollection();
+
     for(RouteBean route : routes.getRoutes()) {
-      results.add(resultFactory.getRouteResultForRegion(route));
+      results.addMatch(resultFactory.getRouteResultForRegion(route));
     }
     
     return results;
   }
   
   @Override
-  public List<SearchResult> getRouteResultsStoppingNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
+  public SearchResultCollection findRoutesStoppingNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_ROUTES);
 
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -113,9 +125,10 @@ public class SearchServiceImpl implements SearchService {
     
     RoutesBean routes = _transitDataService.getRoutes(queryBean);
 
-    List<SearchResult> results = new ArrayList<SearchResult>();
+    SearchResultCollection results = new SearchResultCollection();
+
     for(RouteBean route : routes.getRoutes()) {
-      results.add(resultFactory.getRouteResult(route));
+      results.addMatch(resultFactory.getRouteResult(route));
     }
     
     return results;
@@ -125,23 +138,68 @@ public class SearchServiceImpl implements SearchService {
   public SearchResultCollection getSearchResults(String query, SearchResultFactory resultFactory) {
     _results = new SearchResultCollection();
     
-    tryAsStop(normalizeQuery(query), resultFactory);
+    String normalizedQuery = normalizeQuery(query);
     
-    if(_results.isEmpty()) {
-      tryAsRoute(normalizeQuery(query), resultFactory);
+    tryAsRoute(normalizedQuery, resultFactory);
+    
+    if(_results.isEmpty() && StringUtils.isNumeric(normalizedQuery)) {
+      tryAsStop(normalizedQuery, resultFactory);
     }
 
     if(_results.isEmpty()) {
-      tryAsGeocode(normalizeQuery(query), resultFactory);
+      tryAsGeocode(normalizedQuery, resultFactory);
     }
     
     return _results;
   }
 
   private String normalizeQuery(String q) {
+    if(q == null) {
+      return null;
+    }
     
+    q = q.trim();
     
-    return q;
+    String normalizedQuery = "";
+    String[] tokens = q.split(" ");
+    for(int i = 0; i < tokens.length; i++) {
+      String token = tokens[i].trim().toUpperCase();
+
+      String lastItem = null;
+      String nextItem = null;
+      if(i - 1 >= 0) {
+        lastItem = tokens[i - 1].trim().toUpperCase();
+      }
+      
+      if(i + 1 < tokens.length) {
+        nextItem = tokens[i + 1].trim().toUpperCase();
+      }
+      
+      // keep track of route tokens we found when parsing
+      if(_routeShortNameToIdMap.containsKey(token)) {
+        // if a route is included as part of another type of query, then it's a filter--
+        // so remove it from the normalized query sent to the geocoder or stop service
+        if((lastItem != null && !_routeShortNameToIdMap.containsKey(lastItem)) || (nextItem != null && !_routeShortNameToIdMap.containsKey(nextItem))) {
+          _results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
+          continue;
+        }
+      }
+
+      // allow the plus sign instead of "and"
+      if(token.equals("+")) {
+        // if a user is prepending a route filter with a plus sign, chop it off
+        // e.g. main and craig + B63
+        if(_routeShortNameToIdMap.containsKey(nextItem)) {
+          continue;
+        }
+
+        token = "and";
+      }
+      
+      normalizedQuery += token + " ";
+    }
+    
+    return normalizedQuery.trim();
   }
   
   private void tryAsRoute(String routeQuery, SearchResultFactory resultFactory) {
@@ -207,10 +265,10 @@ public class SearchServiceImpl implements SearchService {
     }
     
     if(matches.size() == 1)
-      _results.addMatch(resultFactory.getStopResult(matches.get(0)));
+      _results.addMatch(resultFactory.getStopResult(matches.get(0), _results.getRouteIdFilter()));
     else {
       for(StopBean match : matches) {
-        _results.addSuggestion(resultFactory.getStopResult(match));
+        _results.addSuggestion(resultFactory.getStopResult(match, _results.getRouteIdFilter()));
       }
     }
   }
@@ -220,11 +278,25 @@ public class SearchServiceImpl implements SearchService {
     
     for(NycGeocoderResult result : geocoderResults) {
       if(geocoderResults.size() == 1) {
-        _results.addMatch(resultFactory.getGeocoderResult(result));
+        _results.addMatch(resultFactory.getGeocoderResult(result, _results.getRouteIdFilter()));
       } else {        
-        _results.addSuggestion(resultFactory.getGeocoderResult(result));
+        _results.addSuggestion(resultFactory.getGeocoderResult(result, _results.getRouteIdFilter()));
       }
     }
+  }
+  
+  // a thread that can block for network IO while tomcat starts
+  private class BootstrapThread extends Thread {
+
+    @Override
+    public void run() {     
+      try {
+        refreshCaches();
+      } catch (Exception e) {
+        _log.error("Error updating cache: " + e.getMessage());
+      }
+    }   
+
   }
   
 }

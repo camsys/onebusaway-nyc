@@ -19,26 +19,24 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
 	xmlns:wiki="/oba-wiki-tags">
 
-<div class="routeList">
-	<p>
-		<strong>
+	<h3>
 			Did you mean?
-		</strong>
-	</p>
-	
-	<p>
-		<s:iterator value="results.suggestions">
-			<s:url var="url">
-				<s:param name="q">
+	</h3>
+		
+	<div class="routeList">
+		<p>
+			<s:iterator value="results.matches">
+				<s:url var="url">
+					<s:param name="q">
+						<s:property value="shortName" />
+					</s:param>
+					<s:param name="l"><s:property value="l" /></s:param>
+				</s:url>
+				<a href="${url}"> 
 					<s:property value="shortName" />
-				</s:param>
-				<s:param name="l"><s:property value="l" /></s:param>
-			</s:url>
-			<a href="${url}"> 
-				<s:property value="shortName" />
-			</a> &amp;nbsp;
-		</s:iterator>
-	</p>
-</div>
+				</a> &amp;nbsp;
+			</s:iterator>
+		</p>
+	</div>
 
 </html>

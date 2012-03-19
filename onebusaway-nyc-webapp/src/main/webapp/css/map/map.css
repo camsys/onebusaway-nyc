@@ -175,7 +175,9 @@
 }
 
 #content #matches ul li.legendItem .serviceAlertContainer .alerts li {
-	padding: 10px 10px 10px 10px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
 	color: #D12020;
 	font-size: 13px;
 	background-color: #FDEEF4;
@@ -227,13 +229,14 @@
 #content #matches ul li.legendItem p.destination ul.stops {
 	margin-top: 5px;
 	margin-bottom: 20px;
+	margin-left: 25px;
 }
 
 #content #matches ul li.legendItem p.destination ul.stops li {
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 3px;
-	padding-left: 40px;
+	padding-left: 20px;
 }
 
 /* default--this is overrideen  by javascript */
@@ -249,6 +252,7 @@
 }
 
 #content #matches ul li.legendItem p.destination ul.stops li a:hover {
+	font-size: 125%;
 	font-weight: bold;
 }
 

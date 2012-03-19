@@ -7,7 +7,7 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
 import java.util.List;
 
 /**
- * Ambiguous address top-level search result.
+ * Location search result.
  * @author jmaki
  *
  */

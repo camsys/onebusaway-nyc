@@ -34,18 +34,6 @@ public class StopResult implements SearchResult {
     return stop.getName();
   }
   
-  public Double getLatitude() {
-    return stop.getLat();
-  }
-  
-  public Double getLongitude() {
-    return stop.getLon();
-  }
-
-  public String getStopDirection() {
-   return stop.getDirection();
-  }  
-  
   public List<RouteAtStop> getRoutesAvailable() {
     return routesAvailable;
   }

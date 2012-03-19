@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.sms.impl;
 
-import org.onebusaway.nyc.sms.actions.GoogleAnalyticsSessionAware;
+import org.onebusaway.nyc.sms.services.GoogleAnalyticsSessionAware;
 import org.onebusaway.nyc.sms.services.SessionManager;
 import org.onebusaway.presentation.impl.users.XWorkRequestAttributes;
 

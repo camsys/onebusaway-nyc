@@ -31,18 +31,6 @@ public class StopOnRoute {
     return stop.getName();
   }
   
-  public Double getLatitude() {
-    return stop.getLat();
-  }
-  
-  public Double getLongitude() {
-    return stop.getLon();
-  }
-
-  public String getStopDirection() {
-   return stop.getDirection();
-  }  
-  
   public String getDistanceAways() {
     return distanceAways;
   }

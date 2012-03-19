@@ -5,7 +5,7 @@ import org.onebusaway.transit_data.model.RouteBean;
 import java.util.List;
 
 /**
- * Route available at a stop, the top being the top-level result.
+ * Route available at a stop, the stop being the top-level result.
  * @author jmaki
  *
  */
@@ -27,13 +27,17 @@ public class RouteAtStop {
   public String getShortName() {
     return route.getShortName();
   }
-  
+
   public String getLongName() {
     return route.getLongName();
   }
   
+  public String getDescription() {
+    return route.getDescription();
+  }
+
   public String getColor() {
-   return route.getColor();
+    return route.getColor();
   }  
 
   public List<RouteDirection> getDirections() {
