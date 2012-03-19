@@ -222,7 +222,7 @@ public class IndexAction extends SessionedIndexAction {
     
     // worst case in terms of footer length
     String footer = "Send:\n";
-    footer += "'M' for more\n";
+    footer += "M for more\n";
 
     String body = ""; 
     int i = offset;
@@ -265,7 +265,7 @@ public class IndexAction extends SessionedIndexAction {
     String header = result.getShortName() + "\n";
 
     String footer = "\nSend:\n";
-    footer += "STOP ID or INTERSECTION\n";      
+    footer += "STOP-ID or INTERSECTION\n";      
     footer += "Add '" + result.getShortName() + "' for best results\n";
     
     // find biggest headsign
@@ -325,7 +325,7 @@ public class IndexAction extends SessionedIndexAction {
     footer += "1-" + _searchResults.getSuggestions().size() + "\n";
 
     // the worst case in terms of length for footer
-    String moreFooter = footer + "'M' for more\n";
+    String moreFooter = footer + "M for more\n";
     
     String body = ""; 
     int i = offset;
@@ -371,7 +371,7 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     String footer = "\nSend:\n";
-    footer += "STOP ID+ROUTE for info\n";
+    footer += "STOP-ID+ROUTE for info\n";
 
     String alertsFooter = footer + "C+ROUTE for alerts (*)\n";
 
@@ -503,7 +503,7 @@ public class IndexAction extends SessionedIndexAction {
   private String errorResponse(String message) throws Exception {
     String staticStuff = "Send:\n\n";
     
-    staticStuff += "STOP ID or\n";
+    staticStuff += "STOP-ID or\n";
     staticStuff += "INTERSECTION\n\n";
     
     staticStuff += "Add ROUTE for best results:\n";
@@ -586,7 +586,6 @@ public class IndexAction extends SessionedIndexAction {
     return null;
   }
   
-    
   /**
    * METHODS FOR VIEWS
    */
