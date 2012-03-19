@@ -41,7 +41,7 @@ public class SearchServiceImpl implements SearchService {
   // the pattern of what can be leftover after prefix/suffix matching for a route
   // to be a "suggestion" for a given search
   private static final Pattern leftOverMatchPattern = 
-      Pattern.compile("([A-Z]|-)*");
+      Pattern.compile("^([A-Z]|-)+$");
 
   // when querying for routes from a lat/lng, use this distance in meters
   private static final double DISTANCE_TO_ROUTES = 100;
