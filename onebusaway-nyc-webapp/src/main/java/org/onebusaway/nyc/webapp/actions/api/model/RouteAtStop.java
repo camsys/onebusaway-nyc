@@ -37,7 +37,11 @@ public class RouteAtStop {
   }
 
   public String getColor() {
-    return route.getColor();
+    if(route.getColor() != null) {
+      return route.getColor();
+    } else {
+      return "000000";
+    }
   }  
 
   public List<RouteDirection> getDirections() {

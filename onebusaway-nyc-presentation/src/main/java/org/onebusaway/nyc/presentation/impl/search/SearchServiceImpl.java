@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -35,6 +37,11 @@ import javax.annotation.PostConstruct;
 public class SearchServiceImpl implements SearchService {
 
   private static Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);
+
+  // the pattern of what can be leftover after prefix matching for a route
+  // to be a "suggestion" for a search
+  private static final Pattern leftOverMatchPattern = 
+      Pattern.compile("([A-Z]|-)*");
 
   // when querying for routes from a lat/lng, use this distance in meters
   private static final double DISTANCE_TO_ROUTES = 100;
@@ -220,10 +227,15 @@ public class SearchServiceImpl implements SearchService {
     }
 
     for(String routeShortName : _routeShortNameToIdMap.keySet()) {
-      // if the route short name ends or starts with our query, and whatever's left over is a letter
+      // if the route short name ends or starts with our query, and whatever's left over is "discardable",
+      // matching the regex 
+      String leftOvers = routeShortName.replace(routeQuery, "");
+      Matcher matcher = leftOverMatchPattern.matcher(leftOvers);
+      Boolean leftOverIsDiscardable = matcher.find();
+      
       if(!routeQuery.equals(routeShortName) 
-          && ((routeShortName.startsWith(routeQuery) && StringUtils.isAlpha(routeShortName.replace(routeQuery, "")))
-          || (routeShortName.endsWith(routeQuery) && StringUtils.isAlpha(routeShortName.replace(routeQuery, ""))))) {
+          && ((routeShortName.startsWith(routeQuery) && leftOverIsDiscardable)
+          || (routeShortName.endsWith(routeQuery) && leftOverIsDiscardable))) {
         RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeShortName));
         _results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;
