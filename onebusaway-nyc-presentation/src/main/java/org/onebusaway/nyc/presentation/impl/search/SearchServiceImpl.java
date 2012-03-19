@@ -38,8 +38,8 @@ public class SearchServiceImpl implements SearchService {
 
   private static Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
-  // the pattern of what can be leftover after prefix matching for a route
-  // to be a "suggestion" for a search
+  // the pattern of what can be leftover after prefix/suffix matching for a route
+  // to be a "suggestion" for a given search
   private static final Pattern leftOverMatchPattern = 
       Pattern.compile("([A-Z]|-)*");
 
@@ -227,15 +227,15 @@ public class SearchServiceImpl implements SearchService {
     }
 
     for(String routeShortName : _routeShortNameToIdMap.keySet()) {
-      // if the route short name ends or starts with our query, and whatever's left over is "discardable",
-      // matching the regex 
+      // if the route short name ends or starts with our query, and whatever's left over 
+      // matches the regex
       String leftOvers = routeShortName.replace(routeQuery, "");
       Matcher matcher = leftOverMatchPattern.matcher(leftOvers);
-      Boolean leftOverIsDiscardable = matcher.find();
+      Boolean leftOversAreDiscardable = matcher.find();
       
       if(!routeQuery.equals(routeShortName) 
-          && ((routeShortName.startsWith(routeQuery) && leftOverIsDiscardable)
-          || (routeShortName.endsWith(routeQuery) && leftOverIsDiscardable))) {
+          && ((routeShortName.startsWith(routeQuery) && leftOversAreDiscardable)
+          || (routeShortName.endsWith(routeQuery) && leftOversAreDiscardable))) {
         RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeShortName));
         _results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;
