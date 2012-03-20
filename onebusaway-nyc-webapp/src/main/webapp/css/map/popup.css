@@ -165,7 +165,6 @@
 	font-style: italic;	
 }
 
-.popup #zoomHere {
-	color: #CCCCCC;
+.popup ul.links {
 	margin-top: 10px;
 }

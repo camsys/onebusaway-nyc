@@ -66,7 +66,7 @@ OBA.Popups = (function() {
 					return;
 				}
 				
-				infoWindow.setContent(contentFn(json, popupContainerId));
+				infoWindow.setContent(contentFn(json, popupContainerId, marker));
 				
 				if(openBubble === true) {
 					infoWindow.open(map, marker);
@@ -123,7 +123,7 @@ OBA.Popups = (function() {
         return html;
 	}
 	
-	function getVehicleContentForResponse(r, popupContainerId) {
+	function getVehicleContentForResponse(r, popupContainerId, marker) {
 		var activity = r.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 		if(activity === null || activity.MonitoredVehicleJourney === null) {
 			return null;
@@ -208,7 +208,7 @@ OBA.Popups = (function() {
 		return html;
 	}
 
-	function getStopContentForResponse(r, popupContainerId) {
+	function getStopContentForResponse(r, popupContainerId, marker) {
 		var siri = r.siri;
 		var stopResult = r.stop;
 		
@@ -347,12 +347,27 @@ OBA.Popups = (function() {
 			html += '<p class="service">No scheduled service at this time.</p>';
 		}
 
-		html += OBA.Config.infoBubbleFooterFunction("stop", stopIdWithoutAgency);
-	        
+		html += OBA.Config.infoBubbleFooterFunction("stop", stopIdWithoutAgency);	        
+
+		html += "<ul class='links'>";
+		html += "<a href='#' id='zoomHere'>Center and Zoom Here</a>";
+		html += "</ul>";
+		
 		// (end popup)
 		html += '</div>';
+
+		var content = jQuery(html);
+		var zoomHereLink = content.find("#zoomHere");
+
+		zoomHereLink.click(function(e) {
+			e.preventDefault();
+			
+			var map = marker.map;
+			map.setCenter(marker.getPosition());
+			map.setZoom(16);
+		});
 		
-		return html;
+		return content.get(0);
 	}
 
 	//////////////////// CONSTRUCTOR /////////////////////
