@@ -62,13 +62,14 @@ public class ScheduleLikelihood implements SensorModelRule {
    * These are all in minutes
    */
   final static public double schedDevMeanPrior = 0.0;
-  final static public double schedDevStdDevPrior = 80.0/2;
-  final static public double schedDevDuringStdDevPrior = 80.0/2;
+  final static public double schedDevStdDevPrior = 80.0/2d;
+  final static public double schedDevDuringStdDevPrior = 80.0/2d;
   final static public double schedTransScale = 1.5;
+  final static public double schedTransStdDev= 5d/2d;
   final private double layoverDuringMean = 0.0;
-  final private double layoverDuringStdDev = 80.0/2;
+  final private double layoverDuringStdDev = 80.0/2d;
   final private double layoverBeforeMean = 0.0;
-  final private double layoverBeforeStdDev = 80.0/2;
+  final private double layoverBeforeStdDev = 80.0/2d;
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {

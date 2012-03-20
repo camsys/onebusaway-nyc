@@ -264,7 +264,7 @@ public class JourneyStateTransitionModel {
   }
 
   /*
-   * A deterministic journey state logic.
+   * A deterministic journey state logic.<br>
    */
   public JourneyState getJourneyState(BlockStateObservation blockState, Observation obs, boolean vehicleNotMoved) {
     if (_vehicleStateLibrary.isAtBase(obs.getLocation()))

@@ -33,23 +33,26 @@ public final class BlockStateObservation implements
   private final boolean _isSnapped;
 
   private final double _scheduleDeviation;
+
+  private final Observation _obs;
   
   private BlockStateObservation(BlockState blockState, Boolean isRunReported,
       Boolean isUTSassigned, Boolean isRunAM, boolean isAtLayoverSpot, 
-      boolean isSnapped, double scheduleDev) {
+      boolean isSnapped, Observation obs) {
     _blockState = blockState;
     this._isRunReported = isRunReported;
     this._isOpAssigned = isUTSassigned;
     this._isRunReportedAssignedMismatch = isRunAM;
     this._isAtPotentialLayoverSpot = isAtLayoverSpot;
     this._isSnapped = isSnapped;
-    this._scheduleDeviation = scheduleDev;
+    this._obs = obs;
+    this._scheduleDeviation = computeScheduleDeviation(obs, blockState);
   }
 
-  public BlockStateObservation(BlockStateObservation state) {
+  public BlockStateObservation(BlockStateObservation state, Observation obs) {
     this(state._blockState, state._isRunReported, state._isOpAssigned,
         state._isRunReportedAssignedMismatch, state._isAtPotentialLayoverSpot,
-        state._isSnapped, state._scheduleDeviation);
+        state._isSnapped, obs);
   }
 
   public BlockStateObservation(BlockState blockState, Observation obs,
@@ -67,11 +70,23 @@ public final class BlockStateObservation implements
         && _isRunReported != null ? _isOpAssigned && !_isRunReported : null;
     _isAtPotentialLayoverSpot = isAtPotentialLayoverSpot;
     _isSnapped = isSnapped;
-    _scheduleDeviation = ((obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000.0 
-        - blockState.getBlockLocation().getScheduledTime())/60.0;
+    _scheduleDeviation = computeScheduleDeviation(obs, blockState);
+    _obs = obs;
     
   }
 
+  public static double computeScheduleDeviation(Observation obs, BlockState blockState) {
+    
+    final double schedDev = ((obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000.0 
+        - blockState.getBlockLocation().getScheduledTime())/60.0;
+    final double dab = blockState.getBlockLocation().getDistanceAlongBlock();
+    if ((dab <= 0.0 && schedDev <= 0.0)
+        || (dab >= blockState.getBlockInstance().getBlock().getTotalBlockDistance() && schedDev >= 0.0))
+      return 0.0;
+    else
+      return schedDev;
+  }
+  
   public BlockState getBlockState() {
     return _blockState;
   }
@@ -108,6 +123,7 @@ public final class BlockStateObservation implements
   public String toString() {
     return Objects.toStringHelper("BlockStateObservation")
         .addValue(_blockState)
+        .add("isSnapped", _isSnapped)
         .add("isOpAssigned", _isOpAssigned)
         .add("isRunReported", _isRunReported)
         .add("schedDev", _scheduleDeviation)
@@ -190,6 +206,10 @@ public final class BlockStateObservation implements
 
   public double getScheduleDeviation() {
     return _scheduleDeviation;
+  }
+
+  public Observation getObs() {
+    return _obs;
   }
 
 }

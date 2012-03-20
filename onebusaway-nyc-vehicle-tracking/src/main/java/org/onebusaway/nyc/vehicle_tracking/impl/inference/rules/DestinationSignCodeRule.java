@@ -64,17 +64,23 @@ public class DestinationSignCodeRule implements SensorModelRule {
     DSC_STATE state = getDscState(context);
     switch(state) {
       case DSC_OOS_IP:
-        return result.addResultAsAnd("in-progress o.o.s. dsc", 0.0);
+        result.addResultAsAnd("in-progress o.o.s. dsc", 0.0);
+        return result;
       case DSC_OOS_NOT_IP:
-        return result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95/2d);
+        result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95/2d);
+        return result;
       case DSC_IS_NO_BLOCK:
-        return result.addResultAsAnd("not o.o.s. dsc null-block", 0.01);
+        result.addResultAsAnd("not o.o.s. dsc null-block", 0.01);
+        return result;
       case DSC_MATCH:
-        return result.addResultAsAnd("in-service matching DSC", 0.95/2d);
+        result.addResultAsAnd("in-service matching DSC", 0.95/2d);
+        return result;
       case DSC_ROUTE_MATCH:
-        return result.addResultAsAnd("in-service route-matching DSC", 0.04);
+        result.addResultAsAnd("in-service route-matching DSC", 0.04);
+        return result;
       case DSC_NO_ROUTE_MATCH:
-        return result.addResultAsAnd("in-service non-route-matching DSC", 0.0);
+        result.addResultAsAnd("in-service non-route-matching DSC", 0.0);
+        return result;
       default:
         return null;
     }

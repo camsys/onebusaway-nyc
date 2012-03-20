@@ -137,7 +137,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
           ParticleFactoryImpl.getThreadLocalRng().get(), distAlongPrior, stdDev);
       distAlongSample += parentDistAlong;
     } else {
-      return parentBlockStateObs;
+      return new BlockStateObservation(parentBlockStateObs, obs);
     }
 
     if (distAlongSample > parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance())
@@ -198,11 +198,13 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       BlockStateObservation parentBlockStateObs, Observation obs) {
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
 
-    final double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000.0;
-    final double newSchedDev = NormalGen.nextDouble(
-        ParticleFactoryImpl.getThreadLocalRng().get(),
-        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff / 60.0
-            * ScheduleLikelihood.schedTransScale);
+//    final double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000.0;
+//    final double newSchedDev = NormalGen.nextDouble(
+//        ParticleFactoryImpl.getThreadLocalRng().get(),
+//        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff / 60.0
+//            * ScheduleLikelihood.schedTransScale);
+    final double newSchedDev = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(),
+        parentBlockStateObs.getScheduleDeviation(), ScheduleLikelihood.schedTransStdDev);
 
     final int currentTime = (int) (obs.getTime() - parentBlockState.getBlockInstance().getServiceDate()) / 1000;
     final int newSchedTime = currentTime - (int) (newSchedDev * 60.0);
@@ -216,10 +218,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
           obs, parentBlockState.getBlockInstance(), 0.0);
     } else if (endSchedTime < newSchedTime) {
-      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
-          obs,
-          parentBlockState.getBlockInstance(),
-          parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
+//      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+//          obs,
+//          parentBlockState.getBlockInstance(),
+//          parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
+      schedState = null;
     } else {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, parentBlockState.getBlockInstance(), newSchedTime);

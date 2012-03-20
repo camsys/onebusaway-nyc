@@ -43,6 +43,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Sets;
 
+import org.apache.commons.math.util.FastMath;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -125,6 +126,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
     final MotionState motionState = updateMotionState(parentState, obs);
 
     final BlockState parentBlockState = parentState.getBlockState();
+    final BlockStateObservation parentBlockStateObs = parentState.getBlockStateObservation();
     final Set<BlockStateObservation> transitions = Sets.newHashSet();
     boolean allowBlockTransition = _blockStateTransitionModel.allowBlockTransition(parentState, obs);
     if (parentBlockState == null || allowBlockTransition) {
@@ -133,12 +135,24 @@ public class MotionModelImpl implements MotionModel<Observation> {
        */
       transitions.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(obs));
     } else {
+      /*
+       * Only the snapped blocks 
+       */
       transitions.addAll(_blocksFromObservationService.advanceState(obs, 
           parentState.getBlockState(), -1.0 * GpsLikelihood.gpsStdDev/2.0, 
-          GpsLikelihood.gpsStdDev/2.0));
+          Double.POSITIVE_INFINITY));
+//          GpsLikelihood.gpsStdDev/2.0));
     }
     
-    transitions.add(parentState.getBlockStateObservation());
+    BlockStateObservation newParentBlockStateObs;
+    if (parentBlockStateObs != null) {
+      newParentBlockStateObs = _blocksFromObservationService.getBlockStateObservationFromDist(obs,
+          parentBlockStateObs.getBlockState().getBlockInstance(), 
+          parentBlockStateObs.getBlockState().getBlockLocation().getDistanceAlongBlock());
+    } else {
+      newParentBlockStateObs = null;
+    }
+    transitions.add(newParentBlockStateObs);
       
     final double vehicleHasNotMovedProb = SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
         motionState, obs);
@@ -166,42 +180,8 @@ public class MotionModelImpl implements MotionModel<Observation> {
         final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
         final boolean vehicleNotMoved = inMotionSample < vehicleHasNotMovedProb;
 
-        final boolean runChanged = hasRunChanged(parentState.getBlockStateObservation(), proposalEdge);
-        BlockStateObservation newEdge;
-        if (proposalEdge != null) {
-          if (parentBlockState != null) {
-            /*
-             * We sample the a schedule propagation when there
-             * are no snapped states, otherwise, we sample "true' 
-             * locations from the GPS's error range. 
-             */
-            if (proposalEdge != parentState.getBlockStateObservation() 
-                && proposalEdge.isSnapped()) {
-//              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
-              newEdge = proposalEdge;
-            } else if (runChanged) {
-              newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
-                  proposalEdge.getBlockState().getBlockInstance(), obs);
-            } else {
-//              newEdge = _blockStateSamplingStrategy.sampleTransitionScheduleDev(
-//                  parentState.getBlockStateObservation(), obs);
-              newEdge = _blockStateSamplingStrategy.sampleTransitionDistanceState(
-                  parentState.getBlockStateObservation(), obs, vehicleNotMoved, 
-                  parentState.getJourneyState().getPhase());
-            }
-          } else {
-            if (proposalEdge != parentState.getBlockStateObservation()
-                && proposalEdge.isSnapped()) {
-//              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
-              newEdge = proposalEdge;
-            } else {
-              newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
-                  proposalEdge.getBlockState().getBlockInstance(), obs);
-            }
-          }
-        } else {
-          newEdge = null;
-        }
+        BlockStateObservation newEdge = getNewEdgeFromProposal(newParentBlockStateObs, proposalEdge, obs, 
+            parentState.getJourneyState().getPhase(), vehicleNotMoved);
         final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
             newEdge, obs, vehicleNotMoved);
         final VehicleState newState = new VehicleState(motionState, newEdge,
@@ -246,6 +226,66 @@ public class MotionModelImpl implements MotionModel<Observation> {
         results.add(new Particle(timestamp, parent.getElement(), 1.0, nullState));
       }
     }
+  }
+
+  private BlockStateObservation getNewEdgeFromProposal(
+      BlockStateObservation parentBlockStateObs, BlockStateObservation proposalEdge,
+      Observation obs, EVehiclePhase parentPhase, boolean vehicleNotMoved) {
+    BlockStateObservation newEdge;
+    if (proposalEdge != null) {
+      if (parentBlockStateObs != null) {
+        /*
+         * When a state is transitioning we need to consider
+         * whether the proposal edge is snapped or not, since that
+         * leads to different sampling procedures.
+         * Also, we propogate non-snapped states differently.
+         */
+        final double currentScheduleDev = BlockStateObservation.computeScheduleDeviation(obs, 
+            parentBlockStateObs.getBlockState());
+        final boolean runChanged = hasRunChanged(parentBlockStateObs, proposalEdge);
+        
+        if (proposalEdge.isSnapped()) {
+//              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
+          newEdge = proposalEdge;
+        } else if (runChanged) {
+          newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
+              proposalEdge.getBlockState().getBlockInstance(), obs);
+        } else {
+          /*
+           * When our previous journey state was deadhead-before we
+           * don't want to "jump the gun" and expect it to be at the start
+           * of the first trip and moving along, so we wait for a snapped
+           * location to appear.
+           */
+          if (EVehiclePhase.AT_BASE == parentPhase) {
+            newEdge = parentBlockStateObs;
+          } else if (EVehiclePhase.isActiveDuringBlock(parentPhase)
+              || (EVehiclePhase.isActiveBeforeBlock(parentPhase) 
+                  &&  FastMath.abs(currentScheduleDev) > 0.0)){
+            /*
+             * If it's active in the block or deadhead_before after the start time... 
+             */
+            newEdge = _blockStateSamplingStrategy.sampleTransitionDistanceState(
+                parentBlockStateObs, obs, vehicleNotMoved, 
+                parentPhase);
+          } else {
+            newEdge = parentBlockStateObs;
+          }
+        }
+      } else {
+        if (proposalEdge.isSnapped()) {
+//              newEdge = _blockStateSamplingStrategy.sampleGpsObservationState(proposalEdge, obs);
+          newEdge = proposalEdge;
+        } else {
+          newEdge = _blockStateSamplingStrategy.samplePriorScheduleState(
+              proposalEdge.getBlockState().getBlockInstance(), obs);
+        }
+      }
+    } else {
+      newEdge = null;
+    }
+    
+    return newEdge;
   }
 
   // @Override

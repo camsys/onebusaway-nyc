@@ -360,14 +360,18 @@ public class AbstractTraceRunner {
            * layover-before is more likely without a block
            * (a terminal, in that case, is defined as the first
            * or last stop of a trip). 
+           * 
+           * EDIT: now we allow layover-before == deadhead-before.
            */
           || (truePhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
               && infPhase.equals(EVehiclePhase.LAYOVER_BEFORE)
-              && StringUtils.isBlank(infRecord.getInferredBlockId()))
+//              && StringUtils.isBlank(infRecord.getInferredBlockId())
+              )
           || (infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
               && truePhase.equals(EVehiclePhase.LAYOVER_BEFORE)
-              && StringUtils.isBlank(trueRecord.getInferredBlockId()))
+//              && StringUtils.isBlank(trueRecord.getInferredBlockId())
               )
+            )
         infPhaseCounts.increment(truePhase);
 
       if (EVehiclePhase.isActiveDuringBlock(truePhase)

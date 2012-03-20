@@ -24,6 +24,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 import org.onebusaway.realtime.api.EVehiclePhase;
 
 import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
+import umontreal.iro.lecuyer.probdist.HalfNormalDist;
 import umontreal.iro.lecuyer.probdist.NormalDist;
 
 // @Component
@@ -96,15 +97,11 @@ public class EdgeLikelihood implements SensorModelRule {
 
       } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
 
-        if (parentState.getBlockState().getBlockLocation().getDistanceAlongBlock() < blockState.getBlockLocation().getDistanceAlongBlock()) {
-          // TODO do something special to account for excess distance after the
-          // block?
+        if (parentState.getBlockState().getBlockLocation().getDistanceAlongBlock() 
+            < blockState.getBlockLocation().getDistanceAlongBlock()) {
           pDistAlong = computeEdgeMovementProb(blockState, obs,
               parentState.getBlockState(), phase);
         } else {
-          /*
-           * FIXME should use average velocity/time from prev. obs
-           */
           final double x = NormalDist.inverseF(0.0, startBlockStdDev, 0.01);
           pDistAlong = NormalDist.density(0.0, startBlockStdDev, x);
         }
@@ -117,19 +114,13 @@ public class EdgeLikelihood implements SensorModelRule {
       }
       result.addResultAsAnd("moveAlong", pDistAlong);
 
-    } else if (previouslyInactive) {
-      /*
-       * FIXME should use average velocity/time from prev. obs
-       */
-      final double x = NormalDist.inverseF(0.0, startBlockStdDev, 0.01);
-      pDistAlong = NormalDist.density(0.0, startBlockStdDev, x);
-      result.addResultAsAnd("previouslyInactive", pDistAlong);
+    } else {
+      
+      pDistAlong = FoldedNormalDist.density(0.0, 
+            blockState.getBlockInstance().getBlock().getTotalBlockDistance()/3d, 
+             blockState.getBlockLocation().getDistanceAlongBlock());
+      result.addResultAsAnd("previouslyInactive or new run", pDistAlong);
 
-    } else if (newRun) {
-
-      final double x = NormalDist.inverseF(0.0, startBlockStdDev, 0.01);
-      pDistAlong = NormalDist.density(0.0, startBlockStdDev, x);
-      result.addResultAsAnd("newBlock", pDistAlong);
     }
 
     return result;
@@ -148,22 +139,6 @@ public class EdgeLikelihood implements SensorModelRule {
     final double prevDab = prevBlockState.getBlockLocation().getDistanceAlongBlock();
     final double dabDelta = currentDab - prevDab;
 
-    // /*
-    // * Use whichever comes first: previous time incremented by observed change
-    // * in time, or last stop departure time.
-    // */
-    // final int expSchedTime = Math.min(
-    // (int) (prevBlockState.getBlockLocation().getScheduledTime()
-    // + (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000),
-    // Iterables.getLast(
-    // prevBlockState.getBlockInstance().getBlock().getStopTimes()).getStopTime().getDepartureTime());
-    //
-    // // FIXME need to compensate for distances over the end of a trip...
-    // final double distanceAlongBlock =
-    // _blockStateService.getDistanceAlongBlock(
-    // blockState.getBlockInstance().getBlock(),
-    // prevBlockState.getBlockLocation().getStopTimeIndex(), expSchedTime);
-    // final double expectedDabDelta = distanceAlongBlock - prevDab;
     final double stdDev;
     if (EVehiclePhase.DEADHEAD_DURING == phase) {
       stdDev = deadheadDuringStdDev;

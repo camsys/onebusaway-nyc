@@ -67,13 +67,17 @@ public class RunTransitionLikelihood implements SensorModelRule {
     
     switch(state) {
       case RUN_CHANGE_INFO_DIFF:
-        return result.addResultAsAnd("changed reported run or operator id", 0.9/2d);
+        result.addResultAsAnd("changed reported run or operator id", 0.97/3d);
+        return result;
       case RUN_CHANGE_FROM_OOS:
-        return result.addResultAsAnd("change from o.o.s.", 0.1*(3d/4d));
+        result.addResultAsAnd("change from o.o.s.", 0.97/3d);
+        return result;
       case RUN_CHANGE_FROM_IS:
-        return result.addResultAsAnd("change not from o.o.s.", 0.1/4d);
+        result.addResultAsAnd("change not from o.o.s.", 0.03);
+        return result;
       case RUN_NOT_CHANGED:
-        return result.addResultAsAnd("not-changed run", 0.9/2d);
+        result.addResultAsAnd("not-changed run", 0.97/3d);
+        return result;
       default:
         return null;
     }
