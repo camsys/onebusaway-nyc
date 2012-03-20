@@ -162,16 +162,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
      * after the block's start.
      */
     final double currentTime = (obs.getTime() - blockInstance.getServiceDate()) / 1000;
-    // TODO rounding?
-    // double newSchedTimeMins =
-    // NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(),
-    // currentTime/60.0, ScheduleLikelihood.schedDevStdDevPrior/2);
 
-    final StudentTDistribution priorSchedDevDist = new StudentTDistribution(1,
-        currentTime / 60.0, 1 / (5.0 * 5.0));
-    final double newSchedTimeMins = priorSchedDevDist.sample(ParticleFactoryImpl.getLocalRng());
+    final double newSchedTime = currentTime + 60d * ScheduleLikelihood.schedDevPriorDist.sample(
+        ParticleFactoryImpl.getLocalRng());
 
-    final int newSchedTime = (int) (newSchedTimeMins * 60.0);
     final int startSchedTime = Iterables.getFirst(
         blockInstance.getBlock().getStopTimes(), null).getStopTime().getArrivalTime();
     final int endSchedTime = Iterables.getLast(
@@ -187,7 +181,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       schedState = null;
     } else {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
-          obs, blockInstance, newSchedTime);
+          obs, blockInstance, (int)newSchedTime);
     }
 
     return schedState;
@@ -198,13 +192,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       BlockStateObservation parentBlockStateObs, Observation obs) {
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
 
-//    final double obsTimeDiff = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000.0;
-//    final double newSchedDev = NormalGen.nextDouble(
-//        ParticleFactoryImpl.getThreadLocalRng().get(),
-//        parentBlockStateObs.getScheduleDeviation(), obsTimeDiff / 60.0
-//            * ScheduleLikelihood.schedTransScale);
-    final double newSchedDev = NormalGen.nextDouble(ParticleFactoryImpl.getThreadLocalRng().get(),
-        parentBlockStateObs.getScheduleDeviation(), ScheduleLikelihood.schedTransStdDev);
+    final double newSchedDev = ScheduleLikelihood.schedDevPriorDist.sample(
+        ParticleFactoryImpl.getLocalRng());
 
     final int currentTime = (int) (obs.getTime() - parentBlockState.getBlockInstance().getServiceDate()) / 1000;
     final int newSchedTime = currentTime - (int) (newSchedDev * 60.0);

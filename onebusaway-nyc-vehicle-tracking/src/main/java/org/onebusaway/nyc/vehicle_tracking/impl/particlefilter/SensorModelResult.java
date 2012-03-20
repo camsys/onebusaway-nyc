@@ -95,6 +95,12 @@ public class SensorModelResult {
     return addResult(new SensorModelResult(name, probability));
   }
 
+  public SensorModelResult addLogResultAsAnd(String name, double logProbability) {
+    SensorModelResult newResult = new SensorModelResult(name);
+    newResult.setLogProbability(logProbability);
+    return addResultAsAnd(newResult);
+  }
+  
   public SensorModelResult addResultAsAnd(String name, double probability) {
     return addResultAsAnd(new SensorModelResult(name, probability));
   }
