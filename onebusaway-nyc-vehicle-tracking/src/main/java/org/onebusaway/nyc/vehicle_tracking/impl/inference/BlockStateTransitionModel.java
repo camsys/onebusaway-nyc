@@ -321,12 +321,24 @@ public class BlockStateTransitionModel {
 
   public boolean allowBlockTransition(VehicleState parentState, Observation obs) {
 
-    final Observation prevObs = obs.getPreviousObservation();
+//    final Observation prevObs = obs.getPreviousObservation();
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
 
     if (parentBlockState == null && !obs.isOutOfService())
       return true;
 
+    if (parentBlockState != null) {
+      if (parentBlockState.getRunReported() == null
+          && parentBlockState.getOpAssigned() == null) {
+        /*
+         * We have no run information, so we will allow a run transition
+         * when we hit deadhead-after.
+         */
+        if (parentState.getJourneyState().getPhase() == EVehiclePhase.DEADHEAD_AFTER) {
+          return true;
+        }
+      }
+    }
 //    /**
 //     * Have we just transitioned out of a terminal?
 //     */
