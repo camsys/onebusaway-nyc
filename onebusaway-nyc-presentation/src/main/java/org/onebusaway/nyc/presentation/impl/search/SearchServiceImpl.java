@@ -56,8 +56,6 @@ public class SearchServiceImpl implements SearchService {
   @Autowired
   private TransitDataService _transitDataService;
 
-  private SearchResultCollection _results = null;
-
   private Map<String, String> _routeShortNameToIdMap = new HashMap<String, String>();
 
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
@@ -144,24 +142,24 @@ public class SearchServiceImpl implements SearchService {
   
   @Override
   public SearchResultCollection getSearchResults(String query, SearchResultFactory resultFactory) {
-    _results = new SearchResultCollection();
+    SearchResultCollection results = new SearchResultCollection();
     
-    String normalizedQuery = normalizeQuery(query);
+    String normalizedQuery = normalizeQuery(results, query);
     
-    tryAsRoute(normalizedQuery, resultFactory);
+    tryAsRoute(results, normalizedQuery, resultFactory);
     
-    if(_results.isEmpty() && StringUtils.isNumeric(normalizedQuery)) {
-      tryAsStop(normalizedQuery, resultFactory);
+    if(results.isEmpty() && StringUtils.isNumeric(normalizedQuery)) {
+      tryAsStop(results, normalizedQuery, resultFactory);
     }
 
-    if(_results.isEmpty()) {
-      tryAsGeocode(normalizedQuery, resultFactory);
+    if(results.isEmpty()) {
+      tryAsGeocode(results, normalizedQuery, resultFactory);
     }
     
-    return _results;
+    return results;
   }
 
-  private String normalizeQuery(String q) {
+  private String normalizeQuery(SearchResultCollection results, String q) {
     if(q == null) {
       return null;
     }
@@ -195,7 +193,7 @@ public class SearchServiceImpl implements SearchService {
         // if a route is included as part of another type of query, then it's a filter--
         // so remove it from the normalized query sent to the geocoder or stop service
         if((lastItem != null && !_routeShortNameToIdMap.containsKey(lastItem)) || (nextItem != null && !_routeShortNameToIdMap.containsKey(nextItem))) {
-          _results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
+          results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
           continue;
         }
       }
@@ -217,7 +215,7 @@ public class SearchServiceImpl implements SearchService {
     return normalizedQuery.trim();
   }
   
-  private void tryAsRoute(String routeQuery, SearchResultFactory resultFactory) {
+  private void tryAsRoute(SearchResultCollection results, String routeQuery, SearchResultFactory resultFactory) {
     if(routeQuery == null || StringUtils.isEmpty(routeQuery)) {
       return;
     }
@@ -231,7 +229,7 @@ public class SearchServiceImpl implements SearchService {
     // short name matching
     if(_routeShortNameToIdMap.get(routeQuery) != null) {
       RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeQuery));
-      _results.addMatch(resultFactory.getRouteResult(routeBean));
+      results.addMatch(resultFactory.getRouteResult(routeBean));
     }
 
     for(String routeShortName : _routeShortNameToIdMap.keySet()) {
@@ -245,7 +243,7 @@ public class SearchServiceImpl implements SearchService {
           && ((routeShortName.startsWith(routeQuery) && leftOversAreDiscardable)
           || (routeShortName.endsWith(routeQuery) && leftOversAreDiscardable))) {
         RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeShortName));
-        _results.addSuggestion(resultFactory.getRouteResult(routeBean));
+        results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;
       }
     }
@@ -254,14 +252,14 @@ public class SearchServiceImpl implements SearchService {
     for(String routeLongName : _routeLongNameToIdMap.keySet()) {
       if(routeLongName.contains(routeQuery + " ") || routeLongName.contains(" " + routeQuery)) {
         RouteBean routeBean = _transitDataService.getRouteForId(_routeLongNameToIdMap.get(routeLongName));
-        _results.addSuggestion(resultFactory.getRouteResult(routeBean));
+        results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;        
       }
     }
       
   }
 
-  private void tryAsStop(String stopQuery, SearchResultFactory resultFactory) {
+  private void tryAsStop(SearchResultCollection results, String stopQuery, SearchResultFactory resultFactory) {
     if(stopQuery == null || StringUtils.isEmpty(stopQuery)) {
       return;
     }
@@ -285,22 +283,22 @@ public class SearchServiceImpl implements SearchService {
     }
     
     if(matches.size() == 1)
-      _results.addMatch(resultFactory.getStopResult(matches.get(0), _results.getRouteIdFilter()));
+      results.addMatch(resultFactory.getStopResult(matches.get(0), results.getRouteIdFilter()));
     else {
       for(StopBean match : matches) {
-        _results.addSuggestion(resultFactory.getStopResult(match, _results.getRouteIdFilter()));
+        results.addSuggestion(resultFactory.getStopResult(match, results.getRouteIdFilter()));
       }
     }
   }
   
-  private void tryAsGeocode(String query, SearchResultFactory resultFactory) {
+  private void tryAsGeocode(SearchResultCollection results, String query, SearchResultFactory resultFactory) {
     List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(query);
     
     for(NycGeocoderResult result : geocoderResults) {
       if(geocoderResults.size() == 1) {
-        _results.addMatch(resultFactory.getGeocoderResult(result, _results.getRouteIdFilter()));
+        results.addMatch(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
       } else {        
-        _results.addSuggestion(resultFactory.getGeocoderResult(result, _results.getRouteIdFilter()));
+        results.addSuggestion(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
       }
     }
   }
