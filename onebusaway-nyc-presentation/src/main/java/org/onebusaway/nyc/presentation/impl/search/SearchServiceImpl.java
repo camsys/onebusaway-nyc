@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -166,20 +167,23 @@ public class SearchServiceImpl implements SearchService {
     }
     
     q = q.trim();
+
+    List<String> tokens = new ArrayList<String>();
+    StringTokenizer tokenizer = new StringTokenizer(q, " +", true);
+    while(tokenizer.hasMoreTokens()) {
+      tokens.add(tokenizer.nextToken().trim().toUpperCase());
+    }
     
     String normalizedQuery = "";
-    String[] tokens = q.split(" ");
-    for(int i = 0; i < tokens.length; i++) {
-      String token = tokens[i].trim().toUpperCase();
-
+    for(int i = 0; i < tokens.size(); i++) {
+      String token = tokens.get(i);
       String lastItem = null;
       String nextItem = null;
       if(i - 1 >= 0) {
-        lastItem = tokens[i - 1].trim().toUpperCase();
+        lastItem = tokens.get(i - 1);
       }
-      
-      if(i + 1 < tokens.length) {
-        nextItem = tokens[i + 1].trim().toUpperCase();
+      if(i + 1 < tokens.size()) {
+        nextItem = tokens.get(i + 1);
       }
       
       // keep track of route tokens we found when parsing
