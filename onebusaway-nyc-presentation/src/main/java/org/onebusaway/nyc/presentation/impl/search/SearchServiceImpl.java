@@ -171,7 +171,11 @@ public class SearchServiceImpl implements SearchService {
     List<String> tokens = new ArrayList<String>();
     StringTokenizer tokenizer = new StringTokenizer(q, " +", true);
     while(tokenizer.hasMoreTokens()) {
-      tokens.add(tokenizer.nextToken().trim().toUpperCase());
+      String token = tokenizer.nextToken().trim().toUpperCase();
+      
+      if(!StringUtils.isEmpty(token)) {
+        tokens.add(token);
+      }
     }
     
     String normalizedQuery = "";
