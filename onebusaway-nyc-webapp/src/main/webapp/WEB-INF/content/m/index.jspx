@@ -37,7 +37,10 @@
 	<s:url var="url" value="/js/lib/jquery.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-	<s:url var="url" value="/js/oba/m/Location.js"/>
+	<s:url var="url" value="/js/lib/dateFormat.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/oba/m/Mobile.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
 
@@ -60,11 +63,13 @@
 		<small>TIP: Enter an intersection, bus route or bus stop code.</small>
 	</div>
 
-	<div id="content">
-		<s:if test="%{results.empty}">
+	<s:if test="%{results.empty}">
+		<div id="content">
 			<c:import url="welcome.jspx"/>
-		</s:if>
-		<s:else>
+		</div>
+	</s:if>
+	<s:else>
+		<div id="content">
 			<s:if test="%{results.suggestions.size&gt;0}">
 				<!-- route search with no direct matches -->
 				<s:if test="results.resultType.equals('RouteResult')">
@@ -88,8 +93,17 @@
 					<c:import url="stop-result.jspx"/>
 				</s:elseif>
 			</s:if>
-		</s:else>
-	</div>
+		</div>
+
+		<div id="refresh">
+			<s:url var="url" namespace="/m" action="index" anchor="top">				
+				<s:param name="q"><s:property value="q" /></s:param>
+				<s:param name="l"><s:property value="l" /></s:param>
+				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
+			</s:url>
+	    	<a href="${url}">Refresh (updated <strong><s:property value="lastUpdateTime" /></strong>)</a>
+		</div>
+	</s:else>
 	
 	<div id="footer">
     	<p>

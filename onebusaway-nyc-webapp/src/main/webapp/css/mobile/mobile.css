@@ -183,6 +183,23 @@ small {
 	width: 280px;
 }
 
+/* refresh */
+#refresh {
+	text-align: center;
+	display: block;
+	background-color: #C0C0C0;
+}
+
+#refresh a {
+	font-size: 80%;
+	display: block;
+	font-weight: bold;
+	padding: .75em;
+	text-align: center;
+	text-transform: uppercase;
+	color: #FFFFFF;
+}
+
 /* content panel */
 #content {
 	padding-top: 1em;

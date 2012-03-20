@@ -34,6 +34,8 @@ import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -216,6 +218,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return (_q == null || _q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT))) 
         && _location == null;
   }
+  
+  public String getLastUpdateTime() {
+    return DateFormat.getTimeInstance().format(new Date());
+  } 
   
   public String getResultType() {
     return _results.getResultType();
