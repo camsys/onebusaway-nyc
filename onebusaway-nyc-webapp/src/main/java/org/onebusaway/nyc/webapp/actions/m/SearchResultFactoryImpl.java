@@ -88,7 +88,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     }  
 
     // add stops in both directions
-    Map<String, String> stopIdToDistanceAwayStringMap = getStopIdToDistanceAwayStringMapForRoute(routeBean);
+    Map<String, List<String>> stopIdToDistanceAwayStringMap = getStopIdToDistanceAwayStringsListMapForRoute(routeBean);
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -228,8 +228,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     return result;
   }
   
-  private Map<String, String> getStopIdToDistanceAwayStringMapForRoute(RouteBean routeBean) {
-    Map<String, String> result = new HashMap<String, String>();      
+  private Map<String, List<String>> getStopIdToDistanceAwayStringsListMapForRoute(RouteBean routeBean) {
+    Map<String, List<String>> result = new HashMap<String, List<String>>();      
 
     // stop visits
     List<VehicleActivityStructure> journeyList = 
@@ -245,17 +245,13 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
       String stopId = monitoredCall.getStopPointRef().getValue();      
 
-      String distanceString = result.get(stopId);
-      if(distanceString == null) {
-        distanceString = new String();
+      List<String> distanceStrings = result.get(stopId);
+      if(distanceStrings == null) {
+        distanceStrings = new ArrayList<String>();
       }
       
-      if(distanceString.length() > 0) {
-        distanceString += ", ";
-      }
-
-      distanceString += getPresentableDistance(journey.getMonitoredVehicleJourney(), journey.getRecordedAtTime().getTime(), false);
-      result.put(stopId,  distanceString);
+      distanceStrings.add(getPresentableDistance(journey.getMonitoredVehicleJourney(), journey.getRecordedAtTime().getTime(), false));
+      result.put(stopId,  distanceStrings);
     }
 
     return result;

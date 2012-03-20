@@ -3,6 +3,8 @@ package org.onebusaway.nyc.webapp.actions.m.model;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
+import java.util.List;
+
 /**
  * A stop on a route, the route being the top-level search result.
  * @author jmaki
@@ -12,9 +14,9 @@ public class StopOnRoute {
 
   private StopBean stop;
   
-  private String distanceAways;
+  private List<String> distanceAways;
   
-  public StopOnRoute(StopBean stop, String distanceAways) {
+  public StopOnRoute(StopBean stop, List<String> distanceAways) {
     this.stop = stop;
     this.distanceAways = distanceAways;
   }
@@ -31,7 +33,7 @@ public class StopOnRoute {
     return stop.getName();
   }
   
-  public String getDistanceAways() {
+  public List<String> getDistanceAways() {
     return distanceAways;
   }
 

@@ -23,15 +23,15 @@
 .routeHeader.color<c:out value="${color}" /> {
 	border-bottom: 5px solid #<c:out value="${color}" />;
 }
-.stopsOnRoute.color<c:out value="${color}" /> li {
+.stopsOnRoute.color<c:out value="${color}" />&gt;li {
 	background-image: url('../img/stop-on-route/stop_on_route_middle_<c:out value="${color}"/>.png');
 	background-position: center left;
 	background-repeat: no-repeat;
 }
-.stopsOnRoute.color<c:out value="${color}" /> li.start {
+.stopsOnRoute.color<c:out value="${color}" />&gt;li.start {
 	background-image: url('../img/stop-on-route/stop_on_route_start_<c:out value="${color}"/>.png');
 }
-.stopsOnRoute.color<c:out value="${color}" /> li.end {
+.stopsOnRoute.color<c:out value="${color}" />&gt;li.end {
 	background-image: url('../img/stop-on-route/stop_on_route_end_<c:out value="${color}"/>.png');
 }
 </c:forEach>

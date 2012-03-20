@@ -237,11 +237,18 @@ small {
 	padding: .3em;
 	padding-left: 20px;
 }
+.arrivalsOnRoute li,
 .arrivalsAtStop li {
-	padding-left: 20px;
+	white-space: nowrap;
+	margin-left: 10px;
+	padding-left: 16px;
 	background-image: url('img/bullet_bus.png');
 	background-repeat: no-repeat;
 	background-position: center left;
+}
+.arrivalsOnRoute,
+.arrivalsOnRoute li {
+	display: inline;
 }
 .routeList a {
 	display: inline-block;

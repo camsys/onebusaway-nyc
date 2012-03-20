@@ -89,7 +89,12 @@
 											<s:property value="name" />
 										</a> 
 									</strong>
-									&amp;nbsp;<s:property value="distanceAways" />
+									
+									<ol class="arrivalsOnRoute">
+										<c:forEach var="distanceAway" items="${distanceAways}">
+											<li><c:out value="${distanceAway}" /></li>
+										</c:forEach>
+									</ol>
 								</c:when>
 								<c:otherwise>
 									<s:url var="url" namespace="/m" action="index">
