@@ -188,8 +188,8 @@ small {
 	text-align: center;
 	display: block;
 	background-color: #C0C0C0;
+	border: 2px solid #A0A0A0;
 }
-
 #refresh a {
 	font-size: 80%;
 	display: block;
@@ -239,7 +239,6 @@ small {
 }
 .arrivalsOnRoute li,
 .arrivalsAtStop li {
-	white-space: nowrap;
 	margin-left: 10px;
 	padding-left: 16px;
 	background-image: url('img/bullet_bus.png');
@@ -249,6 +248,9 @@ small {
 .arrivalsOnRoute,
 .arrivalsOnRoute li {
 	display: inline;
+}
+.arrivalsOnRoute li {
+	white-space: nowrap;
 }
 .routeList a {
 	display: inline-block;
