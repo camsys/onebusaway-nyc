@@ -200,7 +200,7 @@ OBA.Popups = (function() {
 			html += '</ul>';
 		}
 		
-		html += OBA.Config.infoBubbleFooterFunction('route', routeIdWithoutAgency);			
+		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
 		
 		// (end popup)
 		html += '</div>';
