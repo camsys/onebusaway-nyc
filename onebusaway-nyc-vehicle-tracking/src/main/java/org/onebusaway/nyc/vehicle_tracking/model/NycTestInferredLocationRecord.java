@@ -21,6 +21,8 @@ import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
 
+import com.google.common.base.Strings;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -334,6 +336,14 @@ public class NycTestInferredLocationRecord implements Serializable {
     this.actualTripId = actualTripId;
   }
 
+  public boolean isReportedRunInfoSet() {
+    return (!Strings.isNullOrEmpty(this.reportedRunId)
+        && !this.reportedRunId.matches("0*-?0*"))
+        || (!Strings.isNullOrEmpty(this.operatorId)
+            && !this.operatorId.matches("0*"));
+    
+  }
+  
   public boolean isActualServiceDateSet() {
     return actualServiceDate > 0;
   }
