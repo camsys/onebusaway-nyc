@@ -71,6 +71,13 @@ OBA.Popups = (function() {
 				if(openBubble === true) {
 					infoWindow.open(map, marker);
 				}
+				
+				var content = jQuery("#" + popupContainerId);
+				if(content.height() > 300) {
+					content.css("overflow-y", "scroll")
+							.css("height", "280");
+				}
+				
 			});
 		};
 		refreshFn(true);		
@@ -132,10 +139,6 @@ OBA.Popups = (function() {
 		var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
 		var vehicleIdParts = vehicleId.split("_");
 		var vehicleIdWithoutAgency = vehicleIdParts[1];
-
-		var routeId = activity.MonitoredVehicleJourney.LineRef;
-		var routeIdParts = routeId.split("_");
-		var routeIdWithoutAgency = routeIdParts[1];
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
@@ -258,7 +261,8 @@ OBA.Popups = (function() {
 	    var routeAndDirectionWithoutArrivalsCount = 0;
 	    var routeAndDirectionWithoutSerivce = {};
 	    var routeAndDirectionWithoutSerivceCount = 0;
-	    
+	    var totalRouteCount = 0;
+		
 	    // break up routes here between those with and without service
 	    jQuery.each(stopResult.routesAvailable, function(_, route) {
 	    	jQuery.each(route.directions, function(__, direction) {
@@ -270,6 +274,7 @@ OBA.Popups = (function() {
 	    			routeAndDirectionWithoutArrivalsCount++;
 	    		}
 	    	});
+	    	totalRouteCount++;
 	    });
 	    
 	    // ...now those with and without arrivals
@@ -287,9 +292,16 @@ OBA.Popups = (function() {
 			routeAndDirectionWithArrivals[routeId + "_" + directionId].push(monitoredJourney.MonitoredVehicleJourney);
 			routeAndDirectionWithArrivalsCount++;
 		});	    
-		
+	    
 	    // service available
-		html += '<p class="service">Service available at this stop:</p>';
+		var maxObservationsToShow = 3;
+		if(totalRouteCount > 5) {
+			maxObservationsToShow = 1;
+		} else if(totalRouteCount > 3) {
+			maxObservationsToShow = 2;
+		}	
+
+	    html += '<p class="service">Service available at this stop:</p>';
 
 		if(routeAndDirectionWithArrivalsCount > 0) {
 			jQuery.each(routeAndDirectionWithArrivals, function(_, mvjs) {
@@ -302,7 +314,7 @@ OBA.Popups = (function() {
 				html += '</li>';
 
 				jQuery.each(mvjs, function(_, monitoredVehicleJourney) {
-					if(_ >= 3) {
+					if(_ >= maxObservationsToShow) {
 						return false;
 					}
 
@@ -362,7 +374,7 @@ OBA.Popups = (function() {
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
 		});
-		
+
 		return content.get(0);
 	}
 
