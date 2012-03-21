@@ -141,7 +141,7 @@ OBA.Popups = (function() {
 		
 		// header
 		html += '<div class="header vehicle">';
-		html += '<p class="title">' + routeIdWithoutAgency + " " + activity.MonitoredVehicleJourney.DestinationName + '</p><p>';
+		html += '<p class="title">' + activity.MonitoredVehicleJourney.PublishedLineName + " " + activity.MonitoredVehicleJourney.DestinationName + '</p><p>';
 		html += '<span class="type">Vehicle #' + vehicleIdWithoutAgency + '</span>';
 
 		var updateTimestamp = OBA.Util.ISO8601StringToDate(activity.RecordedAtTime).getTime();
@@ -297,12 +297,8 @@ OBA.Popups = (function() {
 
 				html += '<ul>';
 
-				var routeId = mvj.LineRef;
-				var routeIdParts = routeId.split("_");
-				var routeIdWithoutAgency = routeIdParts[1];
-
 				html += '<li class="route">';
-				html += '<a href="#' + routeIdWithoutAgency + '">' + routeIdWithoutAgency + " " + mvj.DestinationName + '</a>';
+				html += '<a href="#' + mvj.PublishedLineName + '">' + mvj.PublishedLineName + " " + mvj.DestinationName + '</a>';
 				html += '</li>';
 
 				jQuery.each(mvjs, function(_, monitoredVehicleJourney) {

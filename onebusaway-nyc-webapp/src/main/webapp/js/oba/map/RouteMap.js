@@ -237,7 +237,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 					var markerOptions = {
 						zIndex: 3,
 						map: map,
-						title: routeIdWithoutAgency + " " + headsign,
+						title: "Vehicle " + vehicleIdWithoutAgency + " to " + headsign,
 						vehicleId: vehicleId,
 						routeId: routeId
 					};
