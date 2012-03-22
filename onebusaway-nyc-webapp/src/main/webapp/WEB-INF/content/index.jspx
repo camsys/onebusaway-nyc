@@ -118,16 +118,16 @@
          <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
        </form>
        
-       <div id="suggestions">
-       	 <h2>Did You Mean?</h2>
-       	 <ul></ul>
-	   </div>
-	            
        <div id="matches">
        	 <h2>Results:</h2>
        	 <ul></ul>
 	   </div>
 
+       <div id="suggestions">
+       	 <h2>Did You Mean?</h2>
+       	 <ul></ul>
+	   </div>
+	            
 	   <div id="no-results">&amp;nbsp;</div>
 
 	   <div id="loading">

@@ -70,18 +70,6 @@
 	</s:if>
 	<s:else>
 		<div id="content">
-			<s:if test="%{results.suggestions.size&gt;0}">
-				<!-- route search with no direct matches -->
-				<s:if test="results.resultType.equals('RouteResult')">
-					<c:import url="route-suggestion-picker.jspx"/>
-				</s:if>
-	
-				<!-- amigbuous address -->
-				<s:elseif test="results.resultType.equals('GeocodeResult')">
-						<c:import url="geocode-result.jspx"/>
-				</s:elseif>
-			</s:if>	
-	
 			<s:if test="%{results.matches.size&gt;0}">
 				<s:if test="results.resultType.equals('RouteResult')">
 					<c:import url="route-result.jspx"/>
@@ -93,6 +81,18 @@
 					<c:import url="stop-result.jspx"/>
 				</s:elseif>
 			</s:if>
+
+			<s:if test="%{results.suggestions.size&gt;0}">
+				<!-- route search with no direct matches -->
+				<s:if test="results.resultType.equals('RouteResult')">
+					<c:import url="route-suggestion-picker.jspx"/>
+				</s:if>
+	
+				<!-- amigbuous address -->
+				<s:elseif test="results.resultType.equals('GeocodeResult')">
+						<c:import url="geocode-result.jspx"/>
+				</s:elseif>
+			</s:if>	
 		</div>
 
 		<div id="refresh">
