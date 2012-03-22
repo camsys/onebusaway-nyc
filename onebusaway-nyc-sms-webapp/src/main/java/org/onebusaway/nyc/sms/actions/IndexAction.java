@@ -371,7 +371,7 @@ public class IndexAction extends SessionedIndexAction {
     }
     
     String footer = "\nSend:\n";
-    footer += "STOP-ID+ROUTE for info\n";
+    footer += "STOP-ID+ROUTE for bus info\n";
 
     String alertsFooter = footer + "C+ROUTE for alerts (*)\n";
 
