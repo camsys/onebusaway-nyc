@@ -14,7 +14,7 @@
     <name>onebusaway-nyc</name>
 
     <properties>
-    	<onebusaway.gtfs.version>1.2.7-SNAPSHOT</onebusaway.gtfs.version>
+    	<onebusaway.gtfs.version>1.2.6-SNAPSHOT</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
     	<onebusaway.csv-entities.version>1.0.3-SNAPSHOT</onebusaway.csv-entities.version>
     	<struts.version>2.2.1.1</struts.version>
