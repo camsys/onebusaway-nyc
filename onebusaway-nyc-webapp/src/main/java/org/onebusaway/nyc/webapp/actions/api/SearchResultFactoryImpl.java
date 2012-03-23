@@ -129,7 +129,10 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
             polylines.add(polyline.getPoints());
           }
 
-          directions.add(new RouteDirection(stopGroupBean, polylines, null, null));
+          Boolean hasUpcomingScheduledService = 
+              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+
+          directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
         }
       }
 
