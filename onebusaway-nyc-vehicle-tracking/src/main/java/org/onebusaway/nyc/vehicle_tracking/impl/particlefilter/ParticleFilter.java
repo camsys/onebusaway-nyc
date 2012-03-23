@@ -31,6 +31,8 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 
+import org.apache.commons.math.util.FastMath;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -199,11 +201,6 @@ public class ParticleFilter<OBS> {
     _timeOfLastUpdate = timestamp;
   }
   
-  private void resample(double timestamp, OBS observation) 
-      throws ParticleFilterException {
-    reset();
-    updateFilter(timestamp, observation);
-  }
 
   /*
    * Returns an ArrayList, each entry of which is a Particle. This allows
@@ -215,6 +212,7 @@ public class ParticleFilter<OBS> {
     return _particleFactory.createParticles(timestamp, observation);
   }
 
+  /*
   private Multiset<Particle> applyMotionAndSensorModel(final OBS obs,
       final double timestamp, final CategoricalDist<Particle> cdf)
       throws ParticleFilterException {
@@ -269,43 +267,57 @@ public class ParticleFilter<OBS> {
     final Multiset<Particle> particles = HashMultiset.create(results);
     return particles;
   }
+  */
 
   @SuppressWarnings("unused")
   private Multiset<Particle> applyMotionModel(final OBS obs,
       final double timestamp) throws ParticleFilterException {
     Multiset<Particle> particles;
     final double elapsed = timestamp - _timeOfLastUpdate;
-    if (_threads > 1) {
-      final Multiset<Particle> results = ConcurrentHashMultiset.create();
-      final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-      for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
-        tasks.add(Executors.callable(new Runnable() {
-          @Override
-          public void run() {
-            cachedParticleMove(pEntry, timestamp, elapsed, obs,
-                results);
-          }
-        }));
-      }
-      _stateTransitionCache.clear();
-      try {
-        _executorService.invokeAll(tasks);
-      } catch (final InterruptedException e) {
-        throw new ParticleFilterException(
-            "particle sensor apply task interrupted: " + e.getMessage());
-      }
-      particles = HashMultiset.create(results);
-    } else {
-      particles = HashMultiset.create(_particles.entrySet().size());
-      for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
-        cachedParticleMove(pEntry, timestamp, elapsed, obs,
-            particles);
-      }
-      _stateTransitionCache.clear();
-    }
+//    if (_threads > 1) {
+//      final Multiset<Particle> results = ConcurrentHashMultiset.create();
+//      final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+//      for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
+//        tasks.add(Executors.callable(new Runnable() {
+//          @Override
+//          public void run() {
+//            cachedParticleMove(pEntry, timestamp, elapsed, obs,
+//                results);
+//          }
+//        }));
+//      }
+//      _stateTransitionCache.clear();
+//      try {
+//        _executorService.invokeAll(tasks);
+//      } catch (final InterruptedException e) {
+//        throw new ParticleFilterException(
+//            "particle sensor apply task interrupted: " + e.getMessage());
+//      }
+//      particles = HashMultiset.create(results);
+//    } else {
+      particles = _motionModel.move(_particles, timestamp, elapsed, obs);
+//    }
     return particles;
   }
 
+  public static double getEffectiveSampleSize(Multiset<Particle> particles) {
+    double CVt = 0.0;
+    double N = particles.size();
+    double Wnorm = 0.0;
+    for (Multiset.Entry<Particle> p : particles.entrySet()) {
+      SensorModelResult res = p.getElement().getResult();
+      if (res == null)
+        return Double.NaN;
+      Wnorm += res.getProbability()*p.getCount();
+    }
+    for (Multiset.Entry<Particle> p : particles.entrySet()) {
+      CVt += FastMath.pow(p.getElement().getResult().getProbability()/Wnorm - 1/N, 2.0)*p.getCount();
+    }
+    CVt = FastMath.sqrt(N*CVt);
+    
+    return N/(1+FastMath.pow(CVt, 2.0));
+  }
+  
   private static final Ordering<Particle> _nullBlockStateComparator = new Ordering<Particle>() {
 
     @Override
@@ -406,22 +418,6 @@ public class ParticleFilter<OBS> {
     }
 
     return cdf;
-  }
-
-  /**
-   * XXX remember to clear the local cache after using this. FIXME again,
-   * assumes particles' data are VehicleState type.
-   * 
-   * @param particle
-   * @param timestamp
-   * @param elapsed
-   * @param obs
-   * @param particles
-   */
-  private void cachedParticleMove(Multiset.Entry<Particle> particle, final double timestamp,
-      final double elapsed, final OBS obs, Multiset<Particle> particles) {
-    _motionModel.move(particle, timestamp, elapsed, obs, particles,
-        _stateTransitionCache);
   }
 
   /**
@@ -545,16 +541,16 @@ public class ParticleFilter<OBS> {
      * model(likelihood) to each particle
      */
     CategoricalDist<Particle> cdf;
-    if (_moveAndWeight && _threads > 1) {
-
-      if (moveParticles) {
-        cdf = new CategoricalDist<Particle>();
-        particles.addAll(applyMotionAndSensorModel(obs, timestamp, cdf));
-      } else {
-        cdf = applySensorModel(particles, obs);
-      }
-
-    } else {
+//    if (_moveAndWeight && _threads > 1) {
+//
+//      if (moveParticles) {
+//        cdf = new CategoricalDist<Particle>();
+//        particles.addAll(applyMotionAndSensorModel(obs, timestamp, cdf));
+//      } else {
+//        cdf = applySensorModel(particles, obs);
+//      }
+//
+//    } else {
 
       /*
        * perform movement and weighing separately
@@ -564,7 +560,7 @@ public class ParticleFilter<OBS> {
       }
 
       cdf = applySensorModel(particles, obs);
-    }
+//    }
 
     /**
      * 3. track the weighted particles (before resampling and normalization)
@@ -577,7 +573,7 @@ public class ParticleFilter<OBS> {
 
     if (!cdf.canSample())
       throw new ZeroProbabilityParticleFilterException();
-
+    
     computeBestState(particles);
 
     /**

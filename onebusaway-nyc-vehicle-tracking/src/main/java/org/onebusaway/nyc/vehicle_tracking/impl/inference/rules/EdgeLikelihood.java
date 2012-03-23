@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
+import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
@@ -23,18 +24,23 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
-import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
-import umontreal.iro.lecuyer.probdist.HalfNormalDist;
-import umontreal.iro.lecuyer.probdist.NormalDist;
+import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
 
 // @Component
 public class EdgeLikelihood implements SensorModelRule {
 
-  final public static double deadheadDuringStdDev = 150.0/1;
+  final public static UnivariateGaussian inProgressEdgeMovementDist = new UnivariateGaussian(
+      0d, 70d * 70d);
+  final public static UnivariateGaussian deadDuringEdgeMovementDist = new UnivariateGaussian(
+      0d, 150d * 150d);
+  final public static UnivariateGaussian noEdgeMovementDist = new UnivariateGaussian(
+      0d, 250d * 250d);
 
-  final public static double inProgressStdDev = 70.0/1;
+  // final public static double deadheadDuringStdDev = 150.0/1;
 
-  final public static double startBlockStdDev = 50.0/1;
+  // final public static double inProgressStdDev = 70.0/1;
+
+  // final public static double startBlockStdDev = 50.0/1;
 
   // private BlockStateService _blockStateService;
 
@@ -64,17 +70,16 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
 
+    if (obs.isAtBase()) {
+      result.addResultAsAnd("pNotInProgress(base)", 1.0);
+      return result;
+    }
+
     if (blockState == null) {
-      if (obs.isAtBase()) {
-        result.addResultAsAnd("pNotInProgress(base)", 1.0);
-      } else {
-        /*
-         * FIXME should use average velocity/time from prev. obs
-         */
-        final double x = NormalDist.inverseF(0.0, startBlockStdDev, 0.01);
-        final double pDistAlong = NormalDist.density(0.0, startBlockStdDev, x);
-        result.addResultAsAnd("pNotInProgress(prior)", pDistAlong);
-      }
+
+      final double pDistAlong = computeNoEdgeMovementLogProb(obs);
+
+      result.addLogResultAsAnd("pNotInProgress(no-edge)", pDistAlong);
       return result;
     }
 
@@ -92,62 +97,69 @@ public class EdgeLikelihood implements SensorModelRule {
 
       if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
 
-        pDistAlong = FoldedNormalDist.density(0.0, startBlockStdDev,
-            blockState.getBlockLocation().getDistanceAlongBlock());
+        pDistAlong = computeNoEdgeMovementLogProb(obs);
 
       } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
 
         if (parentState.getBlockState().getBlockLocation().getDistanceAlongBlock() 
             < blockState.getBlockLocation().getDistanceAlongBlock()) {
-          pDistAlong = computeEdgeMovementProb(blockState, obs,
-              parentState.getBlockState(), phase);
+
+          pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
         } else {
-          final double x = NormalDist.inverseF(0.0, startBlockStdDev, 0.01);
-          pDistAlong = NormalDist.density(0.0, startBlockStdDev, x);
+          pDistAlong = computeNoEdgeMovementLogProb(obs);
         }
 
       } else {
 
-        pDistAlong = computeEdgeMovementProb(blockState, obs,
-            parentState.getBlockState(), phase);
+        pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
 
       }
-      result.addResultAsAnd("moveAlong", pDistAlong);
+      result.addLogResultAsAnd("in-progress", pDistAlong);
 
     } else {
-      
-      pDistAlong = FoldedNormalDist.density(0.0, 
-            blockState.getBlockInstance().getBlock().getTotalBlockDistance()/3d, 
-             blockState.getBlockLocation().getDistanceAlongBlock());
-      result.addResultAsAnd("previouslyInactive or new run", pDistAlong);
+
+      pDistAlong = computeNoEdgeMovementLogProb(obs);
+
+      result.addLogResultAsAnd("new-run", pDistAlong);
 
     }
 
     return result;
   }
 
-  static private final double computeEdgeMovementProb(BlockState blockState,
-      Observation obs, BlockState prevBlockState, EVehiclePhase phase) {
+  static private final double computeNoEdgeMovementLogProb(Observation obs) {
+    final double obsDistDelta = SphericalGeometryLibrary.distance(
+        obs.getLocation(), obs.getPreviousObservation().getLocation());
+    final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
+
+    // FIXME really lame. use a Kalman filter.
+    final double expAvgDist = 6.7056 * obsTimeDelta;
+
+    final double pDistAlong = noEdgeMovementDist.getProbabilityFunction().logEvaluate(
+        obsDistDelta - expAvgDist);
+    return pDistAlong;
+  }
+
+  static private final double computeEdgeMovementLogProb(Observation obs, 
+      VehicleState state, VehicleState parentState) {
+
     final double obsDelta = SphericalGeometryLibrary.distance(
         obs.getLocation(), obs.getPreviousObservation().getLocation());
 
-    /*
-     * When there are multiple (potential) previously in-progress block-states,
-     * we need to average over them to determine
-     */
-    final double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
-    final double prevDab = prevBlockState.getBlockLocation().getDistanceAlongBlock();
+    final double currentDab = state.getBlockState().getBlockLocation().getDistanceAlongBlock();
+    final double prevDab = parentState.getBlockState().getBlockLocation().getDistanceAlongBlock();
     final double dabDelta = currentDab - prevDab;
 
-    final double stdDev;
-    if (EVehiclePhase.DEADHEAD_DURING == phase) {
-      stdDev = deadheadDuringStdDev;
+    final double pMove;
+    if (EVehiclePhase.DEADHEAD_DURING == state.getJourneyState().getPhase()
+        || EVehiclePhase.DEADHEAD_DURING == parentState.getJourneyState().getPhase()) {
+      pMove = deadDuringEdgeMovementDist.getProbabilityFunction().logEvaluate(
+          dabDelta - obsDelta);
     } else {
-      stdDev = inProgressStdDev;
+      pMove = inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(
+          dabDelta - obsDelta);
     }
 
-    final double pInP3Tmp = NormalDist.density(dabDelta, stdDev, obsDelta);
-
-    return pInP3Tmp;
+    return pMove;
   }
 }

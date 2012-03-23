@@ -79,22 +79,8 @@ public class ScheduleLikelihood implements SensorModelRule {
     final EVehiclePhase phase = state.getJourneyState().getPhase();
     final BlockState blockState = state.getBlockState();
     final VehicleState parentState = context.getParentState();
-//    final BlockStateObservation parentBlockState = 
-//        parentState != null ? parentState.getBlockStateObservation() : null;
-    
     
     final SensorModelResult result = computeSchedTimeProb(parentState, state, blockState, phase, obs);
-//    final double prevObsSchedDev = parentBlockState != null ? parentBlockState.getScheduleDeviation() 
-//        : 0.0;
-//    final double obsTimeDiff = obs.getPreviousObservation() != null ? 
-//        (obs.getTime() - obs.getPreviousObservation().getTime())/1000.0 : 0.0;
-//    final double devStdDev = FastMath.abs(obsTimeDiff)/60.0 * schedTransScale;
-//    final boolean runChanged = MotionModelImpl.hasRunChanged(state.getBlockStateObservation(), parentBlockState);
-//    if (blockState != null && !runChanged) {
-//      final double pDevTrans = NormalDist.density(prevObsSchedDev, devStdDev, 
-//          state.getBlockStateObservation().getScheduleDeviation());
-//      result.addResultAsAnd("in progress(dev-trans)", pDevTrans);
-//    }
     
     return result;
   }

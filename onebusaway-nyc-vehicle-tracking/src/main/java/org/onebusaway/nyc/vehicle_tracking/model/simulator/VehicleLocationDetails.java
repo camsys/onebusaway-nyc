@@ -18,6 +18,7 @@ package org.onebusaway.nyc.vehicle_tracking.model.simulator;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 
@@ -108,22 +109,7 @@ public class VehicleLocationDetails {
   }
   
   public double getEffectiveSampleSize() {
-    double CVt = 0.0;
-    double N = particles.size();
-    double Wnorm = 0.0;
-    for (Entry<Particle> p : particles.entrySet()) {
-      SensorModelResult res = p.getElement().getResult();
-      if (res == null)
-        return Double.NaN;
-      Wnorm += res.getProbability()*p.getCount();
-    }
-    for (Entry<Particle> p : particles.entrySet()) {
-      CVt += FastMath.pow(p.getElement().getResult().getProbability()/Wnorm - 1/N, 2.0)*p.getCount();
-    }
-    CVt = FastMath.sqrt(N*CVt);
-    
-    return N/(1+FastMath.pow(CVt, 2.0));
-    
+    return ParticleFilter.getEffectiveSampleSize(particles);
   }
   
   public void setSampledParticles(Multiset<Particle> sampledParticles2) {

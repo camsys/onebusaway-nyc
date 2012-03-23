@@ -425,11 +425,11 @@ public class BlockStateService {
                */
               double distanceAlongBlock = blockTrip.getDistanceAlongBlock()
                   + distanceAlongShape;
-              /*
-               * We concern ourselves with only a meter's precision.
-               */
-              distanceAlongBlock = DoubleMath.roundToLong(distanceAlongBlock,
-                  RoundingMode.HALF_UP);
+//              /*
+//               * We concern ourselves with only a meter's precision.
+//               */
+//              distanceAlongBlock = DoubleMath.roundToLong(distanceAlongBlock,
+//                  RoundingMode.HALF_UP);
               if (distanceAlongBlock > instance.getBlock().getTotalBlockDistance()) {
                 distanceAlongBlock = instance.getBlock().getTotalBlockDistance();
               }

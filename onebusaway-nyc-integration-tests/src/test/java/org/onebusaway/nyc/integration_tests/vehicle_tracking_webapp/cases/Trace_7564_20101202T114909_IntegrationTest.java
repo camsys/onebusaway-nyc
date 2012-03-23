@@ -38,8 +38,9 @@ public class Trace_7564_20101202T114909_IntegrationTest extends AbstractTraceRun
      * good decision on which is correct. 
      * also, some in-progress & deviated/deadhead conflicts.
      */
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.86);
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.94);
+//    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.86);
+//    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.94);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0.89);
 //    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.94);
   }
 }

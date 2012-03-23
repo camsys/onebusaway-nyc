@@ -321,7 +321,6 @@ public class BlockStateTransitionModel {
 
   public boolean allowBlockTransition(VehicleState parentState, Observation obs) {
 
-//    final Observation prevObs = obs.getPreviousObservation();
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
 
     if (parentBlockState == null && !obs.isOutOfService())
@@ -337,29 +336,31 @@ public class BlockStateTransitionModel {
         if (parentState.getJourneyState().getPhase() == EVehiclePhase.DEADHEAD_AFTER) {
           return true;
         }
+        
+//        final Observation prevObs = obs.getPreviousObservation();
+//        /**
+//         * Have we just transitioned out of a terminal?
+//         */
+//        if (prevObs != null) {
+//          /**
+//           * If we were assigned a block, then use the block's terminals, otherwise,
+//           * all terminals.
+//           */
+//          if (parentBlockState != null) {
+//            final boolean wasAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
+//                prevObs.getRecord(),
+//                parentBlockState.getBlockState().getBlockInstance());
+//            final boolean isAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
+//                obs.getRecord(),
+//                parentBlockState.getBlockState().getBlockInstance());
+//    
+//            if (wasAtBlockTerminal && !isAtBlockTerminal) {
+//              return true;
+//            }
+//          }
+//        }
       }
     }
-//    /**
-//     * Have we just transitioned out of a terminal?
-//     */
-//    if (prevObs != null) {
-//      /**
-//       * If we were assigned a block, then use the block's terminals, otherwise,
-//       * all terminals.
-//       */
-//      if (parentBlockState != null) {
-//        final boolean wasAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
-//            prevObs.getRecord(),
-//            parentBlockState.getBlockState().getBlockInstance());
-//        final boolean isAtBlockTerminal = VehicleStateLibrary.isAtPotentialTerminal(
-//            obs.getRecord(),
-//            parentBlockState.getBlockState().getBlockInstance());
-//
-//        if (wasAtBlockTerminal && !isAtBlockTerminal) {
-//          return true;
-//        }
-//      }
-//    }
 
     final NycRawLocationRecord record = obs.getRecord();
     final String dsc = record.getDestinationSignCode();

@@ -27,6 +27,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObserv
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
 
@@ -127,14 +128,39 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     double distAlongSample;
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
     final double parentDistAlong = parentBlockState.getBlockLocation().getDistanceAlongBlock();
+    
     if (!vehicleNotMoved) {
-      final double distAlongPrior = SphericalGeometryLibrary.distance(
-          obs.getLocation(), obs.getPreviousObservation().getLocation());
-      final double stdDev = EVehiclePhase.DEADHEAD_DURING == phase
-          ? EdgeLikelihood.deadheadDuringStdDev
-          : EdgeLikelihood.inProgressStdDev;
-      distAlongSample = NormalGen.nextDouble(
-          ParticleFactoryImpl.getThreadLocalRng().get(), distAlongPrior, stdDev);
+      
+      if (EVehiclePhase.DEADHEAD_DURING == phase) {
+        /*
+         * We use the observed distance moved in the direction of the next stop.
+         */
+        BlockStopTimeEntry nextStop = parentBlockStateObs.getBlockState().getBlockLocation().getNextStop();
+        
+        if (nextStop == null || nextStop.getDistanceAlongBlock() <= parentDistAlong) {
+          distAlongSample = 0d;
+        } else {
+        
+          final double prevDistToNextStop = SphericalGeometryLibrary.distance(
+              obs.getPreviousObservation().getLocation(), nextStop.getStopTime().getStop().getStopLocation());
+          final double currentDistToNextStop = SphericalGeometryLibrary.distance(
+              obs.getLocation(), nextStop.getStopTime().getStop().getStopLocation());
+        
+          double distAlongPrior = prevDistToNextStop - currentDistToNextStop;
+          
+          if (distAlongPrior <= 0d)
+            distAlongPrior = 0d;
+          
+          distAlongSample = EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
+          distAlongSample += distAlongPrior;
+        }
+      } else {
+        final double distAlongPrior = SphericalGeometryLibrary.distance(
+            obs.getPreviousObservation().getLocation(), obs.getLocation());
+        distAlongSample = EdgeLikelihood.inProgressEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
+        distAlongSample += distAlongPrior;
+      }
+      
       distAlongSample += parentDistAlong;
     } else {
       return new BlockStateObservation(parentBlockStateObs, obs);

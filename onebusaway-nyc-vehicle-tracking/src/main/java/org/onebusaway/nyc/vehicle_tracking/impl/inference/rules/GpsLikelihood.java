@@ -56,7 +56,8 @@ public class GpsLikelihood implements SensorModelRule {
 
   final static public double gpsStdDev = 45.0/2d;
 
-  private static final double deadheadBeforeGpsStdDev = 100.0;
+//  private static final double deadheadBeforeGpsStdDev = 100.0;
+  private static final double deadheadBeforeGpsStdDev = 45.0/2d;
   final private double inProgressGpsMean = 3.0;
 
   @Autowired

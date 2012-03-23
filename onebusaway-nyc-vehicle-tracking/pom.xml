@@ -53,6 +53,11 @@
           <version>2.4</version>
         </dependency>
         <dependency>
+            <groupId>gov.sandia.foundry</groupId>
+            <artifactId>gov-sandia-cognition-common-core</artifactId>
+            <version>3.3.2</version>
+        </dependency> 
+        <dependency>
           <groupId>gov.sandia.foundry</groupId>
           <artifactId>gov-sandia-cognition-learning-core</artifactId>
           <version>3.3.2</version>
