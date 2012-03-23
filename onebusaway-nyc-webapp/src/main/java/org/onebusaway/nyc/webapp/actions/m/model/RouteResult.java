@@ -4,6 +4,7 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.RouteBean;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Route as a top-level search result.
@@ -16,9 +17,12 @@ public class RouteResult implements SearchResult {
   
   private List<RouteDirection> directions;
     
-  public RouteResult(RouteBean route, List<RouteDirection> directions) {
+  private Set<String> serviceAlerts;
+  
+  public RouteResult(RouteBean route, List<RouteDirection> directions, Set<String> serviceAlerts) {
     this.route = route;
     this.directions = directions;
+    this.serviceAlerts = serviceAlerts;
   }
   
   public String getId() {
@@ -43,6 +47,10 @@ public class RouteResult implements SearchResult {
     } else {
       return "000000";
     }
+  }
+  
+  public Set<String> getServiceAlerts() {
+    return serviceAlerts;
   }
   
   public List<RouteDirection> getDirections() {

@@ -290,9 +290,9 @@ public class IndexAction extends SessionedIndexAction {
         body += "\n";
         
         if(direction.hasUpcomingScheduledService() == false) {
-          body += "not sched.\n";
+          body += "not scheduled\n";
         } else {
-          body += "is sched.\n";        
+          body += "is scheduled\n";        
         }
       }
       routeDirectionTruncationLength--;

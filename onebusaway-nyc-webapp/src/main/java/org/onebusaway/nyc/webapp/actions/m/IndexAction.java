@@ -25,7 +25,9 @@ import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
+import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
+import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.lang.StringUtils;
@@ -225,6 +227,25 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   
   public String getResultType() {
     return _results.getResultType();
+  }
+  
+  public Set<String> getUniqueServiceAlertsForResults() {
+    Set<String> uniqueServiceAlerts = new HashSet<String>();
+    
+    for(SearchResult _result : _results.getMatches()) {
+      if(_results.getResultType().equals("RouteResult")) {
+        RouteResult result = (RouteResult)_result;
+        uniqueServiceAlerts.addAll(result.getServiceAlerts());
+        
+      } else if(_results.getResultType().equals("StopResult")) {
+        StopResult result = (StopResult)_result;        
+        for(RouteAtStop route : result.getAllRoutesAvailable()) {
+          uniqueServiceAlerts.addAll(route.getServiceAlerts());
+        }
+      }
+    }
+    
+    return uniqueServiceAlerts;
   }
   
   public SearchResultCollection getResults() {

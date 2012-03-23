@@ -31,6 +31,19 @@
 				<s:property value="description" />
 			</p>
 			
+			<s:if test="%{uniqueServiceAlertsForResults.size&gt;0}">
+				<div class="alerts">
+					<p>
+						<strong>Service Change for Route:</strong>
+					</p>
+					<ul class="alerts">
+						<c:forEach var="uniqueServiceAlert" items="${uniqueServiceAlertsForResults}">
+							<li><c:out value="${uniqueServiceAlert}" escapeXml="false"/></li>
+						</c:forEach>
+					</ul>
+				</div>
+			</s:if>
+		
 			<ul>
 				<s:iterator value="directions">
 					<s:url var="url" value="" anchor="%{directionId}"></s:url>
@@ -59,19 +72,6 @@
 						</p>
 					</c:when>
 				</c:choose>
-				
-				<s:if test="%{serviceAlerts.size&gt;0}">
-					<div class="alerts">
-						<p>
-							<strong>Service Change For Route:</strong>
-						</p>
-						<ul class="alerts">
-							<s:iterator value="serviceAlerts">
-								<li><s:property value="value" escape="false"/></li>
-							</s:iterator>
-						</ul>
-					</div>
-				</s:if>
 							
 				<ul class="stopsOnRoute color${color}">
 					<s:iterator value="stops" status="stopsStatus">

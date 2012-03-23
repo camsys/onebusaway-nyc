@@ -124,7 +124,7 @@ OBA.Popups = (function() {
         }
         
         if (html !== '') {
-            html = '<p class="service-alert title">Service Change:</p><ul class="service-alert">' + html + '</ul>';
+            html = '<div class="serviceAlertContainer"><p class="title">Service Change:</p> <ul class="alerts">' + html + '</ul></div>';
         }
         
         return html;
@@ -164,9 +164,6 @@ OBA.Popups = (function() {
 		html += '</p>';
 		html += '</div>';
 		
-		// service alerts
-		html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);		
-		
 		// service available at stop
 		if(typeof activity.MonitoredVehicleJourney.MonitoredCall === 'undefined' 
 			&& (typeof activity.MonitoredVehicleJourney.OnwardCalls === 'undefined'
@@ -202,6 +199,9 @@ OBA.Popups = (function() {
 			});
 			html += '</ul>';
 		}
+		
+		// service alerts
+		html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);		
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
 		
@@ -252,9 +252,6 @@ OBA.Popups = (function() {
 		html += '  </p>';
 		html += ' </div>';
 		
-		// service alerts
-	    html += getServiceAlerts(siri, null);
-
 	    var routeAndDirectionWithArrivals = {};
 	    var routeAndDirectionWithArrivalsCount = 0;
 	    var routeAndDirectionWithoutArrivals = {};
@@ -326,7 +323,7 @@ OBA.Popups = (function() {
 							distance += " (at terminal)";
 						}
 
-						var lastClass = ((_ === 2 || _ === mvjs.length - 1) ? " last" : "");
+						var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
 						html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
 					}
 				});
@@ -334,6 +331,8 @@ OBA.Popups = (function() {
 		}
 		
 		if(routeAndDirectionWithoutArrivalsCount > 0) {
+		    html += '<p class="service">No buses en-route to this stop (please check back shortly for an update):</p>';
+
 			html += '<ul>';
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
 				html += '<li class="route">';
@@ -341,10 +340,11 @@ OBA.Popups = (function() {
 				html += '</li>';
 			});
 			html += '</ul>';
-			html += '<p class="service">No buses en-route. Check back shortly for an update.</p>';
 		}
 
 		if(routeAndDirectionWithoutSerivceCount > 0) {
+			html += '<p class="service">No scheduled service at this time:</p>';
+
 			html += '<ul>';
 			jQuery.each(routeAndDirectionWithoutSerivce, function(_, d) {
 				html += '<li class="route">';
@@ -352,8 +352,10 @@ OBA.Popups = (function() {
 				html += '</li>';
 			});
 			html += '</ul>';
-			html += '<p class="service">No scheduled service at this time.</p>';
 		}
+
+		// service alerts
+	    html += getServiceAlerts(siri, null);
 
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopIdWithoutAgency);	        
 

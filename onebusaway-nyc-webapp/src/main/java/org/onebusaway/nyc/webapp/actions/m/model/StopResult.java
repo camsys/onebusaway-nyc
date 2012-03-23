@@ -4,6 +4,7 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,11 +16,18 @@ public class StopResult implements SearchResult {
 
   private StopBean stop;
   
-  private List<RouteAtStop> routesAvailable;
+  private List<RouteAtStop> routesWithArrivals;
   
-  public StopResult(StopBean stop, List<RouteAtStop> routesAvailable) {
+  private List<RouteAtStop> routesWithNoVehiclesEnRoute;
+
+  private List<RouteAtStop> routesWithNoScheduledService;
+
+  public StopResult(StopBean stop, List<RouteAtStop> routesWithArrivals,
+      List<RouteAtStop> routesWithNoVehiclesEnRoute, List<RouteAtStop> routesWithNoScheduledService) {
     this.stop = stop;
-    this.routesAvailable = routesAvailable;
+    this.routesWithArrivals = routesWithArrivals;
+    this.routesWithNoVehiclesEnRoute = routesWithNoVehiclesEnRoute;
+    this.routesWithNoScheduledService = routesWithNoScheduledService;
   }
   
   public String getId() {
@@ -34,8 +42,25 @@ public class StopResult implements SearchResult {
     return stop.getName();
   }
   
-  public List<RouteAtStop> getRoutesAvailable() {
-    return routesAvailable;
+  public List<RouteAtStop> getAllRoutesAvailable() {
+    List<RouteAtStop> fullList = new ArrayList<RouteAtStop>();
+    fullList.addAll(routesWithArrivals);
+    fullList.addAll(routesWithNoVehiclesEnRoute);
+    fullList.addAll(routesWithNoVehiclesEnRoute);
+
+    return fullList;
+  }
+
+  public List<RouteAtStop> getRoutesWithNoVehiclesEnRoute() {
+    return routesWithNoVehiclesEnRoute;
+  }
+  
+  public List<RouteAtStop> getRoutesWithNoScheduledService() {
+    return routesWithNoScheduledService;
+  }
+  
+  public List<RouteAtStop> getRoutesWithArrivals() {
+    return routesWithArrivals;
   }
   
 }

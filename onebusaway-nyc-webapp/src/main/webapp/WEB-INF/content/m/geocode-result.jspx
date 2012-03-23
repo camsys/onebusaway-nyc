@@ -19,7 +19,6 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
 	xmlns:wiki="/oba-wiki-tags">
 
-
 	<h3>
 		Did you mean?
 	</h3>

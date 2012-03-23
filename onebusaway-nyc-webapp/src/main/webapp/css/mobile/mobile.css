@@ -215,7 +215,7 @@ small {
 	margin-top: 2em;
 }
 .directionAtStop {
-	margin-bottom: 2em;
+	margin-bottom: .5em;
 }
 .routeList,
 .routeDescription {
@@ -223,6 +223,11 @@ small {
 }
 .noMatches {
 	padding-bottom: 1em;
+}
+.stopResultGroupHeader {
+	font-weight: bold;
+	color: #AAAAAA;
+	padding-top: 1em;
 }
 .routeHeader {
 	padding: 0;
@@ -284,9 +289,6 @@ small {
     margin-top: 0.3em;
     margin-bottom: 0.3em;
 	font-weight: bold;
-}
-.noBusEnRoute {
-	color: #AAAAAA;
 }
 
 #footer {

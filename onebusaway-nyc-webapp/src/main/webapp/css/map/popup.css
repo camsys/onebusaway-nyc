@@ -76,19 +76,27 @@
   	color: #d12020;
 }
 
-.popup .service-alert {
+.popup .serviceAlertContainer {
 	color: #d12020;
-	margin-bottom: 3px;
+	background-color: #FDEEF4;
+	margin: 4px;
+	margin-left: 0px;
+	margin-top: 7px;
 	width: 400px;  
 }
 
-.popup .service-alert li {
-	margin-bottom: 6px;
+.popup .serviceAlertContainer .alerts li {
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+	color: #D12020;
+	font-size: 13px;
+	line-height: 1.2em;
 }
 
-.popup .service-alert.title {
+.popup .serviceAlertContainer .title {
+	padding: 5px;
 	font-weight:bold;
-	margin-top: 3px;
 }
 
 .popup ul li.route {
@@ -153,7 +161,6 @@
 }
 
 .popup .footer {
-	margin-top: 7px;	
 	padding-top: 7px;
 	border-top: 1px solid #bebebe;
 }
