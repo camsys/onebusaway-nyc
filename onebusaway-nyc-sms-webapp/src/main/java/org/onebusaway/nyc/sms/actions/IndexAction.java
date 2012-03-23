@@ -482,6 +482,8 @@ public class IndexAction extends SessionedIndexAction {
       }
       
       header += "/" + totalItems + ")\n";
+    } else {
+      header = "";
     }
 
     if(_googleAnalytics != null) {
