@@ -367,7 +367,7 @@ public class IndexAction extends SessionedIndexAction {
 
     // a placeholder header used for worst-case length calculations--updated
     // with real values at the end once we know how many things actually fit
-    String header = "(XX-XX/XX)\n";
+    String header = "XX-XX of XX stops\n";
     
     String footer = "\nSend:\n";
     footer += "STOP-ID+ROUTE for bus info\n";
@@ -473,15 +473,13 @@ public class IndexAction extends SessionedIndexAction {
       int start = offset + 1;
       int end = i;
       
-      header = "(";
-      
       if(start == end) {
-        header += start + "";
+        header = start + "";
       } else {
-        header += start + "-" + end;
+        header = start + "-" + end;
       }
-      
-      header += "/" + totalItems + ")\n";
+
+      header += " of " + totalItems + " stops\n";
     } else {
       header = "";
     }
