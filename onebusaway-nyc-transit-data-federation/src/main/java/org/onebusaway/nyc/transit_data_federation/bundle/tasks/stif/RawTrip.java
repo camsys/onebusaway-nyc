@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,10 @@ public class RawTrip implements Comparable<RawTrip> {
   public boolean lastTripInSequence;
   private String dsc;
   public String signCodeRoute;
+
+  public File path;
+  public int lineNumber;
+  public TripIdentifier id;
 
   public RawTrip(String runId, String reliefRunId, String nextRun,
       StifTripType type, String dsc) {
