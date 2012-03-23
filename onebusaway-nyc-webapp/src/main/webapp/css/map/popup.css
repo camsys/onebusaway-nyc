@@ -66,7 +66,6 @@
 
 .popup .service {
 	width: 325px;
-	padding-top: 4px;
 	padding-bottom: 4px;
 	color: #666666;
 	font-weight: bold;
@@ -79,9 +78,6 @@
 .popup .serviceAlertContainer {
 	color: #d12020;
 	background-color: #FDEEF4;
-	margin: 4px;
-	margin-left: 0px;
-	margin-top: 7px;
 	width: 400px;  
 }
 
@@ -103,6 +99,10 @@
 	whitespace: no-wrap;
 	color: #000099;
 	font-weight: bold;
+}
+
+.popup ul li.route.last {
+	padding-bottom: 4px;
 }
 
 .popup ul li.route.no-padding {
@@ -134,6 +134,10 @@
 	background-repeat: no-repeat;
 }
 
+.popup ul li.nextStop.last {
+	padding-bottom: 4px;
+}
+
 #bustime .popup ul li.nextStop span.stopName {
 	color: #000099;
 	cursor: pointer;
@@ -161,6 +165,7 @@
 }
 
 .popup .footer {
+	margin-top: 7px;
 	padding-top: 7px;
 	border-top: 1px solid #bebebe;
 }

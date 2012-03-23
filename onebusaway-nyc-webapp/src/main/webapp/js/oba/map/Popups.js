@@ -191,7 +191,9 @@ OBA.Popups = (function() {
 				var stopIdParts = call.StopPointRef.split("_");
 				var stopIdWithoutAgencyId = stopIdParts[1];
 				
-				html += '<li class="nextStop">';				
+				var lastClass = ((_ === nextStops.length - 1) ? " last" : "");
+
+				html += '<li class="nextStop' + lastClass + '">';				
 				html += '<a href="#' + stopIdWithoutAgencyId + '">' + call.StopPointName + '</a>';
 				html += '<span>';
 				html +=   call.Extensions.Distances.PresentableDistance;
@@ -298,9 +300,9 @@ OBA.Popups = (function() {
 			maxObservationsToShow = 2;
 		}	
 
-	    html += '<p class="service">Service available at this stop:</p>';
-
 		if(routeAndDirectionWithArrivalsCount > 0) {
+		    html += '<p class="service">Service available at this stop:</p>';
+
 			jQuery.each(routeAndDirectionWithArrivals, function(_, mvjs) {
 				var mvj = mvjs[0];
 
@@ -334,10 +336,15 @@ OBA.Popups = (function() {
 		    html += '<p class="service">No buses en-route to this stop (please check back shortly for an update):</p>';
 
 			html += '<ul>';
+			var i = 0;
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
-				html += '<li class="route">';
+				var lastClass = ((i === routeAndDirectionWithoutArrivalsCount - 1) ? " last" : "");
+
+				html += '<li class="route' + lastClass + '">';
 				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
 				html += '</li>';
+				
+				i++;
 			});
 			html += '</ul>';
 		}
@@ -346,10 +353,15 @@ OBA.Popups = (function() {
 			html += '<p class="service">No scheduled service at this time:</p>';
 
 			html += '<ul>';
+			var i = 0;
 			jQuery.each(routeAndDirectionWithoutSerivce, function(_, d) {
-				html += '<li class="route">';
+				var lastClass = ((i === routeAndDirectionWithoutSerivceCount - 1) ? " last" : "");
+
+				html += '<li class="route' + lastClass + '">';
 				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
 				html += '</li>';
+				
+				i++;
 			});
 			html += '</ul>';
 		}
