@@ -653,6 +653,6 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				delete infoWindowListeners[key];
 			}
 			infoWindowListeners = [];
-		},
+		}
 	};
 };

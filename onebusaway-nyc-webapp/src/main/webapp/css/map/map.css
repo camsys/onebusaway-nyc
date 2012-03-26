@@ -61,6 +61,8 @@
 	margin: 3px 6px 0 0;
 	text-indent: -9999px;
 	background: url('img/search_icon.png') no-repeat scroll 0 0 transparent;
+	font-size: 0;
+	line-height: 0;
 }
 
 #content #no-results,

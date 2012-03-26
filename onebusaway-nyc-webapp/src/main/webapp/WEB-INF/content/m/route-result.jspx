@@ -23,7 +23,7 @@
 
 	<s:iterator value="results.matches">
 		<div class="route">
-			<p class="routeHeader color${color}">
+			<p class="routeHeader routeHeaderColor${color}">
 					<strong><s:property value="shortName" />&amp;nbsp;<s:property value="longName" /></strong>
 			</p>
 
@@ -73,9 +73,9 @@
 					</c:when>
 				</c:choose>
 							
-				<ul class="stopsOnRoute color${color}">
+				<ul class="stopsOnRoute stopsOnRouteColor${color}">
 					<s:iterator value="stops" status="stopsStatus">
-						<li class="${stopsStatus.index == 0 ? 'start' : stopsStatus.last ? 'end' : ''}">
+						<li class="${stopsStatus.index == 0 ? 'start' : stopsStatus.last ? 'end' : 'middle'}">
 							<c:choose>
 								<c:when test="${!empty distanceAways}">
 									<s:url var="url" namespace="/m" action="index">

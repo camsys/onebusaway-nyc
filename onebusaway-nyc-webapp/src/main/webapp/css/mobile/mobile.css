@@ -79,7 +79,6 @@ body table {
 body {
     background-color: #ffffff;
     font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
-    padding: 1.5em;
 	-webkit-text-size-adjust: none;
 }
 a:visited,
@@ -123,20 +122,39 @@ strong {
     font-weight: bold;
 }
 
-/* search panel */
-#searchPanel {
-	padding: 0;
+/* body padding */
+
+#branding, 
+#searchPanel, 
+#content, 
+#footer {
 	margin: 0;
-}
-#searchPanel form {
-	padding-top: 0;
+	padding: 1.5em;
 	padding-bottom: 0;
+	padding-top: 0;
+}
+.welcome {
+	padding-top: 1em;
+}
+#searchPanel {
+	padding-top: .25em;
+}
+#branding {
+	padding-top: 1.5em;
+}
+#footer {
+	padding-top: 1.5em;
+	padding-bottom: 1.5em;
+}
+
+/* search panel */
+#searchPanel form {
     background-image: url("img/search_background.png");
     background-repeat: no-repeat;
-    display: block;
     position: relative;
     width: 302px;
     height: 40px;
+    display: block;
 }
 #searchPanel .s {
     background: url("img/search_icon.png") no-repeat scroll 0 0 transparent;
@@ -145,10 +163,13 @@ strong {
     height: 30px;
     margin: 3px 6px 0 0;
     position: absolute;
-    text-indent: -9999px;
 	right: 0;
     top: 0;
-    width: 30px;
+	display: block;
+	text-indent: -999px;
+	font-size: 0;
+	line-height: 0;
+	width: 30px;
 }
 #searchPanel .q {
     background-color: transparent;
@@ -189,22 +210,20 @@ small {
 	display: block;
 	background-color: #C0C0C0;
 	border: 2px solid #A0A0A0;
+	width: auto;
 }
 #refresh a {
 	font-size: 80%;
+	padding: .75em;
 	display: block;
 	font-weight: bold;
-	padding: .75em;
 	text-align: center;
 	text-transform: uppercase;
 	color: #FFFFFF;
+	width: 100%;
 }
 
 /* content panel */
-#content {
-	padding-top: 1em;
-}
-
 .ambiguousLocations,
 .examples,
 .stop,
@@ -291,6 +310,5 @@ small {
 }
 
 #footer {
-	padding-top: 1em;
     line-height: 1.6em;
 }

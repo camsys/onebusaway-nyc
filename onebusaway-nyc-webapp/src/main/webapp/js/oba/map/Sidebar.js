@@ -16,7 +16,7 @@
 
 var OBA = window.OBA || {};
 
-OBA.Sidebar = function () {
+OBA.Sidebar = function() {
 	var theWindow = jQuery(window),
 		topBarDiv = jQuery("#topbar"), 
 		mainbox = jQuery("#mainbox"),

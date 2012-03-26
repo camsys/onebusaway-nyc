@@ -72,12 +72,23 @@ OBA.Popups = (function() {
 					infoWindow.open(map, marker);
 				}
 				
+				// hack to prevent scrollbars in the IEs
+				var sizeChanged = false;
 				var content = jQuery("#" + popupContainerId);
 				if(content.height() > 300) {
 					content.css("overflow-y", "scroll")
 							.css("height", "280");
+					sizeChanged = true;
 				}
-				
+				if(content.width() > 400) {
+					content.css("overflow-x", "hidden")
+							.css("width", "380");
+					sizeChanged = true;
+				}
+				if(sizeChanged) {
+					infoWindow.setContent(content.get(0));
+					infoWindow.open(map, marker);
+				}
 			});
 		};
 		refreshFn(true);		
@@ -124,7 +135,7 @@ OBA.Popups = (function() {
         }
         
         if (html !== '') {
-            html = '<div class="serviceAlertContainer"><p class="title">Service Change:</p> <ul class="alerts">' + html + '</ul></div>';
+            html = '<div class="serviceAlertContainer"><p class="title">Service Change:</p><ul class="alerts">' + html + '</ul></div>';
         }
         
         return html;
