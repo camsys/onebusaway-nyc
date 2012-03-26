@@ -71,11 +71,6 @@
 		<li>Location: <a href="${zipCodeUrl}">10304</a>  &amp;nbsp; <a href="${streetUrl}">Hylan Blvd</a>
 		</li>
 		<li>(Add route for best results)</li>
-		<br />
-
-		<s:url var="mobileM34Url" namespace="/wiki" action="Mobile/M34Pilot"/>
-		<li>Looking for the <a href="${mobileM34Url}">M34 or M34A?</a>
-		</li>
 	</ul>
 </div>
 </html>
