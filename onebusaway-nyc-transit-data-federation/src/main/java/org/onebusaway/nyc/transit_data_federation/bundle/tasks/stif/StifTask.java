@@ -138,6 +138,23 @@ public class StifTask implements Runnable {
 
     Set<String> inServiceDscs = new HashSet<String>();
 
+    logDSCStatistics(dscToTripMap, tripToDscMap);
+
+    int withoutMatch = loader.getTripsWithoutMatchCount();
+    int total = loader.getTripsCount();
+
+    _log.info("stif trips without match: " + withoutMatch + " / " + total);
+
+    readNotInServiceDscs();
+
+    serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs);
+
+    csvLogger.summarize();
+    csvLogger = null; //ensure no writes after summary
+  }
+
+  private void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
+      Map<AgencyAndId, String> tripToDscMap) {
     csvLogger.header("dsc_statistics.csv", "dsc,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
     for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
       String destinationSignCode = entry.getKey();
@@ -149,14 +166,10 @@ public class StifTask implements Runnable {
       Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
       csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), routeIds.size());
     }
+  }
 
-    int withoutMatch = loader.getTripsWithoutMatchCount();
-    int total = loader.getTripsCount();
-
-    _log.info("stif trips without match: " + withoutMatch + " / " + total);
-
-    readNotInServiceDscs();
-
+  private void serializeDSCData(Map<String, List<AgencyAndId>> dscToTripMap,
+      Map<AgencyAndId, String> tripToDscMap, Set<String> inServiceDscs) {
     for (String notInServiceDsc : _notInServiceDscs) {
       if (inServiceDscs.contains(notInServiceDsc))
         _log.warn("overlap between in-service and not-in-service dscs: "
@@ -178,7 +191,6 @@ public class StifTask implements Runnable {
     } catch (IOException e) {
       throw new IllegalStateException("error serializing DSC/STIF data", e);
     }
-
   }
 
   private void loadStifBlocks(StifTripLoader loader) {
