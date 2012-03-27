@@ -34,6 +34,7 @@ table td {
 
 <p><a href="vehicle-location-simulation.do">Back to Vehicle
 Location Simulation Console</a></p>
+<p><a download="results_${filename}" href="vehicle-location-simulation!task-result-records.do?taskId=${taskId}">CSV Results Records</a></p>
 
 <h2>Journey Summaries</h2>
 

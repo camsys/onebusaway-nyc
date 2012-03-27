@@ -291,9 +291,12 @@ public class VehicleLocationSimulationController {
   public ModelAndView taskResultsView(@RequestParam() int taskId) {
 
     List<NycTestInferredLocationRecord> records = _vehicleLocationSimulationService.getResultRecords(taskId);
+    String filename = _vehicleLocationSimulationService.getSimulation(taskId).getFilename();
     Map<String, Object> m = new HashMap<String, Object>();
     m.put("records", records);
     m.put("taskId", taskId);
+    m.put("taskId", taskId);
+    m.put("filename", filename);
     return new ModelAndView("vehicle-location-simulation-results-view.jspx", m);
   }
 

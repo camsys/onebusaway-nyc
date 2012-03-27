@@ -396,8 +396,8 @@ public class AbstractTraceRunner {
       /*
        * record the false positives
        */
-      if (!EVehiclePhase.isActiveDuringBlock(truePhase)
-          && EVehiclePhase.isActiveDuringBlock(infPhase)) {
+      if (EVehiclePhase.IN_PROGRESS != truePhase
+          && EVehiclePhase.IN_PROGRESS == infPhase) {
         ++falsePositiveCount;
       }
       
@@ -514,43 +514,24 @@ public class AbstractTraceRunner {
        * we don't expect much as far as during's and after's.
        */
       if (
-            (
-              (truePhase.equals(EVehiclePhase.DEADHEAD_AFTER)
-                  && infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE))
-                || 
-                (infPhase.equals(EVehiclePhase.DEADHEAD_AFTER)
-                  && truePhase.equals(EVehiclePhase.DEADHEAD_BEFORE))
-            )
-          ||
-            (
-              (truePhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
-                  && infPhase.equals(EVehiclePhase.LAYOVER_BEFORE))
-                || 
-                (infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
-                  && truePhase.equals(EVehiclePhase.LAYOVER_BEFORE))
-            )
-          ||     
-            (
-              (truePhase.equals(EVehiclePhase.DEADHEAD_DURING)
-                  && infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE))
-                || 
-                (infPhase.equals(EVehiclePhase.DEADHEAD_DURING)
-                  && truePhase.equals(EVehiclePhase.DEADHEAD_BEFORE))
-            )
-          ||
-            (
-                (truePhase.equals(EVehiclePhase.LAYOVER_DURING)
-                  && infPhase.equals(EVehiclePhase.LAYOVER_BEFORE))
-                || 
-                (infPhase.equals(EVehiclePhase.LAYOVER_DURING)
-                  && truePhase.equals(EVehiclePhase.LAYOVER_BEFORE))
-            )
-          ) {
+          (isDeadhead(truePhase) && isDeadhead(infPhase))
+          || (EVehiclePhase.isLayover(truePhase) && EVehiclePhase.isLayover(infPhase))
+          || (isDeadhead(truePhase) && EVehiclePhase.isLayover(infPhase))
+          || (isDeadhead(infPhase) && EVehiclePhase.isLayover(truePhase))
+          )
         return true;
-      }
     } 
     
     return false;
+  }
+  
+  private boolean isDeadhead(EVehiclePhase phase) {
+    if (phase == EVehiclePhase.DEADHEAD_AFTER
+        || phase == EVehiclePhase.DEADHEAD_BEFORE
+        || phase == EVehiclePhase.DEADHEAD_DURING)
+      return true;
+    else 
+      return false;
   }
     
 

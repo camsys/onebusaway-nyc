@@ -224,6 +224,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
     _stepForOne = false;
     _stepRecordIndex = -1;
     _resetRecordIndex = true;
+    _details.clear();
     notify();
   }
 

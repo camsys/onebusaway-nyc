@@ -19,6 +19,7 @@ import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -98,25 +99,44 @@ public class EdgeLikelihood implements SensorModelRule {
 
     final double pDistAlong;
     if (!previouslyInactive && !newRun) {
-
-      if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
-
-        pDistAlong = computeNoEdgeMovementLogProb(obs);
-
-      } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
-
-        if (parentState.getBlockState().getBlockLocation().getDistanceAlongBlock() 
-            < blockState.getBlockLocation().getDistanceAlongBlock()) {
-
+      
+      EVehiclePhase prevPhase = parentState.getJourneyState().getPhase();
+      
+      if (parentState.getBlockStateObservation().isSnapped()
+          && state.getBlockStateObservation().isSnapped()) {
           pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
-        } else {
-          pDistAlong = computeNoEdgeMovementLogProb(obs);
-        }
-
+        
       } else {
 
-        pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
-
+        if (EVehiclePhase.IN_PROGRESS != prevPhase
+            || EVehiclePhase.IN_PROGRESS != phase) {
+          pDistAlong = computeNoEdgeMovementLogProb(obs);
+        } else {
+          pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
+        }
+//        if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
+//  
+//          pDistAlong = computeNoEdgeMovementLogProb(obs);
+//  
+//        } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
+//  
+//          if (parentState.getBlockState().getBlockLocation().getDistanceAlongBlock() 
+//              < blockState.getBlockLocation().getDistanceAlongBlock()) {
+//  
+//            pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
+//          } else {
+//            pDistAlong = computeNoEdgeMovementLogProb(obs);
+//          }
+//          
+//        } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
+//  
+//          pDistAlong = computeNoEdgeMovementLogProb(obs);
+//  
+//        } else {
+//  
+//          pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
+//  
+//        }
       }
       result.addLogResultAsAnd("in-progress", pDistAlong);
 
@@ -162,35 +182,35 @@ public class EdgeLikelihood implements SensorModelRule {
 
     final double pMove;
     final EVehiclePhase phase = state.getJourneyState().getPhase();
-    if (EVehiclePhase.DEADHEAD_DURING == phase 
-        || EVehiclePhase.DEADHEAD_DURING == parentState.getJourneyState().getPhase()) {
-      
-      BlockStopTimeEntry nextStop = EVehiclePhase.DEADHEAD_DURING != phase ? 
-          parentState.getBlockState().getBlockLocation().getNextStop() :
-            state.getBlockState().getBlockLocation().getNextStop();
-      final double lastDelta = SphericalGeometryLibrary.distance(obs.getPreviousObservation().getLocation(),
-          nextStop.getStopTime().getStop().getStopLocation());
-      
-      final double currentDelta; 
-      if (nextStop.getDistanceAlongBlock() <= state.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
-        currentDelta = -1 * (state.getBlockState().getBlockLocation().getDistanceAlongBlock() -
-            state.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock());
-      } else {
-        currentDelta = SphericalGeometryLibrary.distance(obs.getLocation(),
-          nextStop.getStopTime().getStop().getStopLocation());
-      }
-      
-      final double obsDelta = lastDelta - currentDelta;
-      
-      pMove = deadDuringEdgeMovementDist.getProbabilityFunction().logEvaluate(
-          dabDelta - obsDelta);
-    } else {
+//    if (EVehiclePhase.DEADHEAD_DURING == phase 
+//        || EVehiclePhase.DEADHEAD_DURING == parentState.getJourneyState().getPhase()) {
+//      
+//      BlockStopTimeEntry nextStop = EVehiclePhase.DEADHEAD_DURING != phase ? 
+//          parentState.getBlockState().getBlockLocation().getNextStop() :
+//            state.getBlockState().getBlockLocation().getNextStop();
+//      final double lastDelta = SphericalGeometryLibrary.distance(obs.getPreviousObservation().getLocation(),
+//          nextStop.getStopTime().getStop().getStopLocation());
+//      
+//      final double currentDelta; 
+//      if (nextStop.getDistanceAlongBlock() <= state.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
+//        currentDelta = -1 * (state.getBlockState().getBlockLocation().getDistanceAlongBlock() -
+//            state.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock());
+//      } else {
+//        currentDelta = SphericalGeometryLibrary.distance(obs.getLocation(),
+//          nextStop.getStopTime().getStop().getStopLocation());
+//      }
+//      
+//      final double obsDelta = lastDelta - currentDelta;
+//      
+//      pMove = deadDuringEdgeMovementDist.getProbabilityFunction().logEvaluate(
+//          dabDelta - obsDelta);
+//    } else {
       final double obsDelta = SphericalGeometryLibrary.distance(
           obs.getLocation(), obs.getPreviousObservation().getLocation());
   
       pMove = inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(
           dabDelta - obsDelta);
-    }
+//    }
 
     return pMove;
   }
