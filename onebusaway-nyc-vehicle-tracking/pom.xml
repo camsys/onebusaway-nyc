@@ -26,6 +26,11 @@
             <version>${onebusaway.nyc.version}</version>
         </dependency>
         <dependency>
+        	<groupId>org.onebusaway</groupId>
+        	<artifactId>onebusaway-nyc-util</artifactId>
+        	<version>${onebusaway.nyc.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.4</version>

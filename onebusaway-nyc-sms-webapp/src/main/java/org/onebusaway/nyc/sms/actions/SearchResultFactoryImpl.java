@@ -25,9 +25,9 @@ import org.onebusaway.nyc.sms.actions.model.RouteAtStop;
 import org.onebusaway.nyc.sms.actions.model.RouteDirection;
 import org.onebusaway.nyc.sms.actions.model.RouteResult;
 import org.onebusaway.nyc.sms.actions.model.StopResult;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.NameBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
@@ -45,6 +45,7 @@ import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -53,7 +54,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   private ConfigurationService _configurationService;
 
   private RealtimeService _realtimeService;
-
+    
   private ScheduledServiceService _scheduledServiceService;
 
   public SearchResultFactoryImpl(TransitDataService transitDataService, ScheduledServiceService scheduledServiceService, 
@@ -108,12 +109,14 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean) {
-    StopBean stop = _transitDataService.getStop(stopBean.getId());    
-
+  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
-    for(RouteBean routeBean : stop.getRoutes()) {
+    for(RouteBean routeBean : stopBean.getRoutes()) {
+      if(routeIdFilter != null && !routeIdFilter.isEmpty() && !routeIdFilter.contains(routeBean.getId())) {
+        continue;
+      }
+    
       StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
       
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
@@ -156,11 +159,11 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
       routesAtStop.add(routeAtStop);
     }
 
-    return new StopResult(stop, routesAtStop);
+    return new StopResult(stopBean, routesAtStop);
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeIdFilter) {
     return new GeocodeResult(geocodeResult);   
   }
 
@@ -202,13 +205,13 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
     SiriDistanceExtension distanceExtension = wrapper.getDistances();    
     
-    String message = "";
-    String distance = distanceExtension.getPresentableDistance();
+    String message = "";    
+    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mi.", "mi.", "");
 
     // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
     if(isStopContext && progressStatus != null && progressStatus.getValue().equals("layover")) {
-      message += "at terminal";
+      message += "@term.";
     }
     
     int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
@@ -219,11 +222,11 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         message += ", ";
       }
       
-      message += "old data";
+      message += "old";
     }
 
     if(message.length() > 0)
-      return distance + " (" + message + ")";
+      return distance + "(" + message + ")";
     else
       return distance;
   }

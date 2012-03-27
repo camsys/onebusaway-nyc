@@ -125,7 +125,7 @@ public class StifTripLoaderSupport {
     return stopIdsByLocation.get(originLocation);
   }
 
-  private TripIdentifier getTripAsIdentifier(final Trip trip) {
+  TripIdentifier getTripAsIdentifier(final Trip trip) {
 
     String routeName = trip.getRoute().getId().getId();
     int startTime = -1, endTime = -1;

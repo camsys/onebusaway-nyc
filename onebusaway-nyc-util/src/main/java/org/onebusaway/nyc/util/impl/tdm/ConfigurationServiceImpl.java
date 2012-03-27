@@ -1,20 +1,18 @@
-package org.onebusaway.nyc.transit_data_federation.impl.tdm;
+package org.onebusaway.nyc.util.impl.tdm;
+
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 import org.onebusaway.container.refresh.RefreshService;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
-
-import com.google.gson.JsonObject;
-
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
+import com.google.gson.JsonObject;
 
 public class ConfigurationServiceImpl implements ConfigurationService {
 

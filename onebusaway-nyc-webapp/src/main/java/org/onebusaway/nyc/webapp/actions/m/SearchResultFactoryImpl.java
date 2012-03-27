@@ -20,9 +20,10 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.m.model.RouteDirection;
@@ -48,8 +49,10 @@ import uk.org.siri.siri.VehicleActivityStructure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -87,7 +90,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     }  
 
     // add stops in both directions
-    Map<String, String> stopIdToDistanceAwayStringMap = getStopIdToDistanceAwayStringMapForRoute(routeBean);
+    Map<String, List<String>> stopIdToDistanceAwayStringMap = getStopIdToDistanceAwayStringsListMapForRoute(routeBean);
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -112,33 +115,38 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           }
         }
 
-        // service alerts in this direction
-        List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-
-        List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-        for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
-          for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
-            if(description.getValue() != null) {
-              description.setValue(description.getValue().replace("\n", "<br/>"));
-              serviceAlertDescriptions.add(description);
-            }
-          }
-        }
-        
-        directions.add(new RouteDirection(stopGroupBean, stopsOnRoute, hasUpcomingScheduledService, serviceAlertDescriptions, null));
+        directions.add(new RouteDirection(stopGroupBean, stopsOnRoute, hasUpcomingScheduledService, null));
       }
     }
 
-    return new RouteResult(routeBean, directions);
+    // service alerts in this direction
+    Set<String> serviceAlertDescriptions = new HashSet<String>();
+
+    List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRoute(routeBean.getId());
+    for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
+      for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
+        if(description.getValue() != null) {
+          serviceAlertDescriptions.add(description.getValue().replace("\n", "<br/>"));
+        }
+      }
+    }
+    
+    return new RouteResult(routeBean, directions, serviceAlertDescriptions);
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean) {
-    StopBean stop = _transitDataService.getStop(stopBean.getId());    
-
-    List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
+  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
+    List<RouteAtStop> routesWithArrivals = new ArrayList<RouteAtStop>();
+    List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<RouteAtStop>();
+    List<RouteAtStop> routesWithNoScheduledService = new ArrayList<RouteAtStop>();
     
-    for(RouteBean routeBean : stop.getRoutes()) {
+    Set<String> serviceAlertDescriptions = new HashSet<String>();
+
+    for(RouteBean routeBean : stopBean.getRoutes()) {
+      if(routeIdFilter != null && !routeIdFilter.isEmpty() && !routeIdFilter.contains(routeBean.getId())) {
+          continue;
+      }
+      
       StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
       
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
@@ -155,40 +163,50 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           if(!stopGroupBean.getStopIds().contains(stopBean.getId()))
             continue;
 
-          // service alerts in this direction
-          List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
+          // arrivals in this direction
+          List<String> arrivalsForRouteAndDirection = getDistanceAwayStringsForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
 
+          // service alerts for this route + direction
           List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
           for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
             for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
               if(description.getValue() != null) {
-                description.setValue(description.getValue().replace("\n", "<br/>"));
-                serviceAlertDescriptions.add(description);
+                serviceAlertDescriptions.add(description.getValue().replace("\n", "<br/>"));
               }
             }
           }
-
-          // arrivals in this direction
-          List<String> arrivalsForRouteAndDirection = getDistanceAwayStringsForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
           
           // service in this direction
           Boolean hasUpcomingScheduledService = 
               _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
 
-          directions.add(new RouteDirection(stopGroupBean, null, hasUpcomingScheduledService, 
-              serviceAlertDescriptions, arrivalsForRouteAndDirection));
+          directions.add(new RouteDirection(stopGroupBean, null, hasUpcomingScheduledService, arrivalsForRouteAndDirection));
         }
       }
+      
+      RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions, serviceAlertDescriptions);
 
-      RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions);
-      routesAtStop.add(routeAtStop);
+      for(RouteDirection direction : routeAtStop.getDirections()) {
+        if(direction.getHasUpcomingScheduledService() == false) {
+          routesWithNoScheduledService.add(routeAtStop);
+          break;
+        } else {
+          if(direction.getDistanceAways().size() > 0) {
+            routesWithArrivals.add(routeAtStop);
+            break;
+          } else {
+            routesWithNoVehiclesEnRoute.add(routeAtStop);
+            break;
+          }
+        }
+      }
     }
 
-    return new StopResult(stop, routesAtStop);
+    return new StopResult(stopBean, routesWithArrivals, routesWithNoVehiclesEnRoute, routesWithNoScheduledService);
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeShortNameFilter) {
     return new GeocodeResult(geocodeResult);   
   }
 
@@ -225,8 +243,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     return result;
   }
   
-  private Map<String, String> getStopIdToDistanceAwayStringMapForRoute(RouteBean routeBean) {
-    Map<String, String> result = new HashMap<String, String>();      
+  private Map<String, List<String>> getStopIdToDistanceAwayStringsListMapForRoute(RouteBean routeBean) {
+    Map<String, List<String>> result = new HashMap<String, List<String>>();      
 
     // stop visits
     List<VehicleActivityStructure> journeyList = 
@@ -242,17 +260,13 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
       String stopId = monitoredCall.getStopPointRef().getValue();      
 
-      String distanceString = result.get(stopId);
-      if(distanceString == null) {
-        distanceString = new String();
+      List<String> distanceStrings = result.get(stopId);
+      if(distanceStrings == null) {
+        distanceStrings = new ArrayList<String>();
       }
       
-      if(distanceString.length() > 0) {
-        distanceString += ", ";
-      }
-
-      distanceString += getPresentableDistance(journey.getMonitoredVehicleJourney(), journey.getRecordedAtTime().getTime(), false);
-      result.put(stopId,  distanceString);
+      distanceStrings.add(getPresentableDistance(journey.getMonitoredVehicleJourney(), journey.getRecordedAtTime().getTime(), false));
+      result.put(stopId,  distanceStrings);
     }
 
     return result;

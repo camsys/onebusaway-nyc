@@ -15,7 +15,8 @@
  */
 package org.onebusaway.nyc.webapp.actions;
 
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 
 import com.opensymphony.xwork2.ActionContext;

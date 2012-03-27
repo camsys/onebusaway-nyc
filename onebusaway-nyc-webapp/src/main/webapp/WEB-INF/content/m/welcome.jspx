@@ -21,17 +21,16 @@
 <jsp:directive.page contentType="text/html" />
 
 <c:if test="${!queryIsEmpty}">
-	<div>
-		<p>
-			<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
-			No results found for your query. <a href="${url}">Search Tips</a>
-		</p>
-	</div>
+	<h3 class="noMatches">
+		<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
+		No matches. <a href="${url}">Search Tips</a>
+	</h3>
 </c:if>
 
 <div class="welcome">
-	<p>Try these example searches:</p>
-	<ul>
+	<h3>Try these example searches:</h3>
+
+	<ul class="examples">
 		<s:url var="B63url" namespace="/m" action="index">
 			<s:param name="q">B63</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
@@ -61,18 +60,17 @@
 		<li>Stop ID: <a href="${url}">200884</a>
 		</li>
 
-		<s:url var="url" namespace="/m" action="index">
+		<s:url var="zipCodeUrl" namespace="/m" action="index">
 			<s:param name="q">10304</s:param>
 			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Location: <a href="${url}">10304</a>
+		<s:url var="streetUrl" namespace="/m" action="index">
+			<s:param name="q">Hylan Blvd</s:param>
+			<s:param name="l"><s:property value="l" /></s:param>
+		</s:url>
+		<li>Location: <a href="${zipCodeUrl}">10304</a>  &amp;nbsp; <a href="${streetUrl}">Hylan Blvd</a>
 		</li>
 		<li>(Add route for best results)</li>
-		<br />
-
-		<s:url var="mobileM34Url" namespace="/wiki" action="Mobile/M34Pilot"/>
-		<li>Looking for the <a href="${mobileM34Url}">M34 or M34A?</a>
-		</li>
 	</ul>
 </div>
 </html>

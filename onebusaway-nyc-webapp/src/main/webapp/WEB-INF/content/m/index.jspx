@@ -37,7 +37,10 @@
 	<s:url var="url" value="/js/lib/jquery.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-	<s:url var="url" value="/js/oba/m/Location.js"/>
+	<s:url var="url" value="/js/lib/dateFormat.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/oba/m/Mobile.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
 
@@ -51,10 +54,9 @@
 
 	<div id="searchPanel">
 		<s:form namespace="/m" action="index" method="GET">
-	        <label for="q">Search for: </label>
 			<input type="text" name="q" class="q" value="${q}"/>
 			<input type="submit" class="s" value="Find" id="submitButton"/>
-
+			
 			<input type="hidden" name="l" id="l" value="${l}"/>
 		</s:form>
 
@@ -62,62 +64,54 @@
 	</div>
 
 	<s:if test="%{results.empty}">
-		<c:import url="welcome.jspx"/>
+		<div id="content">
+			<c:import url="welcome.jspx"/>
+		</div>
 	</s:if>
 	<s:else>
-		<a name="top"></a>
-		<div class="refresh">
+		<div id="content">
+			<s:if test="%{results.matches.size&gt;0}">
+				<s:if test="results.resultType.equals('RouteResult')">
+					<c:import url="route-result.jspx"/>
+				</s:if>
+				<s:elseif test="results.resultType.equals('RouteInRegionResult')">
+						<c:import url="route-in-region-picker.jspx"/>
+				</s:elseif>
+				<s:elseif test="results.resultType.equals('StopResult')">
+					<c:import url="stop-result.jspx"/>
+				</s:elseif>
+			</s:if>
+
+			<s:if test="%{results.suggestions.size&gt;0}">
+				<!-- route search with no direct matches -->
+				<s:if test="results.resultType.equals('RouteResult')">
+					<c:import url="route-suggestion-picker.jspx"/>
+				</s:if>
+	
+				<!-- amigbuous address -->
+				<s:elseif test="results.resultType.equals('GeocodeResult')">
+						<c:import url="geocode-result.jspx"/>
+				</s:elseif>
+			</s:if>	
+		</div>
+
+		<div id="refresh">
 			<s:url var="url" namespace="/m" action="index" anchor="top">				
 				<s:param name="q"><s:property value="q" /></s:param>
 				<s:param name="l"><s:property value="l" /></s:param>
 				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
 			</s:url>
-	    	<a href="${url}">Refresh Results</a>
-		</div>
-
-		<s:if test="%{results.suggestions.size&gt;0}">
-			<!-- route search with no direct matches -->
-			<s:if test="results.resultType.equals('RouteResult')">
-				<c:import url="routeSuggestionPicker.jspx"/>
-			</s:if>
-
-			<!-- amigbuous address -->
-			<s:elseif test="results.resultType.equals('GeocodeResult')">
-					<c:import url="geocodeResult.jspx"/>
-			</s:elseif>
-		</s:if>	
-
-		<s:if test="%{results.matches.size&gt;0}">
-			<s:if test="results.resultType.equals('RouteResult')">
-				<c:import url="routeResult.jspx"/>
-			</s:if>
-			<s:elseif test="results.resultType.equals('RouteInRegionResult')">
-					<c:import url="routeInRegionPicker.jspx"/>
-			</s:elseif>
-			<s:elseif test="results.resultType.equals('StopResult')">
-				<c:import url="stopResult.jspx"/>
-			</s:elseif>
-		</s:if>
-		
-		
-		<a name="bottom"></a>
-		<div class="refresh">
-			<s:url var="url" namespace="/m" action="index" anchor="bottom">				
-				<s:param name="q"><s:property value="q" /></s:param>
-				<s:param name="l"><s:property value="l" /></s:param>
-				<s:param name="cacheBreaker"><s:property value="cacheBreaker" /></s:param>
-			</s:url>
-	    	<a href="${url}">Refresh Results</a>
+	    	<a href="${url}">Refresh (<strong>Updated <s:property value="lastUpdateTime" /></strong>)</a>
 		</div>
 	</s:else>
-
+	
 	<div id="footer">
     	<p>
 			<s:url var="mobileHelpUrl" namespace="/wiki" action="Mobile/Help"/>	
     		<a href="${mobileHelpUrl}">Help</a> | 
     		
     		<s:url var="desktopUrl" namespace="/" action="index"/>	
-    		<a href="${desktopUrl}">Desktop Version</a> |
+    		<a href="${desktopUrl}">Desktop Site</a> |
     		
     		<s:url var="contactUrl" namespace="/wiki" action="ContactUs"/>	
     		<a href="${contactUrl}">Contact</a> |
@@ -127,5 +121,10 @@
 	</div>
 
 	<img src="${googleAnalyticsTrackingUrl}" alt=""/>
+	
+	<s:url var="url" value="/m/color-stylesheet">
+  		<s:param name="colors"><s:property value="routeColors" /></s:param>
+  	</s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 </body>
 </html>

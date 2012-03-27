@@ -14,9 +14,9 @@
     <dependencies>
 			<!-- for configuration service -->
         <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-nyc-transit-data</artifactId>
-            <version>${onebusaway.nyc.version}</version>
+        	<groupId>org.onebusaway</groupId>
+        	<artifactId>onebusaway-nyc-util</artifactId>
+        	<version>${onebusaway.nyc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.zeromq</groupId>
@@ -51,6 +51,7 @@
             <artifactId>jackson-xc</artifactId>
             <version>1.9.2</version>
         </dependency>
+        
     </dependencies>
     <profiles>
         <profile>
