@@ -24,29 +24,27 @@
  */
 package org.onebusaway.nyc.report_archive.model;
 
-import org.hibernate.annotations.AccessType;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
-
-import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.VehicleStatusBean;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.AccessType;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Index;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.VehicleStatusBean;
+import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data.model.trips.TripStatusBean;
 
 @Entity
 @Table(name = "obanyc_inferredlocation")
@@ -142,7 +140,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
 
   @Column(nullable = true, name = "inferred_run_id", length = 16)
   private String inferredRunId;
- 
+  
   // Fields from TDS
   // Stop ID of next scheduled stop
   @Column(nullable = true, name = "next_scheduled_stop_id", length = 32)
@@ -152,14 +150,8 @@ public class ArchivedInferredLocationRecord implements Serializable {
   @Column(nullable = true, name = "next_scheduled_stop_distance")
   private Double nextScheduledStopDistance;
 
-  // Fields for 1B, back-linking UTS data
-  @Column(nullable = true, name = "assigned_run_route", length = 8)
-  private String assignedRunRoute = null;
-
-  @Column(nullable = true, name = "assigned_run_number", length = 8)
-  private String assignedRunNumber = null;
-
-
+  @Column(nullable = true, name = "assigned_run_id", length = 16)
+  private String assignedRunId = null;
 
   public ArchivedInferredLocationRecord() {
   }
@@ -221,6 +213,7 @@ public class ArchivedInferredLocationRecord implements Serializable {
     setEmergencyFlag(managementBean.isEmergencyFlag());
     setInferredOperatorId(managementBean.getLastInferredOperatorId());
     setInferredRunId(managementBean.getInferredRunId());
+    setAssignedRunId(managementBean.getAssignedRunId());
 
     // TDS fields are inserted by setVehicleLocationRecordBean
 
@@ -476,7 +469,15 @@ public class ArchivedInferredLocationRecord implements Serializable {
   public String getInferredRunId() {
     return inferredRunId;
   }
-
+  
+  public void setAssignedRunId(String assignedRunId) {
+    this.assignedRunId = assignedRunId;    
+  }
+  
+  public String getAssignedRunId() {
+    return assignedRunId;
+  }
+  
   // Properties from TDS
 
   public void setNextScheduledStopId(String nextScheduledStopId) {

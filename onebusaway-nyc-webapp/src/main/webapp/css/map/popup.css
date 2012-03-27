@@ -66,7 +66,6 @@
 
 .popup .service {
 	width: 325px;
-	padding-top: 4px;
 	padding-bottom: 4px;
 	color: #666666;
 	font-weight: bold;
@@ -76,25 +75,33 @@
   	color: #d12020;
 }
 
-.popup .service-alert {
+.popup .serviceAlertContainer {
 	color: #d12020;
-	margin-bottom: 3px;
-	width: 400px;  
+	background-color: #FDEEF4;
 }
 
-.popup .service-alert li {
-	margin-bottom: 6px;
+.popup .serviceAlertContainer .alerts li {
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+	color: #D12020;
+	font-size: 13px;
+	line-height: 1.2em;
 }
 
-.popup .service-alert.title {
+.popup .serviceAlertContainer .title {
+	padding: 5px;
 	font-weight:bold;
-	margin-top: 3px;
 }
 
 .popup ul li.route {
 	whitespace: no-wrap;
 	color: #000099;
 	font-weight: bold;
+}
+
+.popup ul li.route.last {
+	padding-bottom: 4px;
 }
 
 .popup ul li.route.no-padding {
@@ -126,6 +133,10 @@
 	background-repeat: no-repeat;
 }
 
+.popup ul li.nextStop.last {
+	padding-bottom: 4px;
+}
+
 #bustime .popup ul li.nextStop span.stopName {
 	color: #000099;
 	cursor: pointer;
@@ -153,7 +164,7 @@
 }
 
 .popup .footer {
-	margin-top: 7px;	
+	margin-top: 7px;
 	padding-top: 7px;
 	border-top: 1px solid #bebebe;
 }
@@ -165,7 +176,6 @@
 	font-style: italic;	
 }
 
-.popup #zoomHere {
-	color: #CCCCCC;
+.popup ul.links {
 	margin-top: 10px;
 }

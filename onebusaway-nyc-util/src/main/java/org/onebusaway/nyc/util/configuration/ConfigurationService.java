@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data.services;
+package org.onebusaway.nyc.util.configuration;
 
 /**
  * Service interface for getting configuration parameters from a centrally-distributed

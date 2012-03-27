@@ -152,12 +152,21 @@ public class CcLocationReportRecord implements Serializable {
     // Check for localCcLocationReport and extract sentences if available
     String gpggaSentence = null;
     String gprmcSentence = null;
+    String sentence1 = null;
+    String sentence2 = null;
     
     if ((message.getLocalCcLocationReport() != null) 
 	&& (message.getLocalCcLocationReport().getNMEA() != null)
 	&& (message.getLocalCcLocationReport().getNMEA().getSentence() != null)) {
-	gpggaSentence = message.getLocalCcLocationReport().getNMEA().getSentence().get(0);
-	gprmcSentence = message.getLocalCcLocationReport().getNMEA().getSentence().get(1);
+      for (String s: message.getLocalCcLocationReport().getNMEA().getSentence()) {
+	if (s != null) {
+	  if (s.indexOf("$GPGGA") != -1) {
+	    gpggaSentence = s;
+	  } else if (s.indexOf("$GPRMC") != -1) {
+	    gprmcSentence = s;
+	  }
+	}
+      }
     }
     setNmeaSentenceGPGGA(gpggaSentence);
     setNmeaSentenceGPRMC(gprmcSentence);
@@ -165,24 +174,27 @@ public class CcLocationReportRecord implements Serializable {
     setRawMessage(contents);
   }
 
-  // Timestamp of the on-board device when this message is created, in standard XML timestamp format
-  // "time-reported": "2011-06-22T10:58:10.0-00:00"
-    private Date convertTime(String timeString, String zoneOffset) {
-      if (timeString == null) {
-	  return null;
-      }
-      // some times the date doesn't include UTC
-      // 2011-08-06T10:40:38.825, we have to assume these are in 
-      // local, i.e. EST time and convert appropriately
-      DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
-      formatter.withZone(DateTimeZone.UTC);
+  /**
+   * Timestamp of the on-board device when this message is created, in standard XML timestamp format
+   * "time-reported": "2011-06-22T10:58:10.0-00:00"
+   * Package private for unit tests.
+   */
+  Date convertTime(String timeString, String zoneOffset) {
+    if (timeString == null) {
+      return null;
+    }
+    // some times the date doesn't include UTC
+    // 2011-08-06T10:40:38.825, we have to assume these are in 
+    // local, i.e. EST time and convert appropriately
+    DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
+    formatter.withZone(DateTimeZone.UTC);
       
-      if (timeString.length() > 20 
-      	  && timeString.length() < 24) {
-      	  // append correct offset
-      	  timeString = timeString + zoneOffset;
-      }
-      return new Date(formatter.parseDateTime(timeString).getMillis());
+    if (timeString.length() > 20 
+	&& timeString.length() < 24) {
+      // append correct offset
+      timeString = timeString + zoneOffset;
+    }
+    return new Date(formatter.parseDateTime(timeString).getMillis());
   }
 
   // Instantaneous speed.  Per SAE J1587 speed is in half mph increments with an offset of -15mph.

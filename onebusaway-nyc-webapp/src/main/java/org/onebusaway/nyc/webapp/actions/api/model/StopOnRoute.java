@@ -32,7 +32,11 @@ public class StopOnRoute {
   }
 
   public String getStopDirection() {
-   return stop.getDirection();
+    if(stop.getDirection() == null || (stop.getDirection() != null && stop.getDirection().equals("?"))) {
+      return "unknown";
+    } else {
+      return stop.getDirection();
+    }
   }  
 
 }

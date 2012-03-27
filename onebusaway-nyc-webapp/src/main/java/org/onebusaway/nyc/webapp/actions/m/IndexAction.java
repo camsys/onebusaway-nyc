@@ -16,21 +16,31 @@
 package org.onebusaway.nyc.webapp.actions.m;
 
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
+import org.onebusaway.nyc.webapp.actions.m.model.RouteAtStop;
+import org.onebusaway.nyc.webapp.actions.m.model.RouteResult;
+import org.onebusaway.nyc.webapp.actions.m.model.StopResult;
 import org.onebusaway.transit_data.services.TransitDataService;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.xwork.StringEscapeUtils;
 import org.apache.struts2.ServletActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -86,7 +96,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     
     // empty query with location means search for stops near current location
     if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT)))) {
-      _results = _searchService.findStopsNearPoint(_location.getLat(), _location.getLon(), factory);
+      _results = _searchService.findStopsNearPoint(_location.getLat(), _location.getLon(), factory, _results.getRouteIdFilter());
 
     } else {
       if(_q.isEmpty()) {
@@ -107,7 +117,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
         // if we got a location (point) back, find stops nearby
         } else {
           _results = 
-              _searchService.findStopsNearPoint(result.getLatitude(), result.getLongitude(), factory);
+              _searchService.findStopsNearPoint(result.getLatitude(), result.getLongitude(), factory, _results.getRouteIdFilter());
         }  
       }
     }
@@ -130,14 +140,14 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
       // referrer
       HttpServletRequest request = ServletActionContext.getRequest();      
-      String referer = request.getHeader("referer");	
+      String referer = request.getHeader("referer");  
       if (referer == null || referer.isEmpty()) {
         referer = "-";
       }
       url.append("&utmr=").append(URLEncoder.encode(referer, "UTF-8"));
 
       // event tracking
-      String label = getQ();	      
+      String label = getQ();        
       if(label == null) {
         label = "";
       }
@@ -161,28 +171,24 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
         } else if(_results.getResultType().equals("StopResult")) {
           action = "Stop or Intersection Search";
-        }	    	  
-      }	else {
+        }         
+      } else {
         if(getQueryIsEmpty()) {
           action = "Home";
         } else {
-          action = "No Search Results";	    		  
+          action = "No Search Results";           
         }
       }
 
-      // page view on homepage hit, "event" for everything else.
-      if(action.equals("Home")) {
-        url.append("&utmp=/m/index");
-      } else {
-        url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");	    	  
-      }
+      //url.append("&utmt=event&utme=5(Mobile Web*" + action + "*" + label + ")");          
+      url.append("&utmp=/m/index#" + action + "/" + label);
 
       return url.toString().replace("&", "&amp;"); 
     } catch(Exception e) {
       return null;
     }
   }
-
+  
   public String getQ() {
     if((_q == null || _q.isEmpty()) && _location != null)
       return CURRENT_LOCATION_TEXT;
@@ -197,6 +203,16 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       return "off";
   }
   
+  public String getRouteColors() {
+    Set<String> routeColors = new HashSet<String>();
+    for(SearchResult _result : _results.getMatches()) {
+      RouteResult result = (RouteResult)_result;
+      routeColors.add(result.getColor());
+    }
+
+    return StringUtils.join(routeColors, ",");
+  }
+  
   public String getCacheBreaker() {
 	  return String.valueOf((int)Math.ceil((Math.random() * 100000)));
   }
@@ -206,8 +222,31 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
         && _location == null;
   }
   
+  public String getLastUpdateTime() {
+    return DateFormat.getTimeInstance().format(new Date());
+  } 
+  
   public String getResultType() {
     return _results.getResultType();
+  }
+  
+  public Set<String> getUniqueServiceAlertsForResults() {
+    Set<String> uniqueServiceAlerts = new HashSet<String>();
+    
+    for(SearchResult _result : _results.getMatches()) {
+      if(_results.getResultType().equals("RouteResult")) {
+        RouteResult result = (RouteResult)_result;
+        uniqueServiceAlerts.addAll(result.getServiceAlerts());
+        
+      } else if(_results.getResultType().equals("StopResult")) {
+        StopResult result = (StopResult)_result;        
+        for(RouteAtStop route : result.getAllRoutesAvailable()) {
+          uniqueServiceAlerts.addAll(route.getServiceAlerts());
+        }
+      }
+    }
+    
+    return uniqueServiceAlerts;
   }
   
   public SearchResultCollection getResults() {

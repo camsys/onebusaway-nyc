@@ -17,11 +17,10 @@ package org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.model.StopTime;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
@@ -41,7 +41,6 @@ import org.onebusaway.utility.ObjectSerializationLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.terracotta.agent.repkg.de.schlichtherle.io.FileOutputStream;
 
 /**
  * Load STIF data, including the mapping between destination sign codes and trip
@@ -66,10 +65,12 @@ public class StifTask implements Runnable {
   private NycFederatedTransitDataBundle _bundle;
 
   private String logPath;
-  
-  private String tripsWoBlocksLogPath;
 
   private boolean fallBackToStifBlocks = false;
+
+  private MultiCSVLogger csvLogger;
+
+  private HashMap<String, Set<AgencyAndId>> routeIdsByDsc = new HashMap<String, Set<AgencyAndId>>();
 
   @Autowired
   public void setGtfsMutableRelationalDao(
@@ -104,14 +105,13 @@ public class StifTask implements Runnable {
     this.logPath = logPath;
   }
   
-  public void setTripsWoBlocksLogPath(String tripsWoBlocksLogPath) {
-	  this.tripsWoBlocksLogPath = tripsWoBlocksLogPath;
-  }
-
   public void run() {
+
+    csvLogger = new MultiCSVLogger(logPath);
 
     StifTripLoader loader = new StifTripLoader();
     loader.setGtfsDao(_gtfsMutableRelationalDao);
+    loader.setLogger(csvLogger);
 
     for (File path : _stifPaths) {
       loadStif(path, loader);
@@ -138,14 +138,7 @@ public class StifTask implements Runnable {
 
     Set<String> inServiceDscs = new HashSet<String>();
 
-    for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
-      String destinationSignCode = entry.getKey();
-      List<AgencyAndId> tripIds = entry.getValue();
-
-      for (AgencyAndId tripId : tripIds) {
-    	 tripToDscMap.put(tripId, destinationSignCode);
-      }
-    }
+    logDSCStatistics(dscToTripMap, tripToDscMap);
 
     int withoutMatch = loader.getTripsWithoutMatchCount();
     int total = loader.getTripsCount();
@@ -154,6 +147,29 @@ public class StifTask implements Runnable {
 
     readNotInServiceDscs();
 
+    serializeDSCData(dscToTripMap, tripToDscMap, inServiceDscs);
+
+    csvLogger.summarize();
+    csvLogger = null; //ensure no writes after summary
+  }
+
+  private void logDSCStatistics(Map<String, List<AgencyAndId>> dscToTripMap,
+      Map<AgencyAndId, String> tripToDscMap) {
+    csvLogger.header("dsc_statistics.csv", "dsc,number_of_trips_in_stif,number_of_distinct_route_ids_in_gtfs");
+    for (Map.Entry<String, List<AgencyAndId>> entry : dscToTripMap.entrySet()) {
+      String destinationSignCode = entry.getKey();
+      List<AgencyAndId> tripIds = entry.getValue();
+      for (AgencyAndId tripId : tripIds) {
+    	 tripToDscMap.put(tripId, destinationSignCode);
+      }
+
+      Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
+      csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), routeIds.size());
+    }
+  }
+
+  private void serializeDSCData(Map<String, List<AgencyAndId>> dscToTripMap,
+      Map<AgencyAndId, String> tripToDscMap, Set<String> inServiceDscs) {
     for (String notInServiceDsc : _notInServiceDscs) {
       if (inServiceDscs.contains(notInServiceDsc))
         _log.warn("overlap between in-service and not-in-service dscs: "
@@ -175,7 +191,6 @@ public class StifTask implements Runnable {
     } catch (IOException e) {
       throw new IllegalStateException("error serializing DSC/STIF data", e);
     }
-
   }
 
   private void loadStifBlocks(StifTripLoader loader) {
@@ -242,20 +257,16 @@ public class StifTask implements Runnable {
 
   private void computeBlocksFromRuns(StifTripLoader loader) {
 
-    FileOutputStream outputStream = null;
-    PrintStream printStream = null;
-    if (logPath != null) {
-      try {
-        outputStream = new FileOutputStream(new File(logPath));
-        printStream = new PrintStream(outputStream);
-        printStream.println("blockId,tripId,dsc,firstStop,firstStopTime,lastStop,lastStopTime,"+
-        "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute");
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
     int blockNo = 0;
+
+    HashSet<Trip> usedGtfsTrips = new HashSet<Trip>();
+
+    csvLogger.header("non_pullin_without_next_movement.csv", "stif_trip,stif_filename,stif_trip_record_line_num");
+    csvLogger.header(
+        "stif_trips_without_pullout.csv",
+        "stif_trip, stif_filename, stif_trip_record_line_num, gtfs_trip_id, synthesized_block_id");
+    csvLogger.header("matched_trips_gtfs_stif.csv", "blockId,tripId,dsc,firstStop,firstStopTime,lastStop,lastStopTime,"+
+        "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute");
 
     Map<ServiceCode, List<RawTrip>> rawData = loader.getRawStifData();
     for (Map.Entry<ServiceCode, List<RawTrip>> entry : rawData.entrySet()) {
@@ -299,6 +310,8 @@ public class StifTask implements Runnable {
             break;
           }
           if (lastTrip.nextRun == null) {
+            csvLogger.log("non_pullin_without_next_movement.csv", lastTrip.id, lastTrip.path, lastTrip.lineNumber); 
+
             _log.warn("A non-pullin has no next run; some trips will end up with missing blocks"
                     + " and the log will be messed up. The bad trip starts at " + lastTrip.firstStop + " at "
                     + lastTrip.firstStopTime + " on " + lastTrip.runId + " on " + lastTrip.serviceCode);
@@ -352,121 +365,88 @@ public class StifTask implements Runnable {
             gtfsTrip.setBlockId(blockId);
             _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
 
-            dumpBlockDataForTrip(printStream, trip,
-                gtfsTrip.getId().getId(), blockId);
+            addToMapSet(routeIdsByDsc, trip.getDsc(), gtfsTrip.getRoute().getId());
+            dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId);
+
+            usedGtfsTrips.add(gtfsTrip);
           }
           if (lastTrip.type == StifTripType.DEADHEAD) {
             for (String blockId : blockIds) {
-              dumpBlockDataForTrip(printStream, lastTrip, "deadhead", blockId);
+              dumpBlockDataForTrip(lastTrip, "deadhead", blockId);
             }
           }
         }
         unmatchedTrips.remove(lastTrip);
 
         for (String blockId : blockIds) {
-          dumpBlockDataForTrip(printStream, pullout, "pullout", blockId);
-          dumpBlockDataForTrip(printStream, lastTrip, "pullin", blockId);
+          dumpBlockDataForTrip(pullout, "pullout", blockId);
+          dumpBlockDataForTrip(lastTrip, "pullin", blockId);
         }
       }
 
       for (RawTrip trip : unmatchedTrips) {
-        _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey() + " trip type " + trip.type + " must not have an associated pullout");
+        _log.warn("STIF trip: " + trip + " on schedule " + entry.getKey()
+            + " trip type " + trip.type
+            + " must not have an associated pullout");
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
-          String blockId = gtfsTrip.getServiceId() + "_" + trip.firstStop + "_" + trip.firstStopTime + "_" + trip.runId.replace("-","_") + "_orphan_" + blockNo;
-          _log.warn("Generating single-trip block id for GTFS trip: " + gtfsTrip.getId() + " : " + blockId);
+          String blockId = gtfsTrip.getServiceId() + "_" + trip.firstStop + "_"
+              + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
+              + "_orphan_" + blockNo;
+          _log.warn("Generating single-trip block id for GTFS trip: "
+              + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
-          dumpBlockDataForTrip(printStream, trip, gtfsTrip.getId().getId(), blockId);
+          csvLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
+              trip.lineNumber, gtfsTrip.getId(), blockId);
         }
+      }
+    }
+
+    HashSet<Route> routesWithTrips = new HashSet<Route>();
+    csvLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
+    Collection<Trip> allTrips = _gtfsMutableRelationalDao.getAllTrips();
+    for (Trip trip : allTrips) {
+      if (usedGtfsTrips.contains(trip)) {
+        routesWithTrips.add(trip.getRoute());
+      } else {
+        csvLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), loader.getSupport().getTripAsIdentifier(trip));
       }
     }
     
-    if (outputStream != null) {
-      try {
-        outputStream.close();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+    csvLogger.header("route_ids_with_no_trips.csv", "agency_id,route_id");
+    for (Route route : _gtfsMutableRelationalDao.getAllRoutes()) {
+      if (routesWithTrips.contains(route)) {
+        continue;
       }
+      csvLogger.log("route_ids_with_no_trips.csv", route.getId().getAgencyId(), route.getId().getId());
     }
-
-    
-    if (tripsWoBlocksLogPath != null) {
-      FileOutputStream woBlocksOS = null;
-      PrintStream woBlocksPrintStream = null;
-      
-      try {
-        woBlocksOS = new FileOutputStream(new File(tripsWoBlocksLogPath));
-        woBlocksPrintStream = new PrintStream(woBlocksOS);
-
-        boolean header = true;
-        for (Trip trip : _gtfsMutableRelationalDao.getAllTrips()) {
-          if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
-            if (header) {
-              woBlocksPrintStream.println("Trips without blocks:");
-              header = false;
-            }
-            woBlocksPrintStream.println(trip.getId().getId());
-          }
-        }
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-      } finally {
-        if (woBlocksOS != null) {
-          try {
-            woBlocksOS.close();
-          } catch (IOException e) {
-            throw new RuntimeException(e);
-          }
-        }
-      }
-
-    }
-
   }
 
   /**
-   * Dump some raw block matching data to a CSV file from stif trips
-   * 
-   * @param outputStream
-   * @param rawRunDataByTrip
-   * @param trip
+   * An extremely common pattern: add an item to a set in a hash value, creating that set if
+   * necessary; based on code from OTP with permission of copyright holder (OpenPlans). 
    */
-  private void dumpBlockDataForTrip(PrintStream printStream, RawTrip trip,
+  public static final <T, U> void addToMapSet(Map<T, Set<U>> mapList, T key, U value) {
+      Set<U> list = mapList.get(key);
+      if (list == null) {
+          list = new HashSet<U>();
+          mapList.put(key, list);
+      }
+      list.add(value);
+  }
+
+
+  /**
+   * Dump some raw block matching data to a CSV file from stif trips
+   */
+  private void dumpBlockDataForTrip(RawTrip trip,
       String tripId, String blockId) {
-    if (printStream == null) {
-      return;
-    }
 
-    printStream.print(blockId);
-    printStream.print(",");
-    printStream.print(tripId);
-    printStream.print(",");
-    printStream.print(trip.getDsc());
-    printStream.print(",");
-
-    printStream.print(trip.firstStop);
-    printStream.print(",");
-    printStream.print(trip.firstStopTime);
-    printStream.print(",");
-    printStream.print(trip.lastStop);
-    printStream.print(",");
-    printStream.print(trip.lastStopTime);
-    printStream.print(",");
-
-    printStream.print(trip.runId);
-    printStream.print(",");
-    printStream.print(trip.reliefRunId);
-
-    printStream.print(",");
-    printStream.print(trip.recoveryTime);
-    printStream.print(",");
-    printStream.print(trip.firstTripInSequence);
-    printStream.print(",");
-    printStream.print(trip.lastTripInSequence);
-    printStream.print(",");
-
-    printStream.print(trip.getSignCodeRoute());
-    printStream.print("\n");
+    csvLogger.log("matched_trips_gtfs_stif.csv", blockId, tripId,
+        trip.getDsc(), trip.firstStop, trip.firstStopTime, trip.lastStop,
+        trip.lastStopTime, trip.runId, trip.reliefRunId, trip.recoveryTime,
+        trip.firstTripInSequence, trip.lastTripInSequence,
+        trip.getSignCodeRoute());
   }
 
   private void warnOnMissingTrips() {
@@ -513,7 +493,7 @@ public class StifTask implements Runnable {
    * Whether blocks should come be computed from runs (true) or read from the STIF (false)
    * @return
    */
-  public boolean usesFallBackToStiffBlocks() {
+  public boolean usesFallBackToStifBlocks() {
     return fallBackToStifBlocks;
   }
 

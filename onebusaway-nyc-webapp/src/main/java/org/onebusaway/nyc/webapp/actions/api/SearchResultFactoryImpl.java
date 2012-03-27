@@ -37,6 +37,7 @@ import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -107,12 +108,10 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   }
 
   @Override
-  public SearchResult getStopResult(StopBean stopBean) {
-    StopBean stop = _transitDataService.getStop(stopBean.getId());    
-
+  public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
-    for(RouteBean routeBean : stop.getRoutes()) {
+    for(RouteBean routeBean : stopBean.getRoutes()) {
       StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
 
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
@@ -130,7 +129,10 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
             polylines.add(polyline.getPoints());
           }
 
-          directions.add(new RouteDirection(stopGroupBean, polylines, null, null));
+          Boolean hasUpcomingScheduledService = 
+              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+
+          directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
         }
       }
 
@@ -138,11 +140,11 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
       routesAtStop.add(routeAtStop);
     }
 
-    return new StopResult(stop, routesAtStop);
+    return new StopResult(stopBean, routesAtStop);
   }
 
   @Override
-  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult) {
+  public SearchResult getGeocoderResult(NycGeocoderResult geocodeResult, Set<String> routeIdFilter) {
     List<SearchResult> routesNearby = null;
     
     if(geocodeResult.isRegion()) {

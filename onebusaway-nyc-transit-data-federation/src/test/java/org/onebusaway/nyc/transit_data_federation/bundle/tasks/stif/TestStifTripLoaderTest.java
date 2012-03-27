@@ -44,7 +44,7 @@ public class TestStifTripLoaderTest {
 
     StifTripLoader loader = new StifTripLoader();
     loader.setGtfsDao(dao);
-    loader.run(in);
+    loader.run(in, new File("stif.m_0014__.210186.sun"));
     Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();
     assertTrue(mapping.containsKey("1140"));
     List<AgencyAndId> trips = mapping.get("1140");

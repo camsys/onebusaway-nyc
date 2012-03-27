@@ -4,7 +4,7 @@ import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
 import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
 import org.onebusaway.nyc.vehicle_tracking.impl.queue.InputQueueListenerTask;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

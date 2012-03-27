@@ -15,10 +15,25 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.queue;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Date;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.TimerTask;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.servlet.ServletContext;
+
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.MappingJsonFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 
 import org.codehaus.jackson.JsonGenerator;
@@ -28,20 +43,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.web.context.ServletContextAware;
+
 import org.zeromq.ZMQ;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Date;
-import java.util.TimerTask;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
+public class OutputQueueSenderServiceImpl implements OutputQueueSenderService, ServletContextAware {
 
   private static Logger _log = LoggerFactory.getLogger(OutputQueueSenderServiceImpl.class);
 
@@ -81,6 +87,19 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
   @Autowired
   private ThreadPoolTaskScheduler _taskScheduler;
 
+  public void setServletContext(ServletContext servletContext) {
+    // check for primaryHost name
+    String hostname = null;
+    if (servletContext != null) {
+      hostname = (String)servletContext.getInitParameter("primary.host.name");
+      _log.info("servlet context provied primary.host.name=" + hostname);
+    }
+    if (hostname != null) {
+      setPrimaryHostname(hostname);
+    }
+  }
+
+
   private class SendThread implements Runnable {
 
     int processedCount = 0;
@@ -95,6 +114,7 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
       _zmqSocket = socket;
       _topicName = topicName.getBytes();
     }
+
 
     @Override
     public void run() {
@@ -166,6 +186,11 @@ public class OutputQueueSenderServiceImpl implements OutputQueueSenderService {
 
     private String getHeartbeatMessage(String hostname, long timestamp,
         long interval) {
+      /*
+       * remember that only one IE for each depot will be transmitting at a
+       * time, so we can use the primaryhostname to identify this IE
+       * in the heartbeat message.
+       */
       final String msg = "{\"heartbeat\": {\"hostname\":\"%1$s\",\"heartbeat_timestamp\":%2$s,\"heartbeat_interval\":%3$s}}";
       return String.format(msg, getPrimaryHostname(), timestamp, interval);
     }

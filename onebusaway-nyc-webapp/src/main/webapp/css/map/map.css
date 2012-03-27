@@ -61,6 +61,8 @@
 	margin: 3px 6px 0 0;
 	text-indent: -9999px;
 	background: url('img/search_icon.png') no-repeat scroll 0 0 transparent;
+	font-size: 0;
+	line-height: 0;
 }
 
 #content #no-results,
@@ -100,7 +102,7 @@
 /* result types */
 
 #content #suggestions ul li.routeItem {
-	width: 65px;
+	width: 33%;
 	height: 25px;
 	display: block;
 	float: left;
@@ -229,13 +231,14 @@
 #content #matches ul li.legendItem p.destination ul.stops {
 	margin-top: 5px;
 	margin-bottom: 20px;
+	margin-left: 25px;
 }
 
 #content #matches ul li.legendItem p.destination ul.stops li {
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 3px;
-	padding-left: 40px;
+	padding-left: 20px;
 }
 
 /* default--this is overrideen  by javascript */

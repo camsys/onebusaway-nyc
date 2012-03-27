@@ -20,6 +20,11 @@
             <version>${onebusaway.nyc.version}</version>
         </dependency>
         <dependency>
+        	<groupId>org.onebusaway</groupId>
+        	<artifactId>onebusaway-nyc-util</artifactId>
+        	<version>${onebusaway.nyc.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.onebusaway</groupId>
             <artifactId>onebusaway-siri-api-v13</artifactId>
             <version>${onebusaway.siri.version}</version>
@@ -85,5 +90,7 @@
           </artifactId>
           <version>${onebusaway.nyc.version}</version>
         </dependency>
+
+        
     </dependencies>
 </project>

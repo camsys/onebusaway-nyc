@@ -21,7 +21,8 @@ import org.onebusaway.geocoder.services.GeocoderService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;

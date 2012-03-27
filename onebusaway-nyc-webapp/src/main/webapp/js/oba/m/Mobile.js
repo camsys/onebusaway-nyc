@@ -10,7 +10,54 @@ OBA.Mobile = (function() {
 	var lastLatitude = null;
 	var lastLongitude = null; 
 	
-	var initLocationUI = function() {
+	function addRefreshBehavior() {
+		// refresh button logic
+		var refreshBar = jQuery("#refresh")
+					.css("position", "absolute")
+					.css("right", "20")
+					.css("left", "20");
+
+		var refreshTimestamp = refreshBar
+								.find("strong");
+		
+		// ajax refresh for browsers that support it
+		refreshBar.find("a").click(function(e) {
+			e.preventDefault();
+		
+			refreshTimestamp.text("Loading...");
+			
+			jQuery("#content")
+				.load(location.href + " #content>*", null, function() {
+					refreshTimestamp.text("Updated " + new Date().format("mediumTime"));
+				});
+		});
+				
+		// scrolling/fixed refresh bar logic
+		var contentDiv = jQuery("#content")
+							.css("padding-top", refreshBar.height() * 1.5);				
+
+		var topLimit = contentDiv.offset().top + (refreshBar.height() * 0.25) - 20;
+		
+		jQuery("body")
+					.css("position", "relative");
+
+		var theWindow = jQuery(window);
+		var repositionRefreshBar = function() {
+			var top = theWindow.scrollTop();
+
+			if(top < topLimit) {
+				top = topLimit;
+			}
+			
+			refreshBar.css("top", top + 20);
+		};
+		repositionRefreshBar();
+		
+		theWindow.scroll(repositionRefreshBar)
+					.resize(repositionRefreshBar);
+	}
+	
+	function initLocationUI() {
 		var searchPanelForm = jQuery("#searchPanel form");
 
 		var toggleUI = jQuery("<p>Use my location:</p>")
@@ -56,7 +103,7 @@ OBA.Mobile = (function() {
 		}
 	};
 	
-	var updatePageState = function() {
+	function updatePageState() {
 		var locationValue = "off";
 		if(lastLatitude !== null && lastLongitude !== null) {
 			locationValue = lastLatitude + "," + lastLongitude;
@@ -89,7 +136,7 @@ OBA.Mobile = (function() {
 	};
 
 	// event when user turns off location
-	var turnOffGeolocation = function() {
+	function turnOffGeolocation() {
 		lastLatitude = null;
 		lastLongitude = null;
 
@@ -100,7 +147,7 @@ OBA.Mobile = (function() {
 	};
 	
 	// event when user turns on location
-	var turnOnGeolocation = function() {
+	function turnOnGeolocation() {
 		// show "finding location" message button to user while 
 		// location is being found
 		if(nearbyButton !== null) {
@@ -133,6 +180,8 @@ OBA.Mobile = (function() {
 					turnOffGeolocation();
 				}
 			}			
+			
+			addRefreshBehavior();
 		}
 	};
 })();

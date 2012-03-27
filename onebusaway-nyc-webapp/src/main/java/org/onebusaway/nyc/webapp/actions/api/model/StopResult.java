@@ -38,7 +38,11 @@ public class StopResult implements SearchResult {
   }
 
   public String getStopDirection() {
-   return stop.getDirection();
+    if(stop.getDirection() == null || (stop.getDirection() != null && stop.getDirection().equals("?"))) {
+      return "unknown";
+    } else {
+      return stop.getDirection();
+    }
   }  
   
   public List<RouteAtStop> getRoutesAvailable() {

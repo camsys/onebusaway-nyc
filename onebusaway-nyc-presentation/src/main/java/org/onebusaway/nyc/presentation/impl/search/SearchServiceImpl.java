@@ -18,6 +18,8 @@ import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +27,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
 @Component
 public class SearchServiceImpl implements SearchService {
+
+  private static Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);
+
+  // the pattern of what can be leftover after prefix/suffix matching for a route
+  // to be a "suggestion" for a given search
+  private static final Pattern leftOverMatchPattern = 
+      Pattern.compile("^([A-Z]|-)+$");
 
   // when querying for routes from a lat/lng, use this distance in meters
   private static final double DISTANCE_TO_ROUTES = 100;
@@ -43,22 +56,23 @@ public class SearchServiceImpl implements SearchService {
   @Autowired
   private TransitDataService _transitDataService;
 
-  private SearchResultCollection _results = null;
-
   private Map<String, String> _routeShortNameToIdMap = new HashMap<String, String>();
 
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
 
   public void refreshCaches() {
-    _routeShortNameToIdMap.clear();
-    
-    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
-      for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
-        RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
-        _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
-        _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
-      }
-    }    
+    synchronized(_routeShortNameToIdMap) {
+      _routeShortNameToIdMap.clear();
+      _routeLongNameToIdMap.clear();
+      
+      for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+        for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
+          RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
+          _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
+          _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
+        }
+      }    
+    }
   }
   
   @PostConstruct
@@ -68,7 +82,7 @@ public class SearchServiceImpl implements SearchService {
   }
   
   @Override
-  public SearchResultCollection findStopsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory) {
+  public SearchResultCollection findStopsNearPoint(Double latitude, Double longitude, SearchResultFactory resultFactory, Set<String> routeIdFilter) {
     CoordinateBounds bounds = SphericalGeometryLibrary.bounds(latitude, longitude, DISTANCE_TO_STOPS);
 
     SearchQueryBean queryBean = new SearchQueryBean();
@@ -79,9 +93,10 @@ public class SearchServiceImpl implements SearchService {
     StopsBean stops = _transitDataService.getStops(queryBean);
 
     SearchResultCollection results = new SearchResultCollection();
-
+    results.addRouteIdFilters(routeIdFilter);
+    
     for(StopBean stop : stops.getStops()) {
-      results.addMatch(resultFactory.getStopResult(stop));
+      results.addMatch(resultFactory.getStopResult(stop, routeIdFilter));
     }
     
     return results;    
@@ -127,28 +142,80 @@ public class SearchServiceImpl implements SearchService {
   
   @Override
   public SearchResultCollection getSearchResults(String query, SearchResultFactory resultFactory) {
-    _results = new SearchResultCollection();
+    SearchResultCollection results = new SearchResultCollection();
     
-    tryAsStop(normalizeQuery(query), resultFactory);
+    String normalizedQuery = normalizeQuery(results, query);
     
-    if(_results.isEmpty()) {
-      tryAsRoute(normalizeQuery(query), resultFactory);
+    tryAsRoute(results, normalizedQuery, resultFactory);
+    
+    if(results.isEmpty() && StringUtils.isNumeric(normalizedQuery)) {
+      tryAsStop(results, normalizedQuery, resultFactory);
     }
 
-    if(_results.isEmpty()) {
-      tryAsGeocode(normalizeQuery(query), resultFactory);
+    if(results.isEmpty()) {
+      tryAsGeocode(results, normalizedQuery, resultFactory);
     }
     
-    return _results;
+    return results;
   }
 
-  private String normalizeQuery(String q) {
+  private String normalizeQuery(SearchResultCollection results, String q) {
+    if(q == null) {
+      return null;
+    }
     
+    q = q.trim();
+
+    List<String> tokens = new ArrayList<String>();
+    StringTokenizer tokenizer = new StringTokenizer(q, " +", true);
+    while(tokenizer.hasMoreTokens()) {
+      String token = tokenizer.nextToken().trim().toUpperCase();
+      
+      if(!StringUtils.isEmpty(token)) {
+        tokens.add(token);
+      }
+    }
     
-    return q;
+    String normalizedQuery = "";
+    for(int i = 0; i < tokens.size(); i++) {
+      String token = tokens.get(i);
+      String lastItem = null;
+      String nextItem = null;
+      if(i - 1 >= 0) {
+        lastItem = tokens.get(i - 1);
+      }
+      if(i + 1 < tokens.size()) {
+        nextItem = tokens.get(i + 1);
+      }
+      
+      // keep track of route tokens we found when parsing
+      if(_routeShortNameToIdMap.containsKey(token)) {
+        // if a route is included as part of another type of query, then it's a filter--
+        // so remove it from the normalized query sent to the geocoder or stop service
+        if((lastItem != null && !_routeShortNameToIdMap.containsKey(lastItem)) || (nextItem != null && !_routeShortNameToIdMap.containsKey(nextItem))) {
+          results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
+          continue;
+        }
+      }
+
+      // allow the plus sign instead of "and"
+      if(token.equals("+")) {
+        // if a user is prepending a route filter with a plus sign, chop it off
+        // e.g. main and craig + B63
+        if(_routeShortNameToIdMap.containsKey(nextItem)) {
+          continue;
+        }
+
+        token = "and";
+      }
+      
+      normalizedQuery += token + " ";
+    }
+    
+    return normalizedQuery.trim();
   }
   
-  private void tryAsRoute(String routeQuery, SearchResultFactory resultFactory) {
+  private void tryAsRoute(SearchResultCollection results, String routeQuery, SearchResultFactory resultFactory) {
     if(routeQuery == null || StringUtils.isEmpty(routeQuery)) {
       return;
     }
@@ -162,16 +229,21 @@ public class SearchServiceImpl implements SearchService {
     // short name matching
     if(_routeShortNameToIdMap.get(routeQuery) != null) {
       RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeQuery));
-      _results.addMatch(resultFactory.getRouteResult(routeBean));
+      results.addMatch(resultFactory.getRouteResult(routeBean));
     }
 
     for(String routeShortName : _routeShortNameToIdMap.keySet()) {
-      // if the route short name ends or starts with our query, and whatever's left over is a letter
+      // if the route short name ends or starts with our query, and whatever's left over 
+      // matches the regex
+      String leftOvers = routeShortName.replace(routeQuery, "");
+      Matcher matcher = leftOverMatchPattern.matcher(leftOvers);
+      Boolean leftOversAreDiscardable = matcher.find();
+      
       if(!routeQuery.equals(routeShortName) 
-          && ((routeShortName.startsWith(routeQuery) && StringUtils.isAlpha(routeShortName.replace(routeQuery, "")))
-          || (routeShortName.endsWith(routeQuery) && StringUtils.isAlpha(routeShortName.replace(routeQuery, ""))))) {
+          && ((routeShortName.startsWith(routeQuery) && leftOversAreDiscardable)
+          || (routeShortName.endsWith(routeQuery) && leftOversAreDiscardable))) {
         RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeShortName));
-        _results.addSuggestion(resultFactory.getRouteResult(routeBean));
+        results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;
       }
     }
@@ -180,14 +252,14 @@ public class SearchServiceImpl implements SearchService {
     for(String routeLongName : _routeLongNameToIdMap.keySet()) {
       if(routeLongName.contains(routeQuery + " ") || routeLongName.contains(" " + routeQuery)) {
         RouteBean routeBean = _transitDataService.getRouteForId(_routeLongNameToIdMap.get(routeLongName));
-        _results.addSuggestion(resultFactory.getRouteResult(routeBean));
+        results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;        
       }
     }
       
   }
 
-  private void tryAsStop(String stopQuery, SearchResultFactory resultFactory) {
+  private void tryAsStop(SearchResultCollection results, String stopQuery, SearchResultFactory resultFactory) {
     if(stopQuery == null || StringUtils.isEmpty(stopQuery)) {
       return;
     }
@@ -211,22 +283,22 @@ public class SearchServiceImpl implements SearchService {
     }
     
     if(matches.size() == 1)
-      _results.addMatch(resultFactory.getStopResult(matches.get(0)));
+      results.addMatch(resultFactory.getStopResult(matches.get(0), results.getRouteIdFilter()));
     else {
       for(StopBean match : matches) {
-        _results.addSuggestion(resultFactory.getStopResult(match));
+        results.addSuggestion(resultFactory.getStopResult(match, results.getRouteIdFilter()));
       }
     }
   }
   
-  private void tryAsGeocode(String query, SearchResultFactory resultFactory) {
+  private void tryAsGeocode(SearchResultCollection results, String query, SearchResultFactory resultFactory) {
     List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(query);
     
     for(NycGeocoderResult result : geocoderResults) {
       if(geocoderResults.size() == 1) {
-        _results.addMatch(resultFactory.getGeocoderResult(result));
+        results.addMatch(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
       } else {        
-        _results.addSuggestion(resultFactory.getGeocoderResult(result));
+        results.addSuggestion(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
       }
     }
   }
@@ -236,7 +308,11 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public void run() {     
-      refreshCaches();
+      try {
+        refreshCaches();
+      } catch (Exception e) {
+        _log.error("Error updating cache: " + e.getMessage());
+      }
     }   
 
   }

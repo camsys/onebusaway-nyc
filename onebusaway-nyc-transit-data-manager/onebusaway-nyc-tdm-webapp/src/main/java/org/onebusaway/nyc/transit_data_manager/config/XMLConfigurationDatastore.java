@@ -116,6 +116,8 @@ public class XMLConfigurationDatastore implements
     JAXBContext jc = JAXBContext.newInstance(ConfigurationStore.class);
     Marshaller m = jc.createMarshaller();
 
+    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
     m.marshal(configuration, configFile);
 
     _log.debug("Done writing configuration to file.");

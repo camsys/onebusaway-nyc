@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
@@ -57,8 +57,6 @@ public class BlockStateTransitionModel {
 
   private ObservationCache _observationCache;
 
-  @Autowired
-  private ConfigurationService _configurationService;
   
   /****
    * Parameters
