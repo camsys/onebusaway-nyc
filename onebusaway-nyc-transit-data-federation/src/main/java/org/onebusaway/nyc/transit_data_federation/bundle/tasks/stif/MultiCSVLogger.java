@@ -27,6 +27,11 @@ public class MultiCSVLogger {
 
   public MultiCSVLogger(String path) {
     logs = new HashMap<String, Log>();
+    // integration tests may not have a path
+    if (path == null) {
+	path = System.getProperty("java.io.tmpdir");
+	System.err.println("ERROR: MultiCSVLogger initialized without path:  using " + path);
+    }
     basePath = new File(path);
     if (!basePath.exists()) {
       basePath.mkdirs();
