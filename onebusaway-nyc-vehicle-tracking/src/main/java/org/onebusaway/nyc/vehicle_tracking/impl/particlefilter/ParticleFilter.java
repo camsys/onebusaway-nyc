@@ -308,19 +308,24 @@ public class ParticleFilter<OBS> {
     double Wnorm = 0.0;
     for (Multiset.Entry<Particle> p : particles.entrySet()) {
       final double weight = p.getElement().getWeight();
-      Wnorm += FastMath.pow(weight*p.getCount(), 2);
+      Wnorm += weight * p.getCount();
     }
     
     if (Wnorm == 0)
       return 0d;
     
+    double Wvar = 0.0;
+    for (Multiset.Entry<Particle> p : particles.entrySet()) {
+      final double weight = p.getElement().getWeight();
+      Wvar += FastMath.pow(weight/Wnorm, 2) * p.getCount();
+    }
 //    for (Multiset.Entry<Particle> p : particles.entrySet()) {
 //      CVt += FastMath.pow(p.getElement().getWeight()/Wnorm - 1/N, 2.0)*p.getCount();
 //    }
 //    CVt = FastMath.sqrt(N*CVt);
 //    
 //    return N/(1+FastMath.pow(CVt, 2.0));
-    return 1/Wnorm;
+    return 1/Wvar;
   }
   
   private static final Ordering<Particle> _nullBlockStateComparator = new Ordering<Particle>() {
@@ -595,10 +600,10 @@ public class ParticleFilter<OBS> {
         cdf.put(FastMath.exp(logProb), p);
       }
       
-      final Multiset<Particle> resampled = cdf.sample(ParticleFactoryImpl.getInitialNumberOfParticles());
-      
       if (!cdf.canSample())
         throw new ZeroProbabilityParticleFilterException();
+      
+      final Multiset<Particle> resampled = cdf.sample(ParticleFactoryImpl.getInitialNumberOfParticles());
       
       final Multiset<Particle> reweighted = HashMultiset.create(resampled.size());
       for (final Multiset.Entry<Particle> pEntry : resampled.entrySet()) {

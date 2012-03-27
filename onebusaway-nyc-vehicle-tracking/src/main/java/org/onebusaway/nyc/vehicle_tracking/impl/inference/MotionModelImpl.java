@@ -377,9 +377,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     if (transitionDist.canSample()) {
       final Particle sampledParticle = transitionDist.sample();
-//      sampledParticle.setLogWeight(parent.getElement().getLogWeight()
-//          + sampledParticle.getTransResult().getLogProbability());
-      sampledParticle.setLogWeight(sampledParticle.getTransResult().getLogProbability());
+      sampledParticle.setLogWeight(parent.getElement().getLogWeight()
+          + sampledParticle.getTransResult().getLogProbability());
+//      sampledParticle.setLogWeight(sampledParticle.getTransResult().getLogProbability());
       return sampledParticle;
     } else {
       final SensorModelResult transProb = new SensorModelResult("Transition (null)");
@@ -402,9 +402,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final Particle newParticle = new Particle(timestamp, parent.getElement(),
           0.0, nullState);
       newParticle.setTransResult(transProb);
-//      newParticle.setLogWeight(parent.getElement().getLogWeight()
-//          + newParticle.getTransResult().getLogProbability());
-      newParticle.setLogWeight(newParticle.getTransResult().getLogProbability());
+      newParticle.setLogWeight(parent.getElement().getLogWeight()
+          + newParticle.getTransResult().getLogProbability());
+//      newParticle.setLogWeight(newParticle.getTransResult().getLogProbability());
       
       return newParticle; 
     }

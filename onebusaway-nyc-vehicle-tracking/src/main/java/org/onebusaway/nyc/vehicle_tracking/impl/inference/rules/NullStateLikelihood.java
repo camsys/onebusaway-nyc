@@ -72,10 +72,10 @@ public class NullStateLikelihood implements SensorModelRule {
     NullStates state = getNullState(context);
     switch(state) {
       case NULL_STATE:
-        result.addResultAsAnd("null-state", 0.05);
+        result.addResultAsAnd("null-state", 0.005);
         break;
       case NON_NULL_STATE:
-        result.addResultAsAnd("non-null-state", 0.95);
+        result.addResultAsAnd("non-null-state", 0.995);
         break;
     }
     return result;
