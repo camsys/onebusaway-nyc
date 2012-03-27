@@ -35,11 +35,12 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Set;
 
-// @Component
+@Component
 public class RunTransitionLikelihood implements SensorModelRule {
 
   @Autowired

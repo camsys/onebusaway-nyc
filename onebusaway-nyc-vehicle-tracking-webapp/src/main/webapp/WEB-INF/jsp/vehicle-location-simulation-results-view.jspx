@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:form="http://www.springframework.org/tags/form">
+<jsp:directive.page contentType="text/html" />
+<head>
+<title>Vehicle Location Simulations - Results View</title>
+</head>
+<style>
+table td {
+	border: 1px solid black;
+}
+</style>
+<body>
+
+<p><a href="vehicle-location-simulation.do">Back to Vehicle
+Location Simulation Console</a></p>
+
+<h2>Journey Summaries</h2>
+
+<table>
+    <thead>
+        <tr>
+            <td>Record #</td>
+            <td>Time</td>
+            <td>Vehicle Id</td>
+            <td>Reported Run</td>
+            <td>DSC</td>
+            <td>Actual Trip</td>
+            <td>Inf. Trip</td>
+            <td>Actual Sched. Time</td>
+            <td>Inf. Sched. Time</td>
+            <td>Actual Phase</td>
+            <td>Inf. Phase</td>
+            <td>Actual DAB</td>
+            <td>Inf. DAB</td>
+        </tr>
+    </thead>
+    <tbody>
+        <c:forEach var="record" items="${records}">
+            <tr>
+		            <td align='center'><a href="vehicle-location-simulation!task-details.do?taskId=${taskId}&amp;recordNumber=${record.recordNumber-1}">
+		            <c:out value="${record.recordNumber}" />
+		            </a></td>
+                <td align='center'>
+						    <fmt:formatDate pattern="yyyy-MM-dd HH:mm:ss Z" timeZone="EST" value="${record.timestampAsDate}"/>
+                </td>
+	              <td align='center' bgcolor='#cdc9c9'><c:out value="${fn:replace(record.vehicleId, '_', ' ')}"/></td>
+                <td align='center'><c:out value="${record.reportedRunId}" /></td>
+                <td align='center' bgcolor='#cdc9c9'><c:out value="${record.dsc}" /></td>
+                
+                <td align='center'><c:out value="${record.actualTripId}" /></td>
+                <c:set var="bgcolor1" value="#cdc9c9"/>
+                <c:if test="${record.actualTripId != record.inferredTripId}">
+                    <c:set var="bgcolor1" value="#ff6347"/>
+                </c:if>
+                <td align='center' bgcolor='${bgcolor1}'><c:out value="${record.inferredTripId}" /></td>
+                
+                <c:set var="actualSchedTimeFormat" value="NA"/>
+                <c:if test="${record.actualScheduleTime > 0}">
+                  <c:set var="actualSchedMins" value="${record.actualScheduleTime/60.0}"/>
+                  <c:set var="actualSchedHours" value="${actualSchedMins / 60.0}"/>
+	                <fmt:formatNumber var="actualSchedMinsDisp" value="${actualSchedMins % 60}" pattern="00" maxFractionDigits="0" />
+	                <fmt:formatNumber var="actualSchedHoursDisp" value="${fn:substringBefore(actualSchedHours, '.')}" pattern="#0" maxFractionDigits="0" />
+	                <c:set var="actualSchedTimeFormat" value="${actualSchedHoursDisp}:${actualSchedMinsDisp}"/>
+                </c:if>
+                <td align='center'><c:out value="${actualSchedTimeFormat}" /></td>
+                <c:set var="infSchedTimeFormat" value="NA"/>
+                <c:if test="${record.inferredScheduleTime > 0}">
+                  <c:set var="infSchedMins" value="${record.inferredScheduleTime/60.0}"/>
+                  <c:set var="infSchedHours" value="${infSchedMins / 60.0}"/>
+	                <fmt:formatNumber var="infSchedMinsDisp" value="${infSchedMins % 60}" pattern="00" maxFractionDigits="0" />
+	                <fmt:formatNumber var="infSchedHoursDisp" value="${fn:substringBefore(infSchedHours, '.')}" pattern="#0" maxFractionDigits="0" />
+	                <c:set var="infSchedTimeFormat" value="${infSchedHoursDisp}:${infSchedMinsDisp}"/>
+                </c:if>
+                <td align='center' bgcolor='#cdc9c9'><c:out value="${infSchedTimeFormat}" /></td>
+	              <td align='center'><c:out value="${fn:replace(record.actualPhase, '_', ' ')}"/></td>
+                <c:set var="bgcolor2" value="#cdc9c9"/>
+                <c:if test="${record.actualPhase != record.inferredPhase}">
+                    <c:set var="bgcolor2" value="#ff6347"/>
+                </c:if>
+	              <td align='center' bgcolor='${bgcolor2}'><c:out value="${fn:replace(record.inferredPhase, '_', ' ')}"/></td>
+                <fmt:formatNumber var="actualDab" value="${record.actualDistanceAlongBlock}" maxFractionDigits="1" />
+                <fmt:formatNumber var="infDab" value="${record.inferredDistanceAlongBlock}" maxFractionDigits="1" />
+                <td align='center'><c:out value="${actualDab}" /></td>
+                <td align='center' bgcolor='${bgcolor2}'><c:out value="${infDab}" /></td>
+            </tr>
+        </c:forEach>
+    </tbody>
+</table>
+
+</body>
+</html>

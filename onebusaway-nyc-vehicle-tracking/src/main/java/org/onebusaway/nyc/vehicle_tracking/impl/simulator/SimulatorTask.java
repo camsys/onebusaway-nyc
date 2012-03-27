@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.text.DateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,6 +46,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SimulatorTask implements Runnable, EntityHandler {
 
+  private int _maxParticleHistorySize = Integer.MAX_VALUE;
+
   private static Logger _log = LoggerFactory.getLogger(SimulatorTask.class);
 
   private static DateFormat _format = DateFormat.getTimeInstance(DateFormat.SHORT);
@@ -53,7 +56,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   private final List<NycTestInferredLocationRecord> _results = new ArrayList<NycTestInferredLocationRecord>();
 
-  private final Deque<VehicleLocationDetails> _details = new ArrayDeque<VehicleLocationDetails>();
+//  private final Deque<VehicleLocationDetails> _details = new ArrayDeque<VehicleLocationDetails>();
+  private final List<VehicleLocationDetails> _details = new ArrayList<VehicleLocationDetails>();
 
   private final AtomicInteger _recordsProcessed = new AtomicInteger();
 
@@ -235,28 +239,38 @@ public class SimulatorTask implements Runnable, EntityHandler {
     return summary;
   }
 
-  public VehicleLocationDetails getDetails(int historyOffset) {
-    int index = 0;
-    for (final Iterator<VehicleLocationDetails> it = _details.descendingIterator(); it.hasNext();) {
-      final VehicleLocationDetails details = it.next();
-      if (index == historyOffset)
-        return details;
-      index++;
-    }
-    return null;
+  public VehicleLocationDetails getDetails(int recordNumber) {
+    return recordNumber < 0 || recordNumber >= _details.size() ? null : _details.get(recordNumber);
+//    int index = 0;
+//    for (final Iterator<VehicleLocationDetails> it = _details.descendingIterator(); it.hasNext();) {
+//      final VehicleLocationDetails details = it.next();
+//      if (index == historyOffset)
+//        return details;
+//      index++;
+//    }
+//    return null;
   }
 
-  public VehicleLocationDetails getParticleDetails(int particleId) {
+  public VehicleLocationDetails getParticleDetails(int particleId, int recordIndex) {
     final VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
-    details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
-    final Multiset<Particle> particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId);
+    
+    final Collection<Multiset.Entry<Particle>> particles;
+    if (recordIndex < 0) {
+      details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
+      particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId).entrySet();
+    } else {
+      details.setLastObservation(getDetails(recordIndex).getLastObservation());
+      particles = getDetails(recordIndex).getParticles();
+    }
+    
     if (particles != null) {
-      for (Particle p : particles) {
+      for (Multiset.Entry<Particle> pEntry : particles) {
+        Particle p = pEntry.getElement();
         if (p.getIndex() == particleId) {
           final Multiset<Particle> history = TreeMultiset.create(Ordering.natural());
           while (p != null) {
-            history.add(p, particles.count(p));
+            history.add(p, pEntry.getCount());
             p = p.getParent();
           }
           details.setParticles(history);
@@ -519,9 +533,10 @@ public class SimulatorTask implements Runnable, EntityHandler {
     // _vehicleLocationInferenceService.getCurrentJourneySummariesForVehicleId(_vehicleId);
     // details.setSummaries(summaries);
 
-    _details.add(details);
-    while (_details.size() > 5)
-      _details.removeFirst();
+    if (_details.size() < _maxParticleHistorySize)
+      _details.add(details);
+//    while (_details.size() > _maxParticleHistorySize)
+//      _details.removeFirst();
 
     return true;
   }
@@ -532,5 +547,13 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   public void setFilename(String filename) {
     _filename = filename;
+  }
+
+  public int getMaxParticleHistorySize() {
+    return _maxParticleHistorySize;
+  }
+
+  public void setMaxParticleHistorySize(int maxParticleHistorySize) {
+    _maxParticleHistorySize = maxParticleHistorySize;
   }
 }

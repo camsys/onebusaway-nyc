@@ -176,7 +176,8 @@ public class VehicleLocationSimulationServiceImpl implements
   public int simulateLocationsFromTrace(String filename, String traceType,
       InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
-      boolean bypassInference, boolean fillActualProperties, boolean loop)
+      boolean bypassInference, boolean fillActualProperties, boolean loop, 
+      int historySize)
       throws IOException {
 
     final SimulatorTask task = new SimulatorTask();
@@ -188,6 +189,7 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setBypassInference(bypassInference);
     task.setFillActualProperties(fillActualProperties);
     task.setLoop(loop);
+    task.setMaxParticleHistorySize(historySize);
 
     final CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
@@ -224,18 +226,18 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public VehicleLocationDetails getSimulationDetails(int taskId,
-      int historyOffset) {
+      int recordNumber) {
     final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
-      return task.getDetails(historyOffset);
+      return task.getDetails(recordNumber);
     return null;
   }
 
   @Override
-  public VehicleLocationDetails getParticleDetails(int taskId, int particleId) {
+  public VehicleLocationDetails getParticleDetails(int taskId, int particleId, int recordIndex) {
     final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
-      return task.getParticleDetails(particleId);
+      return task.getParticleDetails(particleId, recordIndex);
     return null;
   }
 

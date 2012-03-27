@@ -21,6 +21,8 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
+import org.apache.commons.math.util.FastMath;
+
 import java.io.Serializable;
 
 /**
@@ -36,7 +38,7 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   private double _timestamp;
 
-  private double _weight = 1.0;
+  private double _logWeight = 0.0;
 
   transient private SensorModelResult _result;
 
@@ -53,17 +55,17 @@ public class Particle implements Serializable, Comparable<Particle> {
   }
 
   public Particle(double timestamp, Particle parent) {
-    this(timestamp, parent, 1.0);
+    this(timestamp, parent, 0.0);
   }
 
-  public Particle(double timestamp, Particle parent, double weight) {
-    this(timestamp, parent, weight, null);
+  public Particle(double timestamp, Particle parent, double logWeight) {
+    this(timestamp, parent, logWeight, null);
   }
 
-  public Particle(double timestamp, Particle parent, double weight, Object data) {
+  public Particle(double timestamp, Particle parent, double logWeight, Object data) {
     _timestamp = timestamp;
     _parent = parent;
-    _weight = weight;
+    _logWeight = logWeight;
     _data = data;
 
     /*
@@ -82,7 +84,7 @@ public class Particle implements Serializable, Comparable<Particle> {
   public Particle(Particle particle) {
     _timestamp = particle.getTimestamp();
     _parent = particle.getParent();
-    _weight = particle.getWeight();
+    _logWeight = particle.getLogWeight();
     _data = particle.getData();
   }
 
@@ -95,11 +97,15 @@ public class Particle implements Serializable, Comparable<Particle> {
   }
 
   public double getWeight() {
-    return _weight;
+    return FastMath.exp(_logWeight);
   }
 
   public void setWeight(double weight) {
-    _weight = weight;
+    _logWeight = FastMath.log(weight);
+  }
+  
+  public void setLogWeight(double logWeight) {
+    _logWeight = logWeight;
   }
 
   public SensorModelResult getResult() {
@@ -140,7 +146,7 @@ public class Particle implements Serializable, Comparable<Particle> {
   }
 
   public Particle advanceParticle(long timestamp) {
-    final Particle p = new Particle(timestamp, this, _weight, _data);
+    final Particle p = new Particle(timestamp, this, _logWeight, _data);
     return p;
   }
 
@@ -148,7 +154,7 @@ public class Particle implements Serializable, Comparable<Particle> {
   public String toString() {
     return Objects.toStringHelper("Particle")
         .add("time", _timestamp)
-        .add("weight", _weight)
+        .add("weight", _logWeight)
         .add("data", _data)
         .add("parentState", _parent != null ? _parent.getData() : null)
         .toString();
@@ -182,8 +188,8 @@ public class Particle implements Serializable, Comparable<Particle> {
     }
 
     final int particleComp = ComparisonChain.start().compare(t.getTimestamp(),
-        o.getTimestamp(), Ordering.natural().reverse()).compare(t.getWeight(),
-        o.getWeight(), Ordering.natural().reverse()).compare(t.getData(),
+        o.getTimestamp(), Ordering.natural().reverse()).compare(t.getLogWeight(),
+        o.getLogWeight(), Ordering.natural().reverse()).compare(t.getData(),
         o.getData(), _particleDataOrdering.nullsLast()).result();
     return particleComp;
   }
@@ -218,7 +224,7 @@ public class Particle implements Serializable, Comparable<Particle> {
         }
       }
       temp1 = Double.doubleToLongBits(p._timestamp);
-      temp2 = Double.doubleToLongBits(p._weight);
+      temp2 = Double.doubleToLongBits(p._logWeight);
     }
     result = prime * result + pdataHashCode;
     result = prime * result + (int) (temp1 ^ (temp1 >>> 32));
@@ -254,7 +260,7 @@ public class Particle implements Serializable, Comparable<Particle> {
     if (Double.doubleToLongBits(thisObj._timestamp) != Double.doubleToLongBits(other._timestamp)) {
       return false;
     }
-    if (Double.doubleToLongBits(thisObj._weight) != Double.doubleToLongBits(other._weight)) {
+    if (Double.doubleToLongBits(thisObj._logWeight) != Double.doubleToLongBits(other._logWeight)) {
       return false;
     }
     if (thisObj._data == null) {
@@ -299,5 +305,9 @@ public class Particle implements Serializable, Comparable<Particle> {
   
   public SensorModelResult getTransResult() {
     return this._transResult;
+  }
+
+  public double getLogWeight() {
+    return _logWeight;
   }
 }

@@ -192,6 +192,7 @@
 -->
                 <ie.listener>PartitionedInputQueueListenerTask</ie.listener>
                 <ie.output.queue>DummyOutputQueueSenderServiceImpl</ie.output.queue>
+<!--                 <tdm.host>tdm.dev.obanyc.com</tdm.host> -->
                 <tdm.host></tdm.host>
                 <service.alerts.url>http://localhost:8080/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8080/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>

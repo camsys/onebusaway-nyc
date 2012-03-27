@@ -68,6 +68,8 @@ public class ParticleFilter<OBS> {
 
   }
 
+  final private static double _resampleThreshold = 0.5;
+  
   /**
    * Flag for operations that keep particle trajectory information, etc.
    */
@@ -301,21 +303,24 @@ public class ParticleFilter<OBS> {
   }
 
   public static double getEffectiveSampleSize(Multiset<Particle> particles) {
-    double CVt = 0.0;
-    double N = particles.size();
+//    double CVt = 0.0;
+//    double N = particles.size();
     double Wnorm = 0.0;
     for (Multiset.Entry<Particle> p : particles.entrySet()) {
-      SensorModelResult res = p.getElement().getResult();
-      if (res == null)
-        return Double.NaN;
-      Wnorm += res.getProbability()*p.getCount();
+      final double weight = p.getElement().getWeight();
+      Wnorm += FastMath.pow(weight*p.getCount(), 2);
     }
-    for (Multiset.Entry<Particle> p : particles.entrySet()) {
-      CVt += FastMath.pow(p.getElement().getResult().getProbability()/Wnorm - 1/N, 2.0)*p.getCount();
-    }
-    CVt = FastMath.sqrt(N*CVt);
     
-    return N/(1+FastMath.pow(CVt, 2.0));
+    if (Wnorm == 0)
+      return 0d;
+    
+//    for (Multiset.Entry<Particle> p : particles.entrySet()) {
+//      CVt += FastMath.pow(p.getElement().getWeight()/Wnorm - 1/N, 2.0)*p.getCount();
+//    }
+//    CVt = FastMath.sqrt(N*CVt);
+//    
+//    return N/(1+FastMath.pow(CVt, 2.0));
+    return 1/Wnorm;
   }
   
   private static final Ordering<Particle> _nullBlockStateComparator = new Ordering<Particle>() {
@@ -345,6 +350,7 @@ public class ParticleFilter<OBS> {
     }
 
   };
+  
 
   /**
    * Applies the sensor model (as set by setSensorModel) to each particle in the
@@ -463,9 +469,10 @@ public class ParticleFilter<OBS> {
         final Particle p = pEntry.getElement();
         p.setIndex(index++);
 
-        final double w = p.getWeight() * pEntry.getCount();
+//        final double w = p.getLogWeight() + FastMath.log(pEntry.getCount());
+        final double w = FastMath.exp(p.getTransResult().getLogProbability() + FastMath.log(pEntry.getCount()));
 
-        if (w == 0.0)
+        if (Double.isInfinite(w))
           continue;
 
         final VehicleState vs = p.getData();
@@ -540,7 +547,7 @@ public class ParticleFilter<OBS> {
      * 1. apply the motion model to each particle 2. apply the sensor
      * model(likelihood) to each particle
      */
-    CategoricalDist<Particle> cdf;
+//    CategoricalDist<Particle> cdf;
 //    if (_moveAndWeight && _threads > 1) {
 //
 //      if (moveParticles) {
@@ -559,7 +566,7 @@ public class ParticleFilter<OBS> {
         particles = applyMotionModel(obs, timestamp);
       }
 
-      cdf = applySensorModel(particles, obs);
+//      cdf = applySensorModel(particles, obs);
 //    }
 
     /**
@@ -571,25 +578,39 @@ public class ParticleFilter<OBS> {
      * 4. store the most likely particle's information
      */
 
-    if (!cdf.canSample())
-      throw new ZeroProbabilityParticleFilterException();
+//    if (!cdf.canSample())
+//      throw new ZeroProbabilityParticleFilterException();
     
     computeBestState(particles);
 
-    /**
-     * 5. resample (use the CDF of unevenly weighted particles to create an
-     * equal number of equally-weighted ones)
-     */
-    final Multiset<Particle> resampled = cdf.sample(ParticleFactoryImpl.getInitialNumberOfParticles());
-    // TODO why create a new multiset?
-    final Multiset<Particle> reweighted = HashMultiset.create(resampled.size());
-    for (final Multiset.Entry<Particle> pEntry : resampled.entrySet()) {
-      final Particle p = pEntry.getElement().cloneParticle();
-      p.setWeight(((double) pEntry.getCount()) / resampled.size());
-      reweighted.add(p, pEntry.getCount());
+    if (getEffectiveSampleSize(particles)/ParticleFactoryImpl.getInitialNumberOfParticles() < _resampleThreshold) {
+      /**
+       * 5. resample (use the CDF of unevenly weighted particles to create an
+       * equal number of equally-weighted ones)
+       */
+      CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
+      for (final Multiset.Entry<Particle> pEntry : particles.entrySet()) {
+        final Particle p = pEntry.getElement();
+        final double logProb = p.getLogWeight() + FastMath.log(pEntry.getCount());
+        cdf.put(FastMath.exp(logProb), p);
+      }
+      
+      final Multiset<Particle> resampled = cdf.sample(ParticleFactoryImpl.getInitialNumberOfParticles());
+      
+      if (!cdf.canSample())
+        throw new ZeroProbabilityParticleFilterException();
+      
+      final Multiset<Particle> reweighted = HashMultiset.create(resampled.size());
+      for (final Multiset.Entry<Particle> pEntry : resampled.entrySet()) {
+        final Particle p = pEntry.getElement().cloneParticle();
+        p.setWeight(((double) pEntry.getCount()) / resampled.size());
+        reweighted.add(p, pEntry.getCount());
+      }
+      _particles = reweighted;
+    } else {
+      _particles = particles;
     }
 
-    _particles = reweighted;
   }
 
   public int getThreads() {

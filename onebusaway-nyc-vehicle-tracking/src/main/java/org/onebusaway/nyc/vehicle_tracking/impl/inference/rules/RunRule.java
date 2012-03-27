@@ -28,14 +28,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class RunRule implements SensorModelRule {
 
-  private OperatorAssignmentService _operatorAssignmentService;
-
-  @Autowired
-  public void setOperatorAssignmentService(
-      OperatorAssignmentService operatorAssignmentService) {
-    _operatorAssignmentService = operatorAssignmentService;
-  }
-  
   public static enum RUN_INFO_STATE {
     NO_RUN_INFO,
     RUN_INFO_NO_RUN,

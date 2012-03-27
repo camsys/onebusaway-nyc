@@ -282,7 +282,7 @@ OBA.Debug = function() {
           	}
           };
           
-          var schedTime = null;
+          var schedTime = 0;
           var currentTime = null;
           var serviceDate = null;
           var inferredLat = null;
@@ -327,7 +327,7 @@ OBA.Debug = function() {
 								} else if (property === "inferredDistanceAlongBlock") {
 									markerText.inferredDAB = value;
 								} else if (property === "inferredServiceDate") {
-									schedTime = value;
+									schedTime += value;
 									serviceDate = value;
 								} else if (property === "inferredScheduleTime") {
 									schedTime += value*1000;
@@ -531,7 +531,17 @@ OBA.Debug = function() {
 							feature.data.popupSize = new OpenLayers.Size(500, 100);
 		          popup = feature.createPopup(true);
 		          popup.setContentHTML(html);
+		          var new_popup = new OpenLayers.Control.DragPopup(popup);
 		          stopMarkers.map.addPopup(popup);
+		          stopMarkers.map.addControl(new_popup);
+		          popup.keepInMap = false;
+			        popup.moveTo = function() {
+			        	if (new_popup.down) {
+				        	OpenLayers.Popup.prototype.moveTo.apply(this, arguments);
+			        	} else {
+				        	OpenLayers.Popup.Anchored.prototype.moveTo.apply(this, arguments);
+			        	}
+		        	}
 	            OpenLayers.Event.stop(event);
 		        });
           })(point, html);

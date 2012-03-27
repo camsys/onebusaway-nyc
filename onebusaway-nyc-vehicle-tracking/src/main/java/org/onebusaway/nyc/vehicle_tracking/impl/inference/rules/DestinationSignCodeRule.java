@@ -15,9 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
-import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.implies;
-import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
@@ -45,35 +42,30 @@ public class DestinationSignCodeRule implements SensorModelRule {
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
   }
-  
+
   public static enum DSC_STATE {
-    DSC_OOS_IP,
-    DSC_OOS_NOT_IP,
-    DSC_IS_NO_BLOCK,
-    DSC_MATCH,
-    DSC_ROUTE_MATCH,
-    DSC_NO_ROUTE_MATCH
+    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH
   }
-  
+
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
-    
+
     final SensorModelResult result = new SensorModelResult(
         "pDestinationSignCode");
-    DSC_STATE state = getDscState(context);
-    switch(state) {
+    final DSC_STATE state = getDscState(context);
+    switch (state) {
       case DSC_OOS_IP:
         result.addResultAsAnd("in-progress o.o.s. dsc", 0.0);
         return result;
       case DSC_OOS_NOT_IP:
-        result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95/2d);
+        result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95 / 2d);
         return result;
       case DSC_IS_NO_BLOCK:
         result.addResultAsAnd("not o.o.s. dsc null-block", 0.01);
         return result;
       case DSC_MATCH:
-        result.addResultAsAnd("in-service matching DSC", 0.95/2d);
+        result.addResultAsAnd("in-service matching DSC", 0.95 / 2d);
         return result;
       case DSC_ROUTE_MATCH:
         result.addResultAsAnd("in-service route-matching DSC", 0.04);
@@ -84,10 +76,10 @@ public class DestinationSignCodeRule implements SensorModelRule {
       default:
         return null;
     }
-  
+
   }
 
-  public DSC_STATE getDscState(final Context context) { 
+  public DSC_STATE getDscState(final Context context) {
     final VehicleState state = context.getState();
     final Observation obs = context.getObservation();
 
@@ -95,51 +87,47 @@ public class DestinationSignCodeRule implements SensorModelRule {
     final EVehiclePhase phase = js.getPhase();
 
     final String observedDsc = obs.getLastValidDestinationSignCode();
-    
 
     if (observedDsc == null || obs.isOutOfService()) {
       /**
        * If we haven't yet seen a valid DSC, or it's out of service
        */
       if (EVehiclePhase.IN_PROGRESS == phase) {
-        return DSC_STATE.DSC_OOS_IP; 
+        return DSC_STATE.DSC_OOS_IP;
       } else {
-        return DSC_STATE.DSC_OOS_NOT_IP; 
+        return DSC_STATE.DSC_OOS_NOT_IP;
       }
     } else {
       final BlockState bs = state.getBlockState();
       if (bs == null) {
-        return DSC_STATE.DSC_IS_NO_BLOCK; 
+        return DSC_STATE.DSC_IS_NO_BLOCK;
       } else {
-        Set<String> dscs = Sets.newHashSet();
+        final Set<String> dscs = Sets.newHashSet();
         dscs.add(bs.getDestinationSignCode());
-        Set<AgencyAndId> routes = Sets.newHashSet();
+        final Set<AgencyAndId> routes = Sets.newHashSet();
         routes.add(bs.getBlockLocation().getActiveTrip().getTrip().getRouteCollection().getId());
-        
+
         /*
-         * dsc changes occur between parts of a block, so
-         * account for that
+         * dsc changes occur between parts of a block, so account for that
          */
         if (EVehiclePhase.LAYOVER_DURING == phase
             || EVehiclePhase.DEADHEAD_DURING == phase) {
-          BlockTripEntry nextTrip = bs.getBlockLocation().getActiveTrip()
-                    .getNextTrip();
-          
+          final BlockTripEntry nextTrip = bs.getBlockLocation().getActiveTrip().getNextTrip();
+
           if (nextTrip != null) {
-            final String dsc = _destinationSignCodeService
-                .getDestinationSignCodeForTripId(nextTrip.getTrip().getId());
+            final String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(nextTrip.getTrip().getId());
             if (dsc != null)
               dscs.add(dsc);
             routes.add(nextTrip.getTrip().getRouteCollection().getId());
           }
         }
-        
+
         if (dscs.contains(observedDsc)) {
           return DSC_STATE.DSC_MATCH;
         } else {
           /*
-           * a dsc implies a route. even though the reported dsc may not match, we
-           * expect the general route to be the same...
+           * a dsc implies a route. even though the reported dsc may not match,
+           * we expect the general route to be the same...
            */
           boolean routeMatch = false;
           for (final AgencyAndId dscRoute : obs.getDscImpliedRouteCollections()) {
@@ -148,13 +136,13 @@ public class DestinationSignCodeRule implements SensorModelRule {
               break;
             }
           }
-  
+
           if (routeMatch)
             return DSC_STATE.DSC_ROUTE_MATCH;
           else
             return DSC_STATE.DSC_NO_ROUTE_MATCH;
         }
-        
+
       }
     }
   }

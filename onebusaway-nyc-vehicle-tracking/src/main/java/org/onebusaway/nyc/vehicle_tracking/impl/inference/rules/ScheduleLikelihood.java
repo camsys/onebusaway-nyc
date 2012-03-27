@@ -55,7 +55,7 @@ import umontreal.iro.lecuyer.stat.Tally;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-//@Component
+@Component
 public class ScheduleLikelihood implements SensorModelRule {
 
   private BlockStateService _blockStateService;
@@ -63,7 +63,7 @@ public class ScheduleLikelihood implements SensorModelRule {
   /*
    * These are all in minutes
    */
-  final static public StudentTDistribution schedDevPriorDist = new StudentTDistribution(2, 0d, 1d/60d);
+  final static public StudentTDistribution schedDevPriorDist = new StudentTDistribution(2, 0d, 1d/15d);
 
   @Autowired
   public void setBlockStateService(BlockStateService blockStateService) {
@@ -89,43 +89,37 @@ public class ScheduleLikelihood implements SensorModelRule {
       BlockState blockState, EVehiclePhase phase, Observation obs) {
     final SensorModelResult result = new SensorModelResult("pSchedule", 1.0);
     if (blockState == null) {
-      
-      
-      final double x = FoldedNormalDist.inverseF(schedDevPriorDist.getMean(), 
-          FastMath.sqrt(1d/schedDevPriorDist.getPrecision()), 0.95);
-      final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
-      result.addLogResultAsAnd("null state", pSched);
+      result.addLogResultAsAnd("null state", 0.0);
       
     } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
       
-      final double x = FoldedNormalDist.inverseF(schedDevPriorDist.getMean(), 
-          FastMath.sqrt(1d/schedDevPriorDist.getPrecision()), 0.95);
-      final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
-      result.addLogResultAsAnd("deadhead after", pSched);
+      if (FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d) {
+        final double x = state.getBlockStateObservation().getScheduleDeviation();
+        final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
+        result.addLogResultAsAnd("deadhead before", pSched);
+      } else {
+        result.addLogResultAsAnd("deadhead after", 0.0);
+      }
       
     } else if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
       
-      final double x; 
       if (FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d) {
-        x = state.getBlockStateObservation().getScheduleDeviation();
+        final double x = state.getBlockStateObservation().getScheduleDeviation();
+        final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
+        result.addLogResultAsAnd("deadhead before", pSched);
       } else {
-        x = FoldedNormalDist.inverseF(schedDevPriorDist.getMean(), 
-          FastMath.sqrt(1d/schedDevPriorDist.getPrecision()), 0.95);
+        result.addLogResultAsAnd("deadhead before", 0.0);
       }
-      final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
-      result.addLogResultAsAnd("deadhead before", pSched);
       
     } else if (EVehiclePhase.LAYOVER_BEFORE == phase) {
       
-      final double x; 
       if (FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d) {
-        x = state.getBlockStateObservation().getScheduleDeviation();
+        final double x = state.getBlockStateObservation().getScheduleDeviation();
+        final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
+        result.addLogResultAsAnd("layover before", pSched);
       } else {
-        x = FoldedNormalDist.inverseF(schedDevPriorDist.getMean(), 
-          FastMath.sqrt(1d/schedDevPriorDist.getPrecision()), 0.95);
+        result.addLogResultAsAnd("layover before", 0.0);
       }
-      final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
-      result.addLogResultAsAnd("layover before", pSched);
       
     } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
       

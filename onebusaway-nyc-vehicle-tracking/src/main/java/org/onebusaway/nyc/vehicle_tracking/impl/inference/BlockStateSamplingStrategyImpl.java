@@ -148,11 +148,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
         
           double distAlongPrior = prevDistToNextStop - currentDistToNextStop;
           
-          if (distAlongPrior <= 0d)
-            distAlongPrior = 0d;
-          
-          distAlongSample = EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
-          distAlongSample += distAlongPrior;
+//          if (distAlongPrior <= 0d)
+//            distAlongPrior = 0d;
+//          
+//          distAlongSample = EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
+          distAlongSample = distAlongPrior;
         }
       } else {
         final double distAlongPrior = SphericalGeometryLibrary.distance(

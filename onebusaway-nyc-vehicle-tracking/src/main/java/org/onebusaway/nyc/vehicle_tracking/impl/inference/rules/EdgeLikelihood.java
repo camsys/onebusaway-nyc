@@ -15,7 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
-import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
@@ -23,10 +22,15 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+
+import com.google.common.collect.Iterables;
+
+import org.springframework.stereotype.Component;
 
 import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
 
-// @Component
+@Component
 public class EdgeLikelihood implements SensorModelRule {
 
   final public static UnivariateGaussian inProgressEdgeMovementDist = new UnivariateGaussian(
@@ -118,7 +122,16 @@ public class EdgeLikelihood implements SensorModelRule {
 
     } else {
 
-      pDistAlong = computeNoEdgeMovementLogProb(obs);
+      if (EVehiclePhase.IN_PROGRESS == phase) {
+        final double obsDelta = SphericalGeometryLibrary.distance(
+            obs.getLocation(), obs.getPreviousObservation().getLocation());
+        final double obsToTripDelta = SphericalGeometryLibrary.distance(
+            blockState.getBlockLocation().getLocation(), obs.getPreviousObservation().getLocation());
+        pDistAlong = inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(
+            obsToTripDelta - obsDelta);
+      } else {
+        pDistAlong = computeNoEdgeMovementLogProb(obs);
+      }
 
       result.addLogResultAsAnd("new-run", pDistAlong);
 
@@ -143,19 +156,38 @@ public class EdgeLikelihood implements SensorModelRule {
   static private final double computeEdgeMovementLogProb(Observation obs, 
       VehicleState state, VehicleState parentState) {
 
-    final double obsDelta = SphericalGeometryLibrary.distance(
-        obs.getLocation(), obs.getPreviousObservation().getLocation());
-
     final double currentDab = state.getBlockState().getBlockLocation().getDistanceAlongBlock();
     final double prevDab = parentState.getBlockState().getBlockLocation().getDistanceAlongBlock();
     final double dabDelta = currentDab - prevDab;
 
     final double pMove;
-    if (EVehiclePhase.DEADHEAD_DURING == state.getJourneyState().getPhase()
+    final EVehiclePhase phase = state.getJourneyState().getPhase();
+    if (EVehiclePhase.DEADHEAD_DURING == phase 
         || EVehiclePhase.DEADHEAD_DURING == parentState.getJourneyState().getPhase()) {
+      
+      BlockStopTimeEntry nextStop = EVehiclePhase.DEADHEAD_DURING != phase ? 
+          parentState.getBlockState().getBlockLocation().getNextStop() :
+            state.getBlockState().getBlockLocation().getNextStop();
+      final double lastDelta = SphericalGeometryLibrary.distance(obs.getPreviousObservation().getLocation(),
+          nextStop.getStopTime().getStop().getStopLocation());
+      
+      final double currentDelta; 
+      if (nextStop.getDistanceAlongBlock() <= state.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
+        currentDelta = -1 * (state.getBlockState().getBlockLocation().getDistanceAlongBlock() -
+            state.getBlockState().getBlockLocation().getActiveTrip().getDistanceAlongBlock());
+      } else {
+        currentDelta = SphericalGeometryLibrary.distance(obs.getLocation(),
+          nextStop.getStopTime().getStop().getStopLocation());
+      }
+      
+      final double obsDelta = lastDelta - currentDelta;
+      
       pMove = deadDuringEdgeMovementDist.getProbabilityFunction().logEvaluate(
           dabDelta - obsDelta);
     } else {
+      final double obsDelta = SphericalGeometryLibrary.distance(
+          obs.getLocation(), obs.getPreviousObservation().getLocation());
+  
       pMove = inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(
           dabDelta - obsDelta);
     }

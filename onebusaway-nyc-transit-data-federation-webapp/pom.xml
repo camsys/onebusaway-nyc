@@ -115,6 +115,7 @@
             <id>local-ie-testing</id>
             <properties>
                 <tdm.host></tdm.host>
+<!--                 <tdm.host>tdm.dev.obanyc.com</tdm.host> -->
                 <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <service.alerts.url></service.alerts.url>

@@ -123,10 +123,6 @@ public class CategoricalDist<T extends Comparable<T>> {
     _cumulativeProb += prob;
     final double newProb = _entriesToProbs.adjustOrPutValue(object, prob, prob);
 
-    if (Double.compare(prob, newProb) == 0) {
-      _objIdx.add(_objIdx.size());
-    }
-
     /*
      * reset the underlying distribution for lazy reloading
      */
@@ -168,6 +164,10 @@ public class CategoricalDist<T extends Comparable<T>> {
   private double[] initializeDistribution() {
     double[] probVector = MathUtils.normalizeArray(_entriesToProbs.values(),
         1.0);
+    _entries = _entriesToProbs.keys();
+    for (int i = 0; i < _entries.length; ++i) {
+     _objIdx.add(i); 
+    }
     if (_sort) {
       probVector = handleSort(probVector);
     }
@@ -181,7 +181,6 @@ public class CategoricalDist<T extends Comparable<T>> {
       prevVal = cummulativeDist[i];
     }
     _emd = new MultinomialDistribution(DenseVectorFactoryMTJ.INSTANCE.copyArray(probVector), 1);
-    _entries = _entriesToProbs.keys();
     return cummulativeDist;
   }
   

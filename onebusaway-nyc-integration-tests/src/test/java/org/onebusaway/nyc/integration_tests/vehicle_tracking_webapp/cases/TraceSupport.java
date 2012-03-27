@@ -63,9 +63,10 @@ public class TraceSupport {
       StringPart returnIdParam = new StringPart("returnId", "true");
       StringPart shiftStartTimeParam = new StringPart("shiftStartTime", "" + shiftStartTime);
       StringPart traceTypeParam = new StringPart("traceType", "NycTestInferredLocationRecord");
+      StringPart historySize = new StringPart("historySize", "" + 0);
 
       post.setRequestEntity(new MultipartRequestEntity(new Part[] {
-          filePart, returnIdParam, shiftStartTimeParam, traceTypeParam},
+          filePart, returnIdParam, shiftStartTimeParam, traceTypeParam, historySize},
           new HttpMethodParams()));
       client.executeMethod(post);
 

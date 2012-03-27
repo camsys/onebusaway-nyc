@@ -27,12 +27,6 @@ import java.util.Properties;
 
 public interface VehicleLocationSimulationService {
 
-  public int simulateLocationsFromTrace(String traceType, String filename,
-      InputStream traceInputStream, boolean runInRealtime,
-      boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
-      boolean bypassInference, boolean fillActualProperties, boolean loop)
-      throws IOException;
-
   public List<VehicleLocationSimulationSummary> getSimulations();
 
   public VehicleLocationSimulationSummary getSimulation(int taskId);
@@ -40,7 +34,6 @@ public interface VehicleLocationSimulationService {
   public VehicleLocationDetails getSimulationDetails(int taskId,
       int historyOffset);
 
-  public VehicleLocationDetails getParticleDetails(int taskId, int particleId);
 
   public List<NycTestInferredLocationRecord> getSimulationRecords(int taskId);
 
@@ -66,4 +59,13 @@ public interface VehicleLocationSimulationService {
       boolean isRunBased, boolean realtime, boolean fillActual,
       boolean reportsOperatorId, boolean reportsRunId,
       boolean allowRunTransitions, Properties properties);
+
+  public VehicleLocationDetails getParticleDetails(int taskId, int particleId,
+      int recordIndex);
+
+  public int simulateLocationsFromTrace(String filename, String traceType,
+      InputStream traceInputStream, boolean runInRealtime,
+      boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
+      boolean bypassInference, boolean fillActualProperties, boolean loop,
+      int historySize) throws IOException;
 }

@@ -35,14 +35,21 @@ table td {
 Location Simulation Console</a></p>
 
 <ul>
-    <li>Current History Offset: <c:out value="${historyOffset}" /></li>
+    <li>Current Record Number: <c:out value="${recordNumber}" /></li>
+    <li>
+	     <form action="vehicle-location-simulation!task-details.do">
+	     <input type="hidden" name="taskId" value="${details.id}"/>
+	     <input id="stepRecordIndex" type="text" name="recordNumber" size="20"/>
+	     <input type="submit" value="Go"/>
+	     </form>
+    </li>
     <li><a
-        href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset+1}">Previous
-    Particles</a></li>
-    <c:if test="${ historyOffset != 0}">
+        href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;recordNumber=${recordNumber+1}">
+        Next Record</a></li>
+    <c:if test="${ recordNumber != 0}">
         <li><a
-            href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;historyOffset=${historyOffset-1}">Next
-        Particles</a></li>
+            href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;recordNumber=${recordNumber-1}">
+            Previous Particles</a></li>
     </c:if>
 </ul>
 
@@ -51,65 +58,25 @@ Location Simulation Console</a></p>
 <c:set var="obs" value="${details.lastObservation}" />
 
 <ul>
-    <li>time:<jsp:text>
-    </jsp:text><fmt:formatDate pattern="yyyy-MM-dd_HH-mm-ss"
-        value="${obs.timestampAsDate}" /></li>
-    <li><jsp:text>vehicle id: </jsp:text><c:out
-        value="${obs.vehicleId}" /></li>
-    <li>location:<jsp:text>
-    </jsp:text><c:out value="${obs.lat}" /><jsp:text>
-    </jsp:text><c:out value="${obs.lon}" /></li>
-    <li><jsp:text>dsc: </jsp:text><c:out value="${obs.dsc}" /></li>
+    <li>time:<jsp:text> </jsp:text><fmt:formatDate pattern="yyyy-MM-dd HH:mm:ss Z" value="${obs.timeAsDate}" timeZone="EST"/></li>
+    <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
+    <li>location:<jsp:text> </jsp:text><c:out value="${obs.latitude}"/><jsp:text>, </jsp:text><c:out value="${obs.longitude}"/></li>
+    <li><jsp:text>dsc: </jsp:text><c:out value="${obs.destinationSignCode}"/></li>
+    <li><jsp:text>operatorId: </jsp:text><c:out value="${obs.operatorId}"/></li>
+    <li><jsp:text>reportedRunNumber: </jsp:text><c:out value="${obs.runNumber}"/></li>
+    <li><jsp:text>reportedRunRouteId: </jsp:text><c:out value="${obs.runRouteId}"/></li>
+    <li>
+    <fmt:formatNumber var="ess" value="${details.effectiveSampleSize}" maxFractionDigits="2"/>
+    <fmt:formatNumber var="esspct" value="${details.effectiveSampleSize/details.sampleSize}" maxFractionDigits="2"/>
+    <jsp:text>EffectiveSampleSize%: 
+    </jsp:text><c:out value="${esspct}"/>
+	    <jsp:text>  (</jsp:text><c:out value="${ess}"/>
+	    <jsp:text>/</jsp:text><c:out value="${details.sampleSize}"/>
+	    <jsp:text>)</jsp:text>
+    </li>
+    
 </ul>
 
-<h2>Journey Summaries</h2>
-
-<table>
-    <thead>
-        <tr>
-            <td>From</td>
-            <td>To</td>
-            <td>Phase</td>
-            <td>BlockId</td>
-            <td>Completion Ratio From</td>
-            <td>Completion Ratio To</td>
-        </tr>
-    </thead>
-    <tbody>
-        <c:forEach var="summary" items="${details.summaries}">
-            <jsp:useBean id="timeFrom" class="java.util.Date" />
-            <jsp:setProperty name="timeFrom" property="time"
-                value="${summary.timeFrom}" />
-            <jsp:useBean id="timeTo" class="java.util.Date" />
-            <jsp:setProperty name="timeTo" property="time"
-                value="${summary.timeTo}" />
-            <tr>
-                <td><fmt:formatDate pattern="HH:mm"
-                    value="${timeFrom}" /></td>
-                <td><fmt:formatDate pattern="HH:mm"
-                    value="${timeTo}" /></td>
-                <td><c:out value="${summary.phase}" /></td>
-                <td><a
-                    href="block-details.do?blockId=${summary.blockInstance.block.block.id}"><c:out
-                    value="${summary.blockInstance.block.block.id}" /></a></td>
-                <td><fmt:formatNumber pattern="0.00"
-                    value="${summary.blockCompletionRatioFrom}" /></td>
-                <td><fmt:formatNumber pattern="0.00"
-                    value="${summary.blockCompletionRatioTo}" /></td>
-            </tr>
-        </c:forEach>
-    </tbody>
-</table>
-
-<c:if test="${details.history}">
-    <h2>Sensor Model Result</h2>
-    <ul>
-        <c:set var="sensorModelResult"
-            value="${details.particles[0].result}" scope="request" />
-        <jsp:include
-            page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
-    </ul>
-</c:if>
 <h2>Particles</h2>
 
 <c:if test="${showSampledParticles}">
