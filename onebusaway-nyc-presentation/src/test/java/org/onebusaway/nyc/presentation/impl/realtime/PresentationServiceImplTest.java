@@ -3,8 +3,8 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import org.junit.Before;
 import org.junit.Test;

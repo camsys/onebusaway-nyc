@@ -13,7 +13,7 @@
     
     <bean id="configService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="${config.path}/remoting/configuration-service"/>
-        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.ConfigurationService" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
     </bean>
 
 
