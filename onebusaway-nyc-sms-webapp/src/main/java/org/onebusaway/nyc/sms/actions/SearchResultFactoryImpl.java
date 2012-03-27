@@ -226,7 +226,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     }
 
     if(message.length() > 0)
-      return distance + " (" + message + ")";
+      return distance + "(" + message + ")";
     else
       return distance;
   }

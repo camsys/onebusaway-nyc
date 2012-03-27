@@ -265,7 +265,7 @@ public class IndexAction extends SessionedIndexAction {
     String header = result.getShortName() + "\n";
 
     String footer = "\nSend:\n";
-    footer += "STOP-ID or INTERSECTION\n";      
+    footer += "STOPCODE or INTERSECTION\n";      
     footer += "Add '" + result.getShortName() + "' for best results\n";
     
     // find biggest headsign
@@ -370,7 +370,7 @@ public class IndexAction extends SessionedIndexAction {
     String header = "XX-XX of XX stops\n";
     
     String footer = "\nSend:\n";
-    footer += "STOP-ID+ROUTE for bus info\n";
+    footer += "STOPCODE+ROUTE for bus info\n";
 
     String alertsFooter = footer + "C+ROUTE for alerts (*)\n";
 
@@ -380,6 +380,7 @@ public class IndexAction extends SessionedIndexAction {
     String body = ""; 
     int i = offset;
     int routesInThisPage = 0;
+    int stopsInThisPage = 0;
     while(i < _searchResults.getMatches().size()) {
       StopResult stopResult = (StopResult)_searchResults.getMatches().get(i);
 
@@ -392,6 +393,7 @@ public class IndexAction extends SessionedIndexAction {
 
       // with realtime info
       String realtimePartToAdd = "";
+
       // without realtime info
       String routesOnlyPartToAdd = "";
 
@@ -404,7 +406,6 @@ public class IndexAction extends SessionedIndexAction {
       } else {
         Set<String> notScheduledRoutes = new HashSet<String>();
         Set<String> notEnRouteRoutes = new HashSet<String>();
-
         Set<String> routeList = new HashSet<String>();
 
         for(RouteAtStop routeHere : stopResult.getRoutesAvailable()) {
@@ -463,6 +464,7 @@ public class IndexAction extends SessionedIndexAction {
         break;
       }
       
+      stopsInThisPage++;
       i++;
     }
     _searchResultsCursor = i; 
@@ -484,6 +486,15 @@ public class IndexAction extends SessionedIndexAction {
       header = "";
     }
 
+    // we're fitting one stop on the page--so replace STOPCODE with 
+    // this actual stop code for a better example
+    if(stopsInThisPage == 1) {
+      StopResult stopResult = (StopResult)_searchResults.getMatches().get(i-1);
+
+      footer = footer.replace("STOPCODE", stopResult.getIdWithoutAgency());
+      moreFooter = moreFooter.replace("STOPCODE", stopResult.getIdWithoutAgency());
+    }
+    
     if(_googleAnalytics != null) {
       try {
         _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query);
@@ -519,14 +530,14 @@ public class IndexAction extends SessionedIndexAction {
   private String errorResponse(String message) throws Exception {
     String staticStuff = "Send:\n\n";
     
-    staticStuff += "STOP-ID or\n";
+    staticStuff += "STOPCODE or\n";
     staticStuff += "INTERSECTION\n\n";
     
     staticStuff += "Add ROUTE for best results:\n";
     staticStuff += "S74 MAIN AND CRAIG\n";
     staticStuff += "200884 S44\n\n";
     
-    staticStuff += "Find your 6-digit stop ID on bus stop pole";
+    staticStuff += "Find your 6-digit stopcode on bus stop pole";
 
     if(message != null) {
       if(staticStuff.length() + 1 + message.length() > MAX_SMS_CHARACTER_COUNT) {
