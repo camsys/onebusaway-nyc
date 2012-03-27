@@ -33,7 +33,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.DNSResolver;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

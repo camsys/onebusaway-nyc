@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 
 import org.junit.Before;
 import org.junit.Test;

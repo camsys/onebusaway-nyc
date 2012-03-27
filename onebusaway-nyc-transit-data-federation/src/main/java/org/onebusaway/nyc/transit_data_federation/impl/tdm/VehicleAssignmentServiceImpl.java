@@ -2,8 +2,10 @@ package org.onebusaway.nyc.transit_data_federation.impl.tdm;
 
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

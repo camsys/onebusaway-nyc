@@ -27,7 +27,8 @@ import org.onebusaway.nyc.sms.actions.model.RouteDirection;
 import org.onebusaway.nyc.sms.actions.model.RouteResult;
 import org.onebusaway.nyc.sms.actions.model.ServiceAlertResult;
 import org.onebusaway.nyc.sms.actions.model.StopResult;
-import org.onebusaway.nyc.transit_data.services.ConfigurationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
+
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 

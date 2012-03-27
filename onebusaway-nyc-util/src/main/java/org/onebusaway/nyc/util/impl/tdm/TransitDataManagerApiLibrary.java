@@ -1,12 +1,10 @@
-package org.onebusaway.nyc.transit_data_federation.impl.tdm;
-
-import org.onebusaway.nyc.transit_data_federation.impl.RestApiLibrary;
-
+package org.onebusaway.nyc.util.impl.tdm;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.nyc.util.impl.RestApiLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

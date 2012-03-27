@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.transit_data_federation.impl;
+package org.onebusaway.nyc.util.impl;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
