@@ -164,7 +164,11 @@ public class StifTask implements Runnable {
       }
 
       Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
-      csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), routeIds.size());
+      if (routeIds != null) {
+	  csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), routeIds.size());
+      } else {
+	  csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), 0);
+      }
     }
   }
 
