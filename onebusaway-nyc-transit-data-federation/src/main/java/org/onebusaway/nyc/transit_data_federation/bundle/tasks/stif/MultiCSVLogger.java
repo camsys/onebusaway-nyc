@@ -45,7 +45,12 @@ public class MultiCSVLogger {
     }
     for (int i = 0; i < args.length; ++i) {
       Object arg = args[i];
-      log.stream.print(arg);
+      String argStr = "" + arg; //arg.toString() fails for null, while this works
+      if (argStr.contains(",") || argStr.contains("\"")) {
+        argStr = "\"" + argStr.replace("\"", "\"\"") + "\"";
+      }
+
+      log.stream.print(argStr);
       if (i != args.length - 1)
         log.stream.print(",");
     }
