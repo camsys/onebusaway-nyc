@@ -3,14 +3,21 @@ package org.onebusaway.nyc.transit_data_manager.adapters.api.processes;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.BigInteger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.SignCodeData;
 
+import tcip_final_3_0_5_1.CPTLoadFileHeader;
+import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.CcAnnouncementInfo;
 import tcip_final_3_0_5_1.ObjectFactory;
 import tcip_final_3_0_5_1.SchPullOutList;
@@ -35,13 +42,36 @@ public class MtaSignCodeToTcipXmlProcess extends FileToFileConverterProcess {
     info.setDestinations(destinations);
     
     try {
+      info.setCreated(getDefaultRequiredTcipAttrCreated());
+    } catch (DatatypeConfigurationException e1) {
+      throw new IOException(e1);
+    }
+    
+    info.setSchVersion(getDefaultRequiredTcipAttrSchVersion());
+    info.setSourceapp(getDefaultRequiredTcipAttrSourceapp());
+    info.setSourceip(getDefaultRequiredTcipAttrSourceip());
+    info.setSourceport(getDefaultRequiredTcipAttrSourceport());
+    info.setNoNameSpaceSchemaLocation(getDefaultRequiredTcipAttrNoNameSpaceSchemaLocation());
+    
+    CPTLoadFileHeader fileHeader = new CPTLoadFileHeader();
+    CPTVehicleIden veh = new CPTVehicleIden();
+    fileHeader.setVehicle(veh);
+    
+    fileHeader.setFileIdentifier("6");
+    
+    DateTimeFormatter dtf = ISODateTimeFormat.dateTime();
+    
+    fileHeader.setUpdatedDatetime(dtf.print(new DateTime()));
+    
+    info.setFileHeader(fileHeader);
+    
+    try {
       output = generateXml(info);
     } catch (JAXBException e) {
       e.printStackTrace();
     }
   }
 
-  
   private String generateXml(CcAnnouncementInfo inputElement)
       throws JAXBException {
     String outputStr = null;

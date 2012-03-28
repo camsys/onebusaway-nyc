@@ -9,6 +9,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -43,6 +44,17 @@ public class UtsVehiclePulloutToTcipXmlProcess extends
     ListPullOutsGenerator vehAssignsGen = new ListPullOutsGenerator(
         firstServiceDate);
     SchPullOutList pullOutList = vehAssignsGen.generateFromVehAssignList(allPullouts);
+    
+    try {
+      pullOutList.setCreated(getDefaultRequiredTcipAttrCreated());
+    } catch (DatatypeConfigurationException e1) {
+      throw new IOException(e1);
+    }
+    pullOutList.setSchVersion(getDefaultRequiredTcipAttrSchVersion());
+    pullOutList.setSourceapp(getDefaultRequiredTcipAttrSourceapp());
+    pullOutList.setSourceip(getDefaultRequiredTcipAttrSourceip());
+    pullOutList.setSourceport(getDefaultRequiredTcipAttrSourceport());
+    pullOutList.setNoNameSpaceSchemaLocation(getDefaultRequiredTcipAttrNoNameSpaceSchemaLocation());
     
     try {
       output = generateXml(pullOutList);
