@@ -12,6 +12,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.joda.time.DateMidnight;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.OperatorAssignmentData;
@@ -64,6 +65,17 @@ public class UtsCrewAssignsToTcipXmlProcess extends FileToFileConverterProcess {
     PushOperatorAssignsGenerator opAssignsGen = new PushOperatorAssignsGenerator(
         firstServiceDate);
     SchPushOperatorAssignments opAssignsPush = opAssignsGen.generateFromOpAssignList(assignsForAllDates);
+    
+  try {
+    opAssignsPush.setCreated(getDefaultRequiredTcipAttrCreated());
+  } catch (DatatypeConfigurationException e1) {
+    throw new IOException(e1);
+  }
+  opAssignsPush.setSchVersion(getDefaultRequiredTcipAttrSchVersion());
+  opAssignsPush.setSourceapp(getDefaultRequiredTcipAttrSourceapp());
+  opAssignsPush.setSourceip(getDefaultRequiredTcipAttrSourceip());
+  opAssignsPush.setSourceport(getDefaultRequiredTcipAttrSourceport());
+  opAssignsPush.setNoNameSpaceSchemaLocation(getDefaultRequiredTcipAttrNoNameSpaceSchemaLocation());
 
     try {
       output = generateXml(opAssignsPush);
