@@ -65,6 +65,7 @@
         <property name="properties">
             <props>
                 <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
+                <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
                 <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
             </props>
         </property>
