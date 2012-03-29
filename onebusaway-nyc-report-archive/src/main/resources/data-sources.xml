@@ -38,40 +38,20 @@
                 value="true" />
     </bean>
     
-<!--      <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-        <property name="url" value="jdbc:hsqldb:file:org_onebusaway_nyc_database" />
-        <property name="username" value="sa" />
-        <property name="password" value="" />
-    </bean>
-
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-            </props> 
-        </property> 
-    </bean> 
-
- -->
     <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
         <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
         <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
-<!-- try out autodetect dialect -->
-<!--
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
-                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.hbm2ddl.auto">validate</prop>
             </props> 
         </property> 
     </bean> 
--->
-    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
+
+    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary" >
       <constructor-arg type="java.lang.String" value="${tdm.host}"/>
       <constructor-arg type="java.lang.Integer" value="80" />
       <constructor-arg type="java.lang.String" value="/api/" />

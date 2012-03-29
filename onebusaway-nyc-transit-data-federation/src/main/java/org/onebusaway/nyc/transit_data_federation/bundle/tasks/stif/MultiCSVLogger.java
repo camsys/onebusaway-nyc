@@ -27,6 +27,11 @@ public class MultiCSVLogger {
 
   public MultiCSVLogger(String path) {
     logs = new HashMap<String, Log>();
+    // integration tests may not have a path
+    if (path == null) {
+	path = System.getProperty("java.io.tmpdir");
+	System.err.println("ERROR: MultiCSVLogger initialized without path:  using " + path);
+    }
     basePath = new File(path);
     if (!basePath.exists()) {
       basePath.mkdirs();
@@ -40,7 +45,12 @@ public class MultiCSVLogger {
     }
     for (int i = 0; i < args.length; ++i) {
       Object arg = args[i];
-      log.stream.print(arg);
+      String argStr = "" + arg; //arg.toString() fails for null, while this works
+      if (argStr.contains(",") || argStr.contains("\"")) {
+        argStr = "\"" + argStr.replace("\"", "\"\"") + "\"";
+      }
+
+      log.stream.print(argStr);
       if (i != args.length - 1)
         log.stream.print(",");
     }

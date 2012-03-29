@@ -164,7 +164,11 @@ public class StifTask implements Runnable {
       }
 
       Set<AgencyAndId> routeIds = routeIdsByDsc.get(destinationSignCode);
-      csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), routeIds.size());
+      if (routeIds != null) {
+	  csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), routeIds.size());
+      } else {
+	  csvLogger.log("dsc_statistics.csv", destinationSignCode, tripIds.size(), 0);
+      }
     }
   }
 
@@ -402,20 +406,20 @@ public class StifTask implements Runnable {
       }
     }
 
-    HashSet<AgencyAndId> routesWithTrips = new HashSet<AgencyAndId>();
+    HashSet<Route> routesWithTrips = new HashSet<Route>();
     csvLogger.header("gtfs_trips_with_no_stif_match.csv", "gtfs_trip_id,stif_trip");
     Collection<Trip> allTrips = _gtfsMutableRelationalDao.getAllTrips();
     for (Trip trip : allTrips) {
       if (usedGtfsTrips.contains(trip)) {
-        continue;
+        routesWithTrips.add(trip.getRoute());
+      } else {
+        csvLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), loader.getSupport().getTripAsIdentifier(trip));
       }
-      csvLogger.log("gtfs_trips_with_no_stif_match.csv", trip.getId(), loader.getSupport().getTripAsIdentifier(trip));
-      routesWithTrips.add(trip.getRoute().getId());
     }
     
     csvLogger.header("route_ids_with_no_trips.csv", "agency_id,route_id");
     for (Route route : _gtfsMutableRelationalDao.getAllRoutes()) {
-      if (routesWithTrips.contains(route.getId())) {
+      if (routesWithTrips.contains(route)) {
         continue;
       }
       csvLogger.log("route_ids_with_no_trips.csv", route.getId().getAgencyId(), route.getId().getId());
