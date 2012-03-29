@@ -18,13 +18,13 @@ package org.onebusaway.nyc.sms.actions;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.sms.actions.model.GeocodeResult;
 import org.onebusaway.nyc.sms.actions.model.RouteAtStop;
 import org.onebusaway.nyc.sms.actions.model.RouteDirection;
 import org.onebusaway.nyc.sms.actions.model.RouteResult;
 import org.onebusaway.nyc.sms.actions.model.StopResult;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -44,6 +44,7 @@ import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -55,12 +56,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   private RealtimeService _realtimeService;
     
-  private ScheduledServiceService _scheduledServiceService;
+  private NycTransitDataService _nycTransitDataService;
 
-  public SearchResultFactoryImpl(TransitDataService transitDataService, ScheduledServiceService scheduledServiceService, 
+  public SearchResultFactoryImpl(TransitDataService transitDataService, NycTransitDataService nycTransitDataService, 
       RealtimeService realtimeService, ConfigurationService configurationService) {
     _transitDataService = transitDataService;
-    _scheduledServiceService = scheduledServiceService;
+    _nycTransitDataService = nycTransitDataService;
     _realtimeService = realtimeService;
     _configurationService = configurationService;
   }
@@ -86,7 +87,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           continue;
         
         Boolean hasUpcomingScheduledService = 
-            _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+            _nycTransitDataService.routeHasUpcomingScheduledService(new Date(), routeBean.getId(), stopGroupBean.getId());
 
         // service alerts for this route + direction
         List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
@@ -136,7 +137,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           List<String> arrivalsForRouteAndDirection = getDistanceAwayStringsForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
           
           Boolean hasUpcomingScheduledService = 
-              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
           // service alerts for this route + direction
           List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();

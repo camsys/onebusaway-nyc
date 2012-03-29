@@ -9,6 +9,7 @@ import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RoutesBean;
@@ -18,8 +19,6 @@ import org.onebusaway.transit_data.model.StopsBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,12 +31,8 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
-
 @Component
 public class SearchServiceImpl implements SearchService {
-
-  private static Logger _log = LoggerFactory.getLogger(SearchServiceImpl.class);
 
   // the pattern of what can be leftover after prefix/suffix matching for a route
   // to be a "suggestion" for a given search
@@ -54,31 +49,42 @@ public class SearchServiceImpl implements SearchService {
   private NycGeocoderService _geocoderService;
   
   @Autowired
+  private NycTransitDataService _nycTransitDataService;
+
+  @Autowired
   private TransitDataService _transitDataService;
 
   private Map<String, String> _routeShortNameToIdMap = new HashMap<String, String>();
 
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
 
-  public void refreshCaches() {
-    synchronized(_routeShortNameToIdMap) {
-      _routeShortNameToIdMap.clear();
-      _routeLongNameToIdMap.clear();
-      
-      for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
-        for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
-          RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
-          _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
-          _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
-        }
-      }    
-    }
-  }
+  private String _bundleIdForCaches = null;
   
-  @PostConstruct
-  public void setup() {
-    Thread bootstrapThread = new BootstrapThread();
-    bootstrapThread.start();
+  // we keep an internal cache of route short/long names because if we moved this into the
+  // transit data federation, we'd also have to move the model factory and some other agency-specific
+  // conventions, which wouldn't be pretty.
+  //
+  // long-term FIXME: figure out how to split apart the model creation a bit more from the actual
+  // search process.
+  public void refreshCachesIfNecessary() {
+    String currentBundleId = _nycTransitDataService.getActiveBundleId();
+
+    if((_bundleIdForCaches != null && _bundleIdForCaches.equals(currentBundleId)) || currentBundleId == null) {
+      return;
+    }
+  
+    _routeShortNameToIdMap.clear();
+    _routeLongNameToIdMap.clear();
+    
+    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+      for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
+        RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
+        _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
+        _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
+      }
+    }    
+    
+    _bundleIdForCaches = currentBundleId;
   }
   
   @Override
@@ -142,6 +148,8 @@ public class SearchServiceImpl implements SearchService {
   
   @Override
   public SearchResultCollection getSearchResults(String query, SearchResultFactory resultFactory) {
+    refreshCachesIfNecessary();
+    
     SearchResultCollection results = new SearchResultCollection();
     
     String normalizedQuery = normalizeQuery(results, query);
@@ -301,20 +309,6 @@ public class SearchServiceImpl implements SearchService {
         results.addSuggestion(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
       }
     }
-  }
-  
-  // a thread that can block for network IO while tomcat starts
-  private class BootstrapThread extends Thread {
-
-    @Override
-    public void run() {     
-      try {
-        refreshCaches();
-      } catch (Exception e) {
-        _log.error("Error updating cache: " + e.getMessage());
-      }
-    }   
-
   }
   
 }

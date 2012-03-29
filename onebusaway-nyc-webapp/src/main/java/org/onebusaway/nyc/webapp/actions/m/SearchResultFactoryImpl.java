@@ -18,9 +18,8 @@ package org.onebusaway.nyc.webapp.actions.m;
 import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
-
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
@@ -48,6 +47,7 @@ import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,12 +62,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   private RealtimeService _realtimeService;
 
-  private ScheduledServiceService _scheduledServiceService;
+  private NycTransitDataService _nycTransitDataService;
 
-  public SearchResultFactoryImpl(TransitDataService transitDataService, ScheduledServiceService scheduledServiceService, 
+  public SearchResultFactoryImpl(TransitDataService transitDataService, NycTransitDataService nycTransitDataService, 
       RealtimeService realtimeService, ConfigurationService configurationService) {
     _transitDataService = transitDataService;
-    _scheduledServiceService = scheduledServiceService;
+    _nycTransitDataService = nycTransitDataService;
     _realtimeService = realtimeService;
     _configurationService = configurationService;
   }
@@ -103,8 +103,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         
         // service in this direction
         Boolean hasUpcomingScheduledService = 
-            _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
-
+            _nycTransitDataService.routeHasUpcomingScheduledService(new Date(), routeBean.getId(), stopGroupBean.getId());
+     
         // stops in this direction
         List<StopOnRoute> stopsOnRoute = null;
         if(!stopGroupBean.getStopIds().isEmpty()) {
@@ -178,7 +178,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           
           // service in this direction
           Boolean hasUpcomingScheduledService = 
-              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
           directions.add(new RouteDirection(stopGroupBean, null, hasUpcomingScheduledService, arrivalsForRouteAndDirection));
         }

@@ -221,6 +221,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 				var longitude = activity.MonitoredVehicleJourney.VehicleLocation.Longitude;
 				var orientation = activity.MonitoredVehicleJourney.Bearing;
 				var headsign = activity.MonitoredVehicleJourney.DestinationName;
+				var routeName = activity.MonitoredVehicleJourney.PublishedLineName;
 
 				var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
 				var vehicleIdParts = vehicleId.split("_");
@@ -237,7 +238,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 					var markerOptions = {
 						zIndex: 3,
 						map: map,
-						title: "Vehicle " + vehicleIdWithoutAgency + " to " + headsign,
+						title: "Vehicle " + vehicleIdWithoutAgency + ", " + routeName + " to " + headsign,
 						vehicleId: vehicleId,
 						routeId: routeId
 					};
