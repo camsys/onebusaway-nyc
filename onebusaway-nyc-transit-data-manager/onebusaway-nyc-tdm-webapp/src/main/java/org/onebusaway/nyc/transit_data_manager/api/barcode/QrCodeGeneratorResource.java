@@ -3,20 +3,18 @@ package org.onebusaway.nyc.transit_data_manager.api.barcode;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
@@ -37,12 +35,14 @@ import org.onebusaway.nyc.transit_data_manager.barcode.GoogleChartBarcodeGenerat
 import org.onebusaway.nyc.transit_data_manager.barcode.QRErrorCorrectionLevel;
 import org.onebusaway.nyc.transit_data_manager.barcode.QrCodeGenerator;
 import org.onebusaway.nyc.transit_data_manager.barcode.model.MtaBarcode;
+import org.onebusaway.nyc.transit_data_manager.util.ZipFileBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
 @Path("/barcode")
 @Component
@@ -58,7 +58,7 @@ public class QrCodeGeneratorResource {
 
   private static String REPLACE_STR = "__REPLACE__";
   private static String STOP_COLUMN_NAME = "STOP_ID";
-  
+
   private static Logger _log = LoggerFactory.getLogger(QrCodeGeneratorResource.class);
 
   @Autowired
@@ -70,10 +70,10 @@ public class QrCodeGeneratorResource {
   private QrCodeGenerator barcodeGen;
   private BarcodeContentsConverter contentConv;
 
-  public void setUrlToEmbedStopIdReplace (String replaceUrl) {
+  public void setUrlToEmbedStopIdReplace(String replaceUrl) {
     this.urlToEmbedStopIdReplace = replaceUrl;
   }
-  
+
   public void setBarcodeGen(QrCodeGenerator barcodeGen) {
     this.barcodeGen = barcodeGen;
   }
@@ -84,10 +84,14 @@ public class QrCodeGeneratorResource {
 
   @Path("/getByStopId/{stopId}")
   @GET
-  public Response getQrCodeForStopUrlById(@PathParam("stopId") int stopId,
-      @DefaultValue("99") @QueryParam("img-dimension") final int imgDimension,
-      @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName,
-      @DefaultValue("4") @QueryParam("margin-rows") final int quietZoneRows) {
+  public Response getQrCodeForStopUrlById(@PathParam("stopId")
+  int stopId, @DefaultValue("99")
+  @QueryParam("img-dimension")
+  final int imgDimension, @DefaultValue("BMP")
+  @QueryParam("img-type")
+  String imgFormatName, @DefaultValue("4")
+  @QueryParam("margin-rows")
+  final int quietZoneRows) {
 
     _log.info("Starting getQrCodeForStopUrlById.");
 
@@ -95,9 +99,9 @@ public class QrCodeGeneratorResource {
 
     final String barcodeContents = generateBusStopContentsForStopId(String.valueOf(stopId));
 
-    //boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
-        //QRErrorCorrectionLevel.Q, barcodeContents);
-    
+    // boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
+    // QRErrorCorrectionLevel.Q, barcodeContents);
+
     boolean contentsFitBarcodeVersion = true;
 
     if (!contentsFitBarcodeVersion) {
@@ -139,17 +143,19 @@ public class QrCodeGeneratorResource {
   @Path("/batchGen")
   @Consumes({"text/comma-separated-values", "text/csv"})
   @POST
-  public Response batchGenerateBarcodes(
-      @DefaultValue("99") @QueryParam("img-dimension") int imgDimension,
-      @DefaultValue("BMP") @QueryParam("img-type") String imgFormatName,
-      @DefaultValue("4") @QueryParam("margin-rows") int quietZoneRows,
-      InputStream inputFileStream) {
+  public Response batchGenerateBarcodes(@DefaultValue("99")
+  @QueryParam("img-dimension")
+  int imgDimension, @DefaultValue("BMP")
+  @QueryParam("img-type")
+  String imgFormatName, @DefaultValue("4")
+  @QueryParam("margin-rows")
+  int quietZoneRows, InputStream inputFileStream) {
 
     _log.info("batchGenerateBarcodes Started.");
 
     BarcodeImageType imageType = parseImgFormatName(imgFormatName);
 
-    List<MtaBarcode> urlsToEncode;
+    Set<MtaBarcode> urlsToEncode;
     try {
       urlsToEncode = parseListResultBarcodesFromInputCsv(inputFileStream);
     } catch (IOException e) {
@@ -168,6 +174,9 @@ public class QrCodeGeneratorResource {
 
     final File resultZipFile;
     try {
+      
+      _log.info("Batch generating " + urlsToEncode.size() + " barcodes.");
+      
       resultZipFile = generateBarcodeZipFileFromUrlList(urlsToEncode,
           imgDimension, imageType, quietZoneRows);
     } catch (IOException e1) {
@@ -212,33 +221,23 @@ public class QrCodeGeneratorResource {
     return response;
   }
 
-  private List<MtaBarcode> parseListResultBarcodesFromInputCsv(
+  private Set<MtaBarcode> parseListResultBarcodesFromInputCsv(
       InputStream inputCsvFileStream) throws IOException {
+
     int stopColumnIdx = -1;
 
-    // First make sure we have a STOP_COLUMN_NAME column.
-    // Take note of its index.
-    List<String[]> allLines = null;
-    String[] headerLine;
-    List<String[]> dataLines = null;
-
     CSVReader reader = null;
+    
+    String [] headerLine;
+    
     try {
       reader = new CSVReader(new InputStreamReader(inputCsvFileStream));
 
-      allLines = reader.readAll();
-      headerLine = allLines.get(0);
-      _log.info("found " + allLines.size()
-          + " total lines in input. header is " + Arrays.toString(headerLine));
-
-      dataLines = allLines.subList(1, allLines.size());
+      headerLine = reader.readNext();
     } catch (IOException e) {
       e.printStackTrace();
       throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
-    } finally {
-      if (reader != null)
-        reader.close();
-    }
+    } 
 
     for (int i = 0; i < headerLine.length; i++) {
       if (STOP_COLUMN_NAME.equalsIgnoreCase(headerLine[i])) {
@@ -259,72 +258,128 @@ public class QrCodeGeneratorResource {
      * and add it to the zipfile.
      */
 
-    List<MtaBarcode> urlsToEncode = new ArrayList<MtaBarcode>();
+    Set<MtaBarcode> urlsToEncode = new HashSet<MtaBarcode>();
 
-    Iterator<String[]> linesIt = dataLines.iterator();
-    String[] line;
-    while (linesIt.hasNext()) {
-      line = linesIt.next();
-
-      _log.debug("adding stopnum " + line[stopColumnIdx]
+    String[] nextLine;
+    
+    while ((nextLine = reader.readNext()) != null) {
+      _log.debug("adding stopnum " + nextLine[stopColumnIdx]
           + "to the list of items to encode.");
 
-      String stopIdStr = line[stopColumnIdx];
+      String stopIdStr = nextLine[stopColumnIdx];
 
       String barcodeContents = generateBusStopContentsForStopId(stopIdStr);
 
-//      boolean contentsFitBarcodeVersion = contentConv.fitsV2QrCode(
-//          QRErrorCorrectionLevel.Q, barcodeContents);
-      
-      boolean contentsFitBarcodeVersion = true;
+      if (!"".equals(barcodeContents) ) {
 
-      if (!"".equals(barcodeContents) && contentsFitBarcodeVersion) {
+        MtaBarcode barcode = new MtaBarcode(barcodeContents);
 
-        MtaBarcode barcode = new MtaBarcode();
-
-        barcode.setContents(barcodeContents);
         barcode.setStopIdStr(stopIdStr);
-
+        
         if (!urlsToEncode.contains(barcode)) {
           urlsToEncode.add(barcode);
         }
       }
     }
 
+    if (reader != null)
+      try{
+        reader.close();
+      } catch (IOException e) { } // do nothing.
+
     return urlsToEncode;
   }
 
-  protected File generateBarcodeZipFileFromUrlList(List<MtaBarcode> bcList,
+  /**
+   * This method generates a zip file containing a barcode image for each
+   * barcode in bcList. Additionally, the zip file contains one output file
+   * specific to the Hastus application in use by the MTA.
+   * 
+   * @param urlsToEncode This method generates a barcode image file for each unique
+   *          barcode in this set.
+   * @param imageDimension
+   * @param imgType
+   * @param quietZoneRows
+   * @return
+   * @throws IOException
+   */
+  protected File generateBarcodeZipFileFromUrlList(Set<MtaBarcode> urlsToEncode,
       int imageDimension, BarcodeImageType imgType, int quietZoneRows)
       throws IOException {
 
     File tempFile = getTempFile(ZIP_FILE_PREFIX, ZIP_FILE_SUFFIX);
 
-    ZipOutputStream zipOutput = null;
+    ZipFileBuilder zipBuilder = null;
+
+    CSVWriter datafileWriter = null;
 
     try {
-      zipOutput = new ZipOutputStream(new FileOutputStream(tempFile));
+      zipBuilder = new ZipFileBuilder(tempFile);
 
-      for (MtaBarcode bc : bcList) {
-        // RenderedImage responseImg = barcodeGen.generateCode(bc.getContents(),
-        // imageDimension,
-        // imageDimension, quietZoneRows);
+      // The format of the data file is specified in a document provided by the
+      // mta.
+
+      // It is a semicolon delimited file with the following form:
+      // Keyword; stop code; QR Code file name; description of the stop
+      // attachment
+
+      // Basically, it looks like the following:
+      // stpattach;202097;202097.bmp;QR Code for stop 202097
+      // stpattach;503967;503967.bmp;QR Code for stop 503967
+
+      int datafileNumElements = 4;
+
+      // The positions of the different fields.
+      int datafileKeywordIdx = 0;
+      int datafileStopcodeIdx = 1;
+      int datafileFilenameIdx = 2;
+      int datafileDescriptionIdx = 3;
+
+      // The various strings that are basically constant.
+      String datafileFilename = "hastus_datafile.txt";
+      String datafileKeywordValue = "stpattach";
+      String datafileDescriptionReplaceStr = "QR Code for stop ~~STOP_ID~~";
+      String datafileDescriptionStopIdReplaceToken = "~~STOP_ID~~";
+
+      // Need to keep track of the barcodes we produce, so create a list of
+      // String[],
+      // This can then be passed into OpenCSVs csvwriter later.
+      List<String[]> barcodesDatafile = new ArrayList<String[]>();
+
+      // Loop over all input barcodes, generating an image for each.
+      for (MtaBarcode bc : urlsToEncode) {
 
         String imgFileName = String.valueOf(bc.getStopIdStr()) + "."
             + imgType.getFormatName();
 
-        ZipEntry zipEntry = new ZipEntry(imgFileName);
-
-        zipOutput.putNextEntry(zipEntry);
-
         _log.debug("writing " + imgFileName + " to tempfile.");
 
         genBarcodeWriteToOutputStream(bc.getContents(), imageDimension,
-            quietZoneRows, imgType, zipOutput);
+            quietZoneRows, imgType, zipBuilder.addFile(imgFileName));
+
+        // Now update barcodesDatafile with the info for this barcode.
+        String[] datafileRow = new String[datafileNumElements];
+        datafileRow[datafileKeywordIdx] = datafileKeywordValue;
+        datafileRow[datafileStopcodeIdx] = bc.getStopIdStr();
+        datafileRow[datafileFilenameIdx] = imgFileName;
+        datafileRow[datafileDescriptionIdx] = datafileDescriptionReplaceStr.replaceFirst(
+            datafileDescriptionStopIdReplaceToken, bc.getStopIdStr());
+
+        barcodesDatafile.add(datafileRow);
       }
+
+      datafileWriter = new CSVWriter(new OutputStreamWriter(
+          zipBuilder.addFile(datafileFilename)), ';',
+          CSVWriter.NO_QUOTE_CHARACTER);
+      datafileWriter.writeAll(barcodesDatafile);
+
     } finally {
-      if (zipOutput != null)
-        zipOutput.close();
+      if (datafileWriter != null)
+        datafileWriter.close();
+
+      if (zipBuilder != null)
+        zipBuilder.close();
+
     }
 
     return tempFile;
@@ -340,7 +395,6 @@ public class QrCodeGeneratorResource {
   }
 
   private File getTempFile(String prefix, String suffix) throws IOException {
-    // Create the zip file & output stream.
     File tempFile;
 
     try {
@@ -382,19 +436,21 @@ public class QrCodeGeneratorResource {
 
     return imageType;
   }
-  
+
   /**
-   * This method takes a stopId and returns a string representing the
-   * URL to embed in barcodes for that stop Id. It assumes the 
-   * property urlToEmbedStopIdReplace in this class contains a replacement
-   * string, '__REPLACE__'
+   * This method takes a stopId and returns a string representing the URL to
+   * embed in barcodes for that stop Id. It assumes the property
+   * urlToEmbedStopIdReplace in this class contains a replacement string,
+   * '__REPLACE__'
+   * 
    * @param stopId The stop Id to substitute for __REPLACE__.
-   * @return A string with the stop id url for embedding into barcodes. Does
-   * not capitalize it or anything which may be needed for good barcodes.
+   * @return A string with the stop id url for embedding into barcodes. Does not
+   *         capitalize it or anything which may be needed for good barcodes.
    */
   private String getEmbeddedStopIdUrl(String stopIdStr) {
-    String stopIdUrl = urlToEmbedStopIdReplace.replaceAll(REPLACE_STR, stopIdStr);
-    
+    String stopIdUrl = urlToEmbedStopIdReplace.replaceAll(REPLACE_STR,
+        stopIdStr);
+
     return stopIdUrl;
   }
 }
