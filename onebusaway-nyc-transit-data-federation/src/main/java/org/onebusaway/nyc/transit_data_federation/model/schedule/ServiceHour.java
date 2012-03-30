@@ -36,6 +36,8 @@ public class ServiceHour implements Comparable<ServiceHour> {
     c.set(Calendar.MONTH, this.month);
     c.set(Calendar.DAY_OF_MONTH, this.day);
     c.set(Calendar.HOUR_OF_DAY, this.hour);
+    c.set(Calendar.MINUTE, 0);
+    c.set(Calendar.SECOND, 0);
     return c.getTimeInMillis();
   }
   
