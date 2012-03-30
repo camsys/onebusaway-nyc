@@ -16,8 +16,8 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
-import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.services.TransitDataService;
 
@@ -38,7 +38,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
   private TransitDataService _transitDataService;
 
   @Autowired
-  private ScheduledServiceService _scheduledServiceService;
+  private NycTransitDataService _nycTransitDataService;
 
   private SearchResultCollection _results = null;
   
@@ -56,7 +56,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
       return SUCCESS;
     
     _results = _searchService.getSearchResults(_q, new SearchResultFactoryImpl(_transitDataService, 
-            _searchService, _scheduledServiceService));
+            _searchService, _nycTransitDataService));
 
     return SUCCESS;
   }   

@@ -1,7 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.m.model;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 
 /**

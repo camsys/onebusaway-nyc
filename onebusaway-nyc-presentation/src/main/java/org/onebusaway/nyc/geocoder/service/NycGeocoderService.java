@@ -1,7 +1,5 @@
 package org.onebusaway.nyc.geocoder.service;
 
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
-
 import java.util.List;
 
 public interface NycGeocoderService {

@@ -18,6 +18,11 @@
        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
     </bean>
  
+    <bean id="nycTransitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="${tds.path}/remoting/nyc-transit-data-service" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
+    </bean>
+ 
     <bean id="vehicleTrackingManagementService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
        <property name="serviceUrl" value="${vtms.path}/remoting/vehicle-tracking-management-service" />
        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />

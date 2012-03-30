@@ -16,39 +16,34 @@
 package org.onebusaway.nyc.geocoder.impl;
 
 import org.onebusaway.geocoder.impl.GoogleAddressComponent;
-import org.onebusaway.geocoder.model.GeocoderResults;
-import org.onebusaway.geocoder.services.GeocoderService;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
-import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
+import org.onebusaway.nyc.geocoder.model.GoogleGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
-
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+public class GoogleGeocoderImpl extends FilteredGeocoderBase {
 
   private static Logger _log = LoggerFactory.getLogger(GoogleGeocoderImpl.class);
-
-  private static GeometryFactory _geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
   private static final String GEOCODE_URL_PREFIX = "http://maps.googleapis.com";
   
@@ -56,12 +51,10 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
 
   @Autowired
   private ConfigurationService _configurationService;
-
+  
   private boolean _sensor = false;
 
   private CoordinateBounds _resultBiasingBounds = null;
-  
-  private Polygon _wktFilterPolygon = null;
   
   public void setSensor(boolean sensor) {
     _sensor = sensor;
@@ -69,16 +62,6 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
 
   public void setResultBiasingBounds(CoordinateBounds bounds) {
     _resultBiasingBounds = bounds;
-  }
-  
-  public void setWktFilterPolygon(String wkt) throws ParseException {
-    WKTReader reader = new WKTReader();
-    _wktFilterPolygon = (Polygon)reader.read(wkt);
-  }
-
-  // (method to make legacy OBA components that use the geocoder happy...)
-  public GeocoderResults geocode(String location) {
-    return null;
   }
   
   public List<NycGeocoderResult> nycGeocode(String location) {
@@ -100,18 +83,17 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
       }
 
       String clientId = 
-          _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);    
-      String secretKey = 
+          _configurationService.getConfigurationValueAsString("display.googleMapsClientId", null);          
+      String authKey = 
           _configurationService.getConfigurationValueAsString("display.googleMapsSecretKey", null);    
       
-      if(clientId != null && secretKey != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(secretKey)) {
+      if(clientId != null && authKey != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(authKey)) {
         q.append("&client=").append(clientId);
       }
     
       URL url = null;
-      if(secretKey != null && clientId != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(secretKey)) {
-        GoogleUrlAuthentication urlSigner = new GoogleUrlAuthentication(secretKey);
-        url = new URL(GEOCODE_URL_PREFIX + urlSigner.signRequest(GEOCODE_PATH + "?" + q.toString()));
+      if(authKey != null && clientId != null && !StringUtils.isEmpty(clientId) && !StringUtils.isEmpty(authKey)) {
+        url = new URL(GEOCODE_URL_PREFIX + signRequest(authKey, GEOCODE_PATH + "?" + q.toString()));
       } else {
         url = new URL(GEOCODE_URL_PREFIX + GEOCODE_PATH + "?" + q.toString());        
       }
@@ -134,38 +116,50 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
       return null;
     }
   }
+  
+  /**
+   * PRIVATE METHODS
+   */
+  private String signRequest(String key, String resource) throws NoSuchAlgorithmException,
+    InvalidKeyException, UnsupportedEncodingException, URISyntaxException {
 
-  private List<NycGeocoderResult> filterResultsByWktPolygon(List<NycGeocoderResult> input) {
-    if(_wktFilterPolygon == null) {
-      return input;
-    }
+    key = key.replace('-', '+');
+    key = key.replace('_', '/');
+    byte[] base64edKey = Base64.decodeBase64(key.getBytes());
+
+    // Get an HMAC-SHA1 signing key from the raw key bytes
+    SecretKeySpec sha1Key = new SecretKeySpec(base64edKey, "HmacSHA1");
+
+    // Get an HMAC-SHA1 Mac instance and initialize it with the HMAC-SHA1 key
+    Mac mac = Mac.getInstance("HmacSHA1");
+    mac.init(sha1Key);
+
+    // compute the binary signature for the request
+    byte[] sigBytes = mac.doFinal(resource.getBytes());
+
+    // base 64 encode the binary signature
+    String signature = new String(Base64.encodeBase64(sigBytes));
     
-    List<NycGeocoderResult> output = new ArrayList<NycGeocoderResult>();
-    for(NycGeocoderResult result : input) {
-      Coordinate coordinate = new Coordinate(result.getLongitude(), result.getLatitude());
-      Geometry point = _geometryFactory.createPoint(coordinate);
-      
-      if(_wktFilterPolygon.intersects(point)) {
-        output.add(result);
-      }
-    }
-
-    return output;
+    // convert the signature to 'web safe' base 64
+    signature = signature.replace('+', '-');
+    signature = signature.replace('/', '_');
+    
+    return resource + "&signature=" + signature;
   }
+  
   
   private Digester createDigester() {
     Digester digester = new Digester();
 
-    digester.addObjectCreate("GeocodeResponse/result", NycGeocoderResult.class);
-    digester.addObjectCreate("GeocodeResponse/result/address_component", GoogleAddressComponent.class);
+    digester.addObjectCreate("GeocodeResponse/result", GoogleGeocoderResult.class);
 
+    digester.addObjectCreate("GeocodeResponse/result/address_component", GoogleAddressComponent.class);
     digester.addCallMethod("GeocodeResponse/result/address_component/long_name", "setLongName", 0);
     digester.addCallMethod("GeocodeResponse/result/address_component/short_name", "setShortName", 0);
     digester.addCallMethod("GeocodeResponse/result/address_component/type", "addType", 0);
     digester.addSetNext("GeocodeResponse/result/address_component", "addAddressComponent");
     
     Class<?>[] dType = {Double.class};
-
     digester.addCallMethod("GeocodeResponse/result/formatted_address", "setFormattedAddress", 0);
     digester.addCallMethod("GeocodeResponse/result/geometry/location/lat", "setLatitude", 0, dType);
     digester.addCallMethod("GeocodeResponse/result/geometry/location/lng", "setLongitude", 0, dType);
@@ -173,6 +167,7 @@ public class GoogleGeocoderImpl implements NycGeocoderService, GeocoderService {
     digester.addCallMethod("GeocodeResponse/result/geometry/bounds/southwest/lng", "setSouthwestLongitude", 0, dType);
     digester.addCallMethod("GeocodeResponse/result/geometry/bounds/northeast/lat", "setNortheastLatitude", 0, dType);
     digester.addCallMethod("GeocodeResponse/result/geometry/bounds/northeast/lng", "setNortheastLongitude", 0, dType);
+
     digester.addSetNext("GeocodeResponse/result", "add");
 
     return digester;

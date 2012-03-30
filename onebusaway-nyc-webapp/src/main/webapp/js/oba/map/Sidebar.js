@@ -33,6 +33,8 @@ OBA.Sidebar = function() {
 	var routeMap = null;
 	var wizard = null;
 
+	var searchRequest = null;
+	
 	function addSearchBehavior() {
 		var searchForm = jQuery("#searchbar form");
 		
@@ -135,6 +137,7 @@ OBA.Sidebar = function() {
 		var loading = destinationContainer.find(".loading");
 		loading.show();
 
+		// multiple of these can be out at once without being inconsistent UI-wise.
 		jQuery.getJSON(OBA.Config.stopsOnRouteForDirection + "?callback=?", { routeId: routeResult.id, directionId: direction.directionId }, 
 		function(json) { 
 			loading.hide();
@@ -369,8 +372,12 @@ OBA.Sidebar = function() {
 
 		(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
 		
-		loading.show();		
-		jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
+		loading.show();	
+		
+		if(searchRequest !== null) {
+			searchRequest.abort();
+		}		
+		searchRequest = jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
 			loading.hide();
 
 			var resultType = json.searchResults.resultType;
