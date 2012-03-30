@@ -16,7 +16,7 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;

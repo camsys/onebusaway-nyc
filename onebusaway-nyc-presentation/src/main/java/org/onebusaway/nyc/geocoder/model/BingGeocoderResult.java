@@ -15,21 +15,17 @@
  */
 package org.onebusaway.nyc.geocoder.model;
 
-import org.onebusaway.geocoder.impl.GoogleAddressComponent;
 import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.nyc.presentation.model.SearchResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 
-import java.io.Serializable;
-import java.util.HashMap;
-
-public class NycGeocoderResult implements Serializable, SearchResult {
-
-  private static final long serialVersionUID = 1L;
+public class BingGeocoderResult implements NycGeocoderResult {
   
   private String formattedAddress = null;
   
-  private HashMap<String, String> addressComponentMap = new HashMap<String, String>();
-  
+  private String neighborhood = null;
+
+  private String locality = null;
+
   private Double latitude = null;
   
   private Double longitude = null;
@@ -66,37 +62,42 @@ public class NycGeocoderResult implements Serializable, SearchResult {
     this.latitude = latitude;
   }
 
+  public void setLocality(String locality) {
+    this.locality = locality;
+  }
+
+  public void setNeighborhood(String neighborhood) {
+    this.neighborhood = neighborhood;
+  }
+
   public void setLongitude(Double longitude) {
     this.longitude = longitude;
   }
 
-  public void addAddressComponent(GoogleAddressComponent addressComponent) {
-    for(String type : addressComponent.getTypes()) {
-      addressComponentMap.put(type, addressComponent.getShortName());
-    }
-  }
-  
+  @Override
   public Double getLatitude() {
     return latitude;
   }
   
+  @Override
   public Double getLongitude() {
     return longitude;
   }
   
+  @Override
   public String getNeighborhood() {
-    String output = addressComponentMap.get("neighborhood");
-
-    if(output != null)
-      return output;
+    if(neighborhood != null) 
+      return neighborhood;
     else
-      return addressComponentMap.get("sublocality");
+      return locality;
   }
  
+  @Override
   public String getFormattedAddress() {
     return this.formattedAddress;
   }
   
+  @Override
   public CoordinateBounds getBounds() {
     if(northeastLatitude != null && northeastLongitude != null 
         && southwestLatitude != null && southwestLongitude != null) {
@@ -108,7 +109,8 @@ public class NycGeocoderResult implements Serializable, SearchResult {
     }    
   }
   
+  @Override
   public boolean isRegion() {
-    return (getBounds() != null);
+    return (getBounds() != null && getLatitude() == null && getLongitude() == null);
   }
 }

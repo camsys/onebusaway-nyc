@@ -4,7 +4,7 @@ import org.onebusaway.exceptions.NoSuchStopServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderService;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;

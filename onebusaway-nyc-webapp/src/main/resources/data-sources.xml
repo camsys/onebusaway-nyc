@@ -33,7 +33,9 @@
         <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
     </bean>
 
+
     <!-- Database Configuration -->
+
     <bean id="dataSource"
           class="org.springframework.jndi.JndiObjectFactoryBean">
       <property name="jndiName"
@@ -47,16 +49,7 @@
       <property name="resourceRef"
                 value="true" />
     </bean>
-<!--
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.dialect">${db.hibernate.dialect}</prop>
-            </props>
-        </property>
-    </bean>
--->
+
     <alias name="dataSource" alias="mutableDataSource" />
 
 

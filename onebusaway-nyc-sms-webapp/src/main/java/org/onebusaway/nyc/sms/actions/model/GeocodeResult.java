@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.sms.actions.model;
 
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 
 /**
