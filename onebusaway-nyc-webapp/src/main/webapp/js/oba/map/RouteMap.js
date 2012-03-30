@@ -31,6 +31,9 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 	var hoverPolylinesByRoute = {};
 	var stopsById = {};
 
+	var siriVMRequestsByRouteId = {};
+	var stopsWithinBoundsRequest = null;
+	
 	// when hovering over a route in "region" view
 	var hoverPolyline = null;
 	
@@ -204,7 +207,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			params.time = OBA.Config.time;
 		}
 		
-		jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", params, 
+		if(typeof siriVMRequestsByRouteId[routeId] !== 'undefined' && siriVMRequestsByRouteId[routeId] !== null) {
+			siriVMRequestsByRouteId[routeId].abort();
+		}
+		siriVMRequestsByRouteId[routeId] = jQuery.getJSON(OBA.Config.siriVMUrl + "?callback=?", params, 
 		function(json) {
 			// service alerts
 			if(typeof serviceAlertCallbackFn === 'function') {
@@ -360,7 +366,10 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 		if(map.getZoom() < 16) {
 			removeStops(false);
 		} else {	
-			jQuery.getJSON(OBA.Config.stopsWithinBoundsUrl + "?callback=?", { bounds: map.getBounds().toUrlValue() }, 
+			if(stopsWithinBoundsRequest !== null) {
+				stopsWithinBoundsRequest.abort();
+			}
+			stopsWithinBoundsRequest = jQuery.getJSON(OBA.Config.stopsWithinBoundsUrl + "?callback=?", { bounds: map.getBounds().toUrlValue() }, 
 			function(json) {
 				removeStops(true);
 				
