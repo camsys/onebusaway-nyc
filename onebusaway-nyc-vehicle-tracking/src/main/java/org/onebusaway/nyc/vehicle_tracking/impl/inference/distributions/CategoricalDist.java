@@ -127,6 +127,7 @@ public class CategoricalDist<T extends Comparable<T>> {
      * reset the underlying distribution for lazy reloading
      */
     _emd = null;
+    _objIdx.clear();
   }
 
   @SuppressWarnings("unchecked")
