@@ -32,8 +32,6 @@ import org.springframework.stereotype.Component;
 @Component
 class VehicleTrackingManagementServiceImpl implements VehicleTrackingManagementService {
 
-  private static Logger _log = LoggerFactory.getLogger(VehicleTrackingManagementServiceImpl.class);
-
   @Autowired
   private DestinationSignCodeService _dscService;
   

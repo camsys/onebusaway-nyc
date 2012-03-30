@@ -18,7 +18,7 @@ package org.onebusaway.nyc.webapp.actions.api;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteDirection;
@@ -42,6 +42,7 @@ import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
   private TransitDataService _transitDataService;
 
   @Autowired
-  private ScheduledServiceService _scheduledServiceService;
+  private NycTransitDataService _nycTransitDataService;
 
   private ObjectMapper _mapper = new ObjectMapper();    
 
@@ -104,7 +105,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
             continue;
           
           Boolean hasUpcomingScheduledService = 
-              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stop.getId(), routeBean.getId(), stopGroupBean.getId());
           
           routeDirections.add(new RouteDirection(stopGroupBean, null, null, hasUpcomingScheduledService));
         }

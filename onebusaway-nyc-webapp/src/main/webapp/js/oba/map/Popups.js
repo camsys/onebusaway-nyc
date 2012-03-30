@@ -21,6 +21,8 @@ OBA.Popups = (function() {
 
 	var infoWindow = null;
 
+	var refreshPopupRequest = null;
+	
 	function closeInfoWindow() {
 		if(infoWindow !== null) {
 			infoWindow.close();
@@ -61,7 +63,10 @@ OBA.Popups = (function() {
 				params.time = OBA.Config.time;
 			}
 			
-			jQuery.getJSON(url, params, function(json) {
+			if(refreshPopupRequest !== null) {
+				refreshPopupRequest.abort();
+			}
+			refreshPopupRequest = jQuery.getJSON(url, params, function(json) {
 				if(infoWindow === null) {
 					return;
 				}

@@ -15,16 +15,15 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl.queue;
 
-import java.io.IOException;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.queue.QueueListenerTask;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+
+import org.codehaus.jackson.map.AnnotationIntrospector;
+import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 

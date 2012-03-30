@@ -17,7 +17,7 @@ OBA.GoogleMapWrapper = function(mapNode) {
 	};
 
 	var map = new google.maps.Map(mapNode, defaultMapOptions);
-
+	
 	// CUSTOM SUBWAY TILES
 	var mtaSubwayMapType = new google.maps.ImageMapType({
 		bounds: new google.maps.LatLngBounds(
@@ -198,6 +198,39 @@ OBA.GoogleMapWrapper = function(mapNode) {
 	map.mapTypes.set('Transit', transitStyledMapType);
 	map.setMapTypeId('Transit');
 	
+	// BING MAPS TILES
+	var bingMapsMapType = new google.maps.ImageMapType({
+		getTileUrl: function(coord, zoom) {
+			if(!(zoom >= this.minZoom && zoom <= this.maxZoom)) {
+				return null;
+			}
+
+		    // if not, calculate the quadtree value and request the graphic
+			var quad = "", i;
+		    for(i = zoom; i > 0; i--) {
+		        var mask = 1 << (i - 1); 
+		        var cell = 0; 
+		        if ((coord.x & mask) != 0) {
+		            cell++; }
+		        if ((coord.y & mask) != 0) {
+		            cell += 2; }
+		        quad += cell; 
+		    } 
+		    
+		    return "http://ecn.t0.tiles.virtualearth.net/tiles/r" + quad + ".jpeg?g=914&shading=hill";
+		},
+		tileSize: new google.maps.Size(256, 256),
+		opacity: 1.0,
+		maxZoom: 21,
+		minZoom: 1,
+		name: 'Bing Maps',
+		isPng: false,
+		alt: ''
+	});
+	
+//	map.mapTypes.set('Bing Maps', bingMapsMapType);
+//	map.setMapTypeId('Bing Maps');
+
 	// RETURN OBJECT BACK TO CALLER
 	return map;
 };

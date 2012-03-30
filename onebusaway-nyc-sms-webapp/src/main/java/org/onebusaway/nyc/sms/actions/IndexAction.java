@@ -18,7 +18,6 @@ package org.onebusaway.nyc.sms.actions;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.sms.actions.model.GeocodeResult;
@@ -27,8 +26,8 @@ import org.onebusaway.nyc.sms.actions.model.RouteDirection;
 import org.onebusaway.nyc.sms.actions.model.RouteResult;
 import org.onebusaway.nyc.sms.actions.model.ServiceAlertResult;
 import org.onebusaway.nyc.sms.actions.model.StopResult;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
-
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
@@ -58,7 +57,7 @@ public class IndexAction extends SessionedIndexAction {
   private SearchService _searchService;
 
   @Autowired
-  private ScheduledServiceService _scheduledServiceService;
+  private NycTransitDataService _nycTransitDataService;
 
   @Autowired
   private TransitDataService _transitDataService;
@@ -70,7 +69,7 @@ public class IndexAction extends SessionedIndexAction {
   public String execute() throws Exception {
     
     SearchResultFactory _resultFactory = new SearchResultFactoryImpl(_transitDataService,
-        _scheduledServiceService, _realtimeService, _configurationService);
+        _nycTransitDataService, _realtimeService, _configurationService);
 
     // send an initial visit to google analytics to tie our events to
     String googleAnalyticsSiteId = 

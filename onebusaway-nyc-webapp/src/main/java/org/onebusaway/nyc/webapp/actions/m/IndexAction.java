@@ -19,10 +19,9 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
-
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.m.model.GeocodeResult;
@@ -54,7 +53,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   private ConfigurationService _configurationService;
 
   @Autowired
-  private ScheduledServiceService _scheduledServiceService;
+  private NycTransitDataService _nycTransitDataService;
 
   @Autowired
   private TransitDataService _transitDataService;
@@ -92,7 +91,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       return SUCCESS;
 
     SearchResultFactory factory = new SearchResultFactoryImpl(_transitDataService,
-        _scheduledServiceService, _realtimeService, _configurationService);
+        _nycTransitDataService, _realtimeService, _configurationService);
     
     // empty query with location means search for stops near current location
     if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT)))) {

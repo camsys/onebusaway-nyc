@@ -40,4 +40,8 @@ public class ConfigAction extends OneBusAwayNYCActionSupport {
     return _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);    
   }
 
+  public String getBingMapsKey() {
+    return _configurationService.getConfigurationValueAsString("display.bingMapsKey", null);    
+  }
+
 }

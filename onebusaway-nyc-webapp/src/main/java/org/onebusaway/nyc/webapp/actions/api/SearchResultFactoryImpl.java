@@ -16,11 +16,11 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
-import org.onebusaway.nyc.geocoder.model.NycGeocoderResult;
+import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
-import org.onebusaway.nyc.presentation.service.realtime.ScheduledServiceService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.api.model.GeocodeResult;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteAtStop;
 import org.onebusaway.nyc.webapp.actions.api.model.RouteDirection;
@@ -36,6 +36,7 @@ import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -45,12 +46,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   private SearchService _searchService;
 
-  private ScheduledServiceService _scheduledServiceService;
+  private NycTransitDataService _nycTransitDataService;
 
-  public SearchResultFactoryImpl(TransitDataService transitDataService, SearchService searchService, ScheduledServiceService scheduledServiceService) {
+  public SearchResultFactoryImpl(TransitDataService transitDataService, SearchService searchService, NycTransitDataService nycTransitDataService) {
     _transitDataService = transitDataService;
     _searchService = searchService;
-    _scheduledServiceService = scheduledServiceService;
+    _nycTransitDataService = nycTransitDataService;
   }
 
   @Override
@@ -98,7 +99,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         }
 
         Boolean hasUpcomingScheduledService = 
-            _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+            _nycTransitDataService.routeHasUpcomingScheduledService(new Date(), routeBean.getId(), stopGroupBean.getId());
 
         directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
       }
@@ -130,7 +131,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           }
 
           Boolean hasUpcomingScheduledService = 
-              _scheduledServiceService.hasUpcomingScheduledService(routeBean, stopGroupBean);
+              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
           directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
         }
