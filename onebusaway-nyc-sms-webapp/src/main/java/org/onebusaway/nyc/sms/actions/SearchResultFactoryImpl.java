@@ -45,6 +45,7 @@ import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -134,7 +135,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           if(!stopGroupBean.getStopIds().contains(stopBean.getId()))
             continue;
 
-          List<String> arrivalsForRouteAndDirection = getDistanceAwayStringsForStopAndRouteAndDirection(stopBean, routeBean, stopGroupBean);
+          HashMap<Double, String> distanceAwayStringsByDistanceFromStop = 
+              getDistanceAwayStringsForStopAndRouteAndDirectionByDistanceFromStop(stopBean, routeBean, stopGroupBean);
           
           Boolean hasUpcomingScheduledService = 
               _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
@@ -152,7 +154,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
             }
           }
           
-          directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, arrivalsForRouteAndDirection, serviceAlertDescriptions));
+          directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
         }
       }
 
@@ -171,8 +173,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   /*** 
    * PRIVATE METHODS
    */
-  private List<String> getDistanceAwayStringsForStopAndRouteAndDirection(StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean) {
-    List<String> result = new ArrayList<String>();
+  private HashMap<Double, String> getDistanceAwayStringsForStopAndRouteAndDirectionByDistanceFromStop(StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean) {
+    HashMap<Double, String> result = new HashMap<Double, String>();
 
     // stop visits
     List<MonitoredStopVisitStructure> visitList = 
@@ -194,7 +196,10 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
       }
 
       if(result.size() < 3) {
-        result.add(getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
+        SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
+        SiriDistanceExtension distanceExtension = wrapper.getDistances();    
+
+        result.put(distanceExtension.getDistanceFromCall(), getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
       }
     }
     
