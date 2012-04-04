@@ -66,7 +66,9 @@
 
 .popup .service {
 	width: 325px;
-	padding-bottom: 4px;
+	margin: 0;
+	padding: 0;
+	padding-top: 4px;
 	color: #666666;
 	font-weight: bold;
 }
