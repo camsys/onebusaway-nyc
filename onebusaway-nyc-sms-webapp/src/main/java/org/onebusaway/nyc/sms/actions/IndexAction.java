@@ -38,8 +38,10 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class IndexAction extends SessionedIndexAction {
   
@@ -94,12 +96,12 @@ public class IndexAction extends SessionedIndexAction {
           
     while(true) {
       if(_searchResults.getMatches().size() > 0) {
+        // route identifier search
         if(_searchResults.getMatches().size() == 1 && _searchResults.getResultType().equals("RouteResult")) {
           RouteResult route = (RouteResult)_searchResults.getMatches().get(0);
 
-          // service alerts for the route
           if(commandString != null && commandString.equals("C")) {
-            // find a unique set of service alerts
+            // find a unique set of service alerts for the route found
             Set<String> alerts = new HashSet<String>();
             for(RouteDirection direction : route.getDirections()) {
               for(NaturalLanguageStringBean alert : direction.getSerivceAlerts()) {
@@ -133,10 +135,14 @@ public class IndexAction extends SessionedIndexAction {
           
         // one or more paginated stops
         } else if(_searchResults.getResultType().equals("StopResult")) {
-          if(commandString != null && commandString.equals("M")) {
-            _response = stopResponse(_searchResultsCursor);
+          if(_searchResults.getMatches().size() > 1) {
+            if(commandString != null && commandString.equals("M")) {
+              _response = multipleStopResponse(_searchResultsCursor);
+            } else {
+              _response = multipleStopResponse(0);
+            }
           } else {
-            _response = stopResponse(0);
+            _response = singleStopResponse();              
           }
           break;
           
@@ -166,8 +172,7 @@ public class IndexAction extends SessionedIndexAction {
           _response = didYouMeanResponse();
 
         // if we get a geocode result, the user is choosing among multiple
-        // ambiguous addresses. if they send "M" for more, we start displaying where we left
-        // off, otherwise start at the beginning. we also recognize a numeric input that
+        // ambiguous addresses. we also recognize a numeric input that
         // represents which ambiguous location number the user wants to use.
         } else if(_searchResults.getResultType().equals("GeocodeResult")) {
           if(commandString != null) {
@@ -231,8 +236,8 @@ public class IndexAction extends SessionedIndexAction {
       String textToAdd = serviceAlert.getAlert() + "\n\n";      
 
       // if the alert alone is too long, we have to chop it
-      if(textToAdd.length() > MAX_SMS_CHARACTER_COUNT - footer.length() - 3) {
-        textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - footer.length() - 3) + "...";
+      if(textToAdd.length() > MAX_SMS_CHARACTER_COUNT - footer.length() - 5) {
+        textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - footer.length() - 5) + "...\n\n";
       }
       
       if(body.length() + footer.length() + textToAdd.length() < MAX_SMS_CHARACTER_COUNT) {
@@ -282,11 +287,10 @@ public class IndexAction extends SessionedIndexAction {
         String headsign = direction.getDestination();
         
         if(headsign.length() > routeDirectionTruncationLength) {
-          body += "to " + headsign.substring(0, Math.min(routeDirectionTruncationLength, headsign.length())) + "... ";
+          body += "to " + headsign.substring(0, Math.min(routeDirectionTruncationLength, headsign.length())) + "...";
         } else {
           body += "to " + headsign + " ";
-        }
-        
+        }        
         body += "\n";
         
         if(direction.hasUpcomingScheduledService() == false) {
@@ -360,13 +364,14 @@ public class IndexAction extends SessionedIndexAction {
     }
   }
     
-  private String stopResponse(int offset) throws Exception {
+  private String multipleStopResponse(int offset) throws Exception {
     if(offset >= _searchResults.getMatches().size()) {
       return errorResponse("No more.");
     }
 
     // a placeholder header used for worst-case length calculations--updated
-    // with real values at the end once we know how many things actually fit
+    // with real values at the end once we know how many things actually fit 
+    // with realtime data
     String header = "XX-XX of XX stops\n";
     
     String footer = "\nSend:\n";
@@ -379,31 +384,27 @@ public class IndexAction extends SessionedIndexAction {
 
     String body = ""; 
     int i = offset;
-    int routesInThisPage = 0;
     int stopsInThisPage = 0;
     while(i < _searchResults.getMatches().size()) {
       StopResult stopResult = (StopResult)_searchResults.getMatches().get(i);
 
-      String fixedPartToAdd = "";
-      if(_searchResults.getMatches().size() > 1) {
-        fixedPartToAdd += stopResult.getStopDirection() + "-bound: " + stopResult.getIdWithoutAgency() + "\n";
-      } else {
-        fixedPartToAdd += stopResult.getIdWithoutAgency() + "\n";
-      }
+      // stop header
+      String fixedPartToAdd = stopResult.getStopDirection() + "-bound: " + stopResult.getIdWithoutAgency() + "\n";
 
-      // with realtime info
-      String realtimePartToAdd = "";
-
-      // without realtime info
-      String routesOnlyPartToAdd = "";
+      // body content for stop
+      String realtimePartToAdd = ""; // can fit each route in a category, or show an observation
+      String routesOnlyPartToAdd = ""; // the above isn't true. 
 
       if(stopResult.getRoutesAvailable().size() == 0) {
+        // if we found a stop with no routes because of a stop+route filter, 
+        // indicate that specifically
         if(_searchResults.getRouteIdFilter().size() > 0) {
           fixedPartToAdd += "No filter matches\n";
         } else {
           fixedPartToAdd += "No routes\n";
         }
       } else {
+        // create groups of routes in same status
         Set<String> notScheduledRoutes = new HashSet<String>();
         Set<String> notEnRouteRoutes = new HashSet<String>();
         Set<String> routeList = new HashSet<String>();
@@ -428,11 +429,11 @@ public class IndexAction extends SessionedIndexAction {
                 notEnRouteRoutes.add(prefix);
               }
             }
-          }
-        } // for routes here realtime
+          } // for direction
+        } // for routes here 
 
         if(notEnRouteRoutes.size() > 0) {
-          realtimePartToAdd += StringUtils.join(notEnRouteRoutes, ",") + " not en-rt.\n";
+          realtimePartToAdd += StringUtils.join(notEnRouteRoutes, ",") + " not en-route\n";
         }
         
         if(notScheduledRoutes.size() > 0) {
@@ -447,17 +448,14 @@ public class IndexAction extends SessionedIndexAction {
       // we can fit realtime for this stop
       if(realtimePartToAdd.length() + 1 < remainingSpace) {
         body += fixedPartToAdd + realtimePartToAdd;
-        routesInThisPage++;
         
       // we can fit only routes for this stop
       } else if(routesOnlyPartToAdd.length() + 1 < remainingSpace) {
         body += fixedPartToAdd + routesOnlyPartToAdd;
-        routesInThisPage++;
 
-      // can't fit the "fallback case"
-      } else if(routesInThisPage == 0 && routesOnlyPartToAdd.length() + 1 > remainingSpace) {
+      // can't fit the "fallback case"--a stop with so many routes, it doesn't fit in one page, either.
+      } else if(stopsInThisPage == 0 && routesOnlyPartToAdd.length() + 1 > remainingSpace) {
         body += fixedPartToAdd + "(too many routes to show)\n";
-        routesInThisPage++;
 
       // out of space in this message, break to next page    
       } else {
@@ -470,34 +468,21 @@ public class IndexAction extends SessionedIndexAction {
     _searchResultsCursor = i; 
 
     // construct real header now that we know how many items fit on our page:
-    if(_searchResults.getMatches().size() > 1) {
-      int totalItems = _searchResults.getMatches().size();
-      int start = offset + 1;
-      int end = i;
+    int totalItems = _searchResults.getMatches().size();
+    int start = offset + 1;
+    int end = i;
       
-      if(start == end) {
-        header = start + "";
-      } else {
-        header = start + "-" + end;
-      }
-
-      header += " of " + totalItems + " stops\n";
+    if(start == end) {
+      header = start + "";
     } else {
-      header = "";
+      header = start + "-" + end;
     }
 
-    // we're fitting one stop on the page--so replace STOPCODE with 
-    // this actual stop code for a better example
-    if(stopsInThisPage == 1) {
-      StopResult stopResult = (StopResult)_searchResults.getMatches().get(i-1);
+    header += " of " + totalItems + " stops\n";
 
-      footer = footer.replace("STOPCODE", stopResult.getIdWithoutAgency());
-      moreFooter = moreFooter.replace("STOPCODE", stopResult.getIdWithoutAgency());
-    }
-    
     if(_googleAnalytics != null) {
       try {
-        _googleAnalytics.trackEvent("SMS", "Stop Realtime Response", _query);
+        _googleAnalytics.trackEvent("SMS", "Stop Realtime Response For Multiple Stops", _query);
       } catch(Exception e) {
         //discard
       }
@@ -510,6 +495,92 @@ public class IndexAction extends SessionedIndexAction {
     }
   }
       
+  private String singleStopResponse() throws Exception {
+    StopResult stopResult = (StopResult)_searchResults.getMatches().get(0);
+
+    String header = stopResult.getIdWithoutAgency() + "\n";
+
+    String footer = "\nSend:\n";
+    footer += stopResult.getIdWithoutAgency() + "+ROUTE for bus info\n";
+
+    // worst case for footer length
+    String alertsFooter = footer + "C+ROUTE for alerts (*)\n";
+
+    // body content for stops
+    String body = "";
+    if(stopResult.getRoutesAvailable().size() == 0) {
+      // if we found a stop with no routes because of a stop+route filter, 
+      // indicate that specifically
+      if(_searchResults.getRouteIdFilter().size() > 0) {
+        body += "No filter matches\n";
+      } else {
+        body += "No routes\n";
+      }
+    } else {
+      // bulid map of sorted vehicle observation strings for this stop, sorted by closest->farthest
+      TreeMap<Double, String> observationsByDistanceFromStopAcrossAllRoutes = 
+          new TreeMap<Double, String>();
+      
+      for(RouteAtStop routeHere : stopResult.getRoutesAvailable()) {
+        for(RouteDirection direction : routeHere.getDirections()) {
+          String prefix = "";
+          if(!direction.getSerivceAlerts().isEmpty()) {
+            footer = alertsFooter;
+            prefix += "*";
+          }            
+          prefix += routeHere.getShortName();
+
+          HashMap<Double, String> sortableDistanceAways = direction.getDistanceAwaysWithSortKey();
+          for(Double distanceAway : sortableDistanceAways.keySet()) {
+            String distanceAwayString = sortableDistanceAways.get(distanceAway);
+            
+            observationsByDistanceFromStopAcrossAllRoutes.put(distanceAway, prefix + ": " + distanceAwayString);
+          }
+        }
+      }
+
+      // if there are no upcoming buses, provide info about the routes that the user gave a filter for, if any
+      if(observationsByDistanceFromStopAcrossAllRoutes.isEmpty()) {
+        if(_searchResults.getRouteIdFilter().isEmpty()) {
+          body += "No upcoming arrivals.\n";
+        } else {
+          // respond specifically to any route that the user added as a filter to this stop
+          for(RouteAtStop routeHere : stopResult.getRoutesAvailable()) {
+            for(RouteDirection direction : routeHere.getDirections()) {
+              if(direction.hasUpcomingScheduledService()) {
+                body += routeHere.getShortName() + ": not en-route\n"; 
+              } else {
+                body += routeHere.getShortName() + ": not scheduled\n"; 
+              }
+            }
+          }
+        }        
+        
+      // as many observations as will fit, sorted by soonest to arrive out
+      } else {      
+        for(String observationString : observationsByDistanceFromStopAcrossAllRoutes.values()) {
+          String textToAdd = observationString + "\n";      
+  
+          if(body.length() + header.length() + alertsFooter.length() + textToAdd.length() < MAX_SMS_CHARACTER_COUNT) {
+            body += textToAdd;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+
+    if(_googleAnalytics != null) {
+      try {
+        _googleAnalytics.trackEvent("SMS", "Stop Realtime Response for Single Stop", _query);
+      } catch(Exception e) {
+        //discard
+      }
+    }
+    
+    return header + body + footer;
+  }
+  
   private String didYouMeanResponse() {
     String header = "Did you mean?\n\n";
 
@@ -559,10 +630,13 @@ public class IndexAction extends SessionedIndexAction {
     
     query = query.trim();
 
+    // if this is a command prefix, one with a parameter, the command is "C", the query is the
+    // "parameter".
     if(query.toUpperCase().startsWith("C ") || query.toUpperCase().startsWith("C+")) {        
       return query.substring(2);
     }
 
+    // if this is a command, no query can be pressent
     if(getCommand(query) != null) {
       return null;
     }
