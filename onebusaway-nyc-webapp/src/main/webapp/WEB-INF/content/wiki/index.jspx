@@ -21,6 +21,10 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 <title>MTA Bus Time: <s:property value="title" /></title>
+
+<s:url var="url" value="/api/config"/>
+<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
 </head>
 <body>
 <s:if test="hasToc">
