@@ -170,15 +170,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     final Multiset<Particle> particles = HashMultiset.create();
 
-    final MotionState motionState = _motionModel.updateMotionState(obs);
     for (int i = 0; i < _initialNumberOfParticles; ++i) {
       final CategoricalDist<Particle> transitionProb = new CategoricalDist<Particle>();
  
       for (final BlockStateObservation blockState : potentialBlocks) {
         final SensorModelResult transProb = new SensorModelResult("transition");
         final double inMotionSample = threadLocalRng.get().nextDouble();
-        final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
-            motionState, obs);
+        final boolean vehicleNotMoved = inMotionSample < 0.5;
+        final MotionState motionState = _motionModel.updateMotionState(obs, vehicleNotMoved);
   
         BlockStateObservation sampledBlockState;
         if (blockState != null) {
@@ -228,8 +227,8 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         particles.add(newSample);
       } else {
         final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
-        final boolean vehicleNotMoved = inMotionSample < SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
-            motionState, obs);
+        final boolean vehicleNotMoved = inMotionSample < 0.5;
+        final MotionState motionState = _motionModel.updateMotionState(obs, vehicleNotMoved);
         final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
             null, obs, vehicleNotMoved);
         final VehicleState nullState = new VehicleState(motionState, null,
@@ -260,10 +259,10 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       Observation obs) {
 
     List<JourneyPhaseSummary> summaries = null;
-    if (ParticleFilter.getDebugEnabled()) {
-      summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
-          journeyState, obs);
-    }
+//    if (ParticleFilter.getDebugEnabled()) {
+//      summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
+//          journeyState, obs);
+//    }
 
     return new VehicleState(motionState, blockState, journeyState, summaries,
         obs);

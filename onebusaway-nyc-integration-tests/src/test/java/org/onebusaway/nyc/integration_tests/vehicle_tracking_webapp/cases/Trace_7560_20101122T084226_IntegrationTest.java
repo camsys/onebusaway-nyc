@@ -26,6 +26,8 @@ import org.onebusaway.realtime.api.EVehiclePhase;
  * 
  * DSC is 0000. Do we check for the start of another block?
  * 
+ * Also, we're fine with in-progress deviated instead of deadhead-after
+ * 
  * 
  * @author bdferris
  */
@@ -34,6 +36,6 @@ public class Trace_7560_20101122T084226_IntegrationTest extends AbstractTraceRun
   public Trace_7560_20101122T084226_IntegrationTest() throws Exception {
     super("7560-2010-11-22T08-42-26.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0.80);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0.00);
   }
 }

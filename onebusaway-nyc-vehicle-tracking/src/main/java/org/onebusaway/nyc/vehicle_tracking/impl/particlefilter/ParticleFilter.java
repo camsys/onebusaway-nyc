@@ -23,7 +23,6 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 
-import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
@@ -68,23 +67,17 @@ public class ParticleFilter<OBS> {
 
   }
 
-  final private static double _resampleThreshold = 0.5;
-  
+  final private static double _resampleThreshold = 0.75;
+
   /**
    * Flag for operations that keep particle trajectory information, etc.
    */
-  final private static boolean _debugEnabled = false;
+  final private static boolean _debugEnabled = true;
 
   /**
    * Flag for option to use the maximum likelihood particle as reported result.
    */
   final private static boolean _maxLikelihoodParticle = false;
-
-  /**
-   * Flag for option to perform move and likelihood operation in the same
-   * thread.
-   */
-  final private static boolean _moveAndWeight = true;
 
   /**
    * Flag for random number generation operations that provide reproducibility .
@@ -119,8 +112,7 @@ public class ParticleFilter<OBS> {
 
   private SensorModel<OBS> _sensorModel;
 
-  private final Map<Entry<VehicleState, VehicleState>, SensorModelResult> _sensorModelResultCache = 
-      new ConcurrentHashMap<Entry<VehicleState, VehicleState>, SensorModelResult>();
+  private final Map<Entry<VehicleState, VehicleState>, SensorModelResult> _sensorModelResultCache = new ConcurrentHashMap<Entry<VehicleState, VehicleState>, SensorModelResult>();
 
   private final Multimap<VehicleState, VehicleState> _stateTransitionCache = HashMultimap.create();
 
@@ -202,7 +194,6 @@ public class ParticleFilter<OBS> {
     runSingleTimeStep(timestamp, observation, !firstTime);
     _timeOfLastUpdate = timestamp;
   }
-  
 
   /*
    * Returns an ArrayList, each entry of which is a Particle. This allows
@@ -215,119 +206,101 @@ public class ParticleFilter<OBS> {
   }
 
   /*
-  private Multiset<Particle> applyMotionAndSensorModel(final OBS obs,
-      final double timestamp, final CategoricalDist<Particle> cdf)
-      throws ParticleFilterException {
-    final double elapsed = timestamp - _timeOfLastUpdate;
-    final Multiset<Particle> results = ConcurrentHashMultiset.create();
-    final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-    for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
-      tasks.add(Executors.callable(new Runnable() {
-        class LocalMoveCache extends ThreadLocal<Multiset<Particle>> {
-          @Override
-          protected Multiset<Particle> initialValue() {
-            return HashMultiset.create();
-          }
-        }
-
-        ThreadLocal<Multiset<Particle>> threadLocal = new LocalMoveCache();
-
-        @Override
-        public void run() {
-          final Multiset<Particle> moveCache = threadLocal.get();
-          cachedParticleMove(pEntry, timestamp, elapsed, obs,
-              moveCache);
-          for (final Multiset.Entry<Particle> pEntry : moveCache.entrySet()) {
-            final Particle p = pEntry.getElement();
-            results.add(p);
-            final SensorModelResult smr = getCachedParticleLikelihood(p, obs);
-            final double likelihood = smr.getProbability() * pEntry.getCount();
-            if (Double.isNaN(likelihood))
-              throw new IllegalStateException("NaN likehood");
-            p.setWeight(likelihood);
-            p.setResult(smr);
-          }
-          moveCache.clear();
-        }
-      }));
-    }
-    try {
-      _executorService.invokeAll(tasks);
-
-      for (final Multiset.Entry<Particle> pEntry : results.entrySet()) {
-        final Particle particle = pEntry.getElement();
-        final double likelihood = particle.getResult().getProbability()
-            * pEntry.getCount();
-        cdf.put(likelihood, particle);
-      }
-    } catch (final InterruptedException e) {
-      throw new ParticleFilterException(
-          "particle motion & sensor apply task interrupted: " + e.getMessage());
-    }
-    _stateTransitionCache.clear();
-    _sensorModelResultCache.clear();
-    final Multiset<Particle> particles = HashMultiset.create(results);
-    return particles;
-  }
-  */
+   * private Multiset<Particle> applyMotionAndSensorModel(final OBS obs, final
+   * double timestamp, final CategoricalDist<Particle> cdf) throws
+   * ParticleFilterException { final double elapsed = timestamp -
+   * _timeOfLastUpdate; final Multiset<Particle> results =
+   * ConcurrentHashMultiset.create(); final Collection<Callable<Object>> tasks =
+   * new ArrayList<Callable<Object>>(); for (final Multiset.Entry<Particle>
+   * pEntry : _particles.entrySet()) { tasks.add(Executors.callable(new
+   * Runnable() { class LocalMoveCache extends ThreadLocal<Multiset<Particle>> {
+   * 
+   * @Override protected Multiset<Particle> initialValue() { return
+   * HashMultiset.create(); } }
+   * 
+   * ThreadLocal<Multiset<Particle>> threadLocal = new LocalMoveCache();
+   * 
+   * @Override public void run() { final Multiset<Particle> moveCache =
+   * threadLocal.get(); cachedParticleMove(pEntry, timestamp, elapsed, obs,
+   * moveCache); for (final Multiset.Entry<Particle> pEntry :
+   * moveCache.entrySet()) { final Particle p = pEntry.getElement();
+   * results.add(p); final SensorModelResult smr =
+   * getCachedParticleLikelihood(p, obs); final double likelihood =
+   * smr.getProbability() * pEntry.getCount(); if (Double.isNaN(likelihood))
+   * throw new IllegalStateException("NaN likehood"); p.setWeight(likelihood);
+   * p.setResult(smr); } moveCache.clear(); } })); } try {
+   * _executorService.invokeAll(tasks);
+   * 
+   * for (final Multiset.Entry<Particle> pEntry : results.entrySet()) { final
+   * Particle particle = pEntry.getElement(); final double likelihood =
+   * particle.getResult().getProbability() pEntry.getCount();
+   * cdf.put(likelihood, particle); } } catch (final InterruptedException e) {
+   * throw new ParticleFilterException(
+   * "particle motion & sensor apply task interrupted: " + e.getMessage()); }
+   * _stateTransitionCache.clear(); _sensorModelResultCache.clear(); final
+   * Multiset<Particle> particles = HashMultiset.create(results); return
+   * particles; }
+   */
 
   @SuppressWarnings("unused")
   private Multiset<Particle> applyMotionModel(final OBS obs,
       final double timestamp) throws ParticleFilterException {
     Multiset<Particle> particles;
     final double elapsed = timestamp - _timeOfLastUpdate;
-//    if (_threads > 1) {
-//      final Multiset<Particle> results = ConcurrentHashMultiset.create();
-//      final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-//      for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
-//        tasks.add(Executors.callable(new Runnable() {
-//          @Override
-//          public void run() {
-//            cachedParticleMove(pEntry, timestamp, elapsed, obs,
-//                results);
-//          }
-//        }));
-//      }
-//      _stateTransitionCache.clear();
-//      try {
-//        _executorService.invokeAll(tasks);
-//      } catch (final InterruptedException e) {
-//        throw new ParticleFilterException(
-//            "particle sensor apply task interrupted: " + e.getMessage());
-//      }
-//      particles = HashMultiset.create(results);
-//    } else {
-      particles = _motionModel.move(_particles, timestamp, elapsed, obs);
-//    }
+    // if (_threads > 1) {
+    // final Multiset<Particle> results = ConcurrentHashMultiset.create();
+    // final Collection<Callable<Object>> tasks = new
+    // ArrayList<Callable<Object>>();
+    // for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
+    // tasks.add(Executors.callable(new Runnable() {
+    // @Override
+    // public void run() {
+    // cachedParticleMove(pEntry, timestamp, elapsed, obs,
+    // results);
+    // }
+    // }));
+    // }
+    // _stateTransitionCache.clear();
+    // try {
+    // _executorService.invokeAll(tasks);
+    // } catch (final InterruptedException e) {
+    // throw new ParticleFilterException(
+    // "particle sensor apply task interrupted: " + e.getMessage());
+    // }
+    // particles = HashMultiset.create(results);
+    // } else {
+    particles = _motionModel.move(_particles, timestamp, elapsed, obs);
+    // }
     return particles;
   }
 
   public static double getEffectiveSampleSize(Multiset<Particle> particles) {
-//    double CVt = 0.0;
-//    double N = particles.size();
+    // double CVt = 0.0;
+    // double N = particles.size();
     double Wnorm = 0.0;
-    for (Multiset.Entry<Particle> p : particles.entrySet()) {
+    for (final Multiset.Entry<Particle> p : particles.entrySet()) {
       final double weight = p.getElement().getWeight();
       Wnorm += weight * p.getCount();
     }
-    
+
     if (Wnorm == 0)
       return 0d;
-    
+
     double Wvar = 0.0;
-    for (Multiset.Entry<Particle> p : particles.entrySet()) {
+    for (final Multiset.Entry<Particle> p : particles.entrySet()) {
       final double weight = p.getElement().getWeight();
-      Wvar += FastMath.pow(weight/Wnorm, 2) * p.getCount();
+      Wvar += FastMath.pow(weight / Wnorm, 2) * p.getCount();
     }
-//    for (Multiset.Entry<Particle> p : particles.entrySet()) {
-//      CVt += FastMath.pow(p.getElement().getWeight()/Wnorm - 1/N, 2.0)*p.getCount();
-//    }
-//    CVt = FastMath.sqrt(N*CVt);
-//    
-//    return N/(1+FastMath.pow(CVt, 2.0));
-    return 1/Wvar;
+    // for (Multiset.Entry<Particle> p : particles.entrySet()) {
+    // CVt += FastMath.pow(p.getElement().getWeight()/Wnorm - 1/N,
+    // 2.0)*p.getCount();
+    // }
+    // CVt = FastMath.sqrt(N*CVt);
+    //
+    // return N/(1+FastMath.pow(CVt, 2.0));
+    return 1 / Wvar;
   }
-  
+
   private static final Ordering<Particle> _nullBlockStateComparator = new Ordering<Particle>() {
 
     @Override
@@ -355,7 +328,6 @@ public class ParticleFilter<OBS> {
     }
 
   };
-  
 
   /**
    * Applies the sensor model (as set by setSensorModel) to each particle in the
@@ -474,8 +446,9 @@ public class ParticleFilter<OBS> {
         final Particle p = pEntry.getElement();
         p.setIndex(index++);
 
-//        final double w = p.getLogWeight() + FastMath.log(pEntry.getCount());
-        final double w = FastMath.exp(p.getTransResult().getLogProbability() + FastMath.log(pEntry.getCount()));
+        // final double w = p.getLogWeight() + FastMath.log(pEntry.getCount());
+        final double w = FastMath.exp(p.getTransResult().getLogProbability()
+            + FastMath.log(pEntry.getCount()));
 
         if (Double.isInfinite(w))
           continue;
@@ -552,27 +525,27 @@ public class ParticleFilter<OBS> {
      * 1. apply the motion model to each particle 2. apply the sensor
      * model(likelihood) to each particle
      */
-//    CategoricalDist<Particle> cdf;
-//    if (_moveAndWeight && _threads > 1) {
-//
-//      if (moveParticles) {
-//        cdf = new CategoricalDist<Particle>();
-//        particles.addAll(applyMotionAndSensorModel(obs, timestamp, cdf));
-//      } else {
-//        cdf = applySensorModel(particles, obs);
-//      }
-//
-//    } else {
+    // CategoricalDist<Particle> cdf;
+    // if (_moveAndWeight && _threads > 1) {
+    //
+    // if (moveParticles) {
+    // cdf = new CategoricalDist<Particle>();
+    // particles.addAll(applyMotionAndSensorModel(obs, timestamp, cdf));
+    // } else {
+    // cdf = applySensorModel(particles, obs);
+    // }
+    //
+    // } else {
 
-      /*
-       * perform movement and weighing separately
-       */
-      if (moveParticles) {
-        particles = applyMotionModel(obs, timestamp);
-      }
+    /*
+     * perform movement and weighing separately
+     */
+    if (moveParticles) {
+      particles = applyMotionModel(obs, timestamp);
+    }
 
-//      cdf = applySensorModel(particles, obs);
-//    }
+    // cdf = applySensorModel(particles, obs);
+    // }
 
     /**
      * 3. track the weighted particles (before resampling and normalization)
@@ -583,28 +556,30 @@ public class ParticleFilter<OBS> {
      * 4. store the most likely particle's information
      */
 
-//    if (!cdf.canSample())
-//      throw new ZeroProbabilityParticleFilterException();
-    
+    // if (!cdf.canSample())
+    // throw new ZeroProbabilityParticleFilterException();
+
     computeBestState(particles);
 
-    if (getEffectiveSampleSize(particles)/ParticleFactoryImpl.getInitialNumberOfParticles() < _resampleThreshold) {
+    if (getEffectiveSampleSize(particles)
+        / ParticleFactoryImpl.getInitialNumberOfParticles() < _resampleThreshold) {
       /**
        * 5. resample (use the CDF of unevenly weighted particles to create an
        * equal number of equally-weighted ones)
        */
-      CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
+      final CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
       for (final Multiset.Entry<Particle> pEntry : particles.entrySet()) {
         final Particle p = pEntry.getElement();
-        final double logProb = p.getLogWeight() + FastMath.log(pEntry.getCount());
+        final double logProb = p.getLogWeight()
+            + FastMath.log(pEntry.getCount());
         cdf.put(FastMath.exp(logProb), p);
       }
-      
+
       if (!cdf.canSample())
         throw new ZeroProbabilityParticleFilterException();
-      
+
       final Multiset<Particle> resampled = cdf.sample(ParticleFactoryImpl.getInitialNumberOfParticles());
-      
+
       final Multiset<Particle> reweighted = HashMultiset.create(resampled.size());
       for (final Multiset.Entry<Particle> pEntry : resampled.entrySet()) {
         final Particle p = pEntry.getElement().cloneParticle();

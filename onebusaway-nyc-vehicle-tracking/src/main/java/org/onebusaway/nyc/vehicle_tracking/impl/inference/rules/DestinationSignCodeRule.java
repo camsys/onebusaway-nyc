@@ -17,6 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -36,11 +38,18 @@ import java.util.Set;
 public class DestinationSignCodeRule implements SensorModelRule {
 
   private DestinationSignCodeService _destinationSignCodeService;
+  private RunService _runService;
 
   @Autowired
   public void setDestinationSignCodeService(
       DestinationSignCodeService destinationSignCodeService) {
     _destinationSignCodeService = destinationSignCodeService;
+  }
+  
+  @Autowired
+  public void setRunService(
+      RunService runService) {
+    _runService = runService;
   }
 
   public static enum DSC_STATE {
@@ -84,7 +93,18 @@ public class DestinationSignCodeRule implements SensorModelRule {
     final Observation obs = context.getObservation();
 
     final JourneyState js = state.getJourneyState();
-    final EVehiclePhase phase = js.getPhase();
+    EVehiclePhase phase = js.getPhase();
+    final BlockState blockState = state.getBlockState();
+    
+    /*
+     * TODO clean up this hack
+     * We are really in-progress, but because of the out-of-service
+     * headsign, we can't report it as in-progress
+     */
+    if (context.getObservation().isOutOfService()
+        && EVehiclePhase.DEADHEAD_DURING == phase
+        && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+      phase = EVehiclePhase.IN_PROGRESS;
 
     final String observedDsc = obs.getLastValidDestinationSignCode();
 

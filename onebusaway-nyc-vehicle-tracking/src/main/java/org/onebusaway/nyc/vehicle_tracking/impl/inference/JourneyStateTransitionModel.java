@@ -288,7 +288,10 @@ public class JourneyStateTransitionModel {
         } else {
           boolean isOnTrip = isLocationOnATrip(blockState.getBlockState());
           if (isOnTrip) {
-            return JourneyState.inProgress();
+            if (obs.isOutOfService())
+              return JourneyState.deadheadDuring(null);
+            else
+              return JourneyState.inProgress();
           } else {
             return JourneyState.deadheadDuring(null);
           }

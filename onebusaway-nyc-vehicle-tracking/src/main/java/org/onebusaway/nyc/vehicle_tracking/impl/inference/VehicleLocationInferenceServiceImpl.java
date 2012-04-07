@@ -99,7 +99,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
   private ExecutorService _executorService;
 
-  private int _numberOfProcessingThreads = 1;
+  private int _numberOfProcessingThreads = 10;
 
   private int _skippedUpdateLogCounter = 0;
   

@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -89,7 +90,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
     final VehicleState parentState = context.getParentState();
     final Observation obs = context.getObservation();
     final Observation prevObs = obs.getPreviousObservation();
-
+    final BlockState blockState = state.getBlockState();
 
     if (parentState != null
         && MotionModelImpl.hasRunChanged(parentState.getBlockStateObservation(),
@@ -99,10 +100,22 @@ public class RunTransitionLikelihood implements SensorModelRule {
         
         return RUN_TRANSITION_STATE.RUN_CHANGE_INFO_DIFF;
       } else {
-        if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-            || EVehiclePhase.DEADHEAD_AFTER == parentState.getJourneyState().getPhase()
-            || EVehiclePhase.DEADHEAD_BEFORE == parentState.getJourneyState().getPhase()
-            || EVehiclePhase.DEADHEAD_DURING == parentState.getJourneyState().getPhase()) {
+        EVehiclePhase parentPhase = parentState.getJourneyState().getPhase();
+    
+        /*
+         * TODO clean up this hack
+         * We are really in-progress, but because of the out-of-service
+         * headsign, we can't report it as in-progress
+         */
+        if (context.getObservation().isOutOfService()
+            && EVehiclePhase.DEADHEAD_DURING == parentPhase
+            && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+          parentPhase = EVehiclePhase.IN_PROGRESS;
+        
+        if (EVehiclePhase.isLayover(parentPhase)
+            || EVehiclePhase.DEADHEAD_AFTER == parentPhase
+            || EVehiclePhase.DEADHEAD_BEFORE == parentPhase
+            || EVehiclePhase.DEADHEAD_DURING == parentPhase) {
           
           return RUN_TRANSITION_STATE.RUN_CHANGE_FROM_OOS;
         } else {

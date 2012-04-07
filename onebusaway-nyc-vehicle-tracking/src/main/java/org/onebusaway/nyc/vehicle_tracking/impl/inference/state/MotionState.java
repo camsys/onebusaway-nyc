@@ -25,9 +25,12 @@ public final class MotionState implements Comparable<MotionState> {
 
   private final CoordinatePoint lastInMotionLocation;
 
-  public MotionState(long lastInMotionTime, CoordinatePoint lastInMotionLocation) {
+  private final boolean vehicleHasNotMoved;
+
+  public MotionState(long lastInMotionTime, CoordinatePoint lastInMotionLocation, boolean vehicleHasNotMoved) {
     this.lastInMotionTime = lastInMotionTime;
     this.lastInMotionLocation = lastInMotionLocation;
+    this.vehicleHasNotMoved = vehicleHasNotMoved;
   }
 
   public long getLastInMotionTime() {
@@ -51,11 +54,13 @@ public final class MotionState implements Comparable<MotionState> {
         rightMotion.getLastInMotionLocation().getLon()).result();
   }
 
-  int _hash = 0;
+  private int _hash = 0;
+  
   @Override
   public int hashCode() {
     if (_hash != 0)
       return _hash;
+      
     final int prime = 31;
     int result = 1;
     result = prime
@@ -63,27 +68,41 @@ public final class MotionState implements Comparable<MotionState> {
         + ((lastInMotionLocation == null) ? 0 : lastInMotionLocation.hashCode());
     result = prime * result
         + (int) (lastInMotionTime ^ (lastInMotionTime >>> 32));
+    result = prime * result + (vehicleHasNotMoved ? 1231 : 1237);
     _hash = result;
     return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (!(obj instanceof MotionState))
+    }
+    if (!(obj instanceof MotionState)) {
       return false;
-    final MotionState other = (MotionState) obj;
+    }
+    MotionState other = (MotionState) obj;
     if (lastInMotionLocation == null) {
-      if (other.lastInMotionLocation != null)
+      if (other.lastInMotionLocation != null) {
         return false;
-    } else if (!lastInMotionLocation.equals(other.lastInMotionLocation))
+      }
+    } else if (!lastInMotionLocation.equals(other.lastInMotionLocation)) {
       return false;
-    if (lastInMotionTime != other.lastInMotionTime)
+    }
+    if (lastInMotionTime != other.lastInMotionTime) {
       return false;
+    }
+    if (vehicleHasNotMoved != other.vehicleHasNotMoved) {
+      return false;
+    }
     return true;
+  }
+
+  public boolean hasVehicleNotMoved() {
+    return vehicleHasNotMoved;
   }
 
 }

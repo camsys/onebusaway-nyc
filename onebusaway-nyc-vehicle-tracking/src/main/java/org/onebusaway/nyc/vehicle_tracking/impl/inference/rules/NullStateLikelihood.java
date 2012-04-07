@@ -85,7 +85,17 @@ public class NullStateLikelihood implements SensorModelRule {
     final VehicleState state = context.getState();
 //    final Observation obs = context.getObservation();
     final BlockState blockState = state.getBlockState();
-    final EVehiclePhase phase = state.getJourneyState().getPhase();
+    EVehiclePhase phase = state.getJourneyState().getPhase();
+    
+    /*
+     * TODO clean up this hack
+     * We are really in-progress, but because of the out-of-service
+     * headsign, we can't report it as in-progress
+     */
+    if (context.getObservation().isOutOfService()
+        && EVehiclePhase.DEADHEAD_DURING == phase
+        && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
+      phase = EVehiclePhase.IN_PROGRESS;
     
     if (blockState == null) {
       return NullStates.NULL_STATE;
