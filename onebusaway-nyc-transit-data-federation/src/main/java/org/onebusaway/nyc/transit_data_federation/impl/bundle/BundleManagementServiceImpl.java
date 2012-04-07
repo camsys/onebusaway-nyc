@@ -113,7 +113,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	public void setTime(Date time) {
 	  Calendar cal = new GregorianCalendar();
 	  cal.setTime(time);
-	  _currentServiceDate = new ServiceDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE));
+	  _currentServiceDate = new ServiceDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DATE));
 
 	  refreshApplicableBundles();
 	}
