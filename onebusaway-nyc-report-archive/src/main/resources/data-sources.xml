@@ -51,7 +51,7 @@
         </property> 
     </bean> 
 
-    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.transit_data_federation.impl.tdm.TransitDataManagerApiLibrary" >
+    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
       <constructor-arg type="java.lang.String" value="${tdm.host}"/>
       <constructor-arg type="java.lang.Integer" value="80" />
       <constructor-arg type="java.lang.String" value="/api/" />
