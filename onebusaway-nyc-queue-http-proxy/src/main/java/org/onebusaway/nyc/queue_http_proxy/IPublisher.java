@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.queue;
+package org.onebusaway.nyc.queue_http_proxy;
 
 /**
  * Represents an interface to simply message queue publishing operations.

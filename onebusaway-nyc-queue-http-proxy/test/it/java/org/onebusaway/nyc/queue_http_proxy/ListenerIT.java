@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.queue;
+package org.onebusaway.nyc.queue_http_proxy;
 
 import java.io.DataInputStream;
 import java.io.OutputStreamWriter;

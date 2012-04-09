@@ -21,7 +21,7 @@
   </context-param>
   <servlet>
     <servlet-name>listener</servlet-name>
-    <servlet-class>org.onebusaway.nyc.queue.BHSListenerServlet</servlet-class>
+    <servlet-class>org.onebusaway.nyc.queue_http_proxy.BHSListenerServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>listener</servlet-name>
