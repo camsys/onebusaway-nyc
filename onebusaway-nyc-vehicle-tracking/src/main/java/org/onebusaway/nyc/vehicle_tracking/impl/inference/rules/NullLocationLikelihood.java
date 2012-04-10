@@ -31,6 +31,8 @@ public class NullLocationLikelihood implements SensorModelRule {
     NON_NULL_STATE
   }
   
+  static private double nullLocProb = 1e-3;
+  
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
@@ -39,10 +41,10 @@ public class NullLocationLikelihood implements SensorModelRule {
     NullLocationStates state = getNullLocationState(context);
     switch(state) {
       case NULL_STATE:
-        result.addResultAsAnd("null-state", 0.01);
+        result.addResultAsAnd("null-state", nullLocProb);
         break;
       case NON_NULL_STATE:
-        result.addResultAsAnd("non-null-state", 0.99);
+        result.addResultAsAnd("non-null-state", 1d - nullLocProb);
         break;
     }
     return result;
@@ -58,7 +60,7 @@ public class NullLocationLikelihood implements SensorModelRule {
      * We are really in-progress, but because of the out-of-service
      * headsign, we can't report it as in-progress
      */
-    if (context.getObservation().isOutOfService()
+    if (context.getObservation().hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
         && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
       phase = EVehiclePhase.IN_PROGRESS;

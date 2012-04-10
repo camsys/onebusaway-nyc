@@ -90,6 +90,7 @@ public class AbstractTraceRunner {
   private double _standardDeviation = 20.0;
 
   private boolean _saveResultsOnAssertionError = true;
+  private double _falsePositiveRatio = 0.10;
 
   public AbstractTraceRunner() {
 
@@ -396,7 +397,8 @@ public class AbstractTraceRunner {
       /*
        * record the false positives
        */
-      if (EVehiclePhase.IN_PROGRESS != truePhase
+      if ((EVehiclePhase.IN_PROGRESS != truePhase 
+          && EVehiclePhase.LAYOVER_DURING != truePhase)
           && EVehiclePhase.IN_PROGRESS == infPhase) {
         ++falsePositiveCount;
       }
@@ -446,7 +448,7 @@ public class AbstractTraceRunner {
      */
     final double falsePositiveRatio = (double)falsePositiveCount / expected.size();
     System.out.println("\tfalse positive ratio=" + falsePositiveRatio);
-    assertTrue("false positive ratio=" + falsePositiveRatio, falsePositiveRatio < 0.1);
+    assertTrue("false positive ratio=" + falsePositiveRatio, falsePositiveRatio < _falsePositiveRatio);
 
     if (schedDevDiff.size() > 1) {
       
@@ -570,6 +572,14 @@ public class AbstractTraceRunner {
 
   public void setSchedTimeDiffStdDevReq(double schedTimeDiffStdDevReq) {
     _schedTimeDiffStdDevReq = schedTimeDiffStdDevReq;
+  }
+
+  public double getFalsePositiveRatio() {
+    return _falsePositiveRatio;
+  }
+
+  public void setFalsePositiveRatio(double falsePositiveRatio) {
+    _falsePositiveRatio = falsePositiveRatio;
   }
 
 }

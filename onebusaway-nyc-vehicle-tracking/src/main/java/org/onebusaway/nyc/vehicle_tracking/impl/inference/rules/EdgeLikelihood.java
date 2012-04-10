@@ -72,7 +72,7 @@ public class EdgeLikelihood implements SensorModelRule {
      * We are really in-progress, but because of the out-of-service
      * headsign, we can't report it as in-progress
      */
-    if (obs.isOutOfService()
+    if (obs.hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
         && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
       phase = EVehiclePhase.IN_PROGRESS;
@@ -118,6 +118,7 @@ public class EdgeLikelihood implements SensorModelRule {
       if (parentState.getBlockStateObservation().isSnapped()
           && state.getBlockStateObservation().isSnapped()) {
           pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
+          result.addLogResultAsAnd("snapped states", pDistAlong);
         
       } else {
 

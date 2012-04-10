@@ -155,58 +155,6 @@ public class BlockStateTransitionModel {
    * Block State Methods
    ****/
 
-  /**
-   * This method takes a parent VehicleState, parentState, and a potential
-   * JourneyState, journeyState, with which a new potential
-   * BlockStateObservation is sampled/determined. This is where we consider a
-   * block, allow a block change, or move along a block we're already tracking.
-   * 
-   * @param parentState
-   * @param motionState
-   * @param journeyState
-   * @param obs
-   * @return BlockStateObservation
-   */
-  public Set<BlockStateObservation> transitionBlockState(
-      VehicleState parentState, MotionState motionState,
-      JourneyState journeyState, Observation obs) {
-
-    final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
-    final Set<BlockStateObservation> potentialTransStates = Sets.newHashSet();
-
-    final boolean allowBlockChange = allowBlockTransition(parentState, obs);
-
-    if (parentBlockState != null) {
-      advanceAlongBlock(potentialTransStates, journeyState.getPhase(),
-          parentBlockState, obs);
-    } else if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase())){
-      potentialTransStates.add(null);
-    }
-
-    /**
-     * If this state has no transitions, consider block changes. Otherwise, pick
-     * the best transition.
-     */
-    if (allowBlockChange) {
-      if (parentBlockState == null) {
-        potentialTransStates.addAll(_blocksFromObservationService.determinePotentialBlockStatesForObservation(
-            obs));
-        if (EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
-          potentialTransStates.remove(null);
-      } else {
-        if (!EVehiclePhase.isActiveDuringBlock(journeyState.getPhase()))
-          potentialTransStates.add(null);
-      }
-    }
-    
-    Set<BlockStateObservation> actualTrans = Sets.newHashSet();
-    for (BlockStateObservation newBlockState : potentialTransStates) {
-      if (isTransitionAllowed(parentState, obs, newBlockState, journeyState))
-        actualTrans.add(newBlockState);
-    }
-
-    return actualTrans;
-  }
 
   private boolean isTransitionAllowed(VehicleState parentState,
       Observation obs, BlockStateObservation state, JourneyState journeyState) {
@@ -321,7 +269,7 @@ public class BlockStateTransitionModel {
 
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
 
-    if (parentBlockState == null && !obs.isOutOfService())
+    if (parentBlockState == null && (!obs.hasOutOfServiceDsc() && obs.hasValidDsc()))
       return true;
 
     if (parentBlockState != null) {
@@ -382,70 +330,6 @@ public class BlockStateTransitionModel {
       return true;
 
     return false;
-  }
-
-  /**
-   * This method searches for the best block location within a given distance
-   * from the previous block location. As well, transitions to and from layover
-   * states are considered here.
-   * 
-   * @param phase
-   * @param BlockStateObservation
-   * @param obs
-   * @return
-   */
-  private void advanceAlongBlock(final Set<BlockStateObservation> results, EVehiclePhase phase,
-      BlockStateObservation blockState, Observation obs) {
-
-    Set<BlockStateObservation> newStates = Sets.newHashSet();
-    if (!obs.isOutOfService()) {
-      Set<BlockStateObservation> updatedStates = _blocksFromObservationService.bestStates(
-          obs, blockState);
-      for (final BlockStateObservation updatedBlockState : updatedStates) {
-        if (updatedBlockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
-            > blockState.getBlockState().getBlockLocation().getDistanceAlongBlock())
-          newStates.add(updatedBlockState);
-      }
-    }
-    
-//    BlockTripEntry blockTrip = blockState.getBlockState().getBlockLocation().getActiveTrip();
-//    double distAlongTrip = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock()
-//      - blockTrip.getDistanceAlongBlock();
-//    
-//    /*
-//     * If the movement takes us pass the trip we were doing, then
-//     * propose then next.
-//     */
-//    if (distTraveled + distAlongTrip > blockTrip.getTrip().getTotalTripDistance()) {
-//      BlockState nextState = _blockStateService.getAsState(blockState.getBlockState().getBlockInstance(), 
-//          blockTrip.getNextTrip().getDistanceAlongBlock());
-//      boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-//          nextState, obs);
-//      newStates.add(new BlockStateObservation(nextState, obs, isAtPotentialLayoverSpot, false));
-//      
-//    }
-    
-    if (newStates.isEmpty()) {
-      if (EVehiclePhase.isActiveDuringBlock(phase)) {
-        double distTraveled = SphericalGeometryLibrary.distance(obs.getLocation(),
-            obs.getPreviousObservation().getLocation());
-        BlockState nextState = _blockStateService.getAsState(blockState.getBlockState().getBlockInstance(), 
-            blockState.getBlockState().getBlockLocation().getDistanceAlongBlock() + distTraveled);
-        boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
-            nextState, obs);
-        newStates.add(new BlockStateObservation(nextState, obs, isAtPotentialLayoverSpot, false));
-      } else {
-        newStates.add(blockState);
-      }
-    }
-    
-    for (BlockStateObservation newState : newStates) {
-      if (EVehiclePhase.isLayover(phase))
-        results.add(_blocksFromObservationService.advanceLayoverState(obs, newState));
-      else
-        results.add(newState);
-    }
-
   }
 
   /**

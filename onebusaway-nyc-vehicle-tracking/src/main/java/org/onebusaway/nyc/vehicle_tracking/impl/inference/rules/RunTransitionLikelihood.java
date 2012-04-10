@@ -107,7 +107,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
          * We are really in-progress, but because of the out-of-service
          * headsign, we can't report it as in-progress
          */
-        if (context.getObservation().isOutOfService()
+        if (context.getObservation().hasOutOfServiceDsc()
             && EVehiclePhase.DEADHEAD_DURING == parentPhase
             && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
           parentPhase = EVehiclePhase.IN_PROGRESS;

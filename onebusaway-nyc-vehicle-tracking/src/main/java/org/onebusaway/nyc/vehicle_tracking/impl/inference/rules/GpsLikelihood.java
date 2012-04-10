@@ -79,7 +79,7 @@ public class GpsLikelihood implements SensorModelRule {
      * We are really in-progress, but because of the out-of-service
      * headsign, we can't report it as in-progress
      */
-    if (obs.isOutOfService()
+    if (obs.hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
         && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
       phase = EVehiclePhase.IN_PROGRESS;
@@ -90,7 +90,19 @@ public class GpsLikelihood implements SensorModelRule {
       result.addResultAsAnd("gps(no state)", 1.0);
       
     } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
-      result.addResultAsAnd("gps(deadhead-after)", 1.0);
+      final double pGps;
+      if (state.getBlockStateObservation().isSnapped()) {
+        final CoordinatePoint p1 = blockState.getBlockLocation().getLocation();
+        final ProjectedPoint p2 = obs.getPoint();
+        final double d = SphericalGeometryLibrary.distance(p1.getLat(),
+            p1.getLon(), p2.getLat(), p2.getLon());
+        pGps = FoldedNormalDist.density(inProgressGpsMean, gpsStdDev, d);
+        result.addResult("d", d);
+        result.addResultAsAnd("gps(deadhead-after)", pGps);
+        
+      } else {
+        result.addResultAsAnd("gps(deadhead-after)", 1.0);
+      }
       
     } else if (EVehiclePhase.AT_BASE == phase) {
       result.addResultAsAnd("gps(at-base)", 1.0);

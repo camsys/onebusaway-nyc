@@ -90,6 +90,8 @@ public class BlockStateService {
 
   private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
 
+  private static final double _oppositeDirMoveCutoff = 15;
+
   /**
    * This will sound weird, but DON'T REMOVE THIS
    */
@@ -440,6 +442,16 @@ public class BlockStateService {
         }
       }
     }
+    
+    Double obsOrientation = null;
+    Double distMoved = null;
+    if (observation.getPreviousRecord() != null) {
+      NycRawLocationRecord prevRecord = observation.getPreviousRecord();
+      obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
+          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
+      distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
+          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
+    }
 
     for (final Entry<BlockInstance, Collection<Double>> biEntry : instancesToDists.asMap().entrySet()) {
       final BlockInstance instance = biEntry.getKey();
@@ -455,11 +467,22 @@ public class BlockStateService {
       for (final Double distanceAlongBlock : biEntry.getValue()) {
         final ScheduledBlockLocation location = _scheduledBlockLocationService.getScheduledBlockLocationFromDistanceAlongBlock(
             instance.getBlock(), distanceAlongBlock);
-        final int schedTime = location.getScheduledTime();
-
+        
+        /*
+         * Don't consider opposite direction trips.
+         */
+        if (obsOrientation != null && distMoved != null) {
+          double orientDiff = Math.abs(obsOrientation - location.getOrientation());
+          if (orientDiff >= 95 && orientDiff <= 265 
+              && distMoved >= getOppositedirmovecutoff()) {
+            continue;
+          }
+        }
+          
         /*
          * Should be increasing time for increasing distanceAlongBlock...
          */
+        final int schedTime = location.getScheduledTime();
         if (schedTime > searchTimeTo)
           break;
 
@@ -715,6 +738,10 @@ public class BlockStateService {
     }
     
     _log.info("done.");
+  }
+
+  public static double getOppositedirmovecutoff() {
+    return _oppositeDirMoveCutoff;
   }
 
 }

@@ -46,7 +46,7 @@ public class OutOfServiceRule implements SensorModelRule {
      * out of service => AT_BASE or DEADHEAD_BEFORE or LAYOVER_BEFORE
      */
 
-    final boolean outOfService = obs.isOutOfService();
+    final boolean outOfService = obs.hasOutOfServiceDsc();
     final boolean beforeState = EVehiclePhase.isActiveBeforeBlock(phase);
 
     final double pOutOfService = implies(p(outOfService), p(beforeState));

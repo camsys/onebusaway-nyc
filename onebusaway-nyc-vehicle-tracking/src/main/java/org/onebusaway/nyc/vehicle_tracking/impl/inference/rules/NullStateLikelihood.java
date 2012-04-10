@@ -92,7 +92,7 @@ public class NullStateLikelihood implements SensorModelRule {
      * We are really in-progress, but because of the out-of-service
      * headsign, we can't report it as in-progress
      */
-    if (context.getObservation().isOutOfService()
+    if (context.getObservation().hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
         && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
       phase = EVehiclePhase.IN_PROGRESS;

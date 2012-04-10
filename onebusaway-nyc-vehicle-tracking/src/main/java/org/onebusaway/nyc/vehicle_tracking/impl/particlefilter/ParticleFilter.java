@@ -72,7 +72,7 @@ public class ParticleFilter<OBS> {
   /**
    * Flag for operations that keep particle trajectory information, etc.
    */
-  final private static boolean _debugEnabled = true;
+  final private static boolean _debugEnabled = false;
 
   /**
    * Flag for option to use the maximum likelihood particle as reported result.
@@ -84,10 +84,6 @@ public class ParticleFilter<OBS> {
    */
   private static boolean _testingEnabled = true;
 
-  private int _threads = 1;
-
-  // Runtime.getRuntime().availableProcessors();
-
   public static boolean getDebugEnabled() {
     return _debugEnabled;
   }
@@ -95,8 +91,6 @@ public class ParticleFilter<OBS> {
   public static boolean getTestingEnabled() {
     return _testingEnabled;
   }
-
-  private ExecutorService _executorService;
 
   volatile private Particle _leastLikelyParticle;
 
@@ -112,10 +106,6 @@ public class ParticleFilter<OBS> {
 
   private SensorModel<OBS> _sensorModel;
 
-  private final Map<Entry<VehicleState, VehicleState>, SensorModelResult> _sensorModelResultCache = new ConcurrentHashMap<Entry<VehicleState, VehicleState>, SensorModelResult>();
-
-  private final Multimap<VehicleState, VehicleState> _stateTransitionCache = HashMultimap.create();
-
   private double _timeOfLastUpdate = 0L;
 
   private Multiset<Particle> _weightedParticles = HashMultiset.create();
@@ -123,9 +113,6 @@ public class ParticleFilter<OBS> {
   @SuppressWarnings("unused")
   public ParticleFilter(ParticleFactory<OBS> particleFactory,
       SensorModel<OBS> sensorModel, MotionModel<OBS> motionModel) {
-    if (_threads > 1) {
-      _executorService = Executors.newFixedThreadPool(_threads);
-    }
 
     _particleFactory = particleFactory;
     _sensorModel = sensorModel;
@@ -205,72 +192,13 @@ public class ParticleFilter<OBS> {
     return _particleFactory.createParticles(timestamp, observation);
   }
 
-  /*
-   * private Multiset<Particle> applyMotionAndSensorModel(final OBS obs, final
-   * double timestamp, final CategoricalDist<Particle> cdf) throws
-   * ParticleFilterException { final double elapsed = timestamp -
-   * _timeOfLastUpdate; final Multiset<Particle> results =
-   * ConcurrentHashMultiset.create(); final Collection<Callable<Object>> tasks =
-   * new ArrayList<Callable<Object>>(); for (final Multiset.Entry<Particle>
-   * pEntry : _particles.entrySet()) { tasks.add(Executors.callable(new
-   * Runnable() { class LocalMoveCache extends ThreadLocal<Multiset<Particle>> {
-   * 
-   * @Override protected Multiset<Particle> initialValue() { return
-   * HashMultiset.create(); } }
-   * 
-   * ThreadLocal<Multiset<Particle>> threadLocal = new LocalMoveCache();
-   * 
-   * @Override public void run() { final Multiset<Particle> moveCache =
-   * threadLocal.get(); cachedParticleMove(pEntry, timestamp, elapsed, obs,
-   * moveCache); for (final Multiset.Entry<Particle> pEntry :
-   * moveCache.entrySet()) { final Particle p = pEntry.getElement();
-   * results.add(p); final SensorModelResult smr =
-   * getCachedParticleLikelihood(p, obs); final double likelihood =
-   * smr.getProbability() * pEntry.getCount(); if (Double.isNaN(likelihood))
-   * throw new IllegalStateException("NaN likehood"); p.setWeight(likelihood);
-   * p.setResult(smr); } moveCache.clear(); } })); } try {
-   * _executorService.invokeAll(tasks);
-   * 
-   * for (final Multiset.Entry<Particle> pEntry : results.entrySet()) { final
-   * Particle particle = pEntry.getElement(); final double likelihood =
-   * particle.getResult().getProbability() pEntry.getCount();
-   * cdf.put(likelihood, particle); } } catch (final InterruptedException e) {
-   * throw new ParticleFilterException(
-   * "particle motion & sensor apply task interrupted: " + e.getMessage()); }
-   * _stateTransitionCache.clear(); _sensorModelResultCache.clear(); final
-   * Multiset<Particle> particles = HashMultiset.create(results); return
-   * particles; }
-   */
 
   @SuppressWarnings("unused")
   private Multiset<Particle> applyMotionModel(final OBS obs,
       final double timestamp) throws ParticleFilterException {
     Multiset<Particle> particles;
     final double elapsed = timestamp - _timeOfLastUpdate;
-    // if (_threads > 1) {
-    // final Multiset<Particle> results = ConcurrentHashMultiset.create();
-    // final Collection<Callable<Object>> tasks = new
-    // ArrayList<Callable<Object>>();
-    // for (final Multiset.Entry<Particle> pEntry : _particles.entrySet()) {
-    // tasks.add(Executors.callable(new Runnable() {
-    // @Override
-    // public void run() {
-    // cachedParticleMove(pEntry, timestamp, elapsed, obs,
-    // results);
-    // }
-    // }));
-    // }
-    // _stateTransitionCache.clear();
-    // try {
-    // _executorService.invokeAll(tasks);
-    // } catch (final InterruptedException e) {
-    // throw new ParticleFilterException(
-    // "particle sensor apply task interrupted: " + e.getMessage());
-    // }
-    // particles = HashMultiset.create(results);
-    // } else {
     particles = _motionModel.move(_particles, timestamp, elapsed, obs);
-    // }
     return particles;
   }
 
@@ -328,80 +256,7 @@ public class ParticleFilter<OBS> {
     }
 
   };
-
-  /**
-   * Applies the sensor model (as set by setSensorModel) to each particle in the
-   * filter, according to the given observable.
-   */
-  @SuppressWarnings("unused")
-  private CategoricalDist<Particle> applySensorModel(
-      Multiset<Particle> particles, final OBS obs)
-      throws ParticleFilterException {
-
-    final CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
-
-    /*
-     * Sort particles in block-state "null order". Used to determine maximum
-     * probabilities for non-null states.
-     */
-    final List<Particle> nullSortedParticles = _nullBlockStateComparator.immutableSortedCopy(particles.elementSet());
-
-    if (_threads > 1) {
-
-      final Collection<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-      final Collection<SensorModelParticleResult> results = new ConcurrentLinkedQueue<SensorModelParticleResult>();
-      for (final Particle p : nullSortedParticles) {
-        tasks.add(Executors.callable(new Runnable() {
-          @Override
-          public void run() {
-            results.add(new SensorModelParticleResult(p,
-                getCachedParticleLikelihood(p, obs)));
-          }
-        }));
-      }
-      _sensorModelResultCache.clear();
-
-      try {
-        _executorService.invokeAll(tasks);
-        for (final SensorModelParticleResult res : results) {
-          final Particle particle = res._particle;
-          final SensorModelResult result = res._result;
-          final double likelihood = result.getProbability()
-              * particles.count(particle);
-
-          if (Double.isNaN(likelihood))
-            throw new IllegalStateException("NaN likehood");
-
-          particle.setWeight(likelihood);
-          particle.setResult(result);
-
-          cdf.put(likelihood, particle);
-        }
-      } catch (final InterruptedException e) {
-        throw new ParticleFilterException(
-            "particle sensor apply task interrupted: " + e.getMessage());
-      }
-    } else {
-      for (final Particle particle : nullSortedParticles) {
-        final SensorModelResult result = getCachedParticleLikelihood(particle,
-            obs);
-
-        final double likelihood = result.getProbability()
-            * particles.count(particle);
-
-        if (Double.isNaN(likelihood))
-          throw new IllegalStateException("NaN likehood");
-
-        particle.setWeight(likelihood);
-        particle.setResult(result);
-
-        cdf.put(likelihood, particle);
-      }
-      _sensorModelResultCache.clear();
-    }
-
-    return cdf;
-  }
+  
 
   /**
    * @return true if this is the initial entry for these particles
@@ -447,7 +302,7 @@ public class ParticleFilter<OBS> {
         p.setIndex(index++);
 
         // final double w = p.getLogWeight() + FastMath.log(pEntry.getCount());
-        final double w = FastMath.exp(p.getTransResult().getLogProbability()
+        final double w = FastMath.exp(p.getLogWeight()
             + FastMath.log(pEntry.getCount()));
 
         if (Double.isInfinite(w))
@@ -488,18 +343,6 @@ public class ParticleFilter<OBS> {
 
   }
 
-  /**
-   * XXX Only returns new results, with already performed calculations signified
-   * by a null return result. TODO Returning null is kinda lame.
-   * 
-   * @param particle
-   * @param obs
-   * @return
-   */
-  private SensorModelResult getCachedParticleLikelihood(Particle particle,
-      OBS obs) {
-    return _sensorModel.likelihood(particle, obs, _sensorModelResultCache);
-  }
 
   @SuppressWarnings("unused")
   private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) {
@@ -521,31 +364,12 @@ public class ParticleFilter<OBS> {
 
     Multiset<Particle> particles = _particles;
 
-    /**
-     * 1. apply the motion model to each particle 2. apply the sensor
-     * model(likelihood) to each particle
-     */
-    // CategoricalDist<Particle> cdf;
-    // if (_moveAndWeight && _threads > 1) {
-    //
-    // if (moveParticles) {
-    // cdf = new CategoricalDist<Particle>();
-    // particles.addAll(applyMotionAndSensorModel(obs, timestamp, cdf));
-    // } else {
-    // cdf = applySensorModel(particles, obs);
-    // }
-    //
-    // } else {
-
     /*
      * perform movement and weighing separately
      */
     if (moveParticles) {
       particles = applyMotionModel(obs, timestamp);
     }
-
-    // cdf = applySensorModel(particles, obs);
-    // }
 
     /**
      * 3. track the weighted particles (before resampling and normalization)
@@ -593,17 +417,4 @@ public class ParticleFilter<OBS> {
 
   }
 
-  public int getThreads() {
-    return _threads;
-  }
-
-  public void setThreads(int threads) {
-    _threads = threads;
-    if (_threads > 1) {
-      if (_executorService != null)
-        _executorService.shutdownNow();
-      _executorService = Executors.newFixedThreadPool(_threads);
-    } else
-      _executorService = null;
-  }
 }

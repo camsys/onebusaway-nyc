@@ -272,6 +272,7 @@ public class RunServiceImpl implements RunService {
              * they're allowed to enter anything, so we put this in there
              */
             runIdsToTry.add(RunTripEntry.createId("00", runNumber));
+            runIdsToTry.add(RunTripEntry.createId("999", runNumber));
 
             /*
              * however, they often use the actual route number

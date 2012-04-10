@@ -49,4 +49,6 @@ public interface BlocksFromObservationService {
 
   public BlockStateObservation getBlockStateObservationFromTime(
       Observation obs, BlockInstance blockInstance, int newSchedTime);
+
+  public boolean hasSnappedBlockStates(Observation obs);
 }

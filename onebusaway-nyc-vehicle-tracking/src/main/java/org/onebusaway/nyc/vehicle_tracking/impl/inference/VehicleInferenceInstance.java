@@ -274,9 +274,9 @@ public class VehicleInferenceInstance {
 
     boolean atBase = _baseLocationService.getBaseNameForLocation(location) != null;
     boolean atTerminal = _vehicleStateLibrary.isAtPotentialBlockTerminal(record);
-    boolean outOfService = lastValidDestinationSignCode == null
-        || _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode)
-        || _destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
+    boolean outOfService = _destinationSignCodeService.isOutOfServiceDestinationSignCode(lastValidDestinationSignCode);
+    boolean hasValidDsc = !_destinationSignCodeService.isMissingDestinationSignCode(lastValidDestinationSignCode)
+        && !_destinationSignCodeService.isUnknownDestinationSignCode(lastValidDestinationSignCode);
 
     Set<AgencyAndId> routeIds = new HashSet<AgencyAndId>();
     if (_previousObservation == null
@@ -294,7 +294,7 @@ public class VehicleInferenceInstance {
     }
 
     final Observation observation = new Observation(timestamp, record,
-        lastValidDestinationSignCode, atBase, atTerminal, outOfService,
+        lastValidDestinationSignCode, atBase, atTerminal, outOfService, hasValidDsc,
         _previousObservation, routeIds, runResults);
 
     if (_previousObservation != null)

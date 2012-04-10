@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import com.google.common.base.Strings;
+
 import org.apache.commons.lang.builder.CompareToBuilder;
 import java.util.Set;
 
@@ -17,6 +19,12 @@ public class RunResults implements Comparable<RunResults> {
     this.bestFuzzyDist = bestFuzzyDist;
   }
 
+  public boolean hasRunResults() {
+    return !(Strings.isNullOrEmpty(assignedRunId)
+        && fuzzyMatches.isEmpty()
+        && bestFuzzyDist == null); 
+  }
+  
   public String getAssignedRunId() {
     return assignedRunId;
   }

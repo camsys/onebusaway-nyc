@@ -50,9 +50,11 @@ public class Observation implements Comparable<Observation> {
 
   private final RunResults _runResults;
 
+  private final boolean hasValidDsc;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
-      boolean outOfService, Observation previousObservation,
+      boolean outOfService, boolean hasValidDsc, Observation previousObservation,
       Set<AgencyAndId> dscImpliedRoutes, RunResults runResults) {
     _timestamp = timestamp;
     _record = record;
@@ -64,6 +66,7 @@ public class Observation implements Comparable<Observation> {
     this.atBase = atBase;
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
+    this.hasValidDsc = hasValidDsc;
 
     _previousObservation = previousObservation;
   }
@@ -92,7 +95,7 @@ public class Observation implements Comparable<Observation> {
     return atTerminal;
   }
 
-  public boolean isOutOfService() {
+  public boolean hasOutOfServiceDsc() {
     return outOfService;
   }
 
@@ -243,6 +246,10 @@ public class Observation implements Comparable<Observation> {
 
   public RunResults getRunResults() {
     return _runResults;
+  }
+
+  public boolean hasValidDsc() {
+    return hasValidDsc;
   }
 
 }

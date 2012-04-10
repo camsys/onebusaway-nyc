@@ -92,7 +92,7 @@ public class TransitionRule implements SensorModelRule {
       wasAtEndOfBlock = true;
 
     double pTransitionFromDuringToBefore = implies(p(transitionDuringToBefore),
-        p(obs.isAtBase() || obs.isOutOfService() || wasOffRoute || endOfBlock
+        p(obs.isAtBase() || obs.hasOutOfServiceDsc() || wasOffRoute || endOfBlock
             || wasAtEndOfBlock));
 
     result.addResultAsAnd(

@@ -96,7 +96,7 @@ public class ScheduleLikelihood implements SensorModelRule {
       if (FastMath.abs(state.getBlockStateObservation().getScheduleDeviation()) > 0d) {
         final double x = state.getBlockStateObservation().getScheduleDeviation();
         final double pSched = schedDevPriorDist.getProbabilityFunction().logEvaluate(x);
-        result.addLogResultAsAnd("deadhead before", pSched);
+        result.addLogResultAsAnd("deadhead after", pSched);
       } else {
         result.addLogResultAsAnd("deadhead after", 0.0);
       }

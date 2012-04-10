@@ -294,7 +294,7 @@ public class BlocksFromObservationServiceImpl implements
     final Set<BlockStateObservation> potentialBlockStatesNotInProgress = Sets.newHashSet();
     final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
 
-    if (!observation.isOutOfService()) {
+    if (observation.getRunResults().hasRunResults()) {
       for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
         boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
             bs, observation);
@@ -515,7 +515,8 @@ public class BlocksFromObservationServiceImpl implements
      */
     final List<AgencyAndId> tripIds = Lists.newArrayList();
     if (observation.getLastValidDestinationSignCode() != null
-        && !observation.isOutOfService())
+        && !observation.hasOutOfServiceDsc()
+        && observation.hasValidDsc())
       tripIds.addAll(_destinationSignCodeService.getTripIdsForDestinationSignCode(dsc));
     
     final List<String> runIds = Lists.newArrayList();
@@ -565,6 +566,16 @@ public class BlocksFromObservationServiceImpl implements
 
   }
 
+  @Override
+  public boolean hasSnappedBlockStates(Observation obs) {
+    Set<BlockState> blockStates = _blockStateService.getBlockStatesForObservation(obs);
+    if (!blockStates.isEmpty())
+      return true;
+    else
+      return false;
+    
+  }
+  
   @Override
   public Set<BlockStateObservation> getSnappedBlockStates(Observation obs) {
     Set<BlockState> blockStates = _blockStateService.getBlockStatesForObservation(obs);

@@ -21,7 +21,8 @@ public class Trace_2423_20120111_091352_092348_IntegrationTest extends AbstractT
 
   public Trace_2423_20120111_091352_092348_IntegrationTest() throws Exception {
     super("2423_20120111_091352_092348.csv.gz");
-    setBundle("2012Jan_SIB63M34_r20_b01", "2012-2-11T09:00:00EDT");
-//    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.8);
+    setBundle("2012Jan_SIB63M34_r20_b01", "2012-1-11T09:00:00EDT");
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.6);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_DURING, 0.9);
   }
 }

@@ -68,7 +68,7 @@ public class DeadheadOrLayoverAfterRule implements SensorModelRule {
     final double pServedSomePartOfBlock = library.computeProbabilityOfServingSomePartOfBlock(blockState);
     final double pOffBlock = library.computeOffBlockProbability(state, obs);
     // double pOutOfService = library.computeOutOfServiceProbability(obs);
-    final double pOutOfService = obs.isOutOfService() ? 1.0 : 0.0;
+    final double pOutOfService = obs.hasOutOfServiceDsc() ? 1.0 : 0.0;
 
     final double pOffRouteOrOutOfService = pServedSomePartOfBlock
         * or(pOffBlock, pOutOfService);

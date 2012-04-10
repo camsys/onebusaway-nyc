@@ -216,14 +216,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         transProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(null, context));
         
         final Particle newParticle = new Particle(timestamp, null, 0.0, state);
-        newParticle.setTransResult(transProb);
+        newParticle.setResult(transProb);
 
         transitionProb.put(transProb.getProbability(), newParticle);
       }
 
       if (transitionProb.canSample()) {
         Particle newSample = transitionProb.sample();
-        newSample.setLogWeight(newSample.getTransResult().getLogProbability());
+        newSample.setLogWeight(newSample.getResult().getLogProbability());
         particles.add(newSample);
       } else {
         final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();

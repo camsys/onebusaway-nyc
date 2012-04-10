@@ -101,14 +101,14 @@ public class DestinationSignCodeRule implements SensorModelRule {
      * We are really in-progress, but because of the out-of-service
      * headsign, we can't report it as in-progress
      */
-    if (context.getObservation().isOutOfService()
+    if (context.getObservation().hasOutOfServiceDsc()
         && EVehiclePhase.DEADHEAD_DURING == phase
         && (blockState != null && JourneyStateTransitionModel.isLocationOnATrip(blockState)))
       phase = EVehiclePhase.IN_PROGRESS;
 
     final String observedDsc = obs.getLastValidDestinationSignCode();
 
-    if (observedDsc == null || obs.isOutOfService()) {
+    if (observedDsc == null || obs.hasOutOfServiceDsc()) {
       /**
        * If we haven't yet seen a valid DSC, or it's out of service
        */

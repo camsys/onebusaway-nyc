@@ -64,8 +64,8 @@ import java.util.Set;
  */
 public class MotionModelImpl implements MotionModel<Observation> {
 
-  private static final double _essNoRunInfoTransitionThreshold = 0.75;
-  private static final double _essRunInfoTransitionThreshold = 0.45;
+  private static final double _essNoRunInfoTransitionThreshold = 0.60;
+  private static final double _essRunInfoTransitionThreshold = 0.65;
 
   private JourneyStateTransitionModel _journeyMotionModel;
 
@@ -148,20 +148,49 @@ public class MotionModelImpl implements MotionModel<Observation> {
     _blockStateSamplingStrategy = blockStateSamplingStrategy;
   }
 
+//  private boolean checkIsInOppositeDirection(Observation observation,
+//      VehicleState state) {
+//    
+//    Double obsOrientation = null;
+//    Double distMoved = null;
+//    if (observation.getPreviousRecord() != null) {
+//      NycRawLocationRecord prevRecord = observation.getPreviousRecord();
+//      obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
+//          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
+//      distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
+//          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
+//    }
+//    
+//    /*
+//     * Don't consider opposite direction trips.
+//     */
+//    if (obsOrientation != null && distMoved != null) {
+//      double orientDiff = Math.abs(obsOrientation - location.getOrientation());
+//      if (orientDiff >= 95 && orientDiff <= 265 
+//          && distMoved >= BlockStateService.getOppositedirmovecutoff()) {
+//        break;
+//      }
+//    }
+//    
+//  }
+
   private boolean allowParentBlockTransition(VehicleState parentState,
       Observation obs) {
 
     final BlockStateObservation parentBlockState = parentState.getBlockStateObservation();
 
-    if (parentBlockState == null && !obs.isOutOfService())
+    if (parentBlockState == null && (!obs.hasOutOfServiceDsc() && obs.hasValidDsc()))
       return true;
 
     if (parentBlockState != null) {
       /*
        * Check if we don't have useable run-info
        */
-      if (Strings.isNullOrEmpty(obs.getOpAssignedRunId())
-          && obs.getFuzzyMatchDistance() == null) {
+      if ((Strings.isNullOrEmpty(obs.getOpAssignedRunId())
+          && obs.getFuzzyMatchDistance() == null)
+          || (parentBlockState.getOpAssigned() != Boolean.TRUE
+            && parentBlockState.getRunReported() != Boolean.TRUE)
+          ) {
 
         /*
          * We have no run information, so we will allow a run transition when we
@@ -171,6 +200,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
           return true;
         }
       }
+    }
+    
+    if (obs.getPreviousObservation() != null) {
+      /*
+       * If we didn't have snapped states, and now we do.
+       */
+      boolean hadNoSnappedStates = !_blocksFromObservationService.hasSnappedBlockStates(
+          obs.getPreviousObservation());
+      boolean hasSnappedStates = _blocksFromObservationService.hasSnappedBlockStates(obs);
+      if (hadNoSnappedStates && hasSnappedStates)
+        return true;
     }
 
     return false;
@@ -189,8 +229,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
       essResampleThreshold = _essRunInfoTransitionThreshold;
     }
 
-    if (ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold)
+    if (ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold) {
+      // TODO debug.  remove.
+      System.out.println("ess resample!");
       return true;
+    }
 
     return false;
   }
@@ -222,7 +265,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
          * Only the snapped blocks
          */
         transitions.addAll(_blocksFromObservationService.advanceState(obs,
-            parentState.getBlockState(), -1.0 * GpsLikelihood.gpsStdDev / 2.0,
+            parentState.getBlockState(), -1.98 * GpsLikelihood.gpsStdDev,
             Double.POSITIVE_INFINITY));
         // GpsLikelihood.gpsStdDev/2.0));
       }
@@ -326,10 +369,16 @@ public class MotionModelImpl implements MotionModel<Observation> {
        * Null-location's Prior
        */
       transProb.addResultAsAnd(nullLocationLikelihood.likelihood(null, context));
+      
+      /*
+       * Vehicle movement prob.
+       */
+      transProb.addResultAsAnd(new SensorModelResult("not-moved", 
+          vehicleNotMoved ? vehicleHasNotMovedProb : 1d - vehicleHasNotMovedProb));
 
       final Particle newParticle = new Particle(timestamp, parent.getElement(),
           0.0, newState);
-      newParticle.setTransResult(transProb);
+      newParticle.setResult(transProb);
 
       transitionDist.put(transProb.getProbability(), newParticle);
     }
@@ -337,7 +386,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
     if (transitionDist.canSample()) {
       final Particle sampledParticle = transitionDist.sample();
       sampledParticle.setLogWeight(parent.getElement().getLogWeight()
-          + sampledParticle.getTransResult().getLogProbability());
+          + sampledParticle.getResult().getLogProbability());
       // sampledParticle.setLogWeight(sampledParticle.getTransResult().getLogProbability());
       return sampledParticle;
     } else {
@@ -359,12 +408,13 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(runTransitionLikelihood.likelihood(null, context));
       transProb.addResultAsAnd(nullStateLikelihood.likelihood(null, context));
       transProb.addResultAsAnd(nullLocationLikelihood.likelihood(null, context));
+      transProb.addResultAsAnd(new SensorModelResult("not-moved", 
+          vehicleNotMoved ? vehicleHasNotMovedProb : 1d - vehicleHasNotMovedProb));
       final Particle newParticle = new Particle(timestamp, parent.getElement(),
           0.0, nullState);
-      newParticle.setTransResult(transProb);
+      newParticle.setResult(transProb);
       newParticle.setLogWeight(parent.getElement().getLogWeight()
-          + newParticle.getTransResult().getLogProbability());
-      // newParticle.setLogWeight(newParticle.getTransResult().getLogProbability());
+          + newParticle.getResult().getLogProbability());
 
       return newParticle;
     }

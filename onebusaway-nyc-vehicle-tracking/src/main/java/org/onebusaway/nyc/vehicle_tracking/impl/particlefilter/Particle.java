@@ -301,6 +301,11 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   public void setTransResult(SensorModelResult transResult) {
     this._transResult = transResult;
+    if (_result != null) {
+      this._result.addResultAsAnd(transResult);
+    } else {
+      this._result = transResult;
+    }
   }
   
   public SensorModelResult getTransResult() {
