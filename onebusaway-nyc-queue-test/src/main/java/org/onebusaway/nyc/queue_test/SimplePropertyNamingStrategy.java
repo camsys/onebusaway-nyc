@@ -6,8 +6,12 @@ import org.codehaus.jackson.map.MapperConfig;
 import org.codehaus.jackson.map.PropertyNamingStrategy;
 import org.codehaus.jackson.map.introspect.AnnotatedField;
 import org.codehaus.jackson.map.introspect.AnnotatedMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimplePropertyNamingStrategy extends PropertyNamingStrategy {
+	protected static Logger _log = LoggerFactory
+			.getLogger(SimplePropertyNamingStrategy.class);
   // custom mappings for various fields
   private HashMap<String, String> map = null;
 

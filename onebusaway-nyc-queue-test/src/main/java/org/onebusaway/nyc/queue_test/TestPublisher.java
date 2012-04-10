@@ -108,7 +108,6 @@ public class TestPublisher implements IPublisher {
     // we remove wrapping below, so check for min length acceptable
     if (realtime.length() < 2)
       return null;
-    _log.warn("realtime=" + realtime);
 
     StringBuffer prefix = new StringBuffer();
     prefix.append("{\"RealtimeEnvelope\": {\"UUID\":\"").append(uuid).append(

@@ -56,6 +56,12 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 			// re-calculate zoneOffset periodically
 			if (count > COUNT_INTERVAL) {
 				_zoneOffset = null;
+				if (record != null) {
+					long delta = System.currentTimeMillis()-record.getTimeReceived().getTime();
+					if (delta > 2000) {
+						_log.warn("realtime queue is " + delta + " millis behind");
+					}
+				}
 				count = 0;
 			}
 		} catch (Throwable t) {

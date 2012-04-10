@@ -27,7 +27,8 @@ import javax.annotation.PreDestroy;
 
 public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 
-  protected abstract void processResult(NycQueuedInferredLocationBean inferredResult, String contents);
+	protected abstract void processResult(
+			NycQueuedInferredLocationBean inferredResult, String contents);
 
 	@Override
 	public boolean processMessage(String address, String contents) {
@@ -35,71 +36,78 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 			if (address == null || !address.equals(getQueueName())) {
 				return false;
 			}
-			NycQueuedInferredLocationBean inferredResult = 
-				_mapper.readValue(contents, NycQueuedInferredLocationBean.class);
+			NycQueuedInferredLocationBean inferredResult = _mapper.readValue(
+					contents, NycQueuedInferredLocationBean.class);
 			processResult(inferredResult, contents);
 			return true;
 		} catch (Exception e) {
-			_log.warn("Received corrupted message from queue; discarding: " + e.getMessage());
-      _log.warn("Contents: " + contents);
+			_log.warn("Received corrupted message from queue; discarding: "
+					+ e.getMessage());
+			_log.warn("Contents: " + contents);
 			return false;
 		}
 	}
 
 	@Override
 	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString("tds.inputQueueHost", null);
+		return _configurationService.getConfigurationValueAsString(
+				"tds.inputQueueHost", null);
 	}
 
 	@Override
 	public String getQueueName() {
-		return _configurationService.getConfigurationValueAsString("tds.inputQueueName", null);
+		return _configurationService.getConfigurationValueAsString(
+				"tds.inputQueueName", null);
 	}
 
 	@Override
 	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger("tds.inputQueuePort", 5563);
+		return _configurationService.getConfigurationValueAsInteger(
+				"tds.inputQueuePort", 5563);
 	}
 
-  @PostConstruct
-  public void setup() {
-	super.setup();
-    // use JAXB annotations so that we pick up anything from the auto-generated XML classes
-    // generated from XSDs
-    AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
-    _mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
+	@PostConstruct
+	public void setup() {
+		super.setup();
+		// use JAXB annotations so that we pick up anything from the
+		// auto-generated XML classes
+		// generated from XSDs
+		AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
+		_mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
 
-  }
+	}
 
-  @PreDestroy 
-  public void destroy() {
+	@PreDestroy
+	public void destroy() {
 		super.destroy();
-  }
+	}
 
-  @Refreshable(dependsOn = {"tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
-  public void startListenerThread() {
-    if(_initialized == true) {
-      _log.warn("Configuration service tried to reconfigure TDS input queue reader; this service is not reconfigurable once started.");
-      return;
-    }
+	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort",
+			"tds.inputQueueName" })
+	public void startListenerThread() {
+		if (_initialized == true) {
+			_log.warn("Configuration service tried to reconfigure TDS input queue reader; this service is not reconfigurable once started.");
+			return;
+		}
 
-    String host = getQueueHost();
-    String queueName = getQueueName();
-    Integer port = getQueuePort();
+		String host = getQueueHost();
+		String queueName = getQueueName();
+		Integer port = getQueuePort();
 
-    if(host == null) {
-      _log.info("TDS input queue is not attached; input hostname was not available via configuration service.");
-      return;
-    }
-    
-    _log.info("queue listening on " + host + ":" + port + ", queue=" + queueName);
+		if (host == null) {
+			_log.info("TDS input queue is not attached; input hostname was not available via configuration service.");
+			return;
+		}
+
+		_log.info("queue listening on " + host + ":" + port + ", queue="
+				+ queueName);
 		try {
 			initializeQueue(host, queueName, port);
 		} catch (InterruptedException ie) {
 			return;
 		}
 
-    _initialized = true;
-  }	
+		_initialized = true;
+	}
 
 }

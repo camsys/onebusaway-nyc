@@ -6,6 +6,7 @@ package org.onebusaway.nyc.queue_test;
 
 import com.eaio.uuid.UUID;
 
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
@@ -32,7 +33,7 @@ public class ThroughputHarness {
 
   private static Logger _log = LoggerFactory.getLogger(ThroughputHarness.class);
   // largest value in db
-  private static final double MAX_DISTANCE_ALONG_BLOCK = 377270.390814062; 
+  private static final double MAX_DISTANCE_ALONG_BLOCK = 377270.390814062;
   private static final double MAX_DISTANCE_ALONG_TRIP = 96028.2459595257;
   private static final double MIN_LAT = 40.221755;
   private static final double MAX_LAT = 40.780869;
@@ -73,7 +74,7 @@ public class ThroughputHarness {
   public void main(String realtimeHost, int realtimePort, String inferenceHost,
       int inferencePort, int sends) {
 
-    _log.warn("opening context");
+   
     ZMQ.Context context = ZMQ.context(1);
     TestPublisher realtimePublisher = new TestPublisher(context, "bhs_queue");
     realtimePublisher.open("tcp", realtimeHost, realtimePort);
@@ -125,11 +126,22 @@ public class ThroughputHarness {
     exceptions.put("routeID", "routeID");
     exceptions.put("runID", "runID");
     exceptions.put("recordTimestamp", "recordTimestamp");
-    exceptions.put("vehicleId", "vehicleId");
-
+    exceptions.put("nameLangs", "nameLangs");
+    exceptions.put("designatorLangs", "designatorLangs");
+    exceptions.put("agencydesignatorLangs", "agencydesignatorLangs");
+    exceptions.put("cep90Percent", "cep-90-percent");
+    exceptions.put("cep95Percent", "cep-95-percent");
+    exceptions.put("cep99Percent", "cep-99-percent");
+    exceptions.put("cep99Pt9Percent", "cep-99pt9percent");
+    exceptions.put("tripDistance", "tripDistance");
+    exceptions.put("routeDesignatorLangs", "route-designatorLangs");
+    exceptions.put("routeNameLangs", "route-nameLangs");
+    exceptions.put("blockID", "blockID");
+    exceptions.put("emergencyCodes", "emergencyCodes");
+    exceptions.put("localCcLocationReport", "localCcLocationReport");
+    exceptions.put("nmea", "NMEA");
     _ccmapper.setPropertyNamingStrategy(new SimplePropertyNamingStrategy(
         exceptions));
-
     _imapper = new ObjectMapper();
 
   }

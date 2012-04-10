@@ -3,23 +3,15 @@ package org.onebusaway.nyc.report_archive.queue;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
-import org.onebusaway.nyc.report_archive.model.NycVehicleManagementStatusRecord;
 import org.onebusaway.nyc.report_archive.services.NycVehicleManagementStatusDao;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
 import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -30,6 +22,7 @@ import org.slf4j.LoggerFactory;
 public class ArchivingInferenceQueueListenerTask extends
 		InferenceQueueListenerTask {
 
+	public static final int COUNT_INTERVAL = 6000;
 	private static Logger _log = LoggerFactory
 			.getLogger(ArchivingInferenceQueueListenerTask.class);
 
@@ -39,6 +32,8 @@ public class ArchivingInferenceQueueListenerTask extends
 	private NycVehicleManagementStatusDao _statusDao;
 	@Autowired
 	private TransitDataService _transitDataService;
+	
+	private int count = 0;
 
 	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort",
 			"tds.inputQueueName" })
@@ -71,6 +66,7 @@ public class ArchivingInferenceQueueListenerTask extends
 	// listening
 	protected void processResult(NycQueuedInferredLocationBean inferredResult,
 			String contents) {
+		count ++;
 		try {
 			if (_log.isDebugEnabled())
 				_log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
@@ -79,6 +75,15 @@ public class ArchivingInferenceQueueListenerTask extends
 					inferredResult, contents);
 			postProcess(locationRecord);
 			_locationDao.saveOrUpdateRecord(locationRecord);
+			if (count > COUNT_INTERVAL) {
+				if (locationRecord != null) {
+					long delta = System.currentTimeMillis() - locationRecord.getArchiveTimeReceived().getTime();
+					if (delta > 2000) {
+						_log.error("inference queue is " + delta + " millis behind");
+					}
+					count = 0;
+				}
+			}
 		} catch (Throwable t) {
 			_log.error("Exception processing contents= " + contents, t);
 		}
@@ -122,6 +127,7 @@ public class ArchivingInferenceQueueListenerTask extends
 	@PostConstruct
 	public void setup() {
 		super.setup();
+		// make parsing lenient
 		_mapper.configure(
 				DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
