@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class ArchivingInferenceQueueListenerTask extends
 		InferenceQueueListenerTask {
 
-	public static final int COUNT_INTERVAL = 6000;
+	public static final int COUNT_INTERVAL = 1000;
 	private static Logger _log = LoggerFactory
 			.getLogger(ArchivingInferenceQueueListenerTask.class);
 
@@ -34,6 +34,8 @@ public class ArchivingInferenceQueueListenerTask extends
 	private TransitDataService _transitDataService;
 	
 	private int count = 0;
+	private long processingSum = 0;
+	private long countStart = System.currentTimeMillis();
 
 	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort",
 			"tds.inputQueueName" })
@@ -67,21 +69,29 @@ public class ArchivingInferenceQueueListenerTask extends
 	protected void processResult(NycQueuedInferredLocationBean inferredResult,
 			String contents) {
 		count ++;
+		
 		try {
 			if (_log.isDebugEnabled())
 				_log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
 						+ new Date(inferredResult.getRecordTimestamp()));
 			ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
 					inferredResult, contents);
+			long processingStart = System.currentTimeMillis();
 			postProcess(locationRecord);
+			processingSum += System.currentTimeMillis() - processingStart;
 			_locationDao.saveOrUpdateRecord(locationRecord);
 			if (count > COUNT_INTERVAL) {
+				_log.warn("inference_queue processed " + count + " messages in " 
+						+ (System.currentTimeMillis()-countStart) 
+						+ ", processing time was " + processingSum );
 				if (locationRecord != null) {
 					long delta = System.currentTimeMillis() - locationRecord.getArchiveTimeReceived().getTime();
 					if (delta > 2000) {
 						_log.error("inference queue is " + delta + " millis behind");
 					}
 					count = 0;
+					processingSum = 0;
+					countStart = System.currentTimeMillis();
 				}
 			}
 		} catch (Throwable t) {
@@ -127,6 +137,7 @@ public class ArchivingInferenceQueueListenerTask extends
 	@PostConstruct
 	public void setup() {
 		super.setup();
+		_log.error("version sab-perf");
 		// make parsing lenient
 		_mapper.configure(
 				DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);

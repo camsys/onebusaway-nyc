@@ -106,7 +106,7 @@
             <argument>5564</argument>
             <argument>*</argument>
             <argument>5567</argument>
-            <argument>1</argument>
+            <argument>1000</argument>
           </arguments>
         </configuration>
       </plugin>
