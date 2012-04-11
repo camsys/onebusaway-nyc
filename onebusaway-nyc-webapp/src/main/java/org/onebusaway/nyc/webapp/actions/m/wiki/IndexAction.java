@@ -137,7 +137,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport implements ServletRe
 	@Override
 	public String execute() throws Exception {
 		if(namespace == null || namespace.isEmpty()) {
-			namespace = "Main";
+			namespace = "MainMobile";
 		}
 		
 		if(name == null || name.isEmpty()) {

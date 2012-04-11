@@ -16,192 +16,221 @@
 /* =Reset default CSS. 
     http://programming4.us/mobile/1284.aspx
 -------------------------------------------------------------- */
-html, body, div, span, object, blockquote, pre,
-abbr, acronym, address, big, cite, code,
-del, dfn, em, font, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center, dl, dt, dd, fieldset, form, label, legend,
-caption, tr, th, td {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    font-weight: normal;
-    vertical-align: baseline;
-    background: transparent;
+html,body,div,span,object,blockquote,pre,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,fieldset,form,label,legend,caption,tr,th,td
+	{
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font-weight: normal;
+	vertical-align: baseline;
+	background: transparent;
 }
+
 p {
-    border: 0;
-    font-size: 100%;
-    font-weight: normal;
-    vertical-align: baseline;
-    background: transparent;
+	border: 0;
+	font-size: 100%;
+	font-weight: normal;
+	vertical-align: baseline;
+	background: transparent;
 }
+
 a {
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
 }
-h1, h2, h3, h4, h5, h6 {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    vertical-align: baseline;
-    background: transparent;
+
+h1,h2,h3,h4,h5,h6 {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	vertical-align: baseline;
+	background: transparent;
 }
+
 body {
-    line-height: inherit;
+	line-height: inherit;
 }
+
 body table {
-    margin: 0;
-    padding: 0;
-    font-size: 100%;
-    font-weight: normal;
-    vertical-align: baseline;
-    background: transparent;
+	margin: 0;
+	padding: 0;
+	font-size: 100%;
+	font-weight: normal;
+	vertical-align: baseline;
+	background: transparent;
 }
 /* remember to highlight insertions somehow! */
 ins {
-    text-decoration: none;
+	text-decoration: none;
 }
+
 del {
-    text-decoration: line-through;
+	text-decoration: line-through;
 }
 /* tables still need 'cellspacing="0"' in the markup */
 body table {
-    border-collapse: collapse;
-    border-spacing: 0;
+	border-collapse: collapse;
+	border-spacing: 0;
 }
-
 
 /* = Override default CSS.
 -------------------------------------------------------------- */
 /* turn off iOS auto test zooming */
 body {
-    background-color: #ffffff;
-    font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+	background-color: #ffffff;
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 	-webkit-text-size-adjust: none;
 }
-a:visited,
-a:active,
-a {
+
+a:visited,a:active,a {
 	color: #0189c7;
 	text-decoration: none;
 }
+
 a:hover {
 	color: #33CCFF;
 }
+
 h1 {
 	font-size: 100%;
 	font-weight: normal;
 	color: #666666;
 }
+
 h2 {
 	font-size: 100%;
 	font-weight: normal;
 }
+
 h3 {
-    font-size: 100%;
-    font-weight: bold;
+	font-size: 100%;
+	font-weight: bold;
 	color: #818181;
 }
-div, p {
-    margin: 0 0 0.6em
+
+div,p {
+	margin: 0 0 0.6em
 }
-ol, ul {
+
+ol,ul {
 	margin: 0;
-    padding: 0;
-    line-height: 1;
+	padding: 0;
+	line-height: 1;
 }
+
 li {
-    list-style: none;
-    margin: 0;
-    margin-bottom: 0.6em;
-    padding: 0;
+	list-style: none;
+	margin: 0;
+	margin-bottom: 0.6em;
+	padding: 0;
 }
+
 strong {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 /* body padding */
-
-#branding, 
-#searchPanel, 
-#content, 
-#footer {
+#branding,#searchPanel,#content,#footer {
 	margin: 0;
 	padding: 1.5em;
 	padding-bottom: 0;
 	padding-top: 0;
 }
+
 .welcome {
 	padding-top: 1em;
 }
+
 #searchPanel {
 	padding-top: .25em;
 }
+
 #branding {
-	padding-top: 1.5em;
+	margin-top: 1.0em;
+	margin-bottom: 1.0em;
 }
+
 #footer {
-	padding-top: 1.5em;
-	padding-bottom: 1.5em;
+	padding-top: 1.0em;
+	padding-bottom: 1.0em;
 }
 
 /* search panel */
 #searchPanel form {
-    background-image: url("img/search_background.png");
-    background-repeat: no-repeat;
-    position: relative;
-    width: 302px;
-    height: 40px;
-    display: block;
+	background-image: url("img/search_background.png");
+	background-repeat: no-repeat;
+	position: relative;
+	width: 302px;
+	height: 40px;
+	display: block;
 }
+
 #searchPanel .s {
-    background: url("img/search_icon.png") no-repeat scroll 0 0 transparent;
-    border: 0 none;
-    cursor: pointer;
-    height: 30px;
-    margin: 3px 6px 0 0;
-    position: absolute;
+	background: url("img/search_icon.png") no-repeat scroll 0 0 transparent;
+	border: 0 none;
+	cursor: pointer;
+	height: 30px;
+	margin: 3px 6px 0 0;
+	position: absolute;
 	right: 0;
-    top: 0;
+	top: 0;
 	display: block;
 	text-indent: -999px;
 	font-size: 0;
 	line-height: 0;
 	width: 30px;
 }
+
 #searchPanel .q {
-    background-color: transparent;
-    border: 0 none;
-    font-family: inherit;
-    font-size: 120%;
-    font-weight: bold;
-    height: 25px;
-    width: 252px;
+	background-color: transparent;
+	border: 0 none;
+	font-family: inherit;
+	font-size: 120%;
+	font-weight: bold;
+	height: 25px;
+	width: 252px;
 	margin-left: 8px;
-    margin-top: 6px;
+	margin-top: 6px;
 }
+
 small {
 	display: block;
 	font-size: 75%;
-    color: #666666;
+	color: #666666;
 }
 
 #toggleUI {
-	margin: 0;
+	margin-bottom: .6em;
 	padding: 0;
 }
+
 #toggleUI a {
 	display: inline-block;
 	text-align: center;
-	margin: .6em;
+	margin-left: .6em;
+	margin-right: .6em;
 }
+
 #nearby {
 	padding-top: 15px;
 }
+
 #nearby input {
 	width: 280px;
+}
+
+/* wiki */
+#text h1 {
+	margin: 0 0 0.3em;
+}
+
+#content #text .meta {
+	border-top: 1px solid #EFEFEF;
+	margin-top: 15px;
+	padding-top: 5px;
+	color: silver;
+	font-size: 10px;
 }
 
 /* refresh */
@@ -212,6 +241,7 @@ small {
 	border: 2px solid #A0A0A0;
 	width: auto;
 }
+
 #refresh a {
 	font-size: 80%;
 	padding: .75em;
@@ -224,57 +254,63 @@ small {
 }
 
 /* content panel */
-.ambiguousLocations,
-.examples,
-.stop,
-.route {
+.ambiguousLocations,.examples,.stop,.route {
 	padding-top: 1em;
 }
+
 .directionForRoute {
 	margin-top: 2em;
 }
+
 .directionAtStop {
 	margin-bottom: .5em;
 }
-.routeList,
-.routeDescription {
+
+.routeList,.routeDescription {
 	padding-top: .25em;
 }
+
 .noMatches {
 	padding-bottom: 1em;
 }
+
 .stopResultGroupHeader {
 	font-weight: bold;
 	color: #818181;
 }
+
 .routeHeader {
 	padding: 0;
 	margin: 0;
 }
+
 .stopsOnRoute {
 	margin-left: .25em;
 }
+
 .stopsOnRoute li {
 	padding: 0;
 	margin: 0;
 	padding: .3em;
 	padding-left: 20px;
 }
-.arrivalsOnRoute li,
-.arrivalsAtStop li {
+
+.arrivalsOnRoute li,.arrivalsAtStop li {
 	margin-left: 10px;
 	padding-left: 16px;
 	background-image: url('img/bullet_bus.png');
 	background-repeat: no-repeat;
 	background-position: center left;
 }
-.arrivalsOnRoute,
-.arrivalsOnRoute li {
+
+.arrivalsOnRoute,.arrivalsOnRoute li {
 	display: inline;
 }
+
 .arrivalsOnRoute li {
 	white-space: nowrap;
 }
+
 .routeList a {
 	display: inline-block;
 	text-align: center;
@@ -284,31 +320,29 @@ small {
 }
 
 .alerts {
-    color: #cc0000;
+	color: #cc0000;
 	background-color: #FDEEF4;
 	padding: .75em;
-    margin-top: 0.3em;
-    margin-bottom: 0.3em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
 }
+
 .alerts ul {
 	padding: 0;
 	margin: 0;
 }
+
 .alerts ul li {
 	margin: 0;
-    padding-top: 0.3em;
-    padding-bottom: 0.3em;
+	padding-top: 0.3em;
+	padding-bottom: 0.3em;
 }
 
 .noService {
-    color: #1C75BC;
+	color: #1C75BC;
 	background-color: #DCF0F7;
 	padding: .75em;
-    margin-top: 0.3em;
-    margin-bottom: 0.3em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
 	font-weight: bold;
-}
-
-#footer {
-    line-height: 1.6em;
 }

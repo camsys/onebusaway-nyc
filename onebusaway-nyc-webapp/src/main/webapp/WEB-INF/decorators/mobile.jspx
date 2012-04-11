@@ -34,15 +34,7 @@
 
   	<s:url var="url" value="/css/mobile/branding.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
-
-	<s:url var="url" value="/js/lib/jquery.js"/>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-	<s:url var="url" value="/js/lib/dateFormat.js"/>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-
-	<s:url var="url" value="/js/oba/m/Mobile.js"/>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+  	<decorator:head/>
 </head>
 
 <body>
@@ -63,7 +55,7 @@
     		<s:url var="desktopUrl" namespace="/" action="index"/>	
     		<a href="${desktopUrl}">Desktop Site</a> |
     		
-    		<s:url var="contactUrl" namespace="/m/wiki" action="Main/ContactUs"/>	
+    		<s:url var="contactUrl" namespace="/m/wiki" action="ContactUs"/>	
     		<a href="${contactUrl}">Contact</a> |
 
 			<a href="http://www.mta.info">MTA.info</a>

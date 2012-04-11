@@ -22,6 +22,14 @@
 <jsp:directive.page contentType="text/html" />
 <jsp:output omit-xml-declaration="yes"/>
 <head>
+	<s:url var="url" value="/js/lib/jquery.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/lib/dateFormat.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+
+	<s:url var="url" value="/js/oba/m/Mobile.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 </head>
 
 <body>
