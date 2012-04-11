@@ -82,14 +82,14 @@ public class ParticleFilter<OBS> {
   /**
    * Flag for random number generation operations that provide reproducibility .
    */
-  private static boolean _testingEnabled = true;
+  private static boolean _enabledReproducibility = true;
 
   public static boolean getDebugEnabled() {
     return _debugEnabled;
   }
 
-  public static boolean getTestingEnabled() {
-    return _testingEnabled;
+  public static boolean getReproducibilityEnabled() {
+    return _enabledReproducibility;
   }
 
   volatile private Particle _leastLikelyParticle;

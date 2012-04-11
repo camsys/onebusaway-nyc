@@ -105,7 +105,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   static ThreadLocal<RandomStream> threadLocalRng;
   static {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(0);
     } else {
       threadLocalRng = new LocalRandomDummy(0);
@@ -116,7 +116,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   static private Random localRandom = new Random();
   
   synchronized public static void setSeed(long seed) {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(seed);
     } else {
       threadLocalRng = new LocalRandomDummy(seed);

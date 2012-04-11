@@ -78,7 +78,7 @@ public class CategoricalDist<T extends Comparable<T>> {
 
   static ThreadLocal<Random> threadLocalRng;
   static {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(0);
     } else {
       threadLocalRng = new LocalRandomDummy(0);
@@ -98,7 +98,7 @@ public class CategoricalDist<T extends Comparable<T>> {
   }
 
   synchronized public static void setSeed(long seed) {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(seed);
     } else {
       threadLocalRng = new LocalRandomDummy(seed);

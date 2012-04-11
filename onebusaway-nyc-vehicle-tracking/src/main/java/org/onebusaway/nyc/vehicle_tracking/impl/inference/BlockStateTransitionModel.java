@@ -96,7 +96,7 @@ public class BlockStateTransitionModel {
 
   static ThreadLocal<Random> threadLocalRng;
   static {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(0);
     } else {
       threadLocalRng = new LocalRandomDummy(0);
@@ -105,7 +105,7 @@ public class BlockStateTransitionModel {
   }
 
   synchronized public static void setSeed(long seed) {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(seed);
     } else {
       threadLocalRng = new LocalRandomDummy(seed);
