@@ -25,7 +25,7 @@
 	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 	<meta name="viewport" content="width=device-width,initial-scale=.90,user-scalable=no"/>  
 
-	<title>MTA Bus Time<s:property value="title"/></title>
+	<title>MTA Bus Time: <s:property value="title"/></title>
 	
   	<link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
 
