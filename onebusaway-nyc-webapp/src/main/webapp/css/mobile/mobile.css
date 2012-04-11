@@ -93,7 +93,7 @@ a:hover {
 }
 
 h1 {
-	font-size: 100%;
+	font-size: 110%;
 	font-weight: normal;
 	color: #666666;
 }
@@ -101,6 +101,7 @@ h1 {
 h2 {
 	font-size: 100%;
 	font-weight: normal;
+	color: #666;
 }
 
 h3 {
@@ -222,6 +223,10 @@ small {
 
 /* wiki */
 #text h1 {
+	margin: 0 0 0.6em;
+}
+
+#text h2 {
 	margin: 0 0 0.3em;
 }
 
