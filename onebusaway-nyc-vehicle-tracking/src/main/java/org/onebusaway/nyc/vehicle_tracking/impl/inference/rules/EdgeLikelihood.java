@@ -23,6 +23,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 
@@ -130,29 +131,6 @@ public class EdgeLikelihood implements SensorModelRule {
           pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
           result.addLogResultAsAnd("in-progress", pDistAlong);
         }
-//        if (EVehiclePhase.DEADHEAD_BEFORE == phase) {
-//  
-//          pDistAlong = computeNoEdgeMovementLogProb(obs);
-//  
-//        } else if (EVehiclePhase.DEADHEAD_AFTER == phase) {
-//  
-//          if (parentState.getBlockState().getBlockLocation().getDistanceAlongBlock() 
-//              < blockState.getBlockLocation().getDistanceAlongBlock()) {
-//  
-//            pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
-//          } else {
-//            pDistAlong = computeNoEdgeMovementLogProb(obs);
-//          }
-//          
-//        } else if (EVehiclePhase.DEADHEAD_DURING == phase) {
-//  
-//          pDistAlong = computeNoEdgeMovementLogProb(obs);
-//  
-//        } else {
-//  
-//          pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
-//  
-//        }
       }
 
     } else {
@@ -176,16 +154,43 @@ public class EdgeLikelihood implements SensorModelRule {
   }
 
   static private final double computeNoEdgeMovementLogProb(VehicleState state, Observation obs) {
+    
+    final Observation prevObs = obs.getPreviousObservation();
     final double obsDistDelta = SphericalGeometryLibrary.distance(
         obs.getLocation(), obs.getPreviousObservation().getLocation());
-    final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
+    final double expAvgDist;
+    final double pDistAlong;
+    if (prevObs != null) {
+      final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
+      final Observation prevPrevObs = prevObs.getPreviousObservation();
+      
+      /*
+       * Trying to get away with not using a real tracking filter 
+       * FIXME really lame. use a Kalman filter.
+       */
+      if (prevPrevObs != null) {
+        final double prevObsDistDelta = SphericalGeometryLibrary.distance(
+            prevPrevObs.getLocation(), prevObs.getLocation());
+        final double prevObsTimeDelta = (prevObs.getTime() - prevPrevObs.getTime()) / 1000d;
+        final double velocityEstimate = prevObsDistDelta/prevObsTimeDelta; 
+        expAvgDist = state.getMotionState().hasVehicleNotMoved()?
+            0.0 : velocityEstimate * obsTimeDelta;
+      } else {
+        expAvgDist = state.getMotionState().hasVehicleNotMoved()?
+            0.0 : _avgVelocity * obsTimeDelta;
+      }
+      
+      pDistAlong = noEdgeMovementDist.getProbabilityFunction().logEvaluate(
+          obsDistDelta - expAvgDist);
+      
+    } else {
+      /*
+       * No movement
+       */
+      pDistAlong = 1d;
+    }
 
-    // FIXME really lame. use a Kalman filter.
-    final double expAvgDist = state.getMotionState().hasVehicleNotMoved()?
-        0.0 : _avgVelocity * obsTimeDelta;
-
-    final double pDistAlong = noEdgeMovementDist.getProbabilityFunction().logEvaluate(
-        obsDistDelta - expAvgDist);
+    
     return pDistAlong;
   }
 

@@ -24,5 +24,6 @@ public class Trace_7560_20101123T031734_IntegrationTest extends AbstractTraceRun
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
     setLoops(1);
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.85);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.85);
   }
 }

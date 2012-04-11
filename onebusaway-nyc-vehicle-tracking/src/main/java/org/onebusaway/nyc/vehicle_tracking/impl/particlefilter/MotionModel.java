@@ -42,10 +42,11 @@ public interface MotionModel<OBS> {
    * @param timestamp
    * @param timeElapsed
    * @param obs
+   * @param previouslyResampled 
    * @param results
    * @param cache
    * @return 
    */
   Multiset<Particle> move(Multiset<Particle> particles, double timestamp, double timeElapsed,
-      OBS obs);
+      OBS obs, boolean previouslyResampled);
 }

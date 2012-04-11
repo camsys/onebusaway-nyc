@@ -25,6 +25,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikeliho
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
@@ -117,7 +118,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
         obs, parentBlockState.getBlockInstance(), distAlongSample);
-    return distState;
+    return isOrientationMostlyEqual(distState.getBlockState(), obs) ? distState: null;
 
   }
 
@@ -173,7 +174,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
         obs, parentBlockState.getBlockInstance(), distAlongSample);
-    return distState;
+    return isOrientationMostlyEqual(distState.getBlockState(), obs) ? distState: null;
   }
 
   @Override
@@ -189,7 +190,12 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
      */
     final double currentTime = (obs.getTime() - blockInstance.getServiceDate()) / 1000;
 
-    final double newSchedTime = currentTime + 60d * ScheduleLikelihood.schedDevPriorDist.sample(
+    /*
+     * TODO
+     * Note that we're using the non-run-matching prior distribution.
+     */
+    final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDevNonRunDist();
+    final double newSchedTime = currentTime + 60d * schedDist.sample(
         ParticleFactoryImpl.getLocalRng());
 
     final int startSchedTime = Iterables.getFirst(
@@ -204,13 +210,13 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     } else if (endSchedTime < newSchedTime) {
 //      schedState = _blocksFromObservationService.getBlockStateObservationFromDist(
 //          obs, blockInstance, blockInstance.getBlock().getTotalBlockDistance());
-      schedState = null;
+      return null;
     } else {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, blockInstance, (int)newSchedTime);
     }
 
-    return schedState;
+    return isOrientationMostlyEqual(schedState.getBlockState(), obs) ? schedState : null;
   }
 
   @Override
@@ -218,7 +224,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       BlockStateObservation parentBlockStateObs, Observation obs) {
     final BlockState parentBlockState = parentBlockStateObs.getBlockState();
 
-    final double newSchedDev = ScheduleLikelihood.schedDevPriorDist.sample(
+    final StudentTDistribution schedDist = ScheduleLikelihood.getSchedDistForBlockState(parentBlockStateObs);
+    final double newSchedDev = schedDist.sample(
         ParticleFactoryImpl.getLocalRng());
 
     final int currentTime = (int) (obs.getTime() - parentBlockState.getBlockInstance().getServiceDate()) / 1000;
@@ -237,13 +244,39 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 //          obs,
 //          parentBlockState.getBlockInstance(),
 //          parentBlockState.getBlockInstance().getBlock().getTotalBlockDistance());
-      schedState = null;
+      return null;
     } else {
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, parentBlockState.getBlockInstance(), newSchedTime);
     }
 
-    return schedState;
+    return isOrientationMostlyEqual(schedState.getBlockState(), obs) ? schedState : null;
+  }
+  
+  /**
+   * Quick and dirty check for the direction of the trip.
+   * @param blockState
+   * @param observation
+   * @return
+   */
+  private boolean isOrientationMostlyEqual(BlockState blockState, Observation observation) {
+    Double obsOrientation = null;
+    Double distMoved = null;
+    if (observation.getPreviousRecord() != null) {
+      NycRawLocationRecord prevRecord = observation.getPreviousRecord();
+      obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
+          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
+      distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
+          prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
+      double orientDiff = Math.abs(obsOrientation - blockState.getBlockLocation().getOrientation());
+      if (orientDiff >= 95 && orientDiff <= 265 
+          && distMoved >= BlockStateService.getOppositedirmovecutoff()) {
+        return false;
+      }
+    }
+    
+    return true;
+    
   }
 
 }

@@ -40,6 +40,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import umontreal.iro.lecuyer.probdist.FoldedNormalDist;
 import umontreal.iro.lecuyer.stat.Tally;
 
 @Component
@@ -263,24 +264,32 @@ public class SensorModelSupportLibrary {
   static public double computeVehicleHasNotMovedProbability(
       MotionState motionState, Observation obs) {
 
-    final Observation prevObs = obs.getPreviousObservation();
-    if (prevObs == null)
+    final NycRawLocationRecord prevRecord = obs.getPreviousRecord();
+    
+    if (prevRecord == null)
       return 0.5;
-    //
-    // final double d = SphericalGeometryLibrary.distance(
-    // prevObs.getLocation(), obs.getLocation());
-    // return 1-FoldedNormalDist.cdf(10.0, 6, d);
-    final long currentTime = obs.getTime();
-    final long lastInMotionTime = motionState.getLastInMotionTime();
-    final int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
-
-    if (120 <= secondsSinceLastMotion) {
-      return 1.0;
-    } else if (60 <= secondsSinceLastMotion) {
-      return 0.9;
-    } else {
-      return 0.0;
-    }
+    
+    final double d = SphericalGeometryLibrary.distance(
+        prevRecord.getLatitude(), prevRecord.getLongitude(), 
+        obs.getLocation().getLat(), obs.getLocation().getLon());
+    
+    return 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev, d);
+    
+//    final Observation prevObs = obs.getPreviousObservation();
+//    if (prevObs == null)
+//      return 0.5;
+//    //
+//    final long currentTime = obs.getTime();
+//    final long lastInMotionTime = motionState.getLastInMotionTime();
+//    final int secondsSinceLastMotion = (int) ((currentTime - lastInMotionTime) / 1000);
+//
+//    if (120 <= secondsSinceLastMotion) {
+//      return 1.0;
+//    } else if (60 <= secondsSinceLastMotion) {
+//      return 0.9;
+//    } else {
+//      return 0.0;
+//    }
   }
 
   /*****

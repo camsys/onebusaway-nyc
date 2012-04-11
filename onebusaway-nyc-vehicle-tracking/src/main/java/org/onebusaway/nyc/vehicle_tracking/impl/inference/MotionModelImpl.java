@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -216,7 +217,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return false;
   }
 
-  private boolean allowGeneralBlockTransition(Observation obs, double ess) {
+  private boolean allowGeneralBlockTransition(Observation obs, double ess, boolean previouslyResampled) {
 
     if (BlockStateTransitionModel.hasDestinationSignCodeChangedBetweenObservations(obs))
       return true;
@@ -229,9 +230,10 @@ public class MotionModelImpl implements MotionModel<Observation> {
       essResampleThreshold = _essRunInfoTransitionThreshold;
     }
 
-    if (ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold) {
+    if (previouslyResampled
+        && ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold) {
       // TODO debug.  remove.
-      System.out.println("ess resample!");
+      System.out.println("ess resample! " + new Date(obs.getTime()));
       return true;
     }
 
@@ -240,12 +242,13 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
   @Override
   public Multiset<Particle> move(Multiset<Particle> particles,
-      double timestamp, double timeElapsed, Observation obs) {
+      double timestamp, double timeElapsed, Observation obs, 
+      boolean previouslyResampled) {
 
     final Multiset<Particle> results = HashMultiset.create();
 
     final double ess = ParticleFilter.getEffectiveSampleSize(particles);
-    final boolean generalBlockTransition = allowGeneralBlockTransition(obs, ess);
+    final boolean generalBlockTransition = allowGeneralBlockTransition(obs, ess, previouslyResampled);
 
     for (final Multiset.Entry<Particle> parent : particles.entrySet()) {
       final VehicleState parentState = parent.getElement().getData();
@@ -329,9 +332,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
       /*
        * Edge movement
        */
-      // if (newEdge.getKey() != BlockSampleType.EDGE_MOVEMENT_SAMPLE) {
       transProb.addResultAsAnd(edgeLikelihood.likelihood(null, context));
-      // }
 
       /*
        * Gps

@@ -110,6 +110,8 @@ public class ParticleFilter<OBS> {
 
   private Multiset<Particle> _weightedParticles = HashMultiset.create();
 
+  private boolean _previouslyResampled;
+
   @SuppressWarnings("unused")
   public ParticleFilter(ParticleFactory<OBS> particleFactory,
       SensorModel<OBS> sensorModel, MotionModel<OBS> motionModel) {
@@ -198,7 +200,7 @@ public class ParticleFilter<OBS> {
       final double timestamp) throws ParticleFilterException {
     Multiset<Particle> particles;
     final double elapsed = timestamp - _timeOfLastUpdate;
-    particles = _motionModel.move(_particles, timestamp, elapsed, obs);
+    particles = _motionModel.move(_particles, timestamp, elapsed, obs, _previouslyResampled);
     return particles;
   }
 
@@ -411,8 +413,10 @@ public class ParticleFilter<OBS> {
         reweighted.add(p, pEntry.getCount());
       }
       _particles = reweighted;
+      _previouslyResampled = true;
     } else {
       _particles = particles;
+      _previouslyResampled = false;
     }
 
   }
