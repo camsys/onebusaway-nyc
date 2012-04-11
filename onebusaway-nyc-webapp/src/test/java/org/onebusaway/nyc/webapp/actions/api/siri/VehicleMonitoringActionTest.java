@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsTestSupport;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
@@ -38,7 +39,7 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
   private RealtimeService realtimeService;
   
   @Mock
-  private TransitDataService transitDataService;
+  private NycTransitDataService transitDataService;
   
   @InjectMocks
   private VehicleMonitoringAction action;

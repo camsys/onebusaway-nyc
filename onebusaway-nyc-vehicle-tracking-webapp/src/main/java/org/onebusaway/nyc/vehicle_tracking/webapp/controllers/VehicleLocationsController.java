@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.webapp.controllers;
 
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordDestinationSignCodeComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.NycTestInferredLocationRecordVehicleComparator;
@@ -28,7 +29,6 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ import java.util.Map;
 public class VehicleLocationsController {
 
   @Autowired
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   @Autowired
   private DestinationSignCodeService _dscService;
@@ -104,11 +104,11 @@ public class VehicleLocationsController {
 
     List<AgencyAndId> trips = _dscService.getTripIdsForDestinationSignCode(dsc);    
     for(AgencyAndId tripId : trips) {
-      TripBean tripBean = _transitDataService.getTrip(tripId.toString());
+      TripBean tripBean = _nycTransitDataService.getTrip(tripId.toString());
       String routeId = tripBean.getRoute().getId();
       
       if(routes.get(routeId) == null) {
-        StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeId);
+        StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeId);
         List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
         for (StopGroupingBean stopGroupingBean : stopGroupings) {
           for (StopGroupBean stopGroupBean : stopGroupingBean.getStopGroups()) {

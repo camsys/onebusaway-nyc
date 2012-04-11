@@ -36,7 +36,6 @@ import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
@@ -51,17 +50,14 @@ import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
-  private TransitDataService _transitDataService;
-
   private ConfigurationService _configurationService;
 
   private RealtimeService _realtimeService;
     
   private NycTransitDataService _nycTransitDataService;
 
-  public SearchResultFactoryImpl(TransitDataService transitDataService, NycTransitDataService nycTransitDataService, 
+  public SearchResultFactoryImpl(NycTransitDataService nycTransitDataService, 
       RealtimeService realtimeService, ConfigurationService configurationService) {
-    _transitDataService = transitDataService;
     _nycTransitDataService = nycTransitDataService;
     _realtimeService = realtimeService;
     _configurationService = configurationService;
@@ -76,7 +72,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   public SearchResult getRouteResult(RouteBean routeBean) {    
     List<RouteDirection> directions = new ArrayList<RouteDirection>();
     
-    StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -119,7 +115,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         continue;
       }
     
-      StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+      StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
       
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
       List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();

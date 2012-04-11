@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
 import org.onebusaway.transit_data.model.NameBean;
@@ -7,7 +8,6 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
@@ -25,7 +25,7 @@ public class StopsOnRouteForDirectionAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   private List<StopOnRoute> _stops = new ArrayList<StopOnRoute>();
 
@@ -47,7 +47,7 @@ public class StopsOnRouteForDirectionAction extends OneBusAwayNYCActionSupport {
       return SUCCESS;
     }
     
-    StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(_routeId);
+    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(_routeId);
 
     // create stop ID->stop bean map
     Map<String, StopBean> stopIdToStopBeanMap = new HashMap<String, StopBean>();
