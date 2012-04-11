@@ -1,30 +1,23 @@
 package org.onebusaway.nyc.report_archive.queue;
 
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
-import org.onebusaway.nyc.report_archive.model.NycVehicleManagementStatusRecord;
 import org.onebusaway.nyc.report_archive.services.NycVehicleManagementStatusDao;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
-import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data.model.RouteBean;
-import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.model.trips.TripStatusBean;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Date;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerTask {
 
@@ -35,7 +28,7 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   @Autowired
   private NycVehicleManagementStatusDao _statusDao;
   @Autowired
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   @Refreshable(dependsOn = {"tds.inputQueueHost", "tds.inputQueuePort", 
       "tds.inputQueueName"})
@@ -96,9 +89,9 @@ public class ArchivingInferenceQueueListenerTask extends InferenceQueueListenerT
   private void postProcess(ArchivedInferredLocationRecord locationRecord) { 
     // Extract next stop id and distance
     String vehicleId = locationRecord.getAgencyId() + "_" + locationRecord.getVehicleId().toString();
-    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(vehicleId, locationRecord.getTimeReported().getTime());
+    VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(vehicleId, locationRecord.getTimeReported().getTime());
     locationRecord.setVehicleStatusBean(vehicle);
-    VehicleLocationRecordBean vehicleLocation = _transitDataService.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord.getTimeReported().getTime()) ;
+    VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord.getTimeReported().getTime()) ;
     if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
      	locationRecord.setVehicleLocationRecordBean(vehicleLocation);
     }

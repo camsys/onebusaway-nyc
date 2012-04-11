@@ -16,6 +16,7 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriDistanceExtension;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.ListBean;
@@ -25,7 +26,6 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -61,7 +61,7 @@ public final class SiriSupport {
   
   public static void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
       TripBean tripBean, TripDetailsBean tripDetails, StopBean monitoredCallStopBean,
-      PresentationService presentationService, TransitDataService transitDataService, long time,
+      PresentationService presentationService, NycTransitDataService nycTransitDataService, long time,
       int maximumOnwardCalls) {
 
     LineRefStructure lineRef = new LineRefStructure();
@@ -154,7 +154,7 @@ public final class SiriSupport {
         query.setTripId(nextTrip.getId());
         query.setVehicleId(tripDetails.getStatus().getVehicleId());
         
-        ListBean<TripDetailsBean> details = transitDataService.getTripDetails(query);
+        ListBean<TripDetailsBean> details = nycTransitDataService.getTripDetails(query);
         for(TripDetailsBean possibleNextTripDetails : details.getList()) {
           // next trip must be on same block
           if(!possibleNextTripDetails.getTrip().getBlockId().equals(tripDetails.getTrip().getBlockId()))
