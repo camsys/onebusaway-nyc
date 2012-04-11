@@ -262,7 +262,8 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
   private boolean isOrientationMostlyEqual(BlockState blockState, Observation observation) {
     Double obsOrientation = null;
     Double distMoved = null;
-    if (observation.getPreviousRecord() != null) {
+    if (observation.getPreviousRecord() != null 
+          && JourneyStateTransitionModel.isLocationOnATrip(blockState)) {
       NycRawLocationRecord prevRecord = observation.getPreviousRecord();
       obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
           prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
