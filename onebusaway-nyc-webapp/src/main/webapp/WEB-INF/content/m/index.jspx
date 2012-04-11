@@ -30,6 +30,11 @@
 
 	<s:url var="url" value="/js/oba/m/Mobile.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	
+	<s:url var="url" value="/m/color-stylesheet">
+  		<s:param name="colors"><s:property value="routeColors" /></s:param>
+  	</s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 </head>
 
 <body>
