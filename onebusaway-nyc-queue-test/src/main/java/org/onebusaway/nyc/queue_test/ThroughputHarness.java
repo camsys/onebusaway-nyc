@@ -118,6 +118,7 @@ public class ThroughputHarness {
 
   }
 
+  // TCIP is inconsistent in property naming, give hints to jackson for serialization
   private void setupMappers() {
     _ccmapper = new ObjectMapper();
     HashMap<String, String> exceptions = new HashMap<String, String>();

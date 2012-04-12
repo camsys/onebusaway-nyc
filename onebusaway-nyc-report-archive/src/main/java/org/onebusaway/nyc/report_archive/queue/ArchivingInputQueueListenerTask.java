@@ -29,6 +29,8 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 	private String _zoneOffset = null;
 	private String _systemTimeZone = null;
 	private int count = 0;
+		private long dbSum = 0;
+	private long dbStart = System.currentTimeMillis();
 
 	@Override
 	// this method can't throw exceptions or it will stop the queue
@@ -51,10 +53,15 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 			CcLocationReportRecord record = new CcLocationReportRecord(
 					envelope, contents, getZoneOffset());
 			if (record != null) {
+				long dbStart = System.currentTimeMillis();
 				_dao.saveOrUpdateReport(record);
+				dbSum += System.currentTimeMillis() - dbStart;
 			}
 			// re-calculate zoneOffset periodically
 			if (count > COUNT_INTERVAL) {
+				_log.warn("realtime queue processed " + count + " messages in " 
+						+ (System.currentTimeMillis()-dbStart)
+						+ ", db time was " + dbSum);
 				_zoneOffset = null;
 				if (record != null) {
 					long delta = System.currentTimeMillis()-record.getTimeReceived().getTime();
@@ -63,6 +70,8 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 					}
 				}
 				count = 0;
+				dbSum = 0;
+				dbStart = System.currentTimeMillis();
 			}
 		} catch (Throwable t) {
 			_log.error("Exception processing contents= " + contents, t);

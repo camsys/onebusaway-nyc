@@ -47,6 +47,7 @@
         <property name="properties">
             <props>
                 <prop key="hibernate.hbm2ddl.auto">validate</prop>
+                <prop key="hibernate.jdbc.batch_size">1000</prop>
             </props> 
         </property> 
     </bean> 
