@@ -54,6 +54,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.TreeMultiset;
 
@@ -540,14 +541,17 @@ public class VehicleInferenceInstance {
     boolean noOperatorIdGiven = 
         StringUtils.isEmpty(operatorId) || StringUtils.containsOnly(operatorId, "0");
 
+    Set<AgencyAndId> routeIds = Sets.newHashSet();
     if (!noOperatorIdGiven) {
       try {
         OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
             new ServiceDate(obsDate), new AgencyAndId(observation.getVehicleId().getAgencyId(), operatorId));
 
         if (oai != null) {
-          if (_runService.isValidRunId(oai.getRunId()))
+          if (_runService.isValidRunId(oai.getRunId())) {
             opAssignedRunId = oai.getRunId();
+            routeIds.addAll(_runService.getRoutesForRunId(opAssignedRunId));
+          }
         }
       } catch (Exception e) {
         _log.warn(e.getMessage());
@@ -572,13 +576,16 @@ public class VehicleInferenceInstance {
         } else {
           bestFuzzyDistance = fuzzyReportedMatches.keySet().first();
           fuzzyMatches = fuzzyReportedMatches.get(bestFuzzyDistance);
+          for (String runId : fuzzyMatches) {
+            routeIds.addAll(_runService.getRoutesForRunId(runId));
+          }
         }
       } catch (IllegalArgumentException ex) {
         _log.warn(ex.getMessage());
       }
     }
 
-    return new RunResults(opAssignedRunId, fuzzyMatches, bestFuzzyDistance);
+    return new RunResults(opAssignedRunId, fuzzyMatches, bestFuzzyDistance, routeIds);
   }
 
  

@@ -33,49 +33,50 @@ table td {
 
 <p><a href="vehicle-location-simulation.do">Back to Vehicle
 Location Simulation Console</a></p>
-
-<ul>
-    <li>Current Record Number: <c:out value="${recordNumber}" /></li>
-    <li>
-	     <form action="vehicle-location-simulation!task-details.do">
-	     <input type="hidden" name="taskId" value="${details.id}"/>
-	     <input id="stepRecordIndex" type="text" name="recordNumber" size="20"/>
-	     <input type="submit" value="Go"/>
-	     </form>
-    </li>
-    <li><a
-        href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;recordNumber=${recordNumber+1}">
-        Next Record</a></li>
-    <c:if test="${ recordNumber != 0}">
-        <li><a
-            href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;recordNumber=${recordNumber-1}">
-            Previous Particles</a></li>
-    </c:if>
-</ul>
-
-<h2>Most Recent Observation</h2>
-
-<c:set var="obs" value="${details.lastObservation}" />
-
-<ul>
-    <li>time:<jsp:text> </jsp:text><fmt:formatDate pattern="yyyy-MM-dd HH:mm:ss Z" value="${obs.timeAsDate}" timeZone="EST"/></li>
-    <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
-    <li>location:<jsp:text> </jsp:text><c:out value="${obs.latitude}"/><jsp:text>, </jsp:text><c:out value="${obs.longitude}"/></li>
-    <li><jsp:text>dsc: </jsp:text><c:out value="${obs.destinationSignCode}"/></li>
-    <li><jsp:text>operatorId: </jsp:text><c:out value="${obs.operatorId}"/></li>
-    <li><jsp:text>reportedRunNumber: </jsp:text><c:out value="${obs.runNumber}"/></li>
-    <li><jsp:text>reportedRunRouteId: </jsp:text><c:out value="${obs.runRouteId}"/></li>
-    <li>
-    <fmt:formatNumber var="ess" value="${details.effectiveSampleSize}" maxFractionDigits="2"/>
-    <fmt:formatNumber var="esspct" value="${details.effectiveSampleSize/details.sampleSize}" maxFractionDigits="2"/>
-    <jsp:text>EffectiveSampleSize%: 
-    </jsp:text><c:out value="${esspct}"/>
-	    <jsp:text>  (</jsp:text><c:out value="${ess}"/>
-	    <jsp:text>/</jsp:text><c:out value="${details.sampleSize}"/>
-	    <jsp:text>)</jsp:text>
-    </li>
-    
-</ul>
+<c:if test="${not empty details}">
+	<ul>
+	    <li>Current Record Number: <c:out value="${recordNumber}" /></li>
+	    <li>
+		     <form action="vehicle-location-simulation!task-details.do">
+		     <input type="hidden" name="taskId" value="${details.id}"/>
+		     <input id="stepRecordIndex" type="text" name="recordNumber" size="20"/>
+		     <input type="submit" value="Go"/>
+		     </form>
+	    </li>
+	    <li><a
+	        href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;recordNumber=${recordNumber+1}">
+	        Next Record</a></li>
+	    <c:if test="${ recordNumber != 0}">
+	        <li><a
+	            href="vehicle-location-simulation!task-details.do?taskId=${details.id}&amp;recordNumber=${recordNumber-1}">
+	            Previous Particles</a></li>
+	    </c:if>
+	</ul>
+	
+	<h2>Most Recent Observation</h2>
+	
+	<c:set var="obs" value="${details.lastObservation}" />
+	
+	<ul>
+	    <li>time:<jsp:text> </jsp:text><fmt:formatDate pattern="yyyy-MM-dd HH:mm:ss Z" value="${obs.timeAsDate}" timeZone="EST"/></li>
+	    <li><jsp:text>vehicle id: </jsp:text><c:out value="${obs.vehicleId}"/></li>
+	    <li>location:<jsp:text> </jsp:text><c:out value="${obs.latitude}"/><jsp:text>, </jsp:text><c:out value="${obs.longitude}"/></li>
+	    <li><jsp:text>dsc: </jsp:text><c:out value="${obs.destinationSignCode}"/></li>
+	    <li><jsp:text>operatorId: </jsp:text><c:out value="${obs.operatorId}"/></li>
+	    <li><jsp:text>reportedRunNumber: </jsp:text><c:out value="${obs.runNumber}"/></li>
+	    <li><jsp:text>reportedRunRouteId: </jsp:text><c:out value="${obs.runRouteId}"/></li>
+	    <li>
+	    <fmt:formatNumber var="ess" value="${details.effectiveSampleSize}" maxFractionDigits="2"/>
+	    <fmt:formatNumber var="esspct" value="${details.effectiveSampleSize/details.sampleSize}" maxFractionDigits="2"/>
+	    <jsp:text>EffectiveSampleSize%: 
+	    </jsp:text><c:out value="${esspct}"/>
+		    <jsp:text>  (</jsp:text><c:out value="${ess}"/>
+		    <jsp:text>/</jsp:text><c:out value="${details.sampleSize}"/>
+		    <jsp:text>)</jsp:text>
+	    </li>
+	    
+	</ul>
+</c:if>
 
 <h2>Particles</h2>
 
@@ -88,6 +89,11 @@ Location Simulation Console</a></p>
 </c:if>
 
 <jsp:include page="particles-snippet.jspx" />
+
+<c:if test="${ showTransitionParticles}">
+		<h2>Transition Particles</h2>
+		<jsp:include page="transition-particles-snippet.jspx" />
+</c:if>
 
 </body>
 </html>

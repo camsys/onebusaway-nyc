@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 
 @Component
-public class DestinationSignCodeRule implements SensorModelRule {
+public class DscLikelihood implements SensorModelRule {
 
   private DestinationSignCodeService _destinationSignCodeService;
   private RunService _runService;
@@ -112,7 +112,7 @@ public class DestinationSignCodeRule implements SensorModelRule {
       /**
        * If we haven't yet seen a valid DSC, or it's out of service
        */
-      if (EVehiclePhase.IN_PROGRESS == phase) {
+      if (EVehiclePhase.IN_PROGRESS == phase && obs.hasOutOfServiceDsc()) {
         return DSC_STATE.DSC_OOS_IP;
       } else {
         return DSC_STATE.DSC_OOS_NOT_IP;

@@ -19,6 +19,7 @@ import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
@@ -42,6 +43,11 @@ import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
 import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
 import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -264,6 +270,7 @@ public class VehicleLocationSimulationController {
     m.put("details", details);
     m.put("recordNumber", recordNumber);
     m.put("showSampledParticles", showSampledParticles);
+    m.put("showTransitionParticles", false);
     return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
   }
 
@@ -275,8 +282,33 @@ public class VehicleLocationSimulationController {
 
     VehicleLocationDetails details = _vehicleLocationSimulationService.getParticleDetails(
         taskId, particleId, recordNumber);
-    return new ModelAndView("vehicle-location-simulation-task-details.jspx",
-        "details", details);
+    Map<String, Object> m = new HashMap<String, Object>();
+    m.put("details", details);
+    m.put("recordNumber", recordNumber);
+    m.put("showTransitionParticles", true);
+    Entry<Particle> firstParticle = Iterables.getFirst(details.getParticles(), null);
+    List<Multiset.Entry<Particle>> transParticles = 
+        (firstParticle != null && firstParticle.getElement().getTransitions() != null)
+          ? Lists.newArrayList(firstParticle.getElement().getTransitions().entrySet()) : null; 
+    if (transParticles != null)
+      m.put("transitionParticles", transParticles);
+    return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!particle-transition-details.do", method = RequestMethod.GET)
+  public ModelAndView particleTransitionDetails(@RequestParam() int taskId,
+      @RequestParam() int parentParticleId,
+      @RequestParam() int transParticleNumber,
+      @RequestParam(required = false, defaultValue = "-1") int recordNumber
+      ) {
+
+    VehicleLocationDetails details = _vehicleLocationSimulationService.getTransitionParticleDetails(
+        taskId, parentParticleId, transParticleNumber, recordNumber);
+    Map<String, Object> m = new HashMap<String, Object>();
+    m.put("details", details);
+    m.put("recordNumber", recordNumber);
+    m.put("showTransitionParticles", false);
+    return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!task-simulation-records.do", method = RequestMethod.GET)
@@ -294,7 +326,6 @@ public class VehicleLocationSimulationController {
     String filename = _vehicleLocationSimulationService.getSimulation(taskId).getFilename();
     Map<String, Object> m = new HashMap<String, Object>();
     m.put("records", records);
-    m.put("taskId", taskId);
     m.put("taskId", taskId);
     m.put("filename", filename);
     return new ModelAndView("vehicle-location-simulation-results-view.jspx", m);

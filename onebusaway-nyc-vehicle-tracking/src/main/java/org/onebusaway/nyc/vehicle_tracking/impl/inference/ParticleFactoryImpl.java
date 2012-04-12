@@ -218,7 +218,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         final Particle newParticle = new Particle(timestamp, null, 0.0, state);
         newParticle.setResult(transProb);
 
-        transitionProb.put(transProb.getProbability(), newParticle);
+        transitionProb.logPut(transProb.getLogProbability(), newParticle);
       }
 
       if (transitionProb.canSample()) {

@@ -22,20 +22,6 @@
     xmlns:form="http://www.springframework.org/tags/form">
     <jsp:directive.page contentType="text/html" />
 
-<c:if test="${details.history}">
-    <h2>Sensor Model Result</h2>
-    <ul>
-        <c:set var="sensorModelResult"
-            value="${details.particles[0].element.result}" scope="request" />
-        <jsp:include
-            page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
-        <c:set var="sensorModelResult"
-            value="${details.particles[0].element.transResult}" scope="request" />
-        <jsp:include
-            page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
-    </ul>
-</c:if>
-
     <table>
         <thead>
             <tr>
@@ -58,8 +44,12 @@
         </thead>
         <tbody>
 
-            <c:forEach var="pEntry" items="${details.particles}">
+            <c:set var="i"
+                value="${-1}" />
+            <c:forEach var="pEntry" items="${transitionParticles}">
                 <tr>
+				            <c:set var="i"
+				                value="${i + 1}" />
                     <c:set var="p"
                         value="${pEntry.element}" />
                     <c:set var="motionState"
@@ -76,23 +66,10 @@
                         value="${p.data.observation.record.timeAsDate}" /></td>
                     <td><c:out value="${pEntry.count}" /></td>
                     <td bgcolor='#cdc9c9'>
-                    <c:choose>
-                        <c:when test="${recordNumber >= -1}">
-                            <c:set var="particleDetailsUrl" value="particle-details"/>
-                            <c:set var="href1" value="vehicle-location-simulation!${particleDetailsUrl}.do?taskId=${details.id}&amp;particleId=${p.index}&amp;recordNumber=${recordNumber}"/>
-                        </c:when>
-                        <c:when test="${details.particleFilterFailureActive}">
-                            <c:set var="particleDetailsUrl" value="bad-particle-details"/>
-                            <c:set var="href1" value="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"/>
-                        </c:when>
-                        <c:when test="${!details.particleFilterFailureActive}">
-                            <c:set var="particleDetailsUrl" value="particle-details"/>
-                            <c:set var="href1" value="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"/>
-                        </c:when>
-                    </c:choose>
-                        <a href="${href1}">
-                        <fmt:formatNumber var="weight" value="${p.logWeight}" pattern="0.###E0"/>
-                        <c:out value="${weight}"/></a>
+                       <c:set var="href1" value="vehicle-location-simulation!particle-transition-details.do?taskId=${details.id}&amp;parentParticleId=${p.index}&amp;transParticleNumber=${i}&amp;recordNumber=${recordNumber}"/>
+                       <a href="${href1}">
+                       <fmt:formatNumber var="weight" value="${p.logWeight}" pattern="0.###E0"/>
+                       <c:out value="${weight}"/></a>
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>
                     <td bgcolor='#cdc9c9'><c:out value="${runReported == null?'NA':runReported}" /></td>

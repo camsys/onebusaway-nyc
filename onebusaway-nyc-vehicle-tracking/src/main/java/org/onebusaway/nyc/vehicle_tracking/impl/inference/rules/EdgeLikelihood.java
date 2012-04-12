@@ -123,8 +123,10 @@ public class EdgeLikelihood implements SensorModelRule {
         
       } else {
 
-        if (EVehiclePhase.IN_PROGRESS != prevPhase
-            || EVehiclePhase.IN_PROGRESS != phase) {
+        /*
+         * Transition from on a trip to not on a trip
+         */
+        if (EVehiclePhase.IN_PROGRESS != phase) {
           pDistAlong = computeNoEdgeMovementLogProb(state, obs);
           result.addLogResultAsAnd("not-in-progress", pDistAlong);
         } else {

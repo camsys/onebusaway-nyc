@@ -19,8 +19,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
+import gov.sandia.cognition.math.LogMath;
 import gov.sandia.cognition.math.matrix.Vector;
 import gov.sandia.cognition.math.matrix.VectorEntry;
+import gov.sandia.cognition.math.matrix.VectorFactory;
 import gov.sandia.cognition.math.matrix.mtj.DenseVectorFactoryMTJ;
 import gov.sandia.cognition.statistics.distribution.MultinomialDistribution;
 
@@ -31,6 +33,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 
+import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 
 import java.util.ArrayList;
@@ -42,7 +45,11 @@ import java.util.Random;
 public class CategoricalDist<T extends Comparable<T>> {
 
   private static final boolean _sort = true;
-  private double _cumulativeProb = 0.0;
+  
+  /*
+   * equals log(p1 + p2 + ...) 
+   */
+  private double _logCumulativeProb = Double.NEGATIVE_INFINITY;
 
   static class LocalRandom extends ThreadLocal<Random> {
     long _seed = 0;
@@ -87,11 +94,10 @@ public class CategoricalDist<T extends Comparable<T>> {
   }
 
   private final List<Integer> _objIdx = Lists.newArrayList();
-  TObjectDoubleMap<T> _entriesToProbs;
+  TObjectDoubleMap<T> _entriesToLogProbs;
   private Object[] _entries;
 
   MultinomialDistribution _emd;
-  private double[] _cummulativeDist;
 
   public static ThreadLocal<Random> getThreadLocalRng() {
     return threadLocalRng;
@@ -106,22 +112,29 @@ public class CategoricalDist<T extends Comparable<T>> {
   }
 
   public CategoricalDist() {
-    _entriesToProbs = new TObjectDoubleHashMap<T>();
+    _entriesToLogProbs = new TObjectDoubleHashMap<T>();
   }
 
   public List<T> getSupport() {
-    return new ArrayList<T>(_entriesToProbs.keySet());
+    return new ArrayList<T>(_entriesToLogProbs.keySet());
   }
 
-  public void put(double prob, T object) {
+  /**
+   * Adds a LOG value to the distribution.
+   * @param logProb
+   * @param object
+   */
+  public void logPut(double logProb, T object) {
 
     Preconditions.checkNotNull(object);
 
-    if (Double.compare(prob, 0.0) <= 0)
+    if (Double.isInfinite(logProb))
       return;
 
-    _cumulativeProb += prob;
-    final double newProb = _entriesToProbs.adjustOrPutValue(object, prob, prob);
+    _logCumulativeProb = LogMath.add(_logCumulativeProb, logProb);
+    double lastVal = _entriesToLogProbs.putIfAbsent(object, logProb);
+    if (_entriesToLogProbs.getNoEntryValue() != lastVal)
+      _entriesToLogProbs.put(object, LogMath.add(lastVal, logProb));
 
     /*
      * reset the underlying distribution for lazy reloading
@@ -133,13 +146,13 @@ public class CategoricalDist<T extends Comparable<T>> {
   @SuppressWarnings("unchecked")
   public T sample() {
 
-    Preconditions.checkState(!_entriesToProbs.isEmpty(),
+    Preconditions.checkState(!_entriesToLogProbs.isEmpty(),
         "No entries in the CDF");
-    Preconditions.checkState(_cumulativeProb > 0.0,
+    Preconditions.checkState(!Double.isInfinite(_logCumulativeProb),
         "No cumulative probability in CDF");
 
-    if (_entriesToProbs.size() == 1) {
-      return Iterables.getOnlyElement(_entriesToProbs.keySet());
+    if (_entriesToLogProbs.size() == 1) {
+      return Iterables.getOnlyElement(_entriesToLogProbs.keySet());
     }
 
     if (_emd == null) {
@@ -162,27 +175,20 @@ public class CategoricalDist<T extends Comparable<T>> {
     return (T)_entries[_objIdx.get(newIdx)];
   }
 
-  private double[] initializeDistribution() {
-    double[] probVector = MathUtils.normalizeArray(_entriesToProbs.values(),
-        1.0);
-    _entries = _entriesToProbs.keys();
+  private void initializeDistribution() {
+    double[] entriesToProbs = _entriesToLogProbs.values();
+    double[] probVector = new double[entriesToProbs.length];
+    for (int i = 0; i < probVector.length; ++i) {
+      probVector[i] = FastMath.exp(entriesToProbs[i] - _logCumulativeProb);
+    }
+    _entries = _entriesToLogProbs.keys();
     for (int i = 0; i < _entries.length; ++i) {
      _objIdx.add(i); 
     }
     if (_sort) {
       probVector = handleSort(probVector);
     }
-    /*
-     * Need a double array for DiscreteDistribution. Lame.
-     */
-    final double[] cummulativeDist = new double[_objIdx.size()];
-    double prevVal = 0.0;
-    for (int i = 0; i < _objIdx.size(); ++i) {
-      cummulativeDist[i] = probVector[i] + prevVal;
-      prevVal = cummulativeDist[i];
-    }
-    _emd = new MultinomialDistribution(DenseVectorFactoryMTJ.INSTANCE.copyArray(probVector), 1);
-    return cummulativeDist;
+    _emd = new MultinomialDistribution(VectorFactory.getDefault().copyArray(probVector), 1);
   }
   
   /**
@@ -190,7 +196,7 @@ public class CategoricalDist<T extends Comparable<T>> {
    * 
    */
   private double[] handleSort(double[] probs) {
-    final Object[] mapKeys = _entriesToProbs.keys();
+    final Object[] mapKeys = _entriesToLogProbs.keys();
     /*
      * Sort the key index by key value, then reorder the prob value array with
      * sorted index.
@@ -201,7 +207,7 @@ public class CategoricalDist<T extends Comparable<T>> {
       public int compare(Integer arg0, Integer arg1) {
         T p0 = (T)mapKeys[arg0];
         T p1 = (T)mapKeys[arg1];
-        int probComp = Double.compare(_entriesToProbs.get(p0), _entriesToProbs.get(p1));
+        int probComp = Double.compare(_entriesToLogProbs.get(p0), _entriesToLogProbs.get(p1));
         if(probComp == 0)
           probComp = p0.compareTo(p1); 
         return probComp;
@@ -218,18 +224,18 @@ public class CategoricalDist<T extends Comparable<T>> {
   public Multiset<T> sample(int samples) {
     
     Preconditions.checkArgument(samples > 0);
-    Preconditions.checkState(!_entriesToProbs.isEmpty(),
+    Preconditions.checkState(!_entriesToLogProbs.isEmpty(),
         "No entries in the CDF");
-    Preconditions.checkState(_cumulativeProb > 0.0,
+    Preconditions.checkState(!Double.isInfinite(_logCumulativeProb),
         "No cumulative probability in CDF");
 
     final Multiset<T> sampled = HashMultiset.create(samples);
-    if (_entriesToProbs.size() == 1) {
-      sampled.add(Iterables.getOnlyElement(_entriesToProbs.keySet()), samples);
+    if (_entriesToLogProbs.size() == 1) {
+      sampled.add(Iterables.getOnlyElement(_entriesToLogProbs.keySet()), samples);
     } else {
 
       if (_emd == null) {
-        _cummulativeDist = initializeDistribution();
+        initializeDistribution();
       }
       
       _emd.setNumTrials(samples);
@@ -247,31 +253,35 @@ public class CategoricalDist<T extends Comparable<T>> {
   }
 
   public boolean isEmpty() {
-    return _entriesToProbs.isEmpty();
+    return _entriesToLogProbs.isEmpty();
   }
 
   public boolean hasProbability() {
-    return _cumulativeProb > 0.0;
+    return !Double.isInfinite(_logCumulativeProb);
   }
 
   public boolean canSample() {
-    return !_entriesToProbs.isEmpty() && _cumulativeProb > 0.0;
+    return !_entriesToLogProbs.isEmpty() && !Double.isInfinite(_logCumulativeProb);
   }
 
   public int size() {
-    return _entriesToProbs.size();
+    return _entriesToLogProbs.size();
   }
 
   @Override
   public String toString() {
-    return _entriesToProbs.toString();
+    return _entriesToLogProbs.toString();
   }
   
   public double getCummulativeProb() {
-    return _cumulativeProb;
+    return FastMath.exp(_logCumulativeProb);
   }
 
+  public double logDensity(T thisState) {
+    return _entriesToLogProbs.get(thisState);
+  }
+  
   public double density(T thisState) {
-    return _entriesToProbs.get(thisState);
+    return FastMath.exp(_entriesToLogProbs.get(thisState));
   }
 }

@@ -77,12 +77,12 @@ public final class BlockStateObservation implements
 
   public static double computeScheduleDeviation(Observation obs, BlockState blockState) {
     
-    final double schedDev = ((obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000.0 
-        - blockState.getBlockLocation().getScheduledTime())/60.0;
+    final double schedDev = ((obs.getTime() - blockState.getBlockInstance().getServiceDate())/1000d 
+        - blockState.getBlockLocation().getScheduledTime())/60d;
     final double dab = blockState.getBlockLocation().getDistanceAlongBlock();
-    if ((dab <= 0.0 && schedDev <= 0.0)
-        || (dab >= blockState.getBlockInstance().getBlock().getTotalBlockDistance() && schedDev >= 0.0))
-      return 0.0;
+    if ((dab <= 0d && schedDev <= 0d)
+        || (dab >= blockState.getBlockInstance().getBlock().getTotalBlockDistance() && schedDev >= 0d))
+      return 0d;
     else
       return schedDev;
   }

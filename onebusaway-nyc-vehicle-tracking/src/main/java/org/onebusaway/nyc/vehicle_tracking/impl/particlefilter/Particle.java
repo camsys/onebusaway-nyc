@@ -19,6 +19,8 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 
 import org.apache.commons.math.util.FastMath;
@@ -49,6 +51,8 @@ public class Particle implements Serializable, Comparable<Particle> {
   private Object _data;
 
   transient private SensorModelResult _transResult;
+
+  private Multiset<Particle> _transitions = null;
 
   public Particle(double timestamp) {
     this(timestamp, null);
@@ -86,6 +90,7 @@ public class Particle implements Serializable, Comparable<Particle> {
     _parent = particle.getParent();
     _logWeight = particle.getLogWeight();
     _data = particle.getData();
+    _transitions = particle._transitions;
   }
 
   public double getTimestamp() {
@@ -314,5 +319,13 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   public double getLogWeight() {
     return _logWeight;
+  }
+
+  public Multiset<Particle> getTransitions() {
+    return _transitions;
+  }
+
+  public void setTransitions(Multiset<Particle> transitions) {
+    _transitions = transitions;
   }
 }

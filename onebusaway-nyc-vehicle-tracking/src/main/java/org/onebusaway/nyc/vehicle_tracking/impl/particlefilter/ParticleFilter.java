@@ -70,7 +70,7 @@ public class ParticleFilter<OBS> {
   final private static double _resampleThreshold = 0.75;
 
   /**
-   * Flag for operations that keep particle trajectory information, etc.
+   * Flag for operations that keep particle trajectory information, transitions, etc.
    */
   final private static boolean _debugEnabled = false;
 
@@ -194,15 +194,6 @@ public class ParticleFilter<OBS> {
     return _particleFactory.createParticles(timestamp, observation);
   }
 
-
-  @SuppressWarnings("unused")
-  private Multiset<Particle> applyMotionModel(final OBS obs,
-      final double timestamp) throws ParticleFilterException {
-    Multiset<Particle> particles;
-    final double elapsed = timestamp - _timeOfLastUpdate;
-    particles = _motionModel.move(_particles, timestamp, elapsed, obs, _previouslyResampled);
-    return particles;
-  }
 
   public static double getEffectiveSampleSize(Multiset<Particle> particles) {
     // double CVt = 0.0;
@@ -370,7 +361,8 @@ public class ParticleFilter<OBS> {
      * perform movement and weighing separately
      */
     if (moveParticles) {
-      particles = applyMotionModel(obs, timestamp);
+      final double elapsed = timestamp - _timeOfLastUpdate;
+      particles = _motionModel.move(_particles, timestamp, elapsed, obs, _previouslyResampled);
     }
 
     /**
@@ -398,7 +390,7 @@ public class ParticleFilter<OBS> {
         final Particle p = pEntry.getElement();
         final double logProb = p.getLogWeight()
             + FastMath.log(pEntry.getCount());
-        cdf.put(FastMath.exp(logProb), p);
+        cdf.logPut(logProb, p);
       }
 
       if (!cdf.canSample())

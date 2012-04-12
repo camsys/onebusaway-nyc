@@ -22,6 +22,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.Categori
 
 import com.google.common.collect.Multiset;
 
+import org.apache.commons.math.util.FastMath;
 import org.junit.Test;
 
 public class CategoricalDistTest {
@@ -30,12 +31,12 @@ public class CategoricalDistTest {
   public void testSampleA() {
 
     final CategoricalDist<String> cdf = new CategoricalDist<String>();
-    cdf.put(0.3*1e-5, "c");
-    cdf.put(0.3, "c");
-    cdf.put(0.2, "c");
-    cdf.put(0.01, "a");
-    cdf.put(0.001, "a");
-    cdf.put(0.2*1e-7, "b");
+    cdf.logPut(FastMath.log(0.3*1e-5), "c");
+    cdf.logPut(FastMath.log(0.3), "c");
+    cdf.logPut(FastMath.log(0.2), "c");
+    cdf.logPut(FastMath.log(0.01), "a");
+    cdf.logPut(FastMath.log(0.001), "a");
+    cdf.logPut(FastMath.log(0.2*1e-7), "b");
 
     final Counter<String> counter = new Counter<String>();
     final int iterations = 1000;
@@ -52,7 +53,7 @@ public class CategoricalDistTest {
     assertEquals(b, cdf.density("b") / cummulativeProb, .05);
     assertEquals(c, cdf.density("c") / cummulativeProb, .05);
     
-    cdf.put(0.001, "d");
+    cdf.logPut(FastMath.log(0.001), "d");
     
     Multiset<String> res = cdf.sample(iterations);
     assertEquals(res.count("a") / (double) iterations, cdf.density("a") / cummulativeProb, .05);

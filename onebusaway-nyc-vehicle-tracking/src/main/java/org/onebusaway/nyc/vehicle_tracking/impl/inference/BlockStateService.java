@@ -91,6 +91,12 @@ public class BlockStateService {
   private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
 
   private static final double _oppositeDirMoveCutoff = 15;
+  
+  /*
+   * Set this field to false if you want snapping to
+   * occur regardless of run or dsc info.
+   */
+  private static final boolean _requireImpliedRoutes = true;
 
   /**
    * This will sound weird, but DON'T REMOVE THIS
@@ -474,7 +480,7 @@ public class BlockStateService {
         if (obsOrientation != null && distMoved != null) {
           double orientDiff = Math.abs(obsOrientation - location.getOrientation());
           if (orientDiff >= 95 && orientDiff <= 265 
-              && distMoved >= getOppositedirmovecutoff()) {
+              && distMoved >= getOppositeDirMoveCutoff()) {
             continue;
           }
         }
@@ -489,8 +495,10 @@ public class BlockStateService {
         /*
          * XXX we might not want to snap these if the dsc is out-of-service
          */
-        if ((!observation.getDscImpliedRouteCollections().isEmpty() && !observation.getDscImpliedRouteCollections().contains(
-            location.getActiveTrip().getTrip().getRouteCollection().getId()))
+        if ((_requireImpliedRoutes
+            && (!observation.getImpliedRouteCollections().isEmpty() 
+                 && !observation.getImpliedRouteCollections().contains(
+                    location.getActiveTrip().getTrip().getRouteCollection().getId())))
             || schedTime < searchTimeFrom)
           continue;
 
@@ -740,7 +748,7 @@ public class BlockStateService {
     _log.info("done.");
   }
 
-  public static double getOppositedirmovecutoff() {
+  public static double getOppositeDirMoveCutoff() {
     return _oppositeDirMoveCutoff;
   }
 

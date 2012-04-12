@@ -34,6 +34,7 @@ import org.junit.runners.Suite;
     Trace_4138_20111207_150000_220000_IntegrationTest.class,
     Trace_4255_20111215_183433_183932_IntegrationTest.class,
     Trace_6154_20111214_123000_143500_IntegrationTest.class,
+    Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest.class,
     Trace_2711_20111208_054046_102329_IntegrationTest.class,
     Trace_7564_20101203T004633_with_runs_reported_IntegrationTest.class,
     Trace_2423_20120111_091352_092348_IntegrationTest.class,

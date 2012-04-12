@@ -24,7 +24,9 @@ import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 
 import java.util.Set;
 
@@ -50,7 +52,9 @@ public class Observation implements Comparable<Observation> {
 
   private final RunResults _runResults;
 
-  private final boolean hasValidDsc;
+  private final boolean _hasValidDsc;
+
+  private final Set<AgencyAndId> _impliedRouteCollections;
 
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
@@ -63,10 +67,12 @@ public class Observation implements Comparable<Observation> {
     _lastValidDestinationSignCode = lastValidDestinationSignCode;
     _dscImpliedRouteCollections = dscImpliedRoutes;
     _runResults = runResults;
+    _impliedRouteCollections = Sets.newHashSet(Iterables.concat(dscImpliedRoutes, 
+         runResults.getRouteIds()));
     this.atBase = atBase;
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
-    this.hasValidDsc = hasValidDsc;
+    this._hasValidDsc = hasValidDsc;
 
     _previousObservation = previousObservation;
   }
@@ -128,6 +134,10 @@ public class Observation implements Comparable<Observation> {
 
   public Set<AgencyAndId> getDscImpliedRouteCollections() {
     return _dscImpliedRouteCollections;
+  }
+  
+  public Set<AgencyAndId> getImpliedRouteCollections() {
+    return _impliedRouteCollections;
   }
 
   public Integer getFuzzyMatchDistance() {
@@ -249,7 +259,11 @@ public class Observation implements Comparable<Observation> {
   }
 
   public boolean hasValidDsc() {
-    return hasValidDsc;
+    return _hasValidDsc;
+  }
+
+  public Set<AgencyAndId> getRunImpliedRouteCollections() {
+    return _runResults.getRouteIds();
   }
 
 }

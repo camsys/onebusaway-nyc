@@ -31,7 +31,7 @@ public class NullLocationLikelihood implements SensorModelRule {
     NON_NULL_STATE
   }
   
-  static private double nullLocProb = 1e-3;
+  static private double nullLocProb = 5e-3;
   
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,

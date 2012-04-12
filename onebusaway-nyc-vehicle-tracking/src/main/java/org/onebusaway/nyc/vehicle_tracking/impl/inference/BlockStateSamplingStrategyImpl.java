@@ -98,6 +98,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
     _scheduleDeviationSigma = new DeviationModel(scheduleDeviationSigma);
   }
 
+  /*
   @Override
   public BlockStateObservation sampleGpsObservationState(
       BlockStateObservation parentBlockStateObs, Observation obs) {
@@ -118,9 +119,10 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
         obs, parentBlockState.getBlockInstance(), distAlongSample);
-    return isOrientationMostlyEqual(distState.getBlockState(), obs) ? distState: null;
+    return orientationCheck(parentBlockState, distState, obs);
 
   }
+  */
 
   @Override
   public BlockStateObservation sampleTransitionDistanceState(
@@ -174,7 +176,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 
     final BlockStateObservation distState = _blocksFromObservationService.getBlockStateObservationFromDist(
         obs, parentBlockState.getBlockInstance(), distAlongSample);
-    return isOrientationMostlyEqual(distState.getBlockState(), obs) ? distState: null;
+    return orientationCheck(parentBlockState, distState, obs);
   }
 
   @Override
@@ -212,11 +214,20 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 //          obs, blockInstance, blockInstance.getBlock().getTotalBlockDistance());
       return null;
     } else {
+      /**
+       * Important note about prior distribution sampling:
+       * to reduce/remove confusion caused by deadhead states
+       * having no pre-defined trajectory, we simply don't allow
+       * prior sampling of deadhead states for certain situations. 
+       */
       schedState = _blocksFromObservationService.getBlockStateObservationFromTime(
           obs, blockInstance, (int)newSchedTime);
+      if (!JourneyStateTransitionModel.isLocationOnATrip(schedState.getBlockState())) {
+        return null;
+      }
     }
 
-    return isOrientationMostlyEqual(schedState.getBlockState(), obs) ? schedState : null;
+    return orientationCheck(null, schedState, obs);
   }
 
   @Override
@@ -250,7 +261,7 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
           obs, parentBlockState.getBlockInstance(), newSchedTime);
     }
 
-    return isOrientationMostlyEqual(schedState.getBlockState(), obs) ? schedState : null;
+    return orientationCheck(parentBlockState, schedState, obs);
   }
   
   /**
@@ -259,24 +270,43 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
    * @param observation
    * @return
    */
-  private boolean isOrientationMostlyEqual(BlockState blockState, Observation observation) {
+  private BlockStateObservation orientationCheck(BlockState parentBlockState, 
+      BlockStateObservation blockState, Observation observation) {
     Double obsOrientation = null;
     Double distMoved = null;
-    if (observation.getPreviousRecord() != null 
-          && JourneyStateTransitionModel.isLocationOnATrip(blockState)) {
+    if (observation.getPreviousRecord() != null
+        && JourneyStateTransitionModel.isLocationOnATrip(blockState.getBlockState())) {
       NycRawLocationRecord prevRecord = observation.getPreviousRecord();
       obsOrientation = SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
           prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
       distMoved = SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
           prevRecord.getLongitude(), observation.getLocation().getLat(), observation.getLocation().getLon());
-      double orientDiff = Math.abs(obsOrientation - blockState.getBlockLocation().getOrientation());
+      double orientDiff = Math.abs(obsOrientation - blockState.getBlockState().getBlockLocation().getOrientation());
       if (orientDiff >= 95 && orientDiff <= 265 
-          && distMoved >= BlockStateService.getOppositedirmovecutoff()) {
-        return false;
+          && distMoved >= BlockStateService.getOppositeDirMoveCutoff()) {
+        /*
+         * If we weren't previously on a trip, but were going
+         * the wrong direction, then truncate this sample up to
+         * the start of the trip. 
+         */
+        if(parentBlockState != null
+            && !JourneyStateTransitionModel.isLocationOnATrip(parentBlockState)) {
+          final double adjustedDistAlong = blockState.getBlockState().getBlockLocation()
+              .getActiveTrip().getDistanceAlongBlock();
+          if (adjustedDistAlong > parentBlockState.getBlockLocation().getDistanceAlongBlock()
+              && adjustedDistAlong < blockState.getBlockState().getBlockLocation().getDistanceAlongBlock()) {
+            BlockStateObservation adjustedState = _blocksFromObservationService.getBlockStateObservationFromDist(
+                observation, parentBlockState.getBlockInstance(), adjustedDistAlong);
+            return adjustedState;
+          } 
+          return null;
+        } else {
+          return null;
+        }
       }
     }
     
-    return true;
+    return blockState;
     
   }
 

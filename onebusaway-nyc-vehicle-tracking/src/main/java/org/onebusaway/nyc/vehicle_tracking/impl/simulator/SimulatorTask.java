@@ -25,6 +25,8 @@ import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetail
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultiset;
@@ -100,6 +102,8 @@ public class SimulatorTask implements Runnable, EntityHandler {
   private boolean _loop;
 
   private String _filename = null;
+
+  private int _particleParentSize = 2;
 
   public SimulatorTask() {
   }
@@ -180,8 +184,9 @@ public class SimulatorTask implements Runnable, EntityHandler {
       return;
     }
 
-    record.setRecordNumber(_records.size() + 1);
     _records.add(record);
+    record.setRecordNumber(_records.size() - 1);
+    
     final AgencyAndId vid = record.getVehicleId();
     if (_vehicleId != null) {
       if (!_vehicleId.equals(vid))
@@ -252,6 +257,35 @@ public class SimulatorTask implements Runnable, EntityHandler {
 //    return null;
   }
 
+  public VehicleLocationDetails getTransitionParticleDetails(int parentParticleId, int transParticleNumber, 
+      int recordIndex) {
+    final VehicleLocationDetails details = new VehicleLocationDetails();
+    details.setId(_id);
+    
+    final Collection<Multiset.Entry<Particle>> particles;
+    if (recordIndex < 0) {
+      details.setLastObservation(RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(_mostRecentRecord));
+      particles = _vehicleLocationInferenceService.getCurrentParticlesForVehicleId(_vehicleId).entrySet();
+    } else {
+      details.setLastObservation(getDetails(recordIndex).getLastObservation());
+      particles = getDetails(recordIndex).getParticles();
+    }
+    
+    if (particles != null) {
+      for (Multiset.Entry<Particle> pEntry : particles) {
+        Particle p = pEntry.getElement();
+        if (p.getIndex() == parentParticleId) {
+          final Multiset<Particle> history = HashMultiset.create();
+          history.add(Iterables.get(p.getTransitions().elementSet(), transParticleNumber));
+          details.setParticles(history);
+          details.setHistory(true);
+          break;
+        }
+      }
+    }
+    return details;
+  }
+  
   public VehicleLocationDetails getParticleDetails(int particleId, int recordIndex) {
     final VehicleLocationDetails details = new VehicleLocationDetails();
     details.setId(_id);
@@ -270,7 +304,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
         Particle p = pEntry.getElement();
         if (p.getIndex() == particleId) {
           final Multiset<Particle> history = TreeMultiset.create(Ordering.natural());
-          while (p != null) {
+          while (p != null && history.elementSet().size() <= _particleParentSize) {
             history.add(p, pEntry.getCount());
             p = p.getParent();
           }
@@ -476,7 +510,6 @@ public class SimulatorTask implements Runnable, EntityHandler {
     if (rr == null || rr.getTimestamp() < record.getTimestamp())
       return false;
 
-    rr.setRecordNumber(_results.size()+1);
     rr.setVehicleId(_vehicleId);
 
     if (_fillActualProperties) {
@@ -509,6 +542,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
     synchronized (_results) {
       _results.add(rr);
+      rr.setRecordNumber(_results.size() - 1);
     }
 
     final VehicleLocationDetails details = new VehicleLocationDetails();
@@ -556,5 +590,13 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   public void setMaxParticleHistorySize(int maxParticleHistorySize) {
     _maxParticleHistorySize = maxParticleHistorySize;
+  }
+
+  public int getParticleParentSize() {
+    return _particleParentSize;
+  }
+
+  public void setParticleParentSize(int particleParentSize) {
+    _particleParentSize = particleParentSize;
   }
 }

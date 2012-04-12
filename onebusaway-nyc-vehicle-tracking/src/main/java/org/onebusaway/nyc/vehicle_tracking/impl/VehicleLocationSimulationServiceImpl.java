@@ -240,6 +240,15 @@ public class VehicleLocationSimulationServiceImpl implements
       return task.getParticleDetails(particleId, recordIndex);
     return null;
   }
+  
+  @Override
+  public VehicleLocationDetails getTransitionParticleDetails(int taskId, int particleId, int transParticleNum,
+      int recordIndex) {
+    final SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      return task.getTransitionParticleDetails(particleId, transParticleNum, recordIndex);
+    return null;
+  }
 
   @Override
   public List<NycTestInferredLocationRecord> getResultRecords(int taskId) {

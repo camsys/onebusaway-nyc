@@ -59,7 +59,7 @@ Location Simulation Console</a></p>
     <tbody>
         <c:forEach var="record" items="${records}">
             <tr>
-		            <td align='center'><a href="vehicle-location-simulation!task-details.do?taskId=${taskId}&amp;recordNumber=${record.recordNumber-1}">
+		            <td align='center'><a href="vehicle-location-simulation!task-details.do?taskId=${taskId}&amp;recordNumber=${record.recordNumber}">
 		            <c:out value="${record.recordNumber}" />
 		            </a></td>
                 <td align='center'>

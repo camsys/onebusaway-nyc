@@ -109,10 +109,14 @@ public class NullStateLikelihood implements SensorModelRule {
       }
       
       if (!state.getBlockStateObservation().isSnapped()
-          && (EVehiclePhase.DEADHEAD_AFTER == phase
+          && ((EVehiclePhase.DEADHEAD_AFTER == phase
+                && state.getBlockStateObservation().getScheduleDeviation() == 0d)
             || EVehiclePhase.AT_BASE == phase
-            || EVehiclePhase.DEADHEAD_BEFORE == phase
-            || EVehiclePhase.LAYOVER_BEFORE == phase)) {
+            || (EVehiclePhase.DEADHEAD_BEFORE == phase 
+                && state.getBlockStateObservation().getScheduleDeviation() == 0d)
+            || (EVehiclePhase.LAYOVER_BEFORE == phase)
+                && state.getBlockStateObservation().getScheduleDeviation() == 0d)
+            ) {
         return NullStates.NULL_STATE;
       } 
       
