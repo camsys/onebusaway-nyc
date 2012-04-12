@@ -7,6 +7,8 @@ import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 
 public interface NycQueuedInferredLocationDao {
 
+  void queueForUpdate(ArchivedInferredLocationRecord record);
+  
   void saveOrUpdateRecord(ArchivedInferredLocationRecord record);
 
   void saveOrUpdateRecords(ArchivedInferredLocationRecord... records);

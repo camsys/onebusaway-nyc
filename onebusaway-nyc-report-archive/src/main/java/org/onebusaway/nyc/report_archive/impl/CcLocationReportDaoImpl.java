@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 			.getLogger(CcLocationReportDaoImpl.class);
 	public static final int BATCH_SIZE = 1000;
 	private HibernateTemplate _template;
+	private List<CcLocationReportRecord> reports = Collections.synchronizedList(new ArrayList<CcLocationReportRecord>());
 	private int _batchCount = 0;
 
 	@Autowired
@@ -37,6 +39,17 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 
 	public HibernateTemplate getHibernateTemplate() {
 		return _template;
+	}
+
+	public void queueForUpdate(CcLocationReportRecord report) {
+		_batchCount++;
+		reports.add(report);
+		if (_batchCount == BATCH_SIZE) {
+			// clear from level one cache
+			saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
+			reports.clear();
+			_batchCount = 0;
+		}
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
@@ -53,13 +66,18 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 		}
 	}
 
+	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateReports(CcLocationReportRecord... reports) {
 		List<CcLocationReportRecord> list = new ArrayList<CcLocationReportRecord>(
 				reports.length);
-		for (CcLocationReportRecord report : reports)
+		for (CcLocationReportRecord report : reports) {
 			list.add(report);
+		}
+		_log.warn("cc flushAll");
 		_template.saveOrUpdateAll(list);
+		_template.flush();
+		_template.clear();
 	}
 
 	@SuppressWarnings("unchecked")

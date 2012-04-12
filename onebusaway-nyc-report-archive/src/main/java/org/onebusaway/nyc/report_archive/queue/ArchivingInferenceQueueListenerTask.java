@@ -79,7 +79,7 @@ public class ArchivingInferenceQueueListenerTask extends
 			long processingStart = System.currentTimeMillis();
 			postProcess(locationRecord);
 			processingSum += System.currentTimeMillis() - processingStart;
-			_locationDao.saveOrUpdateRecord(locationRecord);
+			_locationDao.queueForUpdate(locationRecord);
 			if (count > COUNT_INTERVAL) {
 				_log.warn("inference_queue processed " + count + " messages in " 
 						+ (System.currentTimeMillis()-countStart) 

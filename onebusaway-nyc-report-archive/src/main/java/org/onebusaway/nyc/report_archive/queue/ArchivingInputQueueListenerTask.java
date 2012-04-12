@@ -54,7 +54,7 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 					envelope, contents, getZoneOffset());
 			if (record != null) {
 				long dbStart = System.currentTimeMillis();
-				_dao.saveOrUpdateReport(record);
+				_dao.queueForUpdate(record);
 				dbSum += System.currentTimeMillis() - dbStart;
 			}
 			// re-calculate zoneOffset periodically

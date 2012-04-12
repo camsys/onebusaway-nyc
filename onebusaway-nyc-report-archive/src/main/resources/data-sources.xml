@@ -49,10 +49,12 @@
                 <prop key="hibernate.hbm2ddl.auto">validate</prop>
                 <prop key="hibernate.jdbc.batch_size">1000</prop>
                 <prop key="hibernate.order_inserts">true</prop>
+                <prop key="hibernate.order_updates">true</prop>
+                <prop key="hibernate.show_sql">false</prop>
             </props> 
         </property> 
     </bean> 
-
+    
     <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
       <constructor-arg type="java.lang.String" value="${tdm.host}"/>
       <constructor-arg type="java.lang.Integer" value="80" />

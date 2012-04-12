@@ -15,6 +15,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -25,6 +26,7 @@ public class NycQueuedInferredLocationDaoImpl implements
 			.getLogger(NycQueuedInferredLocationDaoImpl.class);
 	public static final int BATCH_SIZE = 1000;
 	private HibernateTemplate _template;
+	private List<ArchivedInferredLocationRecord> reports = Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
 	private int _batchCount = 0;
 
 	@Autowired
@@ -36,6 +38,17 @@ public class NycQueuedInferredLocationDaoImpl implements
 		return _template;
 	}
 
+	public void queueForUpdate(ArchivedInferredLocationRecord report) {
+		_batchCount++;
+		reports.add(report);
+		if (_batchCount == BATCH_SIZE) {
+			// clear from level one cache
+			saveOrUpdateRecords(reports.toArray(new ArchivedInferredLocationRecord[0]));
+			reports.clear();
+			_batchCount = 0;
+		}
+	}
+	
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
@@ -61,11 +74,16 @@ public class NycQueuedInferredLocationDaoImpl implements
 		for (ArchivedInferredLocationRecord record : records)
 			list.add(record);
 		_template.saveOrUpdateAll(list);
+
+		List<InferredLocationRecord> currentRecords = new ArrayList<InferredLocationRecord>();
 		for (ArchivedInferredLocationRecord record : records) {
 			InferredLocationRecord currentRecord = new InferredLocationRecord(
 					record);
-			_template.saveOrUpdate(currentRecord);
+			currentRecords.add(currentRecord);
 		}
+		_template.saveOrUpdateAll(currentRecords);
+		_template.flush();
+		_template.clear();
 	}
 
 	@Override
