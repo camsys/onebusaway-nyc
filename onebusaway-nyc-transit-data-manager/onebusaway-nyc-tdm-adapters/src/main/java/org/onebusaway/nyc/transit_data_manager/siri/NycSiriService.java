@@ -18,7 +18,7 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.siri.AffectedApplicationStructure;
 import org.onebusaway.siri.OneBusAwayAffects;
@@ -102,7 +102,7 @@ public abstract class NycSiriService {
   static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
 
   @Autowired
-  private NycTransitDataService _nycTransitDataService;
+  private TransitDataService _transitDataService;
 
   private String _serviceAlertsUrl;
 
@@ -666,12 +666,12 @@ public abstract class NycSiriService {
     situationExchangeRequestStructure.setRequestTimestamp(new Date());
   }
 
-  public NycTransitDataService getTransitDataService() {
-    return _nycTransitDataService;
+  public TransitDataService getTransitDataService() {
+    return _transitDataService;
   }
 
-  public void setTransitDataService(NycTransitDataService nycTransitDataService) {
-    this._nycTransitDataService = nycTransitDataService;
+  public void setTransitDataService(TransitDataService transitDataService) {
+    this._transitDataService = transitDataService;
   }
 
   public String getServiceAlertsUrl() {

@@ -1,6 +1,6 @@
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
@@ -29,14 +29,14 @@ public class ServiceAlertsResource {
 			.getLogger(ServiceAlertsResource.class);
 
   @Autowired
-  private NycTransitDataService _nycTransitDataService;
+  private TransitDataService _transitDataService;
 
 	@GET
   @Produces("application/xml")
   public Response list() throws JAXBException {
 	  SituationQueryBean situationQueryBean = new SituationQueryBean();
 	  situationQueryBean.setAgencyId("MTA NYCT");
-    ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(situationQueryBean);
+    ListBean<ServiceAlertBean> serviceAlerts = _transitDataService.getServiceAlerts(situationQueryBean);
 		return Response.ok(serviceAlerts).build();
   }
 
