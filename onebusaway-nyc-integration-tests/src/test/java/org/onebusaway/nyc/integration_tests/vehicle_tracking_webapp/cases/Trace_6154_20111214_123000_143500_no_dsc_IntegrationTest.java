@@ -28,6 +28,6 @@ public class Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest extends Ab
     setBundle("si", "2011-12-07T00:00:00EDT");
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.90);
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_DURING, 0.93);
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.93);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.90);
   }
 }

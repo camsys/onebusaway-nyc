@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import umontreal.iro.lecuyer.randvar.FoldedNormalGen;
 import umontreal.iro.lecuyer.randvar.NormalGen;
 
 @Component
@@ -157,11 +158,22 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
 //          distAlongSample = EdgeLikelihood.deadDuringEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
           distAlongSample = distAlongPrior;
         }
+      } else if (
+          EVehiclePhase.DEADHEAD_AFTER == phase
+          || ((EVehiclePhase.DEADHEAD_BEFORE == phase
+              || EVehiclePhase.LAYOVER_BEFORE == phase)
+              && parentBlockStateObs.getScheduleDeviation() == 0d)
+          ){
+        /*
+         * Only start moving if it's supposed to be
+         */
+        return new BlockStateObservation(parentBlockStateObs, obs);
       } else {
         final double distAlongPrior = SphericalGeometryLibrary.distance(
             obs.getPreviousObservation().getLocation(), obs.getLocation());
-        distAlongSample = EdgeLikelihood.inProgressEdgeMovementDist.sample(ParticleFactoryImpl.getLocalRng());
-        distAlongSample += distAlongPrior;
+        final double distAlongErrorSample = EdgeLikelihood.inProgressEdgeMovementDist.sample(
+            ParticleFactoryImpl.getLocalRng());
+        distAlongSample = distAlongPrior + (distAlongErrorSample > 0 ? distAlongErrorSample : 0d);
       }
       
       distAlongSample += parentDistAlong;

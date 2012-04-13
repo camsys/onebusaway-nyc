@@ -196,10 +196,10 @@ public class EdgeLikelihood implements SensorModelRule {
     return pDistAlong;
   }
 
-  static private final double getAvgVelocityBetweenStops(VehicleState state) {
-    BlockStopTimeEntry nextStop = state.getBlockState().getBlockLocation().getNextStop();
+  static public final double getAvgVelocityBetweenStops(BlockState blockState) {
+    BlockStopTimeEntry nextStop = blockState.getBlockLocation().getNextStop();
     if (nextStop != null && nextStop.getBlockSequence() - 1 > 0) {
-      BlockStopTimeEntry prevStop = state.getBlockState().getBlockInstance().getBlock().getStopTimes().get(
+      BlockStopTimeEntry prevStop = blockState.getBlockInstance().getBlock().getStopTimes().get(
           nextStop.getBlockSequence() - 1);
       final double avgVelocity = (nextStop.getDistanceAlongBlock() - prevStop.getDistanceAlongBlock())/
           (nextStop.getStopTime().getArrivalTime() - prevStop.getStopTime().getDepartureTime());
@@ -222,7 +222,7 @@ public class EdgeLikelihood implements SensorModelRule {
     final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
     final double expAvgDist;
     if (!state.getMotionState().hasVehicleNotMoved()) {
-      expAvgDist = getAvgVelocityBetweenStops(state) * obsTimeDelta;
+      expAvgDist = getAvgVelocityBetweenStops(state.getBlockState()) * obsTimeDelta;
     } else {
       expAvgDist = 0.0;
     }
