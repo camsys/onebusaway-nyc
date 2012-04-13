@@ -508,7 +508,7 @@ OBA.Sidebar = function() {
 
 					jQuery.each(serviceAlerts, function(_, serviceAlert) {
 	                    var description = serviceAlert.Description.replace(/\n/g, "<br/>");
-						serviceAlertsList.append(jQuery("<li></li>").text(description));
+						serviceAlertsList.append(jQuery("<li></li>").html(description));
 					});
 				}
 			});
