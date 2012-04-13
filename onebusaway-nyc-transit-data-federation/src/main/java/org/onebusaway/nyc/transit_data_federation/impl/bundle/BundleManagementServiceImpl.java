@@ -4,8 +4,8 @@ import org.onebusaway.container.refresh.RefreshService;
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
-
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleStoreService;
@@ -13,7 +13,6 @@ import org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
 import org.onebusaway.transit_data.model.ListBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.RefreshableResources;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
@@ -45,6 +44,7 @@ import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 
+@SuppressWarnings("rawtypes")
 public class BundleManagementServiceImpl implements BundleManagementService {
 
   private static final int INFERENCE_PROCESSING_THREAD_WAIT_TIMEOUT_IN_SECONDS = 60;
@@ -70,7 +70,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   protected BundleStoreService _bundleStore = null;
 
   @Autowired
-  private TransitDataService _service;
+  private NycTransitDataService _nycTransitDataService;
 
   @Autowired
   private CacheManager _cacheManager;
@@ -139,7 +139,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 	  return _standaloneMode;
 	}
 		
-  public synchronized void discoverBundles() throws Exception {
+  public void discoverBundles() throws Exception {
     _allBundles = _bundleStore.getBundles();
   }
 
@@ -216,19 +216,19 @@ public class BundleManagementServiceImpl implements BundleManagementService {
   }
 
   @Override
-  public synchronized BundleItem getCurrentBundleMetadata() {
+  public BundleItem getCurrentBundleMetadata() {
     return _applicableBundles.get(_currentBundleId);
   }
 
   // Can messages be processed using this bundle and current state?
   @Override
-  public synchronized Boolean bundleIsReady() {
+  public Boolean bundleIsReady() {
     return _bundleIsReady;
   }
 
   // register inference processing thread 
   @Override
-  public synchronized void registerInferenceProcessingThread(Future thread) {
+  public void registerInferenceProcessingThread(Future thread) {
     _inferenceProcessingThreads.add(thread);
     
     // keep our thread list from getting /too/ big unnecessarily
@@ -322,13 +322,14 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 		System.gc();
     _log.info("Garbage collection after bundle switch complete.");
 
-    removeAndRebuildCache();
-    _log.info("Cache rebuild complete.");
-    						
 		_currentBundleId = bundleId;
     _bundleIsReady = true;	
     _log.info("New bundle is now ready.");
 
+    // need to do after bundle is ready so TDS can not block
+    removeAndRebuildCache();
+    _log.info("Cache rebuild complete.");
+                
 		return;
 	}
 
@@ -345,20 +346,20 @@ public class BundleManagementServiceImpl implements BundleManagementService {
 
     // Rebuild cache
     try {
-      List<AgencyWithCoverageBean> agenciesWithCoverage = _service.getAgenciesWithCoverage();
+      List<AgencyWithCoverageBean> agenciesWithCoverage = _nycTransitDataService.getAgenciesWithCoverage();
 
       for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
 
         AgencyBean agency = agencyWithCoverage.getAgency();
 
-        ListBean<String> stopIds = _service.getStopIdsForAgencyId(agency.getId());
+        ListBean<String> stopIds = _nycTransitDataService.getStopIdsForAgencyId(agency.getId());
         for (String stopId : stopIds.getList()) {
-          _service.getStop(stopId);
+          _nycTransitDataService.getStop(stopId);
         }
 
-        ListBean<String> routeIds = _service.getRouteIdsForAgencyId(agency.getId());
+        ListBean<String> routeIds = _nycTransitDataService.getRouteIdsForAgencyId(agency.getId());
         for (String routeId : routeIds.getList()) {
-          _service.getStopsForRoute(routeId);
+          _nycTransitDataService.getStopsForRoute(routeId);
         }
       }
 
@@ -370,10 +371,10 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       }
 
       for (AgencyAndId shapeId : shapeIds) {
-        _service.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
+        _nycTransitDataService.getShapeForId(AgencyAndIdLibrary.convertToString(shapeId));
       }
-    } catch (ServiceException ex) {
-      _log.error("service exception", ex);
+    } catch (Exception e) {
+      _log.error("Exception during cache rebuild: ", e.getMessage());
     }
     
 //    for (String cacheName : _cacheManager.getCacheNames()) {

@@ -19,7 +19,7 @@
 <decorators defaultdir="/WEB-INF/decorators">
 	<!-- Any urls that are excluded will never be decorated by Sitemesh -->
 	<excludes>
-		<pattern>/m/*</pattern>
+		<!-- <pattern>/m/*</pattern> -->
 		<pattern>/css/*</pattern>
 		<pattern>/js/*</pattern>
 		<pattern>/api/*</pattern>
@@ -33,6 +33,10 @@
 	<decorator name="wiki" page="wiki.jspx">
 		<pattern>/wiki/*</pattern>
 		<pattern>/error/*</pattern>
+	</decorator>
+	
+	<decorator name="mobile" page="mobile.jspx">
+		<pattern>/m/*</pattern>
 	</decorator>
 
 </decorators>

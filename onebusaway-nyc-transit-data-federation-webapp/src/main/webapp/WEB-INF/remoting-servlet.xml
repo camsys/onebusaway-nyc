@@ -17,11 +17,6 @@
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
     <bean name="/transit-data-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
-        <property name="service" ref="transitDataServiceImpl" />
-        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
-    </bean>
-
-    <bean name="/nyc-transit-data-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
         <property name="service" ref="nycTransitDataServiceImpl" />
         <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
     </bean>

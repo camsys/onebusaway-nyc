@@ -19,8 +19,7 @@ import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
@@ -36,13 +35,10 @@ import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
 import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
-import org.onebusaway.transit_data_federation.services.transit_graph.RouteEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -91,7 +87,7 @@ public class VehicleLocationSimulationController {
 
   private VehicleLocationSimulationService _vehicleLocationSimulationService;
   
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
   
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
@@ -101,8 +97,6 @@ public class VehicleLocationSimulationController {
 
   private BlockStatusBeanService _blockStatusBeanService;
 
-  private TransitGraphDao _transitGraphDao;
-
   @Autowired
   public void setVehicleLocationService(
       VehicleLocationInferenceService vehicleLocationService) {
@@ -110,15 +104,9 @@ public class VehicleLocationSimulationController {
   }
 
   @Autowired
-  public void setTransitGraphDao(
-      TransitGraphDao transitGraphDao) {
-    _transitGraphDao = transitGraphDao;
-  }
-  
-  @Autowired
-  public void setTransitDataService(
-      TransitDataService transitDataService) {
-    _transitDataService = transitDataService;
+  public void setNycTransitDataService(
+      NycTransitDataService nycTransitDataService) {
+    _nycTransitDataService = nycTransitDataService;
   }
 
   @Autowired
@@ -375,7 +363,7 @@ public class VehicleLocationSimulationController {
 
     List<String> routeList = new ArrayList<String>();    
     for (String agencyId : _agencyService.getAllAgencyIds()) {
-      ListBean<RouteBean> routes = _transitDataService.getRoutesForAgencyId(agencyId);
+      ListBean<RouteBean> routes = _nycTransitDataService.getRoutesForAgencyId(agencyId);
       for(RouteBean route : routes.getList()) {
         routeList.add(route.getId());
       }
@@ -417,8 +405,8 @@ public class VehicleLocationSimulationController {
   
   @RequestMapping(value = "/vehicle-location-simulation!points-for-trip-id.do", method = RequestMethod.GET)
   public ModelAndView pointsForTripJson(@RequestParam(required=true) String tripId) {
-    TripBean trip = _transitDataService.getTrip(tripId);
-    EncodedPolylineBean polyline = _transitDataService.getShapeForId(trip.getShapeId());
+    TripBean trip = _nycTransitDataService.getTrip(tripId);
+    EncodedPolylineBean polyline = _nycTransitDataService.getShapeForId(trip.getShapeId());
     
     return new ModelAndView("json", "points", polyline.getPoints());
   }
@@ -428,7 +416,7 @@ public class VehicleLocationSimulationController {
     
     TripDetailsQueryBean query = new TripDetailsQueryBean();
     query.setTripId(tripId);
-    TripDetailsBean trip = _transitDataService.getSingleTripDetails(query);
+    TripDetailsBean trip = _nycTransitDataService.getSingleTripDetails(query);
     TripStopTimesBean stops = trip.getSchedule();
     
     return new ModelAndView("json", "stopTimes", stops.getStopTimes());
