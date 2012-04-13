@@ -19,31 +19,41 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
+
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class PriorRule implements SensorModelRule {
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState state = context.getState();
+    final VehicleState state = context.getState();
 
-    JourneyState js = state.getJourneyState();
-    EVehiclePhase phase = js.getPhase();
+    final JourneyState js = state.getJourneyState();
+    final EVehiclePhase phase = js.getPhase();
 
     /**
      * Technically, we might better weight these from prior training data, but
      * for now we want to slightly prefer being in service, not out of service
      */
-    if (phase == EVehiclePhase.DEADHEAD_DURING
-        || phase == EVehiclePhase.DEADHEAD_BEFORE)
-      return new SensorModelResult("pPrior", 0.5);
-    else if (EVehiclePhase.isActiveAfterBlock(phase))
-      return new SensorModelResult("pPrior", 0.7);
-    else
+    if (phase == EVehiclePhase.DEADHEAD_DURING)
       return new SensorModelResult("pPrior", 1.0);
+    else if (phase == EVehiclePhase.DEADHEAD_BEFORE)
+      return new SensorModelResult("pPrior", 0.8);
+    else if (phase == EVehiclePhase.DEADHEAD_AFTER)
+      return new SensorModelResult("pPrior", 0.8);
+    else if (phase == EVehiclePhase.LAYOVER_BEFORE)
+      return new SensorModelResult("pPrior", 0.8);
+    else if (phase == EVehiclePhase.LAYOVER_DURING)
+      return new SensorModelResult("pPrior", 1.0);
+    else if (phase == EVehiclePhase.IN_PROGRESS)
+      return new SensorModelResult("pPrior", 1.0);
+    else if (phase == EVehiclePhase.AT_BASE)
+      return new SensorModelResult("pPrior", 1.0);
+    else
+      return new SensorModelResult("pPrior", 0.0);
   }
 
 }

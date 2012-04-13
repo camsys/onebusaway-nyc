@@ -16,33 +16,52 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+
 import org.onebusaway.collections.Counter;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+
+import com.google.common.collect.Multiset;
+
+import org.apache.commons.math.util.FastMath;
+import org.junit.Test;
 
 public class CategoricalDistTest {
 
   @Test
   public void testSampleA() {
 
-    CategoricalDist<String> cdf = new CategoricalDist<String>();
-    cdf.put(0.1, "a");
-    cdf.put(0.2, "b");
-    cdf.put(0.3, "c");
+    final CategoricalDist<String> cdf = new CategoricalDist<String>();
+    cdf.logPut(FastMath.log(0.3*1e-5), "c");
+    cdf.logPut(FastMath.log(0.3), "c");
+    cdf.logPut(FastMath.log(0.2), "c");
+    cdf.logPut(FastMath.log(0.01), "a");
+    cdf.logPut(FastMath.log(0.001), "a");
+    cdf.logPut(FastMath.log(0.2*1e-7), "b");
 
-    Counter<String> counter = new Counter<String>();
-    double iterations = 1000;
+    final Counter<String> counter = new Counter<String>();
+    final int iterations = 1000;
 
     for (int i = 0; i < iterations; i++)
       counter.increment(cdf.sample());
 
-    double a = counter.getCount("a") / iterations;
-    double b = counter.getCount("b") / iterations;
-    double c = counter.getCount("c") / iterations;
+    final double a = counter.getCount("a") / (double)iterations;
+    final double b = counter.getCount("b") / (double)iterations;
+    final double c = counter.getCount("c") / (double)iterations;
 
-    assertEquals(a, 0.1 / 0.6, .05);
-    assertEquals(b, 0.2 / 0.6, .05);
-    assertEquals(c, 0.3 / 0.6, .05);
+    final double cummulativeProb = cdf.getCummulativeProb();
+    assertEquals(a, cdf.density("a") / cummulativeProb, .05);
+    assertEquals(b, cdf.density("b") / cummulativeProb, .05);
+    assertEquals(c, cdf.density("c") / cummulativeProb, .05);
+    
+    cdf.logPut(FastMath.log(0.001), "d");
+    
+    Multiset<String> res = cdf.sample(iterations);
+    assertEquals(res.count("a") / (double) iterations, cdf.density("a") / cummulativeProb, .05);
+    assertEquals(res.count("b") / (double) iterations, cdf.density("b") / cummulativeProb, .05);
+    assertEquals(res.count("c") / (double) iterations, cdf.density("c") / cummulativeProb, .05);
+    assertEquals(res.count("d") / (double) iterations, cdf.density("d") / cummulativeProb, .05);
+    
+    
   }
 
   /*

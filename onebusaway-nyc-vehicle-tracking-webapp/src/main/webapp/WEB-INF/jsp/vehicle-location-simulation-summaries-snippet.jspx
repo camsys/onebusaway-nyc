@@ -35,11 +35,8 @@
             <tr>
                 <td>filename</td>
                 <td>task id</td>
-                <td>records processed</td>
-                <td>records total</td>
+                <td>records</td>
                 <td>details</td>
-                <td>bad</td>
-                <td>simulation</td>
                 <td>results</td>
                 <td>toggle</td>
                 <td>step</td>
@@ -54,16 +51,10 @@
                 <tr>
                     <td><c:out value="${s.filename}" /></td>
                     <td><c:out value="${s.id}" /></td>
-                    <td><c:out
-                        value="${s.numberOfRecordsProcessed}" /></td>
-                    <td><c:out value="${s.numberOfRecordsTotal}" /></td>
-                    <td><a
-                        href="vehicle-location!particles.do?vehicleId=${s.vehicleId}">details</a></td>
-                    <td><a href="vehicle-location!bad-particles.do?vehicleId=${s.vehicleId}">bad</a></td>
-                    <td><a
-                        href="vehicle-location-simulation!task-simulation-records.do?taskId=${s.id}">records</a></td>
-                    <td><a
-                        href="vehicle-location-simulation!task-result-records.do?taskId=${s.id}">records</a></td>
+                    <td><c:out value="${s.numberOfRecordsProcessed}/${s.numberOfRecordsTotal}" /></td>
+                    <td><a href="vehicle-location-simulation!task-details.do?taskId=${s.id}&amp;recordNumber=${s.numberOfRecordsProcessed-1}">details</a></td>
+                    <td>
+                    <a href="vehicle-location-simulation!task-view-result-records.do?taskId=${s.id}">records</a></td>
                     <td><a
                         href="vehicle-location-simulation!toggle.do?taskId=${s.id}">
                     <c:if test="${s.paused}">resume</c:if> <c:if
@@ -72,7 +63,7 @@
                         href="vehicle-location-simulation!step.do?taskId=${s.id}">step</a></td>
                     <td>
                     <form action="vehicle-location-simulation!step-to.do">
-                    <input id="stepRecordIndex" type="text" name="recordIndex" size="20"/>
+                    <input id="stepRecordIndex" type="text" name="recordIndex" size="60"/>
                     <input type="hidden" name="taskId" value="${s.id}"/>
                     <input type="submit" value="Go"/>
                     </form>

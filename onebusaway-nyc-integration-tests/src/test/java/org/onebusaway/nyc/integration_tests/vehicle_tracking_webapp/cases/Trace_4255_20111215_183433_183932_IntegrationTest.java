@@ -18,7 +18,10 @@ package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
 /**
- * This trace would produce layover-during, and it shouldn't
+ * This trace would produce layover-during, and it shouldn't.
+ * Update 02/14/2012: this should now produce all in-progress
+ * results except for the first observation (can't assign in-progress
+ * to first observation now).
  * 
  * @author bwillard
  * */
@@ -27,6 +30,6 @@ public class Trace_4255_20111215_183433_183932_IntegrationTest extends AbstractT
   public Trace_4255_20111215_183433_183932_IntegrationTest() throws Exception {
     super("4255_20111215_183433_183932.csv.gz");
     setBundle("si", "2011-12-14T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 1.0);
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.8);
   }
 }

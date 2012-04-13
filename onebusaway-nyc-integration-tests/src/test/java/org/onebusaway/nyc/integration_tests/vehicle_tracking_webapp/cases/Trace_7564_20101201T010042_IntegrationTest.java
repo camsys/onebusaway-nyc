@@ -42,5 +42,6 @@ public class Trace_7564_20101201T010042_IntegrationTest extends AbstractTraceRun
      * FIXME this has a potential bundle-conflict with the trace 
      */
     setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.94);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0.81);
   }
 }

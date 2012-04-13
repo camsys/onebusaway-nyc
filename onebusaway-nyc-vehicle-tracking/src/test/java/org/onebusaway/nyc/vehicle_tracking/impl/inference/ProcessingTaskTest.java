@@ -1,9 +1,9 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.when;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
@@ -38,22 +38,22 @@ public class ProcessingTaskTest {
   @Test
   public void testRun() throws Exception {
 
-    VehicleInferenceInstance vehInfInst = mock(VehicleInferenceInstance.class);
+    final VehicleInferenceInstance vehInfInst = mock(VehicleInferenceInstance.class);
     when(
         vehInfInst.handleBypassUpdate(any(NycTestInferredLocationRecord.class))).thenReturn(
         true);
-    NycQueuedInferredLocationBean nqlb = mock(NycQueuedInferredLocationBean.class);
+    final NycQueuedInferredLocationBean nqlb = mock(NycQueuedInferredLocationBean.class);
     when(vehInfInst.getCurrentStateAsNycQueuedInferredLocationBean()).thenReturn(
         nqlb);
 
-    NycVehicleManagementStatusBean mgmtStatus = mock(NycVehicleManagementStatusBean.class);
+    final NycVehicleManagementStatusBean mgmtStatus = mock(NycVehicleManagementStatusBean.class);
 
     when(vehInfInst.getCurrentManagementState()).thenReturn(mgmtStatus);
     when(appContext.getBean(VehicleInferenceInstance.class)).thenReturn(
         vehInfInst);
 
-    NycTestInferredLocationRecord infLocationRec = mock(NycTestInferredLocationRecord.class);
-    AgencyAndId vehicleId = mock(AgencyAndId.class);
+    final NycTestInferredLocationRecord infLocationRec = mock(NycTestInferredLocationRecord.class);
+    final AgencyAndId vehicleId = mock(AgencyAndId.class);
     when(infLocationRec.getVehicleId()).thenReturn(vehicleId);
 
     when(_vehicleAssignmentService.getAssignedDepotForVehicleId(vehicleId)).thenReturn(
@@ -61,7 +61,7 @@ public class ProcessingTaskTest {
 
     service.setApplicationContext(appContext);
 
-    ProcessingTask task = service.new ProcessingTask(infLocationRec);
+    final ProcessingTask task = service.new ProcessingTask(infLocationRec);
     task.run();
 
     verify(mgmtStatus).setDepotId(DEPOT);

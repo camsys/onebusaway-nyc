@@ -49,6 +49,7 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.utility.DateLibrary;
 
 import com.caucho.hessian.client.HessianProxyFactory;
+import com.google.common.base.Strings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,9 @@ import cern.jet.stat.Descriptive;
 public class AbstractTraceRunner {
 
   
+  private double _schedTimeDiffMeanReq = 35d;
+  private double _schedTimeDiffStdDevReq = 55d;
+
   private static Logger _log = LoggerFactory
       .getLogger(AbstractTraceRunner.class);
 
@@ -86,6 +90,7 @@ public class AbstractTraceRunner {
   private double _standardDeviation = 20.0;
 
   private boolean _saveResultsOnAssertionError = true;
+  private double _falsePositiveRatio = 0.10;
 
   public AbstractTraceRunner() {
 
@@ -189,7 +194,7 @@ public class AbstractTraceRunner {
   public void test() throws Throwable {
     Map<EVehiclePhase, Double> results = runTest();
 
-    System.out.println("results of " + this.getClass().getSimpleName());
+    String failedLabels = "";
     for (Entry<EVehiclePhase, Double> result : results.entrySet()) {
       double relativeRatio = result.getValue();
 
@@ -203,8 +208,12 @@ public class AbstractTraceRunner {
 
       System.out.println(label);
 
-      assertTrue(label, relativeRatio >= minAccuracyRatio);
+      if (relativeRatio < minAccuracyRatio) {
+        failedLabels += "\n" + label;
+      }
     }
+    
+    assertTrue(failedLabels, StringUtils.isBlank(failedLabels));
   }
 
   
@@ -293,6 +302,7 @@ public class AbstractTraceRunner {
    * Protected Methods
    ****/
 
+  @SuppressWarnings("null")
   protected Map<EVehiclePhase, Double> validateRecords(
       List<NycTestInferredLocationRecord> expected,
       List<NycTestInferredLocationRecord> actual) {
@@ -307,6 +317,7 @@ public class AbstractTraceRunner {
     Map<EVehiclePhase, Double> phaseResults = new TreeMap<EVehiclePhase, Double>();
 
     DoubleArrayList distanceAlongBlockDeviations = new DoubleArrayList();
+    DoubleArrayList schedDevDiff = new DoubleArrayList();
 
     for (int i = 0; i < expected.size(); i++) {
 
@@ -336,40 +347,27 @@ public class AbstractTraceRunner {
 
       truePhaseCounts.increment(truePhase);
 
-      /**
-       * Notice that we allow deadhead-after <=> deadhead-before,
-       * due to 
-       */
-      if (truePhase.equals(infPhase)
-          /*
-           * we allow an equivalence between deadhead-after
-           * and before due to possible future implementations
-           * of deadhead-after, and due to old tests created
-           * when deadhead-after was implemented.
-           */
-          || (truePhase.equals(EVehiclePhase.DEADHEAD_AFTER)
-              && infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE))
-          /*
-           * we allow an equivalence between deadhead-before and
-           * layover-before without an associated block, since
-           * layover-before is more likely without a block
-           * (a terminal, in that case, is defined as the first
-           * or last stop of a trip). 
-           */
-          || (truePhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
-              && infPhase.equals(EVehiclePhase.LAYOVER_BEFORE)
-              && StringUtils.isBlank(infRecord.getInferredBlockId()))
-          || (infPhase.equals(EVehiclePhase.DEADHEAD_BEFORE)
-              && truePhase.equals(EVehiclePhase.LAYOVER_BEFORE)
-              && StringUtils.isBlank(trueRecord.getInferredBlockId()))
-              )
+      
+      if (checkRecordsMatch(trueRecord, infRecord))
         infPhaseCounts.increment(truePhase);
+        
 
       if (EVehiclePhase.isActiveDuringBlock(truePhase)
           && EVehiclePhase.isActiveDuringBlock(infPhase)) {
         String expectedBlockId = trueRecord.getActualBlockId();
         String actualBlockId = infRecord.getInferredBlockId();
 
+        if (trueRecord.getActualServiceDate() > 0
+            && infRecord.getInferredServiceDate() > 0) {
+          final double actualSchedDev = (trueRecord.getActualServiceDate() + trueRecord.getActualScheduleTime()*1000d)
+              - trueRecord.getTimestamp();
+          final double infSchedDev = (infRecord.getInferredServiceDate() + infRecord.getInferredScheduleTime()*1000d)
+              - infRecord.getTimestamp();
+        
+          schedDevDiff.add((Math.abs(infSchedDev) - Math.abs(actualSchedDev))/(60d * 1000d));
+        }
+        
+        
         // FIXME it's weird to sometimes check this, no?
         if (StringUtils.equals(expectedBlockId, actualBlockId)) {
           double expectedDistanceAlongBlock = trueRecord
@@ -386,7 +384,8 @@ public class AbstractTraceRunner {
       /*
        * here we tally the number of correctly identified (truly) active trips.
        */
-      if (EVehiclePhase.isActiveDuringBlock(truePhase)) {
+      if (EVehiclePhase.isActiveDuringBlock(truePhase) 
+          && !Strings.isNullOrEmpty(infRecord.getActualTripId())) {
         ++actuallyActiveTrips;
 
         if (StringUtils.equals(infRecord.getActualTripId(),
@@ -398,8 +397,9 @@ public class AbstractTraceRunner {
       /*
        * record the false positives
        */
-      if (!EVehiclePhase.isActiveDuringBlock(truePhase)
-          && EVehiclePhase.isActiveDuringBlock(infPhase)) {
+      if ((EVehiclePhase.IN_PROGRESS != truePhase 
+          && EVehiclePhase.LAYOVER_DURING != truePhase)
+          && EVehiclePhase.IN_PROGRESS == infPhase) {
         ++falsePositiveCount;
       }
       
@@ -432,28 +432,61 @@ public class AbstractTraceRunner {
       phaseResults.put(phase, relativeRatio);
 
     }
+    System.out.println("results of " + this.getClass().getSimpleName());
 
-    System.out.println("active trip ratio="
-        + (double)correctlyPredictedActiveTrips / actuallyActiveTrips + " ("
-        + correctlyPredictedActiveTrips + "/" + actuallyActiveTrips + ")");
-    System.out.println("false positive ratio="
-        + (double)falsePositiveCount / expected.size());
+    /*
+     * Check that we're generally active when we should be.
+     */
+//    final double activeTripRatio = (double)correctlyPredictedActiveTrips / actuallyActiveTrips;
+//    System.out.println("\tactive trip ratio="
+//        + activeTripRatio + " ("
+//        + correctlyPredictedActiveTrips + "/" + actuallyActiveTrips + ")");
+//    assertTrue("active trip ratio=" + activeTripRatio, activeTripRatio > 0.95);
+    
+    /*
+     * Check that we're generally not active when we shouldn't be.
+     */
+    final double falsePositiveRatio = (double)falsePositiveCount / expected.size();
+    System.out.println("\tfalse positive ratio=" + falsePositiveRatio);
+    assertTrue("false positive ratio=" + falsePositiveRatio, falsePositiveRatio < _falsePositiveRatio);
 
+    if (schedDevDiff.size() > 1) {
+      
+      /*
+       * Check that our predicted schedule times aren't too far
+       * off from the "actual" ones.
+       */
+      double mean = Descriptive.mean(schedDevDiff);
+//      double median = Descriptive.median(schedDevDiff);
+      double variance = Descriptive.sampleVariance(
+          schedDevDiff, mean);
+      double stdDev = Descriptive.sampleStandardDeviation(
+          schedDevDiff.size(), variance);
+
+//      System.out.println("\tschedTimeDiff median=" + median);
+      System.out.println("\tschedTimeDiff mean=" + mean);
+      System.out.println("\tschedTimeDiff stdDev=" + stdDev);
+      
+//      assertTrue("schedTimeDiff median=" + median, median < 15d);
+      assertTrue("schedTimeDiff mean=" + mean, mean < _schedTimeDiffMeanReq);
+//      assertTrue("schedTimeDiff stdDev=" + stdDev, mean + 1.98 * stdDev < _schedTimeDiffStdDevReq);
+    }
+    
     if (distanceAlongBlockDeviations.size() > 1) {
 
       /**
        * Check that distanceAlongBlockDeviations are within tolerances
        */
       double mean = Descriptive.mean(distanceAlongBlockDeviations);
-      double median = Descriptive.median(distanceAlongBlockDeviations);
+//      double median = Descriptive.median(distanceAlongBlockDeviations);
       double variance = Descriptive.sampleVariance(
           distanceAlongBlockDeviations, mean);
       double stdDev = Descriptive.sampleStandardDeviation(
           distanceAlongBlockDeviations.size(), variance);
 
-      System.out.println("median=" + median);
-      System.out.println("mean=" + mean);
-      System.out.println("stdDev=" + stdDev);
+//      System.out.println("\tdistAlong median=" + median);
+      System.out.println("\tdistAlong mean=" + mean);
+      System.out.println("\tdistAlong stdDev=" + stdDev);
 
       // TODO make the an actual part of the tests
       // assertTrue("median=" + median, median < _median);
@@ -463,6 +496,46 @@ public class AbstractTraceRunner {
 
     return phaseResults;
   }
+
+  @SuppressWarnings("null")
+  private boolean checkRecordsMatch(NycTestInferredLocationRecord trueRecord,
+      NycTestInferredLocationRecord infRecord) {
+    
+    EVehiclePhase truePhase = EVehiclePhase.valueOf(trueRecord.getActualPhase());
+
+    assertTrue(truePhase != null);
+
+    EVehiclePhase infPhase = EVehiclePhase.valueOf(infRecord.getInferredPhase());
+
+    if (truePhase.equals(infPhase))
+      return true;
+    
+    if (!trueRecord.isReportedRunInfoSet() || !Strings.isNullOrEmpty(trueRecord.getActualRunId())) {
+      /*
+       * When the trace doesn't include run information, then
+       * we don't expect much as far as during's and after's.
+       */
+      if (
+          (isDeadhead(truePhase) && isDeadhead(infPhase))
+          || (EVehiclePhase.isLayover(truePhase) && EVehiclePhase.isLayover(infPhase))
+          || (isDeadhead(truePhase) && EVehiclePhase.isLayover(infPhase))
+          || (isDeadhead(infPhase) && EVehiclePhase.isLayover(truePhase))
+          )
+        return true;
+    } 
+    
+    return false;
+  }
+  
+  private boolean isDeadhead(EVehiclePhase phase) {
+    if (phase == EVehiclePhase.DEADHEAD_AFTER
+        || phase == EVehiclePhase.DEADHEAD_BEFORE
+        || phase == EVehiclePhase.DEADHEAD_DURING)
+      return true;
+    else 
+      return false;
+  }
+    
 
   protected void writeResultsOnAssertionError(
       List<NycTestInferredLocationRecord> actual) {
@@ -483,6 +556,30 @@ public class AbstractTraceRunner {
     } catch (Exception ex) {
       _log.error("error writing results on assertion error", ex);
     }
+  }
+
+  public double getSchedTimeDiffMeanReq() {
+    return _schedTimeDiffMeanReq;
+  }
+
+  public void setSchedTimeDiffMeanReq(double schedTimeDiffMeanReq) {
+    _schedTimeDiffMeanReq = schedTimeDiffMeanReq;
+  }
+
+  public double getSchedTimeDiffStdDevReq() {
+    return _schedTimeDiffStdDevReq;
+  }
+
+  public void setSchedTimeDiffStdDevReq(double schedTimeDiffStdDevReq) {
+    _schedTimeDiffStdDevReq = schedTimeDiffStdDevReq;
+  }
+
+  public double getFalsePositiveRatio() {
+    return _falsePositiveRatio;
+  }
+
+  public void setFalsePositiveRatio(double falsePositiveRatio) {
+    _falsePositiveRatio = falsePositiveRatio;
   }
 
 }

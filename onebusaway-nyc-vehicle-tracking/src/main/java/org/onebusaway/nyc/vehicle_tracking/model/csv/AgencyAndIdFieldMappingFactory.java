@@ -53,7 +53,7 @@ public class AgencyAndIdFieldMappingFactory implements FieldMappingFactory {
     @Override
     public void translateFromObjectToCSV(CsvEntityContext context,
         BeanWrapper object, Map<String, Object> csvValues) {
-      AgencyAndId id = (AgencyAndId) object.getPropertyValue(_objFieldName);
+      final AgencyAndId id = (AgencyAndId) object.getPropertyValue(_objFieldName);
       csvValues.put(_csvFieldName, AgencyAndIdLibrary.convertToString(id));
     }
 
@@ -61,8 +61,8 @@ public class AgencyAndIdFieldMappingFactory implements FieldMappingFactory {
     public void translateFromCSVToObject(CsvEntityContext context,
         Map<String, Object> csvValues, BeanWrapper object) {
 
-      String value = (String) csvValues.get(_csvFieldName);
-      AgencyAndId agencyAndId = AgencyAndIdLibrary.convertFromString(value);
+      final String value = (String) csvValues.get(_csvFieldName);
+      final AgencyAndId agencyAndId = AgencyAndIdLibrary.convertFromString(value);
       object.setPropertyValue(_objFieldName, agencyAndId);
     }
   }

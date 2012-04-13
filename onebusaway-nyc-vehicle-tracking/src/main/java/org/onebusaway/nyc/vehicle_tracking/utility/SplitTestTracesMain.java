@@ -15,6 +15,11 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.utility;
 
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -22,11 +27,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-
-import org.onebusaway.csv_entities.CsvEntityReader;
-import org.onebusaway.csv_entities.CsvEntityWriterFactory;
-import org.onebusaway.csv_entities.EntityHandler;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 
 public class SplitTestTracesMain {
 
@@ -37,14 +37,14 @@ public class SplitTestTracesMain {
       System.exit(-1);
     }
 
-    File outputDir = new File(args[args.length - 1]);
+    final File outputDir = new File(args[args.length - 1]);
 
     if (!outputDir.exists())
       outputDir.mkdirs();
 
-    CsvEntityReader reader = new CsvEntityReader();
+    final CsvEntityReader reader = new CsvEntityReader();
 
-    OutputHandler handler = new OutputHandler(outputDir);
+    final OutputHandler handler = new OutputHandler(outputDir);
     reader.addEntityHandler(handler);
 
     for (int i = 0; i < args.length - 1; i++)
@@ -56,9 +56,9 @@ public class SplitTestTracesMain {
 
   private static class OutputHandler implements EntityHandler {
 
-    private SimpleDateFormat _format;
+    private final SimpleDateFormat _format;
 
-    private File _outputDir;
+    private final File _outputDir;
 
     private FileWriter _outputWriter = null;
 
@@ -82,17 +82,17 @@ public class SplitTestTracesMain {
     public void handleEntity(Object bean) {
 
       try {
-        NycTestInferredLocationRecord record = (NycTestInferredLocationRecord) bean;
+        final NycTestInferredLocationRecord record = (NycTestInferredLocationRecord) bean;
 
         if (outputNeedsRefresh(record)) {
 
           if (_outputWriter != null)
             _outputWriter.close();
 
-          File outputFile = getOutputFile(record);
+          final File outputFile = getOutputFile(record);
           _outputWriter = new FileWriter(outputFile);
 
-          CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
+          final CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
           _entityWriter = factory.createWriter(
               NycTestInferredLocationRecord.class, _outputWriter);
         }
@@ -101,7 +101,7 @@ public class SplitTestTracesMain {
 
         _prevRecord = record;
 
-      } catch (Exception ex) {
+      } catch (final Exception ex) {
         throw new IllegalStateException(ex);
       }
     }

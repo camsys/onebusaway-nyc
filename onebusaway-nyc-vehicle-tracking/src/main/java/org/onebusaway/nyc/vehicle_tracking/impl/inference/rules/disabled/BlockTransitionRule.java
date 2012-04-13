@@ -18,9 +18,6 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.disabled;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.not;
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.p;
 
-import java.util.List;
-
-import org.apache.commons.lang.ObjectUtils;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyPhaseSummaryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelRule;
@@ -29,7 +26,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSumm
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.DeviationModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * NOTE: This rule has been disabled
@@ -54,13 +55,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 // @Component
 public class BlockTransitionRule implements SensorModelRule {
 
-  private DeviationModel _blockCompletedRatio = new DeviationModel(0.03);
+  private final DeviationModel _blockCompletedRatio = new DeviationModel(0.03);
 
   /**
    * If a vehicle has serviced only a short period of time on a particular block
    * (~ less than 15 minutes), we consider it unserviced.
    */
-  private DeviationModel _blockUnserviced = new DeviationModel(15 * 60);
+  private final DeviationModel _blockUnserviced = new DeviationModel(15 * 60);
 
   private JourneyPhaseSummaryLibrary _journeyPhaseSummaryLibrary;
 
@@ -74,9 +75,9 @@ public class BlockTransitionRule implements SensorModelRule {
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
 
-    VehicleState state = context.getState();
-    List<JourneyPhaseSummary> summaries = state.getJourneySummaries();
-    JourneyPhaseSummary currentBlock = _journeyPhaseSummaryLibrary.getCurrentBlock(summaries);
+    final VehicleState state = context.getState();
+    final List<JourneyPhaseSummary> summaries = state.getJourneySummaries();
+    final JourneyPhaseSummary currentBlock = _journeyPhaseSummaryLibrary.getCurrentBlock(summaries);
 
     /**
      * We first need a current block
@@ -90,14 +91,14 @@ public class BlockTransitionRule implements SensorModelRule {
      * again (performance op so we don't have to compute everything else each
      * iteration)
      */
-    int currentBlockDuration = (int) ((currentBlock.getTimeTo() - currentBlock.getTimeFrom()) / 1000);
+    final int currentBlockDuration = (int) ((currentBlock.getTimeTo() - currentBlock.getTimeFrom()) / 1000);
     if (currentBlockDuration > 5 * 60)
       return new SensorModelResult("pBlockTransition", 1.0);
 
     /**
      * We next need a previous block
      */
-    JourneyPhaseSummary previousBlock = _journeyPhaseSummaryLibrary.getPreviousBlock(
+    final JourneyPhaseSummary previousBlock = _journeyPhaseSummaryLibrary.getPreviousBlock(
         summaries, currentBlock);
 
     if (previousBlock == null)
@@ -113,13 +114,13 @@ public class BlockTransitionRule implements SensorModelRule {
     /**
      * Did we complete the previous block?
      */
-    double pCompletedBlock = _blockCompletedRatio.probability(1.0 - previousBlock.getBlockCompletionRatioTo());
+    final double pCompletedBlock = _blockCompletedRatio.probability(1.0 - previousBlock.getBlockCompletionRatioTo());
 
     /**
      * Did we service a sufficient amount of the previous block for it to count
      */
-    int previousBlockDuration = (int) ((previousBlock.getTimeTo() - previousBlock.getTimeFrom()) / 1000);
-    double pServicedSomePartOfBlock = not(_blockUnserviced.probability(previousBlockDuration));
+    final int previousBlockDuration = (int) ((previousBlock.getTimeTo() - previousBlock.getTimeFrom()) / 1000);
+    final double pServicedSomePartOfBlock = not(_blockUnserviced.probability(previousBlockDuration));
 
     /**
      * If the transition between a completed block to the next block happens
@@ -127,12 +128,13 @@ public class BlockTransitionRule implements SensorModelRule {
      * 
      * TODO: Detect an acutal layover
      */
-    int blockTransitionDuration = (int) ((currentBlock.getTimeFrom() - previousBlock.getTimeTo()) / 1000);
-    double pBlockTransitionHappenedWithNoLayover = p(blockTransitionDuration < 20 * 10);
+    final int blockTransitionDuration = (int) ((currentBlock.getTimeFrom() - previousBlock.getTimeTo()) / 1000);
+    p(blockTransitionDuration < 20 * 10);
 
-    double pBlockTransition = not(pCompletedBlock * pServicedSomePartOfBlock);
+    final double pBlockTransition = not(pCompletedBlock
+        * pServicedSomePartOfBlock);
 
-    SensorModelResult result = new SensorModelResult("pBlockTransition",
+    final SensorModelResult result = new SensorModelResult("pBlockTransition",
         pBlockTransition);
     result.addResult("pCompletedBlock", pCompletedBlock);
     result.addResult("pServicedSomePartOfBlock", pServicedSomePartOfBlock);

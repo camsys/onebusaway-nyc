@@ -15,8 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Set;
-
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
@@ -24,8 +22,13 @@ import org.onebusaway.transit_data_federation.impl.ProjectedPointFactory;
 import org.onebusaway.transit_data_federation.model.ProjectedPoint;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
+
+import java.util.Set;
 
 public class Observation implements Comparable<Observation> {
 
@@ -49,9 +52,13 @@ public class Observation implements Comparable<Observation> {
 
   private final RunResults _runResults;
 
+  private final boolean _hasValidDsc;
+
+  private final Set<AgencyAndId> _impliedRouteCollections;
+
   public Observation(long timestamp, NycRawLocationRecord record,
       String lastValidDestinationSignCode, boolean atBase, boolean atTerminal,
-      boolean outOfService, Observation previousObservation,
+      boolean outOfService, boolean hasValidDsc, Observation previousObservation,
       Set<AgencyAndId> dscImpliedRoutes, RunResults runResults) {
     _timestamp = timestamp;
     _record = record;
@@ -60,9 +67,12 @@ public class Observation implements Comparable<Observation> {
     _lastValidDestinationSignCode = lastValidDestinationSignCode;
     _dscImpliedRouteCollections = dscImpliedRoutes;
     _runResults = runResults;
+    _impliedRouteCollections = Sets.newHashSet(Iterables.concat(dscImpliedRoutes, 
+         runResults.getRouteIds()));
     this.atBase = atBase;
     this.atTerminal = atTerminal;
     this.outOfService = outOfService;
+    this._hasValidDsc = hasValidDsc;
 
     _previousObservation = previousObservation;
   }
@@ -91,7 +101,7 @@ public class Observation implements Comparable<Observation> {
     return atTerminal;
   }
 
-  public boolean isOutOfService() {
+  public boolean hasOutOfServiceDsc() {
     return outOfService;
   }
 
@@ -115,11 +125,19 @@ public class Observation implements Comparable<Observation> {
 
   @Override
   public String toString() {
-    return _record.toString();
+    return Objects.toStringHelper("Observation")
+        .add("atBase", atBase)
+        .add("atTerminal", atTerminal)
+        .addValue(_record.toString())
+        .toString();
   }
 
   public Set<AgencyAndId> getDscImpliedRouteCollections() {
     return _dscImpliedRouteCollections;
+  }
+  
+  public Set<AgencyAndId> getImpliedRouteCollections() {
+    return _impliedRouteCollections;
   }
 
   public Integer getFuzzyMatchDistance() {
@@ -151,24 +169,24 @@ public class Observation implements Comparable<Observation> {
     if (this == o2)
       return 0;
 
-    int res = ComparisonChain.start().compare(outOfService, o2.outOfService).compare(
-        atTerminal, o2.atTerminal).compare(atBase, o2.atBase).compare(
-        _timestamp, o2._timestamp).compare(_record, o2._record).compare(_point,
-        o2._point, _orderByXandY).compare(_lastValidDestinationSignCode,
-        o2._lastValidDestinationSignCode, Ordering.natural().nullsLast()).compare(
-        _runResults, o2._runResults).result();
+    final int res = ComparisonChain.start().compare(_timestamp, o2._timestamp).compare(
+        _point, o2._point, _orderByXandY).compare(
+        _lastValidDestinationSignCode, o2._lastValidDestinationSignCode,
+        Ordering.natural().nullsLast()).compare(_record, o2._record).compare(
+        outOfService, o2.outOfService).compare(atTerminal, o2.atTerminal).compare(
+        atBase, o2.atBase).compare(_runResults, o2._runResults).result();
 
     return res;
   }
 
   private int _hash = 0;
-  
+
   @Override
   public int hashCode() {
-    
+
     if (_hash != 0)
       return _hash;
-    
+
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -183,7 +201,7 @@ public class Observation implements Comparable<Observation> {
     result = prime * result + (atBase ? 1231 : 1237);
     result = prime * result + (atTerminal ? 1231 : 1237);
     result = prime * result + (outOfService ? 1231 : 1237);
-    
+
     _hash = result;
     return result;
   }
@@ -196,7 +214,7 @@ public class Observation implements Comparable<Observation> {
       return false;
     if (!(obj instanceof Observation))
       return false;
-    Observation other = (Observation) obj;
+    final Observation other = (Observation) obj;
     if (_runResults == null) {
       if (other._runResults != null)
         return false;
@@ -238,6 +256,14 @@ public class Observation implements Comparable<Observation> {
 
   public RunResults getRunResults() {
     return _runResults;
+  }
+
+  public boolean hasValidDsc() {
+    return _hasValidDsc;
+  }
+
+  public Set<AgencyAndId> getRunImpliedRouteCollections() {
+    return _runResults.getRouteIds();
   }
 
 }

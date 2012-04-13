@@ -46,7 +46,7 @@ public final class JourneyStartState {
       return false;
     if (!(obj instanceof JourneyStartState))
       return false;
-    JourneyStartState other = (JourneyStartState) obj;
+    final JourneyStartState other = (JourneyStartState) obj;
     if (journeyStart == null) {
       if (other.journeyStart != null)
         return false;

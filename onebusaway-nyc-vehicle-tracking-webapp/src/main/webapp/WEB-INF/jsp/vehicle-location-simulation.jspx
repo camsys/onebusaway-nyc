@@ -30,6 +30,11 @@
 </head>
 <body>
 
+<h2>Active Simulations</h2>
+<p><a href="vehicle-location-simulation!cancelAll.do">Cancel All Simulations</a></p>
+<jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
+
+
 <h2>Upload a New Vehicle Location Simulation Trace</h2>
 <form action="vehicle-location-simulation!upload-trace.do" method="POST"
     enctype="multipart/form-data">
@@ -103,11 +108,6 @@ template for a simulation run.</p>
 <p><a href="vehicle-location-simulation!active-blocks.do">See
 the list of Currently Scheduled Trips</a></p>
 
-<h2>Active Simulations</h2>
-<jsp:include page="vehicle-location-simulation-summaries-snippet.jspx" />
-
-<p><a href="vehicle-location-simulation!cancelAll.do">Cancel All
-Simulations</a></p>
 
 <h2>Upload a SingleRecord</h2>
 <form action="update-vehicle-location.do" method="POST">

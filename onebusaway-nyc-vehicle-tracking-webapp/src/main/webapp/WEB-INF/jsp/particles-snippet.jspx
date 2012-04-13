@@ -26,7 +26,11 @@
     <h2>Sensor Model Result</h2>
     <ul>
         <c:set var="sensorModelResult"
-            value="${details.particles[0].result}" scope="request" />
+            value="${details.particles[0].element.result}" scope="request" />
+        <jsp:include
+            page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
+        <c:set var="sensorModelResult"
+            value="${details.particles[0].element.transResult}" scope="request" />
         <jsp:include
             page="vehicle-location-simulation-sensor-model-result-snippet.jspx" />
     </ul>
@@ -37,24 +41,27 @@
             <tr>
                 <td>#</td>
                 <td>Time</td>
-                <td>P</td>
+                <td>Count</td>
+                <td>logP</td>
                 <td>Phase</td>
-                <td>FromReportedRun</td>
-                <td>OperatorAssigned</td>
+                <td>From Reported Run</td>
+                <td>Operator Assigned</td>
                 <td>RunId</td>
                 <td>BlockId</td>
                 <td>TripId</td>
                 <td>Dsc</td>
-                <td>BlockLocation</td>
-                <td>DistanceAlongBlock</td>
-                <td>ScheduledTime</td>
-                <td>LastMotionLocation</td>
+                <td>Block Location</td>
+                <td>Distance Along Block</td>
+                <td>Scheduled Dev</td>
+                <td>Snapped</td>
             </tr>
         </thead>
         <tbody>
 
-            <c:forEach var="p" items="${details.particles}">
+            <c:forEach var="pEntry" items="${details.particles}">
                 <tr>
+                    <c:set var="p"
+                        value="${pEntry.element}" />
                     <c:set var="motionState"
                         value="${p.data.motionState}" />
                     <c:set var="journeyState"
@@ -65,44 +72,50 @@
                     <c:set var="blockLocation"
                         value="${blockState.blockLocation}" />
                     <td><c:out value="${p.index}" /></td>
-                    <td><fmt:formatDate pattern="HH:mm"
+                    <td bgcolor='#cdc9c9'><fmt:formatDate pattern="HH:mm:ss"
                         value="${p.data.observation.record.timeAsDate}" /></td>
-                    <td>
-                        <c:if test="${details.particleFilterFailureActive}">
-                            <c:set var="particleDetailsUrl" value="bad-particle-details"/>
-                        </c:if>
-                        <c:if test="${!details.particleFilterFailureActive}">
+                    <td><c:out value="${pEntry.count}" /></td>
+                    <td bgcolor='#cdc9c9'>
+                    <c:choose>
+                        <c:when test="${recordNumber >= -1}">
                             <c:set var="particleDetailsUrl" value="particle-details"/>
-                        </c:if>
-                        <a href="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"><c:out value="${p.weight}"/></a>
+                            <c:set var="href1" value="vehicle-location-simulation!${particleDetailsUrl}.do?taskId=${details.id}&amp;particleId=${p.index}&amp;recordNumber=${recordNumber}"/>
+                        </c:when>
+                        <c:when test="${details.particleFilterFailureActive}">
+                            <c:set var="particleDetailsUrl" value="bad-particle-details"/>
+                            <c:set var="href1" value="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"/>
+                        </c:when>
+                        <c:when test="${!details.particleFilterFailureActive}">
+                            <c:set var="particleDetailsUrl" value="particle-details"/>
+                            <c:set var="href1" value="vehicle-location!${particleDetailsUrl}.do?vehicleId=${p.data.observation.record.vehicleId}&amp;particleId=${p.index}"/>
+                        </c:when>
+                    </c:choose>
+                        <a href="${href1}">
+                        <fmt:formatNumber var="weight" value="${p.logWeight}" pattern="0.###E0"/>
+                        <c:out value="${weight}"/></a>
                     </td>
                     <td><c:out value="${journeyState.phase}" /></td>
-                    <td><c:out value="${runReported == null?'NA':runReported}" /></td>
+                    <td bgcolor='#cdc9c9'><c:out value="${runReported == null?'NA':runReported}" /></td>
                     <td><c:out value="${opAssigned == null?'NA':opAssigned}" /></td>
-                    <td><c:out value="${blockState.runTripEntry.runId}" /></td>
+                    <td bgcolor='#cdc9c9'><c:out value="${blockState.runTripEntry.runId}" /></td>
                     <td><a
                         href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
                         value="${blockState.blockInstance.block.block.id}" /></a></td>
-                    <td><c:out
+                    <td bgcolor='#cdc9c9'><c:out
                         value="${blockLocation.activeTrip.trip.id}" /></td>
                     <td><c:out
                         value="${blockState.destinationSignCode}" /></td>
-                    <td><c:out
-                        value="${blockLocation.location.lat}" /><jsp:text>
-                    </jsp:text><c:out value="${blockLocation.location.lon}" /></td>
-                    <td><c:out
-                        value="${blockLocation.distanceAlongBlock}" /></td>
-                    <jsp:useBean id="scheduleTime"
-                        class="java.util.Date" />
-                    <jsp:setProperty name="scheduleTime" property="time"
-                        value="${blockState.blockInstance.serviceDate + blockLocation.scheduledTime*1000}" />
-                    <td><fmt:formatDate pattern="HH:mm"
-                        value="${scheduleTime}" /><jsp:text> (</jsp:text><c:out
-                        value="${blockLocation.scheduledTime}" />)</td>
-                    <td><c:out
-                        value="${motionState.lastInMotionLocation.lat}" /><jsp:text>
-                    </jsp:text><c:out
-                        value="${motionState.lastInMotionLocation.lon}" /></td>
+                    <td bgcolor='#cdc9c9'>
+                      <fmt:formatNumber var="lat" value="${blockLocation.location.lat}" maxFractionDigits="6"/>
+                      <fmt:formatNumber var="lon" value="${blockLocation.location.lon}" maxFractionDigits="6"/>
+                    <c:out value="${lat},${lon}" />
+                    </td>
+                    <td>
+                      <fmt:formatNumber var="dab" value="${blockLocation.distanceAlongBlock}" maxFractionDigits="2"/>
+	                    <c:out value="${dab} m" /></td>
+                      <fmt:formatNumber var="schedDev" value="${p.data.blockStateObservation.scheduleDeviation}" maxFractionDigits="2"/>
+                    <td bgcolor='#cdc9c9'><c:out value="${schedDev} mins" /></td>
+                    <td><c:out value="${p.data.blockStateObservation.snapped}" /></td>
                 </tr>
             </c:forEach>
         </tbody>

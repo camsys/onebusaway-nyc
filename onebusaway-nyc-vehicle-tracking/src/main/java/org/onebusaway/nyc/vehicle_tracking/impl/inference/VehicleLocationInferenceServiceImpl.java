@@ -15,41 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
-import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
-import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
-import org.onebusaway.transit_data.model.blocks.BlockBean;
-import org.onebusaway.transit_data.model.trips.TripBean;
-
-import com.jhlabs.map.proj.ProjectionException;
-
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-
-import tcip_3_0_5_local.NMEA;
-import tcip_final_3_0_5_1.CcLocationReport;
-import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -69,6 +34,47 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import lrms_final_09_07.Angle;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
+import org.onebusaway.transit_data.model.blocks.BlockBean;
+import org.onebusaway.transit_data.model.trips.TripBean;
+
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
+import com.google.common.collect.TreeMultiset;
+import com.jhlabs.map.proj.ProjectionException;
+
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
+import tcip_3_0_5_local.NMEA;
+import tcip_final_3_0_5_1.CcLocationReport;
+import tcip_final_3_0_5_1.CcLocationReport.EmergencyCodes;
 
 @Component
 public class VehicleLocationInferenceServiceImpl implements VehicleLocationInferenceService {
@@ -97,8 +103,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
   private int _skippedUpdateLogCounter = 0;
   
-  private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = 
-      new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
+  private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
   private ApplicationContext _applicationContext;
 
@@ -117,11 +122,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     _numberOfProcessingThreads = numberOfProcessingThreads;
   }
 
-  @Override
-  public void setSeeds(long cdfSeed, long factorySeed) {
-    ParticleFactoryImpl.setSeed(factorySeed);
-    CategoricalDist.setSeed(cdfSeed);
-  }
 
   @PostConstruct
   public void start() {
@@ -179,9 +179,9 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     r.setLatitude(message.getLatitude() / 1000000f);
     r.setLongitude(message.getLongitude() / 1000000f);
 
-    Angle bearing = message.getDirection();
+    final Angle bearing = message.getDirection();
     if (bearing != null) {
-      Integer degrees = bearing.getCdeg();
+      final Integer degrees = bearing.getCdeg();
       if (degrees != null)
         r.setBearing(degrees);
     }
@@ -191,7 +191,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     r.setDestinationSignCode(message.getDestSignCode().toString());
     r.setDeviceId(message.getManufacturerData());
 
-    AgencyAndId vehicleId = new AgencyAndId(
+    final AgencyAndId vehicleId = new AgencyAndId(
         message.getVehicle().getAgencydesignator(),
         Long.toString(message.getVehicle().getVehicleId()));
     r.setVehicleId(vehicleId);
@@ -205,18 +205,18 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     if (!StringUtils.isEmpty(message.getRouteID().getRouteDesignator()))
       r.setRunRouteId(message.getRouteID().getRouteDesignator());
 
-    EmergencyCodes emergencyCodes = message.getEmergencyCodes();
+    final EmergencyCodes emergencyCodes = message.getEmergencyCodes();
     if (emergencyCodes != null)
       r.setEmergencyFlag(true);
     else
       r.setEmergencyFlag(false);
 
-    tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
+    final tcip_3_0_5_local.CcLocationReport gpsData = message.getLocalCcLocationReport();
     if (gpsData != null) {
-      NMEA nemaSentences = gpsData.getNMEA();
-      List<String> sentenceStrings = nemaSentences.getSentence();
+      final NMEA nemaSentences = gpsData.getNMEA();
+      final List<String> sentenceStrings = nemaSentences.getSentence();
 
-      for (String sentence : sentenceStrings) {
+      for (final String sentence : sentenceStrings) {
         if (sentence.startsWith("$GPGGA"))
           r.setGga(sentence);
 
@@ -225,7 +225,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       }
     }
 
-    DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());
+    final DateTime time = XML_DATE_TIME_FORMAT.parseDateTime(message.getTimeReported());
     r.setTime(time.getMillis());
     r.setTimeReceived(new Date().getTime());
 
@@ -233,17 +233,17 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     String RMCSentence = r.getRmc();
 
     if (RMCSentence != null) {
-      String[] parts = RMCSentence.split(",");
+      final String[] parts = RMCSentence.split(",");
       if (parts.length == 13) {
-        String timePart = parts[1];
-        String datePart = parts[9];
+        final String timePart = parts[1];
+        final String datePart = parts[9];
         if (timePart.length() >= 6 && datePart.length() == 6) {
           try {
-            DateFormat formatter = new SimpleDateFormat("ddMMyy HHmmss");
+            final DateFormat formatter = new SimpleDateFormat("ddMMyy HHmmss");
             formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-            Date fromDRU = formatter.parse(datePart + " " + timePart);
-            long differenceInSeconds = (fromDRU.getTime() - time.getMillis()) / 1000;
+            final Date fromDRU = formatter.parse(datePart + " " + timePart);
+            final long differenceInSeconds = (fromDRU.getTime() - time.getMillis()) / 1000;
 
             if (differenceInSeconds > 30 * 60) { // 30m
               _log.debug("Vehicle "
@@ -254,15 +254,13 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
                   + "Raw timestamp: " + message.getTimeReported() + "\n"
                   + "From RMC: " + datePart + " " + timePart);
             }
-          } catch (ParseException e) {
+          } catch (final ParseException e) {
             _log.debug("Unparseable date: " + datePart + " " + timePart);
           }
         }
       }
     }
 
-    // process message
-    @SuppressWarnings("rawtypes")
     Future result = _executorService.submit(new ProcessingTask(r));
     _bundleManagementService.registerInferenceProcessingThread(result);
   }
@@ -299,13 +297,13 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Override
   public List<NycTestInferredLocationRecord> getLatestProcessedVehicleLocationRecords() {
 
-    List<NycTestInferredLocationRecord> records = new ArrayList<NycTestInferredLocationRecord>();
+    final List<NycTestInferredLocationRecord> records = new ArrayList<NycTestInferredLocationRecord>();
 
-    for (Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
-      AgencyAndId vehicleId = entry.getKey();
-      VehicleInferenceInstance instance = entry.getValue();
+    for (final Map.Entry<AgencyAndId, VehicleInferenceInstance> entry : _vehicleInstancesByVehicleId.entrySet()) {
+      final AgencyAndId vehicleId = entry.getKey();
+      final VehicleInferenceInstance instance = entry.getValue();
       if (instance != null) {
-        NycTestInferredLocationRecord record = instance.getCurrentState();
+        final NycTestInferredLocationRecord record = instance.getCurrentState();
         if (record != null) {
           record.setVehicleId(vehicleId);
           records.add(record);
@@ -319,17 +317,18 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   }
   
   @Override
-  public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+  public Multiset<Particle> getCurrentParticlesForVehicleId(
+      AgencyAndId vehicleId) {
+    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
     return instance.getCurrentParticles();
   }
 
   @Override
-  public List<Particle> getCurrentSampledParticlesForVehicleId(
+  public Multiset<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
     return instance.getCurrentSampledParticles();
@@ -338,7 +337,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Override
   public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(
       AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return Collections.emptyList();
     return instance.getJourneySummaries();
@@ -346,20 +345,20 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
   @Override
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
-    VehicleLocationDetails details = instance.getDetails();
+    final VehicleLocationDetails details = instance.getDetails();
     details.setVehicleId(vehicleId);
     return details;
   }
 
   @Override
   public VehicleLocationDetails getBadDetailsForVehicleId(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+    final VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
     if (instance == null)
       return null;
-    VehicleLocationDetails details = instance.getBadParticleDetails();
+    final VehicleLocationDetails details = instance.getBadParticleDetails();
     details.setVehicleId(vehicleId);
     details.setParticleFilterFailureActive(true);
     return details;
@@ -368,7 +367,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Override
   public VehicleLocationDetails getBadDetailsForVehicleId(
       AgencyAndId vehicleId, int particleId) {
-    VehicleLocationDetails details = getBadDetailsForVehicleId(vehicleId);
+    final VehicleLocationDetails details = getBadDetailsForVehicleId(vehicleId);
     if (details == null)
       return null;
     return findParticle(details, particleId);
@@ -377,7 +376,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Override
   public VehicleLocationDetails getDetailsForVehicleId(AgencyAndId vehicleId,
       int particleId) {
-    VehicleLocationDetails details = getDetailsForVehicleId(vehicleId);
+    final VehicleLocationDetails details = getDetailsForVehicleId(vehicleId);
     if (details == null)
       return null;
     return findParticle(details, particleId);
@@ -468,13 +467,14 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
   private VehicleLocationDetails findParticle(VehicleLocationDetails details,
       int particleId) {
-    List<Particle> particles = details.getParticles();
+    final List<Entry<Particle>> particles = details.getParticles();
     if (particles != null) {
-      for (Particle p : particles) {
+      for (final Entry<Particle> pEntry : particles) {
+        Particle p = pEntry.getElement();
         if (p.getIndex() == particleId) {
-          List<Particle> history = new ArrayList<Particle>();
+          final Multiset<Particle> history = TreeMultiset.create();
           while (p != null) {
-            history.add(p);
+            history.add(p, pEntry.getCount());
             p = p.getParent();
           }
           details.setParticles(history);
@@ -503,7 +503,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
   public class ProcessingTask implements Runnable {
 
-    private AgencyAndId _vehicleId;
+    private final AgencyAndId _vehicleId;
 
     private NycRawLocationRecord _inferenceRecord;
 
@@ -522,7 +522,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     @Override
     public void run() {
       try {
-        VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
+        final VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
 
         boolean passOnRecord = sendRecord(existing);
         if (passOnRecord) {
@@ -543,9 +543,9 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
           _outputQueueSenderService.enqueue(record);
         }
-      } catch (ProjectionException e) {
+      } catch (final ProjectionException e) {
         // discard
-      } catch (Throwable ex) {
+      } catch (final Throwable ex) {
         _log.error("Error processing new location record for inference: ", ex);
       }
     }
@@ -559,5 +559,12 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       
       return false;
     }
+  }
+
+  @Override
+  public void setSeeds(long cdfSeed, long factorySeed) {
+    ParticleFactoryImpl.setSeed(factorySeed);
+    BlockStateTransitionModel.setSeed(factorySeed);
+    CategoricalDist.setSeed(cdfSeed);
   }
 }

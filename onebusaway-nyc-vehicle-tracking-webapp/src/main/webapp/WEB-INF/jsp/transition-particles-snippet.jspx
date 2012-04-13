@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<jsp:root version="1.2" xmlns:jsp="http://java.sun.com/JSP/Page"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+    xmlns:form="http://www.springframework.org/tags/form">
+    <jsp:directive.page contentType="text/html" />
+
+    <table>
+        <thead>
+            <tr>
+                <td>#</td>
+                <td>Time</td>
+                <td>Count</td>
+                <td>logP</td>
+                <td>Phase</td>
+                <td>From Reported Run</td>
+                <td>Operator Assigned</td>
+                <td>RunId</td>
+                <td>BlockId</td>
+                <td>TripId</td>
+                <td>Dsc</td>
+                <td>Block Location</td>
+                <td>Distance Along Block</td>
+                <td>Scheduled Dev</td>
+                <td>Snapped</td>
+            </tr>
+        </thead>
+        <tbody>
+
+            <c:set var="i"
+                value="${-1}" />
+            <c:forEach var="pEntry" items="${transitionParticles}">
+                <tr>
+				            <c:set var="i"
+				                value="${i + 1}" />
+                    <c:set var="p"
+                        value="${pEntry.element}" />
+                    <c:set var="motionState"
+                        value="${p.data.motionState}" />
+                    <c:set var="journeyState"
+                        value="${p.data.journeyState}" />
+                    <c:set var="blockState" value="${p.data.blockState}" />
+                    <c:set var="runReported" value="${p.data.blockStateObservation.runReported}" />
+                    <c:set var="opAssigned" value="${p.data.blockStateObservation.opAssigned}" />
+                    <c:set var="blockLocation"
+                        value="${blockState.blockLocation}" />
+                    <td><c:out value="${p.index}" /></td>
+                    <td bgcolor='#cdc9c9'><fmt:formatDate pattern="HH:mm:ss"
+                        value="${p.data.observation.record.timeAsDate}" /></td>
+                    <td><c:out value="${pEntry.count}" /></td>
+                    <td bgcolor='#cdc9c9'>
+                       <c:set var="href1" value="vehicle-location-simulation!particle-transition-details.do?taskId=${details.id}&amp;parentParticleId=${p.index}&amp;transParticleNumber=${i}&amp;recordNumber=${recordNumber}"/>
+                       <a href="${href1}">
+                       <fmt:formatNumber var="weight" value="${p.logWeight}" pattern="0.###E0"/>
+                       <c:out value="${weight}"/></a>
+                    </td>
+                    <td><c:out value="${journeyState.phase}" /></td>
+                    <td bgcolor='#cdc9c9'><c:out value="${runReported == null?'NA':runReported}" /></td>
+                    <td><c:out value="${opAssigned == null?'NA':opAssigned}" /></td>
+                    <td bgcolor='#cdc9c9'><c:out value="${blockState.runTripEntry.runId}" /></td>
+                    <td><a
+                        href="block-details.do?blockId=${blockState.blockInstance.block.block.id}"><c:out
+                        value="${blockState.blockInstance.block.block.id}" /></a></td>
+                    <td bgcolor='#cdc9c9'><c:out
+                        value="${blockLocation.activeTrip.trip.id}" /></td>
+                    <td><c:out
+                        value="${blockState.destinationSignCode}" /></td>
+                    <td bgcolor='#cdc9c9'>
+                      <fmt:formatNumber var="lat" value="${blockLocation.location.lat}" maxFractionDigits="6"/>
+                      <fmt:formatNumber var="lon" value="${blockLocation.location.lon}" maxFractionDigits="6"/>
+                    <c:out value="${lat},${lon}" />
+                    </td>
+                    <td>
+                      <fmt:formatNumber var="dab" value="${blockLocation.distanceAlongBlock}" maxFractionDigits="2"/>
+	                    <c:out value="${dab} m" /></td>
+                      <fmt:formatNumber var="schedDev" value="${p.data.blockStateObservation.scheduleDeviation}" maxFractionDigits="2"/>
+                    <td bgcolor='#cdc9c9'><c:out value="${schedDev} mins" /></td>
+                    <td><c:out value="${p.data.blockStateObservation.snapped}" /></td>
+                </tr>
+            </c:forEach>
+        </tbody>
+    </table>
+
+</jsp:root>
