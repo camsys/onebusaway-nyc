@@ -228,8 +228,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     if (previouslyResampled
         && ess / ParticleFactoryImpl.getInitialNumberOfParticles() <= essResampleThreshold) {
-      // TODO debug. remove.
-      System.out.println("ess resample! " + new Date(obs.getTime()));
       return true;
     }
 
