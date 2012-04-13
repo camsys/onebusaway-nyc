@@ -5,8 +5,6 @@ import java.util.Date;
 
 public interface CcLocationReportDao {
 
-  void queueForUpdate(CcLocationReportRecord report);
-
   void saveOrUpdateReport(CcLocationReportRecord report);
 
   void saveOrUpdateReports(CcLocationReportRecord... reports);

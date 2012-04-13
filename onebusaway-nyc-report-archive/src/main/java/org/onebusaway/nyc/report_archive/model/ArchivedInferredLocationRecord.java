@@ -37,6 +37,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Index;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
@@ -55,7 +56,8 @@ public class ArchivedInferredLocationRecord implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(generator = "increment")
+  @GenericGenerator(name="increment", strategy="increment")
   @AccessType("property")
   private Long id;
 

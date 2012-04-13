@@ -17,55 +17,58 @@
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="
+  xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+  xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
     <!-- Database Connection Configuration -->
     <!-- Database Configuration -->
-    <bean id="dataSource"
-          class="org.springframework.jndi.JndiObjectFactoryBean">
-      <property name="jndiName"
-                value="java:comp/env/jdbc/archiveDB"/>   
-      <property name="lookupOnStartup"
-                value="true"/>   
-      <property name="cache"
-                value="true"/>   
-      <property name="proxyInterface"
-                value="javax.sql.DataSource"/>   
-      <property name="resourceRef"
-                value="true" />
-    </bean>
-    
-    <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
-        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
-    </bean>
-    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-        <property name="target" value="hibernateProperties" />
-        <property name="properties">
-            <props>
-                <prop key="hibernate.hbm2ddl.auto">validate</prop>
-                <prop key="hibernate.jdbc.batch_size">1000</prop>
-                <prop key="hibernate.order_inserts">true</prop>
-                <prop key="hibernate.order_updates">true</prop>
-                <prop key="hibernate.show_sql">false</prop>
-            </props> 
-        </property> 
-    </bean> 
-    
-    <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary" >
-      <constructor-arg type="java.lang.String" value="${tdm.host}"/>
-      <constructor-arg type="java.lang.Integer" value="80" />
-      <constructor-arg type="java.lang.String" value="/api/" />
-    </bean>
+  <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+    <property name="jndiName" value="java:comp/env/jdbc/archiveDB" />
+    <property name="lookupOnStartup" value="true" />
+    <property name="cache" value="true" />
+    <property name="proxyInterface" value="javax.sql.DataSource" />
+    <property name="resourceRef" value="true" />
+  </bean>
+
+
+  <!--  configure spring and Hibernate transaction annotations -->
+
+  <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    <property name="dataSource" ref="dataSource" />
+  </bean>
+  <tx:annotation-driven transaction-manager="transactionManager"/>
+  
+  <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+    <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
+    <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+  </bean>
+  <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+    <property name="target" value="hibernateProperties" />
+    <property name="properties">
+      <props>
+        <prop key="hibernate.hbm2ddl.auto">validate</prop>
+        <prop key="hibernate.jdbc.batch_size">1000</prop>
+        <prop key="hibernate.order_inserts">true</prop>
+        <prop key="hibernate.order_updates">true</prop>
+        <prop key="hibernate.show_sql">false</prop>
+      </props>
+    </property>
+  </bean>
+
+  <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
+    <constructor-arg type="java.lang.String" value="${tdm.host}" />
+    <constructor-arg type="java.lang.Integer" value="80" />
+    <constructor-arg type="java.lang.String" value="/api/" />
+  </bean>
 
     <!-- Input and Inference Queue Configuration -->
 
-    <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
-    </bean>
-    <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
-    </bean>
-    
+  <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
+  </bean>
+  <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
+  </bean>
+
 </beans>

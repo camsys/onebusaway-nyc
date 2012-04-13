@@ -12,7 +12,11 @@ import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -22,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class ArchivingInferenceQueueListenerTask extends
 		InferenceQueueListenerTask {
 
+	public static final int BATCH_SIZE = 1000;
 	public static final int COUNT_INTERVAL = 1000;
 	private static Logger _log = LoggerFactory
 			.getLogger(ArchivingInferenceQueueListenerTask.class);
@@ -34,8 +39,11 @@ public class ArchivingInferenceQueueListenerTask extends
 	private TransitDataService _transitDataService;
 	
 	private int count = 0;
+	// TODO: remove this debugging info
 	private long processingSum = 0;
 	private long countStart = System.currentTimeMillis();
+	private int _batchCount = 0;
+	private List<ArchivedInferredLocationRecord> records= Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
 
 	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort",
 			"tds.inputQueueName" })
@@ -79,7 +87,14 @@ public class ArchivingInferenceQueueListenerTask extends
 			long processingStart = System.currentTimeMillis();
 			postProcess(locationRecord);
 			processingSum += System.currentTimeMillis() - processingStart;
-			_locationDao.queueForUpdate(locationRecord);
+			_batchCount++;
+			records.add(locationRecord);
+			if (_batchCount == BATCH_SIZE) {
+				_locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
+				records.clear();
+				_batchCount = 0;
+			}
+
 			if (count > COUNT_INTERVAL) {
 				_log.warn("inference_queue processed " + count + " messages in " 
 						+ (System.currentTimeMillis()-countStart) 
@@ -137,7 +152,7 @@ public class ArchivingInferenceQueueListenerTask extends
 	@PostConstruct
 	public void setup() {
 		super.setup();
-		_log.error("version sab-perf");
+
 		// make parsing lenient
 		_mapper.configure(
 				DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);

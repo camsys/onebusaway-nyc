@@ -24,10 +24,8 @@ public class NycQueuedInferredLocationDaoImpl implements
 
 	protected static Logger _log = LoggerFactory
 			.getLogger(NycQueuedInferredLocationDaoImpl.class);
-	public static final int BATCH_SIZE = 1000;
+
 	private HibernateTemplate _template;
-	private List<ArchivedInferredLocationRecord> reports = Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
-	private int _batchCount = 0;
 
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
@@ -38,36 +36,22 @@ public class NycQueuedInferredLocationDaoImpl implements
 		return _template;
 	}
 
-	public void queueForUpdate(ArchivedInferredLocationRecord report) {
-		_batchCount++;
-		reports.add(report);
-		if (_batchCount == BATCH_SIZE) {
-			// clear from level one cache
-			saveOrUpdateRecords(reports.toArray(new ArchivedInferredLocationRecord[0]));
-			reports.clear();
-			_batchCount = 0;
-		}
-	}
-	
+
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
-		_batchCount++;
 		_template.saveOrUpdate(record);
 
 		InferredLocationRecord currentRecord = new InferredLocationRecord(
 				record);
 
 		_template.saveOrUpdate(currentRecord);
-		if (_batchCount == BATCH_SIZE) {
-			// clear from level on cache
-			_log.warn("inference flush");
-			_template.flush();
-			_template.clear();
-			_batchCount = 0;
-		}
+		_template.flush();
+		_template.clear();
 	}
 
+	@Transactional(rollbackFor = Throwable.class)
+	@Override
 	public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
 		List<ArchivedInferredLocationRecord> list = new ArrayList<ArchivedInferredLocationRecord>(
 				records.length);

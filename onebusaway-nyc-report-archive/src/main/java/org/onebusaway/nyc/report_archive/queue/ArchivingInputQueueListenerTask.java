@@ -13,11 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 
+	public static final int BATCH_SIZE = 1000;
 	public static final int COUNT_INTERVAL = 6000;
 	protected static Logger _log = LoggerFactory
 			.getLogger(ArchivingInputQueueListenerTask.class);
@@ -28,10 +32,11 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 	// offset of timezone (-04:00 or -05:00)
 	private String _zoneOffset = null;
 	private String _systemTimeZone = null;
+	private int _batchCount = 0;
 	private int count = 0;
-		private long dbSum = 0;
+	private long dbSum = 0;
 	private long dbStart = System.currentTimeMillis();
-
+	private List<CcLocationReportRecord> reports = Collections.synchronizedList(new ArrayList<CcLocationReportRecord>());
 	@Override
 	// this method can't throw exceptions or it will stop the queue
 	// listening
@@ -54,19 +59,28 @@ public class ArchivingInputQueueListenerTask extends InputQueueListenerTask {
 					envelope, contents, getZoneOffset());
 			if (record != null) {
 				long dbStart = System.currentTimeMillis();
-				_dao.queueForUpdate(record);
+				_batchCount++;
+				reports.add(record);
+				if (_batchCount == BATCH_SIZE) {
+					_dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
+					reports.clear();
+					_batchCount = 0;
+				}
+
 				dbSum += System.currentTimeMillis() - dbStart;
 			}
 			// re-calculate zoneOffset periodically
 			if (count > COUNT_INTERVAL) {
-				_log.warn("realtime queue processed " + count + " messages in " 
-						+ (System.currentTimeMillis()-dbStart)
+				_log.warn("realtime queue processed " + count + " messages in "
+						+ (System.currentTimeMillis() - dbStart)
 						+ ", db time was " + dbSum);
 				_zoneOffset = null;
 				if (record != null) {
-					long delta = System.currentTimeMillis()-record.getTimeReceived().getTime();
+					long delta = System.currentTimeMillis()
+							- record.getTimeReceived().getTime();
 					if (delta > 2000) {
-						_log.warn("realtime queue is " + delta + " millis behind");
+						_log.warn("realtime queue is " + delta
+								+ " millis behind");
 					}
 				}
 				count = 0;

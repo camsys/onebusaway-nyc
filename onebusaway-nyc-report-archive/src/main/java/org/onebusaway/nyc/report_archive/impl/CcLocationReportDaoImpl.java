@@ -9,6 +9,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateAccessor;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
@@ -27,10 +28,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 
 	protected static Logger _log = LoggerFactory
 			.getLogger(CcLocationReportDaoImpl.class);
-	public static final int BATCH_SIZE = 1000;
 	private HibernateTemplate _template;
-	private List<CcLocationReportRecord> reports = Collections.synchronizedList(new ArrayList<CcLocationReportRecord>());
-	private int _batchCount = 0;
 
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
@@ -41,29 +39,12 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 		return _template;
 	}
 
-	public void queueForUpdate(CcLocationReportRecord report) {
-		_batchCount++;
-		reports.add(report);
-		if (_batchCount == BATCH_SIZE) {
-			// clear from level one cache
-			saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
-			reports.clear();
-			_batchCount = 0;
-		}
-	}
-
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateReport(CcLocationReportRecord report) {
-		_batchCount++;
 		_template.saveOrUpdate(report);
-		if (_batchCount == BATCH_SIZE) {
-			// clear from level one cache
-			_log.warn("cc flush");
-			_template.flush();
-			_template.clear();
-			_batchCount = 0;
-		}
+		_template.flush();
+		_template.clear();
 	}
 
 	@Transactional(rollbackFor = Throwable.class)
@@ -74,7 +55,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 		for (CcLocationReportRecord report : reports) {
 			list.add(report);
 		}
-		_log.warn("cc flushAll");
+
 		_template.saveOrUpdateAll(list);
 		_template.flush();
 		_template.clear();
