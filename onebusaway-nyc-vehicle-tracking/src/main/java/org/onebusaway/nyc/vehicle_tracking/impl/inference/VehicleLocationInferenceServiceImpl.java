@@ -19,6 +19,7 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
@@ -32,7 +33,6 @@ import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInf
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import com.jhlabs.map.proj.ProjectionException;
 
@@ -87,7 +87,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   private BundleManagementService _bundleManagementService;
 
   @Autowired
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   private BundleItem _lastBundle = null;
 
@@ -444,8 +444,8 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
         }
   
         // trip or block matched have disappeared!
-        TripBean trip = _transitDataService.getTrip(state.getInferredTripId());
-        BlockBean block = _transitDataService.getBlockForId(state.getInferredBlockId());
+        TripBean trip = _nycTransitDataService.getTrip(state.getInferredTripId());
+        BlockBean block = _nycTransitDataService.getBlockForId(state.getInferredBlockId());
   
         if (trip == null || block == null) {
           _log.info("Vehicle "

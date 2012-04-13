@@ -15,9 +15,11 @@
  */
 package org.onebusaway.nyc.transit_data.services;
 
+import org.onebusaway.transit_data.services.TransitDataService;
+
 import java.util.Date;
 
-public interface NycTransitDataService {
+public interface NycTransitDataService extends TransitDataService {
 
    public String getActiveBundleId();
 

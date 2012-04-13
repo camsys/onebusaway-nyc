@@ -19,6 +19,7 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags"
 	xmlns:wiki="/oba-wiki-tags">
 <jsp:directive.page contentType="text/html" />
+<jsp:output omit-xml-declaration="yes"/>
 
 <c:if test="${!queryIsEmpty}">
 	<h3 class="noMatches">

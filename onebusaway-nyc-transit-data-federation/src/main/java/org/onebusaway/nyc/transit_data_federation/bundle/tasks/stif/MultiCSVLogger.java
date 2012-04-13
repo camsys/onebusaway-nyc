@@ -43,6 +43,7 @@ public class MultiCSVLogger {
     if (log == null) {
       throw new RuntimeException("log called before header for file " + file);
     }
+    log.lines += 1;
     for (int i = 0; i < args.length; ++i) {
       Object arg = args[i];
       String argStr = "" + arg; //arg.toString() fails for null, while this works
@@ -86,7 +87,9 @@ public class MultiCSVLogger {
     for (Map.Entry<String, Log> entry : logs.entrySet()) {
       Log log = entry.getValue();
       String name = entry.getKey().replace("_", " ").replace(".csv", "");
-      stream.println(name + ": " + (log.lines == 0 ? "OK" : "FAIL"));
+      if (!name.equals("dsc statistics")) {
+        stream.println(name + ": " + (log.lines == 0 ? "OK" : "FAIL"));
+      }
     }
     stream.println("\nStatus\n======");
 

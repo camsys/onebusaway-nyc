@@ -19,7 +19,6 @@ import org.onebusaway.nyc.presentation.model.SearchResultCollection;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
@@ -33,9 +32,6 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
 
   @Autowired
   private SearchService _searchService;
-
-  @Autowired
-  private TransitDataService _transitDataService;
 
   @Autowired
   private NycTransitDataService _nycTransitDataService;
@@ -55,8 +51,7 @@ public class SearchAction extends OneBusAwayNYCActionSupport {
     if(_q == null || _q.isEmpty())
       return SUCCESS;
     
-    _results = _searchService.getSearchResults(_q, new SearchResultFactoryImpl(_transitDataService, 
-            _searchService, _nycTransitDataService));
+    _results = _searchService.getSearchResults(_q, new SearchResultFactoryImpl(_searchService, _nycTransitDataService));
 
     return SUCCESS;
   }   

@@ -29,7 +29,6 @@ import org.onebusaway.nyc.sms.actions.model.StopResult;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import com.dmurph.tracking.AnalyticsConfigData;
 import com.dmurph.tracking.JGoogleAnalyticsTracker;
@@ -61,17 +60,13 @@ public class IndexAction extends SessionedIndexAction {
   @Autowired
   private NycTransitDataService _nycTransitDataService;
 
-  @Autowired
-  private TransitDataService _transitDataService;
-
   private JGoogleAnalyticsTracker _googleAnalytics = null;
   
   private String _response = null;
   
   public String execute() throws Exception {
     
-    SearchResultFactory _resultFactory = new SearchResultFactoryImpl(_transitDataService,
-        _nycTransitDataService, _realtimeService, _configurationService);
+    SearchResultFactory _resultFactory = new SearchResultFactoryImpl(_nycTransitDataService, _realtimeService, _configurationService);
 
     // send an initial visit to google analytics to tie our events to
     String googleAnalyticsSiteId = 

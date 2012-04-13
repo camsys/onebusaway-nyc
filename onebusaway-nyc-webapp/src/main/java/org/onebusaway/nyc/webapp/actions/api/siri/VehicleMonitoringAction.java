@@ -16,10 +16,10 @@ package org.onebusaway.nyc.webapp.actions.api.siri;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.utility.DateLibrary;
 
@@ -46,7 +46,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private static final long serialVersionUID = 1L;
 
   @Autowired
-  public TransitDataService _transitDataService;
+  public NycTransitDataService _nycTransitDataService;
 
   @Autowired
   private RealtimeService _realtimeService;
@@ -153,7 +153,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
       // *** CASE 3: all vehicles
     } else {
-      ListBean<VehicleStatusBean> vehicles = _transitDataService.getAllVehiclesForAgency(
+      ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
           agencyId, getTime().getTime());
 
       for (VehicleStatusBean v : vehicles.getList()) {
@@ -201,7 +201,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         vehicleMonitoringDelivery);
 
     _serviceAlertsHelper.addSituationExchangeToServiceDelivery(serviceDelivery,
-        activities, _transitDataService, routeId);
+        activities, _nycTransitDataService, routeId);
 
     Siri siri = new Siri();
     siri.setServiceDelivery(serviceDelivery);

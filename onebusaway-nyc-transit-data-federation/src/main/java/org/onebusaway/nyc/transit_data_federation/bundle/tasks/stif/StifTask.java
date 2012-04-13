@@ -400,8 +400,10 @@ public class StifTask implements Runnable {
           _log.warn("Generating single-trip block id for GTFS trip: "
               + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
+          dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId);
           csvLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
               trip.lineNumber, gtfsTrip.getId(), blockId);
+          usedGtfsTrips.add(gtfsTrip);
         }
       }
     }

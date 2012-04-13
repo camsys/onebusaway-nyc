@@ -1,20 +1,21 @@
 package org.onebusaway.nyc.presentation.impl.service_alerts;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 
 import org.junit.Test;
-import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import uk.org.siri.siri.AffectedVehicleJourneyStructure;
 import uk.org.siri.siri.AffectsScopeStructure;
 import uk.org.siri.siri.AffectsScopeStructure.VehicleJourneys;
 import uk.org.siri.siri.DefaultedTextStructure;
-import uk.org.siri.siri.EntryQualifierStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.PtSituationElementStructure;
 import uk.org.siri.siri.ServiceDelivery;
@@ -24,12 +25,14 @@ import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
-import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
 
   private static final boolean SKIP_JOURNEY = true;
-  private TransitDataService transitDataService;
+  private NycTransitDataService nycTransitDataService;
 
   @Test
   public void testGetServiceAlertBeanAsPtSituationElementStructure() {
@@ -42,7 +45,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   public void testAddSituationExchangeEmpty() {
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, nycTransitDataService);
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(0, list.size());
   }
@@ -52,15 +55,15 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
 
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
-    transitDataService = mock(TransitDataService.class);
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
+    nycTransitDataService = mock(NycTransitDataService.class);
+    when(nycTransitDataService.getServiceAlertForId(anyString())).thenReturn(
         serviceAlertBean);
 
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
     createActivity(activities, "MTA NYCT_100");
 
-    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, nycTransitDataService);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(1, list.size());
@@ -89,15 +92,15 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
 
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
-    transitDataService = mock(TransitDataService.class);
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
+    nycTransitDataService = mock(NycTransitDataService.class);
+    when(nycTransitDataService.getServiceAlertForId(anyString())).thenReturn(
         serviceAlertBean);
 
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
     createActivity(activities, "MTA NYCT_100", SKIP_JOURNEY);
 
-    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, nycTransitDataService);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(0, list.size());
@@ -107,8 +110,8 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   public void testAddSituationExchangeDuplicate() {
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
-    transitDataService = mock(TransitDataService.class);
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
+    nycTransitDataService = mock(NycTransitDataService.class);
+    when(nycTransitDataService.getServiceAlertForId(anyString())).thenReturn(
         serviceAlertBean);
 
     ServiceDelivery serviceDelivery = new ServiceDelivery();
@@ -116,7 +119,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     createActivity(activities, "MTA NYCT_100");
     createActivity(activities, "MTA NYCT_100");
 
-    addSituationExchangeToServiceDelivery(serviceDelivery, activities, transitDataService);
+    addSituationExchangeToServiceDelivery(serviceDelivery, activities, nycTransitDataService);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(1, list.size());
@@ -133,8 +136,8 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
   public void testAddSituationExchangeDuplicateForStops() {
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_100");
 
-    transitDataService = mock(TransitDataService.class);
-    when(transitDataService.getServiceAlertForId(anyString())).thenReturn(
+    nycTransitDataService = mock(NycTransitDataService.class);
+    when(nycTransitDataService.getServiceAlertForId(anyString())).thenReturn(
         serviceAlertBean);
 
     ServiceDelivery serviceDelivery = new ServiceDelivery();
@@ -143,7 +146,7 @@ public class ServiceAlertsHelperTest extends ServiceAlertsHelper {
     createStopActivity(activities, "MTA NYCT_100");
 
     addSituationExchangeToSiriForStops(serviceDelivery, activities,
-        transitDataService, null);
+        nycTransitDataService, null);
 
     List<SituationExchangeDeliveryStructure> list = serviceDelivery.getSituationExchangeDelivery();
     assertEquals(1, list.size());
