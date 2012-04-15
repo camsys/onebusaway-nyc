@@ -40,6 +40,10 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
+import gov.sandia.cognition.math.LogMath;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Maps;
@@ -233,6 +237,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     return false;
   }
+  
 
   @Override
   public Multiset<Particle> move(Multiset<Particle> particles,
@@ -244,6 +249,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
     final double ess = ParticleFilter.getEffectiveSampleSize(particles);
     final boolean generalBlockTransition = allowGeneralBlockTransition(obs,
         ess, previouslyResampled);
+    double normOffset = Double.NEGATIVE_INFINITY;
 
     for (final Multiset.Entry<Particle> parent : particles.entrySet()) {
       final VehicleState parentState = parent.getElement().getData();
@@ -285,15 +291,18 @@ public class MotionModelImpl implements MotionModel<Observation> {
       for (int i = 0; i < parent.getCount(); ++i) {
         final Particle sampledParticle = sampleTransitionParticle(parent,
             newParentBlockStateObs, obs, vehicleHasNotMovedProb, transitions);
-        // if (sampledParticle.getLogWeight() > offset)
-        // offset = sampledParticle.getLogWeight();
+        normOffset = LogMath.add(sampledParticle.getLogWeight(), normOffset);
         results.add(sampledParticle);
       }
     }
 
-    // for (Particle p : results) {
-    // p.setLogWeight(p.getLogWeight() - offset);
-    // }
+    /*
+     * Normalize
+     */
+     for (Entry<Particle> p : results.entrySet()) {
+       p.getElement().setLogNormedWeight(p.getElement().getLogWeight()
+           + FastMath.log(p.getCount()) - normOffset);
+     }
 
     return results;
   }

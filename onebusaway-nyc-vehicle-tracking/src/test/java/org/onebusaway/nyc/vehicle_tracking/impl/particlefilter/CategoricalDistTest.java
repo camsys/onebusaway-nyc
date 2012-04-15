@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import org.onebusaway.collections.Counter;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
 import org.apache.commons.math.util.FastMath;
@@ -60,6 +61,28 @@ public class CategoricalDistTest {
     assertEquals(res.count("b") / (double) iterations, cdf.density("b") / cummulativeProb, .05);
     assertEquals(res.count("c") / (double) iterations, cdf.density("c") / cummulativeProb, .05);
     assertEquals(res.count("d") / (double) iterations, cdf.density("d") / cummulativeProb, .05);
+    
+    Multiset<Particle> testSet = HashMultiset.create();
+    Particle p1 = new Particle(0, null, cdf.density("a"));
+    testSet.add(p1);
+    Particle p2 = new Particle(0, null, cdf.density("b"));
+    testSet.add(p2);
+    Particle p3 = new Particle(0, null, cdf.density("c"));
+    testSet.add(p3);
+    Particle p4 = new Particle(0, null, cdf.density("d"));
+    testSet.add(p4);
+    Multiset<Particle> resSet = ParticleFilter.lowVarianceSampler(testSet, iterations);
+    final Counter<Particle> counter2 = new Counter<Particle>();
+    for (Particle p : resSet)
+      counter2.increment(p);
+    final double a2 = counter2.getCount(p1) / (double)iterations;
+    final double b2 = counter2.getCount(p2) / (double)iterations;
+    final double c2 = counter2.getCount(p3) / (double)iterations;
+    final double d2 = counter2.getCount(p4) / (double)iterations;
+    assertEquals(a2, cdf.density("a") / cummulativeProb, .05);
+    assertEquals(b2, cdf.density("b") / cummulativeProb, .05);
+    assertEquals(c2, cdf.density("c") / cummulativeProb, .05);
+    assertEquals(d2, cdf.density("d") / cummulativeProb, .05);
     
     
   }

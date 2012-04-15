@@ -28,9 +28,13 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 
+import gov.sandia.cognition.math.LogMath;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
+import org.apache.commons.math.util.FastMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,6 +174,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
     final Multiset<Particle> particles = HashMultiset.create();
 
+    double normOffset = Double.NEGATIVE_INFINITY;
     for (int i = 0; i < _initialNumberOfParticles; ++i) {
       final CategoricalDist<Particle> transitionProb = new CategoricalDist<Particle>();
  
@@ -187,11 +192,6 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
            */
           if (blockState.isSnapped()) {
             sampledBlockState = blockState;
-//            sampledBlockState = _blockStateSamplingStrategy.sampleGpsObservationState(blockState, 
-//                obs);
-//          } else if (JourneyStateTransitionModel.isLocationActive(blockState.getBlockState())) {
-//            sampledBlockState = _blockStateSamplingStrategy.sampleTransitionDistanceState(blockState, 
-//                obs, vehicleNotMoved);
           } else {
             sampledBlockState = _blockStateSamplingStrategy.samplePriorScheduleState(
                 blockState.getBlockState().getBlockInstance(), obs);
@@ -221,8 +221,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         transitionProb.logPut(transProb.getLogProbability(), newParticle);
       }
 
+      final Particle newSample;
       if (transitionProb.canSample()) {
-        Particle newSample = transitionProb.sample();
+        newSample = transitionProb.sample();
         newSample.setLogWeight(newSample.getResult().getLogProbability());
         particles.add(newSample);
       } else {
@@ -244,13 +245,23 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
         priorProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(null, context));
         priorProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(null, context));
         
-        final Particle newParticle = new Particle(timestamp, null, 0.0, nullState);
-        newParticle.setResult(priorProb);
-        particles.add(newParticle);
-        newParticle.setLogWeight(newParticle.getResult().getLogProbability());
+        newSample = new Particle(timestamp, null, 0.0, nullState);
+        newSample.setResult(priorProb);
+        particles.add(newSample);
+        newSample.setLogWeight(newSample.getResult().getLogProbability());
       }
+      
+      normOffset = LogMath.add(newSample.getLogWeight(), normOffset);
     }
 
+    /*
+     * Normalize
+     */
+    for (Entry<Particle> p : particles.entrySet()) {
+      p.getElement().setLogNormedWeight(p.getElement().getLogWeight()
+          + FastMath.log(p.getCount()) - normOffset);
+    }
+     
     return particles;
   }
 

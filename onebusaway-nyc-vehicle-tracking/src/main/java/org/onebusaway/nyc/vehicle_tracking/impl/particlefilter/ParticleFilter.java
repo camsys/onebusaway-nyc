@@ -16,34 +16,26 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ParticleFactoryImpl;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
 import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
+import gov.sandia.cognition.math.LogMath;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 
 import org.apache.commons.math.util.FastMath;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Core particle filter implementation.<br>
@@ -70,9 +62,10 @@ public class ParticleFilter<OBS> {
   final private static double _resampleThreshold = 0.75;
 
   /**
-   * Flag for operations that keep particle trajectory information, transitions, etc.
+   * Flag for operations that keep particle trajectory information, transitions,
+   * etc.
    */
-  final private static boolean _debugEnabled = false;
+  final private static boolean _debugEnabled = true;
 
   /**
    * Flag for option to use the maximum likelihood particle as reported result.
@@ -194,7 +187,6 @@ public class ParticleFilter<OBS> {
     return _particleFactory.createParticles(timestamp, observation);
   }
 
-
   public static double getEffectiveSampleSize(Multiset<Particle> particles) {
     // double CVt = 0.0;
     // double N = particles.size();
@@ -249,7 +241,6 @@ public class ParticleFilter<OBS> {
     }
 
   };
-  
 
   /**
    * @return true if this is the initial entry for these particles
@@ -336,7 +327,6 @@ public class ParticleFilter<OBS> {
 
   }
 
-
   @SuppressWarnings("unused")
   private SensorModelResult getParticleLikelihood(Particle particle, OBS obs) {
     return _sensorModel.likelihood(particle, obs);
@@ -362,7 +352,8 @@ public class ParticleFilter<OBS> {
      */
     if (moveParticles) {
       final double elapsed = timestamp - _timeOfLastUpdate;
-      particles = _motionModel.move(_particles, timestamp, elapsed, obs, _previouslyResampled);
+      particles = _motionModel.move(_particles, timestamp, elapsed, obs,
+          _previouslyResampled);
     }
 
     /**
@@ -381,25 +372,15 @@ public class ParticleFilter<OBS> {
 
     if (getEffectiveSampleSize(particles)
         / ParticleFactoryImpl.getInitialNumberOfParticles() < _resampleThreshold) {
+
       /**
-       * 5. resample (use the CDF of unevenly weighted particles to create an
-       * equal number of equally-weighted ones)
+       * 5. resample
        */
-      final CategoricalDist<Particle> cdf = new CategoricalDist<Particle>();
-      for (final Multiset.Entry<Particle> pEntry : particles.entrySet()) {
-        final Particle p = pEntry.getElement();
-        final double logProb = p.getLogWeight()
-            + FastMath.log(pEntry.getCount());
-        cdf.logPut(logProb, p);
-      }
-
-      if (!cdf.canSample())
-        throw new ZeroProbabilityParticleFilterException();
-
-      final Multiset<Particle> resampled = cdf.sample(ParticleFactoryImpl.getInitialNumberOfParticles());
+      final Multiset<Particle> resampled = lowVarianceSampler(particles,
+          particles.size());
 
       final Multiset<Particle> reweighted = HashMultiset.create(resampled.size());
-      for (final Multiset.Entry<Particle> pEntry : resampled.entrySet()) {
+      for (final Entry<Particle> pEntry : resampled.entrySet()) {
         final Particle p = pEntry.getElement().cloneParticle();
         p.setWeight(((double) pEntry.getCount()) / resampled.size());
         reweighted.add(p, pEntry.getCount());
@@ -411,6 +392,30 @@ public class ParticleFilter<OBS> {
       _previouslyResampled = false;
     }
 
+  }
+
+  /**
+   * Low variance sampler. Follows Thrun's example in Probabilistic Robots.
+   */
+  public static Multiset<Particle> lowVarianceSampler(
+      Multiset<Particle> particles, double M) {
+
+    final Multiset<Particle> resampled = HashMultiset.create((int) M);
+    final double r = ParticleFactoryImpl.getLocalRng().nextDouble() / M;
+    final Iterator<Particle> pIter = particles.iterator();
+    Particle p = pIter.next();
+    double c = p.getLogNormedWeight() - FastMath.log(particles.count(p));
+    for (int m = 0; m < M; ++m) {
+      final double U = FastMath.log(r + m / M);
+      while (U > c) {
+        p = pIter.next();
+        c = LogMath.add(
+            p.getLogNormedWeight() - FastMath.log(particles.count(p)), c);
+      }
+      resampled.add(p);
+    }
+
+    return resampled;
   }
 
 }

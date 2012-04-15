@@ -93,6 +93,7 @@ public class RunTransitionLikelihood implements SensorModelRule {
     final BlockState blockState = state.getBlockState();
 
     if (parentState != null
+        && prevObs != null
         && MotionModelImpl.hasRunChanged(parentState.getBlockStateObservation(),
           state.getBlockStateObservation())) {
       if (!Objects.equal(obs.getRecord().getRunId(), prevObs.getRecord().getRunId())

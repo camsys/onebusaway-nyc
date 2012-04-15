@@ -17,6 +17,8 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
+import gov.sandia.cognition.statistics.distribution.DefaultDataDistribution;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;

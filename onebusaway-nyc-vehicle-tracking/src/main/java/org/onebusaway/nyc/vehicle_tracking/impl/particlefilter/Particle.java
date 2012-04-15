@@ -17,6 +17,7 @@ package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultiset;
@@ -53,6 +54,8 @@ public class Particle implements Serializable, Comparable<Particle> {
   transient private SensorModelResult _transResult;
 
   private Multiset<Particle> _transitions = null;
+
+  private double _logNormedWeight = 0.0;
 
   public Particle(double timestamp) {
     this(timestamp, null);
@@ -328,4 +331,23 @@ public class Particle implements Serializable, Comparable<Particle> {
   public void setTransitions(Multiset<Particle> transitions) {
     _transitions = transitions;
   }
+  
+//  static public class logWeightGetter implements Function<Particle, Double> {
+//    @Override
+//    public Double apply(Particle input) {
+//      return input.getLogWeight();
+//    }
+//  }
+  
+//  
+
+  public void setLogNormedWeight(double d) {
+    _logNormedWeight = d;
+  }
+
+  public double getLogNormedWeight() {
+    return _logNormedWeight;
+  }
+
 }
+
