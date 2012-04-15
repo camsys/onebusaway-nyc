@@ -45,6 +45,9 @@ public class ArchivingInferenceQueueListenerTask extends
 
   private int count = 0;
   private long countStart = System.currentTimeMillis();
+  private long constructorSum = 0;
+  private long dbSum = 0;
+  private long processingSum = 0;
   private int _batchCount = 0;
   private List<ArchivedInferredLocationRecord> records = Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
 
@@ -85,21 +88,29 @@ public class ArchivingInferenceQueueListenerTask extends
       if (_log.isDebugEnabled())
         _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
             + new Date(inferredResult.getRecordTimestamp()));
+      long constructorStart = System.currentTimeMillis();
       ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
           inferredResult, contents);
+      constructorSum += (System.currentTimeMillis() - constructorStart);
       long processingStart = System.currentTimeMillis();
       postProcess(locationRecord);
+      processingSum += (System.currentTimeMillis() - processingStart);
       _batchCount++;
       records.add(locationRecord);
       if (_batchCount == _batchSize) {
+        long dbStart = System.currentTimeMillis();
         _locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
+        dbSum += (System.currentTimeMillis() - dbStart);
         records.clear();
         _batchCount = 0;
       }
 
       if (count > COUNT_INTERVAL) {
         _log.info("inference_queue processed " + count + " messages in "
-            + (System.currentTimeMillis() - countStart));
+            + (System.currentTimeMillis() - countStart)
+            + " with constructorSum=" + constructorSum
+            + ", processingSum=" + processingSum
+            + ", dbSum=" + dbSum);
         if (locationRecord != null) {
           long delta = System.currentTimeMillis()
               - locationRecord.getArchiveTimeReceived().getTime();
@@ -108,6 +119,9 @@ public class ArchivingInferenceQueueListenerTask extends
           }
           count = 0;
           countStart = System.currentTimeMillis();
+          constructorSum = 0;
+          processingSum = 0;
+          dbSum = 0;
         }
       }
     } catch (Throwable t) {
