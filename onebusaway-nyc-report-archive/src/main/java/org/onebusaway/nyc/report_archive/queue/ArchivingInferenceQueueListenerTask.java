@@ -24,143 +24,142 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ArchivingInferenceQueueListenerTask extends
-		InferenceQueueListenerTask {
+    InferenceQueueListenerTask {
 
-	public static final int BATCH_SIZE = 1000;
-	public static final int COUNT_INTERVAL = 1000;
-	private static Logger _log = LoggerFactory
-			.getLogger(ArchivingInferenceQueueListenerTask.class);
+  public static final int COUNT_INTERVAL = 10000;
+  public static final int DELAY_THRESHOLD = 10 * 1000;
+  private static Logger _log = LoggerFactory.getLogger(ArchivingInferenceQueueListenerTask.class);
 
-	@Autowired
-	private NycQueuedInferredLocationDao _locationDao;
-	@Autowired
-	private NycVehicleManagementStatusDao _statusDao;
-	@Autowired
-	private TransitDataService _transitDataService;
-	
-	private int count = 0;
-	// TODO: remove this debugging info
-	private long processingSum = 0;
-	private long countStart = System.currentTimeMillis();
-	private int _batchCount = 0;
-	private List<ArchivedInferredLocationRecord> records= Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
+  @Autowired
+  private NycQueuedInferredLocationDao _locationDao;
+  @Autowired
+  private NycVehicleManagementStatusDao _statusDao;
+  @Autowired
+  private TransitDataService _transitDataService;
 
-	@Refreshable(dependsOn = { "tds.inputQueueHost", "tds.inputQueuePort",
-			"tds.inputQueueName" })
-	@Override
-	public void startListenerThread() {
-		if (_initialized == true) {
-			_log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
-			return;
-		}
+  private int _batchSize;
 
-		String host = getQueueHost();
-		String queueName = getQueueName();
-		Integer port = getQueuePort();
+  public void setBatchSize(String batchSizeStr) {
+    _batchSize = Integer.decode(batchSizeStr);
+  }
 
-		if (host == null || queueName == null || port == null) {
-			_log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
-			return;
-		}
-		_log.info("inference archive listening on " + host + ":" + port
-				+ ", queue=" + queueName);
-		try {
-			initializeQueue(host, queueName, port);
-		} catch (InterruptedException ie) {
-			return;
-		}
-	}
+  private int count = 0;
+  private long countStart = System.currentTimeMillis();
+  private int _batchCount = 0;
+  private List<ArchivedInferredLocationRecord> records = Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
 
-	@Override
-	// this method can't throw exceptions or it will stop the queue
-	// listening
-	protected void processResult(NycQueuedInferredLocationBean inferredResult,
-			String contents) {
-		count ++;
-		
-		try {
-			if (_log.isDebugEnabled())
-				_log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
-						+ new Date(inferredResult.getRecordTimestamp()));
-			ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
-					inferredResult, contents);
-			long processingStart = System.currentTimeMillis();
-			postProcess(locationRecord);
-			processingSum += System.currentTimeMillis() - processingStart;
-			_batchCount++;
-			records.add(locationRecord);
-			if (_batchCount == BATCH_SIZE) {
-				_locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
-				records.clear();
-				_batchCount = 0;
-			}
+  @Refreshable(dependsOn = {
+      "tds.inputQueueHost", "tds.inputQueuePort", "tds.inputQueueName"})
+  @Override
+  public void startListenerThread() {
+    if (_initialized == true) {
+      _log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
+      return;
+    }
 
-			if (count > COUNT_INTERVAL) {
-				_log.warn("inference_queue processed " + count + " messages in " 
-						+ (System.currentTimeMillis()-countStart) 
-						+ ", processing time was " + processingSum );
-				if (locationRecord != null) {
-					long delta = System.currentTimeMillis() - locationRecord.getArchiveTimeReceived().getTime();
-					if (delta > 2000) {
-						_log.error("inference queue is " + delta + " millis behind");
-					}
-					count = 0;
-					processingSum = 0;
-					countStart = System.currentTimeMillis();
-				}
-			}
-		} catch (Throwable t) {
-			_log.error("Exception processing contents= " + contents, t);
-		}
-	}
+    String host = getQueueHost();
+    String queueName = getQueueName();
+    Integer port = getQueuePort();
 
-	@Override
-	public String getQueueHost() {
-		return _configurationService.getConfigurationValueAsString(
-				"tds.inputQueueHost", null);
-	}
+    if (host == null || queueName == null || port == null) {
+      _log.info("Inference input queue is not attached; input hostname was not available via configuration service.");
+      return;
+    }
+    _log.info("inference archive listening on " + host + ":" + port
+        + ", queue=" + queueName);
+    try {
+      initializeQueue(host, queueName, port);
+    } catch (InterruptedException ie) {
+      return;
+    }
+  }
 
-	@Override
-	public String getQueueName() {
-		return _configurationService.getConfigurationValueAsString(
-				"tds.inputQueueName", null);
-	}
+  @Override
+  // this method can't throw exceptions or it will stop the queue
+  // listening
+  protected void processResult(NycQueuedInferredLocationBean inferredResult,
+      String contents) {
+    count++;
 
-	@Override
-	public Integer getQueuePort() {
-		return _configurationService.getConfigurationValueAsInteger(
-				"tds.inputQueuePort", 5567);
-	}
+    try {
+      if (_log.isDebugEnabled())
+        _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
+            + new Date(inferredResult.getRecordTimestamp()));
+      ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
+          inferredResult, contents);
+      long processingStart = System.currentTimeMillis();
+      postProcess(locationRecord);
+      _batchCount++;
+      records.add(locationRecord);
+      if (_batchCount == _batchSize) {
+        _locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
+        records.clear();
+        _batchCount = 0;
+      }
 
-	private void postProcess(ArchivedInferredLocationRecord locationRecord) {
-		// Extract next stop id and distance
-		String vehicleId = locationRecord.getAgencyId() + "_"
-				+ locationRecord.getVehicleId().toString();
-		VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(
-				vehicleId, locationRecord.getTimeReported().getTime());
-		locationRecord.setVehicleStatusBean(vehicle);
-		VehicleLocationRecordBean vehicleLocation = _transitDataService
-				.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord
-						.getTimeReported().getTime());
-		if (vehicleLocation != null
-				&& vehicleLocation.getCurrentLocation() != null) {
-			locationRecord.setVehicleLocationRecordBean(vehicleLocation);
-		}
+      if (count > COUNT_INTERVAL) {
+        _log.info("inference_queue processed " + count + " messages in "
+            + (System.currentTimeMillis() - countStart));
+        if (locationRecord != null) {
+          long delta = System.currentTimeMillis()
+              - locationRecord.getArchiveTimeReceived().getTime();
+          if (delta > DELAY_THRESHOLD) {
+            _log.error("inference queue is " + delta + " millis behind");
+          }
+          count = 0;
+          countStart = System.currentTimeMillis();
+        }
+      }
+    } catch (Throwable t) {
+      _log.error("Exception processing contents= " + contents, t);
+    }
+  }
 
-	}
+  @Override
+  public String getQueueHost() {
+    return _configurationService.getConfigurationValueAsString(
+        "tds.inputQueueHost", null);
+  }
 
-	@PostConstruct
-	public void setup() {
-		super.setup();
+  @Override
+  public String getQueueName() {
+    return _configurationService.getConfigurationValueAsString(
+        "tds.inputQueueName", null);
+  }
 
-		// make parsing lenient
-		_mapper.configure(
-				DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-	}
+  @Override
+  public Integer getQueuePort() {
+    return _configurationService.getConfigurationValueAsInteger(
+        "tds.inputQueuePort", 5567);
+  }
 
-	@PreDestroy
-	public void destroy() {
-		super.destroy();
-	}
+  private void postProcess(ArchivedInferredLocationRecord locationRecord) {
+    // Extract next stop id and distance
+    String vehicleId = locationRecord.getAgencyId() + "_"
+        + locationRecord.getVehicleId().toString();
+    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(
+        vehicleId, locationRecord.getTimeReported().getTime());
+    locationRecord.setVehicleStatusBean(vehicle);
+    VehicleLocationRecordBean vehicleLocation = _transitDataService.getVehicleLocationRecordForVehicleId(
+        vehicleId, locationRecord.getTimeReported().getTime());
+    if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
+      locationRecord.setVehicleLocationRecordBean(vehicleLocation);
+    }
+
+  }
+
+  @PostConstruct
+  public void setup() {
+    super.setup();
+
+    // make parsing lenient
+    _mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,
+        false);
+  }
+
+  @PreDestroy
+  public void destroy() {
+    super.destroy();
+  }
 
 }
