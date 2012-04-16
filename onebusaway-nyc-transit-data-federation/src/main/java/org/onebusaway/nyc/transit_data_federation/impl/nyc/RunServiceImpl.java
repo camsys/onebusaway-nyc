@@ -215,7 +215,7 @@ public class RunServiceImpl implements RunService {
     return entriesByRun.get(runId);
   }
 
-  private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+(\\d+)[a-zA-Z]*");
+  private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*");
   private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)-0*(\\d+)");
 
   @Override

@@ -92,7 +92,7 @@ public class RunServiceImplTest {
     runDataByTrip.put(tripF.getId(), new RunData("X0102-5", null, -1));
     runDataByTrip.put(tripG.getId(), new RunData("B63-5", null, -1));
     runDataByTrip.put(tripH.getId(), new RunData("MISC-75", null, -1));
-    runDataByTrip.put(tripI.getId(), new RunData("X103-5", null, -1));
+    runDataByTrip.put(tripI.getId(), new RunData("X102-5", null, -1));
 
     _service.setRunDataByTrip(runDataByTrip);
 
@@ -134,7 +134,7 @@ public class RunServiceImplTest {
     
     assertTrue("fuzzy matches contain id", fuzzyMatches.contains("X0102-5"));
     assertEquals("fuzzy matches size", 2, fuzzyMatches.size());
-    assertEquals("best fuzzy distance", 1, bestFuzzyDistance.intValue());
+    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
     
     matches = _service.getBestRunIdsForFuzzyId("999-75");
     
