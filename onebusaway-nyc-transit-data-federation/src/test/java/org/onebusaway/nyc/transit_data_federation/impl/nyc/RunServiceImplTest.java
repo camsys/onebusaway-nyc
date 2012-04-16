@@ -43,7 +43,7 @@ public class RunServiceImplTest {
 
   private BlockCalendarService _blockCalendarService;
 
-  private TripEntryImpl tripA, tripB, tripC, tripD, tripE, tripF, tripG;
+  private TripEntryImpl tripA, tripB, tripC, tripD, tripE, tripF, tripG, tripH, tripI;
 
   @Before
   public void setup() {
@@ -61,6 +61,8 @@ public class RunServiceImplTest {
     tripE = trip("tripE", "serviceId");
     tripF = trip("tripF", "serviceId");
     tripG = trip("tripG", "serviceId");
+    tripH = trip("tripH", "serviceId");
+    tripI = trip("tripI", "serviceId");
 
     stopTime(0, stopA, tripA, 30, 90, 0);
     stopTime(1, stopB, tripA, 120, 120, 100);
@@ -86,9 +88,11 @@ public class RunServiceImplTest {
     // don't ask how the driver of run2 gets to StopA
     runDataByTrip.put(tripD.getId(), new RunData("run-2", null, -1));
     
-    runDataByTrip.put(tripE.getId(), new RunData("X01-5", null, -1));
+    runDataByTrip.put(tripE.getId(), new RunData("X1-5", null, -1));
     runDataByTrip.put(tripF.getId(), new RunData("X0102-5", null, -1));
-    runDataByTrip.put(tripG.getId(), new RunData("B02-15", null, -1));
+    runDataByTrip.put(tripG.getId(), new RunData("B63-5", null, -1));
+    runDataByTrip.put(tripH.getId(), new RunData("MISC-75", null, -1));
+    runDataByTrip.put(tripI.getId(), new RunData("X103-5", null, -1));
 
     _service.setRunDataByTrip(runDataByTrip);
 
@@ -114,6 +118,8 @@ public class RunServiceImplTest {
     when(_transitGraph.getTripEntryForId(tripE.getId())).thenReturn(tripE);
     when(_transitGraph.getTripEntryForId(tripF.getId())).thenReturn(tripF);
     when(_transitGraph.getTripEntryForId(tripG.getId())).thenReturn(tripG);
+    when(_transitGraph.getTripEntryForId(tripH.getId())).thenReturn(tripH);
+    when(_transitGraph.getTripEntryForId(tripI.getId())).thenReturn(tripI);
 
     _service.transformRunData();
 
@@ -121,21 +127,39 @@ public class RunServiceImplTest {
 
   @Test
   public void testFuzzyMatching() {
-    TreeMultimap<Integer, String> matches = _service.getBestRunIdsForFuzzyId("60102-05");
+    TreeMultimap<Integer, String> matches = _service.getBestRunIdsForFuzzyId("0102-5");
     
     Integer bestFuzzyDistance = matches.keySet().first();
     Set<String> fuzzyMatches = matches.get(bestFuzzyDistance);
     
     assertTrue("fuzzy matches contain id", fuzzyMatches.contains("X0102-5"));
-    assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
-    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
+    assertEquals("fuzzy matches size", 2, fuzzyMatches.size());
+    assertEquals("best fuzzy distance", 1, bestFuzzyDistance.intValue());
     
-    matches = _service.getBestRunIdsForFuzzyId("999-08");
+    matches = _service.getBestRunIdsForFuzzyId("999-75");
     
     bestFuzzyDistance = matches.keySet().first();
     fuzzyMatches = matches.get(bestFuzzyDistance);
     
-    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("MISC-8"));
+    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("MISC-75"));
+    assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
+    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
+    
+    matches = _service.getBestRunIdsForFuzzyId("063-05");
+    
+    bestFuzzyDistance = matches.keySet().first();
+    fuzzyMatches = matches.get(bestFuzzyDistance);
+    
+    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("B63-5"));
+    assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
+    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
+    
+    matches = _service.getBestRunIdsForFuzzyId("001-05");
+    
+    bestFuzzyDistance = matches.keySet().first();
+    fuzzyMatches = matches.get(bestFuzzyDistance);
+    
+    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("X1-5"));
     assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
     assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
   }
