@@ -49,7 +49,7 @@ OBA.Mobile = (function() {
 				top = topLimit;
 			}
 			
-			refreshBar.css("top", top + 20);
+			refreshBar.css("top", top + 3);
 		};
 		repositionRefreshBar();
 		
