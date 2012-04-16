@@ -53,7 +53,7 @@ public class DscLikelihood implements SensorModelRule {
   }
 
   public static enum DSC_STATE {
-    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH
+    DSC_OOS_IP, DSC_OOS_NOT_IP, DSC_IS_NO_BLOCK, DSC_MATCH, DSC_ROUTE_MATCH, DSC_NO_ROUTE_MATCH, DSC_NOT_VALID
   }
 
   @Override
@@ -67,14 +67,17 @@ public class DscLikelihood implements SensorModelRule {
       case DSC_OOS_IP:
         result.addResultAsAnd("in-progress o.o.s. dsc", 0.0);
         return result;
+      case DSC_NOT_VALID:
+        result.addResultAsAnd("non-valid dsc", 0.95/3d);
+        return result;
       case DSC_OOS_NOT_IP:
-        result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95 / 2d);
+        result.addResultAsAnd("not-in-progress o.o.s. dsc", 0.95 / 3d);
         return result;
       case DSC_IS_NO_BLOCK:
         result.addResultAsAnd("not o.o.s. dsc null-block", 0.01);
         return result;
       case DSC_MATCH:
-        result.addResultAsAnd("in-service matching DSC", 0.95 / 2d);
+        result.addResultAsAnd("in-service matching DSC", 0.95 / 3d);
         return result;
       case DSC_ROUTE_MATCH:
         result.addResultAsAnd("in-service route-matching DSC", 0.04);
@@ -108,11 +111,13 @@ public class DscLikelihood implements SensorModelRule {
 
     final String observedDsc = obs.getLastValidDestinationSignCode();
 
-    if (observedDsc == null || obs.hasOutOfServiceDsc()) {
+    if (observedDsc == null || !obs.hasValidDsc() || obs.hasOutOfServiceDsc()) {
       /**
        * If we haven't yet seen a valid DSC, or it's out of service
        */
-      if (EVehiclePhase.IN_PROGRESS == phase && obs.hasOutOfServiceDsc()) {
+      if (!obs.hasValidDsc()) {
+        return DSC_STATE.DSC_NOT_VALID;
+      } else if (EVehiclePhase.IN_PROGRESS == phase && obs.hasOutOfServiceDsc()) {
         return DSC_STATE.DSC_OOS_IP;
       } else {
         return DSC_STATE.DSC_OOS_NOT_IP;

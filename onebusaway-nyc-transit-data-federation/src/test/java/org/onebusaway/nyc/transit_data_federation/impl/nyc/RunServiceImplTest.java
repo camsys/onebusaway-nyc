@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.transit_data_federation.impl.nyc;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.ServiceIdAc
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.TreeMultimap;
 
 public class RunServiceImplTest {
 
@@ -40,7 +43,7 @@ public class RunServiceImplTest {
 
   private BlockCalendarService _blockCalendarService;
 
-  private TripEntryImpl tripA, tripB, tripC, tripD;
+  private TripEntryImpl tripA, tripB, tripC, tripD, tripE, tripF, tripG;
 
   @Before
   public void setup() {
@@ -55,6 +58,9 @@ public class RunServiceImplTest {
     tripB = trip("tripB", "serviceId");
     tripC = trip("tripC", "serviceId");
     tripD = trip("tripD", "serviceId");
+    tripE = trip("tripE", "serviceId");
+    tripF = trip("tripF", "serviceId");
+    tripG = trip("tripG", "serviceId");
 
     stopTime(0, stopA, tripA, 30, 90, 0);
     stopTime(1, stopB, tripA, 120, 120, 100);
@@ -79,6 +85,10 @@ public class RunServiceImplTest {
     runDataByTrip.put(tripC.getId(), new RunData("run-1", null, -1));
     // don't ask how the driver of run2 gets to StopA
     runDataByTrip.put(tripD.getId(), new RunData("run-2", null, -1));
+    
+    runDataByTrip.put(tripE.getId(), new RunData("X01-5", null, -1));
+    runDataByTrip.put(tripF.getId(), new RunData("X0102-5", null, -1));
+    runDataByTrip.put(tripG.getId(), new RunData("B02-15", null, -1));
 
     _service.setRunDataByTrip(runDataByTrip);
 
@@ -101,11 +111,35 @@ public class RunServiceImplTest {
     when(_transitGraph.getTripEntryForId(tripB.getId())).thenReturn(tripB);
     when(_transitGraph.getTripEntryForId(tripC.getId())).thenReturn(tripC);
     when(_transitGraph.getTripEntryForId(tripD.getId())).thenReturn(tripD);
+    when(_transitGraph.getTripEntryForId(tripE.getId())).thenReturn(tripE);
+    when(_transitGraph.getTripEntryForId(tripF.getId())).thenReturn(tripF);
+    when(_transitGraph.getTripEntryForId(tripG.getId())).thenReturn(tripG);
 
     _service.transformRunData();
 
   }
 
+  @Test
+  public void testFuzzyMatching() {
+    TreeMultimap<Integer, String> matches = _service.getBestRunIdsForFuzzyId("60102-05");
+    
+    Integer bestFuzzyDistance = matches.keySet().first();
+    Set<String> fuzzyMatches = matches.get(bestFuzzyDistance);
+    
+    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("X0102-5"));
+    assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
+    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
+    
+    matches = _service.getBestRunIdsForFuzzyId("999-08");
+    
+    bestFuzzyDistance = matches.keySet().first();
+    fuzzyMatches = matches.get(bestFuzzyDistance);
+    
+    assertTrue("fuzzy matches contain id", fuzzyMatches.contains("MISC-8"));
+    assertEquals("fuzzy matches size", 1, fuzzyMatches.size());
+    assertEquals("best fuzzy distance", 0, bestFuzzyDistance.intValue());
+  }
+  
   @Test
   public void testRunService() {
     assertEquals("run-1", _service.getInitialRunForTrip(tripA.getId()));

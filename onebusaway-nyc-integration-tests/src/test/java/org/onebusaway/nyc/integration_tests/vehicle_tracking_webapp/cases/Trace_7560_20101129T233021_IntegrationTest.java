@@ -32,6 +32,6 @@ public class Trace_7560_20101129T233021_IntegrationTest extends AbstractTraceRun
      * FIXME trace needs repair (to reflect more modern assumptions/requirements)
      */
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.79);
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.93);
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.92);
   }
 }
