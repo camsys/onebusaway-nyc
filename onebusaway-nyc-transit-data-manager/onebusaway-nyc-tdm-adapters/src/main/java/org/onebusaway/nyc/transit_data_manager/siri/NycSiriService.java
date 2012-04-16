@@ -15,25 +15,10 @@
  */
 package org.onebusaway.nyc.transit_data_manager.siri;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBException;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.xwork.StringUtils;
 import org.onebusaway.collections.CollectionsLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.siri.AffectedApplicationStructure;
 import org.onebusaway.siri.OneBusAwayAffects;
@@ -47,11 +32,13 @@ import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.impl.realtime.siri.SiriEndpointDetails;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString;
 import org.onebusaway.transit_data_federation.services.service_alerts.ServiceAlerts.TranslatedString.Translation;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.xwork.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +81,20 @@ import uk.org.siri.siri.SubscriptionResponseStructure;
 import uk.org.siri.siri.VehicleJourneyRefStructure;
 import uk.org.siri.siri.WorkflowStatusEnumeration;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBException;
+
 @SuppressWarnings("restriction")
 @Component
 public abstract class NycSiriService {
@@ -101,7 +102,7 @@ public abstract class NycSiriService {
   static final Logger _log = LoggerFactory.getLogger(NycSiriService.class);
 
   @Autowired
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   private String _serviceAlertsUrl;
 
@@ -665,12 +666,12 @@ public abstract class NycSiriService {
     situationExchangeRequestStructure.setRequestTimestamp(new Date());
   }
 
-  public TransitDataService getTransitDataService() {
-    return _transitDataService;
+  public NycTransitDataService getTransitDataService() {
+    return _nycTransitDataService;
   }
 
-  public void setTransitDataService(TransitDataService _transitDataService) {
-    this._transitDataService = _transitDataService;
+  public void setTransitDataService(NycTransitDataService nycTransitDataService) {
+    this._nycTransitDataService = nycTransitDataService;
   }
 
   public String getServiceAlertsUrl() {

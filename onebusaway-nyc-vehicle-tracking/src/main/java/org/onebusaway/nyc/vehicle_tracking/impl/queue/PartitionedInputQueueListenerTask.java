@@ -9,14 +9,14 @@ import org.onebusaway.nyc.vehicle_tracking.services.queue.PartitionedInputQueueL
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletContextAware;
 
+import tcip_final_3_0_5_1.CPTVehicleIden;
+import tcip_final_3_0_5_1.CcLocationReport;
+
 import java.util.ArrayList;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
-
-import tcip_final_3_0_5_1.CPTVehicleIden;
-import tcip_final_3_0_5_1.CcLocationReport;
 
 public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
   implements PartitionedInputQueueListener, ServletContextAware {
@@ -39,10 +39,11 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     _vehicleLocationService = vehicleLocationService;
   }
 
+  @Override
   public void setServletContext(ServletContext servletContext) {
     // check for depot partition keys in the servlet context
     if (servletContext != null) {
-      String key = (String)servletContext.getInitParameter("depot.partition.key");
+      String key = servletContext.getInitParameter("depot.partition.key");
       _log.info("servlet context provied depot.partition.key=" + key);
       if (key != null) {
         setDepotPartitionKey(key);
@@ -52,7 +53,7 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
 
   @Override
   public boolean processMessage(String address, String contents) {
-    RealtimeEnvelope message = deserializeMessage(contents);
+    final RealtimeEnvelope message = deserializeMessage(contents);
 
     if (acceptMessage(message)) {
       _vehicleLocationService.handleRealtimeEnvelopeRecord(message);
@@ -66,29 +67,29 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
     if (envelope == null || envelope.getCcLocationReport() == null)
       return false;
 
-    CcLocationReport message = envelope.getCcLocationReport();
-    ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
-    for (String key : _depotPartitionKeys) {
+    final CcLocationReport message = envelope.getCcLocationReport();
+    final ArrayList<AgencyAndId> vehicleList = new ArrayList<AgencyAndId>();
+    for (final String key : _depotPartitionKeys) {
       try {
         vehicleList.addAll(_vehicleAssignmentService.getAssignedVehicleIdsForDepot(key));
-      } catch (Exception e) {
+      } catch (final Exception e) {
         _log.warn("Error fetching assigned vehicles for depot " + key
             + "; will retry.");
         continue;
       }
     }
 
-    CPTVehicleIden vehicleIdent = message.getVehicle();
-    AgencyAndId vehicleId = new AgencyAndId(vehicleIdent.getAgencydesignator(),
-        vehicleIdent.getVehicleId() + "");
+    final CPTVehicleIden vehicleIdent = message.getVehicle();
+    final AgencyAndId vehicleId = new AgencyAndId(
+        vehicleIdent.getAgencydesignator(), vehicleIdent.getVehicleId() + "");
 
     return vehicleList.contains(vehicleId);
   }
 
   @Override
   public String getDepotPartitionKey() {
-    StringBuilder sb = new StringBuilder();
-    for (String key : _depotPartitionKeys) {
+    final StringBuilder sb = new StringBuilder();
+    for (final String key : _depotPartitionKeys) {
       if (sb.length() > 0)
         sb.append(",");
       sb.append(key);

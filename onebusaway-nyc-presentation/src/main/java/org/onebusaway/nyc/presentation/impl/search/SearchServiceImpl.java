@@ -16,7 +16,6 @@ import org.onebusaway.transit_data.model.RoutesBean;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +50,6 @@ public class SearchServiceImpl implements SearchService {
   @Autowired
   private NycTransitDataService _nycTransitDataService;
 
-  @Autowired
-  private TransitDataService _transitDataService;
-
   private Map<String, String> _routeShortNameToIdMap = new HashMap<String, String>();
 
   private Map<String, String> _routeLongNameToIdMap = new HashMap<String, String>();
@@ -76,9 +72,9 @@ public class SearchServiceImpl implements SearchService {
     _routeShortNameToIdMap.clear();
     _routeLongNameToIdMap.clear();
     
-    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
-      for(String routeId : _transitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
-        RouteBean routeBean = _transitDataService.getRouteForId(routeId);        
+    for(AgencyWithCoverageBean agency : _nycTransitDataService.getAgenciesWithCoverage()) {
+      for(String routeId : _nycTransitDataService.getRouteIdsForAgencyId(agency.getAgency().getId()).getList()) {
+        RouteBean routeBean = _nycTransitDataService.getRouteForId(routeId);        
         _routeShortNameToIdMap.put(routeBean.getShortName(), routeId);
         _routeLongNameToIdMap.put(routeBean.getLongName(), routeId);
       }
@@ -96,7 +92,7 @@ public class SearchServiceImpl implements SearchService {
     queryBean.setBounds(bounds);
     queryBean.setMaxCount(100);
     
-    StopsBean stops = _transitDataService.getStops(queryBean);
+    StopsBean stops = _nycTransitDataService.getStops(queryBean);
 
     SearchResultCollection results = new SearchResultCollection();
     results.addRouteIdFilters(routeIdFilter);
@@ -115,7 +111,7 @@ public class SearchServiceImpl implements SearchService {
     queryBean.setBounds(bounds);
     queryBean.setMaxCount(100);
     
-    RoutesBean routes = _transitDataService.getRoutes(queryBean);
+    RoutesBean routes = _nycTransitDataService.getRoutes(queryBean);
 
     SearchResultCollection results = new SearchResultCollection();
 
@@ -135,7 +131,7 @@ public class SearchServiceImpl implements SearchService {
     queryBean.setBounds(bounds);
     queryBean.setMaxCount(100);
     
-    RoutesBean routes = _transitDataService.getRoutes(queryBean);
+    RoutesBean routes = _nycTransitDataService.getRoutes(queryBean);
 
     SearchResultCollection results = new SearchResultCollection();
 
@@ -236,7 +232,7 @@ public class SearchServiceImpl implements SearchService {
     
     // short name matching
     if(_routeShortNameToIdMap.get(routeQuery) != null) {
-      RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeQuery));
+      RouteBean routeBean = _nycTransitDataService.getRouteForId(_routeShortNameToIdMap.get(routeQuery));
       results.addMatch(resultFactory.getRouteResult(routeBean));
     }
 
@@ -250,7 +246,7 @@ public class SearchServiceImpl implements SearchService {
       if(!routeQuery.equals(routeShortName) 
           && ((routeShortName.startsWith(routeQuery) && leftOversAreDiscardable)
           || (routeShortName.endsWith(routeQuery) && leftOversAreDiscardable))) {
-        RouteBean routeBean = _transitDataService.getRouteForId(_routeShortNameToIdMap.get(routeShortName));
+        RouteBean routeBean = _nycTransitDataService.getRouteForId(_routeShortNameToIdMap.get(routeShortName));
         results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;
       }
@@ -259,7 +255,7 @@ public class SearchServiceImpl implements SearchService {
     // long name matching
     for(String routeLongName : _routeLongNameToIdMap.keySet()) {
       if(routeLongName.contains(routeQuery + " ") || routeLongName.contains(" " + routeQuery)) {
-        RouteBean routeBean = _transitDataService.getRouteForId(_routeLongNameToIdMap.get(routeLongName));
+        RouteBean routeBean = _nycTransitDataService.getRouteForId(_routeLongNameToIdMap.get(routeLongName));
         results.addSuggestion(resultFactory.getRouteResult(routeBean));
         continue;        
       }
@@ -276,11 +272,11 @@ public class SearchServiceImpl implements SearchService {
     
     // try to find a stop ID for all known agencies
     List<StopBean> matches = new ArrayList<StopBean>();
-    for(AgencyWithCoverageBean agency : _transitDataService.getAgenciesWithCoverage()) {
+    for(AgencyWithCoverageBean agency : _nycTransitDataService.getAgenciesWithCoverage()) {
       AgencyAndId potentialStopId = new AgencyAndId(agency.getAgency().getId(), stopQuery);
 
       try {
-        StopBean potentialStop = _transitDataService.getStop(potentialStopId.toString());      
+        StopBean potentialStop = _nycTransitDataService.getStop(potentialStopId.toString());      
 
         if(potentialStop != null) {
           matches.add(potentialStop);

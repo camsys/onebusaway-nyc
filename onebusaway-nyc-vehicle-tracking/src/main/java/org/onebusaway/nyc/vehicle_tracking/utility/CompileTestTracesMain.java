@@ -15,18 +15,18 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.utility;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
-
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.csv_entities.CsvEntityWriterFactory;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.csv_entities.ListEntityHandler;
 import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
 
 public class CompileTestTracesMain {
 
@@ -38,9 +38,9 @@ public class CompileTestTracesMain {
       System.exit(-1);
     }
 
-    List<NycTestInferredLocationRecord> rawRecords = readRecords(new File(
+    final List<NycTestInferredLocationRecord> rawRecords = readRecords(new File(
         args[0]));
-    List<NycTestInferredLocationRecord> labeledRecords = readRecords(new File(
+    final List<NycTestInferredLocationRecord> labeledRecords = readRecords(new File(
         args[1]));
 
     if (rawRecords.size() != labeledRecords.size()) {
@@ -48,14 +48,14 @@ public class CompileTestTracesMain {
           + rawRecords.size() + " labeled=" + labeledRecords.size());
     }
 
-    CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
-    FileWriter out = new FileWriter(args[2]);
-    EntityHandler handler = factory.createWriter(
+    final CsvEntityWriterFactory factory = new CsvEntityWriterFactory();
+    final FileWriter out = new FileWriter(args[2]);
+    final EntityHandler handler = factory.createWriter(
         NycTestInferredLocationRecord.class, out);
 
     for (int i = 0; i < rawRecords.size(); i++) {
-      NycTestInferredLocationRecord rawRecord = rawRecords.get(i);
-      NycTestInferredLocationRecord labeledRecord = labeledRecords.get(i);
+      final NycTestInferredLocationRecord rawRecord = rawRecords.get(i);
+      final NycTestInferredLocationRecord labeledRecord = labeledRecords.get(i);
       rawRecord.setActualRunId(labeledRecord.getActualRunId());
       rawRecord.setActualBlockId(labeledRecord.getActualBlockId());
       rawRecord.setActualDistanceAlongBlock(labeledRecord.getActualDistanceAlongBlock());
@@ -71,9 +71,9 @@ public class CompileTestTracesMain {
   private static List<NycTestInferredLocationRecord> readRecords(File path)
       throws CsvEntityIOException, IOException {
 
-    CsvEntityReader reader = new CsvEntityReader();
+    final CsvEntityReader reader = new CsvEntityReader();
 
-    ListEntityHandler<NycTestInferredLocationRecord> handler = new ListEntityHandler<NycTestInferredLocationRecord>();
+    final ListEntityHandler<NycTestInferredLocationRecord> handler = new ListEntityHandler<NycTestInferredLocationRecord>();
     reader.addEntityHandler(handler);
 
     reader.readEntities(NycTestInferredLocationRecord.class, new FileReader(

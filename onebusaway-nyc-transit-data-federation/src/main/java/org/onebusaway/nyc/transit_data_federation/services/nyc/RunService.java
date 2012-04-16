@@ -3,6 +3,8 @@ package org.onebusaway.nyc.transit_data_federation.services.nyc;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
@@ -49,5 +51,7 @@ public interface RunService {
   public Collection<? extends AgencyAndId> getTripIdsForRunId(String runId);
 
   public boolean isValidRunId(String runId);
+
+  public Set<AgencyAndId> getRoutesForRunId(String opAssignedRunId);
 
 }

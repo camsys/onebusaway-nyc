@@ -22,7 +22,6 @@ import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import uk.org.siri.siri.LocationStructure;
 import uk.org.siri.siri.SituationRefStructure;

@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
@@ -27,68 +28,78 @@ import org.springframework.stereotype.Component;
 @Component
 public class RunRule implements SensorModelRule {
 
-  private OperatorAssignmentService _operatorAssignmentService;
-
-  @Autowired
-  public void setOperatorAssignmentService(
-      OperatorAssignmentService operatorAssignmentService) {
-    _operatorAssignmentService = operatorAssignmentService;
-  }
+  public static enum RUN_INFO_STATE {
+    NO_RUN_INFO,
+    RUN_INFO_NO_RUN,
+    OP_RUN_MATCH,
+    NULL_OP_FUZZY_MATCH,
+    NULL_OP_NO_FUZZY_MATCH,
+    NO_OP_FUZZY_MATCH,
+    NO_OP_NO_FUZZY_MATCH,
+  };
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
       Context context) {
-
-    VehicleState state = context.getState();
-    BlockStateObservation blockState = state.getBlockStateObservation();
-    SensorModelResult result = new SensorModelResult("pRun");
-
-    /**
-     * Weigh matched run's higher
-     */
-    if (blockState != null) {
-      if (blockState.getOpAssigned() == null
-          && blockState.getRunReported() == null) {
-        result.addResultAsAnd("run-info status was not determined", 0.5);
+    
+    final SensorModelResult result = new SensorModelResult("pRun");
+    RUN_INFO_STATE state = getRunInfoState(context);
+    
+    switch (state) {
+      case NO_RUN_INFO:
+        result.addResultAsAnd("no run info", 0.9/3d);
         return result;
-      }
+      case RUN_INFO_NO_RUN:
+        result.addResultAsAnd("run-info, no run", 0.25/4d);
+        return result;
+      case OP_RUN_MATCH:
+        result.addResultAsAnd("op. run match", 0.9/3d);
+        return result;
+      case NULL_OP_FUZZY_MATCH:
+        result.addResultAsAnd("null op. fuzzy match", 0.9/3d);
+        return result;
+      case NULL_OP_NO_FUZZY_MATCH:
+        result.addResultAsAnd("null op. no fuzzy match", (0.25/2d) * 0.01);
+        return result;
+      case NO_OP_FUZZY_MATCH:
+        result.addResultAsAnd("no op. fuzzy match", 0.75 * 0.1);
+        return result;
+      case NO_OP_NO_FUZZY_MATCH:
+        result.addResultAsAnd("no matches", 0.25/4d);
+        return result;
+      default:
+        return null;
+    }
+  }
 
+  public static RUN_INFO_STATE getRunInfoState(Context context) {
+    final VehicleState state = context.getState();
+    final BlockStateObservation blockState = state.getBlockStateObservation();
+    final Observation obs = context.getObservation();
+
+    if (StringUtils.isEmpty(obs.getOpAssignedRunId())
+        && obs.getFuzzyMatchDistance() == null)
+      return RUN_INFO_STATE.NO_RUN_INFO;
+    
+    if (blockState != null) {
       if (blockState.getOpAssigned() == Boolean.TRUE) {
-        /*
-         * If the run for this block matches the schedule, then it should not be
-         * reduced in likelihood.
-         */
-        result.addResultAsAnd("operator assigned", 1.0);
-      } else if (blockState.getRunReported() == Boolean.TRUE) {
-        if (state.getObservation().getFuzzyMatchDistance() == 0)
-          result.addResultAsAnd("run reported (fuzzy)", 0.9);
-        else
-          result.addResultAsAnd("run reported (fuzzy)", 0.6);
-      } else if (blockState.getRunReported() == Boolean.FALSE
-          || blockState.getOpAssigned() == Boolean.FALSE){
-        result.addResultAsAnd("no run info matches", 0.5);
+        return RUN_INFO_STATE.OP_RUN_MATCH;
+      } else if (blockState.getOpAssigned() == Boolean.FALSE) {
+        if (blockState.getRunReported() == Boolean.TRUE) {
+          return RUN_INFO_STATE.NO_OP_FUZZY_MATCH;
+        } else {
+          return RUN_INFO_STATE.NO_OP_NO_FUZZY_MATCH;
+        }
+      } else {
+        if (blockState.getRunReported() == Boolean.TRUE) {
+          return RUN_INFO_STATE.NULL_OP_FUZZY_MATCH;
+        } else {
+          return RUN_INFO_STATE.NULL_OP_NO_FUZZY_MATCH;
+        }
       }
     } else {
-
-      if (state.getObservation().isOutOfService()) {
-        result.addResultAsAnd("NA (out-of-service)", 1.0);
-        return result;
-      }
-
-      /*
-       * We were given run information, and we were able to find
-       * valid info for it, so we penalize for not using it. 
-       */
-      if (!StringUtils.isBlank(state.getObservation().getOpAssignedRunId())
-          || (state.getObservation().getFuzzyMatchDistance() != null
-              && state.getObservation().getFuzzyMatchDistance() <= 1)) {
-        result.addResultAsAnd("not using results from run info", 0.5);
-      } else {
-        result.addResultAsAnd("no good results from run info", 1.0);
-      }
+      return RUN_INFO_STATE.RUN_INFO_NO_RUN;
     }
-
-    return result;
   }
 
 }

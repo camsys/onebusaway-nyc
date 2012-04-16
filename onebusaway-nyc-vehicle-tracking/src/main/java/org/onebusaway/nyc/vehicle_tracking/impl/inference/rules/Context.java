@@ -32,7 +32,7 @@ public class Context {
     this.state = state;
     this.observation = observation;
   }
-
+   
   public VehicleState getParentState() {
     return parentState;
   }

@@ -43,6 +43,15 @@ table td {
     <li><jsp:text>operatorId: </jsp:text><c:out value="${obs.operatorId}"/></li>
     <li><jsp:text>reportedRunNumber: </jsp:text><c:out value="${obs.runNumber}"/></li>
     <li><jsp:text>reportedRunRouteId: </jsp:text><c:out value="${obs.runRouteId}"/></li>
+    <li>
+    <fmt:formatNumber var="ess" value="${details.effectiveSampleSize}" maxFractionDigits="2"/>
+    <fmt:formatNumber var="esspct" value="${details.effectiveSampleSize/details.sampleSize}" maxFractionDigits="2"/>
+    <jsp:text>EffectiveSampleSize%: 
+    </jsp:text><c:out value="${esspct}"/>
+	    <jsp:text>  (</jsp:text><c:out value="${ess}"/>
+	    <jsp:text>/</jsp:text><c:out value="${details.sampleSize}"/>
+	    <jsp:text>)</jsp:text>
+    </li>
 </ul>
 
 <h2>Particles</h2>

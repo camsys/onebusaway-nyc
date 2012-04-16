@@ -15,6 +15,49 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl;
 
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.gtfs.services.calendar.CalendarService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
+import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
+import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
+import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.onebusaway.utility.EOutOfRangeStrategy;
+import org.onebusaway.utility.InterpolationLibrary;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import umontreal.iro.lecuyer.probdist.DiscreteDistribution;
+import umontreal.iro.lecuyer.randvar.UniformGen;
+import umontreal.iro.lecuyer.randvarmulti.DirichletGen;
+import umontreal.iro.lecuyer.rng.MRG32k3a;
+import umontreal.iro.lecuyer.rng.RandomStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -37,53 +80,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.commons.lang.StringUtils;
-import org.onebusaway.csv_entities.CsvEntityReader;
-import org.onebusaway.geospatial.model.CoordinateBounds;
-import org.onebusaway.geospatial.model.CoordinatePoint;
-import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.gtfs.services.calendar.CalendarService;
-import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
-import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
-import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
-import org.onebusaway.nyc.vehicle_tracking.impl.simulator.SimulatorTask;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
-import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
-import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
-import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
-import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
-import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
-import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
-import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
-import org.onebusaway.utility.EOutOfRangeStrategy;
-import org.onebusaway.utility.InterpolationLibrary;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import umontreal.iro.lecuyer.rng.*;
-import umontreal.iro.lecuyer.randvar.*;
-import umontreal.iro.lecuyer.probdist.*;
-import umontreal.iro.lecuyer.randvarmulti.*;
-
 @Component
 public class VehicleLocationSimulationServiceImpl implements
     VehicleLocationSimulationService {
 
-  private Logger _log = LoggerFactory.getLogger(RunServiceImpl.class);
+  private final Logger _log = LoggerFactory.getLogger(VehicleLocationSimulationServiceImpl.class);
 
   private static final String ARG_VEHICLE_ID = "vehicle_id";
 
@@ -109,20 +110,20 @@ public class VehicleLocationSimulationServiceImpl implements
 
   private DestinationSignCodeService _destinationSignCodeService;
 
-  private Map<Integer, SimulatorTask> _tasks = new ConcurrentHashMap<Integer, SimulatorTask>();
+  private final Map<Integer, SimulatorTask> _tasks = new ConcurrentHashMap<Integer, SimulatorTask>();
 
-  private ConcurrentMap<Object, List<SimulatorTask>> _tasksByTag = new ConcurrentHashMap<Object, List<SimulatorTask>>();
+  private final ConcurrentMap<Object, List<SimulatorTask>> _tasksByTag = new ConcurrentHashMap<Object, List<SimulatorTask>>();
 
-  private AtomicInteger _taskIndex = new AtomicInteger();
+  private final AtomicInteger _taskIndex = new AtomicInteger();
 
   private BlockCalendarService _blockCalendarService;
 
   private CalendarService _calendarService;
 
-  private RandomStream streamArr = new MRG32k3a();
+  private final RandomStream streamArr = new MRG32k3a();
 
   // TODO consistent?
-  private UniformGen ung = new UniformGen(streamArr);
+  private final UniformGen ung = new UniformGen(streamArr);
 
   @Autowired
   public void setCalendarService(CalendarService calendarService) {
@@ -175,10 +176,11 @@ public class VehicleLocationSimulationServiceImpl implements
   public int simulateLocationsFromTrace(String filename, String traceType,
       InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
-      boolean bypassInference, boolean fillActualProperties, boolean loop)
+      boolean bypassInference, boolean fillActualProperties, boolean loop, 
+      int historySize)
       throws IOException {
 
-    SimulatorTask task = new SimulatorTask();
+    final SimulatorTask task = new SimulatorTask();
     task.setFilename(filename);
     task.setPauseOnStart(pauseOnStart);
     task.setRunInRealtime(runInRealtime);
@@ -187,8 +189,9 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setBypassInference(bypassInference);
     task.setFillActualProperties(fillActualProperties);
     task.setLoop(loop);
+    task.setMaxParticleHistorySize(historySize);
 
-    CsvEntityReader reader = new CsvEntityReader();
+    final CsvEntityReader reader = new CsvEntityReader();
     reader.addEntityHandler(task);
 
     if (traceType.equals("NycRawLocationRecord")) {
@@ -205,9 +208,9 @@ public class VehicleLocationSimulationServiceImpl implements
   @Override
   public List<VehicleLocationSimulationSummary> getSimulations() {
 
-    List<VehicleLocationSimulationSummary> summaries = new ArrayList<VehicleLocationSimulationSummary>();
+    final List<VehicleLocationSimulationSummary> summaries = new ArrayList<VehicleLocationSimulationSummary>();
 
-    for (SimulatorTask task : _tasks.values())
+    for (final SimulatorTask task : _tasks.values())
       summaries.add(task.getSummary());
 
     return summaries;
@@ -215,7 +218,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public VehicleLocationSimulationSummary getSimulation(int taskId) {
-    SimulatorTask task = _tasks.get(taskId);
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getSummary();
     return null;
@@ -223,24 +226,33 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public VehicleLocationDetails getSimulationDetails(int taskId,
-      int historyOffset) {
-    SimulatorTask task = _tasks.get(taskId);
+      int recordNumber) {
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
-      return task.getDetails(historyOffset);
+      return task.getDetails(recordNumber);
     return null;
   }
 
   @Override
-  public VehicleLocationDetails getParticleDetails(int taskId, int particleId) {
-    SimulatorTask task = _tasks.get(taskId);
+  public VehicleLocationDetails getParticleDetails(int taskId, int particleId, int recordIndex) {
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
-      return task.getParticleDetails(particleId);
+      return task.getParticleDetails(particleId, recordIndex);
+    return null;
+  }
+  
+  @Override
+  public VehicleLocationDetails getTransitionParticleDetails(int taskId, int particleId, int transParticleNum,
+      int recordIndex) {
+    final SimulatorTask task = _tasks.get(taskId);
+    if (task != null)
+      return task.getTransitionParticleDetails(particleId, transParticleNum, recordIndex);
     return null;
   }
 
   @Override
   public List<NycTestInferredLocationRecord> getResultRecords(int taskId) {
-    SimulatorTask task = _tasks.get(taskId);
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getResults();
     return null;
@@ -248,7 +260,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public List<NycTestInferredLocationRecord> getSimulationRecords(int taskId) {
-    SimulatorTask task = _tasks.get(taskId);
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getRecords();
     return Collections.emptyList();
@@ -256,28 +268,28 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public void toggleSimulation(int taskId) {
-    SimulatorTask task = _tasks.get(taskId);
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       task.toggle();
   }
 
   @Override
   public void stepSimulation(int taskId) {
-    SimulatorTask task = _tasks.get(taskId);
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       task.step();
   }
 
   @Override
   public void stepSimulation(int taskId, int recordIndex) {
-    SimulatorTask task = _tasks.get(taskId);
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       task.step(recordIndex);
   }
 
   @Override
   public void restartSimulation(int taskId) {
-    SimulatorTask task = _tasks.get(taskId);
+    final SimulatorTask task = _tasks.get(taskId);
     if (task != null) {
       task.restart();
       if (task.isComplete())
@@ -287,13 +299,13 @@ public class VehicleLocationSimulationServiceImpl implements
 
   @Override
   public void cancelSimulation(int taskId) {
-    SimulatorTask task = _tasks.remove(taskId);
+    final SimulatorTask task = _tasks.remove(taskId);
     if (task != null) {
-      Future<?> future = task.getFuture();
+      final Future<?> future = task.getFuture();
       future.cancel(true);
       task.resetAllVehiclesAppearingInRecordData();
-      for (Object tag : task.getTags()) {
-        List<SimulatorTask> list = getTasksForTag(tag, false);
+      for (final Object tag : task.getTags()) {
+        final List<SimulatorTask> list = getTasksForTag(tag, false);
         if (list != null) {
           synchronized (list) {
             list.remove(task);
@@ -306,8 +318,8 @@ public class VehicleLocationSimulationServiceImpl implements
   @Override
   public void cancelAllSimulations() {
 
-    List<Integer> taskIds = new ArrayList<Integer>(_tasks.keySet());
-    for (int taskId : taskIds)
+    final List<Integer> taskIds = new ArrayList<Integer>(_tasks.keySet());
+    for (final int taskId : taskIds)
       cancelSimulation(taskId);
   }
 
@@ -315,13 +327,13 @@ public class VehicleLocationSimulationServiceImpl implements
   public List<VehicleLocationSimulationSummary> getSimulationsForBlockInstance(
       AgencyAndId blockId, long serviceDate) {
 
-    String tag = generateBlockServiceDateTag(blockId, serviceDate);
-    List<SimulatorTask> tasks = getTasksForTag(tag, false);
+    final String tag = generateBlockServiceDateTag(blockId, serviceDate);
+    final List<SimulatorTask> tasks = getTasksForTag(tag, false);
 
-    List<VehicleLocationSimulationSummary> summaries = new ArrayList<VehicleLocationSimulationSummary>();
+    final List<VehicleLocationSimulationSummary> summaries = new ArrayList<VehicleLocationSimulationSummary>();
 
     if (tasks != null) {
-      for (SimulatorTask task : tasks)
+      for (final SimulatorTask task : tasks)
         summaries.add(task.getSummary());
     }
 
@@ -339,8 +351,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
     @Override
     public int compare(RunTripEntry rte1, RunTripEntry rte2) {
-      TripEntry t1 = rte1.getTripEntry();
-      TripEntry t2 = rte2.getTripEntry();
+      final TripEntry t1 = rte1.getTripEntry();
+      final TripEntry t2 = rte2.getTripEntry();
       long sd1 = _bcs.getBlockInstance(t1.getBlock().getId(), _sd).getServiceDate();
       long sd2 = _bcs.getBlockInstance(t2.getBlock().getId(), _sd).getServiceDate();
       sd1 += rte1.getStartTime() * 1000;
@@ -362,30 +374,30 @@ public class VehicleLocationSimulationServiceImpl implements
      * here we format the runId to have a run-route that looks similar to what
      * an operator would enter.
      */
-    String runNumber = runTrip.getRunNumber();
+    final String runNumber = runTrip.getRunNumber();
     String runRoute = runTrip.getRunRoute();
 
     if (StringUtils.equals(runRoute, "MISC")) {
       // runRoute = "0" + random.nextInt(9) + random.nextInt(9);
       runRoute = "000";
     } else if (runRoute.length() >= 5) {
-      String firstPart = runRoute.substring(1, 3);
-      String lastPart = runRoute.substring(3);
+      final String firstPart = runRoute.substring(1, 3);
+      final String lastPart = runRoute.substring(3);
       runRoute = "0" + (random.nextBoolean() ? firstPart : lastPart);
     } else {
-      String firstPart = runRoute.substring(1, 3);
+      final String firstPart = runRoute.substring(1, 3);
       runRoute = "0" + firstPart;
     }
 
-    String reportedRunId = RunTripEntry.createId(runRoute, runNumber);
+    final String reportedRunId = RunTripEntry.createId(runRoute, runNumber);
 
     if (reportsRunId)
       _log.info("using reported runId=" + reportedRunId);
 
     String lastBlockId = null;
 
-    List<RunTripEntry> rtes = new ArrayList<RunTripEntry>();
-    for (RunTripEntry rte : _runService.getRunTripEntriesForRun(runTrip.getRunId())) {
+    final List<RunTripEntry> rtes = new ArrayList<RunTripEntry>();
+    for (final RunTripEntry rte : _runService.getRunTripEntriesForRun(runTrip.getRunId())) {
       if (_calendarService.isLocalizedServiceIdActiveOnDate(
           rte.getTripEntry().getServiceId(), new Date(serviceDate)))
         rtes.add(rte);
@@ -401,9 +413,9 @@ public class VehicleLocationSimulationServiceImpl implements
     // String agencyId = runTrip.getTripEntry().getId().getAgencyId();
 
     CoordinatePoint lastLocation = null;
-    RunTripEntry lastRunTrip = rtes.get(rtes.size() - 1);
-    int firstTime = runTrip.getStartTime();
-    int lastTime = lastRunTrip.getStopTime();
+    final RunTripEntry lastRunTrip = rtes.get(rtes.size() - 1);
+    final int firstTime = runTrip.getStartTime();
+    final int lastTime = lastRunTrip.getStopTime();
     int runningLastTime = runTrip.getStopTime();
     int currRunIdx = rtes.indexOf(runTrip);
 
@@ -411,10 +423,10 @@ public class VehicleLocationSimulationServiceImpl implements
     // evolution. The latter is chosen, for now.
     while (scheduleTime <= lastTime) {
 
-      NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
+      final NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
 
-      long unperturbedTimestamp = serviceDate + (scheduleTime + shiftStartTime)
-          * 1000;
+      final long unperturbedTimestamp = serviceDate
+          + (scheduleTime + shiftStartTime) * 1000;
 
       if (scheduleTime >= runningLastTime) {
         if (currRunIdx == rtes.size() - 1)
@@ -440,9 +452,9 @@ public class VehicleLocationSimulationServiceImpl implements
       if (runTrip == null)
         break;
 
-      TripEntry trip = runTrip.getTripEntry();
+      final TripEntry trip = runTrip.getTripEntry();
 
-      AgencyAndId tripId = trip.getId();
+      final AgencyAndId tripId = trip.getId();
 
       record.setActualTripId(AgencyAndIdLibrary.convertToString(tripId));
 
@@ -463,20 +475,21 @@ public class VehicleLocationSimulationServiceImpl implements
       int scheduleDeviation = 0;
 
       if (!scheduleDeviations.isEmpty()) {
-        double ratio = (scheduleTime - firstTime)
+        final double ratio = (scheduleTime - firstTime)
             / ((double) (lastTime - firstTime));
         scheduleDeviation = (int) InterpolationLibrary.interpolate(
             scheduleDeviations, ratio, EOutOfRangeStrategy.LAST_VALUE);
       }
 
-      long perterbedTimestamp = unperturbedTimestamp + scheduleDeviation * 1000;
+      final long perterbedTimestamp = unperturbedTimestamp + scheduleDeviation
+          * 1000;
 
       /*
        * sample runTrips active 30 minutes from now. TODO make the time range
        * less arbitrary?
        */
       if (allowRunTransitions) {
-        RunTripEntry newRun = sampleNearbyRunTrips(runTrip,
+        final RunTripEntry newRun = sampleNearbyRunTrips(runTrip,
             unperturbedTimestamp + 30 * 60 * 1000);
 
         if (newRun != null) {
@@ -501,19 +514,20 @@ public class VehicleLocationSimulationServiceImpl implements
       }
 
       // TODO when are there multiples and which do we choose when there are?
-      ScheduledBlockLocation blockLocation = _runService.getSchedBlockLocForRunTripEntryAndTime(
+      final ScheduledBlockLocation blockLocation = _runService.getSchedBlockLocForRunTripEntryAndTime(
           runTrip, unperturbedTimestamp);
-      BlockEntry blockEntry = blockLocation.getActiveTrip().getBlockConfiguration().getBlock();
 
       if (blockLocation == null)
         break;
+
+      final BlockEntry blockEntry = blockLocation.getActiveTrip().getBlockConfiguration().getBlock();
 
       _log.debug("sim blockLocation: " + blockLocation.toString());
       CoordinatePoint location = blockLocation.getLocation();
 
       record.setActualRunId(runTrip.getRunId());
 
-      String currentBlockId = AgencyAndIdLibrary.convertToString(blockEntry.getId());
+      final String currentBlockId = AgencyAndIdLibrary.convertToString(blockEntry.getId());
       // if (_log.isDebugEnabled())
       if (lastBlockId != null
           && !StringUtils.equals(currentBlockId, lastBlockId)) {
@@ -532,7 +546,7 @@ public class VehicleLocationSimulationServiceImpl implements
       } else {
         lastLocation = location;
       }
-      CoordinatePoint p = applyLocationNoise(location.getLat(),
+      final CoordinatePoint p = applyLocationNoise(location.getLat(),
           location.getLon(), locationSigma, random);
 
       record.setDsc(dsc);
@@ -550,7 +564,7 @@ public class VehicleLocationSimulationServiceImpl implements
 
       record.setActualServiceDate(serviceDate);
 
-      int actualScheduleTime = blockLocation.getScheduledTime();
+      final int actualScheduleTime = blockLocation.getScheduledTime();
       record.setActualScheduleTime(actualScheduleTime);
 
       record.setActualDsc(dsc);
@@ -575,7 +589,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private RunTripEntry sampleNearbyRunTrips(RunTripEntry currentRunTrip,
       long timestamp) {
 
-    List<RunTripEntry> activeRunTrips = _runService.getActiveRunTripEntriesForAgencyAndTime(
+    final List<RunTripEntry> activeRunTrips = _runService.getActiveRunTripEntriesForAgencyAndTime(
         currentRunTrip.getTripEntry().getId().getAgencyId(), timestamp);
 
     int bsize = activeRunTrips.size();
@@ -595,8 +609,8 @@ public class VehicleLocationSimulationServiceImpl implements
 
     }
 
-    double[] probs = new double[bsize];
-    double[] obs = new double[bsize];
+    final double[] probs = new double[bsize];
+    final double[] obs = new double[bsize];
     for (int i = 0; i < bsize; ++i) {
       if (i == currentIdx) {
         // TODO Make this configurable, and explain
@@ -608,13 +622,13 @@ public class VehicleLocationSimulationServiceImpl implements
 
       _log.debug(i + ": " + activeRunTrips.get(i));
     }
-    DirichletGen rdg = new DirichletGen(streamArr, probs);
+    final DirichletGen rdg = new DirichletGen(streamArr, probs);
 
     rdg.nextPoint(probs);
-    DiscreteDistribution emd = new DiscreteDistribution(obs, probs, bsize);
+    final DiscreteDistribution emd = new DiscreteDistribution(obs, probs, bsize);
 
-    double u = ung.nextDouble();
-    int newIdx = (int) emd.inverseF(u);
+    final double u = ung.nextDouble();
+    final int newIdx = (int) emd.inverseF(u);
 
     if (newIdx != currentIdx)
       _log.info(probs[newIdx] + ": sampled new idx=" + newIdx);
@@ -635,11 +649,11 @@ public class VehicleLocationSimulationServiceImpl implements
       boolean reportsOperatorId, boolean reportsRunId,
       boolean allowRunTransitions, Properties properties) {
 
-    Random random = new Random();
+    final Random random = new Random();
 
-    SimulatorTask task = new SimulatorTask();
+    final SimulatorTask task = new SimulatorTask();
 
-    String tag = generateBlockServiceDateTag(blockId, serviceDate);
+    final String tag = generateBlockServiceDateTag(blockId, serviceDate);
     task.addTag(tag);
 
     task.setPauseOnStart(false);
@@ -647,23 +661,23 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setBypassInference(bypassInference);
     task.setFillActualProperties(fillActual);
 
-    BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
+    final BlockInstance blockInstance = _blockCalendarService.getBlockInstance(
         blockId, serviceDate);
-    BlockConfigurationEntry block = blockInstance.getBlock();
+    final BlockConfigurationEntry block = blockInstance.getBlock();
 
     int scheduleTime = (int) ((actualTime - serviceDate) / 1000);
-    int shiftStartTime = getShiftStartTimeProperty(properties);
+    final int shiftStartTime = getShiftStartTimeProperty(properties);
     scheduleTime -= shiftStartTime;
 
-    AgencyAndId vehicleId = getVehicleIdProperty(random, properties,
+    final AgencyAndId vehicleId = getVehicleIdProperty(random, properties,
         blockId.getAgencyId());
 
-    double locationSigma = getLocationSigma(properties);
-    SortedMap<Double, Integer> scheduleDeviations = getScheduleDeviations(properties);
+    final double locationSigma = getLocationSigma(properties);
+    final SortedMap<Double, Integer> scheduleDeviations = getScheduleDeviations(properties);
 
     if (isRunBased) {
 
-      RunTripEntry runTrip = _runService.getActiveRunTripEntryForBlockInstance(
+      final RunTripEntry runTrip = _runService.getActiveRunTripEntryForBlockInstance(
           blockInstance, scheduleTime);
 
       if (runTrip == null) {
@@ -686,12 +700,12 @@ public class VehicleLocationSimulationServiceImpl implements
       return addTask(task);
     }
 
-    List<BlockStopTimeEntry> stopTimes = block.getStopTimes();
+    final List<BlockStopTimeEntry> stopTimes = block.getStopTimes();
 
-    BlockStopTimeEntry firstStopTime = stopTimes.get(0);
-    BlockStopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
-    int firstTime = firstStopTime.getStopTime().getArrivalTime();
-    int lastTime = lastStopTime.getStopTime().getDepartureTime();
+    final BlockStopTimeEntry firstStopTime = stopTimes.get(0);
+    final BlockStopTimeEntry lastStopTime = stopTimes.get(stopTimes.size() - 1);
+    final int firstTime = firstStopTime.getStopTime().getArrivalTime();
+    final int lastTime = lastStopTime.getStopTime().getDepartureTime();
 
     if (isIncludeStartTime(properties))
       scheduleTime = firstTime;
@@ -700,14 +714,10 @@ public class VehicleLocationSimulationServiceImpl implements
 
     while (scheduleTime <= lastTime) {
 
-      NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
+      final NycTestInferredLocationRecord record = new NycTestInferredLocationRecord();
 
-      ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
+      final ScheduledBlockLocation blockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
           block, scheduleTime);
-
-      BlockTripEntry trip = blockLocation.getActiveTrip();
-
-      AgencyAndId tripId = trip.getTrip().getId();
 
       /**
        * Not in service?
@@ -715,10 +725,14 @@ public class VehicleLocationSimulationServiceImpl implements
       if (blockLocation == null)
         return -1;
 
-      CoordinatePoint location = blockLocation.getLocation();
+      final BlockTripEntry trip = blockLocation.getActiveTrip();
+
+      final AgencyAndId tripId = trip.getTrip().getId();
+
+      final CoordinatePoint location = blockLocation.getLocation();
       record.setActualBlockId(AgencyAndIdLibrary.convertToString(blockId));
       record.setActualDistanceAlongBlock(blockLocation.getDistanceAlongBlock());
-      int actualScheduleTime = blockLocation.getScheduledTime();
+      final int actualScheduleTime = blockLocation.getScheduledTime();
 
       String dsc = _destinationSignCodeService.getDestinationSignCodeForTripId(tripId);
       if (dsc == null)
@@ -727,16 +741,16 @@ public class VehicleLocationSimulationServiceImpl implements
       int scheduleDeviation = 0;
 
       if (!scheduleDeviations.isEmpty()) {
-        double ratio = (scheduleTime - firstTime)
+        final double ratio = (scheduleTime - firstTime)
             / ((double) (lastTime - firstTime));
         scheduleDeviation = (int) InterpolationLibrary.interpolate(
             scheduleDeviations, ratio, EOutOfRangeStrategy.LAST_VALUE);
       }
 
-      long timestamp = serviceDate
+      final long timestamp = serviceDate
           + (scheduleTime + shiftStartTime + scheduleDeviation) * 1000;
 
-      CoordinatePoint p = applyLocationNoise(location.getLat(),
+      final CoordinatePoint p = applyLocationNoise(location.getLat(),
           location.getLon(), locationSigma, random);
 
       record.setDsc(dsc);
@@ -765,13 +779,13 @@ public class VehicleLocationSimulationServiceImpl implements
     task.setId(_taskIndex.incrementAndGet());
     task.setVehicleLocationService(_vehicleLocationInferenceService);
     _tasks.put(task.getId(), task);
-    for (Object tag : task.getTags()) {
-      List<SimulatorTask> tasks = getTasksForTag(tag, true);
+    for (final Object tag : task.getTags()) {
+      final List<SimulatorTask> tasks = getTasksForTag(tag, true);
       synchronized (tasks) {
         tasks.add(task);
       }
     }
-    Future<?> future = _executor.submit(task);
+    final Future<?> future = _executor.submit(task);
     task.setFuture(future);
 
     return task.getId();
@@ -780,7 +794,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private List<SimulatorTask> getTasksForTag(Object tag, boolean create) {
     List<SimulatorTask> tasks = _tasksByTag.get(tag);
     if (tasks == null && create) {
-      ArrayList<SimulatorTask> newTasks = new ArrayList<SimulatorTask>();
+      final ArrayList<SimulatorTask> newTasks = new ArrayList<SimulatorTask>();
       tasks = _tasksByTag.putIfAbsent(tag, newTasks);
       if (tasks == null)
         tasks = newTasks;
@@ -801,19 +815,19 @@ public class VehicleLocationSimulationServiceImpl implements
    */
   private List<Double> getRunTransitionParams(Properties properties) {
 
-    List<Double> transitionParams = new ArrayList<Double>();
+    final List<Double> transitionParams = new ArrayList<Double>();
 
-    String raw = properties.getProperty(ARG_RUN_TRANSITION_PARAMS);
+    final String raw = properties.getProperty(ARG_RUN_TRANSITION_PARAMS);
 
-    for (String token : raw.split(",")) {
+    for (final String token : raw.split(",")) {
 
-      String[] kvp = token.split("=");
+      final String[] kvp = token.split("=");
 
       if (kvp.length != 1)
         throw new IllegalArgumentException("invalid run-transition params: "
             + raw);
 
-      double param = Double.parseDouble(kvp[0]);
+      final double param = Double.parseDouble(kvp[0]);
 
       transitionParams.add(param);
     }
@@ -837,7 +851,7 @@ public class VehicleLocationSimulationServiceImpl implements
       vehicleId = AgencyAndIdLibrary.convertFromString(properties.getProperty(ARG_VEHICLE_ID));
 
     if (vehicleId == null) {
-      int vid = random.nextInt(9999);
+      final int vid = random.nextInt(9999);
       vehicleId = new AgencyAndId(agencyId, vid + "");
     }
     return vehicleId;
@@ -854,30 +868,30 @@ public class VehicleLocationSimulationServiceImpl implements
       double locationSigma, Random random) {
     if (locationSigma == 0)
       return new CoordinatePoint(lat, lon);
-    double latRadiusInMeters = random.nextGaussian() * locationSigma;
-    double lonRadiusInMeters = random.nextGaussian() * locationSigma;
-    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(lat, lon,
+    final double latRadiusInMeters = random.nextGaussian() * locationSigma;
+    final double lonRadiusInMeters = random.nextGaussian() * locationSigma;
+    final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(lat, lon,
         Math.abs(latRadiusInMeters), Math.abs(lonRadiusInMeters));
-    double latRadius = (bounds.getMaxLat() - bounds.getMinLat()) / 2
+    final double latRadius = (bounds.getMaxLat() - bounds.getMinLat()) / 2
         * (latRadiusInMeters / Math.abs(latRadiusInMeters));
-    double lonRadius = (bounds.getMaxLon() - bounds.getMinLon()) / 2
+    final double lonRadius = (bounds.getMaxLon() - bounds.getMinLon()) / 2
         * (lonRadiusInMeters / Math.abs(lonRadiusInMeters));
     return new CoordinatePoint(lat + latRadius, lon + lonRadius);
   }
 
   private SortedMap<Double, Integer> getScheduleDeviations(Properties properties) {
 
-    SortedMap<Double, Integer> scheduleDeviations = new TreeMap<Double, Integer>();
+    final SortedMap<Double, Integer> scheduleDeviations = new TreeMap<Double, Integer>();
 
     if (properties.containsKey(ARG_SCHEDULE_DEVIATIONS)) {
-      String raw = properties.getProperty(ARG_SCHEDULE_DEVIATIONS);
-      for (String token : raw.split(",")) {
-        String[] kvp = token.split("=");
+      final String raw = properties.getProperty(ARG_SCHEDULE_DEVIATIONS);
+      for (final String token : raw.split(",")) {
+        final String[] kvp = token.split("=");
         if (kvp.length != 2)
           throw new IllegalArgumentException(
               "invalid schedule deviations spec: " + raw);
-        double ratio = Double.parseDouble(kvp[0]);
-        int deviation = Integer.parseInt(kvp[1]) * 60;
+        final double ratio = Double.parseDouble(kvp[0]);
+        final int deviation = Integer.parseInt(kvp[1]) * 60;
         scheduleDeviations.put(ratio, deviation);
       }
     }
@@ -888,7 +902,7 @@ public class VehicleLocationSimulationServiceImpl implements
   private boolean isIncludeStartTime(Properties properties) {
     if (!properties.containsKey(ARG_INCLUDE_START))
       return false;
-    String value = properties.getProperty(ARG_INCLUDE_START).toLowerCase();
+    final String value = properties.getProperty(ARG_INCLUDE_START).toLowerCase();
     return value.equals("true") || value.equals("yes") || value.equals("1");
   }
 }

@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
+import com.google.common.base.Objects;
+
 import org.apache.commons.math.util.FastMath;
 
 import java.util.ArrayList;
@@ -24,9 +26,13 @@ public class SensorModelResult {
 
   private String name;
 
-  private double logProbability = 1.0;
+  private double logProbability = 0.0;
+  
+  private double probability = 1.0;
 
   private List<SensorModelResult> results;
+
+  private boolean refresh = true;
 
   public SensorModelResult(String name) {
     this(name, 1.0);
@@ -35,6 +41,8 @@ public class SensorModelResult {
   public SensorModelResult(String name, double probability) {
     this.name = name;
     this.logProbability = FastMath.log(probability);
+    this.probability = probability;
+    this.refresh = false;
   }
 
   public String getName() {
@@ -45,8 +53,19 @@ public class SensorModelResult {
     this.name = name;
   }
 
+  /**
+   * Returns, and lazily computes, the non-log probability.
+   * <br>
+   * XXX Note that this "compute-on-demand" approach
+   * is not thread-safe.
+   * @return non-log probability
+   */
   public double getProbability() {
-    return FastMath.exp(logProbability);
+    if (this.refresh) {
+      this.probability = FastMath.exp(logProbability);
+      this.refresh = false;
+    }
+    return this.probability;
   }
 
   public double getLogProbability() {
@@ -55,10 +74,13 @@ public class SensorModelResult {
 
   public void setProbability(double probability) {
     this.logProbability = FastMath.log(probability);
+    this.probability = probability;
+    this.refresh = false;
   }
 
   public void setLogProbability(double probability) {
     this.logProbability = probability;
+    this.refresh = true;
   }
 
   public List<SensorModelResult> getResults() {
@@ -73,6 +95,12 @@ public class SensorModelResult {
     return addResult(new SensorModelResult(name, probability));
   }
 
+  public SensorModelResult addLogResultAsAnd(String name, double logProbability) {
+    SensorModelResult newResult = new SensorModelResult(name);
+    newResult.setLogProbability(logProbability);
+    return addResultAsAnd(newResult);
+  }
+  
   public SensorModelResult addResultAsAnd(String name, double probability) {
     return addResultAsAnd(new SensorModelResult(name, probability));
   }
@@ -88,7 +116,20 @@ public class SensorModelResult {
 
   public SensorModelResult addResultAsAnd(SensorModelResult result) {
     this.logProbability += result.logProbability;
+    this.refresh = true;
     return addResult(result);
+  }
+
+  @Override
+  public String toString() {
+    Objects.ToStringHelper toStringHelper = Objects.toStringHelper("SensorModelResult");
+    toStringHelper.add(name, getProbability());
+    if (results != null) {
+      for (SensorModelResult res : results) {
+        toStringHelper.addValue("\n\t" + res.toString());
+      }
+    }
+    return toStringHelper.toString();
   }
 
 }

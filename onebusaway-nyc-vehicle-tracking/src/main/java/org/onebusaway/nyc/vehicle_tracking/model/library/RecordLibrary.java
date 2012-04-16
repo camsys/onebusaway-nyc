@@ -15,13 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model.library;
 
-import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.realtime.api.VehicleLocationRecord;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
+
+import org.apache.commons.lang.StringUtils;
 
 public class RecordLibrary {
 
@@ -43,7 +44,7 @@ public class RecordLibrary {
   public static NycQueuedInferredLocationBean getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(
       NycTestInferredLocationRecord record) {
 
-    NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
+    final NycQueuedInferredLocationBean qlr = new NycQueuedInferredLocationBean();
 
     qlr.setRecordTimestamp(record.getTimestamp());
     qlr.setServiceDate(record.getInferredServiceDate());
@@ -65,7 +66,7 @@ public class RecordLibrary {
   public static VehicleLocationRecord getNycQueuedInferredLocationBeanAsVehicleLocationRecord(
       NycQueuedInferredLocationBean record) {
 
-    VehicleLocationRecord vlr = new VehicleLocationRecord();
+    final VehicleLocationRecord vlr = new VehicleLocationRecord();
 
     vlr.setTimeOfRecord(record.getRecordTimestamp());
     vlr.setTimeOfLocationUpdate(record.getRecordTimestamp());
@@ -86,7 +87,7 @@ public class RecordLibrary {
   public static NycRawLocationRecord getNycTestInferredLocationRecordAsNycRawLocationRecord(
       NycTestInferredLocationRecord record) {
 
-    NycRawLocationRecord vlr = new NycRawLocationRecord();
+    final NycRawLocationRecord vlr = new NycRawLocationRecord();
 
     vlr.setDestinationSignCode(record.getDsc());
     vlr.setLatitude(record.getLat());
@@ -95,7 +96,7 @@ public class RecordLibrary {
     vlr.setTimeReceived(record.getTimestamp());
     vlr.setVehicleId(record.getVehicleId());
     vlr.setOperatorId(record.getOperatorId());
-    String[] runInfo = StringUtils.splitByWholeSeparator(
+    final String[] runInfo = StringUtils.splitByWholeSeparator(
         record.getReportedRunId(), "-");
     if (runInfo != null && runInfo.length > 0) {
       vlr.setRunRouteId(runInfo[0]);

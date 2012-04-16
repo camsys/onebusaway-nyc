@@ -16,7 +16,7 @@ import javax.annotation.PreDestroy;
 public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     implements PartitionedInputQueueListener {
 
-  private String _vehicleId = "MTA NYCT_2827";
+  private final String _vehicleId = "MTA NYCT_2827";
 
   private VehicleLocationInferenceService _vehicleLocationService;
 
@@ -28,7 +28,7 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
 
   @Override
   public boolean processMessage(String address, String contents) {
-    RealtimeEnvelope envelope = deserializeMessage(contents);
+    final RealtimeEnvelope envelope = deserializeMessage(contents);
 
     if (acceptMessage(envelope)) {
       _vehicleLocationService.handleRealtimeEnvelopeRecord(envelope);
@@ -42,10 +42,10 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     if (envelope == null || envelope.getCcLocationReport() == null)
       return false;
 
-    CcLocationReport message = envelope.getCcLocationReport();
-    CPTVehicleIden vehicleIdent = message.getVehicle();
-    AgencyAndId vehicleId = new AgencyAndId(vehicleIdent.getAgencydesignator(),
-        vehicleIdent.getVehicleId() + "");
+    final CcLocationReport message = envelope.getCcLocationReport();
+    final CPTVehicleIden vehicleIdent = message.getVehicle();
+    final AgencyAndId vehicleId = new AgencyAndId(
+        vehicleIdent.getAgencydesignator(), vehicleIdent.getVehicleId() + "");
 
     return _vehicleId.equals(vehicleId.toString());
   }

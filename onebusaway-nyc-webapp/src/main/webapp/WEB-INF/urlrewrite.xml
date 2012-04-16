@@ -60,6 +60,14 @@
         <from>^/wiki/([0-9A-Za-z]*)/?$</from>
         <to last="true">/wiki/index.action?name=$1</to>
     </rule>
+    <rule>
+        <from>^/m/wiki/([0-9A-Za-z]*)/([0-9A-Za-z]*)/?$</from>
+        <to last="true">/m/wiki/index.action?namespace=$1Mobile&amp;name=$2</to>
+    </rule>
+    <rule>
+        <from>^/m/wiki/([0-9A-Za-z]*)/?$</from>
+        <to last="true">/m/wiki/index.action?name=$1</to>
+    </rule>
         
     <!-- 
     	API rules.

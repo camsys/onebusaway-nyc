@@ -20,6 +20,7 @@ import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
@@ -39,6 +40,11 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
 import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -173,7 +179,8 @@ public class VehicleLocationSimulationController {
       @RequestParam(required = false, defaultValue = "false") boolean bypassInference,
       @RequestParam(required = false, defaultValue = "false") boolean fillActualProperties,
       @RequestParam(value = "loop", required = false, defaultValue = "false") boolean loop,
-      @RequestParam(required = false, defaultValue = "false") boolean returnId)
+      @RequestParam(required = false, defaultValue = "false") boolean returnId,
+      @RequestParam(required = false, defaultValue = "-1") int historySize)
       throws IOException {
 
     int taskId = -1;
@@ -186,9 +193,13 @@ public class VehicleLocationSimulationController {
       if (name.endsWith(".gz"))
         in = new GZIPInputStream(in);
 
+      if (historySize < 0)
+        historySize = Integer.MAX_VALUE;
+      
       taskId = _vehicleLocationSimulationService.simulateLocationsFromTrace(
           name, traceType, in, realtime, pauseOnStart, shiftStartTime,
-          minimumRecordInterval, bypassInference, fillActualProperties, loop);
+          minimumRecordInterval, bypassInference, fillActualProperties, loop,
+          historySize);
     }
 
     if (returnId) {
@@ -239,26 +250,55 @@ public class VehicleLocationSimulationController {
   @RequestMapping(value = "/vehicle-location-simulation!task-details.do", method = RequestMethod.GET)
   public ModelAndView taskDetails(
       @RequestParam() int taskId,
-      @RequestParam(required = false, defaultValue = "0") int historyOffset,
+      @RequestParam(required = false, defaultValue = "-1") int recordNumber,
       @RequestParam(required = false, defaultValue = "false") boolean showSampledParticles) {
 
     VehicleLocationDetails details = _vehicleLocationSimulationService.getSimulationDetails(
-        taskId, historyOffset);
+        taskId, recordNumber);
     Map<String, Object> m = new HashMap<String, Object>();
     m.put("details", details);
-    m.put("historyOffset", historyOffset);
+    m.put("recordNumber", recordNumber);
     m.put("showSampledParticles", showSampledParticles);
+    m.put("showTransitionParticles", false);
     return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!particle-details.do", method = RequestMethod.GET)
   public ModelAndView particleDetails(@RequestParam() int taskId,
-      @RequestParam() int particleId) {
+      @RequestParam() int particleId,
+      @RequestParam(required = false, defaultValue = "-1") int recordNumber
+      ) {
 
     VehicleLocationDetails details = _vehicleLocationSimulationService.getParticleDetails(
-        taskId, particleId);
-    return new ModelAndView("vehicle-location-simulation-task-details.jspx",
-        "details", details);
+        taskId, particleId, recordNumber);
+    Map<String, Object> m = new HashMap<String, Object>();
+    m.put("details", details);
+    m.put("recordNumber", recordNumber);
+    m.put("showTransitionParticles", true);
+    m.put("parentParticleId", particleId);
+    Entry<Particle> firstParticle = Iterables.getFirst(details.getParticles(), null);
+    List<Multiset.Entry<Particle>> transParticles = 
+        (firstParticle != null && firstParticle.getElement().getTransitions() != null)
+          ? Lists.newArrayList(firstParticle.getElement().getTransitions().entrySet()) : null; 
+    if (transParticles != null)
+      m.put("transitionParticles", transParticles);
+    return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!particle-transition-details.do", method = RequestMethod.GET)
+  public ModelAndView particleTransitionDetails(@RequestParam() int taskId,
+      @RequestParam() int parentParticleId,
+      @RequestParam() int transParticleNumber,
+      @RequestParam(required = false, defaultValue = "-1") int recordNumber
+      ) {
+
+    VehicleLocationDetails details = _vehicleLocationSimulationService.getTransitionParticleDetails(
+        taskId, parentParticleId, transParticleNumber, recordNumber);
+    Map<String, Object> m = new HashMap<String, Object>();
+    m.put("details", details);
+    m.put("recordNumber", recordNumber);
+    m.put("showTransitionParticles", false);
+    return new ModelAndView("vehicle-location-simulation-task-details.jspx", m);
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!task-simulation-records.do", method = RequestMethod.GET)
@@ -267,6 +307,18 @@ public class VehicleLocationSimulationController {
 
     List<NycTestInferredLocationRecord> records = _vehicleLocationSimulationService.getSimulationRecords(taskId);
     writeRecordsToOutput(response, records);
+  }
+
+  @RequestMapping(value = "/vehicle-location-simulation!task-view-result-records.do", method = RequestMethod.GET)
+  public ModelAndView taskResultsView(@RequestParam() int taskId) {
+
+    List<NycTestInferredLocationRecord> records = _vehicleLocationSimulationService.getResultRecords(taskId);
+    String filename = _vehicleLocationSimulationService.getSimulation(taskId).getFilename();
+    Map<String, Object> m = new HashMap<String, Object>();
+    m.put("records", records);
+    m.put("taskId", taskId);
+    m.put("filename", filename);
+    return new ModelAndView("vehicle-location-simulation-results-view.jspx", m);
   }
 
   @RequestMapping(value = "/vehicle-location-simulation!task-result-records.do", method = RequestMethod.GET)
@@ -337,6 +389,8 @@ public class VehicleLocationSimulationController {
 
     for(BlockStatusBean blockBean : beans.getList()) {
       BlockBean block = blockBean.getBlock();
+      if (block == null)
+        continue;
         
       ArrayList<String> trips = new ArrayList<String>();
       for(BlockConfigurationBean config : block.getConfigurations()) {

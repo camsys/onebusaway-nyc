@@ -1,0 +1,67 @@
+<!--
+
+    Copyright (c) 2011 Metropolitan Transportation Authority
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not
+    use this file except in compliance with the License. You may obtain a copy of
+    the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations under
+    the License.
+
+-->
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core" 
+	xmlns:s="/struts-tags"
+	xmlns:wiki="/oba-wiki-tags"
+	xmlns:decorator="http://www.opensymphony.com/sitemesh/decorator">
+<jsp:directive.page contentType="text/html" />
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+	<meta name="viewport" content="width=device-width,initial-scale=.90,user-scalable=no"/>  
+
+	<title>MTA Bus Time<s:property value="title"/></title>
+	
+  	<link rel="shortcut icon" href="http://mta.info/siteimages/favicon.ico" type="image/x-icon"/>
+
+  	<s:url var="url" value="/css/mobile/mobile.css"></s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+
+  	<s:url var="url" value="/css/mobile/branding.css"></s:url>
+  	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
+  	
+  	<decorator:head/>
+  	
+</head>
+
+<body>
+	<div id="branding">
+		<s:url var="url" namespace="/m" action="index">				
+			<s:param name="l"><s:property value="l" /></s:param>
+		</s:url>
+	    <h1><a href="${url}">MTA Bus Time</a></h1>
+	</div>
+
+	<decorator:body />
+	
+	<div id="footer">
+    	<p>
+			<s:url var="mobileHelpUrl" namespace="/m/wiki" action="Help/Index"/>	
+    		<a href="${mobileHelpUrl}">Help</a> | 
+    		
+    		<s:url var="desktopUrl" namespace="/" action="index"/>	
+    		<a href="${desktopUrl}">Desktop Site</a> |
+    		
+    		<s:url var="contactUrl" namespace="/m/wiki" action="ContactUs"/>	
+    		<a href="${contactUrl}">Contact</a> |
+
+			<a href="http://www.mta.info">MTA.info</a>
+		</p>
+	</div>
+</body>
+</html>
