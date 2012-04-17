@@ -54,4 +54,7 @@ public interface RunService {
 
   public Set<AgencyAndId> getRoutesForRunId(String opAssignedRunId);
 
+  public Collection<RunTripEntry> getRunTripsForTrip(TripEntry trip); 
+  public Set<String> getRunIdsForTrip(TripEntry trip);
+
 }

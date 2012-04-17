@@ -26,16 +26,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RunRule implements SensorModelRule {
+public class RunLikelihood implements SensorModelRule {
 
   public static enum RUN_INFO_STATE {
     NO_RUN_INFO,
     RUN_INFO_NO_RUN,
-    OP_RUN_MATCH,
-    NULL_OP_FUZZY_MATCH,
-    NULL_OP_NO_FUZZY_MATCH,
-    NO_OP_FUZZY_MATCH,
-    NO_OP_NO_FUZZY_MATCH,
+    FORMAL_RUN_MATCH,
+    NO_FORMAL_FUZZY_MATCH,
+    NO_FORMAL_NO_FUZZY_MATCH,
   };
 
   @Override
@@ -47,25 +45,19 @@ public class RunRule implements SensorModelRule {
     
     switch (state) {
       case NO_RUN_INFO:
-        result.addResultAsAnd("no run info", 0.9/3d);
+        result.addResultAsAnd("no run info", 0.9/2d);
         return result;
       case RUN_INFO_NO_RUN:
-        result.addResultAsAnd("run-info, no run", 0.25/4d);
+        result.addResultAsAnd("run-info, no run", 1d/8d * 0.1);
         return result;
-      case OP_RUN_MATCH:
-        result.addResultAsAnd("op. run match", 0.9/3d);
+      case FORMAL_RUN_MATCH:
+        result.addResultAsAnd("formal run match", 0.9/2d);
         return result;
-      case NULL_OP_FUZZY_MATCH:
-        result.addResultAsAnd("null op. fuzzy match", 0.9/3d);
+      case NO_FORMAL_FUZZY_MATCH:
+        result.addResultAsAnd("non-formal fuzzy match", 0.75 * 0.1);
         return result;
-      case NULL_OP_NO_FUZZY_MATCH:
-        result.addResultAsAnd("null op. no fuzzy match", (0.25/2d) * 0.01);
-        return result;
-      case NO_OP_FUZZY_MATCH:
-        result.addResultAsAnd("no op. fuzzy match", 0.75 * 0.1);
-        return result;
-      case NO_OP_NO_FUZZY_MATCH:
-        result.addResultAsAnd("no matches", 0.25/4d);
+      case NO_FORMAL_NO_FUZZY_MATCH:
+        result.addResultAsAnd("no matches", 1d/8d * 0.1);
         return result;
       default:
         return null;
@@ -82,21 +74,15 @@ public class RunRule implements SensorModelRule {
       return RUN_INFO_STATE.NO_RUN_INFO;
     
     if (blockState != null) {
-      if (blockState.getOpAssigned() == Boolean.TRUE) {
-        return RUN_INFO_STATE.OP_RUN_MATCH;
-      } else if (blockState.getOpAssigned() == Boolean.FALSE) {
-        if (blockState.getRunReported() == Boolean.TRUE) {
-          return RUN_INFO_STATE.NO_OP_FUZZY_MATCH;
-        } else {
-          return RUN_INFO_STATE.NO_OP_NO_FUZZY_MATCH;
-        }
+      if (blockState.isRunFormal()) {
+        return RUN_INFO_STATE.FORMAL_RUN_MATCH;
       } else {
         if (blockState.getRunReported() == Boolean.TRUE) {
-          return RUN_INFO_STATE.NULL_OP_FUZZY_MATCH;
+          return RUN_INFO_STATE.NO_FORMAL_FUZZY_MATCH;
         } else {
-          return RUN_INFO_STATE.NULL_OP_NO_FUZZY_MATCH;
+          return RUN_INFO_STATE.NO_FORMAL_NO_FUZZY_MATCH;
         }
-      }
+      } 
     } else {
       return RUN_INFO_STATE.RUN_INFO_NO_RUN;
     }

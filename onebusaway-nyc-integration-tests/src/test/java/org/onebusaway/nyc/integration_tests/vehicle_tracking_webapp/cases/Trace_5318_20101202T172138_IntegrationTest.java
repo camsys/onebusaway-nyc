@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.onebusaway.realtime.api.EVehiclePhase;
+
 public class Trace_5318_20101202T172138_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_5318_20101202T172138_IntegrationTest() throws Exception {
@@ -24,6 +26,7 @@ public class Trace_5318_20101202T172138_IntegrationTest extends AbstractTraceRun
     // but given the recent changes in block assignment, this won't
     // work for that without serious, time-consuming trace fixes.
 //    setLoops(20);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.20);
     setMedian(100.0);
   }
 }
