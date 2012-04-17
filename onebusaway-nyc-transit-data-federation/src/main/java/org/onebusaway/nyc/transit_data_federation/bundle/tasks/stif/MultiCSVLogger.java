@@ -7,7 +7,12 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MultiCSVLogger {
+  private Logger _log = LoggerFactory.getLogger(MultiCSVLogger.class);
+
   class Log {
     int lines;
     PrintStream stream;
@@ -29,8 +34,9 @@ public class MultiCSVLogger {
     logs = new HashMap<String, Log>();
     // integration tests may not have a path
     if (path == null) {
-	path = System.getProperty("java.io.tmpdir");
-	System.err.println("ERROR: MultiCSVLogger initialized without path:  using " + path);
+      path = System.getProperty("java.io.tmpdir");
+      _log.warn("MultiCSVLogger initialized without path:  using "
+          + path);
     }
     basePath = new File(path);
     if (!basePath.exists()) {
@@ -68,11 +74,6 @@ public class MultiCSVLogger {
       throw new RuntimeException("header called more than once for file " + file);
     }
     log.stream.print(header + "\n");
-  }
-  
-  private Log Log(String file) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
   public void summarize() {
