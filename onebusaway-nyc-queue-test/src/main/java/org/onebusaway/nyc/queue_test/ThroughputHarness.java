@@ -58,6 +58,9 @@ public class ThroughputHarness {
       "BP", "RC", "WF", "MQ", "UP", "CS", "CP", "LA", "NL", "GH", "FRK", "JAM",
       "FLAT", "JFK", "MANVI", "YNK", "GRAND", "ENY", "SPRCK", "ECH", "100th",
       "126", "BPK", "RVC", "MJQ", "ULPK", "STG", "LAG", "NJL"};
+  private static final String[] PHASES = {
+    "AT_BASE", "IN_PROGRESS", "DEADHEAD_BEFORE", "LAYOVER_BEFORE", "LAYOVER_DURING"
+  };
   private ObjectMapper _ccmapper;
   private ObjectMapper _imapper;
 
@@ -74,7 +77,7 @@ public class ThroughputHarness {
   public void main(String realtimeHost, int realtimePort, String inferenceHost,
       int inferencePort, int sends) {
 
-   
+    System.out.println("sab-perf build");
     ZMQ.Context context = ZMQ.context(1);
     TestPublisher realtimePublisher = new TestPublisher(context, "bhs_queue");
     realtimePublisher.open("tcp", realtimeHost, realtimePort);
@@ -201,17 +204,17 @@ public class ThroughputHarness {
     r.setVehicleId("MTA NYCT_" + vehicleCount);
     r.setServiceDate(timeStamp);
     r.setScheduleDeviation(0);
-    r.setBlockId("" + vehicleCount);
-    r.setTripId("" + vehicleCount);
+    r.setBlockId("MTA NYCT_MTA NYCT_" + vehicleCount+1);
+    r.setTripId("MTA NYCT_" + vehicleCount+2);
     r.setDistanceAlongBlock(distributeDouble(0.0, MAX_DISTANCE_ALONG_BLOCK));
     r.setDistanceAlongTrip(distributeDouble(0.0, MAX_DISTANCE_ALONG_TRIP));
     r.setInferredLatitude(distributeDouble(MIN_LAT, MAX_LAT));
     r.setInferredLongitude(distributeDouble(MIN_LONG, MAX_LONG));
     r.setObservedLatitude(distributeDouble(MIN_LAT, MAX_LAT));
     r.setObservedLongitude(distributeDouble(MIN_LONG, MAX_LONG));
-    r.setPhase("phase");
+    r.setPhase(distributePhase());
     r.setStatus("status");
-    r.setManagementRecord(createManagementRecord(uuid, vehicleCount, timeStamp));
+    r.setManagementRecord(createManagementRecord(uuid, vehicleCount+3, timeStamp));
     r.setRunId("" + distributeInt(MIN_RUN, MAX_RUN));
     r.setRouteId("" + distributeInt(MIN_ROUTE, MAX_ROUTE));
     r.setBearing(distributeInt(0, 360));
@@ -222,6 +225,10 @@ public class ThroughputHarness {
       e.printStackTrace();
     }
     return null;
+  }
+
+  private String distributePhase() {
+    return PHASES[distributeInt(0, PHASES.length - 1)];
   }
 
   private Double distributeDouble(double min, double max) {

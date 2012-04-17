@@ -16,12 +16,23 @@
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-2.0.xsd">
 
-  <import resource="classpath:org/onebusaway/nyc/transit_data_federation/application-context.xml" />
+    <bean name="/transit-data-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+        <property name="service" ref="transitDataServiceImpl" />
+        <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
+    </bean>
 
-  <!-- This turns on automatic annotation configuration for Jackson -->
-  <context:annotation-config />  
+    <bean name="/nyc-transit-data-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+        <property name="service" ref="nycTransitDataServiceImpl" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
+    </bean>
+    
+    <bean name="/vehicle-tracking-management-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+        <property name="service" ref="vehicleTrackingManagementServiceImpl" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.VehicleTrackingManagementService" />
+    </bean>
 
-<!--
-  <context:component-scan base-package="org.onebusaway.nyc.vehicle_tracking.impl" />
--->                
+    <bean name="/configuration-service" class="org.springframework.remoting.caucho.HessianServiceExporter">
+        <property name="service" ref="configurationService" />
+        <property name="serviceInterface" value="org.onebusaway.nyc.util.configuration.ConfigurationService" />
+    </bean>
 </beans>

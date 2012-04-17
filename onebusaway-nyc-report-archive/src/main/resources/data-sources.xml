@@ -33,30 +33,30 @@
     <property name="resourceRef" value="true" />
   </bean>
 
-
   <!--  configure spring and Hibernate transaction annotations -->
 
   <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-    <property name="dataSource" ref="dataSource" />
+    <property name="sessionFactory" ref="sessionFactory" />
   </bean>
   <tx:annotation-driven transaction-manager="transactionManager"/>
-  
-  <bean id="transitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-    <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
-    <property name="serviceInterface" value="org.onebusaway.transit_data.services.TransitDataService" />
-  </bean>
-  <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
-    <property name="target" value="hibernateProperties" />
-    <property name="properties">
-      <props>
-        <prop key="hibernate.hbm2ddl.auto">validate</prop>
-        <prop key="hibernate.jdbc.batch_size">1000</prop>
-        <prop key="hibernate.order_inserts">true</prop>
-        <prop key="hibernate.order_updates">true</prop>
-        <prop key="hibernate.show_sql">false</prop>
-      </props>
-    </property>
-  </bean>
+
+
+    <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
+        <property name="target" value="hibernateProperties" />
+        <property name="properties">
+            <props>
+<!--
+              <prop key="hibernate.hbm2ddl.auto">validate</prop>
+-->
+              <prop key="hibernate.jdbc.batch_size">1000</prop>
+              <prop key="hibernate.order_inserts">true</prop>
+              <prop key="hibernate.order_updates">true</prop>
+              <prop key="hibernate.show_sql">false</prop>
+              <prop key="bundle.location">${bundle.location}</prop>
+            </props> 
+        </property> 
+    </bean> 
+
 
   <bean id="transitDataManagerApiLibrary" class="org.onebusaway.nyc.util.impl.tdm.TransitDataManagerApiLibrary">
     <constructor-arg type="java.lang.String" value="${tdm.host}" />
@@ -65,10 +65,30 @@
   </bean>
 
     <!-- Input and Inference Queue Configuration -->
+  <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask" >
+    <property name="batchSize" value="1000" />
+  </bean>
+  <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask" >
+    <property name="batchSize" value="1000" />
+  </bean>
+<!-- tds integartion -->
+	<!-- Input Queue Configuration -->
+ 	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 
-  <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
-  </bean>
-  <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
-  </bean>
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="blockLocationServiceImpl.persistBlockLocationRecords">false</prop>
+                <prop key="blockLocationServiceImpl.locationInterpolation">false</prop>
+                <prop key="cacheManager.cacheManagerName">org.onebusaway.transit_data_federation_webapp.cacheManager</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="bundleManagementService" class="org.onebusaway.nyc.transit_data_federation.impl.bundle.BundleManagementServiceImpl">
+                <property name="bundleStoreRoot" value="${bundle.location}" />
+                <property name="standaloneMode" value="${bundle.mode.standalone}" />
+    </bean>
+
 
 </beans>

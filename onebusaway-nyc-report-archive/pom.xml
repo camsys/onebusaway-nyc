@@ -90,6 +90,21 @@
             <groupId>log4j</groupId>
             <artifactId>apache-log4j-extras</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+        <!-- RMI-like service for wiring up services between VMs -->
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>resin-hessian</artifactId>
+	        <version>3.1.6</version>
+        </dependency>
+        <dependency>
+          <groupId>org.onebusaway</groupId>
+          <artifactId>onebusaway-nyc-tdm-adapters</artifactId>
+          <version>${onebusaway.nyc.version}</version>
+        </dependency>
     
     </dependencies>
     <profiles>
@@ -99,7 +114,9 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <tds.path>http://sms:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path><!-- assumes domain is set in resolv.conf -->
+                <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
+                <bundle.mode.standalone>false</bundle.mode.standalone>
+                <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path><!-- assumes domain is set in resolv.conf -->
                 <tdm.host>tdm</tdm.host>
             </properties>
         </profile>
