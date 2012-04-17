@@ -65,13 +65,14 @@
   </bean>
 
     <!-- Input and Inference Queue Configuration -->
-  <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask" >
+
+  <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
     <property name="batchSize" value="1000" />
   </bean>
-  <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask" >
+  <bean id="output_queue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInferenceQueueListenerTask">
     <property name="batchSize" value="1000" />
   </bean>
-<!-- tds integartion -->
+<!-- tds integration -->
 	<!-- Input Queue Configuration -->
  	<bean id="inferenceInputQueue" class="org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceInputQueueListenerTask" />
 
