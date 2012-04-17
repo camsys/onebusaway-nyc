@@ -369,22 +369,23 @@ public class StifTask implements Runnable {
             gtfsTrip.setBlockId(blockId);
             _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
 
-            addToMapSet(routeIdsByDsc, trip.getDsc(), gtfsTrip.getRoute().getId());
-            dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId);
+            AgencyAndId routeId = gtfsTrip.getRoute().getId();
+            addToMapSet(routeIdsByDsc, trip.getDsc(), routeId);
+            dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId, routeId.getId());
 
             usedGtfsTrips.add(gtfsTrip);
           }
           if (lastTrip.type == StifTripType.DEADHEAD) {
             for (String blockId : blockIds) {
-              dumpBlockDataForTrip(lastTrip, "deadhead", blockId);
+              dumpBlockDataForTrip(lastTrip, "deadhead", blockId, "no gtfs trip");
             }
           }
         }
         unmatchedTrips.remove(lastTrip);
 
         for (String blockId : blockIds) {
-          dumpBlockDataForTrip(pullout, "pullout", blockId);
-          dumpBlockDataForTrip(lastTrip, "pullin", blockId);
+          dumpBlockDataForTrip(pullout, "pullout", blockId, "no gtfs trip");
+          dumpBlockDataForTrip(lastTrip, "pullin", blockId, "no gtfs trip");
         }
       }
 
@@ -400,7 +401,7 @@ public class StifTask implements Runnable {
           _log.warn("Generating single-trip block id for GTFS trip: "
               + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
-          dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId);
+          dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId, gtfsTrip.getBlockId());
           csvLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
               trip.lineNumber, gtfsTrip.getId(), blockId);
           usedGtfsTrips.add(gtfsTrip);
@@ -446,13 +447,13 @@ public class StifTask implements Runnable {
    * Dump some raw block matching data to a CSV file from stif trips
    */
   private void dumpBlockDataForTrip(RawTrip trip,
-      String tripId, String blockId) {
+      String tripId, String blockId, String routeId) {
 
     csvLogger.log("matched_trips_gtfs_stif.csv", blockId, tripId,
         trip.getDsc(), trip.firstStop, trip.firstStopTime, trip.lastStop,
         trip.lastStopTime, trip.runId, trip.reliefRunId, trip.recoveryTime,
         trip.firstTripInSequence, trip.lastTripInSequence,
-        trip.getSignCodeRoute());
+        trip.getSignCodeRoute(), routeId);
   }
 
   private void warnOnMissingTrips() {
