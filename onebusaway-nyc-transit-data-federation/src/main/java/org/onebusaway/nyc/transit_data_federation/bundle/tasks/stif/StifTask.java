@@ -246,14 +246,14 @@ public class StifTask implements Runnable {
           return ((Integer) o1) - ((Integer) o2);
         } else {
           RawTrip trip = (RawTrip) o2;
-          return ((Integer) o1) - trip.firstStopTime;
+          return ((Integer) o1) - trip.listedFirstStopTime;
         }
       } else {
         if (o2 instanceof Integer) {
-          return ((RawTrip) o1).firstStopTime - ((Integer) o2);
+          return ((RawTrip) o1).listedFirstStopTime - ((Integer) o2);
         } else {
           RawTrip trip = (RawTrip) o2;
-          return ((RawTrip) o1).firstStopTime - trip.firstStopTime;
+          return ((RawTrip) o1).listedFirstStopTime - trip.listedFirstStopTime;
         }
       }
     }
@@ -268,7 +268,7 @@ public class StifTask implements Runnable {
     csvLogger.header("non_pullin_without_next_movement.csv", "stif_trip,stif_filename,stif_trip_record_line_num");
     csvLogger.header(
         "stif_trips_without_pullout.csv",
-        "stif_trip, stif_filename, stif_trip_record_line_num, gtfs_trip_id, synthesized_block_id");
+        "stif_trip,stif_filename,stif_trip_record_line_num,gtfs_trip_id,synthesized_block_id");
     csvLogger.header("matched_trips_gtfs_stif.csv", "blockId,tripId,dsc,firstStop,firstStopTime,lastStop,lastStopTime,"+
         "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute");
 
@@ -302,6 +302,7 @@ public class StifTask implements Runnable {
         int i = 0;
         HashSet<String> blockIds = new HashSet<String>();
         while (lastTrip.type != StifTripType.PULLIN) {
+
           unmatchedTrips.remove(lastTrip);
           if (++i > 200) {
             _log.warn("We seem to be caught in an infinite loop; this is usually caused\n"
@@ -328,7 +329,7 @@ public class StifTask implements Runnable {
             break;
           }
 
-          int nextTripStartTime = lastTrip.lastStopTime + lastTrip.recoveryTime * 60;
+          int nextTripStartTime = lastTrip.listedLastStopTime + lastTrip.recoveryTime * 60;
           @SuppressWarnings("unchecked")
           int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
 
@@ -340,8 +341,7 @@ public class StifTask implements Runnable {
                 + lastTrip.nextRun
                 + " is next, but there are no trips after "
                 + lastTrip.firstStopTime
-                + ", so some trips will end up with missing blocks (the log may"
-                + " also be incorrect.");
+                + ", so some trips will end up with missing blocks.");
             break;
           }
 
