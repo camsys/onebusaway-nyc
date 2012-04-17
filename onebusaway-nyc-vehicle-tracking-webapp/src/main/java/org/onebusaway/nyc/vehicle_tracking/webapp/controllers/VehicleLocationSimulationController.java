@@ -275,6 +275,7 @@ public class VehicleLocationSimulationController {
     m.put("details", details);
     m.put("recordNumber", recordNumber);
     m.put("showTransitionParticles", true);
+    m.put("parentParticleId", particleId);
     Entry<Particle> firstParticle = Iterables.getFirst(details.getParticles(), null);
     List<Multiset.Entry<Particle>> transParticles = 
         (firstParticle != null && firstParticle.getElement().getTransitions() != null)

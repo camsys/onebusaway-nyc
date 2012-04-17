@@ -147,36 +147,6 @@ public class MotionModelImpl implements MotionModel<Observation> {
     _blockStateSamplingStrategy = blockStateSamplingStrategy;
   }
 
-  // private boolean checkIsInOppositeDirection(Observation observation,
-  // VehicleState state) {
-  //
-  // Double obsOrientation = null;
-  // Double distMoved = null;
-  // if (observation.getPreviousRecord() != null) {
-  // NycRawLocationRecord prevRecord = observation.getPreviousRecord();
-  // obsOrientation =
-  // SphericalGeometryLibrary.getOrientation(prevRecord.getLatitude(),
-  // prevRecord.getLongitude(), observation.getLocation().getLat(),
-  // observation.getLocation().getLon());
-  // distMoved =
-  // SphericalGeometryLibrary.distanceFaster(prevRecord.getLatitude(),
-  // prevRecord.getLongitude(), observation.getLocation().getLat(),
-  // observation.getLocation().getLon());
-  // }
-  //
-  // /*
-  // * Don't consider opposite direction trips.
-  // */
-  // if (obsOrientation != null && distMoved != null) {
-  // double orientDiff = Math.abs(obsOrientation - location.getOrientation());
-  // if (orientDiff >= 95 && orientDiff <= 265
-  // && distMoved >= BlockStateService.getOppositedirmovecutoff()) {
-  // break;
-  // }
-  // }
-  //
-  // }
-
   private boolean allowParentBlockTransition(VehicleState parentState,
       Observation obs) {
 
@@ -307,7 +277,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
     return results;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes", "null"})
   private Particle sampleTransitionParticle(Entry<Particle> parent,
       BlockStateObservation newParentBlockStateObs, Observation obs,
       final double vehicleHasNotMovedProb,
@@ -318,9 +288,9 @@ public class MotionModelImpl implements MotionModel<Observation> {
 
     final CategoricalDist<Particle> transitionDist = new CategoricalDist<Particle>();
 
-    if (ParticleFilter.getDebugEnabled()
-        && parent.getElement().getTransitions() == null)
-      parent.getElement().setTransitions((Multiset) HashMultiset.create());
+    Multiset<Particle> debugTransitions = null;
+    if (ParticleFilter.getDebugEnabled())
+      debugTransitions = HashMultiset.create();
 
     for (final BlockStateObservation proposalEdge : transitions) {
 
@@ -393,17 +363,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
       newParticle.setResult(transProb);
 
       if (ParticleFilter.getDebugEnabled())
-        parent.getElement().getTransitions().add(newParticle);
+        debugTransitions.add(newParticle);
 
       transitionDist.logPut(transProb.getLogProbability(), newParticle);
     }
 
+    final Particle newParticle;
     if (transitionDist.canSample()) {
-      final Particle sampledParticle = transitionDist.sample();
-      sampledParticle.setLogWeight(parent.getElement().getLogWeight()
-          + sampledParticle.getResult().getLogProbability());
+      newParticle = transitionDist.sample();
+      newParticle.setLogWeight(parent.getElement().getLogWeight()
+          + newParticle.getResult().getLogProbability());
 
-      return sampledParticle;
     } else {
       final SensorModelResult transProb = new SensorModelResult(
           "Transition (null)");
@@ -427,14 +397,18 @@ public class MotionModelImpl implements MotionModel<Observation> {
       transProb.addResultAsAnd(new SensorModelResult("not-moved",
           vehicleNotMoved ? vehicleHasNotMovedProb
               : 1d - vehicleHasNotMovedProb));
-      final Particle newParticle = new Particle(timestamp, parent.getElement(),
+      newParticle = new Particle(timestamp, parent.getElement(),
           0.0, nullState);
       newParticle.setResult(transProb);
       newParticle.setLogWeight(parent.getElement().getLogWeight()
           + newParticle.getResult().getLogProbability());
 
-      return newParticle;
     }
+    
+    if (ParticleFilter.getDebugEnabled())
+      newParticle.setTransitions(debugTransitions);
+    
+    return newParticle; 
   }
 
   public static enum BlockSampleType {

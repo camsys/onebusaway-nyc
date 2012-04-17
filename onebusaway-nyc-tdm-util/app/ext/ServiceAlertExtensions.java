@@ -5,9 +5,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.onebusaway.transit_data.model.service_alerts.EEffect;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
+import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
 
 import play.templates.JavaExtensions;
@@ -71,6 +73,18 @@ public class ServiceAlertExtensions extends JavaExtensions {
       return formatMultivalued(serviceAlert.getDescriptions());
     }
     throw new RuntimeException("Unknown field name: " + fieldName);
+  }
+  
+  public static String formatConsequences(ServiceAlertBean serviceAlert) {
+    List<SituationConsequenceBean> list = serviceAlert.getConsequences();
+    if (list == null) {
+      return("(none)");
+    }
+    List<String> effects = new ArrayList<String>();
+    for (SituationConsequenceBean b: list) {
+      effects.add(b.getEffect().toString());
+    }
+    return(StringUtils.join(effects, ", "));
   }
 
   private static String formatMultivalued(

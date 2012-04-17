@@ -447,9 +447,8 @@ public class VehicleInferenceInstance {
 
       // set sched. dev. if we have a match in UTS and are therefore comfortable
       // saying that this schedule deviation is a true match to the schedule.
-      final Boolean opAssigned = blockState.getOpAssigned();
-      if (opAssigned != null && opAssigned) {
-        int deviation = 
+      if (isInferencFormal(blockState)) {
+        int deviation = //blockState.getScheduleDeviation(); 
             (int)((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
 
         record.setScheduleDeviation(deviation);
@@ -492,10 +491,14 @@ public class VehicleInferenceInstance {
     if (blockState != null) {
       record.setLastInferredDestinationSignCode(blockState.getBlockState().getDestinationSignCode());
       record.setInferredRunId(blockState.getBlockState().getRunId());
-      record.setInferenceIsFormal(blockState.getOpAssigned() == null ? false : blockState.getOpAssigned());
+      record.setInferenceIsFormal(isInferencFormal(blockState));
     }
 
     return record;
+  }
+
+  public static boolean isInferencFormal(BlockStateObservation blockState) {
+    return blockState.getOpAssigned() == null ? false : blockState.getOpAssigned();
   }
 
   public synchronized void setVehicleStatus(boolean enabled) {
