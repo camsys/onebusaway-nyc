@@ -328,7 +328,7 @@ public class StifTask implements Runnable {
             break;
           }
 
-          int nextTripStartTime = lastTrip.lastStopTime + lastTrip.recoveryTime;
+          int nextTripStartTime = lastTrip.lastStopTime + lastTrip.recoveryTime * 60;
           @SuppressWarnings("unchecked")
           int index = Collections.binarySearch(trips, nextTripStartTime, new RawTripComparator());
 
