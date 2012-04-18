@@ -37,5 +37,6 @@ public class Trace_7563_20101209T124732_IntegrationTest extends
     // This test is noisy
     // TODO follow up on the layover discrepancies
     setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.76);
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.93);
   }
 }

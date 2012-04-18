@@ -42,6 +42,7 @@ public class Trace_7564_20101203T004633_with_runs_reported_IntegrationTest exten
     super("7564-2010-12-03T00-46-33.with.runs.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
     setLoops(1);
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.75);
+//    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.75);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.93);
   }
 }

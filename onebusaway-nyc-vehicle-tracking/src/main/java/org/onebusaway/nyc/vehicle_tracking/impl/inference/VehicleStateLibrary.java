@@ -44,15 +44,15 @@ public class VehicleStateLibrary {
 
   private BaseLocationService _baseLocationService;
 
-  static private double _layoverStopDistance = 400;
+  private final static double _layoverStopDistance = 400;
 
   /**
    * If we're more than X meters off our block, then we really don't think we're
    * serving the block any more
    */
-  private double _offBlockDistance = 1000;
+  private final double _offBlockDistance = 1000;
 
-  private double _terminalSearchRadius = 150;
+  private final static double _terminalSearchRadius = 150;
 
   private TransitGraphDao _transitGraphDao;
 
@@ -78,9 +78,9 @@ public class VehicleStateLibrary {
    ****/
 
   public boolean isAtBase(CoordinatePoint location) {
-    String baseName = _baseLocationService.getBaseNameForLocation(location);
+    final String baseName = _baseLocationService.getBaseNameForLocation(location);
 
-    boolean isAtBase = (baseName != null);
+    final boolean isAtBase = (baseName != null);
     return isAtBase;
   }
 
@@ -97,7 +97,7 @@ public class VehicleStateLibrary {
     return isAtPotentialLayoverSpot(state.getBlockState(), obs);
   }
 
-  public boolean isAtPotentialLayoverSpot(BlockState blockState, Observation obs) {
+  public static boolean isAtPotentialLayoverSpot(BlockState blockState, Observation obs) {
 
     /**
      * If there is no block assigned to this vehicle state, then we allow a
@@ -114,16 +114,18 @@ public class VehicleStateLibrary {
      * return true;
      */
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
     if (blockLocation == null)
       return false;
 
-    return getPotentialLayoverSpot(blockLocation) != null;
-  }
-
-  public static boolean isAtPotentialLayoverSpot(ScheduledBlockLocation location) {
-    return getPotentialLayoverSpot(location) != null;
+    BlockStopTimeEntry layoverSpot = getPotentialLayoverSpot(blockLocation);
+    if (layoverSpot == null)
+      return false;
+    
+    final double dist = SphericalGeometryLibrary.distance(obs.getLocation(),
+        layoverSpot.getStopTime().getStop().getStopLocation());
+    return  dist <= _layoverStopDistance;
   }
 
   /**
@@ -135,22 +137,22 @@ public class VehicleStateLibrary {
    * @param blockInstance
    * @return whether the observation is within the search radius
    */
-  public boolean isAtPotentialTerminal(NycRawLocationRecord record,
+  public static boolean isAtPotentialTerminal(NycRawLocationRecord record,
       BlockInstance blockInstance) {
 
-    CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
+    final CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
         record.getLongitude());
 
-    StopEntry firstStop = blockInstance.getBlock().getStopTimes().get(0).getStopTime().getStop();
+    final StopEntry firstStop = blockInstance.getBlock().getStopTimes().get(0).getStopTime().getStop();
 
-    double firstStopDist = SphericalGeometryLibrary.distance(loc,
+    final double firstStopDist = SphericalGeometryLibrary.distance(loc,
         firstStop.getStopLocation());
 
-    int lastStopIdx = blockInstance.getBlock().getStopTimes().size() - 1;
+    final int lastStopIdx = blockInstance.getBlock().getStopTimes().size() - 1;
 
-    StopEntry lastStop = blockInstance.getBlock().getStopTimes().get(
+    final StopEntry lastStop = blockInstance.getBlock().getStopTimes().get(
         lastStopIdx).getStopTime().getStop();
-    double lastStopDist = SphericalGeometryLibrary.distance(loc,
+    final double lastStopDist = SphericalGeometryLibrary.distance(loc,
         lastStop.getStopLocation());
 
     if (firstStopDist <= _terminalSearchRadius
@@ -171,31 +173,31 @@ public class VehicleStateLibrary {
    */
   public boolean isAtPotentialBlockTerminal(NycRawLocationRecord record) {
 
-    CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
+    final CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
         record.getLongitude());
-    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(loc,
+    final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(loc,
         _terminalSearchRadius);
 
-    List<BlockConfigurationEntry> blocks = new ArrayList<BlockConfigurationEntry>();
-    List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
-    for (StopEntry stop : stops) {
-      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
-      for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
+    final List<BlockConfigurationEntry> blocks = new ArrayList<BlockConfigurationEntry>();
+    final List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
+    for (final StopEntry stop : stops) {
+      final List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
+      for (final BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
         blocks.addAll(stopTimeIndex.getBlockConfigs());
       }
     }
 
-    for (BlockConfigurationEntry block : blocks) {
+    for (final BlockConfigurationEntry block : blocks) {
 
-      StopEntry firstStop = block.getStopTimes().get(0).getStopTime().getStop();
+      final StopEntry firstStop = block.getStopTimes().get(0).getStopTime().getStop();
 
-      double firstStopDist = SphericalGeometryLibrary.distance(loc,
+      final double firstStopDist = SphericalGeometryLibrary.distance(loc,
           firstStop.getStopLocation());
 
-      int lastStopIdx = block.getStopTimes().size() - 1;
+      final int lastStopIdx = block.getStopTimes().size() - 1;
 
-      StopEntry lastStop = block.getStopTimes().get(lastStopIdx).getStopTime().getStop();
-      double lastStopDist = SphericalGeometryLibrary.distance(loc,
+      final StopEntry lastStop = block.getStopTimes().get(lastStopIdx).getStopTime().getStop();
+      final double lastStopDist = SphericalGeometryLibrary.distance(loc,
           lastStop.getStopLocation());
 
       if (firstStopDist <= _terminalSearchRadius
@@ -218,25 +220,25 @@ public class VehicleStateLibrary {
    */
   public boolean isAtPotentialTripTerminal(NycRawLocationRecord record) {
 
-    CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
+    final CoordinatePoint loc = new CoordinatePoint(record.getLatitude(),
         record.getLongitude());
-    CoordinateBounds bounds = SphericalGeometryLibrary.bounds(loc,
+    final CoordinateBounds bounds = SphericalGeometryLibrary.bounds(loc,
         _terminalSearchRadius);
 
-    List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
-    for (StopEntry stop : stops) {
-      List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
-      for (BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
-        for (BlockTripEntry bte : stopTimeIndex.getTrips()) {
+    final List<StopEntry> stops = _transitGraphDao.getStopsByLocation(bounds);
+    for (final StopEntry stop : stops) {
+      final List<BlockStopTimeIndex> stopTimeIndices = _blockIndexService.getStopTimeIndicesForStop(stop);
+      for (final BlockStopTimeIndex stopTimeIndex : stopTimeIndices) {
+        for (final BlockTripEntry bte : stopTimeIndex.getTrips()) {
           /*
            * is this the first stop on this trip?
            */
-          List<StopTimeEntry> stopsOnTrip = bte.getTrip().getStopTimes();
+          final List<StopTimeEntry> stopsOnTrip = bte.getTrip().getStopTimes();
           if (stop.equals(stopsOnTrip.get(0).getStop())) {
             return true;
           }
 
-          int numOfStops = stopsOnTrip.size() - 1;
+          final int numOfStops = stopsOnTrip.size() - 1;
           if (stop.equals(stopsOnTrip.get(numOfStops).getStop())) {
             return true;
           }
@@ -251,20 +253,20 @@ public class VehicleStateLibrary {
   static public BlockStopTimeEntry getPotentialLayoverSpot(
       ScheduledBlockLocation location) {
 
-    int time = location.getScheduledTime();
+    final int time = location.getScheduledTime();
 
     /**
      * We could be at a layover at a stop itself
      */
-    BlockStopTimeEntry closestStop = location.getClosestStop();
-    StopTimeEntry closestStopTime = closestStop.getStopTime();
+    final BlockStopTimeEntry closestStop = location.getClosestStop();
+    final StopTimeEntry closestStopTime = closestStop.getStopTime();
 
     if (closestStopTime.getAccumulatedSlackTime() > 60
         && closestStopTime.getArrivalTime() <= time
         && time <= closestStopTime.getDepartureTime())
       return closestStop;
 
-    BlockStopTimeEntry nextStop = location.getNextStop();
+    final BlockStopTimeEntry nextStop = location.getNextStop();
 
     /**
      * If the next stop is null, it means we're at the end of the block. Do we
@@ -280,9 +282,9 @@ public class VehicleStateLibrary {
     if (nextStop.getBlockSequence() == 0)
       return nextStop;
 
-    BlockTripEntry nextTrip = nextStop.getTrip();
-    BlockConfigurationEntry blockConfig = nextTrip.getBlockConfiguration();
-    List<BlockStopTimeEntry> stopTimes = blockConfig.getStopTimes();
+    final BlockTripEntry nextTrip = nextStop.getTrip();
+    final BlockConfigurationEntry blockConfig = nextTrip.getBlockConfiguration();
+    final List<BlockStopTimeEntry> stopTimes = blockConfig.getStopTimes();
 
     if (tripChangesBetweenPrevAndNextStop(stopTimes, nextStop, location))
       return nextStop;
@@ -293,20 +295,20 @@ public class VehicleStateLibrary {
      * point or right before they get there
      */
     if (nextStop.getBlockSequence() > 1) {
-      BlockStopTimeEntry previousStop = blockConfig.getStopTimes().get(
+      final BlockStopTimeEntry previousStop = blockConfig.getStopTimes().get(
           nextStop.getBlockSequence() - 1);
       if (tripChangesBetweenPrevAndNextStop(stopTimes, previousStop, location))
         return previousStop;
     }
 
     if (nextStop.getBlockSequence() + 1 < stopTimes.size()) {
-      BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop.getBlockSequence() + 1);
+      final BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop.getBlockSequence() + 1);
       if (tripChangesBetweenPrevAndNextStop(stopTimes, nextNextStop, location))
         return nextNextStop;
     }
 
     if (nextStop.getBlockSequence() + 2 < stopTimes.size()) {
-      BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop.getBlockSequence() + 2);
+      final BlockStopTimeEntry nextNextStop = stopTimes.get(nextStop.getBlockSequence() + 2);
       if (tripChangesBetweenPrevAndNextStop(stopTimes, nextNextStop, location))
         return nextNextStop;
     }
@@ -317,10 +319,10 @@ public class VehicleStateLibrary {
   public double getDistanceToBlockLocation(Observation obs,
       BlockState blockState) {
 
-    ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
+    final ScheduledBlockLocation blockLocation = blockState.getBlockLocation();
 
-    CoordinatePoint blockStart = blockLocation.getLocation();
-    CoordinatePoint currentLocation = obs.getLocation();
+    final CoordinatePoint blockStart = blockLocation.getLocation();
+    final CoordinatePoint currentLocation = obs.getLocation();
 
     return SphericalGeometryLibrary.distance(currentLocation, blockStart);
   }
@@ -337,9 +339,9 @@ public class VehicleStateLibrary {
       List<BlockStopTimeEntry> stopTimes, BlockStopTimeEntry nextStop,
       ScheduledBlockLocation location) {
 
-    BlockStopTimeEntry previousStop = stopTimes.get(nextStop.getBlockSequence() - 1);
-    BlockTripEntry nextTrip = nextStop.getTrip();
-    BlockTripEntry previousTrip = previousStop.getTrip();
+    final BlockStopTimeEntry previousStop = stopTimes.get(nextStop.getBlockSequence() - 1);
+    final BlockTripEntry nextTrip = nextStop.getTrip();
+    final BlockTripEntry previousTrip = previousStop.getTrip();
 
     return !previousTrip.equals(nextTrip)
         && isLayoverInRange(previousStop, nextStop, location);
@@ -352,9 +354,9 @@ public class VehicleStateLibrary {
         && location.getDistanceAlongBlock() <= nextStop.getDistanceAlongBlock())
       return true;
 
-    double d1 = Math.abs(location.getDistanceAlongBlock()
+    final double d1 = Math.abs(location.getDistanceAlongBlock()
         - prevStop.getDistanceAlongBlock());
-    double d2 = Math.abs(location.getDistanceAlongBlock()
+    final double d2 = Math.abs(location.getDistanceAlongBlock()
         - nextStop.getDistanceAlongBlock());
     return Math.min(d1, d2) < _layoverStopDistance;
   }

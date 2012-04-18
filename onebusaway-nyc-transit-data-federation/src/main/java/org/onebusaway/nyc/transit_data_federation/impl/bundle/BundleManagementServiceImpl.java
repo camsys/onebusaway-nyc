@@ -349,6 +349,7 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       List<AgencyWithCoverageBean> agenciesWithCoverage = _nycTransitDataService.getAgenciesWithCoverage();
 
       for (AgencyWithCoverageBean agencyWithCoverage : agenciesWithCoverage) {
+
         AgencyBean agency = agencyWithCoverage.getAgency();
 
         ListBean<String> stopIds = _nycTransitDataService.getStopIdsForAgencyId(agency.getId());
@@ -365,9 +366,8 @@ public class BundleManagementServiceImpl implements BundleManagementService {
       Set<AgencyAndId> shapeIds = new HashSet<AgencyAndId>();
       for (TripEntry trip : _transitGraphDao.getAllTrips()) {
         AgencyAndId shapeId = trip.getShapeId();
-        if (shapeId != null && shapeId.hasValues()) {
+        if (shapeId != null && shapeId.hasValues())
           shapeIds.add(shapeId);
-        }
       }
 
       for (AgencyAndId shapeId : shapeIds) {
@@ -376,6 +376,12 @@ public class BundleManagementServiceImpl implements BundleManagementService {
     } catch (Exception e) {
       _log.error("Exception during cache rebuild: ", e.getMessage());
     }
+    
+//    for (String cacheName : _cacheManager.getCacheNames()) {
+//      _log.info("Flushing cache with ID " + cacheName + " to disk.");
+//      Cache cache = _cacheManager.getCache(cacheName);
+//      cache.flush();
+//    }
 	}
 	
 	private void removeDeadInferenceThreads() {

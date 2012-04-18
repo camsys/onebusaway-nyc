@@ -15,14 +15,16 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.model;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.serialization.mappings.StopTimeFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.AgencyAndIdFieldMappingFactory;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.DateTimeFieldMappingFactory;
+
+import com.google.common.base.Strings;
+
+import java.io.Serializable;
+import java.util.Date;
 
 public class NycTestInferredLocationRecord implements Serializable {
 
@@ -36,6 +38,9 @@ public class NycTestInferredLocationRecord implements Serializable {
   @CsvField(name = "vid", mapping = AgencyAndIdFieldMappingFactory.class)
   private AgencyAndId vehicleId;
 
+  @CsvField(optional = true)
+  private Integer recordNumber;
+  
   @CsvField(optional = true)
   private double lat;
 
@@ -56,7 +61,51 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private String dsc;
+  
+  
+  /*
+   * FIXME
+   * Important/most useful data to see first
+   */
+  
+  @CsvField(optional = true)
+  private String inferredPhase = null;
+  
+  @CsvField(optional = true)
+  private String inferredTripId;
+  
+  @CsvField(optional = true)
+  private String inferredDsc;
+  
+  @CsvField(optional = true)
+  private double inferredDistanceAlongBlock = Double.NaN;
 
+  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
+  private int inferredScheduleTime = MISSING_VALUE;
+  
+  @CsvField(optional = true)
+  private double inferredScheduleDeviation;
+
+  @CsvField(optional = true)
+  private String actualPhase = null;
+
+  @CsvField(optional = true)
+  private String actualTripId;
+  
+  @CsvField(optional = true)
+  private String actualDsc;
+  
+  @CsvField(optional = true)
+  private double actualDistanceAlongBlock = Double.NaN;
+
+  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
+  private int actualScheduleTime = MISSING_VALUE;
+
+  @CsvField(optional = true)
+  private double actualScheduleDeviation;
+
+  
+  
   /****
    * Inferred Values
    ****/
@@ -67,28 +116,13 @@ public class NycTestInferredLocationRecord implements Serializable {
   private String inferredBlockId;
 
   @CsvField(optional = true)
-  private String inferredTripId;
-
-  @CsvField(optional = true)
   private long inferredServiceDate;
-
-  @CsvField(optional = true)
-  private double inferredDistanceAlongBlock = Double.NaN;
-
-  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
-  private int inferredScheduleTime = MISSING_VALUE;
-
-  @CsvField(optional = true)
-  private String inferredDsc;
-
+  
   @CsvField(optional = true)
   private double inferredBlockLat = Double.NaN;
 
   @CsvField(optional = true)
   private double inferredBlockLon = Double.NaN;
-
-  @CsvField(optional = true)
-  private String inferredPhase = null;
 
   @CsvField(optional = true)
   private String inferredStatus = null;
@@ -103,19 +137,7 @@ public class NycTestInferredLocationRecord implements Serializable {
   private String actualBlockId;
 
   @CsvField(optional = true)
-  private String actualTripId;
-
-  @CsvField(optional = true)
   private long actualServiceDate;
-
-  @CsvField(optional = true)
-  private double actualDistanceAlongBlock = Double.NaN;
-
-  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
-  private int actualScheduleTime = MISSING_VALUE;
-
-  @CsvField(optional = true)
-  private String actualDsc;
 
   @CsvField(optional = true)
   private double actualBlockLat = Double.NaN;
@@ -124,10 +146,10 @@ public class NycTestInferredLocationRecord implements Serializable {
   private double actualBlockLon = Double.NaN;
 
   @CsvField(optional = true)
-  private String actualPhase = null;
+  private String actualStatus = null;
 
   @CsvField(optional = true)
-  private String actualStatus = null;
+  private Boolean isRunFormal;
 
   // **************
 
@@ -331,6 +353,14 @@ public class NycTestInferredLocationRecord implements Serializable {
     this.actualTripId = actualTripId;
   }
 
+  public boolean isReportedRunInfoSet() {
+    return (!Strings.isNullOrEmpty(this.reportedRunId)
+        && !this.reportedRunId.matches("0*-?0*"))
+        || (!Strings.isNullOrEmpty(this.operatorId)
+            && !this.operatorId.matches("0*"));
+    
+  }
+  
   public boolean isActualServiceDateSet() {
     return actualServiceDate > 0;
   }
@@ -435,5 +465,37 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setReportedRunId(String reportedRunId) {
     this.reportedRunId = reportedRunId;
+  }
+
+  public Integer getRecordNumber() {
+    return recordNumber;
+  }
+
+  public void setRecordNumber(Integer recordNumber) {
+    this.recordNumber = recordNumber;
+  }
+
+  public double getActualScheduleDeviation() {
+    return actualScheduleDeviation;
+  }
+
+  public void setActualScheduleDeviation(double actualScheduleDeviation) {
+    this.actualScheduleDeviation = actualScheduleDeviation;
+  }
+
+  public double getInferredScheduleDeviation() {
+    return inferredScheduleDeviation;
+  }
+
+  public void setInferredScheduleDeviation(double inferredScheduleDeviation) {
+    this.inferredScheduleDeviation = inferredScheduleDeviation;
+  }
+
+  public Boolean getIsRunFormal() {
+    return isRunFormal;
+  }
+
+  public void setIsRunFormal(Boolean isRunFormal) {
+    this.isRunFormal = isRunFormal;
   }
 }

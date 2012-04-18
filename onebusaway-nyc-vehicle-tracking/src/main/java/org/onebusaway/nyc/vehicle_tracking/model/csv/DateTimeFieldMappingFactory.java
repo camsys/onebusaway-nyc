@@ -64,19 +64,19 @@ public class DateTimeFieldMappingFactory implements FieldMappingFactory {
       if (isMissingAndOptional(csvValues))
         return;
 
-      String valueAsString = (String) csvValues.get(_csvFieldName);
+      final String valueAsString = (String) csvValues.get(_csvFieldName);
 
       try {
 
-        Date valueAsDate = _format.parse(valueAsString);
-        Class<?> type = object.getPropertyType(_objFieldName);
+        final Date valueAsDate = _format.parse(valueAsString);
+        final Class<?> type = object.getPropertyType(_objFieldName);
 
         if (type.equals(Long.class) || type.equals(Long.TYPE))
           object.setPropertyValue(_objFieldName, valueAsDate.getTime());
         else
           object.setPropertyValue(_objFieldName, valueAsDate);
 
-      } catch (ParseException e) {
+      } catch (final ParseException e) {
         throw new CsvDateFormatException(_entityType, "bad date-time string:"
             + valueAsString, e);
       }
@@ -87,10 +87,10 @@ public class DateTimeFieldMappingFactory implements FieldMappingFactory {
         BeanWrapper object, Map<String, Object> csvValues)
         throws CsvEntityException {
 
-      Object obj = object.getPropertyValue(_objFieldName);
-      Date valueAsDate = obj instanceof Long ? new Date(
+      final Object obj = object.getPropertyValue(_objFieldName);
+      final Date valueAsDate = obj instanceof Long ? new Date(
           ((Long) obj).longValue()) : (Date) obj;
-      String valueAsString = _format.format(valueAsDate);
+      final String valueAsString = _format.format(valueAsDate);
       csvValues.put(_csvFieldName, valueAsString);
     }
   }

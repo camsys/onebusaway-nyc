@@ -15,6 +15,14 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.utility;
 
+import org.onebusaway.csv_entities.CsvEntityReader;
+import org.onebusaway.csv_entities.CsvEntityWriterFactory;
+import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
+import org.onebusaway.gtfs.model.AgencyAndId;
+import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -25,14 +33,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.onebusaway.csv_entities.CsvEntityReader;
-import org.onebusaway.csv_entities.CsvEntityWriterFactory;
-import org.onebusaway.csv_entities.EntityHandler;
-import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
-import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
-import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
-
 public class SplitNycVehicleLocationReportIntoTracesMain {
   public static void main(String[] args) throws CsvEntityIOException,
       IOException {
@@ -42,19 +42,19 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
       System.exit(-1);
     }
 
-    File outputDirectory = new File(args[args.length - 1]);
+    final File outputDirectory = new File(args[args.length - 1]);
 
     if (!outputDirectory.exists())
       outputDirectory.mkdirs();
 
-    CsvEntityReader csvReader = new CsvEntityReader();
+    final CsvEntityReader csvReader = new CsvEntityReader();
     csvReader.setTokenizerStrategy(new TabTokenizerStrategy());
 
-    EntityHandlerImpl handler = new EntityHandlerImpl(outputDirectory);
+    final EntityHandlerImpl handler = new EntityHandlerImpl(outputDirectory);
     csvReader.addEntityHandler(handler);
 
     for (int i = 0; i < args.length - 1; i++) {
-      FileReader reader = new FileReader(args[0]);
+      final FileReader reader = new FileReader(args[0]);
       csvReader.readEntities(NycRawLocationRecord.class, reader);
       reader.close();
     }
@@ -65,20 +65,20 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
 
   private static class EntityHandlerImpl implements EntityHandler {
 
-    private Map<AgencyAndId, NycRawLocationRecord> _lastRecordsByVehicleId = new HashMap<AgencyAndId, NycRawLocationRecord>();
+    private final Map<AgencyAndId, NycRawLocationRecord> _lastRecordsByVehicleId = new HashMap<AgencyAndId, NycRawLocationRecord>();
 
-    private Map<AgencyAndId, EntityHandler> _entityHandlersByVehicleId = new HashMap<AgencyAndId, EntityHandler>();
+    private final Map<AgencyAndId, EntityHandler> _entityHandlersByVehicleId = new HashMap<AgencyAndId, EntityHandler>();
 
-    private Map<AgencyAndId, Writer> _writersByVehicleId = new HashMap<AgencyAndId, Writer>();
+    private final Map<AgencyAndId, Writer> _writersByVehicleId = new HashMap<AgencyAndId, Writer>();
 
-    private CsvEntityWriterFactory _factory = new CsvEntityWriterFactory();
+    private final CsvEntityWriterFactory _factory = new CsvEntityWriterFactory();
 
-    private long _maxOffset = 60 * 60 * 1000;
+    private final long _maxOffset = 60 * 60 * 1000;
 
-    private SimpleDateFormat _format = new SimpleDateFormat(
+    private final SimpleDateFormat _format = new SimpleDateFormat(
         "yyyy-MM-dd'T'HH-mm-ss");
 
-    private File _outputDirectory;
+    private final File _outputDirectory;
 
     public EntityHandlerImpl(File outputDirectory) {
       _outputDirectory = outputDirectory;
@@ -89,15 +89,15 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
     public void handleEntity(Object bean) {
 
       try {
-        NycRawLocationRecord record = (NycRawLocationRecord) bean;
-        AgencyAndId vehicleId = record.getVehicleId();
+        final NycRawLocationRecord record = (NycRawLocationRecord) bean;
+        final AgencyAndId vehicleId = record.getVehicleId();
 
-        NycRawLocationRecord prev = _lastRecordsByVehicleId.put(vehicleId,
-            record);
+        final NycRawLocationRecord prev = _lastRecordsByVehicleId.put(
+            vehicleId, record);
 
         EntityHandler handler = _entityHandlersByVehicleId.get(vehicleId);
 
-        long time = getTimeForRecord(record);
+        final long time = getTimeForRecord(record);
 
         if (prev == null || getTimeForRecord(prev) + _maxOffset < time
             || handler == null) {
@@ -106,9 +106,9 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
           if (writer != null)
             writer.close();
 
-          String timeString = _format.format(new Date(time));
-          String fileName = vehicleId.getId() + "-" + timeString + ".txt";
-          File outputFile = new File(_outputDirectory, fileName);
+          final String timeString = _format.format(new Date(time));
+          final String fileName = vehicleId.getId() + "-" + timeString + ".txt";
+          final File outputFile = new File(_outputDirectory, fileName);
           writer = new FileWriter(outputFile);
 
           handler = _factory.createWriter(NycRawLocationRecord.class, writer);
@@ -117,13 +117,13 @@ public class SplitNycVehicleLocationReportIntoTracesMain {
         }
 
         handler.handleEntity(record);
-      } catch (IOException ex) {
+      } catch (final IOException ex) {
         throw new IllegalStateException(ex);
       }
     }
 
     public void close() throws IOException {
-      for (Writer writer : _writersByVehicleId.values())
+      for (final Writer writer : _writersByVehicleId.values())
         writer.close();
     }
 

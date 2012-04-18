@@ -15,19 +15,10 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyStartState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,14 +26,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class JourneyStateTransitionModel {
 
-  private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
-
-  private BlockStateTransitionModel _blockStateTransitionModel;
+  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   @Autowired
   public void setBlockStateTransitionModel(
       BlockStateTransitionModel blockStateTransitionModel) {
-    _blockStateTransitionModel = blockStateTransitionModel;
   }
 
   private VehicleStateLibrary _vehicleStateLibrary;
@@ -52,181 +40,69 @@ public class JourneyStateTransitionModel {
     _vehicleStateLibrary = vehicleStateLibrary;
   }
 
-  /****
-   * 
-   * 
-   ****/
-
-  public void move(VehicleState parentState, MotionState motionState,
-      Observation obs, Collection<VehicleState> vehicleStates) {
-
-    List<JourneyState> journeyStates = getTransitionJourneyStates(parentState,
-        obs);
-
-    generateVehicleStates(parentState, motionState, journeyStates, obs,
-        vehicleStates);
-  }
-
-  public List<JourneyState> getTransitionJourneyStates(
-      VehicleState parentState, Observation obs) {
-
-    JourneyState parentJourneyState = parentState.getJourneyState();
-
-    switch (parentJourneyState.getPhase()) {
-      case AT_BASE:
-        return moveAtBase(obs);
-      case DEADHEAD_BEFORE:
-        return moveDeadheadBefore(obs, parentJourneyState);
-      case LAYOVER_BEFORE:
-        return moveLayoverBefore(obs);
-      case IN_PROGRESS:
-        return moveInProgress(obs);
-      case DEADHEAD_DURING:
-        return moveDeadheadDuring(obs, parentJourneyState);
-      case LAYOVER_DURING:
-        return moveLayoverDuring(obs);
-      default:
-        throw new IllegalStateException("unknown journey state: "
-            + parentJourneyState.getPhase());
-    }
-  }
-
-  /**
-   * This takes all the possible journeyStates that the parentState could
-   * transition to, given the observation, and populates results with the
-   * resulting VehicleStates of each of those transitions.
-   * 
-   * @param parentState
-   * @param motionState
-   * @param journeyStates
-   * @param obs
-   * @param results
+  /*
+   * A deterministic journey state logic.<br>
    */
-  private void generateVehicleStates(VehicleState parentState,
-      MotionState motionState, List<JourneyState> journeyStates,
-      Observation obs, Collection<VehicleState> results) {
-
-    for (JourneyState journeyState : journeyStates) {
-
-      Set<BlockStateObservation> blockStates = _blockStateTransitionModel.transitionBlockState(
-          parentState, motionState, journeyState, obs);
-
-      if (blockStates == null) {
-        @SuppressWarnings("unused")
-        List<JourneyPhaseSummary> summaries = null;
-        if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
-          summaries = _journeyStatePhaseLibrary.extendSummaries(parentState,
-              null, journeyState, obs);
+  public JourneyState getJourneyState(BlockStateObservation blockState,
+      Observation obs, boolean vehicleNotMoved) {
+    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
+      return JourneyState.atBase();
+    if (blockState != null) {
+      final double distanceAlong = blockState.getBlockState().getBlockLocation().getDistanceAlongBlock();
+      if (distanceAlong <= 0.0) {
+        if (vehicleNotMoved && blockState.isAtPotentialLayoverSpot()) {
+          return JourneyState.layoverBefore();
+        } else {
+          return JourneyState.deadheadBefore(null);
         }
-
-        VehicleState vehicleState = new VehicleState(motionState, null,
-            journeyState, null, obs);
-
-        results.add(vehicleState);
-
+      } else if (distanceAlong >= blockState.getBlockState().getBlockInstance().getBlock().getTotalBlockDistance()) {
+        return JourneyState.deadheadAfter();
       } else {
-        for (BlockStateObservation bs : blockStates) {
-
-          @SuppressWarnings("unused")
-          List<JourneyPhaseSummary> summaries = null;
-          if (ParticleFilter.getDebugEnabled() == Boolean.TRUE) {
-            summaries = _journeyStatePhaseLibrary.extendSummaries(parentState,
-                bs, journeyState, obs);
+        /*
+         * In the middle of a block.
+         */
+        if (vehicleNotMoved && blockState.isAtPotentialLayoverSpot()) {
+          return JourneyState.layoverDuring();
+        } else {
+          final boolean isOnTrip = isLocationOnATrip(blockState.getBlockState());
+          if (isOnTrip) {
+            if (obs.hasOutOfServiceDsc())
+              return JourneyState.deadheadDuring(null);
+            else
+              return JourneyState.inProgress();
+          } else {
+            return JourneyState.deadheadDuring(null);
           }
-
-          VehicleState vehicleState = new VehicleState(motionState, bs,
-              journeyState, null, obs);
-
-          results.add(vehicleState);
         }
       }
+    } else {
+      if (vehicleNotMoved && obs.isAtTerminal())
+        return JourneyState.layoverBefore();
+      else
+        return JourneyState.deadheadBefore(null);
     }
   }
 
-  /**
-   * Determine if observation satisfies conditions necessary to transition
-   * to states with non-zero probability.
-   * 
-   * @param res
-   * @param obs
-   */
-  private void includeConditionalStates(final List<JourneyState> res, final Observation obs) {
-    /*
-     * Cannot reasonably transition to in-progress if there isn't a previous
-     * observation with which we can determine the direction of travel.
-     */
-    if (!obs.isOutOfService() && obs.getPreviousObservation() != null
-        && !obs.getPreviousObservation().getRecord().locationDataIsMissing())
-      res.add(JourneyState.inProgress());
-    
-    /*
-     * Has to be at-base to be at base, obviously.
-     */
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation()))
-      res.add(JourneyState.atBase());
-  }
-  
-  private List<JourneyState> moveAtBase(Observation obs) {
+  static public boolean isLocationOnATrip(BlockState blockState) {
+    final double distanceAlong = blockState.getBlockLocation().getDistanceAlongBlock();
+    final BlockTripEntry trip = blockState.getBlockLocation().getActiveTrip();
+    final double tripDistFrom = trip.getDistanceAlongBlock();
+    final double tripDistTo = tripDistFrom
+        + trip.getTrip().getTotalTripDistance();
 
-    List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, obs);
-    return res;
+    if (tripDistFrom < distanceAlong && distanceAlong <= tripDistTo)
+      return true;
+    else
+      return false;
   }
 
-  private List<JourneyState> moveDeadheadBefore(Observation obs,
-      JourneyState parentJourneyState) {
+  static public boolean isLocationActive(BlockState blockState) {
+    final double distanceAlong = blockState.getBlockLocation().getDistanceAlongBlock();
 
-    JourneyStartState start = parentJourneyState.getData();
-
-    List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(start.getJourneyStart())));
-    includeConditionalStates(res, obs);
-    return res;
-  }
-
-  private List<JourneyState> moveLayoverBefore(Observation obs) {
-    List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.layoverBefore(),
-        JourneyState.deadheadBefore(obs.getLocation())));
-    includeConditionalStates(res, obs);
-    return res;
-  }
-
-  private List<JourneyState> moveInProgress(Observation obs) {
-
-    List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.deadheadDuring(obs.getLocation()),
-        JourneyState.layoverDuring(),
-        JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.layoverBefore()));
-    includeConditionalStates(res, obs);
-    return res;
-  }
-
-  private List<JourneyState> moveDeadheadDuring(Observation obs,
-      JourneyState parentJourneyState) {
-
-    JourneyStartState start = parentJourneyState.getData();
-    List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(
-        JourneyState.deadheadDuring(start.getJourneyStart()),
-        JourneyState.layoverDuring(),
-        JourneyState.deadheadBefore(obs.getLocation()),
-        JourneyState.layoverBefore()));
-    includeConditionalStates(res, obs);
-
-    return res;
-  }
-
-  private List<JourneyState> moveLayoverDuring(Observation obs) {
-
-    List<JourneyState> res = new ArrayList<JourneyState>();
-    res.addAll(Arrays.asList(JourneyState.deadheadDuring(obs.getLocation()),
-        JourneyState.layoverDuring()));
-    includeConditionalStates(res, obs);
-    return res;
+    if (0.0 < distanceAlong
+        && distanceAlong < blockState.getBlockInstance().getBlock().getTotalBlockDistance())
+      return true;
+    else
+      return false;
   }
 }

@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.particlefilter;
 
-import java.util.List;
+import com.google.common.collect.Multiset;
 
 /**
  * Factory interface for creating an initial set of particles from an initial
@@ -33,5 +33,5 @@ public interface ParticleFactory<OBS> {
    * @param observation the initial observation
    * @return the initial list of particles
    */
-  public List<Particle> createParticles(double timestamp, OBS observation);
+  public Multiset<Particle> createParticles(double timestamp, OBS observation);
 }

@@ -15,11 +15,6 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.utility;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
 import org.onebusaway.csv_entities.CsvEntityReader;
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
@@ -27,6 +22,11 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.csv.TabTokenizerStrategy;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * This utility examines vehicle trace data to identify all layover locations
@@ -44,13 +44,13 @@ public class FindLayoverLocationsInTracesMain {
       System.exit(-1);
     }
 
-    CsvEntityReader csvReader = new CsvEntityReader();
+    final CsvEntityReader csvReader = new CsvEntityReader();
     csvReader.setTokenizerStrategy(new TabTokenizerStrategy());
 
-    EntityHandlerImpl handler = new EntityHandlerImpl();
+    final EntityHandlerImpl handler = new EntityHandlerImpl();
     csvReader.addEntityHandler(handler);
 
-    for (String arg : args)
+    for (final String arg : args)
       readDataFromPath(csvReader, new File(arg));
     csvReader.close();
   }
@@ -58,14 +58,14 @@ public class FindLayoverLocationsInTracesMain {
   private static void readDataFromPath(CsvEntityReader csvReader, File path)
       throws FileNotFoundException, IOException {
     if (path.isDirectory()) {
-      for (File child : path.listFiles())
+      for (final File child : path.listFiles())
         readDataFromPath(csvReader, child);
     } else {
 
       if (!path.getName().matches("^\\d+-\\d+-\\d+-\\d+T\\d+-\\d+-\\d+.txt"))
         return;
 
-      FileReader reader = new FileReader(path);
+      final FileReader reader = new FileReader(path);
       csvReader.readEntities(NycRawLocationRecord.class, reader);
       reader.close();
     }
@@ -82,7 +82,7 @@ public class FindLayoverLocationsInTracesMain {
     @Override
     public void handleEntity(Object bean) {
 
-      NycRawLocationRecord record = (NycRawLocationRecord) bean;
+      final NycRawLocationRecord record = (NycRawLocationRecord) bean;
 
       if (record.locationDataIsMissing()) {
 
@@ -93,12 +93,12 @@ public class FindLayoverLocationsInTracesMain {
         record.setLongitude(_dwellLocation.getLon());
       }
 
-      CoordinatePoint location = new CoordinatePoint(record.getLatitude(),
-          record.getLongitude());
+      final CoordinatePoint location = new CoordinatePoint(
+          record.getLatitude(), record.getLongitude());
 
       if (!isConsecutiveRecord(record)) {
 
-        long delta = record.getTimeReceived() - _dwellTime;
+        final long delta = record.getTimeReceived() - _dwellTime;
         if (_dwellLocation != null && delta > 7 * 60 * 1000)
 
           System.out.println(_dwellLocation + " " + (delta / (1000 * 60)));
@@ -121,10 +121,11 @@ public class FindLayoverLocationsInTracesMain {
       if (_previousRecord.getTimeReceived() + 2 * 60 * 1000 < record.getTimeReceived())
         return false;
 
-      CoordinatePoint location = new CoordinatePoint(record.getLatitude(),
-          record.getLongitude());
+      final CoordinatePoint location = new CoordinatePoint(
+          record.getLatitude(), record.getLongitude());
 
-      double d = SphericalGeometryLibrary.distance(_dwellLocation, location);
+      final double d = SphericalGeometryLibrary.distance(_dwellLocation,
+          location);
 
       if (d > 10)
         return false;

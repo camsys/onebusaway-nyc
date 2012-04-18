@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
-import java.util.Arrays;
-
 import umontreal.iro.lecuyer.probdist.HalfNormalDist;
 import umontreal.iro.lecuyer.randvar.HalfNormalGen;
 import umontreal.iro.lecuyer.randvar.InverseGammaGen;
 import umontreal.iro.lecuyer.rng.RandomStream;
+
+import java.util.Arrays;
 
 public class LocationDevDist implements
     ConjugateDist<LocationDevParams, Double, Double> {
@@ -19,7 +19,7 @@ public class LocationDevDist implements
   // private InverseGammaDist _locationVarDist = new InverseGammaDist(
   // _locationVarParams[0], _locationVarParams[1]);
 
-  private RandomStream _rng;
+  private final RandomStream _rng;
   private Double _lastLocVarSample = null;
 
   public LocationDevDist(LocationDevDist obj) {
@@ -49,7 +49,7 @@ public class LocationDevDist implements
 
   @Override
   public Double[] samplePrior() {
-    Double[] ret = new Double[1];
+    final Double[] ret = new Double[1];
     ret[0] = InverseGammaGen.nextDouble(_rng, _locationVarParams[0] / 2.0,
         _locationVarParams[1] / 2.0);
     return ret;
@@ -65,7 +65,7 @@ public class LocationDevDist implements
 
   @Override
   public String toString() {
-    StringBuilder b = new StringBuilder();
+    final StringBuilder b = new StringBuilder();
     b.append("LocationDevDist(");
     b.append("locationVarParams=").append(Arrays.toString(_locationVarParams)).append(
         ",");

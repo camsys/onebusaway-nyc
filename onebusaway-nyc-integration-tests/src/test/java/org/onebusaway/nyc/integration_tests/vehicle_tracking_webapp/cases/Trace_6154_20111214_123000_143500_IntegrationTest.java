@@ -17,12 +17,17 @@ package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
 import org.onebusaway.realtime.api.EVehiclePhase;
 
+/**
+ * This trace has a "correct" reported run, a sizable deadhead between trips,
+ * and a bad/detoured start.
+ */
 public class Trace_6154_20111214_123000_143500_IntegrationTest extends AbstractTraceRunner {
 
   public Trace_6154_20111214_123000_143500_IntegrationTest() throws Exception {
     super("6154_20111214_123000_143500.csv.gz");
     setBundle("si", "2011-12-07T00:00:00EDT");
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0.25);
-//    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.93);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.90);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_DURING, 0.93);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.90);
   }
 }

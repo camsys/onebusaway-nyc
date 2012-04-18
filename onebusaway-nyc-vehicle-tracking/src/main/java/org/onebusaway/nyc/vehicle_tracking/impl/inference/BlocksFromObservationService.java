@@ -15,19 +15,18 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Set;
-
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationServiceImpl.BestBlockObservationStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 
+import java.util.Set;
+
 public interface BlocksFromObservationService {
 
-  public Set<BlockInstance> determinePotentialBlocksForObservation(
-      Observation observation, Set<BlockInstance> nearbyBlocks);
+  public void determinePotentialBlocksForObservation(Observation observation,
+      Set<BlockInstance> potentialBlocks);
 
-  public BestBlockObservationStates bestStates(Observation observation,
+  public Set<BlockStateObservation> bestStates(Observation observation,
       BlockStateObservation blockState);
 
   public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
@@ -36,7 +35,20 @@ public interface BlocksFromObservationService {
   public BlockStateObservation advanceLayoverState(Observation obs,
       BlockStateObservation blockState);
 
-  public BestBlockObservationStates advanceState(Observation observation,
+  public Set<BlockStateObservation> advanceState(Observation observation,
       BlockState blockState, double minDistanceToTravel,
       double maxDistanceToTravel);
+
+  public Set<BlockStateObservation> determinePotentialBlockStatesForObservation(
+      Observation observation);
+
+  public BlockStateObservation getBlockStateObservationFromDist(Observation obs,
+      BlockInstance blockInstance, double distanceAlong);
+
+  public Set<BlockStateObservation> getSnappedBlockStates(Observation obs);
+
+  public BlockStateObservation getBlockStateObservationFromTime(
+      Observation obs, BlockInstance blockInstance, int newSchedTime);
+
+  public boolean hasSnappedBlockStates(Observation obs);
 }

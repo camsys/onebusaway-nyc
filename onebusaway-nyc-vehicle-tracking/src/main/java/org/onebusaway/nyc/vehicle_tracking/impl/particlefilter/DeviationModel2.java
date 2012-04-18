@@ -20,11 +20,11 @@ import cern.jet.random.engine.RandomEngine;
 
 public class DeviationModel2 implements ProbabilityFunction {
 
-  private Normal _normal;
+  private final Normal _normal;
 
-  private double _sigma;
+  private final double _sigma;
 
-  private double _offset;
+  private final double _offset;
 
   public DeviationModel2(double sigma) {
     this(sigma, 2.0);
