@@ -43,20 +43,26 @@ import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.TreeMultiset;
@@ -509,6 +515,8 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
     private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
+    private boolean _simulation = false;
+
     public ProcessingTask(NycRawLocationRecord record) {
       _vehicleId = record.getVehicleId();
       _inferenceRecord = record;
@@ -517,12 +525,34 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     public ProcessingTask(NycTestInferredLocationRecord record) {
       _vehicleId = record.getVehicleId();
       _nycTestInferredLocationRecord = record;
+      _inferenceRecord = RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
+      _simulation = true;
     }
 
     @Override
     public void run() {
       try {
         final VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
+        
+        if (_simulation) {
+          String actualRun = _nycTestInferredLocationRecord.getActualRunId();
+          String operatorId = _nycTestInferredLocationRecord.getOperatorId();
+          if (!Strings.isNullOrEmpty(actualRun) && !Strings.isNullOrEmpty(operatorId)) {
+            DummyOperatorAssignmentServiceImpl opSvc;
+            if (!(existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
+              opSvc = new DummyOperatorAssignmentServiceImpl();
+              existing.setOperatorAssignmentService(opSvc);
+              _log.warn("Set operator assignment service to dummy!");
+            } else {
+              opSvc = (DummyOperatorAssignmentServiceImpl)existing.getOperatorAssignmentService();
+            }
+            String[] runParts = actualRun.split("-");
+            
+            opSvc.setOperatorAssignment(
+                new AgencyAndId(_inferenceRecord.getVehicleId().getAgencyId(), operatorId), 
+                runParts[1], runParts[0]);
+          }
+        }
 
         boolean passOnRecord = sendRecord(existing);
         if (passOnRecord) {
