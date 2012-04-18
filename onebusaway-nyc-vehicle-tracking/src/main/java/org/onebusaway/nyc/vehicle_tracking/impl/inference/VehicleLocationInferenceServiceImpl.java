@@ -502,6 +502,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       
       if (instance == null)
         instance = newInstance;
+      
     }
 
     return instance;
@@ -529,6 +530,27 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       _simulation = true;
     }
 
+    private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
+      VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+  
+      if (instance == null) {
+        VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
+  
+        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
+        
+        if (instance == null)
+          instance = newInstance;
+        
+        if (_simulation) {
+          DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
+          newInstance.setOperatorAssignmentService(opSvc);
+          _log.warn("Set operator assignment service to dummy!");
+        }
+      }
+  
+      return instance;
+    }
+    
     @Override
     public void run() {
       try {
@@ -539,18 +561,14 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
           String operatorId = _nycTestInferredLocationRecord.getOperatorId();
           if (!Strings.isNullOrEmpty(actualRun) && !Strings.isNullOrEmpty(operatorId)) {
             DummyOperatorAssignmentServiceImpl opSvc;
-            if (!(existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
-              opSvc = new DummyOperatorAssignmentServiceImpl();
-              existing.setOperatorAssignmentService(opSvc);
-              _log.warn("Set operator assignment service to dummy!");
-            } else {
+            if ((existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
               opSvc = (DummyOperatorAssignmentServiceImpl)existing.getOperatorAssignmentService();
+              String[] runParts = actualRun.split("-");
+              
+              opSvc.setOperatorAssignment(
+                  new AgencyAndId(_inferenceRecord.getVehicleId().getAgencyId(), operatorId), 
+                  runParts[1], runParts[0]);
             }
-            String[] runParts = actualRun.split("-");
-            
-            opSvc.setOperatorAssignment(
-                new AgencyAndId(_inferenceRecord.getVehicleId().getAgencyId(), operatorId), 
-                runParts[1], runParts[0]);
           }
         }
 
