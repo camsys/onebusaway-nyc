@@ -292,6 +292,12 @@ public class StifTask implements Runnable {
         if (trip.type == StifTripType.PULLOUT) {
           pullouts.add(trip);
         }
+        if (trip.type == StifTripType.DEADHEAD && 
+            trip.listedFirstStopTime == trip.listedLastStopTime + trip.recoveryTime) {
+          _log.warn("Zero-length deadhead.  If this immediately follows a pullout, "
+              + "tracing might fail.  If it does, we will mark some trips as trips "
+              + "without pullout.");
+        }
       }
       for (List<RawTrip> byRun : tripsByRun.values()) {
         Collections.sort(byRun);
@@ -347,7 +353,6 @@ public class StifTask implements Runnable {
             break;
           }
 
-          //move to the first trip at this time
           RawTrip trip = trips.get(index);
 
           if (trip == lastTrip) {
