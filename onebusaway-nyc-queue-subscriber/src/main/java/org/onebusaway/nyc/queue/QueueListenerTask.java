@@ -41,6 +41,7 @@ public abstract class QueueListenerTask {
 	protected ZMQ.Context _context = null;
 	protected ZMQ.Socket _socket = null;
 	protected ZMQ.Poller _poller = null;
+	protected int _countInterval = 10000;
 
 	public abstract boolean processMessage(String address, String contents);
 
@@ -52,6 +53,10 @@ public abstract class QueueListenerTask {
 
 	public abstract Integer getQueuePort();
 
+	public void setCountInterval(int countInterval) {
+	  this._countInterval = countInterval;  
+	}
+	
 	public void startDNSCheckThread() {
 		String host = getQueueHost();
 		_resolver = new DNSResolver(host);
@@ -91,11 +96,13 @@ public abstract class QueueListenerTask {
 					Thread.yield();
 				}
 
-				if (processedCount > 1000) {
+				if (processedCount > _countInterval) {
+				  long timeInterval = (new Date().getTime() - markTimestamp.getTime()); 
 					_log.info(getQueueName()
-							+ " input queue: processed 1000 messages in "
-							+ (new Date().getTime() - markTimestamp.getTime())
-							/ 1000 + " seconds.");
+							+ " input queue: processed " + _countInterval + " messages in "
+							+ (timeInterval/1000) 
+							+ " seconds. (" + (1000.0 * processedCount/timeInterval) 
+							+ ") records/second");
 
 					markTimestamp = new Date();
 					processedCount = 0;

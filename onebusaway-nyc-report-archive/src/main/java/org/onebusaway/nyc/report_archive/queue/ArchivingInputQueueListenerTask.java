@@ -26,7 +26,6 @@ import java.util.TimeZone;
 
 public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
-  public static final int COUNT_INTERVAL = 10000;
   public static final int DELAY_THRESHOLD = 10 * 1000;
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
 
@@ -45,9 +44,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   // offset of timezone (-04:00 or -05:00)
   private String _zoneOffset = null;
   private String _systemTimeZone = null;
-  private int batchCount = 0;
-  private int count = 0;
-  private long countStart = System.currentTimeMillis();
+  private int _batchCount = 0;
   private List<CcLocationReportRecord> reports = Collections.synchronizedList(new ArrayList<CcLocationReportRecord>());
 
   public ArchivingInputQueueListenerTask() {
@@ -80,9 +77,8 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
       "inference-engine.inputQueueHost", "inference-engine.inputQueuePort",
       "inference-engine.inputQueueName"})
   public void startListenerThread() {
-    if (_initialized == true) {
-      _log.warn("Configuration service tried to reconfigure inference input queue service; this service is not reconfigurable once started.");
-      return;
+    if (this._initialized) {
+      _log.warn("Configuration service reconfiguring inference input queue service");
     }
 
     String host = getQueueHost();
@@ -129,7 +125,6 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
     RealtimeEnvelope envelope = null;
     try {
       envelope = deserializeMessage(contents);
-      count++;
 
       if (envelope == null || envelope.getCcLocationReport() == null) {
         _log.error("Message discarded, probably corrupted, contents= "
@@ -143,30 +138,28 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
       CcLocationReportRecord record = new CcLocationReportRecord(envelope,
           contents, getZoneOffset());
       if (record != null) {
-        batchCount++;
+        _batchCount++;
         reports.add(record);
-        if (batchCount == _batchSize) {
-          _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
-          reports.clear();
-          batchCount = 0;
+        if (_batchCount == _batchSize) {
+          try { 
+            _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
+          } finally {
+            reports.clear();
+            _batchCount = 0;
+          }
         }
 
       }
       // re-calculate zoneOffset periodically
-      if (count > COUNT_INTERVAL) {
-    	  long duration = System.currentTimeMillis() - countStart;
-        _log.info("realtime queue processed " + count + " messages in "
-            + duration + " :(" +(1000.0 * count/duration) + ") saves/second");
+      if (_batchCount == 0) {
         _zoneOffset = null;
         if (record != null) {
           long delta = System.currentTimeMillis()
               - record.getTimeReceived().getTime();
           if (delta > DELAY_THRESHOLD) {
-            _log.warn("realtime queue is " + delta + " millis behind");
+            _log.warn("realtime queue is " + (delta/1000) + " seconds behind");
           }
         }
-        count = 0;
-        countStart = System.currentTimeMillis();
       }
     } catch (Throwable t) {
       _log.error("Exception processing contents= " + contents, t);

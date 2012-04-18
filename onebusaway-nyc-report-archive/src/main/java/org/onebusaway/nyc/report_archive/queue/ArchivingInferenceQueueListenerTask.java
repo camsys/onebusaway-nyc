@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 public class ArchivingInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
 
-  public static final int COUNT_INTERVAL = 10000;
   public static final int DELAY_THRESHOLD = 10 * 1000;
   private static Logger _log = LoggerFactory.getLogger(ArchivingInferenceQueueListenerTask.class);
 
@@ -43,12 +42,8 @@ public class ArchivingInferenceQueueListenerTask extends
     _batchSize = Integer.decode(batchSizeStr);
   }
 
-  private int count = 0;
-  private long countStart = System.currentTimeMillis();
-  private long constructorSum = 0;
-  private long dbSum = 0;
-  private long processingSum = 0;
   private int _batchCount = 0;
+
   private List<ArchivedInferredLocationRecord> records = Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
 
   @Refreshable(dependsOn = {
@@ -56,8 +51,7 @@ public class ArchivingInferenceQueueListenerTask extends
   @Override
   public void startListenerThread() {
     if (_initialized == true) {
-      _log.warn("Configuration service tried to reconfigure inference output queue service; this service is not reconfigurable once started.");
-      return;
+      _log.warn("Configuration service reconfiguring inference output queue service.");
     }
 
     String host = getQueueHost();
@@ -78,57 +72,36 @@ public class ArchivingInferenceQueueListenerTask extends
   }
 
   @Override
-  // this method can't throw exceptions or it will stop the queue
-  // listening
+  // this method must throw exceptions to force a transaction rollback
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
       String contents) {
-    count++;
 
-    try {
       if (_log.isDebugEnabled())
         _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
             + new Date(inferredResult.getRecordTimestamp()));
-      long constructorStart = System.currentTimeMillis();
       ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
           inferredResult, contents);
-      constructorSum += (System.currentTimeMillis() - constructorStart);
-      long processingStart = System.currentTimeMillis();
       postProcess(locationRecord);
-      processingSum += (System.currentTimeMillis() - processingStart);
       _batchCount++;
       records.add(locationRecord);
       if (_batchCount == _batchSize) {
-        long dbStart = System.currentTimeMillis();
-        _locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
-        dbSum += (System.currentTimeMillis() - dbStart);
-        records.clear();
-        _batchCount = 0;
+        try {
+        	_locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
+        } finally {
+        	records.clear();
+        	_batchCount = 0;
+        }
       }
 
-      if (count > COUNT_INTERVAL) {
-    	  long duration = System.currentTimeMillis() - countStart;
-    	  _log.info("inference_queue processed " + count + " messages in "
-            + (System.currentTimeMillis() - countStart)
-            + " with constructorSum=" + constructorSum
-            + ", processingSum=" + processingSum
-            + ", dbSum=" + dbSum
-            + " :(" + (1000.0 * count/duration) + ") saves/second");
+      if (_batchCount == 0) {
         if (locationRecord != null) {
           long delta = System.currentTimeMillis()
               - locationRecord.getArchiveTimeReceived().getTime();
           if (delta > DELAY_THRESHOLD) {
-            _log.error("inference queue is " + delta + " millis behind");
+            _log.error("inference queue is " + (delta/1000) + " seconds behind");
           }
-          count = 0;
-          countStart = System.currentTimeMillis();
-          constructorSum = 0;
-          processingSum = 0;
-          dbSum = 0;
         }
       }
-    } catch (Throwable t) {
-      _log.error("Exception processing contents= " + contents, t);
-    }
   }
 
   @Override

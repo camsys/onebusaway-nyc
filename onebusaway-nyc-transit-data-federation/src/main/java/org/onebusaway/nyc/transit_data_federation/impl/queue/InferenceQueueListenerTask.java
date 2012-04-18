@@ -69,7 +69,6 @@ public abstract class InferenceQueueListenerTask extends QueueListenerTask {
 	@PostConstruct
 	public void setup() {
 		super.setup();
-		_log.error("sab-perf");
 		// use JAXB annotations so that we pick up anything from the
 		// auto-generated XML classes
 		// generated from XSDs
