@@ -182,9 +182,20 @@ public class StifTripLoader {
             continue;
           }
           int tripType = tripRecord.getTripType();
-          if (firstEventRecord == null) {
+          
+          boolean fakeDeadhead = false;
+          if (firstEventRecord == null && !(tripType == 2 || tripType == 3 || tripType == 4 )) {
+            //revenue trips must have at least one revenue stop
+            _log.warn("Revenue trip at " + tripLineNumber + " in " + path + " has no revenue stops.  " +
+                "Using first/last stops from trip layer rather than event layer.");
+              fakeDeadhead = true;
+          }
+          if (tripType == 2 || tripType == 3 || tripType == 4 || fakeDeadhead) {
             // this must be a non-revenue trip
-            assert (tripType == 2 || tripType == 3 || tripType == 4);
+            if (firstEventRecord != null) {
+              //non-revenue trips should have no revenue stops
+              _log.warn("Non-revenue trip at " + tripLineNumber + " in " + path + " has a revenue stop");
+            }
 
             RawTrip rawTrip = new RawTrip(tripRecord.getRunId(),
                 tripRecord.getReliefRunId(),
@@ -215,8 +226,6 @@ public class StifTripLoader {
             }
             continue;
 
-          } else {
-            assert (tripType != 2 && tripType != 3 && tripType != 4);
           }
 
           String run1 = tripRecord.getRunId();
