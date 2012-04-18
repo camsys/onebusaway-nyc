@@ -191,6 +191,7 @@ public class StifTripLoader {
                 tripRecord.getNextTripOperatorRunId(),
                 StifTripType.byValue(tripType), tripRecord.getSignCode());
             rawTrip.serviceCode = serviceCode;
+            rawTrip.depot = tripRecord.getDepotCode();
             rawTrip.firstStopTime = tripRecord.getOriginTime();
             rawTrip.lastStopTime = tripRecord.getDestinationTime();
             rawTrip.listedFirstStopTime = tripRecord.getOriginTime();
@@ -227,6 +228,7 @@ public class StifTripLoader {
               tripRecord.getNextTripOperatorRunId(),
               StifTripType.byValue(tripType), tripRecord.getSignCode());
           rawTrip.serviceCode = serviceCode;
+          rawTrip.depot = tripRecord.getDepotCode();
           rawTrip.firstStopTime = firstEventRecord.getTime();
           rawTrip.lastStopTime = eventRecord.getTime();
           rawTrip.firstStop = support.getStopIdForLocation(firstEventRecord.getLocation());
