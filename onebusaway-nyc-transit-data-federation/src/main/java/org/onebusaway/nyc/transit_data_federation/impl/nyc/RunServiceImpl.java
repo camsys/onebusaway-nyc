@@ -22,10 +22,12 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TransitGrap
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,11 +41,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -211,9 +215,8 @@ public class RunServiceImpl implements RunService {
     return entriesByRun.get(runId);
   }
 
-  private final Pattern realRunRouteIdPattern = Pattern.compile("([a-zA-Z]+)(\\d*)[a-zA-Z]*");
-  private final Pattern reportedRunIdPattern = Pattern.compile("\\d(\\d+)-0*(\\d+)");
-  private final Pattern multiRoutePattern = Pattern.compile("([1-9]{1}$)|(?:0([1-9]{1}))|([1-9]{1}0)|([1-9]{2})");
+  private final Pattern realRunRouteIdPattern = Pattern.compile("[a-zA-Z]+0*(\\d+)[a-zA-Z]*");
+  private final Pattern reportedRunIdPattern = Pattern.compile("0*([0-9]+)-0*(\\d+)");
 
   @Override
   public TreeMultimap<Integer, String> getBestRunIdsForFuzzyId(
@@ -244,51 +247,17 @@ public class RunServiceImpl implements RunService {
       String[] runPieces= runId.split("-");
       String runRoute = runPieces[0];
       String runNumber = runPieces[1];
-      Matcher routeIdMatcher = realRunRouteIdPattern.matcher(runRoute);
-      List<String> runIdsToTry = new ArrayList<String>();
-      if (routeIdMatcher.matches()) {
-        if (StringUtils.isNotEmpty(routeIdMatcher.group(2))) {
-          String thisRunRouteNumber = routeIdMatcher.group(2);
-
-          Matcher multiRouteMatcher = multiRoutePattern.matcher(thisRunRouteNumber);
-          while (multiRouteMatcher.find()) {
-            for (int i = 1; i <= multiRouteMatcher.groupCount(); ++i) {
-              if (multiRouteMatcher.group(i) != null)
-                runIdsToTry.add(RunTripEntry.createId(multiRouteMatcher.group(i),
-                    runNumber));
-            }
-          } 
-          if (runIdsToTry.isEmpty()){
-            runIdsToTry.add(RunTripEntry.createId(thisRunRouteNumber,
-                runNumber));
-          }
-
-        } else {
-          /*
-           * there is no numeric part to the routeId. check for MISC value
-           */
-          if (StringUtils.equals(runRoute, "MISC")) {
-            /*
-             * they're allowed to enter anything, so we put this in there
-             */
-            runIdsToTry.add(RunTripEntry.createId("00", runNumber));
-
-            /*
-             * however, they often use the actual route number
-             */
-            Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
-            Matcher actualRouteIdMatcher;
-            for (AgencyAndId routeId : routeIds) {
-              actualRouteIdMatcher = multiRoutePattern.matcher(routeId.getId());
-              while (actualRouteIdMatcher.find()) {
-                for (int i = 1; i <= actualRouteIdMatcher.groupCount(); ++i) {
-                  if (actualRouteIdMatcher.group(i) != null)
-                    runIdsToTry.add(RunTripEntry.createId(
-                        actualRouteIdMatcher.group(i), runNumber));
-                }
-              } 
-            }
-          }
+      List<String> runIdsToTry = Lists.newArrayList();
+      if (runRoute.equals("MISC")) {
+        String runIdToTry = RunTripEntry.createId("999", runNumber);
+        runIdsToTry.add(runIdToTry);
+      } else {
+        Matcher routeIdMatcher = realRunRouteIdPattern.matcher(runRoute);
+        if (routeIdMatcher.matches()) {
+          String thisRunRouteNumber = routeIdMatcher.group(1);
+          String runIdToTry = RunTripEntry.createId(thisRunRouteNumber,
+              runNumber);
+          runIdsToTry.add(runIdToTry);
         }
       }
 
@@ -553,6 +522,21 @@ public class RunServiceImpl implements RunService {
 
     return null;
   }
+  
+  @Override
+  public Collection<RunTripEntry> getRunTripsForTrip(TripEntry trip) {
+    Collection<RunTripEntry> trips = entriesByTrip.get(trip.getId());
+    return trips;
+  }
+  
+  @Override
+  public Set<String> getRunIdsForTrip(TripEntry trip) {
+    Set<String> ids = Sets.newHashSet();
+    for (RunTripEntry rte : entriesByTrip.get(trip.getId())) {
+      ids.add(rte.getRunId());
+    }
+    return ids;
+  }
 
   @Override
   public boolean isValidRunId(String runId) {
@@ -579,5 +563,11 @@ public class RunServiceImpl implements RunService {
         return blockTrip;
     }
     return null;
+  }
+
+  @Override
+  public Set<AgencyAndId> getRoutesForRunId(String runId) {
+    Collection<AgencyAndId> routeIds = runIdsToRoutes.get(runId);
+    return Objects.firstNonNull(Sets.newHashSet(routeIds), Collections.<AgencyAndId>emptySet());
   }
 }

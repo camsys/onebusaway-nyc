@@ -2,6 +2,7 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriJsonSerializer;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
@@ -17,7 +18,6 @@ import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +36,7 @@ import java.util.List;
 @Component
 public class RealtimeServiceImpl implements RealtimeService {
 
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   private PresentationService _presentationService;
   
@@ -60,8 +60,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   }
 
   @Autowired
-  public void setTransitDataService(TransitDataService transitDataService) {
-    _transitDataService = transitDataService;
+  public void setNycTransitDataService(NycTransitDataService transitDataService) {
+    _nycTransitDataService = transitDataService;
   }
 
   @Autowired
@@ -108,7 +108,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       activity.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
       SiriSupport.fillMonitoredVehicleJourney(activity.getMonitoredVehicleJourney(), 
           tripDetails.getTrip(), tripDetails, null, 
-          _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
+          _presentationService, _nycTransitDataService, getTime(), maximumOnwardCalls);
       
       output.add(activity);
     }
@@ -140,7 +140,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     inclusion.setIncludeTripBean(true);
     query.setInclusion(inclusion);
 
-    TripDetailsBean tripDetails = _transitDataService.getTripDetailsForVehicleAndTime(query);
+    TripDetailsBean tripDetails = _nycTransitDataService.getTripDetailsForVehicleAndTime(query);
     
     if (tripDetails != null) {
       if(!_presentationService.include(tripDetails.getStatus()))
@@ -152,7 +152,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       output.setMonitoredVehicleJourney(new MonitoredVehicleJourney());
       SiriSupport.fillMonitoredVehicleJourney(output.getMonitoredVehicleJourney(), 
           tripDetails.getTrip(), tripDetails, null, 
-          _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
+          _presentationService, _nycTransitDataService, getTime(), maximumOnwardCalls);
 
       return output;
     }
@@ -175,7 +175,7 @@ public class RealtimeServiceImpl implements RealtimeService {
       query.setTime(getTime());
       query.setVehicleId(statusBean.getVehicleId());
 
-      ListBean<TripDetailsBean> tripDetailBeans = _transitDataService.getTripDetails(query);      
+      ListBean<TripDetailsBean> tripDetailBeans = _nycTransitDataService.getTripDetails(query);      
 
       for(TripDetailsBean tripDetails : tripDetailBeans.getList()) {
         // should be the same as the bean above, but just to double check:
@@ -189,7 +189,7 @@ public class RealtimeServiceImpl implements RealtimeService {
         stopVisit.setMonitoredVehicleJourney(new MonitoredVehicleJourneyStructure());
         SiriSupport.fillMonitoredVehicleJourney(stopVisit.getMonitoredVehicleJourney(), 
             adBean.getTrip(), tripDetails, adBean.getStop(), 
-            _presentationService, _transitDataService, getTime(), maximumOnwardCalls);
+            _presentationService, _nycTransitDataService, getTime(), maximumOnwardCalls);
           
         output.add(stopVisit);
       }
@@ -226,7 +226,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     } else {
       query.addRoute(routeId.toString(), directionId);
     }
-    ListBean<ServiceAlertBean> serviceAlerts = _transitDataService.getServiceAlerts(query);
+    ListBean<ServiceAlertBean> serviceAlerts = _nycTransitDataService.getServiceAlerts(query);
 
     return serviceAlerts.getList();
   }
@@ -241,7 +241,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     inclusionBean.setIncludeTripStatus(true);
     tripRouteQueryBean.setInclusion(inclusionBean);
 
-    return _transitDataService.getTripsForRoute(tripRouteQueryBean);
+    return _nycTransitDataService.getTripsForRoute(tripRouteQueryBean);
   } 
   
   private List<ArrivalAndDepartureBean> getArrivalsAndDeparturesForStop(String stopId) {
@@ -251,7 +251,7 @@ public class RealtimeServiceImpl implements RealtimeService {
     query.setMinutesAfter(90);
     
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures =
-      _transitDataService.getStopWithArrivalsAndDepartures(stopId, query);
+        _nycTransitDataService.getStopWithArrivalsAndDepartures(stopId, query);
 
     return stopWithArrivalsAndDepartures.getArrivalsAndDepartures();
   }

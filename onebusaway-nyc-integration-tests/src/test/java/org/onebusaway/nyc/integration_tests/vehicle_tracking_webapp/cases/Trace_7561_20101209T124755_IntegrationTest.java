@@ -65,7 +65,7 @@ public class Trace_7561_20101209T124755_IntegrationTest extends AbstractTraceRun
      * like some of the others, at the very end of the trace it says
      * deadhead-before when it's not moving (and has left the base)
      */
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.85);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.75);
 //    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.65);
   }
 }

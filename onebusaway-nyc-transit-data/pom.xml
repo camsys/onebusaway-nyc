@@ -9,4 +9,12 @@
     <artifactId>onebusaway-nyc-transit-data</artifactId>
     <name>onebusaway-nyc-transit-data</name>
     <description>Common interfaces and classes for exchanging transit data between UI front-end and transit back-end data sources.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-transit-data</artifactId>
+            <version>${onebusaway.app-modules.version}</version>
+        </dependency>
+    </dependencies>
 </project>

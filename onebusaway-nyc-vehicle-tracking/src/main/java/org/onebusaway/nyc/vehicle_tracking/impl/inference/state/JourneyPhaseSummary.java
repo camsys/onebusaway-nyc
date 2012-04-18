@@ -15,13 +15,13 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
+
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Date;
-
-import org.onebusaway.realtime.api.EVehiclePhase;
-import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 
 public class JourneyPhaseSummary {
 

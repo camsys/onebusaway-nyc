@@ -16,11 +16,11 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import static org.junit.Assert.assertEquals;
-import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.*;
-import java.util.ArrayList;
-import java.util.List;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.block;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.blockConfiguration;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.lsids;
+import static org.onebusaway.transit_data_federation.testing.UnitTestingSupport.serviceIds;
 
-import org.junit.Test;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary.Builder;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -28,25 +28,30 @@ import org.onebusaway.transit_data_federation.impl.transit_graph.BlockEntryImpl;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
 
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class JourneyPhaseSummaryLibraryTest {
 
-  private JourneyPhaseSummaryLibrary _library = new JourneyPhaseSummaryLibrary();
+  private final JourneyPhaseSummaryLibrary _library = new JourneyPhaseSummaryLibrary();
 
   @Test
   public void test() {
 
-    BlockEntryImpl blockA = block("a");
-    BlockEntryImpl blockB = block("b");
+    final BlockEntryImpl blockA = block("a");
+    final BlockEntryImpl blockB = block("b");
 
-    BlockConfigurationEntry blockConfigA = blockConfiguration(blockA,
+    final BlockConfigurationEntry blockConfigA = blockConfiguration(blockA,
         serviceIds(lsids("a"), lsids()));
-    BlockConfigurationEntry blockConfigB = blockConfiguration(blockB,
+    final BlockConfigurationEntry blockConfigB = blockConfiguration(blockB,
         serviceIds(lsids("a"), lsids()));
 
-    BlockInstance blockInstanceA = new BlockInstance(blockConfigA, 0);
-    BlockInstance blockInstanceB = new BlockInstance(blockConfigB, 0);
+    final BlockInstance blockInstanceA = new BlockInstance(blockConfigA, 0);
+    final BlockInstance blockInstanceB = new BlockInstance(blockConfigB, 0);
 
-    List<JourneyPhaseSummary> summaries = new ArrayList<JourneyPhaseSummary>();
+    final List<JourneyPhaseSummary> summaries = new ArrayList<JourneyPhaseSummary>();
 
     Builder b = JourneyPhaseSummary.builder();
     b.setTimeFrom(0);
@@ -84,7 +89,7 @@ public class JourneyPhaseSummaryLibraryTest {
     b.setBlockInstance(blockInstanceB);
     summaries.add(b.create());
 
-    JourneyPhaseSummary s1 = _library.getCurrentBlock(summaries);
+    final JourneyPhaseSummary s1 = _library.getCurrentBlock(summaries);
     assertEquals(1000, s1.getTimeFrom());
     assertEquals(4000, s1.getTimeTo());
     assertEquals(EVehiclePhase.IN_PROGRESS, s1.getPhase());
@@ -92,7 +97,7 @@ public class JourneyPhaseSummaryLibraryTest {
     assertEquals(0.8, s1.getBlockCompletionRatioTo(), 0.0);
     assertEquals(blockInstanceB, s1.getBlockInstance());
 
-    JourneyPhaseSummary s2 = _library.getPreviousBlock(summaries, s1);
+    final JourneyPhaseSummary s2 = _library.getPreviousBlock(summaries, s1);
     assertEquals(0, s2.getTimeFrom());
     assertEquals(1000, s2.getTimeTo());
     assertEquals(EVehiclePhase.IN_PROGRESS, s2.getPhase());

@@ -36,9 +36,8 @@ public class Trace_7564_20101202T034055_IntegrationTest extends AbstractTraceRun
     
     /**
      * FIXME traces think it should be in progress, new model
-     * believes it should be deadhead; i think it should be
-     * layover.
+     * believes it should be deadhead; it looks deadhead in reality.
      */
-    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.8);
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.75);
   }
 }

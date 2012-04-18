@@ -16,12 +16,12 @@
 package org.onebusaway.nyc.webapp.actions.api;
 
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.nyc.webapp.actions.api.model.StopOnRoute;
 import org.onebusaway.transit_data.model.SearchQueryBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopsBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
@@ -37,7 +37,7 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
   private static final long serialVersionUID = 1L;
 
   @Autowired
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   private List<StopOnRoute> _stops = new ArrayList<StopOnRoute>();
 
@@ -64,7 +64,7 @@ public class StopsWithinBoundsAction extends OneBusAwayNYCActionSupport {
     queryBean.setBounds(_bounds);
     queryBean.setMaxCount(200);    
     
-    StopsBean stops = _transitDataService.getStops(queryBean);
+    StopsBean stops = _nycTransitDataService.getStops(queryBean);
     
     for(StopBean stop : stops.getStops()) {
       _stops.add(new StopOnRoute(stop));

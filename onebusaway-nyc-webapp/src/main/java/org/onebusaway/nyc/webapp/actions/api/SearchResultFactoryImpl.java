@@ -33,7 +33,6 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,14 +41,11 @@ import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
-  private TransitDataService _transitDataService;
-
   private SearchService _searchService;
 
   private NycTransitDataService _nycTransitDataService;
 
-  public SearchResultFactoryImpl(TransitDataService transitDataService, SearchService searchService, NycTransitDataService nycTransitDataService) {
-    _transitDataService = transitDataService;
+  public SearchResultFactoryImpl(SearchService searchService, NycTransitDataService nycTransitDataService) {
     _searchService = searchService;
     _nycTransitDataService = nycTransitDataService;
   }
@@ -58,7 +54,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   public SearchResult getRouteResultForRegion(RouteBean routeBean) { 
     List<String> polylines = new ArrayList<String>();
     
-    StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -82,7 +78,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
   public SearchResult getRouteResult(RouteBean routeBean) {    
     List<RouteDirection> directions = new ArrayList<RouteDirection>();
     
-    StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+    StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
     List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
     for (StopGroupingBean stopGroupingBean : stopGroupings) {
@@ -113,7 +109,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
     for(RouteBean routeBean : stopBean.getRoutes()) {
-      StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+      StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
       List<RouteDirection> directions = new ArrayList<RouteDirection>();
       List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();

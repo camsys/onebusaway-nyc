@@ -1,5 +1,9 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import org.onebusaway.gtfs.model.AgencyAndId;
+
+import com.google.common.base.Strings;
+
 import org.apache.commons.lang.builder.CompareToBuilder;
 import java.util.Set;
 
@@ -7,16 +11,25 @@ public class RunResults implements Comparable<RunResults> {
 
   final private String assignedRunId;
   final private Set<String> fuzzyMatches;
+  final private Set<AgencyAndId> routeIds;
   final private Integer bestFuzzyDist;
 
   private int _hash = 0;
 
-  public RunResults(String assignedRunId, Set<String> fuzzyMatches, Integer bestFuzzyDist) {
+  public RunResults(String assignedRunId, Set<String> fuzzyMatches, Integer bestFuzzyDist, 
+      Set<AgencyAndId> routeIds) {
     this.assignedRunId = assignedRunId;
     this.fuzzyMatches = fuzzyMatches;
     this.bestFuzzyDist = bestFuzzyDist;
+    this.routeIds = routeIds;
   }
 
+  public boolean hasRunResults() {
+    return !(Strings.isNullOrEmpty(assignedRunId)
+        && fuzzyMatches.isEmpty()
+        && bestFuzzyDist == null); 
+  }
+  
   public String getAssignedRunId() {
     return assignedRunId;
   }
@@ -91,5 +104,9 @@ public class RunResults implements Comparable<RunResults> {
       return false;
     }
     return true;
+  }
+
+  public Set<AgencyAndId> getRouteIds() {
+    return routeIds;
   }
 }

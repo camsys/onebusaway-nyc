@@ -15,9 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.sort;
 
-import java.util.Comparator;
-
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+
+import java.util.Comparator;
 
 public class ParticleComparator implements Comparator<Particle> {
 

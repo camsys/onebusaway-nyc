@@ -15,15 +15,17 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.services.inference;
 
-import java.util.List;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
-import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
+
+import com.google.common.collect.Multiset;
+
+import java.util.List;
 
 public interface VehicleLocationInferenceService {
 
@@ -49,9 +51,10 @@ public interface VehicleLocationInferenceService {
   /**
    * These are primarily here for debugging
    */
-  public List<Particle> getCurrentParticlesForVehicleId(AgencyAndId vehicleId);
+  public Multiset<Particle> getCurrentParticlesForVehicleId(
+      AgencyAndId vehicleId);
 
-  public List<Particle> getCurrentSampledParticlesForVehicleId(
+  public Multiset<Particle> getCurrentSampledParticlesForVehicleId(
       AgencyAndId vehicleId);
 
   public List<JourneyPhaseSummary> getCurrentJourneySummariesForVehicleId(

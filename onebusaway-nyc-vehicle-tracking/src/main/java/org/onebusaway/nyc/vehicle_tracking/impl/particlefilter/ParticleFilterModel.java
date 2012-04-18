@@ -38,7 +38,7 @@ public class ParticleFilterModel<OBS> {
       ParticleFactory<O> particleFactory, MotionModel<O> motionModel,
       SensorModel<O> sensorModel) {
 
-    ParticleFilterModel<O> pfm = new ParticleFilterModel<O>();
+    final ParticleFilterModel<O> pfm = new ParticleFilterModel<O>();
     pfm.setParticleFactory(particleFactory);
     pfm.setMotionModel(motionModel);
     pfm.setSensorModel(sensorModel);

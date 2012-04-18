@@ -15,19 +15,21 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ObservationCache.EObservationCacheKey;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
-import org.onebusaway.transit_data_federation.impl.blocks.ScheduledBlockLocationLibrary;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ScheduleDeviationLibrary {
@@ -50,8 +52,8 @@ public class ScheduleDeviationLibrary {
   public int computeScheduleDeviation(VehicleState state,
       Observation observation) {
 
-    BlockState blockState = state.getBlockState();
-    ScheduledBlockLocation actualBlockLocation = blockState.getBlockLocation();
+    final BlockState blockState = state.getBlockState();
+    final ScheduledBlockLocation actualBlockLocation = blockState.getBlockLocation();
     return computeScheduleDeviation(blockState.getBlockInstance(),
         actualBlockLocation, observation);
   }
@@ -59,9 +61,9 @@ public class ScheduleDeviationLibrary {
   public int computeScheduleDeviation(BlockInstance blockInstance,
       ScheduledBlockLocation actualBlockLocation, Observation observation) {
 
-    int scheduleTime = (int) ((observation.getTime() - blockInstance.getServiceDate()) / 1000);
+    final int scheduleTime = (int) ((observation.getTime() - blockInstance.getServiceDate()) / 1000);
 
-    ScheduledBlockLocation scheduledBlockLocation = getScheduledBlockLocation(
+    final ScheduledBlockLocation scheduledBlockLocation = getScheduledBlockLocation(
         blockInstance, observation);
 
     /**
@@ -69,11 +71,11 @@ public class ScheduleDeviationLibrary {
      * compute a block location at the end of the block. We want to penalize for
      * that extra time.
      */
-    int extra = Math.max(0,
+    final int extra = Math.max(0,
         scheduleTime - scheduledBlockLocation.getScheduledTime());
 
-    int delta = ScheduledBlockLocationLibrary.computeTravelTimeBetweenLocations(
-        actualBlockLocation, scheduledBlockLocation);
+    final int delta = computeTravelTimeBetweenLocations(actualBlockLocation,
+        scheduledBlockLocation);
 
     return delta + extra;
   }
@@ -92,8 +94,8 @@ public class ScheduleDeviationLibrary {
 
     if (!m.containsKey(blockInstance)) {
 
-      int scheduleTime = (int) ((obs.getTime() - blockInstance.getServiceDate()) / 1000);
-      BlockConfigurationEntry blockConfig = blockInstance.getBlock();
+      final int scheduleTime = (int) ((obs.getTime() - blockInstance.getServiceDate()) / 1000);
+      final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
       ScheduledBlockLocation scheduledBlockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
           blockConfig, scheduleTime);
 
@@ -101,8 +103,8 @@ public class ScheduleDeviationLibrary {
        * Is our schedule time beyond the last stop in the block?
        */
       if (scheduledBlockLocation == null) {
-        int n = blockConfig.getStopTimes().size();
-        int t = blockConfig.getDepartureTimeForIndex(n - 1);
+        final int n = blockConfig.getStopTimes().size();
+        final int t = blockConfig.getDepartureTimeForIndex(n - 1);
         scheduledBlockLocation = _scheduledBlockLocationService.getScheduledBlockLocationFromScheduledTime(
             blockConfig, t);
 
@@ -116,5 +118,77 @@ public class ScheduleDeviationLibrary {
     }
 
     return m.get(blockInstance);
+  }
+
+  public static int computeTravelTimeBetweenLocations(
+      ScheduledBlockLocation scheduledBlockLocationA,
+      ScheduledBlockLocation scheduledBlockLocationB) {
+
+    if (scheduledBlockLocationA.getScheduledTime() == scheduledBlockLocationB.getScheduledTime())
+      return 0;
+
+    final boolean inOrder = scheduledBlockLocationA.getScheduledTime() <= scheduledBlockLocationB.getScheduledTime();
+
+    final ScheduledBlockLocation from = inOrder ? scheduledBlockLocationA
+        : scheduledBlockLocationB;
+    final ScheduledBlockLocation to = inOrder ? scheduledBlockLocationB
+        : scheduledBlockLocationA;
+
+    final int delta = to.getScheduledTime() - from.getScheduledTime();
+
+    final BlockStopTimeEntry fromStop = from.getNextStop();
+    final BlockStopTimeEntry toStop = to.getNextStop();
+
+    int slack = ((toStop != null) ? toStop.getAccumulatedSlackTime() : 0)
+        - fromStop.getAccumulatedSlackTime();
+
+    final int slackFrom = computeSlackToNextStop(from);
+    slack += slackFrom;
+    if (toStop != null) {
+      final int slackTo = computeSlackToNextStop(to);
+      slack -= slackTo;
+    }
+
+    return Math.max(0, delta - slack);
+  }
+
+  public static int computeSlackToNextStop(
+      ScheduledBlockLocation scheduledBlockLocation) {
+
+    final BlockStopTimeEntry nextStop = scheduledBlockLocation.getNextStop();
+    final StopTimeEntry stopTime = nextStop.getStopTime();
+    final int t = scheduledBlockLocation.getScheduledTime();
+
+    /**
+     * If we are actually at the next stop already, we return a negative value:
+     * the amount of slack time already consumed.
+     */
+    if (stopTime.getArrivalTime() <= t && t <= stopTime.getDepartureTime())
+      return stopTime.getArrivalTime() - t;
+
+    final int sequence = nextStop.getBlockSequence();
+
+    /**
+     * Are we before the first stop in the block? Are we already at the stop or
+     * on our way there? Not sure, for now, let's assume there is no slack to be
+     * had
+     */
+    if (sequence == 0)
+      return 0;
+
+    final BlockConfigurationEntry blockConfig = nextStop.getTrip().getBlockConfiguration();
+    final BlockStopTimeEntry previousStop = blockConfig.getStopTimes().get(
+        sequence - 1);
+
+    int slack = nextStop.getAccumulatedSlackTime()
+        - previousStop.getAccumulatedSlackTime();
+    slack -= previousStop.getStopTime().getSlackTime();
+
+    final int timeToNextStop = stopTime.getArrivalTime() - t;
+
+    if (timeToNextStop > slack)
+      return slack;
+    else
+      return timeToNextStop;
   }
 }

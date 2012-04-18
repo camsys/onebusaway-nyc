@@ -39,7 +39,7 @@
 					<s:property value="toc" escape="false"/>
 				</div>
 			</div>
-		</div>
+		</div> 
 
 		<div id="text">
 			<s:property value="content" escape="false"/>

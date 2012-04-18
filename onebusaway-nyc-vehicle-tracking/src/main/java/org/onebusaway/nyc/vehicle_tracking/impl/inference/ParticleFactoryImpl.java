@@ -15,10 +15,9 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
@@ -27,10 +26,26 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilter;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult;
 
+import gov.sandia.cognition.math.LogMath;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
+
+import org.apache.commons.math.util.FastMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import umontreal.iro.lecuyer.rng.MRG32k3a;
+import umontreal.iro.lecuyer.rng.RandomStream;
+
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Create particles from an observation.
@@ -51,18 +66,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ParticleFactoryImpl implements ParticleFactory<Observation> {
 
   private static Logger _log = LoggerFactory.getLogger(ParticleFactoryImpl.class);
+  private static int _initialNumberOfParticles = 200;
 
-  private int _initialNumberOfParticles = 200;
-
-  private JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
-
-  private BlockStateSamplingStrategy _blockStateSamplingStrategy;
-
-  private VehicleStateLibrary _vehicleStateLibrary;
+  private final JourneyPhaseSummaryLibrary _journeyStatePhaseLibrary = new JourneyPhaseSummaryLibrary();
 
   private MotionModelImpl _motionModel;
 
-  static class LocalRandom extends ThreadLocal<Random> {
+  private BlocksFromObservationService _blocksFromObservationService;
+  private JourneyStateTransitionModel _journeyStateTransitionModel;
+  private BlockStateSamplingStrategy _blockStateSamplingStrategy;
+
+  static class LocalRandom extends ThreadLocal<RandomStream> {
     long _seed = 0;
 
     LocalRandom(long seed) {
@@ -70,33 +84,32 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     }
 
     @Override
-    protected Random initialValue() {
+    protected RandomStream initialValue() {
       if (_seed != 0)
-        return new Random(_seed);
+        return new MRG32k3a();
       else
-        return new Random();
+        return new MRG32k3a();
     }
   }
 
-  static class LocalRandomDummy extends ThreadLocal<Random> {
-    private static Random rng;
+  static class LocalRandomDummy extends ThreadLocal<RandomStream> {
+    private static MRG32k3a rng;
 
     LocalRandomDummy(long seed) {
+      rng = new MRG32k3a();
       if (seed != 0)
-        rng = new Random(seed);
-      else
-        rng = new Random();
+        rng.setSeed(new long[] {seed, seed, seed, seed, seed, seed});
     }
 
     @Override
-    synchronized public Random get() {
+    synchronized public RandomStream get() {
       return rng;
     }
   }
 
-  static ThreadLocal<Random> threadLocalRng;
+  static ThreadLocal<RandomStream> threadLocalRng;
   static {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(0);
     } else {
       threadLocalRng = new LocalRandomDummy(0);
@@ -104,13 +117,33 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
     }
   }
 
+  static private Random localRandom = new Random();
+  
   synchronized public static void setSeed(long seed) {
-    if (!ParticleFilter.getTestingEnabled()) {
+    if (!ParticleFilter.getReproducibilityEnabled()) {
       threadLocalRng = new LocalRandom(seed);
     } else {
       threadLocalRng = new LocalRandomDummy(seed);
-
     }
+    localRandom.setSeed(seed);
+  }
+  
+  public static Random getLocalRng() {
+    return localRandom;
+  }
+  
+  public static ThreadLocal<RandomStream> getThreadLocalRng() {
+    return threadLocalRng;
+  }
+
+  public static int getInitialNumberOfParticles() {
+    return _initialNumberOfParticles;
+  }
+
+  @Autowired
+  public void setBlocksFromObservationService(
+      BlocksFromObservationService blocksFromObservationService) {
+    _blocksFromObservationService = blocksFromObservationService;
   }
 
   @Autowired
@@ -120,8 +153,9 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Autowired
-  public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
+  public void setJourneyStateTransitionModel(
+      JourneyStateTransitionModel journeyStateTransitionModel) {
+    _journeyStateTransitionModel = journeyStateTransitionModel;
   }
 
   @Autowired
@@ -134,80 +168,101 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Override
-  public List<Particle> createParticles(double timestamp, Observation obs) {
+  public Multiset<Particle> createParticles(double timestamp, Observation obs) {
 
-    // ProjectedPoint point = obs.getPoint();
-    // CDFMap<EdgeState> cdf =
-    // _edgeStateLibrary.calculatePotentialEdgeStates(point);
+    final Set<BlockStateObservation> potentialBlocks = _blocksFromObservationService.determinePotentialBlockStatesForObservation(obs);
 
-    CategoricalDist<BlockStateObservation> atStartCdf = _blockStateSamplingStrategy.cdfForJourneyAtStart(obs);
+    final Multiset<Particle> particles = HashMultiset.create();
 
-    CategoricalDist<BlockStateObservation> inProgresCdf = _blockStateSamplingStrategy.cdfForJourneyInProgress(obs);
+    double normOffset = Double.NEGATIVE_INFINITY;
+    for (int i = 0; i < _initialNumberOfParticles; ++i) {
+      final CategoricalDist<Particle> transitionProb = new CategoricalDist<Particle>();
+ 
+      for (final BlockStateObservation blockState : potentialBlocks) {
+        final SensorModelResult transProb = new SensorModelResult("transition");
+        final double inMotionSample = threadLocalRng.get().nextDouble();
+        final boolean vehicleNotMoved = inMotionSample < 0.5;
+        final MotionState motionState = _motionModel.updateMotionState(obs, vehicleNotMoved);
+  
+        BlockStateObservation sampledBlockState;
+        if (blockState != null) {
+          /*
+           * Sample a distance along the block using the snapped observation
+           * results as priors.
+           */
+          if (blockState.isSnapped()) {
+            sampledBlockState = blockState;
+          } else {
+            sampledBlockState = _blockStateSamplingStrategy.samplePriorScheduleState(
+                blockState.getBlockState().getBlockInstance(), obs);
+          }
+        } else {
+          sampledBlockState = null;
+        }
+        final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+            sampledBlockState, obs, vehicleNotMoved);
+  
+        final VehicleState state = vehicleState(motionState, sampledBlockState,
+            journeyState, obs);
+        final Context context = new Context(null, state, obs);
+        
+        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(null, context));
+        
+        final Particle newParticle = new Particle(timestamp, null, 0.0, state);
+        newParticle.setResult(transProb);
 
-    List<Particle> particles = new ArrayList<Particle>(
-        _initialNumberOfParticles);
+        transitionProb.logPut(transProb.getLogProbability(), newParticle);
+      }
 
-    if (atStartCdf.isEmpty() && inProgresCdf.isEmpty())
-      _log.warn("no blocks to sample for obs=" + obs);
-
-    for (int i = 0; i < _initialNumberOfParticles; i++) {
-
-      MotionState motionState = _motionModel.updateMotionState(obs);
-
-      VehicleState state = determineJourneyState(motionState, atStartCdf,
-          inProgresCdf, obs);
-
-      Particle p = new Particle(timestamp);
-      p.setData(state);
-      particles.add(p);
+      final Particle newSample;
+      if (transitionProb.canSample()) {
+        newSample = transitionProb.sample();
+        newSample.setLogWeight(newSample.getResult().getLogProbability());
+        particles.add(newSample);
+      } else {
+        final double inMotionSample = ParticleFactoryImpl.getThreadLocalRng().get().nextDouble();
+        final boolean vehicleNotMoved = inMotionSample < 0.5;
+        final MotionState motionState = _motionModel.updateMotionState(obs, vehicleNotMoved);
+        final JourneyState journeyState = _journeyStateTransitionModel.getJourneyState(
+            null, obs, vehicleNotMoved);
+        final VehicleState nullState = new VehicleState(motionState, null,
+            journeyState, null, obs);
+        final Context context = new Context(null, nullState, obs);
+        final SensorModelResult priorProb = new SensorModelResult("prior creation");
+        priorProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(null, context));
+        priorProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(null, context));
+        priorProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(null, context));
+        priorProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null, context));
+        priorProb.addResultAsAnd(_motionModel.runLikelihood.likelihood(null, context));
+        priorProb.addResultAsAnd(_motionModel.runTransitionLikelihood.likelihood(null, context));
+        priorProb.addResultAsAnd(_motionModel.nullStateLikelihood.likelihood(null, context));
+        priorProb.addResultAsAnd(_motionModel.nullLocationLikelihood.likelihood(null, context));
+        
+        newSample = new Particle(timestamp, null, 0.0, nullState);
+        newSample.setResult(priorProb);
+        particles.add(newSample);
+        newSample.setLogWeight(newSample.getResult().getLogProbability());
+      }
+      
+      normOffset = LogMath.add(newSample.getLogWeight(), normOffset);
     }
 
+    /*
+     * Normalize
+     */
+    for (Entry<Particle> p : particles.entrySet()) {
+      p.getElement().setLogNormedWeight(p.getElement().getLogWeight()
+          + FastMath.log(p.getCount()) - normOffset);
+    }
+     
     return particles;
-  }
-
-  public VehicleState determineJourneyState(MotionState motionState,
-      CategoricalDist<BlockStateObservation> atStartCdf,
-      CategoricalDist<BlockStateObservation> inProgressCdf, Observation obs) {
-
-    BlockStateObservation blockState = null;
-
-    // If we're at a base to start, we favor that over all other possibilities
-    if (_vehicleStateLibrary.isAtBase(obs.getLocation())) {
-
-      if (blockState == null && atStartCdf.canSample())
-        blockState = atStartCdf.sample();
-
-      return vehicleState(motionState, blockState, JourneyState.atBase(), obs);
-    }
-
-    // At this point, we could be dead heading before a block or actually on a
-    // block in progress. We slightly favor blocks already in progress
-    double progressSwitch = threadLocalRng.get().nextDouble();
-    if (progressSwitch < 0.75) {
-
-      // No blocks? Jump to the deadhead-before state
-      if (!inProgressCdf.canSample())
-        return vehicleState(motionState, null,
-            JourneyState.deadheadBefore(obs.getLocation()), obs);
-
-      if (blockState == null)
-        blockState = inProgressCdf.sample();
-
-      return vehicleState(motionState, blockState, JourneyState.inProgress(),
-          obs);
-    } else {
-
-      // No blocks? Jump to the deadhead-before state
-      if (!atStartCdf.canSample())
-        return vehicleState(motionState, null,
-            JourneyState.deadheadBefore(obs.getLocation()), obs);
-
-      if (blockState == null)
-        blockState = atStartCdf.sample();
-
-      return vehicleState(motionState, blockState,
-          JourneyState.deadheadBefore(obs.getLocation()), obs);
-    }
   }
 
   private VehicleState vehicleState(MotionState motionState,
@@ -215,21 +270,14 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
       Observation obs) {
 
     List<JourneyPhaseSummary> summaries = null;
-    if (ParticleFilter.getDebugEnabled()) {
-      summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
-          journeyState, obs);
-    }
+//    if (ParticleFilter.getDebugEnabled()) {
+//      summaries = _journeyStatePhaseLibrary.extendSummaries(null, blockState,
+//          journeyState, obs);
+//    }
 
     return new VehicleState(motionState, blockState, journeyState, summaries,
         obs);
   }
 
-  public static ThreadLocal<Random> getThreadLocalRng() {
-    return threadLocalRng;
-  }
-
-  // public static double getNextDouble() {
-  // return threadLocalRng.get().nextDouble();
-  // }
 
 }

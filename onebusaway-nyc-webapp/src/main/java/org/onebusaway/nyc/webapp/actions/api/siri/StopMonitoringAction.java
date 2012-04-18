@@ -13,22 +13,15 @@
  */
 package org.onebusaway.nyc.webapp.actions.api.siri;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.struts2.interceptor.ServletRequestAware;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.utility.DateLibrary;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +32,14 @@ import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
   implements ServletRequestAware {
 
@@ -47,7 +48,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   private static Logger _log = LoggerFactory.getLogger(StopMonitoringAction.class);
 
   @Autowired
-  public TransitDataService _transitDataService;
+  public NycTransitDataService _nycTransitDataService;
 
   @Autowired  
   private RealtimeService _realtimeService;
@@ -163,7 +164,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       serviceDelivery.setResponseTimestamp(getTime());
       serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
 
-      _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _transitDataService, stopId);
+      _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopId);
     } catch (RuntimeException e) {
       _log.error("Exception in generateSirirResponse", e);
       throw e;

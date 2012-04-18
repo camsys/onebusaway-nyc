@@ -1,11 +1,11 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions;
 
-import java.util.Arrays;
-
 import umontreal.iro.lecuyer.probdist.NormalDist;
 import umontreal.iro.lecuyer.randvar.HalfNormalGen;
 import umontreal.iro.lecuyer.randvar.InverseGammaGen;
 import umontreal.iro.lecuyer.rng.RandomStream;
+
+import java.util.Arrays;
 
 /**
  * The real working of this is through distance along the block (meters).
@@ -48,7 +48,7 @@ public class DistAlongDevDist implements
 
   public DistAlongDevDist(RandomStream rnd) {
     _rng = rnd;
-    Double[] priorSample = samplePrior();
+    final Double[] priorSample = samplePrior();
     _distAlongDevVarSample = priorSample[0];
     _distAlongDevTransVarSample = priorSample[1];
     _distAlongDevSample = sample(null);
@@ -77,7 +77,7 @@ public class DistAlongDevDist implements
      * update if it hasn't already been, since this value is necessary for
      * learning
      */
-    if (_lastDevSample == _distAlongDevSample)
+    if (_lastDevSample.equals(_distAlongDevSample))
       _distAlongDevSample = HalfNormalGen.nextDouble(_rng, _distAlongDevSample,
           Math.sqrt(_distAlongDevTransVarSample));
 
@@ -87,13 +87,13 @@ public class DistAlongDevDist implements
     /*
      * predictive variance
      */
-    double Q_t = _distAlongDevKalmanParams[1] + _distAlongDevTransVarSample
-        + _distAlongDevVarSample;
+    final double Q_t = _distAlongDevKalmanParams[1]
+        + _distAlongDevTransVarSample + _distAlongDevVarSample;
 
     /*
      * Kalman gain "matrix"
      */
-    double A_t = (_distAlongDevKalmanParams[1] + _distAlongDevTransVarSample)
+    final double A_t = (_distAlongDevKalmanParams[1] + _distAlongDevTransVarSample)
         / Q_t;
 
     /*
@@ -111,14 +111,14 @@ public class DistAlongDevDist implements
     /*
      * off-line-able suff. stat. propagation
      */
-    Double[] priorSample = samplePrior();
+    final Double[] priorSample = samplePrior();
     _distAlongDevVarSample = priorSample[0];
     _distAlongDevTransVarSample = priorSample[1];
   }
 
   @Override
   public Double[] samplePrior() {
-    Double[] res = new Double[2];
+    final Double[] res = new Double[2];
     res[0] = InverseGammaGen.nextDouble(_rng, _distAlongDevVarParams[0] / 2.0,
         _distAlongDevVarParams[1] / 2.0);
     res[1] = InverseGammaGen.nextDouble(_rng,
@@ -137,7 +137,7 @@ public class DistAlongDevDist implements
 
   @Override
   public String toString() {
-    StringBuilder b = new StringBuilder();
+    final StringBuilder b = new StringBuilder();
     b.append("SchedulDevDist(");
     b.append("scheduleDevVarParams=").append(
         Arrays.toString(_distAlongDevVarParams)).append(",");

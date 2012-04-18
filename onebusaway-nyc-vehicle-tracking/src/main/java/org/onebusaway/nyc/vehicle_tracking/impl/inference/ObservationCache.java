@@ -15,97 +15,76 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Ordering;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 import org.springframework.stereotype.Component;
+
+import java.util.EnumMap;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ObservationCache {
 
   public enum EObservationCacheKey {
-    ROUTE_LOCATION, STREET_NETWORK_EDGES, JOURNEY_START_BLOCK_CDF, JOURNEY_IN_PROGRESS_BLOCK_CDF, JOURNEY_START_BLOCK, JOURNEY_IN_PROGRESS_BLOCK, CLOSEST_BLOCK_LOCATION, SCHEDULED_BLOCK_LOCATION, BLOCK_LOCATION
+    ROUTE_LOCATION, STREET_NETWORK_EDGES, JOURNEY_START_BLOCK_CDF, JOURNEY_IN_PROGRESS_BLOCK_CDF, JOURNEY_START_BLOCK, JOURNEY_IN_PROGRESS_BLOCK, CLOSEST_BLOCK_LOCATION, SCHEDULED_BLOCK_LOCATION, BLOCK_LOCATION, BEST_BLOCK_STATES
   }
 
-  private ConcurrentMap<AgencyAndId, ObservationContents> _contentsByVehicleId = new ConcurrentHashMap<AgencyAndId, ObservationCache.ObservationContents>();
-  private ConcurrentSkipListMap<NycRawLocationRecord, ObservationContents> _contentsByVehicleIdAndTime = new ConcurrentSkipListMap<NycRawLocationRecord, ObservationContents>(
-      Ordering.from(new Comparator<NycRawLocationRecord>() {
+  /*
+   * This is a vehicle-id cache, with timed expiration, that holds an
+   * observation cache per vehicle-id. The observation caches hold only the last
+   * two entries.
+   */
+  private final LoadingCache<AgencyAndId, LoadingCache<Observation, ObservationContents>> _contentsByVehicleId = CacheBuilder.newBuilder().concurrencyLevel(
+      4).expireAfterWrite(30, TimeUnit.MINUTES).build(
+      new CacheLoader<AgencyAndId, LoadingCache<Observation, ObservationContents>>() {
+
         @Override
-        public int compare(NycRawLocationRecord arg0, NycRawLocationRecord arg1) {
-          return ComparisonChain.start().compare(arg0.getVehicleId(),
-              arg1.getVehicleId()).compare(arg0.getTimeReceived(),
-              arg1.getTimeReceived()).result();
+        public LoadingCache<Observation, ObservationContents> load(AgencyAndId key)
+            throws Exception {
+          return CacheBuilder.newBuilder().concurrencyLevel(1).weakKeys().maximumSize(
+              2).build(new CacheLoader<Observation, ObservationContents>() {
+
+            @Override
+            public ObservationContents load(Observation key) throws Exception {
+              return new ObservationContents();
+            }
+          });
         }
-      }));
+
+      });
 
   @SuppressWarnings("unchecked")
   public <T> T getValueForObservation(Observation observation,
       EObservationCacheKey key) {
-    NycRawLocationRecord record = observation.getRecord();
-    ObservationContents contents;
+    final NycRawLocationRecord record = observation.getRecord();
+    final LoadingCache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
+    final ObservationContents contents = contentsCache.getUnchecked(observation);
 
-    if (key == EObservationCacheKey.BLOCK_LOCATION) {
-      contents = _contentsByVehicleIdAndTime.get(record);
-    } else {
-      contents = _contentsByVehicleId.get(record.getVehicleId());
-    }
-    if (contents == null || contents.getObservation() != observation)
+    if (contents == null)
       return null;
+
     return (T) contents.getValueForValueType(key);
   }
 
   public void putValueForObservation(Observation observation,
       EObservationCacheKey key, Object value) {
-    NycRawLocationRecord record = observation.getRecord();
-    /**
-     * This doesn't need to be thread-safe in the strict sense since we should
-     * never get concurrent operations for the same vehicle
-     */
-    ObservationContents contents;
+    final NycRawLocationRecord record = observation.getRecord();
+    final LoadingCache<Observation, ObservationContents> contentsCache = _contentsByVehicleId.getUnchecked(record.getVehicleId());
 
-    if (key == EObservationCacheKey.BLOCK_LOCATION) {
-      contents = _contentsByVehicleIdAndTime.get(record);
-      if (contents == null) {
-        contents = new ObservationContents(observation);
-        _contentsByVehicleIdAndTime.put(record, contents);
-      }
-      contents.putValueForValueType(key, value);
-      while (_contentsByVehicleIdAndTime.size() > 2) {
-        _contentsByVehicleIdAndTime.pollFirstEntry();
-      }
-    } else {
-      contents = _contentsByVehicleId.get(record.getVehicleId());
-      if (contents == null || contents.getObservation() != observation) {
-        contents = new ObservationContents(observation);
-        _contentsByVehicleId.put(record.getVehicleId(), contents);
-      }
-      contents.putValueForValueType(key, value);
-    }
+    final ObservationContents contents = contentsCache.getUnchecked(observation);
+
+    contents.putValueForValueType(key, value);
   }
 
   private static class ObservationContents {
 
-    private final Observation _observation;
-
-    private EnumMap<EObservationCacheKey, Object> _contents = new EnumMap<EObservationCacheKey, Object>(
+    private final EnumMap<EObservationCacheKey, Object> _contents = new EnumMap<EObservationCacheKey, Object>(
         EObservationCacheKey.class);
-
-    public ObservationContents(Observation observation) {
-      _observation = observation;
-    }
-
-    public Observation getObservation() {
-      return _observation;
-    }
 
     @SuppressWarnings("unchecked")
     public <T> T getValueForValueType(EObservationCacheKey key) {
@@ -116,4 +95,5 @@ public class ObservationCache {
       _contents.put(key, value);
     }
   }
+
 }

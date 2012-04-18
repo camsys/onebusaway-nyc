@@ -29,8 +29,8 @@ public class TabTokenizerStrategy implements TokenizerStrategy {
   @Override
   public String format(Iterable<String> tokens) {
     boolean seenFirst = false;
-    StringBuilder b = new StringBuilder();
-    for (String token : tokens) {
+    final StringBuilder b = new StringBuilder();
+    for (final String token : tokens) {
       if (seenFirst)
         b.append('\t');
       else

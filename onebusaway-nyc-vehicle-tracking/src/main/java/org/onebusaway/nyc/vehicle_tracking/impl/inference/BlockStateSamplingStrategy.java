@@ -16,7 +16,11 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.VehicleState;
+import org.onebusaway.realtime.api.EVehiclePhase;
+import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 
 public interface BlockStateSamplingStrategy {
 
@@ -24,12 +28,15 @@ public interface BlockStateSamplingStrategy {
    *
    ****/
 
-  public CategoricalDist<BlockStateObservation> cdfForJourneyAtStart(
-      Observation observation);
+  public BlockStateObservation sampleTransitionDistanceState(BlockStateObservation parentBlockStateObs,
+      Observation obs, boolean vehicleNotMoved, EVehiclePhase eVehiclePhase);
 
-  public CategoricalDist<BlockStateObservation> cdfForJourneyInProgress(
-      Observation observation);
+  public BlockStateObservation sampleTransitionScheduleDev(
+      BlockStateObservation parentBlockStateObs, Observation obs);
 
-  public double scoreState(BlockStateObservation state,
-      Observation observation, boolean atStart);
+//  public BlockStateObservation sampleGpsObservationState(
+//      BlockStateObservation parentBlockStateObs, Observation obs);
+
+  public BlockStateObservation samplePriorScheduleState(BlockInstance blockInstance,
+      Observation obs);
 }

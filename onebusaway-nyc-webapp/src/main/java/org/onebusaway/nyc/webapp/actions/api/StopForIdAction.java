@@ -29,7 +29,6 @@ import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -54,9 +53,6 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
   private RealtimeService _realtimeService;
 
   @Autowired
-  private TransitDataService _transitDataService;
-
-  @Autowired
   private NycTransitDataService _nycTransitDataService;
 
   private ObjectMapper _mapper = new ObjectMapper();    
@@ -79,7 +75,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
       return SUCCESS;
     }
     
-    StopBean stop = _transitDataService.getStop(_stopId);    
+    StopBean stop = _nycTransitDataService.getStop(_stopId);    
 
     if(stop == null) {
       return SUCCESS;
@@ -88,7 +84,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
     
     for(RouteBean routeBean : stop.getRoutes()) {
-      StopsForRouteBean stopsForRoute = _transitDataService.getStopsForRoute(routeBean.getId());
+      StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
 
       List<RouteDirection> routeDirections = new ArrayList<RouteDirection>();
       List<StopGroupingBean> stopGroupings = stopsForRoute.getStopGroupings();
@@ -141,7 +137,7 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
       serviceDelivery.setResponseTimestamp(getTime());
       serviceDelivery.getStopMonitoringDelivery().add(stopMonitoringDelivery);
 
-      _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _transitDataService, stopId);
+      _serviceAlertsHelper.addSituationExchangeToSiriForStops(serviceDelivery, visits, _nycTransitDataService, stopId);
     } catch (RuntimeException e) {
       throw e;
     }

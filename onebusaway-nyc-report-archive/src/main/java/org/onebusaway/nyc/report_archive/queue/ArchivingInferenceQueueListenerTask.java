@@ -1,15 +1,18 @@
 package org.onebusaway.nyc.report_archive.queue;
 
-import org.codehaus.jackson.map.DeserializationConfig;
+import org.onebusaway.container.refresh.Refreshable;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 import org.onebusaway.nyc.report_archive.services.NycVehicleManagementStatusDao;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.impl.queue.InferenceQueueListenerTask;
-import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.transit_data.services.TransitDataService;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data.model.realtime.VehicleLocationRecordBean;
+
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -19,9 +22,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ArchivingInferenceQueueListenerTask extends
     InferenceQueueListenerTask {
@@ -34,7 +34,7 @@ public class ArchivingInferenceQueueListenerTask extends
   @Autowired
   private NycVehicleManagementStatusDao _statusDao;
   @Autowired
-  private TransitDataService _transitDataService;
+  private NycTransitDataService _nycTransitDataService;
 
   private int _batchSize;
 
@@ -124,13 +124,10 @@ public class ArchivingInferenceQueueListenerTask extends
 
   private void postProcess(ArchivedInferredLocationRecord locationRecord) {
     // Extract next stop id and distance
-    String vehicleId = locationRecord.getAgencyId() + "_"
-        + locationRecord.getVehicleId().toString();
-    VehicleStatusBean vehicle = _transitDataService.getVehicleForAgency(
-        vehicleId, locationRecord.getTimeReported().getTime());
+    String vehicleId = locationRecord.getAgencyId() + "_" + locationRecord.getVehicleId().toString();
+    VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(vehicleId, locationRecord.getTimeReported().getTime());
     locationRecord.setVehicleStatusBean(vehicle);
-    VehicleLocationRecordBean vehicleLocation = _transitDataService.getVehicleLocationRecordForVehicleId(
-        vehicleId, locationRecord.getTimeReported().getTime());
+    VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord.getTimeReported().getTime()) ;
     if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
       locationRecord.setVehicleLocationRecordBean(vehicleLocation);
     }
