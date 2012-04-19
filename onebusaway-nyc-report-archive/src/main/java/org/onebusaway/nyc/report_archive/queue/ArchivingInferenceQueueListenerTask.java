@@ -96,7 +96,7 @@ public class ArchivingInferenceQueueListenerTask extends
       if (_batchCount == 0) {
         if (locationRecord != null) {
           long delta = System.currentTimeMillis()
-              - locationRecord.getArchiveTimeReceived().getTime();
+              - locationRecord.getTimeReported().getTime();
           if (delta > DELAY_THRESHOLD) {
             _log.error("inference queue is " + (delta/1000) + " seconds behind");
           }
