@@ -37,11 +37,9 @@
       <property name="resourceRef"
                 value="true" />
     </bean>
+
+    <alias name="dataSource" alias="mutableDataSource" />
     
-    <bean id="nycTransitDataService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-        <property name="serviceUrl" value="${tds.path}/remoting/transit-data-service" />
-        <property name="serviceInterface" value="org.onebusaway.nyc.transit_data.services.NycTransitDataService" />
-    </bean>
     <bean id="webappHibernateProperties" class="org.onebusaway.container.spring.PropertiesBeanPostProcessor">
         <property name="target" value="hibernateProperties" />
         <property name="properties">
