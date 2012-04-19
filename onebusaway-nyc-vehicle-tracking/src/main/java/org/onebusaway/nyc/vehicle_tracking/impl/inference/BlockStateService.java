@@ -93,10 +93,17 @@ public class BlockStateService {
   private static final double _oppositeDirMoveCutoff = 15;
   
   /*
-   * Set this field to false if you want snapping to
-   * occur regardless of run or dsc info.
+   * Set this field to true if you want to require snapped states
+   * match the DSC implied Route
    */
-  private static final boolean _requireImpliedRoutes = true;
+  private static boolean _requireDSCImpliedRoutes = true;
+
+  /*
+   * Set this field to true if you want to only allow snapping to
+   * best fuzzy or operator assigned runs, when no valid DSC
+   * is available.
+   */
+  private static boolean _requireRunMatchesForNullDSC = true;
 
   /**
    * This will sound weird, but DON'T REMOVE THIS
@@ -373,6 +380,9 @@ public class BlockStateService {
         record.getLatitude());
     final Envelope searchEnv = new Envelope(bounds.getMinLon(),
         bounds.getMaxLon(), bounds.getMinLat(), bounds.getMaxLat());
+    
+    Set<String> validRunIds = Sets.newHashSet(Iterables.concat(observation.getBestFuzzyRunIds(),
+                      Collections.singleton(observation.getOpAssignedRunId())));
 
     @SuppressWarnings("unchecked")
     final List<Collection<LocationIndexedLine>> lineMatches = _index.query(searchEnv);
@@ -438,6 +448,28 @@ public class BlockStateService {
 //               */
 //              distanceAlongBlock = DoubleMath.roundToLong(distanceAlongBlock,
 //                  RoundingMode.HALF_UP);
+              /*
+               * Here we make sure that the DSC and/or run-info matches
+               */
+              if (_requireDSCImpliedRoutes) {
+                if (!observation.getImpliedRouteCollections()
+                      .contains(blockTrip.getTrip().getRouteCollection().getId()))
+                  continue;
+              }
+                
+              if (_requireRunMatchesForNullDSC) {
+                /*
+                 * When there is no valid DSC only allow snapping
+                 * to assigned or best fuzzy run.
+                 */
+                if (!observation.hasValidDsc()) {
+                  if (Sets.intersection(validRunIds, 
+                      _runService.getRunIdsForTrip(blockTrip.getTrip())).isEmpty()) {
+                    continue;
+                  }
+                } 
+              }
+                
               if (distanceAlongBlock > instance.getBlock().getTotalBlockDistance()) {
                 distanceAlongBlock = instance.getBlock().getTotalBlockDistance();
               }
@@ -492,14 +524,7 @@ public class BlockStateService {
         if (schedTime > searchTimeTo)
           break;
 
-        /*
-         * XXX we might not want to snap these if the dsc is out-of-service
-         */
-        if ((_requireImpliedRoutes
-            && (!observation.getImpliedRouteCollections().isEmpty() 
-                 && !observation.getImpliedRouteCollections().contains(
-                    location.getActiveTrip().getTrip().getRouteCollection().getId())))
-            || schedTime < searchTimeFrom)
+        if (schedTime < searchTimeFrom)
           continue;
 
         final BlockTripEntry activeTrip = location.getActiveTrip();
@@ -750,6 +775,23 @@ public class BlockStateService {
 
   public static double getOppositeDirMoveCutoff() {
     return _oppositeDirMoveCutoff;
+  }
+
+  public static boolean isRequireDSCImpliedRoutes() {
+    return _requireDSCImpliedRoutes;
+  }
+
+  public static void setRequireDSCImpliedRoutes(boolean requireDSCImpliedRoutes) {
+    _requireDSCImpliedRoutes = requireDSCImpliedRoutes;
+  }
+
+  public static boolean isRequireRunMatchesForNullDSC() {
+    return _requireRunMatchesForNullDSC;
+  }
+
+  public static void setRequireRunMatchesForNullDSC(
+      boolean requireRunMatchesForNullDSC) {
+    _requireRunMatchesForNullDSC = requireRunMatchesForNullDSC;
   }
 
 }

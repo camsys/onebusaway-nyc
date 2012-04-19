@@ -148,6 +148,12 @@ public class NycTestInferredLocationRecord implements Serializable {
   @CsvField(optional = true)
   private String actualStatus = null;
 
+  @CsvField(optional = true)
+  private Boolean actualIsRunFormal;
+  
+  @CsvField(optional = true)
+  private Boolean inferredIsRunFormal;
+
   // **************
 
   public void setVehicleId(AgencyAndId vehicleId) {
@@ -486,5 +492,21 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setInferredScheduleDeviation(double inferredScheduleDeviation) {
     this.inferredScheduleDeviation = inferredScheduleDeviation;
+  }
+
+  public Boolean getInferredIsRunFormal() {
+    return inferredIsRunFormal;
+  }
+
+  public void setInferredIsRunFormal(Boolean isRunFormal) {
+    this.inferredIsRunFormal = isRunFormal;
+  }
+  
+  public Boolean getActualIsRunFormal() {
+    return actualIsRunFormal;
+  }
+
+  public void setActualIsRunFormal(Boolean isRunFormal) {
+    this.actualIsRunFormal = isRunFormal;
   }
 }

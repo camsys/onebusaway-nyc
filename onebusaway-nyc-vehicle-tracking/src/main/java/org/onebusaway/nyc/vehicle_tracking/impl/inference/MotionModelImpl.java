@@ -25,11 +25,11 @@ import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.EdgeLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.GpsLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.NullLocationLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.NullStateLikelihood;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.PriorRule;
-import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunRule;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.RunTransitionLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.ScheduleLikelihood;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.SensorModelSupportLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.disabled.PriorRule;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockStateObservation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.MotionState;
@@ -110,7 +110,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
   public RunTransitionLikelihood runTransitionLikelihood = new RunTransitionLikelihood();
   public GpsLikelihood gpsLikelihood = new GpsLikelihood();
   public PriorRule priorLikelihood = new PriorRule();
-  public RunRule runLikelihood = new RunRule();
+  public RunLikelihood runLikelihood = new RunLikelihood();
   public DscLikelihood dscLikelihood;
   public NullStateLikelihood nullStateLikelihood;
   public NullLocationLikelihood nullLocationLikelihood;
@@ -157,17 +157,17 @@ public class MotionModelImpl implements MotionModel<Observation> {
       return true;
 
     if (parentBlockState != null) {
-      /*
-       * Check if we don't have useable run-info
-       */
-      if ((Strings.isNullOrEmpty(obs.getOpAssignedRunId()) && obs.getFuzzyMatchDistance() == null)
-          || (parentBlockState.getOpAssigned() != Boolean.TRUE && parentBlockState.getRunReported() != Boolean.TRUE)) {
+      if (!parentBlockState.isRunFormal()
+          && _blocksFromObservationService.hasSnappedBlockStates(obs)
+          && obs.hasValidDsc()) {
 
         /*
-         * We have no run information, so we will allow a run transition when we
-         * hit deadhead-after.
+         * We have no good run information, but a valid DSC, so we will allow 
+         * a run transition when there are snapped states and it's not in progress.
+         * This way we're less likely to get deadheads with in-service signs 
+         * floating along routes.
          */
-        if (parentState.getJourneyState().getPhase() == EVehiclePhase.DEADHEAD_AFTER) {
+        if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()) {
           return true;
         }
       }

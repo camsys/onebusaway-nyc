@@ -23,6 +23,7 @@ import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -447,7 +448,7 @@ public class VehicleInferenceInstance {
 
       // set sched. dev. if we have a match in UTS and are therefore comfortable
       // saying that this schedule deviation is a true match to the schedule.
-      if (isInferencFormal(blockState)) {
+      if (blockState.isRunFormal()) {
         int deviation = //blockState.getScheduleDeviation(); 
             (int)((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
 
@@ -491,14 +492,10 @@ public class VehicleInferenceInstance {
     if (blockState != null) {
       record.setLastInferredDestinationSignCode(blockState.getBlockState().getDestinationSignCode());
       record.setInferredRunId(blockState.getBlockState().getRunId());
-      record.setInferenceIsFormal(isInferencFormal(blockState));
+      record.setInferenceIsFormal(blockState.isRunFormal());
     }
 
     return record;
-  }
-
-  public static boolean isInferencFormal(BlockStateObservation blockState) {
-    return blockState.getOpAssigned() == null ? false : blockState.getOpAssigned();
   }
 
   public synchronized void setVehicleStatus(boolean enabled) {
@@ -626,6 +623,7 @@ public class VehicleInferenceInstance {
 
     if (blockState != null) {
       record.setInferredRunId(blockState.getBlockState().getRunId());
+      record.setInferredIsRunFormal(blockState.isRunFormal());
 
       final BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();
       final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
@@ -679,5 +677,9 @@ public class VehicleInferenceInstance {
       record.setInferredDsc("0000");
 
     return record;
+  }
+
+  public OperatorAssignmentService getOperatorAssignmentService() {
+    return _operatorAssignmentService;
   }
 }

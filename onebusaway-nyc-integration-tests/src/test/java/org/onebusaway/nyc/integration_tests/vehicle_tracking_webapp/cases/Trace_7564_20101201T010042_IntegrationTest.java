@@ -43,5 +43,6 @@ public class Trace_7564_20101201T010042_IntegrationTest extends AbstractTraceRun
      */
     setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.94);
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0.81);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.70);
   }
 }

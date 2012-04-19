@@ -26,8 +26,6 @@ public final class BlockStateObservation implements
 
   private final Boolean _isRunReported;
 
-  private final Boolean _isRunReportedAssignedMismatch;
-  
   private final boolean _isAtPotentialLayoverSpot;
 
   private final boolean _isSnapped;
@@ -35,14 +33,16 @@ public final class BlockStateObservation implements
   private final double _scheduleDeviation;
 
   private final Observation _obs;
+
+  private final boolean _isRunFormal;
   
   private BlockStateObservation(BlockState blockState, Boolean isRunReported,
-      Boolean isUTSassigned, Boolean isRunAM, boolean isAtLayoverSpot, 
+      Boolean isUTSassigned, boolean isFormal, boolean isAtLayoverSpot, 
       boolean isSnapped, Observation obs) {
     _blockState = blockState;
+    this._isRunFormal = isFormal;
     this._isRunReported = isRunReported;
     this._isOpAssigned = isUTSassigned;
-    this._isRunReportedAssignedMismatch = isRunAM;
     this._isAtPotentialLayoverSpot = isAtLayoverSpot;
     this._isSnapped = isSnapped;
     this._obs = obs;
@@ -51,7 +51,7 @@ public final class BlockStateObservation implements
 
   public BlockStateObservation(BlockStateObservation state, Observation obs) {
     this(state._blockState, state._isRunReported, state._isOpAssigned,
-        state._isRunReportedAssignedMismatch, state._isAtPotentialLayoverSpot,
+        state._isRunFormal, state._isAtPotentialLayoverSpot,
         state._isSnapped, obs);
   }
 
@@ -66,8 +66,8 @@ public final class BlockStateObservation implements
     _isRunReported = (runId != null && 
         obs.getBestFuzzyRunIds() != null && !obs.getBestFuzzyRunIds().isEmpty())
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
-    _isRunReportedAssignedMismatch = _isOpAssigned != null
-        && _isRunReported != null ? _isOpAssigned && !_isRunReported : null;
+    _isRunFormal = _isOpAssigned == Boolean.TRUE || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0) 
+        ? true : false;
     _isAtPotentialLayoverSpot = isAtPotentialLayoverSpot;
     _isSnapped = isSnapped;
     _scheduleDeviation = computeScheduleDeviation(obs, blockState);
@@ -99,10 +99,6 @@ public final class BlockStateObservation implements
     return _isOpAssigned;
   }
 
-  public Boolean isRunReportedAssignedMismatch() {
-    return _isRunReportedAssignedMismatch;
-  }
-
   @Override
   public int compareTo(BlockStateObservation rightBs) {
 
@@ -110,8 +106,8 @@ public final class BlockStateObservation implements
       return 0;
 
     final int res = ComparisonChain.start().compare(
-        this._isRunReportedAssignedMismatch,
-        rightBs.isRunReportedAssignedMismatch(), Ordering.natural().nullsLast()).compare(
+        this._isRunFormal,
+        rightBs.isRunFormal(), Ordering.natural().nullsLast()).compare(
         this._isRunReported, rightBs.getRunReported(),
         Ordering.natural().nullsLast()).compare(this._isOpAssigned,
         rightBs.getOpAssigned(), Ordering.natural().nullsLast()).compare(
@@ -126,74 +122,9 @@ public final class BlockStateObservation implements
         .add("isSnapped", _isSnapped)
         .add("isOpAssigned", _isOpAssigned)
         .add("isRunReported", _isRunReported)
+        .add("isRunFormal", _isRunFormal)
         .add("schedDev", _scheduleDeviation)
         .toString();
-  }
-
-  private int _hash = 0;
-
-  @Override
-  public int hashCode() {
-    if (_hash != 0)
-      return _hash;
-
-    final int prime = 31;
-    int result = 1;
-    result = prime * result
-        + ((_blockState == null) ? 0 : _blockState.hashCode());
-    result = prime * result
-        + ((_isOpAssigned == null) ? 0 : _isOpAssigned.hashCode());
-    result = prime * result
-        + ((_isRunReported == null) ? 0 : _isRunReported.hashCode());
-    result = prime
-        * result
-        + ((_isRunReportedAssignedMismatch == null) ? 0
-            : _isRunReportedAssignedMismatch.hashCode());
-    _hash = result;
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (!(obj instanceof BlockStateObservation)) {
-      return false;
-    }
-    final BlockStateObservation other = (BlockStateObservation) obj;
-    if (_blockState == null) {
-      if (other._blockState != null) {
-        return false;
-      }
-    } else if (!_blockState.equals(other._blockState)) {
-      return false;
-    }
-    if (_isOpAssigned == null) {
-      if (other._isOpAssigned != null) {
-        return false;
-      }
-    } else if (!_isOpAssigned.equals(other._isOpAssigned)) {
-      return false;
-    }
-    if (_isRunReported == null) {
-      if (other._isRunReported != null) {
-        return false;
-      }
-    } else if (!_isRunReported.equals(other._isRunReported)) {
-      return false;
-    }
-    if (_isRunReportedAssignedMismatch == null) {
-      if (other._isRunReportedAssignedMismatch != null) {
-        return false;
-      }
-    } else if (!_isRunReportedAssignedMismatch.equals(other._isRunReportedAssignedMismatch)) {
-      return false;
-    }
-    return true;
   }
 
   public boolean isAtPotentialLayoverSpot() {
@@ -212,4 +143,88 @@ public final class BlockStateObservation implements
     return _obs;
   }
 
+  public boolean isRunFormal() {
+    return _isRunFormal;
+  }
+
+  int _hashCode = 0;
+  
+  @Override
+  public int hashCode() {
+    if (_hashCode != 0) 
+      return _hashCode;
+    
+    final int prime = 31;
+    int result = 1;
+    result = prime * result
+        + ((_blockState == null) ? 0 : _blockState.hashCode());
+    result = prime * result + (_isAtPotentialLayoverSpot ? 1231 : 1237);
+    result = prime * result
+        + ((_isOpAssigned == null) ? 0 : _isOpAssigned.hashCode());
+    result = prime * result + (_isRunFormal ? 1231 : 1237);
+    result = prime * result
+        + ((_isRunReported == null) ? 0 : _isRunReported.hashCode());
+    result = prime * result + (_isSnapped ? 1231 : 1237);
+    result = prime * result + ((_obs == null) ? 0 : _obs.hashCode());
+    long temp;
+    temp = Double.doubleToLongBits(_scheduleDeviation);
+    result = prime * result + (int) (temp ^ (temp >>> 32));
+    _hashCode = result;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof BlockStateObservation)) {
+      return false;
+    }
+    BlockStateObservation other = (BlockStateObservation) obj;
+    if (_blockState == null) {
+      if (other._blockState != null) {
+        return false;
+      }
+    } else if (!_blockState.equals(other._blockState)) {
+      return false;
+    }
+    if (_isAtPotentialLayoverSpot != other._isAtPotentialLayoverSpot) {
+      return false;
+    }
+    if (_isOpAssigned == null) {
+      if (other._isOpAssigned != null) {
+        return false;
+      }
+    } else if (!_isOpAssigned.equals(other._isOpAssigned)) {
+      return false;
+    }
+    if (_isRunFormal != other._isRunFormal) {
+      return false;
+    }
+    if (_isRunReported == null) {
+      if (other._isRunReported != null) {
+        return false;
+      }
+    } else if (!_isRunReported.equals(other._isRunReported)) {
+      return false;
+    }
+    if (_isSnapped != other._isSnapped) {
+      return false;
+    }
+    if (_obs == null) {
+      if (other._obs != null) {
+        return false;
+      }
+    } else if (!_obs.equals(other._obs)) {
+      return false;
+    }
+    if (Double.doubleToLongBits(_scheduleDeviation) != Double.doubleToLongBits(other._scheduleDeviation)) {
+      return false;
+    }
+    return true;
+  }
 }

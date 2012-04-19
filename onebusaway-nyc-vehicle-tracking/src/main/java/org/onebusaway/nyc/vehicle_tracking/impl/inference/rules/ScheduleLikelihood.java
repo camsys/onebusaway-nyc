@@ -148,8 +148,7 @@ public class ScheduleLikelihood implements SensorModelRule {
   }
 
   public static StudentTDistribution getSchedDistForBlockState(BlockStateObservation blockState) {
-    return (blockState.getOpAssigned() == Boolean.TRUE 
-            || blockState.getRunReported() == Boolean.TRUE) ?
+    return blockState.isRunFormal() ?
               schedDevRunDist : schedDevNonRunDist;
   }
 

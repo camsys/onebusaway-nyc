@@ -34,7 +34,7 @@ public class Trace_7560_20101123T234515_IntegrationTest extends AbstractTraceRun
      * in this case, trace expected in-progress-stalled and we
      * find a better fit with a layover-during.
      */
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.76);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.70);
     
   }
 }

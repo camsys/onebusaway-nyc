@@ -522,6 +522,21 @@ public class RunServiceImpl implements RunService {
 
     return null;
   }
+  
+  @Override
+  public Collection<RunTripEntry> getRunTripsForTrip(TripEntry trip) {
+    Collection<RunTripEntry> trips = entriesByTrip.get(trip.getId());
+    return trips;
+  }
+  
+  @Override
+  public Set<String> getRunIdsForTrip(TripEntry trip) {
+    Set<String> ids = Sets.newHashSet();
+    for (RunTripEntry rte : entriesByTrip.get(trip.getId())) {
+      ids.add(rte.getRunId());
+    }
+    return ids;
+  }
 
   @Override
   public boolean isValidRunId(String runId) {
