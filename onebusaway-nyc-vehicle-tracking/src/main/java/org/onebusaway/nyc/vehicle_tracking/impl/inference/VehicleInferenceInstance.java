@@ -23,6 +23,7 @@ import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -622,7 +623,7 @@ public class VehicleInferenceInstance {
 
     if (blockState != null) {
       record.setInferredRunId(blockState.getBlockState().getRunId());
-      record.setIsRunFormal(blockState.isRunFormal());
+      record.setInferredIsRunFormal(blockState.isRunFormal());
 
       final BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();
       final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
@@ -676,5 +677,9 @@ public class VehicleInferenceInstance {
       record.setInferredDsc("0000");
 
     return record;
+  }
+
+  public OperatorAssignmentService getOperatorAssignmentService() {
+    return _operatorAssignmentService;
   }
 }
