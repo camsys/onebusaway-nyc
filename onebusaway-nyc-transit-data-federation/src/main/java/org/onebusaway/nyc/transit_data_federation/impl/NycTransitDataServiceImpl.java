@@ -24,6 +24,7 @@ import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.model.schedule.ServiceHour;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleSearchService;
 import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
 import org.onebusaway.transit_data.model.AgencyBean;
 import org.onebusaway.transit_data.model.AgencyWithCoverageBean;
@@ -100,6 +101,9 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
   @Autowired
   private ScheduledServiceService _scheduledServiceService;
   
+  @Autowired
+  private BundleSearchService _bundleSearchService;
+  
   private int _blockedRequestCounter = 0;
   
   private void blockUntilBundleIsReady() {
@@ -159,6 +163,14 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
     AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_routeId);
     
     return _scheduledServiceService.stopHasUpcomingScheduledService(serviceHour, stopId, routeId, directionId);
+  }
+  
+  @Override
+  public List<String> getSearchSuggestions(String input) {
+	  
+	  List<String> result = this._bundleSearchService.getSuggestions(input);
+	  
+	  return result;
   }
   
   /****

@@ -63,7 +63,13 @@ public class BundleManagementController {
   }
 
   @RequestMapping("/bundles!reassign.do")
-  public ModelAndView reassign() throws Exception {
+  public ModelAndView reassign(@RequestParam(required=false) String time) throws Exception {
+    if(time != null && !StringUtils.isEmpty(time)) {
+      _bundleManager.setTime(DateLibrary.getIso8601StringAsTime(time));
+    } else {
+      _bundleManager.setTime(new Date());
+    }
+
     _bundleManager.refreshApplicableBundles();
     _bundleManager.reevaluateBundleAssignment();
     
@@ -71,7 +77,13 @@ public class BundleManagementController {
   }
 
   @RequestMapping("/bundles!change.do")
-  public ModelAndView change(@RequestParam String bundleId) throws Exception {
+  public ModelAndView change(@RequestParam String bundleId, @RequestParam(required=false) String time) throws Exception {
+    if(time != null && !StringUtils.isEmpty(time)) {
+      _bundleManager.setTime(DateLibrary.getIso8601StringAsTime(time));
+    } else {
+      _bundleManager.setTime(new Date());
+    }
+
     _bundleManager.changeBundle(bundleId);
     
     return new ModelAndView("redirect:/bundles.do");

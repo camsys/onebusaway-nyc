@@ -18,6 +18,7 @@ package org.onebusaway.nyc.transit_data.services;
 import org.onebusaway.transit_data.services.TransitDataService;
 
 import java.util.Date;
+import java.util.List;
 
 public interface NycTransitDataService extends TransitDataService {
 
@@ -26,5 +27,7 @@ public interface NycTransitDataService extends TransitDataService {
    public Boolean routeHasUpcomingScheduledService(Date time, String routeId, String directionId);
 
    public Boolean stopHasUpcomingScheduledService(Date time, String stopId, String routeId, String directionId);
+   
+   public List<String> getSearchSuggestions(String input);
 
 }

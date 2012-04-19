@@ -22,6 +22,9 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 
+<s:url var="url" value="/css/jquery-ui.css"></s:url>
+<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+
 <s:url var="url" value="/css/map/map.css"></s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
@@ -113,7 +116,7 @@
 	   </div>
     
        <form action="search.action">
-         <input type="text" name="q" value=""/>  
+         <input id="bustimesearch" type="text" name="q" value=""/>
          <input type="submit" value="Find" class="submit"/>
          <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
        </form>

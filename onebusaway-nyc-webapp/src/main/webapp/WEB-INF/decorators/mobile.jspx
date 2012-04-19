@@ -35,6 +35,12 @@
   	<s:url var="url" value="/css/mobile/branding.css"></s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
   	
+  	<s:url var="url" value="/js/lib/jquery.js"/>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+  	
+  	<s:url var="url" value="/js/oba/Config.js"/>
+  	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+  	
   	<decorator:head/>
   	
 </head>

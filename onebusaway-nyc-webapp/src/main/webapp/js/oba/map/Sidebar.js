@@ -52,6 +52,11 @@ OBA.Sidebar = function() {
 			
 			(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
 		});
+		
+		// add autocomplete behavior
+		jQuery("#bustimesearch").autocomplete({
+			source: OBA.Config.autocompleteUrl
+		});
 	}
 
 	function addResizeBehavior() {

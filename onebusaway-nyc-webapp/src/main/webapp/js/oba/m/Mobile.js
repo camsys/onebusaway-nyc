@@ -10,6 +10,12 @@ OBA.Mobile = (function() {
 	var lastLatitude = null;
 	var lastLongitude = null; 
 	
+	function addAutocompleteBehavior() {
+		jQuery("#bustimesearch").autocomplete({
+			source: "../" + OBA.Config.autocompleteUrl
+		});
+	}
+	
 	function addRefreshBehavior() {
 		// refresh button logic
 		var refreshBar = jQuery("#refresh")
@@ -49,7 +55,7 @@ OBA.Mobile = (function() {
 				top = topLimit;
 			}
 			
-			refreshBar.css("top", top + 20);
+			refreshBar.css("top", top + 3);
 		};
 		repositionRefreshBar();
 		
@@ -182,6 +188,7 @@ OBA.Mobile = (function() {
 			}			
 			
 			addRefreshBehavior();
+			addAutocompleteBehavior();
 		}
 	};
 })();
