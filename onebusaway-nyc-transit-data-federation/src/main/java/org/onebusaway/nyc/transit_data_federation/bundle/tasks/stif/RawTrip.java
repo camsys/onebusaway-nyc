@@ -20,6 +20,9 @@ public class RawTrip implements Comparable<RawTrip> {
 
   public int firstStopTime;
   public int lastStopTime;
+  public int listedLastStopTime;
+  public int listedFirstStopTime;
+
   public int recoveryTime;
   public StifTripType type;
   private ArrayList<Trip> gtfsTrips;
@@ -31,6 +34,8 @@ public class RawTrip implements Comparable<RawTrip> {
   public File path;
   public int lineNumber;
   public TripIdentifier id;
+  public String depot;
+
 
   public RawTrip(String runId, String reliefRunId, String nextRun,
       StifTripType type, String dsc) {
@@ -75,5 +80,13 @@ public class RawTrip implements Comparable<RawTrip> {
 
   public String toString() {
     return "Trip on run (" + runId + ") at " + firstStopTime + " with dsc '" + dsc + "'";
+  }
+
+  public String getRunIdWithDepot() {
+    return runId + "-" + depot;
+  }
+
+  public String getNextRunIdWithDepot() {
+    return nextRun + "-" + depot;
   }
 }

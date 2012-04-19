@@ -135,7 +135,7 @@ public class TripRecordFactory extends StifRecordFactory<TripRecord> {
       new FieldDef(150 - 149, "empty", null),
       new FieldDef(154 - 150, "recovery time after this trip", new TripFieldSetter() {
         public void setField(TripRecord record) {
-          record.setRecoveryTime(getTimeFromCentiminutesSafe());
+          record.setRecoveryTime(getIntegerSafe());
         }
       }),
       new FieldDef(155 - 154, "empty", null),

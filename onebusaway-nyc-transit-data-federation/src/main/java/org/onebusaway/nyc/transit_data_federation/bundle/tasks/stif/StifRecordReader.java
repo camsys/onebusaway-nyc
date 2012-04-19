@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.EventRecordFactory;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.GeographyRecordFactory;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.SignCodeRecordFactory;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.StifRecord;
@@ -50,6 +51,7 @@ public class StifRecordReader {
 		recordFactories.put(11, new TimetableRecordFactory());
 		recordFactories.put(15, new GeographyRecordFactory());
 		recordFactories.put(21, new TripRecordFactory());
+		recordFactories.put(31, new EventRecordFactory());
 		recordFactories.put(35, new SignCodeRecordFactory());
 	}
 

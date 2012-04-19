@@ -68,13 +68,13 @@ public class StifTripLoaderSupport {
     stopIdsByLocation.put(location, stopId);
   }
 
-  public TripIdentifier getIdentifierForTripRecord(TripRecord tripRecord) {
+  public TripIdentifier getIdentifierForStifTrip(TripRecord tripRecord, RawTrip rawTrip) {
     String routeName = tripRecord.getSignCodeRoute();
     if (routeName == null || routeName.trim().length() == 0)
       routeName = tripRecord.getRunRoute();
-    String startStop = getStopIdForLocation(tripRecord.getOriginLocation());
-    int startTime = tripRecord.getOriginTime();
-    int endTime = tripRecord.getDestinationTime();
+    String startStop = rawTrip.firstStop;
+    int startTime = rawTrip.firstStopTime;
+    int endTime = rawTrip.lastStopTime;
     if (startTime < 0) {
       // skip a day ahead for previous-day trips.
       startTime += 24 * 60 * 60;
