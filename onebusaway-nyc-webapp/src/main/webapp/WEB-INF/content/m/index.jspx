@@ -22,7 +22,11 @@
 <jsp:directive.page contentType="text/html" />
 <jsp:output omit-xml-declaration="yes"/>
 <head>
-	<s:url var="url" value="/js/lib/jquery.js"/>
+
+	<s:url var="url" value="/css/jquery-ui.css"></s:url>
+	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+	
+	<s:url var="url" value="/js/lib/jquery.ui.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 	<s:url var="url" value="/js/lib/dateFormat.js"/>
@@ -40,7 +44,7 @@
 <body>
 	<div id="searchPanel">
 		<s:form namespace="/m" action="index" method="GET">
-			<input type="text" name="q" class="q" value="${q}"/>
+			<input type="text" id="bustimesearch" name="q" class="q" value="${q}"/>
 			<input type="submit" class="s" value="Find" id="submitButton"/>
 			
 			<input type="hidden" name="l" id="l" value="${l}"/>

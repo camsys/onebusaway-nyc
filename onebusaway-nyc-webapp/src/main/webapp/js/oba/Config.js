@@ -21,6 +21,7 @@ var OBA = window.OBA || {};
 $.ajaxSetup({ cache: false });
 
 OBA.Config = {
+		autocompleteUrl: "api/autocomplete",
 		searchUrl: "api/search",
 		configUrl: "api/config",
 		stopsWithinBoundsUrl: "api/stops-within-bounds",
