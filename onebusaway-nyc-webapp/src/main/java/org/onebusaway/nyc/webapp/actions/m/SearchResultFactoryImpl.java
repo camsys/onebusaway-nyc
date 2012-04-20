@@ -183,11 +183,11 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
       RouteAtStop routeAtStop = new RouteAtStop(routeBean, directions, serviceAlertDescriptions);
 
       for(RouteDirection direction : routeAtStop.getDirections()) {
-        if(direction.getHasUpcomingScheduledService() == false) {
+        if(direction.getHasUpcomingScheduledService() == false && direction.getDistanceAways().isEmpty()) {
           routesWithNoScheduledService.add(routeAtStop);
           break;
         } else {
-          if(direction.getDistanceAways().size() > 0) {
+          if(!direction.getDistanceAways().isEmpty()) {
             routesWithArrivals.add(routeAtStop);
             break;
           } else {

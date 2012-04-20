@@ -93,7 +93,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
           for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
             if(description.getValue() != null) {
-              description.setValue(description.getValue().replace("\n", "<br/>"));
+              description.setValue(description.getValue());
               serviceAlertDescriptions.add(description);
             }
           }
@@ -144,7 +144,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
             for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
               if(description.getValue() != null) {
-                description.setValue(description.getValue().replace("\n", "<br/>"));
+                description.setValue(description.getValue());
                 serviceAlertDescriptions.add(description);
               }
             }
