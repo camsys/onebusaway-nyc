@@ -40,11 +40,12 @@ public class TestThroughput implements Runnable {
   private static final int MAX_SPEED = 149;
   private ObjectMapper _ccmapper;
 
-  private static final int sends = 250;
   private IPublisher _publisher;
+  private int sends = 0;
 
-  public TestThroughput(IPublisher publisher) {
+  public TestThroughput(IPublisher publisher, int sends) {
     _publisher = publisher;
+    this.sends = sends;
     setupMappers();
   }
 
@@ -63,7 +64,7 @@ public class TestThroughput implements Runnable {
       } else if (sent < sends) {
         // not throttled, send
 
-        _publisher.send(createRealtimeMessage(vehicleCount, timeStamp).getBytes());
+        _publisher.send(wrap(createRealtimeMessage(vehicleCount, timeStamp)));
         sent++;
         vehicleCount++;
         if (vehicleCount > MAX_VEHICLES) {
@@ -78,6 +79,12 @@ public class TestThroughput implements Runnable {
       }
     }
 
+  }
+
+  private byte[] wrap(String createRealtimeMessage) {
+    // TODO Auto-generated method stub
+    String msg = "{\"CcLocationReport\":" + createRealtimeMessage + "}";
+    return msg.getBytes();
   }
 
   // TCIP is inconsistent in property naming, give hints to jackson for

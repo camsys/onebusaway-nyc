@@ -1,16 +1,20 @@
 package org.onebusaway.nyc.queue_http_proxy;
 
-import java.io.IOException;
+import org.onebusaway.nyc.queue.IPublisher;
+import org.onebusaway.nyc.queue.Publisher;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.onebusaway.nyc.queue.IPublisher;
-import org.onebusaway.nyc.queue.Publisher;
 
 /**
  * HTTP Proxy Servet. Listens for HTTP Posts and blindly throws the content of
@@ -28,6 +32,7 @@ import org.onebusaway.nyc.queue.Publisher;
  */
 public class BHSListenerServlet extends HttpServlet {
 
+	private static Logger _log = LoggerFactory.getLogger(BHSListenerServlet.class);
 	private static final long serialVersionUID = 245140554274414196L;
 	public static final String PUBLISHER_KEY = "bhs_publisher";
 	public static final String DEFAULT_BHS_QUEUE = "bhs_queue";
@@ -39,7 +44,7 @@ public class BHSListenerServlet extends HttpServlet {
 	public synchronized void init() throws ServletException {
 		IPublisher publisher = (IPublisher) getServletConfig()
 				.getServletContext().getAttribute(PUBLISHER_KEY);
-		// don't assume we are first invocation, according to Servlet spec
+		// don't assume we are first invocation, according to Servlet specification
 		if (publisher == null) {
 			String topic = getInitParameter("queue_topic", DEFAULT_BHS_QUEUE);
 			if (topic == null) {
@@ -51,18 +56,26 @@ public class BHSListenerServlet extends HttpServlet {
 			int port = getInitParameter("queue_port", DEFAULT_PORT);
 
 			publisher = new Publisher(topic);
-			// todo pull this out to config param
+
 			publisher.open(protocol, host, port); 
 									
 			// lazy instantiate and save with application context
 			getServletConfig().getServletContext().setAttribute(PUBLISHER_KEY,
 					publisher);
 			
-			String runTest = (String)getServletConfig()
-				.getServletContext().getAttribute("run.test.throughput");
-			if (runTest != null && "true".equals(runTest)) {
-			  TestThroughput throughput = new TestThroughput(publisher);
-			  throughput.run();
+			String testThroughput = getInitParameter("run.test.throughput", "0");
+			if (!testThroughput.equals("0")) {
+			  try {
+			    _log.info("testing mode: testThroughput=" + testThroughput);
+			    TestThroughput throughput = new TestThroughput(publisher, Integer.parseInt(testThroughput));
+			    Thread t = new Thread(throughput);
+			    t.start();
+			  } catch (NumberFormatException nfe) {
+			    // mis-configured, ignore
+			    _log.error("test throughput misconfigured:" + nfe);
+			  }
+			} else {
+			  _log.info("production mode");
 			}
 		}
 	}
