@@ -57,6 +57,13 @@ public class BHSListenerServlet extends HttpServlet {
 			// lazy instantiate and save with application context
 			getServletConfig().getServletContext().setAttribute(PUBLISHER_KEY,
 					publisher);
+			
+			String runTest = (String)getServletConfig()
+				.getServletContext().getAttribute("run.test.throughput");
+			if (runTest != null && "true".equals(runTest)) {
+			  TestThroughput throughput = new TestThroughput(publisher);
+			  throughput.run();
+			}
 		}
 	}
 
