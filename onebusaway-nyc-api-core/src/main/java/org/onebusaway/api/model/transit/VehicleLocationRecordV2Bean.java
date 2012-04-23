@@ -112,9 +112,10 @@ public class VehicleLocationRecordV2Bean implements Serializable {
     this.timeOfLocationUpdate = timeOfLocationUpdate;
   }
 
-  public Double getScheduleDeviation() {
-    return scheduleDeviation;
-  }
+// hiding this until MTA is ready to make public
+//  public Double getScheduleDeviation() {
+//    return scheduleDeviation;
+//  }
 
   public void setScheduleDeviation(Double scheduleDeviation) {
     this.scheduleDeviation = scheduleDeviation;
