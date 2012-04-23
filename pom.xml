@@ -133,6 +133,7 @@
         <module>onebusaway-nyc-transit-data-federation</module>
         <module>onebusaway-nyc-transit-data-federation-webapp</module>
         <module>onebusaway-nyc-api-webapp</module>
+        <module>onebusaway-nyc-api-core</module>
         <module>onebusaway-nyc-queue-realtime</module>
         <module>onebusaway-nyc-queue-broker</module>
         <module>onebusaway-nyc-queue-http-proxy</module>

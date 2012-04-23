@@ -20,8 +20,8 @@
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-api-core</artifactId>
-            <version>${onebusaway.app-modules.version}</version>
+            <artifactId>onebusaway-nyc-api-core</artifactId>
+            <version>${onebusaway.nyc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.onebusaway</groupId>
