@@ -2,6 +2,7 @@ package org.onebusaway.nyc.sms.actions.model;
 
 import org.onebusaway.transit_data.model.RouteBean;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -9,7 +10,9 @@ import java.util.List;
  * @author jmaki
  *
  */
-public class RouteAtStop {
+public class RouteAtStop implements Serializable {
+  
+  private static final long serialVersionUID = 1L;
 
   private RouteBean route;
     
