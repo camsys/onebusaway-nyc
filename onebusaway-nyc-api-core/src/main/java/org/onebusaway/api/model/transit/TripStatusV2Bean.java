@@ -245,13 +245,13 @@ public final class TripStatusV2Bean implements Serializable {
     this.lastKnownOrientation = lastKnownOrientation;
   }
 
-// hiding this until MTA is ready to make public
-//  public Integer getScheduleDeviation() {
-//    return scheduleDeviation;
-//  }
+  public Integer getScheduleDeviation() {
+    return scheduleDeviation;
+  }
 
   public void setScheduleDeviation(Integer scheduleDeviation) {
-    this.scheduleDeviation = scheduleDeviation;
+// until MTA is ready to release publicly
+    this.scheduleDeviation = null;
   }
 
   public Double getDistanceAlongTrip() {
