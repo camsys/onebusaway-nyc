@@ -304,7 +304,6 @@
                 <configuration>
                     <container>
                         <containerId>tomcat5x</containerId>
-                        <output>/tmp/cargo.log</output>
                         <systemProperties>
                             <onebusaway_prefix>${basedir}</onebusaway_prefix>
                             <hsqldb.port>${hsqldb.port}</hsqldb.port>
