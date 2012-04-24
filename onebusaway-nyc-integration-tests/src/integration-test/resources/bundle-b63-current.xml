@@ -19,12 +19,12 @@
     <bean id="gtfs-bundles" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundles">
         <property name="bundles">
             <list>
-                <ref bean="gtfs_b63" />
+                <ref bean="gtfs_b63_current" />
             </list>
         </property>
     </bean>
 
-    <bean id="gtfs_b63" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
+    <bean id="gtfs_b63_current" class="org.onebusaway.transit_data_federation.bundle.model.GtfsBundle">
         <property name="path" 
         	value="${onebusaway_prefix}/src/integration-test/resources/bundle/gtfs/gtfs-b63-current.zip" />
     </bean>
