@@ -96,6 +96,7 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
         <webapp.api.url></webapp.api.url>
+        <log4j.appender>ROLL</log4j.appender>
       </properties>
     </profile>
     <profile>
@@ -108,6 +109,7 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
+        <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
     <profile>
@@ -119,6 +121,7 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
     <profile>
@@ -130,6 +133,7 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
     <profile>
@@ -143,6 +147,7 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <webapp.api.url>http://localhost:8082</webapp.api.url>
         <tdm.host>tdm.staging.obanyc.com</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
   </profiles>
