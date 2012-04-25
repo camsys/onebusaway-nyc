@@ -15,14 +15,17 @@
  */
 package org.onebusaway.nyc.transit_data_federation.impl;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import org.onebusaway.exceptions.ServiceException;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
-import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
-import org.onebusaway.nyc.transit_data_federation.model.schedule.ServiceHour;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleSearchService;
 import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
@@ -75,21 +78,14 @@ import org.onebusaway.transit_data.model.trips.TripsForAgencyQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForBoundsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
 import org.onebusaway.transit_data.services.TransitDataService;
-import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 @Component
 class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataService {
-
+	
   private static Logger _log = LoggerFactory.getLogger(NycTransitDataServiceImpl.class);
 
   @Autowired
@@ -105,7 +101,7 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
   private BundleSearchService _bundleSearchService;
   
   private int _blockedRequestCounter = 0;
-  
+    
   private void blockUntilBundleIsReady() {
     try {
       while(_bundleManagementService != null && !_bundleManagementService.bundleIsReady()) {
@@ -145,24 +141,15 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
   }
 
   @Override
-  public Boolean routeHasUpcomingScheduledService(Date time, String _routeId, String directionId)  {
+  public Boolean routeHasUpcomingScheduledService(long time, String routeId, String directionId)  {
     blockUntilBundleIsReady();
-
-    ServiceHour serviceHour = new ServiceHour(time);
-    AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_routeId);
-    
-    return _scheduledServiceService.routeHasUpcomingScheduledService(serviceHour, routeId, directionId);
+    return _scheduledServiceService.routeHasUpcomingScheduledService(time, routeId, directionId);
   }
 
   @Override
-  public Boolean stopHasUpcomingScheduledService(Date time, String _stopId, String _routeId, String directionId) {
+  public Boolean stopHasUpcomingScheduledService(long time, String stopId, String routeId, String directionId) {
     blockUntilBundleIsReady();
-
-    ServiceHour serviceHour = new ServiceHour(time);
-    AgencyAndId stopId = AgencyAndIdLibrary.convertFromString(_stopId);
-    AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_routeId);
-    
-    return _scheduledServiceService.stopHasUpcomingScheduledService(serviceHour, stopId, routeId, directionId);
+    return _scheduledServiceService.stopHasUpcomingScheduledService(time, stopId, routeId, directionId);
   }
   
   @Override

@@ -15,9 +15,14 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
+import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.presentation.service.search.SearchService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -34,10 +39,7 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import uk.org.siri.siri.VehicleActivityStructure;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -45,9 +47,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
   private NycTransitDataService _nycTransitDataService;
 
-  public SearchResultFactoryImpl(SearchService searchService, NycTransitDataService nycTransitDataService) {
+  private RealtimeService _realtimeService;
+
+  public SearchResultFactoryImpl(SearchService searchService, NycTransitDataService nycTransitDataService, RealtimeService realtimeService) {
     _searchService = searchService;
     _nycTransitDataService = nycTransitDataService;
+    _realtimeService = realtimeService;
   }
 
   @Override
@@ -95,8 +100,16 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         }
 
         Boolean hasUpcomingScheduledService = 
-            _nycTransitDataService.routeHasUpcomingScheduledService(new Date(), routeBean.getId(), stopGroupBean.getId());
+            _nycTransitDataService.routeHasUpcomingScheduledService(System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
+        // if there are buses on route, always have "scheduled service"
+        List<VehicleActivityStructure> vehiclesOnRoute = 
+        		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
+        
+        if(!vehiclesOnRoute.isEmpty()) {
+        	hasUpcomingScheduledService = true;
+        }
+        
         directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
       }
     }
@@ -127,8 +140,16 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           }
 
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
+          // if there are buses on route, always have "scheduled service"
+          List<VehicleActivityStructure> vehiclesOnRoute = 
+          		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
+          
+          if(!vehiclesOnRoute.isEmpty()) {
+          	hasUpcomingScheduledService = true;
+          }
+          
           directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
         }
       }

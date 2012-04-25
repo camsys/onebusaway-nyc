@@ -15,6 +15,12 @@
  */
 package org.onebusaway.nyc.webapp.actions.api;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import org.codehaus.jackson.map.ObjectMapper;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -30,20 +36,13 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
-
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
+import uk.org.siri.siri.VehicleActivityStructure;
 
 public class StopForIdAction extends OneBusAwayNYCActionSupport {
     
@@ -101,7 +100,15 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
             continue;
           
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stop.getId(), routeBean.getId(), stopGroupBean.getId());
+              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stop.getId(), routeBean.getId(), stopGroupBean.getId());
+          
+          // if there are buses on route, always have "scheduled service"
+          List<VehicleActivityStructure> vehiclesOnRoute = 
+          		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
+          
+          if(!vehiclesOnRoute.isEmpty()) {
+          	hasUpcomingScheduledService = true;
+          }
           
           routeDirections.add(new RouteDirection(stopGroupBean, null, null, hasUpcomingScheduledService));
         }

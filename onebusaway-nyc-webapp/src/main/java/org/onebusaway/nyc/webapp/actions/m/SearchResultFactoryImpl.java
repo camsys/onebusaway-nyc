@@ -15,6 +15,13 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -44,14 +51,6 @@ import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -99,8 +98,16 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         
         // service in this direction
         Boolean hasUpcomingScheduledService = 
-            _nycTransitDataService.routeHasUpcomingScheduledService(new Date(), routeBean.getId(), stopGroupBean.getId());
+            _nycTransitDataService.routeHasUpcomingScheduledService(System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
      
+        // if there are buses on route, always have "scheduled service"
+        List<VehicleActivityStructure> vehiclesOnRoute = 
+        		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
+        
+        if(!vehiclesOnRoute.isEmpty()) {
+        	hasUpcomingScheduledService = true;
+        }
+        
         // stops in this direction
         List<StopOnRoute> stopsOnRoute = null;
         if(!stopGroupBean.getStopIds().isEmpty()) {
@@ -174,8 +181,13 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           
           // service in this direction
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
 
+          // if there are buses on route, always have "scheduled service"
+          if(!arrivalsForRouteAndDirection.isEmpty()) {
+          	hasUpcomingScheduledService = true;
+          }
+          
           directions.add(new RouteDirection(stopGroupBean, null, hasUpcomingScheduledService, arrivalsForRouteAndDirection));
         }
       }

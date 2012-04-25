@@ -1,5 +1,11 @@
 package org.onebusaway.nyc.presentation.impl.realtime;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -18,7 +24,6 @@ import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 import org.onebusaway.transit_data.model.trips.TripForVehicleQueryBean;
 import org.onebusaway.transit_data.model.trips.TripStatusBean;
 import org.onebusaway.transit_data.model.trips.TripsForRouteQueryBean;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +31,6 @@ import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleActivityStructure.MonitoredVehicleJourney;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
 
 @Component
 public class RealtimeServiceImpl implements RealtimeService {
