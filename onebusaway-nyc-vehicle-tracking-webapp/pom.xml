@@ -131,6 +131,7 @@
                 <siri.service.config>nyc-siri-service.xml</siri.service.config>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
                 <depot.partition.key></depot.partition.key>
+                <log4j.appender>ROLL</log4j.appender>
             </properties>
         </profile>
         <profile>
@@ -155,6 +156,7 @@
                  <bundle.location>/tmp/oba-bundle</bundle.location>
                  <bundle.mode.standalone>false</bundle.mode.standalone>
                  <depot.partition.key></depot.partition.key>
+                 <log4j.appender>stdout</log4j.appender>
           </properties>
         </profile>
         <profile>
@@ -178,6 +180,7 @@
                  <bundle.location>/tmp/oba-bundle</bundle.location>
                  <bundle.mode.standalone>false</bundle.mode.standalone>
                  <depot.partition.key></depot.partition.key>
+                 <log4j.appender>stdout</log4j.appender>
           </properties>
         </profile>
         <profile>
@@ -202,6 +205,7 @@
                  <bundle.location>/var/lib/obanyc/oba-bundle</bundle.location>
                  <bundle.mode.standalone>true</bundle.mode.standalone>
                  <depot.partition.key></depot.partition.key>
+                 <log4j.appender>stdout</log4j.appender>
           </properties>
         </profile>
         <profile>
@@ -225,6 +229,7 @@
                  <bundle.location>/tmp/oba-bundle</bundle.location>
                  <bundle.mode.standalone>false</bundle.mode.standalone>
                  <depot.partition.key>YUK</depot.partition.key>
+                 <log4j.appender>stdout</log4j.appender>
           </properties>
         </profile>
 
