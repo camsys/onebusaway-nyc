@@ -22,10 +22,6 @@
 <jsp:directive.page contentType="text/html" />
 <jsp:output omit-xml-declaration="yes"/>
 <head>
-
-	<s:url var="url" value="/css/jquery-ui.css"></s:url>
-	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
-	
 	<s:url var="url" value="/js/lib/jquery.ui.js"/>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
