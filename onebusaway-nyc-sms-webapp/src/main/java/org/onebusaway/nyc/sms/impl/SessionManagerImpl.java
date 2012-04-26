@@ -38,7 +38,7 @@ public class SessionManagerImpl implements SessionManager {
 
   private int _sessionReaperFrequency = 60;
 
-  private int _sessionTimeout = 7 * 60;
+  protected int _sessionTimeout = 7 * 60;
 
   /**
    * The frequency with which we'll check for stale sessions
@@ -91,9 +91,12 @@ public class SessionManagerImpl implements SessionManager {
   }
 
 
+  protected void updateContext(String key, Map<String, Object> context) {
+    _contextEntriesByKey.put(key, new ContextEntry(context));
+  }
 
   /****
-   * Private Method
+   * Private Methods
    ****/
 
   private ContextEntry getOrCreateContextEntry(String key) {
@@ -113,6 +116,15 @@ public class SessionManagerImpl implements SessionManager {
     private Map<String, Object> _context = new HashMap<String, Object>();
 
     private boolean _valid = true;
+
+    public ContextEntry() {
+    }
+
+    public ContextEntry(Map<String, Object> context) {
+      this();
+      _context = context;
+      isValidAfterTouch();
+    }
 
     public synchronized boolean isValidAfterTouch() {
       if (!_valid)
