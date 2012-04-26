@@ -22,20 +22,28 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 
-<s:url var="url" value="/css/map/map.css"></s:url>
+<s:url var="url" value="/css/map/map.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<s:url var="url" value="/css/map/popup.css"></s:url>
+<s:url var="url" value="/css/map/popup.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
-<s:url var="url" value="/css/map/wizard.css"></s:url>
+<s:url var="url" value="/css/map/wizard.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 
 <jsp:text>
 &lt;!--[if IE 6]&gt;
 </jsp:text>
-<s:url var="url" value="/css/ie6.css"></s:url>
-   <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
+	<s:url var="url" value="/css/ie6.css">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 <jsp:text>
 &lt;![endif]--&gt;
 </jsp:text>
@@ -47,40 +55,64 @@
 </s:url>
 <script src="${url}" type="text/javascript"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/jquery.ui.js"/>
+<s:url var="url" value="/js/lib/jquery.ui.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/jquery.history.js"/>
+<s:url var="url" value="/js/lib/jquery.history.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/markerManager.js"/>
+<s:url var="url" value="/js/lib/markerManager.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/rgbcolor.js"/>
+<s:url var="url" value="/js/lib/rgbcolor.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/lib/popover.js"/>
+<s:url var="url" value="/js/lib/popover.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/map/Wizard.js"/>
+<s:url var="url" value="/js/oba/map/Wizard.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/api/config"/>
+<s:url var="url" value="/api/config">
+	<s:param name="v"><s:property value="cacheBreaker" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/Util.js"/>
+<s:url var="url" value="/js/oba/Util.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/map/GoogleMapWrapper.js"/>
+<s:url var="url" value="/js/oba/map/GoogleMapWrapper.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/map/Popups.js"/>
+<s:url var="url" value="/js/oba/map/Popups.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/map/RouteMap.js"/>
+<s:url var="url" value="/js/oba/map/RouteMap.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
-<s:url var="url" value="/js/oba/map/Sidebar.js"/>
+<s:url var="url" value="/js/oba/map/Sidebar.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 </head>

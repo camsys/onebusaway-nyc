@@ -93,6 +93,15 @@ public abstract class OneBusAwayNYCActionSupport extends NextActionSupport {
     return false;
   }
   
+  // CSS + JS cache busting parameter
+  public String getFrontEndVersion() {
+	 return System.getProperty("front-end.version");
+  }
+
+  public String getCacheBreaker() {
+	  return String.valueOf(System.currentTimeMillis());
+  }
+
   protected UserBean getCurrentUser() {
     UserBean user = _currentUserService.getCurrentUser();
     if (user == null)
