@@ -292,20 +292,28 @@
 
 .ui-autocomplete.ui-widget {
 	background-color: #FFFFFF;
+	padding: 0px;
+	margin: 0px;
 	width: 250px;
 	border: 1px solid #EFEFEF;
 }
 
-.ui-autocomplete.ui-widget .ui-menu-item a{
+.ui-autocomplete.ui-widget .ui-menu-item {
+	padding: 0px;
+	margin: 0px;	
+}
+
+.ui-autocomplete.ui-widget .ui-menu-item a {
 	color: #000000;
 	font-size: 120%;
 	font-weight: bold;
+	margin: 0px;
 	padding: 5px;
 	display: block;
 	cursor: pointer;
 }
 
-.ui-autocomplete.ui-widget .ui-menu-item a:hover {
+.ui-autocomplete.ui-widget .ui-menu-item a.ui-state-hover {
 	background-color: #EFEFEF;
 }
 
