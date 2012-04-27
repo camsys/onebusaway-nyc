@@ -116,6 +116,7 @@
         <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
         <webapp.api.url></webapp.api.url>
         <log4j.appender>ROLL</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.MemcacheSessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
@@ -129,6 +130,7 @@
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
@@ -141,6 +143,7 @@
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
@@ -153,6 +156,7 @@
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
@@ -167,6 +171,7 @@
         <webapp.api.url>http://localhost:8082</webapp.api.url>
         <tdm.host>tdm.staging.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
   </profiles>

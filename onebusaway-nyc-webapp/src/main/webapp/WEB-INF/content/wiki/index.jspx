@@ -22,7 +22,9 @@
 <head>
 <title>MTA Bus Time: <s:property value="title" /></title>
 
-<s:url var="url" value="/api/config"/>
+<s:url var="url" value="/api/config">
+	<s:param name="v"><s:property value="cacheBreaker" /></s:param>
+</s:url>
 <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
 </head>

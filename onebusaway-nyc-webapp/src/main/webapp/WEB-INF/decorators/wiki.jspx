@@ -36,28 +36,40 @@
 
   <script type="text/javascript" src="http://mta.info/js/csshorizontalmenu.js"><!-- //prevent jspx minimization --></script>
 
-  <s:url var="url" value="/css/reset.css"/>
+  <s:url var="url" value="/css/reset.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>
   <link rel="stylesheet" type="text/css" href="${url}"/>
 
-  <s:url var="url" value="/css/screen.css"/>
+  <s:url var="url" value="/css/screen.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>
   <link rel="stylesheet" type="text/css" href="${url}"/>
 
-  <s:url var="url" value="/css/branding.css"/>
+  <s:url var="url" value="/css/branding.css">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>
   <link rel="stylesheet" type="text/css" href="${url}"/>
 
 <jsp:text>
 &lt;!--[if IE 6]&gt;
 </jsp:text>
-  <s:url var="url" value="/css/ie6.css"></s:url>
+  <s:url var="url" value="/css/ie6.css">
+  	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>  
   <link rel="stylesheet" href="${url}" type="text/css" media="screen,print"/>
 <jsp:text>
 &lt;![endif]--&gt;
 </jsp:text>
 
-  <s:url var="url" value="/js/lib/jquery.js"/>
+  <s:url var="url" value="/js/lib/jquery.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>  
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
     
-  <s:url var="url" value="/js/oba/Config.js"/>
+  <s:url var="url" value="/js/oba/Config.js">
+	<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+  </s:url>
   <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 
   <decorator:head />
