@@ -208,7 +208,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getCacheBreaker() {
-	  return String.valueOf((int)Math.ceil((Math.random() * 100000)));
+	return String.valueOf(System.currentTimeMillis());
   }
   
   public boolean getQueryIsEmpty() {
