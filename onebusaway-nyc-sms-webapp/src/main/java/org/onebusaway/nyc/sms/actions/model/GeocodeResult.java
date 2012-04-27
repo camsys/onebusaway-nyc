@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.sms.actions.model;
 
+import java.io.Serializable;
+
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 
@@ -8,8 +10,10 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
  * @author jmaki
  *
  */
-public class GeocodeResult implements SearchResult {
+public class GeocodeResult implements SearchResult, Serializable {
 
+  private static final long serialVersionUID = 1L;
+  
   private NycGeocoderResult result;
   
   public GeocodeResult(NycGeocoderResult result) {

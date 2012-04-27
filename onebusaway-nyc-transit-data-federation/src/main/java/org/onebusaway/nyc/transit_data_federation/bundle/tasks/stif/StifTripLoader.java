@@ -28,8 +28,10 @@ import java.util.zip.GZIPInputStream;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.EventRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.GeographyRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.SignCodeRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.StifRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TimetableRecord;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.TripRecord;
@@ -117,7 +119,10 @@ public class StifTripLoader {
 
     boolean warned = false;
     int lineNumber = 0;
-
+    int tripLineNumber = 0;
+    TripRecord tripRecord = null;
+    EventRecord eventRecord = null;
+    EventRecord firstEventRecord = null;
     try {
       reader = new StifRecordReader(stream);
       ServiceCode serviceCode = null;
@@ -139,9 +144,89 @@ public class StifTripLoader {
           support.putStopIdForLocation(geographyRecord.getIdentifier(),
               geographyRecord.getBoxID());
         }
-        if (record instanceof TripRecord) {
-          TripRecord tripRecord = (TripRecord) record;
+
+        if (record instanceof EventRecord) {
+          // track the first and last event records which are revenue stops
+          // for use in trip processing
+          if (tripRecord == null) {
+            continue;
+          }
+          EventRecord possibleEventRecord = (EventRecord) record;
+          if (!possibleEventRecord.isRevenue()) {
+            // skip non-revenue stops
+            continue;
+          }
+          eventRecord = possibleEventRecord;
+          if (firstEventRecord == null) {
+            firstEventRecord = eventRecord;
+          }
+        }
+
+        if (record instanceof TripRecord || record instanceof SignCodeRecord) {
+          // the SignCodeRecord is guaranteed by spec to be after all
+          // TripRecords
+          // So, for each trip's worth of event records, a SignCode record or a
+          // TripRecord will follow.
+          // this code parses the trip record whose events end on the line
+          // *before* this.
+          if (tripRecord == null) {
+            // we have already finished with this trip
+            if (record instanceof TripRecord) {
+              // prepare for next trip
+              tripLineNumber = lineNumber;
+              tripRecord = (TripRecord) record;
+              eventRecord = firstEventRecord = null;
+            } else {
+              tripRecord = null;
+            }
+            continue;
+          }
           int tripType = tripRecord.getTripType();
+          
+          boolean fakeDeadhead = false;
+          if (firstEventRecord == null && !(tripType == 2 || tripType == 3 || tripType == 4 )) {
+            //revenue trips must have at least one revenue stop
+            _log.warn("Revenue trip at " + tripLineNumber + " in " + path + " has no revenue stops.  " +
+                "Using first/last stops from trip layer rather than event layer.");
+              fakeDeadhead = true;
+          }
+          if (tripType == 2 || tripType == 3 || tripType == 4 || fakeDeadhead) {
+            // this must be a non-revenue trip
+            if (firstEventRecord != null) {
+              //non-revenue trips should have no revenue stops
+              _log.warn("Non-revenue trip at " + tripLineNumber + " in " + path + " has a revenue stop");
+            }
+
+            RawTrip rawTrip = new RawTrip(tripRecord.getRunId(),
+                tripRecord.getReliefRunId(),
+                tripRecord.getNextTripOperatorRunId(),
+                StifTripType.byValue(tripType), tripRecord.getSignCode());
+            rawTrip.serviceCode = serviceCode;
+            rawTrip.depot = tripRecord.getDepotCode();
+            rawTrip.firstStopTime = tripRecord.getOriginTime();
+            rawTrip.lastStopTime = tripRecord.getDestinationTime();
+            rawTrip.listedFirstStopTime = tripRecord.getOriginTime();
+            rawTrip.listedLastStopTime = tripRecord.getDestinationTime();
+            rawTrip.firstStop = support.getStopIdForLocation(tripRecord.getOriginLocation());
+            rawTrip.lastStop = support.getStopIdForLocation(tripRecord.getDestinationLocation());
+            rawTrip.recoveryTime = tripRecord.getRecoveryTime();
+            rawTrip.firstTripInSequence = tripRecord.isFirstTripInSequence();
+            rawTrip.lastTripInSequence = tripRecord.isLastTripInSequence();
+            rawTrip.signCodeRoute = tripRecord.getSignCodeRoute();
+            rawTrip.path = path;
+            rawTrip.lineNumber = tripLineNumber;
+            rawData.get(serviceCode).add(rawTrip);
+
+            if (record instanceof TripRecord) {
+              tripLineNumber = lineNumber;
+              tripRecord = (TripRecord) record;
+              eventRecord = firstEventRecord = null;
+            } else {
+              tripRecord = null;
+            }
+            continue;
+
+          }
 
           String run1 = tripRecord.getRunId();
           String run2 = tripRecord.getReliefRunId();
@@ -152,35 +237,35 @@ public class StifTripLoader {
               tripRecord.getNextTripOperatorRunId(),
               StifTripType.byValue(tripType), tripRecord.getSignCode());
           rawTrip.serviceCode = serviceCode;
-          rawTrip.firstStopTime = tripRecord.getOriginTime();
-          rawTrip.lastStopTime = tripRecord.getDestinationTime();
-          rawTrip.firstStop = support.getStopIdForLocation(tripRecord.getOriginLocation());
-          rawTrip.lastStop = support.getStopIdForLocation(tripRecord.getDestinationLocation());
+          rawTrip.depot = tripRecord.getDepotCode();
+          rawTrip.firstStopTime = firstEventRecord.getTime();
+          rawTrip.lastStopTime = eventRecord.getTime();
+          rawTrip.firstStop = support.getStopIdForLocation(firstEventRecord.getLocation());
+          rawTrip.lastStop = support.getStopIdForLocation(eventRecord.getLocation());
+          rawTrip.listedFirstStopTime = tripRecord.getOriginTime();
+          rawTrip.listedLastStopTime = tripRecord.getDestinationTime();
           rawTrip.recoveryTime = tripRecord.getRecoveryTime();
           rawTrip.firstTripInSequence = tripRecord.isFirstTripInSequence();
           rawTrip.lastTripInSequence = tripRecord.isLastTripInSequence();
           rawTrip.signCodeRoute = tripRecord.getSignCodeRoute();
           rawTrip.path = path;
-          rawTrip.lineNumber = lineNumber;
+          rawTrip.lineNumber = tripLineNumber;
           rawData.get(serviceCode).add(rawTrip);
 
-          if (tripType == 2 || tripType == 3 || tripType == 4) {
-            // deadhead or to/from depot
-            continue;
-          }
           String code = tripRecord.getSignCode();
 
-          TripIdentifier id = support.getIdentifierForTripRecord(tripRecord);
+          TripIdentifier id = support.getIdentifierForStifTrip(tripRecord,
+              rawTrip);
           rawTrip.id = id;
 
           if (rawTrip.signCodeRoute == null
               || rawTrip.signCodeRoute.length() == 0) {
             csvLogger.log("stif_trip_layers_with_missing_route.csv", id, path,
-                lineNumber, "signCodeRoute");
+                tripLineNumber, "signCodeRoute");
           }
           if (rawTrip.getDsc() == null || rawTrip.getDsc().length() == 0) {
             csvLogger.log("stif_trip_layers_with_missing_route.csv", id, path,
-                lineNumber, "DSC");
+                tripLineNumber, "DSC");
           }
 
           DuplicateTripCheckKey key = new DuplicateTripCheckKey(rawTrip.runId,
@@ -200,7 +285,7 @@ public class StifTripLoader {
 
           if (trips == null || trips.isEmpty()) {
             csvLogger.log("stif_trips_with_no_gtfs_match.csv", id, path,
-                lineNumber);
+                tripLineNumber);
 
             // trip in stif but not in gtfs
             if (!warned) {
@@ -208,6 +293,14 @@ public class StifTripLoader {
               _log.warn("gtfs trip not found for " + id);
             }
             _tripsWithoutMatchCount++;
+            if (record instanceof TripRecord) {
+              // prepare for next trip
+              tripLineNumber = lineNumber;
+              tripRecord = (TripRecord) record;
+              eventRecord = firstEventRecord = null;
+            } else {
+              tripRecord = null;
+            }
             continue;
           }
 
@@ -237,7 +330,7 @@ public class StifTripLoader {
             // contains all trips from dayCode1, and pre-midnight trips for
             // dayCode2;
 
-            if (tripRecord.getOriginTime() < 0) {
+            if (rawTrip.firstStopTime < 0) {
               /* possible trip records are those containing the previous day */
               if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2.toString()) != serviceCode) {
                 trip = null;
@@ -266,7 +359,7 @@ public class StifTripLoader {
                   && (code == null || code.length() == 0)) {
                 _log.warn("Revenue trip " + rawTrip + " did not have a DSC");
                 csvLogger.log("trips_with_null_dscs.csv", trip.getId(), id,
-                    path, lineNumber);
+                    path, tripLineNumber);
               }
             }
           }
@@ -275,7 +368,7 @@ public class StifTripLoader {
                 && (code == null || code.length() == 0)) {
               _log.warn("Revenue trip " + rawTrip + " did not have a DSC");
               csvLogger.log("trips_with_null_dscs.csv", "(no GTFS trips)", id,
-                  path, lineNumber);
+                  path, tripLineNumber);
             }
           }
 
@@ -286,8 +379,13 @@ public class StifTripLoader {
           }
           for (Trip trip : filtered)
             sctrips.add(trip.getId());
+          tripRecord = null; // we are done processing this trip record
         }
-
+        if (record instanceof TripRecord) {
+          tripLineNumber = lineNumber;
+          tripRecord = (TripRecord) record;
+          eventRecord = firstEventRecord = null;
+        }
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

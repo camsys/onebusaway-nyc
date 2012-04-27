@@ -15,6 +15,11 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
@@ -41,12 +46,7 @@ import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import uk.org.siri.siri.VehicleActivityStructure;
 
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
@@ -84,8 +84,16 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           continue;
         
         Boolean hasUpcomingScheduledService = 
-            _nycTransitDataService.routeHasUpcomingScheduledService(new Date(), routeBean.getId(), stopGroupBean.getId());
+            _nycTransitDataService.routeHasUpcomingScheduledService(System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
+        // if there are buses on route, always have "scheduled service"
+        List<VehicleActivityStructure> vehiclesOnRoute = 
+        		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
+        
+        if(!vehiclesOnRoute.isEmpty()) {
+        	hasUpcomingScheduledService = true;
+        }
+        
         // service alerts for this route + direction
         List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
 
@@ -93,7 +101,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
           for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
             if(description.getValue() != null) {
-              description.setValue(description.getValue().replace("\n", "<br/>"));
+              description.setValue(description.getValue());
               serviceAlertDescriptions.add(description);
             }
           }
@@ -135,7 +143,12 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
               getDistanceAwayStringsForStopAndRouteAndDirectionByDistanceFromStop(stopBean, routeBean, stopGroupBean);
           
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(new Date(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+
+          // if there are buses on route, always have "scheduled service"
+          if(!distanceAwayStringsByDistanceFromStop.isEmpty()) {
+        	  hasUpcomingScheduledService = true;
+          }
 
           // service alerts for this route + direction
           List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
@@ -144,7 +157,7 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
             for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
               if(description.getValue() != null) {
-                description.setValue(description.getValue().replace("\n", "<br/>"));
+                description.setValue(description.getValue());
                 serviceAlertDescriptions.add(description);
               }
             }

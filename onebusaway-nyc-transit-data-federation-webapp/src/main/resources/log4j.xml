@@ -17,6 +17,14 @@
 			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%F:%L] : %m%n" />
 		</layout>
 	</appender>
+	
+	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+		
+		<layout class="org.apache.log4j.PatternLayout">
+			<!-- The log message pattern -->
+			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%F:%L] : %m%n" />
+		</layout>
+	</appender>
 
 	<!-- 0 or more logger/category elements -->
 	
@@ -24,7 +32,7 @@
 
 	<root>
 		<priority value="info" />
-		<appender-ref ref="ROLL" />
+		<appender-ref ref="${log4j.appender}" />
 	</root>
 
 	<!-- 0 or 1 categoryFactory elements -->

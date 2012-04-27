@@ -415,10 +415,10 @@ public class IndexAction extends SessionedIndexAction {
 
             routeList.add(prefix);
             
-            if(!direction.hasUpcomingScheduledService()) {
+            if(!direction.hasUpcomingScheduledService() && direction.getDistanceAways().isEmpty()) {
               notScheduledRoutes.add(prefix);
             } else {
-              if(direction.getDistanceAways().size() > 0) {
+              if(!direction.getDistanceAways().isEmpty()) {
                 realtimePartToAdd += prefix + " " + direction.getDistanceAways().get(0) + "\n";
               } else {
                 notEnRouteRoutes.add(prefix);

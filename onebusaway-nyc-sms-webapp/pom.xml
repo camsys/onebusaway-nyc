@@ -11,6 +11,18 @@
   <packaging>war</packaging>
   <name>onebusaway-nyc-sms-webapp</name>
 
+ <repositories>
+    <repository>
+      <id>spy</id>
+      <name>Spy Repository</name>
+      <layout>default</layout>
+      <url>http://files.couchbase.com/maven2/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  
   <dependencies>
 
     <dependency>
@@ -37,15 +49,15 @@
       <artifactId>standard</artifactId>
     </dependency>
 
-	<dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>apache-log4j-extras</artifactId>
-        </dependency>
-	
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>apache-log4j-extras</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
@@ -56,11 +68,37 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.17</version>
     </dependency>
-	<dependency>
-    	<groupId>com.dmurph</groupId>
-    	<artifactId>JGoogleAnalyticsTracker</artifactId>
-    	<version>1.2.1-SNAPSHOT</version>
-	</dependency>
+    <dependency>
+      <groupId>com.dmurph</groupId>
+      <artifactId>JGoogleAnalyticsTracker</artifactId>
+      <version>1.2.2-SNAPSHOT</version>
+    </dependency>
+<!--     <dependency>
+      <groupId>de.javakaffee.msm</groupId>
+      <artifactId>msm-kryo-serializer</artifactId>
+      <version>1.6.0</version>
+    </dependency>
+ -->    <dependency>
+      <groupId>de.javakaffee.msm</groupId>
+      <artifactId>msm-flexjson-serializer</artifactId>
+      <version>1.6.0</version>
+    </dependency>
+    
+    <dependency>
+     <groupId>spy</groupId>
+     <artifactId>spymemcached</artifactId>
+     <version>2.8.1</version>
+    </dependency>
+        
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -77,6 +115,8 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
         <webapp.api.url></webapp.api.url>
+        <log4j.appender>ROLL</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.MemcacheSessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
@@ -89,17 +129,21 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
+        <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
       <id>local-single-port</id><!-- aka services-tdf-as-tds --> <!-- multi port, also for development -->
       <properties>
-        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
-        <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
@@ -111,6 +155,8 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
     <profile>
@@ -124,6 +170,8 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <webapp.api.url>http://localhost:8082</webapp.api.url>
         <tdm.host>tdm.staging.obanyc.com</tdm.host>
+        <log4j.appender>stdout</log4j.appender>
+        <sms.sessions.manager>org.onebusaway.nyc.sms.impl.SessionManagerImpl</sms.sessions.manager>
       </properties>
     </profile>
   </profiles>

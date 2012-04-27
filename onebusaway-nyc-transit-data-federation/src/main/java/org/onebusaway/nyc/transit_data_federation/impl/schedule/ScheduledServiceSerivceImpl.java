@@ -1,9 +1,11 @@
 package org.onebusaway.nyc.transit_data_federation.impl.schedule;
 
-import org.onebusaway.container.cache.Cacheable;
+import java.util.Date;
+import java.util.List;
+
 import org.onebusaway.gtfs.model.AgencyAndId;
-import org.onebusaway.nyc.transit_data_federation.model.schedule.ServiceHour;
 import org.onebusaway.nyc.transit_data_federation.services.schedule.ScheduledServiceService;
+import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.StopTimeService;
 import org.onebusaway.transit_data_federation.services.StopTimeService.EFrequencyStopTimeBehavior;
 import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
@@ -13,16 +15,16 @@ import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.transit_data_federation.services.tripplanner.StopTimeInstance;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.List;
 
 @Component
 public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
   
+  private static final long SCHEDULE_WINDOW_BEFORE = 15 * 60 * 1000;
+
+  private static final long SCHEDULE_WINDOW_AFTER = 60 * 60 * 1000;
+
   @Autowired
   private BlockCalendarService _blockCalendarService;
 
@@ -32,14 +34,15 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
   @Autowired
   private TransitGraphDao _transitGraphDao;
 
-  @Cacheable
   @Override
-  public Boolean routeHasUpcomingScheduledService(ServiceHour serviceHour, AgencyAndId routeId, String directionId) {    
-    long serviceHourStart = serviceHour.getTime();
-    long serviceHourEnd = serviceHourStart + (60 * 60 * 1000);
+  public Boolean routeHasUpcomingScheduledService(long time, String _routeId, String directionId) {    
+    long serviceStart = time - SCHEDULE_WINDOW_BEFORE;
+    long serviceEnd = time + SCHEDULE_WINDOW_AFTER;
 
+    AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_routeId);
+    
     List<BlockInstance> instances = 
-        _blockCalendarService.getActiveBlocksForRouteInTimeRange(routeId, serviceHourStart, serviceHourEnd);
+        _blockCalendarService.getActiveBlocksForRouteInTimeRange(routeId, serviceStart, serviceEnd);
     
     if(instances.isEmpty()) {
       return false;
@@ -63,19 +66,21 @@ public class ScheduledServiceSerivceImpl implements ScheduledServiceService {
     return false;
   }
 
-  @Cacheable
   @Override
-  public Boolean stopHasUpcomingScheduledService(ServiceHour serviceHour, AgencyAndId stopId, AgencyAndId routeId, String directionId) {
-    StopEntry stopEntry = _transitGraphDao.getStopEntryForId(stopId);
+  public Boolean stopHasUpcomingScheduledService(long time, String _stopId, String _routeId, String directionId) {
+	AgencyAndId routeId = AgencyAndIdLibrary.convertFromString(_routeId);
+	AgencyAndId stopId = AgencyAndIdLibrary.convertFromString(_stopId);
+	  
+	StopEntry stopEntry = _transitGraphDao.getStopEntryForId(stopId);
     if (stopEntry == null) {
       return null;
     }
     
-    Date serviceHourStart = new Date(serviceHour.getTime());
-    Date serviceHourEnd = new Date(serviceHourStart.getTime() + (60 * 60 * 1000));
+    Date serviceStart = new Date(time - SCHEDULE_WINDOW_BEFORE);
+    Date serviceEnd = new Date(time + SCHEDULE_WINDOW_AFTER);
 
     List<StopTimeInstance> stis = _stopTimeService.getStopTimeInstancesInTimeRange(
-        stopEntry, serviceHourStart, serviceHourEnd,
+        stopEntry, serviceStart, serviceEnd,
         EFrequencyStopTimeBehavior.INCLUDE_UNSPECIFIED);
 
     if(stis.isEmpty()) {

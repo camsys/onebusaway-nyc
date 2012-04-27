@@ -23,4 +23,6 @@ public interface SessionManager {
 
   public boolean contextExistsFor(String sessionId);
   
+  public void saveContext(String sessionId);
+  
 }

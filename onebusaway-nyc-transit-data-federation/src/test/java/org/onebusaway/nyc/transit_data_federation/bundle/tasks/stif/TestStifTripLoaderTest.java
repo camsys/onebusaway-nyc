@@ -43,6 +43,7 @@ public class TestStifTripLoaderTest {
     reader.run();
 
     StifTripLoader loader = new StifTripLoader();
+    loader.setLogger(new MultiCSVLogger(null));
     loader.setGtfsDao(dao);
     loader.run(in, new File("stif.m_0014__.210186.sun"));
     Map<String, List<AgencyAndId>> mapping = loader.getTripMapping();

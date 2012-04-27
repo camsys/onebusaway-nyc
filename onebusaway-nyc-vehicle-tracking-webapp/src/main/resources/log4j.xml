@@ -17,12 +17,20 @@
 			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%F:%L] : %m%n" />
 		</layout>
 	</appender>
+	
+	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+		
+		<layout class="org.apache.log4j.PatternLayout">
+			<!-- The log message pattern -->
+			<param name="ConversionPattern" value="%d{ISO8601} %-5p [%F:%L] : %m%n" />
+		</layout>
+	</appender>
 
 	<!-- 0 or more logger/category elements -->
 
         <logger name="org.onebusaway.nyc.vehicle_tracking.impl.queue" additivity="false">
           <level value="info" />
-          <appender-ref ref="ROLL" />
+          <appender-ref ref="${log4j.appender}" />
         </logger>
 	
 	<!-- 0 or 1 root elements -->

@@ -80,6 +80,7 @@
             <props>
                 <prop key="webapp.api.url">${webapp.api.url}</prop>
                 <prop key="tdm.host">${tdm.host}</prop>
+                <prop key="front-end.version">${front-end-version}</prop>
             </props>
         </property>
     </bean>

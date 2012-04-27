@@ -86,6 +86,7 @@
                 <tdm.host>tdm</tdm.host><!-- assumes domain is set in resolv.conf -->
                 <service.alerts.url>http://tdm/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-transit-data-federation-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <log4j.appender>ROLL</log4j.appender>
             </properties>
         </profile>
         <profile>
@@ -94,6 +95,7 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <bundle.location>/tmp/oba-bundle</bundle.location>
                 <bundle.mode.standalone>false</bundle.mode.standalone>
+                <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
         <profile>
@@ -109,6 +111,7 @@
 -->
                 <service.alerts.url>http://tdm.dev.obanyc.com/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
         <profile>
@@ -120,6 +123,7 @@
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <service.alerts.url></service.alerts.url>
                 <service.alerts.subscription.path></service.alerts.subscription.path>
+                <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
         <profile>
@@ -128,6 +132,7 @@
                 <tdm.host>tdm.dev.obanyc.com</tdm.host>
                 <bundle.location>/tmp/oba-bundle</bundle.location>
                 <bundle.mode.standalone>true</bundle.mode.standalone>
+                <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
         <profile>
@@ -138,6 +143,7 @@
                 <bundle.mode.standalone>true</bundle.mode.standalone>
                 <service.alerts.url>http://localhost:8083/siri/situation-exchange</service.alerts.url>
                 <service.alerts.subscription.path>:8081/onebusaway-nyc-vehicle-tracking-webapp/siri/situation-exchange</service.alerts.subscription.path>
+                <log4j.appender>stdout</log4j.appender>
             </properties>
         </profile>
     </profiles>

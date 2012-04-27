@@ -87,6 +87,7 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
     try {
       return invocation.invoke();
     } finally {
+      _sessionManager.saveContext(sessionId);
       RequestContextHolder.setRequestAttributes(originalAttributes);
       context.setSession(originalSession);
     }

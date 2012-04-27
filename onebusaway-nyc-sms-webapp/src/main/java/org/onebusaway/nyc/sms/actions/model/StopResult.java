@@ -4,6 +4,7 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,7 +12,9 @@ import java.util.List;
  * @author jmaki
  *
  */
-public class StopResult implements SearchResult {
+public class StopResult implements SearchResult, Serializable {
+  
+  private static final long serialVersionUID = 1L;
 
   private StopBean stop;
   

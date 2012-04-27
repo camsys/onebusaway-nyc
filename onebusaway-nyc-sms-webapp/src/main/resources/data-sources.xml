@@ -100,5 +100,11 @@
             </props>
         </property>
     </bean>
+    
+    <bean id="memcacheClientFactory" class="org.onebusaway.nyc.sms.impl.MemcacheClientFactory">
+        <property name="addresses" value="sessions-memcache:11211"/>
+    </bean>
+    
+    <bean id="sessionManager" class="${sms.sessions.manager}"/>
 
 </beans>

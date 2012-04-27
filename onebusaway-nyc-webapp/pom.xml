@@ -16,6 +16,7 @@
   <properties>
     <xwiki.version>2.3.1</xwiki.version>
     <xwiki.integration.version>0.0.2</xwiki.integration.version>
+    <front-end.version>2.1</front-end.version>
   </properties>
 
   <repositories>
@@ -154,6 +155,8 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm</tdm.host><!-- assumes domain is set -->
         <webapp.api.url></webapp.api.url>
+        <log4j.appender>ROLL</log4j.appender>
+        <front-end-version>${front-end.version}</front-end-version>
       </properties>
     </profile>
     <profile>
@@ -165,10 +168,9 @@
         <archive.path>http://archive.dev.obanyc.com/onebusaway-nyc-report-archive</archive.path>
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
-<!--
-        <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
--->
         <webapp.api.url></webapp.api.url>
+        <log4j.appender>stdout</log4j.appender>
+        <front-end-version>${front-end.version}</front-end-version>
       </properties>
     </profile>
     <profile>
@@ -181,9 +183,8 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url></webapp.api.url>
-<!--
-        <db.hibernate.dialect>org.hibernate.dialect.MySQLDialect</db.hibernate.dialect>
--->
+        <log4j.appender>stdout</log4j.appender>
+        <front-end-version>${front-end.version}</front-end-version>
       </properties>
     </profile>
     <profile>
@@ -197,6 +198,8 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8080</webapp.api.url>
+        <log4j.appender>stdout</log4j.appender>
+        <front-end-version>${front-end.version}</front-end-version>
       </properties>
     </profile>
     <profile>
@@ -211,6 +214,8 @@
         <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <webapp.api.url>http://localhost:8082</webapp.api.url>
+        <log4j.appender>stdout</log4j.appender>
+        <front-end-version>${front-end.version}</front-end-version>
       </properties>
     </profile>
   </profiles>

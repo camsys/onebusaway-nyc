@@ -15,11 +15,15 @@
  */
 package org.onebusaway.nyc.geocoder.model;
 
+import java.io.Serializable;
+
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 
-public class BingGeocoderResult implements NycGeocoderResult {
+public class BingGeocoderResult implements NycGeocoderResult, Serializable {
   
+  private static final long serialVersionUID = 1L;
+
   private String formattedAddress = null;
   
   private String neighborhood = null;

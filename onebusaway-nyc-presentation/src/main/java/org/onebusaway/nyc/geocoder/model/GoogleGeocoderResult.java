@@ -19,10 +19,13 @@ import org.onebusaway.geocoder.impl.GoogleAddressComponent;
 import org.onebusaway.geospatial.model.CoordinateBounds;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class GoogleGeocoderResult implements NycGeocoderResult {
+public class GoogleGeocoderResult implements NycGeocoderResult, Serializable {
   
+  private static final long serialVersionUID = 1L;
+
   private String formattedAddress = null;
   
   private Double latitude = null;

@@ -42,6 +42,18 @@ public class ArchivingInferenceQueueListenerTask extends
     _batchSize = Integer.decode(batchSizeStr);
   }
 
+  private long _lastCommitTime = System.currentTimeMillis();
+  
+  private long _commitTimeout = 60 * 1000; // 60 seconds by default
+  /**
+   * Time in milliseconds to give up waiting for data and commit current batch.
+   * @param commitTimeout number of milliseconds to wait
+   */
+  public void setCommitTimeout(String commitTimeout) {
+    _commitTimeout = Integer.decode(commitTimeout);
+  }
+
+
   private int _batchCount = 0;
 
   private List<ArchivedInferredLocationRecord> records = Collections.synchronizedList(new ArrayList<ArchivedInferredLocationRecord>());
@@ -84,12 +96,14 @@ public class ArchivingInferenceQueueListenerTask extends
       postProcess(locationRecord);
       _batchCount++;
       records.add(locationRecord);
-      if (_batchCount == _batchSize) {
+      long batchWindow = System.currentTimeMillis() - _lastCommitTime; 
+      if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
         try {
         	_locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
         } finally {
         	records.clear();
         	_batchCount = 0;
+        	_lastCommitTime = System.currentTimeMillis();
         }
       }
 
@@ -115,6 +129,11 @@ public class ArchivingInferenceQueueListenerTask extends
     return _configurationService.getConfigurationValueAsString(
         "tds.inputQueueName", null);
   }
+  
+  public String getQueueDisplayName() {
+    return "archive_inference";
+  }
+
 
   @Override
   public Integer getQueuePort() {

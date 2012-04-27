@@ -15,18 +15,17 @@
  */
 package org.onebusaway.nyc.transit_data.services;
 
-import org.onebusaway.transit_data.services.TransitDataService;
-
-import java.util.Date;
 import java.util.List;
+
+import org.onebusaway.transit_data.services.TransitDataService;
 
 public interface NycTransitDataService extends TransitDataService {
 
    public String getActiveBundleId();
 
-   public Boolean routeHasUpcomingScheduledService(Date time, String routeId, String directionId);
+   public Boolean routeHasUpcomingScheduledService(long time, String routeId, String directionId);
 
-   public Boolean stopHasUpcomingScheduledService(Date time, String stopId, String routeId, String directionId);
+   public Boolean stopHasUpcomingScheduledService(long time, String stopId, String routeId, String directionId);
    
    public List<String> getSearchSuggestions(String input);
 

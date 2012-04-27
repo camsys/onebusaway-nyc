@@ -3,6 +3,7 @@ package org.onebusaway.nyc.sms.actions.model;
 import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.service_alerts.NaturalLanguageStringBean;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +13,9 @@ import java.util.List;
  * @author jmaki
  *
  */
-public class RouteDirection {
+public class RouteDirection implements Serializable {
+  
+  private static final long serialVersionUID = 1L;
 
   private String destination;
     
