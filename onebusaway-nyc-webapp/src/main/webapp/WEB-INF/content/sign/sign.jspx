@@ -31,12 +31,22 @@
 	</s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 
-	<s:url var="url" value="/css/sign/branding.css">
+	<s:url var="url" value="/css/sign/jquery.simplyscroll.css">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-  	</s:url>
+	</s:url>
   	<link rel="stylesheet" href="${url}" type="text/css" media="screen"/>
 
 	<s:url var="url" value="/js/lib/jquery.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	
+	<s:url var="url" value="/js/lib/jquery.jcarousel.js">
+		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
+	</s:url>
+	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	
+	<s:url var="url" value="/js/lib/jquery.simplyscroll.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
@@ -63,15 +73,31 @@
 </head>
 <body>
 
-<div id="branding" class="selfclear">
-    <h1>MTA Bus Time</h1>
-</div>
-
 <div id="error"><!-- //prevent jspx minimization --></div>
-
-<div id="arrivals"><!-- //prevent jspx minimization --></div>
-
-<p id="footer"></p>
+<div id="content" >
+	<div class="jcarousel">
+		<ul><!-- //prevent jspx minimization --></ul>
+	</div>
+</div>
+<div id="pager"><!-- //prevent jspx minimization --></div>
+<div id="footer">
+    <div id="branding"><!-- //prevent jspx minimization --></div>
+	<div id="instructions">
+		<ul>
+			<li class="fixed_width_instruction">Also try MTA Bus Time via:</li>
+			<li class="instructions_number">1</li>
+			<li>TEXT</li>
+			<li id="text1"><!-- //prevent jspx minimization --></li>
+			<li id="text2"><!-- //prevent jspx minimization --></li>
+			<li class="instructions_number">2</li>
+			<li class="fixed_width_instruction">ONLINE at bustime.mta.info</li>
+		</ul>
+	</div>
+	<div id="clock">
+		<div id="time"><!-- //prevent jspx minimization --></div>
+		<div id="day"><!-- //prevent jspx minimization --></div>
+	</div>
+</div>
 
 <script type="text/javascript">
   <![CDATA[var _gaq = _gaq || [];_gaq.push(['_setAccount', OBA.Config.googleAnalyticsId]);_gaq.push(['_setDomainName', 'none']);_gaq.push(['_setAllowLinker', true]);_gaq.push(['_trackPageview']);(function() {var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);})();]]>

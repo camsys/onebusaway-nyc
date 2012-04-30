@@ -22,8 +22,24 @@ OBA.Sign = function() {
 	var timeout = 30;
 	var configurableMessageHtml = null;
 	var stopIdsToRequest = null;
+	var stopInfo = {};
+	var routeInfo = {};
 	var vehiclesPerStop = null;
 	var tisMode = null;
+	var carouselInited = false;
+	
+	var alertData = {};
+	
+	var url = window.location.href;
+	var signPosition = url.indexOf("/sign/sign");
+	var baseUrl = url.substring(0, signPosition);
+
+	var hostname = window.location.hostname;
+	var hostnamePosition = url.indexOf(hostname);
+	var obaApiBaseUrlPosition = url.indexOf("/", hostnamePosition);
+	var obaApiBaseUrl = url.substring(0, obaApiBaseUrlPosition);
+	
+	var agencyId = "MTA NYCT";
 	
 	function getParameterByName(name, defaultValue) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -79,6 +95,7 @@ OBA.Sign = function() {
 	}
 	
 	function setupUI() {
+		
 		// configure interface with URL params
 		tisMode = getParameterByName("tisMode", tisMode);
 		
@@ -97,16 +114,6 @@ OBA.Sign = function() {
 					.text(configurableMessageHtml)
 					.appendTo(header);
 		}
-
-		var stopIds = getParameterByName("stopIds", null);		
-		if(stopIds !== null) {
-			stopIdsToRequest = [];
-			jQuery.each(stopIds.split(","), function(_, o) {
-				stopIdsToRequest.push(o);
-			});
-		} else {
-			showError("No stops are configured for display.");
-		}
 		
 		// add event handlers
 		detectSize();
@@ -122,61 +129,103 @@ OBA.Sign = function() {
 		jQuery("#arrivals")
 				.html("")
 				.empty();
-
-		update();
-		setInterval(update, refreshInterval * 1000);
-	}
-
-	function getNewTableForStop(stopId) {
-		var table = jQuery("<table></table>")
-						.addClass("stop" + stopId);
-
-		jQuery('<thead>' + 
-					'<tr>' + 
-						'<th class="stop">' + 
-							'<span class="name loading">Loading...</span>' + 
-							' <span class="stop-id">Stop #' + stopId + '</span>' + 
-						'</th>' + 
-						'<th class="instructions">' + 
-							OBA.Config.infoBubbleFooterFunction("sign", stopId) +
-						'</th>' +
-						'<th class="qr"></th>' +
-					'</tr>' + 
-				 '</thead>')
-				 .appendTo(table);
-
-		jQuery("<tbody></tbody>")
-				 .appendTo(table);
 		
-		_gaq.push(['_trackEvent', "DIY Sign", "Add Stop", stopId]);
-		
-		return table;
-	}
-	
-	function updateTableForStop(stopTable, applicableSituations, headsignToDistanceAways) {
-		if(stopTable === null) {
+		var stopIds = getParameterByName("stopIds", null);		
+		if(stopIds !== null) {
+			stopIdsToRequest = [];
+			jQuery.each(stopIds.split(","), function(_, o) {
+				stopIdsToRequest.push(o);
+			});
+		} else {
+			showError("No stops are configured for display.");
 			return;
 		}
 		
-		var tableBody = stopTable.find("tbody");
-		tableBody
-			.html("")
-			.empty();
+		jQuery.each(stopIdsToRequest, function(_, stopId) {
+			initStop(stopId);
+		});
 
-		var tableHeader = stopTable.find("thead tr th");
-		tableHeader
-			.find("p.alert")
-			.html("")
-			.remove();
+		updateClock();
+		setInterval(updateClock, 1000);
+		setInterval(refresh, refreshInterval * 1000);
+	}
+	
+	function refresh() {
+		jQuery.each(stopIdsToRequest, function(_, stopId) {
+			update(stopId);
+		});
+	}
+	
+	function updateClock() {
+		var now = new Date();
+		jQuery("#clock #time").text(now.format("h:MM TT"));
+		jQuery("#clock #day").text(now.format("dddd, mmmm d"));
+	}
+	
+	function initStop(stopId) {
+		var params = { stopId: 'MTA NYCT_' + stopId };
+		jQuery.getJSON(baseUrl + "/" + OBA.Config.stopForId, params, function(json) {
+			stopInfo[stopId] = json.stop;
+			jQuery.each(json.stop.routesAvailable, function(_, route) {
+				routeInfo[route.id] = route;
+			});
+			update(stopId);
+		});
+	}
+	
+	function signForRoute(routeId, element) {
+		var sign = element.addClass("sign");
+		sign.css("border-left-color", routeInfo[routeId].color);
+		sign.css("border-left-style", "solid");
+		//sign.css("border-left-width", "15px");
+		sign.text(routeInfo[routeId].shortName);
+		return sign;
+	}
+	
+	function getNewElementForStop(stopId) {
+		
+		var newElement = jQuery(
+			'<li>' +
+				'<div class="slide">' +
+					'<div class="error"></div>' +
+					'<div class="header">' + 
+						'<div class="name loading">Loading...</div>' + 
+						' <div class="stop-id"><h2>Stop #' + stopId + '</h2></div>' +
+					'</div>' + 
+					'<div class="arrivals"></div>' +
+					'<div class="alerts"><div class="alerts_header"><h2>Service Change Notices</h2></div><div id="stop' + stopId + '" class="scroller"></div></div>' +
+				'</div>' +
+			'</li>').addClass("stop" + stopId);
+		
+		var table = jQuery("<table></table>")
+						.addClass("stop" + stopId);
+				
+		newElement.find(".arrivals").append(table);
+		
+		_gaq.push(['_trackEvent', "DIY Sign", "Add Stop", stopId]);
+		
+		return newElement;
+	}
+	
+	function updateElementForStop(stopId, stopElement, headsignToDistanceAways) {
+		if(stopElement === null) {
+			return;
+		}
+		
+		var tableBody = stopElement.find("table");
+		tableBody.html("").empty();
 
 		// situations
-		jQuery.each(applicableSituations, function(situationId, situation) {
-			var alert = jQuery("<p></p>")
-							.addClass("alert")
-							.html(situation.Description.replace(/\n/g, "<br/>"));
-			
-			stopTable.find("thead tr th.stop").append(alert);
-		});
+		stopElement.find(".alerts .scroller").html("").empty();
+		if (jQuery.isEmptyObject(alertData[stopId])) {
+			stopElement.find(".alerts").hide();
+			stopElement.find(".arrivals").width("100%");
+		} else {
+			stopElement.find(".alerts").show();
+			stopElement.find(".arrivals").width("70%");
+
+			resetAlertsInElement(stopId, stopElement);
+		}
 		
 		// arrivals
 		var r = 0;
@@ -192,10 +241,15 @@ OBA.Sign = function() {
 					row.addClass("last");
 				}
 				
+				// sign
+				var sign = signForRoute(vehicleInfo.lineRef, jQuery("<td></td>"));
+				sign.addClass("arrival_sign");
+				sign.appendTo(row);
+				
 				// name cell
 				var vehicleIdSpan = jQuery("<span></span>")
-										.addClass("bus-id")
-										.text(" Bus #" + vehicleInfo.vehicleId);
+					.addClass("bus-id")
+					.text(" Bus #" + vehicleInfo.vehicleId);
 
 				jQuery('<td></td>')
 					.text(headsign)
@@ -223,6 +277,9 @@ OBA.Sign = function() {
 				   .appendTo(tableBody);
 		}
 		
+		stopElement.find('tr:even').addClass('even');
+		stopElement.find('tr:odd').addClass('odd');
+		
 		// (this is a keep-alive mechanism for a MTA TIS watchdog process that ensures sign apps stay running)
 		if(tisMode === "true") {
 			window.name = "BusTime";
@@ -240,12 +297,16 @@ OBA.Sign = function() {
 			.appendTo("#footer");
 	}
 	
-	function showError(jqXHR, textStatus, errorThrown) {
-		updateTimestamp(new Date());
+	function showError(textStatus) {
+		
+		//updateTimestamp(new Date());
+		
 		hideError();
 		
+		jQuery("#pager").hide();
+		
 		jQuery("<p></p>")
-				.html("An error occured while updating arrival information&mdash;please check back later.")
+				.html(textStatus ? textStatus : "An error occured while updating arrival information&mdash;please check back later.")
 				.appendTo("#error");
 
 		jQuery("#arrivals")
@@ -258,110 +319,186 @@ OBA.Sign = function() {
 			.children()
 			.html("")
 			.remove();
+		jQuery("#pager").show();
 	}
 	
-	function update() {
-		if(stopIdsToRequest === null) {
+	function resetAlertsInElement(stopId, element) {
+		
+		var id = element.find("div.scroller").attr("id");
+		
+		element.find("div.scroller").html("").empty().remove();
+		
+		element.find(".alerts_body").html("").empty().remove();
+		
+		var newScroller = jQuery('<div id="' + id + '" class="scroller"></div>');
+		
+		jQuery.each(alertData[stopId], function(situationId, situation) {
+			
+			var signWrapper = jQuery("<div></div>").addClass("sign_wrapper");
+			
+			var existingSigns = [];
+			
+			jQuery.each(situation.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, journey) {
+				if (journey.LineRef in routeInfo && existingSigns.indexOf(journey.LineRef) === -1) {
+					var sign = signForRoute(journey.LineRef, jQuery("<div></div>"));
+					sign.addClass("alert_sign");
+					signWrapper.append(sign);
+					existingSigns.push(journey.LineRef);
+				}
+			});
+			
+			var alert = jQuery("<div></div>")
+							.addClass("alert")
+							.html('<p class="alert_summary">' + situation.Summary.replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p><p>' + situation.Description.replace(/$/g, "<br/><br/>").replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p>');
+			
+			alert.prepend(signWrapper);
+			
+			newScroller.append(alert);
+		});
+		
+		element.find(".alerts").append(newScroller);
+		
+//		var alerts = element.find(".alert");
+//		var totalHeight = 0;
+//		
+//		jQuery.each(alerts, function(_, alert) {
+//			totalHeight += jQuery(alert).height();
+//		});
+//
+//		if (totalHeight > element.find(".scroller").height()) {
+//			
+//			element.find(".alert:last").css("margin-bottom", "30px").css("border-bottom", "2px dashed rgb(200,200,200)");
+//			
+//			element.find(".scroller").simplyScroll({
+//				customClass: 'alerts_body',
+//				orientation: 'vertical',
+//				pauseOnHover: false,
+//				frameRate: 20,
+//				speed: 2
+//			});
+//		}
+	}
+	
+	function pageChanged(carousel, li, index, state) {
+		
+		var listItem = carousel.container.find("li." + li.classList[3] + ":first");
+		
+		var clazz = listItem.attr("class").split(' ')[0];
+		
+		var id = clazz.match(/\d+$/)[0];
+		
+		resetAlertsInElement(id, listItem);
+		
+		jQuery("span.dot").css('background-color', 'rgb(90,90,90)');
+		jQuery("span#" + li.classList[0] + ".dot").css('background-color', 'white');
+	}
+	
+	function carouselSetup(carousel) {
+		carouselInited = true;
+	}
+	
+	function update(stopId) {
+
+		var carousel = jQuery('.jcarousel ul');	
+		if(stopId === null || stopId === "") {
 			return;
 		}
 
-		var arrivalsDiv = jQuery("#arrivals");		
-		jQuery.each(stopIdsToRequest, function(_, stopId) {
-			if(stopId === null || stopId === "") {
-				return;
-			}
+		var stopIdWithoutAgency = stopId;
 
-			var url = window.location.href;
-			var signPosition = url.indexOf("/sign/sign");
-			var baseUrl = url.substring(0, signPosition);
+		var stopIdParts = stopId.split("_");
+		if(stopIdParts.length === 2) {
+			agencyId = stopIdParts[0];
+			stopIdWithoutAgency = stopIdParts[1];
+		}
 
-			var hostname = window.location.hostname;
-			var hostnamePosition = url.indexOf(hostname);
-			var obaApiBaseUrlPosition = url.indexOf("/", hostnamePosition);
-			var obaApiBaseUrl = url.substring(0, obaApiBaseUrlPosition);
-			
-			var agencyId = "MTA NYCT";
-			var stopIdWithoutAgency = stopId;
+		var stopElement = jQuery("li.stop" + stopIdWithoutAgency);
+		if(stopElement.length === 0) {
+			stopElement = getNewElementForStop(stopIdWithoutAgency);
+			carousel.append(stopElement.hide());
+			jQuery("#pager").append('<span id="stop' + stopIdWithoutAgency + '" class="dot"></span>');
+		}
 
-			var stopIdParts = stopId.split("_");
-			if(stopIdParts.length === 2) {
-				agencyId = stopIdParts[0];
-				stopIdWithoutAgency = stopIdParts[1];
-			}
+		var params = { OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" };
+		jQuery.getJSON(baseUrl + "/" + OBA.Config.siriSMUrl, params, function(json) {	
+			//updateTimestamp(OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp));
+			hideError();
 
-			var stopTable = jQuery("table.stop" + stopIdWithoutAgency);
-			if(stopTable.length === 0) {
-				stopTable = getNewTableForStop(stopIdWithoutAgency);
-				arrivalsDiv.append(stopTable.hide());
-			}
-
-			var params = { OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" };
-			jQuery.getJSON(baseUrl + "/" + OBA.Config.siriSMUrl, params, function(json) {	
-				updateTimestamp(OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp));
-				hideError();
-
-				var situationsById = {};
-				if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined') {
-					jQuery.each(json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations, function(_, situationElement) {
-						situationsById[situationElement[0].SituationNumber] = situationElement[0];
-					});
-				}
-				
-				var headsignToDistanceAways = {};
-				var applicableSituations = {};
-				var r = 0;
-				jQuery.each(json.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit, function(_, monitoredStopVisit) {
-					var journey = monitoredStopVisit.MonitoredVehicleJourney;
-
-					if(typeof journey.MonitoredCall === 'undefined') {
-						return;
-					}
-
-					var stopName = journey.MonitoredCall.StopPointName;
-					if(stopName !== null) {
-						jQuery(".stop" + stopId + " .name").removeClass("loading").text(stopName);
-					}
-					
-					var routeId = journey.LineRef;
-					var routeIdParts = routeId.split("_");
-					var routeIdWithoutAgency = routeIdParts[1];
-					
-					var headsign = routeIdWithoutAgency + ": " + journey.DestinationName;
-					if(typeof headsignToDistanceAways[headsign] === 'undefined') {
-						headsignToDistanceAways[headsign] = [];
-						r++;
-					}
-					
-					jQuery.each(journey.SituationRef, function(_, situationRef) {
-						if(typeof situationsById[situationRef.SituationSimpleRef] !== 'undefined') {
-							applicableSituations[situationRef.SituationSimpleRef] = situationsById[situationRef.SituationSimpleRef];
-						}
-					});
-					
-					var vehicleInfo = {};
-					vehicleInfo.distanceAway = journey.MonitoredCall.Extensions.Distances.PresentableDistance;
-					vehicleInfo.vehicleId = journey.VehicleRef.split("_")[1];
-					
-					headsignToDistanceAways[headsign].push(vehicleInfo);
+			var situationsById = {};
+			if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined') {
+				jQuery.each(json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations, function(_, situationElement) {
+					situationsById[situationElement[0].SituationNumber] = situationElement[0];
 				});
+			}
+			
+			var headsignToDistanceAways = {};
+			var applicableSituations = {};
+			var r = 0;
+			jQuery.each(json.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit, function(_, monitoredStopVisit) {
+				var journey = monitoredStopVisit.MonitoredVehicleJourney;
 
-				// update table for this stop ID
-				var stopTable = jQuery("table.stop" + stopIdWithoutAgency).show();
-				updateTableForStop(stopTable, applicableSituations, headsignToDistanceAways);
-				
-				// no monitored call in SM response--to get stop label, we have to call search API (FIXME)
-				if(r === 0) {
-					var stopElement = jQuery(".stop" + stopId + " .name");
-
-					if(stopElement.hasClass("loading")) {
-						jQuery.getJSON(obaApiBaseUrl + "/onebusaway-nyc-api-webapp/api/where/stop/" + agencyId + "_" + stopIdWithoutAgency + ".json", { key: "TEST" }, function(json) {
-							stopName = json.data.name;
-							stopTable.find(".name").removeClass("loading").text(stopName);
-						});
-					}
+				if(typeof journey.MonitoredCall === 'undefined') {
+					return;
 				}
-			}); // ajax()			
-		}); // each()
+
+				var stopName = journey.MonitoredCall.StopPointName;
+				if(stopName !== null) {
+					jQuery(".stop" + stopId + " .name").removeClass("loading").html("<h1>" + stopInfo[stopId].name + "</h1>");
+				}
+				
+				var routeId = journey.LineRef;
+				var routeIdParts = routeId.split("_");
+				var routeIdWithoutAgency = routeIdParts[1];
+				
+				var headsign = journey.DestinationName;
+				if(typeof headsignToDistanceAways[headsign] === 'undefined') {
+					headsignToDistanceAways[headsign] = [];
+					r++;
+				}
+				
+				jQuery.each(journey.SituationRef, function(_, situationRef) {
+					if(typeof situationsById[situationRef.SituationSimpleRef] !== 'undefined') {
+						applicableSituations[situationRef.SituationSimpleRef] = situationsById[situationRef.SituationSimpleRef];
+					}
+				});
+				
+				alertData[stopId] = applicableSituations;
+				
+				var vehicleInfo = {};
+				vehicleInfo.distanceAway = journey.MonitoredCall.Extensions.Distances.PresentableDistance;
+				vehicleInfo.vehicleId = journey.VehicleRef.split("_")[1];
+				vehicleInfo.lineRef = journey.LineRef;
+				
+				headsignToDistanceAways[headsign].push(vehicleInfo);
+			});
+
+			// update table for this stop ID
+			var stopElement = jQuery("li.stop" + stopIdWithoutAgency).show();
+			updateElementForStop(stopId, stopElement, headsignToDistanceAways);
+			
+			if (stopIdsToRequest.length < 2) {
+				jQuery("#content").css("bottom", "80px").css("margin-bottom", "0px");
+				jQuery("#pager").hide();
+			}
+			
+			if (!carouselInited && carousel.find("li").length >= stopIdsToRequest.length) {
+				
+				var pageRate = 0;
+				if (stopIdsToRequest.length > 1)
+					pageRate = 15;
+
+				jQuery('.jcarousel').jcarousel({
+			        scroll: 1,
+					visible: 1,
+					auto: pageRate,
+					wrap: "circular",
+					animation: "slow",
+					itemVisibleInCallback: pageChanged,
+					setupCallback: carouselSetup
+			    });
+			}
+			
+		}); // ajax()			
 	}
 	
 	return {
