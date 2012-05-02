@@ -28,9 +28,12 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
+import java.io.Serializable;
 import java.util.Set;
 
-public class Observation implements Comparable<Observation> {
+public class Observation implements Serializable, Comparable<Observation> {
+
+  private static final long serialVersionUID = 1L;
 
   private final long _timestamp;
 

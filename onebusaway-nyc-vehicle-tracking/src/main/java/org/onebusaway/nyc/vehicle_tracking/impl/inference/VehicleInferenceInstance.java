@@ -15,15 +15,20 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -42,6 +47,7 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFilterMod
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ZeroProbabilityParticleFilterException;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
+import org.onebusaway.nyc.vehicle_tracking.model.VehicleInferenceInstanceState;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.realtime.api.EVehiclePhase;
@@ -52,24 +58,15 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.TreeMultiset;
-
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class VehicleInferenceInstance {
 
@@ -88,8 +85,6 @@ public class VehicleInferenceInstance {
 
   private RunService _runService;
 
-  private long _optionalResetWindow = 10 * 60 * 1000;
-
   private long _automaticResetWindow = 20 * 60 * 1000;
 
   private boolean _enabled = true;
@@ -107,7 +102,30 @@ public class VehicleInferenceInstance {
   private Multiset<Particle> _badParticles;
   
   private ParticleFilter<Observation> _particleFilter;
-
+  
+  // "stateless" mode
+  public VehicleInferenceInstanceState getState() {
+	  VehicleInferenceInstanceState s = new VehicleInferenceInstanceState();
+	  
+	  s.setPreviousObservation(_previousObservation);
+	  s.setLastValidDestinationSignCode(_lastValidDestinationSignCode);
+	  s.setLastUpdateTime(_lastUpdateTime);
+	  s.setLastLocationUpdateTime(_lastLocationUpdateTime);
+	  s.setSeenFirst(_particleFilter.getSeenFirst());
+	  s.setParticles(_particleFilter.getParticleList());
+	  
+	  return s;
+  }
+  
+  public void setState(VehicleInferenceInstanceState s) {
+	  _previousObservation = s.getPreviousObservation();
+	  _lastValidDestinationSignCode = s.getLastValidDestinationSignCode();
+	  _lastUpdateTime = s.getLastUpdateTime();
+	  _lastLocationUpdateTime = s.getLastLocationUpdateTime();	  
+	  _particleFilter.reset();
+	  _particleFilter.restoreFilter(s.getSeenFirst(), s.getParticles());
+  }
+  
   public void setModel(ParticleFilterModel<Observation> model) {
     _particleFilter = new ParticleFilter<Observation>(model);
   }
@@ -137,16 +155,6 @@ public class VehicleInferenceInstance {
   @Autowired
   public void setBaseLocationService(BaseLocationService baseLocationService) {
     _baseLocationService = baseLocationService;
-  }
-
-  /**
-   * If we haven't received a GPS update in the specified window, the inference
-   * engine is reset only if the DSC has changed since the last update
-   * 
-   * @param optionalResetWindow
-   */
-  public void setOptionalResetWindow(long optionalResetWindow) {
-    _optionalResetWindow = optionalResetWindow;
   }
 
   /**

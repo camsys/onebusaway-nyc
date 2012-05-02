@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import java.io.Serializable;
+
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 
@@ -19,7 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 public final class BlockStateObservation implements
-    Comparable<BlockStateObservation> {
+    Comparable<BlockStateObservation>, Serializable {
+
+  private static final long serialVersionUID = 1L;
+
   final private BlockState _blockState;
 
   private final Boolean _isOpAssigned;

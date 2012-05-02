@@ -24,9 +24,12 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class NycRawLocationRecord implements Comparable<NycRawLocationRecord> {
+public class NycRawLocationRecord implements Serializable, Comparable<NycRawLocationRecord> {
+
+  private static final long serialVersionUID = 1L;
 
   private long id;
 

@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
+import java.io.Serializable;
+
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
@@ -34,7 +36,9 @@ import com.google.common.collect.Ordering;
 
 import javax.annotation.Nullable;
 
-public final class BlockState implements Comparable<BlockState> {
+public final class BlockState implements Comparable<BlockState>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   /**
    * Our current block instance

@@ -135,6 +135,10 @@ public class ParticleFilter<OBS> {
     return Multisets.unmodifiableMultiset(_particles);
   }
 
+  public boolean getSeenFirst() {
+	  return _seenFirst;
+  }
+  
   public Multiset<Particle> getWeightedParticles() {
     return Multisets.unmodifiableMultiset(_weightedParticles);
   }
@@ -158,7 +162,13 @@ public class ParticleFilter<OBS> {
     _particles.addAll(initialParticles);
     _seenFirst = true;
   }
-
+  
+  public void restoreFilter(boolean seenFirst, Multiset<Particle> particles) {
+	  _seenFirst = seenFirst;
+	  _particles.clear();
+	  _particles.addAll(particles);
+  }
+  
   public void reset() {
     _particles.clear();
     _particles = HashMultiset.create(200);
