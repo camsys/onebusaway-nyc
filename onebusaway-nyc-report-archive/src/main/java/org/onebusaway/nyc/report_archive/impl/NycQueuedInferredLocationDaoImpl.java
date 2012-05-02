@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Component
@@ -59,13 +60,15 @@ public class NycQueuedInferredLocationDaoImpl implements
 			list.add(record);
 		_template.saveOrUpdateAll(list);
 
-		List<InferredLocationRecord> currentRecords = new ArrayList<InferredLocationRecord>();
+		LinkedHashMap<Integer, InferredLocationRecord> currentRecords = new LinkedHashMap<Integer, InferredLocationRecord>();
 		for (ArchivedInferredLocationRecord record : records) {
 			InferredLocationRecord currentRecord = new InferredLocationRecord(
 					record);
-			currentRecords.add(currentRecord);
+			// duplicate vehicles in a transaction will confuse hibernate, prevent this
+			currentRecords.put(record.getVehicleId(), currentRecord);
 		}
-		_template.saveOrUpdateAll(currentRecords);
+		
+		_template.saveOrUpdateAll(currentRecords.values());
 		_template.flush();
 		_template.clear();
 	}
