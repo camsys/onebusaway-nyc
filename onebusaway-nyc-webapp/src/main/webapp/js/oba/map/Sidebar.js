@@ -63,6 +63,13 @@ OBA.Sidebar = function() {
 		        jQuery('#bustime_search_form').submit();
 		    }
 		});
+		jQuery('#bustime_search_form').submit(function() {
+			jQuery("#bustimesearch").autocomplete("close");
+			return true;
+		});
+		
+		jQuery("#bustimesearch").autocomplete("close").submit
+		jQuery("#bustimesearch").autocomplete("close")
 	}
 
 	function addResizeBehavior() {

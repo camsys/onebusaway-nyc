@@ -20,6 +20,10 @@ OBA.Mobile = (function() {
 		        jQuery('#bustime_search_form').submit();
 		    }
 		});
+		jQuery('#bustime_search_form').submit(function() {
+			jQuery("#bustimesearch").autocomplete("close");
+			return true;
+		});
 	}
 	
 	function addRefreshBehavior() {
