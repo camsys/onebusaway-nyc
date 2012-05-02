@@ -41,11 +41,6 @@
 	</s:url>
 	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 	
-	<s:url var="url" value="/js/lib/jquery.jcarousel.js">
-		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
-	</s:url>
-	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	
 	<s:url var="url" value="/js/lib/jquery.simplyscroll.js">
 		<s:param name="v"><s:property value="frontEndVersion" /></s:param>
 	</s:url>
@@ -73,22 +68,16 @@
 </head>
 <body>
 
-<div id="error"><!-- //prevent jspx minimization --></div>
-<div id="content" >
-	<div class="jcarousel">
-		<ul><!-- //prevent jspx minimization --></ul>
-	</div>
-</div>
+<div id="content"><!-- //prevent jspx minimization --></div>
 <div id="pager"><!-- //prevent jspx minimization --></div>
 <div id="footer">
     <div id="branding"><!-- //prevent jspx minimization --></div>
 	<div id="instructions">
 		<ul>
-			<li class="fixed_width_instruction">Also try MTA Bus Time via:</li>
+			<li class="fixed_width_instruction">Try MTA Bus Time:</li>
 			<li class="instructions_number">1</li>
 			<li>TEXT</li>
 			<li id="text1"><!-- //prevent jspx minimization --></li>
-			<li id="text2"><!-- //prevent jspx minimization --></li>
 			<li class="instructions_number">2</li>
 			<li class="fixed_width_instruction">ONLINE at bustime.mta.info</li>
 		</ul>

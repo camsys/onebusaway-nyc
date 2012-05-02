@@ -122,14 +122,13 @@ h1 {
 	font-size: 2em;
 	text-align: left;
 	font-weight: bold;
-	letter-spacing: .2em;
+	letter-spacing: .1em;
 }
 
 h2 {
 	font-size: 1em;
-	text-align: left;
 	font-weight: bold;
-	letter-spacing: .2em;
+	letter-spacing: .1em;
 }
 
 p, ul, ol, dd, pre {
@@ -240,9 +239,8 @@ small {
 
 #instructions {
 	display: inline-block;
-	width: 55%;
+	width: 60%;
 	height: 100%;
-	margin-left: 3%;
 	text-align: center;
 }
 
@@ -262,31 +260,26 @@ small {
 .instructions_number {
 	font-weight: bold;
 	font-size: 3.0em;
+	margin-right: 0.2em;
 }
 
 #text1 {
-	background-image: url('img/Text_Instructions_1.png');
+	background-image: url('img/Text_Instructions.png');
 	background-position: center center;
 	background-repeat: no-repeat;
 	height: 100%;
-	width: 112px;
-	position: relative;
-	top: 0;
-}
-
-#text2 {
-	background-image: url('img/Text_Instructions_2.png');
-	background-position: center center;
-	background-repeat: no-repeat;
-	height: 100%;
-	width: 112px;
+	width: 307px;
 	position: relative;
 	top: 0;
 	margin-right: 15px;
+	margin-left: 15px;
 }
+
 .fixed_width_instruction {
-	width: 150px;
+	width: 130px;
 	line-height: 1.3em;
+	text-align: left;
+	padding-right: 10px;
 }
 
 #clock {
@@ -399,28 +392,12 @@ p.alert {
 	margin-bottom: 7px;
 }
 
-/**
-* Overwrite for having a carousel with dynamic width.
-*/
-.jcarousel-container-horizontal {
-	width: 100%;
-	height: 100%;
-}
-
-.jcarousel-clip-horizontal {
-	width: 100%;
-	height: 100%;
-}
-
-#carousel {
-	height: 100%;
-}
-
 .slide {
 	position:relative;
 	width: 100%;
 	height: 100%;
 	background: rgb(0,0,0);
+	overflow: hidden;
 }
 
 .header {
@@ -475,6 +452,7 @@ div.stop-id {
 	margin-left: 7px;
 	background: rgb(40,40,40);
 	color: white;
+	text-align: center;
 }
 
 .scroller {
@@ -528,6 +506,7 @@ div.stop-id {
 	font-weight: bold;
 	padding: 0 0.3em 0 0.3em;
 	margin: 0 0.2em 0.4em 0.2em;
+	text-align: center;
 }
 
 .alert_sign {
@@ -544,7 +523,7 @@ div.stop-id {
 	text-align: center;
 }
 
-.loading {
+.loading_overlay {
     background: rgba(0,0,0,.5) url('../Images/ajax-loader-bright.gif') no-repeat;
 	width:100%;
 	height:100%;

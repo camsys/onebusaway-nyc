@@ -26,9 +26,6 @@ OBA.Sign = function() {
 	var routeInfo = {};
 	var vehiclesPerStop = null;
 	var tisMode = null;
-	var carouselInited = false;
-	
-	var alertData = {};
 	
 	var url = window.location.href;
 	var signPosition = url.indexOf("/sign/sign");
@@ -96,6 +93,8 @@ OBA.Sign = function() {
 	
 	function setupUI() {
 		
+		jQuery.fx.interval = 50;
+		
 		// configure interface with URL params
 		tisMode = getParameterByName("tisMode", tisMode);
 		
@@ -126,12 +125,11 @@ OBA.Sign = function() {
 			"cache": false
 		});
 
-		jQuery("#arrivals")
-				.html("")
-				.empty();
+		jQuery("#content").html("").empty();
+		jQuery("#pager").html("").empty();
 		
 		var stopIds = getParameterByName("stopIds", null);		
-		if(stopIds !== null) {
+		if(stopIds !== null && stopIds.length > 0) {
 			stopIdsToRequest = [];
 			jQuery.each(stopIds.split(","), function(_, o) {
 				stopIdsToRequest.push(o);
@@ -141,19 +139,30 @@ OBA.Sign = function() {
 			return;
 		}
 		
+		// This can probably be done in a way cooler way
+		var initMonitor = function() {}
+		initMonitor.count = stopIdsToRequest.length;
+		initMonitor.done = function() {
+			initMonitor.count -= 1;
+			if (initMonitor.count === 0) {
+				advance();
+				//setInterval(advance, refreshInterval * 1000);
+			}
+		}
+		
 		jQuery.each(stopIdsToRequest, function(_, stopId) {
-			initStop(stopId);
+			jQuery("#pager").append('<span id="' + stopId + '" class="dot"></span>');
+			initStop(stopId, initMonitor);
 		});
 
 		updateClock();
 		setInterval(updateClock, 1000);
-		setInterval(refresh, refreshInterval * 1000);
 	}
 	
-	function refresh() {
-		jQuery.each(stopIdsToRequest, function(_, stopId) {
-			update(stopId);
-		});
+	function advance() {
+		var idToDisplay = stopIdsToRequest.shift();
+		stopIdsToRequest.push(idToDisplay);
+		update(idToDisplay);
 	}
 	
 	function updateClock() {
@@ -162,14 +171,14 @@ OBA.Sign = function() {
 		jQuery("#clock #day").text(now.format("dddd, mmmm d"));
 	}
 	
-	function initStop(stopId) {
+	function initStop(stopId, initMonitor) {
 		var params = { stopId: 'MTA NYCT_' + stopId };
 		jQuery.getJSON(baseUrl + "/" + OBA.Config.stopForId, params, function(json) {
 			stopInfo[stopId] = json.stop;
 			jQuery.each(json.stop.routesAvailable, function(_, route) {
 				routeInfo[route.id] = route;
 			});
-			update(stopId);
+			initMonitor.done();
 		});
 	}
 	
@@ -177,7 +186,6 @@ OBA.Sign = function() {
 		var sign = element.addClass("sign");
 		sign.css("border-left-color", routeInfo[routeId].color);
 		sign.css("border-left-style", "solid");
-		//sign.css("border-left-width", "15px");
 		sign.text(routeInfo[routeId].shortName);
 		return sign;
 	}
@@ -185,29 +193,22 @@ OBA.Sign = function() {
 	function getNewElementForStop(stopId) {
 		
 		var newElement = jQuery(
-			'<li>' +
-				'<div class="slide">' +
-					'<div class="error"></div>' +
-					'<div class="header">' + 
-						'<div class="name loading">Loading...</div>' + 
-						' <div class="stop-id"><h2>Stop #' + stopId + '</h2></div>' +
-					'</div>' + 
-					'<div class="arrivals"></div>' +
-					'<div class="alerts"><div class="alerts_header"><h2>Service Change Notices</h2></div><div id="stop' + stopId + '" class="scroller"></div></div>' +
-				'</div>' +
-			'</li>').addClass("stop" + stopId);
-		
-		var table = jQuery("<table></table>")
-						.addClass("stop" + stopId);
-				
-		newElement.find(".arrivals").append(table);
+			'<div>' +
+				'<div class="error"></div>' +
+				'<div class="header">' + 
+					'<div class="name"><h1>' + stopInfo[stopId].name + '</h1></div>' + 
+					' <div class="stop-id"><h2>Stop #' + stopId + '</h2></div>' +
+				'</div>' + 
+				'<div class="arrivals"><table></table></div>' +
+				'<div class="alerts"><div class="alerts_header"><h2>Service Change Notices</h2></div><div id="stop' + stopId + '" class="scroller"></div></div>' +
+			'</div>').addClass("slide");
 		
 		_gaq.push(['_trackEvent', "DIY Sign", "Add Stop", stopId]);
 		
 		return newElement;
 	}
 	
-	function updateElementForStop(stopId, stopElement, headsignToDistanceAways) {
+	function updateElementForStop(stopId, stopElement, headsignToDistanceAways, applicableSituations) {
 		if(stopElement === null) {
 			return;
 		}
@@ -217,14 +218,41 @@ OBA.Sign = function() {
 
 		// situations
 		stopElement.find(".alerts .scroller").html("").empty();
-		if (jQuery.isEmptyObject(alertData[stopId])) {
+		if (jQuery.isEmptyObject(applicableSituations)) {
 			stopElement.find(".alerts").hide();
 			stopElement.find(".arrivals").width("100%");
 		} else {
 			stopElement.find(".alerts").show();
 			stopElement.find(".arrivals").width("70%");
 
-			resetAlertsInElement(stopId, stopElement);
+			stopElement.find("div.scroller").html("").empty();
+			
+			// Probably not needed because we are starting from scratch
+			stopElement.find(".alerts_body").html("").empty().remove();
+
+			jQuery.each(applicableSituations, function(situationId, situation) {
+
+				var signWrapper = jQuery("<div></div>").addClass("sign_wrapper");
+
+				var existingSigns = [];
+
+				jQuery.each(situation.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, journey) {
+					if (journey.LineRef in routeInfo && existingSigns.indexOf(journey.LineRef) === -1) {
+						var sign = signForRoute(journey.LineRef, jQuery("<div></div>"));
+						sign.addClass("alert_sign");
+						signWrapper.append(sign);
+						existingSigns.push(journey.LineRef);
+					}
+				});
+
+				var alert = jQuery("<div></div>")
+								.addClass("alert")
+								.html('<p class="alert_summary">' + situation.Summary.replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p><p>' + situation.Description.replace(/$/g, "<br/><br/>").replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p>');
+
+				alert.prepend(signWrapper);
+
+				stopElement.find("div.scroller").append(alert);
+			});
 		}
 		
 		// arrivals
@@ -299,19 +327,14 @@ OBA.Sign = function() {
 	
 	function showError(textStatus) {
 		
-		//updateTimestamp(new Date());
+		jQuery("#content").html("").empty();
 		
-		hideError();
+		var error = jQuery("<div></div>").attr("id", "error");
+		jQuery("<p></p>").html(typeof textStatus === 'string' ? textStatus : "An error occured while updating arrival information&mdash;please check back later.").appendTo(error);
 		
-		jQuery("#pager").hide();
+		jQuery("#content").append(error);
 		
-		jQuery("<p></p>")
-				.html(textStatus ? textStatus : "An error occured while updating arrival information&mdash;please check back later.")
-				.appendTo("#error");
-
-		jQuery("#arrivals")
-			.html("")
-			.empty();
+		setTimeout(setupUI, 30000);
 	}
 
 	function hideError() {
@@ -320,81 +343,6 @@ OBA.Sign = function() {
 			.html("")
 			.remove();
 		jQuery("#pager").show();
-	}
-	
-	function resetAlertsInElement(stopId, element) {
-		
-		var id = element.find("div.scroller").attr("id");
-		
-		element.find("div.scroller").html("").empty().remove();
-		
-		element.find(".alerts_body").html("").empty().remove();
-		
-		var newScroller = jQuery('<div id="' + id + '" class="scroller"></div>');
-		
-		jQuery.each(alertData[stopId], function(situationId, situation) {
-			
-			var signWrapper = jQuery("<div></div>").addClass("sign_wrapper");
-			
-			var existingSigns = [];
-			
-			jQuery.each(situation.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, journey) {
-				if (journey.LineRef in routeInfo && existingSigns.indexOf(journey.LineRef) === -1) {
-					var sign = signForRoute(journey.LineRef, jQuery("<div></div>"));
-					sign.addClass("alert_sign");
-					signWrapper.append(sign);
-					existingSigns.push(journey.LineRef);
-				}
-			});
-			
-			var alert = jQuery("<div></div>")
-							.addClass("alert")
-							.html('<p class="alert_summary">' + situation.Summary.replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p><p>' + situation.Description.replace(/$/g, "<br/><br/>").replace(/\n\n/g, "<br/><br/>").replace(/\n/g, " ") + '</p>');
-			
-			alert.prepend(signWrapper);
-			
-			newScroller.append(alert);
-		});
-		
-		element.find(".alerts").append(newScroller);
-		
-//		var alerts = element.find(".alert");
-//		var totalHeight = 0;
-//		
-//		jQuery.each(alerts, function(_, alert) {
-//			totalHeight += jQuery(alert).height();
-//		});
-//
-//		if (totalHeight > element.find(".scroller").height()) {
-//			
-//			element.find(".alert:last").css("margin-bottom", "30px").css("border-bottom", "2px dashed rgb(200,200,200)");
-//			
-//			element.find(".scroller").simplyScroll({
-//				customClass: 'alerts_body',
-//				orientation: 'vertical',
-//				pauseOnHover: false,
-//				frameRate: 20,
-//				speed: 2
-//			});
-//		}
-	}
-	
-	function pageChanged(carousel, li, index, state) {
-		
-		var listItem = carousel.container.find("li." + li.classList[3] + ":first");
-		
-		var clazz = listItem.attr("class").split(' ')[0];
-		
-		var id = clazz.match(/\d+$/)[0];
-		
-		resetAlertsInElement(id, listItem);
-		
-		jQuery("span.dot").css('background-color', 'rgb(90,90,90)');
-		jQuery("span#" + li.classList[0] + ".dot").css('background-color', 'white');
-	}
-	
-	function carouselSetup(carousel) {
-		carouselInited = true;
 	}
 	
 	function update(stopId) {
@@ -412,17 +360,12 @@ OBA.Sign = function() {
 			stopIdWithoutAgency = stopIdParts[1];
 		}
 
-		var stopElement = jQuery("li.stop" + stopIdWithoutAgency);
-		if(stopElement.length === 0) {
-			stopElement = getNewElementForStop(stopIdWithoutAgency);
-			carousel.append(stopElement.hide());
-			jQuery("#pager").append('<span id="stop' + stopIdWithoutAgency + '" class="dot"></span>');
-		}
+		var stopElement = getNewElementForStop(stopIdWithoutAgency);
 
 		var params = { OperatorRef: agencyId, MonitoringRef: stopIdWithoutAgency, StopMonitoringDetailLevel: "normal" };
 		jQuery.getJSON(baseUrl + "/" + OBA.Config.siriSMUrl, params, function(json) {	
 			//updateTimestamp(OBA.Util.ISO8601StringToDate(json.Siri.ServiceDelivery.ResponseTimestamp));
-			hideError();
+			//hideError();
 
 			var situationsById = {};
 			if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined') {
@@ -439,11 +382,6 @@ OBA.Sign = function() {
 
 				if(typeof journey.MonitoredCall === 'undefined') {
 					return;
-				}
-
-				var stopName = journey.MonitoredCall.StopPointName;
-				if(stopName !== null) {
-					jQuery(".stop" + stopId + " .name").removeClass("loading").html("<h1>" + stopInfo[stopId].name + "</h1>");
 				}
 				
 				var routeId = journey.LineRef;
@@ -462,8 +400,6 @@ OBA.Sign = function() {
 					}
 				});
 				
-				alertData[stopId] = applicableSituations;
-				
 				var vehicleInfo = {};
 				vehicleInfo.distanceAway = journey.MonitoredCall.Extensions.Distances.PresentableDistance;
 				vehicleInfo.vehicleId = journey.VehicleRef.split("_")[1];
@@ -473,30 +409,52 @@ OBA.Sign = function() {
 			});
 
 			// update table for this stop ID
-			var stopElement = jQuery("li.stop" + stopIdWithoutAgency).show();
-			updateElementForStop(stopId, stopElement, headsignToDistanceAways);
+			updateElementForStop(stopId, stopElement, headsignToDistanceAways, applicableSituations);
+			
+			var oldContent = jQuery("#content");
+			
+			var newContent = jQuery('<div id="content"></div>');
+			stopElement.appendTo(newContent);
+			jQuery("body").prepend(newContent);
 			
 			if (stopIdsToRequest.length < 2) {
-				jQuery("#content").css("bottom", "80px").css("margin-bottom", "0px");
+				newContent.css("bottom", "80px").css("margin-bottom", "0px");
 				jQuery("#pager").hide();
 			}
 			
-			if (!carouselInited && carousel.find("li").length >= stopIdsToRequest.length) {
+			var maxSignWidth = Math.max.apply(Math, newContent.find('.alert_sign').map(function() { return $(this).width(); }).get());
+			
+			newContent.find('.alert_sign').width(maxSignWidth);
+			
+			var contentWidth = oldContent.width();
+			
+			oldContent.animate({left: contentWidth}, 2000, function() {
+				oldContent.html("").empty().remove();
+				jQuery("span.dot").css('background-color', 'rgb(90,90,90)');
+				jQuery("span#" + stopId + ".dot").css('background-color', 'white');
 				
-				var pageRate = 0;
-				if (stopIdsToRequest.length > 1)
-					pageRate = 15;
+				var alerts = stopElement.find(".alert");
+				var totalHeight = 0;
 
-				jQuery('.jcarousel').jcarousel({
-			        scroll: 1,
-					visible: 1,
-					auto: pageRate,
-					wrap: "circular",
-					animation: "slow",
-					itemVisibleInCallback: pageChanged,
-					setupCallback: carouselSetup
-			    });
-			}
+				jQuery.each(alerts, function(_, alert) {
+					totalHeight += jQuery(alert).height();
+				});
+
+				if (totalHeight > stopElement.find(".scroller").height()) {
+
+					stopElement.find(".alert:last").css("margin-bottom", "30px").css("border-bottom", "2px dashed rgb(200,200,200)");
+
+					stopElement.find(".scroller").simplyScroll({
+						customClass: 'alerts_body',
+						orientation: 'vertical',
+						pauseOnHover: false,
+						frameRate: 20,
+						speed: 2
+					});
+				}
+				
+				setTimeout(advance, refreshInterval * 1000);
+			});
 			
 		}); // ajax()			
 	}

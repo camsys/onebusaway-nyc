@@ -55,7 +55,13 @@ OBA.Sidebar = function() {
 		
 		// add autocomplete behavior
 		jQuery("#bustimesearch").autocomplete({
-			source: OBA.Config.autocompleteUrl
+			source: OBA.Config.autocompleteUrl,
+			select: function(event, ui) {
+		        if(ui.item){
+		        	jQuery('#bustimesearch').val(ui.item.value);
+		        }
+		        jQuery('#bustime_search_form').submit();
+		    }
 		});
 	}
 
