@@ -54,7 +54,7 @@ public class AutocompleteAction extends OneBusAwayNYCActionSupport {
     
     suggestions = _nycTransitDataService.getSearchSuggestions(_term.toLowerCase());
     
-    if (suggestions.size() == 0 && _term.length() > 1) {
+    if (suggestions.size() == 0 && _term.length() > 2) {
     	List<NycGeocoderResult> geocoderResults = _geocoderService.nycGeocode(_term);
     	if (geocoderResults.size() > 0) {
         	for (int i = 0; i < 10; i++) {
