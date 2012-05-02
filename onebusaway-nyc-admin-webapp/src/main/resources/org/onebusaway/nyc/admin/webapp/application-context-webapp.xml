@@ -25,29 +25,28 @@
            
     <!-- This turns on automatic annotation configuration -->
     <context:annotation-config />
-
+    
     <import resource="classpath:org/onebusaway/users/application-context.xml" />
     <import resource="classpath:org/onebusaway/users/application-context-security.xml" />
-    <import resource="classpath:org/onebusaway/geocoder/application-context.xml" />
     <import resource="classpath:org/onebusaway/presentation/application-context.xml" />
     <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
-
+    
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
-
+    
     <!--
         Override the current user strategy of the CurrentUserService with one that will automatically create as user as
         needed and set a Remember Me cookie to remember that user for the future
     -->
-    <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.AutoUserCurrentUserStrategyImpl" primary="true" />
-
+    <!-- bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.AutoUserCurrentUserStrategyImpl" primary="true" /-->
+    
     <!-- sec:http>
         <sec:intercept-url pattern="/admin/**" access="ROLE_ADMINISTRATOR" />
         <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
         <sec:remember-me />
         <sec:logout invalidate-session="false" logout-url="/logout.action" />
-    </sec:http>
+    </sec:http-->
 
-    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+    <!-- bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
         <property name="properties">
             <props>
 		        <prop key="userIndexAuthenticationFilter.defaultTargetUrl">/admin</prop>
@@ -59,7 +58,5 @@
         </property>
     </bean-->
 
-    <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
-        <property name="geocoderService" ref="externalGeocoderImpl" />
-    </bean>
+   
 </beans>

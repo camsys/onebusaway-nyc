@@ -140,7 +140,8 @@
         <module>onebusaway-nyc-queue-test</module>
         <module>onebusaway-nyc-queue-subscriber</module>
         <module>onebusaway-nyc-report-archive</module>
-    <module>onebusaway-nyc-util</module>
+    	<module>onebusaway-nyc-util</module>
+    	<module>onebusaway-nyc-admin-webapp</module>
   </modules>
 
     <profiles>
@@ -170,6 +171,7 @@
                 <module>onebusaway-nyc-queue-test</module>
                 <module>onebusaway-nyc-queue-subscriber</module>
                 <module>onebusaway-nyc-report-archive</module>
+                <module>onebusaway-nyc-admin-webapp</module>
             </modules>
         </profile>
     </profiles>
