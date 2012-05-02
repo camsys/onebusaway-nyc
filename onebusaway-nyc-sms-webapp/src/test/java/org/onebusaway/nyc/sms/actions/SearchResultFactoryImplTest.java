@@ -197,6 +197,7 @@ public class SearchResultFactoryImplTest {
   }
 
   private RouteResult runGetRouteResult(List<ServiceAlertBean> serviceAlerts) {
+    setupStops();
     when(
         _realtimeService.getServiceAlertsForRouteAndDirection(anyString(),
             anyString())).thenReturn(serviceAlerts);
