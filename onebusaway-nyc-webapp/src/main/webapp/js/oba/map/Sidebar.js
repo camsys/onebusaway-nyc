@@ -41,6 +41,8 @@ OBA.Sidebar = function() {
 		searchForm.submit(function(e) {
 			e.preventDefault();
 			
+			jQuery("#bustimesearch").autocomplete("close");
+			
 			var searchInput = jQuery("#searchbar form input[type=text]");
 
 			// if search hasn't changed, force the search again to make panning, etc. happen
@@ -60,16 +62,9 @@ OBA.Sidebar = function() {
 		        if(ui.item){
 		        	jQuery('#bustimesearch').val(ui.item.value);
 		        }
-		        jQuery('#bustime_search_form').submit();
+		        doSearch(jQuery('#bustimesearch').val());
 		    }
 		});
-		jQuery('#bustime_search_form').submit(function() {
-			jQuery("#bustimesearch").autocomplete("close");
-			return true;
-		});
-		
-		jQuery("#bustimesearch").autocomplete("close").submit
-		jQuery("#bustimesearch").autocomplete("close")
 	}
 
 	function addResizeBehavior() {
@@ -396,6 +391,9 @@ OBA.Sidebar = function() {
 			searchRequest.abort();
 		}		
 		searchRequest = jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
+			
+			jQuery("#bustimesearch").autocomplete("close");
+			
 			loading.hide();
 
 			var resultType = json.searchResults.resultType;
