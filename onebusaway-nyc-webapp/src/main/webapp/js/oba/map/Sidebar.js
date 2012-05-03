@@ -395,6 +395,7 @@ OBA.Sidebar = function() {
 		}		
 		searchRequest = jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
 			
+			// Be sure the autocomplete list is closed
 			jQuery("#searchbar form input[type=text]").autocomplete("close");
 			
 			loading.hide();
