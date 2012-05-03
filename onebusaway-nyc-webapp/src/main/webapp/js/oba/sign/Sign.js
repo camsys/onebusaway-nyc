@@ -38,6 +38,8 @@ OBA.Sign = function() {
 	
 	var agencyId = "MTA NYCT";
 	
+	var setupUITimeout = null;
+	
 	function getParameterByName(name, defaultValue) {
 		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
 		var regexS = "[\\?&]"+name+"=([^&#]*)";
@@ -121,7 +123,7 @@ OBA.Sign = function() {
 		// setup error handling/timeout
 		jQuery.ajaxSetup({
 			"error": showError,
-			"timeout": timeout * 1000000,
+			"timeout": 60000, // All ajax calls timeout after one minute.
 			"cache": false
 		});
 
@@ -140,15 +142,14 @@ OBA.Sign = function() {
 		}
 		
 		// This can probably be done in a way cooler way
-		var initMonitor = function() {}
+		var initMonitor = function() {};
 		initMonitor.count = stopIdsToRequest.length;
 		initMonitor.done = function() {
 			initMonitor.count -= 1;
 			if (initMonitor.count === 0) {
 				advance();
-				//setInterval(advance, refreshInterval * 1000);
 			}
-		}
+		};
 		
 		jQuery.each(stopIdsToRequest, function(_, stopId) {
 			jQuery("#pager").append('<span id="' + stopId + '" class="dot"></span>');
@@ -334,7 +335,8 @@ OBA.Sign = function() {
 		
 		jQuery("#content").append(error);
 		
-		setTimeout(setupUI, 30000);
+		clearTimeout(setupUITimeout);
+		setupUITimeout = setTimeout(setupUI, 30000);
 	}
 
 	function hideError() {
