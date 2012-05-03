@@ -114,6 +114,7 @@
 	margin-top: .5em;
 	background-position: 0 .3em;
 	background-repeat: no-repeat;
+	min-height: 40px;
 }
 
 #content #matches ul li.legendItem {
