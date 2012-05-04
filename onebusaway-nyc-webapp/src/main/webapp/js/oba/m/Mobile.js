@@ -11,8 +11,24 @@ OBA.Mobile = (function() {
 	var lastLongitude = null; 
 	
 	function addAutocompleteBehavior() {
-		jQuery("#bustimesearch").autocomplete({
-			source: "../" + OBA.Config.autocompleteUrl
+		
+		var searchForm = jQuery("#searchPanel form");
+		var searchInput = jQuery("#searchPanel form input[type=text]");
+		
+		searchInput.autocomplete({
+			source: "../" + OBA.Config.autocompleteUrl,
+			select: function(event, ui) {
+		        if(ui.item){
+		        	searchInput.val(ui.item.value);
+		        	searchForm.submit();
+		        }
+		    }
+		});
+		
+		// Close the autocomplete list when the form is submitted
+		searchForm.submit(function() {
+			searchInput.autocomplete("close");
+			return true;
 		});
 	}
 	

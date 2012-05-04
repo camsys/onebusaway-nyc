@@ -87,7 +87,7 @@
 				<s:elseif test="results.resultType.equals('GeocodeResult')">
 						<c:import url="geocode-result.jspx"/>
 				</s:elseif>
-			</s:if>	
+			</s:if>
 		</div>
 
 		<div id="refresh">
