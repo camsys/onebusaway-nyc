@@ -49,7 +49,7 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
     MemcachedClientIF client;
     try {
       client = memcacheClientFactory.getCacheClient();
-      Future<Boolean> cas = client.set(sessionId, _sessionTimeout, super.getContext(sessionId));
+      Future<Boolean> cas = client.set(sessionId, _sessionTimeout, super.getOrCreateContextEntry(sessionId));
       _log.info("saveContext: response: " + cas.get());
     } catch (Exception e) {
       _log.error("Failed to save context: ", e);
@@ -64,8 +64,9 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
     _log.info("getContextFromCache for " + key);
     try {
       client = memcacheClientFactory.getCacheClient();
-      CASValue<Object> value = client.getAndTouch(key, _sessionTimeout);
-      Map<String, Object> map = (Map<String, Object>) (value == null ? value : value.getValue());
+      ContextEntry contextEntry = (ContextEntry) client.get(key);
+      _log.info("getContextFromCache value before null test is: " + contextEntry);
+      Map<String, Object> map = (Map<String, Object>) (contextEntry == null ? contextEntry : contextEntry.getContext());
       _log.info("getContextFromCache for " + key + " result is " + map);
       return map;
     } catch (Exception e) {

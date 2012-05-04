@@ -23,7 +23,7 @@
 		<pattern>/css/*</pattern>
 		<pattern>/js/*</pattern>
 		<pattern>/api/*</pattern>
-		<pattern>/sign/sign*</pattern>
+		<pattern>/sign/*</pattern>
 	</excludes>
 
 	<decorator name="main" page="main.jspx">

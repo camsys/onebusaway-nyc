@@ -106,17 +106,31 @@ a img { border: none; }
 
 body, input, textarea {
     font-family: Helvetica,Arial,sans-serif;
-    font-size: 0.9em;
+    font-size: 20px;
     line-height: 2em;
     overflow: hidden;
 }
 body {
-    background-color: #999;
+    background-color: rgb(0,0,0);
 }
 h1,h2,h3,h4,h5,h6 { 
     font-weight:normal;
     clear:both;
 }
+
+h1 {
+	font-size: 2em;
+	text-align: left;
+	font-weight: bold;
+	letter-spacing: .1em;
+}
+
+h2 {
+	font-size: 1em;
+	font-weight: bold;
+	letter-spacing: .1em;
+}
+
 p, ul, ol, dd, pre {
     margin-bottom: 2em;
 }
@@ -157,65 +171,8 @@ small {
     font-size: 0.8em;
 }
 
-
-/* =Header
+/* =Error
 -------------------------------------------------------------- */
-
-#branding {
-	background-color: #ffffff;
-    color: #666666;
-    padding: 1em;
-    position: relative;
-}
-h1 {
-    color: #666666;
-    font-size: 2em;
-    font-weight: bold;
-    float: left;
-}
-h2 {
-	color: #c0c0c0;
-	font-size: 1em;	
-	line-height: 1.5em;
-}
-p#message {
-    float: right;
-    width: 50%;
-    font-size: 0.9em;
-    line-height: 1.2em;
-    margin: 1em 0 0;
-}
-
-
-/* =Footer
--------------------------------------------------------------- */
-
-#footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #ffffff;
-    color: #333333;
-    font-size: 0.7em;
-    width: 100%;
-}
-
-#footer span {
-	float: left;
-	line-height: 1.25em;
-	font-size: 0.75em;
-    padding: 0.5em;
-}
-
-#footer #lastupdated {
-	float: right;	
-}
-
-
-/* =The Content
--------------------------------------------------------------- */
-
 #error {
 	font-size: 1.25em;
 	background-color: #eaff7f;
@@ -227,6 +184,144 @@ p#message {
 	padding: 1.1em;
 }
 
+/* =Pager
+-------------------------------------------------------------- */
+#pager {
+    position: fixed;
+	bottom: 80px;
+    height: 20px;
+	line-height: 20px;
+    width: 100%;
+    background: rgb(40,40,40);
+	text-align:center;
+}
+
+.dot {
+    display: inline-block;
+    width: 12px;
+	height: 12px;
+    border-radius: 6px;
+    background-color: rgb(90,90,90);
+	margin: 4px 15px 0px 15px;
+}
+
+/* =Footer
+-------------------------------------------------------------- */
+#footer {
+    position: fixed;
+    bottom: 0;
+	height: 80px;
+	width: 100%;
+    left: 0;
+    right: 0;
+    background: rgb(0,0,0);
+	font-size: 1em;
+	color: white;
+}
+
+#footer span {
+	float: left;
+	line-height: 1.25em;
+	font-size: 0.75em;
+    padding: 0.5em;
+}
+
+#branding {
+	background-image: url('img/bustime-56.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	height: 100%;
+	width: 320px;
+	float: left;
+	margin-left: 10px;
+	display: inline-block;
+}
+
+#instructions {
+	display: inline-block;
+	width: 60%;
+	height: 100%;
+	text-align: center;
+}
+
+#instructions ul {
+	display: inline-block;
+	list-style-type: none;
+	text-align: center;
+	width: 100%;
+}
+
+#instructions li {
+	display: inline-block;
+	position: relative;
+	bottom: 15;
+}
+
+.instructions_number {
+	font-weight: bold;
+	font-size: 3.0em;
+	margin-right: 0.2em;
+}
+
+#text1 {
+	background-image: url('img/Text_Instructions.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	height: 100%;
+	width: 307px;
+	position: relative;
+	top: 0;
+	margin-right: 15px;
+	margin-left: 15px;
+}
+
+.fixed_width_instruction {
+	width: 130px;
+	line-height: 1.3em;
+	text-align: left;
+	padding-right: 10px;
+}
+
+#clock {
+	float: right;
+	text-align: center;
+	margin-right: 20px;
+	margin-top: 8px;
+	display: inline-block;
+}
+
+#clock #time {
+	font-size: 1.5em;
+	line-height: 1.5em;
+}
+
+#clock #day {
+	font-size: 0.8em;
+	line-height: 0.8em;
+}
+
+.bubble p {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+/*  width: 100%;*/
+}
+
+.sms {
+	background: rgb(100,100,100);
+	width: 100;
+	height: 66px;
+	float: left;
+	position: relative;
+	top: 7;
+	margin: 0 5px 0 5px;
+	border-radius: 5px;
+	
+}
+
+
+/* =The Content
+-------------------------------------------------------------- */
 table {
     margin: 0;
     text-align: left;
@@ -234,9 +329,6 @@ table {
 }
 caption {
     text-align: left;
-}
-tr.last td {
-	border-bottom: 10px solid #999;
 }
 th {
     vertical-align: middle;
@@ -247,31 +339,24 @@ th {
     width: 60%;
     border-bottom: 2px solid #999;
 }
-th.instructions {
-	width: 40%;
-	font-style: italic;
-	font-weight: normal;
-	font-size: 0.8em;
-    line-height: 1.2em;
-    color: #808080;
-}
-th.qr {
-	width: 10%;
-	text-align: right;	
-}
-th.qr img {
-	float: right;
-	width: 80px;
-	height: 80px;
-}
 td {
     vertical-align: middle;
-    background-color: #eee;
     padding: 0.9em 1.5em;
     font-size: 1.0em;
     font-weight: bold;
     line-height: 1.1em;
-    border-top: 2px solid #999;
+}
+
+tr.even {
+	background-color: #eeeeee;
+}
+
+tr.odd {
+	background-color: #E0E0E0;
+}
+
+tr {
+	border: 1px solid rgb(150,150,150);
 }
 span.bus-id {
     font-size: 0.8em;
@@ -291,15 +376,179 @@ td.distance {
 }
 p.alert {
 	display: block;
-    color: #cc0000;
-    font-size: 0.7em;
+    color: white;
+    font-size: 1.0em;
     font-weight: normal;
     position: relative; 
     line-height: 1.2em;
 }
 
+/* New stuff*/
+#content {
+	position:fixed;
+	top: 0px;
+    width: 100%;
+    bottom: 100px;
+	margin-bottom: 7px;
+}
+
+.slide {
+	position:relative;
+	width: 100%;
+	height: 100%;
+	background: rgb(0,0,0);
+	overflow: hidden;
+}
+
+.header {
+	position: relative;
+	top: 0;
+	width: 100%;
+	height: 90px;
+	background: rgb(0,0,0);
+	line-height: 90px;
+}
+
+div.name {
+	float: left;
+	padding-left: 30px;
+	color: white;
+	font-weight: bold;
+}
+
+div.stop-id {
+	float: right;
+	padding-right: 30px;
+	color: white;
+}
+
+.arrivals {
+	position: absolute;
+	width: 70%;
+	float: left;
+	top: 90;
+	bottom: 0;
+	background: rgb(50,50,50);
+}
+
+.alerts {
+	position: absolute;
+	width: 30%;
+	float: right;
+	top: 90;
+	bottom: 0;
+	right: 0;
+	background: rgb(0,0,0);
+}
+
+.alerts_header {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 40px;
+	line-height: 40px;
+	padding-left: 10px;
+	margin-left: 7px;
+	background: rgb(40,40,40);
+	color: white;
+	text-align: center;
+}
+
+.scroller {
+	position: absolute;
+	top: 40;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 10px;
+	margin-left: 7px;
+	background: rgb(50,50,50);
+	color: white;
+}
+
+.alerts_body {
+	position: absolute;
+	top: 40;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 10px;
+	margin-left: 7px;
+	background: rgb(50,50,50);
+	color: white;
+}
+
+.alerts_body .simply-scroll-clip {
+	width: 100%;
+	height: 100%;
+}
+
+.alert {
+	float:left;
+	width: 100%;
+	height: auto;
+	color: white;
+}
+
+.alert_summary {
+	font-weight: bold;
+	padding-bottom: 20px;
+}
+
+.sign_wrapper {
+	display: inline-block;
+}
+
+.sign {
+	background-color: white;
+	color: black;
+	font-weight: bold;
+	padding: 0 0.3em 0 0.3em;
+	margin: 0 0.2em 0.4em 0.2em;
+	text-align: center;
+}
+
+.alert_sign {
+	border-left-width: 10px;
+	display: inline-block;
+}
+
+.arrival_sign {
+	border-left-width: 15px;
+	font-size: 2em;
+	border-right: 2px solid rgb(150,150,150);
+	margin: 0;
+	line-height: 1em;
+	text-align: center;
+}
+
+.loading_overlay {
+    background: rgba(0,0,0,.5) url('../Images/ajax-loader-bright.gif') no-repeat;
+	width:100%;
+	height:100%;
+	position:fixed;
+	top:0;
+	left:0;
+	z-index:999;
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    filter:alpha(opacity=70);
+    -moz-opacity:0.7;
+    -khtml-opacity: 0.7;
+    opacity: 0.7;
+    z-index: 10000;
+}
+
 /* landscape configurations */
-body.landscape.sizeTIS, 
+/*body.landscape.sizeTIS, 
 body.landscape.sizeTIS input, 
 body.landscape.sizeTIS textarea { font-size: 2.0em; }
 
@@ -313,10 +562,10 @@ body.landscape.size1000 textarea { font-size: 1.60em; }
 
 body.landscape.size1200, 
 body.landscape.size1200 input, 
-body.landscape.size1200 textarea { font-size: 2.2em; }
+body.landscape.size1200 textarea { font-size: 2.2em; }*/
 
 /* portrait configurations */
-body.portrait.size1000, 
+/*body.portrait.size1000, 
 body.portrait.size1000 input, 
 body.portrait.size1000 textarea { font-size: 0.9em; }
 
@@ -330,4 +579,4 @@ body.portrait.size1600 textarea { font-size: 1.5em; }
 
 body.portrait.size1900, 
 body.portrait.size1900 input, 
-body.portrait.size1900 textarea { font-size: 1.7em; }
+body.portrait.size1900 textarea { font-size: 1.7em; }*/

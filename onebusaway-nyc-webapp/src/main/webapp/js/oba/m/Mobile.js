@@ -12,7 +12,17 @@ OBA.Mobile = (function() {
 	
 	function addAutocompleteBehavior() {
 		jQuery("#bustimesearch").autocomplete({
-			source: "../" + OBA.Config.autocompleteUrl
+			source: "../" + OBA.Config.autocompleteUrl,
+			select: function(event, ui) {
+		        if(ui.item){
+		        	jQuery('#bustimesearch').val(ui.item.value);
+		        }
+		        jQuery('#bustime_search_form').submit();
+		    }
+		});
+		jQuery('#bustime_search_form').submit(function() {
+			jQuery("#bustimesearch").autocomplete("close");
+			return true;
 		});
 	}
 	

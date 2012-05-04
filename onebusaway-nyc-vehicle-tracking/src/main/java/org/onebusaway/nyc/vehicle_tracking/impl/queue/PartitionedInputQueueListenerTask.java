@@ -27,6 +27,10 @@ public class PartitionedInputQueueListenerTask extends InputQueueListenerTask
 
   private VehicleAssignmentService _vehicleAssignmentService;
 
+  public String getQueueDisplayName() {
+      return "PartitionedInputQueueListenerTask";
+  }
+  
   @Autowired
   public void setVehicleAssignmentService(
       VehicleAssignmentService vehicleAssignmentService) {

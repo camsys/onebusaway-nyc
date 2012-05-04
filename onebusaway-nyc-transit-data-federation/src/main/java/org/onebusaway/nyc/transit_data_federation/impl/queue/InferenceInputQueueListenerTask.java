@@ -31,6 +31,10 @@ public class InferenceInputQueueListenerTask extends InferenceQueueListenerTask 
   @Autowired
   private VehicleTrackingManagementService _vehicleTrackingManagementService;
 
+  public String getQueueDisplayName() {
+    return "InferenceInputQueueListenerTask";
+  }
+  
   @Override
   protected void processResult(NycQueuedInferredLocationBean inferredResult, String contents) {
     VehicleLocationRecord vlr = new VehicleLocationRecord();

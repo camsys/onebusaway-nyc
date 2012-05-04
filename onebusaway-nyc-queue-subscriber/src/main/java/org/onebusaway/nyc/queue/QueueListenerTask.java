@@ -50,6 +50,11 @@ public abstract class QueueListenerTask {
 	public abstract String getQueueHost();
 
 	public abstract String getQueueName();
+	
+	/**
+	 * Return the name of the queue for display of statistics in logs.
+	 */
+	public abstract String getQueueDisplayName();
 
 	public abstract Integer getQueuePort();
 
@@ -98,7 +103,7 @@ public abstract class QueueListenerTask {
 
 				if (processedCount > _countInterval) {
 				  long timeInterval = (new Date().getTime() - markTimestamp.getTime()); 
-					_log.info(getQueueName()
+					_log.info(getQueueDisplayName()
 							+ " input queue: processed " + _countInterval + " messages in "
 							+ (timeInterval/1000) 
 							+ " seconds. (" + (1000.0 * processedCount/timeInterval) 

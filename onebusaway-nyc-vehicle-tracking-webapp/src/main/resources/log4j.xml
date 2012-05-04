@@ -37,7 +37,7 @@
 
 	<root>
 		<priority value="info" />
-		<appender-ref ref="ROLL" />
+		<appender-ref ref="${log4j.appender}" />
 	</root>
 
 	<!-- 0 or 1 categoryFactory elements -->

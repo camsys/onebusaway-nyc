@@ -36,12 +36,28 @@ OBA.Sidebar = function() {
 	var searchRequest = null;
 	
 	function addSearchBehavior() {
+		
+		// Get our form and text input so we can customize them
 		var searchForm = jQuery("#searchbar form");
+		var searchInput = jQuery("#searchbar form input[type=text]");
+		
+		// add autocomplete behavior
+		searchInput.autocomplete({
+			source: OBA.Config.autocompleteUrl,
+			select: function(event, ui) {
+		        if(ui.item){
+		        	// Make sure the input has the value selected from the suggestions and initiate the search
+		        	searchInput.val(ui.item.value);
+		        	doSearch(searchInput.val());
+		        }
+		    }
+		});
 		
 		searchForm.submit(function(e) {
 			e.preventDefault();
 			
-			var searchInput = jQuery("#searchbar form input[type=text]");
+			// Close the autocomplete list when the form is submitted.
+			searchInput.autocomplete("close");
 
 			// if search hasn't changed, force the search again to make panning, etc. happen
 			if(window.location.hash !== "#" + searchInput.val()) {
@@ -51,11 +67,6 @@ OBA.Sidebar = function() {
 			}
 			
 			(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
-		});
-		
-		// add autocomplete behavior
-		jQuery("#bustimesearch").autocomplete({
-			source: OBA.Config.autocompleteUrl
 		});
 	}
 
@@ -383,6 +394,10 @@ OBA.Sidebar = function() {
 			searchRequest.abort();
 		}		
 		searchRequest = jQuery.getJSON(OBA.Config.searchUrl + "?callback=?", { q: q }, function(json) { 
+			
+			// Be sure the autocomplete list is closed
+			jQuery("#searchbar form input[type=text]").autocomplete("close");
+			
 			loading.hide();
 
 			var resultType = json.searchResults.resultType;

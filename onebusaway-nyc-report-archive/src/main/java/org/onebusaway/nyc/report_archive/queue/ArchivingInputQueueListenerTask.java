@@ -37,7 +37,19 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   public void setBatchSize(String batchSizeStr) {
     _batchSize = Integer.decode(batchSizeStr);
   }
+  
+  private long _lastCommitTime = System.currentTimeMillis();
+  private long _commitTimeout = 1 * 1000; // 60 seconds by default
+  
+  /**
+   * Time in milliseconds to give up waiting for data and commit current batch.
+   * @param commitTimeout number of milliseconds to wait
+   */
+  public void setCommitTimeout(String commitTimeout) {
+    _commitTimeout = Integer.decode(commitTimeout);
+  }
 
+  
   @Autowired
   private CcLocationReportDao _dao;
 
@@ -111,6 +123,10 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
         "inference-engine.inputQueueName", null);
   }
 
+  public String getQueueDisplayName() {
+    return "archive_realtime";
+  }
+
   @Override
   public Integer getQueuePort() {
     return _configurationService.getConfigurationValueAsInteger(
@@ -140,12 +156,14 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
       if (record != null) {
         _batchCount++;
         reports.add(record);
-        if (_batchCount == _batchSize) {
+        long batchWindow = System.currentTimeMillis() - _lastCommitTime; 
+        if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
           try { 
             _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
           } finally {
             reports.clear();
             _batchCount = 0;
+           	_lastCommitTime = System.currentTimeMillis();
           }
         }
 

@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
+import org.onebusaway.nyc.presentation.impl.search.AbstractSearchResultFactoryImpl;
 import org.onebusaway.nyc.presentation.model.SearchResult;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
-import org.onebusaway.nyc.presentation.service.search.SearchResultFactory;
 import org.onebusaway.nyc.sms.actions.model.GeocodeResult;
 import org.onebusaway.nyc.sms.actions.model.RouteAtStop;
 import org.onebusaway.nyc.sms.actions.model.RouteDirection;
@@ -48,7 +48,7 @@ import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
 import uk.org.siri.siri.VehicleActivityStructure;
 
-public class SearchResultFactoryImpl implements SearchResultFactory {
+public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
   private ConfigurationService _configurationService;
 
@@ -96,16 +96,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
         
         // service alerts for this route + direction
         List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-
         List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-        for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
-          for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
-            if(description.getValue() != null) {
-              description.setValue(description.getValue());
-              serviceAlertDescriptions.add(description);
-            }
-          }
-        }
+        populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
 
         directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
       }
@@ -152,16 +144,8 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
 
           // service alerts for this route + direction
           List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
-
           List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-          for(ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
-            for(NaturalLanguageStringBean description : serviceAlertBean.getDescriptions()) {
-              if(description.getValue() != null) {
-                description.setValue(description.getValue());
-                serviceAlertDescriptions.add(description);
-              }
-            }
-          }
+          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
           
           directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
         }

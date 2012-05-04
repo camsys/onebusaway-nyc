@@ -26,6 +26,10 @@ public class SingleVehicleInputQueueListenerTask extends InputQueueListenerTask
     _vehicleLocationService = vehicleLocationService;
   }
 
+  public String getQueueDisplayName() {
+      return "SingleVehicleInputQueueListenerTask";
+  }
+
   @Override
   public boolean processMessage(String address, String contents) {
     final RealtimeEnvelope envelope = deserializeMessage(contents);
