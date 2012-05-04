@@ -39,7 +39,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   }
   
   private long _lastCommitTime = System.currentTimeMillis();
-  private long _commitTimeout = 60 * 1000; // 60 seconds by default
+  private long _commitTimeout = 1 * 1000; // 60 seconds by default
   
   /**
    * Time in milliseconds to give up waiting for data and commit current batch.
