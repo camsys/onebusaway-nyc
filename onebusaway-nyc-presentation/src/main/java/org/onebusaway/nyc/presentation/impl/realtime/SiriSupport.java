@@ -52,6 +52,7 @@ import uk.org.siri.siri.VehicleRefStructure;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -129,12 +130,15 @@ public final class SiriSupport {
     LocationStructure location = new LocationStructure();
 
     // if vehicle is detected to be on detour, use actual lat/lon, not snapped location.
+    DecimalFormat df = new DecimalFormat();
+    df.setMaximumFractionDigits(6);
+    
     if (presentationService.isOnDetour(tripDetails.getStatus())) {
-      location.setLatitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLat()));
-      location.setLongitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLon()));
+      location.setLatitude(new BigDecimal(df.format(tripDetails.getStatus().getLastKnownLocation().getLat())));
+      location.setLongitude(new BigDecimal(df.format(tripDetails.getStatus().getLastKnownLocation().getLon())));
     } else {
-      location.setLatitude(new BigDecimal(tripDetails.getStatus().getLocation().getLat()));
-      location.setLongitude(new BigDecimal(tripDetails.getStatus().getLocation().getLon()));
+      location.setLatitude(new BigDecimal(df.format(tripDetails.getStatus().getLocation().getLat())));
+      location.setLongitude(new BigDecimal(df.format(tripDetails.getStatus().getLocation().getLon())));
     }
 
     monitoredVehicleJourney.setVehicleLocation(location);
@@ -312,9 +316,13 @@ public final class SiriSupport {
     ExtensionsStructure distancesExtensions = new ExtensionsStructure();
     SiriDistanceExtension distances = new SiriDistanceExtension();
 
+    DecimalFormat df = new DecimalFormat();
+    df.setMaximumFractionDigits(2);
+    df.setGroupingUsed(false);
+    
     distances.setStopsFromCall(index);
-    distances.setCallDistanceAlongRoute(stopTime.getDistanceAlongTrip());
-    distances.setDistanceFromCall(stopTime.getDistanceAlongTrip() - distance);
+    distances.setCallDistanceAlongRoute(Double.valueOf(df.format(stopTime.getDistanceAlongTrip())));
+    distances.setDistanceFromCall(Double.valueOf(df.format(stopTime.getDistanceAlongTrip() - distance)));
     distances.setPresentableDistance(presentationService.getPresentableDistance(distances));
 
     wrapper.setDistances(distances);
