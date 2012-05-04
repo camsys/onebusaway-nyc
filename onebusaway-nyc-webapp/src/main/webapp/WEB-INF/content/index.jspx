@@ -179,6 +179,13 @@
 		 </ul>
 	   </div>
 	   
+		<s:url var="url" namespace="/wiki/Help" action="Routes"/>
+		<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
+	   
+		<div id="cant-find">
+			<wiki:wiki namespace="Help" name="CantFindRoute" />
+		</div>
+	   
     </div>
 
 	<div id="map"></div>

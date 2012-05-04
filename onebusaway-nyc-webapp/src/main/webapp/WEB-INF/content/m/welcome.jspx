@@ -74,4 +74,15 @@
 		<li>(Add route for best results)</li>
 	</ul>
 </div>
+<c:choose>
+	<c:when test="${!queryIsEmpty}">
+		<div id="cant-find">
+			<wiki:wiki namespace="HelpMobile" name="CantFindRoute" />
+		</div>
+	</c:when>
+	<c:otherwise>
+		<s:url var="url" namespace="/m/wiki/Help" action="Routes"/>
+		<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
+	</c:otherwise>
+</c:choose>
 </html>
