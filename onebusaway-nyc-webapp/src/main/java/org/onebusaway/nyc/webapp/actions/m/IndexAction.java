@@ -62,6 +62,8 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private SearchResultCollection _results = new SearchResultCollection();
   
+  private boolean _resultsOriginatedFromGeocode = false;
+  
   private String _q = null;
   
   private CoordinatePoint _location = null;
@@ -102,7 +104,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       // do a bit of a hack with location matches--since we have no map to show locations on,
       // find things that are actionable near/within/etc. the result
       if(_results.getMatches().size() == 1 && _results.getResultType().equals("GeocodeResult")) {
-        GeocodeResult result = (GeocodeResult)_results.getMatches().get(0);
+    	  
+    	  this._resultsOriginatedFromGeocode = true;
+    	  GeocodeResult result = (GeocodeResult)_results.getMatches().get(0);
                 
         // if we got a region back, list routes that pass through it
         if(result.getIsRegion()) {
@@ -245,6 +249,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   
   public SearchResultCollection getResults() {
     return _results;
+  }
+  
+  public boolean getResultsOriginatedFromGeocode() {
+	  return _resultsOriginatedFromGeocode;
   }
   
   public String getTitle() {

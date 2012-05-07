@@ -28,7 +28,9 @@ OBA.Sidebar = function() {
 		suggestions = jQuery("#suggestions"),
 		noResults = jQuery("#no-results"),
 		welcome = jQuery("#welcome"),
-		loading = jQuery("#loading");
+		loading = jQuery("#loading"),
+		availableRoutes = jQuery("#available-routes"),
+		cantFind = jQuery("#cant-find");
 
 	var routeMap = null;
 	var wizard = null;
@@ -96,6 +98,7 @@ OBA.Sidebar = function() {
 
 	// show user list of addresses
 	function disambiguateLocations(locations) {	
+		
 		suggestions.find("h2")
 			.text("Did you mean?");
 
@@ -151,6 +154,7 @@ OBA.Sidebar = function() {
 		}
 
 		var loading = destinationContainer.find(".loading");
+		
 		loading.show();
 
 		// multiple of these can be out at once without being inconsistent UI-wise.
@@ -196,6 +200,7 @@ OBA.Sidebar = function() {
 	}
 	
 	function addRoutesToLegend(routeResults, title) {
+		
 		if(typeof title !== "undefined" && title !== null) {
 			matches.find("h2").text(title);
 		}
@@ -378,6 +383,7 @@ OBA.Sidebar = function() {
 		}
 
 		welcome.show();
+		cantFind.show();
 
 		(wizard && wizard.enabled()) ? results.trigger('no_result') : null;
 	}
@@ -388,7 +394,10 @@ OBA.Sidebar = function() {
 
 		(wizard && wizard.enabled()) ? results.trigger('search_launched') : null;
 		
-		loading.show();	
+		cantFind.hide();
+		availableRoutes.hide();
+		
+		loading.show();
 		
 		if(searchRequest !== null) {
 			searchRequest.abort();

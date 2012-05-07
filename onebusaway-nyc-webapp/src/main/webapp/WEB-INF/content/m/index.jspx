@@ -48,7 +48,7 @@
 
 <body>
 	<div id="searchPanel">
-		<s:form id="bustime_search_form" namespace="/m" action="index" method="GET">
+		<s:form namespace="/m" action="index" method="GET">
 			<input type="text" id="bustimesearch" name="q" class="q" value="${q}"/>
 			<input type="submit" class="s" value="Find" id="submitButton"/>
 			
@@ -87,7 +87,7 @@
 				<s:elseif test="results.resultType.equals('GeocodeResult')">
 						<c:import url="geocode-result.jspx"/>
 				</s:elseif>
-			</s:if>	
+			</s:if>
 		</div>
 
 		<div id="refresh">

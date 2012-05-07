@@ -67,14 +67,16 @@
 
 #content #no-results,
 #content #suggestions,
-#content #matches {
+#content #matches,
+#content #cant-find {
 	width: 280px;
 	display: none;
 	font-size: 16px;
 	clear: both;
 }
 
-#content #welcome {
+#content #welcome,
+#content #available-routes {
 	font-size: 16px;
 }
 
@@ -85,9 +87,15 @@
 	font-weight: bold;
 	color: #818181;	
 	font-size: 1em;
-
 	padding-bottom: 2px;
 	padding-top: 12px;
+}
+
+#content #cant-find h2 {
+	font-weight: bold;
+	font-size: 1em;
+	padding-bottom: 10px;
+	padding-top: 20px;
 }
 
 #content #welcome ul {
@@ -97,6 +105,10 @@
 #content #welcome ul li {
 	line-height: 150%;	
 	font-size: 1em;
+}
+
+#content #available-routes {
+	padding-top: 15px;
 }
 
 /* result types */
@@ -114,6 +126,7 @@
 	margin-top: .5em;
 	background-position: 0 .3em;
 	background-repeat: no-repeat;
+	min-height: 40px;
 }
 
 #content #matches ul li.legendItem {

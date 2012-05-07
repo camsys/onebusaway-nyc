@@ -22,10 +22,20 @@
 <jsp:output omit-xml-declaration="yes"/>
 
 <c:if test="${!queryIsEmpty}">
-	<h3 class="noMatches">
-		<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
-		No matches. <a href="${url}">Search Tips</a>
-	</h3>
+	<c:choose>
+		<c:when test="${resultsOriginatedFromGeocode}">
+			<h3 class="noMatches">
+				<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
+				No stops nearby. <a href="${url}">Search Tips</a>
+			</h3>
+		</c:when>
+		<c:otherwise>
+			<h3 class="noMatches">
+				<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
+				No matches. <a href="${url}">Search Tips</a>
+			</h3>
+		</c:otherwise>
+	</c:choose>
 </c:if>
 
 <div class="welcome">
@@ -74,4 +84,15 @@
 		<li>(Add route for best results)</li>
 	</ul>
 </div>
+<c:choose>
+	<c:when test="${!queryIsEmpty}">
+		<div id="cant-find">
+			<wiki:wiki namespace="HelpMobile" name="CantFindRoute" />
+		</div>
+	</c:when>
+	<c:otherwise>
+		<s:url var="url" namespace="/m/wiki/Help" action="Routes"/>
+		<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
+	</c:otherwise>
+</c:choose>
 </html>

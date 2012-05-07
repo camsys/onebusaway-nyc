@@ -11,17 +11,23 @@ OBA.Mobile = (function() {
 	var lastLongitude = null; 
 	
 	function addAutocompleteBehavior() {
-		jQuery("#bustimesearch").autocomplete({
+		
+		var searchForm = jQuery("#searchPanel form");
+		var searchInput = jQuery("#searchPanel form input[type=text]");
+		
+		searchInput.autocomplete({
 			source: "../" + OBA.Config.autocompleteUrl,
 			select: function(event, ui) {
 		        if(ui.item){
-		        	jQuery('#bustimesearch').val(ui.item.value);
+		        	searchInput.val(ui.item.value);
+		        	searchForm.submit();
 		        }
-		        jQuery('#bustime_search_form').submit();
 		    }
 		});
-		jQuery('#bustime_search_form').submit(function() {
-			jQuery("#bustimesearch").autocomplete("close");
+		
+		// Close the autocomplete list when the form is submitted
+		searchForm.submit(function() {
+			searchInput.autocomplete("close");
 			return true;
 		});
 	}
