@@ -465,7 +465,7 @@ public class StifTask implements Runnable {
 
     csvLogger.log("matched_trips_gtfs_stif.csv", blockId, tripId,
         trip.getDsc(), trip.firstStop, trip.firstStopTime, trip.lastStop,
-        trip.lastStopTime, trip.getRunIdWithDepot(), trip.reliefRunId, trip.recoveryTime,
+        trip.lastStopTime, trip.runId, trip.reliefRunId, trip.recoveryTime,
         trip.firstTripInSequence, trip.lastTripInSequence,
         trip.getSignCodeRoute(), routeId);
   }
