@@ -76,6 +76,18 @@ public class NycQueuedInferredLocationDaoImpl implements
 	@Override
 	public List<CcAndInferredLocationRecord> getAllLastKnownRecords() {
 
+		String hql = "select vehicleRecord from "
+				+ "CcAndInferredLocationReport vehicleRecord, "
+				+ "order by vehicleRecord.vehicleId";
+
+		List<CcAndInferredLocationRecord> list = _template.find(hql);
+		// our join will return a list of object arrays now, in the order
+		// we selected above
+		return list;
+	}
+
+	public List<CcAndInferredLocationRecord> getAllLastKnownRecordsViaMap() {
+
 		List<CcAndInferredLocationRecord> firstArchivedRecord = new ArrayList<CcAndInferredLocationRecord>();
 		/*
 		 * here we do a join for real and inferred data based on vehicle id and
@@ -103,8 +115,21 @@ public class NycQueuedInferredLocationDaoImpl implements
 		return firstArchivedRecord;
 	}
 
-	@Override
+		@Override
 	public CcAndInferredLocationRecord getLastKnownRecordForVehicle(
+			Integer vehicleId) throws Exception {
+
+		CcAndInferredLocationRecord rec = null;
+
+		if (vehicleId == null) {
+			return null;
+		}
+
+		CcAndInferredLocationRecord record = _template.get(CcAndInferredLocationRecord.class, vehicleId);
+		return record;
+	}
+	
+	public CcAndInferredLocationRecord getLastKnownRecordForVehicleViaMap(
 			Integer vehicleId) throws Exception {
 
 		CcAndInferredLocationRecord rec = null;
