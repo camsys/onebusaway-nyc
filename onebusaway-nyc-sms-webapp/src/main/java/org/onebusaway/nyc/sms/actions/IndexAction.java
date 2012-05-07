@@ -235,7 +235,7 @@ public class IndexAction extends SessionedIndexAction {
         textToAdd = textToAdd.substring(0, MAX_SMS_CHARACTER_COUNT - footer.length() - 5) + "...\n\n";
       }
       
-      if(body.length() + footer.length() + textToAdd.length() < MAX_SMS_CHARACTER_COUNT) {
+      if(body.length() + footer.length() + textToAdd.length() <= MAX_SMS_CHARACTER_COUNT) {
         body += textToAdd;
       } else {
         break;
