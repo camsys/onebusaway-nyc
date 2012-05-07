@@ -4,9 +4,18 @@ import org.onebusaway.presentation.impl.NextActionSupport;
 
 public class IndexAction extends NextActionSupport {
 
+	
+	
 	/**
-	 * Generated
+	 * 
 	 */
-	private static final long serialVersionUID = 3264168200719504906L;
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public String execute() throws Exception {
+		return SUCCESS;
+	}
+	
+	
 
 }

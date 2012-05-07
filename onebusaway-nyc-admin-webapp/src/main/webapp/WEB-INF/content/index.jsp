@@ -15,10 +15,19 @@
     the License.
 
 --%>
-<html>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<html xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+<jsp:directive.page contentType="text/html" />
 <body>
-<h2>onebusaway-nyc-admin-webapp</h2>
+<h2>Welcome Admin</h2>
 
+<ul>
+	<li>
+	<s:url var="url" action="User"/>
+	<s:a href="%{url}">Create User</s:a>
+	</li>
+</ul>
 
 </body>
 </html>
