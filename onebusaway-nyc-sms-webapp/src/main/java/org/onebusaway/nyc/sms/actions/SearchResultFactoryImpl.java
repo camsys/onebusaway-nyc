@@ -50,6 +50,8 @@ import uk.org.siri.siri.VehicleActivityStructure;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
+  private static final boolean NO_HTMLIZE_NEWLINES = false;
+
   private ConfigurationService _configurationService;
 
   private RealtimeService _realtimeService;
@@ -97,7 +99,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
         // service alerts for this route + direction
         List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
         List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-        populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
+        populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, NO_HTMLIZE_NEWLINES);
 
         directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
       }
@@ -145,7 +147,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
           // service alerts for this route + direction
           List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
           List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans);
+          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, NO_HTMLIZE_NEWLINES);
           
           directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
         }

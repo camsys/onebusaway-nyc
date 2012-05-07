@@ -15,34 +15,48 @@ public abstract class AbstractSearchResultFactoryImpl implements SearchResultFac
   }
 
   protected void populateServiceAlerts(Set<String> serviceAlertDescriptions, List<ServiceAlertBean> serviceAlertBeans) {
+    populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, true);
+  }
+
+  protected void populateServiceAlerts(Set<String> serviceAlertDescriptions,
+      List<ServiceAlertBean> serviceAlertBeans, boolean htmlizeNewlines) {
+    if (serviceAlertBeans == null)
+      return;
     for (ServiceAlertBean serviceAlertBean : serviceAlertBeans) {
       boolean descriptionsAdded = false;
       descriptionsAdded = setDescription(serviceAlertDescriptions,
-          serviceAlertBean.getDescriptions())
+          serviceAlertBean.getDescriptions(), htmlizeNewlines)
           || setDescription(serviceAlertDescriptions,
-              serviceAlertBean.getSummaries());
+              serviceAlertBean.getSummaries(), htmlizeNewlines);
       if (!descriptionsAdded) {
         serviceAlertDescriptions.add("(no description)");
       }
     }
   }
 
-  // TODO This a problem, assumes English
-  protected void populateServiceAlerts(List<NaturalLanguageStringBean> serviceAlertDescriptions, List<ServiceAlertBean> serviceAlertBeans) {
+  protected void populateServiceAlerts(
+      List<NaturalLanguageStringBean> serviceAlertDescriptions,
+      List<ServiceAlertBean> serviceAlertBeans, boolean htmlizeNewlines) {
     Set<String> d = new HashSet<String>();
-    populateServiceAlerts(d , serviceAlertBeans);
+    populateServiceAlerts(d , serviceAlertBeans, htmlizeNewlines);
     for (String s: d) {
       serviceAlertDescriptions.add(new NaturalLanguageStringBean(s, "EN"));
     }
   }
 
-  private boolean setDescription(Set<String> serviceAlertDescriptions, List<NaturalLanguageStringBean> descriptions) {
+
+  // TODO This a problem, assumes English
+  protected void populateServiceAlerts(List<NaturalLanguageStringBean> serviceAlertDescriptions, List<ServiceAlertBean> serviceAlertBeans) {
+    populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, true);
+  }
+
+  private boolean setDescription(Set<String> serviceAlertDescriptions, List<NaturalLanguageStringBean> descriptions, boolean htmlizeNewlines) {
     boolean descriptionsAdded = false;
     if (descriptions != null) {
       for (NaturalLanguageStringBean description : descriptions) {
         if (description.getValue() != null) {
-          serviceAlertDescriptions.add(description.getValue().replace("\n",
-              "<br/>"));
+          serviceAlertDescriptions.add((htmlizeNewlines ? description.getValue().replace("\n",
+              "<br/>") : description.getValue()));
           descriptionsAdded = true;
         }
       }
