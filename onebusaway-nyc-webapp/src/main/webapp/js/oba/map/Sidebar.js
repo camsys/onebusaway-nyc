@@ -527,8 +527,17 @@ OBA.Sidebar = function() {
 					serviceAlertsList.empty();
 
 					jQuery.each(serviceAlerts, function(_, serviceAlert) {
-	                    var description = serviceAlert.Description.replace(/\n/g, "<br/>");
-						serviceAlertsList.append(jQuery("<li></li>").html(description));
+						var text = null;
+						
+						if(typeof serviceAlert.Description !== 'undefined') {
+							text = serviceAlert.Description;
+						} else if(typeof serviceAlert.Summary !== 'undefined') {
+							text = serviceAlert.Summary;
+						}
+						
+						if(text !== null) {
+							serviceAlertsList.append(jQuery("<li></li>").html(text.replace(/\n/g, "<br/>")));
+						}
 					});
 				}
 			});

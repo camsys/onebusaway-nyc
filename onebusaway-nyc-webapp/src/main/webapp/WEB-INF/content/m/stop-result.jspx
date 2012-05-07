@@ -109,20 +109,6 @@
 			</s:if>
 		</s:else>
 		
-		<s:if test="%{serviceAlerts.size&gt;0}">
-			<div class="alerts">
-				<p>
-					<strong>Service Change For Route:</strong>
-				</p>
-				<ul class="alerts">
-					<s:iterator value="serviceAlerts">
-						<li><s:property value="value" escape="false"/></li>
-					</s:iterator>
-				</ul>
-			</div>
-		</s:if>
-
-
 		<s:if test="%{uniqueServiceAlertsForResults.size&gt;0}">
 			<div class="alerts">
 				<p>
