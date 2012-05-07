@@ -161,12 +161,15 @@ public final class SiriSupport {
         BlockInstanceBean blockInstance = 
           nycTransitDataService.getBlockInstance(tripDetails.getTrip().getBlockId(), tripDetails.getServiceDate());
 
+        double cumulativeBlockDistance = 0;
         for(BlockTripBean blockTrip : blockInstance.getBlockConfiguration().getTrips()) {
           if(blockTrip.getTrip().getId().equals(nextTrip.getId())) {
-              // beginning of the next trip bus will serve
-        	  offset = blockTrip.getDistanceAlongBlock();
+        	  // block distance for this trip only
+        	  offset = blockTrip.getDistanceAlongBlock() - cumulativeBlockDistance;
         	  break;
           }
+          
+          cumulativeBlockDistance = blockTrip.getDistanceAlongBlock();
         }      
 
         // add stops from next trip in block
