@@ -42,13 +42,8 @@
              <result name="AlreadySetup" type="redirectAction">
                 <param name="namespace">/</param>
                 <param name="actionName">index</param>
-                
             </result>
         </global-results>
-        
-        <action name="User">
-        	<result>/WEB-INF/content/credentials.jspx</result>
-  		</action>
   		
     </package>
 </struts>

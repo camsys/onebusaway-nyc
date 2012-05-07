@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author dev
  *
  */
-public class RegisterAction extends NextActionSupport {
+public class RegisterUserAction extends NextActionSupport {
 
 	
 	/**
