@@ -32,32 +32,24 @@ import com.google.common.collect.Ordering;
 
 import org.apache.commons.math.util.FastMath;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.annotation.Resource;
+
 /**
  * Core particle filter implementation.<br>
- * Note: This filter has an experimental multi-threading option that is enabled
- * by setting _threads > 1.
  * 
  * @author bwillard, bdferris
  * 
  * @param <OBS>
  */
-public class ParticleFilter<OBS> {
+public class ParticleFilter<OBS> implements Serializable {
 
-  public class SensorModelParticleResult {
-    public Particle _particle;
-    public SensorModelResult _result;
-
-    SensorModelParticleResult(Particle particle, SensorModelResult result) {
-      _particle = particle;
-      _result = result;
-    }
-
-  }
+  private static final long serialVersionUID = -6762252100541519673L;
 
   final private static double _resampleThreshold = 0.75;
 
@@ -89,15 +81,15 @@ public class ParticleFilter<OBS> {
 
   volatile private Particle _mostLikelyParticle;
 
-  private MotionModel<OBS> _motionModel = null;
+  transient private MotionModel<OBS> _motionModel = null;
 
-  private ParticleFactory<OBS> _particleFactory;
+  transient private ParticleFactory<OBS> _particleFactory;
 
   private Multiset<Particle> _particles = HashMultiset.create(200);
 
   private boolean _seenFirst;
-
-  private SensorModel<OBS> _sensorModel;
+  
+  transient private SensorModel<OBS> _sensorModel;
 
   private double _timeOfLastUpdate = 0L;
 
@@ -416,6 +408,30 @@ public class ParticleFilter<OBS> {
     }
 
     return resampled;
+  }
+
+  public MotionModel<OBS> getMotionModel() {
+    return _motionModel;
+  }
+
+  public void setMotionModel(MotionModel<OBS> motionModel) {
+    _motionModel = motionModel;
+  }
+
+  public ParticleFactory<OBS> getParticleFactory() {
+    return _particleFactory;
+  }
+
+  public void setParticleFactory(ParticleFactory<OBS> particleFactory) {
+    _particleFactory = particleFactory;
+  }
+
+  public SensorModel<OBS> getSensorModel() {
+    return _sensorModel;
+  }
+
+  public void setSensorModel(SensorModel<OBS> sensorModel) {
+    _sensorModel = sensorModel;
   }
 
 }

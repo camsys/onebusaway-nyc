@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -31,7 +32,9 @@ import java.util.List;
  * @author bdferris
  * 
  */
-public final class VehicleState implements Comparable<VehicleState> {
+public final class VehicleState implements Comparable<VehicleState>, Serializable {
+
+  private static final long serialVersionUID = -302715667966573149L;
 
   private final MotionState motionState;
 
@@ -39,7 +42,7 @@ public final class VehicleState implements Comparable<VehicleState> {
 
   private final JourneyState journeyState;
 
-  private final List<JourneyPhaseSummary> journeySummaries;
+  transient private final List<JourneyPhaseSummary> journeySummaries;
 
   private final Observation observation;
 

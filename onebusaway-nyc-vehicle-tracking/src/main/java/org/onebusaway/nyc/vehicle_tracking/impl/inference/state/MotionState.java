@@ -19,7 +19,11 @@ import org.onebusaway.geospatial.model.CoordinatePoint;
 
 import com.google.common.collect.ComparisonChain;
 
-public final class MotionState implements Comparable<MotionState> {
+import java.io.Serializable;
+
+public final class MotionState implements Comparable<MotionState>, Serializable {
+
+  private static final long serialVersionUID = -3863978102742346077L;
 
   private final long lastInMotionTime;
 

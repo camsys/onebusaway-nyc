@@ -18,11 +18,15 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.realtime.api.EVehiclePhase;
 
-public final class JourneyState {
+import java.io.Serializable;
+
+public final class JourneyState implements Serializable {
+
+  private static final long serialVersionUID = -6350606243219839060L;
 
   private final EVehiclePhase phase;
 
-  private final JourneyStartState data;
+  transient private final JourneyStartState data;
 
   private JourneyState(EVehiclePhase phase, JourneyStartState data) {
     this.phase = phase;

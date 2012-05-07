@@ -5,10 +5,14 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import com.google.common.base.Strings;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
+
+import java.io.Serializable;
 import java.util.Set;
 
-public class RunResults implements Comparable<RunResults> {
+public class RunResults implements Comparable<RunResults>, Serializable {
 
+  private static final long serialVersionUID = 7345915556833511609L;
+  
   final private String assignedRunId;
   final private Set<String> fuzzyMatches;
   final private Set<AgencyAndId> routeIds;

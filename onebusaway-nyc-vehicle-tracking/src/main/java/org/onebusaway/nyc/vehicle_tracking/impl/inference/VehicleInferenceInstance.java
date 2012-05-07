@@ -65,28 +65,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class VehicleInferenceInstance {
+public class VehicleInferenceInstance implements Serializable {
 
-  private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
+  private static final long serialVersionUID = -2823197853544854125L;
 
-  private VehicleStateLibrary _vehicleStateLibrary;
+  transient private static Logger _log = LoggerFactory.getLogger(VehicleInferenceInstance.class);
+
+  transient private VehicleStateLibrary _vehicleStateLibrary;
 
   @Autowired
-  private ConfigurationService _configurationService;
+  transient private ConfigurationService _configurationService;
 
-  private DestinationSignCodeService _destinationSignCodeService;
+  transient private DestinationSignCodeService _destinationSignCodeService;
 
-  private BaseLocationService _baseLocationService;
+  transient private BaseLocationService _baseLocationService;
 
-  private OperatorAssignmentService _operatorAssignmentService;
+  transient private OperatorAssignmentService _operatorAssignmentService;
 
-  private RunService _runService;
+  transient private RunService _runService;
 
   private long _optionalResetWindow = 10 * 60 * 1000;
 
@@ -104,7 +109,7 @@ public class VehicleInferenceInstance {
 
   private NycTestInferredLocationRecord _nycTestInferredLocationRecord;
 
-  private Multiset<Particle> _badParticles;
+  transient private Multiset<Particle> _badParticles;
   
   private ParticleFilter<Observation> _particleFilter;
 
@@ -166,7 +171,7 @@ public class VehicleInferenceInstance {
    * @return true if the resulting inferred location record should be passed on,
    *         otherwise false
    */
-  public synchronized boolean handleUpdate(NycRawLocationRecord record) {
+  public synchronized boolean handleUpdate(NycRawLocationRecord record, ObjectOutputStream out) {
 
     /**
      * Choose the best timestamp based on device timestamp and received
@@ -337,6 +342,15 @@ public class VehicleInferenceInstance {
       throw new IllegalStateException(ex);
     }
 
+    if (out != null) {
+      try {
+        out.writeObject(this);
+        out.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    
     return _enabled;
   }
 
@@ -575,7 +589,7 @@ public class VehicleInferenceInstance {
               + reportedRunId);
         } else {
           bestFuzzyDistance = fuzzyReportedMatches.keySet().first();
-          fuzzyMatches = fuzzyReportedMatches.get(bestFuzzyDistance);
+          fuzzyMatches = Sets.newHashSet(fuzzyReportedMatches.get(bestFuzzyDistance));
           for (String runId : fuzzyMatches) {
             routeIds.addAll(_runService.getRoutesForRunId(runId));
           }
@@ -681,5 +695,17 @@ public class VehicleInferenceInstance {
 
   public OperatorAssignmentService getOperatorAssignmentService() {
     return _operatorAssignmentService;
+  }
+
+  public ParticleFilter<Observation> getParticleFilter() {
+    return _particleFilter;
+  }
+
+  public ConfigurationService getConfigurationService() {
+    return _configurationService;
+  }
+
+  public void setConfigurationService(ConfigurationService configurationService) {
+    _configurationService = configurationService;
   }
 }

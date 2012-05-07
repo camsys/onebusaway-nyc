@@ -32,20 +32,30 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
+import java.io.Serializable;
+
 import javax.annotation.Nullable;
 
-public final class BlockState implements Comparable<BlockState> {
+public final class BlockState implements Comparable<BlockState>, Serializable {
+
+  private static final long serialVersionUID = 113570899391047971L;
 
   /**
-   * Our current block instance
+   * These transient fields need to be repopulated, after deserialization,
+   * using the accompanying info.
    */
-  private final RunTripEntry runTrip;
+  transient private final RunTripEntry runTrip;
+  private final String rteRunId;
 
-  private final BlockInstance blockInstance;
+  transient private final BlockInstance blockInstance;
+  private final long biServiceDate;
+  private final AgencyAndId biBlockId; 
 
-  private final ScheduledBlockLocation blockLocation;
+  transient private final ScheduledBlockLocation blockLocation;
+  private final int sblScheduleTime;
 
   private final String destinationSignCode;
+
 
   public BlockState(BlockInstance blockInstance,
       ScheduledBlockLocation blockLocation, @Nullable
@@ -55,20 +65,34 @@ public final class BlockState implements Comparable<BlockState> {
     Preconditions.checkNotNull(destinationSignCode, "destinationSignCode");
 
     this.blockInstance = blockInstance;
+    this.biBlockId = blockInstance.getBlock().getBlock().getId();
+    this.biServiceDate = blockInstance.getState().getServiceDate();
+    
     this.blockLocation = blockLocation;
+    this.sblScheduleTime = blockLocation.getScheduledTime();
+    
     this.destinationSignCode = destinationSignCode;
+    
     this.runTrip = runTrip;
+    if (runTrip != null) {
+      this.rteRunId = runTrip.getRunId();
+    } else {
+      this.rteRunId = null;
+    }
   }
 
   public RunTripEntry getRunTripEntry() {
+    // TODO FIXME if the instance is null, get it
     return runTrip;
   }
 
   public BlockInstance getBlockInstance() {
+    // TODO FIXME if the instance is null, get it
     return blockInstance;
   }
 
   public ScheduledBlockLocation getBlockLocation() {
+    // TODO FIXME if the instance is null, get it
     return blockLocation;
   }
 
@@ -78,8 +102,9 @@ public final class BlockState implements Comparable<BlockState> {
 
   @Override
   public String toString() {
+    // TODO FIXME use the local values 
     AgencyAndId tripId = blockLocation.getActiveTrip() != null ?
-        blockLocation.getActiveTrip().getTrip().getId() : null;;
+        blockLocation.getActiveTrip().getTrip().getId() : null;
     Boolean runTripMatches = (tripId != null && runTrip != null) ? tripId.equals(runTrip.getTripEntry().getId())
             : null;
     int mins = blockLocation.getScheduledTime()/60;
@@ -96,6 +121,7 @@ public final class BlockState implements Comparable<BlockState> {
   }
 
   public String getRunId() {
+    // TODO FIXME use the local values 
     // TODO agencyId?
     return runTrip == null ? null : runTrip.getRunId();
   }
@@ -107,6 +133,7 @@ public final class BlockState implements Comparable<BlockState> {
   @Override
   public int compareTo(BlockState rightBs) {
 
+    // TODO FIXME use the local values 
     if (this == rightBs)
       return 0;
 
@@ -126,6 +153,7 @@ public final class BlockState implements Comparable<BlockState> {
     if (_hash != 0)
       return _hash;
 
+    // TODO FIXME use the local values 
     final int prime = 31;
     int result = 1;
     result = prime * result
@@ -156,6 +184,7 @@ public final class BlockState implements Comparable<BlockState> {
 
   @Override
   public boolean equals(Object obj) {
+    // TODO FIXME use the local values 
     if (this == obj)
       return true;
     if (obj == null)

@@ -19,10 +19,13 @@ import com.google.common.base.Objects;
 
 import org.apache.commons.math.util.FastMath;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SensorModelResult {
+public class SensorModelResult implements Serializable {
+
+  private static final long serialVersionUID = -3206905210367947498L;
 
   private String name;
 

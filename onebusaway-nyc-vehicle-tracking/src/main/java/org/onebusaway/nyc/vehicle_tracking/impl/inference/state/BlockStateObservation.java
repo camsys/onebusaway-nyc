@@ -10,6 +10,8 @@ import com.google.common.collect.Ordering;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.Serializable;
+
 /**
  * This class represents the combination of an observation and a BlockState.
  * Specifically, it contains information about the BlockState that is
@@ -19,7 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 public final class BlockStateObservation implements
-    Comparable<BlockStateObservation> {
+    Comparable<BlockStateObservation>, Serializable {
+  
+  private static final long serialVersionUID = 3420181546855860373L;
+
   final private BlockState _blockState;
 
   private final Boolean _isOpAssigned;

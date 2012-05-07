@@ -43,7 +43,7 @@ public class Particle implements Serializable, Comparable<Particle> {
 
   private double _logWeight = 0.0;
 
-  transient private SensorModelResult _result;
+  private SensorModelResult _result;
 
   private Particle _parent;
 

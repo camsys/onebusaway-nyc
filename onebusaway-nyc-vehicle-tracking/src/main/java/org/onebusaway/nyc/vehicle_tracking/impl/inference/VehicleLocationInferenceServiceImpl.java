@@ -15,6 +15,13 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,11 +55,18 @@ import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.bundle.BundleItem;
 import org.onebusaway.nyc.transit_data_federation.services.bundle.BundleManagementService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmentService;
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.ParticleFactory;
+import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModel;
 import org.onebusaway.nyc.vehicle_tracking.model.NycRawLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
@@ -110,6 +124,15 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   private int _skippedUpdateLogCounter = 0;
   
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
+  
+  /*
+   * FIXME TODO The following two maps are for debug.  remove when finished.
+   */
+  private ConcurrentMap<AgencyAndId, ObjectOutputStream> _outputFilesByVehicleId = 
+      new ConcurrentHashMap<AgencyAndId, ObjectOutputStream>();
+  
+  private ConcurrentMap<AgencyAndId, ObjectInputStream> _inputFilesByVehicleId = 
+      new ConcurrentHashMap<AgencyAndId, ObjectInputStream>();
 
   private ApplicationContext _applicationContext;
 
@@ -492,22 +515,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     return null;
   }
 
-  private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
-    VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
-
-    if (instance == null) {
-      VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
-
-      instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
-      
-      if (instance == null)
-        instance = newInstance;
-      
-    }
-
-    return instance;
-  }
-
   public class ProcessingTask implements Runnable {
 
     private final AgencyAndId _vehicleId;
@@ -530,6 +537,99 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       _simulation = true;
     }
 
+    /**
+     * This is just a test method.  It will create the initial v.i. 
+     * instance and it's serialization output file for the first record,
+     * otherwise it will de-serialize the last serialized v.i. instance and
+     * update that, then re-serialize.
+     * @param vehicleId
+     * @return
+     */
+    private VehicleInferenceInstance getSerializedInstanceForVehicle(AgencyAndId vehicleId) {
+      
+      
+      VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
+  
+      if (instance == null) {
+        VehicleInferenceInstance newInstance = _applicationContext.getBean(VehicleInferenceInstance.class);
+  
+        instance = _vehicleInstancesByVehicleId.putIfAbsent(vehicleId, newInstance);
+        
+        if (instance == null)
+          instance = newInstance;
+        
+        if (_simulation) {
+          DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
+          newInstance.setOperatorAssignmentService(opSvc);
+          _log.warn("Set operator assignment service to dummy!");
+        }
+        return instance;
+      } else {
+      
+        
+        /*
+         * use the previous timestamp to find the last serialized file
+         */
+        String filename = vehicleId + "_" + instance.getCurrentState().getTimestamp() + ".ser"; 
+        
+        ObjectInputStream in = null;
+        VehicleInferenceInstance deSerializedInst = null;
+        FileInputStream fis = null;
+        try
+        {
+          fis = new FileInputStream(filename);
+          in = new ObjectInputStream(fis);
+          _inputFilesByVehicleId.putIfAbsent(vehicleId, in);
+          deSerializedInst = (VehicleInferenceInstance)in.readObject();
+          // TODO will likely need to populate things...
+          repopulateSerializedInferenceInstance(deSerializedInst);
+          
+          return deSerializedInst;
+          
+        }
+        catch(IOException ex)
+        {
+          ex.printStackTrace();
+        } catch (ClassNotFoundException e) {
+          e.printStackTrace();
+        }
+        
+        return instance;
+      }
+    }
+    
+    private void repopulateSerializedInferenceInstance(
+        VehicleInferenceInstance deSerializedInst) {
+      
+      BaseLocationService blsInst = _applicationContext.getBean(BaseLocationService.class);
+      deSerializedInst.setBaseLocationService(blsInst);
+      ConfigurationService csInst = _applicationContext.getBean(ConfigurationService.class);
+      deSerializedInst.setConfigurationService(csInst);
+      DestinationSignCodeService dscInst = _applicationContext.getBean(DestinationSignCodeService.class);
+      deSerializedInst.setDestinationSignCodeService(dscInst);
+      if (_simulation) {
+        DummyOperatorAssignmentServiceImpl opSvc = new DummyOperatorAssignmentServiceImpl();
+        deSerializedInst.setOperatorAssignmentService(opSvc);
+        _log.warn("Set operator assignment service to dummy!");
+      } else {
+        OperatorAssignmentService oasInst = _applicationContext.getBean(OperatorAssignmentService.class);
+        deSerializedInst.setOperatorAssignmentService(oasInst);
+      }
+      RunService rsInst = _applicationContext.getBean(RunService.class);
+      deSerializedInst.setRunService(rsInst);
+      VehicleStateLibrary vsInst = _applicationContext.getBean(VehicleStateLibrary.class);
+      deSerializedInst.setVehicleStateLibrary(vsInst);
+      
+      // TODO FIXME add services to internal objects
+      MotionModel<Observation> mmInst = _applicationContext.getBean(MotionModelImpl.class);
+      deSerializedInst.getParticleFilter().setMotionModel(mmInst);
+      SensorModelImpl smInst = (SensorModelImpl)_applicationContext.getBean("sensorModelImpl");
+      deSerializedInst.getParticleFilter().setSensorModel(smInst);
+      ParticleFactoryImpl pfInst = _applicationContext.getBean(ParticleFactoryImpl.class);
+      deSerializedInst.getParticleFilter().setParticleFactory(pfInst);
+      
+    }
+
     private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
       VehicleInferenceInstance instance = _vehicleInstancesByVehicleId.get(vehicleId);
   
@@ -546,7 +646,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
           newInstance.setOperatorAssignmentService(opSvc);
           _log.warn("Set operator assignment service to dummy!");
         }
-      }
+      } 
   
       return instance;
     }
@@ -554,7 +654,9 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     @Override
     public void run() {
       try {
-        final VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
+        // FIXME TODO remove.  debug.
+//        final VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
+        final VehicleInferenceInstance existing = getSerializedInstanceForVehicle(_vehicleId);
         
         if (_simulation) {
           String actualRun = _nycTestInferredLocationRecord.getActualRunId();
@@ -572,7 +674,9 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
           }
         }
 
-        boolean passOnRecord = sendRecord(existing);
+        // FIXME TODO remove.  debug.
+//        boolean passOnRecord = sendRecord(existing);
+        boolean passOnRecord = sendRecordSerialize(existing);
         if (passOnRecord) {
           // management bean (becomes part of inference bean)
           NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
@@ -598,9 +702,33 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       }
     }
 
+    private boolean sendRecordSerialize(VehicleInferenceInstance existing) {
+      if (_inferenceRecord != null) {
+        
+        FileOutputStream fos;
+        ObjectOutputStream out;
+        
+        String filename = _vehicleId + "_" + _nycTestInferredLocationRecord.getTimestamp() + ".ser"; 
+        try {
+          fos = new FileOutputStream(filename);
+          out = new ObjectOutputStream(fos);
+          return existing.handleUpdate(_inferenceRecord, out);
+        } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        
+      } else if (_nycTestInferredLocationRecord != null) {
+        return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
+      }
+      
+      return false;
+    }
+    
     private boolean sendRecord(VehicleInferenceInstance existing) {
       if (_inferenceRecord != null) {
-        return existing.handleUpdate(_inferenceRecord);
+        return existing.handleUpdate(_inferenceRecord, null);
       } else if (_nycTestInferredLocationRecord != null) {
         return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
       }
