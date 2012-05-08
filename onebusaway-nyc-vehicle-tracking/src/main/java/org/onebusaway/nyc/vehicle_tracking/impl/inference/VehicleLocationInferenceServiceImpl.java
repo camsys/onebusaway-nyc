@@ -598,6 +598,11 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       }
     }
     
+    /**
+     * This method re-injects the services.
+     * 
+     * @param deSerializedInst
+     */
     private void repopulateSerializedInferenceInstance(
         VehicleInferenceInstance deSerializedInst) {
       
@@ -619,8 +624,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       deSerializedInst.setRunService(rsInst);
       VehicleStateLibrary vsInst = _applicationContext.getBean(VehicleStateLibrary.class);
       deSerializedInst.setVehicleStateLibrary(vsInst);
-      
-      // TODO FIXME add services to internal objects
       MotionModel<Observation> mmInst = _applicationContext.getBean(MotionModelImpl.class);
       deSerializedInst.getParticleFilter().setMotionModel(mmInst);
       SensorModelImpl smInst = (SensorModelImpl)_applicationContext.getBean("sensorModelImpl");

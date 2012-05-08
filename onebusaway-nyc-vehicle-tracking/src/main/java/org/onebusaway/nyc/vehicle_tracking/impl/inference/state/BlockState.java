@@ -44,14 +44,14 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
    * These transient fields need to be repopulated, after deserialization,
    * using the accompanying info.
    */
-  transient private final RunTripEntry runTrip;
+  transient private RunTripEntry runTrip;
   private final String rteRunId;
 
-  transient private final BlockInstance blockInstance;
+  transient private BlockInstance blockInstance;
   private final long biServiceDate;
   private final AgencyAndId biBlockId; 
 
-  transient private final ScheduledBlockLocation blockLocation;
+  transient private ScheduledBlockLocation blockLocation;
   private final int sblScheduleTime;
 
   private final String destinationSignCode;
@@ -121,9 +121,7 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
   }
 
   public String getRunId() {
-    // TODO FIXME use the local values 
-    // TODO agencyId?
-    return runTrip == null ? null : runTrip.getRunId();
+    return rteRunId;
   }
 
   /**
@@ -146,12 +144,8 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
     return res;
   }
 
-  private int _hash = 0;
-
   @Override
   public int hashCode() {
-    if (_hash != 0)
-      return _hash;
 
     // TODO FIXME use the local values 
     final int prime = 31;
@@ -168,17 +162,11 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
         + ((blockLocation == null) ? 0
             : ((blockLocation.getActiveTrip() == null) ? 0
                 : blockLocation.getActiveTrip().getTrip().getId().hashCode()));
-    // long temp = 0;
-    // if (blockLocation != null)
-    // temp = Double.doubleToLongBits(blockLocation.getDistanceAlongBlock());
-    // result = (int) (prime * result + ((temp == 0) ? temp
-    // : (int) (temp ^ (temp >>> 32))));
 
     result = prime * result
         + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
     result = prime * result + ((runTrip == null) ? 0 : runTrip.hashCode());
 
-    _hash = result;
     return result;
   }
 
@@ -212,9 +200,6 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
       if (!blockLocation.getActiveTrip().getTrip().getId().equals(
           other.blockLocation.getActiveTrip().getTrip().getId()))
         return false;
-      // if (Double.compare(blockLocation.getDistanceAlongBlock(),
-      // other.blockLocation.getDistanceAlongBlock()) != 0)
-      // return false;
     }
 
     if (destinationSignCode == null) {
