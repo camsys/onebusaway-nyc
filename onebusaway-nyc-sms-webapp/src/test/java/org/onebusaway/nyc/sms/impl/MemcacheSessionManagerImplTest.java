@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Matchers.*;
 
 import net.spy.memcached.CASValue;
+import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.MemcachedClientIF;
 
 import org.junit.After;
@@ -49,11 +50,11 @@ public class MemcacheSessionManagerImplTest {
   @InjectMocks
   private MemcacheSessionManagerImpl _sessionManager;
 
-  private MemcachedClientIF mockMemcacheClient;
+  private MemcachedClient mockMemcacheClient;
 
   @Before
   public void setup() throws IOException {
-    mockMemcacheClient = mock(MemcachedClientIF.class);
+    mockMemcacheClient = mock(MemcachedClient.class);
     when(memcacheClientFactory.getCacheClient()).thenReturn(mockMemcacheClient);
 //    _sessionManager = new MemcacheSessionManagerImpl();
     ((SessionManagerImpl) _sessionManager).setSessionTimeout(10);
