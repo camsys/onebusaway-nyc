@@ -6,38 +6,51 @@ import org.onebusaway.nyc.presentation.model.SearchResult;
 
 /**
  * Location search result.
+ * 
  * @author jmaki
- *
+ * 
  */
 public class GeocodeResult implements SearchResult {
 
-  private NycGeocoderResult result;
-  
-  public GeocodeResult(NycGeocoderResult result) {
-    this.result = result;
-  }
+	private NycGeocoderResult result;
 
-  public String getFormattedAddress() {
-    return result.getFormattedAddress();
-  }
-  
-  public String getNeighborhood() {
-    return result.getNeighborhood();
-  }
-  
-  public Double getLatitude() {
-    return result.getLatitude();
-  }
+	public GeocodeResult(NycGeocoderResult result) {
+		this.result = result;
+	}
 
-  public Double getLongitude() {
-    return result.getLongitude();
-  }  
-  
-  public Boolean getIsRegion() {
-    return result.isRegion();
-  }
-  
-  public CoordinateBounds getBounds() {
-    return result.getBounds();
-  }
+	public String getFormattedAddress() {
+		return result.getFormattedAddress();
+	}
+
+	public String getNeighborhood() {
+		return result.getNeighborhood();
+	}
+
+	public Double getLatitude() {
+		return result.getLatitude();
+	}
+
+	public Double getLongitude() {
+		return result.getLongitude();
+	}
+
+	public Boolean getIsRegion() {
+		return result.isRegion();
+	}
+
+	public CoordinateBounds getBounds() {
+		return result.getBounds();
+	}
+
+	@Override
+	public void setDistanceToQueryLocation(Double distance) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Double getDistanceToQueryLocation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

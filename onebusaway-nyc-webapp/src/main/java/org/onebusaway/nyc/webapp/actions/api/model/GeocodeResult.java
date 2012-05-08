@@ -8,45 +8,58 @@ import java.util.List;
 
 /**
  * Location search result.
+ * 
  * @author jmaki
- *
+ * 
  */
 public class GeocodeResult implements SearchResult {
 
-  private NycGeocoderResult result;
-  
-  private List<SearchResult> nearbyRoutes;
-  
-  public GeocodeResult(NycGeocoderResult result, List<SearchResult> nearbyRoutes) {
-    this.result = result;
-    this.nearbyRoutes = nearbyRoutes;
-  }
-  
-  public String getFormattedAddress() {
-    return result.getFormattedAddress();
-  }
-  
-  public String getNeighborhood() {
-    return result.getNeighborhood();
-  }
-  
-  public Double getLatitude() {
-    return result.getLatitude();
-  }
+	private NycGeocoderResult result;
 
-  public Double getLongitude() {
-    return result.getLongitude();
-  }  
-  
-  public Boolean getIsRegion() {
-    return result.isRegion();
-  }
-  
-  public CoordinateBounds getBounds() {
-    return result.getBounds();
-  }
-  
-  public List<SearchResult> getNearbyRoutes() {
-    return nearbyRoutes;
-  }
+	private List<SearchResult> nearbyRoutes;
+
+	public GeocodeResult(NycGeocoderResult result, List<SearchResult> nearbyRoutes) {
+		this.result = result;
+		this.nearbyRoutes = nearbyRoutes;
+	}
+
+	public String getFormattedAddress() {
+		return result.getFormattedAddress();
+	}
+
+	public String getNeighborhood() {
+		return result.getNeighborhood();
+	}
+
+	public Double getLatitude() {
+		return result.getLatitude();
+	}
+
+	public Double getLongitude() {
+		return result.getLongitude();
+	}
+
+	public Boolean getIsRegion() {
+		return result.isRegion();
+	}
+
+	public CoordinateBounds getBounds() {
+		return result.getBounds();
+	}
+
+	public List<SearchResult> getNearbyRoutes() {
+		return nearbyRoutes;
+	}
+
+	@Override
+	public void setDistanceToQueryLocation(Double distance) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Double getDistanceToQueryLocation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
