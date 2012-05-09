@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -43,12 +44,25 @@ import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 @RunWith(MockitoJUnitRunner.class)
 public class SearchResultFactoryImplTest {
 
+  private static final String[] STRINGS_FOR_LONG_DESCRIPTION = new String[] {
+    "A really long string that has newlines in it.",
+    "The second line of a really long string that has newlines in it.",
+    "The third line of a really long string that has newlines in it.",
+    "The fourth line of a really long string that has newlines in it.",
+    "And now we'll repeat:",
+    "A really long string that has newlines in it.",
+    "The second line of a really long string that has newlines in it.",
+    "The third line of a really long string that has newlines in it.",
+    "The fourth line of a really long string that has newlines in it."
+    };
   private static final String TEST_DESCRIPTION = "Test description";
   private static final String TEST_DESCRIPTION2 = "Test description 2";
   private static final String TEST_SUMMARY = "Test summary";
   private static final String ROUTE_ID = "route id";
   private static final String TEST_STOP_ID = "test stop id";
   private static final String TEST_PRESENTABLE_DISTANCE = "test presentable distance";
+  private static final String TEST_LONG_DESCRIPTION = StringUtils.join(STRINGS_FOR_LONG_DESCRIPTION, "\n");
+  private static final String TEST_LONG_DESCRIPTION_WITH_BRS = StringUtils.join(STRINGS_FOR_LONG_DESCRIPTION, "<br/>");
 
   @Mock
   private ConfigurationService _configurationService;
@@ -119,6 +133,16 @@ public class SearchResultFactoryImplTest {
     assertEquals(2, alerts.size());
     assertEquals(TEST_DESCRIPTION, alerts.get(0).getValue());
     assertEquals(TEST_DESCRIPTION2, alerts.get(1).getValue());
+  }
+
+  @Test
+  public void testGetStopResultServiceAlertWithReallLongDescription() {
+    StopResult result = runGetStopResult(createServiceAlerts(new String[] {
+        TEST_LONG_DESCRIPTION}, new String[] {TEST_SUMMARY}));
+    List<NaturalLanguageStringBean> alerts = result.getRoutesAvailable().get(0).getDirections().get(
+        0).getSerivceAlerts();
+    assertEquals(1, alerts.size());
+    assertEquals(TEST_LONG_DESCRIPTION, alerts.get(0).getValue());
   }
 
   @Test
