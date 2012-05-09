@@ -43,13 +43,13 @@ public class SearchServiceImpl implements SearchService {
 	private static final Pattern leftOverMatchPattern = Pattern.compile("^([A-Z]|-)+$");
 
 	// when querying for routes from a lat/lng, use this distance in meters
-	private static final double DISTANCE_TO_ROUTES = 1500;
+	private static final double DISTANCE_TO_ROUTES = 600;
 	
 	// The max number of closest routes to display
 	private static final int MAX_ROUTES = 10;
 
 	// when querying for stops from a lat/lng, use this distance in meters
-	private static final double DISTANCE_TO_STOPS = 1500;
+	private static final double DISTANCE_TO_STOPS = 600;
 	
 	// The max number of closest stops to display
 	private static final int MAX_STOPS = 10;
