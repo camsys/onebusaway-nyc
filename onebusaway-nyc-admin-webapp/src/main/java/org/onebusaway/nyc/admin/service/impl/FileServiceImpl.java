@@ -24,6 +24,10 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * Implements File operations over Amazon S3.
+ * 
+ */
 public class FileServiceImpl implements FileService {
 
   private static Logger _log = LoggerFactory.getLogger(FileServiceImpl.class);
@@ -39,7 +43,6 @@ public class FileServiceImpl implements FileService {
   @PostConstruct
   public void setup() {
     try {
-      _log.info("setup looking for credentials");
       credentials = new PropertiesCredentials(
           this.getClass().getResourceAsStream("AwsCredentials.properties"));
       s3 = new AmazonS3Client(credentials);
@@ -76,6 +79,9 @@ public class FileServiceImpl implements FileService {
   }
 
   @Override
+  /**
+   * Return tabular data (filename, flag, modified date) about bundle directories.
+   */
   public List<String[]> listBundleDirectories(int maxResults) {
     ListObjectsRequest request = new ListObjectsRequest(bucketName, "", null,
         null, maxResults);
@@ -88,8 +94,7 @@ public class FileServiceImpl implements FileService {
         int matches = summary.getKey().split("\\/").length - 1;
         if (matches == 0) {
           String[] columns = {
-              summary.getKey(), " ", "" + summary.getLastModified().getTime()
-              };
+              summary.getKey(), " ", "" + summary.getLastModified().getTime()};
           rows.add(columns);
         }
       }
