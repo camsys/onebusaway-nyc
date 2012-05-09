@@ -47,21 +47,22 @@ public class InvalidLocationRecord implements Serializable {
   @Column(nullable = false, name = "exception_message", length = 1400)
   private String exceptionMessage;
 
-  public InvalidLocationRecord(String message, Throwable throwable, Date timeReceived) {
-      setArchiveTimeReceived(new Date());
-      setTimeReceived(timeReceived);
-      if (message != null && message.length() > 1400) {
-	  message = message.substring(0, 1400);
-      }
-      setRawMessage(message);
-      String error = null;
-      if (throwable != null) {
-	  error = throwable.toString();
-      }
-      if (error != null && error.length() > 1400) {
-	  error = error.substring(0, 1400);
-      }
-      setExceptionMessage(error);
+  public InvalidLocationRecord(String message, Throwable throwable,
+      Date timeReceived) {
+    setArchiveTimeReceived(new Date());
+    setTimeReceived(timeReceived);
+    if (message != null && message.length() > 1400) {
+      message = message.substring(0, 1400);
+    }
+    setRawMessage(message);
+    String error = null;
+    if (throwable != null) {
+      error = throwable.toString();
+    }
+    if (error != null && error.length() > 1400) {
+      error = error.substring(0, 1400);
+    }
+    setExceptionMessage(error);
   }
 
   public Integer getId() {
@@ -103,6 +104,5 @@ public class InvalidLocationRecord implements Serializable {
   public void setExceptionMessage(String exceptionMessage) {
     this.exceptionMessage = exceptionMessage;
   }
-
 
 }

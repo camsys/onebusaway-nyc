@@ -29,7 +29,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,11 +52,15 @@ public class  NycQueuedInferredLocationDaoImplTest {
     config = config.configure("org/onebusaway/nyc/report_archive/hibernate-configuration.xml");
     _sessionFactory = config.buildSessionFactory();
 
+    CcLocationCache cache = new CcLocationCache(10);
+    
     _dao = new NycQueuedInferredLocationDaoImpl();
     _dao.setSessionFactory(_sessionFactory);
-
+    _dao.setCcLocationCache(cache);
+    
     _ccDao = new CcLocationReportDaoImpl();
     _ccDao.setSessionFactory(_sessionFactory);
+
   }
 
   @After
@@ -71,22 +74,23 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
     assertEquals(0, getNumberOfRecords());
 
-    ArchivedInferredLocationRecord record = getTestRecord();
-
-    _dao.saveOrUpdateRecord(record);
-    assertEquals(1, getNumberOfRecords());
-    assertEquals(1, getNumberOfCurrentRecords());
-
     CcLocationReportRecord bhs = getCcRecord();
     _ccDao.saveOrUpdateReport(bhs);
 
-    record = getTestRecord();
+    ArchivedInferredLocationRecord record = getTestRecord();
     _dao.saveOrUpdateRecords(record);
-    assertEquals(2, getNumberOfRecords());
+    assertEquals(1, getNumberOfRecords());
     assertEquals(1, getNumberOfCurrentRecords());
     
+    record = getTestRecord();
+
+    _dao.saveOrUpdateRecord(record);
+    assertEquals(2, getNumberOfRecords());
+    assertEquals(1, getNumberOfCurrentRecords());
+
+    
     List<CcAndInferredLocationRecord> lastKnownRecords = _dao.getAllLastKnownRecords();
-    // I believe this should be one as both saveOrUpdateRecords happen for the same bus. Also this will prob end up being similar to getNumberOfCurrentRecords 
+    // this should be one as both saveOrUpdateRecords happen for the same bus. Also this will prob end up being similar to getNumberOfCurrentRecords 
 
     assertEquals(1, lastKnownRecords.size()); 
     assertEquals(record.getVehicleId(), lastKnownRecords.get(0).getVehicleId());
@@ -113,7 +117,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
   private CcLocationReportRecord getCcRecord() {
       ArchivedInferredLocationRecord record = getTestRecord();
       CcLocationReportRecord cc = new CcLocationReportRecord();
-			cc.setUUID("foo");
+			cc.setUUID(record.getUUID());
       cc.setTimeReported(record.getTimeReported());
 			cc.setArchiveTimeReceived(new Date(122345l));
       cc.setVehicleId(record.getVehicleId());
@@ -171,7 +175,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
   }    
  
  private int getNumberOfRecords() {
-    //    @SuppressWarnings("rawtypes")
+    @SuppressWarnings("rawtypes")
     Long count = (Long) _dao.getHibernateTemplate().execute(new HibernateCallback() {
 	public Object doInHibernate(Session session) throws HibernateException {
         Query query = session.createQuery("select count(*) from ArchivedInferredLocationRecord");
@@ -182,10 +186,10 @@ public class  NycQueuedInferredLocationDaoImplTest {
   }
 
   private int getNumberOfCurrentRecords() {
-    //    @SuppressWarnings("rawtypes")
+    @SuppressWarnings("rawtypes")
     Long count = (Long) _dao.getHibernateTemplate().execute(new HibernateCallback() {
 	public Object doInHibernate(Session session) throws HibernateException {
-        Query query = session.createQuery("select count(*) from InferredLocationRecord");
+        Query query = session.createQuery("select count(*) from CcAndInferredLocationRecord");
 	return (Long)query.uniqueResult();
 	}
     });

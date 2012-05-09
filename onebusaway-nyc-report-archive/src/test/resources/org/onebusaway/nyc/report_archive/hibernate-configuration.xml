@@ -51,11 +51,9 @@
 
         <mapping class="org.onebusaway.nyc.report_archive.model.CcLocationReportRecord"/>
         <mapping class="org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord"/>
-        <mapping class="org.onebusaway.nyc.report_archive.model.InferredLocationRecord"/>
         <mapping class="org.onebusaway.nyc.report_archive.model.InvalidLocationRecord"/>
+        <mapping class="org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord"/>
 
-<!--         <mapping resource="org/onebusaway/users/impl/UserDaoImpl.hibernate.xml" />
- -->
     </session-factory>
 
 </hibernate-configuration>
