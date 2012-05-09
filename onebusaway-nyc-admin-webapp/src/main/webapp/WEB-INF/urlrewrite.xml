@@ -24,8 +24,21 @@
 -->
 <urlrewrite>
 
-	<!-- outbound-rule>
-    	<from>^(.*)\.action$</from>
-    	<to>$</to>
-    </outbound-rule-->
+	<!-- Redirect root to /login -->
+	<rule>
+		<from>^/$</from>
+		<to>/login.action</to>
+	</rule>
+	
+	<rule>
+		<from>^/admin$</from>
+		<to>/admin/index.action</to>
+	</rule>
+	
+	<!-- rule>
+	 <condition type="request-uri" operator="notequal">^.*_login$</condition>
+	<condition type="request-uri" operator="notequal">^.*\.action$</condition>
+        <from>^(.*)$</from>
+        <to last="true">$1.action</to>
+    </rule-->
 </urlrewrite>

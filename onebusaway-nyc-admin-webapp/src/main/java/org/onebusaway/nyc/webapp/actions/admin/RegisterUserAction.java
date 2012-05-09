@@ -1,24 +1,20 @@
 package org.onebusaway.nyc.webapp.actions.admin;
 
 import org.onebusaway.presentation.impl.NextActionSupport;
-import org.onebusaway.users.impl.CreateUserAction;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
+
 /**
- * Creates a user in the database. Extends {@link CreateUserAction} for customization purposes
- * if required in future.
- * @author dev
+ * Creates a user in the database. 
+ * @author abelsare
  *
  */
 public class RegisterUserAction extends NextActionSupport {
 
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private String username;
 	private String password;
@@ -41,22 +37,12 @@ public class RegisterUserAction extends NextActionSupport {
 		return SUCCESS;
 	}
 	
-	/**
-	 * Validates input fields
-	 */
-	public void validate() {
-		if(username.length() == 0) {
-			addFieldError("username", "User name is required");
-		}
-		if(password.length() == 0) {
-			addFieldError("password", "Password is required");
-		}
-	}
 
 	/**
 	 * Returns user name of the user being created
 	 * @return the username
 	 */
+	@RequiredStringValidator(message="User name is required")
 	public String getUsername() {
 		return username;
 	}
@@ -73,6 +59,7 @@ public class RegisterUserAction extends NextActionSupport {
 	 * Returns password of the user being created
 	 * @return the password
 	 */
+	@RequiredStringValidator(message="Password is required")
 	public String getPassword() {
 		return password;
 	}

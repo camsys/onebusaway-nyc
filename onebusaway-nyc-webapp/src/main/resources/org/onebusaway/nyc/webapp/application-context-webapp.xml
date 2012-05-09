@@ -40,7 +40,8 @@
     -->
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.AutoUserCurrentUserStrategyImpl" primary="true" />
 
-    <!-- sec:http>
+	<!-- To-do: Remove security from this module -->
+    <sec:http>
         <sec:intercept-url pattern="/admin/**" access="ROLE_ADMINISTRATOR" />
         <sec:form-login login-page="/login.action" authentication-failure-url="/login.action?error=1" />
         <sec:remember-me />
@@ -57,7 +58,7 @@
 		        <prop key="resourceServiceImpl.prefix">/resource.action?id=</prop>            
         	</props>
         </property>
-    </bean-->
+    </bean>
 
     <bean id="geocoderImpl" class="org.onebusaway.geocoder.impl.DatabaseCachingGeocoderImpl" primary="true">
         <property name="geocoderService" ref="externalGeocoderImpl" />

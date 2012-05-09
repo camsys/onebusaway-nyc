@@ -15,7 +15,7 @@
  */
 package org.onebusaway.nyc.webapp.actions;
 
-public class LoginAction extends OneBusAwayNYCActionSupport {
+public class LoginAction extends OneBusAwayNYCAdminActionSupport {
 
   private static final long serialVersionUID = 1L;
 

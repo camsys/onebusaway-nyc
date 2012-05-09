@@ -8,16 +8,15 @@ import org.onebusaway.users.services.UserPropertiesService;
 import org.onebusaway.users.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
+
 /**
- * Creates API key for the user. Also authorizes user to use API. 
- * @author dev
+ * Creates API key for the user. Also authorizes the user to use API. 
+ * @author abelsare
  *
  */
 public class ApiKeyAction extends NextActionSupport{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private String key;
 	private UserService userService;
@@ -34,15 +33,11 @@ public class ApiKeyAction extends NextActionSupport{
 		return SUCCESS;
 	}
 	
-	public void validate() {
-		if(key.length() == 0) {
-			addFieldError("key", "key is required");
-		}
-	}
 	/**
 	 * Returns the key of the user being created
 	 * @return the key
 	 */
+	@RequiredStringValidator(message="Key is required")
 	public String getKey() {
 		return key;
 	}
