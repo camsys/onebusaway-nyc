@@ -64,6 +64,11 @@ public class FileServiceImpl implements FileService {
   @Override
   public boolean createBundleDirectory(String filename) {
     try {
+      /*
+       *  a file needs to be written for a directory to exist
+       *  create README file, which could optionally contain meta-data such as
+       *  creator, production mode, etc.
+       */
       File tmpFile = File.createTempFile("README", "txt");
       String contents = "Root of Bundle Build";
       FileWriter fw = new FileWriter(tmpFile);
