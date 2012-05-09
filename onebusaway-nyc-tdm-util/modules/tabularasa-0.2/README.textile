@@ -1,0 +1,15 @@
+h1. Tabula Rasa
+
+Tabula Rasa provides support for user-customisable tables, allowing each user to have a custom view of any table in your application.  Client-side support is provided using the excellent "DataTables":http://www.datatables.net jQuery plugin.
+
+h2. Server-side table definitions
+
+Tables can be defined on the server side, and customised by users so they have their own individual view of a table in the client.  Customisations for moment are position and visibility.
+
+h2. Table cell values calculated by the controller
+
+You have the option to pass your target option and a column key to the controller to obtain the rendered value.
+
+h2. AJAX support for DataTables
+
+A model and renderer are provided to make rendering JSON data to DataTables simple.

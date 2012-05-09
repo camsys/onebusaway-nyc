@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>org.play</groupId>
+    <artifactId>play-parent</artifactId>
+    <version>1.1</version>
+  </parent>
+
+  <groupId>my.group.Id</groupId>
+  <artifactId>myartifactid</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>My Artifact Name</name>
+  <description>My Artifact Description</description>
+
+  <dependencies>
+  <!-- Add your dependencies here
+    <dependency>
+      <groupId></groupId>
+      <artifactId></artifactId>
+      <version></version>
+    </dependency>
+   -->
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+      </plugin>
+      <!-- Keeping this order is very important for packaging phase (copy-dependency must run before antrun) -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+      </plugin>
+    <!-- End -->
+    </plugins>
+  </build>
+
+</project>

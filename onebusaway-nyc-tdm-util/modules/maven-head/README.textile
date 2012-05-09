@@ -1,0 +1,176 @@
+h1. Maven support
+
+The Maven module enables maven support for your application. It adds a pom.xml in your project and deploys a play-parent pom in your local Maven repository.
+Thus, libraries are copied to /lib folder.
+
+Moreover, this module has the ability to create a war package of a Play! application using the 'mvn package' command'.
+The Play! applciations can now be used in you Continuous Integration (CI) system.
+
+h1. <a>What is supported?</a>
+
+* A standard pom.xml can be installed in your Play! application.
+* Libraries dependencies are handled by your pom and are downloaded to your */lib* folder in a single command.
+* Cleaning libraries in the /lib folder is supported in a single command.
+* Packaging your Play! application to a war using Maven is now possible (using only **mvn package**).
+
+h1. <a>Getting started</a>
+
+First, you need to download and install "Apache Maven":http://maven.apache.org/download.html.
+
+Finally, you need to install the play-maven module:  
+
+bc. # play install maven
+
+h1. <a>How to use your own Maven repository to store Play! artefacts</a>
+
+Play!'s' parent pom contains the reference to a repository containing Play! libs and the Play! runtime packaged as a resource.
+But you can use your own repository (your company's one for example).
+
+* Here is the list of the artefacts you have to upload as third-parties (you can find the jars inside framework/lib directory of your Play! installation):
+
+bc. // At the time of writing this README, Play's version is 1.1 
+<!-- This lib must be added to your repository (comes from Sourceforge)-->
+<dependency>
+  <groupId>hsqldb</groupId>
+  <artifactId>hsqldb</artifactId>
+  <version>1.8.1.2</version>
+</dependency>
+<!-- This lib must be added to your repository (comes from Sourceforge)-->
+<dependency>
+  <groupId>com.jamonapi</groupId>
+  <artifactId>jamon</artifactId>
+  <version>2.7</version>
+</dependency>
+<!-- This lib must be added to your repository -->
+<dependency>
+  <groupId>org.play.jj</groupId>
+  <artifactId>imaging</artifactId>
+  <version>1.1</version>
+</dependency>
+<!-- This lib must be added to your repository -->
+<dependency>
+  <groupId>org.play.jj</groupId>
+  <artifactId>simple-captcha</artifactId>
+  <version>1.1</version>
+</dependency>
+<!-- This lib must be added to your repository -->
+<dependency>
+  <groupId>org.play.jj</groupId>
+  <artifactId>textile</artifactId>
+  <version>1.1</version>
+</dependency>
+<!-- This lib must be added to your repository -->
+<dependency>
+  <groupId>org.play.jj</groupId>
+  <artifactId>wikitext</artifactId>
+  <version>1.1</version>
+</dependency>
+<!-- This lib must be added to your repository (comes from Sourceforge)-->
+<dependency>
+  <groupId>jregex</groupId>
+  <artifactId>jregex</artifactId>
+  <version>1.2_01</version>
+</dependency>
+<!-- This lib must be added to your repository -->
+<dependency>
+  <groupId>net.spy</groupId>
+  <artifactId>memcached</artifactId>
+  <version>2.4.2</version>
+</dependency>
+<!-- This lib must be added to your repository -->
+<dependency>
+  <groupId>org.play</groupId>
+  <artifactId>org.eclipse.jdt.core</artifactId>
+  <version>3.6.0</version>
+</dependency>
+
+* You also have to upload the Play! runtime:
+
+Upload the zip package of the Play! framework using these informations :
+
+bc. // At the time of writing this README, Play's version is 1.1 
+<dependency>
+  <groupId>org.play</groupId>
+  <artifactId>play-runtime</artifactId>
+  <version>1.1</version>
+  <type>zip</type>
+</dependency>
+
+* Finally, upload Play!'s jar :
+
+bc. // At the time of writing this README, Play's version is 1.1
+<dependency>
+  <groupId>org.play</groupId>
+  <artifactId>play</artifactId>
+  <version>1.1</version>
+</dependency>
+
+h1. <a>Setting up the Maven module</a>
+
+Start by creating a new application in the classical way.
+
+bc. # play new test-maven
+
+Then edit the *conf/application.conf* file to enable the Maven module:
+
+bc. # Additional modules
+# ~~~~~
+# A module is another play! application. Add a line for each module you want
+# to add to your application. Module paths are either absolutes or relative to
+# the application root.
+#
+module.maven=${play.path}/modules/maven
+
+At this moment, if you are working with Eclipse, do not forget to update your .classpath :
+
+bc. # play ec
+
+You now have to install play-parent in your repository and get a pom.xml in your Play! application :
+
+bc. # play mvn:init
+
+This command installs play-parent pom in your local repository (ex : ~/.m2/repository) and copies the 'skeleton' pom from the play-module to your application.
+
+Edit your pom.xml to change your groupId, artifactId, version, name and description.
+
+Launch an update to retrieve Play! libraries and check there is no error :
+
+bc. # play mvn:up
+
+That's it ! Your application is Maven-compliant.
+The following maven commands are now working :
+
+bc. # mvn clean // be careful, it deletes your /lib folder
+# mvn compile
+# mvn package // will create a war file
+
+h1. <a>play-maven specific commands</a> 
+
+bc. # play mvn:init
+
+Installs play-parent project (a Maven pom project) into local Maven repository. Then creates the appropriate *pom.xml*. After this step, you can add your dependencies to pom.xml. 
+
+bc. # play mvn:update // or play mvn:up
+
+Retrieves all defined dependencies and then it copies them into your /lib folder.
+
+bc. # play mvn:refresh // or play mvn:re
+
+Clears your app/lib folder first, then it executes play mvn:up. 
+
+h1. <a>Known issues</a>
+
+As long as Play! framework "Issue #359":http://play.lighthouseapp.com/projects/57987/tickets/359-war-packaging-add-an-exclude-option is not resolved, 'target' directory is embedded inside the generated war.
+You have to remove it manually after packaging your war (because target directory contains Play! runtime).
+
+h1. <a>How is packaging working</a>
+
+This module contains ant targets designed to launch a *play war* command.
+This command is replacing the war done by *mvn package* with a war build by Play! itself.
+
+* Play! runtime is package as a Maven resource and is a dependency of your application.
+* As a consequence, it is downloaded as a dependency.
+* An Ant target unzip the runtime and launches a *play war* command.
+* The Play! war as the same name as the Maven one, thus it is replacing it.
+
+%{color:red}*It is important to remove target directory from the war to decrease the size by 70Mb.*%
