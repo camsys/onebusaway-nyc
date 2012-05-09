@@ -1,10 +1,13 @@
 package org.onebusaway.nyc.sms.impl;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-import net.spy.memcached.CASValue;
-import net.spy.memcached.MemcachedClientIF;
+import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.internal.OperationFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,8 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
   @Autowired
   private MemcacheClientFactory memcacheClientFactory;
 
+  private MemcachedClient _client;
+
   public MemcacheSessionManagerImpl() {
     super();
   }
@@ -27,10 +32,10 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
   public Map<String, Object> getContext(String key) {
     Map<String, Object> context = getContextFromCache(key);
     if (context != null) {
-      _log.info("getContext for " + key + " not null, updating local cache");
+      _log.debug("getContext for " + key + " not null, updating local cache");
       updateLocalCache(key, context);
     } else {
-      _log.info("getContext for " + key + " is null, delegating to superclass");
+      _log.debug("getContext for " + key + " is null, delegating to superclass");
       context = super.getContext(key);
     }
     return context;
@@ -39,35 +44,37 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
   @Override
   public boolean contextExistsFor(String sessionId) {
     boolean exists = contextExistsInCacheFor(sessionId) || super.contextExistsFor(sessionId);
-    _log.info("contextExistsFor returning " + exists + " for sessionId " + sessionId);
+    _log.debug("contextExistsFor returning " + exists + " for sessionId " + sessionId);
     return exists;
   }
   
   @Override
   public void saveContext(String sessionId) {
-    _log.info("Saving context for sessionId " + sessionId);
-    MemcachedClientIF client;
+    _log.debug("Saving context for sessionId " + sessionId);
     try {
-      client = memcacheClientFactory.getCacheClient();
-      Future<Boolean> cas = client.set(sessionId, _sessionTimeout, super.getOrCreateContextEntry(sessionId));
-      _log.info("saveContext: response: " + cas.get());
+      Future<Boolean> cas = getClient().set(sessionId, _sessionTimeout, super.getOrCreateContextEntry(sessionId));
+      _log.debug("saveContext: response: " + cas.get());
     } catch (Exception e) {
       _log.error("Failed to save context: ", e);
     }
+  }
+  
+  @Override
+  public void close() {
+    super.close();
+    closeClient();
   }
 
   // Private methods
   
   @SuppressWarnings("unchecked")
   private Map<String, Object> getContextFromCache(String key) {
-    MemcachedClientIF client;
-    _log.info("getContextFromCache for " + key);
+    _log.debug("getContextFromCache for " + key);
     try {
-      client = memcacheClientFactory.getCacheClient();
-      ContextEntry contextEntry = (ContextEntry) client.get(key);
-      _log.info("getContextFromCache value before null test is: " + contextEntry);
+      ContextEntry contextEntry = (ContextEntry) getClient().get(key);
+      _log.debug("getContextFromCache value before null test is: " + contextEntry);
       Map<String, Object> map = (Map<String, Object>) (contextEntry == null ? contextEntry : contextEntry.getContext());
-      _log.info("getContextFromCache for " + key + " result is " + map);
+      _log.debug("getContextFromCache for " + key + " result is " + map);
       return map;
     } catch (Exception e) {
       _log.error("Failed to get context from cache: ", e);
@@ -76,11 +83,9 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
   }
 
   private boolean contextExistsInCacheFor(String sessionId) {
-    MemcachedClientIF client;
     try {
-      client = memcacheClientFactory.getCacheClient();
-      boolean exists = client.get(sessionId) != null;
-      _log.info("contextExistsInCacheFor " + sessionId + " result is " + exists);
+      boolean exists = getClient().get(sessionId) != null;
+      _log.debug("contextExistsInCacheFor " + sessionId + " result is " + exists);
       return exists;
     } catch (Exception e) {
       _log.error("Failed to check contextExistsInCacheFor: ", e);
@@ -89,8 +94,31 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
   }
 
   private void updateLocalCache(String key, Map<String, Object> context) {
-    _log.info("updateLocalCache for key " + key);
+    _log.debug("updateLocalCache for key " + key);
     super.updateContext(key, context);
+  }
+
+  public synchronized MemcachedClient getClient() throws IOException {
+    if (_client == null)
+      _client = memcacheClientFactory.getCacheClient();
+    return _client;
+  }
+
+  public synchronized void setClient(MemcachedClient _client) {
+    this._client = _client;
+  }
+  
+  public synchronized void closeClient() {
+    if (_client == null)
+      return;
+    OperationFuture<Boolean> flush = _client.flush();
+    try {
+      flush.get();
+    } catch (Exception e) {
+      _log.error("Failed to flush memcache client", e);
+    }
+    _client.shutdown();
+    _client = null;
   }
 
 }
