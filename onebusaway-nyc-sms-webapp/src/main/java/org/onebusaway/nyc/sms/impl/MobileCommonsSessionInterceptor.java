@@ -90,6 +90,7 @@ public class MobileCommonsSessionInterceptor extends AbstractInterceptor {
       _sessionManager.saveContext(sessionId);
       RequestContextHolder.setRequestAttributes(originalAttributes);
       context.setSession(originalSession);
+      _sessionManager.close();
     }
   }
 }
