@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,20 +15,19 @@
  */
 
 /**
- * Hibernate entity for archiving NycQueuedInferredLocationBeans coming
- * from the inference engine queue.
- *
+ * Hibernate entity for archiving NycQueuedInferredLocationBeans coming from the
+ * inference engine queue.
+ * 
  * @author smeeks
- *
+ * 
  */
 package org.onebusaway.nyc.report_archive.model;
+
+import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
-
-import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -61,40 +60,40 @@ public class NycQueuedInferredLocationRecord implements Serializable {
 
   @Column(nullable = false, name = "service_date")
   private Date serviceDate;
-  
+
   @Column(nullable = true, name = "schedule_deviation")
   private Integer scheduleDeviation;
-  
+
   @Column(nullable = true, name = "block_id")
   private String blockId;
-  
+
   @Column(nullable = true, name = "trip_id")
   private String tripId;
-  
+
   @Column(nullable = true, name = "distance_along_block")
   private Double distanceAlongBlock;
-  
+
   @Column(nullable = true, name = "distance_along_trip")
   private Double distanceAlongTrip;
-  
+
   @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_latitude")
   private BigDecimal inferredLatitude;
-  
+
   @Column(nullable = true, columnDefinition = "DECIMAL(9,6)", name = "inferred_longitude")
   private BigDecimal inferredLongitude;
-  
+
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "observed_latitude")
   private BigDecimal observedLatitude;
-  
+
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "observed_longitude")
   private BigDecimal observedLongitude;
-  
+
   @Column(nullable = false, name = "phase")
   private String phase;
-  
+
   @Column(nullable = false, name = "status")
   private String status;
-  
+
   @Column(nullable = false, name = "raw_message", length = 1400)
   private String rawMessage;
 
@@ -110,7 +109,8 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   public NycQueuedInferredLocationRecord() {
   }
 
-  public NycQueuedInferredLocationRecord(NycQueuedInferredLocationBean message, String contents) {
+  public NycQueuedInferredLocationRecord(NycQueuedInferredLocationBean message,
+      String contents) {
     super();
 
     Double possibleNaN;
@@ -125,7 +125,7 @@ public class NycQueuedInferredLocationRecord implements Serializable {
       setDistanceAlongBlock(null);
     else
       setDistanceAlongBlock(possibleNaN);
-    
+
     setDistanceAlongTrip(message.getDistanceAlongTrip());
 
     if (Double.isNaN(message.getInferredLatitude()))
@@ -269,7 +269,7 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   public void setRunId(String runId) {
     this.runId = runId;
   }
-  
+
   public String getRunId() {
     return runId;
   }
@@ -277,7 +277,7 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   public void setRouteId(String routeId) {
     this.routeId = routeId;
   }
-  
+
   public String getRouteId() {
     return routeId;
   }
@@ -285,7 +285,7 @@ public class NycQueuedInferredLocationRecord implements Serializable {
   public void setBearing(double bearing) {
     this.bearing = bearing;
   }
-  
+
   public double getBearing() {
     return bearing;
   }

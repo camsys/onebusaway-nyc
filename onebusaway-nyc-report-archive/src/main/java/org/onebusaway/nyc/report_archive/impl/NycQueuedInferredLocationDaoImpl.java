@@ -3,168 +3,130 @@ package org.onebusaway.nyc.report_archive.impl;
 import org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord;
 import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
-import org.onebusaway.nyc.report_archive.model.InferredLocationRecord;
 import org.onebusaway.nyc.report_archive.services.NycQueuedInferredLocationDao;
 
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 @Component
 public class NycQueuedInferredLocationDaoImpl implements
-		NycQueuedInferredLocationDao {
+    NycQueuedInferredLocationDao {
 
-	protected static Logger _log = LoggerFactory
-			.getLogger(NycQueuedInferredLocationDaoImpl.class);
+  protected static Logger _log = LoggerFactory.getLogger(NycQueuedInferredLocationDaoImpl.class);
 
-	private HibernateTemplate _template;
+  private HibernateTemplate _template;
 
-	@Autowired
-	public void setSessionFactory(SessionFactory sessionFactory) {
-		_template = new HibernateTemplate(sessionFactory);
-	}
+  @Autowired
+  private CcLocationCache _ccLocationCache;
 
-	public HibernateTemplate getHibernateTemplate() {
-		return _template;
-	}
+  public void setCcLocationCache(CcLocationCache cache) {
+    _ccLocationCache = cache;
+  }
 
+  @Autowired
+  public void setSessionFactory(SessionFactory sessionFactory) {
+    _template = new HibernateTemplate(sessionFactory);
+  }
 
-	@Transactional(rollbackFor = Throwable.class)
-	@Override
-	public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
-		_template.saveOrUpdate(record);
+  public HibernateTemplate getHibernateTemplate() {
+    return _template;
+  }
 
-		InferredLocationRecord currentRecord = new InferredLocationRecord(
-				record);
+  @Transactional(rollbackFor = Throwable.class)
+  @Override
+  public void saveOrUpdateRecord(ArchivedInferredLocationRecord record) {
+    _template.saveOrUpdate(record);
 
-		_template.saveOrUpdate(currentRecord);
-		_template.flush();
-		_template.clear();
-	}
+    CcLocationReportRecord cc = findRealtimeRecord(record);
+    if (cc != null) {
+      CcAndInferredLocationRecord lastKnown = new CcAndInferredLocationRecord(
+          record, cc);
+      _template.saveOrUpdate(lastKnown);
+    }
 
-	@Transactional(rollbackFor = Throwable.class)
-	@Override
-	public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
-		List<ArchivedInferredLocationRecord> list = new ArrayList<ArchivedInferredLocationRecord>(
-				records.length);
-		for (ArchivedInferredLocationRecord record : records)
-			list.add(record);
-		_template.saveOrUpdateAll(list);
+    _template.flush();
+    _template.clear();
+  }
 
-		LinkedHashMap<Integer, InferredLocationRecord> currentRecords = new LinkedHashMap<Integer, InferredLocationRecord>();
-		for (ArchivedInferredLocationRecord record : records) {
-			InferredLocationRecord currentRecord = new InferredLocationRecord(
-					record);
-			// duplicate vehicles in a transaction will confuse hibernate, prevent this
-			currentRecords.put(record.getVehicleId(), currentRecord);
-		}
-		
-		_template.saveOrUpdateAll(currentRecords.values());
-		_template.flush();
-		_template.clear();
-	}
+  @Transactional(rollbackFor = Throwable.class)
+  @Override
+  public void saveOrUpdateRecords(ArchivedInferredLocationRecord... records) {
+    List<ArchivedInferredLocationRecord> list = new ArrayList<ArchivedInferredLocationRecord>(
+        records.length);
+    for (ArchivedInferredLocationRecord record : records)
+      list.add(record);
+    _template.saveOrUpdateAll(list);
 
-	@Override
-	public List<CcAndInferredLocationRecord> getAllLastKnownRecords() {
+    // LastKnownRecord
+    LinkedHashMap<Integer, CcAndInferredLocationRecord> lastKnownRecords = new LinkedHashMap<Integer, CcAndInferredLocationRecord>(
+        records.length);
+    for (ArchivedInferredLocationRecord record : records) {
+      CcLocationReportRecord cc = findRealtimeRecord(record);
+      if (cc != null) {
+        CcAndInferredLocationRecord lastKnown = new CcAndInferredLocationRecord(
+            record, cc);
+        lastKnownRecords.put(lastKnown.getVehicleId(), lastKnown);
+      }
+    }
+    _template.saveOrUpdateAll(lastKnownRecords.values());
+    _template.flush();
+    _template.clear();
+  }
 
-		String hql = "select vehicleRecord from "
-				+ "CcAndInferredLocationReport vehicleRecord, "
-				+ "order by vehicleRecord.vehicleId";
+  private CcLocationReportRecord findRealtimeRecord(
+      ArchivedInferredLocationRecord record) {
+    // first check cache for realtime record
+    CcLocationReportRecord realtime = _ccLocationCache.get(record.getUUID());
 
-		List<CcAndInferredLocationRecord> list = _template.find(hql);
-		// our join will return a list of object arrays now, in the order
-		// we selected above
-		return list;
-	}
+    // if not in cache, lookup and log cache miss
+    if (realtime == null) {
+      _log.info("cache miss for " + record.getVehicleId());
 
-	public List<CcAndInferredLocationRecord> getAllLastKnownRecordsViaMap() {
+      String hql = " select cc from CcLocationReportRecord cc where uuid = ? ";
+      @SuppressWarnings("unchecked")
+      List<CcLocationReportRecord> list = _template.find(hql, record.getUUID());
 
-		List<CcAndInferredLocationRecord> firstArchivedRecord = new ArrayList<CcAndInferredLocationRecord>();
-		/*
-		 * here we do a join for real and inferred data based on vehicle id and
-		 * UID, and then join against the current record pointer to retrieve the
-		 * single last known record for that bus
-		 */
-		String hql = "select inferenceRecord, bhsRecord "
-				+ "from InferredLocationRecord map, "
-				+ "CcLocationReportRecord bhsRecord, "
-				+ "ArchivedInferredLocationRecord inferenceRecord "
-				+ "where map.currentRecord = inferenceRecord "
-				+ "and map.vehicleId = bhsRecord.vehicleId "
-				+ "and map.currentRecord.uuid = bhsRecord.uuid "
-				+ "order by map.vehicleId";
+      if (list.size() == 1) {
+        return list.get(0);
+      } else {
+        _log.error("list of size=" + list.size() + " not expected for UUID="
+            + record.getUUID());
+      }
+    }
+    return realtime;
+  }
 
-		List<Object[]> list = _template.find(hql);
-		// our join will return a list of object arrays now, in the order
-		// we selected above
-		for (Object[] o : list) {
-			CcAndInferredLocationRecord record = new CcAndInferredLocationRecord(
-					(ArchivedInferredLocationRecord) o[0],
-					(CcLocationReportRecord) o[1]);
-			firstArchivedRecord.add(record);
-		}
-		return firstArchivedRecord;
-	}
+  @Override
+  public List<CcAndInferredLocationRecord> getAllLastKnownRecords() {
 
-		@Override
-	public CcAndInferredLocationRecord getLastKnownRecordForVehicle(
-			Integer vehicleId) throws Exception {
+    String hql = "from CcAndInferredLocationRecord " + "order by vehicleId";
 
-		CcAndInferredLocationRecord rec = null;
+    @SuppressWarnings("unchecked")
+    List<CcAndInferredLocationRecord> list = _template.find(hql);
+    // our join will return a list of object arrays now, in the order
+    // we selected above
 
-		if (vehicleId == null) {
-			return null;
-		}
+    return list;
+  }
 
-		CcAndInferredLocationRecord record = _template.get(CcAndInferredLocationRecord.class, vehicleId);
-		return record;
-	}
-	
-	public CcAndInferredLocationRecord getLastKnownRecordForVehicleViaMap(
-			Integer vehicleId) throws Exception {
+  @Override
+  public CcAndInferredLocationRecord getLastKnownRecordForVehicle(
+      Integer vehicleId) throws Exception {
 
-		CcAndInferredLocationRecord rec = null;
+    if (vehicleId == null) {
+      return null;
+    }
 
-		if (vehicleId == null) {
-			return null;
-		}
+    return _template.get(CcAndInferredLocationRecord.class, vehicleId);
+  }
 
-		String hql = "select inferenceRecord, bhsRecord "
-				+ "from InferredLocationRecord map, "
-				+ "CcLocationReportRecord bhsRecord, "
-				+ "ArchivedInferredLocationRecord inferenceRecord "
-				+ "where map.currentRecord = inferenceRecord "
-				+ "and map.vehicleId = bhsRecord.vehicleId "
-				+ "and map.currentRecord.uuid = bhsRecord.uuid "
-				+ "and map.vehicleId = ?";
-
-		List<Object[]> list = _template.find(hql, vehicleId);
-
-		if (list.size() > 1) {
-			throw new Exception(
-					"Query for a single latest record of a single vehicle returned multiple records");
-		} else if (list.size() == 0) {
-			rec = null;
-		} else {
-			List<CcAndInferredLocationRecord> firstArchivedRecords = new ArrayList<CcAndInferredLocationRecord>();
-			for (Object[] o : list) {
-				CcAndInferredLocationRecord record = new CcAndInferredLocationRecord(
-						(ArchivedInferredLocationRecord) o[0],
-						(CcLocationReportRecord) o[1]);
-				firstArchivedRecords.add(record);
-			}
-			rec = firstArchivedRecords.get(0);
-		}
-
-		return rec;
-	}
 }

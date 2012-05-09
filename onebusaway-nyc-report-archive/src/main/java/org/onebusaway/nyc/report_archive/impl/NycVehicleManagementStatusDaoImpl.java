@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public
-class NycVehicleManagementStatusDaoImpl implements NycVehicleManagementStatusDao {
+public class NycVehicleManagementStatusDaoImpl implements
+    NycVehicleManagementStatusDao {
 
   private HibernateTemplate _template;
 
@@ -30,7 +30,7 @@ class NycVehicleManagementStatusDaoImpl implements NycVehicleManagementStatusDao
     return _template;
   }
 
-  @Transactional(rollbackFor=Throwable.class)
+  @Transactional(rollbackFor = Throwable.class)
   @Override
   public void saveOrUpdateRecord(NycVehicleManagementStatusRecord record) {
     _template.saveOrUpdate(record);
