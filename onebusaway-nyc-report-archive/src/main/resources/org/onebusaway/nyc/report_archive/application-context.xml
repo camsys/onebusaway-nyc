@@ -31,7 +31,7 @@
                 <value>org.onebusaway.nyc.report_archive.model.CcLocationReportRecord</value>
                 <value>org.onebusaway.nyc.report_archive.model.InvalidLocationRecord</value>
                 <value>org.onebusaway.nyc.report_archive.model.ArchivedInferredLocationRecord</value>
-                <value>org.onebusaway.nyc.report_archive.model.InferredLocationRecord</value>
+                <value>org.onebusaway.nyc.report_archive.model.CcAndInferredLocationRecord</value>
             </list>
         </property>
     </bean>

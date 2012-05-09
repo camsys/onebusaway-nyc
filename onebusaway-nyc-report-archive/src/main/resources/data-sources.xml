@@ -44,7 +44,7 @@
         <property name="target" value="hibernateProperties" />
         <property name="properties">
             <props>
-              <prop key="hibernate.hbm2ddl.auto">validate</prop>
+              <prop key="hibernate.hbm2ddl.auto">update</prop>
               <prop key="hibernate.jdbc.batch_size">1000</prop>
               <prop key="hibernate.order_inserts">false</prop>
               <prop key="hibernate.order_updates">false</prop>
@@ -62,6 +62,10 @@
   </bean>
 
     <!-- Input and Inference Queue Configuration -->
+  <bean id="realtimeCache" class="org.onebusaway.nyc.report_archive.impl.CcLocationCache"
+    scope="singleton">
+    <constructor-arg value="20000"/>
+  </bean>
 
   <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
     <property name="batchSize" value="1000" />

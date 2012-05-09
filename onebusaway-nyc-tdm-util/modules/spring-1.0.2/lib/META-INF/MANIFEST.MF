@@ -1,0 +1,77 @@
+Manifest-Version: 1.0
+Export-Package: org.springframework.asm;version=2.5.5,org.springframew
+ ork.util.comparator;uses:=org.springframework.util;version=2.5.5,org.
+ springframework.metadata.commons;uses:="org.springframework.metadata,
+ org.apache.commons.attributes";version=2.5.5,org.springframework.asm.
+ signature;version=2.5.5,org.springframework.util;uses:="org.apache.co
+ mmons.logging,org.apache.log4j,org.apache.log4j.xml";version=2.5.5,or
+ g.springframework.core.io;uses:="org.springframework.core,org.springf
+ ramework.util";version=2.5.5,org.springframework.core.io.support;uses
+ :="org.apache.commons.logging,org.springframework.util,org.springfram
+ ework.core.io";version=2.5.5,org.springframework.core.annotation;uses
+ :="org.springframework.core,org.springframework.util";version=2.5.5,o
+ rg.springframework.util.xml;uses:="org.apache.commons.logging,javax.x
+ ml.transform,org.springframework.util,org.w3c.dom,org.xml.sax";versio
+ n=2.5.5,org.springframework.core;uses:="org.springframework.asm,org.a
+ pache.commons.logging,org.apache.commons.collections,org.springframew
+ ork.util,edu.emory.mathcs.backport.java.util.concurrent,org.springfra
+ mework.asm.commons,org.apache.commons.collections.map";version=2.5.5,
+ org.springframework.asm.commons;uses:=org.springframework.asm;version
+ =2.5.5,org.springframework.core.task.support;uses:="org.springframewo
+ rk.util,org.springframework.core.task";version=2.5.5,org.springframew
+ ork.core.type.filter;uses:="org.aspectj.weaver,org.aspectj.weaver.pat
+ terns,org.springframework.core.type.classreading,org.springframework.
+ util,org.aspectj.bridge,org.aspectj.weaver.bcel,org.springframework.c
+ ore.type";version=2.5.5,org.springframework.metadata;version=2.5.5,or
+ g.springframework.core.type.classreading;uses:="org.springframework.a
+ sm,org.springframework.asm.commons,org.springframework.util,org.sprin
+ gframework.core.io,org.springframework.core.type";version=2.5.5,org.s
+ pringframework.core.style;uses:=org.springframework.util;version=2.5.
+ 5,org.springframework.core.enums;uses:="org.springframework.util.comp
+ arator,org.apache.commons.logging,org.springframework.util";version=2
+ .5.5,org.springframework.core.task;uses:="org.springframework.core,or
+ g.springframework.util";version=2.5.5,org.springframework.core.type;u
+ ses:=org.springframework.core.annotation;version=2.5.5
+Spring-Version: 2.5.5
+Implementation-Title: Spring Framework
+Implementation-Version: 2.5.5
+Tool: Bnd-0.0.208
+Bundle-Name: spring-core
+Created-By: 1.6.0_06 (Sun Microsystems Inc.)
+Ant-Version: Apache Ant 1.7.0
+Bundle-Version: 2.5.5
+Bnd-LastModified: 1214201348796
+Bundle-ManifestVersion: 2
+Bundle-Description: Spring Framework
+Import-Package: edu.emory.mathcs.backport.java.util.concurrent;resolut
+ ion:=optional,javax.xml.transform;resolution:=optional,org.apache.com
+ mons.attributes;resolution:=optional,org.apache.commons.collections;r
+ esolution:=optional,org.apache.commons.collections.map;resolution:=op
+ tional,org.apache.commons.logging,org.apache.log4j;resolution:=option
+ al,org.apache.log4j.xml;resolution:=optional,org.aspectj.bridge;resol
+ ution:=optional,org.aspectj.weaver;resolution:=optional,org.aspectj.w
+ eaver.bcel;resolution:=optional,org.aspectj.weaver.patterns;resolutio
+ n:=optional,org.eclipse.core.runtime;resolution:=optional;common=spli
+ t,org.springframework.asm;resolution:=optional;version=2.5.5,org.spri
+ ngframework.asm.commons;resolution:=optional;version=2.5.5,org.spring
+ framework.asm.signature;resolution:=optional;version=2.5.5,org.spring
+ framework.core;resolution:=optional;version=2.5.5,org.springframework
+ .core.annotation;resolution:=optional;version=2.5.5,org.springframewo
+ rk.core.enums;resolution:=optional;version=2.5.5,org.springframework.
+ core.io;resolution:=optional;version=2.5.5,org.springframework.core.i
+ o.support;resolution:=optional;version=2.5.5,org.springframework.core
+ .style;resolution:=optional;version=2.5.5,org.springframework.core.ta
+ sk;resolution:=optional;version=2.5.5,org.springframework.core.task.s
+ upport;resolution:=optional;version=2.5.5,org.springframework.core.ty
+ pe;resolution:=optional;version=2.5.5,org.springframework.core.type.c
+ lassreading;resolution:=optional;version=2.5.5,org.springframework.co
+ re.type.filter;resolution:=optional;version=2.5.5,org.springframework
+ .metadata;resolution:=optional;version=2.5.5,org.springframework.meta
+ data.commons;resolution:=optional;version=2.5.5,org.springframework.u
+ til;resolution:=optional;version=2.5.5,org.springframework.util.compa
+ rator;resolution:=optional;version=2.5.5,org.springframework.util.xml
+ ;resolution:=optional;version=2.5.5,org.w3c.dom;resolution:=optional,
+ org.xml.sax;resolution:=optional
+Bundle-SymbolicName: org.springframework.bundle.spring.core
+Originally-Created-By: 10.0-b22 (Sun Microsystems Inc.)
+

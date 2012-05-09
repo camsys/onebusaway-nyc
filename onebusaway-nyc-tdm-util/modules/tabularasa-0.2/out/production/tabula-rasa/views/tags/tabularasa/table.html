@@ -1,0 +1,31 @@
+<table id="${_tableModel.tableId}" class="${_cssClass}">
+    <thead>
+        <tr>
+            #{if _selectAllControlId}
+                <th><input type="checkbox" id="${_selectAllControlId}"/></th>
+            #{/if}
+            #{list _tableModel.tableColumns, as:'column'}
+                #{if column.visible}
+                    <th>&{column.columnKey}</th>
+                #{/if}
+            #{/list}
+        </tr>
+    </thead>
+    <tbody>
+        #{doBody /}
+    </tbody>
+    #{ifnot _excludeFooter && _excludeFooter == true}
+        <tfoot>
+            <tr>
+                #{if _selectAllControlId}
+                    <th></th>
+                #{/if}
+                #{list _tableModel.tableColumns, as:'column'}
+                    #{if column.visible}
+                        <th>&{column.columnKey}</th>
+                    #{/if}
+                #{/list}
+            </tr>
+        </tfoot>
+    #{/ifnot}
+</table>

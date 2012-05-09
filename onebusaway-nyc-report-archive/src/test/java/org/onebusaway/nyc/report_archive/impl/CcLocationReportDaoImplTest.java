@@ -55,6 +55,7 @@ public class CcLocationReportDaoImplTest {
 
     _dao = new CcLocationReportDaoImpl();
     _dao.setSessionFactory(_sessionFactory);
+
   }
 
   @After

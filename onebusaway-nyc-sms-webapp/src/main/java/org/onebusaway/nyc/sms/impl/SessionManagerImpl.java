@@ -164,4 +164,9 @@ public class SessionManagerImpl implements SessionManager {
     }
   }
 
+  @Override
+  public void close() {
+    // no-op in this implementation
+  }
+
 }

@@ -1,0 +1,47 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+
+#{set 'moreScripts'}
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        #{tabularasa.init tableId:'tab'}
+            var tabExtras = {
+                "toolbarTarget": "customiseTable",
+                "toolbar": "<button>hello</button>"
+            };
+            var tabParameters = {
+                "aoColumns": [ {"sName": "name"},
+                               {"sName": "location"}],
+                "sAjaxSource": "@{AjaxSampleApplication.data()}",
+                "bProcessing": true,
+                "bServerSide": true,
+                "sDom": 'lfrtip<"customiseTable">'
+             };
+        #{/tabularasa.init}
+    });
+
+    function addRequestParameters(parameters, tableId) {
+        parameters.push( { "name": "manuallyInsertedParameter",
+                           "value": "bar" } );
+        parameters.push( { "name": "foo.x",
+                           "value": "steve" } );
+        parameters.push( { "name": "foo.y",
+                           "value": true } );
+        parameters.push( { "name": "foo.z",
+                           "value": 5 } );
+    }
+
+</script>
+#{/set}
+
+
+<table class="display" id="tab">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Location</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
