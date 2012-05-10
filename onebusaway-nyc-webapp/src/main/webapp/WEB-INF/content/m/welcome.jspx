@@ -87,7 +87,9 @@
 <c:choose>
 	<c:when test="${!queryIsEmpty}">
 		<div id="cant-find">
-			<wiki:wiki namespace="HelpMobile" name="CantFindRoute" />
+			<h2>Can't find your bus route?</h2>
+			<s:url var="url" namespace="/m/wiki/Help" action="Routes" />
+			<p>MTA Bus Time will be available NYC-wide by the end of 2013. <a href="${url}">Click here</a> to see which routes are currently available.</p>
 		</div>
 	</c:when>
 	<c:otherwise>

@@ -183,7 +183,9 @@
 		<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
 	   
 		<div id="cant-find">
-			<wiki:wiki namespace="Help" name="CantFindRoute" />
+			<h2>Can't find your bus route?</h2>
+			<s:url var="url" namespace="/wiki/Help" action="Routes" />
+			<p>MTA Bus Time will be available NYC-wide by the end of 2013. <a href="${url}">Click here</a> to see which routes are currently available.</p>
 		</div>
 	   
     </div>

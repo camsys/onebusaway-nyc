@@ -16,6 +16,7 @@ import org.onebusaway.transit_data.model.service_alerts.SituationAffectsBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationConsequenceBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 import org.onebusaway.transit_data.model.service_alerts.TimeRangeBean;
+import org.onebusaway.transit_data.services.TransitDataService;
 import org.springframework.remoting.caucho.HessianProxyFactoryBean;
 
 import com.caucho.hessian.client.HessianProxyFactory;

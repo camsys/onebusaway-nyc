@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2011 Metropolitan Transportation Authority
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,24 +15,22 @@
  */
 
 /**
- * Hibernate entity for archiving NycVehicleManagementStatusBeans coming
- * from the inference engine queue.
- *
+ * Hibernate entity for archiving NycVehicleManagementStatusBeans coming from
+ * the inference engine queue.
+ * 
  * @author smeeks
- *
+ * 
  */
 package org.onebusaway.nyc.report_archive.model;
+
+import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
 import org.hibernate.annotations.AccessType;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
-
-import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -58,22 +56,22 @@ public class NycVehicleManagementStatusRecord implements Serializable {
 
   @Column(nullable = false, name = "last_update_time")
   private Long lastUpdateTime;
-  
+
   @Column(nullable = false, name = "last_location_update_time")
   private Long lastLocationUpdateTime;
 
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "last_observed_latitude")
   private BigDecimal lastObservedLatitude;
-  
+
   @Column(nullable = false, columnDefinition = "DECIMAL(9,6)", name = "last_observed_longitude")
   private BigDecimal lastObservedLongitude;
-  
+
   @Column(nullable = false, name = "most_recent_observed_destination_sign_code")
   private String mostRecentObservedDestinationSignCode;
-  
+
   @Column(nullable = true, name = "last_inferred_destination_sign_code")
   private String lastInferredDestinationSignCode;
-  
+
   @Column(nullable = true, name = "inference_engine_hostname")
   private String inferenceEngineHostname;
 
@@ -180,7 +178,8 @@ public class NycVehicleManagementStatusRecord implements Serializable {
     return lastInferredDestinationSignCode;
   }
 
-  public void setLastInferredDestinationSignCode(String inferredDestinationSignCode) {
+  public void setLastInferredDestinationSignCode(
+      String inferredDestinationSignCode) {
     this.lastInferredDestinationSignCode = inferredDestinationSignCode;
   }
 
@@ -201,11 +200,11 @@ public class NycVehicleManagementStatusRecord implements Serializable {
   }
 
   public boolean isInferenceIsFormal() {
-	return inferenceIsFormal;
+    return inferenceIsFormal;
   }
 
   public void setInferenceIsFormal(boolean inferenceIsFormal) {
-	this.inferenceIsFormal = inferenceIsFormal;
+    this.inferenceIsFormal = inferenceIsFormal;
   }
 
   public boolean isInferenceEngineIsPrimary() {

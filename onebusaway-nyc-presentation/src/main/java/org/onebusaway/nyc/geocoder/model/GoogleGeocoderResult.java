@@ -17,98 +17,108 @@ package org.onebusaway.nyc.geocoder.model;
 
 import org.onebusaway.geocoder.impl.GoogleAddressComponent;
 import org.onebusaway.geospatial.model.CoordinateBounds;
+import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.geocoder.service.NycGeocoderResult;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
 public class GoogleGeocoderResult implements NycGeocoderResult, Serializable {
-  
-  private static final long serialVersionUID = 1L;
 
-  private String formattedAddress = null;
-  
-  private Double latitude = null;
-  
-  private Double longitude = null;
-  
-  private Double northeastLatitude = null;
+	private static final long serialVersionUID = 1L;
 
-  private Double northeastLongitude = null;
+	private String formattedAddress = null;
 
-  private Double southwestLatitude = null;
+	private Double latitude = null;
 
-  private Double southwestLongitude = null;
+	private Double longitude = null;
 
-  private HashMap<String, String> addressComponentMap = new HashMap<String, String>();
-  
-  public void setFormattedAddress(String formattedAddress) {
-    this.formattedAddress = formattedAddress;
-  }
+	private Double northeastLatitude = null;
 
-  public void setNortheastLatitude(Double northeastLatitude) {
-    this.northeastLatitude = northeastLatitude;
-  }
+	private Double northeastLongitude = null;
 
-  public void setNortheastLongitude(Double northeastLongitude) {
-    this.northeastLongitude = northeastLongitude;
-  }
+	private Double southwestLatitude = null;
 
-  public void setSouthwestLatitude(Double southwestLatitude) {
-    this.southwestLatitude = southwestLatitude;
-  }
+	private Double southwestLongitude = null;
 
-  public void setSouthwestLongitude(Double southwestLongitude) {
-    this.southwestLongitude = southwestLongitude;
-  }  
+	private HashMap<String, String> addressComponentMap = new HashMap<String, String>();
 
-  public void setLatitude(Double latitude) {
-    this.latitude = latitude;
-  }
+	public void setFormattedAddress(String formattedAddress) {
+		this.formattedAddress = formattedAddress;
+	}
 
-  public void setLongitude(Double longitude) {
-    this.longitude = longitude;
-  }
+	public void setNortheastLatitude(Double northeastLatitude) {
+		this.northeastLatitude = northeastLatitude;
+	}
 
-  public void addAddressComponent(GoogleAddressComponent addressComponent) {
-    for(String type : addressComponent.getTypes()) {
-      addressComponentMap.put(type, addressComponent.getShortName());
-    }
-  }
-  
-  public Double getLatitude() {
-    return latitude;
-  }
-  
-  public Double getLongitude() {
-    return longitude;
-  }
-  
-  public String getNeighborhood() {
-    String output = addressComponentMap.get("neighborhood");
+	public void setNortheastLongitude(Double northeastLongitude) {
+		this.northeastLongitude = northeastLongitude;
+	}
 
-    if(output != null)
-      return output;
-    else
-      return addressComponentMap.get("sublocality");
-  }
- 
-  public String getFormattedAddress() {
-    return this.formattedAddress;
-  }
-  
-  public CoordinateBounds getBounds() {
-    if(northeastLatitude != null && northeastLongitude != null 
-        && southwestLatitude != null && southwestLongitude != null) {
-      
-      return new CoordinateBounds(northeastLatitude, northeastLongitude, 
-          southwestLatitude, southwestLongitude);
-    } else {
-      return null;
-    }    
-  }
-  
-  public boolean isRegion() {
-    return (getBounds() != null);
-  }
+	public void setSouthwestLatitude(Double southwestLatitude) {
+		this.southwestLatitude = southwestLatitude;
+	}
+
+	public void setSouthwestLongitude(Double southwestLongitude) {
+		this.southwestLongitude = southwestLongitude;
+	}
+
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
+
+	public void addAddressComponent(GoogleAddressComponent addressComponent) {
+		for (String type : addressComponent.getTypes()) {
+			addressComponentMap.put(type, addressComponent.getShortName());
+		}
+	}
+
+	public Double getLatitude() {
+		return latitude;
+	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	public String getNeighborhood() {
+		String output = addressComponentMap.get("neighborhood");
+
+		if (output != null)
+			return output;
+		else
+			return addressComponentMap.get("sublocality");
+	}
+
+	public String getFormattedAddress() {
+		return this.formattedAddress;
+	}
+
+	public CoordinateBounds getBounds() {
+		if (northeastLatitude != null && northeastLongitude != null && southwestLatitude != null && southwestLongitude != null) {
+
+			return new CoordinateBounds(northeastLatitude, northeastLongitude, southwestLatitude, southwestLongitude);
+		} else {
+			return null;
+		}
+	}
+
+	public boolean isRegion() {
+		CoordinateBounds bounds = getBounds();
+		if (bounds != null) {
+			double height = SphericalGeometryLibrary.distanceFaster(bounds.getMaxLat(), bounds.getMinLon(), bounds.getMinLat(),
+					bounds.getMinLon());
+			double width = SphericalGeometryLibrary.distanceFaster(bounds.getMinLat(), bounds.getMinLon(), bounds.getMinLat(),
+					bounds.getMaxLon());
+			double area = width * height;
+			// region must be larger than 1200 x 1200 meters
+			if (area > 1440000)
+				return true;
+		}
+		return false;
+	}
 }

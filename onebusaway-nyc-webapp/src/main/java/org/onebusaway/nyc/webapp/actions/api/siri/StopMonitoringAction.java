@@ -36,7 +36,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -113,33 +115,68 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       }
     }
 
+    int maximumStopVisits = Integer.MAX_VALUE;        
+    try {
+      maximumStopVisits = Integer.parseInt(_request.getParameter("MaximumStopVisits"));
+    } catch (NumberFormatException e) {
+      maximumStopVisits = Integer.MAX_VALUE;
+    }
+
+    Integer minimumStopVisitsPerLine = null;        
+    try {
+      minimumStopVisitsPerLine = Integer.parseInt(_request.getParameter("MinimumStopVisitsPerLine"));
+    } catch (NumberFormatException e) {
+      minimumStopVisitsPerLine = null;
+    }
+
+    
+    
     List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
 
     if(stopId != null && stopId.hasValues()) {
-       visits =
-          _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls);
+    	visits = _realtimeService.getMonitoredStopVisitsForStop(stopId.toString(), maximumOnwardCalls);
 
-      if((routeId != null && routeId.hasValues()) || directionId != null) {
-        List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();
+    	List<MonitoredStopVisitStructure> filteredVisits = new ArrayList<MonitoredStopVisitStructure>();
 
-        for(MonitoredStopVisitStructure visit : visits) {
-          MonitoredVehicleJourneyStructure journey = visit.getMonitoredVehicleJourney();
+    	Map<AgencyAndId, Integer> visitCountByLine = new HashMap<AgencyAndId, Integer>();
+    	int visitCount = 0;
+    	
+    	for(MonitoredStopVisitStructure visit : visits) {
+    		MonitoredVehicleJourneyStructure journey = visit.getMonitoredVehicleJourney();
 
-          AgencyAndId thisRouteId = AgencyAndIdLibrary.convertFromString(journey.getLineRef().getValue());
-          String thisDirectionId = journey.getDirectionRef().getValue();
-          
-          // user filtering
-          if((routeId != null && routeId.hasValues()) && !thisRouteId.equals(routeId))
-            continue;
-          
-          if(directionId != null && !thisDirectionId.equals(directionId))
-            continue;
-          
-          filteredVisits.add(visit);
-        }
+    		AgencyAndId thisRouteId = AgencyAndIdLibrary.convertFromString(journey.getLineRef().getValue());
+    		String thisDirectionId = journey.getDirectionRef().getValue();
 
-        visits = filteredVisits;
-      }
+    		// user filtering
+    		if((routeId != null && routeId.hasValues()) && !thisRouteId.equals(routeId))
+    			continue;
+
+    		if(directionId != null && !thisDirectionId.equals(directionId))
+    			continue;
+
+    		// visit count filters
+    		Integer visitCountForThisLine = visitCountByLine.get(thisRouteId);
+    		if(visitCountForThisLine == null) {
+    			visitCountForThisLine = 0;
+    		}
+
+			if(visitCount >= maximumStopVisits) {
+	    		if(minimumStopVisitsPerLine == null) {
+	    			break;
+	    		} else {
+	    			if(visitCountForThisLine >= minimumStopVisitsPerLine) {
+	    				continue;    		
+	    			}
+	    		}
+			}
+    		
+    		filteredVisits.add(visit);
+
+    		visitCount++;    		
+    		visitCountForThisLine++;
+    		visitCountByLine.put(thisRouteId, visitCountForThisLine);
+    	}
+    	visits = filteredVisits;
     }
 
     _response = generateSiriResponse(visits, stopId);
@@ -147,7 +184,6 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     return SUCCESS;
   }
   
-
   private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, AgencyAndId stopId) {
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     try {

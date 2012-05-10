@@ -8,8 +8,9 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.HibernateAccessor;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
@@ -17,11 +18,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Date;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
 
 @Component
 public class CcLocationReportDaoImpl implements CcLocationReportDao {
@@ -29,7 +27,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 	protected static Logger _log = LoggerFactory
 			.getLogger(CcLocationReportDaoImpl.class);
 	private HibernateTemplate _template;
-
+	
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		_template = new HibernateTemplate(sessionFactory);
@@ -38,7 +36,7 @@ public class CcLocationReportDaoImpl implements CcLocationReportDao {
 	public HibernateTemplate getHibernateTemplate() {
 		return _template;
 	}
-
+	
 	@Transactional(rollbackFor = Throwable.class)
 	@Override
 	public void saveOrUpdateReport(CcLocationReportRecord report) {

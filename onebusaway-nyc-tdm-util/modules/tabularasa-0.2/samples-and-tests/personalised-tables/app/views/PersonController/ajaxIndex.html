@@ -1,0 +1,29 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+
+#{set 'moreScripts'}
+    #{tabularasa.init addScriptTag:true, tableId:tableModel.tableId, tableModel:tableModel, selectAllControlId:'selectAll', selectAllName:'targets'}
+        var ${tableModel.tableId}Parameters = {
+            "sAjaxSource": "@{PersonController.data()}",
+            "bProcessing": true,
+            "bServerSide": true,
+            "sNames": [""]
+         };
+    #{/tabularasa.init}
+#{/set}
+
+
+#{tabularasa.table tableModel:tableModel, cssClass:'display', selectAllControlId:'selectAll' /}
+
+*{ Everything below this line is here for the demo, it's not required in your app }*
+<form action="@{PersonController.ajaxIndex}">
+    <select name="userName">
+        <option value="steve">Steve</option>
+        <option value="greet">Greet</option>
+    </select>
+    <input type="submit"/>
+</form>
+
+<div style="margin-top: 20px">
+    <a href="@{PersonController.index()}">Non-AJAX example</a>
+</div>

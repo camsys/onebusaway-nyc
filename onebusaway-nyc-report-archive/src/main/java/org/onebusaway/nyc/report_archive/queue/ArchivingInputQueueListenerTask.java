@@ -1,22 +1,19 @@
 package org.onebusaway.nyc.report_archive.queue;
 
+import org.onebusaway.container.refresh.Refreshable;
+import org.onebusaway.nyc.queue.QueueListenerTask;
+import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
+import org.onebusaway.nyc.report_archive.impl.CcLocationCache;
+import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
+import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
+
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
-import org.onebusaway.container.refresh.Refreshable;
-import org.onebusaway.nyc.queue.QueueListenerTask;
-import org.onebusaway.nyc.queue.model.RealtimeEnvelope;
-import org.onebusaway.nyc.report_archive.model.CcLocationReportRecord;
-import org.onebusaway.nyc.report_archive.services.CcLocationReportDao;
-import org.onebusaway.nyc.vehicle_tracking.impl.queue.InputQueueListenerTask;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,12 +21,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
   public static final int DELAY_THRESHOLD = 10 * 1000;
   protected static Logger _log = LoggerFactory.getLogger(ArchivingInputQueueListenerTask.class);
 
-    /**
+  /**
    * number of inserts to batch together
    */
   private int _batchSize;
@@ -37,19 +37,26 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
   public void setBatchSize(String batchSizeStr) {
     _batchSize = Integer.decode(batchSizeStr);
   }
-  
+
+  @Autowired
+  private CcLocationCache _ccLocationCache;
+
+  public void setCcLocationCache(CcLocationCache cache) {
+    _ccLocationCache = cache;
+  }
+
   private long _lastCommitTime = System.currentTimeMillis();
-  private long _commitTimeout = 1 * 1000; // 60 seconds by default
-  
+  private long _commitTimeout = 1 * 1000; // 1 second by default
+
   /**
    * Time in milliseconds to give up waiting for data and commit current batch.
+   * 
    * @param commitTimeout number of milliseconds to wait
    */
   public void setCommitTimeout(String commitTimeout) {
     _commitTimeout = Integer.decode(commitTimeout);
   }
 
-  
   @Autowired
   private CcLocationReportDao _dao;
 
@@ -66,10 +73,10 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
      */
     AnnotationIntrospector jaxb = new JaxbAnnotationIntrospector();
     _mapper.getDeserializationConfig().setAnnotationIntrospector(jaxb);
-	  
+
   }
 
-    public RealtimeEnvelope deserializeMessage(String contents) {
+  public RealtimeEnvelope deserializeMessage(String contents) {
     RealtimeEnvelope message = null;
     try {
       JsonNode wrappedMessage = _mapper.readValue(contents, JsonNode.class);
@@ -111,7 +118,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
     }
   }
 
-    @Override
+  @Override
   public String getQueueHost() {
     return _configurationService.getConfigurationValueAsString(
         "inference-engine.inputQueueHost", null);
@@ -133,7 +140,6 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
         "inference-engine.inputQueuePort", 5563);
   }
 
-
   @Override
   // this method can't throw exceptions or it will stop the queue
   // listening
@@ -153,17 +159,21 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
 
       CcLocationReportRecord record = new CcLocationReportRecord(envelope,
           contents, getZoneOffset());
+      _ccLocationCache.put(record);
       if (record != null) {
         _batchCount++;
+        // update cache for operational API
         reports.add(record);
-        long batchWindow = System.currentTimeMillis() - _lastCommitTime; 
+        long batchWindow = System.currentTimeMillis() - _lastCommitTime;
         if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
-          try { 
+          try {
+            // unfortunately save needs to be called here to allow transactional
+            // semantics to work
             _dao.saveOrUpdateReports(reports.toArray(new CcLocationReportRecord[0]));
           } finally {
             reports.clear();
             _batchCount = 0;
-           	_lastCommitTime = System.currentTimeMillis();
+            _lastCommitTime = System.currentTimeMillis();
           }
         }
 
@@ -175,7 +185,7 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
           long delta = System.currentTimeMillis()
               - record.getTimeReceived().getTime();
           if (delta > DELAY_THRESHOLD) {
-            _log.warn("realtime queue is " + (delta/1000) + " seconds behind");
+            _log.warn("realtime queue is " + (delta / 1000) + " seconds behind");
           }
         }
       }

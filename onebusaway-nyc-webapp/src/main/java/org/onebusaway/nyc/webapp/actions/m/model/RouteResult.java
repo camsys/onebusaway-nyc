@@ -8,53 +8,66 @@ import java.util.Set;
 
 /**
  * Route as a top-level search result.
+ * 
  * @author jmaki
- *
+ * 
  */
 public class RouteResult implements SearchResult {
 
-  private RouteBean route;
-  
-  private List<RouteDirection> directions;
-    
-  private Set<String> serviceAlerts;
-  
-  public RouteResult(RouteBean route, List<RouteDirection> directions, Set<String> serviceAlerts) {
-    this.route = route;
-    this.directions = directions;
-    this.serviceAlerts = serviceAlerts;
-  }
-  
-  public String getId() {
-    return route.getId();
-  }
-  
-  public String getShortName() {
-    return route.getShortName();
-  }
-  
-  public String getLongName() {
-    return route.getLongName();
-  }
-  
-  public String getDescription() {
-    return route.getDescription();
-  }
+	private RouteBean route;
 
-  public String getColor() {
-    if(route.getColor() != null) {
-      return route.getColor();
-    } else {
-      return "000000";
-    }
-  }
-  
-  public Set<String> getServiceAlerts() {
-    return serviceAlerts;
-  }
-  
-  public List<RouteDirection> getDirections() {
-    return directions;
-  }  
+	private List<RouteDirection> directions;
+
+	private Set<String> serviceAlerts;
+	
+	private Double distanceToQueryLocation = null;
+
+	public RouteResult(RouteBean route, List<RouteDirection> directions, Set<String> serviceAlerts) {
+		this.route = route;
+		this.directions = directions;
+		this.serviceAlerts = serviceAlerts;
+	}
+
+	public String getId() {
+		return route.getId();
+	}
+
+	public String getShortName() {
+		return route.getShortName();
+	}
+
+	public String getLongName() {
+		return route.getLongName();
+	}
+
+	public String getDescription() {
+		return route.getDescription();
+	}
+
+	public String getColor() {
+		if (route.getColor() != null) {
+			return route.getColor();
+		} else {
+			return "000000";
+		}
+	}
+
+	public Set<String> getServiceAlerts() {
+		return serviceAlerts;
+	}
+
+	public List<RouteDirection> getDirections() {
+		return directions;
+	}
+
+	@Override
+	public void setDistanceToQueryLocation(Double distance) {
+		this.distanceToQueryLocation = distance;
+	}
+
+	@Override
+	public Double getDistanceToQueryLocation() {
+		return this.distanceToQueryLocation;
+	}
 
 }

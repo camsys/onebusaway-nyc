@@ -43,16 +43,17 @@ public class ArchivingInferenceQueueListenerTask extends
   }
 
   private long _lastCommitTime = System.currentTimeMillis();
-  
+
   private long _commitTimeout = 1 * 1000; // 1 seconds by default
+
   /**
    * Time in milliseconds to give up waiting for data and commit current batch.
+   * 
    * @param commitTimeout number of milliseconds to wait
    */
   public void setCommitTimeout(String commitTimeout) {
     _commitTimeout = Integer.decode(commitTimeout);
   }
-
 
   private int _batchCount = 0;
 
@@ -88,34 +89,34 @@ public class ArchivingInferenceQueueListenerTask extends
   protected void processResult(NycQueuedInferredLocationBean inferredResult,
       String contents) {
 
-      if (_log.isDebugEnabled())
-        _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
-            + new Date(inferredResult.getRecordTimestamp()));
-      ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
-          inferredResult, contents);
-      postProcess(locationRecord);
-      _batchCount++;
-      records.add(locationRecord);
-      long batchWindow = System.currentTimeMillis() - _lastCommitTime; 
-      if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
-        try {
-        	_locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
-        } finally {
-        	records.clear();
-        	_batchCount = 0;
-        	_lastCommitTime = System.currentTimeMillis();
-        }
+    if (_log.isDebugEnabled())
+      _log.debug("vehicle=" + inferredResult.getVehicleId() + ":"
+          + new Date(inferredResult.getRecordTimestamp()));
+    ArchivedInferredLocationRecord locationRecord = new ArchivedInferredLocationRecord(
+        inferredResult, contents);
+    postProcess(locationRecord);
+    _batchCount++;
+    records.add(locationRecord);
+    long batchWindow = System.currentTimeMillis() - _lastCommitTime;
+    if (_batchCount == _batchSize || batchWindow > _commitTimeout) {
+      try {
+        _locationDao.saveOrUpdateRecords(records.toArray(new ArchivedInferredLocationRecord[0]));
+      } finally {
+        records.clear();
+        _batchCount = 0;
+        _lastCommitTime = System.currentTimeMillis();
       }
+    }
 
-      if (_batchCount == 0) {
-        if (locationRecord != null) {
-          long delta = System.currentTimeMillis()
-              - locationRecord.getTimeReported().getTime();
-          if (delta > DELAY_THRESHOLD) {
-            _log.error("inference queue is " + (delta/1000) + " seconds behind");
-          }
+    if (_batchCount == 0) {
+      if (locationRecord != null) {
+        long delta = System.currentTimeMillis()
+            - locationRecord.getTimeReported().getTime();
+        if (delta > DELAY_THRESHOLD) {
+          _log.error("inference queue is " + (delta / 1000) + " seconds behind");
         }
       }
+    }
   }
 
   @Override
@@ -129,11 +130,10 @@ public class ArchivingInferenceQueueListenerTask extends
     return _configurationService.getConfigurationValueAsString(
         "tds.inputQueueName", null);
   }
-  
+
   public String getQueueDisplayName() {
     return "archive_inference";
   }
-
 
   @Override
   public Integer getQueuePort() {
@@ -143,10 +143,13 @@ public class ArchivingInferenceQueueListenerTask extends
 
   private void postProcess(ArchivedInferredLocationRecord locationRecord) {
     // Extract next stop id and distance
-    String vehicleId = locationRecord.getAgencyId() + "_" + locationRecord.getVehicleId().toString();
-    VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(vehicleId, locationRecord.getTimeReported().getTime());
+    String vehicleId = locationRecord.getAgencyId() + "_"
+        + locationRecord.getVehicleId().toString();
+    VehicleStatusBean vehicle = _nycTransitDataService.getVehicleForAgency(
+        vehicleId, locationRecord.getTimeReported().getTime());
     locationRecord.setVehicleStatusBean(vehicle);
-    VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(vehicleId, locationRecord.getTimeReported().getTime()) ;
+    VehicleLocationRecordBean vehicleLocation = _nycTransitDataService.getVehicleLocationRecordForVehicleId(
+        vehicleId, locationRecord.getTimeReported().getTime());
     if (vehicleLocation != null && vehicleLocation.getCurrentLocation() != null) {
       locationRecord.setVehicleLocationRecordBean(vehicleLocation);
     }

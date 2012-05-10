@@ -1,0 +1,55 @@
+#{if _addScriptTag && _addScriptTag == true}
+<script type="text/javascript">
+    $(document).ready(function() {
+#{/if}
+    #{doBody /}
+    var _internal${_tableId}Params = (typeof ${_tableId}Parameters == 'undefined' ) ? {} : ${_tableId}Parameters;
+
+    if (typeof _internal${_tableId}Params.sAjaxSource != 'undefined')
+    {
+        _internal${_tableId}Params.fnServerData = function ( sSource, aoData, fnCallback ) {
+            aoData.push( { "name": "tableId",
+                           "value": "${_tableId}" } );
+        $.getJSON( sSource, aoData, function (json) {
+	        fnCallback(json)
+        });
+    }};
+
+    if ((typeof ${_tableId}Extras != 'undefined') && (typeof ${_tableId}Extras.toolbar != 'undefined'))
+    {
+       $("div." + ${_tableId}Extras.toolbarTarget).html(${_tableId}Extras.toolbar);
+    }
+
+    #{if _tableModel}
+        if (typeof _internal${_tableId}Params.sNames == 'undefined')
+        {
+            _internal${_tableId}Params.sNames = [];
+        }
+        if (typeof _internal${_tableId}Params.aoColumns == 'undefined')
+        {
+            _internal${_tableId}Params.aoColumns = [];
+        }
+        #{if _selectAllName || _selectAllControlId}
+        _internal${_tableId}Params.sNames .push({ "sName": "${_selectAllName}" });
+        _internal${_tableId}Params.aoColumns.push({ "sName": "${_selectAllName}" });
+        _internal${_tableId}Params.aoColumns = [ { "fnRender": function ( oObj ) {
+            return '<input type="checkbox" name="${_selectAllName}"/>';
+        },
+                                                     "aTargets": [ 0 ]
+                                                 }];
+        _internal${_tableId}Params.aoColumnDefs = [ { "bSortable": false, "sWidth": "20px", "aTargets": [0] }];
+        #{/if}
+        #{list items:_tableModel.tableColumns, as:'column'}
+        _internal${_tableId}Params.sNames .push({ "sName": "${column.columnKey}" });
+        _internal${_tableId}Params.aoColumns.push({ "sName": "${column.columnKey}" });
+        #{/list}
+    #{/if}
+
+    var ${_tableId}DataTable = $('#${_tableId}').dataTable(_internal${_tableId}Params);
+    #{if _selectAllName}
+        #{tabularasa.selectAll targetName:_selectAllName, controlId:_selectAllControlId /}
+    #{/if}
+#{if _addScriptTag && _addScriptTag == true}
+    });
+</script>
+#{/if}
