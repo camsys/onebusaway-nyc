@@ -8,5 +8,6 @@ import java.util.List;
 public interface BundleValidationService {
   List<ServiceDateRange> getServiceDateRanges(InputStream gtfsZipFile);
   ServiceDateRange getCommonServiceDateRange(List<ServiceDateRange> ranges);
+  ServiceDateRange getCommonServiceDateRangeAcrossAllGtfs(List<InputStream> gtfsZipFiles);
   
 }

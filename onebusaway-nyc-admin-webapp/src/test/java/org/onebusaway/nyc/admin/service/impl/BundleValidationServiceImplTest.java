@@ -7,6 +7,7 @@ import org.onebusaway.nyc.admin.model.ServiceDateRange;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BundleValidationServiceImplTest {
@@ -38,6 +39,24 @@ public class BundleValidationServiceImplTest {
     assertNotNull(input);
     List<ServiceDateRange> ranges = impl.getServiceDateRanges(input);
     ServiceDateRange sdr0 = impl.getCommonServiceDateRange(ranges);
+    assertEquals(2012, sdr0.getStartDate().getYear());
+    assertEquals(4, sdr0.getStartDate().getMonth());
+    assertEquals(8, sdr0.getStartDate().getDay());
+    assertEquals(2012, sdr0.getEndDate().getYear());
+    assertEquals(7, sdr0.getEndDate().getMonth());
+    assertEquals(7, sdr0.getEndDate().getDay());
+    
+  }
+  @Test
+  public void testCommonServiceDateRangeAcrossGTFS() throws Exception {
+    BundleValidationServiceImpl impl = new BundleValidationServiceImpl();
+    // load zip file
+    ArrayList<InputStream> inputs = new ArrayList<InputStream>();
+    inputs.add(this.getClass().getResourceAsStream("google_transit_staten_island.zip"));
+    inputs.add(this.getClass().getResourceAsStream("google_transit_manhattan.zip"));
+    
+    ServiceDateRange sdr0 = impl.getCommonServiceDateRangeAcrossAllGtfs(inputs);
+
     assertEquals(2012, sdr0.getStartDate().getYear());
     assertEquals(4, sdr0.getStartDate().getMonth());
     assertEquals(8, sdr0.getStartDate().getDay());
