@@ -25,6 +25,7 @@ OBA.Sidebar = function() {
 
 	var searchBarDiv = jQuery("#searchbar"), 
 		matches = jQuery("#matches"),
+		filteredMatches = jQuery("#filtered-matches"),
 		suggestions = jQuery("#suggestions"),
 		noResults = jQuery("#no-results"),
 		welcome = jQuery("#welcome"),
@@ -199,7 +200,18 @@ OBA.Sidebar = function() {
 		});
 	}
 	
-	function addRoutesToLegend(routeResults, title) {
+	function addRoutesToLegend(routeResults, title, filter, stopId) {
+		
+		if (filter === null) filter = [];
+		
+		var filterExistsInResults = false;
+		
+		jQuery.each(routeResults, function(_, routeResult) {
+			if (filter.indexOf(routeResult.id) !== -1) {
+				filterExistsInResults = true;
+				return false;
+			}
+		});
 		
 		if(typeof title !== "undefined" && title !== null) {
 			matches.find("h2").text(title);
@@ -208,112 +220,155 @@ OBA.Sidebar = function() {
 		var resultsList = matches.find("ul");
 
 		jQuery.each(routeResults, function(_, routeResult) {				
-			// service alerts
-			var serviceAlertList = jQuery("<ul></ul>")
-							.addClass("alerts");
 			
-			var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change for Route</p>")
-											.append(jQuery("<span class='click_info'> + Click for info</span>"));
+			if (filter.length === 0 || filter.indexOf(routeResult.id) !== -1 || !filterExistsInResults) {
 			
-			var serviceAlertContainer = jQuery("<div></div>")
-											.attr("id", "alerts-" + routeResult.id.replace(" ", "_"))
-											.addClass("serviceAlertContainer")
-											.append(serviceAlertHeader)
-											.append(serviceAlertList);
-			
-			serviceAlertContainer.accordion({ header: 'p.serviceAlert', 
-				collapsible: true, 
-				active: false, 
-				autoHeight: false });
-
-			// sidebar item
-			var titleBox = jQuery("<p></p>")
-							.addClass("name")
-							.text(routeResult.shortName + " " + routeResult.longName)
-							.css("border-bottom", "5px solid #" + routeResult.color);
-			
-			var descriptionBox = jQuery("<p></p>")
-							.addClass("description")
-							.text(routeResult.description);
-
-			var listItem = jQuery("<li></li>")
-							.addClass("legendItem")
-							.append(titleBox)
-							.append(descriptionBox)
-							.append(serviceAlertContainer);
-	
-			resultsList.append(listItem);
-			
-			// on click of title, pan to route extent 
-			titleBox.click(function(e) {
-				e.preventDefault();
+				// service alerts
+				var serviceAlertList = jQuery("<ul></ul>")
+								.addClass("alerts");
 				
-				routeMap.panToRoute(routeResult.id);
-			});
-
-			// hover polylines
-			titleBox.hover(function(e) {
-				titleBox.css("color", "#" + routeResult.color);
-			}, function(e) {
-				titleBox.css("color", "");
-			});
-
-			titleBox.hoverIntent({
-				over: function(e) { routeMap.highlightRoute(routeResult.id); },
-				out: function(e) { routeMap.unhighlightRoute(routeResult.id); },
-				sensitivity: 10
-			});
-
-			// direction picker
-			jQuery.each(routeResult.directions, function(_, direction) {
-				var directionHeader = jQuery("<p></p>");
+				var serviceAlertHeader = jQuery("<p class='serviceAlert'>Service Change for Route</p>")
+												.append(jQuery("<span class='click_info'> + Click for info</span>"));
 				
-				jQuery("<span></span>")
-					.text("to " + direction.destination)
-					.appendTo(directionHeader);
+				var serviceAlertContainer = jQuery("<div></div>")
+												.attr("id", "alerts-" + routeResult.id.replace(" ", "_"))
+												.addClass("serviceAlertContainer")
+												.append(serviceAlertHeader)
+												.append(serviceAlertList);
 				
-				if(direction.hasUpcomingScheduledService === false) {
-					var noServiceMessage = jQuery("<div></div>")
-												.addClass("no-service")
-												.text("No scheduled service for the " + 
-														routeResult.shortName + 
-														" to " + direction.destination + " at this time.");
-
-					directionHeader.append(noServiceMessage);
-				}
-
-				var stopsList = jQuery("<ul></ul>")
-											.addClass("stops")
-											.addClass("not-loaded");
-
-				var loading = jQuery("<div><span>Loading...</span></div>")
-											.addClass("loading");
-
-				var destinationContainer = jQuery("<p></p>")
-											.addClass("destination")
-											.append(directionHeader)
-											.append(stopsList)
-											.append(loading);
-				
-				// load stops when user expands stop list
-				directionHeader.click(function(e) {
-					loadStopsForRouteAndDirection(routeResult, direction, destinationContainer);
-				});
-				
-				// accordion-ize
-				destinationContainer.accordion({ header: 'p', 
+				serviceAlertContainer.accordion({ header: 'p.serviceAlert', 
 					collapsible: true, 
 					active: false, 
 					autoHeight: false });
+	
+				// sidebar item
+				var titleBox = jQuery("<p></p>")
+								.addClass("name")
+								.text(routeResult.shortName + " " + routeResult.longName)
+								.css("border-bottom", "5px solid #" + routeResult.color);
 				
-				listItem.append(destinationContainer);
-			});
+				var descriptionBox = jQuery("<p></p>")
+								.addClass("description")
+								.text(routeResult.description);
+	
+				var listItem = jQuery("<li></li>")
+								.addClass("legendItem")
+								.append(titleBox)
+								.append(descriptionBox)
+								.append(serviceAlertContainer);
+		
+				resultsList.append(listItem);
+				
+				// on click of title, pan to route extent 
+				titleBox.click(function(e) {
+					e.preventDefault();
+					
+					routeMap.panToRoute(routeResult.id);
+				});
+	
+				// hover polylines
+				titleBox.hover(function(e) {
+					titleBox.css("color", "#" + routeResult.color);
+				}, function(e) {
+					titleBox.css("color", "");
+				});
+	
+				titleBox.hoverIntent({
+					over: function(e) { 
+						routeMap.highlightRoute(routeResult.id); 
+					}, out: function(e) { 
+						routeMap.unhighlightRoute(routeResult.id); 
+					},
+					sensitivity: 10
+				});
+	
+				// direction picker
+				jQuery.each(routeResult.directions, function(_, direction) {
+					var directionHeader = jQuery("<p></p>");
+					
+					jQuery("<span></span>")
+						.text("to " + direction.destination)
+						.appendTo(directionHeader);
+					
+					if(direction.hasUpcomingScheduledService === false) {
+						var noServiceMessage = jQuery("<div></div>")
+													.addClass("no-service")
+													.text("No scheduled service for the " + 
+															routeResult.shortName + 
+															" to " + direction.destination + " at this time.");
+	
+						directionHeader.append(noServiceMessage);
+					}
+	
+					var stopsList = jQuery("<ul></ul>")
+												.addClass("stops")
+												.addClass("not-loaded");
+	
+					var loading = jQuery("<div><span>Loading...</span></div>")
+												.addClass("loading");
+	
+					var destinationContainer = jQuery("<p></p>")
+												.addClass("destination")
+												.append(directionHeader)
+												.append(stopsList)
+												.append(loading);
+					
+					// load stops when user expands stop list
+					directionHeader.click(function(e) {
+						loadStopsForRouteAndDirection(routeResult, direction, destinationContainer);
+					});
+					
+					// accordion-ize
+					destinationContainer.accordion({ header: 'p', 
+						collapsible: true, 
+						active: false, 
+						autoHeight: false });
+					
+					listItem.append(destinationContainer);
+				});
+				
+				// add to map
+				routeMap.addRoute(routeResult);
+			}
 			
-			// add to map
-			routeMap.addRoute(routeResult);
+			if (filter.length !== 0 && filter.indexOf(routeResult.id) === -1 && filterExistsInResults) {
+				
+				var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
+				var link = jQuery('<a href="#' + stopId.match(/\d*$/) + '%20' + routeResult.shortName + '">' + routeResult.shortName + '</a>');
+				
+				var allPolylines = [];
+				jQuery.each(routeResult.directions, function(_, direction) {
+					allPolylines = allPolylines.concat(direction.polylines);
+				});
+				
+				link.hover(function() {
+					routeMap.showHoverPolyline(allPolylines, routeResult.color);
+				}, function() {
+					routeMap.removeHoverPolyline();
+				});
+				
+				link.appendTo(filteredMatch);
+				
+				filteredMatches.find("ul").append(filteredMatch);
+			}
 		});
 
 		matches.show();
+		
+		if (filteredMatches.find("li").length > 1) {
+			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopId.match(/\d*$/) + '">See All</a>');
+			filteredMatches.find("ul").append(showAll);
+			filteredMatches.show();
+			
+			var maxWidth = 0;
+			jQuery.each(filteredMatches.find("li"), function(_, item) {
+				var wrappedItem = jQuery(item);
+				if (wrappedItem.width() > maxWidth) {
+					maxWidth = wrappedItem.width();
+				}
+			});
+			filteredMatches.find("li").width(maxWidth);
+		}
 	}
 
 	// show multiple route choices to user
@@ -367,8 +422,11 @@ OBA.Sidebar = function() {
 		welcome.hide();
 		noResults.hide();
 
-		matches.hide();		
+		matches.hide();
 		matches.children().empty();
+		
+		filteredMatches.hide();
+		filteredMatches.find("ul").empty();
 
 		suggestions.hide();		
 		suggestions.children().empty();
@@ -414,6 +472,8 @@ OBA.Sidebar = function() {
 			
 			var matches = json.searchResults.matches;
 			var suggestions = json.searchResults.suggestions;
+			
+			var routeIdFilter = json.searchResults.routeIdFilter;
 
 			OBA.Config.analyticsFunction("Search", q + " [M:" + matches.length + " S:" + suggestions.length + "]");
 			
@@ -447,7 +507,7 @@ OBA.Sidebar = function() {
 							if(matches[0].nearbyRoutes.length === 0) {
 								showNoResults("No stops nearby.");
 							} else {
-								addRoutesToLegend(matches[0].nearbyRoutes, "Nearby routes:");
+								addRoutesToLegend(matches[0].nearbyRoutes, "Nearby routes:", null, null);
 							}
 							
 							var latlng = new google.maps.LatLng(matches[0].latitude, matches[0].longitude);
@@ -460,7 +520,7 @@ OBA.Sidebar = function() {
 						break;
 				
 					case "RouteResult":
-						addRoutesToLegend(matches, "Routes:");
+						addRoutesToLegend(matches, "Routes:", null, null);
 
 						routeMap.panToRoute(matches[0].id);
 						
@@ -468,7 +528,7 @@ OBA.Sidebar = function() {
 						break;
 					
 					case "StopResult":
-						addRoutesToLegend(matches[0].routesAvailable, "Routes available:");
+						addRoutesToLegend(matches[0].routesAvailable, "Routes available:", routeIdFilter, matches[0].id);
 
 						var latlng = new google.maps.LatLng(matches[0].latitude, matches[0].longitude);
 						routeMap.addStop(matches[0], function(marker) {
