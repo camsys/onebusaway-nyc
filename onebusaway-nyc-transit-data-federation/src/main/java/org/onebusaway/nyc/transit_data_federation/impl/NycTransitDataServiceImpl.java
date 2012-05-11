@@ -52,6 +52,7 @@ import org.onebusaway.transit_data.model.blocks.ScheduledBlockLocationBean;
 import org.onebusaway.transit_data.model.oba.LocalSearchResult;
 import org.onebusaway.transit_data.model.oba.MinTravelTimeToStopsBean;
 import org.onebusaway.transit_data.model.oba.TimedPlaceBean;
+import org.onebusaway.transit_data.model.problems.ETripProblemGroupBy;
 import org.onebusaway.transit_data.model.problems.PlannedTripProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportBean;
 import org.onebusaway.transit_data.model.problems.StopProblemReportQueryBean;
@@ -569,6 +570,12 @@ class NycTransitDataServiceImpl implements TransitDataService, NycTransitDataSer
   public void updateTripProblemReport(TripProblemReportBean arg0) {
     blockUntilBundleIsReady();
     _transitDataService.updateTripProblemReport(arg0);
+  }
+
+  @Override
+  public ListBean<TripProblemReportSummaryBean> getTripProblemReportSummariesByGrouping(
+      TripProblemReportQueryBean arg0, ETripProblemGroupBy arg1) {
+    return _transitDataService.getTripProblemReportSummariesByGrouping(arg0, arg1);
   }
  
 }
