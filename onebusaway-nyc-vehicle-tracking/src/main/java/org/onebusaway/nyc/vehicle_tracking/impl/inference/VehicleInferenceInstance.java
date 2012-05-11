@@ -686,6 +686,11 @@ public class VehicleInferenceInstance {
       record.setInferredRunId(blockState.getBlockState().getRunId());
       record.setInferredIsRunFormal(blockState.isRunFormal());
 
+      // formality match exposed to TDS
+      if(blockState.isRunFormal()) {
+        statusFields.add("formal");
+      }
+
       final BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();
       final BlockConfigurationEntry blockConfig = blockInstance.getBlock();
       final BlockEntry block = blockConfig.getBlock();
@@ -724,16 +729,11 @@ public class VehicleInferenceInstance {
 
     // Set the status field
     if (!statusFields.isEmpty()) {
-      final StringBuilder b = new StringBuilder();
-      for (final String status : statusFields) {
-        if (b.length() > 0)
-          b.append(',');
-        b.append(status);
-      }
-      record.setInferredStatus(b.toString());
-    } else
+      record.setInferredStatus(StringUtils.join(statusFields,"+"));
+    } else {
       record.setInferredStatus("default");
-
+    }
+    
     if (StringUtils.isBlank(record.getInferredDsc()))
       record.setInferredDsc("0000");
 

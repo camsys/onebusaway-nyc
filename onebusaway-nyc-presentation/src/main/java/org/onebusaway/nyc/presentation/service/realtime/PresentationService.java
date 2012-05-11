@@ -10,6 +10,8 @@ public interface PresentationService {
 
   public void setTime(Date time);
 
+  public Boolean isFormalInference(TripStatusBean statusBean);
+
   public Boolean isInLayover(TripStatusBean statusBean);
 
   public Boolean isOnDetour(TripStatusBean statusBean);
@@ -22,8 +24,11 @@ public interface PresentationService {
  
   
   /* filter logic */
+
+  // for stops only
   public boolean include(ArrivalAndDepartureBean adBean, TripStatusBean status);
-  
+
+  // for stops and vehicles
   public boolean include(TripStatusBean statusBean);
 
 }
