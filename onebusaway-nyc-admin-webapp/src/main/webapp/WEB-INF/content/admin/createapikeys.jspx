@@ -25,25 +25,18 @@
 <link rel="stylesheet" href="${url}" type="text/css"/>
 </head>
 <body>
-	<h2>Create User</h2>
-	<div>
-		<s:form action="register-user" namespace="/admin" id="mainbox">
-			
-			<div>
-				<label style="width:100px;">User Name :</label>
-				<s:textfield name="username" required="true"/>
-			</div>
-			<div>
-				<label style="width:100px;">Password :</label>
-				<s:textfield name="password" required="true"/>
-			</div>
-			<div>
-				<label style="width:100px;">Is Admin?</label>
-				<s:checkbox name="admin"/>
-			</div>
-			<s:submit align="left"/>
-		</s:form>
-		<s:actionmessage />
+	<div id="content">
+		<div id="text">
+			<h2>Create a key</h2>
+				<s:form action="api-key" namespace="/admin">
+					<fieldset>
+						<label class="top">Key :</label>
+						<s:textfield name="key" required="true"/>
+					</fieldset>
+					<s:submit align="left"/>
+				</s:form>
+				<s:actionmessage />
+		</div>
 	</div>
 </body>
 </html>
