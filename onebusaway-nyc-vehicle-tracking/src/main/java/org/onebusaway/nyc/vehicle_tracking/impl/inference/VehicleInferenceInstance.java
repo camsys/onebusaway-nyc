@@ -292,7 +292,7 @@ public class VehicleInferenceInstance {
     if (_previousObservation == null || operatorIdChange == Boolean.TRUE || reportedRunIdChange == Boolean.TRUE) {
       runResults = findRunIdMatches(record);
     } else {
-      runResults = _previousObservation.getRunResults();
+      runResults = updateRunIdMatches(record, _previousObservation.getRunResults());
     }
 
     final Observation observation = new Observation(timestamp, record,
@@ -531,6 +531,60 @@ public class VehicleInferenceInstance {
 
     details.setLastObservation(lastRecord);
   }
+ 
+  /**
+   * This method rechecks the operator assignment and returns either
+   * the old run-results or new ones.
+   * @param observation
+   * @param results
+   * @return
+   */
+  private RunResults updateRunIdMatches(NycRawLocationRecord observation, RunResults results) {
+    
+    Date obsDate = new Date(observation.getTime());
+
+    String opAssignedRunId = null;
+    String operatorId = observation.getOperatorId();
+
+    boolean noOperatorIdGiven = 
+        StringUtils.isEmpty(operatorId) || StringUtils.containsOnly(operatorId, "0");
+
+    Set<AgencyAndId> routeIds = Sets.newHashSet();
+    if (!noOperatorIdGiven) {
+      try {
+        OperatorAssignmentItem oai = _operatorAssignmentService.getOperatorAssignmentItemForServiceDate(
+            new ServiceDate(obsDate), new AgencyAndId(observation.getVehicleId().getAgencyId(), operatorId));
+
+        if (oai != null) {
+          if (_runService.isValidRunId(oai.getRunId())) {
+            opAssignedRunId = oai.getRunId();
+            
+            /*
+             * same results; we're done
+             */
+            if (opAssignedRunId.equals(results.getAssignedRunId()))
+              return results;
+            
+            /*
+             * new assigned run-id; recompute the routes
+             */
+            routeIds.addAll(_runService.getRoutesForRunId(opAssignedRunId));
+            for (String runId : results.getFuzzyMatches()) {
+              routeIds.addAll(_runService.getRoutesForRunId(runId));
+            }
+            return new RunResults(opAssignedRunId, results.getFuzzyMatches(), 
+                results.getBestFuzzyDist(), routeIds);
+          }
+        }
+      } catch (Exception e) {
+        _log.warn(e.getMessage());
+      }
+    }
+    /*
+     * if we're here, then the op-assignment call probably failed, so just return the old results
+     */
+    return results;
+  }
   
   private RunResults findRunIdMatches(NycRawLocationRecord observation) {
     Date obsDate = new Date(observation.getTime());
@@ -620,6 +674,13 @@ public class VehicleInferenceInstance {
       record.setInferredPhase(EVehiclePhase.UNKNOWN.name());
 
     final Set<String> statusFields = new HashSet<String>();
+    
+    /*
+     * This should make sure these are populated.
+     * (will show prev. values when record lat/lon are zero) 
+     */
+    record.setInferredBlockLat(location.getLat());
+    record.setInferredBlockLon(location.getLon());
 
     if (blockState != null) {
       record.setInferredRunId(blockState.getBlockState().getRunId());
