@@ -187,7 +187,7 @@ OBA.Sidebar = function() {
 				stopLink.click(function(e) {
 					e.preventDefault();
 					
-					routeMap.showPopupForStopId(stop.id);
+					routeMap.showPopupForStopId(stop.id, null);
 				});
 				
 				stopLink.hover(function() {
@@ -532,7 +532,7 @@ OBA.Sidebar = function() {
 
 						var latlng = new google.maps.LatLng(matches[0].latitude, matches[0].longitude);
 						routeMap.addStop(matches[0], function(marker) {
-							routeMap.showPopupForStopId(matches[0].id);							
+							routeMap.showPopupForStopId(matches[0].id, routeIdFilter);						
 						});
 						
 						routeMap.showLocation(latlng);

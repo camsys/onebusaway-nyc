@@ -171,7 +171,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 
         var marker = new google.maps.Marker(markerOptions);
         
-        google.maps.event.addListener(marker, "click", function(mouseEvent) {
+        google.maps.event.addListener(marker, "click", function(mouseEvent, routeFilter) {
     	   var stopIdParts = stopId.split("_");
     	   var stopIdWithoutAgency = stopIdParts[1];
     	   
@@ -179,7 +179,8 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
     	   
     	   OBA.Popups.showPopupWithContentFromRequest(map, this, OBA.Config.stopForId, 
     			   { stopId: stopId },
-    			   OBA.Popups.getStopContentForResponse);
+    			   OBA.Popups.getStopContentForResponse, 
+    			   routeFilter);
     	});
 
         stopsById[stopId] = marker;		
@@ -256,7 +257,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 
 			    		OBA.Popups.showPopupWithContentFromRequest(map, this, OBA.Config.siriVMUrl + "?callback=?", 
 			    				{ OperatorRef: agencyId, VehicleRef: vehicleIdWithoutAgency, MaximumNumberOfCallsOnwards: "2", VehicleMonitoringDetailLevel: "calls" }, 
-			    				OBA.Popups.getVehicleContentForResponse);
+			    				OBA.Popups.getVehicleContentForResponse, null);
 			    	});
 				}
 
@@ -536,7 +537,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			map.fitBounds(newBounds);
 		},
 
-		showPopupForStopId: function(stopId) {
+		showPopupForStopId: function(stopId, routeFilter) {
 			var stopMarker = stopsById[stopId];
 
 			if(typeof stopMarker === 'undefined') {
@@ -545,7 +546,7 @@ OBA.RouteMap = function(mapNode, initCallbackFn, serviceAlertCallbackFn) {
 			
 			stopMarker.setVisible(true);
 
-			google.maps.event.trigger(stopMarker, "click");
+			google.maps.event.trigger(stopMarker, "click", null, routeFilter);
 		},
 		
 		// LOCATION SEARCH
