@@ -25,17 +25,18 @@
 <link rel="stylesheet" href="${url}" type="text/css"/>
 </head>
 <body>
-	<h2>Create a key</h2>
-	<div>
-		<s:form action="api-key" namespace="/admin">
-			
-			<div>
-				<label style="width:100px;">Key :</label>
-				<s:textfield name="key" required="true"/>
-			</div>
-			<s:submit align="left"/>
-		</s:form>
-		<s:actionmessage />
+	<div id="content">
+		<div id="text">
+			<h2>Create a key</h2>
+				<s:form action="api-key" namespace="/admin">
+					<fieldset>
+						<label class="top">Key :</label>
+						<s:textfield name="key" required="true"/>
+					</fieldset>
+					<s:submit align="left"/>
+				</s:form>
+				<s:actionmessage />
+		</div>
 	</div>
 </body>
 </html>

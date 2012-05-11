@@ -37,7 +37,7 @@ public class ApiKeyAction extends NextActionSupport{
 	 * Returns the key of the user being created
 	 * @return the key
 	 */
-	@RequiredStringValidator(message="Key is required")
+	@RequiredStringValidator(message="API key is required")
 	public String getKey() {
 		return key;
 	}
