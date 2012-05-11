@@ -134,6 +134,10 @@ public class CcLocationReportRecord implements Serializable {
     setDataQuality(qualityValue);
 
     setDestSignCode(message.getDestSignCode().intValue());
+    if (message.getEmergencyCodes() != null 
+        && message.getEmergencyCodes().getEmergencyCode().size() > 0) {
+      setEmergencyCode(message.getEmergencyCodes().getEmergencyCode().get(0));
+    }
     setDirectionDeg(message.getDirection().getDeg());
     setLatitude(convertMicrodegreesToDegrees(message.getLatitude()));
     setLongitude(convertMicrodegreesToDegrees(message.getLongitude()));
