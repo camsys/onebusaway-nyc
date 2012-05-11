@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
 
     Copyright (c) 2011 Metropolitan Transportation Authority
@@ -16,26 +16,16 @@
     the License.
 
 -->
+<decorators defaultdir="/WEB-INF/decorators">
+	<!-- Any urls that are excluded will never be decorated by Sitemesh -->
+	<excludes>
+		<!-- <pattern>/m/*</pattern> -->
+		<pattern>/css/*</pattern>
+		<pattern>/js/*</pattern>
+	</excludes>
 
-<html xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
-<jsp:directive.page contentType="text/html" />
-<head>
-<s:url var="url" value="/css/admin.css"/>
-<link rel="stylesheet" href="${url}" type="text/css"/>
-</head>
-<body>
-	<h2>Create a key</h2>
-	<div>
-		<s:form action="api-key" namespace="/admin">
-			
-			<div>
-				<label style="width:100px;">Key :</label>
-				<s:textfield name="key" required="true"/>
-			</div>
-			<s:submit align="left"/>
-		</s:form>
-		<s:actionmessage />
-	</div>
-</body>
-</html>
+	<decorator name="decorate" page="decorate.jspx">
+		<pattern>/*</pattern>
+	</decorator>
+
+</decorators>

@@ -50,6 +50,14 @@
 		<filter-name>requestAndResponseContextFilter</filter-name>
 		<filter-class>org.onebusaway.users.impl.RequestAndResponseContextFilter</filter-class>
 	</filter>
+	<filter>
+		<filter-name>action2-cleanup</filter-name>
+		<filter-class>org.apache.struts2.dispatcher.ActionContextCleanUp</filter-class>
+	</filter>
+	<filter>
+		<filter-name>sitemesh</filter-name>
+		<filter-class>com.opensymphony.module.sitemesh.filter.PageFilter</filter-class>
+	</filter>
     <filter>
         <filter-name>action2</filter-name>
         <filter-class>org.apache.struts2.dispatcher.FilterDispatcher</filter-class>
@@ -66,6 +74,18 @@
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>requestAndResponseContextFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>action2-cleanup</filter-name>
+		<url-pattern>*.action</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>sitemesh</filter-name>
 		<url-pattern>/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>REQUEST</dispatcher>

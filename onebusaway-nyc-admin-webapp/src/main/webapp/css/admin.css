@@ -13,10 +13,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
- 
+
+#contentbox {
+	padding:0;
+	height: 100%;   /* For IE */
+}
+
+
+/* from MTA CSS: */
+html, body {
+    background-image: url("http://mta.info/css/images/grey_bg.jpg");
+    background-repeat: repeat-x;
+    color: #333333;
+    font: 13px/1.231 helvetica,arial,clean,sans-serif;
+}
+
 #mainbox {
     background-color: #FFFFFF;
-    width: 350px;
-  	height: 150px;
-    align: left;
+    margin: 0 auto;
+    position: relative;
+    width: 960px;
 }
+
+#topbar {
+    height: 121px;
+}
+
+#topbar #branding {
+    float: left;
+    height: 90px;
+}
+

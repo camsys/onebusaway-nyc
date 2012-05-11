@@ -27,12 +27,16 @@
 	
 	<ul>
 		<li>
-		<s:url var="url" action="createuser"/>
-		<s:a href="%{url}">Create User</s:a>
+			<s:url var="url" action="createuser"/>
+			<s:a href="%{url}">Create User</s:a>
 		</li>
 		<li>
-		<s:url var="url" action="createapikeys"/>
-		<s:a href="%{url}">Create API key</s:a>
+			<s:url var="url" action="createapikeys"/>
+			<s:a href="%{url}">Create API key</s:a>
+		</li>
+		<li>
+			<s:url var="url" action="managebundles" namespace="/admin/bundles"/>
+			<s:a href="%{url}">Bundle Utility</s:a>
 		</li>
 	</ul>
 

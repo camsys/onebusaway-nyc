@@ -27,7 +27,7 @@
 <body>
 	<h2>Create User</h2>
 	<div>
-		<s:form action="register-user" namespace="/admin" id="mainbox">
+		<s:form action="register-user" namespace="/admin">
 			
 			<div>
 				<label style="width:100px;">User Name :</label>
