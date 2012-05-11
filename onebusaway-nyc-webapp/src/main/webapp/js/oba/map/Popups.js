@@ -133,7 +133,7 @@ OBA.Popups = (function() {
             if (r.Siri.ServiceDelivery.SituationExchangeDelivery != null) {
                 jQuery.each(r.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
                     var situationId = ptSituationElement.SituationNumber;
-                    if (situationRefs == null || situationIds[situationId] === true) {
+                    if (ptSituationElement.Description && (situationRefs == null || situationIds[situationId] === true)) {
                         html += '<li>' + ptSituationElement.Description.replace(/\n/g, "<br/>") + '</li>';
                     }
                 });
@@ -253,7 +253,11 @@ OBA.Popups = (function() {
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
-		});		
+		});	
+		
+		if (maxUpdateTimestamp === null) {
+			maxUpdateTimestamp = updateTimestampReference;
+		}
 		
 		if(maxUpdateTimestamp !== null) {
 			var age = (parseInt(updateTimestampReference, 10) - parseInt(maxUpdateTimestamp, 10)) / 1000;
@@ -300,7 +304,7 @@ OBA.Popups = (function() {
 		jQuery.each(stopResult.routesAvailable, function(_, route) {
 	    	if (filterExistsInResults && routeFilter.indexOf(route.id) === -1) {
 	    		var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
-	    		var link = jQuery('<a href="#' + stopResult.id.match(/\d*$/) + '%20' + route.shortName + '">' + route.shortName + '</a>');
+	    		var link = jQuery('<a href="#' + stopResult.id.match(/\d*$/) + '%20' + route.shortName + '"><span class="route-name">' + route.shortName + '</span></a>');
 	    		link.appendTo(filteredMatch);
 	    		filteredMatches.find("ul").append(filteredMatch);
 	    		return true; //continue
@@ -348,7 +352,7 @@ OBA.Popups = (function() {
 		}	
 
 		if(routeAndDirectionWithArrivalsCount > 0) {
-		    html += '<p class="service">Service available at this stop:</p>';
+		    html += '<p class="service">Buses en-route:</p>';
 
 			jQuery.each(routeAndDirectionWithArrivals, function(_, mvjs) {
 				var mvj = mvjs[0];
@@ -356,7 +360,7 @@ OBA.Popups = (function() {
 				html += '<ul>';
 
 				html += '<li class="route">';
-				html += '<a href="#' + mvj.PublishedLineName + '">' + mvj.PublishedLineName + " " + mvj.DestinationName + '</a>';
+				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
 				html += '</li>';
 
 				jQuery.each(mvjs, function(_, monitoredVehicleJourney) {
@@ -380,32 +384,29 @@ OBA.Popups = (function() {
 		}
 		
 		if(routeAndDirectionWithoutArrivalsCount > 0) {
-		    html += '<p class="service">No buses en-route to this stop (please check back shortly for an update):</p>';
+		    html += '<p class="service muted">No buses en-route to this stop for:</p>';
 
 			html += '<ul>';
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
-				var lastClass = ((i === routeAndDirectionWithoutArrivalsCount - 1) ? " last" : "");
-
-				html += '<li class="route' + lastClass + '">';
-				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
+				html += '<li class="route">';
+				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
 				html += '</li>';
 				
 				i++;
 			});
+			html += '<li class="last muted">(check back shortly for an update)</li>';
 			html += '</ul>';
 		}
 
 		if(routeAndDirectionWithoutSerivceCount > 0) {
-			html += '<p class="service">No scheduled service at this time:</p>';
+			html += '<p class="service muted">No scheduled service at this time for:</p>';
 
-			html += '<ul>';
+			html += '<ul class="no-service-routes">';
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutSerivce, function(_, d) {
-				var lastClass = ((i === routeAndDirectionWithoutSerivceCount - 1) ? " last" : "");
-
-				html += '<li class="route' + lastClass + '">';
-				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
+				html += '<li class="route">';
+				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + '</span></a>';
 				html += '</li>';
 				
 				i++;
@@ -415,7 +416,7 @@ OBA.Popups = (function() {
 		
 		// filtered out roues
 		if (filteredMatches.find("li").length > 0) {
-			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopResult.id.match(/\d*$/) + '">See All</a>');
+			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopResult.id.match(/\d*$/) + '"><span class="route-name">See All</span></a>');
 			filteredMatches.find("ul").append(showAll);
 			html += filteredMatches.html();
 		}

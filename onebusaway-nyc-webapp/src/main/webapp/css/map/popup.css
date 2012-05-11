@@ -100,9 +100,10 @@
 	whitespace: no-wrap;
 	color: #000099;
 	font-weight: bold;
+	padding: 2px 0 2px 0;
 }
 
-.popup ul li.route.last {
+.popup ul li.last {
 	padding-bottom: 4px;
 }
 
@@ -120,10 +121,6 @@
 	background-repeat: no-repeat;
 }
 
-.popup ul li.arrival.last {
-	padding-bottom: 4px;
-}
-
 .popup ul li.nextStop {
 	whitespace: no-wrap;
 	color: #000099;
@@ -133,10 +130,6 @@
 	background: url("img/bullet_stop.png");
 	background-position: left top;
 	background-repeat: no-repeat;
-}
-
-.popup ul li.nextStop.last {
-	padding-bottom: 4px;
 }
 
 #bustime .popup ul li.nextStop span.stopName {
@@ -165,6 +158,19 @@
 	margin-left: 0px;
 }
 
+.popup .no-service-routes {
+	padding-bottom: 4px;
+}
+
+.popup .no-service-routes li.route {
+	display: inline-block;
+	padding: 0 1.0em 0 0;
+}
+
+.popup .route-name {
+	font-weight: bold;
+}
+
 .popup .footer {
 	margin-top: 7px;
 	padding-top: 7px;
@@ -184,5 +190,17 @@
 
 .popup .popup-filtered-matches ul li {
 	display: inline-block;
-	padding: 0 0.5em 0 0.5em;
+	padding: 0 1.0em 0 0;
+}
+
+#bustime .popup .muted {
+	color: rgb(100,100,100);
+}
+
+#bustime .popup a.muted {
+	color: rgb(130,130,130);
+}
+
+#bustime .popup a:HOVER.muted {
+	color: rgb(100,100,100);
 }
