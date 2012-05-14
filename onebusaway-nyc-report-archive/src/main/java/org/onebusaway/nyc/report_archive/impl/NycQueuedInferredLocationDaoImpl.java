@@ -87,20 +87,14 @@ public class NycQueuedInferredLocationDaoImpl implements
     // first check cache for realtime record
     CcLocationReportRecord realtime = _ccLocationCache.get(record.getUUID());
 
-    // if not in cache, lookup and log cache miss
+    // if not in cache log cache miss
     if (realtime == null) {
+      /*
+       * NOTE: db is NOT queried for lost record for
+       * performance reasons.  Assume queue has fallen
+       * behind and incoming update will correct this.
+       */
       _log.info("cache miss for " + record.getVehicleId());
-
-      String hql = " select cc from CcLocationReportRecord cc where uuid = ? ";
-      @SuppressWarnings("unchecked")
-      List<CcLocationReportRecord> list = _template.find(hql, record.getUUID());
-
-      if (list.size() == 1) {
-        return list.get(0);
-      } else {
-        _log.error("list of size=" + list.size() + " not expected for UUID="
-            + record.getUUID());
-      }
     }
     return realtime;
   }

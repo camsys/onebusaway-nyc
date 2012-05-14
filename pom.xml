@@ -13,14 +13,14 @@
     <name>onebusaway-nyc</name>
 
     <properties>
-    	<onebusaway.gtfs.version>1.2.6-SNAPSHOT</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
+    	<onebusaway.gtfs.version>1.2.6</onebusaway.gtfs.version><!-- 1.2.7 changes the was CSV works -->
     	<onebusaway.siri.version>1.0.0</onebusaway.siri.version>
-    	<onebusaway.csv-entities.version>1.0.3-SNAPSHOT</onebusaway.csv-entities.version>
+    	<onebusaway.csv-entities.version>1.0.3</onebusaway.csv-entities.version>
     	<struts.version>2.2.1.1</struts.version>
         <jetty.version>6.1.26</jetty.version>
         <spring.version>3.0.3.RELEASE</spring.version>
         <onebusaway.nyc-tcip.version>2.0.1-SNAPSHOT</onebusaway.nyc-tcip.version>
-        <onebusaway.app-modules.version>1.0.5-SNAPSHOT</onebusaway.app-modules.version>
+        <onebusaway.app-modules.version>1.0.7</onebusaway.app-modules.version>
         <onebusaway.nyc.version>2.0.3-SNAPSHOT</onebusaway.nyc.version>
         <gitDescribe>99999</gitDescribe>
     </properties>
@@ -359,7 +359,7 @@
             <dependency>
                 <groupId>org.onebusaway</groupId>
                 <artifactId>onebusaway-collections</artifactId>
-                <version>1.1.2-SNAPSHOT</version>
+                <version>1.1.2</version>
             </dependency>
 
             <dependency>

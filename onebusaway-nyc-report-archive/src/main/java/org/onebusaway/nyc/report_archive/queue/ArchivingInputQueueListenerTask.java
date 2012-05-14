@@ -185,7 +185,8 @@ public class ArchivingInputQueueListenerTask extends QueueListenerTask {
           long delta = System.currentTimeMillis()
               - record.getTimeReceived().getTime();
           if (delta > DELAY_THRESHOLD) {
-            _log.warn("realtime queue is " + (delta / 1000) + " seconds behind");
+            _log.warn("realtime queue is " + (delta / 1000) 
+                + " seconds behind with cache_size=" + _ccLocationCache.size());
           }
         }
       }

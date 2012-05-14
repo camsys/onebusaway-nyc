@@ -53,6 +53,20 @@ public class PresentationServiceImpl implements PresentationService {
   }
 
   @Override
+  public Boolean isFormalInference(TripStatusBean statusBean) {
+    if(statusBean != null) {
+      String status = statusBean.getStatus();
+
+      if(status != null)
+        return status.contains("formal");
+      else
+        return false;
+    }
+
+    return null;
+  }
+  
+  @Override
   public Boolean isOnDetour(TripStatusBean statusBean) {
     if(statusBean != null) {
       String status = statusBean.getStatus();
@@ -122,6 +136,9 @@ public class PresentationServiceImpl implements PresentationService {
     return r;
   }
   
+  /***
+   * These rules are common to vehicles coming to both SM and VM calls. 
+   */
   @Override
   public boolean include(TripStatusBean statusBean) {
     if(statusBean == null)
@@ -174,6 +191,9 @@ public class PresentationServiceImpl implements PresentationService {
     return true;
   }
   
+  /***
+   * These rules are just for SM calls. 
+   */
   @Override
   public boolean include(ArrivalAndDepartureBean adBean, TripStatusBean status) {
     if(adBean == null || status == null)
