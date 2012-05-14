@@ -688,7 +688,7 @@ public class VehicleInferenceInstance {
 
       // formality match exposed to TDS
       if(blockState.isRunFormal()) {
-        statusFields.add("formal");
+        statusFields.add("blockLevelInference");
       }
 
       final BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();
