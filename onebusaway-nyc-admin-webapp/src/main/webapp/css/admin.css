@@ -60,6 +60,7 @@
 	padding-bottom: 5px;
 }
 
+
 body, p, ul, li, h1, h2, a, form, fieldset, label, table, tr, td, tbody {
 	padding: 0px;
 	margin: 0px;
@@ -87,7 +88,7 @@ html, body {
 }
 
 #topbar {
-    height: 121px;
+    height: 75px;
 }
 
 #topbar #branding {

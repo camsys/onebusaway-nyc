@@ -16,13 +16,18 @@
     the License.
 
 -->
+
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	xmlns:decorator="http://www.opensymphony.com/sitemesh/decorator" xmlns:s="/struts-tags">
-
 	<jsp:output doctype-root-element="html"
 		doctype-public="-//W3C//DTD XHTML 1.1 Transitional//EN"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" />
+<jsp:scriptlet>
+org.slf4j.LoggerFactory.getLogger("jsp").error("entering try");
+
+try { 
+</jsp:scriptlet>
 	
 	<jsp:directive.page contentType="text/html" />
 	
@@ -32,10 +37,6 @@
 	    <s:url var="url" value="/css/admin.css">
 		</s:url>
 	  <link rel="stylesheet" type="text/css" href="${url}"/>
-	  
-	  <s:url var="url" value="/js/lib/jquery.js">
-	  </s:url>
-	  <script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
 	  
 	  <decorator:head />
 	</head>
@@ -53,6 +54,13 @@
 				<decorator:body />
 	    	</div>
 		</div>
-		
+		<script type="text/javascript">alert("loaded")</script>
 	</body>
+				<jsp:scriptlet> } catch (Throwable t) {
+		org.slf4j.LoggerFactory.getLogger("jsp").error(t.toString());
+		org.slf4j.LoggerFactory.getLogger("jsp").error("exiting catch"); 
+	}
+    org.slf4j.LoggerFactory.getLogger("jsp").error("outside catch");
+    </jsp:scriptlet>
+	
 </html>

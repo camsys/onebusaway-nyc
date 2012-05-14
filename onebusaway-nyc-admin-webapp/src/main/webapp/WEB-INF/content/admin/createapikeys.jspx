@@ -27,7 +27,7 @@
 <body>
 	<div id="content">
 		<div id="text">
-			<h2>Create a key</h2>
+			<h2>Create an API key</h2>
 				<s:form action="api-key" namespace="/admin">
 					<fieldset>
 						<label class="top">Key :</label>

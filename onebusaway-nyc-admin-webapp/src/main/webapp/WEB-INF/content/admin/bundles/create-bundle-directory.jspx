@@ -25,7 +25,6 @@
 	<link rel="stylesheet" href="${url}" type="text/css"/>
 	</head>
 	<body>
-		<h2>Transit Data Bundle Utility</h2>
-		
+		<h3>Create Bundle Directory</h3>
 	</body>
 </html>

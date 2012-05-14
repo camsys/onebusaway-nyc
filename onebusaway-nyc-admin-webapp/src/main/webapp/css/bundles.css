@@ -1,0 +1,67 @@
+/**
+ * Copyright (c) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+ 
+ #breadcrumb {
+	font: 14px Arial, Helvetica, sans-serif;
+    background-repeat:repeat-x;
+    height:30px;
+    line-height:30px;
+    color:#9b9b9b;
+    border:solid 1px #cacaca;
+    width:100%;
+    overflow:hidden;
+    margin:0px;
+    padding:0px;
+}
+
+#breadcrumb li {
+    list-style-type:none;
+    float:left;
+    padding-left:10px;
+}
+
+#breadcrumb a {
+    height:30px;
+    display:block;
+    background-image:url('img/crumbs.gif');
+    background-repeat:no-repeat;
+    background-position:right;
+    padding-right: 15px;
+    text-decoration: none;
+    color:#454545;
+}
+
+#breadcrumb a:hover {
+    color:#35acc5;
+}
+
+.tab_contents {
+	display : none;
+}
+
+.tab_contents_active {
+	display : block;
+}
+
+#content #text #breadcrumb_contents_container {
+	border: 1px solid #ccc;
+	border-top: none;
+	padding: 10px;
+}
+
+#breadcrumb_contents_container h3{
+	
+}
