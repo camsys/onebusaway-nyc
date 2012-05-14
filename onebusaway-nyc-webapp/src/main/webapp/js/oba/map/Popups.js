@@ -283,7 +283,9 @@ OBA.Popups = (function() {
 	    var routeAndDirectionWithoutSerivceCount = 0;
 	    var totalRouteCount = 0;
 	    
-	    if (routeFilter === null) filter = [];
+	    if (!routeFilter) {
+	    	routeFilter = [];
+	    }
 		
 		var filterExistsInResults = false;
 		
