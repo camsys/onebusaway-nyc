@@ -44,6 +44,7 @@ public class  NycQueuedInferredLocationDaoImplTest {
 
   private NycQueuedInferredLocationDaoImpl _dao;
   private CcLocationReportDaoImpl _ccDao;
+  private CcLocationCache _cache;
 
   @Before
   public void setup() throws IOException {
@@ -52,11 +53,11 @@ public class  NycQueuedInferredLocationDaoImplTest {
     config = config.configure("org/onebusaway/nyc/report_archive/hibernate-configuration.xml");
     _sessionFactory = config.buildSessionFactory();
 
-    CcLocationCache cache = new CcLocationCache(10);
+    _cache = new CcLocationCache(10);
     
     _dao = new NycQueuedInferredLocationDaoImpl();
     _dao.setSessionFactory(_sessionFactory);
-    _dao.setCcLocationCache(cache);
+    _dao.setCcLocationCache(_cache);
     
     _ccDao = new CcLocationReportDaoImpl();
     _ccDao.setSessionFactory(_sessionFactory);
@@ -68,17 +69,19 @@ public class  NycQueuedInferredLocationDaoImplTest {
     if (_sessionFactory != null)
       _sessionFactory.close();
   }
-
+  
   @Test
   public void test() throws Exception {
 
     assertEquals(0, getNumberOfRecords());
 
     CcLocationReportRecord bhs = getCcRecord();
+    _cache.put(bhs); // this happens via ArchivingInputQueueListener 
     _ccDao.saveOrUpdateReport(bhs);
 
     ArchivedInferredLocationRecord record = getTestRecord();
     _dao.saveOrUpdateRecords(record);
+
     assertEquals(1, getNumberOfRecords());
     assertEquals(1, getNumberOfCurrentRecords());
     
