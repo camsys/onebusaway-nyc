@@ -64,7 +64,7 @@
     <!-- Input and Inference Queue Configuration -->
   <bean id="realtimeCache" class="org.onebusaway.nyc.report_archive.impl.CcLocationCache"
     scope="singleton">
-    <constructor-arg value="20000"/>
+    <constructor-arg value="200000"/>
   </bean>
 
   <bean id="bhsInputQueue" class="org.onebusaway.nyc.report_archive.queue.ArchivingInputQueueListenerTask">
