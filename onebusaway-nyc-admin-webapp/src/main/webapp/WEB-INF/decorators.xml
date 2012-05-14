@@ -19,9 +19,8 @@
 <decorators defaultdir="/WEB-INF/decorators">
 	<!-- Any urls that are excluded will never be decorated by Sitemesh -->
 	<excludes>
-		<!-- <pattern>/m/*</pattern> -->
-		<pattern>/css/*</pattern>
-		<pattern>/js/*</pattern>
+        <pattern>/js/*</pattern>
+        <pattern>/css/*</pattern>
 	</excludes>
 
 	<decorator name="decorate" page="decorate.jspx">
