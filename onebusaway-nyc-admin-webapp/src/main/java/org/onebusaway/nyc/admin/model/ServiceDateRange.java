@@ -13,12 +13,13 @@ public class ServiceDateRange implements Serializable {
   private static final long serialVersionUID = 5043315153284104718L;
   private ServiceDate _startDate;
   private ServiceDate _endDate;
-
+  private String _agencyId;
   public ServiceDateRange() {
 
   }
 
-  public ServiceDateRange(ServiceDate startDate, ServiceDate endDate) {
+  public ServiceDateRange(String agencyId, ServiceDate startDate, ServiceDate endDate) {
+    _agencyId = agencyId;
     _startDate = startDate;
     _endDate = endDate;
   }
@@ -39,6 +40,14 @@ public class ServiceDateRange implements Serializable {
     _endDate = endDate;
   }
 
+  public String getAgencyId() {
+    return _agencyId;
+  }
+  
+  public void setAgencyId(String agencyId) {
+    _agencyId = agencyId;
+  }
+  
   @Override
   public boolean equals(Object obj) {
     if (obj == null)
@@ -63,4 +72,5 @@ public class ServiceDateRange implements Serializable {
       hash += getEndDate().hashCode();
     return hash;
   }
+
 }

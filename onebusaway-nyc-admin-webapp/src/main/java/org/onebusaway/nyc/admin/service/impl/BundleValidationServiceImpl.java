@@ -11,7 +11,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,7 +32,18 @@ public class BundleValidationServiceImpl implements BundleValidationService {
       zis = new ZipInputStream(gtfsZipFile);
 
       ZipEntry entry = null;
+      String agencyId = null;
+      String calendarFile = null;
       while ((entry = zis.getNextEntry()) != null) {
+        if ("agency.txt".equals(entry.getName())) {
+          byte[] buff = new byte[CHUNK_SIZE];
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          int count = 0;
+          while ((count = zis.read(buff, 0, CHUNK_SIZE)) != -1) {
+            baos.write(buff, 0, count);
+          }
+          agencyId = parseAgencyId(baos.toString());
+        }
         if ("calendar.txt".equals(entry.getName())) {
           byte[] buff = new byte[CHUNK_SIZE];
           ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -38,8 +51,11 @@ public class BundleValidationServiceImpl implements BundleValidationService {
           while ((count = zis.read(buff, 0, CHUNK_SIZE)) != -1) {
             baos.write(buff, 0, count);
           }
-          return convertToServiceDateRange(baos.toString());
+          calendarFile = baos.toString();
         }
+      }
+      if (agencyId != null && calendarFile != null) {
+        return convertToServiceDateRange(agencyId, calendarFile);
       }
       return null; // did not find calendar.txt
     } catch (IOException ioe) {
@@ -55,7 +71,13 @@ public class BundleValidationServiceImpl implements BundleValidationService {
     }
   }
 
-  private List<ServiceDateRange> convertToServiceDateRange(String calendarFile) {
+  private String parseAgencyId(String agencyFile) {
+    String[] entries = agencyFile.split("\n");
+    return entries[1].split(",")[0];
+  }
+
+  private List<ServiceDateRange> convertToServiceDateRange(String agencyId,
+      String calendarFile) {
     String[] entries = calendarFile.split("\n");
     List<ServiceDateRange> ranges = new ArrayList<ServiceDateRange>();
     int line = 0;
@@ -65,7 +87,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
         String[] columns = entry.split(",");
         _log.info("startDate=" + columns[8] + ", endDate=" + columns[9]);
         if (columns.length > 9) {
-          ranges.add(new ServiceDateRange(parseDate(columns[8]),
+          ranges.add(new ServiceDateRange(agencyId, parseDate(columns[8]),
               parseDate(columns[9])));
         }
       }
@@ -82,33 +104,36 @@ public class BundleValidationServiceImpl implements BundleValidationService {
 
   @Override
   /**
-   * compare each service date range in the list, and return the service date if all are equal, 
-   * otherwise return null.
+   * collect all service date ranges in the list, and return 
+   * map of key=agencyId, value=ServiceDateRange 
    */
-  public ServiceDateRange getCommonServiceDateRange(
+  public Map<String, List<ServiceDateRange>> getServiceDateRangesByAgencyId(
       List<ServiceDateRange> ranges) {
-    ServiceDateRange first = null;
+    HashMap<String, List<ServiceDateRange>> map = new HashMap<String, List<ServiceDateRange>>();
     for (ServiceDateRange sd : ranges) {
-      if (first == null) {
-        first = sd;
-      } else if (!first.equals(sd)) {
-        return null;
+      List<ServiceDateRange> list = map.get(sd.getAgencyId());
+      if (list == null) {
+        list = new ArrayList<ServiceDateRange>();
       }
+      list.add(sd);
+      map.put(sd.getAgencyId(), list);
     }
-    return first;
+    return map;
   }
 
   @Override
   /**
-   * Test for a common service date range across a set of GTFS zip files.
+   * collect all service date ranges in the GTFS, and return 
+   * map of key=agencyId, value=ServiceDateRange
    */
-  public ServiceDateRange getCommonServiceDateRangeAcrossAllGtfs(
+  public Map<String, List<ServiceDateRange>> getServiceDateRangesAcrossAllGtfs(
       List<InputStream> gtfsZipFiles) {
-    List<ServiceDateRange> ranges = new ArrayList<ServiceDateRange>(gtfsZipFiles.size());
+    List<ServiceDateRange> ranges = new ArrayList<ServiceDateRange>(
+        gtfsZipFiles.size());
     for (InputStream is : gtfsZipFiles) {
       ranges.addAll(getServiceDateRanges(is));
     }
-    return getCommonServiceDateRange(ranges);
+    return getServiceDateRangesByAgencyId(ranges);
   }
 
 }
