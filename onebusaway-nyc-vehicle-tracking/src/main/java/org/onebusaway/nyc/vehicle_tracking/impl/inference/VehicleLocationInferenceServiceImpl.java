@@ -62,6 +62,7 @@ import org.onebusaway.nyc.transit_data_federation.services.tdm.OperatorAssignmen
 import org.onebusaway.nyc.transit_data_federation.services.tdm.VehicleAssignmentService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.distributions.CategoricalDist;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.JourneyPhaseSummary;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.MotionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
@@ -75,6 +76,8 @@ import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInf
 import org.onebusaway.nyc.vehicle_tracking.services.queue.OutputQueueSenderService;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Multiset;
@@ -124,15 +127,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   private int _skippedUpdateLogCounter = 0;
   
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
-  
-  /*
-   * FIXME TODO The following two maps are for debug.  remove when finished.
-   */
-  private ConcurrentMap<AgencyAndId, ObjectOutputStream> _outputFilesByVehicleId = 
-      new ConcurrentHashMap<AgencyAndId, ObjectOutputStream>();
-  
-  private ConcurrentMap<AgencyAndId, ObjectInputStream> _inputFilesByVehicleId = 
-      new ConcurrentHashMap<AgencyAndId, ObjectInputStream>();
 
   private ApplicationContext _applicationContext;
 
@@ -565,7 +559,6 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
         }
         return instance;
       } else {
-      
         
         /*
          * use the previous timestamp to find the last serialized file
@@ -579,9 +572,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
         {
           fis = new FileInputStream(filename);
           in = new ObjectInputStream(fis);
-          _inputFilesByVehicleId.putIfAbsent(vehicleId, in);
           deSerializedInst = (VehicleInferenceInstance)in.readObject();
-          // TODO will likely need to populate things...
           repopulateSerializedInferenceInstance(deSerializedInst);
           
           return deSerializedInst;
@@ -631,6 +622,11 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       ParticleFactoryImpl pfInst = _applicationContext.getBean(ParticleFactoryImpl.class);
       deSerializedInst.getParticleFilter().setParticleFactory(pfInst);
       
+      BlockCalendarService bcsInst = _applicationContext.getBean(BlockCalendarService.class);
+      BlockState.blockCalendarService = bcsInst; 
+      ScheduledBlockLocationService sblsInst = _applicationContext.getBean(ScheduledBlockLocationService.class);
+      BlockState.blockLocationService = sblsInst; 
+      BlockState.runService = rsInst; 
     }
 
     private VehicleInferenceInstance getInstanceForVehicle(AgencyAndId vehicleId) {
@@ -715,7 +711,15 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
         try {
           fos = new FileOutputStream(filename);
           out = new ObjectOutputStream(fos);
-          return existing.handleUpdate(_inferenceRecord, out);
+          
+          final boolean cond = existing.handleUpdate(_inferenceRecord);
+          _vehicleInstancesByVehicleId.put(_vehicleId, existing);
+          
+          out.writeObject(existing);
+          out.close();
+          
+          return cond;
+          
         } catch (FileNotFoundException e) {
           e.printStackTrace();
         } catch (IOException e) {
@@ -731,7 +735,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     
     private boolean sendRecord(VehicleInferenceInstance existing) {
       if (_inferenceRecord != null) {
-        return existing.handleUpdate(_inferenceRecord, null);
+        return existing.handleUpdate(_inferenceRecord);
       } else if (_nycTestInferredLocationRecord != null) {
         return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
       }

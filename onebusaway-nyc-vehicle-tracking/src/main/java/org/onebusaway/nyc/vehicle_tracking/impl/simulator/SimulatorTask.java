@@ -493,7 +493,7 @@ public class SimulatorTask implements Runnable, EntityHandler {
         return false;
 
       try {
-        Thread.sleep(10 * i);
+        Thread.sleep(100 * i);
       } catch (final InterruptedException ex) {
         return true;
       }

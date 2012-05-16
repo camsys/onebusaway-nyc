@@ -17,10 +17,14 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.state;
 
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.impl.nyc.RunServiceImpl;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.BlockInstanceComparator;
 import org.onebusaway.nyc.vehicle_tracking.impl.sort.ScheduledBlockLocationComparator;
+import org.onebusaway.transit_data_federation.services.blocks.BlockCalendarService;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
+import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocationService;
 import org.onebusaway.transit_data_federation.impl.blocks.FrequencyComparator;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
@@ -81,18 +85,34 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
     }
   }
 
+  static public RunService runService;
+  
   public RunTripEntry getRunTripEntry() {
-    // TODO FIXME if the instance is null, get it
+    if (runTrip == null) {
+      long thisTime = biServiceDate + 1000*sblScheduleTime;
+      runTrip = runService.getActiveRunTripEntryForRunAndTime(
+          new AgencyAndId("MTA_NYCT", rteRunId), thisTime);
+    }
     return runTrip;
   }
 
+  static public BlockCalendarService blockCalendarService;
+  
   public BlockInstance getBlockInstance() {
-    // TODO FIXME if the instance is null, get it
+    if (blockInstance == null) {
+      blockInstance = blockCalendarService.getBlockInstance(biBlockId,
+          biServiceDate);
+    }
     return blockInstance;
   }
 
+  static public ScheduledBlockLocationService blockLocationService;
+  
   public ScheduledBlockLocation getBlockLocation() {
-    // TODO FIXME if the instance is null, get it
+    if (blockLocation == null) {
+      blockLocation = blockLocationService.getScheduledBlockLocationFromScheduledTime(
+          getBlockInstance().getBlock(), sblScheduleTime);
+    }
     return blockLocation;
   }
 
@@ -103,17 +123,18 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
   @Override
   public String toString() {
     // TODO FIXME use the local values 
-    AgencyAndId tripId = blockLocation.getActiveTrip() != null ?
+    AgencyAndId tripId = getBlockLocation().getActiveTrip() != null ?
         blockLocation.getActiveTrip().getTrip().getId() : null;
-    Boolean runTripMatches = (tripId != null && runTrip != null) ? tripId.equals(runTrip.getTripEntry().getId())
+    Boolean runTripMatches = (tripId != null && getRunTripEntry() != null) ? tripId.equals(
+        getRunTripEntry().getTripEntry().getId())
             : null;
     int mins = blockLocation.getScheduledTime()/60;
     return Objects.toStringHelper("BlockState")
-        .add("blockId", blockInstance.getBlock().getBlock().getId())
+        .add("blockId", getBlockInstance().getBlock().getBlock().getId())
         .add("scheduledTime", Integer.toString(mins/60) 
             + ":" + Integer.toString(mins % 60) 
-            + " (" + Integer.toString(blockLocation.getScheduledTime()) + ")")
-        .add("distanceAlongBlock", blockLocation.getDistanceAlongBlock())
+            + " (" + Integer.toString(getBlockLocation().getScheduledTime()) + ")")
+        .add("distanceAlongBlock", getBlockLocation().getDistanceAlongBlock())
         .add("tripId", tripId)
         .add("dsc", destinationSignCode)
         .add("runTripMatchesActiveTrip", runTripMatches)
@@ -136,11 +157,12 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
       return 0;
 
     final int res = ComparisonChain.start().compare(this.destinationSignCode,
-        rightBs.destinationSignCode).compare(this.blockInstance,
-        rightBs.blockInstance, Ordering.from(BlockInstanceComparator.INSTANCE)).compare(
-        this.blockLocation, rightBs.blockLocation,
+        rightBs.destinationSignCode).compare(this.getBlockInstance(),
+        rightBs.getBlockInstance(), Ordering.from(BlockInstanceComparator.INSTANCE)).compare(
+        this.getBlockLocation(), rightBs.getBlockLocation(),
         Ordering.from(ScheduledBlockLocationComparator.INSTANCE)).compare(
-        this.runTrip, rightBs.runTrip, Ordering.natural().nullsLast()).result();
+        this.getRunTripEntry(), rightBs.getRunTripEntry(), Ordering.natural().nullsLast())
+        .result();
     return res;
   }
 
@@ -151,12 +173,12 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
     final int prime = 31;
     int result = 1;
     result = prime * result
-        + ((blockInstance == null) ? 0 : blockInstance.hashCode());
+        + ((getBlockInstance() == null) ? 0 : blockInstance.hashCode());
     /*
      * don't want/need to change OBA api, so do this...
      */
     result = prime * result
-        + ((blockLocation == null) ? 0 : blockLocation.getScheduledTime());
+        + ((getBlockLocation() == null) ? 0 : blockLocation.getScheduledTime());
     result = prime
         * result
         + ((blockLocation == null) ? 0
@@ -165,7 +187,7 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
 
     result = prime * result
         + ((destinationSignCode == null) ? 0 : destinationSignCode.hashCode());
-    result = prime * result + ((runTrip == null) ? 0 : runTrip.hashCode());
+    result = prime * result + ((getRunTripEntry() == null) ? 0 : getRunTripEntry().hashCode());
 
     return result;
   }
@@ -182,20 +204,20 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
 
     final BlockState other = (BlockState) obj;
 
-    if (blockInstance == null) {
-      if (other.blockInstance != null)
+    if (getBlockInstance() == null) {
+      if (other.getBlockInstance() != null)
         return false;
-    } else if (!blockInstance.equals(other.blockInstance))
+    } else if (!blockInstance.equals(other.getBlockInstance()))
       return false;
 
-    if (blockLocation == null) {
-      if (other.blockLocation != null)
+    if (getBlockLocation() == null) {
+      if (other.getBlockLocation()!= null)
         return false;
     } else {
-      if (other.blockLocation == null)
+      if (other.getBlockLocation() == null)
         return false;
 
-      if (blockLocation.getScheduledTime() != other.blockLocation.getScheduledTime())
+      if (blockLocation.getScheduledTime() != other.getBlockLocation().getScheduledTime())
         return false;
       if (!blockLocation.getActiveTrip().getTrip().getId().equals(
           other.blockLocation.getActiveTrip().getTrip().getId()))
@@ -208,10 +230,10 @@ public final class BlockState implements Comparable<BlockState>, Serializable {
     } else if (!destinationSignCode.equals(other.destinationSignCode))
       return false;
 
-    if (runTrip == null) {
-      if (other.runTrip != null)
+    if (getRunTripEntry() == null) {
+      if (other.getRunTripEntry() != null)
         return false;
-    } else if (!runTrip.equals(other.runTrip))
+    } else if (!runTrip.equals(other.getRunTripEntry()))
       return false;
     return true;
   }

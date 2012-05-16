@@ -171,7 +171,7 @@ public class VehicleInferenceInstance implements Serializable {
    * @return true if the resulting inferred location record should be passed on,
    *         otherwise false
    */
-  public synchronized boolean handleUpdate(NycRawLocationRecord record, ObjectOutputStream out) {
+  public synchronized boolean handleUpdate(NycRawLocationRecord record) {
 
     /**
      * Choose the best timestamp based on device timestamp and received
@@ -342,15 +342,6 @@ public class VehicleInferenceInstance implements Serializable {
       throw new IllegalStateException(ex);
     }
 
-    if (out != null) {
-      try {
-        out.writeObject(this);
-        out.close();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
-    
     return _enabled;
   }
 
