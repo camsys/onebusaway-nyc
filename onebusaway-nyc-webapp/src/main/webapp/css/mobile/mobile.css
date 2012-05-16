@@ -101,13 +101,13 @@ h1 {
 h2 {
 	font-size: 100%;
 	font-weight: normal;
-	color: #666;
+	color: #666666;
 }
 
 h3 {
 	font-size: 100%;
 	font-weight: bold;
-	color: #818181;
+	color: #666666;
 }
 
 div,p {
@@ -260,7 +260,7 @@ small {
 
 /* content panel */
 .ambiguousLocations,.examples,.stop,.route {
-	padding-top: 1em;
+	padding-top: 0.5em;
 }
 
 .directionForRoute {
@@ -282,6 +282,10 @@ small {
 .stopResultGroupHeader {
 	font-weight: bold;
 	color: #818181;
+}
+
+.stopResultGroupHeader.muted.first {
+	margin-top: 2.0em;
 }
 
 .routeHeader {
@@ -352,6 +356,12 @@ small {
 	font-weight: bold;
 }
 
+#not-scheduled-routes a {
+	padding-bottom: 1.0em;
+	width: 6.0em;
+	display: inline-block;
+}
+
 /* suggestions */
 
 .ui-autocomplete.ui-widget {
@@ -379,4 +389,16 @@ small {
 
 .ui-autocomplete.ui-widget .ui-menu-item a.ui-state-hover {
 	background-color: #EFEFEF;
+}
+
+.stop .muted {
+	color: rgb(100,100,100);
+}
+
+.stop a.muted {
+	color: rgb(130,130,130);
+}
+
+.stop a:HOVER.muted {
+	color: rgb(100,100,100);
 }
