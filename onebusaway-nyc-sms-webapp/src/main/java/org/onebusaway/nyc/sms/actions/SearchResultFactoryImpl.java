@@ -209,8 +209,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     String message = "";    
     String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mi.", "mi.", "");
 
-    // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+
+    // wrapped label only appears in stop results
+    if(isStopContext && progressStatus != null && progressStatus.getValue().equals("prevTrip")) {
+      message += "after layover";
+    }
+
+    // at terminal label only appears in stop results
     if(isStopContext && progressStatus != null && progressStatus.getValue().equals("layover")) {
       message += "@term.";
     }

@@ -10,7 +10,7 @@ public interface PresentationService {
 
   public void setTime(Date time);
 
-  public Boolean isFormalInference(TripStatusBean statusBean);
+  public Boolean isBlockLevelInference(TripStatusBean statusBean);
 
   public Boolean isInLayover(TripStatusBean statusBean);
 

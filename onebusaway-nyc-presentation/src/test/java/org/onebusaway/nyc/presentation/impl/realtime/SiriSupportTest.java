@@ -53,6 +53,7 @@ public class SiriSupportTest {
   public TripDetailsBean setupMock() {
     TripDetailsBean tripDetails = new TripDetailsBean();
     TripBean tripBean = new TripBean();
+    tripBean.setId("TEST_TRIP_ID");
     tripDetails.setTrip(tripBean);
     Builder routeBeanBuilder = RouteBean.builder();
     routeBeanBuilder.setId("foo");

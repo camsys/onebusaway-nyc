@@ -368,6 +368,11 @@ OBA.Popups = (function() {
 						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
 
 						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
+								monitoredVehicleJourney.ProgressStatus === "prevTrip") {
+							distance += " (after a brief scheduled layover)";
+						}
+
+						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
 								monitoredVehicleJourney.ProgressStatus === "layover") {
 							distance += " (at terminal)";
 						}

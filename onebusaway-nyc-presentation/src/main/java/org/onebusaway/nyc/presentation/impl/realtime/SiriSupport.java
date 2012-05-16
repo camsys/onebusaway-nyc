@@ -17,12 +17,15 @@ package org.onebusaway.nyc.presentation.impl.realtime;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -38,6 +41,7 @@ import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
 
+import uk.org.siri.siri.BlockRefStructure;
 import uk.org.siri.siri.DataFrameRefStructure;
 import uk.org.siri.siri.DestinationRefStructure;
 import uk.org.siri.siri.DirectionRefStructure;
@@ -90,10 +94,22 @@ public final class SiriSupport {
     headsign.setValue(tripBean.getTripHeadsign());
     monitoredVehicleJourney.setDestinationName(headsign);
 
+    // progress statuses
+    List<String> progressStatuses = new ArrayList<String>();
+    
     if (presentationService.isInLayover(tripDetails.getStatus())) {
-      NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();
-      progressStatus.setValue("layover");
-      monitoredVehicleJourney.setProgressStatus(progressStatus);
+    	progressStatuses.add("layover");
+    }
+
+    // if bus is currently not on the trip we're returning data for, indicate that this is a wrapped bus
+    if(!tripBean.getId().equals(tripDetails.getTripId())) {
+    	progressStatuses.add("prevTrip");
+    }
+
+    if(!progressStatuses.isEmpty()) {
+    	NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();
+        progressStatus.setValue(StringUtils.join(progressStatuses, ","));
+        monitoredVehicleJourney.setProgressStatus(progressStatus);    	
     }
 
     VehicleRefStructure vehicleRef = new VehicleRefStructure();
@@ -115,6 +131,44 @@ public final class SiriSupport {
     framedJourney.setDatedVehicleJourneyRef(tripBean.getId());
     monitoredVehicleJourney.setFramedVehicleJourneyRef(framedJourney);
 
+    // block ref
+    if (presentationService.isBlockLevelInference(tripDetails.getStatus())) {
+      if(tripDetails.getTrip() != null) {
+    	BlockRefStructure blockRef = new BlockRefStructure();
+    	blockRef.setValue(tripDetails.getTrip().getBlockId());
+    	monitoredVehicleJourney.setBlockRef(blockRef);
+      }
+    }
+
+    // sched. depature time
+    if (presentationService.isBlockLevelInference(tripDetails.getStatus())) {
+    	if(tripDetails.getStatus().getPhase().toUpperCase().startsWith("LAYOVER_")) {
+    		TripBean nextTrip = tripDetails.getSchedule().getNextTrip();
+
+    		if(nextTrip != null) {
+    			TripDetailsQueryBean query = new TripDetailsQueryBean();
+    			query.setTripId(nextTrip.getId());
+    			query.setVehicleId(tripDetails.getStatus().getVehicleId());
+        	
+    			ListBean<TripDetailsBean> nextTripDetails = nycTransitDataService.getTripDetails(query);
+        
+    			for(TripDetailsBean details : nextTripDetails.getList()) {
+    				if(!details.getTrip().getBlockId().equals(tripDetails.getTrip().getBlockId())) {
+    					continue;
+    				}
+
+    				List<TripStopTimeBean> stopTimesForNextTrip = details.getSchedule().getStopTimes();
+    				TripStopTimeBean firstStopTime = stopTimesForNextTrip.get(0);
+            	
+    				if(firstStopTime != null) {            	
+    					Date departureTime = new Date(tripDetails.getServiceDate() + (firstStopTime.getDepartureTime() * 1000));
+    					monitoredVehicleJourney.setOriginAimedDepartureTime(departureTime);
+    				}
+    			}
+    		}
+        }
+    }
+    
     // origin/dest.
     List<TripStopTimeBean> stops = tripDetails.getSchedule().getStopTimes();
 

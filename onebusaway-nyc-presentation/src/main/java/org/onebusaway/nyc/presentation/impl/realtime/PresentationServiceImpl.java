@@ -53,12 +53,12 @@ public class PresentationServiceImpl implements PresentationService {
   }
 
   @Override
-  public Boolean isFormalInference(TripStatusBean statusBean) {
+  public Boolean isBlockLevelInference(TripStatusBean statusBean) {
     if(statusBean != null) {
       String status = statusBean.getStatus();
 
       if(status != null)
-        return status.contains("formal");
+        return status.contains("blockLevelInference");
       else
         return false;
     }
@@ -209,55 +209,66 @@ public class PresentationServiceImpl implements PresentationService {
     // hide buses that are on detour from a-d queries
     if(isOnDetour(status))
       return false;
-    
-    /**
-     * So this complicated thing-a-ma-jig is to filter out buses that are at the terminals
-     * when considering arrivals and departures for a stop.
-     * 
-     * The idea is that we label all buses that are in layover "at terminal" headed towards us, then filter 
-     * out ones where that isn't true. The ones we need to specifically filter out are the ones that
-     * are at the other end of the route--the other terminal--waiting to begin service on the trip
-     * we're actually interested in.
-     * 
-     * Consider a route with terminals A and B:
-     * A ----> B 
-     *   <----
-     *   
-     * If we request arrivals and departures for the first trip from B to A, we'll see buses within a block
-     * that might be at A waiting to go to B (trip 2), if the vehicle's block includes a trip from B->A later on. 
-     * Those are the buses we want to filter out here.  
-     */
+
+    // wrap-around logic
     String phase = status.getPhase();
     TripBean activeTrip = status.getActiveTrip();
     TripBean tripBean = adBean.getTrip();
 
-    // only consider buses that are in layover
-    if(phase != null && 
-        (phase.toUpperCase().equals("LAYOVER_BEFORE") || phase.toUpperCase().equals("LAYOVER_DURING"))) {
-
-      double distanceAlongTrip = status.getDistanceAlongTrip();
-      double totalDistanceAlongTrip = status.getTotalDistanceAlongTrip();
-      double ratio = distanceAlongTrip / totalDistanceAlongTrip;
-      
-      // if the bus isn't serving the trip this arrival and departure is for AND 
-      // the bus is NOT on the previous trip in the block, but at the end of that trip (ready to serve
-      // the trip this arrival and departure is for), filter that out.
-      if(activeTrip != null
-            && !tripBean.getId().equals(activeTrip.getId())
-            && !((adBean.getBlockTripSequence() - 1) == status.getBlockTripSequence() && ratio > 0.50)) {
-        _log.debug("  " + status.getVehicleId() + " filtered out due to at terminal/ratio");
-        return false;
-      }
+    if(isBlockLevelInference(status)) {
+    	// if ad is not on the trip this bus is, or the previous trip, filter out
+    	if(!adBean.getTrip().getId().equals(status.getActiveTrip().getId()) 
+    			&& !(adBean.getBlockTripSequence() - 1 == status.getBlockTripSequence())) {
+		  _log.debug("  " + status.getVehicleId() + " filtered out due to trip block sequence");
+		  return false;
+		}
     } else {
-      // if the bus isn't serving the trip this arrival and departure is for, filter out--
-      // since the bus is not in layover now.
-      if (activeTrip != null
-          && !tripBean.getId().equals(activeTrip.getId())) {
-        _log.debug("  " + status.getVehicleId() + " filtered out due to not serving trip for A/D");
-        return false;
-      }
-    }
+	    /**
+	     * So this complicated thing-a-ma-jig is to filter out buses that are at the terminals
+	     * when considering arrivals and departures for a stop.
+	     * 
+	     * The idea is that we label all buses that are in layover "at terminal" headed towards us, then filter 
+	     * out ones where that isn't true. The ones we need to specifically filter out are the ones that
+	     * are at the other end of the route--the other terminal--waiting to begin service on the trip
+	     * we're actually interested in.
+	     * 
+	     * Consider a route with terminals A and B:
+	     * A ----> B 
+	     *   <----
+	     *   
+	     * If we request arrivals and departures for the first trip from B to A, we'll see buses within a block
+	     * that might be at A waiting to go to B (trip 2), if the vehicle's block includes a trip from B->A later on. 
+	     * Those are the buses we want to filter out here.  
+	     */
 
+    	// only consider buses that are in layover
+	    if(phase != null && 
+	        (phase.toUpperCase().equals("LAYOVER_BEFORE") || phase.toUpperCase().equals("LAYOVER_DURING"))) {
+	
+	      double distanceAlongTrip = status.getDistanceAlongTrip();
+	      double totalDistanceAlongTrip = status.getTotalDistanceAlongTrip();
+	      double ratio = distanceAlongTrip / totalDistanceAlongTrip;
+	      
+	      // if the bus isn't serving the trip this arrival and departure is for AND 
+	      // the bus is NOT on the previous trip in the block, but at the end of that trip (ready to serve
+	      // the trip this arrival and departure is for), filter that out.
+	      if(activeTrip != null
+	            && !tripBean.getId().equals(activeTrip.getId())
+	            && !((adBean.getBlockTripSequence() - 1) == status.getBlockTripSequence() && ratio > 0.50)) {
+	        _log.debug("  " + status.getVehicleId() + " filtered out due to at terminal/ratio");
+	        return false;
+	      }
+	    } else {
+	      // if the bus isn't serving the trip this arrival and departure is for, filter out--
+	      // since the bus is not in layover now.
+	      if (activeTrip != null
+	          && !tripBean.getId().equals(activeTrip.getId())) {
+	        _log.debug("  " + status.getVehicleId() + " filtered out due to not serving trip for A/D");
+	        return false;
+	      }
+	    }
+    }
+    
     return true;
   }
 
