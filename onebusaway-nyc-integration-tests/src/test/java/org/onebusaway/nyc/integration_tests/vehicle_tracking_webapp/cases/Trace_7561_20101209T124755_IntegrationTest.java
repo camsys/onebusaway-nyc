@@ -60,12 +60,6 @@ public class Trace_7561_20101209T124755_IntegrationTest extends AbstractTraceRun
     super("7561-2010-12-09T12-47-55.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
     
-    /*
-     * FIXME this has a potential bundle-conflict with the trace 
-     * like some of the others, at the very end of the trace it says
-     * deadhead-before when it's not moving (and has left the base)
-     */
-    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.75);
-//    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.65);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.70);
   }
 }

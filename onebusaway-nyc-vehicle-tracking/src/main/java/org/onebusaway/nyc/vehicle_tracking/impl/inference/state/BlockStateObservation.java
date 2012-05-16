@@ -63,8 +63,9 @@ public final class BlockStateObservation implements
     final String runId = blockState.getRunId();
     _isOpAssigned = obs.getOpAssignedRunId() != null
         ? obs.getOpAssignedRunId().equals(runId) : null;
-    _isRunReported = (runId != null && 
-        obs.getBestFuzzyRunIds() != null && !obs.getBestFuzzyRunIds().isEmpty())
+    _isRunReported = ((runId != null) 
+        && (obs.getBestFuzzyRunIds() != null)
+        && (obs.getFuzzyMatchDistance() != null))
         ? obs.getBestFuzzyRunIds().contains(runId) : null;
     _isRunFormal = _isOpAssigned == Boolean.TRUE || (_isRunReported == Boolean.TRUE && obs.getFuzzyMatchDistance() == 0) 
         ? true : false;
