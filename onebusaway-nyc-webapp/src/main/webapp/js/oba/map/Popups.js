@@ -147,7 +147,60 @@ OBA.Popups = (function() {
         return html;
 	}
 	
+	function processAlertData(situationExchangeDelivery) {
+		var alertData = {};
+		
+		if (situationExchangeDelivery) {
+            jQuery.each(situationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+            	jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
+            		var lineRef = affectedVehicleJourney.LineRef;
+            		if (!(lineRef in alertData)) {
+            			alertData[lineRef] = {};
+            		}
+            		if (!(ptSituationElement.SituationNumber in alertData[lineRef])) {
+            			alertData[lineRef][ptSituationElement.SituationNumber] = ptSituationElement;
+            		}
+            	});
+            });
+		}
+		
+		return alertData;
+	}
+	
+	function activateAlertLinks(content) {
+		var alertLinks = content.find(".alert-link");
+		jQuery.each(alertLinks, function(_, alertLink) {
+			var element = jQuery(alertLink);
+			var idParts = element.attr("id").split("|");
+			var routeId = idParts[1];
+			var routeIdWithoutAgency = routeId.split("_")[1];
+			
+			element.click(function(e) {
+				e.preventDefault();
+				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
+				if (alertElement.length === 0) {
+					expandAlerts = true;
+					window.location = "#" + stopIdWithoutAgency + "%20" + routeIdWithoutAgency;
+				} else {
+					$("#searchbar").animate({
+						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
+						}, 
+						500,
+						function() {
+							if (alertElement.accordion("option", "active") !== 0) {
+								alertElement.accordion("activate" , 0);
+							}
+						});
+				}
+			});
+			
+		});
+	}
+	
 	function getVehicleContentForResponse(r, popupContainerId, marker) {
+		
+		var alertData = processAlertData(r.Siri.ServiceDelivery.SituationExchangeDelivery);
+		
 		var activity = r.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 		if(activity === null || activity.MonitoredVehicleJourney === null) {
 			return null;
@@ -156,6 +209,7 @@ OBA.Popups = (function() {
 		var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
 		var vehicleIdParts = vehicleId.split("_");
 		var vehicleIdWithoutAgency = vehicleIdParts[1];
+		var routeName = activity.MonitoredVehicleJourney.LineRef;
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
@@ -220,34 +274,21 @@ OBA.Popups = (function() {
 		}
 		
 		// service alerts
-		html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);		
+		//html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);
+		if (routeName in alertData) {
+			html += ' <a id="alert-link|' + routeName + '" class="alert-link" href="#">Service Advisory</a>';
+		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
 		
 		// (end popup)
 		html += '</div>';
 		
-		return html;
-	}
-	
-	function processAlertData(r) {
-		var alertData = {};
+		var content = jQuery(html);
 		
-		if (r.siri.Siri.ServiceDelivery.SituationExchangeDelivery != null) {
-            jQuery.each(r.siri.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
-            	jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
-            		var lineRef = affectedVehicleJourney.LineRef;
-            		if (!(lineRef in alertData)) {
-            			alertData[lineRef] = {};
-            		}
-            		if (!(ptSituationElement.SituationNumber in alertData[lineRef])) {
-            			alertData[lineRef][ptSituationElement.SituationNumber] = ptSituationElement;
-            		}
-            	});
-            });
-		}
+		activateAlertLinks(content);
 		
-		return alertData;
+		return content.get(0);
 	}
 
 	function getStopContentForResponse(r, popupContainerId, marker, routeFilter) {
@@ -258,7 +299,7 @@ OBA.Popups = (function() {
 		var stopIdParts = stopId.split("_");
 		var stopIdWithoutAgency = stopIdParts[1];
 		
-		var alertData = processAlertData(r);
+		var alertData = processAlertData(r.siri.Siri.ServiceDelivery.SituationExchangeDelivery);
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
@@ -386,7 +427,7 @@ OBA.Popups = (function() {
 				html += '<li class="route">';
 				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
 				if (mvj.LineRef in alertData) {
-					html += ' <a id="alert-link|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
+					html += ' <a id="alert-link|' + mvj.LineRef + '" class="alert-link" href="#">Advisory</a>';
 				}
 				html += '</li>';
 
@@ -474,33 +515,7 @@ OBA.Popups = (function() {
 			map.setZoom(16);
 		});
 		
-		var alertLinks = content.find(".alert-link");
-		jQuery.each(alertLinks, function(_, alertLink) {
-			var element = jQuery(alertLink);
-			var idParts = element.attr("id").split("|");
-			var routeId = idParts[1];
-			var routeIdWithoutAgency = routeId.split("_")[1];
-			
-			element.click(function(e) {
-				e.preventDefault();
-				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
-				if (alertElement.length === 0) {
-					expandAlerts = true;
-					window.location = "#" + stopIdWithoutAgency + "%20" + routeIdWithoutAgency;
-				} else {
-					$("#searchbar").animate({
-						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
-						}, 
-						500,
-						function() {
-							if (alertElement.accordion("option", "active") !== 0) {
-								alertElement.accordion("activate" , 0);
-							}
-						});
-				}
-			});
-			
-		});
+		activateAlertLinks(content);
 
 		return content.get(0);
 	}
