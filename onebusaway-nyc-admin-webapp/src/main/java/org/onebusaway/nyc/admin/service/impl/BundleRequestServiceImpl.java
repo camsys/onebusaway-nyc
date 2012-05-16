@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,6 +24,8 @@ public class BundleRequestServiceImpl implements BundleRequestService {
   private ExecutorService _executorService = null;
   private BundleValidationService _bundleValidationService;
   private FileService _fileService;
+  private Integer jobCounter = 0;
+  private Map<String, BundleResponse> _responseMap = new HashMap<String, BundleResponse>();
 
   public void setBundleValidationService(BundleValidationService service) {
     _bundleValidationService = service;
@@ -42,7 +46,8 @@ public class BundleRequestServiceImpl implements BundleRequestService {
    * updated upon completion (successful or otherwise) of the validaton process.
    */
   public BundleResponse validate(BundleRequest bundleRequest) {
-    BundleResponse bundleResponse = new BundleResponse();
+    BundleResponse bundleResponse = new BundleResponse(getNextId());
+    _responseMap.put(bundleResponse.getId(), bundleResponse);
     _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
     return bundleResponse;
   }
@@ -80,4 +85,36 @@ public class BundleRequestServiceImpl implements BundleRequestService {
       }
     }
   }
+
+  @Override
+  /**
+   * Retrieve a BundleResponse object for the given id.
+   */
+  public BundleResponse lookup(String id) {
+    return _responseMap.get(id);
+  }
+
+  @Override
+  /**
+   * cleanup resources.
+   */
+  public void cleanup() {
+  _responseMap.clear();
+  } 
+  
+  /**
+   * Trivial implementation of creating unique Ids. Security is not a requirement here.
+   */
+  private String getNextId() {
+    return "" + inc();
+  }
+  
+  private Integer inc() {
+    synchronized (jobCounter) {
+      jobCounter ++;
+    }
+    return jobCounter;
+  }
+  
+  
 }

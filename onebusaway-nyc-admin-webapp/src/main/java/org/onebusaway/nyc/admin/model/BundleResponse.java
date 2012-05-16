@@ -9,7 +9,11 @@ public class BundleResponse {
   private Exception _exception;
   private List<String> _statusMessages = Collections.synchronizedList(new ArrayList<String>());
   private List<String> _validationFiles = Collections.synchronizedList(new ArrayList<String>());
+  private String _id = null;
   
+  public BundleResponse(String id) {
+    _id = id;
+  }
   public synchronized  boolean isComplete() {
     return _isComplete;
   }
@@ -41,4 +45,12 @@ public class BundleResponse {
   public void addValidationFile(String filename) {
     _validationFiles.add(filename);
   }
+
+  /**
+   * key for retrieval from lookup service
+   */
+  public String getId() {
+    return _id;
+  }
+
 }

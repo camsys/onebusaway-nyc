@@ -64,6 +64,9 @@ public class BundleRequestServiceImplTest {
       _log.info("sleeping[" + count + "]...");
       Thread.sleep(10000);
       count++;
+      // NOTE: this is optional to demonstrate retrieval service
+      res = service.lookup(res.getId());
+      assertNotNull(res);
     }
     _log.error("exception=" + res.getException());
     assertNull(res.getException());

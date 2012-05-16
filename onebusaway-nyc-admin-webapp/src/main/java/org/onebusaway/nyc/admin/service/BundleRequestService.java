@@ -5,4 +5,10 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 
 public interface BundleRequestService {
   BundleResponse validate(BundleRequest bundleRequest);
+
+  BundleResponse lookup(String id);
+  
+  void cleanup();
+
+  
 }
