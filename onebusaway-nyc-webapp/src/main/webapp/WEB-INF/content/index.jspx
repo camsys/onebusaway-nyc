@@ -152,7 +152,12 @@
        
        <div id="matches">
        	 <h2>Results:</h2>
-       	 <ul></ul>
+       	 <ul><!-- //prevent jspx minimization --></ul>
+	   </div>
+	   
+	   <div id="filtered-matches">
+	   	<h2>Other routes here:</h2>
+	   	<ul><!-- //prevent jspx minimization --></ul>
 	   </div>
 
        <div id="suggestions">
@@ -190,7 +195,7 @@
 	   
     </div>
 
-	<div id="map"></div>
+	<div id="map"><!-- //prevent jspx minimization --></div>
 
 </div>
 <!-- Begin Wizard -->
