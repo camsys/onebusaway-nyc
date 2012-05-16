@@ -195,7 +195,7 @@
 	   
     </div>
 
-	<div id="map"></div>
+	<div id="map"><!-- //prevent jspx minimization --></div>
 
 </div>
 <!-- Begin Wizard -->
