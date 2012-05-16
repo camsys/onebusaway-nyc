@@ -5,6 +5,7 @@ import org.onebusaway.nyc.admin.service.FileService;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -36,11 +37,13 @@ public class FileServiceImpl implements FileService {
   @Autowired
   private String bucketName;
 
+  @Override
   public void setBucketName(String bucketName) {
     this.bucketName = bucketName;
   }
 
   @PostConstruct
+  @Override
   public void setup() {
     try {
       credentials = new PropertiesCredentials(
@@ -54,6 +57,10 @@ public class FileServiceImpl implements FileService {
   }
 
   @Override
+  /**
+   * check to see if the given bundle directory exists in the configured bucket.
+   * Do not include leading slashes in the filename(key).
+   */
   public boolean bundleDirectoryExists(String filename) {
     ListObjectsRequest request = new ListObjectsRequest(bucketName, filename,
         null, null, 1);
@@ -105,6 +112,21 @@ public class FileServiceImpl implements FileService {
       }
     }
     return rows;
+  }
+
+  @Override
+  /**
+   * Retreive the specified key from S3 and store in the given directory.
+   */
+  public String get(String key, String tmpDir) {
+    FileUtils fs = new FileUtils();
+    String filename = fs.parseFileName(key);
+    _log.info("downloading " + key);
+    GetObjectRequest request = new GetObjectRequest(this.bucketName, key);
+    S3Object file = s3.getObject(request);
+    String pathAndFileName = tmpDir + File.separator + filename;
+    fs.copy(file.getObjectContent(), pathAndFileName);
+    return pathAndFileName;
   }
 
 }
