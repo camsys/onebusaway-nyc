@@ -57,7 +57,7 @@ public class FileServiceImplTest {
     assertTrue(rows.size() > 0);
 
     for (String[] columns : rows) {
-      _log.error("row=" + columns[0]);
+      //_log.error("row=" + columns[0]);
     }
     
     String[] row0 = rows.get(0);

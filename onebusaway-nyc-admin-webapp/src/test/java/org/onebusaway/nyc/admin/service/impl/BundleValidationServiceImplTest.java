@@ -6,7 +6,11 @@ import org.onebusaway.nyc.admin.model.ServiceDateRange;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +21,8 @@ public class BundleValidationServiceImplTest {
   public void testGetServiceDateRange() throws Exception {
     BundleValidationServiceImpl impl = new BundleValidationServiceImpl();
     // load zip file
-    InputStream input = this.getClass().getResourceAsStream("google_transit_staten_island.zip");
+    InputStream input = this.getClass().getResourceAsStream(
+        "google_transit_staten_island.zip");
     assertNotNull(input);
     List<ServiceDateRange> ranges = impl.getServiceDateRanges(input);
     assertNotNull(ranges);
@@ -30,14 +35,15 @@ public class BundleValidationServiceImplTest {
     assertEquals(2012, sdr0.getEndDate().getYear());
     assertEquals(7, sdr0.getEndDate().getMonth());
     assertEquals(7, sdr0.getEndDate().getDay());
-    
+
   }
-  
+
   @Test
   public void testCommonServiceDateRange() throws Exception {
     BundleValidationServiceImpl impl = new BundleValidationServiceImpl();
     // load zip file
-    InputStream input = this.getClass().getResourceAsStream("google_transit_staten_island.zip");
+    InputStream input = this.getClass().getResourceAsStream(
+        "google_transit_staten_island.zip");
     assertNotNull(input);
     List<ServiceDateRange> ranges = impl.getServiceDateRanges(input);
     Map<String, List<ServiceDateRange>> map = impl.getServiceDateRangesByAgencyId(ranges);
@@ -49,16 +55,18 @@ public class BundleValidationServiceImplTest {
     assertEquals(2012, sdr0.getEndDate().getYear());
     assertEquals(7, sdr0.getEndDate().getMonth());
     assertEquals(7, sdr0.getEndDate().getDay());
-    
+
   }
-  
+
   @Test
   public void testCommonServiceDateRangeAcrossGTFS() throws Exception {
     BundleValidationServiceImpl impl = new BundleValidationServiceImpl();
     // load zip file
     ArrayList<InputStream> inputs = new ArrayList<InputStream>();
-    inputs.add(this.getClass().getResourceAsStream("google_transit_staten_island.zip"));
-    inputs.add(this.getClass().getResourceAsStream("google_transit_manhattan.zip"));
+    inputs.add(this.getClass().getResourceAsStream(
+        "google_transit_staten_island.zip"));
+    inputs.add(this.getClass().getResourceAsStream(
+        "google_transit_manhattan.zip"));
     Map<String, List<ServiceDateRange>> map = impl.getServiceDateRangesAcrossAllGtfs(inputs);
     ServiceDateRange sdr0 = map.get("MTA NYCT").get(0);
 
@@ -68,6 +76,28 @@ public class BundleValidationServiceImplTest {
     assertEquals(2012, sdr0.getEndDate().getYear());
     assertEquals(7, sdr0.getEndDate().getMonth());
     assertEquals(7, sdr0.getEndDate().getDay());
+
+  }
+
+  @Test
+  public void testValidateGtfs() throws Exception {
+    BundleValidationServiceImpl impl = new BundleValidationServiceImpl();
+    // copy to tmp
+    InputStream source = this.getClass().getResourceAsStream(
+        "google_transit_staten_island.zip");
+    assertNotNull(source);
+    new FileUtils().copy(source, getTmpDir() + File.separatorChar + "good_feed.zip");
     
+    int rc = impl.installAndValidateGtfs(getTmpDir() + File.separatorChar + "empty_feed.zip", 
+        getTmpDir() + File.separatorChar + "feed.html");
+    // feedValidator exits with returnCode 1
+    assertEquals(1, rc);
+    File output = new File(getTmpDir() + File.separatorChar + "feed.html");
+    assertTrue(output.exists());
+    
+  }
+  
+  private String getTmpDir() {
+    return System.getProperty("java.io.tmpdir");
   }
 }
