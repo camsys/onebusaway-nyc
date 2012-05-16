@@ -60,15 +60,15 @@ public class BundleRequestServiceImplTest {
     assertFalse(res.isComplete());
     
     int count = 0;
-    while (count < 300 && !res.isComplete()) {
+    while (count < 30 && !res.isComplete()) {
       _log.info("sleeping[" + count + "]...");
-      Thread.sleep(10000);
+      Thread.sleep(1000);
       count++;
       // NOTE: this is optional to demonstrate retrieval service
       res = service.lookup(res.getId());
       assertNotNull(res);
     }
-    _log.error("exception=" + res.getException());
+    
     assertNull(res.getException());
     assertTrue(res.isComplete());
     assertNotNull(res.getValidationFiles());
