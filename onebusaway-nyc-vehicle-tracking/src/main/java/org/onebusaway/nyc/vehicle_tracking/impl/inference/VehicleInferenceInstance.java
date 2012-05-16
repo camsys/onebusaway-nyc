@@ -629,9 +629,11 @@ public class VehicleInferenceInstance {
               + reportedRunId);
         } else {
           bestFuzzyDistance = fuzzyReportedMatches.keySet().first();
-          fuzzyMatches = fuzzyReportedMatches.get(bestFuzzyDistance);
-          for (String runId : fuzzyMatches) {
-            routeIds.addAll(_runService.getRoutesForRunId(runId));
+          if (bestFuzzyDistance <= 1) {
+            fuzzyMatches = fuzzyReportedMatches.get(bestFuzzyDistance);
+            for (String runId : fuzzyMatches) {
+              routeIds.addAll(_runService.getRoutesForRunId(runId));
+            }
           }
         }
       } catch (IllegalArgumentException ex) {
