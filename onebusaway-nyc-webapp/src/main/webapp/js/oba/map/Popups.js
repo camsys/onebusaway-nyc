@@ -229,6 +229,26 @@ OBA.Popups = (function() {
 		
 		return html;
 	}
+	
+	function processAlertData(r) {
+		var alertData = {};
+		
+		if (r.siri.Siri.ServiceDelivery.SituationExchangeDelivery != null) {
+            jQuery.each(r.siri.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+            	jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
+            		var lineRef = affectedVehicleJourney.LineRef;
+            		if (!(lineRef in alertData)) {
+            			alertData[lineRef] = {};
+            		}
+            		if (!(ptSituationElement.SituationNumber in alertData[lineRef])) {
+            			alertData[lineRef][ptSituationElement.SituationNumber] = ptSituationElement;
+            		}
+            	});
+            });
+		}
+		
+		return alertData;
+	}
 
 	function getStopContentForResponse(r, popupContainerId, marker, routeFilter) {
 		var siri = r.siri;
@@ -237,6 +257,8 @@ OBA.Popups = (function() {
 		var stopId = stopResult.id;
 		var stopIdParts = stopId.split("_");
 		var stopIdWithoutAgency = stopIdParts[1];
+		
+		var alertData = processAlertData(r);
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
@@ -363,6 +385,9 @@ OBA.Popups = (function() {
 
 				html += '<li class="route">';
 				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
+				if (mvj.LineRef in alertData) {
+					html += ' <a id="alert-link|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
+				}
 				html += '</li>';
 
 				jQuery.each(mvjs, function(_, monitoredVehicleJourney) {
@@ -398,6 +423,9 @@ OBA.Popups = (function() {
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
 				html += '<li class="route">';
 				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
+				if (d.id in alertData) {
+					html += ' <a id="alert-link|' + d.id + '" class="alert-link" href="#">Alert</a>';
+				}
 				html += '</li>';
 				
 				i++;
@@ -429,7 +457,7 @@ OBA.Popups = (function() {
 		}
 
 		// service alerts
-	    html += getServiceAlerts(siri, null);
+	    //html += getServiceAlerts(siri, null);
 
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopIdWithoutAgency);	        
 
@@ -449,6 +477,34 @@ OBA.Popups = (function() {
 			var map = marker.map;
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
+		});
+		
+		var alertLinks = content.find(".alert-link");
+		jQuery.each(alertLinks, function(_, alertLink) {
+			var element = jQuery(alertLink);
+			var idParts = element.attr("id").split("|");
+			var routeId = idParts[1];
+			var routeIdWithoutAgency = routeId.split("_")[1];
+			
+			element.click(function(e) {
+				e.preventDefault();
+				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
+				if (alertElement.length === 0) {
+					expandAlerts = true;
+					window.location = "#" + stopIdWithoutAgency + "%20" + routeIdWithoutAgency;
+				} else {
+					$("#searchbar").animate({
+						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
+						}, 
+						500,
+						function() {
+							if (alertElement.accordion("option", "active") !== 0) {
+								alertElement.accordion("activate" , 0);
+							}
+						});
+				}
+			});
+			
 		});
 
 		return content.get(0);

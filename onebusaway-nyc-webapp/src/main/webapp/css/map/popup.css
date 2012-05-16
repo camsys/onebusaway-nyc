@@ -167,6 +167,10 @@
 	padding: 0 1.0em 0 0;
 }
 
+.popup li.route a {
+	padding-right: 0.5em;
+}
+
 .popup .route-name {
 	font-weight: bold;
 }
@@ -203,4 +207,12 @@
 
 #bustime .popup a:HOVER.muted {
 	color: rgb(100,100,100);
+}
+
+#bustime .popup a.alert-link {
+	color: rgb(210,0,0);
+}
+
+#bustime .popup a:HOVER.alert-link {
+	color: rgb(255,0,0);
 }

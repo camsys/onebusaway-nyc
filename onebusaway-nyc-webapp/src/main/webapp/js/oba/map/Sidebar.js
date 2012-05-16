@@ -16,6 +16,8 @@
 
 var OBA = window.OBA || {};
 
+var expandAlerts = false;
+
 OBA.Sidebar = function() {
 	var theWindow = jQuery(window),
 		topBarDiv = jQuery("#topbar"), 
@@ -240,6 +242,14 @@ OBA.Sidebar = function() {
 					collapsible: true, 
 					active: false, 
 					autoHeight: false });
+				
+				// If popup.js has specified to expand alerts, that has been taken into account above and we
+				// reset the global state to not expand alerts.
+				if (expandAlerts) {
+					serviceAlertContainer.accordion("activate" , 0);
+					expandAlerts = false;
+				}
+				
 	
 				// sidebar item
 				var titleBox = jQuery("<p></p>")
