@@ -719,6 +719,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
           _vehicleInstancesByVehicleId.put(_vehicleId, existing);
           out.close();
           _vehicleInstancesByBytes.put(_vehicleId, Bytes.asList(fos.toByteArray()));
+          _log.info("byte array size = " + fos.size() + ", vehicle=" + _vehicleId);
           
           return cond;
           
