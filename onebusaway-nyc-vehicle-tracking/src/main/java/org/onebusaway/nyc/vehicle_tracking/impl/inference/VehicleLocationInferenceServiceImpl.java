@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,6 +28,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -83,6 +86,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.TreeMultiset;
+import com.google.common.primitives.Bytes;
 import com.jhlabs.map.proj.ProjectionException;
 
 import org.apache.commons.lang.StringUtils;
@@ -127,6 +131,8 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   private int _skippedUpdateLogCounter = 0;
   
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
+  private ConcurrentMap<AgencyAndId, Collection<Byte>> _vehicleInstancesByBytes = 
+      new ConcurrentHashMap<AgencyAndId, Collection<Byte>>();
 
   private ApplicationContext _applicationContext;
 
@@ -560,19 +566,15 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
         return instance;
       } else {
         
-        /*
-         * use the previous timestamp to find the last serialized file
-         */
-        String filename = vehicleId + "_" + instance.getCurrentState().getTimestamp() + ".ser"; 
+        byte[] byteInstance = Bytes.toArray(_vehicleInstancesByBytes.get(vehicleId));
         
-        ObjectInputStream in = null;
+        ByteArrayInputStream in = null;
         VehicleInferenceInstance deSerializedInst = null;
-        FileInputStream fis = null;
         try
         {
-          fis = new FileInputStream(filename);
-          in = new ObjectInputStream(fis);
-          deSerializedInst = (VehicleInferenceInstance)in.readObject();
+          in = new ByteArrayInputStream(byteInstance);
+          ObjectInputStream ois = new ObjectInputStream(in);
+          deSerializedInst = (VehicleInferenceInstance)ois.readObject();
           repopulateSerializedInferenceInstance(deSerializedInst);
           
           return deSerializedInst;
@@ -704,19 +706,19 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
     private boolean sendRecordSerialize(VehicleInferenceInstance existing) {
       if (_inferenceRecord != null) {
         
-        FileOutputStream fos;
+        ByteArrayOutputStream fos;
         ObjectOutputStream out;
         
-        String filename = _vehicleId + "_" + _nycTestInferredLocationRecord.getTimestamp() + ".ser"; 
         try {
-          fos = new FileOutputStream(filename);
+          fos = new ByteArrayOutputStream();
           out = new ObjectOutputStream(fos);
           
           final boolean cond = existing.handleUpdate(_inferenceRecord);
-          _vehicleInstancesByVehicleId.put(_vehicleId, existing);
           
           out.writeObject(existing);
+          _vehicleInstancesByVehicleId.put(_vehicleId, existing);
           out.close();
+          _vehicleInstancesByBytes.put(_vehicleId, Bytes.asList(fos.toByteArray()));
           
           return cond;
           
