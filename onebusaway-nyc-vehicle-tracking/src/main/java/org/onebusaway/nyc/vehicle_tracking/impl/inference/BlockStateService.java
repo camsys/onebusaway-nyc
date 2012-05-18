@@ -90,7 +90,7 @@ public class BlockStateService {
 
   private static final long _tripSearchTimeBeforeFirstStop = 5 * 60 * 60 * 1000;
 
-  private static final double _oppositeDirMoveCutoff = 15;
+  private static final double _oppositeDirMoveCutoff = 5;
   
   /*
    * Set this field to true if you want to require snapped states

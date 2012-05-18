@@ -273,7 +273,12 @@ public class SensorModelSupportLibrary {
         prevRecord.getLatitude(), prevRecord.getLongitude(), 
         obs.getLocation().getLat(), obs.getLocation().getLon());
     
-    return 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev, d);
+    /*
+     * Although the gps std. dev is reasonable for having not moved, we
+     * also have dead-reckoning, which is much more accurate in this
+     * regard, so we shrink the gps std. dev.
+     */
+    return 1d - FoldedNormalDist.cdf(0d, GpsLikelihood.gpsStdDev/4, d);
     
 //    final Observation prevObs = obs.getPreviousObservation();
 //    if (prevObs == null)
