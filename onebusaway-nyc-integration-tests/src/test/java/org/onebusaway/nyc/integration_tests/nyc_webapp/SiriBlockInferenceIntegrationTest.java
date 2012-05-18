@@ -210,7 +210,7 @@ public class SiriBlockInferenceIntegrationTest extends SiriIntegrationTestBase {
 	 HashMap<String,Object> distances = (HashMap<String, Object>) extensions.get("Distances");
 
 	 assertEquals(distances.get("PresentableDistance"), "3 stops away");	 
-	 assertEquals(distances.get("DistanceFromCall"), 709.14);	 
+	 assertEquals(distances.get("DistanceFromCall"), 709.94);	 
 	 assertEquals(distances.get("StopsFromCall"), 3);	 
 	 assertEquals(distances.get("CallDistanceAlongRoute"), 391.14);	 
   } 
@@ -326,7 +326,7 @@ public class SiriBlockInferenceIntegrationTest extends SiriIntegrationTestBase {
 	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
 
 	 assertEquals(distances1.get("PresentableDistance"), "< 1 stop away");	 
-	 assertEquals(distances1.get("DistanceFromCall"), 318.06);	 
+	 assertEquals(distances1.get("DistanceFromCall"), 318.86);	 
 	 assertEquals(distances1.get("StopsFromCall"), 0);	 
 	 assertEquals(distances1.get("CallDistanceAlongRoute"), 0.06);	 
 	 
@@ -336,7 +336,7 @@ public class SiriBlockInferenceIntegrationTest extends SiriIntegrationTestBase {
 	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
 
 	 assertEquals(distances2.get("PresentableDistance"), "25.0 miles away");	 
-	 assertEquals(distances2.get("DistanceFromCall"), 40257.22);	 
+	 assertEquals(distances2.get("DistanceFromCall"), 40258.01);	 
 	 assertEquals(distances2.get("StopsFromCall"), 56);	 
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 39939.21);	 
   }
