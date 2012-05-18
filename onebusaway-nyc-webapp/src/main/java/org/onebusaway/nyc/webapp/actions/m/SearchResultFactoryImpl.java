@@ -303,7 +303,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     // at terminal label only appears in stop results
     if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("layover")) {
-      message += "at terminal";
+        if (message.length() > 0) {
+            message += ", ";
+        }
+
+        message += "at terminal";
     }
 
     int staleTimeout = _configurationService.getConfigurationValueAsInteger(

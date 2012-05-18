@@ -48,7 +48,7 @@ public class SiriIntegrationTestBase {
   
   private long _maxTimeout = 40 * 1000;
 
-  private String _time = "2012-03-01T13:30:42-0500";
+  private String _time = "2012-03-01T13:33:42-0500";
   
   private String _trace;
 
@@ -132,7 +132,7 @@ public class SiriIntegrationTestBase {
 
 	  HttpClient client = new HttpClient();
 	  String port = System.getProperty("org.onebusaway.webapp.port", "8080");
-	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?OperatorRef=" + operatorId + "&MonitoringRef=" + mRef + "&time=" + _time;
+	  String url = "http://localhost:" + port + "/onebusaway-nyc-webapp/api/siri/stop-monitoring.json?OperatorRef=" + operatorId + "&StopMonitoringDetailLevel=calls&MonitoringRef=" + mRef + "&time=" + _time;
 	  GetMethod get = new GetMethod(url);
 	  client.executeMethod(get);
 

@@ -231,6 +231,8 @@ public class SiriBlockInferenceIntegrationTest extends SiriIntegrationTestBase {
 	 HashMap<String,Object> onwardCallWrapper = (HashMap<String, Object>) mvj.get("OnwardCalls");
 	 ArrayList<Object> onwardCalls = (ArrayList<Object>) onwardCallWrapper.get("OnwardCall");
 	 
+	 assertEquals(onwardCalls.size(), 2);
+	 
 	 HashMap<String,Object> stop1 = (HashMap<String, Object>) onwardCalls.get(0);
 	 HashMap<String,Object> stop2 = (HashMap<String, Object>) onwardCalls.get(1);
 	 
@@ -255,4 +257,87 @@ public class SiriBlockInferenceIntegrationTest extends SiriIntegrationTestBase {
 	 assertEquals(distances2.get("CallDistanceAlongRoute"), 38189.61);	 
   }
   
+  // SM onward calls
+  @Test
+  public void testSMOnwardCalls() throws HttpException, IOException {
+	 HashMap<String,Object> vmResponse = getSmResponse("MTA%20NYCT", "903036");
+	  
+	 HashMap<String,Object> siri = (HashMap<String, Object>)vmResponse.get("Siri");
+	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
+	 ArrayList<Object> stopMonitoringDelivery = (ArrayList<Object>)serviceDelivery.get("StopMonitoringDelivery");
+	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
+	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
+	 HashMap<String,Object> mvjWrapper = (HashMap<String, Object>) mvjs.get(0);
+	 HashMap<String,Object> mvj = (HashMap<String, Object>) mvjWrapper.get("MonitoredVehicleJourney");
+
+	 HashMap<String,Object> onwardCallWrapper = (HashMap<String, Object>) mvj.get("OnwardCalls");
+	 ArrayList<Object> onwardCalls = (ArrayList<Object>) onwardCallWrapper.get("OnwardCall");
+	 
+	 assertEquals(onwardCalls.size(), 2);
+	 
+	 HashMap<String,Object> stop1 = (HashMap<String, Object>) onwardCalls.get(0);
+	 HashMap<String,Object> stop2 = (HashMap<String, Object>) onwardCalls.get(1);
+	 
+	 assertEquals(stop1.get("StopPointRef"), "MTA NYCT_404992");
+	 
+	 HashMap<String,Object> extensions1 = (HashMap<String, Object>) stop1.get("Extensions");
+	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
+
+	 assertEquals(distances1.get("PresentableDistance"), "approaching");	 
+	 assertEquals(distances1.get("DistanceFromCall"), 36.58);	 
+	 assertEquals(distances1.get("StopsFromCall"), 0);	 
+	 assertEquals(distances1.get("CallDistanceAlongRoute"), 37974.57);	 
+	 
+	 assertEquals(stop2.get("StopPointRef"), "MTA NYCT_903036");
+
+	 HashMap<String,Object> extensions2 = (HashMap<String, Object>) stop2.get("Extensions");
+	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
+
+	 assertEquals(distances2.get("PresentableDistance"), "1 stop away");	 
+	 assertEquals(distances2.get("DistanceFromCall"), 251.62);	 
+	 assertEquals(distances2.get("StopsFromCall"), 1);	 
+	 assertEquals(distances2.get("CallDistanceAlongRoute"), 38189.61);	 
+  }
+  
+  // SM onward calls
+  @Test
+  public void testSMOnwardCallsNextTrip() throws HttpException, IOException {
+	 HashMap<String,Object> vmResponse = getSmResponse("MTA%20NYCT", "404923");
+	  
+	 HashMap<String,Object> siri = (HashMap<String, Object>)vmResponse.get("Siri");
+	 HashMap<String,Object> serviceDelivery = (HashMap<String, Object>)siri.get("ServiceDelivery");
+	 ArrayList<Object> stopMonitoringDelivery = (ArrayList<Object>)serviceDelivery.get("StopMonitoringDelivery");
+	 HashMap<String,Object> monitoredStopVisit = (HashMap<String,Object>)stopMonitoringDelivery.get(0);
+	 ArrayList<Object> mvjs = (ArrayList<Object>) monitoredStopVisit.get("MonitoredStopVisit");
+	 HashMap<String,Object> mvjWrapper = (HashMap<String, Object>) mvjs.get(0);
+	 HashMap<String,Object> mvj = (HashMap<String, Object>) mvjWrapper.get("MonitoredVehicleJourney");
+
+	 HashMap<String,Object> onwardCallWrapper = (HashMap<String, Object>) mvj.get("OnwardCalls");
+	 ArrayList<Object> onwardCalls = (ArrayList<Object>) onwardCallWrapper.get("OnwardCall");
+	 
+	 assertEquals(onwardCalls.size(), 57);
+	 
+	 HashMap<String,Object> stop1 = (HashMap<String, Object>) onwardCalls.get(0);
+	 HashMap<String,Object> stop2 = (HashMap<String, Object>) onwardCalls.get(onwardCalls.size() - 1);
+	 
+	 assertEquals(stop1.get("StopPointRef"), "MTA NYCT_404923");
+	 
+	 HashMap<String,Object> extensions1 = (HashMap<String, Object>) stop1.get("Extensions");
+	 HashMap<String,Object> distances1 = (HashMap<String, Object>) extensions1.get("Distances");
+
+	 assertEquals(distances1.get("PresentableDistance"), "< 1 stop away");	 
+	 assertEquals(distances1.get("DistanceFromCall"), 318.06);	 
+	 assertEquals(distances1.get("StopsFromCall"), 0);	 
+	 assertEquals(distances1.get("CallDistanceAlongRoute"), 0.06);	 
+	 
+	 assertEquals(stop2.get("StopPointRef"), "MTA NYCT_905046");
+
+	 HashMap<String,Object> extensions2 = (HashMap<String, Object>) stop2.get("Extensions");
+	 HashMap<String,Object> distances2 = (HashMap<String, Object>) extensions2.get("Distances");
+
+	 assertEquals(distances2.get("PresentableDistance"), "25.0 miles away");	 
+	 assertEquals(distances2.get("DistanceFromCall"), 40257.22);	 
+	 assertEquals(distances2.get("StopsFromCall"), 56);	 
+	 assertEquals(distances2.get("CallDistanceAlongRoute"), 39939.21);	 
+  }
 }

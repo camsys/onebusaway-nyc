@@ -243,8 +243,8 @@ public class RealtimeServiceImpl implements RealtimeService {
   private List<ArrivalAndDepartureBean> getArrivalsAndDeparturesForStop(String stopId) {
     ArrivalsAndDeparturesQueryBean query = new ArrivalsAndDeparturesQueryBean();
     query.setTime(getTime());
-    query.setMinutesBefore(60);
-    query.setMinutesAfter(90);
+    query.setMinutesBefore(5 * 60);
+    query.setMinutesAfter(5 * 60);
     
     StopWithArrivalsAndDeparturesBean stopWithArrivalsAndDepartures =
         _nycTransitDataService.getStopWithArrivalsAndDepartures(stopId, query);

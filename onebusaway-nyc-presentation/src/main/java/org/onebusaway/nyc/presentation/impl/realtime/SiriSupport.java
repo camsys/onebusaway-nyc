@@ -216,7 +216,7 @@ public final class SiriSupport {
     // onward calls
     if(onwardCallsMode == OnwardCallsMode.VEHICLE_MONITORING) {
     	fillOnwardCallsForVM(monitoredVehicleJourney, tripDetails, 
-    			presentationService, maximumOnwardCalls);
+    			presentationService, nycTransitDataService, maximumOnwardCalls);
     	
     } else if(onwardCallsMode == OnwardCallsMode.STOP_MONITORING) {
     	fillOnwardCallsForSM(monitoredVehicleJourney, tripDetails,
@@ -234,54 +234,10 @@ public final class SiriSupport {
    */
   private static void fillOnwardCallsForVM(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
 		TripDetailsBean tripDetails, 
-	    PresentationService presentationService, int maximumOnwardCalls) {
-
-	  TripStatusBean tripStatus = tripDetails.getStatus();
-
-	  monitoredVehicleJourney.setOnwardCalls(new OnwardCallsStructure());
-	  
-	  /////////////
-
-	  List<TripStopTimeBean> stopTimes = tripDetails.getSchedule().getStopTimes();
-	  Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
-		  public int compare(TripStopTimeBean arg0, TripStopTimeBean arg1) {
-			  return (int) (arg0.getDistanceAlongTrip() - arg1.getDistanceAlongTrip());
-		  }
-	  });		
-
-	  HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();	   
-
-	  int s = 0; // stops after the next the bus will stop at--"stops away"
-	  for(TripStopTimeBean stopTime : stopTimes) {
-		int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStop());
-
-		if(stopTime.getDistanceAlongTrip() < tripStatus.getDistanceAlongTrip()) {
-			continue;
-		}
-
-    	s++;
-    	
-    	if(s > maximumOnwardCalls) {
-    		return;
-    	}
-    	
-    	monitoredVehicleJourney.getOnwardCalls().getOnwardCall().add(
-    			getOnwardCallStructure(stopTime.getStop(), presentationService, 
-    					stopTime.getDistanceAlongTrip(), 
-    					stopTime.getDistanceAlongTrip() - tripStatus.getDistanceAlongTrip(), 
-    					visitNumber, s - 1));
-	  }
-	  
-	  return;
-  }  
-  
-  private static void fillOnwardCallsForSM(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
-		  TripDetailsBean tripDetails, 
-	      PresentationService presentationService, NycTransitDataService nycTransitDataService, 
-	      int maximumOnwardCalls) {
+	    PresentationService presentationService, NycTransitDataService nycTransitDataService,
+	    int maximumOnwardCalls) {
 
 	  TripStatusBean tripStatus = tripDetails.getStatus();	  
-	  String tripIdOfMonitoredCall = tripDetails.getTripId();
 	  
 	  monitoredVehicleJourney.setOnwardCalls(new OnwardCallsStructure());
 
@@ -331,14 +287,10 @@ public final class SiriSupport {
 				  } else {
 					  s++;
 				  }
-			  } else if(i > tripStatus.getBlockTripSequence()) {
+			  } else {
 				  s++;
 			  }
 
-			  if(!blockTrip.getTrip().getId().equals(tripIdOfMonitoredCall)) {
-				  continue;
-			  }
-			  
 		      if(o > maximumOnwardCalls) {
 		    		return;
 		      }
@@ -351,8 +303,98 @@ public final class SiriSupport {
 		      o++;
 		  }
 		  
-		  // once we've hit the trip we're looking for, exit
-		  return;
+		  // if we're in layover, stop adding onward calls after the next trip the bus is on
+		  // if not, after the current trip
+		  if(presentationService.isInLayover(tripStatus)) {
+			  if(tripDetails.getSchedule().getNextTrip().getId().equals(blockTrip.getTrip().getId())) {
+				  break;
+			  }
+		  } else {
+			  if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+				  break;
+			  }
+		  }
+	  }
+	  
+	  return;
+  }  
+  
+  private static void fillOnwardCallsForSM(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
+		  TripDetailsBean tripDetails, 
+	      PresentationService presentationService, NycTransitDataService nycTransitDataService, 
+	      int maximumOnwardCalls) {
+
+	  TripStatusBean tripStatus = tripDetails.getStatus();	  
+	  String tripIdOfMonitoredCall = tripDetails.getTripId();
+	  
+	  monitoredVehicleJourney.setOnwardCalls(new OnwardCallsStructure());
+
+	  //////////
+	  
+	  BlockInstanceBean blockInstance = 
+			  nycTransitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
+
+	  int i = 0; // trip index in block
+	  int s = 0; // stops after the next the bus will stop at--"stops away"
+	  int o = 0; // onward calls added
+	  long cumulativeBlockDistance = 0; 
+	  
+	  for(BlockTripBean blockTrip : blockInstance.getBlockConfiguration().getTrips()) {
+		  cumulativeBlockDistance += blockTrip.getDistanceAlongBlock();
+
+		  // if the bus has already served this trip, skip it 
+		  if(i < tripStatus.getBlockTripSequence()) {
+			  i++;
+			  continue;
+		  }
+
+		  // always include onward calls for the trip the monitoredcall is on ONLY.
+		  if(!blockTrip.getTrip().getId().equals(tripIdOfMonitoredCall)) {
+			  continue;
+		  }
+		  
+		  // find stops for this trip
+		  TripDetailsQueryBean blockTripQuery = new TripDetailsQueryBean();
+		  blockTripQuery.setTripId(blockTrip.getTrip().getId());
+		  blockTripQuery.setVehicleId(tripStatus.getVehicleId());
+
+		  TripDetailsBean blockTripDetails = 
+				  nycTransitDataService.getSingleTripDetails(blockTripQuery);
+
+		  List<TripStopTimeBean> stopTimes = blockTripDetails.getSchedule().getStopTimes();
+		  Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
+			  public int compare(TripStopTimeBean arg0, TripStopTimeBean arg1) {
+				  return (int) (arg0.getDistanceAlongTrip() - arg1.getDistanceAlongTrip());
+			  }
+		  });		
+
+		  HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();	   
+		  for(TripStopTimeBean stopTime : stopTimes) {
+			  int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStop());
+
+			  // stops away--on this trip, only after we've passed the stop, on future trips,
+			  // count always.
+			  if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
+				  if(stopTime.getDistanceAlongTrip() < tripStatus.getDistanceAlongTrip()) {
+					  continue;
+				  } else {
+					  s++;
+				  }
+			  } else {
+				  s++;
+			  }
+
+		      if(o > maximumOnwardCalls) {
+		    		return;
+		      }
+		    	
+		      monitoredVehicleJourney.getOnwardCalls().getOnwardCall().add(
+		    		  getOnwardCallStructure(stopTime.getStop(), presentationService, 
+		    				  stopTime.getDistanceAlongTrip(), 
+		    				  stopTime.getDistanceAlongTrip() + cumulativeBlockDistance - tripStatus.getDistanceAlongTrip(), 
+		    				  visitNumber, s - 1));
+		      o++;
+		  }
 	  }
 	  
 	  return;
@@ -403,7 +445,7 @@ public final class SiriSupport {
 				  if(stopTime.getDistanceAlongTrip() >= tripStatus.getDistanceAlongTrip()) {
 					  s++;
 				  }
-			  } else if(i > tripStatus.getBlockTripSequence()) {
+			  } else {
 				  s++;
 			  }
 

@@ -218,6 +218,10 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
     // at terminal label only appears in stop results
     if(isStopContext && progressStatus != null && progressStatus.getValue().contains("layover")) {
+      if(message.length() > 0) {
+          message += ", ";
+      }
+          
       message += "@term.";
     }
     

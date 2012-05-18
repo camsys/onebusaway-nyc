@@ -202,9 +202,6 @@ public class PresentationServiceImpl implements PresentationService {
     // hide buses that left the stop recently
     if(adBean.getDistanceFromStop() < 0)
       return false;
-    else
-      if(adBean.getDistanceFromStop() > status.getTotalDistanceAlongTrip())
-        return false;
     
     // hide buses that are on detour from a-d queries
     if(isOnDetour(status))
