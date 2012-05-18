@@ -243,6 +243,9 @@ public final class SiriSupport {
 
 	  //////////
 	  
+	  if(maximumOnwardCalls == 0) 
+		  return;
+
 	  BlockInstanceBean blockInstance = 
 			  nycTransitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
 
@@ -291,7 +294,7 @@ public final class SiriSupport {
 				  s++;
 			  }
 
-		      if(o > maximumOnwardCalls) {
+		      if(o >= maximumOnwardCalls) {
 		    		return;
 		      }
 		    	
@@ -330,6 +333,9 @@ public final class SiriSupport {
 	  monitoredVehicleJourney.setOnwardCalls(new OnwardCallsStructure());
 
 	  //////////
+	  
+	  if(maximumOnwardCalls == 0) 
+		  return;
 	  
 	  BlockInstanceBean blockInstance = 
 			  nycTransitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
@@ -384,7 +390,7 @@ public final class SiriSupport {
 				  s++;
 			  }
 
-		      if(o > maximumOnwardCalls) {
+		      if(o >= maximumOnwardCalls) {
 		    		return;
 		      }
 		    	

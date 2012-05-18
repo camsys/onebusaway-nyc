@@ -193,7 +193,7 @@ OBA.Popups = (function() {
 				&& typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall !== 'undefined') {
 
 				jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
-					if(nextStops.length >= 3) {
+					if(nextStops.length > 3) {
 						return false;
 					}
 					nextStops.push(onwardCall);
