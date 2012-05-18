@@ -188,9 +188,7 @@ OBA.Popups = (function() {
 
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
 		} else {
-			var nextStops = [];
-			nextStops.push(activity.MonitoredVehicleJourney.MonitoredCall);
-			
+			var nextStops = [];			
 			if(typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined'
 				&& typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall !== 'undefined') {
 
@@ -399,12 +397,12 @@ OBA.Popups = (function() {
 						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
 
 						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
-								monitoredVehicleJourney.ProgressStatus === "prevTrip") {
+								monitoredVehicleJourney.ProgressStatus.indexOf("prevTrip") !== -1) {
 							distance += " (after a brief scheduled layover)";
 						}
 
 						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
-								monitoredVehicleJourney.ProgressStatus === "layover") {
+								monitoredVehicleJourney.ProgressStatus.indexOf("layover") !== -1) {
 							distance += " (at terminal)";
 						}
 

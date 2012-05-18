@@ -212,12 +212,12 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 
     // wrapped label only appears in stop results
-    if(isStopContext && progressStatus != null && progressStatus.getValue().equals("prevTrip")) {
+    if(isStopContext && progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
       message += "after layover";
     }
 
     // at terminal label only appears in stop results
-    if(isStopContext && progressStatus != null && progressStatus.getValue().equals("layover")) {
+    if(isStopContext && progressStatus != null && progressStatus.getValue().contains("layover")) {
       message += "@term.";
     }
     

@@ -46,7 +46,7 @@ OBA.Config = {
 		},
 		
 		// For debugging: set to an ISO time string to make UI request from another time
-		time: null,
+		time: "2012-03-01T13:30:42-0500",
 
 		// Called by UI functions that want to send events to GA
 		analyticsFunction: function(type, value) {
