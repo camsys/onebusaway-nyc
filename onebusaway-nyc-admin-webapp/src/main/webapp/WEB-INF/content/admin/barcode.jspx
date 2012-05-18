@@ -53,7 +53,7 @@
 		<img src='${qrResourceUrl}' alt="Bad Image Url. Check source."/>
 	</s:if>		
 	
-	 
+	
 	
 	</div>
 	

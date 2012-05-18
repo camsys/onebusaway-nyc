@@ -20,17 +20,19 @@
     height:30px;
     line-height:30px;
     color:#9b9b9b;
-    border:solid 1px #cacaca;
+    border: transparent 1px #cacaca;
     width:100%;
     overflow:hidden;
     margin:0px;
-    padding:0px;
+    padding:10px;
 }
 
 #breadcrumb li {
     list-style-type:none;
     float:left;
     padding-left:10px;
+    width: 210px;
+    color: #808080;
 }
 
 #breadcrumb a {
@@ -56,12 +58,134 @@
 	display : block;
 }
 
+
 #content #text #breadcrumb_contents_container {
-	border: 1px solid #ccc;
+	border: 1px transparent #ccc;
 	border-top: none;
 	padding: 10px;
+	height: 100%;
 }
 
-#breadcrumb_contents_container h3{
+/** Individual pages for bundle building UI.*/
+
+.tabHeader {
+	padding-top: 20px;
+	margin-top: 20px;
+	height: 30px;
+	background-color:#C0C0C0; 
+}
+
+.tabHeader .headerLabel {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 10px;
+	font-size: 18px;
+	font: Times New Roman, Times, serif;
+}
+
+.submitForm {
+	overflow: none;
+	height: 50 px; 
+	padding-right: 120px;
+	padding-left:20px;
+}
+
+.submit {
+	background-color: #463E3F;
+	height: 60px;
+	width: 150px;
+	float: right;
+	color: white;
+	margin: 50px;
+}
+
+.link {
+	float: right;
+	color: #463E3F;
+	padding-top: 70px;
+}
+
+.bundleForm {
 	
 }
+
+.bundleHeader {
+	font-weight: bold;
+	font: Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	padding-top: 20px;
+	
+}
+.adminLabel {
+	margin-right: 50px;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.horizontalRadio {
+	margin-right: 30px; 
+}
+
+#createDirectory {
+	padding-top: 20px;
+}
+
+#createDirectory #directoryOptions {
+	vertical-align: middle;
+	padding-top: 10px;
+	padding-left: 20px;
+}
+
+#createDirectory #advancedOptions {
+	vertical-align: middle;
+	margin-top: 30px;
+	margin-left: 25px;
+}
+
+#advancedOptions #expand {
+	margin-right: 15px;
+}
+
+#createDirectory #uploadFiles {
+	padding-top: 50px;
+}
+
+#createDirectory #uploadFiles #instruction {
+	background-color: #C3FDB8;
+	z-index: 1;
+	/* These three lines are for transparency in all browsers. */
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+	opacity: 0.5;
+	margin-top: 30px;
+}
+
+#createDirectory #uploadFiles #instruction p {
+	padding-left: 30px;
+	font-weight: bold;
+	color: green;
+	z-index: 5;
+}
+
+#prevalidateInputs {
+	padding-top: 20px;
+	
+}
+
+#prevalidateInputs #directoryLabels {
+	vertical-align: middle;
+	padding-top: 20px;
+}
+
+#prevalidateInputs #validateBox {
+	vertical-align: middle;
+	padding-top: 30px;
+}
+
+#validateBox .validateButton {
+	border: 1px transparent;
+	width: 100px;
+	height: 30px;
+}
+
+

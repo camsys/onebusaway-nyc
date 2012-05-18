@@ -104,6 +104,7 @@
       	<tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tdm.host>tdm</tdm.host><!-- assumes domain is set -->
         <log4j.appender>ROLL</log4j.appender>
       </properties>
     </profile>
@@ -113,6 +114,7 @@
       	 <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
 	     <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
@@ -122,6 +124,7 @@
         <tds.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
@@ -132,6 +135,7 @@
       	<tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
         <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
         <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
@@ -141,6 +145,7 @@
         <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
         <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
         <config.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>

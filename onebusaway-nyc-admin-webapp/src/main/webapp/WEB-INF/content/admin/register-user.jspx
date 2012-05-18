@@ -16,14 +16,38 @@
     the License.
 
 -->
+
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<title>Create API key</title>
+<s:url var="url" value="/css/admin.css"/>
+<link rel="stylesheet" href="${url}" type="text/css"/>
 </head>
 <body>
-<h2>Validation Errors</h2>
-<s:fielderror/>
+	<div id="content">
+		<div id="text">
+			<h2>Create User</h2>
+				<s:form action="register-user!createUser" namespace="/admin">
+					<fieldset>
+						<label class="top">User Name :</label>
+						<s:textfield name="username"/>
+					</fieldset>
+					<fieldset>
+						<label class="top">Password :</label>
+						<s:textfield name="password"/>
+					</fieldset>
+					<fieldset>
+						<s:checkbox name="admin"/>
+						<label class="inline">Is Admin?</label>
+					</fieldset>
+					<s:submit/>
+					<div id="userResult">
+						<s:actionmessage />
+						<s:fielderror/>
+					</div>
+				</s:form>
+		</div>
+	</div>
 </body>
 </html>

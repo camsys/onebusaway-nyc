@@ -28,36 +28,29 @@
 		<div id="content">
 			<div id="text">
 				<div class="tabHeader">
-					<label class="headerLabel">Create Bundle Directory</label>
+					<label class="headerLabel">Validate Bundle Inputs</label>
 				</div>
-				<s:form action="" cssClass="bundleForm"> 
-					<div id="createDirectory">
-						<label class="bundleHeader">1. Select or Create New Bundle Directory</label>
-						<div id="directoryOptions">
-							<input type="radio" name="options" id="create" checked="checked"/>
-							<label for="create" class="horizontalRadio">Create New Bundle Directory</label>
-							<input type="radio" name="options" id="select"/>
-							<label for="select" class="horizontalRadio">Select Existing Directory</label>
+				<s:form action="" cssClass="bundleForm">
+					<div id="prevalidateInputs">
+						<label class="bundleHeader">Pre-Bundle Building Validation of GTFS and STIF Files</label>
+						<div id="directoryLabels">
+							<label class="adminLabel">Bundle Directory :</label>
+							<label class="adminLabel"><s:property value="bundleDirectory"/></label>
 						</div>
-						<div id="advancedOptions">
-							<s:url var="url" value="/css/img/arrow-right-3.png" />
-							<img src="${url}" alt="Not found" id="expand"/>
-							<label class="adminLabel">Advanced Options</label>
-						</div>
-						<div id="advancedOptionsContents">
-						</div>
-						<div id="uploadFiles">
-							<label class="bundleHeader">2. Upload Files</label>
-							<div id="instruction">
-								<p>Before continuing, please use the AWS Management Console to upload bundle files to the new directory.</p>
+						<div id="validateBox">
+							<s:submit value="Validate" cssClass="validateButton" method=""/>
+							<div id="validating">
 							</div>
 						</div>
+						<div id="resultList">
+						
+						</div> 
 						<div class="submitForm">
 							<fieldset>
 								<a href="" class="link">Cancel</a>
 								<s:submit value="Continue" cssClass="submit"/>
 							</fieldset>
-						</div>
+						 </div>
 					</div>
 				</s:form>
 			</div>

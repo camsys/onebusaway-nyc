@@ -20,23 +20,25 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
-<head>
-<s:url var="url" value="/css/admin.css"/>
-<link rel="stylesheet" href="${url}" type="text/css"/>
-</head>
-<body>
-	<div id="content">
-		<div id="text">
-			<h2>Create an API key</h2>
-				<s:form action="api-key" namespace="/admin">
-					<fieldset>
-						<label class="top">Key :</label>
-						<s:textfield name="key" required="true"/>
-					</fieldset>
-					<s:submit align="left"/>
+	<head>
+		<s:url var="url" value="/css/bundles.css"/>
+		<link rel="stylesheet" type="text/css" href="${url}"/>
+	</head>
+	<body>
+		<div id="content">
+			<div id="text">
+				<div class="tabHeader">
+					<h3>Build Bundle</h3>
+				</div>
+				<s:form action=""> 
+					<div class="submitForm">
+						<fieldset>
+							<a href="" class="link">Cancel</a>
+							<s:submit value="Continue" cssClass="submit"/>
+						</fieldset>
+					</div>
 				</s:form>
-				<s:actionmessage />
+			</div>
 		</div>
-	</div>
-</body>
+	</body>
 </html>

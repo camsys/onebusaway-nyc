@@ -22,10 +22,22 @@
 <jsp:directive.page contentType="text/html" />
 	<head>
 	
-		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-	
 		 <s:url var="url" value="/css/bundles.css"/>
 		 <link rel="stylesheet" type="text/css" href="${url}"/>
+		
+	  
+	  	<s:url var="url" value="/js/lib/jquery.js">
+		</s:url>
+		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+		
+		<s:url var="url" value="/js/lib/jquery.ui.js">
+		</s:url>
+		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+		
+		<s:url var="url" value="/js/oba/bundles/bundles.js">
+		</s:url>
+		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	
 				
 	</head>
 	<body>
@@ -34,18 +46,19 @@
 				<h2>Transit Data Bundle Utility</h2>
 				
 					<ul id="breadcrumb">
-						<li><a href="#" rel="#createDirectory" title="Create Directory" class="tab">Create Directory</a></li>
-						<li><a href="#" rel="#preValidateInputs" title="Pre-validate inputs" class="tab">Pre-validate inputs</a></li>
-						<li><a href="#" rel="#buildAndValidate" title="Build And Validate" class="tab">Build And Validate</a></li>
-						<li><a href="#" rel="#deployBundle" title="Deploy Bundle" class="tab">Deploy Bundle</a></li>
+						<li><a href="create-bundle-directory.action" title="Create Directory">Create Directory</a></li>
+						<li><a href="prevalidate-inputs.action" title="Pre-validate inputs">Pre-validate inputs</a></li>
+						<li><a href="build-bundle.action" title="Build And Validate">Build And Validate</a></li>
+						<li><a href="deploy-bundle.action" title="Deploy Bundle">Deploy Bundle</a></li>
 					</ul>
 				
-				
+				<div id="breadcrumb_contents_container">
+				</div>
 				<!-- div id="clear" /-->
 				
-				<div id="breadcrumb_contents_container">
+				<!-- div id="breadcrumb_contents_container">
 					<div id="createDirectory" class="tab_contents tab_contents_active">
-						<h2>Create Directory</h2>
+						<h2>Pre Validate Inputs</h2>
 					</div>
 					<div id="preValidateInputs" class="tab_contents">
 						<h2>Pre Validate Inputs</h2>
@@ -56,7 +69,7 @@
 					<div id="deployBundle" class="tab_contents">
 						<h2>Deploy Bundle</h2>
 					</div>
-				</div>
+				</div-->
 				
 			</div>
 		</div>

@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.admin;
 
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.presentation.impl.NextActionSupport;
 import org.onebusaway.users.model.UserIndex;
 import org.onebusaway.users.model.UserIndexKey;
@@ -15,6 +17,8 @@ import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
  * @author abelsare
  *
  */
+@Results({@Result(type = "redirectAction", name = "redirect", params = {
+	     "actionName", "api-key"})})
 public class ApiKeyAction extends NextActionSupport{
 
 	private static final long serialVersionUID = 1L;
@@ -22,9 +26,11 @@ public class ApiKeyAction extends NextActionSupport{
 	private UserService userService;
 	private UserPropertiesService userPropertiesService;
 	
-	
-	@Override
-	public String execute() throws Exception {
+	/**
+	 * Creates API key in the database
+	 * @return success message
+	 */
+	public String createAPIKey() {
 		UserIndexKey userIndexKey = new UserIndexKey(UserIndexTypes.API_KEY, key);
 	    UserIndex userIndex = userService.getOrCreateUserForIndexKey(userIndexKey,
 	        key, false);
@@ -37,7 +43,7 @@ public class ApiKeyAction extends NextActionSupport{
 	 * Returns the key of the user being created
 	 * @return the key
 	 */
-	@RequiredStringValidator(message="API key is required")
+	//@RequiredStringValidator(message="API key is required")
 	public String getKey() {
 		return key;
 	}

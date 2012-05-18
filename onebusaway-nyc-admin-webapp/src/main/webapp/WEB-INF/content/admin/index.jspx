@@ -21,24 +21,34 @@
 <jsp:directive.page contentType="text/html" />
 <head>
 	<title>Admin Webapp</title>
+	<s:url var="url" value="/css/admin.css"/>
+	<link rel="stylesheet" type="text/css" href="${url}" />
 </head>
 <body>
 	<div id="content">
 		<div id="text">
 			<h2>Welcome Admin</h2>
 			
-			<ul>
+			<ul id="indexList">
 				<li>
-					<s:url var="url" action="createuser"/>
+					<s:url var="url" action="register-user"/>
 					<s:a href="%{url}">Create User</s:a>
 				</li>
 				<li>
-					<s:url var="url" action="createapikeys"/>
+					<s:url var="url" action="api-key"/>
 					<s:a href="%{url}">Create API key</s:a>
 				</li>
 				<li>
 					<s:url var="url" action="manage-bundles" namespace="/admin/bundles"/>
-					<s:a href="%{url}">Bundle Utility</s:a>
+					<s:a href="%{url}">Transit Data Bundle Utility</s:a>
+				</li>
+				<li>
+					<s:url var="url" action="barcode"></s:url>
+					<s:a href="%{url}">QR Code Generation</s:a>
+				</li>
+				<li>
+					<s:url var="url" namespace="/" action="logout"></s:url>
+					<s:a href="%{url}">Logout</s:a>
 				</li>
 			</ul>
 		</div>

@@ -17,11 +17,11 @@ package org.onebusaway.nyc.webapp.actions.admin;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
-import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
+import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 
 @Results({@Result(type = "redirectAction", name = "redirect", params = {
-    "namespace", "/admin", "actionName", "barcode"})})
-public class BarcodeAction extends OneBusAwayNYCActionSupport {
+     "actionName", "barcode"})})
+public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
 
 	private static final long serialVersionUID = 1L;
 

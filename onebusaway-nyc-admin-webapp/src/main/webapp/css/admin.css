@@ -60,6 +60,19 @@
 	padding-bottom: 5px;
 }
 
+#content #text #indexList li {
+	padding-top: 20px;
+	font-size: 12px;
+	vertical-align: center;
+	padding-bottom: 10px;
+}
+
+#content #text #indexList a {
+	text-decoration: none;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+
 
 body, p, ul, li, h1, h2, a, form, fieldset, label, table, tr, td, tbody {
 	padding: 0px;

@@ -19,7 +19,8 @@
 
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	xmlns:decorator="http://www.opensymphony.com/sitemesh/decorator" xmlns:ss="/struts-tags">
+	xmlns:decorator="http://www.opensymphony.com/sitemesh/decorator" xmlns:s="/struts-tags">
+	
 	<jsp:output doctype-root-element="html"
 		doctype-public="-//W3C//DTD XHTML 1.1 Transitional//EN"
 		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" />
@@ -28,15 +29,13 @@
 	
 	<head>
 	  <title><decorator:title default="MTA Admin" /></title>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta http-equiv="X-UA-Compatible" content="IE=8" />	  
-	    <ss:url var="adminCssUrl" value="/css/admin.css">
-		</ss:url>
-	    <link rel="stylesheet" type="text/css" href="${adminCssUrl}"/>
-		
-        <ss:url var="url" value="/js/lib/jquery.js">
-        </ss:url>
-	  	<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
+	  
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  	  <meta http-equiv="X-UA-Compatible" content="IE=8" />
+	  
+	  <s:url var="url" value="/css/admin.css">
+		</s:url>
+	  <link rel="stylesheet" type="text/css" href="${url}"/>
 
 	  
 	  <decorator:head />

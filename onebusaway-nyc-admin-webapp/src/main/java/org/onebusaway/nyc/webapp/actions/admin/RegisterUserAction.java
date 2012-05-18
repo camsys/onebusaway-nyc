@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.admin;
 
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.presentation.impl.NextActionSupport;
 import org.onebusaway.users.model.User;
 import org.onebusaway.users.model.UserIndex;
@@ -13,6 +15,8 @@ import com.opensymphony.xwork2.validator.annotations.RequiredStringValidator;
  * @author abelsare
  *
  */
+@Results({@Result(type = "redirectAction", name = "redirect", params = {
+	     "actionName", "register-user"})})
 public class RegisterUserAction extends NextActionSupport {
 
 	private static final long serialVersionUID = 1L;
@@ -21,8 +25,11 @@ public class RegisterUserAction extends NextActionSupport {
 	private boolean admin;
 	private UserService userService;
 	
-	@Override
-	public String execute() throws Exception {
+	/**
+	 * Creates a new user in the system.
+	 * @return success message
+	 */
+	public String createUser() {
 		UserIndex userIndex = userService.getOrCreateUserForUsernameAndPassword(
 		        username, password);
 
@@ -35,6 +42,7 @@ public class RegisterUserAction extends NextActionSupport {
 		    }
 		addActionMessage("User '" +username + "' created successfully");
 		return SUCCESS;
+
 	}
 	
 
@@ -42,7 +50,7 @@ public class RegisterUserAction extends NextActionSupport {
 	 * Returns user name of the user being created
 	 * @return the username
 	 */
-	@RequiredStringValidator(message="User name is required")
+	//@RequiredStringValidator(message="User name is required")
 	public String getUsername() {
 		return username;
 	}
@@ -59,7 +67,7 @@ public class RegisterUserAction extends NextActionSupport {
 	 * Returns password of the user being created
 	 * @return the password
 	 */
-	@RequiredStringValidator(message="Password is required")
+	//@RequiredStringValidator(message="Password is required")
 	public String getPassword() {
 		return password;
 	}
