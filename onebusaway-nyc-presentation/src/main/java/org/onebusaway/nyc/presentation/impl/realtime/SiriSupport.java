@@ -267,7 +267,7 @@ public final class SiriSupport {
 				  // a block trip's distance along block is the *beginning* of that block trip along the block
 				  // so to get the size of this one, we have to look at the next.
 				  if(i + 1 < blockTrips.size()) {
-					  distanceOfVehicleAlongBlock += blockTrips.get(i + 1).getDistanceAlongBlock();
+					  distanceOfVehicleAlongBlock = blockTrips.get(i + 1).getDistanceAlongBlock();
 				  }
 
 				  // bus has already served this trip, so no need to go further
@@ -372,7 +372,7 @@ public final class SiriSupport {
 				  // a block trip's distance along block is the *beginning* of that block trip along the block
 				  // so to get the size of this one, we have to look at the next.
 				  if(i + 1 < blockTrips.size()) {
-					  distanceOfVehicleAlongBlock += blockTrips.get(i + 1).getDistanceAlongBlock();
+					  distanceOfVehicleAlongBlock = blockTrips.get(i + 1).getDistanceAlongBlock();
 				  }
 
 				  // bus has already served this trip, so no need to go further
