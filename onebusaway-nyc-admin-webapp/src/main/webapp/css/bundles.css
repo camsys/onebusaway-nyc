@@ -88,6 +88,7 @@
 	height: 50 px; 
 	padding-right: 120px;
 	padding-left:20px;
+	margin-bottom: 30px;
 }
 
 .submit {
@@ -117,13 +118,30 @@
 	
 }
 .adminLabel {
-	margin-right: 50px;
 	font-weight: bold;
 	font-size: 12px;
 }
 
 .horizontalRadio {
 	margin-right: 30px; 
+}
+
+.formButton {
+	border: 1px transparent;
+	width: 100px;
+	height: 30px;
+	display: inline;
+	background-image:url('img/Button_background.png');
+	
+}
+
+.directoryLabels {
+	vertical-align: middle;
+	padding-top: 20px;
+}
+
+.directoryLabel {
+	margin-right: 50px;
 }
 
 #createDirectory {
@@ -136,14 +154,68 @@
 	padding-left: 20px;
 }
 
+#createDirectory #createDirectoryContents {
+	padding-left: 30px;
+}
+
+#createDirectory #selectExistingContents {
+	display:none;
+}
+
+#createDirectory #createDirectoryContents .directoryName {
+	width: 420px;
+	margin-right: 50px;
+}
+
+#createDirectory #createDirectoryContents #createDirectoryResult {
+	display: none;
+}
+
 #createDirectory #advancedOptions {
 	vertical-align: middle;
 	margin-top: 30px;
 	margin-left: 25px;
 }
 
-#advancedOptions #expand {
-	margin-right: 15px;
+#createDirectory #advancedOptions #expand {
+	margin-right: 10px;
+}
+
+#createDirectory #advancedOptionsContents {
+	display: none;
+}
+
+#createDirectory #advancedOptionsContents #production {
+	vertical-align: middle;
+	
+}
+
+#createDirectory #advancedOptionsContents #production #productionLabel {
+	margin-left: 50px;
+	margin-right: 20px;
+}
+
+#createDirectory #advancedOptionsContents #production .productionCheck {
+	padding-top: 20px;
+	margin-top: 10px;
+	dispaly: inline;
+}
+
+#createDirectory #advancedOptionsContents #commentLabel {
+	padding-left: 50px;
+	display: block;
+	padding-top: 20px;
+}
+
+#createDirectory #advancedOptionsContents #commentBox {
+	padding-left: 50px;
+	
+}
+
+#createDirectory #advancedOptionsContents #commentBox .comments {
+	width: 400px;
+	margin-right: 50px;
+	height: 50px;
 }
 
 #createDirectory #uploadFiles {
@@ -172,20 +244,40 @@
 	
 }
 
-#prevalidateInputs #directoryLabels {
-	vertical-align: middle;
-	padding-top: 20px;
-}
 
 #prevalidateInputs #validateBox {
 	vertical-align: middle;
 	padding-top: 30px;
 }
 
-#validateBox .validateButton {
-	border: 1px transparent;
-	width: 100px;
-	height: 30px;
+#prevalidateInputs #validateBox #validating {
+	display: none;
+	padding: 50px;
 }
+
+#prevalidateInputs #validateBox #validating #validationProgress {
+	margin-right: 10px;
+}
+
+#buildBundle {
+	padding-top: 20px;
+}
+
+#buildBundle #bundleContents {
+	height: 200px;
+}
+
+#bundleContents #instructionBox{
+	margin-top: 20px;
+	background-color: #F0F0F0;
+	border: solid 1px transparent;
+	width: 200px;
+}
+
+#bundleContents #instructionBox p {
+	font-weight: bold;
+}
+
+
 
 

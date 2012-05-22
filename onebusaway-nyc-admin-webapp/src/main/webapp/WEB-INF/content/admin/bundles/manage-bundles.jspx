@@ -37,8 +37,7 @@
 		<s:url var="url" value="/js/oba/bundles/bundles.js">
 		</s:url>
 		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	
-				
+	 	
 	</head>
 	<body>
 		<div id="content">
@@ -46,30 +45,20 @@
 				<h2>Transit Data Bundle Utility</h2>
 				
 					<ul id="breadcrumb">
-						<li><a href="create-bundle-directory.action" title="Create Directory">Create Directory</a></li>
+						<li><a href="create-bundle-directory.action" title="Create">Create Directory</a></li>
 						<li><a href="prevalidate-inputs.action" title="Pre-validate inputs">Pre-validate inputs</a></li>
 						<li><a href="build-bundle.action" title="Build And Validate">Build And Validate</a></li>
 						<li><a href="deploy-bundle.action" title="Deploy Bundle">Deploy Bundle</a></li>
 					</ul>
 				
 				<div id="breadcrumb_contents_container">
+					<div id="Create">
+						
+					</div>
 				</div>
-				<!-- div id="clear" /-->
 				
-				<!-- div id="breadcrumb_contents_container">
-					<div id="createDirectory" class="tab_contents tab_contents_active">
-						<h2>Pre Validate Inputs</h2>
-					</div>
-					<div id="preValidateInputs" class="tab_contents">
-						<h2>Pre Validate Inputs</h2>
-					</div>
-					<div id="buildAndValidate" class="tab_contents">
-						<h2>Build And Validate</h2>
-					</div>
-					<div id="deployBundle" class="tab_contents">
-						<h2>Deploy Bundle</h2>
-					</div>
-				</div-->
+				
+				
 				
 			</div>
 		</div>

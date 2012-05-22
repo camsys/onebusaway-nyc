@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2011 Metropolitan Transportation Authority
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -14,28 +14,99 @@
  * the License.
  */
 
-/*jQuery(document).ready(function(){
-	$('.tab').click(function(){
-		$('#content > #text > #breadcrumb > li.active').removeClass('active');
-		$(this).parent().addClass('active');
-		$('#content > #text > #breadcrumb_contents_container > div.tab_contents_active')
-			.removeClass('tab_contents_active');
-		$(this.rel).addClass('tab_contents_active');
-	});
-});*/
+/*var OBA = window.OBA || {};
+
+OBA.Bundles = function() {
+	
+	function toggleAdvancedOptionsContents() {
+		jQuery("#createDirectory #advancedOptions #expand").bind({
+			'click' : function () {
+				var $image = jQuery("#createDirectory #advancedOptions #expand");
+				var $imageSource = $image.attr("src");
+				if($imageSource.indexOf("right-3") != -1) {
+					//Change the img to down arrow
+					$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-down-3.png");
+				} else {
+					//Change the img to right arrow
+					$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-right-3.png");
+				}
+				//Toggle advanced options box
+				jQuery("#advancedOptionsContents").toggle();
+			}	});
+	} 
+
+	return {
+		initialize : function () {
+			toggleAdvancedOptionsContents();
+		}
+	};
+};
+
+jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
 jQuery(document).ready(function() {
-
-	//Select the first tab on page load
-	var $tabs = $('#breadcrumb').tabs({selected:0});
-	var selected = $tabs.tabs('option', 'selected');
-	alert(selected);
-	$('#breadcrumb_contents_container').html();
 	
-	$('#breadcrumb').bind('tabsselect', function(event, ui) {
-	    alert("tab");
-	});
+	//toggle advanced option contents
+	jQuery("#createDirectory #advancedOptions #expand").bind({
+			'click' : toggleAdvancedOptions	});
+	
+	//handle create and select radio buttons
+	jQuery("input[name='options']").change(directoryOptionChanged);
+	
+	//Handle validate button click event
+	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
+	
 });
+
+
+function toggleAdvancedOptions() {
+	var $image = jQuery("#createDirectory #advancedOptions #expand");
+	var $imageSource = $image.attr("src");
+	if($imageSource.indexOf("right-3") != -1) {
+		//Change the img to down arrow
+		$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-down-3.png");
+	} else {
+		//Change the img to right arrow
+		$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-right-3.png");
+	}
+	//Toggle advanced options box
+	jQuery("#advancedOptionsContents").toggle();
+}
+
+function directoryOptionChanged() {
+	if(jQuery("#create").is(":checked")) {
+		//Change the button text and hide select directory list
+		jQuery("#createDirectoryContents #directoryButton").val("Create");
+		jQuery("#createDirectoryContents #directoryButton").attr("name","method:createDirectory");
+		jQuery("#selectExistingContents").hide();
+	} else {
+		//Change the button text and show select directory list
+		jQuery("#createDirectoryContents #directoryButton").val("Select");
+		jQuery("#createDirectoryContents #directoryButton").attr("name","method:selectDirectory");
+		jQuery.ajax({
+			url: "/onebusaway-nyc-admin-webapp/admin/bundles/create-bundle-directory!getExistingDirectories.action",
+			type: "GET",
+			success: function(response) {
+				
+			}
+		});
+		jQuery("#selectExistingContents").show();
+	}
+	
+}
+
+function onValidateClick() {
+	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
+	jQuery.ajax({
+		url: "/onebusaway-nyc-admin-webapp/admin/bundles/prevalidate-inputs!validateBundle.action",
+		type: "GET",
+		success: function(response) {
+			
+		}
+	});
+}
+
+
 
 
 
