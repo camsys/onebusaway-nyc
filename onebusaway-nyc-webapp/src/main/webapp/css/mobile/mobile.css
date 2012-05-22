@@ -183,6 +183,10 @@ strong {
 	width: 30px;
 }
 
+#searchPanel .s.loading {
+	background: url("img/search_loader.gif") no-repeat scroll 0 0 transparent;
+}
+
 #searchPanel .q {
 	background-color: transparent;
 	border: 0 none;
@@ -284,10 +288,6 @@ small {
 	color: #818181;
 }
 
-.stopResultGroupHeader.muted.first {
-	margin-top: 2.0em;
-}
-
 .routeHeader {
 	padding: 0;
 	margin: 0;
@@ -357,7 +357,6 @@ small {
 }
 
 #not-scheduled-routes a {
-	padding-bottom: 1.0em;
 	width: 6.0em;
 	display: inline-block;
 }
@@ -401,4 +400,30 @@ small {
 
 .stop a:HOVER.muted {
 	color: rgb(100,100,100);
+}
+
+#nearby-button-bar {
+	background-color: rgb(200,200,200);
+	border: 1px solid rgb(150,150,150);
+	width: 299px;
+	border-radius: 5px;
+}
+
+#nearby-stops-button, #nearby-routes-button {
+	margin: 0;
+	padding: 0;
+	width: 149;
+	height: 40px;
+	line-height: 40px;
+	display: inline-block;
+	text-align: center;
+	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
+}
+
+#nearby-stops-button {
+	border-right: 1px solid rgb(150,150,150);
+}
+
+#nearby-stops-button.down, #nearby-routes-button.down {
+	background-color: rgb(150,150,150);
 }

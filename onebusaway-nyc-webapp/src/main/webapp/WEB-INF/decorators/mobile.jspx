@@ -55,9 +55,7 @@
 
 <body>
 	<div id="branding">
-		<s:url var="url" namespace="/m" action="index">				
-			<s:param name="l"><s:property value="l" /></s:param>
-		</s:url>
+		<s:url var="url" namespace="/m" action="index" />
 	    <h1><a href="${url}">MTA Bus Time</a></h1>
 	</div>
 
