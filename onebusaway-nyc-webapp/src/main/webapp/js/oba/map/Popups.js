@@ -276,7 +276,7 @@ OBA.Popups = (function() {
 		// service alerts
 		//html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);
 		if (routeName in alertData) {
-			html += ' <a id="alert-link|' + routeName + '" class="alert-link" href="#">Service Advisory</a>';
+			html += ' <a id="alert-link|' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
 		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
@@ -427,7 +427,7 @@ OBA.Popups = (function() {
 				html += '<li class="route">';
 				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
 				if (mvj.LineRef in alertData) {
-					html += ' <a id="alert-link|' + mvj.LineRef + '" class="alert-link" href="#">Advisory</a>';
+					html += ' <a id="alert-link|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
 				}
 				html += '</li>';
 
