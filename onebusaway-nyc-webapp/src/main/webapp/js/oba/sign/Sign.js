@@ -238,7 +238,7 @@ OBA.Sign = function() {
 				var existingSigns = [];
 
 				jQuery.each(situation.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, journey) {
-					if (journey.LineRef in routeInfo && existingSigns.indexOf(journey.LineRef) === -1) {
+					if (journey.LineRef in routeInfo && jQuery.inArray(journey.LineRef, existingSigns) < 0) {
 						var sign = signForRoute(journey.LineRef, jQuery("<div></div>"));
 						sign.addClass("alert_sign");
 						signWrapper.append(sign);

@@ -353,7 +353,7 @@ OBA.Popups = (function() {
 		var filterExistsInResults = false;
 		
 		jQuery.each(stopResult.routesAvailable, function(_, routeResult) {
-			if (routeFilter.indexOf(routeResult.id) !== -1) {
+			if (jQuery.inArray(routeResult.id, routeFilter) > -1) {
 				filterExistsInResults = true;
 				return false;
 			}
@@ -367,7 +367,7 @@ OBA.Popups = (function() {
 		filteredMatchesData.append("<ul></ul>");
 	    
 		jQuery.each(stopResult.routesAvailable, function(_, route) {
-	    	if (filterExistsInResults && routeFilter.indexOf(route.id) === -1) {
+	    	if (filterExistsInResults && jQuery.inArray(route.id, routeFilter) < 0) {
 	    		var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
 	    		var link = jQuery('<a href="#' + stopResult.id.match(/\d*$/) + '%20' + route.shortName + '"><span class="route-name">' + route.shortName + '</span></a>');
 	    		link.appendTo(filteredMatch);
@@ -392,7 +392,7 @@ OBA.Popups = (function() {
 	    jQuery.each(visits, function(_, monitoredJourney) {
 			var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
 			
-			if (filterExistsInResults && routeFilter.indexOf(routeId) === -1) {
+			if (filterExistsInResults && jQuery.inArray(routeId, routeFilter) < 0) {
 				return true; //continue
 			}
 			
