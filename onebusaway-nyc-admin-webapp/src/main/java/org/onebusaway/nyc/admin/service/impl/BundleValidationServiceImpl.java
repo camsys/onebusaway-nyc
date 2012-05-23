@@ -148,6 +148,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
     // 2 is the return code if process not found/file not found on exec
     if (returnCode == 2) {
       // try installing if that failed
+      _log.info("downloading feed validator");
       downloadFeedValidator();
       
       try {
@@ -171,10 +172,11 @@ public class BundleValidationServiceImpl implements BundleValidationService {
       String cmd = tmpDir + File.separator
           + "feedvalidator.py -n -m --service_gap_interval=1 --output="
           + outputFile + " " + gtfsZipFileName;
-
+      _log.info("exec:" + cmd);
       process = Runtime.getRuntime().exec(cmd);
       return process.waitFor();
     } catch (Exception e) {
+      _log.error(e.toString());
       String msg = e.getMessage();
       if (msg != null && e.getMessage().indexOf("error=2,") > 0) {
         return 2; // File Not Found
@@ -190,7 +192,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
     String url = "http://googletransitdatafeed.googlecode.com/files/"
         + TRANSIT_FEED + ".tar.gz";
     fs.wget(url);
-    fs.tarzxf(TRANSIT_FEED + "tar.gz");
+    fs.tarzxf(tmpDir + File.separatorChar + TRANSIT_FEED + ".tar.gz");
   }
 
 }

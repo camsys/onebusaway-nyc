@@ -38,7 +38,7 @@ public class FileUtils {
     DataInputStream dis = null;
     DataOutputStream dos = null;
     String fileName = parseFileName(urlString);
-    _log.debug("downloading " + urlString + " to fileName " + _workingDirectory
+    _log.info("downloading " + urlString + " to fileName " + _workingDirectory
         + File.separatorChar + fileName);
     byte[] buff = new byte[CHUNK_SIZE];
     int read = 0;
@@ -126,7 +126,8 @@ public class FileUtils {
   public int tarzxf(String tarFile) {
     Process process = null;
     try {
-      String cmd = "bash -c \"cd " + _workingDirectory + " && tar zxf " + tarFile + "\"";
+      String cmd = "tar zxC " + _workingDirectory + " -f " + tarFile;
+      _log.info("exec:" + cmd);
       process = Runtime.getRuntime().exec(cmd);
       return process.waitFor();
     } catch (Exception e) {

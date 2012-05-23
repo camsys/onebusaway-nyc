@@ -86,13 +86,17 @@ public class BundleValidationServiceImplTest {
     InputStream source = this.getClass().getResourceAsStream(
         "google_transit_staten_island.zip");
     assertNotNull(source);
-    new FileUtils().copy(source, getTmpDir() + File.separatorChar + "good_feed.zip");
-    
-    int rc = impl.installAndValidateGtfs(getTmpDir() + File.separatorChar + "empty_feed.zip", 
-        getTmpDir() + File.separatorChar + "feed.html");
+    String goodFeedFilename = getTmpDir() + File.separatorChar + "good_feed.zip";
+    new FileUtils().copy(source, goodFeedFilename);
+    assertTrue(new File(goodFeedFilename).exists());
+    String emptyFeedFilename = getTmpDir() + File.separatorChar + "good_feed.zip";
+    assertTrue(new File(emptyFeedFilename).exists());
+    String feedFilename = getTmpDir() + File.separatorChar + "feed.html";
+    int rc = impl.installAndValidateGtfs(emptyFeedFilename, 
+        feedFilename);
     // feedValidator exits with returnCode 1
     assertEquals(1, rc);
-    File output = new File(getTmpDir() + File.separatorChar + "feed.html");
+    File output = new File(feedFilename);
     assertTrue(output.exists());
     
   }
