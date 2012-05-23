@@ -25,19 +25,31 @@ public class BundleRequestServiceImplTest {
     service.setup();
     service.setBundleValidationService(new BundleValidationServiceImpl());
     FileService fileService = new FileServiceImpl() {
+      @Override
       public void setup() {};
+      @Override
       public boolean bundleDirectoryExists(String filename) {
         return !"noSuchDirectory".equals(filename);
       }
+      @Override
       public boolean createBundleDirectory(String filename) {
         return true;
       };
+      @Override
       public List<String[]> listBundleDirectories(int maxResults) {
         ArrayList<String[]> list = new ArrayList<String[]>();
         String[] columns = {"2012April/", "", "" + System.currentTimeMillis()};
         list.add(columns);
         return list;
       }
+      @Override
+      public List<String> list(String directory, int maxResults) {
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("google_transit_brooklyn.zip");
+        list.add("google_transit_staten_island.zip");
+        return list;
+      }
+
       public String get(String key, String tmpDir) {
         InputStream input = this.getClass().getResourceAsStream(
         "empty_feed.zip");
@@ -54,8 +66,8 @@ public class BundleRequestServiceImplTest {
   @Test
   public void testValidate() throws Exception {
     BundleRequest req = new BundleRequest();
-    String key= "2012Jan/gtfs_latest/google_transit_brooklyn.zip";
-    req.getGtfsList().add(key);
+    String key= "2012Jan";
+    req.setBundleDirectory(key);
     BundleResponse res = service.validate(req);
     assertFalse(res.isComplete());
     
@@ -68,10 +80,13 @@ public class BundleRequestServiceImplTest {
       res = service.lookup(res.getId());
       assertNotNull(res);
     }
-    
+
+    if (res.getException() !=null) {
+      _log.error("Failed with exception=" + res.getException());
+    }
     assertNull(res.getException());
     assertTrue(res.isComplete());
     assertNotNull(res.getValidationFiles());
-    assertEquals(1, res.getValidationFiles().size());
+    assertEquals(2, res.getValidationFiles().size());
   }
 }

@@ -64,7 +64,8 @@ public class BundleRequestServiceImpl implements BundleRequestService {
     @Override
     public void run() {
       try {
-        for (String s3Key : _request.getGtfsList()) {
+        String gtfsDirectory = _fileService.getGtfsPath() + File.separator + _request.getBundleDirectory();
+        for (String s3Key : _fileService.list(gtfsDirectory, 0)) {
           String tmpDir = new FileUtils().createTmpDirectory();
           _response.addStatusMessage("downloading " + s3Key);
           _log.info("downloading " + s3Key);
@@ -80,6 +81,7 @@ public class BundleRequestServiceImpl implements BundleRequestService {
         }
         _response.setComplete(true);
       } catch (Exception any) {
+        _log.error(any.toString(), any);
         _response.setComplete(true);
         _response.setException(any);
       }

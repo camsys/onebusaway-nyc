@@ -83,8 +83,10 @@ public class BundleValidationServiceImplTest {
   public void testValidateGtfs() throws Exception {
     BundleValidationServiceImpl impl = new BundleValidationServiceImpl();
     // copy to tmp
+//    InputStream source = this.getClass().getResourceAsStream(
+//        "google_transit_staten_island.zip");
     InputStream source = this.getClass().getResourceAsStream(
-        "google_transit_staten_island.zip");
+        "empty_feed.zip");
     assertNotNull(source);
     String goodFeedFilename = getTmpDir() + File.separatorChar + "good_feed.zip";
     new FileUtils().copy(source, goodFeedFilename);

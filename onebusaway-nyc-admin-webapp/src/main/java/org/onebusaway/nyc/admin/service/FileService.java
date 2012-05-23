@@ -5,7 +5,10 @@ import java.util.List;
 public interface FileService {
   void setup();
   void setBucketName(String bucketName);
-  
+  void setGtfsPath(String gtfsPath);
+  String getGtfsPath();
+  void setStifPath(String stifPath);
+  String getStifPath();
   boolean bundleDirectoryExists(String filename);
 
   boolean createBundleDirectory(String filename);
@@ -13,4 +16,5 @@ public interface FileService {
   List<String[]> listBundleDirectories(int maxResults);
 
   String get(String s3path, String tmpDir);
+  List<String> list(String directory, int maxResults);
 }

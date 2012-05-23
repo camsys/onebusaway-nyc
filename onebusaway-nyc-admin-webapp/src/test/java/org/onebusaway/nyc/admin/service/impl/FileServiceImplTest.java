@@ -18,21 +18,33 @@ public class FileServiceImplTest {
   @Before
   public void setup() {
     fileService = new FileServiceImpl() {
+      @Override
       public void setup() {};
+      @Override
       public boolean bundleDirectoryExists(String filename) {
         return !"noSuchDirectory".equals(filename);
       }
+      @Override
       public boolean createBundleDirectory(String filename) {
         return true;
       };
+      @Override
       public List<String[]> listBundleDirectories(int maxResults) {
         ArrayList<String[]> list = new ArrayList<String[]>();
         String[] columns = {"2012April/", "", "" + System.currentTimeMillis()};
         list.add(columns);
         return list;
       }
+      @Override
+      public List<String> list(String directory, int maxResults) {
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("google_transit_brooklyn.zip");
+        list.add("google_transit_staten_island.zip");
+        return list;
+      }
     };
     fileService.setBucketName("obanyc-bundle-data");
+    fileService.setGtfsPath("gtfs_latest");
     fileService.setup();
 
   }
@@ -63,5 +75,15 @@ public class FileServiceImplTest {
     String[] row0 = rows.get(0);
     assertEquals("2012April/", row0[0]);
 
+  }
+  
+  @Test
+  public void testList() {
+    String gtfsDir = "2012Jan/gtfs_latest";
+    List<String> rows = fileService.list(gtfsDir, 0);
+
+    assertNotNull(rows);
+    assertEquals(2, rows.size());
+    
   }
 }

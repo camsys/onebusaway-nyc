@@ -32,23 +32,44 @@ import javax.annotation.PostConstruct;
 public class FileServiceImpl implements FileService {
 
   private static Logger _log = LoggerFactory.getLogger(FileServiceImpl.class);
-  private AWSCredentials credentials;
-  private AmazonS3Client s3;
+  private AWSCredentials _credentials;
+  private AmazonS3Client _s3;
   @Autowired
-  private String bucketName;
-
+  private String _bucketName;
+  @Autowired
+  // the gtfs directory relative to the bundle directory; e.g. gtfs_latest
+  private String _gtfsPath;
+  @Autowired
+  // the stif directory relative to the bundle directory; e.g. stif_latest
+  private String _stifPath;
   @Override
   public void setBucketName(String bucketName) {
-    this.bucketName = bucketName;
+    this._bucketName = bucketName;
+  }
+  @Override
+  public void setGtfsPath(String gtfsPath) {
+    this._gtfsPath = gtfsPath;
+  }
+  @Override
+  public String getGtfsPath() {
+    return _gtfsPath;
+  }
+  @Override
+  public void setStifPath(String stifPath) {
+    this._stifPath = stifPath;
+  }
+  @Override
+  public String getStifPath() {
+    return _stifPath;
   }
 
   @PostConstruct
   @Override
   public void setup() {
     try {
-      credentials = new PropertiesCredentials(
+      _credentials = new PropertiesCredentials(
           this.getClass().getResourceAsStream("AwsCredentials.properties"));
-      s3 = new AmazonS3Client(credentials);
+      _s3 = new AmazonS3Client(_credentials);
     } catch (IOException ioe) {
       _log.error(ioe.toString());
       throw new RuntimeException(ioe);
@@ -62,9 +83,9 @@ public class FileServiceImpl implements FileService {
    * Do not include leading slashes in the filename(key).
    */
   public boolean bundleDirectoryExists(String filename) {
-    ListObjectsRequest request = new ListObjectsRequest(bucketName, filename,
+    ListObjectsRequest request = new ListObjectsRequest(_bucketName, filename,
         null, null, 1);
-    ObjectListing listing = s3.listObjects(request);
+    ObjectListing listing = _s3.listObjects(request);
     return listing.getObjectSummaries().size() > 0;
   }
 
@@ -81,9 +102,9 @@ public class FileServiceImpl implements FileService {
       FileWriter fw = new FileWriter(tmpFile);
       fw.append(contents);
       fw.close();
-      PutObjectRequest request = new PutObjectRequest(bucketName, filename
+      PutObjectRequest request = new PutObjectRequest(_bucketName, filename
           + "/README.txt", tmpFile);
-      PutObjectResult result = s3.putObject(request);
+      PutObjectResult result = _s3.putObject(request);
       return result != null;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -95,9 +116,9 @@ public class FileServiceImpl implements FileService {
    * Return tabular data (filename, flag, modified date) about bundle directories.
    */
   public List<String[]> listBundleDirectories(int maxResults) {
-    ListObjectsRequest request = new ListObjectsRequest(bucketName, "", null,
+    ListObjectsRequest request = new ListObjectsRequest(_bucketName, "", null,
         null, maxResults);
-    ObjectListing listing = s3.listObjects(request);
+    ObjectListing listing = _s3.listObjects(request);
     List<String[]> rows = new ArrayList<String[]>();
     for (S3ObjectSummary summary : listing.getObjectSummaries()) {
       // if its a directory at the root level
@@ -114,6 +135,7 @@ public class FileServiceImpl implements FileService {
     return rows;
   }
 
+  
   @Override
   /**
    * Retreive the specified key from S3 and store in the given directory.
@@ -122,11 +144,28 @@ public class FileServiceImpl implements FileService {
     FileUtils fs = new FileUtils();
     String filename = fs.parseFileName(key);
     _log.info("downloading " + key);
-    GetObjectRequest request = new GetObjectRequest(this.bucketName, key);
-    S3Object file = s3.getObject(request);
+    GetObjectRequest request = new GetObjectRequest(this._bucketName, key);
+    S3Object file = _s3.getObject(request);
     String pathAndFileName = tmpDir + File.separator + filename;
     fs.copy(file.getObjectContent(), pathAndFileName);
     return pathAndFileName;
   }
 
+  @Override
+  /**
+   * list the files in the given directory.
+   */
+  public List<String> list(String directory, int maxResults) {
+    ListObjectsRequest request = new ListObjectsRequest(_bucketName, directory, null,
+        null, maxResults);
+    ObjectListing listing = _s3.listObjects(request);
+    List<String> rows = new ArrayList<String>();
+    for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+      // if its a directory at the root level
+      if (!summary.getKey().endsWith("/")) {
+          rows.add(summary.getKey());
+      }
+    }
+    return rows;
+  }
 }

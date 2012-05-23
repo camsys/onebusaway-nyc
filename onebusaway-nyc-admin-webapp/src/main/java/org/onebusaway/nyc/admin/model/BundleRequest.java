@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BundleRequest {
-  private List<String> _gtfsList = new ArrayList<String>();
+  private String _bundleDirectory;
   
-  public List<String> getGtfsList() {
-    return _gtfsList;
+  public String getBundleDirectory() {
+    return _bundleDirectory;
+  }
+  
+  public void setBundleDirectory(String dir) {
+    _bundleDirectory = dir;
   }
 }
