@@ -165,6 +165,8 @@
 .popup .no-service-routes li.route {
 	display: inline-block;
 	padding: 0 1.0em 0 0;
+	zoom: 1;
+	*display:inline;
 }
 
 .popup li.route a {
@@ -195,6 +197,8 @@
 .popup .popup-filtered-matches ul li {
 	display: inline-block;
 	padding: 0 1.0em 0 0;
+	zoom: 1;
+	*display:inline;
 }
 
 #bustime .popup .muted {
