@@ -65,7 +65,7 @@ public class BundleRequestServiceImpl implements BundleRequestService {
     public void run() {
       try {
         String gtfsDirectory = _fileService.getGtfsPath() + File.separator + _request.getBundleDirectory();
-        for (String s3Key : _fileService.list(gtfsDirectory, 0)) {
+        for (String s3Key : _fileService.list(gtfsDirectory, -1)) {
           String tmpDir = new FileUtils().createTmpDirectory();
           _response.addStatusMessage("downloading " + s3Key);
           _log.info("downloading " + s3Key);

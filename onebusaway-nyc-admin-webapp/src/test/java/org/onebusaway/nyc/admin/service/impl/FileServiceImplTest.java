@@ -47,6 +47,12 @@ public class FileServiceImplTest {
     fileService.setGtfsPath("gtfs_latest");
     fileService.setup();
 
+    // un-comment to run against S3
+//    fileService = new FileServiceImpl();
+//    fileService.setBucketName("obanyc-bundle-data");
+//    fileService.setGtfsPath("gtfs_latest");
+//    fileService.setStifPath("stif_latest");
+//    fileService.setup();
   }
 
   @Test
@@ -68,10 +74,6 @@ public class FileServiceImplTest {
     assertNotNull(rows);
     assertTrue(rows.size() > 0);
 
-    for (String[] columns : rows) {
-      //_log.error("row=" + columns[0]);
-    }
-    
     String[] row0 = rows.get(0);
     assertEquals("2012April/", row0[0]);
 
@@ -80,8 +82,7 @@ public class FileServiceImplTest {
   @Test
   public void testList() {
     String gtfsDir = "2012Jan/gtfs_latest";
-    List<String> rows = fileService.list(gtfsDir, 0);
-
+    List<String> rows = fileService.list(gtfsDir, -1);
     assertNotNull(rows);
     assertEquals(2, rows.size());
     
