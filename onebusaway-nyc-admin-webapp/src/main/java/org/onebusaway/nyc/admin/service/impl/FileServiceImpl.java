@@ -42,6 +42,9 @@ public class FileServiceImpl implements FileService {
   @Autowired
   // the stif directory relative to the bundle directory; e.g. stif_latest
   private String _stifPath;
+  @Autowired
+  private String _buildPath;
+  
   @Override
   public void setBucketName(String bucketName) {
     this._bucketName = bucketName;
@@ -61,6 +64,14 @@ public class FileServiceImpl implements FileService {
   @Override
   public String getStifPath() {
     return _stifPath;
+  }
+  @Override
+  public void setBuildPath(String buildPath) {
+    this._buildPath = buildPath;
+  }
+  @Override
+  public String getBuildPath() {
+    return _buildPath;
   }
 
   @PostConstruct
@@ -105,6 +116,13 @@ public class FileServiceImpl implements FileService {
       PutObjectRequest request = new PutObjectRequest(_bucketName, filename
           + "/README.txt", tmpFile);
       PutObjectResult result = _s3.putObject(request);
+      // now create tree structure
+      request = new PutObjectRequest(_bucketName, filename + "/" + this.getGtfsPath(), null);
+      result = _s3.putObject(request);
+      request = new PutObjectRequest(_bucketName, filename + "/" + this.getStifPath(), null);
+      result = _s3.putObject(request);
+      request = new PutObjectRequest(_bucketName, filename + "/" + this.getBuildPath(), null);
+      result = _s3.putObject(request);
       return result != null;
     } catch (Exception e) {
       throw new RuntimeException(e);

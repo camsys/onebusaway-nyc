@@ -9,6 +9,8 @@ public interface FileService {
   String getGtfsPath();
   void setStifPath(String stifPath);
   String getStifPath();
+  void setBuildPath(String buildPath);
+  String getBuildPath();
   boolean bundleDirectoryExists(String filename);
 
   boolean createBundleDirectory(String filename);
@@ -17,4 +19,5 @@ public interface FileService {
 
   String get(String s3path, String tmpDir);
   List<String> list(String directory, int maxResults);
+  
 }
