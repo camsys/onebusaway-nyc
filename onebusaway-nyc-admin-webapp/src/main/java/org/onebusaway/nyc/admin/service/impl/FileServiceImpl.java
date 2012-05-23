@@ -117,14 +117,15 @@ public class FileServiceImpl implements FileService {
           + "/README.txt", tmpFile);
       PutObjectResult result = _s3.putObject(request);
       // now create tree structure
-      request = new PutObjectRequest(_bucketName, filename + "/" + this.getGtfsPath(), null);
-      result = _s3.putObject(request);
-      request = new PutObjectRequest(_bucketName, filename + "/" + this.getStifPath(), null);
-      result = _s3.putObject(request);
-      request = new PutObjectRequest(_bucketName, filename + "/" + this.getBuildPath(), null);
-      result = _s3.putObject(request);
+//      request = new PutObjectRequest(_bucketName, filename + "/" + this.getGtfsPath(), null);
+//      result = _s3.putObject(request);
+//      request = new PutObjectRequest(_bucketName, filename + "/" + this.getStifPath(), null);
+//      result = _s3.putObject(request);
+//      request = new PutObjectRequest(_bucketName, filename + "/" + this.getBuildPath(), null);
+//      result = _s3.putObject(request);
       return result != null;
     } catch (Exception e) {
+      _log.error(e.toString(), e);
       throw new RuntimeException(e);
     }
   }
