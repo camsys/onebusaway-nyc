@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.onebusaway.nyc.admin.service.FileService;
-import org.onebusaway.nyc.webapp.actions.admin.bundles.CreateBundleDirectoryAction;
+import org.onebusaway.nyc.webapp.actions.admin.bundles.ManageBundlesAction;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -18,18 +18,18 @@ import static org.mockito.Mockito.times;
  * @author abelsare
  *
  */
-public class CreateBundleDirectoryActionTest {
+public class ManageBundlesActionTest {
 
 	@Mock
 	private FileService fileService;
-	private CreateBundleDirectoryAction action;
+	private ManageBundlesAction action;
 	private static final String directoryName = "TEST"; 
 	
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		
-		action = new CreateBundleDirectoryAction();
+		action = new ManageBundlesAction();
 		action.setFileService(fileService);
 		action.setDirectoryName(directoryName);
 	}

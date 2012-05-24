@@ -43,23 +43,22 @@
 		<div id="content">
 			<div id="text">
 				<h2>Transit Data Bundle Utility</h2>
-				
+				<s:form action="manage-bundles" cssClass="bundleForm">
 					<ul id="breadcrumb">
-						<li><a href="create-bundle-directory.action" title="Create">Create Directory</a></li>
-						<li><a href="prevalidate-inputs.action" title="Pre-validate inputs">Pre-validate inputs</a></li>
-						<li><a href="build-bundle.action" title="Build And Validate">Build And Validate</a></li>
-						<li><a href="deploy-bundle.action" title="Deploy Bundle">Deploy Bundle</a></li>
+						<li><a href="#Create" title="Create Directory">Create Directory</a></li>
+						<li><a href="#Validate" title="Pre-validate inputs">Pre-validate inputs</a></li>
+						<li><a href="#Build" title="Build And Validate">Build And Validate</a></li>
+						<li><a href="#Deploy" title="Deploy Bundle">Deploy Bundle</a></li>
 					</ul>
 				
+				
 				<div id="breadcrumb_contents_container">
-					<div id="Create">
-						
-					</div>
+					<div id="Create" />
+					<div id="Validate" />
+					<div id="Build" />
+					<div id="Deploy" />
 				</div>
-				
-				
-				
-				
+				</s:form>
 			</div>
 		</div>
 	</body>

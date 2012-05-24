@@ -33,6 +33,7 @@
     
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
     
+    
     <!--
         Override the current user strategy of the CurrentUserService with one that will automatically create as user as
         needed and set a Remember Me cookie to remember that user for the future
@@ -64,5 +65,18 @@
         </property>
     </bean>
 
+   <bean id="fileService" class="org.onebusaway.nyc.admin.service.impl.FileServiceImpl">
+   		<property name="bucketName" value="obanyc-bundle-data"/>
+   		<property name="gtfsPath" value="gtfs_latest" />
+   		<property name="stifPath" value="stif_latest" />
+   		<property name="buildPath" value="builds" />
+   </bean>
+   
+   <bean id="bundleRequestService" class="org.onebusaway.nyc.admin.service.impl.BundleRequestServiceImpl" />
+   		
+   
+   <bean id="bundleValidationService" class="org.onebusaway.nyc.admin.service.impl.BundleValidationServiceImpl" />
+   		
+   <bean id="bundleBuildingService" class="org.onebusaway.nyc.admin.service.impl.BundleBuildingServiceImpl" />
    
 </beans>

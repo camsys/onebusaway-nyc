@@ -33,18 +33,20 @@ import javax.annotation.PostConstruct;
 public class FileServiceImpl implements FileService {
 
   private static Logger _log = LoggerFactory.getLogger(FileServiceImpl.class);
+
   private AWSCredentials _credentials;
   private AmazonS3Client _s3;
-  @Autowired
+ 
   private String _bucketName;
-  @Autowired
+ 
   // the gtfs directory relative to the bundle directory; e.g. gtfs_latest
   private String _gtfsPath;
-  @Autowired
+ 
   // the stif directory relative to the bundle directory; e.g. stif_latest
   private String _stifPath;
-  @Autowired
+ 
   private String _buildPath;
+
 
   @Override
   public void setBucketName(String bucketName) {

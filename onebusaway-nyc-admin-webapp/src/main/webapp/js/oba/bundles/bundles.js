@@ -46,6 +46,10 @@ jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
 jQuery(document).ready(function() {
 	
+	
+	//handle tab clicks
+	jQuery("#breadcrumb").bind('click', onTabClick);
+	
 	//toggle advanced option contents
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 			'click' : toggleAdvancedOptions	});
@@ -57,6 +61,26 @@ jQuery(document).ready(function() {
 	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
 	
 });
+
+function onTabClick(event) {
+	var $target = event.target;
+	
+	if($target.hash == "#Create") {
+		jQuery("#Create").load("bundles/create-bundle-directory.action");
+	}
+	if($target.hash == "#Validate") {
+		jQuery("#Validate").load("bundles/prevalidate-inputs.action");
+	}
+	if($target.hash == "#Build") {
+		jQuery("#Build").load("bundles/build-bundle.action");
+	}
+	if($target.hash == "#Deploy") {
+		jQuery("#Deploy").load("bundles/deploy-bundle.action");
+	}
+	
+	
+}
+
 
 
 function toggleAdvancedOptions() {
@@ -84,10 +108,14 @@ function directoryOptionChanged() {
 		jQuery("#createDirectoryContents #directoryButton").val("Select");
 		jQuery("#createDirectoryContents #directoryButton").attr("name","method:selectDirectory");
 		jQuery.ajax({
-			url: "/onebusaway-nyc-admin-webapp/admin/bundles/create-bundle-directory!getExistingDirectories.action",
+			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!getExistingDirectories.action",
 			type: "GET",
+			dataType: "json",
 			success: function(response) {
-				
+				alert(response);
+			},
+			error: function(request) {
+				alert(request.statustext);
 			}
 		});
 		jQuery("#selectExistingContents").show();
@@ -98,7 +126,7 @@ function directoryOptionChanged() {
 function onValidateClick() {
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
-		url: "/onebusaway-nyc-admin-webapp/admin/bundles/prevalidate-inputs!validateBundle.action",
+		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!validateBundle.action",
 		type: "GET",
 		success: function(response) {
 			

@@ -11,6 +11,7 @@ import org.onebusaway.nyc.admin.service.FileService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.util.HashMap;
@@ -32,14 +33,18 @@ public class BundleRequestServiceImpl implements BundleRequestService {
   private Map<String, BundleResponse> _validationMap = new HashMap<String, BundleResponse>();
   private Map<String, BundleBuildResponse> _buildMap = new HashMap<String, BundleBuildResponse>();
 
+  @Autowired
   public void setBundleValidationService(BundleValidationService service) {
     _bundleValidationService = service;
   }
 
+  @Autowired
   public void setBundleBuildingService(BundleBuildingService service) {
     _bundleBuildingService = service;
   }
 
+
+  @Autowired
   public void setFileService(FileService service) {
     _fileService = service;
   }

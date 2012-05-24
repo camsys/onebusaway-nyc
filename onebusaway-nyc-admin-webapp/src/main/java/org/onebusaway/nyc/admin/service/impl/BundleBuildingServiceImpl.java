@@ -15,6 +15,7 @@ import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundl
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 
@@ -31,6 +32,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImpl.class);
   private FileService _fileService;
 
+  @Autowired
   public void setFileService(FileService service) {
     _fileService = service;
   }

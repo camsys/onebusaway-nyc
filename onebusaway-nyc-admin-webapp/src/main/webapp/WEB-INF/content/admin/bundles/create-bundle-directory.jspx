@@ -42,7 +42,7 @@
 				<div class="tabHeader">
 					<label class="headerLabel">Create Bundle Directory</label>
 				</div>
-				<s:form action="create-bundle-directory" cssClass="bundleForm"> 
+				<s:form action="manage-bundles" cssClass="bundleForm"> 
 					<div id="createDirectory">
 						<label class="bundleHeader">1. Select or Create New Bundle Directory</label>
 						<div id="directoryOptions">

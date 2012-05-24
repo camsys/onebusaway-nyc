@@ -60,7 +60,7 @@
 
 
 #content #text #breadcrumb_contents_container {
-	border: 1px transparent #ccc;
+	border: 1px solid #ccc;
 	border-top: none;
 	padding: 10px;
 	height: 100%;
