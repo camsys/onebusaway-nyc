@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -144,22 +145,29 @@ public class FileServiceImpl implements FileService {
    * Return tabular data (filename, flag, modified date) about bundle directories.
    */
   public List<String[]> listBundleDirectories(int maxResults) {
-    ListObjectsRequest request = new ListObjectsRequest(_bucketName, "", null,
-        null, maxResults);
-    ObjectListing listing = _s3.listObjects(request);
     List<String[]> rows = new ArrayList<String[]>();
-    for (S3ObjectSummary summary : listing.getObjectSummaries()) {
-      // if its a directory at the root level
-      if (summary.getKey().endsWith("/")) {
-        // make sure its not a sub-directory
-        int matches = summary.getKey().split("\\/").length - 1;
-        if (matches == 0) {
+    HashMap<String, String> map = new HashMap<String, String>();
+    ListObjectsRequest request = new ListObjectsRequest(_bucketName, null, "/",
+        "", maxResults);
+
+    ObjectListing listing = null;
+    do {
+      if (listing == null) { 
+        listing = _s3.listObjects(request);
+      } else {
+        listing = _s3.listNextBatchOfObjects(listing);
+      }
+      for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+        String key = parseKey(summary.getKey());
+        if (!map.containsKey(key)) {
           String[] columns = {
-              summary.getKey(), " ", "" + summary.getLastModified().getTime()};
+              key, " ", "" + summary.getLastModified().getTime()};
           rows.add(columns);
+          map.put(key, key);
         }
       }
-    }
+      
+    } while (listing.isTruncated());
     return rows;
   }
 
@@ -205,7 +213,8 @@ public class FileServiceImpl implements FileService {
       File dir = new File(file);
       for (File contents : dir.listFiles()) {
         try {
-          put(prefix + "/" + key, contents.getName(), contents.getCanonicalPath());
+          put(prefix + "/" + key, contents.getName(),
+              contents.getCanonicalPath());
         } catch (IOException ioe) {
           _log.error(ioe.toString(), ioe);
         }
@@ -237,5 +246,12 @@ public class FileServiceImpl implements FileService {
       }
     }
     return rows;
+  }
+  
+  private String parseKey(String key) {
+    if (key == null) return null;
+    int pos = key.indexOf("/");
+    if (pos == -1) return key;
+    return key.substring(0, pos);
   }
 }
