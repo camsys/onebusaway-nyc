@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -294,20 +295,20 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 
-    // wrapped label only appears in stop results
     if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("prevTrip")) {
-      message += "after a brief scheduled layover";
-    }
+    	message += "after scheduled terminal stop";
 
     // at terminal label only appears in stop results
-    if (isStopContext && progressStatus != null
+    } else if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("layover")) {
-        if (message.length() > 0) {
-            message += ", ";
-        }
-
-        message += "at terminal";
+    	if(journey.getOriginAimedDepartureTime() != null) {
+    		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+    	
+    		message += "at terminal, scheduled to depart at " + formatter.format(journey.getOriginAimedDepartureTime());
+    	} else {
+    		message += "at terminal";
+    	}
     }
 
     int staleTimeout = _configurationService.getConfigurationValueAsInteger(

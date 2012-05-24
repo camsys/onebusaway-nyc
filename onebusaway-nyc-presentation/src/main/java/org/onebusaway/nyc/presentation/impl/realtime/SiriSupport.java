@@ -70,6 +70,9 @@ public final class SiriSupport {
 	  STOP_MONITORING
   }
 	
+  /**
+   * The tripDetails bean here may not be for the trip the vehicle is currently on, in the case of A-D for stop!
+   */
   public static void fillMonitoredVehicleJourney(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
 	  TripDetailsBean tripDetails, StopBean monitoredCallStopBean, OnwardCallsMode onwardCallsMode,
       PresentationService presentationService, NycTransitDataService nycTransitDataService,
@@ -161,13 +164,13 @@ public final class SiriSupport {
     
     if (presentationService.isInLayover(tripStatus)) {
     	progressStatuses.add("layover");
+    } else {
+    	// "prevTrip" really means not on the framedvehiclejourney trip
+    	if(!tripBean.getId().equals(tripStatus.getActiveTrip().getId())) {
+    		progressStatuses.add("prevTrip");
+    	}
     }
-
-    // "prevTrip" really means not on the framedvehiclejourney trip
-    if(!tripBean.getId().equals(tripStatus.getActiveTrip().getId())) {
-    	progressStatuses.add("prevTrip");
-    }
-
+    
     if(!progressStatuses.isEmpty()) {
     	NaturalLanguageStringStructure progressStatus = new NaturalLanguageStringStructure();
         progressStatus.setValue(StringUtils.join(progressStatuses, ","));
@@ -183,31 +186,37 @@ public final class SiriSupport {
      
     // scheduled depature time
     if (presentationService.isBlockLevelInference(tripStatus) && presentationService.isInLayover(tripStatus)) {
-    	// if we're less than 50% of the trip, assume we've already started the next trip, otherwise, advance
-    	// to it if we're over 50% (at the end) of the last one. 
-    	TripDetailsBean nextTripDetails = null;    	
-
-    	if(tripStatus.getDistanceAlongTrip() < (0.5 * tripStatus.getTotalDistanceAlongTrip())) {
-    		nextTripDetails = tripDetails;
-    	} else {
-    		TripBean nextTrip = tripDetails.getSchedule().getNextTrip();
-
-    		if(nextTrip != null) {
-    			TripDetailsQueryBean query = new TripDetailsQueryBean();
-    			query.setTripId(nextTrip.getId());
-    			query.setVehicleId(tripDetails.getStatus().getVehicleId());        	
-    			nextTripDetails = nycTransitDataService.getSingleTripDetails(query);
-    		}
-    	}
+    	// find trip details for the vehicle's current trip
+    	TripDetailsBean vehicleTripDetailsBean = tripDetails;
     	
-    	if(nextTripDetails != null) {
-			List<TripStopTimeBean> stopTimesForNextTrip = nextTripDetails.getSchedule().getStopTimes();
-			TripStopTimeBean firstStopTime = stopTimesForNextTrip.get(0);
-        	
-			if(firstStopTime != null) {            	
-				Date departureTime = new Date(tripDetails.getServiceDate() + (firstStopTime.getDepartureTime() * 1000));
-				monitoredVehicleJourney.setOriginAimedDepartureTime(departureTime);
-			}
+    	if(!vehicleTripDetailsBean.getTripId().equals(tripStatus.getActiveTrip().getId())) {
+        	TripDetailsQueryBean query = new TripDetailsQueryBean();
+    		query.setTripId(tripStatus.getActiveTrip().getId());
+    		query.setVehicleId(tripDetails.getStatus().getVehicleId());        	
+    		vehicleTripDetailsBean = nycTransitDataService.getSingleTripDetails(query);
+    	}
+
+    	// if the vehicle is at the head of a trip, assume it's moved into the new trip. Otherwise,
+    	// advance to the next trip to get to the new one. 
+		List<TripStopTimeBean> stopTimesForCurrentTrip = null;
+		
+		if(tripStatus.getDistanceAlongTrip() < (0.5 * tripStatus.getTotalDistanceAlongTrip())) {
+			stopTimesForCurrentTrip = vehicleTripDetailsBean.getSchedule().getStopTimes();
+		} else {
+        	TripDetailsQueryBean query = new TripDetailsQueryBean();
+			query.setTripId(vehicleTripDetailsBean.getSchedule().getNextTrip().getId());
+			query.setVehicleId(tripDetails.getStatus().getVehicleId());        	
+			vehicleTripDetailsBean = nycTransitDataService.getSingleTripDetails(query);
+
+			stopTimesForCurrentTrip = vehicleTripDetailsBean.getSchedule().getStopTimes();
+		}
+
+		// now find the origin departure time
+		TripStopTimeBean originTerminalStop = stopTimesForCurrentTrip.get(0);
+		
+		if(originTerminalStop != null) {            	
+			Date departureTime = new Date(tripDetails.getServiceDate() + (originTerminalStop.getDepartureTime() * 1000));
+			monitoredVehicleJourney.setOriginAimedDepartureTime(departureTime);
 		}
     }    
     

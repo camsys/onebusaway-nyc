@@ -439,12 +439,16 @@ OBA.Popups = (function() {
 
 						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
 								monitoredVehicleJourney.ProgressStatus.indexOf("prevTrip") !== -1) {
-							distance += " (after a brief scheduled layover)";
-						}
-
-						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
+							distance += " (after scheduled terminal stop)";
+						} else if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
 								monitoredVehicleJourney.ProgressStatus.indexOf("layover") !== -1) {
-							distance += " (at terminal)";
+							
+							if(typeof monitoredVehicleJourney.OriginAimedDepartureTime !== 'undefined') {
+								var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
+								distance += " (at terminal, scheduled to depart at " + departureTime.format("h:MM TT") + ")";
+							} else {
+								distance += " (at terminal)";
+							}
 						}
 
 						var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");

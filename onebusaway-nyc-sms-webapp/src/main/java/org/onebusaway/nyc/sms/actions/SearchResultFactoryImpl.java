@@ -210,19 +210,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mi.", "mi.", "");
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
-
+    
     // wrapped label only appears in stop results
-    if(isStopContext && progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-      message += "after layover";
-    }
-
-    // at terminal label only appears in stop results
-    if(isStopContext && progressStatus != null && progressStatus.getValue().contains("layover")) {
-      if(message.length() > 0) {
-          message += ", ";
-      }
-          
-      message += "@term.";
+    if(isStopContext) {    	
+    	if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+    		message += "after layover";
+    	} else if(progressStatus != null && progressStatus.getValue().contains("layover")) {
+    	    message += "@term.";
+    	}
     }
     
     int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    
