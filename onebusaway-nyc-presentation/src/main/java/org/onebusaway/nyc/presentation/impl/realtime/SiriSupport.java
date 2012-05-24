@@ -34,6 +34,7 @@ import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.blocks.BlockStopTimeBean;
 import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
@@ -183,49 +184,50 @@ public final class SiriSupport {
     	blockRef.setValue(tripDetails.getTrip().getBlockId());
     	monitoredVehicleJourney.setBlockRef(blockRef);
     }
-     
+	  
+	BlockInstanceBean blockInstance = 
+			nycTransitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
+
     // scheduled depature time
     if (presentationService.isBlockLevelInference(tripStatus) && presentationService.isInLayover(tripStatus)) {
-    	// find trip details for the vehicle's current trip
-    	TripDetailsBean vehicleTripDetailsBean = tripDetails;
-    	
-    	if(!vehicleTripDetailsBean.getTripId().equals(tripStatus.getActiveTrip().getId())) {
-        	TripDetailsQueryBean query = new TripDetailsQueryBean();
-    		query.setTripId(tripStatus.getActiveTrip().getId());
-    		query.setVehicleId(tripDetails.getStatus().getVehicleId());        	
-    		vehicleTripDetailsBean = nycTransitDataService.getSingleTripDetails(query);
+		BlockStopTimeBean originDepartureStopTime = null;
+
+		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
+    	for(int t = 0; t < blockTrips.size(); t++) {
+    		BlockTripBean thisTrip = blockTrips.get(t);
+    		BlockTripBean nextTrip = null;    		
+    		if(t + 1 < blockTrips.size()) {
+    			nextTrip = blockTrips.get(t + 1);
+    		}
+
+    		if(thisTrip.getTrip().getId().equals(tripStatus.getActiveTrip().getId())) {    			
+    			// just started new trip
+    			if(tripStatus.getDistanceAlongTrip() < (0.5 * tripStatus.getTotalDistanceAlongTrip())) {
+    				originDepartureStopTime = thisTrip.getBlockStopTimes().get(0);
+
+    			// at end of previous trip
+    			} else {
+    				if(nextTrip != null) {
+    					originDepartureStopTime = nextTrip.getBlockStopTimes().get(0);
+    				}
+    			}
+    			
+    			break;
+    		}
     	}
-
-    	// if the vehicle is at the head of a trip, assume it's moved into the new trip. Otherwise,
-    	// advance to the next trip to get to the new one. 
-		List<TripStopTimeBean> stopTimesForCurrentTrip = null;
-		
-		if(tripStatus.getDistanceAlongTrip() < (0.5 * tripStatus.getTotalDistanceAlongTrip())) {
-			stopTimesForCurrentTrip = vehicleTripDetailsBean.getSchedule().getStopTimes();
-		} else {
-        	TripDetailsQueryBean query = new TripDetailsQueryBean();
-			query.setTripId(vehicleTripDetailsBean.getSchedule().getNextTrip().getId());
-			query.setVehicleId(tripDetails.getStatus().getVehicleId());        	
-			vehicleTripDetailsBean = nycTransitDataService.getSingleTripDetails(query);
-
-			stopTimesForCurrentTrip = vehicleTripDetailsBean.getSchedule().getStopTimes();
-		}
-
-		// now find the origin departure time
-		TripStopTimeBean originTerminalStop = stopTimesForCurrentTrip.get(0);
-		
-		if(originTerminalStop != null) {            	
-			Date departureTime = new Date(tripDetails.getServiceDate() + (originTerminalStop.getDepartureTime() * 1000));
+    			
+		if(originDepartureStopTime != null) {            	
+			Date departureTime = new Date(tripDetails.getServiceDate() + (originDepartureStopTime.getStopTime().getDepartureTime() * 1000));
 			monitoredVehicleJourney.setOriginAimedDepartureTime(departureTime);
 		}
     }    
     
     // monitored call
-    fillMonitoredCall(monitoredVehicleJourney, tripStatus, monitoredCallStopBean, 
+    fillMonitoredCall(monitoredVehicleJourney, blockInstance, tripStatus, monitoredCallStopBean, 
     		presentationService, nycTransitDataService);
 
     // onward calls
-    fillOnwardCalls(monitoredVehicleJourney, tripDetails, onwardCallsMode,
+    fillOnwardCalls(monitoredVehicleJourney, blockInstance, tripDetails, onwardCallsMode,
     		presentationService, nycTransitDataService, maximumOnwardCalls);
     
     // situations
@@ -238,7 +240,7 @@ public final class SiriSupport {
    * PRIVATE STATIC METHODS
    */
   private static void fillOnwardCalls(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
-		  TripDetailsBean tripDetails, OnwardCallsMode onwardCallsMode,
+		  BlockInstanceBean blockInstance, TripDetailsBean tripDetails, OnwardCallsMode onwardCallsMode,
 	      PresentationService presentationService, NycTransitDataService nycTransitDataService, 
 	      int maximumOnwardCalls) {
 
@@ -253,9 +255,6 @@ public final class SiriSupport {
 	  if(maximumOnwardCalls == 0) { 
 		  return;
 	  }
-	  
-	  BlockInstanceBean blockInstance = 
-			  nycTransitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
 
 	  List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
@@ -290,30 +289,15 @@ public final class SiriSupport {
 				  continue;
 			  }
 		  }
-		  
-		  // find stops for this trip
-		  TripDetailsQueryBean blockTripQuery = new TripDetailsQueryBean();
-		  blockTripQuery.setTripId(blockTrip.getTrip().getId());
-		  blockTripQuery.setVehicleId(tripStatus.getVehicleId());
-
-		  TripDetailsBean blockTripDetails = 
-				  nycTransitDataService.getSingleTripDetails(blockTripQuery);
-
-		  List<TripStopTimeBean> stopTimes = blockTripDetails.getSchedule().getStopTimes();
-		  Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
-			  public int compare(TripStopTimeBean arg0, TripStopTimeBean arg1) {
-				  return (int) (arg0.getDistanceAlongTrip() - arg1.getDistanceAlongTrip());
-			  }
-		  });		
 
 		  HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();	   
-		  for(TripStopTimeBean stopTime : stopTimes) {
-			  int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStop());
+		  for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
+			  int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
 			  // block trip stops away--on this trip, only after we've passed the stop, 
 			  // on future trips, count always.
 			  if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-				  if(stopTime.getDistanceAlongTrip() >= tripStatus.getDistanceAlongTrip()) {
+				  if(stopTime.getDistanceAlongBlock() >= distanceOfVehicleAlongBlock) {
 					  blockTripStopsAfterTheVehicle++;
 				  } else {
 					  // stop is behind the bus--no need to go further
@@ -330,9 +314,9 @@ public final class SiriSupport {
 		      }
 		    	
 		      monitoredVehicleJourney.getOnwardCalls().getOnwardCall().add(
-		    		  getOnwardCallStructure(stopTime.getStop(), presentationService, 
-		    				  stopTime.getDistanceAlongTrip(), 
-							  (blockTrip.getDistanceAlongBlock() + stopTime.getDistanceAlongTrip()) - distanceOfVehicleAlongBlock, 
+		    		  getOnwardCallStructure(stopTime.getStopTime().getStop(), presentationService, 
+		    				  stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(), 
+							  stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock, 
 		    				  visitNumber, blockTripStopsAfterTheVehicle - 1));
 
 		      onwardCallsAdded++;
@@ -357,11 +341,8 @@ public final class SiriSupport {
   }
   
   private static void fillMonitoredCall(MonitoredVehicleJourneyStructure monitoredVehicleJourney, 
-		  TripStatusBean tripStatus, StopBean monitoredCallStopBean, 
+		  BlockInstanceBean blockInstance, TripStatusBean tripStatus, StopBean monitoredCallStopBean, 
 	      PresentationService presentationService, NycTransitDataService nycTransitDataService) {
-
-	  BlockInstanceBean blockInstance = 
-			  nycTransitDataService.getBlockInstance(tripStatus.getActiveTrip().getBlockId(), tripStatus.getServiceDate());
 
 	  List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
 
@@ -389,30 +370,15 @@ public final class SiriSupport {
 			  }
 		  }
 		  
-		  // find stops for this trip
-		  TripDetailsQueryBean blockTripQuery = new TripDetailsQueryBean();
-		  blockTripQuery.setTripId(blockTrip.getTrip().getId());
-		  blockTripQuery.setVehicleId(tripStatus.getVehicleId());
-
-		  TripDetailsBean blockTripDetails = 
-				  nycTransitDataService.getSingleTripDetails(blockTripQuery);
-
-		  List<TripStopTimeBean> stopTimes = blockTripDetails.getSchedule().getStopTimes();
-		  Collections.sort(stopTimes, new Comparator<TripStopTimeBean>() {
-			  public int compare(TripStopTimeBean arg0, TripStopTimeBean arg1) {
-				  return (int) (arg0.getDistanceAlongTrip() - arg1.getDistanceAlongTrip());
-			  }
-		  });		
-
 		  HashMap<String, Integer> visitNumberForStopMap = new HashMap<String, Integer>();	   
 
-		  for(TripStopTimeBean stopTime : stopTimes) {
-			  int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStop());
+		  for(BlockStopTimeBean stopTime : blockTrip.getBlockStopTimes()) {
+			  int visitNumber = getVisitNumber(visitNumberForStopMap, stopTime.getStopTime().getStop());
 
 			  // block trip stops away--on this trip, only after we've passed the stop, 
 			  // on future trips, count always.
 			  if(tripStatus.getActiveTrip().getId().equals(blockTrip.getTrip().getId())) {
-				  if(stopTime.getDistanceAlongTrip() >= tripStatus.getDistanceAlongTrip()) {
+				  if(stopTime.getDistanceAlongBlock() >= distanceOfVehicleAlongBlock) {
 					  blockTripStopsAfterTheVehicle++;
 				  } else {
 					  // bus has passed this stop already--no need to go further
@@ -425,12 +391,12 @@ public final class SiriSupport {
 			  }
 
 			  // monitored call
-			  if(stopTime.getStop().getId().equals(monitoredCallStopBean.getId())) {    
+			  if(stopTime.getStopTime().getStop().getId().equals(monitoredCallStopBean.getId())) {    
 				  if(!presentationService.isOnDetour(tripStatus)) {
 					  monitoredVehicleJourney.setMonitoredCall(
-							  getMonitoredCallStructure(stopTime.getStop(), presentationService, 
-									  stopTime.getDistanceAlongTrip(), 
-									  (blockTrip.getDistanceAlongBlock() + stopTime.getDistanceAlongTrip()) - distanceOfVehicleAlongBlock, 
+							  getMonitoredCallStructure(stopTime.getStopTime().getStop(), presentationService, 
+									  stopTime.getDistanceAlongBlock() - blockTrip.getDistanceAlongBlock(), 
+									  stopTime.getDistanceAlongBlock() - distanceOfVehicleAlongBlock, 
 									  visitNumber, blockTripStopsAfterTheVehicle - 1));
 				  }
 
