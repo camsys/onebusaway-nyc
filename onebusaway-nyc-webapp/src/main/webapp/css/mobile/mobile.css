@@ -457,7 +457,6 @@ small {
 	height: 32px;
 	line-height: 30px;
 	display: inline-block;
-	font-size: 0.85em;
 	text-align: center;
 	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
 	-webkit-appearance: none;
@@ -490,6 +489,22 @@ small {
 	-moz-border-radius-bottomright: 0.5em;
 	-webkit-border-top-right-radius: 0.5em;
 	-webkit-border-bottom-right-radius: 0.5em;
+}
+
+#nearby-stops-button-icon {
+	background: url("img/stop_icon.png") no-repeat scroll left center;
+	font-size: 0.85em;
+	display: inline-block;
+}
+
+#nearby-routes-button-icon {
+	background: url("img/route_icon.png") no-repeat scroll left center;
+	font-size: 0.85em;
+	display: inline-block;
+}
+
+.nearby-text {
+	padding-left: 30px;
 }
 
 #nearby-stops-button.down, #nearby-routes-button.down {

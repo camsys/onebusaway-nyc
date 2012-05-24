@@ -80,8 +80,12 @@ OBA.Mobile = (function() {
 		var searchPanelForm = jQuery("#searchPanel form");
 		
 		var splitButton = jQuery("<div></div>").attr("id", "nearby-button-bar");
-		var nearbyStopsBtn = jQuery("<div></div>").attr("id", "nearby-stops-button").addClass("nearby-button").text("Nearby Stops").appendTo(splitButton);
-		var nearbyRoutesBtn = jQuery("<div></div>").attr("id", "nearby-routes-button").addClass("nearby-button").text("Nearby Routes").appendTo(splitButton);
+		
+		var nearbyStopsBtn = jQuery("<div></div>").attr("id", "nearby-stops-button").addClass("nearby-button").appendTo(splitButton);
+		var nearbyRoutesBtn = jQuery("<div></div>").attr("id", "nearby-routes-button").addClass("nearby-button").appendTo(splitButton);
+		
+		nearbyStopsBtn.append(jQuery("<div></div>").attr("id", "nearby-stops-button-icon").append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Stops")));
+		nearbyRoutesBtn.append(jQuery("<div></div>").attr("id", "nearby-routes-button-icon").append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Routes")));
 		
 		searchPanelForm.before(splitButton);
 				
