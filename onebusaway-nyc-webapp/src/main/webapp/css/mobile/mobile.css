@@ -149,7 +149,7 @@ strong {
 
 #branding {
 	margin-top: 1.0em;
-	margin-bottom: 1.0em;
+	margin-bottom: 0.3em;
 }
 
 #footer {
@@ -246,9 +246,12 @@ small {
 #refresh {
 	text-align: center;
 	display: block;
-	background-color: #C0C0C0;
-	border: 2px solid #A0A0A0;
-	width: auto;
+	background-color: rgb(160,160,160);
+	border: 1px solid rgb(130,130,130);
+	width: 302px;
+	-webkit-box-shadow: 0 3px 1px -1px rgb(100,100,100);
+	-moz-box-shadow: 0 3px 1px -1px rgb(100,100,100);
+	box-shadow: 0 3px 1px -1px rgb(100,100,100);
 }
 
 #refresh a {
@@ -285,7 +288,7 @@ small {
 
 .stopResultGroupHeader {
 	font-weight: bold;
-	color: #818181;
+	color: rgb(129,129,129);
 }
 
 .routeHeader {
@@ -402,22 +405,47 @@ small {
 	color: rgb(100,100,100);
 }
 
+.stopHeader {
+	background-image: url("img/header_stop.png");
+	background-color: #ddd;
+	background-repeat: no-repeat;
+	background-position: 4px;
+	width: 302px;
+	min-height: 33px;
+}
+
+.stopHeaderText {
+	font-weight: bold;
+	margin-left: 3em;
+	padding-top: 0.5em;
+}
+
 #nearby-button-bar {
-	background-color: rgb(200,200,200);
 	border: 1px solid rgb(150,150,150);
-	width: 299px;
-	border-radius: 5px;
+	width: 301px;
+	border-radius: 3px;
+	margin-bottom: 0.9em;
 }
 
 #nearby-stops-button, #nearby-routes-button {
 	margin: 0;
 	padding: 0;
-	width: 149;
-	height: 40px;
-	line-height: 40px;
+	width: 150px;
+	height: 30px;
+	line-height: 30px;
 	display: inline-block;
+	font-size: 0.85em;
 	text-align: center;
 	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
+	-webkit-appearance: none;
+	background: rgb(255,255,255); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(229,229,229,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(229,229,229,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* IE10+ */
+	background: linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 ); /* IE6-9 */
 }
 
 #nearby-stops-button {
@@ -425,5 +453,14 @@ small {
 }
 
 #nearby-stops-button.down, #nearby-routes-button.down {
-	background-color: rgb(150,150,150);
+	color: #777;
+	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
+	background: rgb(160,160,160); /* Old browsers */
+	background: -moz-linear-gradient(top, rgba(160,160,160,1) 0%, rgba(240,240,240,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(160,160,160,1)), color-stop(100%,rgba(240,240,240,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* IE10+ */
+	background: linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 ); /* IE6-9 */
 }

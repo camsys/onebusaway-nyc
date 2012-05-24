@@ -23,11 +23,11 @@
 
 <s:iterator value="results.matches">
 	<div class="stop">
-		<p class="stopHeader">
-			<strong> 
+		<div class="stopHeader">
+			<div class="stopHeaderText"> 
 				<s:property value="name" /> 
-			</strong>
-		</p>
+			</div>
+		</div>
 						
 		<s:if test="%{routesWithArrivals.size+routesWithNoVehiclesEnRoute.size+routesWithNoScheduledService.size==0}">
 			<s:if test="%{results.routeIdFilter.size&gt;0}">
