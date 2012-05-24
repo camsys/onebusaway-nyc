@@ -134,7 +134,7 @@ strong {
 /* body padding */
 #branding,#searchPanel,#content,#footer {
 	margin: 0;
-	padding: 1.5em;
+	padding: 0.8em;
 	padding-bottom: 0;
 	padding-top: 0;
 }
@@ -191,8 +191,8 @@ strong {
 	background-color: transparent;
 	border: 0 none;
 	font-family: inherit;
-	font-size: 120%;
 	font-weight: bold;
+	font-size: 1em;
 	height: 25px;
 	width: 252px;
 	margin-left: 8px;
@@ -256,7 +256,7 @@ small {
 
 #refresh a {
 	font-size: 80%;
-	padding: .75em;
+	padding: 0.6em;
 	display: block;
 	font-weight: bold;
 	text-align: center;
@@ -270,12 +270,26 @@ small {
 	padding-top: 0.5em;
 }
 
+.direction-link {
+	font-weight: bold;
+	line-height: 1.1em;
+	margin-left: 0.4em;
+}
+
+.direction-jump {
+	font-size: 0.8em;
+	font-style: italic;
+	font-weight: lighter;
+	line-height: 1.2em;
+}
+
 .directionForRoute {
 	margin-top: 2em;
 }
 
 .directionAtStop {
 	margin-bottom: .5em;
+	margin-left: 0.3em;
 }
 
 .routeList,.routeDescription {
@@ -289,10 +303,11 @@ small {
 .stopResultGroupHeader {
 	font-weight: bold;
 	color: rgb(129,129,129);
+	margin-left: 0.3em;
 }
 
 .routeHeader {
-	padding: 0;
+	padding: 0 0 .3em 0;
 	margin: 0;
 }
 
@@ -359,9 +374,10 @@ small {
 	font-weight: bold;
 }
 
-#not-scheduled-routes a {
-	width: 6.0em;
+.not-scheduled-routes a {
+	width: 3.0em;
 	display: inline-block;
+	line-height: 1.8em;
 }
 
 /* suggestions */
@@ -395,10 +411,12 @@ small {
 
 .stop .muted {
 	color: rgb(100,100,100);
+	margin-left: 0.3em;
 }
 
 .stop a.muted {
 	color: rgb(130,130,130);
+	margin-left: 0.8em;
 }
 
 .stop a:HOVER.muted {
@@ -406,31 +424,26 @@ small {
 }
 
 .stopHeader {
-	background-image: url("img/header_stop.png");
-	background-color: #ddd;
-	background-repeat: no-repeat;
-	background-position: 4px;
+	background-color: #eee;
 	width: 302px;
-	min-height: 33px;
 }
 
 .stopHeaderText {
 	font-weight: bold;
-	margin-left: 3em;
+	margin-left: 0.3em;  
 	padding-top: 0.5em;
+	padding-bottom: 0.5em;
 }
 
 #nearby-button-bar {
-	border: 1px solid rgb(150,150,150);
-	width: 301px;
-	border-radius: 3px;
 	margin-bottom: 0.9em;
+	white-space: nowrap;
 }
 
 #nearby-stops-button, #nearby-routes-button {
 	margin: 0;
 	padding: 0;
-	width: 150px;
+	width: 149px;
 	height: 30px;
 	line-height: 30px;
 	display: inline-block;
@@ -450,6 +463,23 @@ small {
 
 #nearby-stops-button {
 	border-right: 1px solid rgb(150,150,150);
+	border-top: 1px solid rgb(150,150,150);
+	border-left: 1px solid rgb(150,150,150);
+	border-bottom: 1px solid rgb(150,150,150);
+	-moz-border-radius-topleft: 0.5em;
+	-moz-border-radius-bottomleft: 0.5em;
+	-webkit-border-top-left-radius: 0.5em;
+	-webkit-border-bottom-left-radius: 0.5em;
+}
+
+#nearby-routes-button {
+	border-right: 1px solid rgb(150,150,150);
+	border-top: 1px solid rgb(150,150,150);
+	border-bottom: 1px solid rgb(150,150,150);
+	-moz-border-radius-topright: 0.5em;
+	-moz-border-radius-bottomright: 0.5em;
+	-webkit-border-top-right-radius: 0.5em;
+	-webkit-border-bottom-right-radius: 0.5em;
 }
 
 #nearby-stops-button.down, #nearby-routes-button.down {

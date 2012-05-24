@@ -45,10 +45,11 @@
 			</s:if>
 		
 			<ul>
+				<li class="direction-jump">Choose your direction:</li>
 				<s:iterator value="directions">
 					<s:url var="url" value="" anchor="%{directionId}"></s:url>
 					<li>
-						<a href="${url}">
+						<a href="${url}" class="direction-link">
 							to&amp;nbsp;<s:property value="destination" />
 						</a>
 					</li>

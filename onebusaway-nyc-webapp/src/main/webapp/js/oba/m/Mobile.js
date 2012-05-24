@@ -32,7 +32,7 @@ OBA.Mobile = (function() {
 		var refreshBar = jQuery("#refresh")
 					.css("position", "absolute")
 					.css("right", "20")
-					.css("left", "20");
+					.css("left", "12");
 
 		var refreshTimestamp = refreshBar
 								.find("strong");
