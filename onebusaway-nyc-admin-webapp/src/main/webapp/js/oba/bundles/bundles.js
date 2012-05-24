@@ -108,17 +108,17 @@ function directoryOptionChanged() {
 		jQuery("#createDirectoryContents #directoryButton").val("Select");
 		jQuery("#createDirectoryContents #directoryButton").attr("name","method:selectDirectory");
 		jQuery.ajax({
-			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!getExistingDirectories.action",
+			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!requestExistingDirectories.action",
 			type: "GET",
-			dataType: "json",
+			async: false,
 			success: function(response) {
-				alert(response);
+				jQuery("#selectExistingContents").show();
+				
 			},
 			error: function(request) {
 				alert(request.statustext);
 			}
 		});
-		jQuery("#selectExistingContents").show();
 	}
 	
 }

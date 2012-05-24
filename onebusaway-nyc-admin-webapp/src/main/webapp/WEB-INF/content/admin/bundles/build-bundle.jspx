@@ -49,7 +49,7 @@
 						<div class="submitForm">
 							<fieldset>
 								<a href="" class="link">Cancel</a>
-								<s:submit value="Continue" cssClass="submit"/>
+								<input type="button" value="Continue" class="submit"/>
 							</fieldset>
 						</div>
 					</div>
