@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BundleRequestServiceImplTest {
-  private static Logger _log = LoggerFactory.getLogger(FileServiceImplTest.class);
+  private static Logger _log = LoggerFactory.getLogger(BundleRequestServiceImplTest.class);
   private BundleRequestServiceImpl service;
   
   @Before
@@ -77,7 +77,7 @@ public class BundleRequestServiceImplTest {
       Thread.sleep(1000);
       count++;
       // NOTE: this is optional to demonstrate retrieval service
-      res = service.lookup(res.getId());
+      res = service.lookupValidationRequest(res.getId());
       assertNotNull(res);
     }
 

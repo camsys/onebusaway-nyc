@@ -44,31 +44,37 @@ public class FileServiceImpl implements FileService {
   private String _stifPath;
   @Autowired
   private String _buildPath;
-  
+
   @Override
   public void setBucketName(String bucketName) {
     this._bucketName = bucketName;
   }
+
   @Override
   public void setGtfsPath(String gtfsPath) {
     this._gtfsPath = gtfsPath;
   }
+
   @Override
   public String getGtfsPath() {
     return _gtfsPath;
   }
+
   @Override
   public void setStifPath(String stifPath) {
     this._stifPath = stifPath;
   }
+
   @Override
   public String getStifPath() {
     return _stifPath;
   }
+
   @Override
   public void setBuildPath(String buildPath) {
     this._buildPath = buildPath;
   }
+
   @Override
   public String getBuildPath() {
     return _buildPath;
@@ -104,9 +110,9 @@ public class FileServiceImpl implements FileService {
   public boolean createBundleDirectory(String filename) {
     try {
       /*
-       *  a file needs to be written for a directory to exist
-       *  create README file, which could optionally contain meta-data such as
-       *  creator, production mode, etc.
+       * a file needs to be written for a directory to exist create README file,
+       * which could optionally contain meta-data such as creator, production
+       * mode, etc.
        */
       File tmpFile = File.createTempFile("README", "txt");
       String contents = "Root of Bundle Build";
@@ -117,12 +123,15 @@ public class FileServiceImpl implements FileService {
           + "/README.txt", tmpFile);
       PutObjectResult result = _s3.putObject(request);
       // now create tree structure
-//      request = new PutObjectRequest(_bucketName, filename + "/" + this.getGtfsPath(), null);
-//      result = _s3.putObject(request);
-//      request = new PutObjectRequest(_bucketName, filename + "/" + this.getStifPath(), null);
-//      result = _s3.putObject(request);
-//      request = new PutObjectRequest(_bucketName, filename + "/" + this.getBuildPath(), null);
-//      result = _s3.putObject(request);
+      // request = new PutObjectRequest(_bucketName, filename + "/" +
+      // this.getGtfsPath(), null);
+      // result = _s3.putObject(request);
+      // request = new PutObjectRequest(_bucketName, filename + "/" +
+      // this.getStifPath(), null);
+      // result = _s3.putObject(request);
+      // request = new PutObjectRequest(_bucketName, filename + "/" +
+      // this.getBuildPath(), null);
+      // result = _s3.putObject(request);
       return result != null;
     } catch (Exception e) {
       _log.error(e.toString(), e);
@@ -154,10 +163,9 @@ public class FileServiceImpl implements FileService {
     return rows;
   }
 
-  
   @Override
   /**
-   * Retreive the specified key from S3 and store in the given directory.
+   * Retrieve the specified key from S3 and store in the given directory.
    */
   public String get(String key, String tmpDir) {
     FileUtils fs = new FileUtils();
@@ -172,17 +180,60 @@ public class FileServiceImpl implements FileService {
 
   @Override
   /**
+   * push the contents of the directory to S3 at the given key location.
+   */
+  public String put(String key, String file) {
+    if (new File(file).isDirectory()) {
+      File dir = new File(file);
+      for (File contents : dir.listFiles()) {
+        try {
+          put(key, contents.getName(), contents.getCanonicalPath());
+        } catch (IOException ioe) {
+          _log.error(ioe.toString(), ioe);
+        }
+      }
+      return null;
+    }
+    PutObjectRequest request = new PutObjectRequest(this._bucketName, key,
+        new File(file));
+    PutObjectResult result = _s3.putObject(request);
+    return result.getVersionId();
+  }
+
+  public String put(String prefix, String key, String file) {
+    if (new File(file).isDirectory()) {
+      File dir = new File(file);
+      for (File contents : dir.listFiles()) {
+        try {
+          put(prefix + "/" + key, contents.getName(), contents.getCanonicalPath());
+        } catch (IOException ioe) {
+          _log.error(ioe.toString(), ioe);
+        }
+      }
+      return null;
+    }
+    String filename = prefix + "/" + key;
+    _log.info("uploading " + file + " to " + filename);
+    PutObjectRequest request = new PutObjectRequest(this._bucketName, filename,
+        new File(file));
+    PutObjectResult result = _s3.putObject(request);
+    return result.getVersionId();
+
+  }
+
+  @Override
+  /**
    * list the files in the given directory.
    */
   public List<String> list(String directory, int maxResults) {
-    ListObjectsRequest request = new ListObjectsRequest(_bucketName, directory, null,
-        null, maxResults);
+    ListObjectsRequest request = new ListObjectsRequest(_bucketName, directory,
+        null, null, maxResults);
     ObjectListing listing = _s3.listObjects(request);
     List<String> rows = new ArrayList<String>();
     for (S3ObjectSummary summary : listing.getObjectSummaries()) {
       // if its a directory at the root level
       if (!summary.getKey().endsWith("/")) {
-          rows.add(summary.getKey());
+        rows.add(summary.getKey());
       }
     }
     return rows;

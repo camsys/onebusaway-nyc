@@ -1,7 +1,10 @@
 package org.onebusaway.nyc.admin.service.impl;
 
+import org.onebusaway.nyc.admin.model.BundleBuildRequest;
+import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
+import org.onebusaway.nyc.admin.service.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.BundleValidationService;
 import org.onebusaway.nyc.admin.service.FileService;
@@ -19,16 +22,22 @@ import javax.annotation.PostConstruct;
 
 public class BundleRequestServiceImpl implements BundleRequestService {
 
-  protected static Logger _log = LoggerFactory
-			.getLogger(BundleRequestServiceImpl.class);
+  protected static Logger _log = LoggerFactory.getLogger(BundleRequestServiceImpl.class);
   private ExecutorService _executorService = null;
   private BundleValidationService _bundleValidationService;
+  private BundleBuildingService _bundleBuildingService;
+
   private FileService _fileService;
   private Integer jobCounter = 0;
-  private Map<String, BundleResponse> _responseMap = new HashMap<String, BundleResponse>();
+  private Map<String, BundleResponse> _validationMap = new HashMap<String, BundleResponse>();
+  private Map<String, BundleBuildResponse> _buildMap = new HashMap<String, BundleBuildResponse>();
 
   public void setBundleValidationService(BundleValidationService service) {
     _bundleValidationService = service;
+  }
+
+  public void setBundleBuildingService(BundleBuildingService service) {
+    _bundleBuildingService = service;
   }
 
   public void setFileService(FileService service) {
@@ -47,8 +56,55 @@ public class BundleRequestServiceImpl implements BundleRequestService {
    */
   public BundleResponse validate(BundleRequest bundleRequest) {
     BundleResponse bundleResponse = new BundleResponse(getNextId());
-    _responseMap.put(bundleResponse.getId(), bundleResponse);
+    _validationMap.put(bundleResponse.getId(), bundleResponse);
     _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
+    return bundleResponse;
+  }
+
+  @Override
+  /**
+   * Retrieve a BundleResponse object for the given id.
+   */
+  public BundleResponse lookupValidationRequest(String id) {
+    return _validationMap.get(id);
+  }
+
+  @Override
+  /**
+   * Retrieve a BundleBuildResponse object for the given id.
+   */
+  public BundleBuildResponse lookupBuildRequest(String id) {
+    return _buildMap.get(id);
+  }
+
+  @Override
+  /**
+   * cleanup resources.
+   */
+  public void cleanup() {
+    _validationMap.clear();
+  }
+
+  /**
+   * Trivial implementation of creating unique Ids. Security is not a
+   * requirement here.
+   */
+  private String getNextId() {
+    return "" + inc();
+  }
+
+  private Integer inc() {
+    synchronized (jobCounter) {
+      jobCounter++;
+    }
+    return jobCounter;
+  }
+
+  @Override
+  public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
+    BundleBuildResponse bundleResponse = new BundleBuildResponse(getNextId());
+    _buildMap.put(bundleResponse.getId(), bundleResponse);
+    _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
     return bundleResponse;
   }
 
@@ -64,7 +120,8 @@ public class BundleRequestServiceImpl implements BundleRequestService {
     @Override
     public void run() {
       try {
-        String gtfsDirectory = _fileService.getGtfsPath() + File.separator + _request.getBundleDirectory();
+        String gtfsDirectory = _fileService.getGtfsPath() + File.separator
+            + _request.getBundleDirectory();
         for (String s3Key : _fileService.list(gtfsDirectory, -1)) {
           String tmpDir = new FileUtils().createTmpDirectory();
           _response.addStatusMessage("downloading " + s3Key);
@@ -88,35 +145,30 @@ public class BundleRequestServiceImpl implements BundleRequestService {
     }
   }
 
-  @Override
-  /**
-   * Retrieve a BundleResponse object for the given id.
-   */
-  public BundleResponse lookup(String id) {
-    return _responseMap.get(id);
+  private class BuildThread implements Runnable {
+    private BundleBuildRequest _request;
+    private BundleBuildResponse _response;
+
+    public BuildThread(BundleBuildRequest request, BundleBuildResponse response) {
+      _request = request;
+      _response = response;
+    }
+
+    @Override
+    public void run() {
+      try {
+
+        _bundleBuildingService.download(_request, _response);
+        _bundleBuildingService.prepare(_request, _response);
+        _bundleBuildingService.build(_request, _response);
+        _bundleBuildingService.upload(_request, _response);
+        _response.setComplete(true);
+      } catch (Exception any) {
+        _log.error(any.toString(), any);
+        _response.setComplete(true);
+        _response.addException(any);
+      }
+    }
   }
 
-  @Override
-  /**
-   * cleanup resources.
-   */
-  public void cleanup() {
-  _responseMap.clear();
-  } 
-  
-  /**
-   * Trivial implementation of creating unique Ids. Security is not a requirement here.
-   */
-  private String getNextId() {
-    return "" + inc();
-  }
-  
-  private Integer inc() {
-    synchronized (jobCounter) {
-      jobCounter ++;
-    }
-    return jobCounter;
-  }
-  
-  
 }

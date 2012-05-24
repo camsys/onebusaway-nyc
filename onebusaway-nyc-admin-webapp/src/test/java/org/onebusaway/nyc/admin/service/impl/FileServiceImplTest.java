@@ -52,6 +52,7 @@ public class FileServiceImplTest {
 //    fileService.setBucketName("obanyc-bundle-data");
 //    fileService.setGtfsPath("gtfs_latest");
 //    fileService.setStifPath("stif_latest");
+//    fileService.setBuildPath("builds");    
 //    fileService.setup();
   }
 

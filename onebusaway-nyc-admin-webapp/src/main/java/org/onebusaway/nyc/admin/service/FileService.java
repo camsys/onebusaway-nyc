@@ -18,6 +18,8 @@ public interface FileService {
   List<String[]> listBundleDirectories(int maxResults);
 
   String get(String s3path, String tmpDir);
+  String put(String key, String directory);
+  
   List<String> list(String directory, int maxResults);
   
 }

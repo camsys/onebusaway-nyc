@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>onebusaway-nyc</artifactId>
@@ -66,20 +66,30 @@
       <artifactId>onebusaway-nyc-transit-data</artifactId>
       <version>${onebusaway.nyc.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-transit-data-federation-builder</artifactId>
+      <version>${onebusaway.app-modules.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-gtfs</artifactId>
+      <version>${onebusaway.gtfs.version}</version>
+    </dependency>
     <!--  s3 integration -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
       <version>1.3.9</version>
       <exclusions>
-      	<exclusion>
-      		<groupId>org.codehaus.jackson</groupId>
-      		<artifactId>jackson-core-asl</artifactId>
-      	</exclusion>
-      	<exclusion>
-      		<groupId>org.codehaus.jackson</groupId>
-      		<artifactId>jackson-mapper-asl</artifactId>
-      	</exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-core-asl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -93,7 +103,7 @@
       <version>1.9.0</version>
     </dependency-->
   </dependencies>
-  
+
   <profiles>
     <profile>
       <id>cloud</id> <!-- aka services-dev --> <!-- aka staging, production -->
@@ -101,7 +111,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-      	<tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <tdm.host>tdm</tdm.host><!-- assumes domain is set -->
@@ -111,11 +121,11 @@
     <profile>
       <id>local-front-end</id>
       <properties>
-      	 <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
+        <tds.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
         <config.path>http://sms.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
-	     <log4j.appender>stdout</log4j.appender>
+        <log4j.appender>stdout</log4j.appender>
       </properties>
     </profile>
     <profile>
@@ -132,7 +142,7 @@
       <!-- Vehicle tracking webapp offers the TDS -->
       <id>local-ie</id> <!-- aka services-vtw-as-tds --> <!-- single port, aka development -->
       <properties>
-      	<tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+        <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
         <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
         <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
@@ -140,7 +150,7 @@
       </properties>
     </profile>
     <profile>
-      <id>local-multi-port</id> 
+      <id>local-multi-port</id>
       <properties>
         <tds.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
         <vtms.path>http://localhost:8081/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
@@ -150,7 +160,7 @@
       </properties>
     </profile>
   </profiles>
-  
+
   <build>
     <finalName>onebusaway-nyc-admin-webapp</finalName>
     <plugins>
@@ -195,9 +205,9 @@
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>maven-jetty-plugin</artifactId>
         <version>${jetty.version}</version>
-                <configuration>
-                  <contextPath>/</contextPath>
-                </configuration>
+        <configuration>
+          <contextPath>/</contextPath>
+        </configuration>
       </plugin>
     </plugins>
     <resources>
