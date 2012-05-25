@@ -32,7 +32,7 @@ OBA.Mobile = (function() {
 		var refreshBar = jQuery("#refresh")
 					.css("position", "absolute")
 					.css("right", "20")
-					.css("left", "20");
+					.css("left", "12");
 
 		var refreshTimestamp = refreshBar
 								.find("strong");
@@ -80,12 +80,22 @@ OBA.Mobile = (function() {
 		var searchPanelForm = jQuery("#searchPanel form");
 		
 		var splitButton = jQuery("<div></div>").attr("id", "nearby-button-bar");
-		jQuery("<div></div>").attr("id", "nearby-stops-button").addClass("nearby-button").text("Nearby Stops").appendTo(splitButton);
-		jQuery("<div></div>").attr("id", "nearby-routes-button").addClass("nearby-button").text("Nearby Routes").appendTo(splitButton);
+		
+		var nearbyStopsBtn = jQuery("<div></div>").attr("id", "nearby-stops-button").addClass("nearby-button").appendTo(splitButton);
+		var nearbyRoutesBtn = jQuery("<div></div>").attr("id", "nearby-routes-button").addClass("nearby-button").appendTo(splitButton);
+		
+		nearbyStopsBtn.append(jQuery("<div></div>").attr("id", "nearby-stops-button-icon").append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Stops")));
+		nearbyRoutesBtn.append(jQuery("<div></div>").attr("id", "nearby-routes-button-icon").append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Routes")));
 		
 		searchPanelForm.before(splitButton);
-		
+				
 		$( ".nearby-button" ).mousedown(function() {
+			// change other button to mouse up
+			if (jQuery(this).attr("id") === "nearby-stops-button") {
+				nearbyRoutesBtn.removeClass("down");
+			} else {
+				nearbyStopsBtn.removeClass("down");
+			}
 			jQuery(this).addClass("down");
 		});
 		

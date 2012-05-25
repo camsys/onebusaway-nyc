@@ -25,14 +25,14 @@
 	<c:choose>
 		<c:when test="${resultsOriginatedFromGeocode}">
 			<h3 class="noMatches">
-				<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
-				No stops nearby. <a href="${url}">Search Tips</a>
+				<s:url var="url" namespace="/m/wiki/Help" action="Index" />
+				No stops nearby. <a href="${url}">Search Tips . . .</a>
 			</h3>
 		</c:when>
 		<c:otherwise>
 			<h3 class="noMatches">
-				<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
-				No matches. <a href="${url}">Search Tips</a>
+				<s:url var="url" namespace="/m/wiki/Help" action="Index" />
+				No matches. <a href="${url}">Search Tips . . .</a>
 			</h3>
 		</c:otherwise>
 	</c:choose>

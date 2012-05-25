@@ -134,7 +134,7 @@ strong {
 /* body padding */
 #branding,#searchPanel,#content,#footer {
 	margin: 0;
-	padding: 1.5em;
+	padding: 0.8em;
 	padding-bottom: 0;
 	padding-top: 0;
 }
@@ -145,11 +145,12 @@ strong {
 
 #searchPanel {
 	padding-top: .25em;
+	padding-bottom: .6em;
 }
 
 #branding {
 	margin-top: 1.0em;
-	margin-bottom: 1.0em;
+	margin-bottom: 0.3em;
 }
 
 #footer {
@@ -159,42 +160,48 @@ strong {
 
 /* search panel */
 #searchPanel form {
-	background-image: url("img/search_background.png");
-	background-repeat: no-repeat;
 	position: relative;
-	width: 302px;
-	height: 40px;
+	min-width: 250px;
+	max-width: 94%;
+	height: 34px;
 	display: block;
+	-moz-box-shadow: inset 0 3px 8px rgba(232,232,232,1);
+   	-webkit-box-shadow: inset 0 3px 8px rgba(232,232,232,1);
+   	box-shadow: inset 0 3px 8px rgba(232,232,232,1);
+   	border: 1px solid rgb(150,150,150);
+   	margin-bottom: 0.3em;
 }
 
 #searchPanel .s {
-	background: url("img/search_icon.png") no-repeat scroll 0 0 transparent;
+	background: url("img/search_icon.png") no-repeat scroll 0 0 rgb(242,242,242);
 	border: 0 none;
+	border-left: 5px solid rgb(242,242,242);
 	cursor: pointer;
-	height: 30px;
-	margin: 3px 6px 0 0;
+	height: 32px;
+	width: 36px;
 	position: absolute;
-	right: 0;
-	top: 0;
+	right: 0px;
+	top: 2px;
 	display: block;
 	text-indent: -999px;
 	font-size: 0;
 	line-height: 0;
-	width: 30px;
 }
 
 #searchPanel .s.loading {
-	background: url("img/search_loader.gif") no-repeat scroll 0 0 transparent;
+	background: url("img/search_loader.gif") no-repeat scroll 0 0 rgb(242,242,242);
+	height: 32px;
+	top: 2px;
 }
 
 #searchPanel .q {
 	background-color: transparent;
 	border: 0 none;
 	font-family: inherit;
-	font-size: 120%;
 	font-weight: bold;
-	height: 25px;
-	width: 252px;
+	font-size: 1em;
+	height: 26px;
+	width: 85%;
 	margin-left: 8px;
 	margin-top: 6px;
 }
@@ -246,25 +253,41 @@ small {
 #refresh {
 	text-align: center;
 	display: block;
-	background-color: #C0C0C0;
-	border: 2px solid #A0A0A0;
-	width: auto;
+	background-color: rgb(160,160,160);
+	border: 1px solid rgb(130,130,130);
+	min-width: 250px;
+	max-width: 93%;
+	-webkit-box-shadow: 0 3px 1px -1px rgb(100,100,100);
+	-moz-box-shadow: 0 3px 1px -1px rgb(100,100,100);
+	box-shadow: 0 3px 1px -1px rgb(100,100,100);
 }
 
 #refresh a {
 	font-size: 80%;
-	padding: .75em;
+	padding: 0.6em;
 	display: block;
 	font-weight: bold;
 	text-align: center;
 	text-transform: uppercase;
 	color: #FFFFFF;
-	width: 100%;
 }
 
 /* content panel */
 .ambiguousLocations,.examples,.stop,.route {
 	padding-top: 0.5em;
+}
+
+.direction-link {
+	font-weight: bold;
+	line-height: 1.1em;
+	margin-left: 0.4em;
+}
+
+.direction-jump {
+	font-size: 0.8em;
+	font-style: italic;
+	font-weight: lighter;
+	line-height: 1.2em;
 }
 
 .directionForRoute {
@@ -273,6 +296,7 @@ small {
 
 .directionAtStop {
 	margin-bottom: .5em;
+	margin-left: 0.3em;
 }
 
 .routeList,.routeDescription {
@@ -285,11 +309,12 @@ small {
 
 .stopResultGroupHeader {
 	font-weight: bold;
-	color: #818181;
+	color: rgb(129,129,129);
+	margin-left: 0.3em;
 }
 
 .routeHeader {
-	padding: 0;
+	padding: 0 0 .3em 0;
 	margin: 0;
 }
 
@@ -356,9 +381,10 @@ small {
 	font-weight: bold;
 }
 
-#not-scheduled-routes a {
-	width: 6.0em;
+.not-scheduled-routes a {
+	width: 3.0em;
 	display: inline-block;
+	line-height: 1.8em;
 }
 
 /* suggestions */
@@ -392,38 +418,113 @@ small {
 
 .stop .muted {
 	color: rgb(100,100,100);
+	margin-left: 0.3em;
 }
 
 .stop a.muted {
 	color: rgb(130,130,130);
+	margin-left: 0.8em;
 }
 
 .stop a:HOVER.muted {
 	color: rgb(100,100,100);
 }
 
+.stopHeader {
+	background-color: #eee;
+	min-width: 250px;
+	max-width: 96%;
+}
+
+.stopHeaderText {
+	font-weight: bold;
+	margin-left: 0.3em;  
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+}
+
 #nearby-button-bar {
-	background-color: rgb(200,200,200);
-	border: 1px solid rgb(150,150,150);
-	width: 299px;
-	border-radius: 5px;
+	margin-bottom: 0.9em;
+	white-space: nowrap;
+	max-width: 98%;
 }
 
 #nearby-stops-button, #nearby-routes-button {
 	margin: 0;
 	padding: 0;
-	width: 149;
-	height: 40px;
-	line-height: 40px;
+	min-width: 125px;
+	width: 48%;
+	height: 32px;
+	line-height: 30px;
 	display: inline-block;
 	text-align: center;
 	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
+	-webkit-appearance: none;
+	background: rgb(255,255,255); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(229,229,229,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(229,229,229,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* IE10+ */
+	background: linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 ); /* IE6-9 */
 }
 
 #nearby-stops-button {
 	border-right: 1px solid rgb(150,150,150);
+	border-top: 1px solid rgb(150,150,150);
+	border-left: 1px solid rgb(150,150,150);
+	border-bottom: 1px solid rgb(150,150,150);
+	-moz-border-radius-topleft: 0.5em;
+	-moz-border-radius-bottomleft: 0.5em;
+	-webkit-border-top-left-radius: 0.5em;
+	-webkit-border-bottom-left-radius: 0.5em;
+}
+
+#nearby-routes-button {
+	border-right: 1px solid rgb(150,150,150);
+	border-top: 1px solid rgb(150,150,150);
+	border-bottom: 1px solid rgb(150,150,150);
+	-moz-border-radius-topright: 0.5em;
+	-moz-border-radius-bottomright: 0.5em;
+	-webkit-border-top-right-radius: 0.5em;
+	-webkit-border-bottom-right-radius: 0.5em;
+}
+
+#nearby-stops-button-icon {
+	background: url("img/stop_icon.png") no-repeat scroll left center;
+	font-size: 0.85em;
+	display: inline-block;
+}
+
+#nearby-routes-button-icon {
+	background: url("img/route_icon.png") no-repeat scroll left center;
+	font-size: 0.85em;
+	display: inline-block;
+}
+
+.nearby-text {
+	padding-left: 22px;
 }
 
 #nearby-stops-button.down, #nearby-routes-button.down {
-	background-color: rgb(150,150,150);
+	color: #777;
+	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
+	background: rgb(160,160,160); /* Old browsers */
+	background: -moz-linear-gradient(top, rgba(160,160,160,1) 0%, rgba(240,240,240,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(160,160,160,1)), color-stop(100%,rgba(240,240,240,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* IE10+ */
+	background: linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 ); /* IE6-9 */
+}
+
+#cant-find {
+	margin-top: 1.2em;
+	line-height: 160%;
+}
+
+#cant-find h2 {
+	font-weight: bold;
 }
