@@ -172,7 +172,8 @@ OBA.Popups = (function() {
 		jQuery.each(alertLinks, function(_, alertLink) {
 			var element = jQuery(alertLink);
 			var idParts = element.attr("id").split("|");
-			var routeId = idParts[1];
+			var stopId = idParts[1];
+			var routeId = idParts[2];
 			var routeIdWithoutAgency = routeId.split("_")[1];
 			
 			element.click(function(e) {
@@ -180,7 +181,7 @@ OBA.Popups = (function() {
 				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
 				if (alertElement.length === 0) {
 					expandAlerts = true;
-					window.location = "#" + stopIdWithoutAgency + "%20" + routeIdWithoutAgency;
+					window.location = "#" + stopId + "%20" + routeIdWithoutAgency;
 				} else {
 					$("#searchbar").animate({
 						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
@@ -276,7 +277,7 @@ OBA.Popups = (function() {
 		// service alerts
 		//html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);
 		if (routeName in alertData) {
-			html += ' <a id="alert-link|' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
+			html += ' <a id="alert-link||' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
 		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
@@ -427,7 +428,7 @@ OBA.Popups = (function() {
 				html += '<li class="route">';
 				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
 				if (mvj.LineRef in alertData) {
-					html += ' <a id="alert-link|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
 				}
 				html += '</li>';
 
@@ -460,7 +461,7 @@ OBA.Popups = (function() {
 				html += '<li class="route">';
 				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
 				if (d.id in alertData) {
-					html += ' <a id="alert-link|' + d.id + '" class="alert-link" href="#">Alert</a>';
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + d.id + '" class="alert-link" href="#">Alert</a>';
 				}
 				html += '</li>';
 				
