@@ -53,7 +53,15 @@
 					</div>
 				</div>
 				<div id="selectExistingContents">
-					<ul id="existingDirectories"></ul>
+					<label class="adminLabel">Select an existing bundle directory from below:</label>
+					<div>
+						<ul id="currentDirectories">
+							<li>Directories</li>
+							<s:iterator value="existingDirectories" status="directoryStatus">
+								<li><s:property value="name" /><s:property value="type" /><s:property value="creationTimestamp" /></li>
+							</s:iterator>
+						</ul>
+					</div>
 				</div>
 				<div id="advancedOptions">
 					<s:url var="url" value="/css/img/arrow-right-3.png" />
@@ -69,7 +77,7 @@
 					<label id="commentLabel">Comments:</label>
 					<div id="commentBox">
 						<s:textarea name="comments" cssClass="comments"></s:textarea>
-						<s:submit val="Add Comment" cssClass="formButton" />
+						<input type="button" value="Continue" class="submit"/>
 					</div>
 				</div>
 				<div id="uploadFiles">

@@ -160,6 +160,7 @@
 
 #createDirectory #selectExistingContents {
 	display:none;
+	padding-left: 30px;
 }
 
 #createDirectory #createDirectoryContents .directoryName {

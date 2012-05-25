@@ -1,12 +1,13 @@
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
+import java.util.ArrayList;
 import java.util.List;
-
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
+import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
@@ -14,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
- * Base class to hold properties and methods required across all bundle building UI pages
+ * Action class that holds properties and methods required across all bundle building UI pages
  * @author abelsare
  *
  */
@@ -31,9 +32,12 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private boolean directoryCreated;
 	private boolean productionTarget;
 	private String comments;
+	private List<ExistingDirectory> existingDirectories;
 	private FileService fileService;
 	private BundleRequestService bundleRequestService;
 	private static final int MAX_RESULTS = -1;
+	
+	
 	
 	
 	/**
@@ -58,9 +62,15 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 * Returns the existing directories in the current bucket on AWS
 	 * @return list of existing directories
 	 */
-	public List<String[]> getExistingDirectories() {
+	public void requestExistingDirectories() {
 		List<String[]> existingDirectories = fileService.listBundleDirectories(MAX_RESULTS);
-		return existingDirectories;
+		List<ExistingDirectory> directories = new ArrayList<ExistingDirectory>();
+		for(String[] existingDirectory : existingDirectories) {
+			ExistingDirectory directory = new ExistingDirectory(existingDirectory[0], existingDirectory[1], 
+					existingDirectory[2]);
+			directories.add(directory);
+		}
+		setExistingDirectories(directories);
 	}
 	
 	
@@ -181,6 +191,20 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	@Autowired
 	public void setBundleRequestService(BundleRequestService bundleRequestService) {
 		this.bundleRequestService = bundleRequestService;
+	}
+
+	/**
+	 * @return the existingDirectories
+	 */
+	public List<ExistingDirectory> getExistingDirectories() {
+		return existingDirectories;
+	}
+
+	/**
+	 * @param existingDirectories the existingDirectories to set
+	 */
+	public void setExistingDirectories(List<ExistingDirectory> existingDirectories) {
+		this.existingDirectories = existingDirectories;
 	}
 	
 
