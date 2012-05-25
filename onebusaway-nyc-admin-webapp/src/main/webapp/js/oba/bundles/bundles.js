@@ -46,7 +46,18 @@ jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
 jQuery(document).ready(function() {
 	jQuery("#tabs").tabs();
-	
+	jQuery("#currentDirectories").selectable({ 
+		stop: function() {
+			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
+				  return $(element).text();  
+				}); 
+			if (names.length > 0) {
+				var $element = jQuery("#manage-bundles_directoryName");
+				// only return the first selection, as multiple selections are possible
+				$element.attr("value", names[0]);
+			}
+		}
+	});
 	//toggle advanced option contents
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 			'click' : toggleAdvancedOptions	});
@@ -56,6 +67,8 @@ jQuery(document).ready(function() {
 	
 	//Handle validate button click event
 	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
+	
+	
 	
 });
 
@@ -84,18 +97,20 @@ function directoryOptionChanged() {
 		//Change the button text and show select directory list
 		jQuery("#createDirectoryContents #directoryButton").val("Select");
 		jQuery("#createDirectoryContents #directoryButton").attr("name","method:selectDirectory");
-		jQuery.ajax({
-			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!requestExistingDirectories.action",
-			type: "GET",
-			async: false,
-			success: function(response) {
-				jQuery("#selectExistingContents").show();
-				
-			},
-			error: function(request) {
-				alert(request.statustext);
-			}
-		});
+		jQuery("#selectExistingContents").show();
+		// TODO replace the exitingDirectories form call with this below
+//		jQuery.ajax({
+//			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!requestExistingDirectories.action",
+//			type: "GET",
+//			async: false,
+//			success: function(response) {
+//				jQuery("#selectExistingContents").show();
+//				
+//			},
+//			error: function(request) {
+//				alert(request.statustext);
+//			}
+//		});
 	}
 	
 }

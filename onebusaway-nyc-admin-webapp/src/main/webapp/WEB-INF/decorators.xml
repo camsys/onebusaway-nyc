@@ -28,7 +28,7 @@
         <pattern>/admin/index.*</pattern>
 		<pattern>/admin/register-user.*</pattern>
         <pattern>/admin/api-key.*</pattern>
-		<pattern>/admin/manage-bundles.*</pattern>
+		<pattern>/admin/bundles/manage-bundles.*</pattern>
         <pattern>/admin/barcode.*</pattern>
 	</decorator>
 

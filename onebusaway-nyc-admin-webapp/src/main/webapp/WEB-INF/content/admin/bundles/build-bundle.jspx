@@ -25,7 +25,6 @@
 		<div class="tabHeader">
 			<label class="headerLabel">Build Bundle</label>
 		</div>
-		<s:form action="" cssClass="bundleForm">
 			<div id="buildBundle">
 				<label class="bundleHeader">Set Notifications, Name And
 					Build Bundle</label>
@@ -50,7 +49,6 @@
 					</fieldset>
 				</div>
 			</div>
-		</s:form>
 	</div>
 </div>
 </html>

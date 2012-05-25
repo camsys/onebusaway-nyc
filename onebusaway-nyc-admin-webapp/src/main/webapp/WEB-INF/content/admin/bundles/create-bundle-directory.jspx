@@ -25,7 +25,6 @@
 		<div class="tabHeader">
 			<label class="headerLabel">Create Bundle Directory</label>
 		</div>
-		<s:form action="manage-bundles" cssClass="bundleForm">
 			<div id="createDirectory">
 				<label class="bundleHeader">1. Select or Create New Bundle
 					Directory</label>
@@ -57,8 +56,8 @@
 					<div>
 						<ul id="currentDirectories">
 							<li>Directories</li>
-							<s:iterator value="existingDirectories" status="directoryStatus">
-								<li><s:property value="name" /><s:property value="type" /><s:property value="creationTimestamp" /></li>
+							<s:iterator value="%{existingDirectories}" status="directoryStatus">
+								<li><strong><s:property value="name" /></strong><s:property value="type" /><s:property value="creationTimestamp" /></li>
 							</s:iterator>
 						</ul>
 					</div>
@@ -94,7 +93,6 @@
 					</fieldset>
 				</div>
 			</div>
-		</s:form>
 	</div>
 </div>
 </html>

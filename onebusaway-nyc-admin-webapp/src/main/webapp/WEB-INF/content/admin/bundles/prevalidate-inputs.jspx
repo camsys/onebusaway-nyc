@@ -25,7 +25,6 @@
 		<div class="tabHeader">
 			<label class="headerLabel">Validate Bundle Inputs</label>
 		</div>
-		<s:form action="manage-bundles" cssClass="bundleForm">
 			<div id="prevalidateInputs">
 				<label class="bundleHeader">Pre-Bundle Building Validation
 					of GTFS and STIF Files</label>
@@ -53,7 +52,6 @@
 					</fieldset>
 				</div>
 			</div>
-		</s:form>
 	</div>
 </div>
 </html>

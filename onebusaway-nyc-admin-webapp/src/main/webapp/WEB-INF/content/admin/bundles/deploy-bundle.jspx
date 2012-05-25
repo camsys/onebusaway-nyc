@@ -25,14 +25,12 @@
 		<div class="tabHeader">
 			<label class="headerLabel">Deploy Bundle</label>
 		</div>
-		<s:form action="">
 			<div class="submitForm">
 				<fieldset>
 					<a href="" class="link">Cancel</a>
 					<input type="button" value="Continue" class="submit"/>
 				</fieldset>
 			</div>
-		</s:form>
 	</div>
 </div>
 </html>

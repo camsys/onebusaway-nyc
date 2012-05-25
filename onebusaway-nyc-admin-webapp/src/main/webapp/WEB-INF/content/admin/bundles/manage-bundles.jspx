@@ -53,6 +53,7 @@
 </script>
 </head>
 <body>
+<s:form namespace="/admin/bundles" action="manage-bundles" cssClass="bundleForm">
 	<div id="content">
 		<div id="text">
 			<h2>Transit Data Bundle Utility</h2>
@@ -69,27 +70,29 @@
 				</ul>
 
 				<div id="Create">
-					<jsp:include page="bundles/create-bundle-directory.jspx">
+					<jsp:include page="create-bundle-directory.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>
 				<div id="Validate">
-					<jsp:include page="bundles/prevalidate-inputs.jspx">
+					<jsp:include page="prevalidate-inputs.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>
 				<div id="Build">
-					<jsp:include page="bundles/build-bundle.jspx">
+					<jsp:include page="build-bundle.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>
 				<div id="Deploy">
-					<jsp:include page="bundles/deploy-bundle.jspx">
+					<jsp:include page="deploy-bundle.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>
 			</div>
 		</div>
 	</div>
+</s:form>
 </body>
+
 </html>
