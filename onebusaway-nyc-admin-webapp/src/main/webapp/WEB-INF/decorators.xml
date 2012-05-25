@@ -21,11 +21,15 @@
 	<excludes>
         <pattern>/js/*</pattern>
         <pattern>/css/*</pattern>
-        <pattern>/admin/bundles/*</pattern>
+        <!--  <pattern>/admin/bundles/*</pattern> -->
 	</excludes>
 
 	<decorator name="decorate" page="decorate.jspx">
-		<pattern>/*</pattern>
+        <pattern>/admin/index.*</pattern>
+		<pattern>/admin/register-user.*</pattern>
+        <pattern>/admin/api-key.*</pattern>
+		<pattern>/admin/manage-bundles.*</pattern>
+        <pattern>/admin/barcode.*</pattern>
 	</decorator>
 
 </decorators>

@@ -20,41 +20,37 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
-	<head>
-		<s:url var="url" value="/css/bundles.css"/>
-		<link rel="stylesheet" type="text/css" href="${url}"/>
-	</head>
-	<body>
-		<div id="content">
-			<div id="text">
-				<div class="tabHeader">
-					<label class="headerLabel">Build Bundle</label>
-				</div>
-				<s:form action="" cssClass="bundleForm">
-					<div id="buildBundle">
-						<label class="bundleHeader">Set Notifications, Name And Build Bundle</label>
-						<div class="directoryLabels">
-							<label class="adminLabel directoryLabel">Bundle Directory :</label>
-							<label class="adminLabel directoryLabel"><s:property value="bundleDirectory"/></label>
-						</div>
-						<div id="bundleContents">
-							<fieldset>
-								<p>(Optional) Bundle building can take more than 10 minutes. Select a way to be notified when the bundle is complete:
-								</p>
-								<label>Email</label>
-								<s:checkbox name="emailNotification" cssClass="inline" />
-								<s:textfield name="emailAddress" />
-							</fieldset>
-						</div>
-						<div class="submitForm">
-							<fieldset>
-								<a href="" class="link">Cancel</a>
-								<s:submit value="Continue" cssClass="submit"/>
-							</fieldset>
-						</div>
-					</div>
-				</s:form>
-			</div>
+<div id="content">
+	<div id="text">
+		<div class="tabHeader">
+			<label class="headerLabel">Build Bundle</label>
 		</div>
-	</body>
+		<s:form action="" cssClass="bundleForm">
+			<div id="buildBundle">
+				<label class="bundleHeader">Set Notifications, Name And
+					Build Bundle</label>
+				<div class="directoryLabels">
+					<label class="adminLabel directoryLabel">Bundle Directory :</label>
+					<label class="adminLabel directoryLabel"><s:property
+							value="bundleDirectory" /></label>
+				</div>
+				<div id="bundleContents">
+					<fieldset>
+						<p>(Optional) Bundle building can take more than 10 minutes.
+							Select a way to be notified when the bundle is complete:</p>
+						<label>Email</label>
+						<s:checkbox name="emailNotification" cssClass="inline" />
+						<s:textfield name="emailAddress" />
+					</fieldset>
+				</div>
+				<div class="submitForm">
+					<fieldset>
+						<a href="" class="link">Cancel</a>
+						<s:submit value="Continue" cssClass="submit" />
+					</fieldset>
+				</div>
+			</div>
+		</s:form>
+	</div>
+</div>
 </html>

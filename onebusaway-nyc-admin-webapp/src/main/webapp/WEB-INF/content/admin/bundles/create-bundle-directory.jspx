@@ -20,86 +20,73 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
-	<head>
-		<s:url var="url" value="/css/bundles.css"/>
-		<link rel="stylesheet" type="text/css" href="${url}"/>
-		
-		<s:url var="url" value="/js/lib/jquery.js">
-		</s:url>
-		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-		
-		<s:url var="url" value="/js/lib/jquery.ui.js">
-		</s:url>
-		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-		
-		<s:url var="url" value="/js/oba/bundles/bundles.js"/>
-		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-		 
-	</head>
-	<body>
-		<div id="content">
-			<div id="text">
-				<div class="tabHeader">
-					<label class="headerLabel">Create Bundle Directory</label>
-				</div>
-				<s:form action="manage-bundles" cssClass="bundleForm"> 
-					<div id="createDirectory">
-						<label class="bundleHeader">1. Select or Create New Bundle Directory</label>
-						<div id="directoryOptions">
-							<input type="radio" name="options" id="create" checked="checked"/>
-							<label for="create" class="horizontalRadio">Create New Bundle Directory</label>
-							<input type="radio" name="options" id="select"/>
-							<label for="select" class="horizontalRadio">Select Existing Directory</label>
-						</div>
-						<div id="createDirectoryContents">
-							<s:textfield name="directoryName" cssClass="directoryName"/>
-							<s:submit id="directoryButton" value="Create" cssClass="formButton" method="createDirectory"/>
-							<div id="createDirectoryResult">
-								<s:if test="%{#directoryCreated == true}">
-									<s:url var="url" value="/css/img/dialog-accept-2.png"/>
-									<img id="resultImage" src="${url}" alt="Image not found"/>
-								</s:if>
-								<s:else>
-									<s:url var="url" value="/css/img/warning_16.png"/>
-									<img id="resultImage" src="${url}" alt="Image not found"/>
-								</s:else>
-								<s:property value="createDirectoryMessage"/>
-							</div>
-						</div>
-						<div id="selectExistingContents">
-							<ul id="existingDirectories"></ul>
-						</div>
-						<div id="advancedOptions">
-							<s:url var="url" value="/css/img/arrow-right-3.png" />
-							<img src="${url}" alt="Not found" id="expand"/>
-							<label class="adminLabel">Advanced Options</label>
-						</div>
-						<div id="advancedOptionsContents">
-							<div id="production">
-								<label id="productionLabel" class="adminLabel">Production Target</label>
-								<s:checkbox cssClass="productionCheck" name="productionTarget"></s:checkbox>
-							</div>
-							<label id="commentLabel">Comments:</label>
-							<div id="commentBox">
-								<s:textarea name="comments" cssClass="comments"></s:textarea>
-								<s:submit val="Add Comment" cssClass="formButton"/>
-							</div>
-						</div>
-						<div id="uploadFiles">
-							<label class="bundleHeader">2. Upload Files</label>
-							<div id="instruction">
-								<p>Before continuing, please use the AWS Management Console to upload bundle files to the new directory.</p>
-							</div>
-						</div>
-						<div class="submitForm">
-							<fieldset>
-								<a href="" class="link">Cancel</a>
-								<s:submit value="Continue" cssClass="submit"/>
-							</fieldset>
-						</div>
-					</div>
-				</s:form>
-			</div>
+<div id="content">
+	<div id="text">
+		<div class="tabHeader">
+			<label class="headerLabel">Create Bundle Directory</label>
 		</div>
-	</body>
+		<s:form action="manage-bundles" cssClass="bundleForm">
+			<div id="createDirectory">
+				<label class="bundleHeader">1. Select or Create New Bundle
+					Directory</label>
+				<div id="directoryOptions">
+					<input type="radio" name="options" id="create" checked="checked" />
+					<label for="create" class="horizontalRadio">Create New
+						Bundle Directory</label> <input type="radio" name="options" id="select" />
+					<label for="select" class="horizontalRadio">Select Existing
+						Directory</label>
+				</div>
+				<div id="createDirectoryContents">
+					<s:textfield name="directoryName" cssClass="directoryName" />
+					<s:submit id="directoryButton" value="Create" cssClass="formButton"
+						method="createDirectory" />
+					<div id="createDirectoryResult">
+						<s:if test="%{#directoryCreated == true}">
+							<s:url var="url" value="/css/img/dialog-accept-2.png" />
+							<img id="resultImage" src="${url}" alt="Image not found" />
+						</s:if>
+						<s:else>
+							<s:url var="url" value="/css/img/warning_16.png" />
+							<img id="resultImage" src="${url}" alt="Image not found" />
+						</s:else>
+						<s:property value="createDirectoryMessage" />
+					</div>
+				</div>
+				<div id="selectExistingContents">
+					<ul id="existingDirectories"></ul>
+				</div>
+				<div id="advancedOptions">
+					<s:url var="url" value="/css/img/arrow-right-3.png" />
+					<img src="${url}" alt="Not found" id="expand" /> <label
+						class="adminLabel">Advanced Options</label>
+				</div>
+				<div id="advancedOptionsContents">
+					<div id="production">
+						<label id="productionLabel" class="adminLabel">Production
+							Target</label>
+						<s:checkbox cssClass="productionCheck" name="productionTarget"></s:checkbox>
+					</div>
+					<label id="commentLabel">Comments:</label>
+					<div id="commentBox">
+						<s:textarea name="comments" cssClass="comments"></s:textarea>
+						<s:submit val="Add Comment" cssClass="formButton" />
+					</div>
+				</div>
+				<div id="uploadFiles">
+					<label class="bundleHeader">2. Upload Files</label>
+					<div id="instruction">
+						<p>Before continuing, please use the AWS Management Console to
+							upload bundle files to the new directory.</p>
+					</div>
+				</div>
+				<div class="submitForm">
+					<fieldset>
+						<a href="" class="link">Cancel</a>
+						<s:submit value="Continue" cssClass="submit" />
+					</fieldset>
+				</div>
+			</div>
+		</s:form>
+	</div>
+</div>
 </html>

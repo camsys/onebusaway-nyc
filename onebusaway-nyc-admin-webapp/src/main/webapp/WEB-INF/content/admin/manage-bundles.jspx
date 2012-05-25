@@ -20,46 +20,76 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
-	<head>
+<head>
+<!-- todo find out which css elements are required and move to bundles.css --> 
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
+	rel="stylesheet" type="text/css" />
+
+<s:url var="url" value="/css/bundles.css" />
+<link rel="stylesheet" type="text/css" href="${url}">
+	<!-- //prevent jspx minimization -->
+</link>
+
+<s:url var="url" value="/js/lib/jquery.js">
+</s:url>
+<script type="text/javascript" src="${url}">
+<!-- //prevent jspx minimization -->
 	
-		 <s:url var="url" value="/css/bundles.css"/>
-		 <link rel="stylesheet" type="text/css" href="${url}"/>
-		
-	  
-	  	<s:url var="url" value="/js/lib/jquery.js">
-		</s:url>
-		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-		
-		<s:url var="url" value="/js/lib/jquery.ui.js">
-		</s:url>
-		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-		
-		<s:url var="url" value="/js/oba/bundles/bundles.js">
-		</s:url>
-		<script type="text/javascript" src="${url}"><!-- //prevent jspx minimization --></script>
-	 	
-	</head>
-	<body>
-		<div id="content">
-			<div id="text">
-				<h2>Transit Data Bundle Utility</h2>
-				<s:form action="manage-bundles" cssClass="bundleForm">
-					<ul id="breadcrumb">
-						<li><a href="#Create" title="Create Directory">Create Directory</a></li>
-						<li><a href="#Validate" title="Pre-validate inputs">Pre-validate inputs</a></li>
-						<li><a href="#Build" title="Build And Validate">Build And Validate</a></li>
-						<li><a href="#Deploy" title="Deploy Bundle">Deploy Bundle</a></li>
-					</ul>
-				
-				
-				<div id="breadcrumb_contents_container">
-					<div id="Create" />
-					<div id="Validate" />
-					<div id="Build" />
-					<div id="Deploy" />
+</script>
+
+<s:url var="url" value="/js/lib/jquery.ui.js">
+</s:url>
+<script type="text/javascript" src="${url}">
+<!-- //prevent jspx minimization -->
+	
+</script>
+
+<s:url var="url" value="/js/oba/bundles/bundles.js">
+	<!-- //prevent jspx minimization -->
+</s:url>
+<script type="text/javascript" src="${url}">
+<!-- //prevent jspx minimization -->
+	
+</script>
+</head>
+<body>
+	<div id="content">
+		<div id="text">
+			<h2>Transit Data Bundle Utility</h2>
+			<div id="tabs">
+				<ul id="breadcrumb">
+					<li><a href="#Create" title="Create Directory"><span>Create
+								Directory</span></a></li>
+					<li><a href="#Validate" title="Pre-validate inputs"><span>Pre-validate
+								inputs</span></a></li>
+					<li><a href="#Build" title="Build And Validate"><span>Build
+								And Validate</span></a></li>
+					<li><a href="#Deploy" title="Deploy Bundle"><span>Deploy
+								Bundle</span></a></li>
+				</ul>
+
+				<div id="Create">
+					<jsp:include page="bundles/create-bundle-directory.jspx">
+						<!--  space -->
+					</jsp:include>
 				</div>
-				</s:form>
+				<div id="Validate">
+					<jsp:include page="bundles/prevalidate-inputs.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Build">
+					<jsp:include page="bundles/build-bundle.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Deploy">
+					<jsp:include page="bundles/deploy-bundle.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
 			</div>
 		</div>
-	</body>
+	</div>
+</body>
 </html>

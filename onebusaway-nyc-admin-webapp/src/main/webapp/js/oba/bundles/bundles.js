@@ -45,10 +45,7 @@ OBA.Bundles = function() {
 jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
 jQuery(document).ready(function() {
-	
-	
-	//handle tab clicks
-	jQuery("#breadcrumb").bind('click', onTabClick);
+	jQuery("#tabs").tabs();
 	
 	//toggle advanced option contents
 	jQuery("#createDirectory #advancedOptions #expand").bind({
@@ -61,26 +58,6 @@ jQuery(document).ready(function() {
 	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
 	
 });
-
-function onTabClick(event) {
-	var $target = event.target;
-	
-	if($target.hash == "#Create") {
-		jQuery("#Create").load("bundles/create-bundle-directory.action");
-	}
-	if($target.hash == "#Validate") {
-		jQuery("#Validate").load("bundles/prevalidate-inputs.action");
-	}
-	if($target.hash == "#Build") {
-		jQuery("#Build").load("bundles/build-bundle.action");
-	}
-	if($target.hash == "#Deploy") {
-		jQuery("#Deploy").load("bundles/deploy-bundle.action");
-	}
-	
-	
-}
-
 
 
 function toggleAdvancedOptions() {
