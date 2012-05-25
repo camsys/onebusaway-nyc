@@ -514,7 +514,7 @@ public class VehicleLocationSimulationController {
         model);
   }
   
-  @RequestMapping(value = "/vehicle-location-simulation!runForStop.do", method = RequestMethod.GET)
+  @RequestMapping(value = "/vehicle-location-simulation!runsForStop.do", method = RequestMethod.GET)
   public ModelAndView runsForStop(
       @RequestParam(value = "id", required = true) String id, 
       @RequestParam(value = "minutesBefore", required = false, defaultValue = "60") int minutesBefore,
