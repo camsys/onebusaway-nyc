@@ -42,10 +42,12 @@ OBA.Mobile = (function() {
 			e.preventDefault();
 		
 			refreshTimestamp.text("Loading...");
+			refreshBar.addClass("loading")
 			
 			jQuery("#content")
 				.load(location.href + " #content>*", null, function() {
 					refreshTimestamp.text("Updated " + new Date().format("mediumTime"));
+					refreshBar.removeClass("loading");
 				});
 		});
 				

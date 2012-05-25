@@ -291,6 +291,18 @@ small {
 	color: #FFFFFF;
 }
 
+#refresh.loading {
+	border: 1px solid rgba(220,220,220,0.75);
+	background: rgb(30,87,153); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(30,87,153,0.73) 0%, rgba(125,185,232,0.73) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(30,87,153,0.73)), color-stop(100%,rgba(125,185,232,0.73))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(30,87,153,0.73) 0%,rgba(125,185,232,0.73) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(30,87,153,0.73) 0%,rgba(125,185,232,0.73) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(30,87,153,0.73) 0%,rgba(125,185,232,0.73) 100%); /* IE10+ */
+	background: linear-gradient(top,  rgba(30,87,153,0.73) 0%,rgba(125,185,232,0.73) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ba1e5799', endColorstr='#ba7db9e8',GradientType=0 ); /* IE6-8 */
+}
+
 /* content panel */
 .ambiguousLocations,.examples,.stop,.route {
 	padding-top: 0.5em;
