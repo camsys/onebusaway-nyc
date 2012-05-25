@@ -145,7 +145,7 @@ strong {
 
 #searchPanel {
 	padding-top: .25em;
-	padding-bottom: .6em;
+	padding-bottom: .8em;
 }
 
 #branding {
@@ -165,11 +165,11 @@ strong {
 	max-width: 94%;
 	height: 34px;
 	display: block;
+	margin-bottom: 0.3em;
+	border: 1px solid rgb(150,150,150);
+	box-shadow: inset 0 3px 8px rgba(232,232,232,1);
 	-moz-box-shadow: inset 0 3px 8px rgba(232,232,232,1);
    	-webkit-box-shadow: inset 0 3px 8px rgba(232,232,232,1);
-   	box-shadow: inset 0 3px 8px rgba(232,232,232,1);
-   	border: 1px solid rgb(150,150,150);
-   	margin-bottom: 0.3em;
 }
 
 #searchPanel .s {
@@ -253,21 +253,33 @@ small {
 #refresh {
 	text-align: center;
 	display: block;
-	background-color: rgb(160,160,160);
-	border: 1px solid rgb(130,130,130);
 	min-width: 250px;
-	max-width: 93%;
-	-webkit-box-shadow: 0 3px 1px -1px rgb(100,100,100);
-	-moz-box-shadow: 0 3px 1px -1px rgb(100,100,100);
-	box-shadow: 0 3px 1px -1px rgb(100,100,100);
+	max-width: 92%;
+	height: 32px;
+	text-shadow:1px 1px 0 rgba(50,50,50,0.5);
+	border: 1px solid rgba(255,255,255,0.75);
+	-moz-border-radius: 0.3em;
+	-webkit-border-radius: 0.3em;
+	border-radius: 0.3em;
+	-webkit-box-shadow: 0px 2px 3px rgb(100, 100, 100);
+	-moz-box-shadow:  0px 2px 3px rgb(100, 100, 100);
+	box-shadow:         0px 2px 3px rgb(100, 100, 100);
+	background: rgb(117,148,186); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(117,148,186,0.68) 0%, rgba(0,91,160,0.67) 61%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(117,148,186,0.68)), color-stop(61%,rgba(0,91,160,0.67))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(117,148,186,0.68) 0%,rgba(0,91,160,0.67) 61%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(117,148,186,0.68) 0%,rgba(0,91,160,0.67) 61%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(117,148,186,0.68) 0%,rgba(0,91,160,0.67) 61%); /* IE10+ */
+	background: linear-gradient(top,  rgba(117,148,186,0.68) 0%,rgba(0,91,160,0.67) 61%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ad7594ba', endColorstr='#ab005ba0',GradientType=0 ); /* IE6-8 */	
 }
 
 #refresh a {
 	font-size: 80%;
-	padding: 0.6em;
+	padding: 0.7em;
 	display: block;
-	font-weight: bold;
 	text-align: center;
+	font-weight: bold;
 	text-transform: uppercase;
 	color: #FFFFFF;
 }
@@ -446,49 +458,52 @@ small {
 #nearby-button-bar {
 	margin-bottom: 0.9em;
 	white-space: nowrap;
-	max-width: 98%;
+	width: 94%;
+	-webkit-box-shadow: 0px 1px 2px rgba(240, 240, 240, 0.75);
+	-moz-box-shadow: 0px 1px 2px rgba(240, 240, 240, 0.75);
+	box-shadow: 0px 1px 2px rgba(240, 240, 240, 0.75);
 }
 
 #nearby-stops-button, #nearby-routes-button {
 	margin: 0;
 	padding: 0;
 	min-width: 125px;
-	width: 48%;
+	width: 50%;
 	height: 32px;
 	line-height: 30px;
 	display: inline-block;
 	text-align: center;
 	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
-	-webkit-appearance: none;
+	border-top: 1px solid rgb(255,255,255);
+	border-bottom: 1px solid rgb(180,180,180);
+	-webkit-box-shadow: 0px -1px 1px rgba(200,200,200,0.75);
+	-moz-box-shadow: 0px -1px 1px rgba(200,200,200,0.75);
+	box-shadow: 0px -1px 1px rgba(200,200,200,0.75);
 	background: rgb(255,255,255); /* Old browsers */
-	background: -moz-linear-gradient(top,  rgba(255,255,255,1) 0%, rgba(229,229,229,1) 100%); /* FF3.6+ */
+	background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(229,229,229,1) 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(229,229,229,1))); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* IE10+ */
-	background: linear-gradient(top,  rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* W3C */
+	background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* IE10+ */
+	background: linear-gradient(top, rgba(255,255,255,1) 0%,rgba(229,229,229,1) 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 ); /* IE6-9 */
 }
 
 #nearby-stops-button {
 	border-right: 1px solid rgb(150,150,150);
-	border-top: 1px solid rgb(150,150,150);
-	border-left: 1px solid rgb(150,150,150);
-	border-bottom: 1px solid rgb(150,150,150);
-	-moz-border-radius-topleft: 0.5em;
-	-moz-border-radius-bottomleft: 0.5em;
-	-webkit-border-top-left-radius: 0.5em;
-	-webkit-border-bottom-left-radius: 0.5em;
+	border-left: 1px solid rgb(200,200,200);
+	-moz-border-radius-topleft: 0.3em;
+	-moz-border-radius-bottomleft: 0.3em;
+	-webkit-border-top-left-radius: 0.3em;
+	-webkit-border-bottom-left-radius: 0.3em;
 }
 
 #nearby-routes-button {
-	border-right: 1px solid rgb(150,150,150);
-	border-top: 1px solid rgb(150,150,150);
-	border-bottom: 1px solid rgb(150,150,150);
-	-moz-border-radius-topright: 0.5em;
-	-moz-border-radius-bottomright: 0.5em;
-	-webkit-border-top-right-radius: 0.5em;
-	-webkit-border-bottom-right-radius: 0.5em;
+	border-right: 1px solid rgb(200,200,200);
+	-moz-border-radius-topright: 0.3em;
+	-moz-border-radius-bottomright: 0.3em;
+	-webkit-border-top-right-radius: 0.3em;
+	-webkit-border-bottom-right-radius: 0.3em;
 }
 
 #nearby-stops-button-icon {
@@ -504,12 +519,14 @@ small {
 }
 
 .nearby-text {
-	padding-left: 22px;
+	padding-left: 23px;
 }
 
 #nearby-stops-button.down, #nearby-routes-button.down {
 	color: #777;
 	text-shadow:1px 1px 0 rgba(255,255,255,0.5);
+	border-top: 1px solid rgb(140,140,140);
+	border-bottom: 1px solid rgb(220,220,220);
 	background: rgb(160,160,160); /* Old browsers */
 	background: -moz-linear-gradient(top, rgba(160,160,160,1) 0%, rgba(240,240,240,1) 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(160,160,160,1)), color-stop(100%,rgba(240,240,240,1))); /* Chrome,Safari4+ */
@@ -518,6 +535,18 @@ small {
 	background: -ms-linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* IE10+ */
 	background: linear-gradient(top, rgba(160,160,160,1) 0%,rgba(240,240,240,1) 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e5e5e5',GradientType=0 ); /* IE6-9 */
+}
+
+#nearby-stops-button.down {
+	border-left: 1px solid rgb(160,160,160);
+}
+
+#nearby-routes-button.down {
+	border-right: 1px solid rgb(160,160,160);
+}
+
+.down #nearby-stops-button-icon {
+	background: url("img/stop_icon_pressed.png") no-repeat scroll left center;
 }
 
 #cant-find {

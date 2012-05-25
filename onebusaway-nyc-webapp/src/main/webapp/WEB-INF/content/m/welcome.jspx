@@ -63,7 +63,7 @@
 		<s:url var="url" namespace="/m" action="index">
 			<s:param name="q">200884</s:param>
 		</s:url>
-		<li>Stop ID: <a href="${url}">200884</a>
+		<li>Stop Code: <a href="${url}">200884</a>
 		</li>
 
 		<s:url var="zipCodeUrl" namespace="/m" action="index">
