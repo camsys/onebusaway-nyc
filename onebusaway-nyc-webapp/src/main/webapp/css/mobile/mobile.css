@@ -256,7 +256,6 @@ small {
 	min-width: 250px;
 	max-width: 92%;
 	height: 32px;
-	text-align: center;
 	text-shadow:1px 1px 0 rgba(50,50,50,0.5);
 	border: 1px solid rgba(255,255,255,0.75);
 	-moz-border-radius: 0.3em;
@@ -277,7 +276,7 @@ small {
 
 #refresh a {
 	font-size: 80%;
-	padding: 0.6em;
+	padding: 0.7em;
 	display: block;
 	text-align: center;
 	font-weight: bold;
