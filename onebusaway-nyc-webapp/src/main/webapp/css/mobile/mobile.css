@@ -202,8 +202,15 @@ strong {
 	font-size: 1em;
 	height: 26px;
 	width: 85%;
-	margin-left: 8px;
-	margin-top: 6px;
+	margin-left: 3px;
+	margin-top: 4px;
+}
+
+/* Hides accessibility labels */
+.obscure {
+  position: absolute !important;
+  clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px);
 }
 
 small {
@@ -257,7 +264,7 @@ small {
 	max-width: 92%;
 	height: 32px;
 	text-shadow:1px 1px 0 rgba(50,50,50,0.5);
-	border: 1px solid rgba(255,255,255,0.75);
+	border: 1px solid rgba(150,150,150,0.75);
 	-moz-border-radius: 0.3em;
 	-webkit-border-radius: 0.3em;
 	border-radius: 0.3em;
@@ -275,8 +282,8 @@ small {
 }
 
 #refresh a {
-	font-size: 80%;
-	padding: 0.7em;
+	font-size: 0.85em;
+	padding: 0.6em;
 	display: block;
 	text-align: center;
 	font-weight: bold;

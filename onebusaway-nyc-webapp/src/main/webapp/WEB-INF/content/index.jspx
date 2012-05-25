@@ -128,7 +128,7 @@
 	  			
 	   	  	<ul>
 	   	  		<s:url var="url" namespace="/m" action="index"/>
-				<li id="link_mobile"><a href="${url}">Text / Mobile</a></li>
+				<li id="link_mobile" aria-label="Text only version"><a href="${url}">Text / Mobile</a></li>
 	    	  	
 				<s:url var="url" namespace="/wiki" action="About"/>
 				<li id="link_about"><a href="${url}">About</a></li>
