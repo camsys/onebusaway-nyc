@@ -366,7 +366,7 @@ OBA.Sidebar = function() {
 		matches.show();
 		
 		if (filteredMatches.find("li").length > 1) {
-			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopId.match(/\d*$/) + '">See All</a>');
+			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopId.match(/\d*$/) + '">See&nbsp;All</a>');
 			filteredMatches.find("ul").append(showAll);
 			filteredMatches.show();
 			

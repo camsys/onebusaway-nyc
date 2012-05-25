@@ -488,7 +488,7 @@ OBA.Popups = (function() {
 		
 		// filtered out roues
 		if (filteredMatches.find("li").length > 0) {
-			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopResult.id.match(/\d*$/) + '"><span class="route-name">See All</span></a>');
+			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopResult.id.match(/\d*$/) + '"><span class="route-name">See&nbsp;All</span></a>');
 			filteredMatches.find("ul").append(showAll);
 			html += filteredMatches.html();
 		}
