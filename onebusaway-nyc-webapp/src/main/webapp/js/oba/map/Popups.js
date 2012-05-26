@@ -45,7 +45,7 @@ OBA.Popups = (function() {
 		infoWindow.open(map, marker);
 	}
 	
-	function showPopupWithContentFromRequest(map, marker, url, params, contentFn) {
+	function showPopupWithContentFromRequest(map, marker, url, params, contentFn, routeFilter) {
 		closeInfoWindow();
 		
 		infoWindow = new google.maps.InfoWindow({
@@ -65,13 +65,14 @@ OBA.Popups = (function() {
 			
 			if(refreshPopupRequest !== null) {
 				refreshPopupRequest.abort();
+				openBubble = true;
 			}
 			refreshPopupRequest = jQuery.getJSON(url, params, function(json) {
 				if(infoWindow === null) {
 					return;
 				}
 				
-				infoWindow.setContent(contentFn(json, popupContainerId, marker));
+				infoWindow.setContent(contentFn(json, popupContainerId, marker, routeFilter));
 				
 				if(openBubble === true) {
 					infoWindow.open(map, marker);
@@ -132,7 +133,7 @@ OBA.Popups = (function() {
             if (r.Siri.ServiceDelivery.SituationExchangeDelivery != null) {
                 jQuery.each(r.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
                     var situationId = ptSituationElement.SituationNumber;
-                    if (situationRefs == null || situationIds[situationId] === true) {
+                    if (ptSituationElement.Description && (situationRefs == null || situationIds[situationId] === true)) {
                         html += '<li>' + ptSituationElement.Description.replace(/\n/g, "<br/>") + '</li>';
                     }
                 });
@@ -146,7 +147,61 @@ OBA.Popups = (function() {
         return html;
 	}
 	
+	function processAlertData(situationExchangeDelivery) {
+		var alertData = {};
+		
+		if (situationExchangeDelivery) {
+            jQuery.each(situationExchangeDelivery[0].Situations.PtSituationElement, function(_, ptSituationElement) {
+            	jQuery.each(ptSituationElement.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, affectedVehicleJourney) {
+            		var lineRef = affectedVehicleJourney.LineRef;
+            		if (!(lineRef in alertData)) {
+            			alertData[lineRef] = {};
+            		}
+            		if (!(ptSituationElement.SituationNumber in alertData[lineRef])) {
+            			alertData[lineRef][ptSituationElement.SituationNumber] = ptSituationElement;
+            		}
+            	});
+            });
+		}
+		
+		return alertData;
+	}
+	
+	function activateAlertLinks(content) {
+		var alertLinks = content.find(".alert-link");
+		jQuery.each(alertLinks, function(_, alertLink) {
+			var element = jQuery(alertLink);
+			var idParts = element.attr("id").split("|");
+			var stopId = idParts[1];
+			var routeId = idParts[2];
+			var routeIdWithoutAgency = routeId.split("_")[1];
+			
+			element.click(function(e) {
+				e.preventDefault();
+				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
+				if (alertElement.length === 0) {
+					expandAlerts = true;
+					window.location = "#" + stopId + "%20" + routeIdWithoutAgency;
+				} else {
+					$("#searchbar").animate({
+						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
+						}, 
+						500,
+						function() {
+							if (alertElement.accordion("option", "active") !== 0) {
+								alertElement.accordion("activate" , 0);
+							}
+						});
+				}
+			});
+			
+		});
+	}
+	
 	function getVehicleContentForResponse(r, popupContainerId, marker) {
+		
+		var alertData = processAlertData(r.Siri.ServiceDelivery.SituationExchangeDelivery);
+		
 		var activity = r.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
 		if(activity === null || activity.MonitoredVehicleJourney === null) {
 			return null;
@@ -155,6 +210,7 @@ OBA.Popups = (function() {
 		var vehicleId = activity.MonitoredVehicleJourney.VehicleRef;
 		var vehicleIdParts = vehicleId.split("_");
 		var vehicleIdWithoutAgency = vehicleIdParts[1];
+		var routeName = activity.MonitoredVehicleJourney.LineRef;
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
@@ -219,23 +275,32 @@ OBA.Popups = (function() {
 		}
 		
 		// service alerts
-		html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);		
+		//html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);
+		if (routeName in alertData) {
+			html += ' <a id="alert-link||' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
+		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
 		
 		// (end popup)
 		html += '</div>';
 		
-		return html;
+		var content = jQuery(html);
+		
+		activateAlertLinks(content);
+		
+		return content.get(0);
 	}
 
-	function getStopContentForResponse(r, popupContainerId, marker) {
+	function getStopContentForResponse(r, popupContainerId, marker, routeFilter) {
 		var siri = r.siri;
 		var stopResult = r.stop;
 		
 		var stopId = stopResult.id;
 		var stopIdParts = stopId.split("_");
 		var stopIdWithoutAgency = stopIdParts[1];
+		
+		var alertData = processAlertData(r.siri.Siri.ServiceDelivery.SituationExchangeDelivery);
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
@@ -252,7 +317,11 @@ OBA.Popups = (function() {
 			if(updateTimestamp > maxUpdateTimestamp) {
 				maxUpdateTimestamp = updateTimestamp;
 			}
-		});		
+		});	
+		
+		if (maxUpdateTimestamp === null) {
+			maxUpdateTimestamp = updateTimestampReference;
+		}
 		
 		if(maxUpdateTimestamp !== null) {
 			var age = (parseInt(updateTimestampReference, 10) - parseInt(maxUpdateTimestamp, 10)) / 1000;
@@ -277,9 +346,36 @@ OBA.Popups = (function() {
 	    var routeAndDirectionWithoutSerivce = {};
 	    var routeAndDirectionWithoutSerivceCount = 0;
 	    var totalRouteCount = 0;
+	    
+	    if (!routeFilter) {
+	    	routeFilter = [];
+	    }
+		
+		var filterExistsInResults = false;
+		
+		jQuery.each(stopResult.routesAvailable, function(_, routeResult) {
+			if (jQuery.inArray(routeResult.id, routeFilter) > -1) {
+				filterExistsInResults = true;
+				return false;
+			}
+		});
 		
 	    // break up routes here between those with and without service
-	    jQuery.each(stopResult.routesAvailable, function(_, route) {
+		var filteredMatches = jQuery("<div></div>");
+		var filteredMatchesData = jQuery('<div></div>').addClass("popup-filtered-matches");
+		filteredMatches.append(filteredMatchesData);
+		filteredMatchesData.append(jQuery("<h2></h2>").text("Other Routes Here:").addClass("service"));
+		filteredMatchesData.append("<ul></ul>");
+	    
+		jQuery.each(stopResult.routesAvailable, function(_, route) {
+	    	if (filterExistsInResults && jQuery.inArray(route.id, routeFilter) < 0) {
+	    		var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
+	    		var link = jQuery('<a href="#' + stopResult.id.match(/\d*$/) + '%20' + route.shortName + '"><span class="route-name">' + route.shortName + '</span></a>');
+	    		link.appendTo(filteredMatch);
+	    		filteredMatches.find("ul").append(filteredMatch);
+	    		return true; //continue
+	    	}
+	    	
 	    	jQuery.each(route.directions, function(__, direction) {
 	    		if(direction.hasUpcomingScheduledService === false) {
 	    			routeAndDirectionWithoutSerivce[route.id + "_" + direction.directionId] = { "id":route.id, "shortName":route.shortName, "destination":direction.destination };
@@ -296,6 +392,11 @@ OBA.Popups = (function() {
 	    var visits = siri.Siri.ServiceDelivery.StopMonitoringDelivery[0].MonitoredStopVisit;
 	    jQuery.each(visits, function(_, monitoredJourney) {
 			var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
+			
+			if (filterExistsInResults && jQuery.inArray(routeId, routeFilter) < 0) {
+				return true; //continue
+			}
+			
 			var directionId = monitoredJourney.MonitoredVehicleJourney.DirectionRef;
 
 			if(typeof routeAndDirectionWithArrivals[routeId + "_" + directionId] === 'undefined') {
@@ -317,7 +418,7 @@ OBA.Popups = (function() {
 		}	
 
 		if(routeAndDirectionWithArrivalsCount > 0) {
-		    html += '<p class="service">Service available at this stop:</p>';
+		    html += '<p class="service">Buses en-route:</p>';
 
 			jQuery.each(routeAndDirectionWithArrivals, function(_, mvjs) {
 				var mvj = mvjs[0];
@@ -325,7 +426,10 @@ OBA.Popups = (function() {
 				html += '<ul>';
 
 				html += '<li class="route">';
-				html += '<a href="#' + mvj.PublishedLineName + '">' + mvj.PublishedLineName + " " + mvj.DestinationName + '</a>';
+				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
+				if (mvj.LineRef in alertData) {
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
+				}
 				html += '</li>';
 
 				jQuery.each(mvjs, function(_, monitoredVehicleJourney) {
@@ -349,41 +453,48 @@ OBA.Popups = (function() {
 		}
 		
 		if(routeAndDirectionWithoutArrivalsCount > 0) {
-		    html += '<p class="service">No buses en-route to this stop (please check back shortly for an update):</p>';
+		    html += '<p class="service muted">No buses en-route to this stop for:</p>';
 
 			html += '<ul>';
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
-				var lastClass = ((i === routeAndDirectionWithoutArrivalsCount - 1) ? " last" : "");
-
-				html += '<li class="route' + lastClass + '">';
-				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
+				html += '<li class="route">';
+				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
+				if (d.id in alertData) {
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + d.id + '" class="alert-link" href="#">Alert</a>';
+				}
 				html += '</li>';
 				
 				i++;
 			});
+			html += '<li class="last muted">(check back shortly for an update)</li>';
 			html += '</ul>';
 		}
 
 		if(routeAndDirectionWithoutSerivceCount > 0) {
-			html += '<p class="service">No scheduled service at this time:</p>';
+			html += '<p class="service muted">No scheduled service at this time for:</p>';
 
-			html += '<ul>';
+			html += '<ul class="no-service-routes">';
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutSerivce, function(_, d) {
-				var lastClass = ((i === routeAndDirectionWithoutSerivceCount - 1) ? " last" : "");
-
-				html += '<li class="route' + lastClass + '">';
-				html += '<a href="#' + d.shortName + '">' + d.shortName + " " + d.destination + '</a>';
+				html += '<li class="route">';
+				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + '</span></a>';
 				html += '</li>';
 				
 				i++;
 			});
 			html += '</ul>';
 		}
+		
+		// filtered out roues
+		if (filteredMatches.find("li").length > 0) {
+			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopResult.id.match(/\d*$/) + '"><span class="route-name">See&nbsp;All</span></a>');
+			filteredMatches.find("ul").append(showAll);
+			html += filteredMatches.html();
+		}
 
 		// service alerts
-	    html += getServiceAlerts(siri, null);
+	    //html += getServiceAlerts(siri, null);
 
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopIdWithoutAgency);	        
 
@@ -404,6 +515,8 @@ OBA.Popups = (function() {
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
 		});
+		
+		activateAlertLinks(content);
 
 		return content.get(0);
 	}

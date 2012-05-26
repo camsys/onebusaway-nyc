@@ -83,12 +83,11 @@
 		    <artifactId>onebusaway-siri-api-v13</artifactId>
 		    <version>1.0.0</version>
 		</dependency>
-  		<dependency>
-		    <groupId>org.onebusaway</groupId>
-		    <artifactId>onebusaway-nyc-tdm-service</artifactId>
-		    <version>2.0.3-SNAPSHOT</version>
-		    <type>war</type>
-  		</dependency>
+          <dependency>
+            <groupId>org.onebusaway</groupId>
+            <artifactId>onebusaway-nyc-transit-data-federation</artifactId>
+            <version>2.0.3-SNAPSHOT</version>
+        </dependency>
   
   <!-- Add your dependencies here
     <dependency>
@@ -102,6 +101,11 @@
     <artifactId>onebusaway-transit-data-federation</artifactId>
     <version>2.0.9-SNAPSHOT</version>
   </dependency>
+    <dependency>
+      <groupId>org.onebusaway</groupId>
+      <artifactId>onebusaway-nyc-transit-data</artifactId>
+      <version>2.0.3-SNAPSHOT</version>
+    </dependency>  
   <dependency>
     <groupId>com.sun.jersey</groupId>
     <artifactId>jersey-bundle</artifactId>
@@ -114,7 +118,33 @@
   </dependency>
   </dependencies>
   
+  <profiles>
+    <profile>
+      <id>local-single-port</id><!-- aka services-tdf-as-tds --> <!-- aka staging, production -->
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <tds.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</tds.path>
+        <vtms.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</vtms.path>
+        <config.path>http://localhost:8080/onebusaway-nyc-vehicle-tracking-webapp</config.path>
+        <archive.path>http://localhost:8080/onebusaway-nyc-report-archive</archive.path>
+        <service.wikihost>xwiki.staging.obanyc.com</service.wikihost>
+        <tdm.host>tdm.dev.obanyc.com</tdm.host>
+        <webapp.api.url></webapp.api.url>
+        <log4j.appender>stdout</log4j.appender>
+        <front-end-version>${front-end.version}</front-end-version>
+      </properties>
+    </profile>
+  </profiles>
+  
   <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     <plugins>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>

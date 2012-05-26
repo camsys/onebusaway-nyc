@@ -204,7 +204,7 @@ public class StifTask implements Runnable {
       Trip trip = entry.getKey();
       if (trip.getBlockId() == null || trip.getBlockId().length() == 0) {
         RawRunData data = entry.getValue();
-        trip.setBlockId(trip.getServiceId() + "_STIF_" + data.getDepotCode() + "_" + data.getBlock());
+        trip.setBlockId(trip.getServiceId().getId() + "_STIF_" + data.getDepotCode() + "_" + data.getBlock());
         _gtfsMutableRelationalDao.updateEntity(trip);
       }
     }
@@ -376,7 +376,7 @@ public class StifTask implements Runnable {
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
-            String blockId = gtfsTrip.getServiceId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
+            String blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
 
             blockId = blockId.intern();
             blockIds.add(blockId);
@@ -409,7 +409,7 @@ public class StifTask implements Runnable {
             + " must not have an associated pullout");
         for (Trip gtfsTrip : trip.getGtfsTrips()) {
           blockNo++;
-          String blockId = gtfsTrip.getServiceId() + "_" + trip.firstStop + "_"
+          String blockId = gtfsTrip.getServiceId().getId() + "_" + trip.firstStop + "_"
               + trip.firstStopTime + "_" + trip.runId.replace("-", "_")
               + "_orphan_" + blockNo;
           _log.warn("Generating single-trip block id for GTFS trip: "
@@ -465,7 +465,7 @@ public class StifTask implements Runnable {
 
     csvLogger.log("matched_trips_gtfs_stif.csv", blockId, tripId,
         trip.getDsc(), trip.firstStop, trip.firstStopTime, trip.lastStop,
-        trip.lastStopTime, trip.getRunIdWithDepot(), trip.reliefRunId, trip.recoveryTime,
+        trip.lastStopTime, trip.runId, trip.reliefRunId, trip.recoveryTime,
         trip.firstTripInSequence, trip.lastTripInSequence,
         trip.getSignCodeRoute(), routeId);
   }

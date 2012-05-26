@@ -128,7 +128,7 @@
 	  			
 	   	  	<ul>
 	   	  		<s:url var="url" namespace="/m" action="index"/>
-				<li id="link_mobile"><a href="${url}">Text / Mobile</a></li>
+				<li id="link_mobile" aria-label="Text only version"><a href="${url}">Text / Mobile</a></li>
 	    	  	
 				<s:url var="url" namespace="/wiki" action="About"/>
 				<li id="link_about"><a href="${url}">About</a></li>
@@ -145,14 +145,19 @@
 	   </div>
     
        <form action="search.action">
-         <input id="bustimesearch" type="text" name="q" value=""/>
+         <input type="text" name="q" value=""/>
          <input type="submit" value="Find" class="submit"/>
          <p id="tip">TIP: Enter an intersection, bus route or bus stop code.</p>
        </form>
        
        <div id="matches">
        	 <h2>Results:</h2>
-       	 <ul></ul>
+       	 <ul><!-- //prevent jspx minimization --></ul>
+	   </div>
+	   
+	   <div id="filtered-matches">
+	   	<h2>Other routes here:</h2>
+	   	<ul><!-- //prevent jspx minimization --></ul>
 	   </div>
 
        <div id="suggestions">
@@ -172,16 +177,25 @@
 		 <h2>Try these example searches:</h2>
 		 
 		 <ul>
-		 	<li>Routes: &amp;nbsp; <a href="#B63">B63</a> &amp;nbsp; <a href="#S62">S62</a> &amp;nbsp; <a href="#X1">X1</a></li>
+		 	<li>Route: &amp;nbsp; <a href="#B63">B63</a> &amp;nbsp; <a href="#S62">S62</a> &amp;nbsp; <a href="#X1">X1</a></li>
 		 	<li>Intersection: &amp;nbsp; <a href="#Main%20St%20and%20Craig%20Ave">Main St and Craig Ave</a></li>
 		 	<li>Stop Code: &amp;nbsp; <a href="#200884">200884</a></li>
 		 	<li>Location: &amp;nbsp; <a href="#10304">10304</a> &amp;nbsp; <a href="#Hylan%20Blvd">Hylan Blvd</a></li>
 		 </ul>
 	   </div>
 	   
+		<s:url var="url" namespace="/wiki/Help" action="Routes"/>
+		<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
+	   
+		<div id="cant-find">
+			<h2>Can't find your bus route?</h2>
+			<s:url var="url" namespace="/wiki/Help" action="Routes" />
+			<p>MTA Bus Time will be available NYC-wide by the end of 2013. <a href="${url}">Click here</a> to see which routes are currently available.</p>
+		</div>
+	   
     </div>
 
-	<div id="map"></div>
+	<div id="map"><!-- //prevent jspx minimization --></div>
 
 </div>
 <!-- Begin Wizard -->

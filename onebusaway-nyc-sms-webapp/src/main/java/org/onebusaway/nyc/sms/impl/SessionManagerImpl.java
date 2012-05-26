@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.sms.impl;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -96,10 +97,10 @@ public class SessionManagerImpl implements SessionManager {
   }
 
   /****
-   * Private Methods
+   * Protected Methods
    ****/
 
-  private ContextEntry getOrCreateContextEntry(String key) {
+  protected ContextEntry getOrCreateContextEntry(String key) {
     while (true) {
       ContextEntry entry = new ContextEntry();
       ContextEntry existingEntry = _contextEntriesByKey.putIfAbsent(key, entry);
@@ -109,7 +110,9 @@ public class SessionManagerImpl implements SessionManager {
     }
   }
 
-  private static class ContextEntry {
+  protected static class ContextEntry implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private long _lastAccess;
 
@@ -159,6 +162,11 @@ public class SessionManagerImpl implements SessionManager {
           it.remove();
       }
     }
+  }
+
+  @Override
+  public void close() {
+    // no-op in this implementation
   }
 
 }

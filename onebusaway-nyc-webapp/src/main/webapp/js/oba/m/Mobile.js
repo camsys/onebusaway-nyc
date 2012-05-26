@@ -1,18 +1,29 @@
 var OBA = window.OBA || {};
 
 OBA.Mobile = (function() {
+	
 	var locationField = null;
-
-	var turnOffButton = null;
-	var turnOnButton = null;
-	var nearbyButton = null;
-
-	var lastLatitude = null;
-	var lastLongitude = null; 
+	var typeField = null;
 	
 	function addAutocompleteBehavior() {
-		jQuery("#bustimesearch").autocomplete({
-			source: "../" + OBA.Config.autocompleteUrl
+		
+		var searchForm = jQuery("#searchPanel form");
+		var searchInput = jQuery("#searchPanel form input[type=text]");
+		
+		searchInput.autocomplete({
+			source: "../" + OBA.Config.autocompleteUrl,
+			select: function(event, ui) {
+		        if(ui.item){
+		        	searchInput.val(ui.item.value);
+		        	searchForm.submit();
+		        }
+		    }
+		});
+		
+		// Close the autocomplete list when the form is submitted
+		searchForm.submit(function() {
+			searchInput.autocomplete("close");
+			return true;
 		});
 	}
 	
@@ -21,7 +32,7 @@ OBA.Mobile = (function() {
 		var refreshBar = jQuery("#refresh")
 					.css("position", "absolute")
 					.css("right", "20")
-					.css("left", "20");
+					.css("left", "12");
 
 		var refreshTimestamp = refreshBar
 								.find("strong");
@@ -31,10 +42,12 @@ OBA.Mobile = (function() {
 			e.preventDefault();
 		
 			refreshTimestamp.text("Loading...");
+			refreshBar.addClass("loading")
 			
 			jQuery("#content")
 				.load(location.href + " #content>*", null, function() {
 					refreshTimestamp.text("Updated " + new Date().format("mediumTime"));
+					refreshBar.removeClass("loading");
 				});
 		});
 				
@@ -64,127 +77,77 @@ OBA.Mobile = (function() {
 	}
 	
 	function initLocationUI() {
+		jQuery("#submitButton").removeClass("loading");
+		
 		var searchPanelForm = jQuery("#searchPanel form");
-
-		var toggleUI = jQuery("<p>Use my location:</p>")
-			.attr("id", "toggleUI");
-
-		turnOffButton = jQuery("<a href='#'>Turn Off</a>")
-			.click(function(e) {
-				e.preventDefault();				
-				turnOffGeolocation();
-				return false;
-			});
-
-		turnOnButton = jQuery("<a href='#'>Turn On</a>")
-			.click(function(e) {
-				e.preventDefault();
-				turnOnGeolocation();
-				return false;
-			});
 		
-		toggleUI.append(turnOffButton);
-		toggleUI.append(turnOnButton);	
+		var splitButton = jQuery("<div></div>").attr("id", "nearby-button-bar");
 		
-		searchPanelForm.before(toggleUI);
+		var nearbyStopsBtn = jQuery("<div></div>").attr("id", "nearby-stops-button").attr("aria-label", "Find nearby stops using GPS").addClass("nearby-button").appendTo(splitButton);
+		var nearbyRoutesBtn = jQuery("<div></div>").attr("id", "nearby-routes-button").attr("aria-label", "Find nearby routes using GPS").addClass("nearby-button").appendTo(splitButton);
 		
-		// find nearby button
-		var welcomeDiv = jQuery(".welcome");
-
-		if(welcomeDiv.length > 0) {
-			var nearbyForm = jQuery("<form id='nearby'></form>");
-
-			nearbyButton = jQuery("<input type='button' value='Finding your location...'/>")
-				.attr("disabled", "true")
-				.appendTo(nearbyForm);
-
-			nearbyButton.click(function(e) {
-				e.preventDefault();
-				searchPanelForm.find("#q").val("");
-				searchPanelForm.submit();
-				return false;
-			});
-			
-			welcomeDiv.append(nearbyForm);
-		}
-	};
-	
-	function updatePageState() {
-		var locationValue = "off";
-		if(lastLatitude !== null && lastLongitude !== null) {
-			locationValue = lastLatitude + "," + lastLongitude;
-		}
-
-		// update search field
-		if(locationField !== null) {
-			locationField.val(locationValue);
-		}
-			
-		// update links on this page to include location
-		jQuery.each(jQuery("body").find("a"), function(_, _link) {
-			var link = jQuery(_link);
-			var existingHref = link.attr("href");
-			if(typeof existingHref !== 'undefined' && existingHref.indexOf("&l=") > -1) {
-				var newHref = existingHref.replace(/&l=[^&|#|?]*/i, "&l=" + locationValue);
-				link.attr("href", newHref);
-			}
-		});
-			
-		// update find stops nearby button
-		if(nearbyButton !== null) {
-			if(locationValue !== "off") {
-				nearbyButton.removeAttr("disabled");
-				nearbyButton.val("Find Stops Near Me");
+		nearbyStopsBtn.append(jQuery("<div></div>").attr("id", "nearby-stops-button-icon").append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Stops")));
+		nearbyRoutesBtn.append(jQuery("<div></div>").attr("id", "nearby-routes-button-icon").append(jQuery("<span></span>").addClass("nearby-text").text("Nearby Routes")));
+		
+		searchPanelForm.before(splitButton);
+				
+		$( ".nearby-button" ).mousedown(function() {
+			// change other button to mouse up
+			if (jQuery(this).attr("id") === "nearby-stops-button") {
+				nearbyRoutesBtn.removeClass("down");
 			} else {
-				nearbyButton.hide();
+				nearbyStopsBtn.removeClass("down");
 			}
-		}
-	};
-
-	// event when user turns off location
-	function turnOffGeolocation() {
-		lastLatitude = null;
-		lastLongitude = null;
-
-		updatePageState();
+			jQuery(this).addClass("down");
+		});
 		
-		turnOffButton.text("Is Off").css("font-weight", "bold");
-		turnOnButton.text("Turn On").css("font-weight", "normal");
+		$( ".nearby-button" ).mouseup(function() {
+			if (jQuery(this).attr("id") === "nearby-stops-button") {
+				typeField.val("stops");
+			} else {
+				typeField.val("routes");
+			}
+			queryByLocation();
+		});
 	};
 	
 	// event when user turns on location
-	function turnOnGeolocation() {
+	function queryByLocation() {
 		// show "finding location" message button to user while 
 		// location is being found
-		if(nearbyButton !== null) {
-			nearbyButton.attr("disabled", "true");
-			nearbyButton.val("Finding your location...");
-			nearbyButton.show();
-		}
+		jQuery("#submitButton").addClass("loading");
+		jQuery(".q").attr("placeholder", "Finding your location...");
 
 		navigator.geolocation.getCurrentPosition(function(location) {
-			lastLatitude = location.coords.latitude;
-			lastLongitude = location.coords.longitude;
+			
+			jQuery(".q").attr("placeholder", "Searching...");
 
-			updatePageState();
-		}, turnOffGeolocation);
-
-		turnOffButton.text("Turn Off").css("font-weight", "normal");
-		turnOnButton.text("Is On").css("font-weight", "bold");
+			// update search field
+			if(locationField !== null) {
+				locationField.val(location.coords.latitude + "," + location.coords.longitude);
+			}
+			
+			var searchPanelForm = jQuery("#searchPanel form");
+			
+			searchPanelForm.find(".q").val("");
+			searchPanelForm.submit();
+			
+		}, function() {
+			alert("Unable to determine your location.");
+			jQuery(".nearby-button").removeClass("down");
+			jQuery("#submitButton").removeClass("loading");
+			jQuery(".q").removeAttr("placeholder");
+			
+		});
 	};
 		
 	return {
 		initialize: function() {
 			locationField = jQuery("#l");
+			typeField = jQuery("#t");
 			
 			if(navigator.geolocation) {
-				initLocationUI();					
-
-				if(locationField.val() !== "off") {
-					turnOnGeolocation();
-				} else {
-					turnOffGeolocation();
-				}
+				initLocationUI();
 			}			
 			
 			addRefreshBehavior();

@@ -22,10 +22,20 @@
 <jsp:output omit-xml-declaration="yes"/>
 
 <c:if test="${!queryIsEmpty}">
-	<h3 class="noMatches">
-		<s:url var="url" namespace="/wiki/Help" action="MobileOverview" />
-		No matches. <a href="${url}">Search Tips</a>
-	</h3>
+	<c:choose>
+		<c:when test="${resultsOriginatedFromGeocode}">
+			<h3 class="noMatches">
+				<s:url var="url" namespace="/m/wiki/Help" action="Index" />
+				No stops nearby. <a href="${url}">Search Tips . . .</a>
+			</h3>
+		</c:when>
+		<c:otherwise>
+			<h3 class="noMatches">
+				<s:url var="url" namespace="/m/wiki/Help" action="Index" />
+				No matches. <a href="${url}">Search Tips...</a>
+			</h3>
+		</c:otherwise>
+	</c:choose>
 </c:if>
 
 <div class="welcome">
@@ -34,44 +44,50 @@
 	<ul class="examples">
 		<s:url var="B63url" namespace="/m" action="index">
 			<s:param name="q">B63</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<s:url var="S62url" namespace="/m" action="index">
 			<s:param name="q">S62</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<s:url var="X1url" namespace="/m" action="index">
 			<s:param name="q">X1</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<li>Route: <a href="${B63url}">B63</a> &amp;nbsp; <a href="${S62url}">S62</a> &amp;nbsp; <a href="${X1url}">X1</a>
 		</li>
 
 		<s:url var="url" namespace="/m" action="index">
 			<s:param name="q">Main St and Craig Rd</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<li>Intersection: <a href="${url}">Main St and Craig Rd</a>
 		</li>
 
 		<s:url var="url" namespace="/m" action="index">
 			<s:param name="q">200884</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
-		<li>Stop ID: <a href="${url}">200884</a>
+		<li>Stop Code: <a href="${url}">200884</a>
 		</li>
 
 		<s:url var="zipCodeUrl" namespace="/m" action="index">
 			<s:param name="q">10304</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<s:url var="streetUrl" namespace="/m" action="index">
 			<s:param name="q">Hylan Blvd</s:param>
-			<s:param name="l"><s:property value="l" /></s:param>
 		</s:url>
 		<li>Location: <a href="${zipCodeUrl}">10304</a>  &amp;nbsp; <a href="${streetUrl}">Hylan Blvd</a>
 		</li>
 		<li>(Add route for best results)</li>
 	</ul>
 </div>
+<c:choose>
+	<c:when test="${!queryIsEmpty}">
+		<div id="cant-find">
+			<h2>Can't find your bus route?</h2>
+			<s:url var="url" namespace="/m/wiki/Help" action="Routes" />
+			<p>MTA Bus Time will be available NYC-wide by the end of 2013. <a href="${url}">Click here</a> to see which routes are currently available.</p>
+		</div>
+	</c:when>
+	<c:otherwise>
+		<s:url var="url" namespace="/m/wiki/Help" action="Routes"/>
+		<div id="available-routes"><a href="${url}">Click here</a> for a list of available routes.</div>
+	</c:otherwise>
+</c:choose>
 </html>

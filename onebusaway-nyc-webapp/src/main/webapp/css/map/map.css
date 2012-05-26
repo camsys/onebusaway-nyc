@@ -67,27 +67,37 @@
 
 #content #no-results,
 #content #suggestions,
-#content #matches {
+#content #matches,
+#content #filtered-matches,
+#content #cant-find {
 	width: 280px;
 	display: none;
 	font-size: 16px;
 	clear: both;
 }
 
-#content #welcome {
+#content #welcome,
+#content #available-routes {
 	font-size: 16px;
 }
 
 #content #no-results h2,
 #content #welcome h2,
 #content #suggestions h2,
-#content #matches h2 {
+#content #matches h2,
+#content #filtered-matches h2 {
 	font-weight: bold;
 	color: #818181;	
 	font-size: 1em;
-
 	padding-bottom: 2px;
 	padding-top: 12px;
+}
+
+#content #cant-find h2 {
+	font-weight: bold;
+	font-size: 1em;
+	padding-bottom: 10px;
+	padding-top: 20px;
 }
 
 #content #welcome ul {
@@ -97,6 +107,10 @@
 #content #welcome ul li {
 	line-height: 150%;	
 	font-size: 1em;
+}
+
+#content #available-routes {
+	padding-top: 15px;
 }
 
 /* result types */
@@ -114,7 +128,7 @@
 	margin-top: .5em;
 	background-position: 0 .3em;
 	background-repeat: no-repeat;
-	height: 2.5em;
+	min-height: 40px;
 }
 
 #content #matches ul li.legendItem {
@@ -256,6 +270,13 @@
 #content #matches ul li.legendItem p.destination ul.stops li a:hover {
 	font-size: 125%;
 	font-weight: bold;
+}
+
+#content #filtered-matches ul li {
+	display: inline-block;
+	padding: 0.2em;
+	zoom: 1;
+	*display:inline;
 }
 
 /* loading indicators */

@@ -14,6 +14,15 @@
 
 package org.onebusaway.nyc.presentation.impl.realtime;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.onebusaway.nyc.presentation.impl.AgencySupportLibrary;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
@@ -22,12 +31,12 @@ import org.onebusaway.nyc.transit_data_federation.siri.SiriExtensionWrapper;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
+import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsQueryBean;
-
-import org.apache.commons.collections.CollectionUtils;
 
 import uk.org.siri.siri.DataFrameRefStructure;
 import uk.org.siri.siri.DestinationRefStructure;
@@ -49,13 +58,6 @@ import uk.org.siri.siri.SituationRefStructure;
 import uk.org.siri.siri.SituationSimpleRefStructure;
 import uk.org.siri.siri.StopPointRefStructure;
 import uk.org.siri.siri.VehicleRefStructure;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
 
 public final class SiriSupport {
   
@@ -129,12 +131,15 @@ public final class SiriSupport {
     LocationStructure location = new LocationStructure();
 
     // if vehicle is detected to be on detour, use actual lat/lon, not snapped location.
+    DecimalFormat df = new DecimalFormat();
+    df.setMaximumFractionDigits(6);
+    
     if (presentationService.isOnDetour(tripDetails.getStatus())) {
-      location.setLatitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLat()));
-      location.setLongitude(new BigDecimal(tripDetails.getStatus().getLastKnownLocation().getLon()));
+      location.setLatitude(new BigDecimal(df.format(tripDetails.getStatus().getLastKnownLocation().getLat())));
+      location.setLongitude(new BigDecimal(df.format(tripDetails.getStatus().getLastKnownLocation().getLon())));
     } else {
-      location.setLatitude(new BigDecimal(tripDetails.getStatus().getLocation().getLat()));
-      location.setLongitude(new BigDecimal(tripDetails.getStatus().getLocation().getLon()));
+      location.setLatitude(new BigDecimal(df.format(tripDetails.getStatus().getLocation().getLat())));
+      location.setLongitude(new BigDecimal(df.format(tripDetails.getStatus().getLocation().getLon())));
     }
 
     monitoredVehicleJourney.setVehicleLocation(location);
@@ -148,8 +153,26 @@ public final class SiriSupport {
     // if in layover, add the next trip in the block's stops
     if(tripDetails.getStatus().getPhase().toUpperCase().startsWith("LAYOVER_")) {
       TripBean nextTrip = tripDetails.getSchedule().getNextTrip();
-      
+
       if(nextTrip != null) {      
+        double offset = tripDetails.getStatus().getTotalDistanceAlongTrip();
+
+        // get the space/DAT between the end of the current trip and the start of the next
+        BlockInstanceBean blockInstance = 
+          nycTransitDataService.getBlockInstance(tripDetails.getTrip().getBlockId(), tripDetails.getServiceDate());
+
+        double cumulativeBlockDistance = 0;
+        for(BlockTripBean blockTrip : blockInstance.getBlockConfiguration().getTrips()) {
+          if(blockTrip.getTrip().getId().equals(nextTrip.getId())) {
+        	  // block distance for this trip only
+        	  offset = blockTrip.getDistanceAlongBlock() - cumulativeBlockDistance;
+        	  break;
+          }
+          
+          cumulativeBlockDistance = blockTrip.getDistanceAlongBlock();
+        }      
+
+        // add stops from next trip in block
         TripDetailsQueryBean query = new TripDetailsQueryBean();
         query.setTripId(nextTrip.getId());
         query.setVehicleId(tripDetails.getStatus().getVehicleId());
@@ -157,10 +180,9 @@ public final class SiriSupport {
         ListBean<TripDetailsBean> details = nycTransitDataService.getTripDetails(query);
         for(TripDetailsBean possibleNextTripDetails : details.getList()) {
           // next trip must be on same block
-          if(!possibleNextTripDetails.getTrip().getBlockId().equals(tripDetails.getTrip().getBlockId()))
+          if(!possibleNextTripDetails.getTrip().getBlockId().equals(tripDetails.getTrip().getBlockId())) {
             continue;
-
-          double offset = tripDetails.getStatus().getTotalDistanceAlongTrip();          
+          }
 
           if(offset > 0 && !Double.isNaN(offset)) {
             for(TripStopTimeBean stopTime : possibleNextTripDetails.getSchedule().getStopTimes()) {
@@ -312,9 +334,13 @@ public final class SiriSupport {
     ExtensionsStructure distancesExtensions = new ExtensionsStructure();
     SiriDistanceExtension distances = new SiriDistanceExtension();
 
+    DecimalFormat df = new DecimalFormat();
+    df.setMaximumFractionDigits(2);
+    df.setGroupingUsed(false);
+    
     distances.setStopsFromCall(index);
-    distances.setCallDistanceAlongRoute(stopTime.getDistanceAlongTrip());
-    distances.setDistanceFromCall(stopTime.getDistanceAlongTrip() - distance);
+    distances.setCallDistanceAlongRoute(Double.valueOf(df.format(stopTime.getDistanceAlongTrip())));
+    distances.setDistanceFromCall(Double.valueOf(df.format(stopTime.getDistanceAlongTrip() - distance)));
     distances.setPresentableDistance(presentationService.getPresentableDistance(distances));
 
     wrapper.setDistances(distances);
@@ -323,7 +349,6 @@ public final class SiriSupport {
     
     return monitoredCallStructure;
   }
-  
   
   private static int getVisitNumber(HashMap<String, Integer> visitNumberForStop, StopBean stop) {
     int visitNumber;
@@ -338,7 +363,6 @@ public final class SiriSupport {
     
     return visitNumber;
   }
-  
   
   private static ProgressRateEnumeration getProgressRateForPhaseAndStatus(String status, String phase) {
     if (phase == null) {

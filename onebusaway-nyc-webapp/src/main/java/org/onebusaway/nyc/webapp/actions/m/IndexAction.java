@@ -46,8 +46,6 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private static final long serialVersionUID = 1L;
 
-  private static final String CURRENT_LOCATION_TEXT = "(Current Location)";
-
   @Autowired
   private ConfigurationService _configurationService;
 
@@ -62,9 +60,13 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
 
   private SearchResultCollection _results = new SearchResultCollection();
   
+  private boolean _resultsOriginatedFromGeocode = false;
+  
   private String _q = null;
   
   private CoordinatePoint _location = null;
+  
+  private String _type = null;
   
   public void setQ(String q) {
     if(q != null) {
@@ -81,6 +83,10 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
           Double.parseDouble(locationParts[1]));
     }
   }
+  
+  public void setT(String type) {
+	  this._type = type;
+  }
 
   public String execute() throws Exception {
     if(_q == null)
@@ -89,8 +95,12 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     SearchResultFactory factory = new SearchResultFactoryImpl(_nycTransitDataService, _realtimeService, _configurationService);
     
     // empty query with location means search for stops near current location
-    if(_location != null && (_q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT)))) {
-      _results = _searchService.findStopsNearPoint(_location.getLat(), _location.getLon(), factory, _results.getRouteIdFilter());
+    if(_location != null && _q.isEmpty()) {
+    	if (_type.equals("stops")) {
+    		_results = _searchService.findStopsNearPoint(_location.getLat(), _location.getLon(), factory, _results.getRouteIdFilter());
+    	} else {
+    		_results = _searchService.findRoutesStoppingNearPoint(_location.getLat(), _location.getLon(), factory);
+    	}
 
     } else {
       if(_q.isEmpty()) {
@@ -102,7 +112,9 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
       // do a bit of a hack with location matches--since we have no map to show locations on,
       // find things that are actionable near/within/etc. the result
       if(_results.getMatches().size() == 1 && _results.getResultType().equals("GeocodeResult")) {
-        GeocodeResult result = (GeocodeResult)_results.getMatches().get(0);
+    	  
+    	  this._resultsOriginatedFromGeocode = true;
+    	  GeocodeResult result = (GeocodeResult)_results.getMatches().get(0);
                 
         // if we got a region back, list routes that pass through it
         if(result.getIsRegion()) {
@@ -185,7 +197,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   
   public String getQ() {
     if((_q == null || _q.isEmpty()) && _location != null)
-      return CURRENT_LOCATION_TEXT;
+      return null;
     else
       return StringEscapeUtils.escapeHtml(_q);
   }
@@ -194,7 +206,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if(_location != null) 
       return _location.getLat() + "," + _location.getLon();
     else
-      return "off";
+      return null;
+  }
+  
+  public String getT() {
+	  return this._type;
   }
   
   public String getRouteColors() {
@@ -212,7 +228,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public boolean getQueryIsEmpty() {
-    return (_q == null || _q.isEmpty() || (_q != null && _q.equals(CURRENT_LOCATION_TEXT))) 
+    return (_q == null || _q.isEmpty()) 
         && _location == null;
   }
   
@@ -247,9 +263,16 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     return _results;
   }
   
+  public boolean getResultsOriginatedFromGeocode() {
+	  return _resultsOriginatedFromGeocode;
+  }
+  
   public String getTitle() {
     if(!getQueryIsEmpty()) {
-      return ": " + this._q;
+    	if (this._q != null && !this._q.isEmpty())
+    		return ": " + this._q;
+    	else
+    		return "";
     } else {
       return "";
     }
