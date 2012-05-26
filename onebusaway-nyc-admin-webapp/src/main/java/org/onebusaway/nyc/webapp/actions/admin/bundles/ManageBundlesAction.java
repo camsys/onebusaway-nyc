@@ -3,6 +3,8 @@ package org.onebusaway.nyc.webapp.actions.admin.bundles;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.onebusaway.nyc.admin.model.BundleBuildRequest;
+import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
@@ -30,8 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
     "actionName", "manage-bundles"}),
     @Result(name="selectDirectory", type="json", 
   params={"root", "bundleDirectory"}),
-    @Result(name="bundleResponse", type="json", 
-  params={"root", "bundleResponse"})
+    @Result(name="validationResponse", type="json", 
+  params={"root", "bundleResponse"}),
+    @Result(name="buildResponse", type="json", 
+  params={"root", "bundleBuildResponse"})
 })
 public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
   private static Logger _log = LoggerFactory.getLogger(ManageBundlesAction.class);
@@ -48,6 +52,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private BundleRequestService bundleRequestService;
 	private static final int MAX_RESULTS = -1;
 	private BundleResponse bundleResponse;
+	private BundleBuildResponse bundleBuildResponse;
 	private String id;
 	
 	@Override
@@ -120,13 +125,30 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 		this.bundleResponse = bundleRequestService.validate(bundleRequest);
 		_log.info("id=" + this.bundleResponse.getId());
 		_log.info("complete=" + this.bundleResponse.isComplete());
-		return "bundleResponse";
+		return "validationResponse";
 	}
 	
 	public String validateStatus() {
 	  _log.info("in validateStatus with id=" + getId());
 	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
-	  return "bundleResponse";
+	  return "validationResponse";
+	}
+
+	
+	public String buildBundle() {
+	  _log.info("in buildBundle with bundleDirectory=" + bundleDirectory);
+		BundleBuildRequest bundleRequest = new BundleBuildRequest();
+		bundleRequest.setBundleDirectory(bundleDirectory);
+		this.bundleBuildResponse = bundleRequestService.build(bundleRequest);
+		_log.info("id=" + this.bundleBuildResponse.getId());
+		_log.info("complete=" + this.bundleBuildResponse.isComplete());
+		return "buildResponse";
+	}
+	
+	public String buildStatus() {
+	  _log.info("in validateStatus with id=" + getId());
+	  this.bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
+	  return "buildResponse";
 	}
 	
 //	/**
@@ -240,6 +262,10 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 
 	public BundleResponse getBundleResponse() {
 	  return bundleResponse;
+	}
+
+	public BundleBuildResponse getBundleBuildResponse() {
+	  return bundleBuildResponse;
 	}
 	
 	public void setId(String id) {

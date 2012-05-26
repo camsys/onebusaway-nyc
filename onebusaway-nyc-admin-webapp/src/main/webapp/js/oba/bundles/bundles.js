@@ -71,7 +71,8 @@ jQuery(document).ready(function() {
 	//Handle validate button click event
 	jQuery("#prevalidateInputs #validateBox #validateButton").click(onValidateClick);
 	
-	
+	//Handle build button click event
+	jQuery("#buildBundle_buildButton").click(onBuildClick);
 	
 });
 
@@ -88,6 +89,7 @@ function onSelectClick() {
 				var $tabs = jQuery("#tabs");
 				$tabs.tabs('select', 1);
 				jQuery("#prevalidate_bundleDirectory").text(bundleDir);
+				jQuery("#buildBundle_bundleDirectory").text(bundleDir);
 			},
 			error: function(request) {
 				alert(request.statustext);
@@ -193,6 +195,68 @@ function updateValidateStatus() {
 				}
 				txt = txt + "</ul>";
 				jQuery("#prevalidate_resultList").html(txt);	
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});
+}
+
+function onBuildClick() {
+	jQuery("#buildBundle #buildBox #building").show().css("display","inline");
+	jQuery.ajax({
+		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!buildBundle.action",
+		type: "POST",
+		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
+			"method:buildBundle": "Build"},
+		async: false,
+		success: function(response) {
+				var bundleResponse = eval(response);
+				if (bundleResponse != undefined) {
+					jQuery("#buildBundle_id").text(bundleResponse.id);
+					jQuery("#buildBundle_resultList").html("calling...");
+					window.setTimeout(updateBuildStatus, 1000);
+				} else {
+					jQuery("#buildBundle_id").text(error);
+					jQuery("#buildBundle_resultList").html("error");
+				}
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});
+}
+
+function updateBuildStatus() {
+	id = jQuery("#buildBundle_id").text();
+	jQuery.ajax({
+		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!buildStatus.action",
+		type: "POST",
+		data: {"id": id,
+			"method:buildStatus": "Status"},
+		async: false,
+		success: function(response) {
+				var txt = "<ul>";
+				var bundleResponse = eval(response);
+				if (bundleResponse == null) {
+					jQuery("#buildBundle_buildProgress").text("Complete.");
+					jQuery("#buildBundle #buildBox #building #buildProgress").hide();
+					jQuery("#buildBundle_resultList").html("unknown id=" + id);
+				}
+				var size = bundleResponse.statusList.length;
+				if (size > 0) {
+					for (var i=0; i<size; i++) {
+						txt = txt + "<li>" + bundleResponse.statusList[i] + "</li>";
+					}
+				}
+				if (bundleResponse.complete == false) {
+					window.setTimeout(updateBuildStatus, 1000); // recurse
+				} else {
+					jQuery("#buildBundle_buildProgress").text("Complete.");
+					jQuery("#buildBundle #buildBox #building #buildingProgress").hide();
+				}
+				txt = txt + "</ul>";
+				jQuery("#buildBundle_resultList").html(txt);	
 		},
 		error: function(request) {
 			alert(request.statustext);

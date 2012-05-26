@@ -30,8 +30,24 @@
 					Build Bundle</label>
 				<div class="directoryLabels">
 					<label class="adminLabel directoryLabel">Bundle Directory :</label>
-					<label class="adminLabel directoryLabel"><s:property
+					<label id="buildBundle_bundleDirectory" class="adminLabel directoryLabel"><s:property
 							value="bundleDirectory" /></label>
+					<label class="adminLabel directoryLabel">Request Id :</label>
+					<label id="buildBundle_id" class="adminLabel directoryLabel"><s:property
+							value="id" /></label>
+				</div>
+				<div id="buildBox">
+					<input type="button" id="buildBundle_buildButton" value="Build"
+						class="formButton" />
+					<div id="building">
+						<s:url var="url" value="/css/img/ajax-loader.gif" />
+						<img id="buildingProgress" src="${url}" alt="Ajax loader" /> 
+						  <label id="buildBundle_buildProgress"
+							class="adminLabel">Building ... </label>
+					</div>
+				</div>
+				<div id="buildBundle_resultList">
+				<!--  space -->
 				</div>
 				<div id="bundleContents">
 					<fieldset>

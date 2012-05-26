@@ -178,9 +178,10 @@ public class FileServiceImpl implements FileService {
    * Retrieve the specified key from S3 and store in the given directory.
    */
   public String get(String key, String tmpDir) {
+    _log.debug("get(" + key + ", " + tmpDir + ")");
     FileUtils fs = new FileUtils();
     String filename = fs.parseFileName(key);
-    _log.info("downloading " + key);
+    _log.debug("filename=" + filename);
     GetObjectRequest request = new GetObjectRequest(this._bucketName, key);
     S3Object file = _s3.getObject(request);
     String pathAndFileName = tmpDir + File.separator + filename;

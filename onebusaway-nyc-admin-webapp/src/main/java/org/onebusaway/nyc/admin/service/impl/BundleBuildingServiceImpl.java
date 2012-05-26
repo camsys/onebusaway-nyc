@@ -47,6 +47,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
     String bundleDir = request.getBundleDirectory();
     String tmpDirectory = request.getTmpDirectory();
+    if (tmpDirectory == null) { 
+      tmpDirectory = new FileUtils().createTmpDirectory();
+      request.setTmpDirectory(tmpDirectory);
+    }
 
     // download gtfs
     List<String> gtfs = _fileService.list(

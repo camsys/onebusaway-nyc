@@ -182,6 +182,8 @@ public class BundleRequestServiceImpl implements BundleRequestService {
         _bundleBuildingService.prepare(_request, _response);
         _bundleBuildingService.build(_request, _response);
         _bundleBuildingService.upload(_request, _response);
+        _response.addStatusMessage("version=" + _response.getVersionString());
+        _response.addStatusMessage("complete");
         _response.setComplete(true);
       } catch (Exception any) {
         _log.error(any.toString(), any);
