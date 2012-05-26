@@ -131,7 +131,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	}
 	
 	public String validateStatus() {
-	  _log.info("in validateStatus with id=" + getId());
+	  _log.debug("in validateStatus with id=" + getId());
 	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
 	  return "validationResponse";
 	}
@@ -151,7 +151,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	}
 	
 	public String buildStatus() {
-	  _log.info("in validateStatus with id=" + getId());
+	  _log.debug("in validateStatus with id=" + getId());
 	  this.bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
 	  return "buildResponse";
 	}

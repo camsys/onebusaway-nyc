@@ -14,5 +14,9 @@ public interface BundleBuildingService {
 
   int build(BundleBuildRequest request, BundleBuildResponse response);
 
+  void assemble(BundleBuildRequest request, BundleBuildResponse response);
+  
   void upload(BundleBuildRequest request, BundleBuildResponse response);
+
+
 }

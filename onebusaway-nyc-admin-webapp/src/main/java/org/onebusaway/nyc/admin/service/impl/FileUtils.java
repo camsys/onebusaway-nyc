@@ -249,4 +249,36 @@ public class FileUtils {
       throw new RuntimeException(ioe);
     }
   }
+
+  public int tarcvf(String baseDir, String[] paths, String filename) {
+    Process process = null;
+    try {
+      StringBuffer cmd = new StringBuffer();
+      cmd.append("tar zcC " + baseDir + "  ");
+      for (String path : paths) {
+        cmd.append(path + " ");
+      }
+      cmd.append("-f " + filename);
+      _log.info("exec:" + cmd.toString());
+      process = Runtime.getRuntime().exec(cmd.toString());
+      return process.waitFor();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+  }
+
+  public int rmDir(String directory) {
+    Process process = null;
+    try {
+      String cmd = "rm -rf '" + directory + "'";
+      _log.info("exec:" + cmd);
+      process = Runtime.getRuntime().exec(cmd);
+      return process.waitFor();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    
+  }
 }

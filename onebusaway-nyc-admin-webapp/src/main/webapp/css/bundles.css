@@ -284,6 +284,10 @@
 	padding: 50px;
 }
 
+#buildBundle_exception {
+	display: none;
+	background-color:#FF0000;
+}
 
 #currentDirectories .ui-selecting {
 	background: #FEFF9F;  

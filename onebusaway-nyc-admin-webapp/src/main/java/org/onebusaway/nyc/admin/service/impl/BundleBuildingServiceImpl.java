@@ -29,6 +29,9 @@ import java.util.Map;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUILD_BUNDLE_DIR = "built-bundle";
+  private static final String DATA_DIR = "data";
+  private static final String OUTPUT_DIR = "outputs";
+  private static final String INPUTS_DIR = "inputs";
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImpl.class);
   private FileService _fileService;
 
@@ -71,6 +74,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   @Override
   public void prepare(BundleBuildRequest request, BundleBuildResponse response) {
+    FileUtils fs = new FileUtils();
+    // copy source data to inputs
+    String inputsPath = request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + INPUTS_DIR;
+    File inputsDir = new File(inputsPath);
+    inputsDir.mkdirs();
+    String outputsPath = request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + OUTPUT_DIR;
+    File outputsDir = new File(outputsPath);
+    outputsDir.mkdirs();
+    
+    for (String gtfs : response.getGtfsList()) {
+      String outputFilename = inputsPath + File.separator + fs.parseFileName(gtfs); 
+      fs.copyFiles(new File(gtfs), new File(outputFilename));
+    }
+    for (String stif: response.getStifZipList()) {
+      String outputFilename = inputsPath + File.separator + fs.parseFileName(stif); 
+      fs.copyFiles(new File(stif), new File(outputFilename));
+    }
+    
     for (String stifZip : response.getStifZipList()) {
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
           + "stif");
@@ -91,8 +112,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     PrintStream logFile = null;
     try {
       File outputPath = new File(bundleDir);
+      File dataPath = new File(bundleDir + File.separator + DATA_DIR);
       // beans assume bundlePath is set -- this will be where files are written!
-      System.setProperty("bundlePath", outputPath.getAbsolutePath());
+      System.setProperty("bundlePath", dataPath.getAbsolutePath());
       outputPath.mkdir();
       String logFilename = bundleDir + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
@@ -137,8 +159,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       stifLoaderTask.addPropertyValue("notInServiceDscPath",
           notInServiceFilename);
       stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
-      stifLoaderTask.addPropertyValue("logPath", bundleDir + File.separator
-          + "csv");
+      stifLoaderTask.addPropertyValue("logPath", bundleDir + File.separator 
+          + OUTPUT_DIR);
       beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
 
       BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
@@ -174,6 +196,48 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       }
     }
 
+  }
+  
+  @Override
+  public void assemble(BundleBuildRequest request, BundleBuildResponse response) {
+    FileUtils fs = new FileUtils();
+    // TODO build BundleMetaData.json
+    String[] paths = {"data", "inputs", "outputs", "BundleMetaData.json"};
+    String filename = request.getTmpDirectory() + File.separator + request.getBundleName() + ".tar.gz";
+    response.addStatusMessage("creating bundle=" + filename);
+    String baseDir = request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR;
+    fs.tarcvf(baseDir, paths, filename);
+    
+    // now copy inputs and outputs to root for easy access
+    // inputs
+    String inputsPath = request.getTmpDirectory() + File.separator + INPUTS_DIR;
+    File inputsDestDir = new File(inputsPath);
+    inputsDestDir.mkdir();
+    File inputsDir = new File(request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + INPUTS_DIR);
+    
+    File[] inputFiles = inputsDir.listFiles();
+    if (inputFiles != null) {
+      for (File input : inputFiles) {
+        fs.copyFiles(input, new File(inputsPath + File.separator + input.getName()));
+      }
+    }
+    
+    // outputs
+    String outputsPath = request.getTmpDirectory() + File.separator + OUTPUT_DIR;
+    File outputsDestDir = new File(outputsPath);
+    outputsDestDir.mkdir();
+    File outputsDir = new File(request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + OUTPUT_DIR);
+    File[] outputFiles = outputsDir.listFiles();
+    if (outputFiles != null) {
+      for (File output : outputFiles) {
+        fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
+      }
+    }
+    //TODO implement delete
+//    int rc = fs.rmDir(request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR );
+//    _log.info("delete of " + request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR  + " had rc=" + rc);
+//    rc = fs.rmDir(request.getTmpDirectory() + File.separator + "stif");
+//    _log.info("delete of " + request.getTmpDirectory() + File.separator + "stif"  + " had rc=" + rc);
   }
 
   private StringBuffer listToFile(List<String> notInServiceDSCList) {

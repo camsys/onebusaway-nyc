@@ -258,6 +258,13 @@ function updateBuildStatus() {
 				}
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_resultList").html(txt);	
+				// check for exception
+				if (bundleResponse.exception != null) {
+					if (bundleResponse.exception.message != undefined) {
+						jQuery("#buildBundle_exception").show().css("display","inline");
+						jQuery("#buildBundle_exception").html(bundleResponse.exception.message);
+					}
+				}
 		},
 		error: function(request) {
 			alert(request.statustext);
