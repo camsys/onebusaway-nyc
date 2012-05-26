@@ -72,5 +72,14 @@
         <property name="calculateDefaultBoundsFromAgencyCoverage" value="false" />
     </bean>
     
+    <!--  workaround for ehcache issues, requires unique name to not conflict bundle building -->
+    <bean class="org.onebusaway.container.spring.PropertyOverrideConfigurer">
+    <property name="properties">
+      <props>
+        <prop key="cacheManager.cacheManagerName">org.onebusaway.nyc.admin.cacheManager</prop>
+      </props>
+    </property>
+</bean>
+    
 
 </beans>

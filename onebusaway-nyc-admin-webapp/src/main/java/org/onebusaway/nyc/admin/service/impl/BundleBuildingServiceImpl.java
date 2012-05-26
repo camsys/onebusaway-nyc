@@ -91,6 +91,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     PrintStream logFile = null;
     try {
       File outputPath = new File(bundleDir);
+      // beans assume bundlePath is set -- this will be where files are written!
+      System.setProperty("bundlePath", outputPath.getAbsolutePath());
       outputPath.mkdir();
       String logFilename = bundleDir + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
@@ -105,6 +107,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       List<GtfsBundle> gtfsBundles = createGtfsBundles(response.getGtfsList());
       List<String> contextPaths = new ArrayList<String>();
 
+      // fixup ehcache -- ehCacheMBeanRegistration
+      
       if (!gtfsBundles.isEmpty()) {
         BeanDefinitionBuilder bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsBundles.class);
         bean.addPropertyValue("bundles", gtfsBundles);
@@ -116,8 +120,11 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       // configure for NYC specifics
       BeanDefinitionBuilder bundle = BeanDefinitionBuilder.genericBeanDefinition(FederatedTransitDataBundle.class);
+      bundle.addPropertyValue("path", outputPath);
       beans.put("bundle", bundle.getBeanDefinition());
+      
       BeanDefinitionBuilder nycBundle = BeanDefinitionBuilder.genericBeanDefinition(NycFederatedTransitDataBundle.class);
+      nycBundle.addPropertyValue("path", outputPath);
       beans.put("nycBundle", nycBundle.getBeanDefinition());
 
       BeanDefinitionBuilder stifLoaderTask = BeanDefinitionBuilder.genericBeanDefinition(StifTask.class);
