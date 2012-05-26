@@ -32,17 +32,21 @@
 					<label class="adminLabel directoryLabel">Bundle Directory :</label>
 					<label id="prevalidate_bundleDirectory" class="adminLabel directoryLabel"><s:property
 							value="bundleDirectory" /></label>
+					<label class="adminLabel directoryLabel">Request Id :</label>
+					<label id="prevalidate_id" class="adminLabel directoryLabel"><s:property
+							value="id" /></label>
 				</div>
 				<div id="validateBox">
 					<input type="button" id="validateButton" value="Validate"
 						class="formButton" />
 					<div id="validating">
 						<s:url var="url" value="/css/img/ajax-loader.gif" />
-						<img id="validationProgress" src="${url}" alt="Ajax loader" /> <label
+						<img id="validationProgress" src="${url}" alt="Ajax loader" /> 
+						  <label id="prevalidate_validationProgress"
 							class="adminLabel">Validating ... </label>
 					</div>
 				</div>
-				<div id="resultList">
+				<div id="prevalidate_resultList">
 				<!--  space -->
 				</div>
 				<div class="submitForm">

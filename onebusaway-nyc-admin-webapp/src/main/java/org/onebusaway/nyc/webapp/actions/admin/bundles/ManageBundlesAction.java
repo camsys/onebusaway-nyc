@@ -52,7 +52,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	
 	@Override
 	public String input() {
-	  _log.info("in input");
+	  _log.debug("in input");
     return SUCCESS;
 	  
 	}
@@ -67,7 +67,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 * Creates directory for uploading bundles on AWS
 	 */
 	public String createDirectory() {
-	  _log.info("in create directory with dir=" + directoryName);
+	  _log.debug("in create directory with dir=" + directoryName);
 		if(fileService.bundleDirectoryExists(directoryName)) {
 		  _log.info("bundle dir exists");
 			createDirectoryMessage = directoryName + " already exists. Please try again!";
@@ -114,7 +114,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 * @return bundle response as validation result.
 	 */
 	public String validateBundle() {
-	  _log.info("in validateBundle");
+	  _log.info("in validateBundle with bundleDirectory=" + bundleDirectory);
 		BundleRequest bundleRequest = new BundleRequest();
 		bundleRequest.setBundleDirectory(bundleDirectory);
 		this.bundleResponse = bundleRequestService.validate(bundleRequest);

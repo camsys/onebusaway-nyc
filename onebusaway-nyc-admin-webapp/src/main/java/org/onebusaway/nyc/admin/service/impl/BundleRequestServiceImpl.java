@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,6 +62,7 @@ public class BundleRequestServiceImpl implements BundleRequestService {
    */
   public BundleResponse validate(BundleRequest bundleRequest) {
     BundleResponse bundleResponse = new BundleResponse(getNextId());
+    _log.info("validate id=" + bundleResponse.getId());
     _validationMap.put(bundleResponse.getId(), bundleResponse);
     _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
     return bundleResponse;
@@ -125,9 +127,17 @@ public class BundleRequestServiceImpl implements BundleRequestService {
     @Override
     public void run() {
       try {
-        String gtfsDirectory = _fileService.getGtfsPath() + File.separator
-            + _request.getBundleDirectory();
-        for (String s3Key : _fileService.list(gtfsDirectory, -1)) {
+        _log.info("in validateThread.run");
+        String gtfsDirectory =  _request.getBundleDirectory() + File.separator
+            + _fileService.getGtfsPath();
+        _log.info("gtfsDir=" + gtfsDirectory);
+        List<String> files = _fileService.list(gtfsDirectory, -1);
+        if (files == null || files.size() == 0) { 
+          _response.addStatusMessage("no files found in " + gtfsDirectory);
+          _response.setComplete(true);
+          return;
+        }
+        for (String s3Key : files) {
           String tmpDir = new FileUtils().createTmpDirectory();
           _response.addStatusMessage("downloading " + s3Key);
           _log.info("downloading " + s3Key);
@@ -146,6 +156,11 @@ public class BundleRequestServiceImpl implements BundleRequestService {
         _log.error(any.toString(), any);
         _response.setComplete(true);
         _response.setException(any);
+      } catch (Throwable t) {
+        RuntimeException re = new RuntimeException(t);
+        _log.error(t.toString(), re);
+        _response.setComplete(true);
+        _response.setException(re);
       }
     }
   }

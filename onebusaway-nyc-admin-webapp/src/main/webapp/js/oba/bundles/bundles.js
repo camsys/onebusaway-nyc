@@ -143,10 +143,56 @@ function onValidateClick() {
 	jQuery.ajax({
 		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!validateBundle.action",
 		type: "POST",
-		data: {"method:validateBundle": "Validate"},
+		data: {"bundleDirectory": jQuery("#prevalidate_bundleDirectory").text(),
+			"method:validateBundle": "Validate"},
 		async: false,
 		success: function(response) {
-				alert("response=" + response);
+				var bundleResponse = eval(response);
+				if (bundleResponse != undefined) {
+					jQuery("#prevalidate_id").text(bundleResponse.id);
+					jQuery("#prevalidate_resultList").text("calling...");
+					window.setTimeout(updateValidateStatus, 1000);
+				} else {
+					jQuery("#prevalidate_id").text(error);
+					jQuery("#prevalidate_resultList").text("error");
+				}
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});
+}
+
+function updateValidateStatus() {
+	var id = jQuery("#prevalidate_id").text();
+	jQuery.ajax({
+		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!validateStatus.action",
+		type: "POST",
+		data: {"id": id,
+			"method:validateBundle": "Validate"},
+		async: false,
+		success: function(response) {
+				var txt = "<ul>";
+				var bundleResponse = eval(response);
+				if (bundleResponse == null) {
+					jQuery("#prevalidate_validationProgress").text("Complete.");
+					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+					jQuery("#prevalidate_resultList").html("unknown id=" + id);
+				}
+				var size = bundleResponse.statusMessages.length;
+				if (size > 0) {
+					for (var i=0; i<size; i++) {
+						txt = txt + "<li>" + bundleResponse.statusMessages[i] + "</li>";
+					}
+				}
+				if (bundleResponse.complete == false) {
+					window.setTimeout(updateValidateStatus, 1000); // recurse
+				} else {
+					jQuery("#prevalidate_validationProgress").text("Complete.");
+					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+				}
+				txt = txt + "</ul>";
+				jQuery("#prevalidate_resultList").html(txt);	
 		},
 		error: function(request) {
 			alert(request.statustext);
