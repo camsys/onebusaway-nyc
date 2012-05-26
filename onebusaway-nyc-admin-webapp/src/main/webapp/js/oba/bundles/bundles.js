@@ -58,6 +58,9 @@ jQuery(document).ready(function() {
 			}
 		}
 	});
+	
+	// hookup ajax call to select
+	jQuery("#directoryButton").click(onSelectClick);
 	//toggle advanced option contents
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 			'click' : toggleAdvancedOptions	});
@@ -71,6 +74,26 @@ jQuery(document).ready(function() {
 	
 	
 });
+
+
+function onSelectClick() {
+	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+		jQuery.ajax({
+			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!selectDirectory.action",
+			type: "POST",
+			data: {"directoryName":  bundleDir,
+				"method:selectDirectory": "Select"},
+			async: false,
+			success: function(response) {
+				var $tabs = jQuery("#tabs");
+				$tabs.tabs('select', 1);
+				jQuery("#prevalidate_bundleDirectory").text(bundleDir);
+			},
+			error: function(request) {
+				alert(request.statustext);
+			}
+		});
+}
 
 
 function toggleAdvancedOptions() {
@@ -119,14 +142,14 @@ function onValidateClick() {
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
 		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!validateBundle.action",
-		type: "GET",
+		type: "POST",
+		data: {"method:validateBundle": "Validate"},
+		async: false,
 		success: function(response) {
-			
+				alert("response=" + response);
+		},
+		error: function(request) {
+			alert(request.statustext);
 		}
 	});
 }
-
-
-
-
-

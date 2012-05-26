@@ -37,8 +37,8 @@
 				</div>
 				<div id="createDirectoryContents">
 					<s:textfield name="directoryName" cssClass="directoryName" />
-					<s:submit id="directoryButton" value="Create" cssClass="formButton"
-						method="createDirectory" />
+					<input type="button" id="directoryButton" value="Create" class="formButton"
+						 />
 					<div id="createDirectoryResult">
 						<s:if test="%{#directoryCreated == true}">
 							<s:url var="url" value="/css/img/dialog-accept-2.png" />

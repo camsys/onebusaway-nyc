@@ -30,7 +30,7 @@
 					of GTFS and STIF Files</label>
 				<div class="directoryLabels">
 					<label class="adminLabel directoryLabel">Bundle Directory :</label>
-					<label class="adminLabel directoryLabel"><s:property
+					<label id="prevalidate_bundleDirectory" class="adminLabel directoryLabel"><s:property
 							value="bundleDirectory" /></label>
 				</div>
 				<div id="validateBox">

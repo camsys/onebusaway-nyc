@@ -10,6 +10,9 @@ import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +21,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Action class that holds properties and methods required across all bundle building UI pages
  * @author abelsare
+ * @author sheldonabrown
  *
  */
+@Namespace(value="/admin/bundles")
+@Results({
+    @Result(type = "redirectAction", name = "redirect", params = {
+    "actionName", "manage-bundles"}),
+    @Result(name="selectDirectory", type="json", 
+  params={"root", "bundleDirectory"}),
+    @Result(name="bundleResponse", type="json", 
+  params={"root", "bundleResponse"})
+})
 public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
   private static Logger _log = LoggerFactory.getLogger(ManageBundlesAction.class);
 	private static final long serialVersionUID = 1L;
@@ -34,26 +47,32 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private FileService fileService;
 	private BundleRequestService bundleRequestService;
 	private static final int MAX_RESULTS = -1;
+	private BundleResponse bundleResponse;
+	private String id;
 	
 	@Override
 	public String input() {
-	  _log.debug("in input");
+	  _log.info("in input");
     return SUCCESS;
 	  
 	}
 	
 	@Override
 	public String execute() {
+	  _log.info("in execute");
 	  return SUCCESS;
 	}
 	
 	/**
 	 * Creates directory for uploading bundles on AWS
 	 */
-	public void createDirectory() {
+	public String createDirectory() {
+	  _log.info("in create directory with dir=" + directoryName);
 		if(fileService.bundleDirectoryExists(directoryName)) {
+		  _log.info("bundle dir exists");
 			createDirectoryMessage = directoryName + " already exists. Please try again!";
 		} else {
+		  _log.info("creating bundledir");
 			//Create the directory if it does not exist.
 			directoryCreated = fileService.createBundleDirectory(directoryName);
 			selectDirectory();
@@ -61,10 +80,17 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 				createDirectoryMessage = "Successfully created new directory: " +directoryName;
 			} else {
 				createDirectoryMessage = "Unable to create direcory: " +directoryName;
+				return INPUT;
 			}
 		}
+		return "prevalidate";
 	}
 	
+	public String selectDirectory() {
+	  _log.info("in selectDirectory with dirname=" + directoryName);
+	  bundleDirectory = directoryName;
+	  return "selectDirectory";
+	}
 	/**
 	 * Returns the existing directories in the current bucket on AWS
 	 * @return list of existing directories
@@ -87,18 +113,28 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 * Validates a bundle request and generates a response
 	 * @return bundle response as validation result.
 	 */
-	public BundleResponse validateBundle() { 
+	public String validateBundle() {
+	  _log.info("in validateBundle");
 		BundleRequest bundleRequest = new BundleRequest();
 		bundleRequest.setBundleDirectory(bundleDirectory);
-		return bundleRequestService.validate(bundleRequest);
+		this.bundleResponse = bundleRequestService.validate(bundleRequest);
+		_log.info("id=" + this.bundleResponse.getId());
+		_log.info("complete=" + this.bundleResponse.isComplete());
+		return "bundleResponse";
 	}
 	
-	/**
-	 * Stores the newly created or selected directory name from the UI.
-	 */
-	public void selectDirectory() {
-		bundleDirectory = directoryName;
+	public String validateStatus() {
+	  _log.info("in validateStatus with id=" + getId());
+	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
+	  return "bundleResponse";
 	}
+	
+//	/**
+//	 * Stores the newly created or selected directory name from the UI.
+//	 */
+//	public void selectDirectory() {
+//		bundleDirectory = directoryName;
+//	}
 	
 	/**
 	 * @return the createDirectoryMessage
@@ -202,4 +238,15 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 		this.bundleRequestService = bundleRequestService;
 	}
 
+	public BundleResponse getBundleResponse() {
+	  return bundleResponse;
+	}
+	
+	public void setId(String id) {
+	  this.id = id;
+	}
+	
+	public String getId() {
+	    return id;
+	}
 }

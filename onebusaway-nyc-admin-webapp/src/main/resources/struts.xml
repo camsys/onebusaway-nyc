@@ -35,7 +35,9 @@
     <constant name="struts.convention.default.parent.package" value="onebusaway-admin-webapp-default" />
     
     <package name="onebusaway-admin-webapp-default" extends="struts-default">
-    
+  		<result-types>
+          <result-type name="json" class="org.apache.struts2.json.JSONResult"/>
+        </result-types>
     	<global-results>
          	<result name="NotFound">
                 <param name="location">/WEB-INF/content/error/404.jspx</param>
@@ -45,6 +47,5 @@
                 <param name="actionName">index</param>
             </result>
         </global-results>
-  		
     </package>
 </struts>
