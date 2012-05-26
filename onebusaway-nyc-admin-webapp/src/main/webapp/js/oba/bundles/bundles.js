@@ -208,6 +208,7 @@ function onBuildClick() {
 		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!buildBundle.action",
 		type: "POST",
 		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
+			"bundleName": jQuery("#buildBundle_bundleName").val(),
 			"method:buildBundle": "Build"},
 		async: false,
 		success: function(response) {

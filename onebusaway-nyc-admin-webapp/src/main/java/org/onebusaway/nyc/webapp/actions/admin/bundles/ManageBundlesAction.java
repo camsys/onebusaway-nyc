@@ -45,6 +45,8 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private String createDirectoryMessage;
 	//Holds the value entered in the text box
 	private String directoryName;
+	// what to call the bundle, entered in the text box
+	private String bundleName;
 	private boolean directoryCreated;
 	private boolean productionTarget;
 	private String comments;
@@ -136,9 +138,12 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 
 	
 	public String buildBundle() {
-	  _log.info("in buildBundle with bundleDirectory=" + bundleDirectory);
+	  _log.info("in buildBundle with bundleDirectory=" + bundleDirectory 
+	      + " and bundleName=" + bundleName);
 		BundleBuildRequest bundleRequest = new BundleBuildRequest();
 		bundleRequest.setBundleDirectory(bundleDirectory);
+		bundleRequest.setBundleName(bundleName);
+		//bundleRequest.
 		this.bundleBuildResponse = bundleRequestService.build(bundleRequest);
 		_log.info("id=" + this.bundleBuildResponse.getId());
 		_log.info("complete=" + this.bundleBuildResponse.isComplete());
@@ -274,5 +279,13 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	
 	public String getId() {
 	    return id;
+	}
+	
+	public void setBundleName(String bundleName) {
+	  this.bundleName = bundleName;
+	}
+	
+	public String getBundleName() {
+    return bundleName;
 	}
 }

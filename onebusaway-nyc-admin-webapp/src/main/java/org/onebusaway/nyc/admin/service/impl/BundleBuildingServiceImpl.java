@@ -155,7 +155,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       response.addStatusMessage("building bundle");
       creator.run();
-      response.addStatusMessage("Finished");
+      response.addStatusMessage("bundle build complete");
       return 0;
 
     } catch (Exception e) {
@@ -201,16 +201,22 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
   public void upload(BundleBuildRequest request, BundleBuildResponse response) {
     String versionString = createVersionString(request, response);
     response.setVersionString(versionString);
+    response.addStatusMessage("uploading to " + versionString);
     _log.info("uploading " + response.getBundleOutputDirectory() + " to " + versionString);
     _fileService.put(versionString, response.getBundleOutputDirectory());
+    response.addStatusMessage("upload complete");
   }
 
-  //TODO trivial implementation
   private String createVersionString(BundleBuildRequest request,
       BundleBuildResponse response) {
+    String bundleName = request.getBundleName();
+    _log.info("createVersionString found bundleName=" + bundleName);
+    if (bundleName == null || bundleName.length() == 0) {
+      bundleName = "b" + System.currentTimeMillis();
+    }
     return request.getBundleDirectory() + File.separator + 
         _fileService.getBuildPath() +  File.separator +
-        "b" + System.currentTimeMillis();
+        bundleName;
   }
 
 }

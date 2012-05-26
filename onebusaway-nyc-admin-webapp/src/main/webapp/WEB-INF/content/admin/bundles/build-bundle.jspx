@@ -35,6 +35,8 @@
 					<label class="adminLabel directoryLabel">Request Id :</label>
 					<label id="buildBundle_id" class="adminLabel directoryLabel"><s:property
 							value="id" /></label>
+					<label class="adminLabel directoryLabel">Bundle Name :</label>
+					<input type="text" id="buildBundle_bundleName" />
 				</div>
 				<div id="buildBox">
 					<input type="button" id="buildBundle_buildButton" value="Build"
