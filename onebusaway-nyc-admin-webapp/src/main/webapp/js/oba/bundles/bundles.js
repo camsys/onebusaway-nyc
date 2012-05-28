@@ -58,7 +58,9 @@ jQuery(document).ready(function() {
 			}
 		}
 	});
-	
+
+	jQuery("#create_continue").click(onCreateContinueClick);
+	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
 	//toggle advanced option contents
@@ -76,23 +78,41 @@ jQuery(document).ready(function() {
 	
 });
 
+function onCreateContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 1);
+}
+
+function onPrevalidateContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 2);
+}
 
 function onSelectClick() {
 	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	var actionName = "selectDirectory";
+	if (jQuery("#create").is(":checked")) {
+		actionName = "createDirectory";
+	}
 		jQuery.ajax({
-			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!selectDirectory.action",
+			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!" + actionName + ".action",
 			type: "POST",
-			data: {"directoryName":  bundleDir,
-				"method:selectDirectory": "Select"},
+			data: {"directoryName":  bundleDir},
 			async: false,
 			success: function(response) {
-				var $tabs = jQuery("#tabs");
-				$tabs.tabs('select', 1);
-				jQuery("#prevalidate_bundleDirectory").text(bundleDir);
-				jQuery("#buildBundle_bundleDirectory").text(bundleDir);
+				var status = eval(response);
+				if (status != undefined) {
+					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","inline");
+					jQuery("#createDirectoryMessage").text(status.message);
+					var bundleDir = status.directoryName;
+					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
+					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
+				} else {
+					alert("null status");
+				}
 			},
 			error: function(request) {
-				alert(request.statustext);
+				alert("onSelectClick error=" + request.statustext);
 			}
 		});
 }

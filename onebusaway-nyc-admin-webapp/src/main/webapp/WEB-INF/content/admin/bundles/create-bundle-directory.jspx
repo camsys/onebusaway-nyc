@@ -40,6 +40,8 @@
 					<input type="button" id="directoryButton" value="Create" class="formButton"
 						 />
 					<div id="createDirectoryResult">
+					<!--  TODO  -->
+					<!-- 
 						<s:if test="%{#directoryCreated == true}">
 							<s:url var="url" value="/css/img/dialog-accept-2.png" />
 							<img id="resultImage" src="${url}" alt="Image not found" />
@@ -48,7 +50,10 @@
 							<s:url var="url" value="/css/img/warning_16.png" />
 							<img id="resultImage" src="${url}" alt="Image not found" />
 						</s:else>
-						<s:property value="createDirectoryMessage" />
+					-->
+						<div id="createDirectoryMessage">
+						<!--  space -->
+						</div>
 					</div>
 				</div>
 				<div id="selectExistingContents">
@@ -76,7 +81,7 @@
 					<label id="commentLabel">Comments:</label>
 					<div id="commentBox">
 						<s:textarea name="comments" cssClass="comments"></s:textarea>
-						<input type="button" value="Continue" class="submit"/>
+						<input type="button" value="Continue" id="create_comments" class="submit"/>
 					</div>
 				</div>
 				<div id="uploadFiles">
@@ -89,7 +94,7 @@
 				<div class="submitForm">
 					<fieldset>
 						<a href="" class="link">Cancel</a>
-						<s:submit value="Continue" cssClass="submit" />
+						<input type="button" id="create_continue" value="Continue" class="submit"/>
 					</fieldset>
 				</div>
 			</div>

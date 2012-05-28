@@ -40,7 +40,7 @@ public class ManageBundlesActionTest {
 		
 		action.createDirectory();
 		
-		assertEquals(action.getCreateDirectoryMessage(), "Successfully created new directory: TEST");
+		assertEquals(action.getDirectoryStatus().getMessage(), "Successfully created new directory: TEST");
 		assertEquals(action.getBundleDirectory(), "TEST");
 		
 		verify(fileService, times(1)).bundleDirectoryExists(directoryName);
@@ -58,7 +58,7 @@ public class ManageBundlesActionTest {
 		
 		action.createDirectory();
 		
-		assertEquals(action.getCreateDirectoryMessage(), "Unable to create direcory: TEST");
+		assertEquals(action.getDirectoryStatus().getMessage(), "Unable to create direcory: TEST");
 		assertEquals(action.getBundleDirectory(), "TEST");
 		
 		verify(fileService, times(1)).bundleDirectoryExists(directoryName);
@@ -71,7 +71,7 @@ public class ManageBundlesActionTest {
 		
 		action.createDirectory();
 		
-		assertEquals(action.getCreateDirectoryMessage(), "TEST already exists. Please try again!");
+		assertEquals(action.getDirectoryStatus().getMessage(), "TEST already exists. Please try again!");
 		assertEquals(action.getBundleDirectory(), null);
 		
 		verify(fileService, times(1)).bundleDirectoryExists(directoryName);

@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
     @Result(type = "redirectAction", name = "redirect", params = {
     "actionName", "manage-bundles"}),
     @Result(name="selectDirectory", type="json", 
-  params={"root", "bundleDirectory"}),
+  params={"root", "directoryStatus"}),
     @Result(name="validationResponse", type="json", 
   params={"root", "bundleResponse"}),
     @Result(name="buildResponse", type="json", 
@@ -42,7 +42,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private static final long serialVersionUID = 1L;
 	//To hold the final directory name 
 	private String bundleDirectory;
-	private String createDirectoryMessage;
+	private DirectoryStatus directoryStatus = null;
 	//Holds the value entered in the text box
 	private String directoryName;
 	// what to call the bundle, entered in the text box
@@ -74,12 +74,13 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 * Creates directory for uploading bundles on AWS
 	 */
 	public String createDirectory() {
+	  String createDirectoryMessage = null;
 	  _log.debug("in create directory with dir=" + directoryName);
 		if(fileService.bundleDirectoryExists(directoryName)) {
 		  _log.info("bundle dir exists");
 			createDirectoryMessage = directoryName + " already exists. Please try again!";
 		} else {
-		  _log.info("creating bundledir");
+		  _log.info("creating bundledir=" + directoryName);
 			//Create the directory if it does not exist.
 			directoryCreated = fileService.createBundleDirectory(directoryName);
 			selectDirectory();
@@ -87,15 +88,16 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 				createDirectoryMessage = "Successfully created new directory: " +directoryName;
 			} else {
 				createDirectoryMessage = "Unable to create direcory: " +directoryName;
-				return INPUT;
 			}
 		}
-		return "prevalidate";
+		directoryStatus = new DirectoryStatus(directoryName, createDirectoryMessage); 
+		return "selectDirectory";
 	}
 	
 	public String selectDirectory() {
 	  _log.info("in selectDirectory with dirname=" + directoryName);
 	  bundleDirectory = directoryName;
+	  directoryStatus = new DirectoryStatus(directoryName, "selected " + directoryName);
 	  return "selectDirectory";
 	}
 	/**
@@ -155,28 +157,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  this.bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
 	  return "buildResponse";
 	}
-	
-//	/**
-//	 * Stores the newly created or selected directory name from the UI.
-//	 */
-//	public void selectDirectory() {
-//		bundleDirectory = directoryName;
-//	}
-	
-	/**
-	 * @return the createDirectoryMessage
-	 */
-	public String getCreateDirectoryMessage() {
-		return createDirectoryMessage;
-	}
-	
-	/**
-	 * @param createDirectoryMessage the createDirectoryMessage to set
-	 */
-	public void setCreateDirectoryMessage(String createDirectoryMessage) {
-		this.createDirectoryMessage = createDirectoryMessage;
-	}
-	
+
 	/**
 	 * @return the directoryName
 	 */
@@ -287,5 +268,25 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	
 	public String getBundleName() {
     return bundleName;
+	}
+
+	public DirectoryStatus getDirectoryStatus() {
+	  return directoryStatus;
+	}
+	
+	public class DirectoryStatus {
+	  private String directoryName;
+	  private String message;
+	  public DirectoryStatus(String directoryName, String message) {
+	    this.directoryName = directoryName;
+	    this.message = message;
+	  }
+	  
+	  public String getDirectoryName() {
+	    return directoryName;
+	  }
+	  public String getMessage() {
+	    return message;
+	  }
 	}
 }

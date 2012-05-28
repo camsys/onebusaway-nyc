@@ -94,6 +94,9 @@ public class BundleValidationServiceImplTest {
     int rc = impl.installAndValidateGtfs(emptyFeedFilename, 
         feedFilename);
     // feedValidator exits with returnCode 1
+    if (rc == 2) {
+      throw new RuntimeException("please execute this command: 'sudo ln -s /usr/bin/python /usr/bin/python2.5'");
+    }
     assertEquals(1, rc);
     File output = new File(feedFilename);
     assertTrue(output.exists());
