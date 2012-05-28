@@ -63,9 +63,9 @@ public class BundleBuildingServiceImplTest {
         _log.error("list called with " + directory);
         ArrayList<String> list = new ArrayList<String>();
         if (directory.equals("test/gtfs_latest")) {
-          list.add("google_transit_staten_island.zip");
+          list.add("gtfs-m34.zip");
         } else if (directory.equals("test/stif_latest")) {
-          list.add("stif.zip");
+          list.add("stif-m34.zip");
         } else {
           list.add("empty");
         }
@@ -76,11 +76,11 @@ public class BundleBuildingServiceImplTest {
       public String get(String key, String tmpDir) {
         _log.error("get called with " + key);
         InputStream source = null;
-        if (key.equals("google_transit_staten_island.zip")) {
+        if (key.equals("gtfs-m34.zip")) {
           source = this.getClass().getResourceAsStream(
-              "google_transit_staten_island.zip");
-        } else if (key.equals("stif.zip")) {
-          source = this.getClass().getResourceAsStream("stif.zip");
+              "gtfs-m34.zip");
+        } else if (key.equals("stif-m34.zip")) {
+          source = this.getClass().getResourceAsStream("stif-m34.zip");
         }
         String filename = tmpDir + File.separator + key;
         new FileUtils().copy(source, filename);
