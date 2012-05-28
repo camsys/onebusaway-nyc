@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -149,13 +150,30 @@ public class FileServiceImpl implements FileService {
   public List<String[]> listBundleDirectories(int maxResults) {
     List<String[]> rows = new ArrayList<String[]>();
     HashMap<String, String> map = new HashMap<String, String>();
-    ListObjectsRequest request = new ListObjectsRequest(_bucketName, null, "/",
-        "", maxResults);
+    ListObjectsRequest request = new ListObjectsRequest(_bucketName, null, null,
+        "/", maxResults);
 
     ObjectListing listing = null;
     do {
       if (listing == null) { 
         listing = _s3.listObjects(request);
+        if (listing.getCommonPrefixes() != null) {
+          // short circuit if common prefixes works
+          List<String> commonPrefixes = listing.getCommonPrefixes();
+          for (String key : commonPrefixes) {
+            Date lastModified = getLastModifiedTimeForKey(key);
+            String lastModifiedStr = "n/a";
+            if (lastModified != null) {
+              lastModifiedStr = "" + lastModified.toString();
+            }
+            String[] columns = {
+              parseKey(key), getStatus(key), lastModifiedStr 
+            };
+          rows.add(columns);
+          }
+          return rows;
+        }
+        _log.error("prefixes=" + listing.getCommonPrefixes());
       } else {
         listing = _s3.listNextBatchOfObjects(listing);
       }
@@ -171,6 +189,21 @@ public class FileServiceImpl implements FileService {
       
     } while (listing.isTruncated());
     return rows;
+  }
+
+  
+  private Date getLastModifiedTimeForKey(String key) {
+    ListObjectsRequest request = new ListObjectsRequest(_bucketName, key, null,
+        "/", 1);
+    ObjectListing listing = _s3.listObjects(request);
+    if (!listing.getObjectSummaries().isEmpty())
+      return listing.getObjectSummaries().get(0).getLastModified();
+    return null;
+  }
+
+  // TODO return the status (production/experimental) of this directory
+  private String getStatus(String key) {
+    return " ";
   }
 
   @Override
