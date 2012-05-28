@@ -1,5 +1,9 @@
 package org.onebusaway.nyc.admin.model;
 
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,15 +15,15 @@ public class BundleBuildRequest {
   public String getBundleDirectory() {
     return _bundleDirectory;
   }
-  
+
   public void setBundleDirectory(String bundleDirectory) {
     _bundleDirectory = bundleDirectory;
   }
 
   public String getTmpDirectory() {
-    return _tmpDirectory; 
+    return _tmpDirectory;
   }
-  
+
   public void setTmpDirectory(String tmpDirectory) {
     _tmpDirectory = tmpDirectory;
   }
@@ -39,9 +43,21 @@ public class BundleBuildRequest {
   public String getBundleName() {
     return _bundleName;
   }
-  
+
   public void setBundleName(String bundleName) {
-    _bundleName = bundleName;    
+    _bundleName = bundleName;
+  }
+
+  public LocalDate getBundleStartDate() {
+    // TODO this needs to come from UI or be calculated
+    DateTimeFormatter dtf = ISODateTimeFormat.basicDate();
+    return new LocalDate(dtf.parseLocalDate("20120408"));
+  }
+
+  public LocalDate getBundleEndDate() {
+    // TODO this needs to come from UI or be calculated
+    DateTimeFormatter dtf = ISODateTimeFormat.basicDate();
+    return new LocalDate(dtf.parseLocalDate("20120707"));
   }
 
 }

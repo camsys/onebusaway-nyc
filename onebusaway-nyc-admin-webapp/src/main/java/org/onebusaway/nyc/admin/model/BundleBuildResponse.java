@@ -10,7 +10,11 @@ public class BundleBuildResponse {
   private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
   private Exception _exception = null;
   private boolean _isComplete = false;
+  private String _bundleRootDirectory;
+  private String _bundleInputDirectory;
   private String _bundleOutputDirectory;
+  private String _bundleDataDirectory;
+  private String _bundleTarFilename;
   private String _versionString;
 
   private String _id = null;
@@ -77,6 +81,37 @@ public class BundleBuildResponse {
 
   public String getVersionString() {
     return _versionString;
+  }
+
+  public String getBundleDataDirectory() {
+    return _bundleDataDirectory;
+  }
+  public void setBundleDataDirectory(String directoryPath) {
+    _bundleDataDirectory = directoryPath;
+  }
+
+  public String getBundleInputDirectory() {
+    return _bundleInputDirectory;
+  }
+  public void setBundleInputDirectory(String directoryPath) {
+    _bundleInputDirectory = directoryPath;
+    
+  }
+
+  public String getBundleTarFilename() {
+    return _bundleTarFilename;
+  }
+  
+  public void setBundleTarFilename(String filename) {
+    _bundleTarFilename = filename;
+  }
+
+  public String getBundleRootDirectory() {
+    return _bundleRootDirectory;
+  }
+  
+  public void setBundleRootDirectory(String directoryPath) {
+    _bundleRootDirectory = directoryPath;
   }
 
 }

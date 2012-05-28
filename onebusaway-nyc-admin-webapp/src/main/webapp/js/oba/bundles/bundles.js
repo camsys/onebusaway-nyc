@@ -203,6 +203,7 @@ function updateValidateStatus() {
 }
 
 function onBuildClick() {
+	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #building").show().css("display","inline");
 	jQuery.ajax({
 		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!buildBundle.action",

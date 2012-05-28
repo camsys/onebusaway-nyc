@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
-  private static final String BUILD_BUNDLE_DIR = "built-bundle";
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
   private static final String INPUTS_DIR = "inputs";
@@ -45,6 +44,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
 
+  /**
+   * download from S3 and stage for building 
+   */
   @Override
   public void download(BundleBuildRequest request, BundleBuildResponse response) {
 
@@ -70,18 +72,38 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       response.addStifZipFile(_fileService.get(file, tmpDirectory));
     }
 
+    // TODO download previous validate data or rerun or?
   }
 
+  /**
+   * stage file locations for bundle building.
+   */
   @Override
   public void prepare(BundleBuildRequest request, BundleBuildResponse response) {
     FileUtils fs = new FileUtils();
     // copy source data to inputs
-    String inputsPath = request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + INPUTS_DIR;
+    String rootPath = request.getTmpDirectory() + File.separator + request.getBundleName();
+    response.setBundleRootDirectory(rootPath);
+    File rootDir = new File(rootPath);
+    rootDir.mkdirs();
+    
+    String inputsPath = request.getTmpDirectory() + File.separator + request.getBundleName() 
+        + File.separator + INPUTS_DIR;
+    response.setBundleInputDirectory(inputsPath);
     File inputsDir = new File(inputsPath);
     inputsDir.mkdirs();
-    String outputsPath = request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + OUTPUT_DIR;
+    String outputsPath = request.getTmpDirectory() + File.separator + request.getBundleName()
+        + File.separator + OUTPUT_DIR;
+    response.setBundleOutputDirectory(outputsPath);
     File outputsDir = new File(outputsPath);
     outputsDir.mkdirs();
+
+    String dataPath = request.getTmpDirectory() + File.separator + request.getBundleName()
+        + File.separator + DATA_DIR;
+    File dataDir = new File(dataPath);
+    response.setBundleDataDirectory(dataPath);
+    dataDir.mkdirs();
+
     
     for (String gtfs : response.getGtfsList()) {
       String outputFilename = inputsPath + File.separator + fs.parseFileName(gtfs); 
@@ -100,23 +122,24 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
 
+  /**
+   * call FederatedTransitDataBundleCreator
+   */
   @Override
   public int build(BundleBuildRequest request, BundleBuildResponse response) {
     /*
      * this follows the example from FederatedTransitDataBundleCreatorMain
      */
-    String bundleDir = request.getTmpDirectory() + File.separator
-        + BUILD_BUNDLE_DIR;
-    response.setBundleOutputDirectory(bundleDir);
     PrintStream stdOut = System.out;
     PrintStream logFile = null;
     try {
-      File outputPath = new File(bundleDir);
-      File dataPath = new File(bundleDir + File.separator + DATA_DIR);
+      
+      File outputPath = new File(response.getBundleDataDirectory());
+
       // beans assume bundlePath is set -- this will be where files are written!
-      System.setProperty("bundlePath", dataPath.getAbsolutePath());
-      outputPath.mkdir();
-      String logFilename = bundleDir + File.separator + "bundleBuilder.out.txt";
+      System.setProperty("bundlePath", outputPath.getAbsolutePath());
+      
+      String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
       // swap standard out for logging
       System.setOut(logFile);
@@ -159,8 +182,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       stifLoaderTask.addPropertyValue("notInServiceDscPath",
           notInServiceFilename);
       stifLoaderTask.addPropertyValue("fallBackToStifBlocks", Boolean.TRUE);
-      stifLoaderTask.addPropertyValue("logPath", bundleDir + File.separator 
-          + OUTPUT_DIR);
+      stifLoaderTask.addPropertyValue("logPath", response.getBundleOutputDirectory());
       beans.put("stifLoaderTask", stifLoaderTask.getBeanDefinition());
 
       BeanDefinitionBuilder task = BeanDefinitionBuilder.genericBeanDefinition(TaskDefinition.class);
@@ -171,7 +193,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // this name is not significant, its loaded by type
       beans.put("nycStifTask", task.getBeanDefinition());
 
-      _log.info("setting outputPath=" + bundleDir);
+      _log.info("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
       creator.setContextPaths(contextPaths);
 
@@ -198,14 +220,20 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
+  /**
+   * arrange files for tar'ing into bundle format
+   */
   @Override
   public void assemble(BundleBuildRequest request, BundleBuildResponse response) {
     FileUtils fs = new FileUtils();
-    // TODO build BundleMetaData.json
-    String[] paths = {"data", "inputs", "outputs", "BundleMetaData.json"};
+    // build BundleMetaData.json
+   new BundleBuildingUtil().generateJsonMetadata(request, response);
+
+    String[] paths = {request.getBundleName()};
     String filename = request.getTmpDirectory() + File.separator + request.getBundleName() + ".tar.gz";
-    response.addStatusMessage("creating bundle=" + filename);
-    String baseDir = request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR;
+    response.setBundleTarFilename(filename);
+    response.addStatusMessage("creating bundle=" + filename + " for root dir=" + request.getTmpDirectory());
+    String baseDir = request.getTmpDirectory();
     fs.tarcvf(baseDir, paths, filename);
     
     // now copy inputs and outputs to root for easy access
@@ -213,7 +241,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String inputsPath = request.getTmpDirectory() + File.separator + INPUTS_DIR;
     File inputsDestDir = new File(inputsPath);
     inputsDestDir.mkdir();
-    File inputsDir = new File(request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + INPUTS_DIR);
+    File inputsDir = new File(response.getBundleInputDirectory());
     
     File[] inputFiles = inputsDir.listFiles();
     if (inputFiles != null) {
@@ -226,7 +254,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     String outputsPath = request.getTmpDirectory() + File.separator + OUTPUT_DIR;
     File outputsDestDir = new File(outputsPath);
     outputsDestDir.mkdir();
-    File outputsDir = new File(request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR + File.separator + OUTPUT_DIR);
+    File outputsDir = new File(response.getBundleOutputDirectory());
     File[] outputFiles = outputsDir.listFiles();
     if (outputFiles != null) {
       for (File output : outputFiles) {
@@ -267,8 +295,12 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setVersionString(versionString);
     response.addStatusMessage("uploading to " + versionString);
     _log.info("uploading " + response.getBundleOutputDirectory() + " to " + versionString);
-    _fileService.put(versionString, response.getBundleOutputDirectory());
+    _fileService.put(versionString + File.separator + INPUTS_DIR, response.getBundleInputDirectory());
+    _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
     response.addStatusMessage("upload complete");
+    // TODO verify this
+    _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
+        response.getBundleTarFilename());
   }
 
   private String createVersionString(BundleBuildRequest request,
