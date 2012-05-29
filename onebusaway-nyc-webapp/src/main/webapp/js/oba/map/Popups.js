@@ -181,7 +181,7 @@ OBA.Popups = (function() {
 				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
 				if (alertElement.length === 0) {
 					expandAlerts = true;
-					window.location = "#" + stopId + "%20" + routeIdWithoutAgency;
+					jQuery.history.load(stopId + " " + routeIdWithoutAgency);
 				} else {
 					$("#searchbar").animate({
 						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
