@@ -58,9 +58,9 @@
 		</div>
 		
 		<s:iterator value="directions">
+			<a name="${directionId}" class="directionAnchor">&amp;nbsp;</a>
 			<div class="directionForRoute">
-				<p>
-					<a name="${directionId}"><!--prevent JSP minimization--></a>
+				<p class="directionTitle">
 					<strong>
 						<s:property value="shortName" />&amp;nbsp;to&amp;nbsp;<s:property value="destination" />
 					</strong> 
