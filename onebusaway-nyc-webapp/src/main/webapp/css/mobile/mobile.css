@@ -176,11 +176,11 @@ strong {
 	background: url("img/search_icon.png") no-repeat scroll 0 0 rgb(242,242,242);
 	border: 0 none;
 	cursor: pointer;
-	height: 33px;
-	width: 33px;
+	height: 34px;
+	width: 34px;
 	position: absolute;
 	right: 0px;
-	top: 1px;
+	top: 0px;
 	display: block;
 	text-indent: -999px;
 	font-size: 0;
@@ -463,6 +463,10 @@ small {
 
 .stop a.muted {
 	color: rgb(130,130,130);
+	margin-left: 0.8em;
+}
+
+.stop .muted.checkBackText {
 	margin-left: 0.8em;
 }
 
