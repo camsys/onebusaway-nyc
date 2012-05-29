@@ -95,7 +95,7 @@ function onSelectClick() {
 		actionName = "createDirectory";
 	}
 		jQuery.ajax({
-			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!" + actionName + ".action",
+			url: "manage-bundles!" + actionName + ".action",
 			type: "POST",
 			data: {"directoryName":  bundleDir},
 			async: false,
@@ -145,7 +145,7 @@ function directoryOptionChanged() {
 		jQuery("#selectExistingContents").show();
 		// TODO replace the exitingDirectories form call with this below
 //		jQuery.ajax({
-//			url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!requestExistingDirectories.action",
+//			url: "manage-bundles!requestExistingDirectories.action",
 //			type: "GET",
 //			async: false,
 //			success: function(response) {
@@ -163,7 +163,7 @@ function directoryOptionChanged() {
 function onValidateClick() {
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
-		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!validateBundle.action",
+		url: "manage-bundles!validateBundle.action",
 		type: "POST",
 		data: {"bundleDirectory": jQuery("#prevalidate_bundleDirectory").text(),
 			"method:validateBundle": "Validate"},
@@ -188,7 +188,7 @@ function onValidateClick() {
 function updateValidateStatus() {
 	var id = jQuery("#prevalidate_id").text();
 	jQuery.ajax({
-		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!validateStatus.action",
+		url: "manage-bundles!validateStatus.action",
 		type: "POST",
 		data: {"id": id,
 			"method:validateBundle": "Validate"},
@@ -226,7 +226,7 @@ function onBuildClick() {
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #building").show().css("display","inline");
 	jQuery.ajax({
-		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!buildBundle.action",
+		url: "manage-bundles!buildBundle.action",
 		type: "POST",
 		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
 			"bundleName": jQuery("#buildBundle_bundleName").val(),
@@ -252,7 +252,7 @@ function onBuildClick() {
 function updateBuildStatus() {
 	id = jQuery("#buildBundle_id").text();
 	jQuery.ajax({
-		url: "/onebusaway-nyc-admin-webapp/admin/bundles/manage-bundles!buildStatus.action",
+		url: "manage-bundles!buildStatus.action",
 		type: "POST",
 		data: {"id": id,
 			"method:buildStatus": "Status"},
