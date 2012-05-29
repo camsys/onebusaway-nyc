@@ -79,7 +79,7 @@ public class BundleValidationServiceImplTest {
 
   }
 
-  @Test
+  //@Test
   public void testValidateGtfs() throws Exception {
     BundleValidationServiceImpl impl = new BundleValidationServiceImpl();
     InputStream source = this.getClass().getResourceAsStream(
