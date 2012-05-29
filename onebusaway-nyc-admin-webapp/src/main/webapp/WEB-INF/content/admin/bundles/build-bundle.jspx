@@ -54,6 +54,10 @@
 				<div id="buildBundle_exception">
 				<!--  space -->
 				</div>
+				<div id="buildBundle_fileList">
+				<!--  space -->
+				</div>
+
 				<div id="bundleContents">
 					<fieldset>
 						<p>(Optional) Bundle building can take more than 10 minutes.

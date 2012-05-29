@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -220,6 +221,12 @@ public class FileServiceImpl implements FileService {
     String pathAndFileName = tmpDir + File.separator + filename;
     fs.copy(file.getObjectContent(), pathAndFileName);
     return pathAndFileName;
+  }
+  
+  public InputStream get(String key) {
+    GetObjectRequest request = new GetObjectRequest(this._bucketName, key);
+    S3Object file = _s3.getObject(request);
+    return file.getObjectContent();
   }
 
   @Override

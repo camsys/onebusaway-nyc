@@ -261,6 +261,7 @@ function updateValidateList(id) {
 		}
 	});	
 }
+
 function onBuildClick() {
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #building").show().css("display","inline");
@@ -315,6 +316,8 @@ function updateBuildStatus() {
 				} else {
 					jQuery("#buildBundle_buildProgress").text("Complete.");
 					jQuery("#buildBundle #buildBox #building #buildingProgress").hide();
+					updateBuildList(id);
+
 				}
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_resultList").html(txt);	
@@ -330,4 +333,35 @@ function updateBuildStatus() {
 			alert(request.statustext);
 		}
 	});
+}
+
+// populate list of files that were result of building
+function updateBuildList(id) {
+	jQuery.ajax({
+		url: "manage-bundles!buildList.action",
+		type: "POST",
+		data: {"id": id},
+		async: false,
+		success: function(response) {
+				var txt = "<ul>";
+				
+				var list = eval(response);
+				if (list != null) {
+					var size = list.length;
+					if (size > 0) {
+						for (var i=0; i<size; i++) {
+							// TODO urlencode this file name
+							txt = txt + "<li><a href=\"manage-bundles!downloadOutputFile.action?id="
+							+ id+ "&downloadFilename=" 
+							+ list[i] + "\">" + list[i] +  "</a></li>";
+						}
+					}
+				}
+				txt = txt + "</ul>";
+				jQuery("#buildBundle_fileList").html(txt);	
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});	
 }

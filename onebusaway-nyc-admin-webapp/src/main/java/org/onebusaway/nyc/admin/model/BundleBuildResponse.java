@@ -8,6 +8,7 @@ public class BundleBuildResponse {
   private List<String> _gtfsList = Collections.synchronizedList(new ArrayList<String>());
   private List<String> _stifZipList = Collections.synchronizedList(new ArrayList<String>());
   private List<String> _statusList = Collections.synchronizedList(new ArrayList<String>());
+  private List<String> _outputFileList = Collections.synchronizedList(new ArrayList<String>());
   private Exception _exception = null;
   private boolean _isComplete = false;
   private String _bundleRootDirectory;
@@ -15,7 +16,11 @@ public class BundleBuildResponse {
   private String _bundleOutputDirectory;
   private String _bundleDataDirectory;
   private String _bundleTarFilename;
+  private String _remoteInputDirectory;
+  private String _remoteOutputDirectory;
   private String _versionString;
+  private String _tmpDirectory;
+
 
   private String _id = null;
 
@@ -32,7 +37,7 @@ public class BundleBuildResponse {
   }
 
   public List<String> getGtfsList() {
-    return new ArrayList(_gtfsList);
+    return new ArrayList<String>(_gtfsList);
   }
 
   public void addStifZipFile(String file) {
@@ -40,7 +45,7 @@ public class BundleBuildResponse {
   }
 
   public List<String> getStifZipList() {
-    return new ArrayList(_stifZipList);
+    return new ArrayList<String>(_stifZipList);
   }
 
   public void addStatusMessage(String msg) {
@@ -48,7 +53,15 @@ public class BundleBuildResponse {
   }
 
   public List<String> getStatusList() {
-    return new ArrayList(_statusList);
+    return new ArrayList<String>(_statusList);
+  }
+
+  public void addOutputFile(String name) {
+    _outputFileList.add(name);
+  }
+  
+  public List<String> getOutputFileList() {
+    return new ArrayList<String>(_outputFileList);
   }
 
   public void addException(Exception e) {
@@ -112,6 +125,30 @@ public class BundleBuildResponse {
   
   public void setBundleRootDirectory(String directoryPath) {
     _bundleRootDirectory = directoryPath;
+  }
+
+  public String getTmpDirectory() {
+    return _tmpDirectory;
+  }
+  
+  public void setTmpDirectory(String tmpDirectory) {
+    _tmpDirectory = tmpDirectory;
+  }
+
+  public String getRemoteInputDirectory() {
+    return _remoteInputDirectory;
+  }
+  
+  public void setRemoteInputDirectory(String directoryPath) {
+    _remoteInputDirectory = directoryPath;
+  }
+
+  public String getRemoteOutputDirectory() {
+    return _remoteOutputDirectory;
+  }
+
+   public void setRemoteOutputDirectory(String directoryPath) {
+    _remoteOutputDirectory = directoryPath;
   }
 
 }

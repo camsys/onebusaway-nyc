@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.admin.service;
 
+import java.io.InputStream;
 import java.util.List;
 
 public interface FileService {
@@ -18,8 +19,11 @@ public interface FileService {
   List<String[]> listBundleDirectories(int maxResults);
 
   String get(String s3path, String tmpDir);
+  InputStream get(String s3Path);
   String put(String key, String directory);
   
   List<String> list(String directory, int maxResults);
+  
+  
   
 }

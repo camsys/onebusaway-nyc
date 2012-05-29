@@ -56,6 +56,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       tmpDirectory = new FileUtils().createTmpDirectory();
       request.setTmpDirectory(tmpDirectory);
     }
+    response.setTmpDirectory(tmpDirectory);
 
     // download gtfs
     List<String> gtfs = _fileService.list(
@@ -258,6 +259,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     File[] outputFiles = outputsDir.listFiles();
     if (outputFiles != null) {
       for (File output : outputFiles) {
+        response.addOutputFile(output.getName());
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
       }
     }
@@ -296,11 +298,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.addStatusMessage("uploading to " + versionString);
     _log.info("uploading " + response.getBundleOutputDirectory() + " to " + versionString);
     _fileService.put(versionString + File.separator + INPUTS_DIR, response.getBundleInputDirectory());
+    response.setRemoteInputDirectory(versionString + File.separator + INPUTS_DIR);
     _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
-    response.addStatusMessage("upload complete");
+    response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
     // TODO verify this
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
+    response.addStatusMessage("upload complete");
   }
 
   private String createVersionString(BundleBuildRequest request,

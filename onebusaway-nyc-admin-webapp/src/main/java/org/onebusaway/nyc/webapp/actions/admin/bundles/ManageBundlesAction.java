@@ -186,10 +186,33 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  _log.info("download=" + this.downloadFilename + " and id=" + id);
 	  if (this.bundleResponse != null) {
 	    this.downloadInputStream = new FileUtils().read(this.bundleResponse.getTmpDirectory() + File.separator + this.downloadFilename);
+	    return "download";
 	  }
-	  return "download";
+	  // TODO
+	  return "error";
 	}
 
+	public String buildList() {
+	  _log.info("buildList called with id=" + id);
+	  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
+	  if (this.bundleBuildResponse != null) {
+	    fileList.addAll(this.bundleBuildResponse.getOutputFileList());
+	  }
+	  return "fileList";
+	}
+	
+	public String downloadOutputFile() {
+	  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
+	  if (this.bundleBuildResponse != null) {
+	    String s3Key = bundleBuildResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
+	    _log.info("get request for s3Key=" + s3Key);
+	    this.downloadInputStream = this.fileService.get(s3Key);
+	    return "download";
+	  }
+	  // TODO
+	  return "error";
+	}
+	
 	/**
 	 * @return the directoryName
 	 */
