@@ -322,7 +322,16 @@ small {
 }
 
 .directionForRoute {
-	margin-top: 2em;
+	margin-top: 1.2em;
+}
+
+.directionAnchor {
+	position: relative;
+	top: -1.2em;
+}
+
+.directionTitle {
+	margin: 0 0 0.2em;
 }
 
 .directionAtStop {
