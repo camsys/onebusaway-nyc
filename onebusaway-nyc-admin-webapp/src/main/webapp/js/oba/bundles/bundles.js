@@ -25,10 +25,10 @@ OBA.Bundles = function() {
 				var $imageSource = $image.attr("src");
 				if($imageSource.indexOf("right-3") != -1) {
 					//Change the img to down arrow
-					$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-down-3.png");
+					$image.attr("src", "../../css/img/arrow-down-3.png");
 				} else {
 					//Change the img to right arrow
-					$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-right-3.png");
+					$image.attr("src", "../../css/img/arrow-right-3.png");
 				}
 				//Toggle advanced options box
 				jQuery("#advancedOptionsContents").toggle();
@@ -123,10 +123,10 @@ function toggleAdvancedOptions() {
 	var $imageSource = $image.attr("src");
 	if($imageSource.indexOf("right-3") != -1) {
 		//Change the img to down arrow
-		$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-down-3.png");
+		$image.attr("src", "../../css/img/arrow-down-3.png");
 	} else {
 		//Change the img to right arrow
-		$image.attr("src", "/onebusaway-nyc-admin-webapp/css/img/arrow-right-3.png");
+		$image.attr("src", "../../css/img/arrow-right-3.png");
 	}
 	//Toggle advanced options box
 	jQuery("#advancedOptionsContents").toggle();
