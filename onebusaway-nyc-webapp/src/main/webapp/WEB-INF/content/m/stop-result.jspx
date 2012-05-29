@@ -80,7 +80,7 @@
 						</a></p>
 					</s:iterator>
 				</s:iterator>
-				<p class="muted">(check back shortly for an update)</p>
+				<p class="muted checkBackText">(check back shortly for an update)</p>
 			</s:if>
 	
 			<s:if test="%{routesWithNoScheduledService.size&gt;0}">

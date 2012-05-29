@@ -181,7 +181,7 @@ OBA.Popups = (function() {
 				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
 				if (alertElement.length === 0) {
 					expandAlerts = true;
-					window.location = "#" + stopId + "%20" + routeIdWithoutAgency;
+					jQuery.history.load(stopId + " " + routeIdWithoutAgency);
 				} else {
 					$("#searchbar").animate({
 						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
@@ -190,6 +190,14 @@ OBA.Popups = (function() {
 						function() {
 							if (alertElement.accordion("option", "active") !== 0) {
 								alertElement.accordion("activate" , 0);
+							} else {
+								alertElement.animate(
+									{ opacity : 0 },
+									100,
+									function() {
+										alertElement.animate({ opacity : 1 }, 500, "swing");
+									}
+								);
 							}
 						});
 				}
@@ -459,7 +467,7 @@ OBA.Popups = (function() {
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
 				html += '<li class="route">';
-				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
+				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
 				if (d.id in alertData) {
 					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + d.id + '" class="alert-link" href="#">Alert</a>';
 				}
@@ -478,7 +486,7 @@ OBA.Popups = (function() {
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutSerivce, function(_, d) {
 				html += '<li class="route">';
-				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + '</span></a>';
+				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + '</span></a>';
 				html += '</li>';
 				
 				i++;
