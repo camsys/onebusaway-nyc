@@ -1,5 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,7 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.impl.FileUtils;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 
 import org.apache.struts2.convention.annotation.Namespace;
@@ -35,7 +38,14 @@ import org.springframework.beans.factory.annotation.Autowired;
     @Result(name="validationResponse", type="json", 
   params={"root", "bundleResponse"}),
     @Result(name="buildResponse", type="json", 
-  params={"root", "bundleBuildResponse"})
+  params={"root", "bundleBuildResponse"}),
+    @Result(name="fileList", type="json", 
+  params={"root", "fileList"}),
+    @Result(name="download", type="stream", 
+  params={"contentType", "text/html", 
+        "inputName", "downloadInputStream",
+        "contentDisposition", "attachment;filename=\"${downloadFilename}\"",
+        "bufferSize", "1024"})
 })
 public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
   private static Logger _log = LoggerFactory.getLogger(ManageBundlesAction.class);
@@ -56,6 +66,9 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private BundleResponse bundleResponse;
 	private BundleBuildResponse bundleBuildResponse;
 	private String id;
+	private String downloadFilename;
+	private InputStream downloadInputStream;
+	private List<String> fileList = new ArrayList<String>();
 	
 	@Override
 	public String input() {
@@ -156,6 +169,25 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  _log.debug("in validateStatus with id=" + getId());
 	  this.bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
 	  return "buildResponse";
+	}
+	
+	public String fileList() {
+	  _log.info("fileList called for id=" + id); 
+	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
+	  fileList.clear();
+	  if (this.bundleResponse != null) {
+	    fileList.addAll(this.bundleResponse.getValidationFiles());
+	  }
+	  return "fileList";
+	}
+	
+	public String download() {
+	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
+	  _log.info("download=" + this.downloadFilename + " and id=" + id);
+	  if (this.bundleResponse != null) {
+	    this.downloadInputStream = new FileUtils().read(this.bundleResponse.getTmpDirectory() + File.separator + this.downloadFilename);
+	  }
+	  return "download";
 	}
 
 	/**
@@ -272,6 +304,22 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 
 	public DirectoryStatus getDirectoryStatus() {
 	  return directoryStatus;
+	}
+	
+	public InputStream getDownloadInputStream() {
+	  return this.downloadInputStream;
+	}
+	
+	public void setDownloadFilename(String name) {
+	  this.downloadFilename = name;
+	}
+	
+	public String getDownloadFilename() {
+	  return this.downloadFilename;
+	}
+
+	public List<String> getFileList() {
+	  return this.fileList;
 	}
 	
 	public class DirectoryStatus {

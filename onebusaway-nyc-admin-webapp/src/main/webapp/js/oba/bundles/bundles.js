@@ -161,6 +161,7 @@ function directoryOptionChanged() {
 }
 
 function onValidateClick() {
+	jQuery("#prevalidate_exception").hide();
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
 		url: "manage-bundles!validateBundle.action",
@@ -212,9 +213,17 @@ function updateValidateStatus() {
 				} else {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
 					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+					updateValidateList(id);
 				}
 				txt = txt + "</ul>";
-				jQuery("#prevalidate_resultList").html(txt);	
+				jQuery("#prevalidate_resultList").html(txt);
+				if (bundleResponse.exception != null) {
+					if (bundleResponse.exception.message != undefined) {
+						jQuery("#prevalidate_exception").show().css("display","inline");
+						jQuery("#prevalidate_exception").html(bundleResponse.exception.message);
+					}
+				}
+
 		},
 		error: function(request) {
 			alert(request.statustext);
@@ -222,6 +231,36 @@ function updateValidateStatus() {
 	});
 }
 
+// populate list of files that were result of validation
+function updateValidateList(id) {
+	jQuery.ajax({
+		url: "manage-bundles!fileList.action",
+		type: "POST",
+		data: {"id": id},
+		async: false,
+		success: function(response) {
+				var txt = "<ul>";
+				
+				var list = eval(response);
+				if (list != null) {
+					var size = list.length;
+					if (size > 0) {
+						for (var i=0; i<size; i++) {
+							// TODO urlencode this file name
+							txt = txt + "<li><a href=\"manage-bundles!download.action?id="
+							+ id+ "&downloadFilename=" 
+							+ list[i] + "\">" + list[i] +  "</a></li>";
+						}
+					}
+				}
+				txt = txt + "</ul>";
+				jQuery("#prevalidate_fileList").html(txt);	
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});	
+}
 function onBuildClick() {
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #building").show().css("display","inline");

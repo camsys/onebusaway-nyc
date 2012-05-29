@@ -137,8 +137,13 @@ public class BundleRequestServiceImpl implements BundleRequestService {
           _response.setComplete(true);
           return;
         }
+        String tmpDir = _request.getTmpDirectory(); 
+        if (tmpDir == null) {
+          tmpDir = new FileUtils().createTmpDirectory();
+          _request.setTmpDirectory(tmpDir);
+        }
+        _response.setTmpDirectory(_request.getTmpDirectory());
         for (String s3Key : files) {
-          String tmpDir = new FileUtils().createTmpDirectory();
           _response.addStatusMessage("downloading " + s3Key);
           _log.info("downloading " + s3Key);
           String gtfsZipFileName = _fileService.get(s3Key, tmpDir);
@@ -148,7 +153,7 @@ public class BundleRequestServiceImpl implements BundleRequestService {
           _bundleValidationService.installAndValidateGtfs(gtfsZipFileName,
               outputFile);
           _log.info("results of " + gtfsZipFileName + " at " + outputFile);
-          _response.addValidationFile(outputFile);
+          _response.addValidationFile(new FileUtils().parseFileName(outputFile));
           _response.addStatusMessage("complete");
         }
         _response.setComplete(true);

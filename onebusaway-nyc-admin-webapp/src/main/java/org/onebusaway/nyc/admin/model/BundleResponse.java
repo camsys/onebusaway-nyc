@@ -9,6 +9,7 @@ public class BundleResponse {
   private Exception _exception;
   private List<String> _statusMessages = Collections.synchronizedList(new ArrayList<String>());
   private List<String> _validationFiles = Collections.synchronizedList(new ArrayList<String>());
+  private String _tmpDirectory = null;
   private String _id = null;
   
   public BundleResponse(String id) {
@@ -46,6 +47,13 @@ public class BundleResponse {
     _validationFiles.add(filename);
   }
 
+  public String getTmpDirectory() {
+    return _tmpDirectory;
+  }
+  
+  public void setTmpDirectory(String dir) {
+    _tmpDirectory = dir;
+  }
   /**
    * key for retrieval from lookup service
    */
