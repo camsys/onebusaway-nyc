@@ -53,7 +53,12 @@ OBA.Sidebar = function() {
 		        if(ui.item){
 		        	// Make sure the input has the value selected from the suggestions and initiate the search
 		        	searchInput.val(ui.item.value);
-		        	doSearch(searchInput.val());
+		        	// if search hasn't changed, force the search again to make panning, etc. happen
+					if (window.location.hash !== "#" + searchInput.val()) {
+						jQuery.history.load(searchInput.val());	
+					} else {
+						doSearch(searchInput.val());
+					}
 		        }
 		    }
 		});
@@ -65,7 +70,7 @@ OBA.Sidebar = function() {
 			searchInput.autocomplete("close");
 
 			// if search hasn't changed, force the search again to make panning, etc. happen
-			if(window.location.hash !== "#" + searchInput.val()) {
+			if (window.location.hash !== "#" + searchInput.val()) {
 				jQuery.history.load(searchInput.val());	
 			} else {
 				doSearch(searchInput.val());
