@@ -190,6 +190,14 @@ OBA.Popups = (function() {
 						function() {
 							if (alertElement.accordion("option", "active") !== 0) {
 								alertElement.accordion("activate" , 0);
+							} else {
+								alertElement.animate(
+									{ opacity : 0 },
+									100,
+									function() {
+										alertElement.animate({ opacity : 1 }, 500, "swing");
+									}
+								);
 							}
 						});
 				}
