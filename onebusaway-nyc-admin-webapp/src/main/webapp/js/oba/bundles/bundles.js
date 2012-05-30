@@ -44,12 +44,22 @@ OBA.Bundles = function() {
 
 jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
+
 jQuery(document).ready(function() {
 	jQuery("#tabs").tabs();
 	// check if we were called with a hash -- re-enter from email link
 	if (window.location.hash) {
 		var hash = window.location.hash;
+		hash = hash.split('?')[0];
 		$(hash).click();
+	}
+	var qs = parseQuerystring();
+	if (qs["fromEmail"] == "true") {
+		// TODO setup id
+		//alert("called from email!");
+		jQuery("#prevalidate_id").text(qs["id"]);
+		jQuery("#buildBundle_id").text(qs["id"]);
+		updateBuildStatus();
 	}
 	// politely set our hash as tabs are changed
 	jQuery("#tabs").bind("tabsshow", function(event, ui) {
@@ -374,3 +384,17 @@ function updateBuildList(id) {
 		}
 	});	
 }
+
+// add support for parsing query string
+  function parseQuerystring (){
+    var nvpair = {};
+    var qs = window.location.hash.replace('#', 'hash=');
+    qs = qs.replace('?', '&');
+    var pairs = qs.split('&');
+    $.each(pairs, function(i, v){
+      var pair = v.split('=');
+      nvpair[pair[0]] = pair[1];
+    });
+    return nvpair;
+  }
+
