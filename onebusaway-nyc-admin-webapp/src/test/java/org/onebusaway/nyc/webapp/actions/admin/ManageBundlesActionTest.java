@@ -14,7 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
 /**
- * Tests {@link CreateBundleDirectoryAction}
+ * Tests {@link ManageBundlesAction}
  * @author abelsare
  *
  */

@@ -96,21 +96,21 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 		  _log.info("creating bundledir=" + directoryName);
 			//Create the directory if it does not exist.
 			directoryCreated = fileService.createBundleDirectory(directoryName);
-			selectDirectory();
+			bundleDirectory = directoryName;
 			if(directoryCreated) {
 				createDirectoryMessage = "Successfully created new directory: " +directoryName;
 			} else {
 				createDirectoryMessage = "Unable to create direcory: " +directoryName;
 			}
 		}
-		directoryStatus = new DirectoryStatus(directoryName, createDirectoryMessage); 
+		directoryStatus = new DirectoryStatus(directoryName, createDirectoryMessage, directoryCreated); 
 		return "selectDirectory";
 	}
 	
 	public String selectDirectory() {
 	  _log.info("in selectDirectory with dirname=" + directoryName);
 	  bundleDirectory = directoryName;
-	  directoryStatus = new DirectoryStatus(directoryName, "selected " + directoryName);
+	  directoryStatus = new DirectoryStatus(directoryName, "Loaded existing directory " + directoryName, true);
 	  return "selectDirectory";
 	}
 	/**
@@ -348,16 +348,24 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	public class DirectoryStatus {
 	  private String directoryName;
 	  private String message;
-	  public DirectoryStatus(String directoryName, String message) {
+	  private boolean selected;
+	  
+	  public DirectoryStatus(String directoryName, String message, boolean selected) {
 	    this.directoryName = directoryName;
 	    this.message = message;
+	    this.selected = selected;
 	  }
 	  
 	  public String getDirectoryName() {
 	    return directoryName;
 	  }
+	  
 	  public String getMessage() {
 	    return message;
+	  }
+
+	  public boolean isSelected() {
+		return selected;
 	  }
 	}
 }

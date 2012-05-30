@@ -102,7 +102,12 @@ function onSelectClick() {
 			success: function(response) {
 				var status = eval(response);
 				if (status != undefined) {
-					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","inline");
+					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
+					if(status.selected == true) {
+						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/dialog-accept-2.png");
+					} else {
+						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
+					}
 					jQuery("#createDirectoryMessage").text(status.message);
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
@@ -133,6 +138,9 @@ function toggleAdvancedOptions() {
 }
 
 function directoryOptionChanged() {
+	//Clear the results regardless of the selection
+	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
+	
 	if(jQuery("#create").is(":checked")) {
 		//Change the button text and hide select directory list
 		jQuery("#createDirectoryContents #directoryButton").val("Create");
