@@ -4,7 +4,6 @@ import org.onebusaway.nyc.admin.service.EmailService;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsyncClient;
 import com.amazonaws.services.simpleemail.model.Body;
 import com.amazonaws.services.simpleemail.model.Content;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ServletContextAware;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -68,7 +66,22 @@ public class EmailServiceImpl implements EmailService, ServletContextAware {
     Future<SendEmailResult> result = _eClient.sendEmailAsync(sendEmailRequest);
     _log.info("sent email to " + to + " with finished=" + result.isDone());
   }
-  
+
+  @Override
+  public void send(String to, String from, String subject, StringBuffer messageBody) {
+    List<String> toAddresses = new ArrayList<String>();
+    for (String address : to.split(",")) {
+      toAddresses.add(address);
+    }
+    Destination destination = new Destination(toAddresses);
+    Body body = new Body();
+    body.setText(new Content(messageBody.toString()));
+    Message message = new Message(new Content(subject), body);
+    SendEmailRequest sendEmailRequest = new SendEmailRequest(from, destination, message); 
+    SendEmailResult result = _eClient.sendEmail(sendEmailRequest);
+    _log.info("sent email to " + to + " with result=" + result);
+  }
+
   @Override
   public void setServletContext(ServletContext servletContext) {
     if (servletContext != null) {
