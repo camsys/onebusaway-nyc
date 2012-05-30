@@ -49,6 +49,12 @@
 				<div id="prevalidate_resultList">
 				<!--  space -->
 				</div>
+				<div id="prevalidate_exception">
+				<!--  space -->
+				</div>
+				<div id="prevalidate_fileList">
+				<!--  space -->
+				</div>
 				<div class="submitForm">
 					<fieldset>
 						<a href="" class="link">Cancel</a>

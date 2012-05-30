@@ -50,7 +50,7 @@
 	<div id="searchPanel">
 		<s:form namespace="/m" action="index" method="GET">
 			<label for="bustimesearch" class="obscure">Enter search terms</label>
-			<input type="text" id="bustimesearch" name="q" class="q" value="${q}" aria-label="Enter search terms" />
+			<input type="text" id="bustimesearch" name="q" class="q" value="${q}" aria-label="Enter search: " />
 			<input type="submit" class="s" value="Find" id="submitButton" alt="search" />
 			
 			<input type="hidden" name="l" id="l" />

@@ -54,13 +54,17 @@
 				<div id="buildBundle_exception">
 				<!--  space -->
 				</div>
+				<div id="buildBundle_fileList">
+				<!--  space -->
+				</div>
+
 				<div id="bundleContents">
 					<fieldset>
 						<p>(Optional) Bundle building can take more than 10 minutes.
 							Select a way to be notified when the bundle is complete:</p>
 						<label>Email</label>
 						<s:checkbox name="emailNotification" cssClass="inline" />
-						<s:textfield name="emailAddress" />
+						<s:textfield id ="buildBundle_email" name="emailAddress" />
 					</fieldset>
 				</div>
 				<div class="submitForm">

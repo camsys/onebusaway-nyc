@@ -8,7 +8,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,7 +109,13 @@ public class FileUtils {
 
   public String parseFileName(String urlString) {
     int i = urlString.lastIndexOf("/");
-    return urlString.substring(i, urlString.length());
+    if (i+1 < urlString.length()) {
+      return urlString.substring(i+1, urlString.length());
+    }
+    if (i >= 0) {
+      return urlString.substring(i, urlString.length());
+    }
+    return urlString;
   }
 
   public String parseBucket(String s3path) {
@@ -280,5 +288,18 @@ public class FileUtils {
     }
 
     
+  }
+
+  public InputStream read(String filename) {
+    File file = new File(filename);
+    if (file.exists()) {
+      try {
+        return new FileInputStream(file);
+      } catch (FileNotFoundException e) {
+        _log.error(e.toString(), e);
+        throw new RuntimeException(e);
+      }
+    }
+    return null;
   }
 }

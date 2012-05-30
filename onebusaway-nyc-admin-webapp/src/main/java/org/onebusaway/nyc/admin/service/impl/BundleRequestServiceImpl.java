@@ -1,5 +1,6 @@
 package org.onebusaway.nyc.admin.service.impl;
 
+
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequest;
@@ -7,11 +8,13 @@ import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.service.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.BundleValidationService;
+import org.onebusaway.nyc.admin.service.EmailService;
 import org.onebusaway.nyc.admin.service.FileService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ServletContextAware;
 
 import java.io.File;
 import java.util.HashMap;
@@ -21,16 +24,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
 
-public class BundleRequestServiceImpl implements BundleRequestService {
+public class BundleRequestServiceImpl implements BundleRequestService, ServletContextAware {
 
   protected static Logger _log = LoggerFactory.getLogger(BundleRequestServiceImpl.class);
   private ExecutorService _executorService = null;
   private BundleValidationService _bundleValidationService;
   private BundleBuildingService _bundleBuildingService;
 
+  private EmailService _emailService;
   private FileService _fileService;
   private Integer jobCounter = 0;
+	private String serverURL;
   private Map<String, BundleResponse> _validationMap = new HashMap<String, BundleResponse>();
   private Map<String, BundleBuildResponse> _buildMap = new HashMap<String, BundleBuildResponse>();
 
@@ -48,6 +54,11 @@ public class BundleRequestServiceImpl implements BundleRequestService {
   @Autowired
   public void setFileService(FileService service) {
     _fileService = service;
+  }
+
+  @Autowired
+  public void setEmailService(EmailService service) {
+    _emailService = service;
   }
 
   @PostConstruct
@@ -83,6 +94,21 @@ public class BundleRequestServiceImpl implements BundleRequestService {
   public BundleBuildResponse lookupBuildRequest(String id) {
     return _buildMap.get(id);
   }
+  
+  public void sendEmail(BundleBuildRequest request, BundleBuildResponse response) {
+    _log.info("in send email for requestId=" + response.getId() 
+        + " with email=" + request.getEmailAddress());
+    if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1) {
+      String from = "no-reply@admin.dev.obanyc.com";
+  	  StringBuffer msg = new StringBuffer();
+  	  msg.append("Your Build Results are available at ");
+  	  msg.append(getServerURL());
+  	  msg.append("/admin/bundles/manage-bundles.action#Build");
+  	  msg.append("fromEmail=true&id=" + response.getId());
+  	  String subject = "Bundle Build " + response.getId() + " complete";
+  	  _emailService.sendAsync(request.getEmailAddress(), from, subject, msg);
+    }
+  }
 
   @Override
   /**
@@ -106,6 +132,27 @@ public class BundleRequestServiceImpl implements BundleRequestService {
     }
     return jobCounter;
   }
+
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    if (servletContext != null) {
+      String key = servletContext.getInitParameter("server.url");
+      _log.info("servlet context provided server.url=" + key);
+      if (key != null) {
+        setServerURL(key);
+      }
+    }
+  }
+ 	public String getServerURL() {
+	  if (serverURL == null) {
+	    serverURL = "http://localhost:8080/onebusaway-nyc-admin-webapp";
+	  }
+	  return serverURL;
+	}
+	
+	public void setServerURL(String url) {
+	  serverURL = url;
+	}
 
   @Override
   public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
@@ -137,8 +184,13 @@ public class BundleRequestServiceImpl implements BundleRequestService {
           _response.setComplete(true);
           return;
         }
+        String tmpDir = _request.getTmpDirectory(); 
+        if (tmpDir == null) {
+          tmpDir = new FileUtils().createTmpDirectory();
+          _request.setTmpDirectory(tmpDir);
+        }
+        _response.setTmpDirectory(_request.getTmpDirectory());
         for (String s3Key : files) {
-          String tmpDir = new FileUtils().createTmpDirectory();
           _response.addStatusMessage("downloading " + s3Key);
           _log.info("downloading " + s3Key);
           String gtfsZipFileName = _fileService.get(s3Key, tmpDir);
@@ -148,7 +200,7 @@ public class BundleRequestServiceImpl implements BundleRequestService {
           _bundleValidationService.installAndValidateGtfs(gtfsZipFileName,
               outputFile);
           _log.info("results of " + gtfsZipFileName + " at " + outputFile);
-          _response.addValidationFile(outputFile);
+          _response.addValidationFile(new FileUtils().parseFileName(outputFile));
           _response.addStatusMessage("complete");
         }
         _response.setComplete(true);
@@ -190,6 +242,13 @@ public class BundleRequestServiceImpl implements BundleRequestService {
         _log.error(any.toString(), any);
         _response.setComplete(true);
         _response.addException(any);
+      } finally {
+        try {
+          sendEmail(_request, _response);
+        } catch (Throwable t) {
+          // we don't add this to the response as it would hide existing exceptions
+          _log.error("sendEmail failed", t);
+        }
       }
     }
   }

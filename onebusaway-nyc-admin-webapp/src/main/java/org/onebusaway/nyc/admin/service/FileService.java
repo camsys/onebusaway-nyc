@@ -1,9 +1,12 @@
 package org.onebusaway.nyc.admin.service;
 
+import java.io.InputStream;
 import java.util.List;
 
 public interface FileService {
   void setup();
+  void setS3User(String user);
+  void setS3Password(String password);
   void setBucketName(String bucketName);
   void setGtfsPath(String gtfsPath);
   String getGtfsPath();
@@ -18,8 +21,11 @@ public interface FileService {
   List<String[]> listBundleDirectories(int maxResults);
 
   String get(String s3path, String tmpDir);
+  InputStream get(String s3Path);
   String put(String key, String directory);
   
   List<String> list(String directory, int maxResults);
+  
+  
   
 }

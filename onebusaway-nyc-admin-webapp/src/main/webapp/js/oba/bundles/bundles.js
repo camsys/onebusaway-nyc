@@ -44,8 +44,27 @@ OBA.Bundles = function() {
 
 jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
+
 jQuery(document).ready(function() {
 	jQuery("#tabs").tabs();
+	// check if we were called with a hash -- re-enter from email link
+	if (window.location.hash) {
+		var hash = window.location.hash;
+		hash = hash.split('?')[0];
+		$(hash).click();
+	}
+	var qs = parseQuerystring();
+	if (qs["fromEmail"] == "true") {
+		// TODO setup id
+		//alert("called from email!");
+		jQuery("#prevalidate_id").text(qs["id"]);
+		jQuery("#buildBundle_id").text(qs["id"]);
+		updateBuildStatus();
+	}
+	// politely set our hash as tabs are changed
+	jQuery("#tabs").bind("tabsshow", function(event, ui) {
+		window.location.hash = ui.tab.hash;
+	});
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
 			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
@@ -161,6 +180,7 @@ function directoryOptionChanged() {
 }
 
 function onValidateClick() {
+	jQuery("#prevalidate_exception").hide();
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
 		url: "manage-bundles!validateBundle.action",
@@ -212,14 +232,53 @@ function updateValidateStatus() {
 				} else {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
 					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+					updateValidateList(id);
 				}
 				txt = txt + "</ul>";
-				jQuery("#prevalidate_resultList").html(txt);	
+				jQuery("#prevalidate_resultList").html(txt);
+				if (bundleResponse.exception != null) {
+					if (bundleResponse.exception.message != undefined) {
+						jQuery("#prevalidate_exception").show().css("display","inline");
+						jQuery("#prevalidate_exception").html(bundleResponse.exception.message);
+					}
+				}
+
 		},
 		error: function(request) {
 			alert(request.statustext);
 		}
 	});
+}
+
+// populate list of files that were result of validation
+function updateValidateList(id) {
+	jQuery.ajax({
+		url: "manage-bundles!fileList.action",
+		type: "POST",
+		data: {"id": id},
+		async: false,
+		success: function(response) {
+				var txt = "<ul>";
+				
+				var list = eval(response);
+				if (list != null) {
+					var size = list.length;
+					if (size > 0) {
+						for (var i=0; i<size; i++) {
+							var encoded = encodeURIComponent(list[i]);
+							txt = txt + "<li><a href=\"manage-bundles!download.action?id="
+							+ id+ "&downloadFilename=" 
+							+ encoded + "\">" + encoded +  "</a></li>";
+						}
+					}
+				}
+				txt = txt + "</ul>";
+				jQuery("#prevalidate_fileList").html(txt);	
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});	
 }
 
 function onBuildClick() {
@@ -230,6 +289,7 @@ function onBuildClick() {
 		type: "POST",
 		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
 			"bundleName": jQuery("#buildBundle_bundleName").val(),
+			"emailTo": jQuery("#buildBundle_email").val(),
 			"method:buildBundle": "Build"},
 		async: false,
 		success: function(response) {
@@ -276,6 +336,8 @@ function updateBuildStatus() {
 				} else {
 					jQuery("#buildBundle_buildProgress").text("Complete.");
 					jQuery("#buildBundle #buildBox #building #buildingProgress").hide();
+					updateBuildList(id);
+
 				}
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_resultList").html(txt);	
@@ -292,3 +354,48 @@ function updateBuildStatus() {
 		}
 	});
 }
+
+// populate list of files that were result of building
+function updateBuildList(id) {
+	jQuery.ajax({
+		url: "manage-bundles!buildList.action",
+		type: "POST",
+		data: {"id": id},
+		async: false,
+		success: function(response) {
+				var txt = "<ul>";
+				
+				var list = eval(response);
+				if (list != null) {
+					var size = list.length;
+					if (size > 0) {
+						for (var i=0; i<size; i++) {
+							var encoded = encodeURIComponent(list[i]);
+							txt = txt + "<li><a href=\"manage-bundles!downloadOutputFile.action?id="
+							+ id+ "&downloadFilename=" 
+							+ encoded + "\">" + encoded +  "</a></li>";
+						}
+					}
+				}
+				txt = txt + "</ul>";
+				jQuery("#buildBundle_fileList").html(txt);	
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});	
+}
+
+// add support for parsing query string
+  function parseQuerystring (){
+    var nvpair = {};
+    var qs = window.location.hash.replace('#', 'hash=');
+    qs = qs.replace('?', '&');
+    var pairs = qs.split('&');
+    $.each(pairs, function(i, v){
+      var pair = v.split('=');
+      nvpair[pair[0]] = pair[1];
+    });
+    return nvpair;
+  }
+

@@ -260,6 +260,11 @@
 	margin-right: 10px;
 }
 
+#prevalidate_exception {
+	display: none;
+	background-color:#FF0000;
+}
+
 #buildBundle {
 	padding-top: 20px;
 }
@@ -285,6 +290,11 @@
 }
 
 #buildBundle_exception {
+	display: none;
+	background-color:#FF0000;
+}
+
+#prevalidate_exception {
 	display: none;
 	background-color:#FF0000;
 }
