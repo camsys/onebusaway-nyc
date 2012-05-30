@@ -16,6 +16,8 @@ public class GeocodeResult implements SearchResult, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private NycGeocoderResult result;
+	
+	private Double distanceToQueryLocation = null;
 
 	public GeocodeResult(NycGeocoderResult result) {
 		this.result = result;
@@ -42,15 +44,13 @@ public class GeocodeResult implements SearchResult, Serializable {
 	}
 
 	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		// TODO Auto-generated method stub
+  public void setDistanceToQueryLocation(Double distance) {
+    this.distanceToQueryLocation = distance;
+  }
 
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public Double getDistanceToQueryLocation() {
+    return this.distanceToQueryLocation;
+  }
 
 }
