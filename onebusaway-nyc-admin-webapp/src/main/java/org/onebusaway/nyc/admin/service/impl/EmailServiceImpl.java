@@ -92,6 +92,7 @@ public class EmailServiceImpl implements EmailService, ServletContextAware {
       }
       String password = servletContext.getInitParameter("smtp.password");
       if (password != null) {
+        _log.info("servlet context provided smtp.password");
         setSmtpPassword(password);
       }
     }

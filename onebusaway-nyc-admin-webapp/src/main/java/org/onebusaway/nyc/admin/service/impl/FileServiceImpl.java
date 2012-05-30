@@ -113,7 +113,7 @@ public class FileServiceImpl implements FileService, ServletContextAware {
   public void setServletContext(ServletContext servletContext) {
     if (servletContext != null) {
       String user = servletContext.getInitParameter("s3.user");
-      _log.info("servlet context provided smtp.user=" + user);
+      _log.info("servlet context provided s3.user=" + user);
       if (user != null) {
         setS3User(user);
       }
