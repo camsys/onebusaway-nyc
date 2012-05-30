@@ -289,6 +289,7 @@ function onBuildClick() {
 		type: "POST",
 		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
 			"bundleName": jQuery("#buildBundle_bundleName").val(),
+			"emailTo": jQuery("#buildBundle_email").val(),
 			"method:buildBundle": "Build"},
 		async: false,
 		success: function(response) {

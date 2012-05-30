@@ -3,7 +3,7 @@ package org.onebusaway.nyc.admin.service.impl;
 import org.onebusaway.nyc.admin.service.FileService;
 
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.PropertiesCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
@@ -15,7 +15,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.ServletContextAware;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,12 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
 
 /**
  * Implements File operations over Amazon S3.
  * 
  */
-public class FileServiceImpl implements FileService {
+public class FileServiceImpl implements FileService, ServletContextAware {
 
   private static Logger _log = LoggerFactory.getLogger(FileServiceImpl.class);
 
@@ -48,7 +49,17 @@ public class FileServiceImpl implements FileService {
   private String _stifPath;
  
   private String _buildPath;
-
+  private String _username;
+  private String _password;
+  
+  @Override
+  public void setS3User(String user) {
+    _username = user;
+  }
+  @Override
+  public void setS3Password(String password) {
+    _password = password;
+  }
 
   @Override
   public void setBucketName(String bucketName) {
@@ -89,14 +100,28 @@ public class FileServiceImpl implements FileService {
   @Override
   public void setup() {
     try {
-      _credentials = new PropertiesCredentials(
-          this.getClass().getResourceAsStream("AwsCredentials.properties"));
+      _credentials = new BasicAWSCredentials(_username, _password);
       _s3 = new AmazonS3Client(_credentials);
-    } catch (IOException ioe) {
+    } catch (Exception ioe) {
       _log.error(ioe.toString());
       throw new RuntimeException(ioe);
     }
 
+  }
+
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    if (servletContext != null) {
+      String user = servletContext.getInitParameter("s3.user");
+      _log.info("servlet context provided smtp.user=" + user);
+      if (user != null) {
+        setS3User(user);
+      }
+      String password = servletContext.getInitParameter("s3.password");
+      if (password != null) {
+        setS3Password(password);
+      }
+    }
   }
 
   @Override
@@ -297,4 +322,5 @@ public class FileServiceImpl implements FileService {
     if (pos == -1) return key;
     return key.substring(0, pos);
   }
+
 }

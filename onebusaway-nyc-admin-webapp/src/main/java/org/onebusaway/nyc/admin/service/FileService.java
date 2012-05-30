@@ -5,6 +5,8 @@ import java.util.List;
 
 public interface FileService {
   void setup();
+  void setS3User(String user);
+  void setS3Password(String password);
   void setBucketName(String bucketName);
   void setGtfsPath(String gtfsPath);
   String getGtfsPath();
