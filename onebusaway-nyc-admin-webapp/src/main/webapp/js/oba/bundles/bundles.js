@@ -46,6 +46,15 @@ jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
 jQuery(document).ready(function() {
 	jQuery("#tabs").tabs();
+	// check if we were called with a hash -- re-enter from email link
+	if (window.location.hash) {
+		var hash = window.location.hash;
+		$(hash).click();
+	}
+	// politely set our hash as tabs are changed
+	jQuery("#tabs").bind("tabsshow", function(event, ui) {
+		window.location.hash = ui.tab.hash;
+	});
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
 			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
@@ -246,10 +255,10 @@ function updateValidateList(id) {
 					var size = list.length;
 					if (size > 0) {
 						for (var i=0; i<size; i++) {
-							// TODO urlencode this file name
+							var encoded = encodeURIComponent(list[i]);
 							txt = txt + "<li><a href=\"manage-bundles!download.action?id="
 							+ id+ "&downloadFilename=" 
-							+ list[i] + "\">" + list[i] +  "</a></li>";
+							+ encoded + "\">" + encoded +  "</a></li>";
 						}
 					}
 				}
@@ -350,10 +359,10 @@ function updateBuildList(id) {
 					var size = list.length;
 					if (size > 0) {
 						for (var i=0; i<size; i++) {
-							// TODO urlencode this file name
+							var encoded = encodeURIComponent(list[i]);
 							txt = txt + "<li><a href=\"manage-bundles!downloadOutputFile.action?id="
 							+ id+ "&downloadFilename=" 
-							+ list[i] + "\">" + list[i] +  "</a></li>";
+							+ encoded + "\">" + encoded +  "</a></li>";
 						}
 					}
 				}
