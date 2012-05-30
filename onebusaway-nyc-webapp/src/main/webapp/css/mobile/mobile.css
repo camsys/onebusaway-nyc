@@ -356,6 +356,7 @@ small {
 .routeHeader {
 	padding: 0 0 .3em 0;
 	margin: 0;
+	width: 94%;
 }
 
 .stopsOnRoute {

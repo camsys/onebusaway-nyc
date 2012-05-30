@@ -40,17 +40,7 @@
 					<input type="button" id="directoryButton" value="Create" class="formButton"
 						 />
 					<div id="createDirectoryResult">
-					<!--  TODO  -->
-					<!-- 
-						<s:if test="%{#directoryCreated == true}">
-							<s:url var="url" value="/css/img/dialog-accept-2.png" />
-							<img id="resultImage" src="${url}" alt="Image not found" />
-						</s:if>
-						<s:else>
-							<s:url var="url" value="/css/img/warning_16.png" />
-							<img id="resultImage" src="${url}" alt="Image not found" />
-						</s:else>
-					-->
+						<img id="resultImage" alt="Image not found" />
 						<div id="createDirectoryMessage">
 						<!--  space -->
 						</div>
@@ -58,14 +48,21 @@
 				</div>
 				<div id="selectExistingContents">
 					<label class="adminLabel">Select an existing bundle directory from below:</label>
-					<div>
-						<ul id="currentDirectories">
-							<li>Directories</li>
+					<div id="currentDirectories">
 							<s:iterator value="%{existingDirectories}" status="directoryStatus">
-								<li><strong><s:property value="name" /></strong><s:property value="type" /><s:property value="creationTimestamp" /></li>
+								<div id="listItem">
+									<div class="listData">
+										<strong><s:property value="name" /></strong>
+									</div>
+									<div class="listData">
+										<s:property value="type" />
+									</div>
+									<div class="listData">
+										<s:property value="creationTimestamp" />
+									</div>
+								</div>
 							</s:iterator>
-						</ul>
-					</div>
+						</div>
 				</div>
 				<div id="advancedOptions">
 					<s:url var="url" value="/css/img/arrow-right-3.png" />
@@ -81,7 +78,7 @@
 					<label id="commentLabel">Comments:</label>
 					<div id="commentBox">
 						<s:textarea name="comments" cssClass="comments"></s:textarea>
-						<input type="button" value="Continue" id="create_comments" class="submit"/>
+						<input type="button" value="Add Comment" id="create_comments" class="formButton"/>
 					</div>
 				</div>
 				<div id="uploadFiles">

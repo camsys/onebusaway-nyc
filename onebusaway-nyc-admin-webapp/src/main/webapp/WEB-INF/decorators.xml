@@ -30,6 +30,7 @@
         <pattern>/admin/api-key.*</pattern>
 		<pattern>/admin/bundles/manage-bundles.*</pattern>
         <pattern>/admin/barcode.*</pattern>
+        <pattern>/login.*</pattern>
 	</decorator>
 
 </decorators>

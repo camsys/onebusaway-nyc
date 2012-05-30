@@ -14,20 +14,23 @@
  * the License.
  */
  
- #breadcrumb {
-	font: 14px Arial, Helvetica, sans-serif;
-    background-repeat:repeat-x;
-    height:30px;
-    line-height:30px;
-    color:#9b9b9b;
-    border: transparent 1px #cacaca;
-    width:100%;
-    overflow:hidden;
-    margin:0px;
-    padding:10px;
+ 
+#tabs {
+	padding: 0px;
+	background: none;
+	border-width: 0px;
 }
 
-#breadcrumb li {
+#tabs .ui-tabs-nav {
+	padding-left: 0px;
+	background: transparent;
+	border-width: 0px 0px 1px 0px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+
+#tabs #breadcrumb li {
     list-style-type:none;
     float:left;
     padding-left:10px;
@@ -35,15 +38,18 @@
     color: #808080;
 }
 
-#breadcrumb a {
+#tabs #breadcrumb a {
     height:30px;
     display:block;
-    background-image:url('img/crumbs.gif');
     background-repeat:no-repeat;
     background-position:right;
     padding-right: 15px;
     text-decoration: none;
     color:#454545;
+}
+
+#tabs .ui-tabs-panel {
+	border-width: 0px 1px 1px 1px;
 }
 
 #breadcrumb a:hover {
@@ -161,6 +167,24 @@
 #createDirectory #selectExistingContents {
 	display:none;
 	padding-left: 30px;
+	margin-top: 15px;
+}
+
+#createDirectory #selectExistingContents #currentDirectories {
+    display:table;
+    border-collapse:collapse;
+    margin-top: 10px;
+}
+
+#currentDirectories #listItem {
+	 display: table-row;
+	 cursor: pointer;
+}
+
+#currentDirectories .listData {
+	 display: table-cell;
+	 width: 200px;
+	 font-size: 12px;
 }
 
 #createDirectory #createDirectoryContents .directoryName {
@@ -170,6 +194,11 @@
 
 #createDirectory #createDirectoryContents #createDirectoryResult {
 	display: none;
+}
+
+#createDirectory #createDirectoryContents #createDirectoryResult #createDirectoryMessage{
+	display: inline;
+	margin-left: 10px;
 }
 
 #createDirectory #advancedOptions {
