@@ -67,9 +67,9 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private BundleBuildResponse bundleBuildResponse;
 	private String id;
 	private String downloadFilename;
+	private String emailTo;
 	private InputStream downloadInputStream;
 	private List<String> fileList = new ArrayList<String>();
-	
 	@Override
 	public String input() {
 	  _log.debug("in input");
@@ -118,7 +118,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 * @return list of existing directories
 	 */
 	public List<ExistingDirectory> getExistingDirectories() {
-	  //TODO optimize this call implementation -- it takes too long
 		List<String[]> existingDirectories = fileService.listBundleDirectories(MAX_RESULTS);
 		List<ExistingDirectory> directories = new ArrayList<ExistingDirectory>();
 		for(String[] existingDirectory : existingDirectories) {
@@ -158,6 +157,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 		BundleBuildRequest bundleRequest = new BundleBuildRequest();
 		bundleRequest.setBundleDirectory(bundleDirectory);
 		bundleRequest.setBundleName(bundleName);
+		bundleRequest.setEmailAddress(emailTo);
 		//bundleRequest.
 		this.bundleBuildResponse = bundleRequestService.build(bundleRequest);
 		_log.info("id=" + this.bundleBuildResponse.getId());
@@ -276,7 +276,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	public void setFileService(FileService fileService) {
 		this.fileService = fileService;
 	}
-	
+
 	/**
 	 * @return the bundleDirectory
 	 */
@@ -343,6 +343,10 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 
 	public List<String> getFileList() {
 	  return this.fileList;
+	}
+
+	public void setEmailTo(String to) {
+	  emailTo = to;
 	}
 	
 	public class DirectoryStatus {

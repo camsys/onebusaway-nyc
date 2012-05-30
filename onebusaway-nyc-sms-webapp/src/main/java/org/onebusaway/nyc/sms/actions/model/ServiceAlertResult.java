@@ -9,6 +9,8 @@ public class ServiceAlertResult implements SearchResult, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String alert;
+	
+	private Double distanceToQueryLocation = null;
 
 	public ServiceAlertResult(String alert) {
 		this.alert = alert;
@@ -19,15 +21,13 @@ public class ServiceAlertResult implements SearchResult, Serializable {
 	}
 
 	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		// TODO Auto-generated method stub
+  public void setDistanceToQueryLocation(Double distance) {
+    this.distanceToQueryLocation = distance;
+  }
 
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public Double getDistanceToQueryLocation() {
+    return this.distanceToQueryLocation;
+  }
 
 }

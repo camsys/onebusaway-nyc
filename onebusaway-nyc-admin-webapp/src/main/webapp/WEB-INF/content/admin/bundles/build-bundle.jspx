@@ -64,7 +64,7 @@
 							Select a way to be notified when the bundle is complete:</p>
 						<label>Email</label>
 						<s:checkbox name="emailNotification" cssClass="inline" />
-						<s:textfield name="emailAddress" />
+						<s:textfield id ="buildBundle_email" name="emailAddress" />
 					</fieldset>
 				</div>
 				<div class="submitForm">

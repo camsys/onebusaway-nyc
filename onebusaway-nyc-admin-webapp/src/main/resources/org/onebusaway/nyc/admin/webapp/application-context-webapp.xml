@@ -72,6 +72,9 @@
    		<property name="buildPath" value="builds" />
    </bean>
    
+   <bean id="emailService" class="org.onebusaway.nyc.admin.service.impl.EmailServiceImpl">
+   </bean>
+   
    <bean id="bundleRequestService" class="org.onebusaway.nyc.admin.service.impl.BundleRequestServiceImpl" />
    		
    
