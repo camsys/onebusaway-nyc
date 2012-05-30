@@ -20,6 +20,8 @@ public class StopResult implements SearchResult, Serializable {
 	private StopBean stop;
 
 	private List<RouteAtStop> routesAvailable;
+	
+	private Double distanceToQueryLocation = null;
 
 	public StopResult(StopBean stop, List<RouteAtStop> routesAvailable) {
 		this.stop = stop;
@@ -39,15 +41,13 @@ public class StopResult implements SearchResult, Serializable {
 	}
 
 	@Override
-	public void setDistanceToQueryLocation(Double distance) {
-		// TODO Auto-generated method stub
+  public void setDistanceToQueryLocation(Double distance) {
+    this.distanceToQueryLocation = distance;
+  }
 
-	}
-
-	@Override
-	public Double getDistanceToQueryLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+  @Override
+  public Double getDistanceToQueryLocation() {
+    return this.distanceToQueryLocation;
+  }
 
 }
