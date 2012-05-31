@@ -51,14 +51,18 @@ jQuery(document).ready(function() {
 	if (window.location.hash) {
 		var hash = window.location.hash;
 		hash = hash.split('?')[0];
+		// TODO this doesn't work when fromEmail query string is present 
+		// alert("hash=" + hash);
 		$(hash).click();
 	}
 	var qs = parseQuerystring();
 	if (qs["fromEmail"] == "true") {
-		// TODO setup id
 		//alert("called from email!");
 		jQuery("#prevalidate_id").text(qs["id"]);
 		jQuery("#buildBundle_id").text(qs["id"]);
+		// just in case set the tab
+		var $tabs = jQuery("#tabs");
+		$tabs.tabs('select', 2);
 		updateBuildStatus();
 	}
 	// politely set our hash as tabs are changed
@@ -312,7 +316,8 @@ function updateValidateList(id) {
 
 function onBuildClick() {
 	jQuery("#buildBundle_exception").hide();
-	jQuery("#buildBundle #buildBox #building").show().css("display","inline");
+	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
+	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
 		url: "manage-bundles!buildBundle.action",
 		type: "POST",
@@ -407,7 +412,8 @@ function updateBuildList(id) {
 					}
 				}
 				txt = txt + "</ul>";
-				jQuery("#buildBundle_fileList").html(txt);	
+				jQuery("#buildBundle_fileList").html(txt);
+				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
 		},
 		error: function(request) {
 			alert(request.statustext);
