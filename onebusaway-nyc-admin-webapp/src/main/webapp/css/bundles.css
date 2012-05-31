@@ -207,7 +207,7 @@
 	margin-left: 25px;
 }
 
-#createDirectory #advancedOptions #expand {
+#expand {
 	margin-right: 10px;
 }
 
@@ -289,6 +289,32 @@
 	margin-right: 10px;
 }
 
+#prevalidateInputs #prevalidate_progress {
+	vertical-align: middle;
+	margin-top: 20px;
+	margin-right: 10px;
+}
+
+#prevalidateInputs #prevalidate_resultList {
+	display: none;
+	padding-top : 10px;
+}
+
+#prevalidateInputs #prevalidate_fileList {
+	padding-top : 10px;
+}
+
+#prevalidateInputs #prevalidate_fileList li {
+	font-size : 14px;
+	padding-top : 10px;
+	font-family: arial;
+}
+
+#prevalidateInputs #prevalidate_fileList a {
+	text-decoration: none;
+	padding-top: 10px;
+}
+	
 #prevalidate_exception {
 	display: none;
 	background-color:#FF0000;
