@@ -371,8 +371,8 @@ OBA.Sign = function() {
 
 			var situationsById = {};
 			if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined') {
-				jQuery.each(json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations, function(_, situationElement) {
-					situationsById[situationElement[0].SituationNumber] = situationElement[0];
+				jQuery.each(json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, situationElement) {
+					situationsById[situationElement.SituationNumber] = situationElement;
 				});
 			}
 			
