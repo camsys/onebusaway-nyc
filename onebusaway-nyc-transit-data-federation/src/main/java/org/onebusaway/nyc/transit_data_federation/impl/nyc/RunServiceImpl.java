@@ -514,7 +514,7 @@ public class RunServiceImpl implements RunService {
         return firstTrip;
       } else {
         RunTripEntry secondTrip = Iterables.get(bothTrips, 1, null);
-        if (secondTrip.getStartTime() <= scheduleTime)
+        if (secondTrip.getStartTime() <= scheduleTime && secondTrip.getStartTime() >= firstTrip.getStartTime())
           return secondTrip;
       }
       return firstTrip;

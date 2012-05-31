@@ -563,7 +563,7 @@ public class VehicleLocationSimulationController {
       TripEntry tripEntry = _transitGraphDao.getTripEntryForId(AgencyAndIdLibrary.convertFromString(adBean.getTrip().getId()));
       
       RunTripEntry runTripEntry =  
-          _runService.getRunTripEntryForTripAndTime(tripEntry, (int)(adBean.getScheduledArrivalTime() - adBean.getServiceDate()));
+          _runService.getRunTripEntryForTripAndTime(tripEntry, (int)((adBean.getScheduledArrivalTime() - adBean.getServiceDate())/1000));
       
       String runId = runTripEntry.getRunId();
       
