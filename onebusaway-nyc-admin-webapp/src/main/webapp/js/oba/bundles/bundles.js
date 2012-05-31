@@ -79,12 +79,19 @@ jQuery(document).ready(function() {
 	});
 
 	jQuery("#create_continue").click(onCreateContinueClick);
+	
 	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
+	
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
+	
 	//toggle advanced option contents
 	jQuery("#createDirectory #advancedOptions #expand").bind({
 			'click' : toggleAdvancedOptions	});
+	
+	//toggle validation progress list
+	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
+			'click' : toggleValidationResultList});
 	
 	//handle create and select radio buttons
 	jQuery("input[name='options']").change(directoryOptionChanged);
@@ -121,7 +128,12 @@ function onSelectClick() {
 			success: function(response) {
 				var status = eval(response);
 				if (status != undefined) {
-					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","inline");
+					jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
+					if(status.selected == true) {
+						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/dialog-accept-2.png");
+					} else {
+						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
+					}
 					jQuery("#createDirectoryMessage").text(status.message);
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
@@ -139,6 +151,20 @@ function onSelectClick() {
 
 function toggleAdvancedOptions() {
 	var $image = jQuery("#createDirectory #advancedOptions #expand");
+	changeImageSrc($image);
+	//Toggle advanced options box
+	jQuery("#advancedOptionsContents").toggle();
+}
+
+function toggleValidationResultList() {
+	var $image = jQuery("#prevalidateInputs #prevalidate_progress #expand");
+	changeImageSrc($image);
+	//Toggle progress result list
+	jQuery("#prevalidateInputs #prevalidate_resultList").toggle();
+}
+
+function changeImageSrc($image) {
+	
 	var $imageSource = $image.attr("src");
 	if($imageSource.indexOf("right-3") != -1) {
 		//Change the img to down arrow
@@ -147,11 +173,12 @@ function toggleAdvancedOptions() {
 		//Change the img to right arrow
 		$image.attr("src", "../../css/img/arrow-right-3.png");
 	}
-	//Toggle advanced options box
-	jQuery("#advancedOptionsContents").toggle();
 }
 
 function directoryOptionChanged() {
+	//Clear the results regardless of the selection
+	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
+	
 	if(jQuery("#create").is(":checked")) {
 		//Change the button text and hide select directory list
 		jQuery("#createDirectoryContents #directoryButton").val("Create");
@@ -181,6 +208,7 @@ function directoryOptionChanged() {
 
 function onValidateClick() {
 	jQuery("#prevalidate_exception").hide();
+	jQuery("#prevalidateInputs #validateBox #validateButton").attr("disabled", "disabled");
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
 		url: "manage-bundles!validateBundle.action",
@@ -192,7 +220,7 @@ function onValidateClick() {
 				var bundleResponse = eval(response);
 				if (bundleResponse != undefined) {
 					jQuery("#prevalidate_id").text(bundleResponse.id);
-					jQuery("#prevalidate_resultList").text("calling...");
+					//jQuery("#prevalidate_resultList").text("calling...");
 					window.setTimeout(updateValidateStatus, 1000);
 				} else {
 					jQuery("#prevalidate_id").text(error);
@@ -235,7 +263,7 @@ function updateValidateStatus() {
 					updateValidateList(id);
 				}
 				txt = txt + "</ul>";
-				jQuery("#prevalidate_resultList").html(txt);
+				jQuery("#prevalidate_resultList").html(txt).css("font-size", "12px");
 				if (bundleResponse.exception != null) {
 					if (bundleResponse.exception.message != undefined) {
 						jQuery("#prevalidate_exception").show().css("display","inline");
@@ -273,7 +301,8 @@ function updateValidateList(id) {
 					}
 				}
 				txt = txt + "</ul>";
-				jQuery("#prevalidate_fileList").html(txt);	
+				jQuery("#prevalidate_fileList").html(txt);
+				jQuery("#prevalidateInputs #validateBox #validateButton").removeAttr("disabled");
 		},
 		error: function(request) {
 			alert(request.statustext);

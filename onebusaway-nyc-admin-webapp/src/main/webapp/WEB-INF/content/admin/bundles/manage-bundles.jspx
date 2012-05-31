@@ -21,9 +21,10 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
 <head>
-<!-- todo find out which css elements are required and move to bundles.css --> 
-<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css"
-	rel="stylesheet" type="text/css" />
+<s:url var="url" value="/css/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="${url}">
+	<!-- //prevent jspx minimization -->
+</link>
 
 <s:url var="url" value="/css/bundles.css" />
 <link rel="stylesheet" type="text/css" href="${url}">

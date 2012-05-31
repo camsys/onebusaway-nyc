@@ -99,7 +99,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     _log.info("in send email for requestId=" + response.getId() 
         + " with email=" + request.getEmailAddress());
     if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1) {
-      String from = "no-reply@admin.dev.obanyc.com";
+      String from = "sheldonb@gmail.com";
   	  StringBuffer msg = new StringBuffer();
   	  msg.append("Your Build Results are available at ");
   	  msg.append(getServerURL());
