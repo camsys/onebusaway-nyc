@@ -39,8 +39,6 @@ import org.onebusaway.transit_data.model.StopGroupBean;
 import org.onebusaway.transit_data.model.StopGroupingBean;
 import org.onebusaway.transit_data.model.StopsForRouteBean;
 
-import uk.org.siri.siri.VehicleActivityStructure;
-
 public class SearchResultFactoryImpl implements SearchResultFactory {
 
   private SearchService _searchService;
@@ -103,13 +101,13 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
             _nycTransitDataService.routeHasUpcomingScheduledService(System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
-        List<VehicleActivityStructure> vehiclesOnRoute = 
-        		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
-        
-        if(!vehiclesOnRoute.isEmpty()) {
-        	hasUpcomingScheduledService = true;
+        Boolean routeHasVehiclesInService = 
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
+
+        if(routeHasVehiclesInService) {
+      	  hasUpcomingScheduledService = true;
         }
-        
+
         directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
       }
     }
@@ -140,16 +138,17 @@ public class SearchResultFactoryImpl implements SearchResultFactory {
           }
 
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), routeBean.getId(), stopGroupBean.getId());
+              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stopBean.getId(), 
+            		  routeBean.getId(), stopGroupBean.getId());
 
           // if there are buses on route, always have "scheduled service"
-          List<VehicleActivityStructure> vehiclesOnRoute = 
-          		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
-          
-          if(!vehiclesOnRoute.isEmpty()) {
-          	hasUpcomingScheduledService = true;
+          Boolean routeHasVehiclesInService = 
+        		  _realtimeService.getVehiclesInServiceForStopAndRoute(stopBean.getId(), routeBean.getId());
+
+          if(routeHasVehiclesInService) {
+        	  hasUpcomingScheduledService = true;
           }
-          
+
           directions.add(new RouteDirection(stopGroupBean, polylines, null, hasUpcomingScheduledService));
         }
       }
