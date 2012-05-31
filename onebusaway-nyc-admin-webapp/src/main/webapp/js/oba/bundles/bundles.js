@@ -312,7 +312,8 @@ function updateValidateList(id) {
 
 function onBuildClick() {
 	jQuery("#buildBundle_exception").hide();
-	jQuery("#buildBundle #buildBox #building").show().css("display","inline");
+	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
+	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
 		url: "manage-bundles!buildBundle.action",
 		type: "POST",
@@ -407,7 +408,8 @@ function updateBuildList(id) {
 					}
 				}
 				txt = txt + "</ul>";
-				jQuery("#buildBundle_fileList").html(txt);	
+				jQuery("#buildBundle_fileList").html(txt);
+				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
 		},
 		error: function(request) {
 			alert(request.statustext);
