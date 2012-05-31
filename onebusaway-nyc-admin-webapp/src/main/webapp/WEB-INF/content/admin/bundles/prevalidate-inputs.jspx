@@ -46,6 +46,11 @@
 							class="adminLabel">Validating ... </label>
 					</div>
 				</div>
+				<div id="prevalidate_progress">
+					<s:url var="url" value="/css/img/arrow-right-3.png" />
+					<img src="${url}" alt="Not found" id="expand" /> <label
+						class="adminLabel">Validation Progress</label>
+				</div>
 				<div id="prevalidate_resultList">
 				<!--  space -->
 				</div>
