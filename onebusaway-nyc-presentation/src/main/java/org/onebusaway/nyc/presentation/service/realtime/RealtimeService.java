@@ -21,14 +21,18 @@ public interface RealtimeService {
   public SiriXmlSerializer getSiriXmlSerializer();
   
   
-  public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
-      String directionId, int maximumOnwardCalls);
-    
   public VehicleActivityStructure getVehicleActivityForVehicle(String vehicleId, 
       int maximumOnwardCalls);
   
+  public List<VehicleActivityStructure> getVehicleActivityForRoute(String routeId, 
+	      String directionId, int maximumOnwardCalls);
+	    
   public List<MonitoredStopVisitStructure> getMonitoredStopVisitsForStop(String stopId, 
       int maximumOnwardCalls);  
+
+  public boolean getVehiclesInServiceForRoute(String routeId, String directionId);
+
+  public boolean getVehiclesInServiceForStopAndRoute(String stopId, String routeId);
 
   
   // FIXME TODO: refactor these to receive a passed in collection of MonitoredStopVisits or VehicleActivities?
