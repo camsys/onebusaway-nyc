@@ -16,7 +16,10 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.JourneyStateTransitionModel;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.MotionModelImpl;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.state.BlockState;
@@ -29,6 +32,7 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTi
 
 import com.google.common.collect.Iterables;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
@@ -51,12 +55,12 @@ public class EdgeLikelihood implements SensorModelRule {
 
   // final public static double startBlockStdDev = 50.0/1;
 
-  // private BlockStateService _blockStateService;
-
-  // @Autowired
-  // public void setBlockStateService(BlockStateService blockStateService) {
-  // _blockStateService = blockStateService;
-  // }
+//  private BlockStateService _blockStateService;
+//  
+//  @Autowired
+//  public void setBlockStateService(BlockStateService blockStateService) {
+//    _blockStateService = blockStateService;
+//  }
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
@@ -102,7 +106,6 @@ public class EdgeLikelihood implements SensorModelRule {
       return result;
     }
 
-    parentState.getBlockState();
     /*
      * Edge Movement
      */
@@ -111,26 +114,30 @@ public class EdgeLikelihood implements SensorModelRule {
         parentState.getBlockStateObservation(),
         state.getBlockStateObservation());
 
+    final boolean hasMoved = state.getMotionState().hasVehicleNotMoved();
     final double pDistAlong;
     if (!previouslyInactive && !newRun) {
       
-      EVehiclePhase prevPhase = parentState.getJourneyState().getPhase();
-      
       if (parentState.getBlockStateObservation().isSnapped()
           && state.getBlockStateObservation().isSnapped()) {
-          pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
+          pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), 
+              parentState.getBlockState(), hasMoved);
           result.addLogResultAsAnd("snapped states", pDistAlong);
         
       } else {
 
         /*
-         * Transition from on a trip to not on a trip
+         * This could be a transition from being on a trip geom to off, and vice versa.
          */
         if (EVehiclePhase.IN_PROGRESS != phase) {
           pDistAlong = computeNoEdgeMovementLogProb(state, obs);
           result.addLogResultAsAnd("not-in-progress", pDistAlong);
+        } else if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()){
+          pDistAlong = computeEdgeEntranceMovementLogProb(state, obs);
+          result.addLogResultAsAnd("just-in-progress", pDistAlong);
         } else {
-          pDistAlong = computeEdgeMovementLogProb(obs, state, parentState);
+          pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), 
+              parentState.getBlockState(), hasMoved);
           result.addLogResultAsAnd("in-progress", pDistAlong);
         }
       }
@@ -138,12 +145,7 @@ public class EdgeLikelihood implements SensorModelRule {
     } else {
 
       if (EVehiclePhase.IN_PROGRESS == phase) {
-        final double obsDelta = SphericalGeometryLibrary.distance(
-            obs.getLocation(), obs.getPreviousObservation().getLocation());
-        final double obsToTripDelta = SphericalGeometryLibrary.distance(
-            blockState.getBlockLocation().getLocation(), obs.getPreviousObservation().getLocation());
-        final double x = obsToTripDelta - obsDelta;
-        pDistAlong = inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
+        pDistAlong = computeEdgeEntranceMovementLogProb(state, obs);
       } else {
         pDistAlong = computeNoEdgeMovementLogProb(state, obs);
       }
@@ -155,6 +157,15 @@ public class EdgeLikelihood implements SensorModelRule {
     return result;
   }
 
+  static private final double computeEdgeEntranceMovementLogProb(VehicleState state, Observation obs) {
+    final double obsDelta = SphericalGeometryLibrary.distance(
+        obs.getLocation(), obs.getPreviousObservation().getLocation());
+    final double obsToTripDelta = SphericalGeometryLibrary.distance(
+        state.getBlockState().getBlockLocation().getLocation(), obs.getPreviousObservation().getLocation());
+    final double x = obsToTripDelta - obsDelta;
+    return inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
+  }
+  
   static private final double computeNoEdgeMovementLogProb(VehicleState state, Observation obs) {
     
     final Observation prevObs = obs.getPreviousObservation();
@@ -210,19 +221,19 @@ public class EdgeLikelihood implements SensorModelRule {
     
   }
   
-  static private final double computeEdgeMovementLogProb(Observation obs, 
-      VehicleState state, VehicleState parentState) {
+  private static final double computeEdgeMovementLogProb(Observation obs, 
+      BlockState blockState, BlockState parentBlockState, boolean hasMoved) {
 
-    final double currentDab = state.getBlockState().getBlockLocation().getDistanceAlongBlock();
-    final double prevDab = parentState.getBlockState().getBlockLocation().getDistanceAlongBlock();
+    final double currentDab = blockState.getBlockLocation().getDistanceAlongBlock();
+    final double prevDab = parentBlockState.getBlockLocation().getDistanceAlongBlock();
     final double dabDeltaTmp = currentDab - prevDab;
     final double dabDelta = dabDeltaTmp;
 
     // FIXME really lame. use a Kalman filter.
     final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
     final double expAvgDist;
-    if (!state.getMotionState().hasVehicleNotMoved()) {
-      expAvgDist = getAvgVelocityBetweenStops(state.getBlockState()) * obsTimeDelta;
+    if (!hasMoved) {
+      expAvgDist = getAvgVelocityBetweenStops(blockState) * obsTimeDelta;
     } else {
       expAvgDist = 0.0;
     }
