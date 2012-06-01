@@ -91,7 +91,7 @@
 
 .submitForm {
 	overflow: none;
-	height: 50 px; 
+	height: 80px; 
 	padding-right: 120px;
 	padding-left:20px;
 	margin-bottom: 30px;
@@ -148,6 +148,10 @@
 
 .directoryLabel {
 	margin-right: 50px;
+}
+
+.progress {
+	margin-right: 10px;
 }
 
 #createDirectory {
@@ -285,10 +289,6 @@
 	padding: 50px;
 }
 
-#prevalidateInputs #validateBox #validating #validationProgress {
-	margin-right: 10px;
-}
-
 #prevalidateInputs #prevalidate_progress {
 	vertical-align: middle;
 	margin-top: 20px;
@@ -305,14 +305,15 @@
 }
 
 #prevalidateInputs #prevalidate_fileList li {
-	font-size : 14px;
 	padding-top : 10px;
-	font-family: arial;
 }
 
 #prevalidateInputs #prevalidate_fileList a {
-	text-decoration: none;
 	padding-top: 10px;
+	font-size : 14px;
+	font-family: arial;
+	color: blue;
+	
 }
 	
 #prevalidate_exception {
@@ -324,24 +325,85 @@
 	padding-top: 20px;
 }
 
-#buildBundle #bundleContents {
+#buildBundle #bundleContentsHolder {
+	border: solid 1px transparent;
+	width: 890px;
 	height: 200px;
+	overflow: none;
 }
 
-#bundleContents #instructionBox{
+#bundleContentsHolder #bundleContents {
 	margin-top: 20px;
 	background-color: #F0F0F0;
 	border: solid 1px transparent;
 	width: 200px;
+	padding: 5px;
+	float: left;
 }
 
-#bundleContents #instructionBox p {
+#bundleContentsHolder #bundleContents p {
 	font-weight: bold;
+	font-size: 12px;
+	padding-top : 10px;
 }
 
-#buildBundle #buildBox #building {
+#bundleContentsHolder #buildBox {
+	margin-top: 20px;
+	border: solid 1px transparent;
+	padding: 5px;
+	margin-left: 20px;
+	width: 600px;
+	height: 150px;
+	float: left;
+}
+
+#bundleContentsHolder #buildBox #building {
 	display: none;
-	padding: 50px;
+	background-color: #F0F0F0;
+	
+}
+
+#buildBox #buildBundle_bundleName {
+	width: 300px;
+	display: block;
+	margin-top: 7px;
+}
+
+#buildBox #buildBundle_buildButton {
+	width: 150px;
+	height: 40px;
+	margin-top: 15px;
+	background-image:url('img/Button_background.png');
+}	
+
+#buildBox #bundleLabel {
+	display: block;
+}
+
+#buildBundle #buildBundle_progress {
+	vertical-align: middle;
+	margin-top: 5px;
+	margin-right: 10px;
+}
+
+#buildBundle #buildBundle_resultList {
+	display: none;
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_resultList {
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_fileList li {
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_fileList a {
+	padding-top: 10px;
+	font-size : 14px;
+	font-family: arial;
+	color: blue;
 }
 
 #buildBundle_exception {
@@ -349,14 +411,10 @@
 	background-color:#FF0000;
 }
 
-#prevalidate_exception {
-	display: none;
-	background-color:#FF0000;
-}
-
 #currentDirectories .ui-selecting {
 	background: #FEFF9F;  
-}  
+}
+
 #currentDirectories .ui-selected {  
   	background-color:#eEeF8F;  
 }  

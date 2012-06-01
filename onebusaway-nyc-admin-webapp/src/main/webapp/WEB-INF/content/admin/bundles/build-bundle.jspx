@@ -35,18 +35,33 @@
 					<label class="adminLabel directoryLabel">Request Id :</label>
 					<label id="buildBundle_id" class="adminLabel directoryLabel"><s:property
 							value="id" /></label>
-					<label class="adminLabel directoryLabel">Bundle Name :</label>
-					<input type="text" id="buildBundle_bundleName" />
 				</div>
-				<div id="buildBox">
-					<input type="button" id="buildBundle_buildButton" value="Build"
-						class="formButton" />
-					<div id="building">
-						<s:url var="url" value="/css/img/ajax-loader.gif" />
-						<img id="buildingProgress" src="${url}" alt="Ajax loader" /> 
-						  <label id="buildBundle_buildProgress"
-							class="adminLabel">Building ... </label>
+				<div id="bundleContentsHolder">
+					<div id="bundleContents">
+						<fieldset>
+							<p>(Optional) Bundle building can take more than 10 minutes.
+								Select a way to be notified when the bundle is complete:</p>
+							<label class="adminLabel">Email</label>
+							<s:textfield id ="buildBundle_email" name="emailAddress" />
+						</fieldset>
 					</div>
+					<div id="buildBox">
+						<div>
+							<label id="bundleLabel" class="adminLabel">Bundle Name :</label>
+							<input type="text" id="buildBundle_bundleName" />
+							<input type="button" id="buildBundle_buildButton" value="Build Bundle"/>
+						</div>
+						<div id="building">
+							<s:url var="url" value="/css/img/ajax-loader.gif" />
+							<img id="buildingProgress" src="${url}" alt="Ajax loader" class="progress"/> 
+							<label id="buildBundle_buildProgress" class="adminLabel">Building ... </label>
+						</div>
+					</div>
+				</div>
+				<div id="buildBundle_progress">
+					<s:url var="url" value="/css/img/arrow-right-3.png" />
+					<img src="${url}" alt="Not found" id="expand" /> <label
+						class="adminLabel">Bundle Build Progress</label>
 				</div>
 				<div id="buildBundle_resultList">
 				<!--  space -->
@@ -56,16 +71,6 @@
 				</div>
 				<div id="buildBundle_fileList">
 				<!--  space -->
-				</div>
-
-				<div id="bundleContents">
-					<fieldset>
-						<p>(Optional) Bundle building can take more than 10 minutes.
-							Select a way to be notified when the bundle is complete:</p>
-						<label>Email</label>
-						<s:checkbox name="emailNotification" cssClass="inline" />
-						<s:textfield id ="buildBundle_email" name="emailAddress" />
-					</fieldset>
 				</div>
 				<div class="submitForm">
 					<fieldset>

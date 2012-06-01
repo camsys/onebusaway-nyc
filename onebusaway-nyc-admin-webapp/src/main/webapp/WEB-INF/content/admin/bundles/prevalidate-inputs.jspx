@@ -41,7 +41,7 @@
 						class="formButton" />
 					<div id="validating">
 						<s:url var="url" value="/css/img/ajax-loader.gif" />
-						<img id="validationProgress" src="${url}" alt="Ajax loader" /> 
+						<img id="validationProgress" src="${url}" alt="Ajax loader" class="progress"/> 
 						  <label id="prevalidate_validationProgress"
 							class="adminLabel">Validating ... </label>
 					</div>
