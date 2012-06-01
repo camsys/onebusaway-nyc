@@ -305,14 +305,15 @@
 }
 
 #prevalidateInputs #prevalidate_fileList li {
-	font-size : 14px;
 	padding-top : 10px;
-	font-family: arial;
 }
 
 #prevalidateInputs #prevalidate_fileList a {
-	text-decoration: none;
 	padding-top: 10px;
+	font-size : 14px;
+	font-family: arial;
+	color: blue;
+	
 }
 	
 #prevalidate_exception {
@@ -379,19 +380,41 @@
 	display: block;
 }
 
-#buildBundle_exception {
-	display: none;
-	background-color:#FF0000;
+#buildBundle #buildBundle_progress {
+	vertical-align: middle;
+	margin-top: 5px;
+	margin-right: 10px;
 }
 
-#prevalidate_exception {
+#buildBundle #buildBundle_resultList {
+	display: none;
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_resultList {
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_fileList li {
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_fileList a {
+	padding-top: 10px;
+	font-size : 14px;
+	font-family: arial;
+	color: blue;
+}
+
+#buildBundle_exception {
 	display: none;
 	background-color:#FF0000;
 }
 
 #currentDirectories .ui-selecting {
 	background: #FEFF9F;  
-}  
+}
+
 #currentDirectories .ui-selected {  
   	background-color:#eEeF8F;  
 }  

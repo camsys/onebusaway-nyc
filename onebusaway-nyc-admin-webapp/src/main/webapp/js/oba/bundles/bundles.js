@@ -97,6 +97,10 @@ jQuery(document).ready(function() {
 	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
 			'click' : toggleValidationResultList});
 	
+	//toggle bundle build progress list
+	jQuery("#buildBundle #buildBundle_progress #expand").bind({
+			'click' : toggleBuildBundleResultList});
+	
 	//handle create and select radio buttons
 	jQuery("input[name='options']").change(directoryOptionChanged);
 	
@@ -165,6 +169,13 @@ function toggleValidationResultList() {
 	changeImageSrc($image);
 	//Toggle progress result list
 	jQuery("#prevalidateInputs #prevalidate_resultList").toggle();
+}
+
+function toggleBuildBundleResultList() {
+	var $image = jQuery("#buildBundle #buildBundle_progress #expand");
+	changeImageSrc($image);
+	//Toggle progress result list
+	jQuery("#buildBundle #buildBundle_resultList").toggle();
 }
 
 function changeImageSrc($image) {
@@ -250,7 +261,7 @@ function updateValidateStatus() {
 				var bundleResponse = eval(response);
 				if (bundleResponse == null) {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
-					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
 					jQuery("#prevalidate_resultList").html("unknown id=" + id);
 				}
 				var size = bundleResponse.statusMessages.length;
@@ -263,7 +274,7 @@ function updateValidateStatus() {
 					window.setTimeout(updateValidateStatus, 1000); // recurse
 				} else {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
-					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
 					updateValidateList(id);
 				}
 				txt = txt + "</ul>";
@@ -355,8 +366,8 @@ function updateBuildStatus() {
 				var txt = "<ul>";
 				var bundleResponse = eval(response);
 				if (bundleResponse == null) {
-					jQuery("#buildBundle_buildProgress").text("Complete.");
-					jQuery("#buildBundle #buildBox #building #buildProgress").hide();
+					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
+					jQuery("#buildBundle #buildBox #building #buildProgress").attr("src","../../css/img/dialog-accept-2.png");
 					jQuery("#buildBundle_resultList").html("unknown id=" + id);
 				}
 				var size = bundleResponse.statusList.length;
@@ -368,13 +379,13 @@ function updateBuildStatus() {
 				if (bundleResponse.complete == false) {
 					window.setTimeout(updateBuildStatus, 1000); // recurse
 				} else {
-					jQuery("#buildBundle_buildProgress").text("Complete.");
-					jQuery("#buildBundle #buildBox #building #buildingProgress").hide();
+					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
+					jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-accept-2.png");
 					updateBuildList(id);
 
 				}
 				txt = txt + "</ul>";
-				jQuery("#buildBundle_resultList").html(txt);	
+				jQuery("#buildBundle_resultList").html(txt).css("font-size", "12px");	
 				// check for exception
 				if (bundleResponse.exception != null) {
 					if (bundleResponse.exception.message != undefined) {
