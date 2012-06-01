@@ -20,17 +20,13 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
-<div id="content">
-	<div id="text">
 		<div class="tabHeader">
 			<label class="headerLabel">Deploy Bundle</label>
 		</div>
 			<div class="submitForm">
 				<fieldset>
 					<a href="" class="link">Cancel</a>
-					<input type="button" value="Continue" class="submit"/>
+					<input type="button" value="Continue" class="submit_enabled"/>
 				</fieldset>
 			</div>
-	</div>
-</div>
 </html>

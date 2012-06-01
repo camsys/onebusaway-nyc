@@ -97,19 +97,30 @@
 	margin-bottom: 30px;
 }
 
-.submit {
+.submit_enabled {
 	background-color: #463E3F;
 	height: 60px;
 	width: 150px;
 	float: right;
 	color: white;
-	margin: 50px;
+	margin-right: 50px;
+	margin-top: 20px;
+}
+
+.submit_disabled {
+	background-color: #F0F0F0;
+	height: 60px;
+	width: 150px;
+	float: right;
+	color: grey;
+	margin-right: 50px;
+	margin-top: 20px;
 }
 
 .link {
 	float: right;
 	color: #463E3F;
-	padding-top: 70px;
+	margin-top: 40px;
 }
 
 .bundleForm {
@@ -207,7 +218,7 @@
 
 #createDirectory #advancedOptions {
 	vertical-align: middle;
-	margin-top: 30px;
+	margin-top: 20px;
 	margin-left: 25px;
 }
 
@@ -253,23 +264,23 @@
 }
 
 #createDirectory #uploadFiles {
-	padding-top: 50px;
+	padding-top: 30px;
 }
 
 #createDirectory #uploadFiles #instruction {
 	background-color: #C3FDB8;
 	z-index: 1;
 	/* These three lines are for transparency in all browsers. */
-    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
-	opacity: 0.5;
-	margin-top: 30px;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+	opacity: 0.6;
+	margin-top: 20px;
 }
 
 #createDirectory #uploadFiles #instruction p {
 	padding-left: 30px;
 	font-weight: bold;
-	color: green;
+	color: #004E00;
 	z-index: 5;
 }
 
