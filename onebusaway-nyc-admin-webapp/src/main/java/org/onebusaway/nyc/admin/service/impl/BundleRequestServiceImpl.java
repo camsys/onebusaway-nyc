@@ -73,6 +73,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
    */
   public BundleResponse validate(BundleRequest bundleRequest) {
     BundleResponse bundleResponse = new BundleResponse(getNextId());
+    bundleResponse.addStatusMessage("queueing...");
     _log.info("validate id=" + bundleResponse.getId());
     _validationMap.put(bundleResponse.getId(), bundleResponse);
     _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
@@ -157,6 +158,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   @Override
   public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
     BundleBuildResponse bundleResponse = new BundleBuildResponse(getNextId());
+    bundleResponse.addStatusMessage("queueing...");
     _buildMap.put(bundleResponse.getId(), bundleResponse);
     _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
     return bundleResponse;
@@ -173,6 +175,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 
     @Override
     public void run() {
+      _response.addStatusMessage("running...");
       try {
         _log.info("in validateThread.run");
         String gtfsDirectory =  _request.getBundleDirectory() + File.separator
@@ -228,6 +231,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 
     @Override
     public void run() {
+      _response.addStatusMessage("running...");
       try {
 
         _bundleBuildingService.download(_request, _response);
