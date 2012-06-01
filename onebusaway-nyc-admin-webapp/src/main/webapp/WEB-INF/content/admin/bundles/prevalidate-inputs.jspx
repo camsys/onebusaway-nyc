@@ -20,53 +20,48 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
-<div id="content">
-	<div id="text">
 		<div class="tabHeader">
 			<label class="headerLabel">Validate Bundle Inputs</label>
-		</div>
-			<div id="prevalidateInputs">
-				<label class="bundleHeader">Pre-Bundle Building Validation
-					of GTFS and STIF Files</label>
-				<div class="directoryLabels">
-					<label class="adminLabel directoryLabel">Bundle Directory :</label>
-					<label id="prevalidate_bundleDirectory" class="adminLabel directoryLabel"><s:property
-							value="bundleDirectory" /></label>
-					<label class="adminLabel directoryLabel">Request Id :</label>
-					<label id="prevalidate_id" class="adminLabel directoryLabel"><s:property
-							value="id" /></label>
 				</div>
-				<div id="validateBox">
-					<input type="button" id="validateButton" value="Validate"
-						class="formButton" />
-					<div id="validating">
-						<s:url var="url" value="/css/img/ajax-loader.gif" />
-						<img id="validationProgress" src="${url}" alt="Ajax loader" class="progress"/> 
-						  <label id="prevalidate_validationProgress"
-							class="adminLabel">Validating ... </label>
-					</div>
-				</div>
-				<div id="prevalidate_progress">
-					<s:url var="url" value="/css/img/arrow-right-3.png" />
-					<img src="${url}" alt="Not found" id="expand" /> <label
-						class="adminLabel">Validation Progress</label>
-				</div>
-				<div id="prevalidate_resultList">
-				<!--  space -->
-				</div>
-				<div id="prevalidate_exception">
-				<!--  space -->
-				</div>
-				<div id="prevalidate_fileList">
-				<!--  space -->
-				</div>
-				<div class="submitForm">
-					<fieldset>
-						<a href="" class="link">Cancel</a>
-						<input type="button" id="prevalidate_continue" value="Continue" class="submit"/>
-					</fieldset>
+		<div id="prevalidateInputs">
+			<label class="bundleHeader">Pre-Bundle Building Validation of
+				GTFS and STIF Files</label>
+			<div class="directoryLabels">
+				<label class="adminLabel directoryLabel">Bundle Directory :</label> <label
+					id="prevalidate_bundleDirectory" class="adminLabel directoryLabel"><s:property
+						value="bundleDirectory" /></label> <label class="adminLabel directoryLabel">Request
+					Id :</label> <label id="prevalidate_id" class="adminLabel directoryLabel"><s:property
+						value="id" /></label>
+			</div>
+			<div id="validateBox">
+				<input type="button" id="validateButton" value="Validate"
+					class="formButton" />
+				<div id="validating">
+					<s:url var="url" value="/css/img/ajax-loader.gif" />
+					<img id="validationProgress" src="${url}" alt="Ajax loader"
+						class="progress" /> <label id="prevalidate_validationProgress"
+						class="adminLabel">Validating ... </label>
 				</div>
 			</div>
-	</div>
-</div>
+			<div id="prevalidate_progress">
+				<s:url var="url" value="/css/img/arrow-right-3.png" />
+				<img src="${url}" alt="Not found" id="expand" /> <label
+					class="adminLabel">Validation Progress</label>
+			</div>
+			<div id="prevalidate_resultList">
+				<!--  space -->
+			</div>
+			<div id="prevalidate_exception">
+				<!--  space -->
+			</div>
+			<div id="prevalidate_fileList">
+				<!--  space -->
+			</div>
+			<div class="submitForm">
+				<fieldset>
+					<a href="" class="link">Cancel</a> 
+					<input type="button" id="prevalidate_continue" value="Continue" class="submit_enabled" />
+				</fieldset>
+			</div>
+		</div>
 </html>

@@ -78,6 +78,10 @@ jQuery(document).ready(function() {
 				var $element = jQuery("#manage-bundles_directoryName");
 				// only return the first selection, as multiple selections are possible
 				$element.attr("value", names[0]);
+				jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
+				jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
+				jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
+								.css("font-weight", "bold").css("color", "red");
 			}
 		}
 	});
@@ -142,7 +146,9 @@ function onSelectClick() {
 					} else {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 					}
-					jQuery("#createDirectoryMessage").text(status.message);
+					jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
+					jQuery("#create_continue").removeAttr("disabled")
+							.removeClass("submit_disabled").addClass("submit_enabled");
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
@@ -193,6 +199,7 @@ function changeImageSrc($image) {
 function directoryOptionChanged() {
 	//Clear the results regardless of the selection
 	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
+	jQuery("#manage-bundles_directoryName").val("");
 	
 	if(jQuery("#create").is(":checked")) {
 		//Change the button text and hide select directory list
