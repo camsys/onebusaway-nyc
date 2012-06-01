@@ -23,8 +23,10 @@ import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 import org.onebusaway.utility.ObjectSerializationLibrary;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -67,9 +69,9 @@ public class RunServiceImpl implements RunService {
   
   private Multimap<String, AgencyAndId> runIdsToTripIds;
 
-  private Multimap<String, RunTripEntry> entriesByRunNumber;
+  private ListMultimap<String, RunTripEntry> entriesByRunNumber;
 
-  private Multimap<AgencyAndId, RunTripEntry> entriesByTrip;
+  private ListMultimap<AgencyAndId, RunTripEntry> entriesByTrip;
   
   private BlockCalendarService blockCalendarService;
 
@@ -135,8 +137,8 @@ public class RunServiceImpl implements RunService {
     entriesByRun = TreeMultimap.create();
     runIdsToRoutes = HashMultimap.create();
     runIdsToTripIds = HashMultimap.create();
-    entriesByTrip = HashMultimap.create();
-    entriesByRunNumber = HashMultimap.create();
+    entriesByTrip = ArrayListMultimap.create();
+    entriesByRunNumber = ArrayListMultimap.create();
 
     for (Map.Entry<AgencyAndId, RunData> entry : runDataByTrip.entrySet()) {
       TripEntry trip = transitGraph.getTripEntryForId(entry.getKey());
@@ -505,16 +507,17 @@ public class RunServiceImpl implements RunService {
   public RunTripEntry getRunTripEntryForTripAndTime(TripEntry trip,
       int scheduleTime) {
 
-    Collection<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
+    List<RunTripEntry> bothTrips = entriesByTrip.get(trip.getId());
 
     if (!bothTrips.isEmpty()) {
 
-      RunTripEntry firstTrip = Iterables.get(bothTrips, 0, null);
+      RunTripEntry firstTrip = bothTrips.get(0);
       if (bothTrips.size() == 1) {
         return firstTrip;
       } else {
-        RunTripEntry secondTrip = Iterables.get(bothTrips, 1, null);
-        if (secondTrip.getStartTime() <= scheduleTime && secondTrip.getStartTime() >= firstTrip.getStartTime())
+        RunTripEntry secondTrip = bothTrips.get(1);
+        if (secondTrip.getStartTime() <= scheduleTime 
+            && secondTrip.getStartTime() >= firstTrip.getStartTime())
           return secondTrip;
       }
       return firstTrip;

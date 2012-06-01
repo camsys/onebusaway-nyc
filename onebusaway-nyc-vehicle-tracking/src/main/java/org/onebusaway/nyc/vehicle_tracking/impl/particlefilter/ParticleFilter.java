@@ -23,6 +23,7 @@ import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gov.sandia.cognition.math.LogMath;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -399,6 +400,7 @@ public class ParticleFilter<OBS> {
    */
   public static Multiset<Particle> lowVarianceSampler(
       Multiset<Particle> particles, double M) {
+    Preconditions.checkArgument(particles.size() > 0);
 
     final Multiset<Particle> resampled = HashMultiset.create((int) M);
     final double r = ParticleFactoryImpl.getLocalRng().nextDouble() / M;
@@ -407,7 +409,7 @@ public class ParticleFilter<OBS> {
     double c = p.getLogNormedWeight() - FastMath.log(particles.count(p));
     for (int m = 0; m < M; ++m) {
       final double U = FastMath.log(r + m / M);
-      while (U > c) {
+      while (U > c && pIter.hasNext()) {
         p = pIter.next();
         c = LogMath.add(
             p.getLogNormedWeight() - FastMath.log(particles.count(p)), c);
