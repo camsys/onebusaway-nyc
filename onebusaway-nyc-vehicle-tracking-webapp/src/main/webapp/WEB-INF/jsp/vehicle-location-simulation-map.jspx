@@ -207,6 +207,7 @@ OBA.Debug = function() {
 		
 		jQuery.ajax({
 			url: "vehicle-location-simulation!task-result-records-json.do?taskId=" + getParameterByName("taskId"),
+			dataType: "json",
 			success: function(data) {
 				if(data.records === null) {
 					alert("No records were found for this task.");
@@ -459,6 +460,7 @@ OBA.Debug = function() {
 		
 		jQuery.ajax({
 			url: "vehicle-location-simulation!points-for-trip-id.do?tripId=" + selectedTripId,
+			dataType: "json",
 			success: function(data) {
 	      var rawPoints = decodePolyline(data.points);
 	
@@ -490,6 +492,7 @@ OBA.Debug = function() {
 		
 		jQuery.ajax({
 			url: "vehicle-location-simulation!stops-for-trip-id.do?tripId=" + selectedTripId,
+			dataType: "json",
 			success: function(data) {
 				
 	      for(var i = 0; i < data.stopTimes.length; i++) {
@@ -583,6 +586,7 @@ OBA.Debug = function() {
 		jQuery.ajax({
 			url: "vehicle-location-simulation!active-blocks-for-route-json.do?routeId=" + selectedRouteId 
 					+ "&timestamp=" + msepoch,
+			dataType: "json",
 			success: function(data) {
 				tripsByBlockId = data.blocks;
 
@@ -603,6 +607,7 @@ OBA.Debug = function() {
 	function initRouteList() {
 		jQuery.ajax({
 			url: "vehicle-location-simulation!active-routes-json.do",
+			dataType: "json",
 			success: function(data) {
 				var routeList = jQuery("#routes");
 				routeList.empty();

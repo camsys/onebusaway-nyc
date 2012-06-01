@@ -594,7 +594,7 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
       } catch (final ProjectionException e) {
         // discard
       } catch (final Throwable ex) {
-        _log.error("Error processing new location record for inference: ", ex);
+        _log.error("Error processing new location record for inference on vehicle " + _vehicleId + ": ", ex);
       }
     }
 
