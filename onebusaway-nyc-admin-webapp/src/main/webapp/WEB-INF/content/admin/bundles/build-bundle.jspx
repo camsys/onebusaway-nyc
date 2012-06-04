@@ -73,7 +73,7 @@
 			<div class="submitForm">
 				<fieldset>
 					<a href="" class="link">Cancel</a> 
-					<input type="button" id="build_continue" value="Continue" class="submit_enabled" />
+					<input type="button" id="build_continue" value="Continue" class="submit_disabled" disabled="disabled" />
 				</fieldset>
 			</div>
 		</div>

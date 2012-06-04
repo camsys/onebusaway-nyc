@@ -147,8 +147,8 @@ function onSelectClick() {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 					}
 					jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
-					jQuery("#create_continue").removeAttr("disabled")
-							.removeClass("submit_disabled").addClass("submit_enabled");
+					var continueButton = jQuery("#create_continue");
+					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
@@ -162,6 +162,10 @@ function onSelectClick() {
 		});
 }
 
+function enableContinueButton(continueButton) {
+	jQuery(continueButton).removeAttr("disabled")
+		.removeClass("submit_disabled").addClass("submit_enabled");	
+}
 
 function toggleAdvancedOptions() {
 	var $image = jQuery("#createDirectory #advancedOptions #expand");
@@ -325,6 +329,8 @@ function updateValidateList(id) {
 				txt = txt + "</ul>";
 				jQuery("#prevalidate_fileList").html(txt);
 				jQuery("#prevalidateInputs #validateBox #validateButton").removeAttr("disabled");
+				var continueButton = jQuery("#prevalidate_continue");
+				enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			alert(request.statustext);
@@ -432,6 +438,8 @@ function updateBuildList(id) {
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_fileList").html(txt);
 				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
+				var continueButton = jQuery("#build_continue");
+				enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			alert(request.statustext);
