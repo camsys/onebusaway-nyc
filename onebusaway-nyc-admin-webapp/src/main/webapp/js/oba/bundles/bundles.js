@@ -69,6 +69,7 @@ jQuery(document).ready(function() {
 	jQuery("#tabs").bind("tabsshow", function(event, ui) {
 		window.location.hash = ui.tab.hash;
 	});
+	
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
 			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
@@ -147,8 +148,8 @@ function onSelectClick() {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 					}
 					jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
-					jQuery("#create_continue").removeAttr("disabled")
-							.removeClass("submit_disabled").addClass("submit_enabled");
+					var continueButton = jQuery("#create_continue");
+					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
@@ -162,6 +163,10 @@ function onSelectClick() {
 		});
 }
 
+function enableContinueButton(continueButton) {
+	jQuery(continueButton).removeAttr("disabled")
+		.removeClass("submit_disabled").addClass("submit_enabled");	
+}
 
 function toggleAdvancedOptions() {
 	var $image = jQuery("#createDirectory #advancedOptions #expand");
@@ -325,6 +330,8 @@ function updateValidateList(id) {
 				txt = txt + "</ul>";
 				jQuery("#prevalidate_fileList").html(txt);
 				jQuery("#prevalidateInputs #validateBox #validateButton").removeAttr("disabled");
+				var continueButton = jQuery("#prevalidate_continue");
+				enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			alert(request.statustext);
@@ -430,13 +437,35 @@ function updateBuildList(id) {
 					}
 				}
 				txt = txt + "</ul>";
-				jQuery("#buildBundle_fileList").html(txt);
+				jQuery("#buildBundle_fileList").html(txt).css("display", "block");
+				updateBuildSummary();
 				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
+				var continueButton = jQuery("#build_continue");
+				enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			alert(request.statustext);
 		}
 	});	
+}
+
+function updateBuildSummary(){
+	jQuery.ajax({
+		url: "manage-bundles!downloadOutputFile.action",
+		type: "POST",
+		data: {"id": id,
+			   "downloadFilename": "summary.txt"},
+		async: false,
+		success: function(response){
+			jQuery("#bundleResultSummary").append("<div id=\"summary\"></div>")
+					.css("padding", "5px").css("background-color", "#F0F0F0")
+					.addClass("summaryFont");
+			jQuery("#bundleResultSummary #summary").html(response).wrap("<pre />");
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});
 }
 
 // add support for parsing query string
