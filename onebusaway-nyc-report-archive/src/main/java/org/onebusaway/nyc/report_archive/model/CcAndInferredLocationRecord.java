@@ -68,6 +68,7 @@ public class CcAndInferredLocationRecord implements Serializable {
     setLongitude(realtime.getLongitude());
     setSpeed(realtime.getSpeed());
     setDirectionDeg(realtime.getDirectionDeg());
+    
     // inferred fields
     setAgencyId(inferred.getAgencyId());
     setVehicleId(inferred.getVehicleId());
@@ -90,6 +91,8 @@ public class CcAndInferredLocationRecord implements Serializable {
     setNextScheduledStopId(inferred.getNextScheduledStopId());
     setNextScheduledStopDistance(inferred.getNextScheduledStopDistance());
     setScheduleDeviation(inferred.getScheduleDeviation());
+    setAssignedRunId(inferred.getAssignedRunId());
+
   }
 
   // realtime fields
@@ -205,6 +208,9 @@ public class CcAndInferredLocationRecord implements Serializable {
 
   @Column(nullable = true, name = "schedule_deviation")
   private Integer scheduleDeviation;
+
+  @Column(nullable = true, name = "assigned_run_id", length = 16)
+  private String assignedRunId = null;
 
   public String getUUID() {
     return uuid;
@@ -485,6 +491,14 @@ public class CcAndInferredLocationRecord implements Serializable {
 
   public void setScheduleDeviation(Integer scheduleDeviation) {
     this.scheduleDeviation = scheduleDeviation;
+  }
+
+  public void setAssignedRunId(String assignedRunId) {
+    this.assignedRunId = assignedRunId;
+  }
+
+  public String getAssignedRunId() {
+    return assignedRunId;
   }
 
   private String toISODate(Date date) {
