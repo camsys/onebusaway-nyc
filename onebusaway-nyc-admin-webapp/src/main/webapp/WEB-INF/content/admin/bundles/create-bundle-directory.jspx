@@ -90,7 +90,8 @@
 			</div>
 			<div class="submitForm">
 				<fieldset>
-					<a href="" class="link">Cancel</a> 
+					<s:url var="url" action="index.action" namespace="/admin" />
+					<a href="${url}" class="link">Cancel</a> 
 					<input type="button" id="create_continue" value="Continue" class="submit_disabled" disabled="disabled"/>
 				</fieldset>
 			</div>

@@ -69,6 +69,7 @@ jQuery(document).ready(function() {
 	jQuery("#tabs").bind("tabsshow", function(event, ui) {
 		window.location.hash = ui.tab.hash;
 	});
+	
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
 			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
@@ -436,7 +437,8 @@ function updateBuildList(id) {
 					}
 				}
 				txt = txt + "</ul>";
-				jQuery("#buildBundle_fileList").html(txt);
+				jQuery("#buildBundle_fileList").html(txt).css("display", "block");
+				updateBuildSummary();
 				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
 				var continueButton = jQuery("#build_continue");
 				enableContinueButton(continueButton);
@@ -445,6 +447,25 @@ function updateBuildList(id) {
 			alert(request.statustext);
 		}
 	});	
+}
+
+function updateBuildSummary(){
+	jQuery.ajax({
+		url: "manage-bundles!downloadOutputFile.action",
+		type: "POST",
+		data: {"id": id,
+			   "downloadFilename": "summary.txt"},
+		async: false,
+		success: function(response){
+			jQuery("#bundleResultSummary").append("<div id=\"summary\"></div>")
+					.css("padding", "5px").css("background-color", "#F0F0F0")
+					.addClass("summaryFont");
+			jQuery("#bundleResultSummary #summary").html(response).wrap("<pre />");
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});
 }
 
 // add support for parsing query string

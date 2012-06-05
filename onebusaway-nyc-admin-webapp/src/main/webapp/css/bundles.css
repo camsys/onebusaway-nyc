@@ -76,7 +76,6 @@
 
 .tabHeader {
 	padding-top: 20px;
-	margin-top: 20px;
 	height: 30px;
 	background-color:#C0C0C0; 
 }
@@ -316,12 +315,12 @@
 }
 
 #prevalidateInputs #prevalidate_fileList li {
-	padding-top : 10px;
+	margin-bottom: 10px;
+	background-color: #F0F0F0;
 }
 
 #prevalidateInputs #prevalidate_fileList a {
-	padding-top: 10px;
-	font-size : 14px;
+	font-size : 12px;
 	font-family: arial;
 	color: blue;
 	
@@ -371,7 +370,6 @@
 #bundleContentsHolder #buildBox #building {
 	display: none;
 	background-color: #F0F0F0;
-	
 }
 
 #buildBox #buildBundle_bundleName {
@@ -391,35 +389,64 @@
 	display: block;
 }
 
-#buildBundle #buildBundle_progress {
+#buildBundle_exception {
+	display: none;
+	background-color:#FF0000;
+}
+
+#buildBundle #bundleResultsHolder {
+	border: solid 1px transparent;
+	width: 890px;
+	height: auto;
+	overflow: none;
+}
+
+#bundleResultsHolder #bundleResults {
+	border: solid 1px transparent;
+	width: 400px;
+	float: left;
+}
+
+#bundleResultsHolder #bundleResultSummary {
+	border: solid 1px transparent;
+	padding: 5px;
+	margin-left: 20px;
+	width: 400px;
+	float: left;
+}
+
+#buildBundle #bundleResultsHolder #buildBundle_progress {
 	vertical-align: middle;
-	margin-top: 5px;
 	margin-right: 10px;
 }
 
-#buildBundle #buildBundle_resultList {
+#bundleResultsHolder #buildBundle_resultList {
 	display: none;
 	padding-top : 10px;
 }
 
-#buildBundle #buildBundle_resultList {
+#bundleResultsHolder #buildBundle_fileList {
 	padding-top : 10px;
+	display: none;
 }
 
-#buildBundle #buildBundle_fileList li {
-	padding-top : 10px;
+#bundleResultsHolder #buildBundle_fileList li {
+	margin-bottom: 10px;
+	background-color: #F0F0F0;
 }
 
-#buildBundle #buildBundle_fileList a {
-	padding-top: 10px;
-	font-size : 14px;
+#bundleResultsHolder #buildBundle_fileList a {
+	font-size : 12px;
 	font-family: arial;
 	color: blue;
 }
 
-#buildBundle_exception {
-	display: none;
-	background-color:#FF0000;
+.clear {
+	clear: both;
+}
+
+.summaryFont {
+	font: 13px/1.231 helvetica,arial,clean,sans-serif;
 }
 
 #currentDirectories .ui-selecting {
