@@ -105,7 +105,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   	  msg.append("Your Build Results are available at ");
   	  msg.append(getServerURL());
   	  msg.append("/admin/bundles/manage-bundles.action#Build");
-  	  msg.append("?fromEmail=true&id=" + response.getId());
+  	  msg.append("?fromEmail=true&id=" + response.getId() +"&name=" + request.getBundleName());
   	  String subject = "Bundle Build " + response.getId() + " complete";
   	  _emailService.send(request.getEmailAddress(), from, subject, msg);
     }

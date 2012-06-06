@@ -60,6 +60,7 @@ jQuery(document).ready(function() {
 		//alert("called from email!");
 		jQuery("#prevalidate_id").text(qs["id"]);
 		jQuery("#buildBundle_id").text(qs["id"]);
+		jQuery("#buildBundle_bundleName").val(qs["name"]);
 		// just in case set the tab
 		var $tabs = jQuery("#tabs");
 		$tabs.tabs('select', 2);
