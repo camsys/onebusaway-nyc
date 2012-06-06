@@ -126,6 +126,7 @@ public class StifTripLoader {
     try {
       reader = new StifRecordReader(stream);
       ServiceCode serviceCode = null;
+      String agencyId = null;
       while (true) {
         StifRecord record = reader.read();
         lineNumber++;
@@ -134,7 +135,9 @@ public class StifTripLoader {
           break;
         }
         if (record instanceof TimetableRecord) {
-          serviceCode = ((TimetableRecord) record).getServiceCode();
+          TimetableRecord timetableRecord = (TimetableRecord) record;
+          serviceCode = timetableRecord.getServiceCode();
+          agencyId = timetableRecord.getAgencyId();
           if (!rawData.containsKey(serviceCode)) {
             rawData.put(serviceCode, new ArrayList<RawTrip>());
           }
@@ -201,6 +204,7 @@ public class StifTripLoader {
                 tripRecord.getReliefRunId(),
                 tripRecord.getNextTripOperatorRunId(),
                 StifTripType.byValue(tripType), tripRecord.getSignCode());
+            rawTrip.agencyId = agencyId;
             rawTrip.serviceCode = serviceCode;
             rawTrip.depot = tripRecord.getDepotCode();
             rawTrip.firstStopTime = tripRecord.getOriginTime();

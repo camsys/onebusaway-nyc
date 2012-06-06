@@ -22,6 +22,7 @@ public class TimetableRecord implements StifRecord {
 
 	private String routeIdentifier;
 	private ServiceCode serviceCode;
+  private String agencyId;
 
 	public void setRouteIdentifier(String routeIdentifier) {
 		this.routeIdentifier = routeIdentifier;
@@ -38,4 +39,12 @@ public class TimetableRecord implements StifRecord {
 	public ServiceCode getServiceCode() {
 		return serviceCode;
 	}
+
+  public void setAgencyId(String agencyId) {
+    this.agencyId = agencyId;
+  }
+
+  public String getAgencyId() {
+    return agencyId;
+  }
 }

@@ -35,6 +35,7 @@ public class RawTrip implements Comparable<RawTrip> {
   public int lineNumber;
   public TripIdentifier id;
   public String depot;
+  public String agencyId;
 
 
   public RawTrip(String runId, String reliefRunId, String nextRun,
