@@ -36,6 +36,7 @@ public class TimetableRecordFactory extends StifRecordFactory<TimetableRecord> {
 		new FieldDef(65-41, "route description", null),
 		new FieldDef(73-65, "schedule number", null),
 		new FieldDef(77-73, "version number", null),
+		new FieldDef(78-77, "empty", null),
 		new FieldDef(79-78, "stif type code", null),
 		new FieldDef(80-79, "empty", null),
     new FieldDef(82 - 80, "organization", new TimetableFieldSetter() {
@@ -43,7 +44,7 @@ public class TimetableRecordFactory extends StifRecordFactory<TimetableRecord> {
           String org = getStringData();
           if ("TA".equals(org) || "OA".equals(org)) {
             record.setAgencyId("MTA NYCT");
-          } else if ("BC".equals(org)) {
+          } else if ("MB".equals(org) || "BC".equals(org)) {
             record.setAgencyId("MTABC");
           } else {
             record.setAgencyId(org);
