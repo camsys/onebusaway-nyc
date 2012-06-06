@@ -38,6 +38,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.utility.ObjectSerializationLibrary;
+import org.opentripplanner.common.model.P2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -307,7 +308,7 @@ public class StifTask implements Runnable {
         blockNo ++;
         RawTrip lastTrip = pullout;
         int i = 0;
-        HashSet<String> blockIds = new HashSet<String>();
+        HashSet<P2<String>> blockIds = new HashSet<P2<String>>();
         while (lastTrip.type != StifTripType.PULLIN) {
 
           unmatchedTrips.remove(lastTrip);
@@ -379,7 +380,7 @@ public class StifTask implements Runnable {
             String blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
 
             blockId = blockId.intern();
-            blockIds.add(blockId);
+            blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));
             gtfsTrip.setBlockId(blockId);
             _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
 
@@ -391,16 +392,19 @@ public class StifTask implements Runnable {
             usedGtfsTrips.add(gtfsTrip);
           }
           if (lastTrip.type == StifTripType.DEADHEAD) {
-            for (String blockId : blockIds) {
-              dumpBlockDataForTrip(lastTrip, "", "deadhead", blockId, "no gtfs trip");
+            for (P2<String> blockId : blockIds) {
+              String tripId = String.format("deadhead_%s_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.lastStop, lastTrip.runId);
+              dumpBlockDataForTrip(lastTrip, blockId.getSecond(), tripId, blockId.getFirst(), "no gtfs trip");
             }
           }
         }
         unmatchedTrips.remove(lastTrip);
 
-        for (String blockId : blockIds) {
-          dumpBlockDataForTrip(pullout, "", "pullout", blockId, "no gtfs trip");
-          dumpBlockDataForTrip(lastTrip, "", "pullin", blockId, "no gtfs trip");
+        for (P2<String> blockId : blockIds) {
+          String pulloutTripId = String.format("pullout_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.runId);
+          dumpBlockDataForTrip(pullout, blockId.getSecond(), pulloutTripId , blockId.getFirst(), "no gtfs trip");
+          String pullinTripId = String.format("pullin_%s_%s_%s_%s", blockId.getSecond(), lastTrip.lastStop, lastTrip.lastStopTime, lastTrip.runId);
+          dumpBlockDataForTrip(lastTrip, blockId.getSecond(), pullinTripId, blockId.getFirst(), "no gtfs trip");
         }
       }
 
