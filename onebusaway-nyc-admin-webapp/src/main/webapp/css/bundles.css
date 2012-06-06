@@ -383,7 +383,12 @@
 	height: 40px;
 	margin-top: 15px;
 	background-image:url('img/Button_background.png');
-}	
+}
+
+#buildBox #buildBundle_resultLink {
+	vertical-align: middle;
+	margin-top: 10px;
+}
 
 #buildBox #bundleLabel {
 	display: block;
@@ -399,6 +404,7 @@
 	width: 890px;
 	height: auto;
 	overflow: none;
+	margin-top: 20px;
 }
 
 #bundleResultsHolder #bundleResults {
