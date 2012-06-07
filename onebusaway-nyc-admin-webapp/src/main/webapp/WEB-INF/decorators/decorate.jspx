@@ -49,6 +49,14 @@
 						<img src="http://mta.info/template/images/mta_info.gif" alt="MTA.info logo" />
 					</a>
 				</div>
+				<s:if test="!anonymousUser">
+					<div id="navigation">
+						<s:url var="url" namespace="/" action="logout"></s:url>
+						<s:a href="%{url}">Logout</s:a>
+						<s:url var="url" namespace="/admin" action="index"/>
+						<a href="${url}">Back To Welcome</a>
+					</div>
+				</s:if>
 			</div>
 			<div id="contentbox">
 				<decorator:body />

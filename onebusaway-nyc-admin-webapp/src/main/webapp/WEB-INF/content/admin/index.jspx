@@ -46,10 +46,6 @@
 					<s:url var="url" action="barcode"></s:url>
 					<s:a href="%{url}">QR Code Generation</s:a>
 				</li>
-				<li>
-					<s:url var="url" namespace="/" action="logout"></s:url>
-					<s:a href="%{url}">Logout</s:a>
-				</li>
 			</ul>
 		</div>
 	</div>
