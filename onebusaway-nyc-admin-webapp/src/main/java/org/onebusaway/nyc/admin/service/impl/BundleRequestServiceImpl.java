@@ -10,6 +10,7 @@ import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.BundleValidationService;
 import org.onebusaway.nyc.admin.service.EmailService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   private ExecutorService _executorService = null;
   private BundleValidationService _bundleValidationService;
   private BundleBuildingService _bundleBuildingService;
-
+  private ConfigurationService configurationService;
   private EmailService _emailService;
   private FileService _fileService;
   private Integer jobCounter = 0;
@@ -96,19 +97,40 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     return _buildMap.get(id);
   }
   
+  /**
+   * Sends email to the given email address. 
+   * @param request bundle request
+   * @param response bundle response
+   */
   public void sendEmail(BundleBuildRequest request, BundleBuildResponse response) {
     _log.info("in send email for requestId=" + response.getId() 
         + " with email=" + request.getEmailAddress());
     if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1) {
-      String from = "sheldonb@gmail.com";
+      String from = configurationService.getConfigurationValueAsString("admin.senderEmailAddress", "mtabuscis@mtabuscis.net");
   	  StringBuffer msg = new StringBuffer();
   	  msg.append("Your Build Results are available at ");
-  	  msg.append(getServerURL());
-  	  msg.append("/admin/bundles/manage-bundles.action#Build");
-  	  msg.append("?fromEmail=true&id=" + response.getId() +"&name=" + request.getBundleName());
+  	  msg.append(getResultLink(request.getBundleName(), response.getId()));
   	  String subject = "Bundle Build " + response.getId() + " complete";
   	  _emailService.send(request.getEmailAddress(), from, subject, msg);
     }
+  }
+  
+  @Override
+  public BundleBuildResponse buildBundleResultURL(String bundleName) {
+	  BundleBuildResponse bundleResponse = new BundleBuildResponse(getNextId());
+	  bundleResponse.addStatusMessage("queueing...");
+	  bundleResponse.setBundleResultLink(getResultLink(bundleName, bundleResponse.getId()));
+	  _buildMap.put(bundleResponse.getId(), bundleResponse);
+	  return bundleResponse;
+  }
+  
+  
+  private String getResultLink(String bundleName, String responseId) {
+	  StringBuffer resultLink = new StringBuffer();
+	  resultLink.append(getServerURL());
+	  resultLink.append("/admin/bundles/manage-bundles.action#Build");
+	  resultLink.append("?fromEmail=true&id=" + responseId +"&name=" + bundleName);
+	  return resultLink.toString();
   }
 
   @Override
@@ -156,10 +178,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 	}
 
   @Override
-  public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
-    BundleBuildResponse bundleResponse = new BundleBuildResponse(getNextId());
-    bundleResponse.addStatusMessage("queueing...");
-    _buildMap.put(bundleResponse.getId(), bundleResponse);
+  public BundleBuildResponse build(BundleBuildRequest bundleRequest, String responseId) {
+    BundleBuildResponse bundleResponse = lookupBuildRequest(responseId);
     _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
     return bundleResponse;
   }
@@ -256,5 +276,13 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       }
     }
   }
+
+	/**
+	 * @param configurationService the configurationService to set
+	 */
+  	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+		this.configurationService = configurationService;
+	}
 
 }

@@ -10,7 +10,14 @@ public interface BundleRequestService {
 
   BundleResponse lookupValidationRequest(String id);
   BundleBuildResponse lookupBuildRequest(String id);
-  BundleBuildResponse build(BundleBuildRequest bundleRequest);
+  BundleBuildResponse build(BundleBuildRequest bundleRequest, String responseId);
+  
+  /**
+   * Builds and returns the URL where build bundle results can be viewed after the process completes
+   * @param request bundle request
+   * @return the result URL
+   */
+  BundleBuildResponse buildBundleResultURL(String bundleName);
   
   void cleanup();
 

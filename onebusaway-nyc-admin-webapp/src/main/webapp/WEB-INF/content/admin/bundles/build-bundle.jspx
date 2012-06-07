@@ -54,6 +54,10 @@
 							class="progress" /> <label id="buildBundle_buildProgress"
 							class="adminLabel">Building ... </label>
 					</div>
+					<div id="buildBundle_resultLink">
+						<label class="adminLabel">Result Link :</label>
+						<label id="resultLink"></label>
+					</div>
 				</div>
 			</div>
 			<div id="bundleResultsHolder">
