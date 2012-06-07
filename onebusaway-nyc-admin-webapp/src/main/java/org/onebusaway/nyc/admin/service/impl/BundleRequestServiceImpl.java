@@ -10,6 +10,7 @@ import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.BundleValidationService;
 import org.onebusaway.nyc.admin.service.EmailService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   private ExecutorService _executorService = null;
   private BundleValidationService _bundleValidationService;
   private BundleBuildingService _bundleBuildingService;
-
+  private ConfigurationService configurationService;
   private EmailService _emailService;
   private FileService _fileService;
   private Integer jobCounter = 0;
@@ -105,7 +106,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     _log.info("in send email for requestId=" + response.getId() 
         + " with email=" + request.getEmailAddress());
     if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1) {
-      String from = "sheldonb@gmail.com";
+      String from = configurationService.getConfigurationValueAsString("admin.senderEmailAddress", "mtabuscis@mtabuscis.net");
   	  StringBuffer msg = new StringBuffer();
   	  msg.append("Your Build Results are available at ");
   	  msg.append(getResultLink(request.getBundleName(), response.getId()));
@@ -275,5 +276,13 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       }
     }
   }
+
+	/**
+	 * @param configurationService the configurationService to set
+	 */
+  	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+		this.configurationService = configurationService;
+	}
 
 }
