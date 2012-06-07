@@ -33,8 +33,7 @@
 #tabs #breadcrumb li {
     list-style-type:none;
     float:left;
-    padding-left:10px;
-    width: 210px;
+    width: 175px;
     color: #808080;
 }
 
@@ -262,11 +261,11 @@
 	height: 50px;
 }
 
-#createDirectory #uploadFiles {
-	padding-top: 30px;
+#uploadFiles {
+	padding-top: 20px;
 }
 
-#createDirectory #uploadFiles #instruction {
+#uploadFiles #uploadInstructions #instruction {
 	background-color: #C3FDB8;
 	z-index: 1;
 	/* These three lines are for transparency in all browsers. */
@@ -276,7 +275,7 @@
 	margin-top: 20px;
 }
 
-#createDirectory #uploadFiles #instruction p {
+#uploadInstructions #instruction p {
 	padding-left: 30px;
 	font-weight: bold;
 	color: #004E00;

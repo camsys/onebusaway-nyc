@@ -110,11 +110,15 @@ html, body {
 
 #topbar #navigation {
 	vertical-align: middle;
+	border: solid 1px transparent;
+	height: 75px;
+	background-image:url('img/HeaderBar18.jpg');
 }
 
 #topbar #navigation a {
 	padding-left: 10px;
 	padding-right: 10px;
 	float: right;
+	color: white;
 }
 

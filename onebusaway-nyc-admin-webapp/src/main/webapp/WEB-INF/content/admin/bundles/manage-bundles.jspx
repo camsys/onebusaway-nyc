@@ -60,18 +60,25 @@
 			<h2>Transit Data Bundle Utility</h2>
 			<div id="tabs">
 				<ul id="breadcrumb">
-					<li><a href="#Create" title="Create Directory"><span>Create
+					<li><a href="#Create" title="Create Directory"><span>1. Create
 								Directory</span></a></li>
-					<li><a href="#Validate" title="Pre-validate inputs"><span>Pre-validate
+					<li><a href="#Upload" title="Upload Files"><span>2. Upload 
+								Files</span></a></li>
+					<li><a href="#Validate" title="Pre-validate inputs"><span>3. Pre-validate
 								inputs</span></a></li>
-					<li><a href="#Build" title="Build And Validate"><span>Build
+					<li><a href="#Build" title="Build And Validate"><span>4. Build
 								And Validate</span></a></li>
-					<li><a href="#Deploy" title="Deploy Bundle"><span>Deploy
+					<li><a href="#Deploy" title="Deploy Bundle"><span>5. Deploy
 								Bundle</span></a></li>
 				</ul>
 
 				<div id="Create">
 					<jsp:include page="create-bundle-directory.jspx">
+						<!--  space -->
+					</jsp:include>
+				</div>
+				<div id="Upload">
+					<jsp:include page="upload-files.jspx">
 						<!--  space -->
 					</jsp:include>
 				</div>
