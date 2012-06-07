@@ -91,8 +91,7 @@ public class TripRecord implements StifRecord {
   }
 
   public void setSignCodeRoute(String signCodeRoute) {
-    signCodeRoute = signCodeRoute.replaceFirst("^([a-zA-Z]+)0+", "$1");
-    this.signCodeRoute = signCodeRoute;
+    this.signCodeRoute = signCodeRoute.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
   }
 
   public String getReliefRunNumber() {

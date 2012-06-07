@@ -35,7 +35,7 @@ public class EventRecordFactory extends StifRecordFactory<EventRecord> {
       }),
       new FieldDef(15 - 7, "event time", new EventFieldSetter() {
         public void setField(EventRecord record) {
-          record.setTime(getTimeFromCentiminutes());
+          record.setTime(getTimeFromCentiminutesSafe());
         }
       }),
       new FieldDef(17 - 15, "event type", null),

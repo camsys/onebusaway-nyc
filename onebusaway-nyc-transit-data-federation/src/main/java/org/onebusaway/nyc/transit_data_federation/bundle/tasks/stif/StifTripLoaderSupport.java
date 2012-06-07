@@ -70,8 +70,10 @@ public class StifTripLoaderSupport {
 
   public TripIdentifier getIdentifierForStifTrip(TripRecord tripRecord, RawTrip rawTrip) {
     String routeName = tripRecord.getSignCodeRoute();
-    if (routeName == null || routeName.trim().length() == 0)
+    if (routeName == null || routeName.trim().length() == 0) {
       routeName = tripRecord.getRunRoute();
+      routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
+    }
     String startStop = rawTrip.firstStop;
     int startTime = rawTrip.firstStopTime;
     int endTime = rawTrip.lastStopTime;
@@ -171,13 +173,17 @@ public class StifTripLoaderSupport {
       StopTime endStopTime = stopTimes.get(stopTimes.size() - 1);
       endTime = endStopTime.getArrivalTime();
     }
-    //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
-    //their current trip id format.
-
+    String run = "";
     String[] parts = trip.getId().getId().split("_");
-    String runRoute = parts[4];
-    String runId = parts[5];
-    String run = runRoute + "-" + runId;
+    if (parts.length >= 6) {
+      //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
+      //their current trip id format.
+      //for MTA Bus Co, this is not necessary, we hope
+      String runRoute = parts[4];
+      String runId = parts[5];
+      run = runRoute + "-" + runId;
+    }
+    routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
     return new TripIdentifier(routeName, startTime, endTime, startStop, run);
   }
 

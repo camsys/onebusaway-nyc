@@ -57,7 +57,6 @@ public class TripIdentifier {
     result = prime * result + ((startStop == null) ? 0 : startStop.hashCode());
     result = prime * result + startTime;
     result = prime * result + endTime;
-    result = prime * result + ((run == null) ? 0 : run.hashCode());
     return result;
   }
 
@@ -75,7 +74,7 @@ public class TripIdentifier {
         return false;
     } else if (!routeName.equals(other.routeName))
       return false;
-    else if (!run.equals(other.run))
+    else if (!run.equals(other.run) && run != null && other.run != null)
       return false;
     if (startStop == null) {
       if (other.startStop != null)
