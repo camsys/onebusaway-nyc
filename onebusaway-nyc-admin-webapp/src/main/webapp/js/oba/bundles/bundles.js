@@ -453,6 +453,28 @@ function updateBuildStatus() {
 
 // populate list of files that were result of building
 function updateBuildList(id) {
+	var summaryList = null;
+		jQuery.ajax({
+		url: "manage-bundles!downloadOutputFile.action",
+		type: "POST",
+		data: {"id": id,
+			   "downloadFilename": "summary.csv"},
+		async: false,
+		success: function(response){
+			summaryList = response;
+			}
+		});
+
+		var lines = summaryList.split(/\n/);
+		lines.pop(lines.length-1); // discard header
+		var fileDescriptionMap = new Array();
+		var fileCountMap = new Array();
+		for (var i = 0; i < lines.length; i++) {
+			var dataField = lines[i].split(',');
+
+			fileDescriptionMap[dataField[0]] = dataField[1];
+			fileCountMap[dataField[0]] = dataField[2];
+		}
 	jQuery.ajax({
 		url: "manage-bundles!buildList.action",
 		type: "POST",
@@ -466,16 +488,21 @@ function updateBuildList(id) {
 					var size = list.length;
 					if (size > 0) {
 						for (var i=0; i<size; i++) {
-							var encoded = encodeURIComponent(list[i]);
-							txt = txt + "<li><a href=\"manage-bundles!downloadOutputFile.action?id="
-							+ id+ "&downloadFilename=" 
-							+ encoded + "\">" + encoded +  "</a></li>";
+							var description = fileDescriptionMap[list[i]];
+							var lineCount = fileCountMap[list[i]];
+							if (description != undefined) {
+								var encoded = encodeURIComponent(list[i]);
+								txt = txt + "<li>" + description + ":"
+								+ lineCount + "&nbsp;&nbsp;"
+								+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
+								+ id+ "&downloadFilename=" 
+								+ encoded + "\">" + encoded +  "</a></li>";
+							}
 						}
 					}
 				}
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_fileList").html(txt).css("display", "block");
-				updateBuildSummary();
 				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
 				var continueButton = jQuery("#build_continue");
 				enableContinueButton(continueButton);
@@ -484,25 +511,6 @@ function updateBuildList(id) {
 			alert(request.statustext);
 		}
 	});	
-}
-
-function updateBuildSummary(){
-	jQuery.ajax({
-		url: "manage-bundles!downloadOutputFile.action",
-		type: "POST",
-		data: {"id": id,
-			   "downloadFilename": "summary.txt"},
-		async: false,
-		success: function(response){
-			jQuery("#bundleResultSummary").append("<div id=\"summary\"></div>")
-					.css("padding", "5px").css("background-color", "#F0F0F0")
-					.addClass("summaryFont");
-			jQuery("#bundleResultSummary #summary").html(response).wrap("<pre />");
-		},
-		error: function(request) {
-			alert(request.statustext);
-		}
-	});
 }
 
 // add support for parsing query string

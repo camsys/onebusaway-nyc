@@ -77,9 +77,6 @@
 						<!--  space -->
 					</div>
 				</div>
-				<div id="bundleResultSummary">
-					<label class="adminLabel">Summary :</label>
-				</div>
 				<br class="clear" />
 			</div>
 			<div class="submitForm">
