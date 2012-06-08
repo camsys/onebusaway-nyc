@@ -144,7 +144,7 @@ public class StifTripLoaderSupport {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
             SQLException {
-          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 ORDER BY st.departureTime ASC LIMIT 1");
+          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 ORDER BY st.stopSequence ASC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
@@ -157,7 +157,7 @@ public class StifTripLoaderSupport {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
             SQLException {
-          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 ORDER BY st.arrivalTime DESC LIMIT 1");
+          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 ORDER BY st.stopSequence DESC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
