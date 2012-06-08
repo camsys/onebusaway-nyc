@@ -44,7 +44,7 @@
 				</div>
 				<div id="buildBox">
 					<div>
-						<label id="bundleLabel" class="adminLabel">Bundle Name :</label> <input
+						<label id="bundleLabel" class="adminLabel">Bundle Build Name :</label> <input
 							type="text" id="buildBundle_bundleName" /> <input type="button"
 							id="buildBundle_buildButton" value="Build Bundle" />
 					</div>
@@ -53,6 +53,10 @@
 						<img id="buildingProgress" src="${url}" alt="Ajax loader"
 							class="progress" /> <label id="buildBundle_buildProgress"
 							class="adminLabel">Building ... </label>
+					</div>
+					<div id="buildBundle_resultLink">
+						<label class="adminLabel">Result Link :</label>
+						<label id="resultLink"></label>
 					</div>
 				</div>
 			</div>

@@ -24,7 +24,7 @@
 			<label class="headerLabel">Create Bundle Directory</label>
 		</div>
 		<div id="createDirectory">
-			<label class="bundleHeader">1. Select or Create New Bundle
+			<label class="bundleHeader">Select or Create New Bundle
 				Directory</label>
 			<div id="directoryOptions">
 				<input type="radio" name="options" id="create" checked="checked" /> <label
@@ -79,13 +79,6 @@
 					<s:textarea name="comments" cssClass="comments"></s:textarea>
 					<input type="button" value="Add Comment" id="create_comments"
 						class="formButton" />
-				</div>
-			</div>
-			<div id="uploadFiles">
-				<label class="bundleHeader">2. Upload Files</label>
-				<div id="instruction">
-					<p>Before continuing, please use the AWS Management Console to
-						upload bundle files to the new directory.</p>
 				</div>
 			</div>
 			<div class="submitForm">

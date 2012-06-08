@@ -61,6 +61,8 @@ jQuery(document).ready(function() {
 		jQuery("#prevalidate_id").text(qs["id"]);
 		jQuery("#buildBundle_id").text(qs["id"]);
 		jQuery("#buildBundle_bundleName").val(qs["name"]);
+		//hide the result link when reentering from email
+		jQuery("#buildBundle_resultLink").hide();
 		// just in case set the tab
 		var $tabs = jQuery("#tabs");
 		$tabs.tabs('select', 2);
@@ -91,6 +93,8 @@ jQuery(document).ready(function() {
 	jQuery("#create_continue").click(onCreateContinueClick);
 	
 	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
+	
+	jQuery("#upload_continue").click(onUploadContinueClick);
 	
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
@@ -123,9 +127,14 @@ function onCreateContinueClick() {
 	$tabs.tabs('select', 1);
 }
 
-function onPrevalidateContinueClick() {
+function onUploadContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 2);
+}
+
+function onPrevalidateContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 3);
 }
 
 function onSelectClick() {
@@ -345,17 +354,41 @@ function onBuildClick() {
 	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
 	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
+		url: "manage-bundles!getBundleBuildResultURL.action",
+		type: "POST",
+		data: {"bundleName": jQuery("#buildBundle_bundleName").val()},
+		async: false,
+		success: function(response) {
+				var bundleResponse = eval(response);
+				jQuery("#buildBundle_id").text(bundleResponse.id);
+				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+						.text(bundleResponse.bundleResultLink)
+						.css("padding-left", "5px")
+						.css("font-size", "12px")
+						.addClass("adminLabel")
+						.css("color", "green");
+				buildBundle();
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});
+}
+
+function buildBundle(){
+	id = jQuery("#buildBundle_id").text();
+	jQuery.ajax({
 		url: "manage-bundles!buildBundle.action",
 		type: "POST",
 		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
 			"bundleName": jQuery("#buildBundle_bundleName").val(),
 			"emailTo": jQuery("#buildBundle_email").val(),
+			"id": id,
 			"method:buildBundle": "Build"},
 		async: false,
 		success: function(response) {
 				var bundleResponse = eval(response);
 				if (bundleResponse != undefined) {
-					jQuery("#buildBundle_id").text(bundleResponse.id);
 					jQuery("#buildBundle_resultList").html("calling...");
 					window.setTimeout(updateBuildStatus, 1000);
 				} else {
