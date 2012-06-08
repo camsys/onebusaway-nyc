@@ -265,21 +265,38 @@
 	padding-top: 20px;
 }
 
-#uploadFiles #uploadInstructions #instruction {
+#uploadFiles #instruction {
 	background-color: #C3FDB8;
 	z-index: 1;
 	/* These three lines are for transparency in all browsers. */
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
     filter: alpha(opacity=60);
 	opacity: 0.6;
-	margin-top: 20px;
 }
 
-#uploadInstructions #instruction p {
+#instruction p {
 	padding-left: 30px;
 	font-weight: bold;
 	color: #004E00;
 	z-index: 5;
+}
+
+#uploadFiles #s3_details {
+	margin-top: 20px;
+}
+
+
+#uploadFiles #gtfs_details {
+	margin-top: 10px;
+}
+
+#uploadFiles #stif_details {
+	margin-top: 10px;
+}
+
+#gtfs_location, #stif_location, #s3_location {
+	margin-left: 5px;
+	font-size : 12px;
 }
 
 #prevalidateInputs {

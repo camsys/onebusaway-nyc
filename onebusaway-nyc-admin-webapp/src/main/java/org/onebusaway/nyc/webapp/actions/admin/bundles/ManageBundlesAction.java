@@ -9,6 +9,7 @@ import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
+import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
@@ -52,7 +53,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private static final long serialVersionUID = 1L;
 	//To hold the final directory name 
 	private String bundleDirectory;
-	private DirectoryStatus directoryStatus = null;
 	//Holds the value entered in the text box
 	private String directoryName;
 	// what to call the bundle, entered in the text box
@@ -70,6 +70,8 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private String emailTo;
 	private InputStream downloadInputStream;
 	private List<String> fileList = new ArrayList<String>();
+	private DirectoryStatus directoryStatus;
+	
 	@Override
 	public String input() {
 	  _log.debug("in input");
@@ -103,16 +105,26 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 				createDirectoryMessage = "Unable to create direcory: " +directoryName;
 			}
 		}
-		directoryStatus = new DirectoryStatus(directoryName, createDirectoryMessage, directoryCreated); 
+		 
+		directoryStatus = createDirectoryStatus(createDirectoryMessage, directoryCreated);
 		return "selectDirectory";
 	}
 	
 	public String selectDirectory() {
 	  _log.info("in selectDirectory with dirname=" + directoryName);
 	  bundleDirectory = directoryName;
-	  directoryStatus = new DirectoryStatus(directoryName, "Loaded existing directory " + directoryName, true);
+	  directoryStatus = createDirectoryStatus("Loaded existing directory " + directoryName, true);
 	  return "selectDirectory";
 	}
+	
+	private DirectoryStatus createDirectoryStatus(String statusMessage, boolean selected) {
+		DirectoryStatus directoryStatus = new DirectoryStatus(directoryName, statusMessage, directoryCreated);
+		directoryStatus.setGtfsPath(fileService.getGtfsPath());
+		directoryStatus.setStifPath(fileService.getStifPath());
+		directoryStatus.setBucketName(fileService.getBucketName());
+		return directoryStatus;
+	}
+	
 	/**
 	 * Returns the existing directories in the current bucket on AWS
 	 * @return list of existing directories
@@ -358,27 +370,4 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  emailTo = to;
 	}
 	
-	public class DirectoryStatus {
-	  private String directoryName;
-	  private String message;
-	  private boolean selected;
-	  
-	  public DirectoryStatus(String directoryName, String message, boolean selected) {
-	    this.directoryName = directoryName;
-	    this.message = message;
-	    this.selected = selected;
-	  }
-	  
-	  public String getDirectoryName() {
-	    return directoryName;
-	  }
-	  
-	  public String getMessage() {
-	    return message;
-	  }
-
-	  public boolean isSelected() {
-		return selected;
-	  }
-	}
 }

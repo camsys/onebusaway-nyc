@@ -24,11 +24,21 @@
 			<label class="headerLabel">Upload Files</label>
 		</div>
 		<div id="uploadFiles">
-			<div id="uploadInstructions">
-				<div id="instruction">
-					<p>Before continuing, please use the AWS Management Console to
-						upload bundle files to the new directory.</p>
-				</div>
+			<div id="instruction">
+				<p>Before continuing, please use the AWS Management Console to
+					upload bundle files to the new directory.</p>
+			</div>
+			<div id="s3_details">
+				<label class="adminLabel">Use S3 Bucket : </label>
+				<label id="s3_location"></label>
+			</div>
+			<div id="gtfs_details">
+				<label class="adminLabel">Upload gtfs files to : </label>
+				<label id="gtfs_location"></label>
+			</div>
+			<div id="stif_details">
+				<label class="adminLabel">Upload stif files to : </label>
+				<label id="stif_location"></label>
 			</div>
 			<div class="submitForm">
 				<fieldset>

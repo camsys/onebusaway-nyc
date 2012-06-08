@@ -163,6 +163,9 @@ function onSelectClick() {
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
+					jQuery("#uploadFiles #s3_details #s3_location").text(status.bucketName);
+					jQuery("#uploadFiles #gtfs_details #gtfs_location").text(bundleDir + "/" + status.gtfsPath + " directory");
+					jQuery("#uploadFiles #stif_details #stif_location").text(bundleDir + "/" + status.stifPath + " directory");
 				} else {
 					alert("null status");
 				}
