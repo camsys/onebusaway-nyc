@@ -101,12 +101,11 @@ public class StifTripLoaderSupport {
 
       for (Trip trip : allTrips) {
 
-        if (index % 500 == 0)
+        if (index % 20000 == 0)
           _log.info("trip=" + index + " / " + allTrips.size());
         index++;
 
         TripIdentifier tripIdentifier = getTripAsIdentifier(trip);
-
         List<Trip> trips = tripsByIdentifier.get(tripIdentifier);
         if (trips == null) {
           trips = new ArrayList<Trip>();
