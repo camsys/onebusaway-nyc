@@ -294,7 +294,7 @@ public class BlocksFromObservationServiceImpl implements
     final Set<BlockStateObservation> potentialBlockStatesNotInProgress = Sets.newHashSet();
     final Set<BlockInstance> snappedBlocks = Sets.newHashSet();
 
-    if (observation.getRunResults().hasRunResults()) {
+    if (observation.getRunResults().hasRunResults() || observation.hasValidDsc()) {
       for (final BlockState bs : _blockStateService.getBlockStatesForObservation(observation)) {
         boolean isAtPotentialLayoverSpot = VehicleStateLibrary.isAtPotentialLayoverSpot(
             bs, observation);
