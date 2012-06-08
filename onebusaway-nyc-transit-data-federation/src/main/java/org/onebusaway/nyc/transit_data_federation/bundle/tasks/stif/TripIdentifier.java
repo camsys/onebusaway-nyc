@@ -46,7 +46,7 @@ public class TripIdentifier {
   @Override
   public String toString() {
     return "TripIdentifier(" + routeName + "," + gtfsAndStifTimeFormat(startTime) + "," + gtfsAndStifTimeFormat(endTime) + "," + startStop
-        + "," + run + ")";
+        + "," + run + " from " + startStop + ")";
   }
 
   @Override
@@ -74,7 +74,7 @@ public class TripIdentifier {
         return false;
     } else if (!routeName.equals(other.routeName))
       return false;
-    else if (!run.equals(other.run) && run != null && other.run != null)
+    else if (run != null && other.run != null && (!run.equals(other.run)))
       return false;
     if (startStop == null) {
       if (other.startStop != null)
