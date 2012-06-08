@@ -65,7 +65,7 @@ jQuery(document).ready(function() {
 		jQuery("#buildBundle_resultLink").hide();
 		// just in case set the tab
 		var $tabs = jQuery("#tabs");
-		$tabs.tabs('select', 2);
+		$tabs.tabs('select', 3);
 		updateBuildStatus();
 	}
 	// politely set our hash as tabs are changed

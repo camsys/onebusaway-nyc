@@ -15,6 +15,7 @@ import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.web.context.ServletContextAware;
 
 import java.io.File;
@@ -106,12 +107,19 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     _log.info("in send email for requestId=" + response.getId() 
         + " with email=" + request.getEmailAddress());
     if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1) {
-      String from = configurationService.getConfigurationValueAsString("admin.senderEmailAddress", "mtabuscis@mtabuscis.net");
-  	  StringBuffer msg = new StringBuffer();
-  	  msg.append("Your Build Results are available at ");
-  	  msg.append(getResultLink(request.getBundleName(), response.getId()));
-  	  String subject = "Bundle Build " + response.getId() + " complete";
-  	  _emailService.send(request.getEmailAddress(), from, subject, msg);
+    	String from;
+    	try {
+    		from = configurationService.getConfigurationValueAsString("admin.senderEmailAddress", "mtabuscis@mtabuscis.net");
+    	} catch(RemoteConnectFailureException e) {
+    		_log.error("Setting from email address to default value : 'mtabuscis@mtabuscis.net' due to failure to connect to TDM");
+    		from = "mtabuscis@mtabuscis.net";
+    		e.printStackTrace();
+    	}
+    	StringBuffer msg = new StringBuffer();
+    	msg.append("Your Build Results are available at ");
+    	msg.append(getResultLink(request.getBundleName(), response.getId()));
+    	String subject = "Bundle Build " + response.getId() + " complete";
+    	_emailService.send(request.getEmailAddress(), from, subject, msg);
     }
   }
   
