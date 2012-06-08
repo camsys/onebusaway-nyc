@@ -73,7 +73,7 @@ public class EventRecordFactory extends StifRecordFactory<EventRecord> {
       new FieldDef(24 - 22, "empty", null),
       new FieldDef(29 - 24, "distance from Start of Trip", new EventFieldSetter() {
         public void setField(EventRecord record) {
-          record.setDistanceFromStartOfTrip(getInteger());
+          record.setDistanceFromStartOfTrip(getIntegerSafe());
         }
       })
   };
