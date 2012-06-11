@@ -14,6 +14,8 @@ public interface FileService {
   String getStifPath();
   void setBuildPath(String buildPath);
   String getBuildPath();
+  String getBucketName();
+  
   boolean bundleDirectoryExists(String filename);
 
   boolean createBundleDirectory(String filename);

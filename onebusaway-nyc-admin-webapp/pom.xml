@@ -124,7 +124,7 @@
       <properties>
         <tds.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://localhost:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <config.path>http://tds:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <tdm.host>tdm</tdm.host><!-- assumes domain is set -->
         <log4j.appender>ROLL</log4j.appender>
       </properties>
@@ -144,7 +144,7 @@
       <properties>
         <tds.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</tds.path>
         <vtms.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</vtms.path>
-        <config.path>http://app.dev.obanyc.com/onebusaway-nyc-transit-data-federation-webapp</config.path>
+        <config.path>http://app1.dev.obanyc.com:8080/onebusaway-nyc-transit-data-federation-webapp</config.path>
         <tdm.host>tdm.dev.obanyc.com</tdm.host>
         <log4j.appender>stdout</log4j.appender>
       </properties>

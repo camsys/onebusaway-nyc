@@ -60,15 +60,19 @@ jQuery(document).ready(function() {
 		//alert("called from email!");
 		jQuery("#prevalidate_id").text(qs["id"]);
 		jQuery("#buildBundle_id").text(qs["id"]);
+		jQuery("#buildBundle_bundleName").val(qs["name"]);
+		//hide the result link when reentering from email
+		jQuery("#buildBundle_resultLink").hide();
 		// just in case set the tab
 		var $tabs = jQuery("#tabs");
-		$tabs.tabs('select', 2);
+		$tabs.tabs('select', 3);
 		updateBuildStatus();
 	}
 	// politely set our hash as tabs are changed
 	jQuery("#tabs").bind("tabsshow", function(event, ui) {
 		window.location.hash = ui.tab.hash;
 	});
+	
 	jQuery("#currentDirectories").selectable({ 
 		stop: function() {
 			var names = $.map($('.ui-selected strong, this'), function(element, i) {  
@@ -78,6 +82,10 @@ jQuery(document).ready(function() {
 				var $element = jQuery("#manage-bundles_directoryName");
 				// only return the first selection, as multiple selections are possible
 				$element.attr("value", names[0]);
+				jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").show().css("display","block");
+				jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
+				jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
+								.css("font-weight", "bold").css("color", "red");
 			}
 		}
 	});
@@ -85,6 +93,8 @@ jQuery(document).ready(function() {
 	jQuery("#create_continue").click(onCreateContinueClick);
 	
 	jQuery("#prevalidate_continue").click(onPrevalidateContinueClick);
+	
+	jQuery("#upload_continue").click(onUploadContinueClick);
 	
 	// hookup ajax call to select
 	jQuery("#directoryButton").click(onSelectClick);
@@ -96,6 +106,10 @@ jQuery(document).ready(function() {
 	//toggle validation progress list
 	jQuery("#prevalidateInputs #prevalidate_progress #expand").bind({
 			'click' : toggleValidationResultList});
+	
+	//toggle bundle build progress list
+	jQuery("#buildBundle #buildBundle_progress #expand").bind({
+			'click' : toggleBuildBundleResultList});
 	
 	//handle create and select radio buttons
 	jQuery("input[name='options']").change(directoryOptionChanged);
@@ -113,9 +127,14 @@ function onCreateContinueClick() {
 	$tabs.tabs('select', 1);
 }
 
-function onPrevalidateContinueClick() {
+function onUploadContinueClick() {
 	var $tabs = jQuery("#tabs");
 	$tabs.tabs('select', 2);
+}
+
+function onPrevalidateContinueClick() {
+	var $tabs = jQuery("#tabs");
+	$tabs.tabs('select', 3);
 }
 
 function onSelectClick() {
@@ -138,10 +157,15 @@ function onSelectClick() {
 					} else {
 						jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 					}
-					jQuery("#createDirectoryMessage").text(status.message);
+					jQuery("#createDirectoryMessage").text(status.message).css("color", "green");
+					var continueButton = jQuery("#create_continue");
+					enableContinueButton(continueButton);
 					var bundleDir = status.directoryName;
 					jQuery("#prevalidate_bundleDirectory").text(bundleDir);
 					jQuery("#buildBundle_bundleDirectory").text(bundleDir);
+					jQuery("#uploadFiles #s3_details #s3_location").text(status.bucketName);
+					jQuery("#uploadFiles #gtfs_details #gtfs_location").text(bundleDir + "/" + status.gtfsPath + " directory");
+					jQuery("#uploadFiles #stif_details #stif_location").text(bundleDir + "/" + status.stifPath + " directory");
 				} else {
 					alert("null status");
 				}
@@ -152,6 +176,10 @@ function onSelectClick() {
 		});
 }
 
+function enableContinueButton(continueButton) {
+	jQuery(continueButton).removeAttr("disabled")
+		.removeClass("submit_disabled").addClass("submit_enabled");	
+}
 
 function toggleAdvancedOptions() {
 	var $image = jQuery("#createDirectory #advancedOptions #expand");
@@ -165,6 +193,13 @@ function toggleValidationResultList() {
 	changeImageSrc($image);
 	//Toggle progress result list
 	jQuery("#prevalidateInputs #prevalidate_resultList").toggle();
+}
+
+function toggleBuildBundleResultList() {
+	var $image = jQuery("#buildBundle #buildBundle_progress #expand");
+	changeImageSrc($image);
+	//Toggle progress result list
+	jQuery("#buildBundle #buildBundle_resultList").toggle();
 }
 
 function changeImageSrc($image) {
@@ -182,6 +217,7 @@ function changeImageSrc($image) {
 function directoryOptionChanged() {
 	//Clear the results regardless of the selection
 	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
+	jQuery("#manage-bundles_directoryName").val("");
 	
 	if(jQuery("#create").is(":checked")) {
 		//Change the button text and hide select directory list
@@ -211,6 +247,12 @@ function directoryOptionChanged() {
 }
 
 function onValidateClick() {
+	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
+		alert("missing bundle directory");
+		return;
+	}
+
 	jQuery("#prevalidate_exception").hide();
 	jQuery("#prevalidateInputs #validateBox #validateButton").attr("disabled", "disabled");
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
@@ -250,7 +292,7 @@ function updateValidateStatus() {
 				var bundleResponse = eval(response);
 				if (bundleResponse == null) {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
-					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
 					jQuery("#prevalidate_resultList").html("unknown id=" + id);
 				}
 				var size = bundleResponse.statusMessages.length;
@@ -263,7 +305,7 @@ function updateValidateStatus() {
 					window.setTimeout(updateValidateStatus, 1000); // recurse
 				} else {
 					jQuery("#prevalidate_validationProgress").text("Complete.");
-					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").hide();
+					jQuery("#prevalidateInputs #validateBox #validating #validationProgress").attr("src","../../css/img/dialog-accept-2.png");
 					updateValidateList(id);
 				}
 				txt = txt + "</ul>";
@@ -307,6 +349,8 @@ function updateValidateList(id) {
 				txt = txt + "</ul>";
 				jQuery("#prevalidate_fileList").html(txt);
 				jQuery("#prevalidateInputs #validateBox #validateButton").removeAttr("disabled");
+				var continueButton = jQuery("#prevalidate_continue");
+				enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			alert(request.statustext);
@@ -315,21 +359,55 @@ function updateValidateList(id) {
 }
 
 function onBuildClick() {
+	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
+		alert("missing bundle directory");
+		return;
+	}
+	var bundleName = jQuery("#buildBundle_bundleName").val();
+	if (bundleName == undefined || bundleName == null || bundleName == "") {
+		alert("missing bundle build name");
+		return;
+	}
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
 	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
+	jQuery.ajax({
+		url: "manage-bundles!getBundleBuildResultURL.action",
+		type: "POST",
+		data: {"bundleName": bundleName},
+		async: false,
+		success: function(response) {
+				var bundleResponse = eval(response);
+				jQuery("#buildBundle_id").text(bundleResponse.id);
+				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
+						.text(bundleResponse.bundleResultLink)
+						.css("padding-left", "5px")
+						.css("font-size", "12px")
+						.addClass("adminLabel")
+						.css("color", "green");
+				buildBundle();
+		},
+		error: function(request) {
+			alert(request.statustext);
+		}
+	});
+}
+
+function buildBundle(){
+	id = jQuery("#buildBundle_id").text();
 	jQuery.ajax({
 		url: "manage-bundles!buildBundle.action",
 		type: "POST",
 		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
 			"bundleName": jQuery("#buildBundle_bundleName").val(),
 			"emailTo": jQuery("#buildBundle_email").val(),
+			"id": id,
 			"method:buildBundle": "Build"},
 		async: false,
 		success: function(response) {
 				var bundleResponse = eval(response);
 				if (bundleResponse != undefined) {
-					jQuery("#buildBundle_id").text(bundleResponse.id);
 					jQuery("#buildBundle_resultList").html("calling...");
 					window.setTimeout(updateBuildStatus, 1000);
 				} else {
@@ -355,8 +433,8 @@ function updateBuildStatus() {
 				var txt = "<ul>";
 				var bundleResponse = eval(response);
 				if (bundleResponse == null) {
-					jQuery("#buildBundle_buildProgress").text("Complete.");
-					jQuery("#buildBundle #buildBox #building #buildProgress").hide();
+					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
+					jQuery("#buildBundle #buildBox #building #buildProgress").attr("src","../../css/img/dialog-accept-2.png");
 					jQuery("#buildBundle_resultList").html("unknown id=" + id);
 				}
 				var size = bundleResponse.statusList.length;
@@ -368,13 +446,13 @@ function updateBuildStatus() {
 				if (bundleResponse.complete == false) {
 					window.setTimeout(updateBuildStatus, 1000); // recurse
 				} else {
-					jQuery("#buildBundle_buildProgress").text("Complete.");
-					jQuery("#buildBundle #buildBox #building #buildingProgress").hide();
+					jQuery("#buildBundle_buildProgress").text("Bundle Complete!");
+					jQuery("#buildBundle #buildBox #building #buildingProgress").attr("src","../../css/img/dialog-accept-2.png");
 					updateBuildList(id);
 
 				}
 				txt = txt + "</ul>";
-				jQuery("#buildBundle_resultList").html(txt);	
+				jQuery("#buildBundle_resultList").html(txt).css("font-size", "12px");	
 				// check for exception
 				if (bundleResponse.exception != null) {
 					if (bundleResponse.exception.message != undefined) {
@@ -391,6 +469,28 @@ function updateBuildStatus() {
 
 // populate list of files that were result of building
 function updateBuildList(id) {
+	var summaryList = null;
+		jQuery.ajax({
+		url: "manage-bundles!downloadOutputFile.action",
+		type: "POST",
+		data: {"id": id,
+			   "downloadFilename": "summary.csv"},
+		async: false,
+		success: function(response){
+			summaryList = response;
+			}
+		});
+
+		var lines = summaryList.split(/\n/);
+		lines.pop(lines.length-1); // discard header
+		var fileDescriptionMap = new Array();
+		var fileCountMap = new Array();
+		for (var i = 0; i < lines.length; i++) {
+			var dataField = lines[i].split(',');
+
+			fileDescriptionMap[dataField[0]] = dataField[1];
+			fileCountMap[dataField[0]] = dataField[2];
+		}
 	jQuery.ajax({
 		url: "manage-bundles!buildList.action",
 		type: "POST",
@@ -404,16 +504,24 @@ function updateBuildList(id) {
 					var size = list.length;
 					if (size > 0) {
 						for (var i=0; i<size; i++) {
-							var encoded = encodeURIComponent(list[i]);
-							txt = txt + "<li><a href=\"manage-bundles!downloadOutputFile.action?id="
-							+ id+ "&downloadFilename=" 
-							+ encoded + "\">" + encoded +  "</a></li>";
+							var description = fileDescriptionMap[list[i]];
+							var lineCount = fileCountMap[list[i]];
+							if (description != undefined) {
+								var encoded = encodeURIComponent(list[i]);
+								txt = txt + "<li>" + description + ":"
+								+ lineCount + "&nbsp;&nbsp;"
+								+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
+								+ id+ "&downloadFilename=" 
+								+ encoded + "\">" + encoded +  "</a></li>";
+							}
 						}
 					}
 				}
 				txt = txt + "</ul>";
-				jQuery("#buildBundle_fileList").html(txt);
+				jQuery("#buildBundle_fileList").html(txt).css("display", "block");
 				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
+				var continueButton = jQuery("#build_continue");
+				enableContinueButton(continueButton);
 		},
 		error: function(request) {
 			alert(request.statustext);

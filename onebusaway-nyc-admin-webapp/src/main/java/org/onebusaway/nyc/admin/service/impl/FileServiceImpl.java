@@ -65,6 +65,11 @@ public class FileServiceImpl implements FileService, ServletContextAware {
   public void setBucketName(String bucketName) {
     this._bucketName = bucketName;
   }
+  
+  @Override
+  public String getBucketName() {
+    return this._bucketName;
+  }
 
   @Override
   public void setGtfsPath(String gtfsPath) {

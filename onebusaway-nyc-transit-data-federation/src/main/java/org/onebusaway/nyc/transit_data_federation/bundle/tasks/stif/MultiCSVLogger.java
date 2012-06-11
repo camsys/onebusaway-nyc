@@ -102,25 +102,17 @@ public class MultiCSVLogger {
   public void summarize() {
     FileOutputStream outputStream;
     try {
-      outputStream = new FileOutputStream(new File(basePath, "summary.txt"));
+      outputStream = new FileOutputStream(new File(basePath, "summary.csv"));
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
     }
     PrintStream stream = new PrintStream(outputStream);
-    stream.println("Task Status\n===========");
+    stream.println("filename,description,lines");
     for (Map.Entry<String, Log> entry : logs.entrySet()) {
       Log log = entry.getValue();
       String name = entry.getKey().replace("_", " ").replace(".csv", "");
-      if (!name.equals("dsc statistics")) {
-        stream.println(name + ": " + (log.lines == 0 ? "OK" : "FAIL"));
-      }
-    }
-    stream.println("\nStatus\n======");
-
-    for (Map.Entry<String, Log> entry : logs.entrySet()) {
-      Log log = entry.getValue();
-      String name = entry.getKey().replace("_", " ").replace(".csv", "");
-      stream.println(name + ": " + log.lines);
+      String filename = entry.getKey().replace(",", "_");
+      stream.println(filename + "," + name + "," + log.lines);
     }
   }
 }

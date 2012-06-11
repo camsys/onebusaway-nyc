@@ -21,13 +21,31 @@
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
 		<div class="tabHeader">
-			<label class="headerLabel">Deploy Bundle</label>
+			<label class="headerLabel">Upload Files</label>
 		</div>
+		<div id="uploadFiles">
+			<div id="instruction">
+				<p>Before continuing, please use the AWS Management Console to
+					upload bundle files to the new directory.</p>
+			</div>
+			<div id="s3_details">
+				<label class="adminLabel">Use S3 Bucket : </label>
+				<label id="s3_location"></label>
+			</div>
+			<div id="gtfs_details">
+				<label class="adminLabel">Upload gtfs files to : </label>
+				<label id="gtfs_location"></label>
+			</div>
+			<div id="stif_details">
+				<label class="adminLabel">Upload stif files to : </label>
+				<label id="stif_location"></label>
+			</div>
 			<div class="submitForm">
 				<fieldset>
 					<s:url var="url" action="index.action" namespace="/admin" />
-					<a href="${url}" class="link">Cancel</a>
-					<input type="button" value="Continue" class="submit_enabled"/>
+					<a href="${url}" class="link">Cancel</a> 
+					<input type="button" id="upload_continue" value="Continue" class="submit_enabled"/>
 				</fieldset>
 			</div>
+		</div>
 </html>

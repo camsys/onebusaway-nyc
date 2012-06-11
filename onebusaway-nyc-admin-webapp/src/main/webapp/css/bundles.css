@@ -33,8 +33,7 @@
 #tabs #breadcrumb li {
     list-style-type:none;
     float:left;
-    padding-left:10px;
-    width: 210px;
+    width: 175px;
     color: #808080;
 }
 
@@ -76,7 +75,6 @@
 
 .tabHeader {
 	padding-top: 20px;
-	margin-top: 20px;
 	height: 30px;
 	background-color:#C0C0C0; 
 }
@@ -97,19 +95,30 @@
 	margin-bottom: 30px;
 }
 
-.submit {
+.submit_enabled {
 	background-color: #463E3F;
 	height: 60px;
 	width: 150px;
 	float: right;
 	color: white;
-	margin: 50px;
+	margin-right: 50px;
+	margin-top: 20px;
+}
+
+.submit_disabled {
+	background-color: #F0F0F0;
+	height: 60px;
+	width: 150px;
+	float: right;
+	color: grey;
+	margin-right: 50px;
+	margin-top: 20px;
 }
 
 .link {
 	float: right;
 	color: #463E3F;
-	padding-top: 70px;
+	margin-top: 40px;
 }
 
 .bundleForm {
@@ -177,7 +186,7 @@
 #createDirectory #selectExistingContents #currentDirectories {
     display:table;
     border-collapse:collapse;
-    margin-top: 10px;
+    margin-top: 7px;
 }
 
 #currentDirectories #listItem {
@@ -207,7 +216,7 @@
 
 #createDirectory #advancedOptions {
 	vertical-align: middle;
-	margin-top: 30px;
+	margin-top: 20px;
 	margin-left: 25px;
 }
 
@@ -252,25 +261,42 @@
 	height: 50px;
 }
 
-#createDirectory #uploadFiles {
-	padding-top: 50px;
+#uploadFiles {
+	padding-top: 20px;
 }
 
-#createDirectory #uploadFiles #instruction {
+#uploadFiles #instruction {
 	background-color: #C3FDB8;
 	z-index: 1;
 	/* These three lines are for transparency in all browsers. */
-    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
-	opacity: 0.5;
-	margin-top: 30px;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+	opacity: 0.6;
 }
 
-#createDirectory #uploadFiles #instruction p {
+#instruction p {
 	padding-left: 30px;
 	font-weight: bold;
-	color: green;
+	color: #004E00;
 	z-index: 5;
+}
+
+#uploadFiles #s3_details {
+	margin-top: 20px;
+}
+
+
+#uploadFiles #gtfs_details {
+	margin-top: 10px;
+}
+
+#uploadFiles #stif_details {
+	margin-top: 10px;
+}
+
+#gtfs_location, #stif_location, #s3_location {
+	margin-left: 5px;
+	font-size : 12px;
 }
 
 #prevalidateInputs {
@@ -305,14 +331,15 @@
 }
 
 #prevalidateInputs #prevalidate_fileList li {
-	font-size : 14px;
-	padding-top : 10px;
-	font-family: arial;
+	margin-bottom: 10px;
+	background-color: #F0F0F0;
 }
 
 #prevalidateInputs #prevalidate_fileList a {
-	text-decoration: none;
-	padding-top: 10px;
+	font-size : 12px;
+	font-family: arial;
+	color: blue;
+	
 }
 	
 #prevalidate_exception {
@@ -359,7 +386,6 @@
 #bundleContentsHolder #buildBox #building {
 	display: none;
 	background-color: #F0F0F0;
-	
 }
 
 #buildBox #buildBundle_bundleName {
@@ -373,7 +399,12 @@
 	height: 40px;
 	margin-top: 15px;
 	background-image:url('img/Button_background.png');
-}	
+}
+
+#buildBox #buildBundle_resultLink {
+	vertical-align: middle;
+	margin-top: 10px;
+}
 
 #buildBox #bundleLabel {
 	display: block;
@@ -384,14 +415,66 @@
 	background-color:#FF0000;
 }
 
-#prevalidate_exception {
+#buildBundle #bundleResultsHolder {
+	border: solid 1px transparent;
+	width: 890px;
+	height: auto;
+	overflow: none;
+	margin-top: 20px;
+}
+
+#bundleResultsHolder #bundleResults {
+	border: solid 1px transparent;
+	width: 400px;
+	float: left;
+}
+
+#bundleResultsHolder #bundleResultSummary {
+	border: solid 1px transparent;
+	padding: 5px;
+	margin-left: 20px;
+	width: 400px;
+	float: left;
+}
+
+#buildBundle #bundleResultsHolder #buildBundle_progress {
+	vertical-align: middle;
+	margin-right: 10px;
+}
+
+#bundleResultsHolder #buildBundle_resultList {
 	display: none;
-	background-color:#FF0000;
+	padding-top : 10px;
+}
+
+#bundleResultsHolder #buildBundle_fileList {
+	padding-top : 10px;
+	display: none;
+}
+
+#bundleResultsHolder #buildBundle_fileList li {
+	margin-bottom: 10px;
+	background-color: #F0F0F0;
+}
+
+#bundleResultsHolder #buildBundle_fileList a {
+	font-size : 12px;
+	font-family: arial;
+	color: blue;
+}
+
+.clear {
+	clear: both;
+}
+
+.summaryFont {
+	font: 13px/1.231 helvetica,arial,clean,sans-serif;
 }
 
 #currentDirectories .ui-selecting {
 	background: #FEFF9F;  
-}  
+}
+
 #currentDirectories .ui-selected {  
   	background-color:#eEeF8F;  
 }  
