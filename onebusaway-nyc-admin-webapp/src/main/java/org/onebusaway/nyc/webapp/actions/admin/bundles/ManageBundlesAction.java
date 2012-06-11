@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,11 @@ import org.springframework.beans.factory.annotation.Autowired;
   params={"root", "bundleBuildResponse"}),
     @Result(name="fileList", type="json", 
   params={"root", "fileList"}),
+  	@Result(name="downloadZip", type="stream", 
+  params={"contentType", "application/zip", 
+          "inputName", "downloadInputStream",
+          "contentDisposition", "attachment;filename=\"output.zip\"",
+          "bufferSize", "1024"}),
     @Result(name="download", type="stream", 
   params={"contentType", "text/html", 
         "inputName", "downloadInputStream",
@@ -222,6 +229,19 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  return "fileList";
 	}
 	
+	public String buildOutputZip() {
+		_log.info("buildOuputZip called with id=" +id);
+		bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
+		String zipFileName = fileService.createOutputFilesZip(bundleBuildResponse.getBundleOutputDirectory());
+		try {
+			downloadInputStream = new FileInputStream(zipFileName);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "downloadZip";
+	}
+	
 	public String downloadOutputFile() {
 	  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
 	  if (this.bundleBuildResponse != null) {
@@ -369,5 +389,5 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	public void setEmailTo(String to) {
 	  emailTo = to;
 	}
-	
+
 }

@@ -22,6 +22,7 @@
         <pattern>/js/*</pattern>
         <pattern>/css/*</pattern>
         <pattern>/admin/bundles/manage-bundles!downloadOutputFile.action*</pattern>
+        <pattern>/admin/bundles/manage-bundles!buildOutputZip.action*</pattern>
 	</excludes>
 
 	<decorator name="decorate" page="decorate.jspx">

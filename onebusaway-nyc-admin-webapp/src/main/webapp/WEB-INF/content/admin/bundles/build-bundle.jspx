@@ -77,7 +77,11 @@
 						<!--  space -->
 					</div>
 				</div>
-				<br class="clear" />
+			</div>
+			<div id="downloadLogs">
+				<s:url var="url" value="/css/img/go-down-10.png" />
+				<img src="${url}" alt="Image not found" id="downloadImg"/>
+				<a id="downloadButton" class="adminLabel">Download as zip</a>
 			</div>
 			<div class="submitForm">
 				<fieldset>
