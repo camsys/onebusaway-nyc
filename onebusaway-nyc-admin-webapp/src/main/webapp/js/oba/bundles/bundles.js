@@ -508,17 +508,20 @@ function updateBuildList(id) {
 							var lineCount = fileCountMap[list[i]];
 							if (description != undefined) {
 								var encoded = encodeURIComponent(list[i]);
-								txt = txt + "<li>" + description + ":"
-								+ lineCount + "&nbsp;&nbsp;"
+								txt = txt + "<li>" + description + ":" + "&nbsp;"
+								+ lineCount + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+								+ "<img src=\"../../css/img/go-down-5.png\" />"
 								+ "<a href=\"manage-bundles!downloadOutputFile.action?id="
 								+ id+ "&downloadFilename=" 
-								+ encoded + "\">" + encoded +  "</a></li>";
+								+ encoded + "\">" + ".csv" +  "</a></li>";
 							}
 						}
 					}
 				}
 				txt = txt + "</ul>";
 				jQuery("#buildBundle_fileList").html(txt).css("display", "block");
+				jQuery("#buildBundle #downloadLogs").show().css("display", "block");
+				jQuery("#buildBundle #downloadLogs #downloadButton").attr("href", "manage-bundles!buildOutputZip.action?id=" + id);
 				jQuery("#buildBundle #buildBox #buildBundle_buildButton").removeAttr("disabled");
 				var continueButton = jQuery("#build_continue");
 				enableContinueButton(continueButton);
@@ -528,6 +531,7 @@ function updateBuildList(id) {
 		}
 	});	
 }
+
 
 // add support for parsing query string
   function parseQuerystring (){

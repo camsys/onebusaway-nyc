@@ -425,16 +425,6 @@
 
 #bundleResultsHolder #bundleResults {
 	border: solid 1px transparent;
-	width: 400px;
-	float: left;
-}
-
-#bundleResultsHolder #bundleResultSummary {
-	border: solid 1px transparent;
-	padding: 5px;
-	margin-left: 20px;
-	width: 400px;
-	float: left;
 }
 
 #buildBundle #bundleResultsHolder #buildBundle_progress {
@@ -449,6 +439,7 @@
 
 #bundleResultsHolder #buildBundle_fileList {
 	padding-top : 10px;
+	width: 550px;
 	display: none;
 }
 
@@ -462,6 +453,28 @@
 	font-family: arial;
 	color: blue;
 }
+
+#buildBundle #downloadLogs {
+	overflow: none;
+	width: 125px;
+	margin-top: 10px;
+	border: solid 1px transparent;
+	height: 20px;
+	display: none;
+}
+
+#downloadLogs #downloadButton {
+	float: left;
+}
+
+#downloadLogs #downloadImg {
+	float: left;
+	margin-right: 5px;
+}
+
+#downloadLogs #downloadButton:hover {
+	cursor: pointer; 
+}	
 
 .clear {
 	clear: both;
