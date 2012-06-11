@@ -247,6 +247,7 @@ public class StifTripLoader {
               tripRecord.getReliefRunId(),
               tripRecord.getNextTripOperatorRunId(),
               StifTripType.byValue(tripType), tripRecord.getSignCode());
+          rawTrip.agencyId = agencyId;
           rawTrip.serviceCode = serviceCode;
           rawTrip.depot = tripRecord.getDepotCode();
           rawTrip.firstStopTime = firstEventRecord.getTime();
