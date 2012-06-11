@@ -226,6 +226,7 @@ public class StifTripLoader {
             rawTrip.signCodeRoute = tripRecord.getSignCodeRoute();
             rawTrip.path = path;
             rawTrip.lineNumber = tripLineNumber;
+            rawTrip.blockId = tripRecord.getBlockNumber();
             rawData.get(serviceCode).add(rawTrip);
 
             if (record instanceof TripRecord) {
@@ -262,6 +263,7 @@ public class StifTripLoader {
           rawTrip.signCodeRoute = tripRecord.getSignCodeRoute();
           rawTrip.path = path;
           rawTrip.lineNumber = tripLineNumber;
+          rawTrip.blockId = tripRecord.getBlockNumber();
           rawData.get(serviceCode).add(rawTrip);
 
           String code = tripRecord.getSignCode();

@@ -377,7 +377,12 @@ public class StifTask implements Runnable {
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
-            String blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
+            String blockId;
+            if (trip.blockId == null) {
+              blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
+            } else {
+              blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId + "_" + blockNo;
+            }
 
             blockId = blockId.intern();
             blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));

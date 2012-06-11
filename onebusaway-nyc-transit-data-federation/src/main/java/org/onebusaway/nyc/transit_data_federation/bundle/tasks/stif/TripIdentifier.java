@@ -22,14 +22,16 @@ public class TripIdentifier {
   public String routeName;
   public String startStop;
   public String run;
+  public String block;
   public int endTime;
 
-  public TripIdentifier(String routeName, int startTime, int endTime, String startStop, String run) {
+  public TripIdentifier(String routeName, int startTime, int endTime, String startStop, String run, String block) {
     this.routeName = routeName;
     this.startTime = startTime;
     this.startStop = startStop;
     this.endTime = endTime;
     this.run = run;
+    this.block = block;
   }
 
   private String gtfsAndStifTimeFormat(int time) {
@@ -75,6 +77,8 @@ public class TripIdentifier {
     } else if (!routeName.equals(other.routeName))
       return false;
     else if (run != null && other.run != null && (!run.equals(other.run)))
+      return false;
+    else if (block != null && other.block != null && (!block.equals(other.block)))
       return false;
     if (startStop == null) {
       if (other.startStop != null)

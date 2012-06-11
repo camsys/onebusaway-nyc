@@ -14,6 +14,8 @@ public class RawTrip implements Comparable<RawTrip> {
   public String runId;
   public String reliefRunId;
 
+  public String blockId;
+
   public ServiceCode serviceCode;
   public String firstStop;
   public String lastStop;

@@ -47,7 +47,8 @@ public class TripRecord implements StifRecord {
   }
 
   public void setBlockNumber(String blockNumber) {
-    this.blockNumber = blockNumber;
+    if (!"".equals(blockNumber))
+      this.blockNumber = blockNumber;
   }
 
   public String getBlockNumber() {

@@ -83,7 +83,7 @@ public class StifTripLoaderSupport {
       endTime += 24 * 60 * 60;
     }
     String run = tripRecord.getRunId();
-    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run, rawTrip.blockId);
   }
 
   public List<Trip> getTripsForIdentifier(TripIdentifier id) {
@@ -183,7 +183,7 @@ public class StifTripLoaderSupport {
       run = runRoute + "-" + runId;
     }
     routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
-    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run, trip.getBlockId());
   }
 
   public GtfsMutableRelationalDao getGtfsDao() {
