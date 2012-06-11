@@ -1,6 +1,7 @@
 package org.onebusaway.nyc.webapp.actions.m.model;
 
 import org.onebusaway.nyc.presentation.model.SearchResult;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 
@@ -23,14 +24,17 @@ public class StopResult implements SearchResult {
 
 	private List<RouteAtStop> routesWithNoScheduledService;
 	
+	private List<RouteBean> filteredRoutes;
+	
 	private Double distanceToQueryLocation = null;
 
 	public StopResult(StopBean stop, List<RouteAtStop> routesWithArrivals, List<RouteAtStop> routesWithNoVehiclesEnRoute,
-			List<RouteAtStop> routesWithNoScheduledService) {
+			List<RouteAtStop> routesWithNoScheduledService, List<RouteBean> filteredRoutes) {
 		this.stop = stop;
 		this.routesWithArrivals = routesWithArrivals;
 		this.routesWithNoVehiclesEnRoute = routesWithNoVehiclesEnRoute;
 		this.routesWithNoScheduledService = routesWithNoScheduledService;
+		this.filteredRoutes = filteredRoutes;
 	}
 
 	public String getId() {
@@ -64,6 +68,10 @@ public class StopResult implements SearchResult {
 
 	public List<RouteAtStop> getRoutesWithArrivals() {
 		return routesWithArrivals;
+	}
+	
+	public List<RouteBean> getFilteredRoutes() {
+	  return filteredRoutes;
 	}
 
 	@Override

@@ -247,6 +247,12 @@ function directoryOptionChanged() {
 }
 
 function onValidateClick() {
+	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
+		alert("missing bundle directory");
+		return;
+	}
+
 	jQuery("#prevalidate_exception").hide();
 	jQuery("#prevalidateInputs #validateBox #validateButton").attr("disabled", "disabled");
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
@@ -353,13 +359,23 @@ function updateValidateList(id) {
 }
 
 function onBuildClick() {
+	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
+		alert("missing bundle directory");
+		return;
+	}
+	var bundleName = jQuery("#buildBundle_bundleName").val();
+	if (bundleName == undefined || bundleName == null || bundleName == "") {
+		alert("missing bundle build name");
+		return;
+	}
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
 	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
 		url: "manage-bundles!getBundleBuildResultURL.action",
 		type: "POST",
-		data: {"bundleName": jQuery("#buildBundle_bundleName").val()},
+		data: {"bundleName": bundleName},
 		async: false,
 		success: function(response) {
 				var bundleResponse = eval(response);
