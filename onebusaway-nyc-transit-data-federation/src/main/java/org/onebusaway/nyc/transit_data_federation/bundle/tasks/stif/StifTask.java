@@ -378,7 +378,7 @@ public class StifTask implements Runnable {
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
             String blockId;
-            if (trip.blockId == null) {
+            if (trip.agencyId.equals("MTA NYCT")) {
               blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
             } else {
               blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId + "_" + blockNo;
