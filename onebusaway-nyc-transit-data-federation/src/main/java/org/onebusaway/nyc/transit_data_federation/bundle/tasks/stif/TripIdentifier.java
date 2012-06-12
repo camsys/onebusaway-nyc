@@ -48,7 +48,7 @@ public class TripIdentifier {
   @Override
   public String toString() {
     return "TripIdentifier(" + routeName + "," + gtfsAndStifTimeFormat(startTime) + "," + gtfsAndStifTimeFormat(endTime) + "," + startStop
-        + "," + run + " from " + startStop + ")";
+        + "," + run + " from " + startStop + " block " + block + ")";
   }
 
   @Override
