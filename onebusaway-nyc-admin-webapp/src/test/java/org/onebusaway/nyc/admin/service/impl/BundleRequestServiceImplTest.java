@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.bundle.impl.BundleValidationServiceImpl;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,9 +22,10 @@ public class BundleRequestServiceImplTest {
   
   @Before
   public void setup() {
+    BundleValidationServiceImpl validationService = new BundleValidationServiceImpl();
     service = new BundleRequestServiceImpl();
     service.setup();
-    service.setBundleValidationService(new BundleValidationServiceImpl());
+    service.setBundleValidationService(validationService);
     FileService fileService = new FileServiceImpl() {
       @Override
       public void setup() {};
@@ -49,7 +51,7 @@ public class BundleRequestServiceImplTest {
         list.add("google_transit_staten_island.zip");
         return list;
       }
-
+      @Override
       public String get(String key, String tmpDir) {
         InputStream input = this.getClass().getResourceAsStream(
         "empty_feed.zip");
@@ -57,10 +59,15 @@ public class BundleRequestServiceImplTest {
         new FileUtils().copy(input, destination);
         return destination;
       }
+      @Override
+      public String put(String key, String tmpDir) {
+        // no op
+        return null;
+      }
     };
     fileService.setup();
     fileService.setBucketName("obanyc-bundle-data");
-    service.setFileService(fileService);
+    validationService.setFileService(fileService);
   }
   
   @Test
@@ -68,6 +75,7 @@ public class BundleRequestServiceImplTest {
     BundleRequest req = new BundleRequest();
     String key= "2012Jan";
     req.setBundleDirectory(key);
+    req.setBundleBuildName("test_0");
     BundleResponse res = service.validate(req);
     assertFalse(res.isComplete());
     
@@ -81,7 +89,7 @@ public class BundleRequestServiceImplTest {
       assertNotNull(res);
     }
 
-    if (res.getException() !=null) {
+    if (res.getException() != null) {
       _log.error("Failed with exception=" + res.getException());
     }
     assertNull(res.getException());

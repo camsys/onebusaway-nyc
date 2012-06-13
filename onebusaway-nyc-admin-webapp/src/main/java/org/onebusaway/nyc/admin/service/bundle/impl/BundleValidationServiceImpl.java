@@ -1,11 +1,16 @@
-package org.onebusaway.nyc.admin.service.impl;
+package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
+import org.onebusaway.nyc.admin.model.BundleRequest;
+import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ServiceDateRange;
-import org.onebusaway.nyc.admin.service.BundleValidationService;
+import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
+import org.onebusaway.nyc.admin.service.impl.FileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,9 +25,17 @@ import java.util.zip.ZipInputStream;
 
 public class BundleValidationServiceImpl implements BundleValidationService {
 
+  private static final String OUTPUT_DIR = "outputs";
+  private static final String BUILD_DIR = "builds";
   private static final int CHUNK_SIZE = 1024;
   private static final String TRANSIT_FEED = "transitfeed-1.2.11";
   private static Logger _log = LoggerFactory.getLogger(BundleValidationServiceImpl.class);
+  private FileService _fileService;
+
+  @Autowired
+  public void setFileService(FileService service) {
+    _fileService = service;
+  }
 
   @Override
   /**
@@ -164,6 +177,40 @@ public class BundleValidationServiceImpl implements BundleValidationService {
   }
 
   @Override
+  public void downloadAndValidate(BundleRequest request, BundleResponse response) {
+            String gtfsDirectory =  request.getBundleDirectory() + File.separator
+            + _fileService.getGtfsPath();
+        _log.info("gtfsDir=" + gtfsDirectory);
+        List<String> files = _fileService.list(gtfsDirectory, -1);
+        if (files == null || files.size() == 0) { 
+          response.addStatusMessage("no files found in " + gtfsDirectory);
+          response.setComplete(true);
+          return;
+        }
+        String tmpDir = request.getTmpDirectory(); 
+        if (tmpDir == null) {
+          tmpDir = new FileUtils().createTmpDirectory();
+          request.setTmpDirectory(tmpDir);
+        }
+        response.setTmpDirectory(request.getTmpDirectory());
+        for (String s3Key : files) {
+          response.addStatusMessage("downloading " + s3Key);
+          _log.info("downloading " + s3Key);
+          String gtfsZipFileName = _fileService.get(s3Key, tmpDir);
+          String outputFile = gtfsZipFileName + ".html";
+          response.addStatusMessage("validating " + s3Key);
+          _log.info("validating " + s3Key);
+          installAndValidateGtfs(gtfsZipFileName,
+              outputFile);
+          _log.info("results of " + gtfsZipFileName + " at " + outputFile);
+          response.addValidationFile(new FileUtils().parseFileName(outputFile));
+          upload(request, response);
+          response.addStatusMessage("complete");
+        }
+
+  }
+  
+  @Override
   public int validateGtfs(String gtfsZipFileName, String outputFile) {
     Process process = null;
     try {
@@ -193,6 +240,24 @@ public class BundleValidationServiceImpl implements BundleValidationService {
         + TRANSIT_FEED + ".tar.gz";
     fs.wget(url);
     fs.tarzxf(tmpDir + File.separatorChar + TRANSIT_FEED + ".tar.gz");
+  }
+
+  public void upload(BundleRequest request, BundleResponse response) {
+    String destDirectory = request.getBundleDirectory() + File.separator
+        + BUILD_DIR + File.separator
+        + request.getBundleBuildName() + File.separator
+        + OUTPUT_DIR;
+    String outputsPath = request.getTmpDirectory();
+    
+    for (String htmlFile : response.getValidationFiles()) {
+      String msg = "uploading " + htmlFile + " to " + destDirectory;
+      response.addStatusMessage(msg);
+      _log.info(msg);
+      _fileService.put(destDirectory + File.separator + htmlFile, 
+          outputsPath + File.separator + htmlFile);      
+    }
+
+    response.addStatusMessage("upload complete");
   }
 
 }

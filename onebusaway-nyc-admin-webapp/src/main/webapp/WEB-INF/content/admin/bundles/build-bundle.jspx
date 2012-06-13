@@ -46,7 +46,7 @@
 					<div>
 						<label id="bundleLabel" class="adminLabel">Bundle Build Name :</label> <input
 							type="text" id="buildBundle_bundleName" /> <input type="button"
-							id="buildBundle_buildButton" value="Build Bundle" />
+							id="buildBundle_buildButton" value="Build Bundle" class="formButton" />
 					</div>
 					<div id="building">
 						<s:url var="url" value="/css/img/ajax-loader.gif" />

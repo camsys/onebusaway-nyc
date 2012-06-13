@@ -32,7 +32,7 @@
     <import resource="classpath:org/onebusaway/nyc/presentation/application-context.xml" />
     
     <context:component-scan base-package="org.onebusaway.nyc.webapp.impl" />
-    
+    <context:component-scan base-package="org.onebusaway.nyc.admin.service.bundle.api" />
     
     <bean id="currentUserStrategyImpl" class="org.onebusaway.users.impl.CurrentUserStrategyImpl" primary="true" />
 
@@ -74,8 +74,8 @@
    <bean id="bundleRequestService" class="org.onebusaway.nyc.admin.service.impl.BundleRequestServiceImpl" />
    		
    
-   <bean id="bundleValidationService" class="org.onebusaway.nyc.admin.service.impl.BundleValidationServiceImpl" />
+   <bean id="bundleValidationService" class="org.onebusaway.nyc.admin.service.bundle.impl.BundleValidationServiceImpl" />
    		
-   <bean id="bundleBuildingService" class="org.onebusaway.nyc.admin.service.impl.BundleBuildingServiceImpl" />
+   <bean id="bundleBuildingService" class="org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingServiceImpl" />
    
 </beans>

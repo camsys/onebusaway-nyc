@@ -6,6 +6,7 @@ import java.util.List;
 public class BundleRequest {
   private String _bundleDirectory;
   private String _tmpDirectory;
+  private String _bundleBuildName;
   
   public String getBundleDirectory() {
     return _bundleDirectory;
@@ -21,5 +22,13 @@ public class BundleRequest {
   
   public void setTmpDirectory(String dir) {
     _tmpDirectory = dir;
+  }
+
+  public String getBundleBuildName() {
+    return _bundleBuildName;
+  }
+  
+  public void setBundleBuildName(String bundleName) {
+    this._bundleBuildName = bundleName;
   }
 }

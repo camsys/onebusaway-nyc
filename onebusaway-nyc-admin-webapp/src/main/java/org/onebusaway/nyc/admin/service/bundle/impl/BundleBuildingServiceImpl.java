@@ -1,11 +1,12 @@
-package org.onebusaway.nyc.admin.service.impl;
+package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import org.onebusaway.container.ContainerLibrary;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
-import org.onebusaway.nyc.admin.service.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.impl.FileUtils;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
@@ -76,7 +77,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       response.addStifZipFile(_fileService.get(file, tmpDirectory));
     }
 
-    // TODO download previous validate data or rerun or?
   }
 
   /**
@@ -283,11 +283,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
       }
     }
-    //TODO implement delete
-//    int rc = fs.rmDir(request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR );
-//    _log.info("delete of " + request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR  + " had rc=" + rc);
-//    rc = fs.rmDir(request.getTmpDirectory() + File.separator + "stif");
-//    _log.info("delete of " + request.getTmpDirectory() + File.separator + "stif"  + " had rc=" + rc);
   }
 
   private StringBuffer listToFile(List<String> notInServiceDSCList) {
@@ -321,10 +316,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteInputDirectory(versionString + File.separator + INPUTS_DIR);
     _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
-    // TODO verify this
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
     response.addStatusMessage("upload complete");
+     // TODO implement delete
   }
 
   private String createVersionString(BundleBuildRequest request,
