@@ -40,23 +40,15 @@ OBA.Mobile = (function() {
 		// ajax refresh for browsers that support it
 		refreshBar.find("a").click(function(e) {
 			e.preventDefault();
-		
+
 			refreshTimestamp.text("Loading...");
 			refreshBar.addClass("loading");
-			
-			/*jQuery("#content")
+
+			jQuery("#content")
 				.load(location.href + " #content>*", null, function() {
 					refreshTimestamp.text("Updated " + new Date().format("mediumTime"));
 					refreshBar.removeClass("loading");
-				});*/
-			
-			jQuery("#content")
-			.get(location.href + " #content>*", null, function(data) {
-				jQuery("#content").html(data);
-				  alert('Load was performed.');
-				refreshTimestamp.text("Updated " + new Date().format("mediumTime"));
-				refreshBar.removeClass("loading");
-			});
+				});
 		});
 				
 		// scrolling/fixed refresh bar logic
