@@ -118,7 +118,7 @@
                 <tdm.pipoFilename>UTSPUPUFULL.txt</tdm.pipoFilename>
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
-                <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
+                <tdm.bundlePath>/var/lib/obanyc/oba-bundle</tdm.bundlePath>
                 <tdm.depotIdTranslationConfigFile>src/resources/depot_ids.csv</tdm.depotIdTranslationConfigFile>
             </properties>
         </profile>

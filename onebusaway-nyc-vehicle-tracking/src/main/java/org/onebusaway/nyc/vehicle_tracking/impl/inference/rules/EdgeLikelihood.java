@@ -137,7 +137,7 @@ public class EdgeLikelihood implements SensorModelRule {
           pDistAlong = computeNoEdgeMovementLogProb(state, obs);
           result.addLogResultAsAnd("not-in-progress", pDistAlong);
         } else if (EVehiclePhase.IN_PROGRESS != parentState.getJourneyState().getPhase()){
-          BlockState previousTripState = library.getPreviousStateOnSameBlock(state); 
+          BlockState previousTripState = parentState.getBlockState(); //library.getPreviousStateOnSameBlock(state); 
           if (previousTripState != null)
             pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), previousTripState, hasMoved); 
           else
@@ -153,7 +153,7 @@ public class EdgeLikelihood implements SensorModelRule {
     } else {
 
       if (EVehiclePhase.IN_PROGRESS == phase) {
-        BlockState previousTripState = library.getPreviousStateOnSameBlock(state); 
+        BlockState previousTripState = parentState.getBlockState(); //library.getPreviousStateOnSameBlock(state); 
         if (previousTripState != null)
           pDistAlong = computeEdgeMovementLogProb(obs, state.getBlockState(), previousTripState, hasMoved); 
         else

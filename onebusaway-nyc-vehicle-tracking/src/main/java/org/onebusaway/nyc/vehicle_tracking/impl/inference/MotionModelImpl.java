@@ -377,9 +377,13 @@ public class MotionModelImpl implements MotionModel<Observation> {
       /*
        * Vehicle movement prob.
        */
-      transProb.addResultAsAnd(new SensorModelResult("not-moved",
-          vehicleNotMoved ? vehicleHasNotMovedProb
-              : 1d - vehicleHasNotMovedProb));
+      SensorModelResult movementResult = new SensorModelResult("movement");
+      if (vehicleNotMoved) {
+        movementResult.addResultAsAnd(new SensorModelResult("not-moved", vehicleHasNotMovedProb));
+      } else {
+        movementResult.addResultAsAnd(new SensorModelResult("moved", 1d-vehicleHasNotMovedProb));
+      }
+      transProb.addResultAsAnd(movementResult);
       
       transProb.addLogResultAsAnd(newEdge.getKey().name(), 0);
 
@@ -448,7 +452,7 @@ public class MotionModelImpl implements MotionModel<Observation> {
    */
   private JourneyState adjustInProgressTransition(VehicleState parentState,
       java.util.Map.Entry<BlockSampleType, BlockStateObservation> newEdge,
-      JourneyState journeyState, boolean hasMoved) {
+      JourneyState journeyState, boolean hasNotMoved) {
     
     if (!parentState.getJourneyState().getPhase().equals(EVehiclePhase.IN_PROGRESS)
         && journeyState.getPhase().equals(EVehiclePhase.IN_PROGRESS)
@@ -456,11 +460,11 @@ public class MotionModelImpl implements MotionModel<Observation> {
       final boolean wasPrevStateDuring = EVehiclePhase.isActiveDuringBlock(
           parentState.getJourneyState().getPhase());
       if (EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && hasMoved) {
+          && !hasNotMoved) {
         return wasPrevStateDuring ? JourneyState.deadheadDuring(null)
             : JourneyState.deadheadBefore(null);
       } else if (!EVehiclePhase.isLayover(parentState.getJourneyState().getPhase())
-          && !hasMoved) {
+          && hasNotMoved) {
         return wasPrevStateDuring ? JourneyState.layoverDuring()
             : JourneyState.layoverBefore();
       } else {
