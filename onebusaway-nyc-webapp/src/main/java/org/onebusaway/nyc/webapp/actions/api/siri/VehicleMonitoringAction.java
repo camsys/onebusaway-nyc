@@ -26,8 +26,11 @@ import org.onebusaway.utility.DateLibrary;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.org.siri.siri.ErrorDescriptionStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
+import uk.org.siri.siri.OtherErrorStructure;
 import uk.org.siri.siri.ServiceDelivery;
+import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
@@ -98,6 +101,11 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
     } catch (Exception e) {
       routeId = new AgencyAndId(agencyId, _request.getParameter("LineRef"));
     }
+    
+    Exception error = null;
+    if(routeId != null && routeId.hasValues() && this._nycTransitDataService.getRouteForId(routeId.toString()) == null) {
+      error = new Exception("No such route: " + routeId.toString());
+    }
 
     String detailLevel = _request.getParameter("VehicleMonitoringDetailLevel");
 
@@ -134,7 +142,7 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         activities = filteredActivities;
       }
 
-      _response = generateSiriResponse(activities, routeId);
+      _response = generateSiriResponse(activities, routeId, error);
 
       return SUCCESS;
     }
@@ -166,16 +174,9 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
     }
 
-    _response = generateSiriResponse(activities);
+    _response = generateSiriResponse(activities, null, error);
 
     return SUCCESS;
-  }
-
-  /**
-   * Generate a siri response for a set of VehicleActivities
-   */
-  private Siri generateSiriResponse(List<VehicleActivityStructure> activities) {
-    return generateSiriResponse(activities, null);
   }
 
   /**
@@ -184,24 +185,39 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
    * @param routeId
    */
   private Siri generateSiriResponse(List<VehicleActivityStructure> activities,
-      AgencyAndId routeId) {
+      AgencyAndId routeId, Exception error) {
+    
     VehicleMonitoringDeliveryStructure vehicleMonitoringDelivery = new VehicleMonitoringDeliveryStructure();
     vehicleMonitoringDelivery.setResponseTimestamp(getTime());
-
-    Calendar gregorianCalendar = new GregorianCalendar();
-    gregorianCalendar.setTime(getTime());
-    gregorianCalendar.add(Calendar.MINUTE, 1);
-    vehicleMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
-
-    vehicleMonitoringDelivery.getVehicleActivity().addAll(activities);
-
+    
     ServiceDelivery serviceDelivery = new ServiceDelivery();
     serviceDelivery.setResponseTimestamp(getTime());
-    serviceDelivery.getVehicleMonitoringDelivery().add(
-        vehicleMonitoringDelivery);
+    serviceDelivery.getVehicleMonitoringDelivery().add(vehicleMonitoringDelivery);
+    
+    if (error != null) {
+      ServiceDeliveryErrorConditionStructure errorConditionStructure = new ServiceDeliveryErrorConditionStructure();
+      
+      ErrorDescriptionStructure errorDescriptionStructure = new ErrorDescriptionStructure();
+      errorDescriptionStructure.setValue(error.getMessage());
+      
+      OtherErrorStructure otherErrorStructure = new OtherErrorStructure();
+      otherErrorStructure.setErrorText(error.getMessage());
+      
+      errorConditionStructure.setDescription(errorDescriptionStructure);
+      errorConditionStructure.setOtherError(otherErrorStructure);
+      
+      vehicleMonitoringDelivery.setErrorCondition(errorConditionStructure);
+    } else {
+      Calendar gregorianCalendar = new GregorianCalendar();
+      gregorianCalendar.setTime(getTime());
+      gregorianCalendar.add(Calendar.MINUTE, 1);
+      vehicleMonitoringDelivery.setValidUntil(gregorianCalendar.getTime());
 
-    _serviceAlertsHelper.addSituationExchangeToServiceDelivery(serviceDelivery,
-        activities, _nycTransitDataService, routeId);
+      vehicleMonitoringDelivery.getVehicleActivity().addAll(activities);
+
+      _serviceAlertsHelper.addSituationExchangeToServiceDelivery(serviceDelivery,
+          activities, _nycTransitDataService, routeId);
+    }
 
     Siri siri = new Siri();
     siri.setServiceDelivery(serviceDelivery);
