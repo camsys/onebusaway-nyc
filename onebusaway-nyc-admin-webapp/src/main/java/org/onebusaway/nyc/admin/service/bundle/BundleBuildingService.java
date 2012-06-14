@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.admin.service;
+package org.onebusaway.nyc.admin.service.bundle;
 
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;

@@ -44,9 +44,9 @@
 				</div>
 				<div id="buildBox">
 					<div>
-						<label id="bundleLabel" class="adminLabel">Bundle Name :</label> <input
+						<label id="bundleLabel" class="adminLabel">Bundle Build Name :</label> <input
 							type="text" id="buildBundle_bundleName" /> <input type="button"
-							id="buildBundle_buildButton" value="Build Bundle" />
+							id="buildBundle_buildButton" value="Build Bundle" class="formButton" />
 					</div>
 					<div id="building">
 						<s:url var="url" value="/css/img/ajax-loader.gif" />
@@ -54,26 +54,40 @@
 							class="progress" /> <label id="buildBundle_buildProgress"
 							class="adminLabel">Building ... </label>
 					</div>
+					<div id="buildBundle_resultLink">
+						<label class="adminLabel">Result Link :</label>
+						<label id="resultLink"></label>
+					</div>
 				</div>
 			</div>
-			<div id="buildBundle_progress">
-				<s:url var="url" value="/css/img/arrow-right-3.png" />
-				<img src="${url}" alt="Not found" id="expand" /> <label
-					class="adminLabel">Bundle Build Progress</label>
+			<div id="bundleResultsHolder">
+				<div id="bundleResults">
+					<div id="buildBundle_progress">
+						<s:url var="url" value="/css/img/arrow-right-3.png" />
+						<img src="${url}" alt="Not found" id="expand" /> <label
+							class="adminLabel">Bundle Build Progress</label>
+					</div>
+					<div id="buildBundle_resultList">
+						<!--  space -->
+					</div>
+					<div id="buildBundle_exception">
+						<!--  space -->
+					</div>
+					<div id="buildBundle_fileList">
+						<!--  space -->
+					</div>
+				</div>
 			</div>
-			<div id="buildBundle_resultList">
-				<!--  space -->
-			</div>
-			<div id="buildBundle_exception">
-				<!--  space -->
-			</div>
-			<div id="buildBundle_fileList">
-				<!--  space -->
+			<div id="downloadLogs">
+				<s:url var="url" value="/css/img/go-down-10.png" />
+				<img src="${url}" alt="Image not found" id="downloadImg"/>
+				<a id="downloadButton" class="adminLabel">Download as zip</a>
 			</div>
 			<div class="submitForm">
 				<fieldset>
-					<a href="" class="link">Cancel</a> 
-					<input type="button" id="build_continue" value="Continue" class="submit_enabled" />
+					<s:url var="url" action="index.action" namespace="/admin" />
+					<a href="${url}" class="link">Cancel</a> 
+						<input type="button" id="build_continue" value="Continue" class="submit_disabled" disabled="disabled" />
 				</fieldset>
 			</div>
 		</div>

@@ -5,15 +5,17 @@ import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
-import org.onebusaway.nyc.admin.service.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
-import org.onebusaway.nyc.admin.service.BundleValidationService;
 import org.onebusaway.nyc.admin.service.EmailService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.web.context.ServletContextAware;
 
 import java.io.File;
@@ -32,9 +34,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   private ExecutorService _executorService = null;
   private BundleValidationService _bundleValidationService;
   private BundleBuildingService _bundleBuildingService;
-
+  private ConfigurationService configurationService;
   private EmailService _emailService;
-  private FileService _fileService;
   private Integer jobCounter = 0;
 	private String serverURL;
   private Map<String, BundleResponse> _validationMap = new HashMap<String, BundleResponse>();
@@ -48,12 +49,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   @Autowired
   public void setBundleBuildingService(BundleBuildingService service) {
     _bundleBuildingService = service;
-  }
-
-
-  @Autowired
-  public void setFileService(FileService service) {
-    _fileService = service;
   }
 
   @Autowired
@@ -96,19 +91,46 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     return _buildMap.get(id);
   }
   
+  /**
+   * Sends email to the given email address. 
+   * @param request bundle request
+   * @param response bundle response
+   */
   public void sendEmail(BundleBuildRequest request, BundleBuildResponse response) {
     _log.info("in send email for requestId=" + response.getId() 
         + " with email=" + request.getEmailAddress());
-    if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1) {
-      String from = "sheldonb@gmail.com";
-  	  StringBuffer msg = new StringBuffer();
-  	  msg.append("Your Build Results are available at ");
-  	  msg.append(getServerURL());
-  	  msg.append("/admin/bundles/manage-bundles.action#Build");
-  	  msg.append("?fromEmail=true&id=" + response.getId());
-  	  String subject = "Bundle Build " + response.getId() + " complete";
-  	  _emailService.send(request.getEmailAddress(), from, subject, msg);
+    if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1
+        && !"null".equals(request.getEmailAddress())) {
+    	String from;
+    	try {
+    		from = configurationService.getConfigurationValueAsString("admin.senderEmailAddress", "mtabuscis@mtabuscis.net");
+    	} catch(RemoteConnectFailureException e) {
+    		_log.error("Setting from email address to default value : 'mtabuscis@mtabuscis.net' due to failure to connect to TDM");
+    		from = "mtabuscis@mtabuscis.net";
+    		e.printStackTrace();
+    	}
+    	StringBuffer msg = new StringBuffer();
+    	msg.append("Your Build Results are available at ");
+    	msg.append(getResultLink(request.getBundleName(), response.getId()));
+    	String subject = "Bundle Build " + response.getId() + " complete";
+    	_emailService.send(request.getEmailAddress(), from, subject, msg);
     }
+  }
+  
+  @Override
+  public BundleBuildResponse buildBundleResultURL(String id) {
+	  BundleBuildResponse bundleResponse = this.lookupBuildRequest(id);
+	  bundleResponse.setBundleResultLink(getResultLink(bundleResponse.getBundleBuildName(), bundleResponse.getId()));
+	  return bundleResponse;
+  }
+  
+  
+  private String getResultLink(String bundleName, String responseId) {
+	  StringBuffer resultLink = new StringBuffer();
+	  resultLink.append(getServerURL());
+	  resultLink.append("/admin/bundles/manage-bundles.action#Build");
+	  resultLink.append("?fromEmail=true&id=" + responseId +"&name=" + bundleName);
+	  return resultLink.toString();
   }
 
   @Override
@@ -158,8 +180,9 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   @Override
   public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
     BundleBuildResponse bundleResponse = new BundleBuildResponse(getNextId());
-    bundleResponse.addStatusMessage("queueing...");
-    _buildMap.put(bundleResponse.getId(), bundleResponse);
+    bundleResponse.setBundleBuildName(bundleRequest.getBundleName());
+	  _buildMap.put(bundleResponse.getId(), bundleResponse);
+	  bundleResponse.addStatusMessage("queueing...");
     _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
     return bundleResponse;
   }
@@ -178,34 +201,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       _response.addStatusMessage("running...");
       try {
         _log.info("in validateThread.run");
-        String gtfsDirectory =  _request.getBundleDirectory() + File.separator
-            + _fileService.getGtfsPath();
-        _log.info("gtfsDir=" + gtfsDirectory);
-        List<String> files = _fileService.list(gtfsDirectory, -1);
-        if (files == null || files.size() == 0) { 
-          _response.addStatusMessage("no files found in " + gtfsDirectory);
-          _response.setComplete(true);
-          return;
-        }
-        String tmpDir = _request.getTmpDirectory(); 
-        if (tmpDir == null) {
-          tmpDir = new FileUtils().createTmpDirectory();
-          _request.setTmpDirectory(tmpDir);
-        }
-        _response.setTmpDirectory(_request.getTmpDirectory());
-        for (String s3Key : files) {
-          _response.addStatusMessage("downloading " + s3Key);
-          _log.info("downloading " + s3Key);
-          String gtfsZipFileName = _fileService.get(s3Key, tmpDir);
-          String outputFile = gtfsZipFileName + ".html";
-          _response.addStatusMessage("validating " + s3Key);
-          _log.info("validating " + s3Key);
-          _bundleValidationService.installAndValidateGtfs(gtfsZipFileName,
-              outputFile);
-          _log.info("results of " + gtfsZipFileName + " at " + outputFile);
-          _response.addValidationFile(new FileUtils().parseFileName(outputFile));
-          _response.addStatusMessage("complete");
-        }
+        _bundleValidationService.downloadAndValidate(_request, _response);
         _response.setComplete(true);
       } catch (Exception any) {
         _log.error(any.toString(), any);
@@ -256,5 +252,13 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       }
     }
   }
+
+	/**
+	 * @param configurationService the configurationService to set
+	 */
+  	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+		this.configurationService = configurationService;
+	}
 
 }

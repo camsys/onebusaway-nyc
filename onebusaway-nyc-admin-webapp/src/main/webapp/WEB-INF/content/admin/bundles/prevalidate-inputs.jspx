@@ -34,6 +34,8 @@
 						value="id" /></label>
 			</div>
 			<div id="validateBox">
+				<label id="bundleLabel" class="adminLabel">Bundle Build Name :</label> <input
+							type="text" id="prevalidate_bundleName" /> 
 				<input type="button" id="validateButton" value="Validate"
 					class="formButton" />
 				<div id="validating">
@@ -59,8 +61,9 @@
 			</div>
 			<div class="submitForm">
 				<fieldset>
-					<a href="" class="link">Cancel</a> 
-					<input type="button" id="prevalidate_continue" value="Continue" class="submit_enabled" />
+					<s:url var="url" action="index" namespace="/admin" />
+					<a href="${url}" class="link">Cancel</a> 
+					<input type="button" id="prevalidate_continue" value="Continue" class="submit_disabled" disabled="disabled" />
 				</fieldset>
 			</div>
 		</div>

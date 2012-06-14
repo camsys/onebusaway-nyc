@@ -20,9 +20,10 @@ public class BundleBuildResponse {
   private String _remoteOutputDirectory;
   private String _versionString;
   private String _tmpDirectory;
-
+  private String _bundleBuildName;
 
   private String _id = null;
+  private String bundleResultLink;
 
   public BundleBuildResponse(String id) {
     _id = id;
@@ -149,6 +150,28 @@ public class BundleBuildResponse {
 
    public void setRemoteOutputDirectory(String directoryPath) {
     _remoteOutputDirectory = directoryPath;
+  }
+
+	/**
+	 * @return the bundleResultLink
+	 */
+	public String getBundleResultLink() {
+		return bundleResultLink;
+	}
+	
+	/**
+	 * @param bundleResultLink the bundleResultLink to set
+	 */
+	public void setBundleResultLink(String bundleResultLink) {
+		this.bundleResultLink = bundleResultLink;
+	}
+
+	public String getBundleBuildName() {
+	  return _bundleBuildName;
+	}
+	
+  public void setBundleBuildName(String bundleName) {
+    this._bundleBuildName = bundleName;
   }
 
 }

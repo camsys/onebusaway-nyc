@@ -1,10 +1,12 @@
-package org.onebusaway.nyc.admin.service.impl;
+package org.onebusaway.nyc.admin.service.bundle.impl;
 
+import org.onebusaway.container.ContainerLibrary;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
-import org.onebusaway.nyc.admin.service.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.impl.FileUtils;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
+  private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
   private static final String INPUTS_DIR = "inputs";
@@ -73,7 +77,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       response.addStifZipFile(_fileService.get(file, tmpDirectory));
     }
 
-    // TODO download previous validate data or rerun or?
   }
 
   /**
@@ -133,6 +136,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
      */
     PrintStream stdOut = System.out;
     PrintStream logFile = null;
+    // pass a mini spring context to the bundle builder so we can cleanup
+    ConfigurableApplicationContext context = null;
     try {
       
       File outputPath = new File(response.getBundleDataDirectory());
@@ -152,16 +157,13 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
       List<GtfsBundle> gtfsBundles = createGtfsBundles(response.getGtfsList());
       List<String> contextPaths = new ArrayList<String>();
-
-      // fixup ehcache -- ehCacheMBeanRegistration
+      contextPaths.add(BUNDLE_RESOURCE);
       
-      if (!gtfsBundles.isEmpty()) {
-        BeanDefinitionBuilder bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsBundles.class);
-        bean.addPropertyValue("bundles", gtfsBundles);
-        beans.put("gtfs-bundles", bean.getBeanDefinition());
-      }
+      BeanDefinitionBuilder bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsBundles.class);
+      bean.addPropertyValue("bundles", gtfsBundles);
+      beans.put("gtfs-bundles", bean.getBeanDefinition());
 
-      BeanDefinitionBuilder bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsRelationalDaoImpl.class);
+      bean = BeanDefinitionBuilder.genericBeanDefinition(GtfsRelationalDaoImpl.class);
       beans.put("gtfsRelationalDaoImpl", bean.getBeanDefinition());
 
       // configure for NYC specifics
@@ -194,10 +196,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       // this name is not significant, its loaded by type
       beans.put("nycStifTask", task.getBeanDefinition());
 
-      _log.info("setting outputPath=" + outputPath);
+      _log.debug("setting outputPath=" + outputPath);
       creator.setOutputPath(outputPath);
       creator.setContextPaths(contextPaths);
 
+      // manage our own context to recover from exceptions
+      Map<String, BeanDefinition> contextBeans = new HashMap<String, BeanDefinition>();
+      contextBeans.putAll(beans);
+      context = ContainerLibrary.createContext(contextPaths, contextBeans);
+      creator.setContext(context);
+      
+      
       response.addStatusMessage("building bundle");
       creator.run();
       response.addStatusMessage("bundle build complete");
@@ -212,6 +221,17 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       response.addException(new RuntimeException(t.toString()));
       return -1;
     } finally {
+      if (context != null) {
+        try {
+          /*
+           * here we cleanup the spring context so we can process follow on requests.
+           */
+        context.stop();
+        context.close();
+        } catch (Throwable t) {
+          _log.error("buried context close:", t);
+        }
+      }
       // restore standard out
       System.setOut(stdOut);
       if (logFile != null) {
@@ -263,11 +283,6 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
       }
     }
-    //TODO implement delete
-//    int rc = fs.rmDir(request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR );
-//    _log.info("delete of " + request.getTmpDirectory() + File.separator + BUILD_BUNDLE_DIR  + " had rc=" + rc);
-//    rc = fs.rmDir(request.getTmpDirectory() + File.separator + "stif");
-//    _log.info("delete of " + request.getTmpDirectory() + File.separator + "stif"  + " had rc=" + rc);
   }
 
   private StringBuffer listToFile(List<String> notInServiceDSCList) {
@@ -301,10 +316,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteInputDirectory(versionString + File.separator + INPUTS_DIR);
     _fileService.put(versionString + File.separator + OUTPUT_DIR, response.getBundleOutputDirectory());
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
-    // TODO verify this
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
     response.addStatusMessage("upload complete");
+     // TODO implement delete
   }
 
   private String createVersionString(BundleBuildRequest request,
