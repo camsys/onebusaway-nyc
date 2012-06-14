@@ -247,20 +247,25 @@ function directoryOptionChanged() {
 }
 
 function onValidateClick() {
-	var bundleDir = jQuery("#manage-bundles_directoryName").val();
-	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
+	var bundleDirectory = jQuery("#prevalidate_bundleDirectory").text();
+	if (bundleDirectory == undefined || bundleDirectory == null || bundleDirectory == "") {
 		alert("missing bundle directory");
 		return;
+	}
+	var bundleName = jQuery("#prevalidate_bundleName").val();
+	if (bundleName == undefined || bundleName == null || bundleName == "") {
+		alert("missing bundle build name");
+		return;
+	} else {
+		jQuery("#buildBundle_bundleName").val(bundleName);
 	}
 
 	jQuery("#prevalidate_exception").hide();
 	jQuery("#prevalidateInputs #validateBox #validateButton").attr("disabled", "disabled");
 	jQuery("#prevalidateInputs #validateBox #validating").show().css("display","inline");
 	jQuery.ajax({
-		url: "manage-bundles!validateBundle.action",
-		type: "POST",
-		data: {"bundleDirectory": jQuery("#prevalidate_bundleDirectory").text(),
-			"method:validateBundle": "Validate"},
+		url: "../../api/validate/" + bundleDirectory + "/" + bundleName + "/create",
+		type: "GET",
 		async: false,
 		success: function(response) {
 				var bundleResponse = eval(response);
@@ -282,10 +287,8 @@ function onValidateClick() {
 function updateValidateStatus() {
 	var id = jQuery("#prevalidate_id").text();
 	jQuery.ajax({
-		url: "manage-bundles!validateStatus.action",
-		type: "POST",
-		data: {"id": id,
-			"method:validateBundle": "Validate"},
+		url: "../../api/validate/" + id + "/list",
+		type: "GET",
 		async: false,
 		success: function(response) {
 				var txt = "<ul>";
@@ -369,24 +372,24 @@ function onBuildClick() {
 		alert("missing bundle build name");
 		return;
 	}
+	buildBundle();
+
+	var id = jQuery("#buildBundle_id").text();
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
 	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
-		url: "manage-bundles!getBundleBuildResultURL.action",
-		type: "POST",
-		data: {"bundleName": bundleName},
+		url: "../../api/build/" + id + "/url",
+		type: "GET",
 		async: false,
 		success: function(response) {
 				var bundleResponse = eval(response);
-				jQuery("#buildBundle_id").text(bundleResponse.id);
 				jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink")
 						.text(bundleResponse.bundleResultLink)
 						.css("padding-left", "5px")
 						.css("font-size", "12px")
 						.addClass("adminLabel")
 						.css("color", "green");
-				buildBundle();
 		},
 		error: function(request) {
 			alert(request.statustext);
@@ -395,20 +398,19 @@ function onBuildClick() {
 }
 
 function buildBundle(){
-	id = jQuery("#buildBundle_id").text();
+	var bundleDirectory = jQuery("#buildBundle_bundleDirectory").text();
+	var bundleName = jQuery("#buildBundle_bundleName").val();
+	var email = jQuery("#buildBundle_email").val();
+	if (email == "") { email = "null"; }
 	jQuery.ajax({
-		url: "manage-bundles!buildBundle.action",
-		type: "POST",
-		data: {"bundleDirectory": jQuery("#buildBundle_bundleDirectory").text(),
-			"bundleName": jQuery("#buildBundle_bundleName").val(),
-			"emailTo": jQuery("#buildBundle_email").val(),
-			"id": id,
-			"method:buildBundle": "Build"},
+		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/create",
+		type: "GET",
 		async: false,
 		success: function(response) {
 				var bundleResponse = eval(response);
 				if (bundleResponse != undefined) {
 					jQuery("#buildBundle_resultList").html("calling...");
+					jQuery("#buildBundle_id").text(bundleResponse.id);
 					window.setTimeout(updateBuildStatus, 1000);
 				} else {
 					jQuery("#buildBundle_id").text(error);
@@ -424,10 +426,8 @@ function buildBundle(){
 function updateBuildStatus() {
 	id = jQuery("#buildBundle_id").text();
 	jQuery.ajax({
-		url: "manage-bundles!buildStatus.action",
-		type: "POST",
-		data: {"id": id,
-			"method:buildStatus": "Status"},
+		url: "../../api/build/" + id + "/list",
+		type: "GET",
 		async: false,
 		success: function(response) {
 				var txt = "<ul>";

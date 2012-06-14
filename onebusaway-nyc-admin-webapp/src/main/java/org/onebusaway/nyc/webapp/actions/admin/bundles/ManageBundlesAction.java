@@ -148,57 +148,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 		return directories;
 	}
 	
-	
-	/**
-	 * Validates a bundle request and generates a response
-	 * @return bundle response as validation result.
-	 */
-	public String validateBundle() {
-	  _log.info("in validateBundle with bundleDirectory=" + bundleDirectory);
-		BundleRequest bundleRequest = new BundleRequest();
-		bundleRequest.setBundleDirectory(bundleDirectory);
-		this.bundleResponse = bundleRequestService.validate(bundleRequest);
-		_log.info("id=" + this.bundleResponse.getId());
-		_log.info("complete=" + this.bundleResponse.isComplete());
-		return "validationResponse";
-	}
-	
-	public String validateStatus() {
-	  _log.debug("in validateStatus with id=" + getId());
-	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
-	  return "validationResponse";
-	}
-
-	
-	public String buildBundle() {
-	  _log.info("in buildBundle with bundleDirectory=" + bundleDirectory 
-	      + " and bundleName=" + bundleName);
-		
-		//bundleRequest.
-	  	BundleBuildRequest bundleBuildRequest = new BundleBuildRequest();
-		bundleBuildRequest.setBundleDirectory(bundleDirectory);
-		bundleBuildRequest.setBundleName(bundleName);
-		bundleBuildRequest.setEmailAddress(emailTo);
-		
-		this.bundleBuildResponse = bundleRequestService.build(bundleBuildRequest, getId());
-		_log.info("id=" + this.bundleBuildResponse.getId());
-		_log.info("complete=" + this.bundleBuildResponse.isComplete());
-		return "buildResponse";
-	}
-	
-	public String buildStatus() {
-	  _log.debug("in buildStatus with id=" + getId());
-	  this.bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
-	  return "buildResponse";
-	}
-	
-	public String getBundleBuildResultURL() {
-		 _log.info("in getResultURL with bundleDirectory=" + bundleDirectory 
-			      + " and bundleName=" + bundleName);
-		this.bundleBuildResponse  = bundleRequestService.buildBundleResultURL(bundleName);
-		return "buildResponse";
-	}
-	
 	public String fileList() {
 	  _log.info("fileList called for id=" + id); 
 	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
