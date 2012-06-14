@@ -17,11 +17,16 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.VehicleStatusBean;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.utility.DateLibrary;
+
+import com.dmurph.tracking.AnalyticsConfigData;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +58,9 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Autowired
   private RealtimeService _realtimeService;
+  
+  @Autowired
+  private ConfigurationService _configurationService;
 
   private Siri _response;
 
@@ -63,6 +71,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private String _type = "xml";
 
   private Date _now = null;
+  
+  private JGoogleAnalyticsTracker _googleAnalytics = null;
 
   public void setTime(String time) throws Exception {
     Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);
@@ -83,6 +93,19 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Override
   public String execute() {
+    
+    String googleAnalyticsSiteId = 
+        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
+    
+    try {
+      if(googleAnalyticsSiteId != null) {    
+        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, null);
+        _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
+      }
+    } catch(Exception e) {
+      // discard
+    }
+    
     _realtimeService.setTime(getTime());
 
     String directionId = _request.getParameter("DirectionRef");
@@ -119,9 +142,14 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         maximumOnwardCalls = Integer.MAX_VALUE;
       }
     }
+    
+    String gaLabel = null;
 
     // *** CASE 1: by route
     if (routeId != null && routeId.hasValues()) {
+      
+      gaLabel = routeId.toString();
+      
       List<VehicleActivityStructure> activities = _realtimeService.getVehicleActivityForRoute(
           routeId.toString(), directionId, maximumOnwardCalls);
 
@@ -143,24 +171,31 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
       }
 
       _response = generateSiriResponse(activities, routeId, error);
-
-      return SUCCESS;
-    }
-
-    List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
-
-    // *** CASE 2: single vehicle--no route specified (that's the case above)
-    if ((vehicleId != null && vehicleId.hasValues())
+      
+      // *** CASE 2: single vehicle--no route specified (that's the case above)
+    } else if ((vehicleId != null && vehicleId.hasValues())
         && (routeId == null || !routeId.hasValues())) {
+      
+      gaLabel = vehicleId.toString();
+      
+      List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
+      
       VehicleActivityStructure activity = _realtimeService.getVehicleActivityForVehicle(
           vehicleId.toString(), maximumOnwardCalls);
 
       if (activity != null) {
         activities.add(activity);
       }
+      
+      _response = generateSiriResponse(activities, null, error);
 
       // *** CASE 3: all vehicles
     } else {
+      
+      gaLabel = "All Vehicles";
+      
+      List<VehicleActivityStructure> activities = new ArrayList<VehicleActivityStructure>();
+      
       ListBean<VehicleStatusBean> vehicles = _nycTransitDataService.getAllVehiclesForAgency(
           agencyId, getTime().getTime());
 
@@ -172,9 +207,17 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
           activities.add(activity);
         }
       }
+      
+      _response = generateSiriResponse(activities, null, error);
     }
-
-    _response = generateSiriResponse(activities, null, error);
+    
+    if(_googleAnalytics != null && _request.getParameter("key") != null && !_request.getParameter("key").isEmpty()) {
+      try {
+      _googleAnalytics.trackEvent("API", "Vehicle Monitoring", gaLabel);
+      } catch(Exception e) {
+        //discard
+      }
+    }
 
     return SUCCESS;
   }

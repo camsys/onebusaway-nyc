@@ -17,9 +17,14 @@ import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsHelper;
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCActionSupport;
 import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.utility.DateLibrary;
+
+import com.dmurph.tracking.AnalyticsConfigData;
+import com.dmurph.tracking.JGoogleAnalyticsTracker;
+import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +58,9 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
   @Autowired  
   private RealtimeService _realtimeService;
+  
+  @Autowired
+  private ConfigurationService _configurationService;
 
   private Siri _response;
   
@@ -63,6 +71,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   private String _type = "xml";
 
   private Date _now = null;
+  
+  private JGoogleAnalyticsTracker _googleAnalytics = null;
   
   public void setTime(String time) throws Exception {
     Date timeAsDate = DateLibrary.getIso8601StringAsTime(time);    
@@ -83,6 +93,19 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   
   @Override
   public String execute() { 
+    
+    String googleAnalyticsSiteId = 
+        _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
+    
+    try {
+      if(googleAnalyticsSiteId != null) {    
+        AnalyticsConfigData config = new AnalyticsConfigData(googleAnalyticsSiteId, null);
+        _googleAnalytics = new JGoogleAnalyticsTracker(config, GoogleAnalyticsVersion.V_4_7_2);
+      }
+    } catch(Exception e) {
+      // discard
+    }
+    
     _realtimeService.setTime(getTime());
 
     String directionId = _request.getParameter("DirectionRef");
@@ -127,9 +150,15 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     } catch (NumberFormatException e) {
       minimumStopVisitsPerLine = null;
     }
+    
+    if(_googleAnalytics != null && _request.getParameter("key") != null && !_request.getParameter("key").isEmpty()) {
+      try {
+      _googleAnalytics.trackEvent("API", "Stop Monitoring", stopId.toString());
+      } catch(Exception e) {
+        //discard
+      }
+    }
 
-    
-    
     List<MonitoredStopVisitStructure> visits = new ArrayList<MonitoredStopVisitStructure>();
     Exception error = null;
 
@@ -167,7 +196,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
       			visitCountForThisLine = 0;
       		}
 
-      	if(visitCount >= maximumStopVisits) {
+      		if(visitCount >= maximumStopVisits) {
         		if(minimumStopVisitsPerLine == null) {
         			break;
         		} else {
@@ -175,7 +204,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
         				continue;    		
         			}
         		}
-      	}
+      		}
       		
       		filteredVisits.add(visit);
 
