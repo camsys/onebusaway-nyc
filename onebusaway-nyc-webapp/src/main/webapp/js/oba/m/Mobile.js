@@ -40,10 +40,10 @@ OBA.Mobile = (function() {
 		// ajax refresh for browsers that support it
 		refreshBar.find("a").click(function(e) {
 			e.preventDefault();
-		
+
 			refreshTimestamp.text("Loading...");
-			refreshBar.addClass("loading")
-			
+			refreshBar.addClass("loading");
+
 			jQuery("#content")
 				.load(location.href + " #content>*", null, function() {
 					refreshTimestamp.text("Updated " + new Date().format("mediumTime"));

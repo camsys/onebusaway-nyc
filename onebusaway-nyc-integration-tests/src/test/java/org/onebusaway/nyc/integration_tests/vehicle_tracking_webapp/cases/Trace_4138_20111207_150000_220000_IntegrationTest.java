@@ -29,12 +29,12 @@ public class Trace_4138_20111207_150000_220000_IntegrationTest extends AbstractT
     setBundle("si", "2011-12-14T00:00:00EDT");
     setLoops(2);
 //    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.95);
-    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.78);
     /**
      * TODO records 120 onward should ideally be deadhead, but it's 
      * tough for the current filter.
      */
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_AFTER, 0);
+    setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.03);
     /**
      * Whether it should be layover or deadhead is still a question,
      * but in general it doesn't hurt us (since it's a block-less state).

@@ -31,6 +31,7 @@ import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockStopTimeEntry;
 
 import gov.sandia.cognition.statistics.distribution.StudentTDistribution;
+import gov.sandia.cognition.statistics.distribution.UnivariateGaussian;
 
 import com.google.common.collect.Iterables;
 
@@ -171,8 +172,11 @@ class BlockStateSamplingStrategyImpl implements BlockStateSamplingStrategy {
       } else {
         final double distAlongPrior = SphericalGeometryLibrary.distance(
             obs.getPreviousObservation().getLocation(), obs.getLocation());
-        final double distAlongErrorSample = EdgeLikelihood.inProgressEdgeMovementDist.sample(
-            ParticleFactoryImpl.getLocalRng());
+//        final double distAlongErrorSample = EdgeLikelihood.inProgressEdgeMovementDist.sample(
+//            ParticleFactoryImpl.getLocalRng());
+        final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
+        final double distAlongErrorSample = ParticleFactoryImpl.getLocalRng().nextGaussian() 
+            * Math.pow(obsTimeDelta,2)/2d;
         distAlongSample = distAlongPrior + (distAlongErrorSample > 0 ? distAlongErrorSample : 0d);
       }
       

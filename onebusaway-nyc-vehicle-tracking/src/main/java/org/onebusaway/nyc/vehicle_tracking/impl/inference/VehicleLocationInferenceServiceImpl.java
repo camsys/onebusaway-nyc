@@ -557,13 +557,13 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
         final VehicleInferenceInstance existing = getInstanceForVehicle(_vehicleId);
         
         if (_simulation) {
-          String actualRun = _nycTestInferredLocationRecord.getActualRunId();
+          String assignedRun = _nycTestInferredLocationRecord.getAssignedRunId();
           String operatorId = _nycTestInferredLocationRecord.getOperatorId();
-          if (!Strings.isNullOrEmpty(actualRun) && !Strings.isNullOrEmpty(operatorId)) {
+          if (!Strings.isNullOrEmpty(assignedRun) && !Strings.isNullOrEmpty(operatorId)) {
             DummyOperatorAssignmentServiceImpl opSvc;
             if ((existing.getOperatorAssignmentService() instanceof DummyOperatorAssignmentServiceImpl)) {
               opSvc = (DummyOperatorAssignmentServiceImpl)existing.getOperatorAssignmentService();
-              String[] runParts = actualRun.split("-");
+              String[] runParts = assignedRun.split("-");
               
               opSvc.setOperatorAssignment(
                   new AgencyAndId(_inferenceRecord.getVehicleId().getAgencyId(), operatorId), 

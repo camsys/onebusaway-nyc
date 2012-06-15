@@ -18,8 +18,11 @@ package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateService.BestBlockStates;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlockStateTransitionModel;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.BlocksFromObservationService;
+import org.onebusaway.nyc.vehicle_tracking.impl.inference.MissingShapePointsException;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.ScheduleDeviationLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
@@ -36,6 +39,8 @@ import org.onebusaway.realtime.api.EVehiclePhase;
 import org.onebusaway.transit_data_federation.services.blocks.BlockInstance;
 import org.onebusaway.transit_data_federation.services.blocks.ScheduledBlockLocation;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfigurationEntry;
+
+import com.google.common.collect.Iterables;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -57,6 +62,8 @@ public class SensorModelSupportLibrary {
   private BlockStateTransitionModel _blockStateTransitionModel;
 
   private ScheduleDeviationLibrary _scheduleDeviationLibrary;
+  
+  private BlockStateService _blockStateService;
 
   /****
    * Parameters
@@ -117,8 +124,9 @@ public class SensorModelSupportLibrary {
   }
 
   @Autowired
-  public void setBlocksFromObservationService(
-      BlocksFromObservationService blocksFromObservationService) {
+  public void setBlocksStateService(
+      BlockStateService blocksStateService) {
+    _blockStateService = blocksStateService;
   }
 
   @Autowired
@@ -890,6 +898,18 @@ public class SensorModelSupportLibrary {
 
   public static final double not(double p) {
     return 1.0 - p;
+  }
+
+  public BlockState getPreviousStateOnSameBlock(VehicleState state) {
+    Observation prevObs = state.getObservation().getPreviousObservation();
+    try {
+      BestBlockStates prevState = _blockStateService.getBestBlockLocations(prevObs, state.getBlockState().getBlockInstance(),
+          Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      return Iterables.getFirst(prevState.getAllStates(), null);
+    } catch (MissingShapePointsException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
 }

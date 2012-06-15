@@ -20,7 +20,7 @@ public class BundleBuildResponse {
   private String _remoteOutputDirectory;
   private String _versionString;
   private String _tmpDirectory;
-
+  private String _bundleBuildName;
 
   private String _id = null;
   private String bundleResultLink;
@@ -165,5 +165,13 @@ public class BundleBuildResponse {
 	public void setBundleResultLink(String bundleResultLink) {
 		this.bundleResultLink = bundleResultLink;
 	}
+
+	public String getBundleBuildName() {
+	  return _bundleBuildName;
+	}
+	
+  public void setBundleBuildName(String bundleName) {
+    this._bundleBuildName = bundleName;
+  }
 
 }
