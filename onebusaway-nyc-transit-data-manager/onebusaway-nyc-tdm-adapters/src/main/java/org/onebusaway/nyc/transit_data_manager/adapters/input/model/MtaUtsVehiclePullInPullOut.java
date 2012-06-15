@@ -148,7 +148,8 @@ public class MtaUtsVehiclePullInPullOut {
   }
 
   public String getOperatorDesignator() {
-    return authIdField + passNumberField;
+	  //Removed authIdField as per comments in OBANYC-440
+	  return passNumberField;
   }
 
 }
