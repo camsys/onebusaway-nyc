@@ -664,7 +664,7 @@ public class VehicleLocationSimulationController {
           currentRunTripEntry.getTripEntry().getStopTimes().
           get(currentRunTripEntry.getTripEntry().getStopTimes().size() -1).getStop().getId().toString());
       trip.put("dsc", _destinationSignCodeService.getDestinationSignCodeForTripId(currentRunTripEntry.getTripEntry().getId()));
-      trip.put("routeId", currentRunTripEntry.getRunRoute());
+      trip.put("routeId", currentRunTripEntry.getTripEntry().getRoute().getId().toString());
       trip.put("directionId", currentRunTripEntry.getTripEntry().getDirectionId());
       trip.put("blockId", currentRunTripEntry.getTripEntry().getBlock().getId().toString());
       if (!currentRunTripEntry.getRelief().equals(ReliefState.NO_RELIEF)) {
