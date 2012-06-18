@@ -426,7 +426,7 @@ public class StifTask implements Runnable {
               + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
           dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
-              gtfsTrip.getId().getId(), blockId, gtfsTrip.getBlockId());
+              gtfsTrip.getId().getId(), blockId, gtfsTrip.getRoute().getId().getId());
           csvLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
               trip.lineNumber, gtfsTrip.getId(), blockId);
           usedGtfsTrips.add(gtfsTrip);
