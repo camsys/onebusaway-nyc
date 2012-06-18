@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 
+import tcip_final_3_0_5_1.SCHPullInOutInfo;
+
 /**
  * Holds vehicle pipo information
  * @author abelsare
@@ -11,13 +13,13 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
  */
 public class VehiclePipoMessage {
 	
-	private List<VehiclePullInOutInfo> pulloutData;
+	private List<SCHPullInOutInfo> pulloutData;
 	private String status;
 	
 	/**
 	 * @param pulloutData the pulloutData to set
 	 */
-	public void setPulloutData(List<VehiclePullInOutInfo> pulloutData) {
+	public void setPulloutData(List<SCHPullInOutInfo> pulloutData) {
 		this.pulloutData = pulloutData;
 	}
 	/**

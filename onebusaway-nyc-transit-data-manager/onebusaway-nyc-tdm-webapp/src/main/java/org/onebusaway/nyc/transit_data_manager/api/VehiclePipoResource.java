@@ -77,7 +77,7 @@ public class VehiclePipoResource {
 		List<VehiclePullInOutInfo> activePullouts = vehiclePullInOutService.getActivePullOuts(data.getAllPullouts());
 		
 		VehiclePipoMessage message  = new VehiclePipoMessage();
-		message.setPulloutData(activePullouts);
+		message.setPulloutData(buildOutputData(activePullouts));
 		message.setStatus("OK");
 		
 		String outputJson = serializeOutput(message, method);
@@ -102,15 +102,15 @@ public class VehiclePipoResource {
 		
 		VehiclePullInOutInfo currentActivePulloutByBus = getCurrentActivePullOutsByField(pulloutsByBus);
 		
-		/*List<SCHPullInOutInfo> outputData = new ArrayList<SCHPullInOutInfo>();
+		List<SCHPullInOutInfo> outputData = new ArrayList<SCHPullInOutInfo>();
 		outputData.add(currentActivePulloutByBus.getPullOutInfo());
-		outputData.add(currentActivePulloutByBus.getPullInInfo());*/
+		outputData.add(currentActivePulloutByBus.getPullInInfo());
 		
-		List<VehiclePullInOutInfo> currentActivePulloutsByBus = new ArrayList<VehiclePullInOutInfo>();
-		currentActivePulloutsByBus.add(currentActivePulloutByBus);
+		/*List<VehiclePullInOutInfo> currentActivePulloutsByBus = new ArrayList<VehiclePullInOutInfo>();
+		currentActivePulloutsByBus.add(currentActivePulloutByBus);*/
 		
 		VehiclePipoMessage message  = new VehiclePipoMessage();
-		message.setPulloutData(currentActivePulloutsByBus);
+		message.setPulloutData(outputData);
 		message.setStatus("OK");
 		
 		String outputJson = serializeOutput(message, method);
@@ -133,15 +133,15 @@ public class VehiclePipoResource {
 		
 		VehiclePullInOutInfo currentActivePulloutByDepot = getCurrentActivePullOutsByField(pulloutsByDepot);
 		
-		/*List<SCHPullInOutInfo> outputData = new ArrayList<SCHPullInOutInfo>();
-		outputData.add(currentActivePulloutByBus.getPullOutInfo());
-		outputData.add(currentActivePulloutByBus.getPullInInfo());*/
+		List<SCHPullInOutInfo> outputData = new ArrayList<SCHPullInOutInfo>();
+		outputData.add(currentActivePulloutByDepot.getPullOutInfo());
+		outputData.add(currentActivePulloutByDepot.getPullInInfo());
 		
-		List<VehiclePullInOutInfo> currentActivePulloutsByDepot = new ArrayList<VehiclePullInOutInfo>();
-		currentActivePulloutsByDepot.add(currentActivePulloutByDepot);
+		/*List<VehiclePullInOutInfo> currentActivePulloutsByDepot = new ArrayList<VehiclePullInOutInfo>();
+		currentActivePulloutsByDepot.add(currentActivePulloutByDepot);*/
 		
 		VehiclePipoMessage message  = new VehiclePipoMessage();
-		message.setPulloutData(currentActivePulloutsByDepot);
+		message.setPulloutData(outputData);
 		message.setStatus("OK");
 		
 		String outputJson = serializeOutput(message, method);

@@ -35,7 +35,7 @@ public class UtsMappingTool extends TcipMappingTool {
   }
   
   // TODO: This method is the same as getJsonModelAgencyIdByTcipId in TcipMappingTool.
-  public String getVehicleDesignatorFromAgencyId(Long agencyId) {
+  public String getAgencyDesignatorFromAgencyId(Long agencyId) {
     String vehDesignator;
     
     if (agencyId == MTA_NYCT_AGENCY_ID) {

@@ -98,6 +98,7 @@ public class GenericConverter {
       
       try {
         ex.runConversion();
+        System.out.println("Generated ouput to " +outputFile);
       } catch (IOException e1) {
         System.out.println("Had trouble writing output file to disk. Please investigate output file.");
         return;
