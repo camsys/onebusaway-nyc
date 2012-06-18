@@ -27,6 +27,7 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -38,6 +39,7 @@ import uk.org.siri.siri.ServiceDeliveryErrorConditionStructure;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,9 +49,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class StopMonitoringAction extends OneBusAwayNYCActionSupport 
-  implements ServletRequestAware {
+  implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
 
@@ -67,6 +70,8 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
 
   private HttpServletRequest _request;
+  
+  private HttpServletResponse _servletResponse;
   
   private String _type = "xml";
 
@@ -92,7 +97,7 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   }
   
   @Override
-  public String execute() { 
+  public String execute() {
     
     String googleAnalyticsSiteId = 
         _configurationService.getConfigurationValueAsString("display.googleAnalyticsSiteId", null);
@@ -219,8 +224,14 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
     }
 
     _response = generateSiriResponse(visits, stopId, error);
+    
+    try {
+      this._servletResponse.getWriter().write(getStopMonitoring());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
-    return SUCCESS;
+    return null;
   }
   
   private Siri generateSiriResponse(List<MonitoredStopVisitStructure> visits, AgencyAndId stopId, Exception error) {
@@ -266,10 +277,13 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
 
   public String getStopMonitoring() {
     try {
-      if(_type.equals("xml"))
+      if(_type.equals("xml")) {
+        this._servletResponse.setContentType("application/xml");
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
-      else
+      } else {
+        this._servletResponse.setContentType("application/json");
         return _realtimeService.getSiriJsonSerializer().getJson(_response, _request.getParameter("callback"));
+      }
     } catch(Exception e) {
       return e.getMessage();
     }
@@ -278,6 +292,15 @@ public class StopMonitoringAction extends OneBusAwayNYCActionSupport
   @Override
   public void setServletRequest(HttpServletRequest request) {
     this._request = request;
+  }
+
+  @Override
+  public void setServletResponse(HttpServletResponse servletResponse) {
+    this._servletResponse = servletResponse;
+  }
+  
+  public HttpServletResponse getServletResponse(){
+    return _servletResponse;
   }
   
 }
