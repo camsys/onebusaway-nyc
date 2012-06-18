@@ -25,7 +25,6 @@ import org.onebusaway.utility.ObjectSerializationLibrary;
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -288,10 +287,8 @@ public class RunServiceImpl implements RunService {
    * start time of the next, we return the next trip.
    */
   @Override
-  public RunTripEntry getActiveRunTripEntryForRunAndTime(
-      AgencyAndId runAgencyAndId, long time) {
+  public RunTripEntry getActiveRunTripEntryForRunAndTime(String runId, long time) {
 
-    String runId = runAgencyAndId.getId();
     if (!entriesByRun.containsKey(runId)) {
       _log.warn("Run id " + runId + " was not found.");
       return null;
