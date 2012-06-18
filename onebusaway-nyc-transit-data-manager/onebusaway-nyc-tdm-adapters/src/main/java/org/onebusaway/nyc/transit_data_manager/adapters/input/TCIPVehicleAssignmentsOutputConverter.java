@@ -1,51 +1,61 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.input;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsVehiclePullInPullOut;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import tcip_final_3_0_5_1.SCHPullInOutInfo;
 
 public class TCIPVehicleAssignmentsOutputConverter implements
     VehicleAssignmentsOutputConverter {
   
-  private DepotIdTranslator depotIdTranslator = null;
+	private DepotIdTranslator depotIdTranslator = null;
+	private MtaUtsToTcipVehicleAssignmentConverter dataConverter;
 
-  private List<MtaUtsVehiclePullInPullOut> vehicleAssignInputData = null;
+	private List<MtaUtsVehiclePullInPullOut> vehicleAssignInputData = null;
 
-  public TCIPVehicleAssignmentsOutputConverter(
-      List<MtaUtsVehiclePullInPullOut> data) {
-    vehicleAssignInputData = data;
-  }
 
-  public List<SCHPullInOutInfo> convertAssignments() {
+	public List<VehiclePullInOutInfo> convertAssignments() {
 
-    MtaUtsToTcipVehicleAssignmentConverter dataConverter = new MtaUtsToTcipVehicleAssignmentConverter();
-    dataConverter.setDepotIdTranslator(depotIdTranslator);
+		dataConverter.setDepotIdTranslator(depotIdTranslator);
 
-    List<SCHPullInOutInfo> vehAssigns = new ArrayList<SCHPullInOutInfo>();
+		List<VehiclePullInOutInfo> vehAssigns = new ArrayList<VehiclePullInOutInfo>();
 
-    Iterator<MtaUtsVehiclePullInPullOut> itr = vehicleAssignInputData.iterator();
 
-    SCHPullInOutInfo vehAssign = null;
+		for(MtaUtsVehiclePullInPullOut input : vehicleAssignInputData) {
+			VehiclePullInOutInfo vehiclePullInOutInfo = new VehiclePullInOutInfo();
+			SCHPullInOutInfo schPullOutInfo = dataConverter.convertToPullOut(input);
+			vehiclePullInOutInfo.setPullOutInfo(schPullOutInfo);
+			SCHPullInOutInfo schPullInInfo = dataConverter.convertToPullIn(input);
+			vehiclePullInOutInfo.setPullInInfo(schPullInInfo);
+			vehAssigns.add(vehiclePullInOutInfo);
+		}
 
-    MtaUtsVehiclePullInPullOut input = null;
+		return vehAssigns;
+	}
 
-    while (itr.hasNext()) {
-      input = itr.next();
-      vehAssign = dataConverter.convertToPullOut(input);
-      vehAssigns.add(vehAssign);
-      vehAssign = dataConverter.convertToPullIn(input);
-      vehAssigns.add(vehAssign);
-    }
+	public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
+		this.depotIdTranslator = depotIdTranslator;    
+	}
 
-    return vehAssigns;
-  }
+	/**
+	 * Injects data converter
+	 * @param dataConverter the dataConverter to set
+	 */
+	@Autowired
+	public void setDataConverter(
+			MtaUtsToTcipVehicleAssignmentConverter dataConverter) {
+		this.dataConverter = dataConverter;
+	}
 
-  public void setDepotIdTranslator(DepotIdTranslator depotIdTranslator) {
-    this.depotIdTranslator = depotIdTranslator;    
-  }
-}
+	public void setVehicleAssignInputData(
+			List<MtaUtsVehiclePullInPullOut> vehicleAssignInputData) {
+		this.vehicleAssignInputData = vehicleAssignInputData;
+		
+	}
+
+}	

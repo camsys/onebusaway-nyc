@@ -126,6 +126,9 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   @CsvField(optional = true)
   private String inferredStatus = null;
+  
+  @CsvField(optional = true)
+  private String assignedRunId;
 
   /****
    * Ground Truth Information
@@ -508,5 +511,13 @@ public class NycTestInferredLocationRecord implements Serializable {
 
   public void setActualIsRunFormal(Boolean isRunFormal) {
     this.actualIsRunFormal = isRunFormal;
+  }
+
+  public String getAssignedRunId() {
+    return assignedRunId;
+  }
+
+  public void setAssignedRunId(String assignedRunId) {
+    this.assignedRunId = assignedRunId;
   }
 }

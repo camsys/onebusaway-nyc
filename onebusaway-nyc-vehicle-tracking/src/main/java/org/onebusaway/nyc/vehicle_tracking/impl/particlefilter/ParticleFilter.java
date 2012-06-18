@@ -32,6 +32,8 @@ import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 
 import org.apache.commons.math.util.FastMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -49,6 +51,8 @@ import java.util.TreeSet;
  */
 public class ParticleFilter<OBS> {
 
+  private static Logger _log = LoggerFactory.getLogger(ParticleFilter.class);
+  
   public class SensorModelParticleResult {
     public Particle _particle;
     public SensorModelResult _result;
@@ -106,13 +110,14 @@ public class ParticleFilter<OBS> {
 
   private boolean _previouslyResampled;
 
-  @SuppressWarnings("unused")
   public ParticleFilter(ParticleFactory<OBS> particleFactory,
       SensorModel<OBS> sensorModel, MotionModel<OBS> motionModel) {
 
     _particleFactory = particleFactory;
     _sensorModel = sensorModel;
     _motionModel = motionModel;
+    if (_debugEnabled)
+      _log.warn("Debug is enabled!  All particle history/information will be kept in memory!");
   }
 
   public ParticleFilter(ParticleFilterModel<OBS> model) {
