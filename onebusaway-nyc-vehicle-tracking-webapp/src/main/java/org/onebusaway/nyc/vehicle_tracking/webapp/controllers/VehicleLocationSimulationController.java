@@ -642,6 +642,8 @@ public class VehicleLocationSimulationController {
     
     RunTripEntry currentRunTripEntry = _runService.getActiveRunTripEntryForRunAndTime(id, serviceDate.getTime());
     
+    if (currentRunTripEntry == null) return new ModelAndView("json", "tripsForRun", model);
+    
     // Maybe kind of a hack...
     model.put("agencyId", currentRunTripEntry.getTripEntry().getId().getAgencyId());
     
