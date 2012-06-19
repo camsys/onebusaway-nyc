@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.web.context.ServletContextAware;
 
+import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -66,6 +67,11 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     _executorService = Executors.newFixedThreadPool(1);
   }
 
+  // TODO
+  public String getInstanceId() {
+  	  return "i-a8d44dd1";
+  }
+  
   @Override
   /**
    * Make an asynchronous request to validate bundle(s).  The BundleResponse object is
@@ -186,7 +192,9 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 
   @Override
   public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
-    BundleBuildResponse bundleResponse = new BundleBuildResponse(getNextId());
+    String id = getNextId();
+    bundleRequest.setId(id);
+    BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     bundleResponse.setBundleBuildName(bundleRequest.getBundleName());
 	  _buildMap.put(bundleResponse.getId(), bundleResponse);
 	  bundleResponse.addStatusMessage("queueing...");
@@ -200,7 +208,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   
   private class ValidateThread implements Runnable {
     private static final int MAX_COUNT = 100;
-    
     private BundleRequest _request;
     private BundleResponse _response;
 
@@ -211,12 +218,11 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 
     @Override
     public void run() {
-      String serverId = null;
-      _response.addStatusMessage("running...");
+      String serverId = getInstanceId();
+      _response.addStatusMessage("starting server...");
       try {
         _log.info("in validateThread.run");
-        // TODO lookup this value from configuration service
-        serverId = _bundleServer.start("i-a8d44dd1");
+        serverId = _bundleServer.start(getInstanceId());
         int count = 0;
         boolean isAlive = _bundleServer.ping(serverId);
         while (isAlive == false && count < MAX_COUNT) {
@@ -228,7 +234,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           _log.error("server " + serverId + " failed to start");
           return;
         }
-        // fire the request initializing a remote server
+
         _log.info("calling validate(remote)");
         String url = "/validate/" + _request.getBundleDirectory() + "/"
             + _request.getBundleBuildName() + "/"
@@ -242,15 +248,17 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           _validationMap.put(id, _response);
           count = 0;
           // should this response look ok, query until it completes
-          while (!_response.isComplete() && count < MAX_COUNT) {
+          while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
             url = "/validate/" + id + "/list";
             _log.info("calling list (remote)");
             _response = makeRequest(serverId, url, null, BundleResponse.class);
             _validationMap.put(id, _response);
-            _log.info("got back response.isComplete=" + _response.isComplete());
-            int lastMessage = _response.getStatusMessages().size();
-            if (lastMessage > 0) {
-            _log.info("latest message=" + _response.getStatusMessages().get(lastMessage -1));
+            if (_response != null) {
+              _log.info("got back response.isComplete=" + _response);
+              int lastMessage = _response.getStatusMessages().size();
+              if (lastMessage > 0) {
+              _log.info("latest message=" + _response.getStatusMessages().get(lastMessage -1));
+              }
             }
             count++;
             Thread.sleep(5 * 1000);
@@ -274,14 +282,21 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         _response.setException(re);
       } finally {
         _response.setComplete(true);
-        // TODO when to do this?
-        //_bundleServer.stop(serverId);
+        // allow machine to power down
+        _log.info("powering down " + serverId);
+        _bundleServer.stop(serverId);
+        try {
+          Thread.sleep(30 * 1000); // allow time for instance to power down
+        } catch (InterruptedException ie) {
+          return;
+        }
       }
     }
 
   }
 
   private class BuildThread implements Runnable {
+    private static final int MAX_COUNT = 100;
     private BundleBuildRequest _request;
     private BundleBuildResponse _response;
 
@@ -292,24 +307,79 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 
     @Override
     public void run() {
-      _response.addStatusMessage("running...");
+      String serverId = getInstanceId();
+      _response.addStatusMessage("starting server...");
       try {
+        serverId = _bundleServer.start(getInstanceId());
+        int count = 0;
+        boolean isAlive = _bundleServer.ping(serverId);
+        while (isAlive == false && count < MAX_COUNT) {
+          Thread.sleep(5 * 1000);
+          count++;
+          isAlive = _bundleServer.ping(serverId);
+        }
+        if (!isAlive) {
+          _log.error("server " + serverId + " failed to start");
+          return;
+        }
+        
+        _log.info("calling BuildResource(remote)");
+        String url = "/build/" + _request.getBundleDirectory() + "/"
+            + _request.getBundleName() + "/"
+            + _request.getEmailAddress() + "/" 
+            + _request.getId() + "/create";
+        _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
+        _log.info("call to build returned=" + _response);
 
-        _bundleBuildingService.download(_request, _response);
-        _bundleBuildingService.prepare(_request, _response);
-        _bundleBuildingService.build(_request, _response);
-        _bundleBuildingService.assemble(_request, _response);
-        _bundleBuildingService.upload(_request, _response);
+          if (_response != null && _response.getId() != null) {
+          String id = _response.getId();
+          // put response in map
+          _buildMap.put(id, _response);
+          count = 0;
+          // should this response look ok, query until it completes
+          while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
+            url = "/build/" + id + "/list";
+            _log.info("calling list (remote)");
+            _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
+            _buildMap.put(id, _response);
+            _log.info("got back response=" + _response);
+            if (_response != null) {
+              int lastMessage = _response.getStatusList().size();
+              if (lastMessage > 0) {
+                _log.info("latest message=" + _response.getStatusList().get(lastMessage -1));
+              }
+            }
+            count++;
+            Thread.sleep(5 * 1000);
+          }
+        }
+
+        if (_response == null || _response.getId() == null) {
+          _log.error("null response; assuming no response from server");
+          _response = new BundleBuildResponse(_request.getId());
+          _response.addException(new RuntimeException("no response from server"));
+          _buildMap.put(_request.getId(), _response);
+        } else {
+          _log.info("exiting ValidateThread successfully");
+        }
+
         _response.addStatusMessage("version=" + _response.getVersionString());
         _response.addStatusMessage("complete");
-        _response.setComplete(true);
       } catch (Exception any) {
         _log.error(any.toString(), any);
-        _response.setComplete(true);
         _response.addException(any);
       } finally {
         try {
+          _response.setComplete(true);
+          _log.info("powering down " + serverId);
+          _bundleServer.stop(serverId);
           sendEmail(_request, _response);
+          try {
+            // allow machine to power down
+            Thread.sleep(30 * 1000);
+          } catch (InterruptedException ie) {
+            return;
+          }
         } catch (Throwable t) {
           // we don't add this to the response as it would hide existing exceptions
           _log.error("sendEmail failed", t);

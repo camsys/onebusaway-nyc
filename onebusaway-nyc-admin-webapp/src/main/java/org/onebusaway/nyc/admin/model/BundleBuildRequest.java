@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BundleBuildRequest {
+  private String _id;
   private String _bundleDirectory;
   private String _bundleName;
   private String _tmpDirectory;
@@ -67,6 +68,14 @@ public class BundleBuildRequest {
   
   public void setEmailAddress(String emailTo) {
     _emailAddress = emailTo;
+  }
+
+  public String getId() {
+    return _id;
+  }
+  
+  public void setId(String id) {
+    _id = id;
   }
 
 }

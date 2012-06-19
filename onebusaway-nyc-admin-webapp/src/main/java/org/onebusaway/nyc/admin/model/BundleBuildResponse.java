@@ -25,12 +25,24 @@ public class BundleBuildResponse {
   private String _id = null;
   private String bundleResultLink;
 
+  // no arg constructor for serialization
+  public BundleBuildResponse() {
+    
+  }
   public BundleBuildResponse(String id) {
     _id = id;
   }
 
+  public String toString() {
+    return "BundleBuildResponse{[" + _id + "], complete=" + _isComplete + "}"; 
+  }
+
   public String getId() {
     return _id;
+  }
+
+  public void setId(String id) {
+    _id = id;
   }
 
   public void addGtfsFile(String file) {
@@ -66,6 +78,10 @@ public class BundleBuildResponse {
   }
 
   public void addException(Exception e) {
+    _exception = e;
+  }
+  
+  public void setException(Exception e) {
     _exception = e;
   }
 

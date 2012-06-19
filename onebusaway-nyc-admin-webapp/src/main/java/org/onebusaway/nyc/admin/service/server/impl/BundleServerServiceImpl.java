@@ -208,20 +208,15 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
         connection.setDoOutput(true);
         connection.setReadTimeout(10000);
    
-        // copy stream into StringBuilder
-        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = rd.readLine()) != null) {
-          sb.append(line + '\n');
-        }
+        // copy stream into String
+        String content = fromJson(connection);
         
         // parse content to appropriate return type
         T t = null;
         if (returnType == String.class) {
-          t = (T)sb.toString();
+          t = (T)content;
         } else {
-          String json = sb.toString();
+          String json = content;
           t =_mapper.readValue(json, returnType);
         }
         _log.info("got |" + t + "|");
@@ -236,13 +231,24 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
       return null;
    }
    
+  private String fromJson(HttpURLConnection connection) {
+    try {
+      BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+      StringBuilder sb = new StringBuilder();
+      String line = null;
+      while ((line = rd.readLine()) != null) {
+        sb.append(line + '\n');
+      }
+      return sb.toString();
+    } catch (Exception any){
+      _log.error("fromJson caught exception:", any);
+    }
+    return null;
+  }
+  
    @Override
    public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds) {
      try {
-       // TODO
-       // start up remote server
-       //start(instanceId);
-
        // serialize payload
        String jsonPayload = toJson(payload);
        
@@ -254,7 +260,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
          Thread.sleep(5 * 1000);
          isAlive = ping(instanceId);
        }
-       _log.error("makeRequest ping=" + isAlive);
+
        if (!isAlive) {
          _log.error("instanceId=" + instanceId + " failed to start");
          return null;

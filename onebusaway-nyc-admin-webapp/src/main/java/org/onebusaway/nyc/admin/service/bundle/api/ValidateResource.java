@@ -115,6 +115,7 @@ public class ValidateResource extends AuthenticatedResource {
     return response;
   }
 
+  // TODO
   @Override
   protected boolean isAuthorized() {
     return true;

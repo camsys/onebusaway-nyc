@@ -18,5 +18,7 @@ public interface BundleBuildingService {
   
   void upload(BundleBuildRequest request, BundleBuildResponse response);
 
+  void doBuild(BundleBuildRequest request, BundleBuildResponse response);
+
 
 }
