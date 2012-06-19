@@ -1,9 +1,7 @@
 package org.onebusaway.nyc.admin.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class BundleRequest {
+  private String _id;
   private String _bundleDirectory;
   private String _tmpDirectory;
   private String _bundleBuildName;
@@ -30,5 +28,13 @@ public class BundleRequest {
   
   public void setBundleBuildName(String bundleName) {
     this._bundleBuildName = bundleName;
+  }
+
+  public String getId() {
+    return _id;
+  }
+  
+  public void setId(String id) {
+    _id = id;
   }
 }

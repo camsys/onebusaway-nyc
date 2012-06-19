@@ -11,6 +11,14 @@ public class BundleResponse {
   private List<String> _validationFiles = Collections.synchronizedList(new ArrayList<String>());
   private String _tmpDirectory = null;
   private String _id = null;
+
+  public BundleResponse() {
+    // for JSON serialization
+  }
+  
+  public String toString() {
+    return "BundleResponse{[" + _id + "], complete=" + _isComplete + "}"; 
+  }
   
   public BundleResponse(String id) {
     _id = id;
@@ -59,6 +67,10 @@ public class BundleResponse {
    */
   public String getId() {
     return _id;
+  }
+  
+  public void setId(String id) {
+    _id = id;
   }
 
 }
