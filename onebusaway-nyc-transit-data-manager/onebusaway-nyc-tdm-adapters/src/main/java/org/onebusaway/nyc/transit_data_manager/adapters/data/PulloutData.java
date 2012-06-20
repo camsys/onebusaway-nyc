@@ -26,4 +26,11 @@ public interface PulloutData {
 	 * @return pull out data for given depot
 	 */
 	List<VehiclePullInOutInfo> getPulloutsByDepot(String depotId);
+	
+	/**
+	 * Returns pull out data for the given agency
+	 * @param agencyId agency for which pull data is desired
+	 * @return pull out data for given agency
+	 */
+	List<VehiclePullInOutInfo> getPulloutsByAgency(String agencyId);
 }

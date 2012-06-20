@@ -14,6 +14,8 @@ import tcip_final_3_0_5_1.CPTTransitFacilityIden;
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.SCHBlockIden;
 import tcip_final_3_0_5_1.SCHPullInOutInfo;
+import tcip_final_3_0_5_1.SCHRouteIden;
+import tcip_final_3_0_5_1.SCHRunIden;
 
 public class MtaUtsToTcipVehicleAssignmentConverter {
   
@@ -67,7 +69,8 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     SCHPullInOutInfo outputAssignment = new SCHPullInOutInfo();
 
     Long agencyId = mappingTool.getAgencyIdFromUtsAuthId(inputAssignment.getAuthId());
-
+    String agencyDesignator = mappingTool.getAgencyDesignatorFromAgencyId(agencyId);
+    
     // Get the pull in time and store it as it's used multiple times.
     DateTime pullInTime = getSchedDateAsCalByType(inputAssignment, true);
 
@@ -78,7 +81,6 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     CPTVehicleIden bus = new CPTVehicleIden();
     bus.setAgencyId(agencyId);
     bus.setVehicleId(inputAssignment.getBusNumber());
-    bus.setDesignator(mappingTool.getVehicleDesignatorFromAgencyId(agencyId));
     outputAssignment.setVehicle(bus);
 
     // set time to be the scheduled pull in or pull out time, based on isPullIn
@@ -93,6 +95,7 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     CPTTransitFacilityIden depot = new CPTTransitFacilityIden();
     depot.setFacilityName(getMappedDepotId(inputAssignment));
     depot.setFacilityId(new Long(0));
+    depot.setAgencydesignator(agencyDesignator);
     outputAssignment.setGarage(depot);
 
     // Set the date to be the service date.
@@ -110,40 +113,48 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     SCHBlockIden block = new SCHBlockIden();
     block.setBlockId(new Long(0));
 
-    DateTimeFormatter sDateDTF = DateTimeFormat.forPattern("MMddyyyy");
+    DateTimeFormatter sDateDTF = DateTimeFormat.forPattern("yyyyMMdd");
     String serviceDateMMDDYYYY = sDateDTF.print(inputAssignment.getServiceDate());
 
-    DateTimeFormatter poTimeDTF = DateTimeFormat.forPattern("HHmm");
+    DateTimeFormatter poTimeDTF = DateTimeFormat.forPattern("HHmmss");
     String pullOutTimeHHMM = poTimeDTF.print(pullOutTime);
 
-    String concatPODateTime = serviceDateMMDDYYYY + "_" + pullOutTimeHHMM;
-    //Put the block designator information only if pull out is true
-    if(!isPullIn) {
-    	StringBuilder blockDesignator = new StringBuilder();
-    	blockDesignator.append(getMappedDepotId(inputAssignment)); 
-    	blockDesignator.append("_");
-    	blockDesignator.append(inputAssignment.getRoute());
-    	blockDesignator.append("_");
-    	blockDesignator.append(inputAssignment.getRunNumberField());
-    	blockDesignator.append("_");
-    	blockDesignator.append(concatPODateTime);
-    	block.setBlockDesignator(blockDesignator.toString());
-    	//reset the string builder
-    	blockDesignator.setLength(0);
-    }
+    StringBuilder blockDesignator = new StringBuilder();
+    blockDesignator.append(agencyDesignator);
+    blockDesignator.append("_");
+    blockDesignator.append(serviceDateMMDDYYYY);
+    blockDesignator.append("_");
+    blockDesignator.append(getMappedDepotId(inputAssignment)); 
+    blockDesignator.append("_");
+    blockDesignator.append(pullOutTimeHHMM);
+    blockDesignator.append("_");
+    blockDesignator.append(inputAssignment.getRoute());
+    blockDesignator.append("_");
+    blockDesignator.append(inputAssignment.getRunNumberField());
+
+    block.setBlockDesignator(blockDesignator.toString());
+    //reset the string builder
+    blockDesignator.setLength(0);
+    
     outputAssignment.setBlock(block);
 
-    // Set the local info, which holds the run-route.
-    tcip_3_0_5_local.SCHPullInOutInfo localInfo = new tcip_3_0_5_local.SCHPullInOutInfo();
-    StringBuilder runRoute = new StringBuilder();
-    runRoute.append(inputAssignment.getRoute());
-    runRoute.append("-");
-    runRoute.append(inputAssignment.getRunNumberField());
-    localInfo.setRunRoute(runRoute.toString());
-    //reset the string builder
-    runRoute.setLength(0);
-    
-    outputAssignment.setLocalSCHPullInOutInfo(localInfo);
+    // Set run info if pull out is true
+    if(!isPullIn) {
+    	SCHRunIden run = new SCHRunIden();
+    	run.setRunId(0L);
+    	
+    	StringBuilder runRoute = new StringBuilder();
+    	runRoute.append(inputAssignment.getRoute());
+    	runRoute.append("-");
+    	runRoute.append(inputAssignment.getRunNumberField());
+    	
+    	run.setDesignator(runRoute.toString());
+    	
+    	//reset the string builder
+    	runRoute.setLength(0);
+    	
+    	outputAssignment.setRun(run);
+    }
 
     return outputAssignment;
   }

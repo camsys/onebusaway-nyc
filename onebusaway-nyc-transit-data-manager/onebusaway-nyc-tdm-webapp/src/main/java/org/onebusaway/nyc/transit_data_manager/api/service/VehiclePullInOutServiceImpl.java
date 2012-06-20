@@ -48,7 +48,7 @@ public class VehiclePullInOutServiceImpl implements VehiclePullInOutService{
 			log.debug("Call to getMostRecentActivePullout with empty list");
 		} else {
 			mostRecentActivePullout = activePullouts.get(0);
-			//Loop thhrough active pull out list to get pull out with the latest time
+			//Loop through active pull out list to get pull out with the latest time
 			for(VehiclePullInOutInfo currentActivePullout : activePullouts) {
 				DateTime currentActivepullOutTime = format.parseDateTime(
 						currentActivePullout.getPullOutInfo().getTime());
