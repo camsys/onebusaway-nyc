@@ -1,58 +1,60 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.output.json;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.PullInOut;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicle;
-import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import tcip_final_3_0_5_1.CPTVehicleIden;
 import tcip_final_3_0_5_1.SCHPullInOutInfo;
 
+/**
+ * Converts tcip pull out object to a model object that can be serialized by JSON.
+ * @author abelsare
+ *
+ */
 public class PullInOutFromTcip implements
-    ModelCounterpartConverter<SCHPullInOutInfo, PullInOut> {
+    ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> {
 
-  UtsMappingTool mappingTool = null;
-  ModelCounterpartConverter<CPTVehicleIden, Vehicle> vehConv = null;
+	private ModelCounterpartConverter<CPTVehicleIden, Vehicle> vehConv;
 
-  public PullInOutFromTcip() {
-    mappingTool = new UtsMappingTool();
-    vehConv = new VehicleFromTcip();
-  }
+	public PullInOut convert(VehiclePullInOutInfo input) {
 
-  public PullInOut convert(SCHPullInOutInfo input) {
-    PullInOut movement = new PullInOut();
+		PullInOut movement = new PullInOut();
+		SCHPullInOutInfo pulloutInfo = input.getPullOutInfo();
+		SCHPullInOutInfo pullinInfo = input.getPullInInfo();
 
-    movement.setPullIn(input.isPullIn());
-    movement.setDepotName(input.getGarage().getFacilityName());
+		Vehicle vehicle = vehConv.convert(pulloutInfo.getVehicle());
+		movement.setVehicleId(vehicle.getVehicleId());
 
-    movement.setVehicle(vehConv.convert(input.getVehicle()));
+		movement.setVehicleAgencyId(pulloutInfo.getVehicle().getAgencyId().toString());
+		
+		movement.setAgencyId(pulloutInfo.getGarage().getAgencydesignator());
+		
+		movement.setDepot(pulloutInfo.getGarage().getFacilityName());
 
-    movement.setAgencyId(mappingTool.getJsonModelAgencyIdByTcipId(input.getOperator().getAgencyId()));
-    movement.setPassId(String.valueOf(input.getOperator().getOperatorId()));
+		movement.setServiceDate(pulloutInfo.getDate());
+		
+		movement.setPulloutTime(pulloutInfo.getTime());
+		
+		movement.setRun(pulloutInfo.getRun().getDesignator());
 
-    // Set the service Date.
-    DateTimeFormatter xmlDateDTF = ISODateTimeFormat.date();
-    DateTime serviceDate = xmlDateDTF.parseDateTime(input.getDate());
+		movement.setOperatorId(String.valueOf(pulloutInfo.getOperator().getOperatorId()));
+		
+		movement.setPullinTime(pullinInfo.getTime());
 
-    DateTimeFormatter shortDateDTF = ISODateTimeFormat.date();
-    movement.setServiceDate(shortDateDTF.print(serviceDate));
+		return movement;
+	}
 
-    // set the action date - the time the thing supposedly actually happened.
-    DateTimeFormatter xmlDTF = ISODateTimeFormat.dateTimeNoMillis();
-    DateTime actionTime = xmlDTF.parseDateTime(input.getTime());
-
-    movement.setTime(xmlDTF.print(actionTime));
-
-    movement.setBlockDesignator(input.getBlock().getBlockDesignator());
-
-    movement.setRunNumber(mappingTool.parseRunNumFromBlockDesignator(input.getBlock().getBlockDesignator()));
-
-    movement.setRunRoute(input.getLocalSCHPullInOutInfo().getRunRoute());
-
-    return movement;
-  }
+	/**
+	 * Injects {@link VehicleFromTcip}
+	 * @param vehConv the vehConv to set
+	 */
+	@Autowired
+	public void setVehConv(
+			ModelCounterpartConverter<CPTVehicleIden, Vehicle> vehConv) {
+		this.vehConv = vehConv;
+	}
 
 }
