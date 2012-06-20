@@ -343,7 +343,7 @@ function updateValidateList(id) {
 					if (size > 0) {
 						for (var i=0; i<size; i++) {
 							var encoded = encodeURIComponent(list[i]);
-							txt = txt + "<li><a href=\"manage-bundles!download.action?id="
+							txt = txt + "<li><a href=\"manage-bundles!downloadValidateFile.action?id="
 							+ id+ "&downloadFilename=" 
 							+ encoded + "\">" + encoded +  "</a></li>";
 						}

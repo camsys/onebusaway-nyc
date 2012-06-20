@@ -248,6 +248,7 @@ public class BundleValidationServiceImpl implements BundleValidationService {
         + request.getBundleBuildName() + File.separator
         + OUTPUT_DIR;
     String outputsPath = request.getTmpDirectory();
+    response.setRemoteOutputDirectory(destDirectory);
     
     for (String htmlFile : response.getValidationFiles()) {
       String msg = "uploading " + htmlFile + " to " + destDirectory;

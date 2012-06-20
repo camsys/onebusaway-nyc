@@ -283,6 +283,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         _response.setComplete(true);
         // allow machine to power down
         _log.info("powering down " + serverId);
+        _response.addStatusMessage("shutting down server");
         _bundleServer.stop(serverId);
         try {
           Thread.sleep(30 * 1000); // allow time for instance to power down
@@ -371,6 +372,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         try {
           _response.setComplete(true);
           _log.info("powering down " + serverId);
+          _response.addStatusMessage("shutting down server");
           _bundleServer.stop(serverId);
           sendEmail(_request, _response);
           try {

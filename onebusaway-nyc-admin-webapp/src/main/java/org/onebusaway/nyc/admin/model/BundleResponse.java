@@ -10,8 +10,10 @@ public class BundleResponse {
   private List<String> _statusMessages = Collections.synchronizedList(new ArrayList<String>());
   private List<String> _validationFiles = Collections.synchronizedList(new ArrayList<String>());
   private String _tmpDirectory = null;
+  private String _remoteOutputDirectory;
   private String _id = null;
-
+  
+  
   public BundleResponse() {
     // for JSON serialization
   }
@@ -81,6 +83,14 @@ public class BundleResponse {
   
   public void setId(String id) {
     _id = id;
+  }
+
+  public void setRemoteOutputDirectory(String directoryPath) {
+    _remoteOutputDirectory = directoryPath;
+  }
+
+   public String getRemoteOutputDirectory() {
+    return _remoteOutputDirectory;
   }
 
 }

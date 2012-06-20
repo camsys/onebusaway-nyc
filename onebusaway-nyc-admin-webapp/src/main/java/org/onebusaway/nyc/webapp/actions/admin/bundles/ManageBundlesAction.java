@@ -166,6 +166,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	    return "download";
 	  }
 	  // TODO
+	  _log.error("bundleResponse not found for id=" + id);
 	  return "error";
 	}
 
@@ -192,6 +193,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	}
 	
 	public String downloadOutputFile() {
+	  _log.info("downloadOutputFile with id=" + id + " and file=" + this.downloadFilename);
 	  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
 	  if (this.bundleBuildResponse != null) {
 	    String s3Key = bundleBuildResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
@@ -202,7 +204,20 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  // TODO
 	  return "error";
 	}
-	
+
+	public String downloadValidateFile() {
+	  this.bundleResponse = this.bundleRequestService.lookupValidationRequest(getId());
+	  if (this.bundleResponse != null) {
+	    String s3Key = bundleResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
+	    _log.info("get request for s3Key=" + s3Key);
+	    this.downloadInputStream = this.fileService.get(s3Key);
+	    return "download";
+	  }
+	  // TODO
+	  _log.error("validate file not found for id=" + getId());
+	  return "error";
+	}
+
 	/**
 	 * @return the directoryName
 	 */
