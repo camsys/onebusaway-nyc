@@ -47,6 +47,7 @@ public class BuildResource extends AuthenticatedResource {
     BundleBuildResponse buildResponse = null;
     try {
       buildResponse =_bundleService.build(buildRequest);
+      buildResponse = _bundleService.buildBundleResultURL(buildResponse.getId());
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);

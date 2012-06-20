@@ -373,7 +373,11 @@ function onBuildClick() {
 		return;
 	}
 	buildBundle();
+    bundleUrl();
 
+}
+
+function bundleUrl() {
 	var id = jQuery("#buildBundle_id").text();
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
@@ -395,8 +399,11 @@ function onBuildClick() {
 			alert(request.statustext);
 		}
 	});
+	var url = jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink").text();
+	if (url == null || url == "") {
+		window.setTimeout(bundleUrl, 5000);
+	}
 }
-
 function buildBundle(){
 	var bundleDirectory = jQuery("#buildBundle_bundleDirectory").text();
 	var bundleName = jQuery("#buildBundle_bundleName").val();
