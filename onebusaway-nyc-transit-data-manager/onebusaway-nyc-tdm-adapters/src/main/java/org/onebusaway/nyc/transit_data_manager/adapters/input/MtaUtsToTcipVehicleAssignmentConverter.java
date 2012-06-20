@@ -7,6 +7,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsVehiclePullInPullOut;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import tcip_final_3_0_5_1.CPTOperatorIden;
 import tcip_final_3_0_5_1.CPTTransitFacilityIden;
@@ -19,13 +20,14 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
   private static String DATASOURCE_SYSTEM = "UTS"; 
 
   public MtaUtsToTcipVehicleAssignmentConverter() {
-    setMappingTool(new UtsMappingTool());
+    
   }
 
   private DepotIdTranslator depotIdTranslator = null;
   
   UtsMappingTool mappingTool = null;
 
+  @Autowired
   public void setMappingTool(UtsMappingTool mappingTool) {
     this.mappingTool = mappingTool;
   }
@@ -115,15 +117,32 @@ public class MtaUtsToTcipVehicleAssignmentConverter {
     String pullOutTimeHHMM = poTimeDTF.print(pullOutTime);
 
     String concatPODateTime = serviceDateMMDDYYYY + "_" + pullOutTimeHHMM;
-    String blockDesignator = getMappedDepotId(inputAssignment) + "_"
-        + inputAssignment.getRoute() + "_"
-        + inputAssignment.getRunNumberField() + "_" + concatPODateTime;
-    block.setBlockDesignator(blockDesignator);
+    //Put the block designator information only if pull out is true
+    if(!isPullIn) {
+    	StringBuilder blockDesignator = new StringBuilder();
+    	blockDesignator.append(getMappedDepotId(inputAssignment)); 
+    	blockDesignator.append("_");
+    	blockDesignator.append(inputAssignment.getRoute());
+    	blockDesignator.append("_");
+    	blockDesignator.append(inputAssignment.getRunNumberField());
+    	blockDesignator.append("_");
+    	blockDesignator.append(concatPODateTime);
+    	block.setBlockDesignator(blockDesignator.toString());
+    	//reset the string builder
+    	blockDesignator.setLength(0);
+    }
     outputAssignment.setBlock(block);
 
     // Set the local info, which holds the run-route.
     tcip_3_0_5_local.SCHPullInOutInfo localInfo = new tcip_3_0_5_local.SCHPullInOutInfo();
-    localInfo.setRunRoute(inputAssignment.getRoute());
+    StringBuilder runRoute = new StringBuilder();
+    runRoute.append(inputAssignment.getRoute());
+    runRoute.append("-");
+    runRoute.append(inputAssignment.getRunNumberField());
+    localInfo.setRunRoute(runRoute.toString());
+    //reset the string builder
+    runRoute.setLength(0);
+    
     outputAssignment.setLocalSCHPullInOutInfo(localInfo);
 
     return outputAssignment;

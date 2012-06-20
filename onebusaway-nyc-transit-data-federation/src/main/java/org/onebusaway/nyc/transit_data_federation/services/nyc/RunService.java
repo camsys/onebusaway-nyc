@@ -22,7 +22,7 @@ public interface RunService {
 
   public Collection<RunTripEntry> getRunTripEntriesForRun(String runId);
 
-  public RunTripEntry getActiveRunTripEntryForRunAndTime(AgencyAndId runAgencyAndId,
+  public RunTripEntry getActiveRunTripEntryForRunAndTime(String runId,
       long time);
 
   public List<RunTripEntry> getActiveRunTripEntriesForAgencyAndTime(String agencyId,

@@ -1,15 +1,14 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.tcip;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 import tcip_final_3_0_5_1.CPTSubscriptionHeader;
-import tcip_final_3_0_5_1.SCHPullInOutInfo;
 import tcip_final_3_0_5_1.SchPullOutList;
 
 public class ListPullOutsGenerator {
@@ -22,7 +21,7 @@ public class ListPullOutsGenerator {
   }
 
   public SchPullOutList generateFromVehAssignList(
-      List<SCHPullInOutInfo> vehAssignList) {
+      List<VehiclePullInOutInfo> vehAssignList) {
 
     SchPullOutList resultVehAssigns = new SchPullOutList();
 
@@ -54,16 +53,15 @@ public class ListPullOutsGenerator {
   }
 
   private SchPullOutList.PullOuts generatePullOuts(
-      List<SCHPullInOutInfo> pullOutList) {
+      List<VehiclePullInOutInfo> pullOutList) {
     SchPullOutList.PullOuts pullouts = new SchPullOutList.PullOuts();
 
     // iterate over assignmentList and add each element using
-    // pullouts.getPullOut().add(itr.next());
-    Iterator<SCHPullInOutInfo> itr = pullOutList.iterator();
-    while (itr.hasNext()) {
-      pullouts.getPullOut().add(itr.next());
+    // pullouts.getPullOut()
+    for(VehiclePullInOutInfo vehiclePullInOut : pullOutList) {
+    	pullouts.getPullOut().add(vehiclePullInOut.getPullOutInfo());
+    	pullouts.getPullOut().add(vehiclePullInOut.getPullInInfo());
     }
-
     return pullouts;
   }
 }

@@ -34,6 +34,7 @@ public class Trace_6154_20111214_123000_143500_no_dsc_IntegrationTest extends Ab
      * (goes from 12 min to 23 min sched. dev. when inferring in-progress),
      * but that will potentially harm other things.
      */
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_BEFORE, 0d);
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_DURING, 0.68);
     setMinAccuracyRatioForPhase(EVehiclePhase.DEADHEAD_BEFORE, 0.90);
   }

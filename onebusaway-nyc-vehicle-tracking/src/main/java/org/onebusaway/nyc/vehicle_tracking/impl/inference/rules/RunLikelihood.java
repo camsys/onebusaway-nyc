@@ -35,6 +35,8 @@ public class RunLikelihood implements SensorModelRule {
     NO_FORMAL_FUZZY_MATCH,
     NO_FORMAL_NO_FUZZY_MATCH,
   };
+  
+  private final double matchProportion = 0.99;
 
   @Override
   public SensorModelResult likelihood(SensorModelSupportLibrary library,
@@ -45,19 +47,19 @@ public class RunLikelihood implements SensorModelRule {
     
     switch (state) {
       case NO_RUN_INFO:
-        result.addResultAsAnd("no run info", 0.9/2d);
-        return result;
-      case RUN_INFO_NO_RUN:
-        result.addResultAsAnd("run-info, no run", 1d/8d * 0.1);
+        result.addResultAsAnd("no run info", matchProportion/2d);
         return result;
       case FORMAL_RUN_MATCH:
-        result.addResultAsAnd("formal run match", 0.9/2d);
+        result.addResultAsAnd("formal run match", matchProportion/2d);
         return result;
       case NO_FORMAL_FUZZY_MATCH:
-        result.addResultAsAnd("non-formal fuzzy match", 0.75 * 0.1);
+        result.addResultAsAnd("non-formal fuzzy match", 0.75 * (1d - matchProportion));
+        return result;
+      case RUN_INFO_NO_RUN:
+        result.addResultAsAnd("run-info, no run", 1d/8d * (1d - matchProportion));
         return result;
       case NO_FORMAL_NO_FUZZY_MATCH:
-        result.addResultAsAnd("no matches", 1d/8d * 0.1);
+        result.addResultAsAnd("no matches", 1d/8d * (1d - matchProportion));
         return result;
       default:
         return null;

@@ -75,6 +75,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   private BlocksFromObservationService _blocksFromObservationService;
   private JourneyStateTransitionModel _journeyStateTransitionModel;
   private BlockStateSamplingStrategy _blockStateSamplingStrategy;
+  private SensorModelSupportLibrary _sensorModelLibrary;
 
   static class LocalRandom extends ThreadLocal<RandomStream> {
     long _seed = 0;
@@ -141,6 +142,11 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
   }
 
   @Autowired
+  public void setSensorModelLibrary(SensorModelSupportLibrary sensorModelLibrary) {
+    _sensorModelLibrary = sensorModelLibrary;
+  }
+  
+  @Autowired
   public void setBlocksFromObservationService(
       BlocksFromObservationService blocksFromObservationService) {
     _blocksFromObservationService = blocksFromObservationService;
@@ -206,7 +212,7 @@ public class ParticleFactoryImpl implements ParticleFactory<Observation> {
             journeyState, obs);
         final Context context = new Context(null, state, obs);
         
-        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(null, context));
+        transProb.addResultAsAnd(_motionModel.getEdgeLikelihood().likelihood(_sensorModelLibrary, context));
         transProb.addResultAsAnd(_motionModel.getGpsLikelihood().likelihood(null, context));
         transProb.addResultAsAnd(_motionModel.getSchedLikelihood().likelihood(null, context));
         transProb.addResultAsAnd(_motionModel.dscLikelihood.likelihood(null, context));
