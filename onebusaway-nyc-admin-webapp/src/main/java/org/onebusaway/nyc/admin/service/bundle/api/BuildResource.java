@@ -75,7 +75,7 @@ public class BuildResource extends AuthenticatedResource {
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       _mapper.writeValue(jsonGenerator, buildResponse);
-      _log.info("received response=" + buildResponse);
+      _log.debug("received response=" + buildResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any){
       _log.error("exception looking up build:", any);

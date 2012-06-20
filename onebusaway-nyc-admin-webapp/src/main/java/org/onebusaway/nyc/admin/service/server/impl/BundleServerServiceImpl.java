@@ -58,7 +58,6 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	@Override
   public void setup() {
 		try {
-		  _log.info("setup called with _username=" + _username);
 			_credentials = new BasicAWSCredentials(_username, _password);
 			_ec2 = new AmazonEC2Client(_credentials);
 		} catch (Exception ioe) {
@@ -72,7 +71,6 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 	public void setServletContext(ServletContext servletContext) {
 		if (servletContext != null) {
 			String user = servletContext.getInitParameter("ec2.user");
-			_log.info("servlet context provided s3.user=" + user);
 			if (user != null) {
 				setEc2User(user);
 			}
@@ -91,9 +89,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
     
     List<String> instances = new ArrayList<String>();
     instances.add(instanceId);
-    _log.info("searching for instance=" + instanceId);
     StartInstancesRequest startInstancesRequest = new StartInstancesRequest(instances);
-    _log.info("calling start instances");
     StartInstancesResult startInstancesResult = _ec2.startInstances(startInstancesRequest);
     InstanceStateChange change = null;
     if (!startInstancesResult.getStartingInstances().isEmpty()) {
@@ -111,9 +107,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
     describeInstancesRequest.setInstanceIds(list);
     DescribeInstancesResult result = _ec2.describeInstances(describeInstancesRequest);
     if (!result.getReservations().isEmpty()) {
-      _log.info("found reservation");
       if (!result.getReservations().get(0).getInstances().isEmpty()) {
-        _log.info("found " + result.getReservations().get(0).getInstances().size() + " instance(s)");
         Instance i = result.getReservations().get(0).getInstances().get(0);
         return i;
       }
@@ -139,7 +133,6 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   @Override
   public String findPublicDns(String instanceId) {
     if (LOCAL_HOST.equalsIgnoreCase(instanceId)) {
-      _log.info("instanceId=" + instanceId + " was local");
       return instanceId;
     }
     
@@ -148,7 +141,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
       return i.getPublicDnsName();
     }
     if (i != null && !i.getNetworkInterfaces().isEmpty()) {
-      _log.info("found " + i.getNetworkInterfaces().size() + " network interface(s)");
+
       // if you need public IP, you need to lookup the association
       return i.getNetworkInterfaces().get(0).getPrivateDnsName();
     }
@@ -166,9 +159,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
       return i.getPublicDnsName();
     }
     if (i != null && !i.getNetworkInterfaces().isEmpty()) {
-      _log.info("found network interfaces");
       if (i.getNetworkInterfaces().get(0).getAssociation() != null) {
-        _log.info("found association");
         return i.getNetworkInterfaces().get(0).getAssociation().getPublicIp();
       }
     }
@@ -183,9 +174,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
     
     List<String> instances = new ArrayList<String>();
     instances.add(instanceId);
-    _log.info("searching for instance=" + instanceId);
     StopInstancesRequest stopInstancesRequest = new StopInstancesRequest(instances);
-    _log.info("calling start instances");
     StopInstancesResult stopInstancesResult = _ec2.stopInstances(stopInstancesRequest);
     InstanceStateChange change = null;
     if (!stopInstancesResult.getStoppingInstances().isEmpty()) {
@@ -199,7 +188,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   @Override
   public boolean ping(String instanceId) {
     String json = (String)makeRequestInternal(instanceId, PING_API, null, String.class);
-    _log.info("json=" + json);
+    _log.debug("json=" + json);
     if (json != null) json = json.trim();
     return "{1}".equals(json);
   }
@@ -221,7 +210,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
       HttpURLConnection connection = null;
       try {
         String url = generateUrl(host, apiCall);
-        _log.info("making request for " + url);
+        _log.debug("making request for " + url);
         connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestMethod("GET");
         connection.setDoOutput(true);
@@ -238,7 +227,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
           String json = content;
           t =_mapper.readValue(json, returnType);
         }
-        _log.info("got |" + t + "|");
+        _log.debug("got |" + t + "|");
         return t;
       } catch (Exception e) {
         _log.error("e=", e);
@@ -289,7 +278,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
      } catch (InterruptedException ie) {
        return null;
      } finally {
-       _log.info("exiting makeRequest");
+       _log.debug("exiting makeRequest");
      }
    }
    

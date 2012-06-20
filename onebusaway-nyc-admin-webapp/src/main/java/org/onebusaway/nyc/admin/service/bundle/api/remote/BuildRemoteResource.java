@@ -61,7 +61,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
-    _log.info("in build(local)");
+
     BundleBuildRequest bundleRequest = new BundleBuildRequest();
     bundleRequest.setBundleDirectory(bundleDirectory);
     bundleRequest.setBundleName(bundleName);
@@ -81,7 +81,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       // write back response
-      _log.info("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
+      _log.debug("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
       _mapper.writeValue(jsonGenerator, bundleResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any) {

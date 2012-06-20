@@ -73,7 +73,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     bundleRequest.setId(id);
     BundleResponse bundleResponse = new BundleResponse(id);
     bundleResponse.addStatusMessage("queueing...");
-    _log.info("validate id=" + bundleResponse.getId());
+    _log.debug("validate id=" + bundleResponse.getId());
     _validationMap.put(bundleResponse.getId(), bundleResponse);
     _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
     return bundleResponse;
@@ -101,7 +101,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
    * @param response bundle response
    */
   public void sendEmail(BundleBuildRequest request, BundleBuildResponse response) {
-    _log.info("in send email for requestId=" + response.getId() 
+    _log.debug("in send email for requestId=" + response.getId() 
         + " with email=" + request.getEmailAddress());
     if (request.getEmailAddress() != null && request.getEmailAddress().length() > 1
         && !"null".equals(request.getEmailAddress())) {
@@ -164,7 +164,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   public void setServletContext(ServletContext servletContext) {
     if (servletContext != null) {
       String key = servletContext.getInitParameter("server.url");
-      _log.info("servlet context provided server.url=" + key);
       if (key != null) {
         setServerURL(key);
       }
@@ -216,7 +215,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       String serverId = getInstanceId();
       _response.addStatusMessage("starting server...");
       try {
-        _log.info("in validateThread.run");
         serverId = _bundleServer.start(getInstanceId());
         int count = 0;
         boolean isAlive = _bundleServer.ping(serverId);
@@ -235,7 +233,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
             + _request.getBundleBuildName() + "/"
             + _request.getId() + "/create";
         _response = makeRequest(serverId, url, null, BundleResponse.class);
-        _log.info("call to validate returned=" + _response);
         
         if (_response != null && _response.getId() != null) {
           String id = _response.getId();
@@ -245,28 +242,23 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           // should this response look ok, query until it completes
           while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
             url = "/validate/remote/" + id + "/list";
-            _log.info("calling list (remote)");
+
             _response = makeRequest(serverId, url, null, BundleResponse.class);
             _validationMap.put(id, _response);
-            if (_response != null) {
-              _log.info("got back response.isComplete=" + _response);
-              int lastMessage = _response.getStatusMessages().size();
-              if (lastMessage > 0) {
-              _log.info("latest message=" + _response.getStatusMessages().get(lastMessage -1));
-              }
-            }
             count++;
             Thread.sleep(5 * 1000);
           }
         }
 
+        /*
+         * Here either the server didn't start, or it crashed before we finished.
+         * ABORT as there is nothing else we can do.
+         */
         if (_response == null || _response.getId() == null) {
           _log.error("null response; assuming no response from server");
           _response = new BundleResponse(_request.getId());
           _response.setException(new RuntimeException("no response from server"));
           _validationMap.put(_request.getId(), _response);
-        } else {
-          _log.info("exiting ValidateThread successfully");
         }
       } catch (Exception any) {
         _log.error(any.toString(), any);
@@ -278,7 +270,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       } finally {
         _response.setComplete(true);
         // allow machine to power down
-        _log.info("powering down " + serverId);
         _response.addStatusMessage("shutting down server");
         _bundleServer.stop(serverId);
         try {
@@ -319,13 +310,11 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           return;
         }
         
-        _log.info("calling BuildResource(remote)");
         String url = "/build/remote/" + _request.getBundleDirectory() + "/"
             + _request.getBundleName() + "/"
             + _request.getEmailAddress() + "/" 
             + _request.getId() + "/create";
         _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
-        _log.info("call to build returned=" + _response);
 
           if (_response != null && _response.getId() != null) {
           String id = _response.getId();
@@ -335,28 +324,22 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           // should this response look ok, query until it completes
           while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
             url = "/build/remote/" + id + "/list";
-            _log.info("calling list (remote)");
             _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
             _buildMap.put(id, _response);
-            _log.info("got back response=" + _response);
-            if (_response != null) {
-              int lastMessage = _response.getStatusList().size();
-              if (lastMessage > 0) {
-                _log.info("latest message=" + _response.getStatusList().get(lastMessage -1));
-              }
-            }
+
             count++;
             Thread.sleep(5 * 1000);
           }
         }
 
+          /*
+           * either the server didn't start or crashed mid way; abort either way.
+           */
         if (_response == null || _response.getId() == null) {
           _log.error("null response; assuming no response from server");
           _response = new BundleBuildResponse(_request.getId());
           _response.addException(new RuntimeException("no response from server"));
           _buildMap.put(_request.getId(), _response);
-        } else {
-          _log.info("exiting ValidateThread successfully");
         }
 
         _response.addStatusMessage("version=" + _response.getVersionString());
@@ -367,7 +350,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       } finally {
         try {
           _response.setComplete(true);
-          _log.info("powering down " + serverId);
           _response.addStatusMessage("shutting down server");
           _bundleServer.stop(serverId);
           sendEmail(_request, _response);
