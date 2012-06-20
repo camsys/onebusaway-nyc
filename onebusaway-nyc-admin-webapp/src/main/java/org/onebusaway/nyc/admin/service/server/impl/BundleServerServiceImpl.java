@@ -36,6 +36,7 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 
 	private static Logger _log = LoggerFactory.getLogger(BundleServerServiceImpl.class);
   private static final String PING_API = "/ping/remote";
+  private static final String LOCAL_HOST = "localhost";
 
   private AWSCredentials _credentials;
   private AmazonEC2Client _ec2;
@@ -84,6 +85,10 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
 
   @Override
   public String start(String instanceId) {
+    if (LOCAL_HOST.equalsIgnoreCase(instanceId)) {
+      return instanceId;
+    }
+    
     List<String> instances = new ArrayList<String>();
     instances.add(instanceId);
     _log.info("searching for instance=" + instanceId);
@@ -133,6 +138,11 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   
   @Override
   public String findPublicDns(String instanceId) {
+    if (LOCAL_HOST.equalsIgnoreCase(instanceId)) {
+      _log.info("instanceId=" + instanceId + " was local");
+      return instanceId;
+    }
+    
     Instance i = getInstance(instanceId);
     if (i != null && i.getPublicDnsName() != null) {
       return i.getPublicDnsName();
@@ -147,6 +157,10 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   
   @Override
   public String findPublicIp(String instanceId) {
+    if (LOCAL_HOST.equalsIgnoreCase(instanceId)) {
+      return instanceId;
+    }
+
     Instance i = getInstance(instanceId);
     if (i != null && i.getPublicIpAddress() != null) {
       return i.getPublicDnsName();
@@ -163,6 +177,10 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   
   @Override
   public String stop(String instanceId) {
+    if (LOCAL_HOST.equalsIgnoreCase(instanceId)) {
+      return instanceId;
+    }
+    
     List<String> instances = new ArrayList<String>();
     instances.add(instanceId);
     _log.info("searching for instance=" + instanceId);
@@ -194,8 +212,8 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   @SuppressWarnings("unchecked")
   protected <T> T  makeRequestInternal(String instanceId, String apiCall, String jsonPayload, Class<T> returnType) {
      _log.info("makeRequestInternal(" + instanceId + ", " + apiCall + ")");
-      String host = this.findPublicDns(instanceId);
-      if (host == null || host.length() == 0) {
+     String host = this.findPublicDns(instanceId);
+     if (host == null || host.length() == 0) {
         _log.error("makeRequest called with unknown instanceId=" + instanceId);
         return null;
       }

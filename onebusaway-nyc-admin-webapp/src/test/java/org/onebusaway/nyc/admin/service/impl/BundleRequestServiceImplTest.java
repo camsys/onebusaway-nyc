@@ -27,6 +27,7 @@ public class BundleRequestServiceImplTest {
   public void setup() {
     BundleValidationServiceImpl validationService = new BundleValidationServiceImpl();
     service = new BundleRequestServiceImpl();
+    service.setInstanceId("localhost");
     service.setup();
 
     FileService fileService = new FileServiceImpl() {

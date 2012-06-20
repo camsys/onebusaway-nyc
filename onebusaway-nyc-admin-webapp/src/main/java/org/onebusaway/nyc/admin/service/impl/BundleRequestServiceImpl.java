@@ -7,8 +7,6 @@ import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.EmailService;
-import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
-import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
 import org.onebusaway.nyc.admin.service.server.BundleServerService;
 import org.onebusaway.nyc.util.configuration.ConfigurationService;
 
@@ -36,6 +34,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   private EmailService _emailService;
   private Integer jobCounter = 0;
 	private String serverURL;
+	private String _instanceId;
   private Map<String, BundleResponse> _validationMap = new HashMap<String, BundleResponse>();
   private Map<String, BundleBuildResponse> _buildMap = new HashMap<String, BundleBuildResponse>();
 
@@ -54,8 +53,14 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     _executorService = Executors.newFixedThreadPool(1);
   }
 
+  public void setInstanceId(String instanceId) {
+    _instanceId = instanceId;
+  }
+  
   public String getInstanceId() {
-    return configurationService.getConfigurationValueAsString("admin.instanceId", null);
+    if (_instanceId == null)
+      return configurationService.getConfigurationValueAsString("admin.instanceId", null);
+    return _instanceId;
   }
   
   @Override
@@ -162,6 +167,10 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       _log.info("servlet context provided server.url=" + key);
       if (key != null) {
         setServerURL(key);
+      }
+      String instanceOverride = servletContext.getInitParameter("admin.instanceId");
+      if (instanceOverride != null) {
+        setInstanceId(instanceOverride);
       }
     }
   }
