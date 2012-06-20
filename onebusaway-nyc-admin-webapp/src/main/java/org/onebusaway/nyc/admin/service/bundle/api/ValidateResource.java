@@ -2,7 +2,7 @@ package org.onebusaway.nyc.admin.service.bundle.api;
 
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
-import org.onebusaway.nyc.admin.service.bundle.BundleValidationService;
+import org.onebusaway.nyc.admin.service.BundleRequestService;
 
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
@@ -14,12 +14,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -34,29 +29,18 @@ import javax.ws.rs.core.Response;
  *
  */
 public class ValidateResource extends AuthenticatedResource {
-
+  
 	private static Logger _log = LoggerFactory.getLogger(ValidateResource.class);
   private final ObjectMapper _mapper = new ObjectMapper();
-  private Map<String, BundleResponse> _validationMap = new HashMap<String, BundleResponse>();
-  private ExecutorService _executorService = null;
-
-//  @Autowired
-//  private BundleRequestService _bundleService;
 
   @Autowired
-  private BundleValidationService _validateService;
+  private BundleRequestService _bundleService;
 
-  @PostConstruct
-  public void setup() {
-        _executorService = Executors.newFixedThreadPool(1);
-  }
-
-  @Path("/{bundleDirectory}/{bundleName}/{id}/create")
+  @Path("/{bundleDirectory}/{bundleName}/create")
   @GET
   @Produces("application/json")
   public Response validate(@PathParam("bundleDirectory") String bundleDirectory,
-      @PathParam("bundleName") String bundleName,
-      @PathParam("id") String id) {
+      @PathParam("bundleName") String bundleName) {
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();
@@ -65,31 +49,21 @@ public class ValidateResource extends AuthenticatedResource {
     BundleRequest bundleRequest = new BundleRequest();
     bundleRequest.setBundleBuildName(bundleName);
     bundleRequest.setBundleDirectory(bundleDirectory);
-    bundleRequest.setId(id);
-    BundleResponse bundleResponse = new BundleResponse(id);
-    
+    BundleResponse bundleResponse = null;
     try {
-      _log.info("calling downloadAndValidate");
-      // place execution in its own thread
-      _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
-      // place handle to response in map
-      _validationMap.put(id, bundleResponse);
-      
+      bundleResponse = _bundleService.validate(bundleRequest);
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      // write back response
-      _log.info("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
       _mapper.writeValue(jsonGenerator, bundleResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any) {
       _log.error("validate resource caught exception:" + any);
       response = Response.serverError().build();
     }
-    
     return response;
-  }
-  
+    }
+
   @Path("/{id}/list")
   @GET
   @Produces("application/json")
@@ -98,50 +72,17 @@ public class ValidateResource extends AuthenticatedResource {
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
-
+    BundleResponse bundleResponse = null;
     try {
-      _log.info("calling list for id=" + id);
+      bundleResponse = _bundleService.lookupValidationRequest(id);
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      
-      BundleResponse bundleResponse = _validationMap.get(id);
-      _log.info("found bundleResponse=" + bundleResponse + " for id=" + id);
       _mapper.writeValue(jsonGenerator, bundleResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any) {
       response = Response.serverError().build();
     }
     return response;
-  }
-
-  // TODO
-  @Override
-  protected boolean isAuthorized() {
-    return true;
-  }
-  
-    private class ValidateThread implements Runnable {
-      
-      private BundleRequest _request;
-      private BundleResponse _response;
-  
-      public ValidateThread(BundleRequest request, BundleResponse response) {
-        _request = request;
-        _response = response;
-      }
-  
-      @Override
-      public void run() {
-        try {
-         _validateService.downloadAndValidate(_request, _response);
-        } catch (Exception any) {
-          _log.error("run failed:", any);
-          _response.setException(any);
-        } finally {
-         _log.info("downloadAndValidate complete!");
-         _response.setComplete(true);
-        }
-      }
-    }
+  }  
 }

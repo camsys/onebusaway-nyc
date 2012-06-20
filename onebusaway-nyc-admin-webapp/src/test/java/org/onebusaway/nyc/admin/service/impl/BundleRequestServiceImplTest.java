@@ -105,21 +105,21 @@ public class BundleRequestServiceImplTest {
       @Override
       public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds) {
         _log.error("makeRequest called with apiCall=" + apiCall + " and payload=" + payload);
-        if (apiCall.equals("/validate/2012Jan/test_0/1/create")) {
+        if (apiCall.equals("/validate/remote/2012Jan/test_0/1/create")) {
           BundleResponse br = new BundleResponse("1");
           return (T) br;
-        } else if (apiCall.equals("/build/2012Jan/test_0/null/1/create")) {
+        } else if (apiCall.equals("/build/remote/2012Jan/test_0/null/1/create")) {
           BundleBuildResponse br = new BundleBuildResponse("1");
           return (T) br;
-        } else if (apiCall.equals("/ping")) {
+        } else if (apiCall.equals("/ping/remote")) {
           return (T)"{1}";
-        } else if (apiCall.equals("/validate/1/list")) {
+        } else if (apiCall.equals("/validate/remote/1/list")) {
           BundleResponse br = new BundleResponse("1");
           br.addValidationFile("file1");
           br.addValidationFile("file2");
           br.setComplete(true);
           return (T) br;
-        } else if (apiCall.equals("/build/1/list")) {
+        } else if (apiCall.equals("/build/remote/1/list")) {
           BundleBuildResponse br = new BundleBuildResponse("1");
           br.addGtfsFile("file1");
           br.addGtfsFile("file2");

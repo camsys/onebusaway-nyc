@@ -35,7 +35,7 @@ import javax.servlet.ServletContext;
 public class BundleServerServiceImpl implements BundleServerService, ServletContextAware {
 
 	private static Logger _log = LoggerFactory.getLogger(BundleServerServiceImpl.class);
-  private static final String PING_API = "/ping";
+  private static final String PING_API = "/ping/remote";
 
   private AWSCredentials _credentials;
   private AmazonEC2Client _ec2;

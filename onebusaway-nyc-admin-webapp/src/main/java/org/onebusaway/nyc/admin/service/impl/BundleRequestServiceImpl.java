@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.RemoteConnectFailureException;
 import org.springframework.web.context.ServletContextAware;
 
-import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -236,7 +235,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         }
 
         _log.info("calling validate(remote)");
-        String url = "/validate/" + _request.getBundleDirectory() + "/"
+        String url = "/validate/remote/" + _request.getBundleDirectory() + "/"
             + _request.getBundleBuildName() + "/"
             + _request.getId() + "/create";
         _response = makeRequest(serverId, url, null, BundleResponse.class);
@@ -249,7 +248,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           count = 0;
           // should this response look ok, query until it completes
           while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
-            url = "/validate/" + id + "/list";
+            url = "/validate/remote/" + id + "/list";
             _log.info("calling list (remote)");
             _response = makeRequest(serverId, url, null, BundleResponse.class);
             _validationMap.put(id, _response);
@@ -324,7 +323,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         }
         
         _log.info("calling BuildResource(remote)");
-        String url = "/build/" + _request.getBundleDirectory() + "/"
+        String url = "/build/remote/" + _request.getBundleDirectory() + "/"
             + _request.getBundleName() + "/"
             + _request.getEmailAddress() + "/" 
             + _request.getId() + "/create";
@@ -338,7 +337,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           count = 0;
           // should this response look ok, query until it completes
           while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
-            url = "/build/" + id + "/list";
+            url = "/build/remote/" + id + "/list";
             _log.info("calling list (remote)");
             _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
             _buildMap.put(id, _response);

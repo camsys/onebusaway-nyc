@@ -2,7 +2,7 @@ package org.onebusaway.nyc.admin.service.bundle.api;
 
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
-import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.BundleRequestService;
 
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
@@ -14,81 +14,52 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
-@Path("/build")
+@Path("/build/")
 @Component
 @Scope("singleton")
-/**
- * Build endpoint. 
- *
- */
 public class BuildResource extends AuthenticatedResource {
-
-  private final ObjectMapper _mapper = new ObjectMapper();
-
-	private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
-  private Map<String, BundleBuildResponse> _buildMap = new HashMap<String, BundleBuildResponse>();
-  private ExecutorService _executorService = null;
-	
   @Autowired
-  private BundleBuildingService _bundleService;
+  private BundleRequestService _bundleService;
+  private final ObjectMapper _mapper = new ObjectMapper();
+  private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
   
-  @PostConstruct
-  public void setup() {
-        _executorService = Executors.newFixedThreadPool(1);
-  }
-
-  @Path("/{bundleDirectory}/{bundleName}/{email}/{id}/create")
+  @Path("/{bundleDirectory}/{bundleName}/{email}/create")
   @GET
   @Produces("application/json")
   public Response build(@PathParam("bundleDirectory") String bundleDirectory,
       @PathParam("bundleName") String bundleName,
-      @PathParam("email") String email,
-      @PathParam("id") String id) {
+      @PathParam("email") String email) {
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
-    _log.info("in build(local)");
-    BundleBuildRequest bundleRequest = new BundleBuildRequest();
-    bundleRequest.setBundleDirectory(bundleDirectory);
-    bundleRequest.setBundleName(bundleName);
-    bundleRequest.setBundleDirectory(bundleDirectory);
-    bundleRequest.setEmailAddress(email);
-    bundleRequest.setId(id);
-    BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
-    
+    BundleBuildRequest buildRequest = new BundleBuildRequest();
+    buildRequest.setBundleDirectory(bundleDirectory);
+    buildRequest.setBundleName(bundleName);
+    buildRequest.setEmailAddress(email);
+    BundleBuildResponse buildResponse = null;
     try {
-      // place execution in its own thread
-      _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
-      // place handle to response in map
-      _buildMap.put(id, bundleResponse);
+      buildResponse =_bundleService.build(buildRequest);
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      // write back response
-      _log.info("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
-      _mapper.writeValue(jsonGenerator, bundleResponse);
+      _mapper.writeValue(jsonGenerator, buildResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any) {
-      _log.error("execption in build:", any);
+      _log.error("exception in build:", any);
       response = Response.serverError().build();
     }
     
     return response;
-  }
-
+    }
+  
   @Path("/{id}/list")
   @GET
   @Produces("application/json")
@@ -97,44 +68,17 @@ public class BuildResource extends AuthenticatedResource {
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
-
+    BundleBuildResponse buildResponse = _bundleService.lookupBuildRequest(id);
     try {
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
-      _mapper.writeValue(jsonGenerator, _buildMap.get(id));
+      _mapper.writeValue(jsonGenerator, buildResponse);
       response = Response.ok(sw.toString()).build();
-    } catch (Exception any) {
+    } catch (Exception any){
+      _log.error("exception looking up build:", any);
       response = Response.serverError().build();
     }
     return response;
-  }
-  
-
-  // TODO
-  @Override
-  protected boolean isAuthorized() {
-    return true;
-  }
-
-    private class BuildThread implements Runnable {
-      
-      private BundleBuildRequest _request;
-      private BundleBuildResponse _response;
-  
-      public BuildThread(BundleBuildRequest request, BundleBuildResponse response) {
-        _request = request;
-        _response = response;
-      }
-  
-      @Override
-      public void run() {
-        try {
-        _bundleService.doBuild(_request, _response);
-        } finally {
-          _response.setComplete(true);
-        }
-      }
     }
-
 }
