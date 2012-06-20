@@ -31,8 +31,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   private static final int WAIT_SECONDS = 120;
   protected static Logger _log = LoggerFactory.getLogger(BundleRequestServiceImpl.class);
   private ExecutorService _executorService = null;
-  private BundleValidationService _bundleValidationService;
-  private BundleBuildingService _bundleBuildingService;
   private ConfigurationService configurationService;
   private BundleServerService _bundleServer;
   private EmailService _emailService;
@@ -40,16 +38,6 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
 	private String serverURL;
   private Map<String, BundleResponse> _validationMap = new HashMap<String, BundleResponse>();
   private Map<String, BundleBuildResponse> _buildMap = new HashMap<String, BundleBuildResponse>();
-
-  @Autowired
-  public void setBundleValidationService(BundleValidationService service) {
-    _bundleValidationService = service;
-  }
-
-  @Autowired
-  public void setBundleBuildingService(BundleBuildingService service) {
-    _bundleBuildingService = service;
-  }
 
   @Autowired
   public void setEmailService(EmailService service) {
@@ -66,9 +54,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     _executorService = Executors.newFixedThreadPool(1);
   }
 
-  // TODO
   public String getInstanceId() {
-  	  return "i-a8d44dd1";
+    return configurationService.getConfigurationValueAsString("admin.instanceId", null);
   }
   
   @Override

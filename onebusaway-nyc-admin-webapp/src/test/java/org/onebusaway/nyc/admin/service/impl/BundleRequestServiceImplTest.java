@@ -28,7 +28,7 @@ public class BundleRequestServiceImplTest {
     BundleValidationServiceImpl validationService = new BundleValidationServiceImpl();
     service = new BundleRequestServiceImpl();
     service.setup();
-    service.setBundleValidationService(validationService);
+
     FileService fileService = new FileServiceImpl() {
       @Override
       public void setup() {};
