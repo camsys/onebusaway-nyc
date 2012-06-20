@@ -42,6 +42,11 @@ public class BundleResponse {
   public void addStatusMessage(String msg) {
     _statusMessages.add(msg);
   }
+
+  // for JSON serialization only
+  public void setStatusMessages(List<String> statusMessages) {
+    _statusMessages = statusMessages;
+  }
   
   public synchronized void setComplete(boolean b) {
     _isComplete = b;
@@ -55,6 +60,11 @@ public class BundleResponse {
     _validationFiles.add(filename);
   }
 
+  // for JSON serialization only
+  public void setValidationFiles(List<String> validationFiles) {
+    _validationFiles = validationFiles;
+  }
+  
   public String getTmpDirectory() {
     return _tmpDirectory;
   }

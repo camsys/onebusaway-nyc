@@ -71,6 +71,8 @@ public class BuildRemoteResource extends AuthenticatedResource {
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     
     try {
+      bundleResponse.addStatusMessage("server started");
+      bundleResponse.addStatusMessage("queueing");
       // place execution in its own thread
       _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
       // place handle to response in map
@@ -131,6 +133,7 @@ public class BuildRemoteResource extends AuthenticatedResource {
       @Override
       public void run() {
         try {
+        _response.addStatusMessage("in run queue");
         _bundleService.doBuild(_request, _response);
         } finally {
           _response.setComplete(true);

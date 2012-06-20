@@ -67,6 +67,8 @@ public class ValidateRemoteResource extends AuthenticatedResource {
     BundleResponse bundleResponse = new BundleResponse(id);
     
     try {
+      bundleResponse.addStatusMessage("server started");
+      bundleResponse.addStatusMessage("queueing");
       _log.info("calling downloadAndValidate");
       // place execution in its own thread
       _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
@@ -131,6 +133,7 @@ public class ValidateRemoteResource extends AuthenticatedResource {
       @Override
       public void run() {
         try {
+          _response.addStatusMessage("in run queue");
          _validateService.downloadAndValidate(_request, _response);
         } catch (Exception any) {
           _log.error("run failed:", any);

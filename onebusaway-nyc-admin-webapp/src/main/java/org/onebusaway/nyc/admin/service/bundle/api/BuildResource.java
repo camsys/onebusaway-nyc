@@ -74,6 +74,29 @@ public class BuildResource extends AuthenticatedResource {
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       _mapper.writeValue(jsonGenerator, buildResponse);
+      _log.info("received response=" + buildResponse);
+      response = Response.ok(sw.toString()).build();
+    } catch (Exception any){
+      _log.error("exception looking up build:", any);
+      response = Response.serverError().build();
+    }
+    return response;
+    }
+  
+  @Path("/{id}/url")
+  @GET
+  @Produces("application/json")
+  public Response url(@PathParam("id") String id) {
+    Response response = null;
+    if (!isAuthorized()) {
+      return Response.noContent().build();
+    }
+    BundleBuildResponse buildResponse = _bundleService.lookupBuildRequest(id);
+    try {
+      final StringWriter sw = new StringWriter();
+      final MappingJsonFactory jsonFactory = new MappingJsonFactory();
+      final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
+      _mapper.writeValue(jsonGenerator, buildResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any){
       _log.error("exception looking up build:", any);
