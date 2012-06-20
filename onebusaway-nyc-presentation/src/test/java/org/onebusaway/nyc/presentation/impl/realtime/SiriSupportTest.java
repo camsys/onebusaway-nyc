@@ -51,7 +51,7 @@ public class SiriSupportTest {
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
     SiriSupport.fillMonitoredVehicleJourney(journey, trip, null, OnwardCallsMode.VEHICLE_MONITORING,
-        presentationService, nycTransitDataService, 0);
+        presentationService, nycTransitDataService, 0, null);
     
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();

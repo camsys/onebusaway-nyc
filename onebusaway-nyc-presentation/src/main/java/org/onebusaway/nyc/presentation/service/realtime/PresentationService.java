@@ -10,6 +10,8 @@ public interface PresentationService {
 
   public void setTime(Date time);
 
+  public Boolean useTimePredictionsIfAvailable(TripStatusBean statusBean);
+
   public Boolean isBlockLevelInference(TripStatusBean statusBean);
 
   public Boolean isInLayover(TripStatusBean statusBean);

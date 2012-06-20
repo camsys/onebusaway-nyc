@@ -38,6 +38,11 @@ public class PresentationServiceImpl implements PresentationService {
   }
 
   @Override
+  public Boolean useTimePredictionsIfAvailable(TripStatusBean statusBean) {
+	  return Boolean.parseBoolean(_configurationService.getConfigurationValueAsString("display.useTimePredictions", "false"));
+  }
+
+  @Override
   public Boolean isInLayover(TripStatusBean statusBean) {
     if(statusBean != null) {
       String phase = statusBean.getPhase();
