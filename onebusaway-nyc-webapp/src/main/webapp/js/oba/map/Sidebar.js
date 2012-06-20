@@ -53,7 +53,12 @@ OBA.Sidebar = function() {
 		        if(ui.item){
 		        	// Make sure the input has the value selected from the suggestions and initiate the search
 		        	searchInput.val(ui.item.value);
-		        	doSearch(searchInput.val());
+		        	// if search hasn't changed, force the search again to make panning, etc. happen
+					if (window.location.hash !== "#" + searchInput.val()) {
+						jQuery.history.load(searchInput.val());	
+					} else {
+						doSearch(searchInput.val());
+					}
 		        }
 		    }
 		});
@@ -65,7 +70,7 @@ OBA.Sidebar = function() {
 			searchInput.autocomplete("close");
 
 			// if search hasn't changed, force the search again to make panning, etc. happen
-			if(window.location.hash !== "#" + searchInput.val()) {
+			if (window.location.hash !== "#" + searchInput.val()) {
 				jQuery.history.load(searchInput.val());	
 			} else {
 				doSearch(searchInput.val());
@@ -209,7 +214,7 @@ OBA.Sidebar = function() {
 		var filterExistsInResults = false;
 		
 		jQuery.each(routeResults, function(_, routeResult) {
-			if (filter.indexOf(routeResult.id) !== -1) {
+			if (jQuery.inArray(routeResult.id, filter) > -1) {
 				filterExistsInResults = true;
 				return false;
 			}
@@ -223,7 +228,7 @@ OBA.Sidebar = function() {
 
 		jQuery.each(routeResults, function(_, routeResult) {				
 			
-			if (filter.length === 0 || filter.indexOf(routeResult.id) !== -1 || !filterExistsInResults) {
+			if (filter.length === 0 || jQuery.inArray(routeResult.id, filter) > -1 || !filterExistsInResults) {
 			
 				// service alerts
 				var serviceAlertList = jQuery("<ul></ul>")
@@ -341,7 +346,7 @@ OBA.Sidebar = function() {
 				routeMap.addRoute(routeResult);
 			}
 			
-			if (filter.length !== 0 && filter.indexOf(routeResult.id) === -1 && filterExistsInResults) {
+			if (filter.length !== 0 && jQuery.inArray(routeResult.id, filter) < 0 && filterExistsInResults) {
 				
 				var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
 				var link = jQuery('<a href="#' + stopId.match(/\d*$/) + '%20' + routeResult.shortName + '">' + routeResult.shortName + '</a>');
@@ -366,7 +371,7 @@ OBA.Sidebar = function() {
 		matches.show();
 		
 		if (filteredMatches.find("li").length > 1) {
-			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopId.match(/\d*$/) + '">See All</a>');
+			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopId.match(/\d*$/) + '">See&nbsp;All</a>');
 			filteredMatches.find("ul").append(showAll);
 			filteredMatches.show();
 			

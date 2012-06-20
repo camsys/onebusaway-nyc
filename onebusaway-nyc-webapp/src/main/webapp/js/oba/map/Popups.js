@@ -172,7 +172,8 @@ OBA.Popups = (function() {
 		jQuery.each(alertLinks, function(_, alertLink) {
 			var element = jQuery(alertLink);
 			var idParts = element.attr("id").split("|");
-			var routeId = idParts[1];
+			var stopId = idParts[1];
+			var routeId = idParts[2];
 			var routeIdWithoutAgency = routeId.split("_")[1];
 			
 			element.click(function(e) {
@@ -180,7 +181,7 @@ OBA.Popups = (function() {
 				var alertElement = jQuery('#alerts-' + routeId.replace(" ","_"));
 				if (alertElement.length === 0) {
 					expandAlerts = true;
-					window.location = "#" + stopIdWithoutAgency + "%20" + routeIdWithoutAgency;
+					jQuery.history.load(stopId + " " + routeIdWithoutAgency);
 				} else {
 					$("#searchbar").animate({
 						scrollTop: alertElement.parent().offset().top - jQuery("#searchbar").offset().top + jQuery("#searchbar").scrollTop()
@@ -189,6 +190,14 @@ OBA.Popups = (function() {
 						function() {
 							if (alertElement.accordion("option", "active") !== 0) {
 								alertElement.accordion("activate" , 0);
+							} else {
+								alertElement.animate(
+									{ opacity : 0 },
+									100,
+									function() {
+										alertElement.animate({ opacity : 1 }, 500, "swing");
+									}
+								);
 							}
 						});
 				}
@@ -273,7 +282,7 @@ OBA.Popups = (function() {
 		
 		// service alerts
 		if (routeName in alertData) {
-			html += ' <a id="alert-link|' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
+			html += ' <a id="alert-link||' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
 		}
 		
 		html += OBA.Config.infoBubbleFooterFunction('route', activity.MonitoredVehicleJourney.PublishedLineName);			
@@ -350,7 +359,7 @@ OBA.Popups = (function() {
 		var filterExistsInResults = false;
 		
 		jQuery.each(stopResult.routesAvailable, function(_, routeResult) {
-			if (routeFilter.indexOf(routeResult.id) !== -1) {
+			if (jQuery.inArray(routeResult.id, routeFilter) > -1) {
 				filterExistsInResults = true;
 				return false;
 			}
@@ -364,7 +373,7 @@ OBA.Popups = (function() {
 		filteredMatchesData.append("<ul></ul>");
 	    
 		jQuery.each(stopResult.routesAvailable, function(_, route) {
-	    	if (filterExistsInResults && routeFilter.indexOf(route.id) === -1) {
+	    	if (filterExistsInResults && jQuery.inArray(route.id, routeFilter) < 0) {
 	    		var filteredMatch = jQuery("<li></li>").addClass("filtered-match");
 	    		var link = jQuery('<a href="#' + stopResult.id.match(/\d*$/) + '%20' + route.shortName + '"><span class="route-name">' + route.shortName + '</span></a>');
 	    		link.appendTo(filteredMatch);
@@ -389,7 +398,7 @@ OBA.Popups = (function() {
 	    jQuery.each(visits, function(_, monitoredJourney) {
 			var routeId = monitoredJourney.MonitoredVehicleJourney.LineRef;
 			
-			if (filterExistsInResults && routeFilter.indexOf(routeId) === -1) {
+			if (filterExistsInResults && jQuery.inArray(routeId, routeFilter) < 0) {
 				return true; //continue
 			}
 			
@@ -424,7 +433,7 @@ OBA.Popups = (function() {
 				html += '<li class="route">';
 				html += '<a href="#' + mvj.PublishedLineName + '"><span class="route-name">' + mvj.PublishedLineName + "</span>&nbsp;&nbsp; to " + mvj.DestinationName + '</a>';
 				if (mvj.LineRef in alertData) {
-					html += ' <a id="alert-link|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + mvj.LineRef + '" class="alert-link" href="#">Alert</a>';
 				}
 				html += '</li>';
 
@@ -499,9 +508,9 @@ OBA.Popups = (function() {
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutArrivals, function(_, d) {
 				html += '<li class="route">';
-				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
+				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + "</span>&nbsp;&nbsp; to " + d.destination + '</a>';
 				if (d.id in alertData) {
-					html += ' <a id="alert-link|' + d.id + '" class="alert-link" href="#">Alert</a>';
+					html += ' <a id="alert-link|' + stopIdWithoutAgency + '|' + d.id + '" class="alert-link" href="#">Alert</a>';
 				}
 				html += '</li>';
 				
@@ -518,7 +527,7 @@ OBA.Popups = (function() {
 			var i = 0;
 			jQuery.each(routeAndDirectionWithoutSerivce, function(_, d) {
 				html += '<li class="route">';
-				html += '<a class="muted" href="#' + d.shortName + '"><span class="route-name">' + d.shortName + '</span></a>';
+				html += '<a class="muted" href="#' + stopIdWithoutAgency + "%20" + d.shortName + '"><span class="route-name">' + d.shortName + '</span></a>';
 				html += '</li>';
 				
 				i++;
@@ -528,7 +537,7 @@ OBA.Popups = (function() {
 		
 		// filtered out roues
 		if (filteredMatches.find("li").length > 0) {
-			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopResult.id.match(/\d*$/) + '"><span class="route-name">See All</span></a>');
+			var showAll = jQuery("<li></li>").addClass("filtered-match").html('<a href="#' + stopResult.id.match(/\d*$/) + '"><span class="route-name">See&nbsp;All</span></a>');
 			filteredMatches.find("ul").append(showAll);
 			html += filteredMatches.html();
 		}

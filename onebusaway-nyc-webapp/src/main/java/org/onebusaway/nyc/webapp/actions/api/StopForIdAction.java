@@ -42,7 +42,6 @@ import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.ServiceDelivery;
 import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.StopMonitoringDeliveryStructure;
-import uk.org.siri.siri.VehicleActivityStructure;
 
 public class StopForIdAction extends OneBusAwayNYCActionSupport {
     
@@ -100,14 +99,15 @@ public class StopForIdAction extends OneBusAwayNYCActionSupport {
             continue;
           
           Boolean hasUpcomingScheduledService = 
-              _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stop.getId(), routeBean.getId(), stopGroupBean.getId());
-          
+        		  _nycTransitDataService.stopHasUpcomingScheduledService(System.currentTimeMillis(), stop.getId(), 
+        				  routeBean.getId(), stopGroupBean.getId());
+
           // if there are buses on route, always have "scheduled service"
-          List<VehicleActivityStructure> vehiclesOnRoute = 
-          		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
-          
-          if(!vehiclesOnRoute.isEmpty()) {
-          	hasUpcomingScheduledService = true;
+          Boolean routeHasVehiclesInService = 
+        		  _realtimeService.getVehiclesInServiceForStopAndRoute(stop.getId(), routeBean.getId());
+
+          if(routeHasVehiclesInService) {
+        	  hasUpcomingScheduledService = true;
           }
           
           routeDirections.add(new RouteDirection(stopGroupBean, null, null, hasUpcomingScheduledService));

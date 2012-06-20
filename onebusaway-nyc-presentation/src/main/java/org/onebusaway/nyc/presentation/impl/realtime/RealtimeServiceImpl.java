@@ -232,6 +232,44 @@ public class RealtimeServiceImpl implements RealtimeService {
     
     return output;
   }
+
+  @Override
+  public boolean getVehiclesInServiceForRoute(String routeId, String directionId) {
+	  ListBean<TripDetailsBean> trips = getAllTripsForRoute(routeId);
+	  for(TripDetailsBean tripDetails : trips.getList()) {
+		  // filter out interlined routes
+		  if(routeId != null && !tripDetails.getTrip().getRoute().getId().equals(routeId))
+			  continue;
+
+		  // filtered out by user
+		  if(directionId != null && !tripDetails.getTrip().getDirectionId().equals(directionId))
+			  continue;
+
+		  if(!_presentationService.include(tripDetails.getStatus()))
+			  continue;
+
+		  return true;
+	  } 
+
+	  return false;
+  }
+
+  @Override
+  public boolean getVehiclesInServiceForStopAndRoute(String stopId, String routeId) {
+	  for (ArrivalAndDepartureBean adBean : getArrivalsAndDeparturesForStop(stopId)) {
+		  TripStatusBean statusBean = adBean.getTripStatus();
+		  if(!_presentationService.include(statusBean) || !_presentationService.include(adBean, statusBean))
+			  continue;
+
+		  // filtered out by user
+		  if(routeId != null && !adBean.getTrip().getRoute().getId().equals(routeId))
+			  continue;
+
+		  return true;
+	  }
+
+	  return false;
+  }
   
   @Override
   public List<ServiceAlertBean> getServiceAlertsForRoute(String routeId) {

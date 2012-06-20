@@ -275,6 +275,8 @@
 #content #filtered-matches ul li {
 	display: inline-block;
 	padding: 0.2em;
+	zoom: 1;
+	*display:inline;
 }
 
 /* loading indicators */

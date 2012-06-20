@@ -238,7 +238,7 @@ OBA.Sign = function() {
 				var existingSigns = [];
 
 				jQuery.each(situation.Affects.VehicleJourneys.AffectedVehicleJourney, function(_, journey) {
-					if (journey.LineRef in routeInfo && existingSigns.indexOf(journey.LineRef) === -1) {
+					if (journey.LineRef in routeInfo && jQuery.inArray(journey.LineRef, existingSigns) < 0) {
 						var sign = signForRoute(journey.LineRef, jQuery("<div></div>"));
 						sign.addClass("alert_sign");
 						signWrapper.append(sign);
@@ -371,8 +371,8 @@ OBA.Sign = function() {
 
 			var situationsById = {};
 			if(typeof json.Siri.ServiceDelivery.SituationExchangeDelivery !== 'undefined') {
-				jQuery.each(json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations, function(_, situationElement) {
-					situationsById[situationElement[0].SituationNumber] = situationElement[0];
+				jQuery.each(json.Siri.ServiceDelivery.SituationExchangeDelivery[0].Situations.PtSituationElement, function(_, situationElement) {
+					situationsById[situationElement.SituationNumber] = situationElement;
 				});
 			}
 			

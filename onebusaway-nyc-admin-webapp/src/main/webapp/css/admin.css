@@ -1,0 +1,111 @@
+/**
+ * Copyright (c) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+#contentbox {
+	padding:0;
+	margin: 0 0 0 20px;
+	height: 100%;   /* For IE */
+}
+
+#contentbox #content {
+	padding-top: 0;
+}
+
+#content #text {
+    position: relative;
+	padding-top: 5px;
+	margin-right: 20px;
+	line-height: 120%;
+}
+
+#content #text fieldset {
+	padding: 10px;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+#content #text fieldset label {
+	display: block;
+	padding-bottom: 3px;
+	font-weight: bold;
+}
+
+#content #text fieldset label.inline {
+	display: inline;
+}
+
+#content #text p {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+#content #text h1,
+#content #text h2 {
+	font-weight: normal;
+	font-size: 22px;
+	padding-top: 30px;
+	padding-bottom: 5px;
+}
+
+#content #text #indexList li {
+	padding-top: 20px;
+	font-size: 12px;
+	vertical-align: center;
+	padding-bottom: 10px;
+}
+
+#content #text #indexList a {
+	text-decoration: none;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+
+
+body, p, ul, li, h1, h2, a, form, fieldset, label, table, tr, td, tbody {
+	padding: 0px;
+	margin: 0px;
+	border: none;
+}
+
+ul li {
+	list-style-type: none;
+}
+
+
+/* from MTA CSS: */
+html, body {
+    background-image: url("http://mta.info/css/images/grey_bg.jpg");
+    background-repeat: repeat-x;
+    color: #333333;
+    font: 13px/1.231 helvetica,arial,clean,sans-serif;
+}
+
+#mainbox {
+    background-color: #FFFFFF;
+    margin: 0 auto;
+    position: relative;
+    width: 960px;
+}
+
+#topbar {
+    height: 75px;
+}
+
+#topbar #branding {
+    float: left;
+    height: 90px;
+}
+

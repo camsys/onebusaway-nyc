@@ -46,7 +46,6 @@ import uk.org.siri.siri.MonitoredCallStructure;
 import uk.org.siri.siri.MonitoredStopVisitStructure;
 import uk.org.siri.siri.MonitoredVehicleJourneyStructure;
 import uk.org.siri.siri.NaturalLanguageStringStructure;
-import uk.org.siri.siri.VehicleActivityStructure;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
@@ -89,13 +88,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
             _nycTransitDataService.routeHasUpcomingScheduledService(System.currentTimeMillis(), routeBean.getId(), stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
-        List<VehicleActivityStructure> vehiclesOnRoute = 
-        		_realtimeService.getVehicleActivityForRoute(routeBean.getId(), stopGroupBean.getId(), 0);
-        
-        if(!vehiclesOnRoute.isEmpty()) {
-        	hasUpcomingScheduledService = true;
+        Boolean routeHasVehiclesInService = 
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
+
+        if(routeHasVehiclesInService) {
+      	  hasUpcomingScheduledService = true;
         }
-        
+
         // service alerts for this route + direction
         List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
         List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());

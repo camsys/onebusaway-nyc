@@ -1,0 +1,421 @@
+/**
+ * Copyright (c) 2011 Metropolitan Transportation Authority
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+ 
+ 
+#tabs {
+	padding: 0px;
+	background: none;
+	border-width: 0px;
+}
+
+#tabs .ui-tabs-nav {
+	padding-left: 0px;
+	background: transparent;
+	border-width: 0px 0px 1px 0px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+
+#tabs #breadcrumb li {
+    list-style-type:none;
+    float:left;
+    padding-left:10px;
+    width: 210px;
+    color: #808080;
+}
+
+#tabs #breadcrumb a {
+    height:30px;
+    display:block;
+    background-repeat:no-repeat;
+    background-position:right;
+    padding-right: 15px;
+    text-decoration: none;
+    color:#454545;
+}
+
+#tabs .ui-tabs-panel {
+	border-width: 0px 1px 1px 1px;
+}
+
+#breadcrumb a:hover {
+    color:#35acc5;
+}
+
+.tab_contents {
+	display : none;
+}
+
+.tab_contents_active {
+	display : block;
+}
+
+
+#content #text #breadcrumb_contents_container {
+	border: 1px solid #ccc;
+	border-top: none;
+	padding: 10px;
+	height: 100%;
+}
+
+/** Individual pages for bundle building UI.*/
+
+.tabHeader {
+	padding-top: 20px;
+	margin-top: 20px;
+	height: 30px;
+	background-color:#C0C0C0; 
+}
+
+.tabHeader .headerLabel {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 10px;
+	font-size: 18px;
+	font: Times New Roman, Times, serif;
+}
+
+.submitForm {
+	overflow: none;
+	height: 80px; 
+	padding-right: 120px;
+	padding-left:20px;
+	margin-bottom: 30px;
+}
+
+.submit {
+	background-color: #463E3F;
+	height: 60px;
+	width: 150px;
+	float: right;
+	color: white;
+	margin: 50px;
+}
+
+.link {
+	float: right;
+	color: #463E3F;
+	padding-top: 70px;
+}
+
+.bundleForm {
+	
+}
+
+.bundleHeader {
+	font-weight: bold;
+	font: Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	padding-top: 20px;
+	
+}
+.adminLabel {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.horizontalRadio {
+	margin-right: 30px; 
+}
+
+.formButton {
+	border: 1px transparent;
+	width: 100px;
+	height: 30px;
+	display: inline;
+	background-image:url('img/Button_background.png');
+	
+}
+
+.directoryLabels {
+	vertical-align: middle;
+	padding-top: 20px;
+}
+
+.directoryLabel {
+	margin-right: 50px;
+}
+
+.progress {
+	margin-right: 10px;
+}
+
+#createDirectory {
+	padding-top: 20px;
+}
+
+#createDirectory #directoryOptions {
+	vertical-align: middle;
+	padding-top: 10px;
+	padding-left: 20px;
+}
+
+#createDirectory #createDirectoryContents {
+	padding-left: 30px;
+}
+
+#createDirectory #selectExistingContents {
+	display:none;
+	padding-left: 30px;
+	margin-top: 15px;
+}
+
+#createDirectory #selectExistingContents #currentDirectories {
+    display:table;
+    border-collapse:collapse;
+    margin-top: 10px;
+}
+
+#currentDirectories #listItem {
+	 display: table-row;
+	 cursor: pointer;
+}
+
+#currentDirectories .listData {
+	 display: table-cell;
+	 width: 200px;
+	 font-size: 12px;
+}
+
+#createDirectory #createDirectoryContents .directoryName {
+	width: 420px;
+	margin-right: 50px;
+}
+
+#createDirectory #createDirectoryContents #createDirectoryResult {
+	display: none;
+}
+
+#createDirectory #createDirectoryContents #createDirectoryResult #createDirectoryMessage{
+	display: inline;
+	margin-left: 10px;
+}
+
+#createDirectory #advancedOptions {
+	vertical-align: middle;
+	margin-top: 30px;
+	margin-left: 25px;
+}
+
+#expand {
+	margin-right: 10px;
+}
+
+#createDirectory #advancedOptionsContents {
+	display: none;
+}
+
+#createDirectory #advancedOptionsContents #production {
+	vertical-align: middle;
+	
+}
+
+#createDirectory #advancedOptionsContents #production #productionLabel {
+	margin-left: 50px;
+	margin-right: 20px;
+}
+
+#createDirectory #advancedOptionsContents #production .productionCheck {
+	padding-top: 20px;
+	margin-top: 10px;
+	dispaly: inline;
+}
+
+#createDirectory #advancedOptionsContents #commentLabel {
+	padding-left: 50px;
+	display: block;
+	padding-top: 20px;
+}
+
+#createDirectory #advancedOptionsContents #commentBox {
+	padding-left: 50px;
+	
+}
+
+#createDirectory #advancedOptionsContents #commentBox .comments {
+	width: 400px;
+	margin-right: 50px;
+	height: 50px;
+}
+
+#createDirectory #uploadFiles {
+	padding-top: 50px;
+}
+
+#createDirectory #uploadFiles #instruction {
+	background-color: #C3FDB8;
+	z-index: 1;
+	/* These three lines are for transparency in all browsers. */
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+	opacity: 0.5;
+	margin-top: 30px;
+}
+
+#createDirectory #uploadFiles #instruction p {
+	padding-left: 30px;
+	font-weight: bold;
+	color: green;
+	z-index: 5;
+}
+
+#prevalidateInputs {
+	padding-top: 20px;
+	
+}
+
+
+#prevalidateInputs #validateBox {
+	vertical-align: middle;
+	padding-top: 30px;
+}
+
+#prevalidateInputs #validateBox #validating {
+	display: none;
+	padding: 50px;
+}
+
+#prevalidateInputs #prevalidate_progress {
+	vertical-align: middle;
+	margin-top: 20px;
+	margin-right: 10px;
+}
+
+#prevalidateInputs #prevalidate_resultList {
+	display: none;
+	padding-top : 10px;
+}
+
+#prevalidateInputs #prevalidate_fileList {
+	padding-top : 10px;
+}
+
+#prevalidateInputs #prevalidate_fileList li {
+	padding-top : 10px;
+}
+
+#prevalidateInputs #prevalidate_fileList a {
+	padding-top: 10px;
+	font-size : 14px;
+	font-family: arial;
+	color: blue;
+	
+}
+	
+#prevalidate_exception {
+	display: none;
+	background-color:#FF0000;
+}
+
+#buildBundle {
+	padding-top: 20px;
+}
+
+#buildBundle #bundleContentsHolder {
+	border: solid 1px transparent;
+	width: 890px;
+	height: 200px;
+	overflow: none;
+}
+
+#bundleContentsHolder #bundleContents {
+	margin-top: 20px;
+	background-color: #F0F0F0;
+	border: solid 1px transparent;
+	width: 200px;
+	padding: 5px;
+	float: left;
+}
+
+#bundleContentsHolder #bundleContents p {
+	font-weight: bold;
+	font-size: 12px;
+	padding-top : 10px;
+}
+
+#bundleContentsHolder #buildBox {
+	margin-top: 20px;
+	border: solid 1px transparent;
+	padding: 5px;
+	margin-left: 20px;
+	width: 600px;
+	height: 150px;
+	float: left;
+}
+
+#bundleContentsHolder #buildBox #building {
+	display: none;
+	background-color: #F0F0F0;
+	
+}
+
+#buildBox #buildBundle_bundleName {
+	width: 300px;
+	display: block;
+	margin-top: 7px;
+}
+
+#buildBox #buildBundle_buildButton {
+	width: 150px;
+	height: 40px;
+	margin-top: 15px;
+	background-image:url('img/Button_background.png');
+}	
+
+#buildBox #bundleLabel {
+	display: block;
+}
+
+#buildBundle #buildBundle_progress {
+	vertical-align: middle;
+	margin-top: 5px;
+	margin-right: 10px;
+}
+
+#buildBundle #buildBundle_resultList {
+	display: none;
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_resultList {
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_fileList li {
+	padding-top : 10px;
+}
+
+#buildBundle #buildBundle_fileList a {
+	padding-top: 10px;
+	font-size : 14px;
+	font-family: arial;
+	color: blue;
+}
+
+#buildBundle_exception {
+	display: none;
+	background-color:#FF0000;
+}
+
+#currentDirectories .ui-selecting {
+	background: #FEFF9F;  
+}
+
+#currentDirectories .ui-selected {  
+  	background-color:#eEeF8F;  
+}  
+

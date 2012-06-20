@@ -20,14 +20,20 @@ import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
+import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
 import org.onebusaway.nyc.vehicle_tracking.model.NycTestInferredLocationRecord;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.VehicleLocationSimulationService;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.onebusaway.transit_data.model.ArrivalAndDepartureBean;
+import org.onebusaway.transit_data.model.ArrivalsAndDeparturesQueryBean;
 import org.onebusaway.transit_data.model.ListBean;
 import org.onebusaway.transit_data.model.RouteBean;
+import org.onebusaway.transit_data.model.StopWithArrivalsAndDeparturesBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
 import org.onebusaway.transit_data.model.blocks.BlockBean;
 import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
@@ -40,12 +46,15 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
 import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
+import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
+import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 
+import org.apache.log4j.lf5.util.DateFormatManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
@@ -61,6 +70,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -71,6 +82,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -90,6 +102,12 @@ public class VehicleLocationSimulationController {
   
   private NycTransitDataService _nycTransitDataService;
   
+  private DestinationSignCodeService _destinationSignCodeService;
+  
+  private RunService _runService;
+  
+  private TransitGraphDao _transitGraphDao;
+  
   private VehicleLocationInferenceService _vehicleLocationInferenceService;
 
   private AgencyService _agencyService;
@@ -108,6 +126,21 @@ public class VehicleLocationSimulationController {
   public void setNycTransitDataService(
       NycTransitDataService nycTransitDataService) {
     _nycTransitDataService = nycTransitDataService;
+  }
+  
+  @Autowired
+  public void setDestinationSignCodeService(DestinationSignCodeService destinationSignCodeService) {
+    _destinationSignCodeService = destinationSignCodeService;
+  }
+  
+  @Autowired
+  public void setRunService(RunService runService) {
+    _runService = runService;
+  }
+  
+  @Autowired
+  public void setTransitGraphDao(TransitGraphDao transitGraphDao) {
+    _transitGraphDao = transitGraphDao;
   }
 
   @Autowired
@@ -479,6 +512,95 @@ public class VehicleLocationSimulationController {
     model.put("serviceDate", serviceDate);
     return new ModelAndView("redirect:/vehicle-location-simulation!block.do",
         model);
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!runsForStop.do", method = RequestMethod.GET)
+  public ModelAndView runsForStop(
+      @RequestParam(value = "id", required = true) String id, 
+      @RequestParam(value = "minutesBefore", required = false, defaultValue = "60") int minutesBefore,
+      @RequestParam(value = "minutesAfter", required = false, defaultValue = "60") int minutesAfter,
+      @RequestParam(value = "time", required = false, defaultValue = "0") String time) throws ParseException {
+    
+    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    
+    Long lTime;
+    
+    if (time.equals("0")) {
+      lTime = new Date().getTime();
+    } else {
+      try {
+        lTime = Long.valueOf(time);
+      } catch (NumberFormatException e) {
+        try {
+          Date d = formatter.parse(time);
+          lTime = d.getTime();
+        } catch (ParseException e1) {
+          throw e1;
+        }
+      }
+    }
+    
+    ArrivalsAndDeparturesQueryBean queryBean = new ArrivalsAndDeparturesQueryBean();
+    queryBean.setMinutesBefore(minutesBefore);
+    queryBean.setMinutesAfter(minutesAfter);
+    queryBean.setTime(lTime);
+    
+    StopWithArrivalsAndDeparturesBean bean = this._nycTransitDataService.getStopWithArrivalsAndDepartures(id, queryBean);
+    
+    Map<String, Object> model = new HashMap<String, Object>();
+    
+    model.put("id", id);
+    
+    List<Map<String, Object>> runs = new ArrayList<Map<String, Object>>();
+    
+    model.put("runs", runs);
+    
+    Map<String, Map<String, Object>> runMap = new HashMap<String, Map<String, Object>>();
+
+    for (ArrivalAndDepartureBean adBean : bean.getArrivalsAndDepartures()) {
+      
+      TripEntry tripEntry = _transitGraphDao.getTripEntryForId(AgencyAndIdLibrary.convertFromString(adBean.getTrip().getId()));
+      
+      RunTripEntry runTripEntry =  
+          _runService.getRunTripEntryForTripAndTime(tripEntry, (int)((adBean.getScheduledArrivalTime() - adBean.getServiceDate())/1000));
+      
+      String runId = runTripEntry.getRunId();
+      
+      if (!runMap.containsKey(runId)) {
+        // create a new run object
+        Map<String, Object> run = new HashMap<String, Object>();
+        run.put("id", runId);
+        run.put("trips", new ArrayList<HashMap<String, Object>>());
+        
+        // add it to our list of runs
+        runs.add(run);
+        
+        // keep track of it in our map of runs so we can look it up easily while iterating through the ArrivalAndDepartureBeans
+        runMap.put(runId, run);
+      }
+      
+      // Get the list of trips we've been tracking for the current runId. It's already part of our runs which are already part of our result
+      @SuppressWarnings("unchecked")
+      List<Map<String, String>> trips = (List<Map<String, String>>) (runMap.get(runId).get("trips"));
+      
+      // Create a new trip for this adBean
+      Map<String, String> trip = new HashMap<String, String>();
+      
+      trip.put("tripId", adBean.getTrip().getId());
+      AgencyAndId tripId = AgencyAndIdLibrary.convertFromString(adBean.getTrip().getId());
+      trip.put("destinationSignCode", _destinationSignCodeService.getDestinationSignCodeForTripId(tripId));
+      trip.put("runId", _runService.getInitialRunForTrip(tripId));
+      trip.put("routeId", adBean.getTrip().getRoute().getId());
+      trip.put("directionId", adBean.getTrip().getDirectionId());
+      trip.put("blockId", adBean.getTrip().getBlockId());
+      trip.put("time", String.valueOf(adBean.getScheduledArrivalTime()/1000)); // Predicted? Scheduled?
+      
+      // Add this trip to our list of trips for this runId
+      trips.add(trip);
+    }
+    
+    return new ModelAndView("json", "runsForStop", model);
   }
 
   /****

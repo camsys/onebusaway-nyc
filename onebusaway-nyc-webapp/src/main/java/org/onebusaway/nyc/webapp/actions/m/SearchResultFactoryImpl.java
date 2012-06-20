@@ -103,11 +103,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
             stopGroupBean.getId());
 
         // if there are buses on route, always have "scheduled service"
-        List<VehicleActivityStructure> vehiclesOnRoute = _realtimeService.getVehicleActivityForRoute(
-            routeBean.getId(), stopGroupBean.getId(), 0);
+        Boolean routeHasVehiclesInService = 
+      		  _realtimeService.getVehiclesInServiceForRoute(routeBean.getId(), stopGroupBean.getId());
 
-        if (!vehiclesOnRoute.isEmpty()) {
-          hasUpcomingScheduledService = true;
+        if(routeHasVehiclesInService) {
+      	  hasUpcomingScheduledService = true;
         }
 
         // stops in this direction
