@@ -205,8 +205,9 @@ public class BundleServerServiceImpl implements BundleServerService, ServletCont
   }
 
    private String generateUrl(String host, String apiCall) {
-     // TODO
-     return "http://" + host + ":8080/onebusaway-nyc-admin-webapp/api" + apiCall;
+     if (LOCAL_HOST.equalsIgnoreCase(host)) 
+       return "http://" + host + ":8080/onebusaway-nyc-admin-webapp/api" + apiCall;
+     return "http://" + host + ":8080/api" + apiCall;
    }
    
   @SuppressWarnings("unchecked")
