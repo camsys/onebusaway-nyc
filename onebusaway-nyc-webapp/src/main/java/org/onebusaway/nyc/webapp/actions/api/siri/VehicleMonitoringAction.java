@@ -29,6 +29,7 @@ import com.dmurph.tracking.JGoogleAnalyticsTracker;
 import com.dmurph.tracking.JGoogleAnalyticsTracker.GoogleAnalyticsVersion;
 
 import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.siri.siri.ErrorDescriptionStructure;
@@ -40,6 +41,7 @@ import uk.org.siri.siri.Siri;
 import uk.org.siri.siri.VehicleActivityStructure;
 import uk.org.siri.siri.VehicleMonitoringDeliveryStructure;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,9 +49,10 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
-    implements ServletRequestAware {
+    implements ServletRequestAware, ServletResponseAware {
 
   private static final long serialVersionUID = 1L;
 
@@ -67,6 +70,8 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   private ServiceAlertsHelper _serviceAlertsHelper = new ServiceAlertsHelper();
 
   private HttpServletRequest _request;
+  
+  private HttpServletResponse _servletResponse;
 
   private String _type = "xml";
 
@@ -218,8 +223,14 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
         //discard
       }
     }
+    
+    try {
+      this._servletResponse.getWriter().write(getVehicleMonitoring());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
-    return SUCCESS;
+    return null;
   }
 
   /**
@@ -270,11 +281,14 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
 
   public String getVehicleMonitoring() {
     try {
-      if (_type.equals("xml"))
+      if (_type.equals("xml")) {
+        this._servletResponse.setContentType("application/xml");
         return _realtimeService.getSiriXmlSerializer().getXml(_response);
-      else
+      } else {
+        this._servletResponse.setContentType("application/json");
         return _realtimeService.getSiriJsonSerializer().getJson(_response,
             _request.getParameter("callback"));
+      }
     } catch (Exception e) {
       return e.getMessage();
     }
@@ -283,6 +297,15 @@ public class VehicleMonitoringAction extends OneBusAwayNYCActionSupport
   @Override
   public void setServletRequest(HttpServletRequest request) {
     this._request = request;
+  }
+
+  @Override
+  public void setServletResponse(HttpServletResponse servletResponse) {
+    this._servletResponse = servletResponse;
+  }
+  
+  public HttpServletResponse getServletResponse(){
+    return _servletResponse;
   }
 
 }

@@ -48,6 +48,15 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
 
+  @Override
+  public void doBuild(BundleBuildRequest request, BundleBuildResponse response) {
+    response.setId(request.getId());
+    download(request, response);
+    prepare(request, response);
+    build(request, response);
+    assemble(request, response);
+    upload(request, response);
+  }
   /**
    * download from S3 and stage for building 
    */

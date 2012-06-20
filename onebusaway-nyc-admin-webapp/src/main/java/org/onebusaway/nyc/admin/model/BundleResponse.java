@@ -11,6 +11,14 @@ public class BundleResponse {
   private List<String> _validationFiles = Collections.synchronizedList(new ArrayList<String>());
   private String _tmpDirectory = null;
   private String _id = null;
+
+  public BundleResponse() {
+    // for JSON serialization
+  }
+  
+  public String toString() {
+    return "BundleResponse{[" + _id + "], complete=" + _isComplete + "}"; 
+  }
   
   public BundleResponse(String id) {
     _id = id;
@@ -34,6 +42,11 @@ public class BundleResponse {
   public void addStatusMessage(String msg) {
     _statusMessages.add(msg);
   }
+
+  // for JSON serialization only
+  public void setStatusMessages(List<String> statusMessages) {
+    _statusMessages = statusMessages;
+  }
   
   public synchronized void setComplete(boolean b) {
     _isComplete = b;
@@ -47,6 +60,11 @@ public class BundleResponse {
     _validationFiles.add(filename);
   }
 
+  // for JSON serialization only
+  public void setValidationFiles(List<String> validationFiles) {
+    _validationFiles = validationFiles;
+  }
+  
   public String getTmpDirectory() {
     return _tmpDirectory;
   }
@@ -59,6 +77,10 @@ public class BundleResponse {
    */
   public String getId() {
     return _id;
+  }
+  
+  public void setId(String id) {
+    _id = id;
   }
 
 }

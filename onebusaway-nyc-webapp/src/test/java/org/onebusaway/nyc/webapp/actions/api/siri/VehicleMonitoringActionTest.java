@@ -4,11 +4,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +23,9 @@ import org.onebusaway.nyc.presentation.impl.service_alerts.ServiceAlertsTestSupp
 import org.onebusaway.nyc.presentation.service.realtime.RealtimeService;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.nyc.transit_data_federation.siri.SiriXmlSerializer;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data.model.ListBean;
+import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.service_alerts.SituationQueryBean;
 
@@ -40,16 +46,32 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
   @Mock
   private NycTransitDataService transitDataService;
   
+  @Mock
+  private ConfigurationService configurationService;
+  
   @InjectMocks
   private VehicleMonitoringAction action;
 
   @Mock
   HttpServletRequest request;
   
+  @Mock
+  HttpServletResponse servletResponse;
+  
   @Test
-  public void testExecuteByRoute() {
+  public void testExecuteByRoute() throws Exception {
+    
     when(request.getParameter(eq("LineRef"))).thenReturn("S51");
     when(request.getParameter(eq("OperatorRef"))).thenReturn("MTA NYCT");
+    
+    PrintWriter nothingPrintWriter = new PrintWriter(new OutputStream() {
+      @Override
+      public void write(int b) throws IOException {
+        // Do nothing
+      }
+    });
+    when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
+    
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
     when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0))).thenReturn(vehicleActivities);
     
@@ -68,6 +90,11 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1");
     when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
     
+    RouteBean routeBean = RouteBean.builder().create();
+    when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
+    
+    when(configurationService.getConfigurationValueAsString(eq("display.googleAnalyticsSiteId"), anyString())).thenReturn("foo");
+    
     List<SituationRefStructure> sitRef = mvJourney.getSituationRef();
     SituationRefStructure sitRefStructure = new SituationRefStructure();
     sitRef.add(sitRefStructure );
@@ -79,20 +106,34 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(realtimeService.getSiriXmlSerializer()).thenReturn(serializer );
 
     action.setServletRequest(request);
+    action.setServletResponse(servletResponse);
     action.execute();
     String monitoring = action.getVehicleMonitoring();
     assertTrue("Result XML does not match expected", monitoring.matches("(?s).*<ServiceDelivery><ResponseTimestamp>.+</ResponseTimestamp><VehicleMonitoringDelivery><ResponseTimestamp>.+</ResponseTimestamp><ValidUntil>.+</ValidUntil><VehicleActivity><MonitoredVehicleJourney><SituationRef><SituationSimpleRef>situation ref</SituationSimpleRef></SituationRef><VehicleLocation><Longitude>89.0</Longitude><Latitude>88.0</Latitude></VehicleLocation></MonitoredVehicleJourney></VehicleActivity></VehicleMonitoringDelivery><SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>MTA NYCT_1</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects><VehicleJourneys><AffectedVehicleJourney><LineRef>MTA NYCT_B63</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>MTA NYCT_B63</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>MTA NYCT_S55</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>MTA NYCT_S55</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney></VehicleJourneys></Affects></PtSituationElement></Situations></SituationExchangeDelivery></ServiceDelivery></Siri>.*"));
   }
 
   @Test
-  public void testExecuteByRouteNoActivity() {
+  public void testExecuteByRouteNoActivity() throws Exception {
+    
     when(request.getParameter(eq("LineRef"))).thenReturn("S51");
     when(request.getParameter(eq("OperatorRef"))).thenReturn("MTA NYCT");
+    
+    PrintWriter nothingPrintWriter = new PrintWriter(new OutputStream() {
+      @Override
+      public void write(int b) throws IOException {
+        // Do nothing
+      }
+    });
+    when(servletResponse.getWriter()).thenReturn(nothingPrintWriter);
+    
     List<VehicleActivityStructure> vehicleActivities = new ArrayList<VehicleActivityStructure>();
     when(realtimeService.getVehicleActivityForRoute(eq("MTA NYCT_S51"), anyString(), eq(0))).thenReturn(vehicleActivities);
     
     ServiceAlertBean serviceAlertBean = ServiceAlertsTestSupport.createServiceAlertBean("MTA NYCT_1");
     when(transitDataService.getServiceAlertForId(anyString())).thenReturn(serviceAlertBean );
+    
+    RouteBean routeBean = RouteBean.builder().create();
+    when(transitDataService.getRouteForId(anyString())).thenReturn(routeBean);
     
     ListBean<ServiceAlertBean> serviceAlertListBean = new ListBean<ServiceAlertBean>();
     List<ServiceAlertBean> list = new ArrayList<ServiceAlertBean>();
@@ -104,9 +145,9 @@ public class VehicleMonitoringActionTest extends VehicleMonitoringAction {
     when(realtimeService.getSiriXmlSerializer()).thenReturn(serializer );
 
     action.setServletRequest(request);
+    action.setServletResponse(servletResponse);
     action.execute();
     String monitoring = action.getVehicleMonitoring();
-    System.err.println(monitoring);
     assertTrue("Result XML does not match expected", monitoring.matches("(?s).*<SituationExchangeDelivery><Situations><PtSituationElement><SituationNumber>MTA NYCT_1</SituationNumber><Summary xml:lang=\"EN\">summary</Summary><Description xml:lang=\"EN\">description</Description><Affects><VehicleJourneys><AffectedVehicleJourney><LineRef>MTA NYCT_B63</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>MTA NYCT_B63</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>MTA NYCT_S55</LineRef><DirectionRef>0</DirectionRef></AffectedVehicleJourney><AffectedVehicleJourney><LineRef>MTA NYCT_S55</LineRef><DirectionRef>1</DirectionRef></AffectedVehicleJourney></VehicleJourneys></Affects></PtSituationElement></Situations></SituationExchangeDelivery></ServiceDelivery></Siri>.*"));
   }
 
