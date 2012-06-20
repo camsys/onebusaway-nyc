@@ -1,4 +1,4 @@
-package org.onebusaway.nyc.admin.service.impl;
+package org.onebusaway.nyc.admin.service.bundle.impl;
 
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
@@ -94,7 +94,16 @@ public class BundleBuildingUtil {
     } else {
       for (String filePath : dir.list()) {
         File listEntry = new File(dir, filePath);
-        if (listEntry.isFile()) {
+        String listEntryFilename = null;
+        try {
+          listEntryFilename = listEntry.getCanonicalPath();
+        } catch (Exception e) {
+          // bury
+        }
+        // prevent lock files from insertion into json, they change
+        if (listEntry.isFile()  
+            && listEntryFilename != null 
+            && !listEntryFilename.endsWith(".lck")) {
           BundleFile file = new BundleFile();
           
           String relPathToBase = baseDir.toURI().relativize(listEntry.toURI()).getPath();
@@ -105,6 +114,7 @@ public class BundleBuildingUtil {
           file.setMd5(sum);
           
           files.add(file);
+          _log.debug("file:" + listEntry + " has Md5=" + sum);
         } else if (listEntry.isDirectory()) {
           files.addAll(getBundleFilesWithSumsForDirectory(baseDir, listEntry));
         }

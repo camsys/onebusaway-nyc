@@ -20,6 +20,7 @@ import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.geospatial.model.EncodedPolylineBean;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
+import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ReliefState;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.RunService;
@@ -46,6 +47,8 @@ import org.onebusaway.transit_data_federation.services.AgencyAndIdLibrary;
 import org.onebusaway.transit_data_federation.services.AgencyService;
 import org.onebusaway.transit_data_federation.services.beans.BlockBeanService;
 import org.onebusaway.transit_data_federation.services.beans.BlockStatusBeanService;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopEntry;
+import org.onebusaway.transit_data_federation.services.transit_graph.StopTimeEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TransitGraphDao;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
 
@@ -75,6 +78,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -566,11 +570,13 @@ public class VehicleLocationSimulationController {
           _runService.getRunTripEntryForTripAndTime(tripEntry, (int)((adBean.getScheduledArrivalTime() - adBean.getServiceDate())/1000));
       
       String runId = runTripEntry.getRunId();
+      String agencyId = runTripEntry.getTripEntry().getId().getAgencyId();
       
       if (!runMap.containsKey(runId)) {
         // create a new run object
         Map<String, Object> run = new HashMap<String, Object>();
         run.put("id", runId);
+        run.put("agencyId", agencyId);
         run.put("trips", new ArrayList<HashMap<String, Object>>());
         
         // add it to our list of runs
@@ -601,6 +607,106 @@ public class VehicleLocationSimulationController {
     }
     
     return new ModelAndView("json", "runsForStop", model);
+  }
+  
+  @RequestMapping(value = "/vehicle-location-simulation!tripsForRun.do", method = RequestMethod.GET)
+  public ModelAndView tripsForRun(
+      @RequestParam(value = "id", required = true) String id, 
+      @RequestParam(value = "time", required = false, defaultValue = "0") String time) throws ParseException {
+    
+    DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    
+    Long lTime;
+    
+    if (time.equals("0")) {
+      lTime = new Date().getTime();
+    } else {
+      try {
+        lTime = Long.valueOf(time);
+      } catch (NumberFormatException e) {
+        try {
+          Date d = formatter.parse(time);
+          lTime = d.getTime();
+        } catch (ParseException e1) {
+          throw e1;
+        }
+      }
+    }
+    
+    Date serviceDate = this.getTimestampAsDate(lTime);
+    
+    Map<String, Object> model = new HashMap<String, Object>();
+    
+    model.put("runId", id);
+    
+    RunTripEntry currentRunTripEntry = _runService.getActiveRunTripEntryForRunAndTime(id, serviceDate.getTime());
+    
+    if (currentRunTripEntry == null) return new ModelAndView("json", "tripsForRun", model);
+    
+    // Maybe kind of a hack...
+    model.put("agencyId", currentRunTripEntry.getTripEntry().getId().getAgencyId());
+    
+    List<Map<String, Object>> trips = new ArrayList<Map<String, Object>>();
+    
+    model.put("trips", trips);
+    
+    while (currentRunTripEntry.getStartTime() < _runService.getNextEntry(currentRunTripEntry, serviceDate.getTime()).getStartTime()) {
+      
+      Map<String, Object> trip = new HashMap<String, Object>();
+      
+      trip.put("tripId", currentRunTripEntry.getTripEntry().getId().toString());
+      trip.put("initialRunId", _runService.getInitialRunForTrip(currentRunTripEntry.getTripEntry().getId()));
+      trip.put("startTime", serviceDate.getTime()/1000 + currentRunTripEntry.getStartTime()); // Could use arrival time of first stop???
+      trip.put("startLocationStopId", currentRunTripEntry.getTripEntry().getStopTimes().get(0).getStop().getId().toString());
+      trip.put("endTime", serviceDate.getTime()/1000 + currentRunTripEntry.getStopTime());
+      trip.put("endLocationStopId" , 
+          currentRunTripEntry.getTripEntry().getStopTimes().
+          get(currentRunTripEntry.getTripEntry().getStopTimes().size() -1).getStop().getId().toString());
+      trip.put("dsc", _destinationSignCodeService.getDestinationSignCodeForTripId(currentRunTripEntry.getTripEntry().getId()));
+      trip.put("routeId", currentRunTripEntry.getTripEntry().getRoute().getId().toString());
+      trip.put("directionId", currentRunTripEntry.getTripEntry().getDirectionId());
+      trip.put("blockId", currentRunTripEntry.getTripEntry().getBlock().getId().toString());
+      if (!currentRunTripEntry.getRelief().equals(ReliefState.NO_RELIEF)) {
+        trip.put("reliefRunId", _runService.getReliefRunForTrip(currentRunTripEntry.getTripEntry().getId()));
+        int reliefTime = _runService.getReliefTimeForTrip(currentRunTripEntry.getTripEntry().getId());
+        trip.put("reliefTime", serviceDate.getTime()/1000 + reliefTime);
+        
+        StopEntry reliefStop = null;
+        for (int i = 0; i < currentRunTripEntry.getTripEntry().getStopTimes().size() - 1; i++) {
+          
+          StopEntry currentStop = currentRunTripEntry.getTripEntry().getStopTimes().get(i).getStop();
+          int currentStopArrivalTime = currentRunTripEntry.getTripEntry().getStopTimes().get(i).getArrivalTime();
+          int currentStopDepartureTime = currentRunTripEntry.getTripEntry().getStopTimes().get(i).getDepartureTime();
+          
+          StopEntry nextStop = currentRunTripEntry.getTripEntry().getStopTimes().get(i + 1).getStop();
+          int nextStopArrivalTime = currentRunTripEntry.getTripEntry().getStopTimes().get(i + 1).getArrivalTime();
+          int nextStopDepartureTime = currentRunTripEntry.getTripEntry().getStopTimes().get(i + 1).getDepartureTime();
+          
+          if (reliefTime <= currentStopDepartureTime) {
+            reliefStop = currentStop;
+            break;
+          }
+          
+          if (reliefTime > currentStopDepartureTime && reliefTime <= nextStopDepartureTime) {
+            reliefStop = (reliefTime - currentStopDepartureTime <= nextStopArrivalTime - reliefTime) ? currentStop : nextStop;
+            break;
+          }
+          
+          if (i == currentRunTripEntry.getTripEntry().getStopTimes().size() - 2 && reliefTime > nextStopArrivalTime) {
+            reliefStop = nextStop;
+          }
+        }
+        if (reliefStop != null)
+          trip.put("reliefStopId", reliefStop.getId().toString());
+      }
+      
+      trips.add(trip);
+      
+      currentRunTripEntry = _runService.getNextEntry(currentRunTripEntry, serviceDate.getTime());
+    }
+    
+    return new ModelAndView("json", "tripsForRun", model);
   }
 
   /****
@@ -702,5 +808,15 @@ public class VehicleLocationSimulationController {
       RouteBean route = trip.getRoute();
       return route.getLongName();
     }
+  }
+  
+  private Date getTimestampAsDate(long timestamp) {
+    Calendar cd = Calendar.getInstance();
+    cd.setTimeInMillis(timestamp);
+    cd.set(Calendar.HOUR_OF_DAY, 0);
+    cd.set(Calendar.MINUTE, 0);
+    cd.set(Calendar.SECOND, 0);
+    cd.set(Calendar.MILLISECOND, 0);
+    return cd.getTime();
   }
 }

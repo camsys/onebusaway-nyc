@@ -78,4 +78,19 @@ public enum ServiceCode {
 		serviceCodeForGtfsId.put(string, serviceCode);
 	}
 
+	public static ServiceCode getServiceCodeForBusCoGTFS(String id) {
+	  if (id.contains("Weekday")) {
+	    if (id.contains("SDon")) {
+	      return WEEKDAY_SCHOOL_OPEN;
+	    } else {
+	      return WEEKDAY_SCHOOL_CLOSED;
+	    }
+	  } else if (id.contains("Saturday")) {
+	    return SATURDAY;
+	  } else if (id.contains("Sunday")) {
+	    return SUNDAY;
+	  } else
+	    return null;
+	}
+
 }

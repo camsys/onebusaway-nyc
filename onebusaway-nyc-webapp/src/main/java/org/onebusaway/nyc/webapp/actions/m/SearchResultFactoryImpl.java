@@ -140,12 +140,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     List<RouteAtStop> routesWithArrivals = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoVehiclesEnRoute = new ArrayList<RouteAtStop>();
     List<RouteAtStop> routesWithNoScheduledService = new ArrayList<RouteAtStop>();
+    List<RouteBean> filteredRoutes = new ArrayList<RouteBean>();
 
     Set<String> serviceAlertDescriptions = new HashSet<String>();
 
     for (RouteBean routeBean : stopBean.getRoutes()) {
       if (routeIdFilter != null && !routeIdFilter.isEmpty()
           && !routeIdFilter.contains(routeBean.getId())) {
+        filteredRoutes.add(routeBean);
         continue;
       }
 
@@ -210,7 +212,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     }
 
     return new StopResult(stopBean, routesWithArrivals,
-        routesWithNoVehiclesEnRoute, routesWithNoScheduledService);
+        routesWithNoVehiclesEnRoute, routesWithNoScheduledService, filteredRoutes);
   }
 
   @Override

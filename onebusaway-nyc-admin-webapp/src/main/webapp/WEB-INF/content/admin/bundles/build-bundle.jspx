@@ -20,65 +20,75 @@
 <html xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
 <jsp:directive.page contentType="text/html" />
-<div id="content">
-	<div id="text">
 		<div class="tabHeader">
 			<label class="headerLabel">Build Bundle</label>
 		</div>
-			<div id="buildBundle">
-				<label class="bundleHeader">Set Notifications, Name And
-					Build Bundle</label>
-				<div class="directoryLabels">
-					<label class="adminLabel directoryLabel">Bundle Directory :</label>
-					<label id="buildBundle_bundleDirectory" class="adminLabel directoryLabel"><s:property
-							value="bundleDirectory" /></label>
-					<label class="adminLabel directoryLabel">Request Id :</label>
-					<label id="buildBundle_id" class="adminLabel directoryLabel"><s:property
-							value="id" /></label>
-				</div>
-				<div id="bundleContentsHolder">
-					<div id="bundleContents">
-						<fieldset>
-							<p>(Optional) Bundle building can take more than 10 minutes.
-								Select a way to be notified when the bundle is complete:</p>
-							<label class="adminLabel">Email</label>
-							<s:textfield id ="buildBundle_email" name="emailAddress" />
-						</fieldset>
-					</div>
-					<div id="buildBox">
-						<div>
-							<label id="bundleLabel" class="adminLabel">Bundle Name :</label>
-							<input type="text" id="buildBundle_bundleName" />
-							<input type="button" id="buildBundle_buildButton" value="Build Bundle"/>
-						</div>
-						<div id="building">
-							<s:url var="url" value="/css/img/ajax-loader.gif" />
-							<img id="buildingProgress" src="${url}" alt="Ajax loader" class="progress"/> 
-							<label id="buildBundle_buildProgress" class="adminLabel">Building ... </label>
-						</div>
-					</div>
-				</div>
-				<div id="buildBundle_progress">
-					<s:url var="url" value="/css/img/arrow-right-3.png" />
-					<img src="${url}" alt="Not found" id="expand" /> <label
-						class="adminLabel">Bundle Build Progress</label>
-				</div>
-				<div id="buildBundle_resultList">
-				<!--  space -->
-				</div>
-				<div id="buildBundle_exception">
-				<!--  space -->
-				</div>
-				<div id="buildBundle_fileList">
-				<!--  space -->
-				</div>
-				<div class="submitForm">
+		<div id="buildBundle">
+			<label class="bundleHeader">Set Notifications, Name And Build
+				Bundle</label>
+			<div class="directoryLabels">
+				<label class="adminLabel directoryLabel">Bundle Directory :</label> <label
+					id="buildBundle_bundleDirectory" class="adminLabel directoryLabel"><s:property
+						value="bundleDirectory" /></label> <label class="adminLabel directoryLabel">Request
+					Id :</label> <label id="buildBundle_id" class="adminLabel directoryLabel"><s:property
+						value="id" /></label>
+			</div>
+			<div id="bundleContentsHolder">
+				<div id="bundleContents">
 					<fieldset>
-						<a href="" class="link">Cancel</a>
-						<input type="button" value="Continue" class="submit"/>
+						<p>(Optional) Bundle building can take more than 10 minutes.
+							Select a way to be notified when the bundle is complete:</p>
+						<label class="adminLabel">Email</label>
+						<s:textfield id="buildBundle_email" name="emailAddress" />
 					</fieldset>
 				</div>
+				<div id="buildBox">
+					<div>
+						<label id="bundleLabel" class="adminLabel">Bundle Build Name :</label> <input
+							type="text" id="buildBundle_bundleName" /> <input type="button"
+							id="buildBundle_buildButton" value="Build Bundle" class="formButton" />
+					</div>
+					<div id="building">
+						<s:url var="url" value="/css/img/ajax-loader.gif" />
+						<img id="buildingProgress" src="${url}" alt="Ajax loader"
+							class="progress" /> <label id="buildBundle_buildProgress"
+							class="adminLabel">Building ... </label>
+					</div>
+					<div id="buildBundle_resultLink">
+						<label class="adminLabel">Result Link :</label>
+						<label id="resultLink"></label>
+					</div>
+				</div>
 			</div>
-	</div>
-</div>
+			<div id="bundleResultsHolder">
+				<div id="bundleResults">
+					<div id="buildBundle_progress">
+						<s:url var="url" value="/css/img/arrow-right-3.png" />
+						<img src="${url}" alt="Not found" id="expand" /> <label
+							class="adminLabel">Bundle Build Progress</label>
+					</div>
+					<div id="buildBundle_resultList">
+						<!--  space -->
+					</div>
+					<div id="buildBundle_exception">
+						<!--  space -->
+					</div>
+					<div id="buildBundle_fileList">
+						<!--  space -->
+					</div>
+				</div>
+			</div>
+			<div id="downloadLogs">
+				<s:url var="url" value="/css/img/go-down-10.png" />
+				<img src="${url}" alt="Image not found" id="downloadImg"/>
+				<a id="downloadButton" class="adminLabel">Download as zip</a>
+			</div>
+			<div class="submitForm">
+				<fieldset>
+					<s:url var="url" action="index.action" namespace="/admin" />
+					<a href="${url}" class="link">Cancel</a> 
+						<input type="button" id="build_continue" value="Continue" class="submit_disabled" disabled="disabled" />
+				</fieldset>
+			</div>
+		</div>
 </html>

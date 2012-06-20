@@ -1,6 +1,8 @@
 package org.onebusaway.nyc.webapp.actions.admin.bundles;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,7 @@ import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
+import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
 import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
@@ -41,6 +44,11 @@ import org.springframework.beans.factory.annotation.Autowired;
   params={"root", "bundleBuildResponse"}),
     @Result(name="fileList", type="json", 
   params={"root", "fileList"}),
+  	@Result(name="downloadZip", type="stream", 
+  params={"contentType", "application/zip", 
+          "inputName", "downloadInputStream",
+          "contentDisposition", "attachment;filename=\"output.zip\"",
+          "bufferSize", "1024"}),
     @Result(name="download", type="stream", 
   params={"contentType", "text/html", 
         "inputName", "downloadInputStream",
@@ -52,7 +60,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private static final long serialVersionUID = 1L;
 	//To hold the final directory name 
 	private String bundleDirectory;
-	private DirectoryStatus directoryStatus = null;
 	//Holds the value entered in the text box
 	private String directoryName;
 	// what to call the bundle, entered in the text box
@@ -70,6 +77,8 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private String emailTo;
 	private InputStream downloadInputStream;
 	private List<String> fileList = new ArrayList<String>();
+	private DirectoryStatus directoryStatus;
+	
 	@Override
 	public String input() {
 	  _log.debug("in input");
@@ -103,16 +112,26 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 				createDirectoryMessage = "Unable to create direcory: " +directoryName;
 			}
 		}
-		directoryStatus = new DirectoryStatus(directoryName, createDirectoryMessage, directoryCreated); 
+		 
+		directoryStatus = createDirectoryStatus(createDirectoryMessage, directoryCreated);
 		return "selectDirectory";
 	}
 	
 	public String selectDirectory() {
 	  _log.info("in selectDirectory with dirname=" + directoryName);
 	  bundleDirectory = directoryName;
-	  directoryStatus = new DirectoryStatus(directoryName, "Loaded existing directory " + directoryName, true);
+	  directoryStatus = createDirectoryStatus("Loaded existing directory " + directoryName, true);
 	  return "selectDirectory";
 	}
+	
+	private DirectoryStatus createDirectoryStatus(String statusMessage, boolean selected) {
+		DirectoryStatus directoryStatus = new DirectoryStatus(directoryName, statusMessage, directoryCreated);
+		directoryStatus.setGtfsPath(fileService.getGtfsPath());
+		directoryStatus.setStifPath(fileService.getStifPath());
+		directoryStatus.setBucketName(fileService.getBucketName());
+		return directoryStatus;
+	}
+	
 	/**
 	 * Returns the existing directories in the current bucket on AWS
 	 * @return list of existing directories
@@ -127,48 +146,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 		}
 		
 		return directories;
-	}
-	
-	
-	/**
-	 * Validates a bundle request and generates a response
-	 * @return bundle response as validation result.
-	 */
-	public String validateBundle() {
-	  _log.info("in validateBundle with bundleDirectory=" + bundleDirectory);
-		BundleRequest bundleRequest = new BundleRequest();
-		bundleRequest.setBundleDirectory(bundleDirectory);
-		this.bundleResponse = bundleRequestService.validate(bundleRequest);
-		_log.info("id=" + this.bundleResponse.getId());
-		_log.info("complete=" + this.bundleResponse.isComplete());
-		return "validationResponse";
-	}
-	
-	public String validateStatus() {
-	  _log.debug("in validateStatus with id=" + getId());
-	  this.bundleResponse = bundleRequestService.lookupValidationRequest(getId());
-	  return "validationResponse";
-	}
-
-	
-	public String buildBundle() {
-	  _log.info("in buildBundle with bundleDirectory=" + bundleDirectory 
-	      + " and bundleName=" + bundleName);
-		BundleBuildRequest bundleRequest = new BundleBuildRequest();
-		bundleRequest.setBundleDirectory(bundleDirectory);
-		bundleRequest.setBundleName(bundleName);
-		bundleRequest.setEmailAddress(emailTo);
-		//bundleRequest.
-		this.bundleBuildResponse = bundleRequestService.build(bundleRequest);
-		_log.info("id=" + this.bundleBuildResponse.getId());
-		_log.info("complete=" + this.bundleBuildResponse.isComplete());
-		return "buildResponse";
-	}
-	
-	public String buildStatus() {
-	  _log.debug("in validateStatus with id=" + getId());
-	  this.bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
-	  return "buildResponse";
 	}
 	
 	public String fileList() {
@@ -189,6 +166,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	    return "download";
 	  }
 	  // TODO
+	  _log.error("bundleResponse not found for id=" + id);
 	  return "error";
 	}
 
@@ -201,7 +179,21 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  return "fileList";
 	}
 	
+	public String buildOutputZip() {
+		_log.info("buildOuputZip called with id=" +id);
+		bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
+		String zipFileName = fileService.createOutputFilesZip(bundleBuildResponse.getBundleOutputDirectory());
+		try {
+			downloadInputStream = new FileInputStream(zipFileName);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "downloadZip";
+	}
+	
 	public String downloadOutputFile() {
+	  _log.info("downloadOutputFile with id=" + id + " and file=" + this.downloadFilename);
 	  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
 	  if (this.bundleBuildResponse != null) {
 	    String s3Key = bundleBuildResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
@@ -212,7 +204,20 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  // TODO
 	  return "error";
 	}
-	
+
+	public String downloadValidateFile() {
+	  this.bundleResponse = this.bundleRequestService.lookupValidationRequest(getId());
+	  if (this.bundleResponse != null) {
+	    String s3Key = bundleResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
+	    _log.info("get request for s3Key=" + s3Key);
+	    this.downloadInputStream = this.fileService.get(s3Key);
+	    return "download";
+	  }
+	  // TODO
+	  _log.error("validate file not found for id=" + getId());
+	  return "error";
+	}
+
 	/**
 	 * @return the directoryName
 	 */
@@ -348,28 +353,5 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	public void setEmailTo(String to) {
 	  emailTo = to;
 	}
-	
-	public class DirectoryStatus {
-	  private String directoryName;
-	  private String message;
-	  private boolean selected;
-	  
-	  public DirectoryStatus(String directoryName, String message, boolean selected) {
-	    this.directoryName = directoryName;
-	    this.message = message;
-	    this.selected = selected;
-	  }
-	  
-	  public String getDirectoryName() {
-	    return directoryName;
-	  }
-	  
-	  public String getMessage() {
-	    return message;
-	  }
 
-	  public boolean isSelected() {
-		return selected;
-	  }
-	}
 }

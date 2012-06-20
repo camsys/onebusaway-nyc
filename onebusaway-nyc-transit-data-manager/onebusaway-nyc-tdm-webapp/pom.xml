@@ -106,12 +106,13 @@
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
         </profile>
         <profile>
             <id>local-paths</id>
             <properties>
-                <tdm.dataPath>src/resources/tdm_data/</tdm.dataPath>
+                <tdm.dataPath>/mnt/tdm_data</tdm.dataPath>
                 <tdm.crewAssignsUploadDir>${tdm.dataPath}/crew_assign</tdm.crewAssignsUploadDir> <!-- See UtsCrewUploadsFilePicker for usage of this. -->
                 <tdm.depotAssignsDownloadDir>${tdm.dataPath}/depot_assigns</tdm.depotAssignsDownloadDir> <!-- See DepotAssignmentsSoapDownloadsFilePicker for usage of this. -->
                 <tdm.dscFilesDir>${tdm.dataPath}/dsc</tdm.dscFilesDir> <!-- See DscManualUploadDateTimestampFilePicker for usage of this. -->
@@ -119,7 +120,8 @@
                 <tdm.prettyPrintOutput>true</tdm.prettyPrintOutput>
                 <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
-                <tdm.depotIdTranslationConfigFile>src/resources/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.depotIdTranslationConfigFile>/mnt/depot_ids.csv</tdm.depotIdTranslationConfigFile>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
         </profile>
         <profile>
@@ -134,6 +136,7 @@
                 <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile></tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>D:\tmp\bundles</tdm.bundlePath>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}\vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
         </profile>
         <profile>
@@ -157,6 +160,7 @@
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
                 <log4j.appender>ROLL</log4j.appender>
             </properties>
         </profile>
@@ -290,7 +294,7 @@
                     </descriptors>
                 </configuration>
             </plugin>
-
+            
         </plugins>
 
         <resources>
@@ -302,7 +306,6 @@
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
             </resource>
-
         </resources>
 
     </build>

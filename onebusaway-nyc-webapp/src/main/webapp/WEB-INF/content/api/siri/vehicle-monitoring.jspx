@@ -16,6 +16,4 @@ under the License.
 -->
 <jsp:root version="2.0" xmlns:jsp="http://java.sun.com/JSP/Page"
 	xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:s="/struts-tags">
-<jsp:directive.page contentType="text/plain" />
-<s:property value="vehicleMonitoring" escape="false"/>
 </jsp:root>

@@ -23,6 +23,7 @@ import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.Vehicl
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.DepotsMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclesMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.DepotAssignmentsSoapDownloadsFilePicker;
 import org.onebusaway.nyc.transit_data_manager.api.sourceData.MostRecentFilePicker;
 import org.onebusaway.nyc.transit_data_manager.json.JsonTool;
@@ -117,6 +118,7 @@ public class DepotResource {
 
     // Now convert the data to my json model.
     ModelCounterpartConverter<CPTVehicleIden, Vehicle> toJsonModelConv = new VehicleFromTcip();
+    ((VehicleFromTcip)toJsonModelConv).setMappingTool(new TcipMappingTool());
 
     List<Vehicle> depotVehiclesJson = new ArrayList<Vehicle>();
 

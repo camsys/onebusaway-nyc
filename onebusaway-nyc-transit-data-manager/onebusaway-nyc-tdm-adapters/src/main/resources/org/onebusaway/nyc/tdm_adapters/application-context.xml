@@ -7,4 +7,24 @@
   <context:component-scan base-package="org.onebusaway.nyc.transit_data_manager.siri" />
   <context:annotation-config />
 
+	<bean id="tcipVehicleAssignmentsOutputConverter" class="org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPVehicleAssignmentsOutputConverter">
+		<property name="dataConverter" ref="mtaUtsToTcipVehicleAssignmentConverter" />
+    </bean>
+    
+    <bean id="mtaUtsToTcipVehicleAssignmentConverter" class="org.onebusaway.nyc.transit_data_manager.adapters.input.MtaUtsToTcipVehicleAssignmentConverter">
+    	<property name="mappingTool" ref="utsMappingTool" />
+    </bean>
+    
+    <bean id="utsMappingTool" class="org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool" />
+    
+    <bean id="pulloutDataConverter" class="org.onebusaway.nyc.transit_data_manager.adapters.output.json.PullInOutFromTcip" >
+    	<property name="vehConv" ref="vehicleFromTcip"/>
+    </bean>
+    
+    <bean id="vehicleFromTcip" class="org.onebusaway.nyc.transit_data_manager.adapters.output.json.VehicleFromTcip" >
+    	<property name="mappingTool" ref="tcipMappingTool" />
+    </bean>
+    
+    <bean id="tcipMappingTool" class="org.onebusaway.nyc.transit_data_manager.adapters.tools.TcipMappingTool" />
+    
 </beans>

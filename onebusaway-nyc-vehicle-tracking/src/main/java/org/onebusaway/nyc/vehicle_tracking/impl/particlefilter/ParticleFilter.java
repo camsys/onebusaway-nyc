@@ -23,6 +23,7 @@ import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gov.sandia.cognition.math.LogMath;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -31,6 +32,8 @@ import com.google.common.collect.Multisets;
 import com.google.common.collect.Ordering;
 
 import org.apache.commons.math.util.FastMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -48,6 +51,8 @@ import java.util.TreeSet;
  */
 public class ParticleFilter<OBS> {
 
+  private static Logger _log = LoggerFactory.getLogger(ParticleFilter.class);
+  
   public class SensorModelParticleResult {
     public Particle _particle;
     public SensorModelResult _result;
@@ -105,13 +110,14 @@ public class ParticleFilter<OBS> {
 
   private boolean _previouslyResampled;
 
-  @SuppressWarnings("unused")
   public ParticleFilter(ParticleFactory<OBS> particleFactory,
       SensorModel<OBS> sensorModel, MotionModel<OBS> motionModel) {
 
     _particleFactory = particleFactory;
     _sensorModel = sensorModel;
     _motionModel = motionModel;
+    if (_debugEnabled)
+      _log.warn("Debug is enabled!  All particle history/information will be kept in memory!");
   }
 
   public ParticleFilter(ParticleFilterModel<OBS> model) {
@@ -399,6 +405,7 @@ public class ParticleFilter<OBS> {
    */
   public static Multiset<Particle> lowVarianceSampler(
       Multiset<Particle> particles, double M) {
+    Preconditions.checkArgument(particles.size() > 0);
 
     final Multiset<Particle> resampled = HashMultiset.create((int) M);
     final double r = ParticleFactoryImpl.getLocalRng().nextDouble() / M;
@@ -407,7 +414,7 @@ public class ParticleFilter<OBS> {
     double c = p.getLogNormedWeight() - FastMath.log(particles.count(p));
     for (int m = 0; m < M; ++m) {
       final double U = FastMath.log(r + m / M);
-      while (U > c) {
+      while (U > c && pIter.hasNext()) {
         p = pIter.next();
         c = LogMath.add(
             p.getLogNormedWeight() - FastMath.log(particles.count(p)), c);

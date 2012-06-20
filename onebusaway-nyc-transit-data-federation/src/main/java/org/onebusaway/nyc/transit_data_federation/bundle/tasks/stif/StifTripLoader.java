@@ -126,6 +126,8 @@ public class StifTripLoader {
     try {
       reader = new StifRecordReader(stream);
       ServiceCode serviceCode = null;
+      String agencyId = null;
+      boolean isBusCo = false;
       while (true) {
         StifRecord record = reader.read();
         lineNumber++;
@@ -134,15 +136,20 @@ public class StifTripLoader {
           break;
         }
         if (record instanceof TimetableRecord) {
-          serviceCode = ((TimetableRecord) record).getServiceCode();
+          TimetableRecord timetableRecord = (TimetableRecord) record;
+          serviceCode = timetableRecord.getServiceCode();
+          agencyId = timetableRecord.getAgencyId();
+          isBusCo = "MTABC".equals(agencyId);
           if (!rawData.containsKey(serviceCode)) {
             rawData.put(serviceCode, new ArrayList<RawTrip>());
           }
+          continue;
         }
         if (record instanceof GeographyRecord) {
           GeographyRecord geographyRecord = ((GeographyRecord) record);
           support.putStopIdForLocation(geographyRecord.getIdentifier(),
               geographyRecord.getBoxID());
+          continue;
         }
 
         if (record instanceof EventRecord) {
@@ -152,6 +159,9 @@ public class StifTripLoader {
             continue;
           }
           EventRecord possibleEventRecord = (EventRecord) record;
+          if (possibleEventRecord.getLocation() == null)
+            //yet another new kind of bogus record
+            continue;
           if (!possibleEventRecord.isRevenue()) {
             // skip non-revenue stops
             continue;
@@ -201,6 +211,7 @@ public class StifTripLoader {
                 tripRecord.getReliefRunId(),
                 tripRecord.getNextTripOperatorRunId(),
                 StifTripType.byValue(tripType), tripRecord.getSignCode());
+            rawTrip.agencyId = agencyId;
             rawTrip.serviceCode = serviceCode;
             rawTrip.depot = tripRecord.getDepotCode();
             rawTrip.firstStopTime = tripRecord.getOriginTime();
@@ -215,6 +226,7 @@ public class StifTripLoader {
             rawTrip.signCodeRoute = tripRecord.getSignCodeRoute();
             rawTrip.path = path;
             rawTrip.lineNumber = tripLineNumber;
+            rawTrip.blockId = tripRecord.getBlockNumber();
             rawData.get(serviceCode).add(rawTrip);
 
             if (record instanceof TripRecord) {
@@ -236,6 +248,7 @@ public class StifTripLoader {
               tripRecord.getReliefRunId(),
               tripRecord.getNextTripOperatorRunId(),
               StifTripType.byValue(tripType), tripRecord.getSignCode());
+          rawTrip.agencyId = agencyId;
           rawTrip.serviceCode = serviceCode;
           rawTrip.depot = tripRecord.getDepotCode();
           rawTrip.firstStopTime = firstEventRecord.getTime();
@@ -250,6 +263,7 @@ public class StifTripLoader {
           rawTrip.signCodeRoute = tripRecord.getSignCodeRoute();
           rawTrip.path = path;
           rawTrip.lineNumber = tripLineNumber;
+          rawTrip.blockId = tripRecord.getBlockNumber();
           rawData.get(serviceCode).add(rawTrip);
 
           String code = tripRecord.getSignCode();
@@ -322,25 +336,31 @@ public class StifTripLoader {
              */
 
             String serviceId = trip.getServiceId().getId();
-            Character dayCode1 = serviceId.charAt(serviceId.length() - 2);
-            Character dayCode2 = serviceId.charAt(serviceId.length() - 1);
-
-            // schedule runs on on days where a dayCode1 is followed by a
-            // dayCode2;
-            // contains all trips from dayCode1, and pre-midnight trips for
-            // dayCode2;
-
-            if (rawTrip.firstStopTime < 0) {
-              /* possible trip records are those containing the previous day */
-              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2.toString()) != serviceCode) {
-                trip = null;
+            if (isBusCo) {
+              ServiceCode tripServiceCode = ServiceCode.getServiceCodeForBusCoGTFS(serviceId);
+              if (serviceCode != tripServiceCode) {
+                  trip = null;
               }
             } else {
-              if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1.toString()) != serviceCode) {
-                trip = null;
+              Character dayCode1 = serviceId.charAt(serviceId.length() - 2);
+              Character dayCode2 = serviceId.charAt(serviceId.length() - 1);
+
+              // schedule runs on on days where a dayCode1 is followed by a
+              // dayCode2;
+              // contains all trips from dayCode1, and pre-midnight trips for
+              // dayCode2;
+
+              if (rawTrip.firstStopTime < 0) {
+                // possible trip records are those containing the previous day
+                if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode2.toString()) != serviceCode) {
+                  trip = null;
+                }
+              } else {
+                if (StifTripLoaderSupport.scheduleIdForGtfsDayCode(dayCode1.toString()) != serviceCode) {
+                  trip = null;
+                }
               }
             }
-
             if (trip != null) {
 
               rawTrip.addGtfsTrip(trip);

@@ -14,6 +14,8 @@ public interface FileService {
   String getStifPath();
   void setBuildPath(String buildPath);
   String getBuildPath();
+  String getBucketName();
+  
   boolean bundleDirectoryExists(String filename);
 
   boolean createBundleDirectory(String filename);
@@ -26,6 +28,11 @@ public interface FileService {
   
   List<String> list(String directory, int maxResults);
   
-  
+  /**
+   * Creates a zip of all the output files generated in the given bundle directory during bundle building process
+   * @param directoryName bundle outpur directory name
+   * @return name of the zip file created
+   */
+  String createOutputFilesZip(String directoryName);
   
 }

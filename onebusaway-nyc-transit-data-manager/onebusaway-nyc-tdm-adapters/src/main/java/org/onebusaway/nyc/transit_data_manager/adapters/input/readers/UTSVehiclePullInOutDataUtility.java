@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.model.MtaUtsVehiclePullInPullOut;
 
 public class UTSVehiclePullInOutDataUtility {
@@ -40,7 +41,7 @@ public class UTSVehiclePullInOutDataUtility {
     if ("no op".equalsIgnoreCase(pullout.getBusNumberField()))
       result = false;
     
-    if ("".equals(pullout.getBusNumberField())) // no bus number means not useful.
+    if (StringUtils.isBlank(pullout.getBusNumberField())) // no bus number means not useful.
       result = false;
     
     return result;

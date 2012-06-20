@@ -17,20 +17,23 @@ package org.onebusaway.nyc.webapp.actions.admin;
 
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
 
 @Results({@Result(type = "redirectAction", name = "redirect", params = {
      "actionName", "barcode"})})
 public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
-
+  private static Logger _log = LoggerFactory.getLogger(BarcodeAction.class);
 	private static final long serialVersionUID = 1L;
 
 	private int busStopId;
 	private int edgeDimension;
 	
 	private String qrResourceUrl = "";
-	
-	private String tdmHost = System.getProperty("tdm.host", "");
+	// TODO: why is this a system property?
+	private String tdmHost = System.getProperty("tdm.host", "http://tdm");
 	
 	public String getTdmHost() {
 		return tdmHost;
@@ -70,7 +73,7 @@ public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
 		qrResourceUrl = qrResourceUrl + dimensionParam + String.valueOf(edgeDimension);
 		
 		// need to display the image on the page.
-		
+		_log.debug("qrResourceUrl=" + qrResourceUrl);
 		return SUCCESS;
 	}
 

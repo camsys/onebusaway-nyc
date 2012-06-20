@@ -37,6 +37,7 @@
         <prop key="tdm.pipoFilename">${tdm.pipoFilename}</prop>
         <prop key="tdm.depotIdTranslationFile">${tdm.depotIdTranslationConfigFile}</prop>
         <prop key="tdm.prettyPrintOutput">${tdm.prettyPrintOutput}</prop>
+        <prop key="tdm.vehiclepipoUploadDir">${tdm.vehiclepipoUploadDir}</prop>
       </props>
     </property>
   </bean>
@@ -76,5 +77,7 @@
     class="java.lang.String">
     <constructor-arg type="java.lang.String" value="${qrBarcodes.stopIdReplaceUrl}" />
     </bean>
+    
+    <bean id="vehiclePullInOutService" class="org.onebusaway.nyc.transit_data_manager.api.service.VehiclePullInOutServiceImpl" />
 
 </beans>

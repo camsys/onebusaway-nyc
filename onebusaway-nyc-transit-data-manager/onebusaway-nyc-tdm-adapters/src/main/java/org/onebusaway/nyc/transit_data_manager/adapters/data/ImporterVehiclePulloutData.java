@@ -1,19 +1,54 @@
 package org.onebusaway.nyc.transit_data_manager.adapters.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import tcip_final_3_0_5_1.SCHOperatorAssignment;
-import tcip_final_3_0_5_1.SCHPullInOutInfo;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
+
 
 public class ImporterVehiclePulloutData implements PulloutData {
 
-  private List<SCHPullInOutInfo> pulloutData = null;
+	private List<VehiclePullInOutInfo> pulloutData = null;
 
-  public ImporterVehiclePulloutData(List<SCHPullInOutInfo> pulloutData) {
-    this.pulloutData = pulloutData;
-  }
-  
-  public List<SCHPullInOutInfo> getAllPullouts() {
-    return pulloutData;
-  }
+	public ImporterVehiclePulloutData(List<VehiclePullInOutInfo> pulloutData) {
+		this.pulloutData = pulloutData;
+	}
+
+	public List<VehiclePullInOutInfo> getAllPullouts() {
+		return pulloutData;
+	}
+
+	public List<VehiclePullInOutInfo> getPulloutsByBus(Long busNumber) {
+		List<VehiclePullInOutInfo> busPullOutInfo = new ArrayList<VehiclePullInOutInfo>();
+		
+		for(VehiclePullInOutInfo currentPullOut : pulloutData) {
+			if(currentPullOut.getPullOutInfo().getVehicle().getVehicleId() == busNumber.longValue()) {
+				busPullOutInfo.add(currentPullOut);
+			}
+		}
+		return busPullOutInfo;
+	}
+
+	public List<VehiclePullInOutInfo> getPulloutsByDepot(String depotId) {
+		List<VehiclePullInOutInfo> depotPullOutInfo = new ArrayList<VehiclePullInOutInfo>();
+		
+		for(VehiclePullInOutInfo currentPullOut : pulloutData) {
+			if(currentPullOut.getPullOutInfo().getGarage().getFacilityName().equals(depotId)) {
+				depotPullOutInfo.add(currentPullOut);
+			}
+		}
+		return depotPullOutInfo;
+	}
+
+	public List<VehiclePullInOutInfo> getPulloutsByAgency(String agencyId) {
+		List<VehiclePullInOutInfo> agencyPullOutInfo = new ArrayList<VehiclePullInOutInfo>();
+		
+		for(VehiclePullInOutInfo currentPullOut : pulloutData) {
+			if(currentPullOut.getPullOutInfo().getGarage().getAgencydesignator().equals(agencyId)) {
+				agencyPullOutInfo.add(currentPullOut);
+			}
+		}
+		
+		return agencyPullOutInfo;
+	}
 }

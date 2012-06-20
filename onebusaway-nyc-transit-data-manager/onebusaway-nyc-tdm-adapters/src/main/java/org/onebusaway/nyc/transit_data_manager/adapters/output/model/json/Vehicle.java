@@ -8,24 +8,28 @@ package org.onebusaway.nyc.transit_data_manager.adapters.output.model.json;
  * 
  */
 public class Vehicle {
-  public Vehicle() {
+	public Vehicle() {
 
-  }
+	}
 
-  private String agencyId;
-  private String vehicleId;
-  private String depotId;
+	private String agencyId;
+	private String vehicleId;
+	private String depotId;
 
-  public void setAgencyId(String agencyId) {
-    this.agencyId = agencyId;
-  }
+	public void setAgencyId(String agencyId) {
+		this.agencyId = agencyId;
+	}
 
-  public void setVehicleId(String vehicleId) {
-    this.vehicleId = vehicleId;
-  }
+	public void setVehicleId(String vehicleId) {
+		this.vehicleId = vehicleId;
+	}
 
-  public void setDepotId(String depot) {
-    this.depotId = depot;
-  }
+	public void setDepotId(String depot) {
+		this.depotId = depot;
+	}
+	
+	public String getVehicleId() {
+		return vehicleId;
+	}
 
 }

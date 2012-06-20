@@ -91,7 +91,7 @@
                         </c:when>
                     </c:choose>
                         <a href="${href1}">
-                        <fmt:formatNumber var="weight" value="${p.logWeight}" pattern="0.###E0"/>
+                        <fmt:formatNumber var="weight" value="${p.logNormedWeight}" pattern="0.###E0"/>
                         <c:out value="${weight}"/></a>
                     </td>
 										<c:if test="${details.history}">

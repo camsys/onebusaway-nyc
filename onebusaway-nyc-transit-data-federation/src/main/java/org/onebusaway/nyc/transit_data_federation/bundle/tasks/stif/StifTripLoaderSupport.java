@@ -70,8 +70,10 @@ public class StifTripLoaderSupport {
 
   public TripIdentifier getIdentifierForStifTrip(TripRecord tripRecord, RawTrip rawTrip) {
     String routeName = tripRecord.getSignCodeRoute();
-    if (routeName == null || routeName.trim().length() == 0)
+    if (routeName == null || routeName.trim().length() == 0) {
       routeName = tripRecord.getRunRoute();
+      routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
+    }
     String startStop = rawTrip.firstStop;
     int startTime = rawTrip.firstStopTime;
     int endTime = rawTrip.lastStopTime;
@@ -81,7 +83,7 @@ public class StifTripLoaderSupport {
       endTime += 24 * 60 * 60;
     }
     String run = tripRecord.getRunId();
-    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run, rawTrip.blockId);
   }
 
   public List<Trip> getTripsForIdentifier(TripIdentifier id) {
@@ -99,12 +101,11 @@ public class StifTripLoaderSupport {
 
       for (Trip trip : allTrips) {
 
-        if (index % 500 == 0)
+        if (index % 20000 == 0)
           _log.info("trip=" + index + " / " + allTrips.size());
         index++;
 
         TripIdentifier tripIdentifier = getTripAsIdentifier(trip);
-
         List<Trip> trips = tripsByIdentifier.get(tripIdentifier);
         if (trips == null) {
           trips = new ArrayList<Trip>();
@@ -143,7 +144,7 @@ public class StifTripLoaderSupport {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
             SQLException {
-          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 ORDER BY st.departureTime ASC LIMIT 1");
+          Query query = session.createQuery("SELECT st.departureTime, st.stop.id.id FROM StopTime st WHERE st.trip = :trip AND st.departureTime >= 0 ORDER BY st.stopSequence ASC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
@@ -156,7 +157,7 @@ public class StifTripLoaderSupport {
         @Override
         public Object doInHibernate(Session session) throws HibernateException,
             SQLException {
-          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 ORDER BY st.arrivalTime DESC LIMIT 1");
+          Query query = session.createQuery("SELECT st.arrivalTime FROM StopTime st WHERE st.trip = :trip AND st.arrivalTime >= 0 ORDER BY st.stopSequence DESC LIMIT 1");
           query.setParameter("trip", trip);
           return query.list();
         }
@@ -171,14 +172,18 @@ public class StifTripLoaderSupport {
       StopTime endStopTime = stopTimes.get(stopTimes.size() - 1);
       endTime = endStopTime.getArrivalTime();
     }
-    //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
-    //their current trip id format.
-
+    String run = null;
     String[] parts = trip.getId().getId().split("_");
-    String runRoute = parts[4];
-    String runId = parts[5];
-    String run = runRoute + "-" + runId;
-    return new TripIdentifier(routeName, startTime, endTime, startStop, run);
+    if (parts.length >= 6) {
+      //hack the run out of the trip id.  This depends sensitively on the MTA maintaining
+      //their current trip id format.
+      //for MTA Bus Co, this is not necessary, we hope
+      String runRoute = parts[4];
+      String runId = parts[5];
+      run = runRoute + "-" + runId;
+    }
+    routeName = routeName.replaceFirst("^([a-zA-Z]+)0+", "$1").toUpperCase();
+    return new TripIdentifier(routeName, startTime, endTime, startStop, run, trip.getBlockId());
   }
 
   public GtfsMutableRelationalDao getGtfsDao() {

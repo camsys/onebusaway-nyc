@@ -4,8 +4,9 @@ import static org.junit.Assert.*;
 
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
-import org.onebusaway.nyc.admin.service.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.FileService;
+import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
+import org.onebusaway.nyc.admin.service.bundle.impl.BundleBuildingServiceImpl;
 
 import org.junit.Before;
 import org.junit.Test;

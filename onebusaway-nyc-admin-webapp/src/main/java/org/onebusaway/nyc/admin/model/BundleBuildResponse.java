@@ -20,16 +20,31 @@ public class BundleBuildResponse {
   private String _remoteOutputDirectory;
   private String _versionString;
   private String _tmpDirectory;
-
+  private String _bundleBuildName;
 
   private String _id = null;
+  private String bundleResultLink;
 
+  // no arg constructor for serialization
+  public BundleBuildResponse() {
+    
+  }
   public BundleBuildResponse(String id) {
     _id = id;
   }
 
+  public String toString() {
+    return "BundleBuildResponse{[" + _id + "], bundleResultLink=" + bundleResultLink
+        + ", statusList=" + _statusList 
+        + ", complete=" + _isComplete + "}"; 
+  }
+
   public String getId() {
     return _id;
+  }
+
+  public void setId(String id) {
+    _id = id;
   }
 
   public void addGtfsFile(String file) {
@@ -40,6 +55,11 @@ public class BundleBuildResponse {
     return new ArrayList<String>(_gtfsList);
   }
 
+  // for JSON serialization only
+  public void setGtfsList(List<String> gtfsList) {
+    _gtfsList = gtfsList;
+  }
+  
   public void addStifZipFile(String file) {
     _stifZipList.add(file);
   }
@@ -48,6 +68,11 @@ public class BundleBuildResponse {
     return new ArrayList<String>(_stifZipList);
   }
 
+  // for JSON serializaton only
+  public void setStifZipList(List<String> stifZipList) {
+    _stifZipList = stifZipList;
+  }
+  
   public void addStatusMessage(String msg) {
     _statusList.add(msg);
   }
@@ -56,6 +81,11 @@ public class BundleBuildResponse {
     return new ArrayList<String>(_statusList);
   }
 
+  // for JSON serialization only
+  public void setStatusList(List<String> statusList) {
+    _statusList = statusList;
+  }
+  
   public void addOutputFile(String name) {
     _outputFileList.add(name);
   }
@@ -64,7 +94,15 @@ public class BundleBuildResponse {
     return new ArrayList<String>(_outputFileList);
   }
 
+  public void setOutputFileList(List<String> outputFileList) {
+    _outputFileList = outputFileList;
+  }
+  
   public void addException(Exception e) {
+    _exception = e;
+  }
+  
+  public void setException(Exception e) {
     _exception = e;
   }
 
@@ -149,6 +187,28 @@ public class BundleBuildResponse {
 
    public void setRemoteOutputDirectory(String directoryPath) {
     _remoteOutputDirectory = directoryPath;
+  }
+
+	/**
+	 * @return the bundleResultLink
+	 */
+	public String getBundleResultLink() {
+		return bundleResultLink;
+	}
+	
+	/**
+	 * @param bundleResultLink the bundleResultLink to set
+	 */
+	public void setBundleResultLink(String bundleResultLink) {
+		this.bundleResultLink = bundleResultLink;
+	}
+
+	public String getBundleBuildName() {
+	  return _bundleBuildName;
+	}
+	
+  public void setBundleBuildName(String bundleName) {
+    this._bundleBuildName = bundleName;
   }
 
 }

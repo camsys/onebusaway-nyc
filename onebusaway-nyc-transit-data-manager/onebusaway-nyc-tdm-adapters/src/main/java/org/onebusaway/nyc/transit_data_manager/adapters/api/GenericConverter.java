@@ -9,6 +9,9 @@ import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.MtaSignCod
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToJsonOutputProcess;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsCrewAssignsToTcipXmlProcess;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsVehiclePulloutToTcipXmlProcess;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.MtaUtsToTcipVehicleAssignmentConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.input.TCIPVehicleAssignmentsOutputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.tools.UtsMappingTool;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
@@ -37,7 +40,11 @@ public class GenericConverter {
     } else if (mtaUtsCrewToTcipXml.equals(convType)) {
       conv = new UtsCrewAssignsToTcipXmlProcess(inputFile, outputFile);
     } else if (mtaUtsPipoToTcipXml.equals(convType)) {
-      conv = new UtsVehiclePulloutToTcipXmlProcess(inputFile, outputFile);
+      TCIPVehicleAssignmentsOutputConverter converter = new TCIPVehicleAssignmentsOutputConverter();
+      MtaUtsToTcipVehicleAssignmentConverter dataConverter = new MtaUtsToTcipVehicleAssignmentConverter();
+      dataConverter.setMappingTool(new UtsMappingTool());
+	  converter.setDataConverter(dataConverter);
+	  conv = new UtsVehiclePulloutToTcipXmlProcess(inputFile, outputFile, converter);
     } else if (mtaDscToTcipXml.equals(convType)) {
       conv = new MtaSignCodeToTcipXmlProcess(inputFile, outputFile);
     }
@@ -91,6 +98,7 @@ public class GenericConverter {
       
       try {
         ex.runConversion();
+        System.out.println("Generated ouput to " +outputFile);
       } catch (IOException e1) {
         System.out.println("Had trouble writing output file to disk. Please investigate output file.");
         return;

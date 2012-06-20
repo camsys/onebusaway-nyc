@@ -100,6 +100,11 @@
       <groupId>taglibs</groupId>
       <artifactId>standard</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.dmurph</groupId>
+      <artifactId>JGoogleAnalyticsTracker</artifactId>
+      <version>1.2.2-SNAPSHOT</version>
+    </dependency>
 
 <!--
     <dependency>

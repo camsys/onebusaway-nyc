@@ -38,6 +38,7 @@ import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTrans
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.ServiceCode;
 import org.onebusaway.nyc.transit_data_federation.model.nyc.RunData;
 import org.onebusaway.utility.ObjectSerializationLibrary;
+import org.opentripplanner.common.model.P2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -269,8 +270,8 @@ public class StifTask implements Runnable {
     csvLogger.header(
         "stif_trips_without_pullout.csv",
         "stif_trip,stif_filename,stif_trip_record_line_num,gtfs_trip_id,synthesized_block_id");
-    csvLogger.header("matched_trips_gtfs_stif.csv", "blockId,tripId,dsc,firstStop,firstStopTime,lastStop,lastStopTime,"+
-        "runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute,routeId");
+    csvLogger.header("matched_trips_gtfs_stif.csv", "agency_id,gtfs_service_id,service_id,blockId,tripId,dsc,firstStop,"+
+        "firstStopTime,lastStop,lastStopTime,runId,reliefRunId,recoveryTime,firstInSeq,lastInSeq,signCodeRoute,routeId");
 
     Map<ServiceCode, List<RawTrip>> rawData = loader.getRawStifData();
     for (Map.Entry<ServiceCode, List<RawTrip>> entry : rawData.entrySet()) {
@@ -307,7 +308,7 @@ public class StifTask implements Runnable {
         blockNo ++;
         RawTrip lastTrip = pullout;
         int i = 0;
-        HashSet<String> blockIds = new HashSet<String>();
+        HashSet<P2<String>> blockIds = new HashSet<P2<String>>();
         while (lastTrip.type != StifTripType.PULLIN) {
 
           unmatchedTrips.remove(lastTrip);
@@ -376,30 +377,39 @@ public class StifTask implements Runnable {
           lastTrip = trip;
           for (Trip gtfsTrip : lastTrip.getGtfsTrips()) {
             RawRunData rawRunData = loader.getRawRunDataByTrip().get(gtfsTrip);
-            String blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
+            String blockId;
+            if (trip.agencyId.equals("MTA NYCT")) {
+              blockId = gtfsTrip.getServiceId().getId() + "_" + rawRunData.getDepotCode() + "_" + pullout.firstStopTime + "_" + pullout.getRunIdWithDepot() + "_" + blockNo;
+            } else {
+              blockId = gtfsTrip.getServiceId().getId() + "_" + trip.blockId + "_" + blockNo;
+            }
 
             blockId = blockId.intern();
-            blockIds.add(blockId);
+            blockIds.add(new P2<String>(blockId, gtfsTrip.getServiceId().getId()));
             gtfsTrip.setBlockId(blockId);
             _gtfsMutableRelationalDao.updateEntity(gtfsTrip);
 
             AgencyAndId routeId = gtfsTrip.getRoute().getId();
             addToMapSet(routeIdsByDsc, trip.getDsc(), routeId);
-            dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId, routeId.getId());
+            dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
+                gtfsTrip.getId().getId(), blockId, routeId.getId());
 
             usedGtfsTrips.add(gtfsTrip);
           }
           if (lastTrip.type == StifTripType.DEADHEAD) {
-            for (String blockId : blockIds) {
-              dumpBlockDataForTrip(lastTrip, "deadhead", blockId, "no gtfs trip");
+            for (P2<String> blockId : blockIds) {
+              String tripId = String.format("deadhead_%s_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.lastStop, lastTrip.runId);
+              dumpBlockDataForTrip(lastTrip, blockId.getSecond(), tripId, blockId.getFirst(), "no gtfs trip");
             }
           }
         }
         unmatchedTrips.remove(lastTrip);
 
-        for (String blockId : blockIds) {
-          dumpBlockDataForTrip(pullout, "pullout", blockId, "no gtfs trip");
-          dumpBlockDataForTrip(lastTrip, "pullin", blockId, "no gtfs trip");
+        for (P2<String> blockId : blockIds) {
+          String pulloutTripId = String.format("pullout_%s_%s_%s_%s", blockId.getSecond(), lastTrip.firstStop, lastTrip.firstStopTime, lastTrip.runId);
+          dumpBlockDataForTrip(pullout, blockId.getSecond(), pulloutTripId , blockId.getFirst(), "no gtfs trip");
+          String pullinTripId = String.format("pullin_%s_%s_%s_%s", blockId.getSecond(), lastTrip.lastStop, lastTrip.lastStopTime, lastTrip.runId);
+          dumpBlockDataForTrip(lastTrip, blockId.getSecond(), pullinTripId, blockId.getFirst(), "no gtfs trip");
         }
       }
 
@@ -415,7 +425,8 @@ public class StifTask implements Runnable {
           _log.warn("Generating single-trip block id for GTFS trip: "
               + gtfsTrip.getId() + " : " + blockId);
           gtfsTrip.setBlockId(blockId);
-          dumpBlockDataForTrip(trip, gtfsTrip.getId().getId(), blockId, gtfsTrip.getBlockId());
+          dumpBlockDataForTrip(trip, gtfsTrip.getServiceId().getId(),
+              gtfsTrip.getId().getId(), blockId, gtfsTrip.getRoute().getId().getId());
           csvLogger.log("stif_trips_without_pullout.csv", trip.id, trip.path,
               trip.lineNumber, gtfsTrip.getId(), blockId);
           usedGtfsTrips.add(gtfsTrip);
@@ -460,14 +471,14 @@ public class StifTask implements Runnable {
   /**
    * Dump some raw block matching data to a CSV file from stif trips
    */
-  private void dumpBlockDataForTrip(RawTrip trip,
+  private void dumpBlockDataForTrip(RawTrip trip, String gtfsServiceId,
       String tripId, String blockId, String routeId) {
 
-    csvLogger.log("matched_trips_gtfs_stif.csv", blockId, tripId,
-        trip.getDsc(), trip.firstStop, trip.firstStopTime, trip.lastStop,
-        trip.lastStopTime, trip.runId, trip.reliefRunId, trip.recoveryTime,
-        trip.firstTripInSequence, trip.lastTripInSequence,
-        trip.getSignCodeRoute(), routeId);
+    csvLogger.log("matched_trips_gtfs_stif.csv", trip.agencyId,
+        gtfsServiceId, trip.serviceCode, blockId, tripId, trip.getDsc(), trip.firstStop,
+        trip.firstStopTime, trip.lastStop, trip.lastStopTime, trip.runId,
+        trip.reliefRunId, trip.recoveryTime, trip.firstTripInSequence,
+        trip.lastTripInSequence, trip.getSignCodeRoute(), routeId);
   }
 
   private void warnOnMissingTrips() {

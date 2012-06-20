@@ -245,6 +245,12 @@ public class SearchServiceImpl implements SearchService {
 					results.addRouteIdFilter(_routeShortNameToIdMap.get(token));
 					continue;
 				}
+			} else {
+			  // if the token is not a route and the next or last token is a valid stop id,
+			  // consider the token a bad filter and remove it from the query.
+			  if ((lastItem != null && stopsForId(lastItem).size() > 0) || (nextItem != null && stopsForId(nextItem).size() > 0)) {
+			    continue;
+			  }
 			}
 
 			// allow the plus sign instead of "and"
@@ -317,20 +323,7 @@ public class SearchServiceImpl implements SearchService {
 		stopQuery = stopQuery.trim();
 
 		// try to find a stop ID for all known agencies
-		List<StopBean> matches = new ArrayList<StopBean>();
-		for (AgencyWithCoverageBean agency : _nycTransitDataService.getAgenciesWithCoverage()) {
-			AgencyAndId potentialStopId = new AgencyAndId(agency.getAgency().getId(), stopQuery);
-
-			try {
-				StopBean potentialStop = _nycTransitDataService.getStop(potentialStopId.toString());
-
-				if (potentialStop != null) {
-					matches.add(potentialStop);
-				}
-			} catch (NoSuchStopServiceException ex) {
-				continue;
-			}
-		}
+		List<StopBean> matches = stopsForId(stopQuery);
 
 		if (matches.size() == 1)
 			results.addMatch(resultFactory.getStopResult(matches.get(0), results.getRouteIdFilter()));
@@ -351,6 +344,25 @@ public class SearchServiceImpl implements SearchService {
 				results.addSuggestion(resultFactory.getGeocoderResult(result, results.getRouteIdFilter()));
 			}
 		}
+	}
+	
+	// Utility method for getting all known stops for an id with no agency
+	private List<StopBean> stopsForId(String id) {
+	  List<StopBean> matches = new ArrayList<StopBean>();
+    for (AgencyWithCoverageBean agency : _nycTransitDataService.getAgenciesWithCoverage()) {
+      AgencyAndId potentialStopId = new AgencyAndId(agency.getAgency().getId(), id);
+
+      try {
+        StopBean potentialStop = _nycTransitDataService.getStop(potentialStopId.toString());
+
+        if (potentialStop != null) {
+          matches.add(potentialStop);
+        }
+      } catch (NoSuchStopServiceException ex) {
+        continue;
+      }
+    }
+    return matches;
 	}
 
 	private class SearchResultDistanceComparator implements Comparator<SearchResult> {
