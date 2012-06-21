@@ -202,8 +202,13 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   
   private class ValidateThread implements Runnable {
     private static final int MAX_COUNT = 3600; //(5 hours at 5 second increments)
+    private static final int MAX_PING_COUNT = 60; //(5 minutes at 5 second increments)
+    private static final int MAX_ERRORS = 20;
     private BundleRequest _request;
     private BundleResponse _response;
+    private int pingCount = 0;
+    private int errorCount = 0;
+    private int pollCount = 0;
 
     public ValidateThread(BundleRequest request, BundleResponse response) {
       _request = request;
@@ -216,11 +221,10 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       _response.addStatusMessage("starting server...");
       try {
         serverId = _bundleServer.start(getInstanceId());
-        int count = 0;
         boolean isAlive = _bundleServer.ping(serverId);
-        while (isAlive == false && count < MAX_COUNT) {
+        while (isAlive == false && pingCount < MAX_PING_COUNT) {
           Thread.sleep(5 * 1000);
-          count++;
+          pingCount++;
           isAlive = _bundleServer.ping(serverId);
         }
         if (!isAlive) {
@@ -238,14 +242,14 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           String id = _response.getId();
           // put response in map
           _validationMap.put(id, _response);
-          count = 0;
+
           // should this response look ok, query until it completes
-          while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
+          while (!isComplete(_response)) {
             url = "/validate/remote/" + id + "/list";
 
             _response = makeRequest(serverId, url, null, BundleResponse.class);
             _validationMap.put(id, _response);
-            count++;
+            pollCount++;
             Thread.sleep(5 * 1000);
           }
         }
@@ -270,6 +274,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       } finally {
         _response.setComplete(true);
         // allow machine to power down
+        _log.info("validateThread exiting, shutting down server");
         _response.addStatusMessage("shutting down server");
         _bundleServer.stop(serverId);
         try {
@@ -280,13 +285,36 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       }
     }
 
+    private boolean isComplete(BundleResponse response) {
+      if (response == null && errorCount < MAX_ERRORS) {
+        errorCount++;
+        return false;
+      } else if (response == null && errorCount > MAX_ERRORS) {
+        _log.error("Received " + MAX_ERRORS + " errors, bailing");
+        return true;
+      } else if (response.isComplete()) {
+        return true;
+      } else if (pollCount > MAX_COUNT) {
+        _log.error("Build timed-out, bailing");
+        response.addStatusMessage("Bailing due to build timeout");
+        return true;
+      }
+      errorCount = 0; // reset errorCount
+      return false;
+    }
+
   }
 
   private class BuildThread implements Runnable {
     private static final int MAX_COUNT = 3600; // 5 hours at 5 second increments
+    private static final int MAX_PING_COUNT = 60; // 5 minutes
+    private static final int MAX_ERRORS = 20;
     private BundleBuildRequest _request;
     private BundleBuildResponse _response;
-
+    private int errorCount = 0;
+    private int pollCount = 0;
+    
+    
     public BuildThread(BundleBuildRequest request, BundleBuildResponse response) {
       _request = request;
       _response = response;
@@ -298,15 +326,16 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
       _response.addStatusMessage("starting server...");
       try {
         serverId = _bundleServer.start(getInstanceId());
-        int count = 0;
+        int pingCount = 0;
         boolean isAlive = _bundleServer.ping(serverId);
-        while (isAlive == false && count < MAX_COUNT) {
+        while (isAlive == false && pingCount < MAX_PING_COUNT) {
           Thread.sleep(5 * 1000);
-          count++;
+          pingCount++;
           isAlive = _bundleServer.ping(serverId);
         }
         if (!isAlive) {
           _log.error("server " + serverId + " failed to start");
+          _response.addStatusMessage("Server failed to start.  Please try again");
           return;
         }
         
@@ -322,14 +351,13 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           String id = _response.getId();
           // put response in map
           _buildMap.put(id, _response);
-          count = 0;
+
           // should this response look ok, query until it completes
-          while ((_response == null || !_response.isComplete()) && count < MAX_COUNT) {
+          while (!isComplete(_response)) {
             url = "/build/remote/" + id + "/list";
             _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
             _buildMap.put(id, _response);
-
-            count++;
+            pollCount++;
             Thread.sleep(5 * 1000);
           }
         }
@@ -353,6 +381,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         try {
           _response.setComplete(true);
           _response.addStatusMessage("shutting down server");
+          _log.info("buildThread exiting, shutting down server");
           _bundleServer.stop(serverId);
           sendEmail(_request, _response);
           try {
@@ -366,6 +395,24 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
           _log.error("sendEmail failed", t);
         }
       }
+    }
+    
+    private boolean isComplete(BundleBuildResponse response) {
+      if (response == null && errorCount < MAX_ERRORS) {
+        errorCount++;
+        return false;
+      } else if (response == null && errorCount > MAX_ERRORS) {
+        _log.error("Received " + MAX_ERRORS + " errors, bailing");
+        return true;
+      } else if (response.isComplete()) {
+        return true;
+      } else if (pollCount > MAX_COUNT) {
+        _log.error("Build timed-out, bailing");
+        response.addStatusMessage("Bailing due to build timeout");
+        return true;
+      }
+      errorCount = 0; // reset errorCount
+      return false;
     }
   }
 
