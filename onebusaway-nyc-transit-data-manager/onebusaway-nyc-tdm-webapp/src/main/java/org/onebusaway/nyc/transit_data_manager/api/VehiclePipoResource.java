@@ -121,7 +121,7 @@ public class VehiclePipoResource {
 		return output;
 	}
 	
-	@Path("/{depotName}/vehicles/list")
+	@Path("/depot/{depotName}/list")
 	@GET
 	@Produces("application/json")
 	public String getActivePulloutsForDepot(@PathParam("depotName") String depotName) {
@@ -152,7 +152,7 @@ public class VehiclePipoResource {
 		return output;
 	}
 	
-	@Path("/vehicles/{agencyId}/list")
+	@Path("/agency/{agencyId}/list")
 	@GET
 	@Produces("application/json")
 	public String getActivePulloutsForAgency(@PathParam("agencyId") String agencyId) {
