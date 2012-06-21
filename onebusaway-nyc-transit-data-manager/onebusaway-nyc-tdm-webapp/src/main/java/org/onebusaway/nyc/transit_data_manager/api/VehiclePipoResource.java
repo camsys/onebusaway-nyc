@@ -33,8 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import tcip_final_3_0_5_1.SCHPullInOutInfo;
-
 /**
  * Web service resource to return vehicle pull in pull out data from the server. The data is parsed from a CSV
  * file in the configured directory and converted into TCIP format which is then sent back to the caller as 
@@ -42,7 +40,7 @@ import tcip_final_3_0_5_1.SCHPullInOutInfo;
  * @author abelsare
  *
  */
-@Path("/vehiclepipo")
+@Path("/pullouts")
 @Component
 @Scope("request")
 public class VehiclePipoResource {
@@ -154,7 +152,7 @@ public class VehiclePipoResource {
 		return output;
 	}
 	
-	@Path("/{agencyId}/vehicles")
+	@Path("/vehicles/{agencyId}/list")
 	@GET
 	@Produces("application/json")
 	public String getActivePulloutsForAgency(@PathParam("agencyId") String agencyId) {

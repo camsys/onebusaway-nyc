@@ -28,7 +28,7 @@ public class PullInOutFromTcip implements
 		Vehicle vehicle = vehConv.convert(pulloutInfo.getVehicle());
 		movement.setVehicleId(vehicle.getVehicleId());
 
-		movement.setVehicleAgencyId(pulloutInfo.getVehicle().getAgencyId().toString());
+		movement.setAgencyIdTcip(pulloutInfo.getVehicle().getAgencyId().toString());
 		
 		movement.setAgencyId(pulloutInfo.getGarage().getAgencydesignator());
 		
