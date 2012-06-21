@@ -7,7 +7,7 @@ package org.onebusaway.nyc.transit_data_manager.adapters.output.model.json;
  */
 public class PullInOut {
 	private String vehicleId;
-	private String vehicleAgencyId;
+	private String agencyIdTcip;
 	private String agencyId;
 	private String depot;
 	private String serviceDate;
@@ -26,18 +26,6 @@ public class PullInOut {
 	 */
 	public void setVehicleId(String vehicleId) {
 		this.vehicleId = vehicleId;
-	}
-	/**
-	 * @return the vehicleAgencyId
-	 */
-	public String getVehicleAgencyId() {
-		return vehicleAgencyId;
-	}
-	/**
-	 * @param vehicleAgencyId the vehicleAgencyId to set
-	 */
-	public void setVehicleAgencyId(String vehicleAgencyId) {
-		this.vehicleAgencyId = vehicleAgencyId;
 	}
 	/**
 	 * @return the agencyId
@@ -122,6 +110,18 @@ public class PullInOut {
 	 */
 	public void setPullinTime(String pullinTime) {
 		this.pullinTime = pullinTime;
+	}
+	/**
+	 * @return the agencyIdTcip
+	 */
+	public String getAgencyIdTcip() {
+		return agencyIdTcip;
+	}
+	/**
+	 * @param agencyIdTcip the agencyIdTcip to set
+	 */
+	public void setAgencyIdTcip(String agencyIdTcip) {
+		this.agencyIdTcip = agencyIdTcip;
 	}
 	
 }
