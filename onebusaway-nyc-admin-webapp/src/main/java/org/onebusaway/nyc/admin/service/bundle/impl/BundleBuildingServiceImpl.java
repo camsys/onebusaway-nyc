@@ -7,8 +7,10 @@ import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.impl.FileUtils;
+import org.onebusaway.nyc.admin.service.impl.ProcessUtil;
 import org.onebusaway.nyc.transit_data_federation.bundle.model.NycFederatedTransitDataBundle;
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.StifTask;
+import org.onebusaway.nyc.util.configuration.ConfigurationService;
 import org.onebusaway.transit_data_federation.bundle.FederatedTransitDataBundleCreator;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundle;
 import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
@@ -22,9 +24,12 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,16 +37,27 @@ import java.util.Map;
 
 public class BundleBuildingServiceImpl implements BundleBuildingService {
   private static final String BUNDLE_RESOURCE = "classpath:org/onebusaway/transit_data_federation/bundle/application-context-bundle-admin.xml";
+  private static final String DEFAULT_STIF_CLEANUP_URL = "https://github.com/camsys/onebusaway-nyc/raw/master/onebusaway-nyc-stif-loader/fix-stif-date-codes.py";
   private static final String DATA_DIR = "data";
   private static final String OUTPUT_DIR = "outputs";
   private static final String INPUTS_DIR = "inputs";
+
   private static Logger _log = LoggerFactory.getLogger(BundleBuildingServiceImpl.class);
   private FileService _fileService;
-
+  private ConfigurationService configurationService;
+  
   @Autowired
   public void setFileService(FileService service) {
     _fileService = service;
   }
+
+ 	/**
+	 * @param configurationService the configurationService to set
+	 */
+ 	@Autowired
+	public void setConfigurationService(ConfigurationService configurationService) {
+		this.configurationService = configurationService;
+	}
 
   @Override
   public void setup() {
@@ -56,6 +72,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     build(request, response);
     assemble(request, response);
     upload(request, response);
+    response.addStatusMessage("Bundle build process complete");
   }
   /**
    * download from S3 and stage for building 
@@ -93,6 +110,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    */
   @Override
   public void prepare(BundleBuildRequest request, BundleBuildResponse response) {
+    response.addStatusMessage("preparing for build");
     FileUtils fs = new FileUtils();
     // copy source data to inputs
     String rootPath = request.getTmpDirectory() + File.separator + request.getBundleName();
@@ -128,13 +146,61 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     }
     
     for (String stifZip : response.getStifZipList()) {
+      _log.info("stif copying " + stifZip + " to " + request.getTmpDirectory() + File.separator
+          + "stif");
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
           + "stif");
     }
-    // TODO clean them via STIF_PYTHON_CLEANUP_SCRIPT
+    
+    // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
+    try {
+      File stifDir = new File(request.getTmpDirectory() + File.separator + "stif");
+      File[] stifDirectories = stifDir.listFiles();
+      if (stifDirectories != null) {
+        
+        fs = new FileUtils(request.getTmpDirectory());
+          String stifUtilUrl = getStifCleanupUrl();
+          response.addStatusMessage("downloading " + stifUtilUrl + " to clean stifs");
+          fs.wget(stifUtilUrl);
+          String stifUtilName = fs.parseFileName(stifUtilUrl);
+          // make executable
+          fs.chmod("500", request.getTmpDirectory() + File.separator + stifUtilName);
 
+        // for each subdirectory of stif, run the script 
+        for (File stifSubDir : stifDirectories) {
+          String cmd = request.getTmpDirectory() + File.separator + stifUtilName + " " 
+            + stifSubDir.getCanonicalPath();
+          
+          // kick off process and collect output
+          ProcessUtil pu = new ProcessUtil(cmd);
+          pu.exec();
+          if (pu.getReturnCode() == null || !pu.getReturnCode().equals(0)) {
+            String returnCodeMessage = stifUtilName + " exited with return code " + pu.getReturnCode();
+            response.addStatusMessage(returnCodeMessage);
+            _log.info(returnCodeMessage);
+            response.addStatusMessage(stifUtilName + ":" + pu.getOutput());
+            _log.info("output=" + pu.getOutput());
+            response.addStatusMessage(stifUtilName + ":" + pu.getError());
+            _log.info("error=" + pu.getError());
+          }
+          if (pu.getException() != null) {
+            response.addException(pu.getException());
+          }
+        }
+        response.addStatusMessage("stif cleaning complete");
+      } 
+    } catch (Exception any) {
+      response.addException(any);
+    }
   }
 
+  private String getStifCleanupUrl() {
+    if (configurationService != null) {
+      return configurationService.getConfigurationValueAsString("admin.stif_cleanup_url", DEFAULT_STIF_CLEANUP_URL);
+    }
+    return DEFAULT_STIF_CLEANUP_URL;
+  }
+  
   /**
    * call FederatedTransitDataBundleCreator
    */
@@ -255,6 +321,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
    */
   @Override
   public void assemble(BundleBuildRequest request, BundleBuildResponse response) {
+    response.addStatusMessage("compressing results");
+
     FileUtils fs = new FileUtils();
     // build BundleMetaData.json
    new BundleBuildingUtil().generateJsonMetadata(request, response);
@@ -327,8 +395,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
-    response.addStatusMessage("upload complete");
-     // TODO implement delete
+    /* TODO implement delete 
+     * for now we rely on cloud restart to delete volume for us, but that is lazy 
+     */
   }
 
   private String createVersionString(BundleBuildRequest request,
