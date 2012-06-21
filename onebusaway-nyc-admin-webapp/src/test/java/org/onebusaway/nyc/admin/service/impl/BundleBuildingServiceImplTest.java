@@ -126,19 +126,24 @@ public class BundleBuildingServiceImplTest {
         + System.currentTimeMillis());
     assertEquals(0, response.getStatusList().size());
 
+    // step 1
     _service.download(request, response);
     assertNotNull(response.getGtfsList());
     assertEquals(1, response.getGtfsList().size());
 
     assertNotNull(response.getStifZipList());
     assertEquals(1, response.getStifZipList().size());
-
+     
     assertNotNull(response.getStatusList());
     assertTrue(response.getStatusList().size() > 0);
 
+    // step 2
     _service.prepare(request, response);
 
+    
     assertFalse(response.isComplete());
+    
+    // step 3
     int rc = _service.build(request, response);
     if (response.getException() != null) {
       _log.error("Failed with exception=" + response.getException());
@@ -146,7 +151,11 @@ public class BundleBuildingServiceImplTest {
     assertNull(response.getException());
     assertFalse(response.isComplete());
     assertEquals(0, rc);
+    
+    // step 4
+    _service.assemble(request, response);
 
+    // step 5
     _service.upload(request, response);
     assertFalse(response.isComplete()); // set by BundleRequestService
 

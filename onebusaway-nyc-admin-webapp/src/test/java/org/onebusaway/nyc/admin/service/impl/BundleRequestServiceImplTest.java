@@ -177,6 +177,7 @@ public class BundleRequestServiceImplTest {
     //String key = "m34"; // use for faster testing
     req.setBundleDirectory(key);
     req.setBundleName("test_0");
+    req.setTmpDirectory(new FileUtils().createTmpDirectory());
     _log.debug("calling build for dir=" + req.getBundleDirectory() + " name=" + req.getBundleName());
     BundleBuildResponse res = service.build(req);
     assertFalse(res.isComplete());
