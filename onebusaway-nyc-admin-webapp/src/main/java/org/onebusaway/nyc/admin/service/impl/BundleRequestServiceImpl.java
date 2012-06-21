@@ -201,7 +201,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   }
   
   private class ValidateThread implements Runnable {
-    private static final int MAX_COUNT = 100;
+    private static final int MAX_COUNT = 3600; //(5 hours at 5 second increments)
     private BundleRequest _request;
     private BundleResponse _response;
 
@@ -283,7 +283,7 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   }
 
   private class BuildThread implements Runnable {
-    private static final int MAX_COUNT = 100;
+    private static final int MAX_COUNT = 3600; // 5 hours at 5 second increments
     private BundleBuildRequest _request;
     private BundleBuildResponse _response;
 
