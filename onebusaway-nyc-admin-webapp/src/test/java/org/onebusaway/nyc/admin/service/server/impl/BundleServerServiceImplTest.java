@@ -52,9 +52,9 @@ public class BundleServerServiceImplTest {
     long start = System.currentTimeMillis();
     String dns = serverService.pollPublicDns(instanceId, 60);
     long end = System.currentTimeMillis();
-    _log.info("found dns=" + dns + " after " + (end-start)/1000 + " seconds");
+    _log.debug("found dns=" + dns + " after " + (end-start)/1000 + " seconds");
     String ip = serverService.findPublicIp(instanceId);
-    _log.info("found ip=" + ip);
+    _log.debug("found ip=" + ip);
     assertNotNull(ip);
     
     start = System.currentTimeMillis();
@@ -65,7 +65,7 @@ public class BundleServerServiceImplTest {
       count++;
     }
     end = System.currentTimeMillis();
-    _log.info("ping=" + serverService.ping(instanceId) + " after " + (end-start)/1000 + " seconds");
+    _log.debug("ping=" + serverService.ping(instanceId) + " after " + (end-start)/1000 + " seconds");
     serverService.stop(instanceId);
   }
 

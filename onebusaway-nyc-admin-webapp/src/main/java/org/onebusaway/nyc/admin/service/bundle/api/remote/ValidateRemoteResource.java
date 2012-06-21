@@ -69,7 +69,6 @@ public class ValidateRemoteResource extends AuthenticatedResource {
     try {
       bundleResponse.addStatusMessage("server started");
       bundleResponse.addStatusMessage("queueing");
-      _log.info("calling downloadAndValidate");
       // place execution in its own thread
       _executorService.execute(new ValidateThread(bundleRequest, bundleResponse));
       // place handle to response in map
@@ -79,7 +78,7 @@ public class ValidateRemoteResource extends AuthenticatedResource {
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       // write back response
-      _log.info("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
+      _log.debug("returning id=" + bundleResponse.getId() + " for bundleResponse=" + bundleResponse);
       _mapper.writeValue(jsonGenerator, bundleResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any) {
@@ -99,13 +98,12 @@ public class ValidateRemoteResource extends AuthenticatedResource {
     }
 
     try {
-      _log.info("calling list for id=" + id);
       final StringWriter sw = new StringWriter();
       final MappingJsonFactory jsonFactory = new MappingJsonFactory();
       final JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator(sw);
       
       BundleResponse bundleResponse = _validationMap.get(id);
-      _log.info("found bundleResponse=" + bundleResponse + " for id=" + id);
+      _log.debug("found bundleResponse=" + bundleResponse + " for id=" + id);
       _mapper.writeValue(jsonGenerator, bundleResponse);
       response = Response.ok(sw.toString()).build();
     } catch (Exception any) {
@@ -139,7 +137,6 @@ public class ValidateRemoteResource extends AuthenticatedResource {
           _log.error("run failed:", any);
           _response.setException(any);
         } finally {
-         _log.info("downloadAndValidate complete!");
          _response.setComplete(true);
         }
       }

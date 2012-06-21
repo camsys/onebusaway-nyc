@@ -105,7 +105,7 @@ public class BundleRequestServiceImplTest {
       @SuppressWarnings("unchecked")
       @Override
       public <T> T makeRequest(String instanceId, String apiCall, Object payload, Class<T> returnType, int waitTimeInSeconds) {
-        _log.error("makeRequest called with apiCall=" + apiCall + " and payload=" + payload);
+        _log.debug("makeRequest called with apiCall=" + apiCall + " and payload=" + payload);
         if (apiCall.equals("/validate/remote/2012Jan/test_0/1/create")) {
           BundleResponse br = new BundleResponse("1");
           return (T) br;
@@ -146,7 +146,7 @@ public class BundleRequestServiceImplTest {
     //String key = "m34"; // use for faster testing
     req.setBundleDirectory(key);
     req.setBundleBuildName("test_0");
-    _log.info("calling validate for dir=" + req.getBundleDirectory() + " name=" + req.getBundleBuildName());
+    _log.debug("calling validate for dir=" + req.getBundleDirectory() + " name=" + req.getBundleBuildName());
     BundleResponse res = service.validate(req);
     assertFalse(res.isComplete());
     
@@ -156,7 +156,7 @@ public class BundleRequestServiceImplTest {
       Thread.sleep(10 * 1000);
       count++;
       // NOTE: this is optional to demonstrate retrieval service
-      _log.info("calling lookup(local) for id=" + res.getId());
+      _log.debug("calling lookup(local) for id=" + res.getId());
       res = service.lookupValidationRequest(res.getId());
       assertNotNull(res);
     }
@@ -180,6 +180,7 @@ public class BundleRequestServiceImplTest {
     req.setBundleStartDate("2012-04-08");
     req.setBundleEndDate("2012-07-07");
     _log.info("calling build for dir=" + req.getBundleDirectory() + " name=" + req.getBundleName());
+    _log.debug("calling build for dir=" + req.getBundleDirectory() + " name=" + req.getBundleName());
     BundleBuildResponse res = service.build(req);
     assertFalse(res.isComplete());
     
