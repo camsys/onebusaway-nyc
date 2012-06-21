@@ -166,7 +166,7 @@ public class VehiclePipoResourceTest {
 		
 		//Check first pullout data
 		assertTrue(outputJson.contains(" \"vehicle-id\": \"1240\""));
-		assertTrue(outputJson.contains( "\"vehicle-agency-id\": \"2008\""));
+		assertTrue(outputJson.contains( "\"agency-id-tcip\": \"2008\""));
 		assertTrue(outputJson.contains(" \"agency-id\": \"MTA NYCT\""));
 		assertTrue(outputJson.contains( "\"depot\": \"OS\""));
 		assertTrue(outputJson.contains(" \"service-date\": \"2012-06-15\""));
@@ -177,7 +177,7 @@ public class VehiclePipoResourceTest {
 		
 		//Check second pullout data
 		assertTrue(outputJson.contains(" \"vehicle-id\": \"1230\""));
-		assertTrue(outputJson.contains( "\"vehicle-agency-id\": \"2008\""));
+		assertTrue(outputJson.contains( "\"agency-id-tcip\": \"2008\""));
 		assertTrue(outputJson.contains(" \"agency-id\": \"MTA NYCT\""));
 		assertTrue(outputJson.contains( "\"depot\": \"OS\""));
 		assertTrue(outputJson.contains(" \"service-date\": \"2012-06-15\""));
@@ -248,7 +248,7 @@ public class VehiclePipoResourceTest {
 	private void verifyPulloutData(String outputJson) {
 		//Check pullout data
 		assertTrue(outputJson.contains(" \"vehicle-id\": \"1253\""));
-		assertTrue(outputJson.contains( "\"vehicle-agency-id\": \"2008\""));
+		assertTrue(outputJson.contains( "\"agency-id-tcip\": \"2008\""));
 		assertTrue(outputJson.contains(" \"agency-id\": \"MTA NYCT\""));
 		assertTrue(outputJson.contains( "\"depot\": \"OS\""));
 		assertTrue(outputJson.contains(" \"service-date\": \"2012-06-15\""));
