@@ -199,7 +199,7 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
     if((_q == null || _q.isEmpty()) && _location != null)
       return null;
     else
-      return StringEscapeUtils.escapeHtml(_q);
+      return StringEscapeUtils.escapeHtml(_q.replace("&amp;", "&"));
   }
   
   public String getL() {
