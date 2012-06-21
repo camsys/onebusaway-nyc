@@ -137,6 +137,10 @@
 	font-size: 12px;
 }
 
+.bundleLabel {
+	display: block;
+}
+
 .horizontalRadio {
 	margin-right: 30px; 
 }
@@ -145,9 +149,15 @@
 	border: 1px transparent;
 	width: 100px;
 	height: 30px;
+	background-image:url('img/Button_background.png');
+}
+
+.inlineFormButton {
+	border: 1px transparent;
+	width: 100px;
+	height: 30px;
 	display: inline;
 	background-image:url('img/Button_background.png');
-	
 }
 
 .directoryLabels {
@@ -301,13 +311,14 @@
 
 #prevalidateInputs {
 	padding-top: 20px;
-	
 }
 
-
 #prevalidateInputs #validateBox {
-	vertical-align: middle;
-	padding-top: 30px;
+	padding-top: 15px;
+}
+
+#prevalidateInputs #validateBox #validateButton {
+	margin-top: 10px;
 }
 
 #prevalidateInputs #validateBox #validating {
@@ -388,13 +399,9 @@
 	background-color: #F0F0F0;
 }
 
-#buildBox #buildBundle_bundleName {
-	width: 300px;
-	display: block;
-	margin-top: 7px;
-}
 
 #buildBox #buildBundle_buildButton {
+	border: 1px, transparent;
 	width: 150px;
 	height: 40px;
 	margin-top: 15px;
@@ -406,8 +413,27 @@
 	margin-top: 10px;
 }
 
-#buildBox #bundleLabel {
+#buildBox #bundleParams {
+	overflow: none;
+}
+
+#bundleParams #bundleNameHolder, #bundleParams #bundleStartDateHolder,
+#bundleParams #bundleEndDateHolder {
+	float: left;
+	margin-right: 20px;
+}
+
+#bundleNameHolder #buildBundle_bundleName {
+	width: 200px;
 	display: block;
+	margin-top: 5px;
+}
+
+#bundleStartDateHolder #startDatePicker,
+#bundleEndDateHolder #endDatePicker {
+	width: 150px;
+	display: block;
+	margin-top: 5px;
 }
 
 #buildBundle_exception {

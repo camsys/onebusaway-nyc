@@ -43,10 +43,22 @@
 					</fieldset>
 				</div>
 				<div id="buildBox">
-					<div>
-						<label id="bundleLabel" class="adminLabel">Bundle Build Name :</label> <input
-							type="text" id="buildBundle_bundleName" /> <input type="button"
-							id="buildBundle_buildButton" value="Build Bundle" class="formButton" />
+					<div id="bundleParams">
+						<div id="bundleNameHolder">
+							<label class="adminLabel bundleLabel">Bundle Build Name :</label> 
+							<input type="text" id="buildBundle_bundleName" /> 
+						</div>
+						<div id="bundleStartDateHolder">
+							<label id="startDateLabel" class="adminLabel">Start Date :</label>
+							<input type="text" id="startDatePicker" />
+							<input type="hidden" id="startDate" />
+						</div>
+						<div id="bundleEndDateHolder">
+							<label id="endDateLabel" class="adminLabel">End Date :</label>
+							<input type="text" id="endDatePicker" />
+							<input type="hidden" id="endDate" />
+						</div>
+						<input type="button" id="buildBundle_buildButton" value="Build Bundle" />
 					</div>
 					<div id="building">
 						<s:url var="url" value="/css/img/ajax-loader.gif" />

@@ -323,7 +323,9 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
         String url = "/build/remote/" + _request.getBundleDirectory() + "/"
             + _request.getBundleName() + "/"
             + _request.getEmailAddress() + "/" 
-            + _request.getId() + "/create";
+            + _request.getId() + "/" 
+            + _request.getBundleStartDate() + "/" 
+            + _request.getBundleEndDate() + "/create";
         _response = makeRequest(serverId, url, null, BundleBuildResponse.class);
         _log.info("call to build returned=" + _response);
 

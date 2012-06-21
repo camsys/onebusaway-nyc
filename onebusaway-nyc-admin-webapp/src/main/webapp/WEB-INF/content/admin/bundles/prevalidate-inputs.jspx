@@ -34,8 +34,10 @@
 						value="id" /></label>
 			</div>
 			<div id="validateBox">
-				<label id="bundleLabel" class="adminLabel">Bundle Build Name :</label> <input
-							type="text" id="prevalidate_bundleName" /> 
+				<div id="bundleNameBox">
+					<label class="adminLabel bundleLabel">Bundle Build Name :</label> 
+					<input type="text" id="prevalidate_bundleName" /> 
+				</div>
 				<input type="button" id="validateButton" value="Validate"
 					class="formButton" />
 				<div id="validating">

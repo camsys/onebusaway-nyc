@@ -13,6 +13,8 @@ public class BundleBuildRequest {
   private String _bundleName;
   private String _tmpDirectory;
   private String _emailAddress;
+  private String _bundleStartDate;
+  private String _bundleEndDate;
 
   public String getBundleDirectory() {
     return _bundleDirectory;
@@ -51,15 +53,21 @@ public class BundleBuildRequest {
   }
 
   public LocalDate getBundleStartDate() {
-    // TODO this needs to come from UI or be calculated
-    DateTimeFormatter dtf = ISODateTimeFormat.basicDate();
-    return new LocalDate(dtf.parseLocalDate("20120408"));
+	  DateTimeFormatter dtf = ISODateTimeFormat.date();
+    return new LocalDate(dtf.parseLocalDate(_bundleStartDate));
+  }
+  
+  public void setBundleStartDate(String bundleStartDate) {
+	  _bundleStartDate = bundleStartDate;
   }
 
   public LocalDate getBundleEndDate() {
-    // TODO this needs to come from UI or be calculated
-    DateTimeFormatter dtf = ISODateTimeFormat.basicDate();
-    return new LocalDate(dtf.parseLocalDate("20120707"));
+    DateTimeFormatter dtf = ISODateTimeFormat.date();
+    return new LocalDate(dtf.parseLocalDate(_bundleEndDate));
+  }
+  
+  public void setBundleEndDate(String bundleEndDate) {
+	  _bundleEndDate = bundleEndDate;
   }
 
   public String getEmailAddress() {
