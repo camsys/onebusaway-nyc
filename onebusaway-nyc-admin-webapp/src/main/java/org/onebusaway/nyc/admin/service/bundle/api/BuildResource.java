@@ -30,21 +30,28 @@ public class BuildResource extends AuthenticatedResource {
   private final ObjectMapper _mapper = new ObjectMapper();
   private static Logger _log = LoggerFactory.getLogger(BuildResource.class);
   
-  @Path("/{bundleDirectory}/{bundleName}/{email}/create")
+  @Path("/{bundleDirectory}/{bundleName}/{email}/{bundleStartDate}/{bundleEndDate}/create")
   @GET
   @Produces("application/json")
   public Response build(@PathParam("bundleDirectory") String bundleDirectory,
       @PathParam("bundleName") String bundleName,
-      @PathParam("email") String email) {
+      @PathParam("email") String email,
+      @PathParam("bundleStartDate") String bundleStartDate,
+      @PathParam("bundleEndDate") String bundleEndDate) {
     Response response = null;
     if (!isAuthorized()) {
       return Response.noContent().build();
     }
+    
     BundleBuildRequest buildRequest = new BundleBuildRequest();
     buildRequest.setBundleDirectory(bundleDirectory);
     buildRequest.setBundleName(bundleName);
     buildRequest.setEmailAddress(email);
+    buildRequest.setBundleStartDate(bundleStartDate);
+    buildRequest.setBundleEndDate(bundleEndDate);
+    
     BundleBuildResponse buildResponse = null;
+    
     try {
       buildResponse =_bundleService.build(buildRequest);
       buildResponse = _bundleService.buildBundleResultURL(buildResponse.getId());

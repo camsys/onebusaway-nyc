@@ -36,7 +36,7 @@
 			<div id="createDirectoryContents">
 				<s:textfield name="directoryName" cssClass="directoryName" />
 				<input type="button" id="directoryButton" value="Create"
-					class="formButton" />
+					class="inlineFormButton" />
 				<div id="createDirectoryResult">
 					<img id="resultImage" alt="Image not found" />
 					<div id="createDirectoryMessage">
@@ -78,7 +78,7 @@
 				<div id="commentBox">
 					<s:textarea name="comments" cssClass="comments"></s:textarea>
 					<input type="button" value="Add Comment" id="create_comments"
-						class="formButton" />
+						class="inlineFormButton" />
 				</div>
 			</div>
 			<div class="submitForm">

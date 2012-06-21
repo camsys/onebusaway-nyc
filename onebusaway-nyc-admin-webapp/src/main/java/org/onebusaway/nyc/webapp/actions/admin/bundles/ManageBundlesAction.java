@@ -7,9 +7,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.onebusaway.nyc.admin.model.BundleBuildRequest;
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
-import org.onebusaway.nyc.admin.model.BundleRequest;
 import org.onebusaway.nyc.admin.model.BundleResponse;
 import org.onebusaway.nyc.admin.model.ui.DirectoryStatus;
 import org.onebusaway.nyc.admin.model.ui.ExistingDirectory;
@@ -17,10 +18,6 @@ import org.onebusaway.nyc.admin.service.BundleRequestService;
 import org.onebusaway.nyc.admin.service.FileService;
 import org.onebusaway.nyc.admin.service.impl.FileUtils;
 import org.onebusaway.nyc.webapp.actions.OneBusAwayNYCAdminActionSupport;
-
-import org.apache.struts2.convention.annotation.Namespace;
-import org.apache.struts2.convention.annotation.Result;
-import org.apache.struts2.convention.annotation.Results;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +61,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	private String directoryName;
 	// what to call the bundle, entered in the text box
 	private String bundleName;
-	private boolean directoryCreated;
 	private boolean productionTarget;
 	private String comments;
 	private FileService fileService;
@@ -97,6 +93,8 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public String createDirectory() {
 	  String createDirectoryMessage = null;
+	  boolean directoryCreated = false;
+	  
 	  _log.debug("in create directory with dir=" + directoryName);
 		if(fileService.bundleDirectoryExists(directoryName)) {
 		  _log.info("bundle dir exists");
@@ -125,7 +123,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	}
 	
 	private DirectoryStatus createDirectoryStatus(String statusMessage, boolean selected) {
-		DirectoryStatus directoryStatus = new DirectoryStatus(directoryName, statusMessage, directoryCreated);
+		DirectoryStatus directoryStatus = new DirectoryStatus(directoryName, statusMessage, selected);
 		directoryStatus.setGtfsPath(fileService.getGtfsPath());
 		directoryStatus.setStifPath(fileService.getStifPath());
 		directoryStatus.setBucketName(fileService.getBucketName());
@@ -230,20 +228,6 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	 */
 	public void setDirectoryName(String directoryName) {
 		this.directoryName = directoryName;
-	}
-	
-	/**
-	 * @return the directoryCreated
-	 */
-	public boolean isDirectoryCreated() {
-		return directoryCreated;
-	}
-	
-	/**
-	 * @param directoryCreated the directoryCreated to set
-	 */
-	public void setDirectoryCreated(boolean directoryCreated) {
-		this.directoryCreated = directoryCreated;
 	}
 	
 	/**
