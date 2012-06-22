@@ -674,9 +674,9 @@ public class VehicleLocationSimulationController {
         
         trip.put("tripId", entry.getTripEntry().getId().toString());
         trip.put("initialRunId", _runService.getInitialRunForTrip(entry.getTripEntry().getId()));
-        trip.put("startTime", serviceDate.getTime()/1000 + entry.getStartTime()); // Could use arrival time of first stop???
+        trip.put("startTime", serviceDate.getTime()/1000 + entry.getTripEntry().getStopTimes().get(0).getArrivalTime());
         trip.put("startLocationStopId", entry.getTripEntry().getStopTimes().get(0).getStop().getId().toString());
-        trip.put("endTime", serviceDate.getTime()/1000 + entry.getStopTime());
+        trip.put("endTime", serviceDate.getTime()/1000 + entry.getTripEntry().getStopTimes().get(entry.getTripEntry().getStopTimes().size()-1).getArrivalTime());
         trip.put("endLocationStopId" , 
             entry.getTripEntry().getStopTimes().
             get(entry.getTripEntry().getStopTimes().size() -1).getStop().getId().toString());
