@@ -46,7 +46,27 @@ jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
 
 jQuery(document).ready(function() {
+	//Initialize tabs
 	jQuery("#tabs").tabs();
+	
+	//Initialize date pickers
+	jQuery("#startDatePicker").datepicker(
+			{ 
+				dateFormat: "yy-mm-dd",
+				altField: "#startDate",
+				onSelect: function(selectedDate) {
+					jQuery("#endDatePicker").datepicker("option", "minDate", selectedDate);
+				}
+			});
+	jQuery("#endDatePicker").datepicker(
+			{ 
+				dateFormat: "yy-mm-dd",
+				altField: "#endDate",
+				onSelect: function(selectedDate) {
+					jQuery("#startDatePicker").datepicker("option", "maxDate", selectedDate);
+				}
+			});
+	
 	// check if we were called with a hash -- re-enter from email link
 	if (window.location.hash) {
 		var hash = window.location.hash;
@@ -343,7 +363,7 @@ function updateValidateList(id) {
 					if (size > 0) {
 						for (var i=0; i<size; i++) {
 							var encoded = encodeURIComponent(list[i]);
-							txt = txt + "<li><a href=\"manage-bundles!download.action?id="
+							txt = txt + "<li><a href=\"manage-bundles!downloadValidateFile.action?id="
 							+ id+ "&downloadFilename=" 
 							+ encoded + "\">" + encoded +  "</a></li>";
 						}
@@ -363,17 +383,41 @@ function updateValidateList(id) {
 
 function onBuildClick() {
 	var bundleDir = jQuery("#manage-bundles_directoryName").val();
+	var bundleName = jQuery("#buildBundle_bundleName").val();
+	var startDate = jQuery("#startDate").val();
+	var endDate = jQuery("#endDate").val();
+	
+	var valid = validateBundleBuildFields(bundleDir, bundleName, startDate, endDate);
+	if(valid == false) {
+		return;
+	}
+	buildBundle(bundleName, startDate, endDate);
+    bundleUrl();
+
+}
+
+function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
+	var valid = true;
 	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
 		alert("missing bundle directory");
-		return;
+		valid = false;
 	}
-	var bundleName = jQuery("#buildBundle_bundleName").val();
 	if (bundleName == undefined || bundleName == null || bundleName == "") {
 		alert("missing bundle build name");
-		return;
+		valid = false;
 	}
-	buildBundle();
+	if (startDate == undefined || startDate == null || startDate == "") {
+		alert("missing bundle start date");
+		valid = false;
+	}
+	if (endDate == undefined || endDate == null || endDate == "") {
+		alert("missing bundle end date");
+		valid = false;
+	}
+	return valid;
+}
 
+function bundleUrl() {
 	var id = jQuery("#buildBundle_id").text();
 	jQuery("#buildBundle_exception").hide();
 	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
@@ -395,15 +439,17 @@ function onBuildClick() {
 			alert(request.statustext);
 		}
 	});
+	var url = jQuery("#buildBundle #buildBox #buildBundle_resultLink #resultLink").text();
+	if (url == null || url == "") {
+		window.setTimeout(bundleUrl, 5000);
+	}
 }
-
-function buildBundle(){
+function buildBundle(bundleName, startDate, endDate){
 	var bundleDirectory = jQuery("#buildBundle_bundleDirectory").text();
-	var bundleName = jQuery("#buildBundle_bundleName").val();
 	var email = jQuery("#buildBundle_email").val();
 	if (email == "") { email = "null"; }
 	jQuery.ajax({
-		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/create",
+		url: "../../api/build/" + bundleDirectory + "/" + bundleName + "/" + email + "/" + startDate + "/" + endDate + "/create",
 		type: "GET",
 		async: false,
 		success: function(response) {

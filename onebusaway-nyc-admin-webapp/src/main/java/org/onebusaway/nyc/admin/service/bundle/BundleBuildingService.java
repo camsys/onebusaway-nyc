@@ -3,8 +3,6 @@ package org.onebusaway.nyc.admin.service.bundle;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 
-import java.util.List;
-
 public interface BundleBuildingService {
   void setup();
 
@@ -17,6 +15,8 @@ public interface BundleBuildingService {
   void assemble(BundleBuildRequest request, BundleBuildResponse response);
   
   void upload(BundleBuildRequest request, BundleBuildResponse response);
+
+  void doBuild(BundleBuildRequest request, BundleBuildResponse response);
 
 
 }

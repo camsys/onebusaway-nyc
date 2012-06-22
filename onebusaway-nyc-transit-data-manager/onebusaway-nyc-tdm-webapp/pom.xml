@@ -106,7 +106,7 @@
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
-                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo/with_EDT_timestamp</tdm.vehiclepipoUploadDir>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
         </profile>
         <profile>
@@ -121,7 +121,7 @@
                 <tdm.config.configXmlFile>testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.bundlePath>/tmp/bundles</tdm.bundlePath>
                 <tdm.depotIdTranslationConfigFile>/mnt/depot_ids.csv</tdm.depotIdTranslationConfigFile>
-                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo/with_EDT_timestamp</tdm.vehiclepipoUploadDir>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
         </profile>
         <profile>
@@ -136,7 +136,7 @@
                 <tdm.config.configXmlFile>d:\shared\testconfigfile.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile></tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>D:\tmp\bundles</tdm.bundlePath>
-                <tdm.vehiclepipoUploadDir>${tdm.dataPath}\vehicle_pipo\with_EDT_timestamp</tdm.vehiclepipoUploadDir>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}\vehicle_pipo</tdm.vehiclepipoUploadDir>
             </properties>
         </profile>
         <profile>
@@ -160,7 +160,7 @@
                 <tdm.config.configXmlFile>/var/lib/obanyc/tdm-config/tdm_config.xml</tdm.config.configXmlFile>
                 <tdm.depotIdTranslationConfigFile>/var/lib/obanyc/tdm/depot_ids.csv</tdm.depotIdTranslationConfigFile>
                 <tdm.bundlePath>/var/lib/obanyc/bundleservice/activebundles</tdm.bundlePath>
-                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo/with_EDT_timestamp</tdm.vehiclepipoUploadDir>
+                <tdm.vehiclepipoUploadDir>${tdm.dataPath}/vehicle_pipo</tdm.vehiclepipoUploadDir>
                 <log4j.appender>ROLL</log4j.appender>
             </properties>
         </profile>

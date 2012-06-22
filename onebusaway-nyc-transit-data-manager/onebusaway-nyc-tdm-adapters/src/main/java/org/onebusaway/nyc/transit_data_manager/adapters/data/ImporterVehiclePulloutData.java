@@ -39,4 +39,16 @@ public class ImporterVehiclePulloutData implements PulloutData {
 		}
 		return depotPullOutInfo;
 	}
+
+	public List<VehiclePullInOutInfo> getPulloutsByAgency(String agencyId) {
+		List<VehiclePullInOutInfo> agencyPullOutInfo = new ArrayList<VehiclePullInOutInfo>();
+		
+		for(VehiclePullInOutInfo currentPullOut : pulloutData) {
+			if(currentPullOut.getPullOutInfo().getGarage().getAgencydesignator().equals(agencyId)) {
+				agencyPullOutInfo.add(currentPullOut);
+			}
+		}
+		
+		return agencyPullOutInfo;
+	}
 }

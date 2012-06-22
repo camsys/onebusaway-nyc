@@ -14,9 +14,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.onebusaway.nyc.transit_data_manager.adapters.ModelCounterpartConverter;
 import org.onebusaway.nyc.transit_data_manager.adapters.api.processes.UtsPulloutsToDataCreator;
 import org.onebusaway.nyc.transit_data_manager.adapters.data.ImporterVehiclePulloutData;
 import org.onebusaway.nyc.transit_data_manager.adapters.input.VehicleAssignmentsOutputConverter;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.json.PullInOutFromTcip;
+import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.PullInOut;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.VehiclePullInOutInfo;
 import org.onebusaway.nyc.transit_data_manager.adapters.output.model.json.message.VehiclePipoMessage;
 import org.onebusaway.nyc.transit_data_manager.adapters.tools.DepotIdTranslator;
@@ -30,8 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import tcip_final_3_0_5_1.SCHPullInOutInfo;
-
 /**
  * Web service resource to return vehicle pull in pull out data from the server. The data is parsed from a CSV
  * file in the configured directory and converted into TCIP format which is then sent back to the caller as 
@@ -39,7 +40,7 @@ import tcip_final_3_0_5_1.SCHPullInOutInfo;
  * @author abelsare
  *
  */
-@Path("/vehiclepipo")
+@Path("/pullouts")
 @Component
 @Scope("request")
 public class VehiclePipoResource {
@@ -49,6 +50,7 @@ public class VehiclePipoResource {
 	private JsonTool jsonTool;
 	private VehicleAssignmentsOutputConverter converter;
 	private VehiclePullInOutService vehiclePullInOutService;
+	private ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> pulloutDataConverter;
 	
 	
 	private static Logger log = LoggerFactory.getLogger(VehiclePipoResource.class);
@@ -75,9 +77,9 @@ public class VehiclePipoResource {
 		ImporterVehiclePulloutData data = getVehiclePipoData();
 		
 		List<VehiclePullInOutInfo> activePullouts = vehiclePullInOutService.getActivePullOuts(data.getAllPullouts());
-		
+
 		VehiclePipoMessage message  = new VehiclePipoMessage();
-		message.setPulloutData(activePullouts);
+		message.setPullouts(buildOutputData(activePullouts));
 		message.setStatus("OK");
 		
 		String outputJson = serializeOutput(message, method);
@@ -92,6 +94,8 @@ public class VehiclePipoResource {
 	@Produces("application/json")
 	public String getCurrentlyActivePulloutsForBus(@PathParam("busNumber") String busNumber) {
 		String method = "getCurrentlyActivePulloutsForBus";
+		String output = null;
+		
 		log.info("Starting " +method);
 
 		ImporterVehiclePulloutData data = getVehiclePipoData();
@@ -100,74 +104,106 @@ public class VehiclePipoResource {
 		
 		List<VehiclePullInOutInfo> pulloutsByBus = data.getPulloutsByBus(busId);
 		
-		VehiclePullInOutInfo currentActivePulloutByBus = getCurrentActivePullOutsByField(pulloutsByBus);
-		
-		/*List<SCHPullInOutInfo> outputData = new ArrayList<SCHPullInOutInfo>();
-		outputData.add(currentActivePulloutByBus.getPullOutInfo());
-		outputData.add(currentActivePulloutByBus.getPullInInfo());*/
-		
-		List<VehiclePullInOutInfo> currentActivePulloutsByBus = new ArrayList<VehiclePullInOutInfo>();
-		currentActivePulloutsByBus.add(currentActivePulloutByBus);
-		
-		VehiclePipoMessage message  = new VehiclePipoMessage();
-		message.setPulloutData(currentActivePulloutsByBus);
-		message.setStatus("OK");
-		
-		String outputJson = serializeOutput(message, method);
+		if(pulloutsByBus.isEmpty()) {
+			output = "No pullouts found for bus : " +busId;
+		} else {
+			List<VehiclePullInOutInfo> currentActivePulloutByBus = getCurrentActivePullOutsByBus(pulloutsByBus);
+			
+			VehiclePipoMessage message  = new VehiclePipoMessage();
+			message.setPullouts(buildOutputData(currentActivePulloutByBus));
+			message.setStatus("OK");
+			
+			output = serializeOutput(message, method);
+			
+		}
 		
 		log.info(method + " returning json output.");
-		
-		return outputJson;
+		return output;
 	}
 	
-	@Path("/{depotName}")
+	@Path("/depot/{depotName}/list")
 	@GET
 	@Produces("application/json")
-	public String getCurrentlyActivePulloutsForDepot(@PathParam("depotName") String depotName) {
+	public String getActivePulloutsForDepot(@PathParam("depotName") String depotName) {
 		String method = "getCurrentlyActivePulloutsForDepot";
+		String output = null;
+		
 		log.info("Starting " +method);
 
 		ImporterVehiclePulloutData	data = getVehiclePipoData();
 		
 		List<VehiclePullInOutInfo> pulloutsByDepot = data.getPulloutsByDepot(depotName);
 		
-		VehiclePullInOutInfo currentActivePulloutByDepot = getCurrentActivePullOutsByField(pulloutsByDepot);
-		
-		/*List<SCHPullInOutInfo> outputData = new ArrayList<SCHPullInOutInfo>();
-		outputData.add(currentActivePulloutByBus.getPullOutInfo());
-		outputData.add(currentActivePulloutByBus.getPullInInfo());*/
-		
-		List<VehiclePullInOutInfo> currentActivePulloutsByDepot = new ArrayList<VehiclePullInOutInfo>();
-		currentActivePulloutsByDepot.add(currentActivePulloutByDepot);
-		
-		VehiclePipoMessage message  = new VehiclePipoMessage();
-		message.setPulloutData(currentActivePulloutsByDepot);
-		message.setStatus("OK");
-		
-		String outputJson = serializeOutput(message, method);
+		if(pulloutsByDepot.isEmpty()) {
+			output = "No pullouts found for depot : " +depotName;
+		} else {
+			//Get active pullouts once we have all pullouts for a depot
+			List<VehiclePullInOutInfo> activePulloutsByDepot = vehiclePullInOutService.getActivePullOuts(pulloutsByDepot);
+			
+			VehiclePipoMessage message  = new VehiclePipoMessage();
+			message.setPullouts(buildOutputData(activePulloutsByDepot));
+			message.setStatus("OK");
+			
+			output = serializeOutput(message, method);
+			
+		}
 		
 		log.info(method + " returning json output.");
-		
-		return outputJson;
+		return output;
 	}
 	
-	private VehiclePullInOutInfo getCurrentActivePullOutsByField(List<VehiclePullInOutInfo> pulloutsByField) {
-		//Get active pullouts once we have all pullouts for the given field such as bus or depot
-		List<VehiclePullInOutInfo> activePulloutsByField = vehiclePullInOutService.getActivePullOuts(pulloutsByField);
+	@Path("/agency/{agencyId}/list")
+	@GET
+	@Produces("application/json")
+	public String getActivePulloutsForAgency(@PathParam("agencyId") String agencyId) {
+		String method = "getCurrentlyActivePulloutsForAgency";
+		String output = null;
+		
+		log.info("Starting " +method);
 
-		VehiclePullInOutInfo currentActivePulloutByField = null;
-
-		//Return pull out with latest pull out time if we have more than one active pull outs for a given bus.
-		if(activePulloutsByField.size() > 1) {
-			currentActivePulloutByField = vehiclePullInOutService.getMostRecentActivePullout(activePulloutsByField);
+		ImporterVehiclePulloutData	data = getVehiclePipoData();
+		
+		List<VehiclePullInOutInfo> pulloutsByAgency = data.getPulloutsByAgency(agencyId);
+		
+		if(pulloutsByAgency.isEmpty()) {
+			output = "No pullouts found for agency : " +agencyId;
 		} else {
-			if(!activePulloutsByField.isEmpty()) {
+			//Get active pullouts once we have all pullouts for a depot
+			List<VehiclePullInOutInfo> activePulloutsByAgency = vehiclePullInOutService.getActivePullOuts(pulloutsByAgency);
+			
+			VehiclePipoMessage message  = new VehiclePipoMessage();
+			message.setPullouts(buildOutputData(activePulloutsByAgency));
+			message.setStatus("OK");
+			
+			output = serializeOutput(message, method);
+			
+		}
+		
+		log.info(method + " returning json output.");
+		return output;
+	}
+	
+	private List<VehiclePullInOutInfo> getCurrentActivePullOutsByBus(List<VehiclePullInOutInfo> pulloutsByBus) {
+		List<VehiclePullInOutInfo> currentActivePulloutsByBus = new ArrayList<VehiclePullInOutInfo>();
+
+		//Get active pullouts once we have all pullouts for a bus
+		List<VehiclePullInOutInfo> activePulloutsByBus = vehiclePullInOutService.getActivePullOuts(pulloutsByBus);
+
+		VehiclePullInOutInfo currentActivePulloutByBus = null;
+
+		//Return pull out with latest pull out time if we have more than one active pull outs.
+		if(activePulloutsByBus.size() > 1) {
+			currentActivePulloutByBus = vehiclePullInOutService.getMostRecentActivePullout(activePulloutsByBus);
+			currentActivePulloutsByBus.add(currentActivePulloutByBus);
+		} else {
+			if(!activePulloutsByBus.isEmpty()) {
 				//this means there is only one pull out record present in the list.
-				currentActivePulloutByField = activePulloutsByField.get(0);
+				currentActivePulloutByBus = activePulloutsByBus.get(0);
+				currentActivePulloutsByBus.add(currentActivePulloutByBus);
 			}
 		}
 		
-		return currentActivePulloutByField;
+		return currentActivePulloutsByBus;
 	}
 
 	private String serializeOutput(VehiclePipoMessage message, String method) {
@@ -220,12 +256,11 @@ public class VehiclePipoResource {
 		return pulloutData;
 	}
 	
-	private List<SCHPullInOutInfo> buildOutputData(List<VehiclePullInOutInfo> vehiclePullInOuts) {
-		List<SCHPullInOutInfo> outputData = new ArrayList<SCHPullInOutInfo>();
-		//Build separate record for pull in and pull out in the output collection
+	private List<PullInOut> buildOutputData(List<VehiclePullInOutInfo> vehiclePullInOuts) {
+		List<PullInOut> outputData = new ArrayList<PullInOut>();
+		//Convert to required JSON format
 		for(VehiclePullInOutInfo vehiclePullInOut : vehiclePullInOuts) {
-			outputData.add(vehiclePullInOut.getPullOutInfo());
-			outputData.add(vehiclePullInOut.getPullInInfo());
+			outputData.add(pulloutDataConverter.convert(vehiclePullInOut));
 		}
 		return outputData;
 	}
@@ -256,5 +291,15 @@ public class VehiclePipoResource {
 	public void setVehiclePullInOutService(
 			VehiclePullInOutService vehiclePullInOutService) {
 		this.vehiclePullInOutService = vehiclePullInOutService;
+	}
+
+	/**
+	 * Injects {@link PullInOutFromTcip}
+	 * @param pulloutDataConverter the pulloutDataConverter to set
+	 */
+	@Autowired
+	public void setPulloutDataConverter(
+			ModelCounterpartConverter<VehiclePullInOutInfo, PullInOut> pulloutDataConverter) {
+		this.pulloutDataConverter = pulloutDataConverter;
 	}
 }

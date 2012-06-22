@@ -299,6 +299,8 @@ public class FileUtils {
         _log.error(e.toString(), e);
         throw new RuntimeException(e);
       }
+    } else {
+      _log.info("file not found for read(" + filename + ")");
     }
     return null;
   }
