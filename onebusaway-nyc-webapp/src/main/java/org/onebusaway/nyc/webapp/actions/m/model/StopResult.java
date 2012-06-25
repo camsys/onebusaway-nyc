@@ -48,6 +48,10 @@ public class StopResult implements SearchResult {
 	public String getName() {
 		return stop.getName();
 	}
+	
+	public String getCode() {
+	  return stop.getCode();
+	}
 
 	public List<RouteAtStop> getAllRoutesAvailable() {
 		List<RouteAtStop> fullList = new ArrayList<RouteAtStop>();
