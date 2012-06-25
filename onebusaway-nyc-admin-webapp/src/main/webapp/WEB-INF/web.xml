@@ -113,4 +113,20 @@
     <servlet-name>Jersey Spring Web Application</servlet-name>
     <url-pattern>/api/*</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <servlet-name>Redirect Servlet</servlet-name>
+    <servlet-class>org.onebusaway.nyc.admin.servlets.RedirectServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Redirect Servlet</servlet-name>
+    <url-pattern>/redirect</url-pattern>
+  </servlet-mapping>
+  
+  
+  <error-page>
+    <error-code>404</error-code>
+    <location>/redirect?uri=/error/404.action</location>
+  </error-page> 
+  
 </web-app>

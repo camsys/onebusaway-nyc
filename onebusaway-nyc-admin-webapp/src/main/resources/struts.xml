@@ -39,13 +39,17 @@
           <result-type name="json" class="org.apache.struts2.json.JSONResult"/>
         </result-types>
     	<global-results>
-         	<result name="NotFound">
-                <param name="location">/WEB-INF/content/error/404.jspx</param>
-            </result>
-             <result name="AlreadySetup" type="redirectAction">
+         	<result name="AlreadySetup" type="redirectAction">
                 <param name="namespace">/</param>
                 <param name="actionName">index</param>
             </result>
+            <result name="errorHandler" type="chain">
+		        <param name="actionName">error</param>
+		        <param name="namespace">/</param>
+		    </result>
         </global-results>
+        <global-exception-mappings>
+    		<exception-mapping exception="java.lang.Exception" result="errorHandler"/>
+		</global-exception-mappings>
     </package>
 </struts>

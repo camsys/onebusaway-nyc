@@ -26,16 +26,17 @@
 <jsp:directive.page contentType="text/html" />
 
 
-<head>
-  <title>404 Not Found</title>
-</head>
 
+<head>
+	<title>Error</title>
+</head>
 <body>
 	<div id="content">
 		<div id="text">
-			<h1>404 Not Found</h1>
-			<p>The page you requested cannot be found</p>
+			<h1>Server Error</h1>
+			<p>There was an error processing your request. Please try again.</p>
 		</div>
 	</div>
 </body>
+
 </html>
