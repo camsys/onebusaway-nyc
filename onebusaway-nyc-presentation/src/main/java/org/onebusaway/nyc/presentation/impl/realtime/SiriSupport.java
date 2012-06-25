@@ -190,38 +190,36 @@ public final class SiriSupport {
 		}
 
 		// scheduled depature time
-		if (presentationService.isBlockLevelInference(currentVehicleTripStatus) && presentationService.isInLayover(currentVehicleTripStatus)) {
-			BlockStopTimeBean originDepartureStopTime = null;
+		BlockStopTimeBean originDepartureStopTime = null;
 
-			List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
-			for(int t = 0; t < blockTrips.size(); t++) {
-				BlockTripBean thisTrip = blockTrips.get(t);
-				BlockTripBean nextTrip = null;    		
-				if(t + 1 < blockTrips.size()) {
-					nextTrip = blockTrips.get(t + 1);
-				}
+		List<BlockTripBean> blockTrips = blockInstance.getBlockConfiguration().getTrips();
+		for(int t = 0; t < blockTrips.size(); t++) {
+			BlockTripBean thisTrip = blockTrips.get(t);
+			BlockTripBean nextTrip = null;    		
+			if(t + 1 < blockTrips.size()) {
+				nextTrip = blockTrips.get(t + 1);
+			}
 
-				if(thisTrip.getTrip().getId().equals(currentVehicleTripStatus.getActiveTrip().getId())) {    			
-					// just started new trip
-					if(currentVehicleTripStatus.getDistanceAlongTrip() < (0.5 * currentVehicleTripStatus.getTotalDistanceAlongTrip())) {
-						originDepartureStopTime = thisTrip.getBlockStopTimes().get(0);
+			if(thisTrip.getTrip().getId().equals(currentVehicleTripStatus.getActiveTrip().getId())) {    			
+				// just started new trip
+				if(currentVehicleTripStatus.getDistanceAlongTrip() < (0.5 * currentVehicleTripStatus.getTotalDistanceAlongTrip())) {
+					originDepartureStopTime = thisTrip.getBlockStopTimes().get(0);
 
-						// at end of previous trip
-					} else {
-						if(nextTrip != null) {
-							originDepartureStopTime = nextTrip.getBlockStopTimes().get(0);
-						}
+				// at end of previous trip
+				} else {
+					if(nextTrip != null) {
+						originDepartureStopTime = nextTrip.getBlockStopTimes().get(0);
 					}
-
-					break;
 				}
-			}
 
-			if(originDepartureStopTime != null) {            	
-				Date departureTime = new Date(framedJourneyTripDetails.getServiceDate() + (originDepartureStopTime.getStopTime().getDepartureTime() * 1000));
-				monitoredVehicleJourney.setOriginAimedDepartureTime(departureTime);
+				break;
 			}
-		}    
+		}
+
+		if(originDepartureStopTime != null) {            	
+			Date departureTime = new Date(framedJourneyTripDetails.getServiceDate() + (originDepartureStopTime.getStopTime().getDepartureTime() * 1000));
+			monitoredVehicleJourney.setOriginAimedDepartureTime(departureTime);
+		}
 		
 		Map<String, TimepointPredictionRecord> stopIdToPredictionRecordMap = new HashMap<String, TimepointPredictionRecord>();
 
