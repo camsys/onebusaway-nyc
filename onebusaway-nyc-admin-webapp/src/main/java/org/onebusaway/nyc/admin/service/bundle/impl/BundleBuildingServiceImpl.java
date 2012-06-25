@@ -347,11 +347,18 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(input, new File(inputsPath + File.separator + input.getName()));
       }
     }
-    
+
     // outputs
     String outputsPath = request.getTmpDirectory() + File.separator + OUTPUT_DIR;
     File outputsDestDir = new File(outputsPath);
     outputsDestDir.mkdir();
+
+    // copy log file to outputs
+    File outputPath = new File(response.getBundleDataDirectory());
+    String logFilename = outputPath + File.separator + "bundleBuilder.out.txt";
+    fs.copyFiles(new File(logFilename), new File(response.getBundleOutputDirectory() + File.separator + "bundleBuilder.out.txt"));
+
+    // copy the rest of the bundle content to outputs directory
     File outputsDir = new File(response.getBundleOutputDirectory());
     File[] outputFiles = outputsDir.listFiles();
     if (outputFiles != null) {
@@ -360,6 +367,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         fs.copyFiles(output, new File(outputsPath + File.separator + output.getName()));
       }
     }
+    
   }
 
   private StringBuffer listToFile(List<String> notInServiceDSCList) {
@@ -395,6 +403,7 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
     response.setRemoteOutputDirectory(versionString + File.separator + OUTPUT_DIR);
     _fileService.put(versionString + File.separator + request.getBundleName() + ".tar.gz", 
         response.getBundleTarFilename());
+
     /* TODO implement delete 
      * for now we rely on cloud restart to delete volume for us, but that is lazy 
      */
