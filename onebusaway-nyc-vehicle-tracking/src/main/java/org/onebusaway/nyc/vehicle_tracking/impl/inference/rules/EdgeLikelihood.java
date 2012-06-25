@@ -176,7 +176,7 @@ public class EdgeLikelihood implements SensorModelRule {
         state.getBlockState().getBlockLocation().getLocation(), obs.getPreviousObservation().getLocation());
     final double x = obsToTripDelta - obsDelta;
     final double obsTimeDelta = (obs.getTime() - obs.getPreviousObservation().getTime()) / 1000d;
-    return UnivariateGaussian.PDF.evaluate(x, 0d, Math.pow(obsTimeDelta,4)/4d);
+    return UnivariateGaussian.PDF.logEvaluate(x, 0d, Math.pow(obsTimeDelta,4)/4d);
 //    return inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
   }
   
@@ -209,7 +209,7 @@ public class EdgeLikelihood implements SensorModelRule {
       
 //      pDistAlong = noEdgeMovementDist.getProbabilityFunction().logEvaluate(
 //          obsDistDelta - expAvgDist);
-      pDistAlong = UnivariateGaussian.PDF.evaluate(obsDistDelta, expAvgDist, 
+      pDistAlong = UnivariateGaussian.PDF.logEvaluate(obsDistDelta, expAvgDist, 
           Math.pow(obsTimeDelta,4)/4d);
       
     } else {
@@ -259,7 +259,7 @@ public class EdgeLikelihood implements SensorModelRule {
 //    final double x = dabDelta - obsDelta;
     final double x = dabDelta - expAvgDist;
 //    final double pMove = inProgressEdgeMovementDist.getProbabilityFunction().logEvaluate(x);
-    final double pMove = UnivariateGaussian.PDF.evaluate(x, 0d, Math.pow(obsTimeDelta,4)/4d);
+    final double pMove = UnivariateGaussian.PDF.logEvaluate(x, 0d, Math.pow(obsTimeDelta,4)/4d);
  
 
     return pMove;

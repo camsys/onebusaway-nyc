@@ -2,9 +2,7 @@ package org.onebusaway.nyc.sms.impl;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.internal.OperationFuture;
@@ -84,7 +82,8 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
 
   private boolean contextExistsInCacheFor(String sessionId) {
     try {
-      boolean exists = getClient().get(sessionId) != null;
+      Object object = getClient().get(sessionId);
+      boolean exists = object != null;
       _log.debug("contextExistsInCacheFor " + sessionId + " result is " + exists);
       return exists;
     } catch (Exception e) {
@@ -111,12 +110,6 @@ public class MemcacheSessionManagerImpl extends SessionManagerImpl {
   public synchronized void closeClient() {
     if (_client == null)
       return;
-    OperationFuture<Boolean> flush = _client.flush();
-    try {
-      flush.get();
-    } catch (Exception e) {
-      _log.error("Failed to flush memcache client", e);
-    }
     _client.shutdown();
     _client = null;
   }
