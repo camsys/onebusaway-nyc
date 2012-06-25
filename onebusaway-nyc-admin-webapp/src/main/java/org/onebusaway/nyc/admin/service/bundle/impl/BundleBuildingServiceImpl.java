@@ -29,6 +29,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -152,6 +153,10 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       new FileUtils().unzip(stifZip, request.getTmpDirectory() + File.separator
           + "stif");
     }
+    
+    // stage baseLocations
+    InputStream baseLocationsStream = this.getClass().getResourceAsStream("/BaseLocations.txt");
+    new FileUtils().copy(baseLocationsStream, dataPath + File.separator + "BaseLocations.txt");
     
     // clean stifs via STIF_PYTHON_CLEANUP_SCRIPT
     try {
