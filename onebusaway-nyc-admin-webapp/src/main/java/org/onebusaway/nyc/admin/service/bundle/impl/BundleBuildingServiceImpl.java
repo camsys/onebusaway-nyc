@@ -17,6 +17,9 @@ import org.onebusaway.transit_data_federation.bundle.model.GtfsBundles;
 import org.onebusaway.transit_data_federation.bundle.model.TaskDefinition;
 import org.onebusaway.transit_data_federation.services.FederatedTransitDataBundle;
 
+import org.apache.log4j.Layout;
+import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.WriterAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +27,10 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -224,7 +225,8 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
       logFile = new PrintStream(new FileOutputStream(new File(logFilename)));
       // swap standard out for logging
       System.setOut(logFile);
-
+      configureLogging(System.out);
+      
       FederatedTransitDataBundleCreator creator = new FederatedTransitDataBundleCreator();
 
       Map<String, BeanDefinition> beans = new HashMap<String, BeanDefinition>();
@@ -308,7 +310,9 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
         }
       }
       // restore standard out
+      deconfigureLogging(System.out);
       System.setOut(stdOut);
+      
       if (logFile != null) {
         logFile.close();
       }
@@ -316,6 +320,36 @@ public class BundleBuildingServiceImpl implements BundleBuildingService {
 
   }
   
+  /**
+   * tear down the logger for the bundle building activity. 
+   */
+  private void deconfigureLogging(OutputStream os) {
+    _log.info("deconfiguring logging");
+    try {
+      os.flush();
+      os.close();
+    } catch (Exception any) {
+      _log.error("deconfigure logging failed:", any);
+    }
+
+    org.apache.log4j.Logger logger = org.apache.log4j.Logger.getRootLogger();
+    logger.removeAppender("bundlebuilder.out");
+  }
+
+  /**
+   * setup a logger just for the bundle building activity. 
+   */
+  private void configureLogging(OutputStream os) {
+    Layout layout = new SimpleLayout();
+    WriterAppender wa = new WriterAppender(layout, os);
+    wa.setName("bundlebuilder.out");
+    // introducing log4j dependency here
+    org.apache.log4j.Logger logger = org.apache.log4j.Logger.getRootLogger();
+    logger.addAppender(wa);
+    _log.info("configuring logging");
+
+  }
+
   /**
    * arrange files for tar'ing into bundle format
    */
