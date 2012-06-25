@@ -86,9 +86,9 @@ OBA.Popups = (function() {
 							.css("height", "280");
 					sizeChanged = true;
 				}
-				if(content.width() > 400) {
+				if(content.width() > 500) {
 					content.css("overflow-x", "hidden")
-							.css("width", "380");
+							.css("width", "480");
 					sizeChanged = true;
 				}
 				if(sizeChanged) {
@@ -207,7 +207,6 @@ OBA.Popups = (function() {
 	}
 	
 	function getVehicleContentForResponse(r, popupContainerId, marker) {
-		
 		var alertData = processAlertData(r.Siri.ServiceDelivery.SituationExchangeDelivery);
 		
 		var activity = r.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].VehicleActivity[0];
@@ -251,39 +250,37 @@ OBA.Popups = (function() {
 
 			html += '<p class="service">Next stops are not known for this vehicle.</p>';
 		} else {
-			var nextStops = [];
-			nextStops.push(activity.MonitoredVehicleJourney.MonitoredCall);
-			
 			if(typeof activity.MonitoredVehicleJourney.OnwardCalls !== 'undefined'
 				&& typeof activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall !== 'undefined') {
 
-				jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
-					if(nextStops.length >= 3) {
-						return false;
-					}
-					nextStops.push(onwardCall);
-				});
-			}
-		
-			html += '<p class="service">Next stops:</p>';
-			html += '<ul>';			
-			jQuery.each(nextStops, function(_, call) {
-				var stopIdParts = call.StopPointRef.split("_");
-				var stopIdWithoutAgencyId = stopIdParts[1];
-				
-				var lastClass = ((_ === nextStops.length - 1) ? " last" : "");
+				html += '<p class="service">Next stops:</p>';
+				html += '<ul>';			
 
-				html += '<li class="nextStop' + lastClass + '">';				
-				html += '<a href="#' + stopIdWithoutAgencyId + '">' + call.StopPointName + '</a>';
-				html += '<span>';
-				html +=   call.Extensions.Distances.PresentableDistance;
-				html += '</span></li>';
-			});
-			html += '</ul>';
+				jQuery.each(activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall, function(_, onwardCall) {
+					var stopIdParts = onwardCall.StopPointRef.split("_");
+					var stopIdWithoutAgencyId = stopIdParts[1];
+						
+					var lastClass = ((_ === activity.MonitoredVehicleJourney.OnwardCalls.OnwardCall.length - 1) ? " last" : "");
+
+					html += '<li class="nextStop' + lastClass + '">';				
+					html += '<a href="#' + stopIdWithoutAgencyId + '">' + onwardCall.StopPointName + '</a>';
+					html += '<span>';
+						
+					if(typeof onwardCall.ExpectedArrivalTime !== 'undefined' && onwardCall.ExpectedArrivalTime !== null) {
+						html += OBA.Util.getArrivalEstimateForISOString(onwardCall.ExpectedArrivalTime, updateTimestampReference);
+						html += ", " + onwardCall.Extensions.Distances.PresentableDistance;
+					} else {
+						html += onwardCall.Extensions.Distances.PresentableDistance;
+					}
+
+					html += '</span></li>';
+				});
+				
+				html += '</ul>';
+			}
 		}
 		
 		// service alerts
-		//html += getServiceAlerts(r, activity.MonitoredVehicleJourney.SituationRef);
 		if (routeName in alertData) {
 			html += ' <a id="alert-link||' + routeName + '" class="alert-link" href="#">Service Alert for ' + activity.MonitoredVehicleJourney.PublishedLineName + '</a>';
 		}
@@ -304,15 +301,15 @@ OBA.Popups = (function() {
 		var siri = r.siri;
 		var stopResult = r.stop;
 		
-		var stopId = stopResult.id;
-		var stopIdParts = stopId.split("_");
-		var stopIdWithoutAgency = stopIdParts[1];
-		
 		var alertData = processAlertData(r.siri.Siri.ServiceDelivery.SituationExchangeDelivery);
 
 		var html = '<div id="' + popupContainerId + '" class="popup">';
 		
 		// header
+		var stopId = stopResult.id;
+		var stopIdParts = stopId.split("_");
+		var stopIdWithoutAgency = stopIdParts[1];
+		
 		html += '<div class="header stop">';
 		html += '<p class="title">' + stopResult.name + '</p><p>';
 		html += '<span class="type">Stop #' + stopIdWithoutAgency + '</span>';
@@ -447,14 +444,58 @@ OBA.Popups = (function() {
 
 					if(typeof monitoredVehicleJourney.MonitoredCall !== 'undefined') {
 						var distance = monitoredVehicleJourney.MonitoredCall.Extensions.Distances.PresentableDistance;
-
-						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' && 
-								monitoredVehicleJourney.ProgressStatus === "layover") {
-							distance += " (at terminal)";
+						
+						var timePrediction = null;
+						if(typeof monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime !== 'undefined' 
+							&& monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime !== null) {
+							timePrediction = OBA.Util.getArrivalEstimateForISOString(
+									monitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime, 
+									updateTimestampReference);
 						}
 
-						var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
-						html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
+						var wrapped = false;
+						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' 
+							&& monitoredVehicleJourney.ProgressStatus.indexOf("prevTrip") !== -1) {
+							wrapped = true;
+						}
+
+						var layover = false;
+						if(typeof monitoredVehicleJourney.ProgressStatus !== 'undefined' 
+							&& monitoredVehicleJourney.ProgressStatus.indexOf("layover") !== -1) {
+							layover = true;
+						}
+
+						var stalled = false;
+						if(typeof monitoredVehicleJourney.ProgressRate !== 'undefined' 
+							&& monitoredVehicleJourney.ProgressRate === "noProgress") {
+							stalled = true;
+						}
+
+						// time mode
+						if(timePrediction != null && stalled === false) {
+							if(wrapped === false) {
+								timePrediction += ", " + distance;
+							}
+							
+							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
+							html += '<li class="arrival' + lastClass + '">' + timePrediction + '</li>';
+
+						// distance mode
+						} else {
+							if(wrapped === true) {
+								distance += " (after scheduled terminal stop)";
+							} else if(layover === true) {
+								if(typeof monitoredVehicleJourney.OriginAimedDepartureTime !== 'undefined') {
+									var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
+									distance += " (at terminal, scheduled to depart at " + departureTime.format("h:MM TT") + ")";
+								} else {
+									distance += " (at terminal)";
+								}
+							}
+						
+							var lastClass = ((_ === maxObservationsToShow - 1 || _ === mvjs.length - 1) ? " last" : "");
+							html += '<li class="arrival' + lastClass + '">' + distance + '</li>';
+						}
 					}
 				});
 			});
@@ -500,9 +541,6 @@ OBA.Popups = (function() {
 			filteredMatches.find("ul").append(showAll);
 			html += filteredMatches.html();
 		}
-
-		// service alerts
-	    //html += getServiceAlerts(siri, null);
 
 		html += OBA.Config.infoBubbleFooterFunction("stop", stopIdWithoutAgency);	        
 

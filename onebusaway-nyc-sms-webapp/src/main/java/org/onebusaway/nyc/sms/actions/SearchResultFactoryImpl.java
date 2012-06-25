@@ -49,7 +49,7 @@ import uk.org.siri.siri.NaturalLanguageStringStructure;
 
 public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
 
-  private static final boolean NO_HTMLIZE_NEWLINES = false;
+  private static final boolean HTMLIZE_NEWLINES = false;
 
   private ConfigurationService _configurationService;
 
@@ -98,7 +98,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
         // service alerts for this route + direction
         List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
         List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-        populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, NO_HTMLIZE_NEWLINES);
+        populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
 
         directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, null, serviceAlertDescriptions));
       }
@@ -146,7 +146,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
           // service alerts for this route + direction
           List<NaturalLanguageStringBean> serviceAlertDescriptions = new ArrayList<NaturalLanguageStringBean>();
           List<ServiceAlertBean> serviceAlertBeans = _realtimeService.getServiceAlertsForRouteAndDirection(routeBean.getId(), stopGroupBean.getId());
-          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, NO_HTMLIZE_NEWLINES);
+          populateServiceAlerts(serviceAlertDescriptions, serviceAlertBeans, HTMLIZE_NEWLINES);
           
           directions.add(new RouteDirection(stopGroupBean, hasUpcomingScheduledService, distanceAwayStringsByDistanceFromStop, serviceAlertDescriptions));
         }
@@ -183,22 +183,73 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
       if(!stopGroupBean.getId().equals(directionId))
         continue;
 
-      // on detour?
+      // on detour? don't show it. 
       MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-      if(monitoredCall == null) {
+      if(monitoredCall == null)
         continue;
-      }
 
-      if(result.size() < 3) {
-        SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
-        SiriDistanceExtension distanceExtension = wrapper.getDistances();    
+      if(result.size() >= 3)
+    	break;
+      
+      String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
+    		  visit.getRecordedAtTime().getTime(), true);
 
-        result.put(distanceExtension.getDistanceFromCall(), getPresentableDistance(visit.getMonitoredVehicleJourney(), visit.getRecordedAtTime().getTime(), true));
-      }
+      String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
+    		  visit.getRecordedAtTime().getTime(), true);
+
+      SiriExtensionWrapper wrapper = (SiriExtensionWrapper)monitoredCall.getExtensions().getAny();
+      SiriDistanceExtension distanceExtension = wrapper.getDistances();    
+
+	  if(timePrediction != null) {
+	  	result.put(distanceExtension.getDistanceFromCall(), timePrediction);
+	  } else {
+		result.put(distanceExtension.getDistanceFromCall(), distance);
+	  }
     }
     
     return result;
   }
+  
+  private String getPresentableTime(
+		  MonitoredVehicleJourneyStructure journey, long updateTime,
+	      boolean isStopContext) {
+
+	  NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+	  MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
+	  
+	  // only show predictions in stop-level contexts
+	  if(!isStopContext) {
+		  return null;
+	  }
+	  
+	  // if data is old, no predictions
+	  int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+	  long age = (System.currentTimeMillis() - updateTime) / 1000;
+
+	  if (age > staleTimeout) {
+		  return null;
+	  }
+	  
+	  if(monitoredCall.getExpectedArrivalTime() != null) {
+		  long predictedArrival = monitoredCall.getExpectedArrivalTime().getTime();
+
+		  SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
+		  SiriDistanceExtension distanceExtension = wrapper.getDistances();
+		  String distance = distanceExtension.getPresentableDistance();
+		  
+		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
+		  String timeString = minutes + " min" + ((Math.abs(minutes) != 1) ? "s." : ".");
+				  
+		  // if wrapped, only show prediction, if not wrapped, show both
+		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+		    return timeString;
+		  } else {
+		    return timeString + ", " + distance;
+		  }
+	  }
+	  
+	  return null;
+  }	  
   
   private String getPresentableDistance(MonitoredVehicleJourneyStructure journey, long updateTime, boolean isStopContext) {
     MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
@@ -208,10 +259,15 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     String message = "";    
     String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mi.", "mi.", "");
 
-    // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
-    if(isStopContext && progressStatus != null && progressStatus.getValue().equals("layover")) {
-      message += "@term.";
+    
+    // wrapped label only appears in stop results
+    if(isStopContext) {    	
+    	if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+    		message += "after layover";
+    	} else if(progressStatus != null && progressStatus.getValue().contains("layover")) {
+    	    message += "@term.";
+    	}
     }
     
     int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);    

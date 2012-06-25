@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.webapp.actions.m;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -167,7 +168,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
             continue;
 
           // arrivals in this direction
-          List<String> arrivalsForRouteAndDirection = getDistanceAwayStringsForStopAndRouteAndDirection(
+          List<String> arrivalsForRouteAndDirection = getDisplayStringsForStopAndRouteAndDirection(
               stopBean, routeBean, stopGroupBean);
 
           // service alerts for this route + direction
@@ -220,7 +221,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     return new GeocodeResult(geocodeResult);
   }
 
-  private List<String> getDistanceAwayStringsForStopAndRouteAndDirection(
+  // stop view
+  private List<String> getDisplayStringsForStopAndRouteAndDirection(
       StopBean stopBean, RouteBean routeBean, StopGroupBean stopGroupBean) {
     List<String> result = new ArrayList<String>();
 
@@ -239,19 +241,29 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
       // on detour?
       MonitoredCallStructure monitoredCall = visit.getMonitoredVehicleJourney().getMonitoredCall();
-      if (monitoredCall == null) {
+      if (monitoredCall == null)
         continue;
-      }
 
-      if (result.size() < 3) {
-        result.add(getPresentableDistance(visit.getMonitoredVehicleJourney(),
-            visit.getRecordedAtTime().getTime(), true));
+      if(result.size() >= 3)
+    	break;
+      
+      String distance = getPresentableDistance(visit.getMonitoredVehicleJourney(),
+    		visit.getRecordedAtTime().getTime(), true);
+    	  
+      String timePrediction = getPresentableTime(visit.getMonitoredVehicleJourney(),
+    	 	visit.getRecordedAtTime().getTime(), true);
+
+      if(timePrediction != null) {
+    	result.add(timePrediction);
+      } else {
+    	result.add(distance);
       }
     }
 
     return result;
   }
 
+  // route view
   private Map<String, List<String>> getStopIdToDistanceAwayStringsListMapForRoute(
       RouteBean routeBean) {
     Map<String, List<String>> result = new HashMap<String, List<String>>();
@@ -284,6 +296,44 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     return result;
   }
 
+  private String getPresentableTime(
+		  MonitoredVehicleJourneyStructure journey, long updateTime,
+	      boolean isStopContext) {
+
+	  NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+	  MonitoredCallStructure monitoredCall = journey.getMonitoredCall();
+	  
+	  if(!isStopContext) {
+		  return null;
+	  }
+	  
+	  int staleTimeout = _configurationService.getConfigurationValueAsInteger("display.staleTimeout", 120);
+	  long age = (System.currentTimeMillis() - updateTime) / 1000;
+
+	  if (age > staleTimeout) {
+		  return null;
+	  }
+	  
+	  if(monitoredCall.getExpectedArrivalTime() != null) {
+		  long predictedArrival = monitoredCall.getExpectedArrivalTime().getTime();
+
+		  SiriExtensionWrapper wrapper = (SiriExtensionWrapper) monitoredCall.getExtensions().getAny();
+		  SiriDistanceExtension distanceExtension = wrapper.getDistances();
+		  String distance = distanceExtension.getPresentableDistance();
+		  
+		  double minutes = Math.floor((predictedArrival - updateTime) / 60 / 1000);
+		  String timeString = minutes + " minute" + ((Math.abs(minutes) != 1) ? "s" : "");
+				  
+		  if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
+		    	return timeString;
+		  } else {
+		    	return timeString + ", " + distance;
+		  }
+	  }
+	  
+	  return null;
+  }	  
+  
   private String getPresentableDistance(
       MonitoredVehicleJourneyStructure journey, long updateTime,
       boolean isStopContext) {
@@ -294,11 +344,22 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     String message = "";
     String distance = distanceExtension.getPresentableDistance();
 
-    // at terminal label only appears in stop results
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
+
     if (isStopContext && progressStatus != null
-        && progressStatus.getValue().equals("layover")) {
-      message += "at terminal";
+        && progressStatus.getValue().contains("prevTrip")) {
+    	message += "after scheduled terminal stop";
+
+    // at terminal label only appears in stop results
+    } else if (isStopContext && progressStatus != null
+        && progressStatus.getValue().contains("layover")) {
+    	if(journey.getOriginAimedDepartureTime() != null) {
+    		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+    	
+    		message += "at terminal, scheduled to depart at " + formatter.format(journey.getOriginAimedDepartureTime());
+    	} else {
+    		message += "at terminal";
+    	}
     }
 
     int staleTimeout = _configurationService.getConfigurationValueAsInteger(
