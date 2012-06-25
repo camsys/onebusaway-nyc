@@ -224,6 +224,23 @@ public class PresentationServiceImpl implements PresentationService {
 		  _log.debug("  " + status.getVehicleId() + " filtered out due to trip block sequence");
 		  return false;
 		}
+    	
+    	// filter out buses that are in layover at the beginning of the previous trip
+    	if(phase != null && 
+	        (phase.toUpperCase().equals("LAYOVER_BEFORE") || phase.toUpperCase().equals("LAYOVER_DURING"))) {
+	
+	      double distanceAlongTrip = status.getDistanceAlongTrip();
+	      double totalDistanceAlongTrip = status.getTotalDistanceAlongTrip();
+	      double ratio = distanceAlongTrip / totalDistanceAlongTrip;
+	      
+	      // if the bus isn't serving the trip this arrival and departure is for AND the bus
+	      // is at layover at 
+	      if(activeTrip != null
+	            && !tripBean.getId().equals(activeTrip.getId()) && ratio < 0.50) {
+	        _log.debug("  " + status.getVehicleId() + " filtered out due to beginning of previous trip");
+	        return false;
+	      }
+	    }
     } else {
 	    /**
 	     * So this complicated thing-a-ma-jig is to filter out buses that are at the terminals
