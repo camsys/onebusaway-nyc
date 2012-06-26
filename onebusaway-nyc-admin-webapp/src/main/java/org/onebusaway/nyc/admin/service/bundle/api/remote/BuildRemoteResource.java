@@ -1,10 +1,13 @@
 package org.onebusaway.nyc.admin.service.bundle.api.remote;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.onebusaway.nyc.admin.model.BundleBuildRequest;
 import org.onebusaway.nyc.admin.model.BundleBuildResponse;
 import org.onebusaway.nyc.admin.service.bundle.BundleBuildingService;
 import org.onebusaway.nyc.admin.service.bundle.api.AuthenticatedResource;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -65,6 +68,8 @@ public class BuildRemoteResource extends AuthenticatedResource {
     }
     _log.info("in build(local)");
 
+    validateDates(bundleStartDate, bundleEndDate);
+    
     BundleBuildRequest bundleRequest = new BundleBuildRequest();
     bundleRequest.setBundleDirectory(bundleDirectory);
     bundleRequest.setBundleName(bundleName);
@@ -125,6 +130,27 @@ public class BuildRemoteResource extends AuthenticatedResource {
   protected boolean isAuthorized() {
     return true;
   }
+  
+  /**
+	 * Performs various validations on start and end dates
+	 * @param bundleStartDateString
+	 * @param bundleEndDateString
+	 */
+	protected void validateDates(String bundleStartDateString, String bundleEndDateString) {
+		if(StringUtils.isBlank(bundleStartDateString)) {
+			throw new RuntimeException("Bundle start date cannot be empty");
+		}
+		if(StringUtils.isBlank(bundleEndDateString)) {
+			throw new RuntimeException("Bundle end date cannot be empty");
+		}
+		
+		DateTime startDate = ISODateTimeFormat.date().parseDateTime(bundleStartDateString);
+		DateTime endDate = ISODateTimeFormat.date().parseDateTime(bundleEndDateString);
+		
+		if(startDate.isAfter(endDate)) {
+			throw new RuntimeException("Start date cannot be after end date");
+		}
+	}
 
     private class BuildThread implements Runnable {
       
