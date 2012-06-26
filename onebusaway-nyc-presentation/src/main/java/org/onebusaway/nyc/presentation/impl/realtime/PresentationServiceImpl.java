@@ -215,14 +215,34 @@ public class PresentationServiceImpl implements PresentationService {
     // wrap-around logic
     String phase = status.getPhase();
     TripBean activeTrip = status.getActiveTrip();
-    TripBean tripBean = adBean.getTrip();
+    TripBean adTripBean = adBean.getTrip();
 
     if(isBlockLevelInference(status)) {
-    	// if ad is not on the trip this bus is, or the previous trip, filter out
-    	if(!adBean.getTrip().getId().equals(status.getActiveTrip().getId()) 
+    	// if ad is not on the trip this bus is on, or the previous trip, filter out
+    	if(!adTripBean.getId().equals(activeTrip.getId()) 
     			&& !(adBean.getBlockTripSequence() - 1 == status.getBlockTripSequence())) {
 		  _log.debug("  " + status.getVehicleId() + " filtered out due to trip block sequence");
 		  return false;
+		}
+    	
+    	// only buses that are on the same or previous trip as the a-d make it to this point:
+
+    	// filter out buses that are farther away than X from the terminal on the previous trip
+    	float previousTripFilterDistanceMiles = 
+    			_configurationService.getConfigurationValueAsFloat("display.previousTripFilterDistance", 5.0f);
+
+    	if(activeTrip != null
+          && !adTripBean.getId().equals(activeTrip.getId())) {
+    		
+  	      double distanceAlongTrip = status.getDistanceAlongTrip();
+  	      double totalDistanceAlongTrip = status.getTotalDistanceAlongTrip();
+
+  	      double distanceFromTerminalMeters = totalDistanceAlongTrip - distanceAlongTrip;
+
+  	      if(distanceFromTerminalMeters > (previousTripFilterDistanceMiles * 1609)) {
+  	    	  _log.debug("  " + status.getVehicleId() + " filtered out due to distance from terminal on prev. trip");
+		      return false;
+  	      }
 		}
     	
     	// filter out buses that are in layover at the beginning of the previous trip
@@ -233,10 +253,9 @@ public class PresentationServiceImpl implements PresentationService {
 	      double totalDistanceAlongTrip = status.getTotalDistanceAlongTrip();
 	      double ratio = distanceAlongTrip / totalDistanceAlongTrip;
 	      
-	      // if the bus isn't serving the trip this arrival and departure is for AND the bus
-	      // is at layover at 
 	      if(activeTrip != null
-	            && !tripBean.getId().equals(activeTrip.getId()) && ratio < 0.50) {
+	            && !adTripBean.getId().equals(activeTrip.getId()) 
+	            && ratio < 0.50) {
 	        _log.debug("  " + status.getVehicleId() + " filtered out due to beginning of previous trip");
 	        return false;
 	      }
@@ -272,7 +291,7 @@ public class PresentationServiceImpl implements PresentationService {
 	      // the bus is NOT on the previous trip in the block, but at the end of that trip (ready to serve
 	      // the trip this arrival and departure is for), filter that out.
 	      if(activeTrip != null
-	            && !tripBean.getId().equals(activeTrip.getId())
+	            && !adTripBean.getId().equals(activeTrip.getId())
 	            && !((adBean.getBlockTripSequence() - 1) == status.getBlockTripSequence() && ratio > 0.50)) {
 	        _log.debug("  " + status.getVehicleId() + " filtered out due to at terminal/ratio");
 	        return false;
@@ -281,7 +300,7 @@ public class PresentationServiceImpl implements PresentationService {
 	      // if the bus isn't serving the trip this arrival and departure is for, filter out--
 	      // since the bus is not in layover now.
 	      if (activeTrip != null
-	          && !tripBean.getId().equals(activeTrip.getId())) {
+	          && !adTripBean.getId().equals(activeTrip.getId())) {
 	        _log.debug("  " + status.getVehicleId() + " filtered out due to not serving trip for A/D");
 	        return false;
 	      }
