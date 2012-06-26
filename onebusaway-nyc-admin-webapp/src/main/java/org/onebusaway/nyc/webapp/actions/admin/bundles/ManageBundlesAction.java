@@ -180,7 +180,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	public String buildOutputZip() {
 		_log.info("buildOuputZip called with id=" +id);
 		bundleBuildResponse = bundleRequestService.lookupBuildRequest(getId());
-		String zipFileName = fileService.createOutputFilesZip(bundleBuildResponse.getBundleOutputDirectory());
+		String zipFileName = fileService.createOutputFilesZip(bundleBuildResponse.getRemoteOutputDirectory());
 		try {
 			downloadInputStream = new FileInputStream(zipFileName);
 		} catch (FileNotFoundException e) {

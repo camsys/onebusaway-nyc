@@ -40,6 +40,7 @@ import javax.servlet.ServletContext;
 public class FileServiceImpl implements FileService, ServletContextAware {
 
 	private static Logger _log = LoggerFactory.getLogger(FileServiceImpl.class);
+	private static int MAX_RESULTS = -1;
 
 	private AWSCredentials _credentials;
 	private AmazonS3Client _s3;
@@ -326,7 +327,18 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 	}
 
 	@Override
-	public String createOutputFilesZip(String directoryName) {
+	public String createOutputFilesZip(String s3Path) {
+	  String directoryName = null;
+	  // create tmp dir
+	  FileUtils fs = new FileUtils();
+	  directoryName = fs.createTmpDirectory();
+	  
+	  // pull down output directory files to this tmp directory
+
+	  for (String s3File : list(s3Path, MAX_RESULTS)) {
+	    get(s3File, directoryName);
+	  }
+	  
 		final String zipFileName = directoryName + File.separator + "output.zip";
 		File outputDirectory = new File(directoryName);
 		String [] outputFiles = outputDirectory.list();
@@ -337,16 +349,20 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			zout = new ZipOutputStream(new FileOutputStream(zipFileName));
 			for(int i=0; i<outputFiles.length; i++) {
 				//Add each file in output directory to the zip
-				FileInputStream in = new FileInputStream(directoryName + File.separator + outputFiles[i]);
+			  String entryName = directoryName + File.separator + outputFiles[i];
+				FileInputStream in = new FileInputStream(entryName);
 				//Add ZIP entry
 				zout.putNextEntry(new ZipEntry(outputFiles[i]));
 				int len;
 				while((len = in.read(buffer)) > 0) {
 					zout.write(buffer, 0, len);
 				}
-				//Close the zip entrry and input stream
+				//Close the zip entry and input stream
 				zout.closeEntry();
 				in.close();
+				
+				// clean up after ourselves
+				new File(entryName).delete();
 			}
 			
 		} catch(IOException e) {
@@ -356,8 +372,10 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 			//Close the zip
 			try {
 				zout.close();
+				// finally remove the tmp directory
+				new File(directoryName).delete();
 			} catch (IOException e) {
-				e.printStackTrace();
+			  _log.error("createOutputFileZip failed:", e);
 			}
 		}
 		return zipFileName;
