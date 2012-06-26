@@ -8,12 +8,17 @@ import java.util.List;
 
 import org.junit.Test;
 import org.onebusaway.geospatial.model.CoordinatePoint;
+import org.onebusaway.nyc.presentation.impl.realtime.SiriSupport.OnwardCallsMode;
 import org.onebusaway.nyc.presentation.service.realtime.PresentationService;
+import org.onebusaway.nyc.transit_data.services.NycTransitDataService;
 import org.onebusaway.transit_data.model.RouteBean;
 import org.onebusaway.transit_data.model.RouteBean.Builder;
 import org.onebusaway.transit_data.model.StopBean;
 import org.onebusaway.transit_data.model.TripStopTimeBean;
 import org.onebusaway.transit_data.model.TripStopTimesBean;
+import org.onebusaway.transit_data.model.blocks.BlockConfigurationBean;
+import org.onebusaway.transit_data.model.blocks.BlockInstanceBean;
+import org.onebusaway.transit_data.model.blocks.BlockTripBean;
 import org.onebusaway.transit_data.model.service_alerts.ServiceAlertBean;
 import org.onebusaway.transit_data.model.trips.TripBean;
 import org.onebusaway.transit_data.model.trips.TripDetailsBean;
@@ -33,12 +38,20 @@ public class SiriSupportTest {
   public void testGetMonitoredVehicleJourney() {    
     TripDetailsBean trip = setupMock();
     PresentationService presentationService = mock(PresentationService.class);
+    NycTransitDataService nycTransitDataService = mock(NycTransitDataService.class);
 
+    BlockInstanceBean blockInstance = new BlockInstanceBean();
+    BlockConfigurationBean blockConfig = new BlockConfigurationBean();
+    blockConfig.setTrips(new ArrayList<BlockTripBean>());
+    blockInstance.setBlockConfiguration(blockConfig);
+    
+    when(nycTransitDataService.getBlockInstance("BLOCK", 0)).thenReturn(blockInstance);
+    
     StopBean monitoredCallStopBean = mock(StopBean.class);
     when(monitoredCallStopBean.getId()).thenReturn(STOP_ID);
     MonitoredVehicleJourney journey = new MonitoredVehicleJourney();
-    SiriSupport.fillMonitoredVehicleJourney(journey, trip.getTrip(), trip, monitoredCallStopBean, 
-        presentationService, null, System.currentTimeMillis(), 0);
+    SiriSupport.fillMonitoredVehicleJourney(journey, trip, null, OnwardCallsMode.VEHICLE_MONITORING,
+        presentationService, nycTransitDataService, 0, null);
     
     assertNotNull(journey);
     List<SituationRefStructure> situationRefs = journey.getSituationRef();
@@ -53,15 +66,18 @@ public class SiriSupportTest {
   public TripDetailsBean setupMock() {
     TripDetailsBean tripDetails = new TripDetailsBean();
     TripBean tripBean = new TripBean();
+    tripBean.setId("TEST_TRIP_ID");
     tripDetails.setTrip(tripBean);
     Builder routeBeanBuilder = RouteBean.builder();
     routeBeanBuilder.setId("foo");
     RouteBean route = routeBeanBuilder.create();
     tripBean.setRoute(route);
+    tripBean.setBlockId("BLOCK");
     TripStatusBean status = new TripStatusBean();
     CoordinatePoint location = new CoordinatePoint(90.0, 90.0);
     status.setLocation(location );
     status.setPhase("IN_PROGRESS");
+    status.setActiveTrip(tripBean);
     status.setStatus("normal");
     status.setDistanceAlongTrip(TRIP_STATUS_BEAN_DISTANCE_ALONG_TRIP);
     tripDetails.setStatus(status);
@@ -80,6 +96,7 @@ public class SiriSupportTest {
     ServiceAlertBean serviceAlert = new ServiceAlertBean();
     serviceAlert.setId(MOCK_SERVICE_ALERT_ID);
     situations.add(serviceAlert );
+    status.setSituations(situations);
     tripDetails.setSituations(situations );
     return tripDetails;
   }
