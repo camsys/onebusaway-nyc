@@ -45,17 +45,20 @@
 				<div id="buildBox">
 					<div id="bundleParams">
 						<div id="bundleNameHolder">
-							<label class="adminLabel bundleLabel">Bundle Build Name :</label> 
+							<label class="adminLabel">Bundle Build Name</label>
+							<label class="required">*</label> 
 							<input type="text" id="buildBundle_bundleName" /> 
 						</div>
 						<div id="bundleStartDateHolder">
-							<label id="startDateLabel" class="adminLabel">Start Date :</label>
-							<input type="text" id="startDatePicker" />
+							<label id="startDateLabel" class="adminLabel">Start Date</label>
+							<label class="required">*</label>
+							<input type="text" id="startDatePicker" readonly="readonly"/>
 							<input type="hidden" id="startDate" />
 						</div>
 						<div id="bundleEndDateHolder">
-							<label id="endDateLabel" class="adminLabel">End Date :</label>
-							<input type="text" id="endDatePicker" />
+							<label id="endDateLabel" class="adminLabel">End Date</label>
+							<label class="required">*</label>
+							<input type="text" id="endDatePicker" readonly="readonly"/>
 							<input type="hidden" id="endDate" />
 						</div>
 						<input type="button" id="buildBundle_buildButton" value="Build Bundle" />

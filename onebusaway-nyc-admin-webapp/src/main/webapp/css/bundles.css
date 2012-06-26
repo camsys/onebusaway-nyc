@@ -173,6 +173,13 @@
 	margin-right: 10px;
 }
 
+.required {
+	color: red;
+	font-weight: bold;
+	display: inline;
+	margin-left: 5px;
+}
+
 #createDirectory {
 	padding-top: 20px;
 }
@@ -332,6 +339,10 @@
 #prevalidateInputs #validateBox #validating {
 	display: none;
 	padding: 50px;
+}
+
+#validateBox #bundleNameBox #prevalidate_bundleName {
+	display: block;
 }
 
 #prevalidateInputs #prevalidate_progress {
