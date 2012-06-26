@@ -15,6 +15,7 @@
  */
 package org.onebusaway.nyc.sms.actions;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -264,9 +265,14 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     // wrapped label only appears in stop results
     if(isStopContext) {    	
     	if(progressStatus != null && progressStatus.getValue().contains("prevTrip")) {
-    		message += "after layover";
+    		message += "+layover@term.";
     	} else if(progressStatus != null && progressStatus.getValue().contains("layover")) {
-    	    message += "@term.";
+    	   	if(journey.getOriginAimedDepartureTime() != null) {
+        		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
+    			message += "@term, sched. depart. " + formatter.format(journey.getOriginAimedDepartureTime());
+        	} else {
+        		message += "@term.";
+        	}
     	}
     }
     
