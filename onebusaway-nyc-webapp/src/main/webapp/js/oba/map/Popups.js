@@ -487,7 +487,12 @@ OBA.Popups = (function() {
 							} else if(layover === true) {
 								if(typeof monitoredVehicleJourney.OriginAimedDepartureTime !== 'undefined') {
 									var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
-									distance += " (at terminal, scheduled to depart at " + departureTime.format("h:MM TT") + ")";
+
+									if(departureTime.getTime() < updateTimestampReference) {
+										distance += " (at terminal, was scheduled to depart at " + departureTime.format("h:MM TT") + ")";
+									} else {
+										distance += " (at terminal, is scheduled to depart at " + departureTime.format("h:MM TT") + ")";
+									}
 								} else {
 									distance += " (at terminal)";
 								}
