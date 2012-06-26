@@ -399,21 +399,25 @@ function onBuildClick() {
 
 function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
 	var valid = true;
+	var errors = "";
 	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
-		alert("missing bundle directory");
+		errors += "missing bundle directory" + "\n";
 		valid = false;
 	}
 	if (bundleName == undefined || bundleName == null || bundleName == "") {
-		alert("missing bundle build name");
+		errors += "missing bundle build name" + "\n";
 		valid = false;
 	}
 	if (startDate == undefined || startDate == null || startDate == "") {
-		alert("missing bundle start date");
+		errors += "missing bundle start date" + "\n";
 		valid = false;
 	}
 	if (endDate == undefined || endDate == null || endDate == "") {
-		alert("missing bundle end date");
+		errors += "missing bundle end date" + "\n";
 		valid = false;
+	}
+	if(errors.length > 0) {
+		alert(errors);
 	}
 	return valid;
 }
