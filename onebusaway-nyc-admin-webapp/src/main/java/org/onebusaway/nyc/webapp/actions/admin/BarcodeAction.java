@@ -32,16 +32,6 @@ public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
 	private int edgeDimension;
 	
 	private String qrResourceUrl = "";
-	// TODO: why is this a system property?
-	private String tdmHost = System.getProperty("tdm.host", "http://tdm");
-	
-	public String getTdmHost() {
-		return tdmHost;
-	}
-
-	public void setTdmHost(String tdmHost) {
-		this.tdmHost = tdmHost;
-	}
 	
 	public String getQrResourceUrl() {
 		return qrResourceUrl;
@@ -66,8 +56,8 @@ public class BarcodeAction extends OneBusAwayNYCAdminActionSupport {
 	public String genBusStopCode() {
 		
 		String dimensionParam = "img-dimension=";
-		// need to call my tdm service, which generates the qr code
-		qrResourceUrl = tdmHost + "/api/barcode/getByStopId/" + String.valueOf(getBusStopId());
+		// local resource proxies the TDM request
+		qrResourceUrl = "../api/barcode/getByStopId/" + String.valueOf(getBusStopId());
 		
 		qrResourceUrl = qrResourceUrl + "?";
 		qrResourceUrl = qrResourceUrl + dimensionParam + String.valueOf(edgeDimension);
