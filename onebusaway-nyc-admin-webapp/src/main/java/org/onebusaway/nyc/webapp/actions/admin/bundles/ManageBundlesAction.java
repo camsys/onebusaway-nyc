@@ -3,6 +3,7 @@ package org.onebusaway.nyc.webapp.actions.admin.bundles;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -192,6 +193,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	
 	public String downloadOutputFile() {
 	  _log.info("downloadOutputFile with id=" + id + " and file=" + this.downloadFilename);
+	  fileService.validateFileName(downloadFilename);
 	  this.bundleBuildResponse = this.bundleRequestService.lookupBuildRequest(getId());
 	  if (this.bundleBuildResponse != null) {
 	    String s3Key = bundleBuildResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
@@ -205,6 +207,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 
 	public String downloadValidateFile() {
 	  this.bundleResponse = this.bundleRequestService.lookupValidationRequest(getId());
+	  fileService.validateFileName(downloadFilename);
 	  if (this.bundleResponse != null) {
 	    String s3Key = bundleResponse.getRemoteOutputDirectory() + File.separator + this.downloadFilename;
 	    _log.info("get request for s3Key=" + s3Key);
@@ -215,7 +218,7 @@ public class ManageBundlesAction extends OneBusAwayNYCAdminActionSupport {
 	  _log.error("validate file not found for id=" + getId());
 	  return "error";
 	}
-
+	
 	/**
 	 * @return the directoryName
 	 */

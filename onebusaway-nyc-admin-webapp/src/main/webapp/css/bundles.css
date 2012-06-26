@@ -271,6 +271,14 @@
 	height: 50px;
 }
 
+#commentBox #create_comments {
+	border: 1px transparent;
+	width: 120px;
+	height: 40px;
+	display: inline;
+	background-image:url('img/Button_background.png');
+}
+
 #uploadFiles {
 	padding-top: 20px;
 }
