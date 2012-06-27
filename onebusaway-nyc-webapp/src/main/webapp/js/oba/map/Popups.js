@@ -483,11 +483,16 @@ OBA.Popups = (function() {
 						// distance mode
 						} else {
 							if(wrapped === true) {
-								distance += " (after scheduled terminal stop)";
+								distance += " <span class='not_bold'>(+ brief scheduled layover at terminal)</span>";
 							} else if(layover === true) {
 								if(typeof monitoredVehicleJourney.OriginAimedDepartureTime !== 'undefined') {
 									var departureTime = OBA.Util.ISO8601StringToDate(monitoredVehicleJourney.OriginAimedDepartureTime);
-									distance += " (at terminal, scheduled to depart at " + departureTime.format("h:MM TT") + ")";
+
+									if(departureTime.getTime() < updateTimestampReference) {
+										distance += " <span class='not_bold'>(at terminal, scheduled departure was " + departureTime.format("h:MM TT") + ")</span>";
+									} else {
+										distance += " <span class='not_bold'>(at terminal, scheduled departure " + departureTime.format("h:MM TT") + ")</span>";
+									}
 								} else {
 									distance += " (at terminal)";
 								}

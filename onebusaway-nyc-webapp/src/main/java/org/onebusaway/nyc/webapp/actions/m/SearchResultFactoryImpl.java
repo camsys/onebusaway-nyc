@@ -17,6 +17,7 @@ package org.onebusaway.nyc.webapp.actions.m;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -348,7 +349,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("prevTrip")) {
-    	message += "after scheduled terminal stop";
+    	message += "+ brief scheduled layover at terminal";
 
     // at terminal label only appears in stop results
     } else if (isStopContext && progressStatus != null
@@ -356,7 +357,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     	if(journey.getOriginAimedDepartureTime() != null) {
     		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
     	
-    		message += "at terminal, scheduled to depart at " + formatter.format(journey.getOriginAimedDepartureTime());
+    		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
+    			message += "at terminal, scheduled departure was " + formatter.format(journey.getOriginAimedDepartureTime());
+    		} else {    			
+    			message += "at terminal, scheduled departure " + formatter.format(journey.getOriginAimedDepartureTime());
+    		}
     	} else {
     		message += "at terminal";
     	}

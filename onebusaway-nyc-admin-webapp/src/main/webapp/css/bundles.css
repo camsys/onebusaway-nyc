@@ -173,6 +173,13 @@
 	margin-right: 10px;
 }
 
+.required {
+	color: red;
+	font-weight: bold;
+	display: inline;
+	margin-left: 5px;
+}
+
 #createDirectory {
 	padding-top: 20px;
 }
@@ -271,6 +278,14 @@
 	height: 50px;
 }
 
+#commentBox #create_comments {
+	border: 1px transparent;
+	width: 120px;
+	height: 40px;
+	display: inline;
+	background-image:url('img/Button_background.png');
+}
+
 #uploadFiles {
 	padding-top: 20px;
 }
@@ -324,6 +339,10 @@
 #prevalidateInputs #validateBox #validating {
 	display: none;
 	padding: 50px;
+}
+
+#validateBox #bundleNameBox #prevalidate_bundleName {
+	display: block;
 }
 
 #prevalidateInputs #prevalidate_progress {

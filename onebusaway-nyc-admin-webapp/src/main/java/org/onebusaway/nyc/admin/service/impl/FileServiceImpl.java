@@ -388,4 +388,20 @@ public class FileServiceImpl implements FileService, ServletContextAware {
 		return key.substring(0, pos);
 	}
 	
+	@Override
+	public void validateFileName(String fileName) {
+		if(fileName.length() == 0) {
+			throw new RuntimeException("File name contains characters that could lead to directory " +
+					"traversal attack");
+		}
+		if(new File(fileName).isAbsolute()) {
+			throw new RuntimeException("File name contains characters that could lead to directory " +
+					"traversal attack");
+		}
+		if(fileName.contains("../") || fileName.contains("./")) {
+			throw new RuntimeException("File name contains characters that could lead to directory " +
+					"traversal attack");
+		}
+	}
+	
 }

@@ -1,18 +1,18 @@
 package org.onebusaway.nyc.admin.service.impl;
 
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+
 public class FileServiceImplTest {
 
-  private static Logger _log = LoggerFactory.getLogger(FileServiceImplTest.class);
   private FileServiceImpl fileService;
 
   @Before
@@ -31,7 +31,7 @@ public class FileServiceImplTest {
       public boolean createBundleDirectory(String filename) {
         return true;
       };
-
+ 
       @Override
       public List<String[]> listBundleDirectories(int maxResults) {
         ArrayList<String[]> list = new ArrayList<String[]>();
@@ -102,5 +102,18 @@ public class FileServiceImplTest {
     assertNotNull(rows);
     assertEquals(2, rows.size());
 
+  }
+  
+  @Test(expected=RuntimeException.class)
+  public void testInvalidFileName() {
+	  fileService.validateFileName("../../abc.txt");
+	  fileService.validateFileName("/home/dev/abc.txt");
+	  fileService.validateFileName("");
+	  fileService.validateFileName("./abc.txt");
+  }
+  
+  @Test
+  public void testValidFileName() {
+	  fileService.validateFileName("abc.txt");
   }
 }
