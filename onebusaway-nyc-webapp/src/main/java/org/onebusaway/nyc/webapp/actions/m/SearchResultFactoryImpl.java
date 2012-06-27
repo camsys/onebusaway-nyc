@@ -349,7 +349,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("prevTrip")) {
-    	message += "after scheduled terminal stop";
+    	message += "+ brief scheduled layover at terminal";
 
     // at terminal label only appears in stop results
     } else if (isStopContext && progressStatus != null
@@ -358,9 +358,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
     	
     		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
-    			message += "at terminal, was scheduled to depart at " + formatter.format(journey.getOriginAimedDepartureTime());
+    			message += "at terminal, scheduled departure was " + formatter.format(journey.getOriginAimedDepartureTime());
     		} else {    			
-    			message += "at terminal, is scheduled to depart at " + formatter.format(journey.getOriginAimedDepartureTime());
+    			message += "at terminal, scheduled departure " + formatter.format(journey.getOriginAimedDepartureTime());
     		}
     	} else {
     		message += "at terminal";
