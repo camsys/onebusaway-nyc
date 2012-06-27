@@ -52,13 +52,13 @@
 						<div id="bundleStartDateHolder">
 							<label id="startDateLabel" class="adminLabel">Start Date</label>
 							<label class="required">*</label>
-							<input type="text" id="startDatePicker" readonly="readonly"/>
+							<input type="text" id="startDatePicker"/>
 							<input type="hidden" id="startDate" />
 						</div>
 						<div id="bundleEndDateHolder">
 							<label id="endDateLabel" class="adminLabel">End Date</label>
 							<label class="required">*</label>
-							<input type="text" id="endDatePicker" readonly="readonly"/>
+							<input type="text" id="endDatePicker"/>
 							<input type="hidden" id="endDate" />
 						</div>
 						<input type="button" id="buildBundle_buildButton" value="Build Bundle" />

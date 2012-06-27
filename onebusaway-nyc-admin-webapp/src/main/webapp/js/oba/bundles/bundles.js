@@ -44,8 +44,11 @@ OBA.Bundles = function() {
 
 jQuery(document).ready(function() { OBA.Bundles.initialize(); });*/
 
+var timeout = null;
 
 jQuery(document).ready(function() {
+	
+	
 	//Initialize tabs
 	jQuery("#tabs").tabs();
 	
@@ -393,8 +396,6 @@ function onBuildClick() {
 		return;
 	}
 	buildBundle(bundleName, startDate, endDate);
-    bundleUrl();
-
 }
 
 function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
@@ -425,8 +426,6 @@ function validateBundleBuildFields(bundleDir, bundleName, startDate, endDate) {
 function bundleUrl() {
 	var id = jQuery("#buildBundle_id").text();
 	jQuery("#buildBundle_exception").hide();
-	jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
-	jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
 	jQuery.ajax({
 		url: "../../api/build/" + id + "/url",
 		type: "GET",
@@ -460,9 +459,16 @@ function buildBundle(bundleName, startDate, endDate){
 		success: function(response) {
 				var bundleResponse = eval(response);
 				if (bundleResponse != undefined) {
-					jQuery("#buildBundle_resultList").html("calling...");
-					jQuery("#buildBundle_id").text(bundleResponse.id);
-					window.setTimeout(updateBuildStatus, 1000);
+					//display exception message if there is any
+					if(bundleResponse.exception !=null) {
+						alert(bundleResponse.exception.message);
+					} else {
+						jQuery("#buildBundle #buildBox #buildBundle_buildButton").attr("disabled", "disabled");
+						jQuery("#buildBundle #buildBox #building").show().css("width","300px").css("margin-top", "20px");
+						jQuery("#buildBundle_resultList").html("calling...");
+						jQuery("#buildBundle_id").text(bundleResponse.id);
+						window.setTimeout(updateBuildStatus, 1000);
+					}
 				} else {
 					jQuery("#buildBundle_id").text(error);
 					jQuery("#buildBundle_resultList").html("error");
@@ -511,6 +517,7 @@ function updateBuildStatus() {
 						jQuery("#buildBundle_exception").html(bundleResponse.exception.message);
 					}
 				}
+				bundleUrl();
 		},
 		error: function(request) {
 			alert(request.statustext);

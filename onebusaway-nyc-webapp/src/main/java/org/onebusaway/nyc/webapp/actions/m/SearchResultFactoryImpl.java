@@ -349,7 +349,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
 
     if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("prevTrip")) {
-    	message += "+ brief scheduled layover at terminal";
+    	message += "+ scheduled layover at terminal";
 
     // at terminal label only appears in stop results
     } else if (isStopContext && progressStatus != null

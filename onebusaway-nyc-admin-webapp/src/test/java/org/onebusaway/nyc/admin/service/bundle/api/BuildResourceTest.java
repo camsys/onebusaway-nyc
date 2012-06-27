@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.onebusaway.nyc.admin.service.exceptions.DateValidationException;
 
 public class BuildResourceTest {
 
@@ -18,8 +19,8 @@ public class BuildResourceTest {
 	public void testInvalidDates() {
 		try {
 			buildResource.validateDates("2012-06-26", "2012-06-21");
-		} catch(RuntimeException e) {
-			assertEquals("Start date should be before end date", e.getMessage());
+		} catch(DateValidationException e) {
+			assertEquals("Start date: " + "2012-06-26" + " should be before End date: " + "2012-06-21", e.getMessage());
 		}
 	}
 	
@@ -27,19 +28,24 @@ public class BuildResourceTest {
 	public void testEmptyDates() {
 		try {
 			buildResource.validateDates("2012-06-26", " ");
-		} catch(RuntimeException e) {
-			assertEquals("Bundle end date cannot be empty", e.getMessage());
+		} catch(DateValidationException e) {
+			assertEquals("End date cannot be empty", e.getMessage());
 		}
 		try {
 			buildResource.validateDates(" ", "2012-06-25");
-		} catch(RuntimeException e) {
-			assertEquals("Bundle start date cannot be empty", e.getMessage());
+		} catch(DateValidationException e) {
+			assertEquals("Start date cannot be empty", e.getMessage());
 		}
 	}
 	
 	@Test
 	public void testValidDates() {
-		buildResource.validateDates("2012-06-21", "2012-06-26");
+		try {
+			buildResource.validateDates("2012-06-21", "2012-06-26");
+		} catch(DateValidationException e) {
+			//This should never happen
+			e.printStackTrace();
+		}
 	}
 
 }
