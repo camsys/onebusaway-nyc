@@ -150,7 +150,7 @@ public class BuildResource extends AuthenticatedResource {
 		}
 		BundleBuildResponse buildResponse = _bundleService.lookupBuildRequest(id);
 		try {
-			constructResponse(buildResponse);
+			response = constructResponse(buildResponse);
 		} catch (Exception any){
 			_log.error("exception looking up build:", any);
 			response = Response.serverError().build();
