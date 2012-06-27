@@ -218,9 +218,9 @@
 }
 
 #bustime .popup a.alert-link {
-	color: rgb(210,0,0);
+	color: rgb(225,0,0);
 	background: url("img/alert_icon.png");
-	background-position: 0 90%;
+	background-position: 0 100%;
 	background-repeat: no-repeat;
 	padding-left: 21px;
 }
