@@ -343,7 +343,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     SiriDistanceExtension distanceExtension = wrapper.getDistances();
 
     String message = "";
-    String distance = distanceExtension.getPresentableDistance();
+    String distance = "<strong>" + distanceExtension.getPresentableDistance() + "</strong>";
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 
@@ -358,9 +358,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
     	
     		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
-    			message += "at terminal, scheduled departure was " + formatter.format(journey.getOriginAimedDepartureTime());
+    			message += "at terminal, was scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
     		} else {    			
-    			message += "at terminal, scheduled departure " + formatter.format(journey.getOriginAimedDepartureTime());
+    			message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
     		}
     	} else {
     		message += "at terminal";

@@ -108,8 +108,8 @@ public class NycSiriServiceGateway extends NycSiriService {
   }
 
   @Override
-  public boolean isInputIncremental() {
-    return false;
+  public void deleteAllServiceAlerts() {
+    // noop for gateway mode
   }
-
+  
 }
