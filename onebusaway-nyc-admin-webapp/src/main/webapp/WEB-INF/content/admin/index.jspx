@@ -27,8 +27,12 @@
 <body>
 	<div id="content">
 		<div id="text">
-			<h2>Welcome Admin</h2>
-			
+			<s:if test="adminUser">
+				<h2>Welcome Admin</h2>
+			</s:if>
+			<s:else>
+				<h2>Welcome Operator</h2>
+			</s:else>
 			<ul id="indexList">
 				<li>
 					<s:url var="url" action="register-user"/>
@@ -38,10 +42,12 @@
 					<s:url var="url" action="api-key"/>
 					<s:a href="%{url}">Create API key</s:a>
 				</li>
-				<li>
-					<s:url var="url" action="manage-bundles" namespace="/admin/bundles"/>
-					<s:a href="%{url}">Transit Data Bundle Utility</s:a>
-				</li>
+				<s:if test="adminUser">
+					<li>
+						<s:url var="url" action="manage-bundles" namespace="/admin/bundles"/>
+						<s:a href="%{url}">Transit Data Bundle Utility</s:a>
+					</li>
+				</s:if>
 				<li>
 					<s:url var="url" action="barcode"></s:url>
 					<s:a href="%{url}">QR Code Generation</s:a>

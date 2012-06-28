@@ -36,7 +36,7 @@
 			<div id="createDirectoryContents">
 				<s:textfield name="directoryName" cssClass="directoryName" />
 				<input type="button" id="directoryButton" value="Create"
-					class="inlineFormButton" />
+					class="inlineFormButton" disabled="disabled"/>
 				<div id="createDirectoryResult">
 					<img id="resultImage" alt="Image not found" />
 					<div id="createDirectoryMessage">

@@ -56,8 +56,20 @@ public class OneBusAwayNYCAdminActionSupport extends NextActionSupport {
 		 return user;
 	 }
 	 
+	 /**
+	  * Checks if the current user is an anonymous user
+	  * @return true if user is an anonymous user
+	  */
 	 public boolean isAnonymousUser() {
 		 return currentUserService.isCurrentUserAnonymous();
+	 }
+	 
+	 /**
+	  * Checks if the current user is an admin user
+	  * @return true if user is an admin user
+	  */
+	 public boolean isAdminUser() {
+		 return currentUserService.isCurrentUserAdmin();
 	 }
 	  
 	/**

@@ -76,13 +76,12 @@ public class SituationExchangeResource {
   @Produces("application/xml")
   @Consumes("application/xml")
   public Response handlePost(String body) throws Exception {
-    return handleRequest(body, !INCREMENTAL);
+    return handleRequest(body);
   }
 
-  public Response handleRequest(String body, boolean incremental) throws JAXBException, Exception {
+  public Response handleRequest(String body) throws JAXBException, Exception {
     _log.info("SituationExchangeResource.handlePost");
     _log.debug("---begin body---\n" + body + "\n---end body---");
-    _log.debug("incremental: " + incremental);
 
     Unmarshaller u = jc.createUnmarshaller();
     Siri incomingSiri = (Siri) u.unmarshal(new StringReader(body));
@@ -90,7 +89,7 @@ public class SituationExchangeResource {
     ServiceDelivery delivery = incomingSiri.getServiceDelivery();
     if (delivery != null) {
       SituationExchangeResults result = new SituationExchangeResults();
-      _siriService.handleServiceDeliveries(result, delivery, incremental);
+      _siriService.handleServiceDeliveries(result, delivery);
       _log.info(result.toString());
       return Response.ok(result).build();
     }

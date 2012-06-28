@@ -56,7 +56,7 @@
 							
 							<ol class="arrivalsAtStop">
 								<c:forEach var="distanceAway" items="${distanceAways}">
-									<li><c:out value="${distanceAway}" /></li>
+									<li>${distanceAway}</li>
 								</c:forEach>
 							</ol>
 						</div>
