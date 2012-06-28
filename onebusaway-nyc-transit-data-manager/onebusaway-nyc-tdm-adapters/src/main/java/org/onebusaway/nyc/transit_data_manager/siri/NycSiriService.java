@@ -136,7 +136,8 @@ public abstract class NycSiriService {
   
   abstract public void setPersister(SiriServicePersister _siriServicePersister);
   
-  abstract public boolean isInputIncremental();
+  abstract public void deleteAllServiceAlerts();
+
 
   @PostConstruct
   public void setup() {
@@ -151,14 +152,14 @@ public abstract class NycSiriService {
   }
 
   public void handleServiceDeliveries(SituationExchangeResults result,
-      ServiceDelivery delivery, boolean incremental) throws Exception {
+      ServiceDelivery delivery) throws Exception {
     Set<String> incomingAgencies = collectAgencies(delivery);
     List<String> preAlertIds = getExistingAlertIds(incomingAgencies);
 
     for (SituationExchangeDeliveryStructure s : delivery.getSituationExchangeDelivery()) {
       SiriEndpointDetails endpointDetails = new SiriEndpointDetails();
       handleServiceDelivery(delivery, s, ESiriModuleType.SITUATION_EXCHANGE,
-          endpointDetails, result, preAlertIds, incremental);
+          endpointDetails, result, preAlertIds);
     }
     
     List<String> postAlertIds = getExistingAlertIds(incomingAgencies);
@@ -187,17 +188,17 @@ public abstract class NycSiriService {
       ServiceDelivery serviceDelivery,
       AbstractServiceDeliveryStructure deliveryForModule,
       ESiriModuleType moduleType, SiriEndpointDetails endpointDetails,
-      SituationExchangeResults result, List<String> preAlertIds, boolean incremental) {
+      SituationExchangeResults result, List<String> preAlertIds) {
 
     handleSituationExchange(serviceDelivery,
         (SituationExchangeDeliveryStructure) deliveryForModule,
-        endpointDetails, result, preAlertIds, incremental);
+        endpointDetails, result, preAlertIds);
   }
 
   
   void handleSituationExchange(ServiceDelivery serviceDelivery,
       SituationExchangeDeliveryStructure sxDelivery,
-      SiriEndpointDetails endpointDetails, SituationExchangeResults result, List<String> preAlertIds, boolean incremental) {
+      SiriEndpointDetails endpointDetails, SituationExchangeResults result, List<String> preAlertIds) {
 
     DeliveryResult deliveryResult = new DeliveryResult();
     result.getDelivery().add(deliveryResult);
@@ -207,12 +208,11 @@ public abstract class NycSiriService {
     if (situations == null)
       return;
 
-    List<String> existingIds = new ArrayList<String>(preAlertIds);
-    _log.info("Size of existing ids: " + existingIds.size());
-    
     List<ServiceAlertBean> serviceAlertsToUpdate = new ArrayList<ServiceAlertBean>();
     List<String> serviceAlertIdsToRemove = new ArrayList<String>();
 
+    deleteAllServiceAlerts();
+    
     for (PtSituationElementStructure ptSituation : situations.getPtSituationElement()) {
 
       ServiceAlertBean serviceAlertBean = getPtSituationAsServiceAlertBean(
@@ -231,16 +231,8 @@ public abstract class NycSiriService {
         serviceAlertsToUpdate.add(serviceAlertBean);
       }
       
-      existingIds.remove(serviceAlertBean.getId());
     }
 
-    _log.info("After loop, size of existing ids: " + existingIds.size());
-
-    if (!(isInputIncremental() || incremental) ) {
-      _log.info("Not incremental, adding " + existingIds.size() + " existing ids to the remove list, which currently has " + serviceAlertIdsToRemove.size());
-      serviceAlertIdsToRemove.addAll(existingIds);
-    }
-    
     String defaultAgencyId = null;
     if (!CollectionsLibrary.isEmpty(endpointDetails.getDefaultAgencyIds()))
       defaultAgencyId = endpointDetails.getDefaultAgencyIds().get(0);
@@ -613,7 +605,7 @@ public abstract class NycSiriService {
         String result = sendSubscriptionAndServiceRequest();
         Siri siri = _siriXmlSerializer.fromXml(result);
         SituationExchangeResults handleResult = new SituationExchangeResults();
-        handleServiceDeliveries(handleResult, siri.getServiceDelivery(), false);
+        handleServiceDeliveries(handleResult, siri.getServiceDelivery());
         _log.info(handleResult.toString());
       }
   
@@ -699,6 +691,5 @@ public abstract class NycSiriService {
   public void setWebResourceWrapper(WebResourceWrapper _webResourceWrapper) {
     this._webResourceWrapper = _webResourceWrapper;
   }
-
 
 }

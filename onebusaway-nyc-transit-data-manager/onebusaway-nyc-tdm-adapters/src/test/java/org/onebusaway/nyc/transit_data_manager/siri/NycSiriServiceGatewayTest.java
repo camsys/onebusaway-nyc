@@ -3,15 +3,10 @@ package org.onebusaway.nyc.transit_data_manager.siri;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,22 +22,6 @@ import uk.org.siri.siri.Siri;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
-
-  @Test
-  public void testFoo() {
-    List<String> pre = new ArrayList<String>();
-    List<String> post = new ArrayList<String>();
-    pre.add("One");
-    pre.add("Two");
-    pre.add("Three");
-    post.add("One");
-    post.add("Three");
-    Collection<String> left = CollectionUtils.subtract(pre, post);
-    assertEquals(1, left.size());
-    for (String s: left) {
-      assertEquals("Two", s);
-    }
-  }
 
   @Test
   public void testGetPtSituationAsServiceAlertBean() {
@@ -92,7 +71,7 @@ public class NycSiriServiceGatewayTest extends NycSiriServiceGateway {
     addSubscription();
     addSubscription();
 
-    handleServiceDeliveries(result, delivery, false);
+    handleServiceDeliveries(result, delivery);
 
     // for (ServiceAlertSubscription s : getActiveServiceAlertSubscriptions())
     //   verify(s).send(any(List.class), any(Collection.class));
