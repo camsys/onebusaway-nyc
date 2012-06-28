@@ -343,7 +343,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     SiriDistanceExtension distanceExtension = wrapper.getDistances();
 
     String message = "";
-    String distance = distanceExtension.getPresentableDistance();
+    String distance = "<strong>" + distanceExtension.getPresentableDistance() + "</strong>";
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 
