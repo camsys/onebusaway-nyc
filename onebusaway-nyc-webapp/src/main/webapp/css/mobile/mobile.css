@@ -375,7 +375,8 @@ small {
 	padding-left: 16px;
 	background-image: url('img/bullet_bus.png');
 	background-repeat: no-repeat;
-	background-position: center left;
+	background-position: left top;
+	line-height: 1.2em;
 }
 
 .arrivalsOnRoute,.arrivalsOnRoute li {
