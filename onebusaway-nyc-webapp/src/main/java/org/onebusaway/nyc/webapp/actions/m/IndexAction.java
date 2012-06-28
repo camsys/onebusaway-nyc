@@ -196,10 +196,11 @@ public class IndexAction extends OneBusAwayNYCActionSupport {
   }
   
   public String getQ() {
-    if((_q == null || _q.isEmpty()) && _location != null)
-      return null;
-    else
+	if(_q == null || _q.isEmpty()) {
+	  return null;
+    } else {
       return StringEscapeUtils.escapeHtml(_q.replace("&amp;", "&"));
+    }
   }
   
   public String getL() {
