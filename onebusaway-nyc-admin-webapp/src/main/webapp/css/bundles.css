@@ -309,15 +309,18 @@
 
 #uploadFiles #s3_details {
 	margin-top: 20px;
+	vertical-align: middle;
 }
 
 
 #uploadFiles #gtfs_details {
 	margin-top: 10px;
+	vertical-align: middle;
 }
 
 #uploadFiles #stif_details {
 	margin-top: 10px;
+	vertical-align: middle;
 }
 
 #gtfs_location, #stif_location, #s3_location {
