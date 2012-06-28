@@ -158,6 +158,7 @@
 	height: 30px;
 	display: inline;
 	background-image:url('img/Button_background.png');
+	color: #999;
 }
 
 .directoryLabels {
@@ -501,7 +502,7 @@
 
 #buildBundle #downloadLogs {
 	overflow: none;
-	width: 125px;
+	width: 160px;
 	margin-top: 10px;
 	border: solid 1px transparent;
 	height: 20px;

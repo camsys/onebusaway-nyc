@@ -195,6 +195,8 @@ jQuery(document).ready(function() {
 				jQuery("#createDirectoryResult #resultImage").attr("src", "../../css/img/warning_16.png");
 				jQuery("#createDirectoryMessage").text("Click Select button to load your directory")
 								.css("font-weight", "bold").css("color", "red");
+				//Enable select button
+				enableSelectButton();
 			}
 		}
 	});
@@ -229,6 +231,10 @@ jQuery(document).ready(function() {
 	//Handle build button click event
 	jQuery("#buildBundle_buildButton").click(onBuildClick);
 	
+	jQuery("#manage-bundles_directoryName").live("input", function() {
+		enableSelectButton();
+	});
+	
 });
 
 function onCreateContinueClick() {
@@ -249,6 +255,10 @@ function onPrevalidateContinueClick() {
 function onSelectClick() {
 	var bundleDir = jQuery("#manage-bundles_directoryName").val();
 	var actionName = "selectDirectory";
+	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
+		alert("Missing bundle directory");
+		return;
+	}
 	if (jQuery("#create").is(":checked")) {
 		actionName = "createDirectory";
 	}
@@ -291,6 +301,11 @@ function enableContinueButton(continueButton) {
 		.removeClass("submit_disabled").addClass("submit_enabled");	
 }
 
+function enableSelectButton() {
+	jQuery("#createDirectory #createDirectoryContents #directoryButton").removeAttr("disabled")
+	.css("color", "#666");
+}
+
 function toggleAdvancedOptions() {
 	var $image = jQuery("#createDirectory #advancedOptions #expand");
 	changeImageSrc($image);
@@ -328,6 +343,8 @@ function directoryOptionChanged() {
 	//Clear the results regardless of the selection
 	jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
 	jQuery("#manage-bundles_directoryName").val("");
+	jQuery("#createDirectory #createDirectoryContents #directoryButton").attr("disabled", "disabled")
+		.css("color", "#999");
 	
 	if(jQuery("#create").is(":checked")) {
 		//Change the button text and hide select directory list
