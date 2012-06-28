@@ -388,7 +388,7 @@ small {
 	background-repeat: no-repeat;
 	background-position: left top;
 	line-height: 120%;
-	min-height: 1%;   /* hasLayout fix for IE7 & IE8 quirks-mode */
+	zoom: 1;   /* hasLayout fix for IE7 & IE8 quirks-mode */
 }
 
 .arrivalsOnRoute,.arrivalsOnRoute li {
