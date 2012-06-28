@@ -61,16 +61,24 @@
 
   <bean id="loadGtfsTask" class="org.onebusaway.transit_data_federation.bundle.tasks.LoadGtfsTask" />
 
+  <!--  here we insert a custom task to modify the service dates to ease bundle changes -->
+  <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
+    <property name="taskName" value="modify_start_date_gtfs" />
+    <property name="afterTaskName" value="gtfs" />
+    <property name="task" ref="modifyStartDateTask" />
+  </bean>
+  
+  <bean id="modifyStartDateTask" class="org.onebusaway.nyc.admin.service.bundle.task.ModifyStartDateTask" />
   <!-- Calendar Data -->
 
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
     <property name="taskName" value="calendar_service" />
-    <property name="afterTaskName" value="gtfs" />
+    <property name="afterTaskName" value="modify_start_date_gtfs" />
     <property name="task" ref="calendarServiceTask" />
   </bean>
 
   <bean id="calendarServiceTask" class="org.onebusaway.transit_data_federation.bundle.tasks.CalendarServiceDataTask" />
-
+  
   <!-- Transit Graph -->
 
   <bean class="org.onebusaway.transit_data_federation.bundle.model.TaskDefinition">
