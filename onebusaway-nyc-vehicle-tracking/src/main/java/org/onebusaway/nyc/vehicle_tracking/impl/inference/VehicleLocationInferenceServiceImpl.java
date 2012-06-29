@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -101,6 +102,8 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   private int _numberOfProcessingThreads = 10;
 
   private int _skippedUpdateLogCounter = 0;
+
+  private boolean _bypassInference = false;
   
   private ConcurrentMap<AgencyAndId, VehicleInferenceInstance> _vehicleInstancesByVehicleId = new ConcurrentHashMap<AgencyAndId, VehicleInferenceInstance>();
 
@@ -142,14 +145,22 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
   @Override
   public void handleNycRawLocationRecord(NycRawLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
-
+    _bypassInference = false;
+    
     _executorService.execute(new ProcessingTask(record));
   }
 
   @Override
   public void handleNycTestInferredLocationRecord(NycTestInferredLocationRecord record) {
     verifyVehicleResultMappingToCurrentBundle();
+    _bypassInference = false;
 
+    _executorService.execute(new ProcessingTask(record));
+  }
+
+  @Override
+  public void handleBypassUpdateForNycTestInferredLocationRecord(NycTestInferredLocationRecord record) {
+    _bypassInference = true;
     _executorService.execute(new ProcessingTask(record));
   }
 
@@ -567,22 +578,39 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
         boolean passOnRecord = sendRecord(existing);
         if (passOnRecord) {
-          // management bean (becomes part of inference bean)
-          NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();
-          managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
-          managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
-          
-          BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
-          if (currentBundle != null) {
-            managementRecord.setActiveBundleId(currentBundle.getId());
-          }
-                    
-          // inference result bean
-          NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
-          record.setVehicleId(_vehicleId.toString());
-          record.setManagementRecord(managementRecord);
+        	
+            if(_bypassInference == true) {
+            	NycQueuedInferredLocationBean record = 
+            			RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(_nycTestInferredLocationRecord);
+            	record.setVehicleId(_vehicleId.toString());
+            	
+            	GregorianCalendar gc = new GregorianCalendar();
+            	gc.setTime(_nycTestInferredLocationRecord.getTimestampAsDate());
+            	gc.set(GregorianCalendar.HOUR_OF_DAY, 0);
+            	gc.set(GregorianCalendar.MINUTE, 0);
+            	gc.set(GregorianCalendar.SECOND, 0);
+            	record.setServiceDate(gc.getTimeInMillis());
+            	
+                _outputQueueSenderService.enqueue(record);
 
-          _outputQueueSenderService.enqueue(record);
+            } else {
+            	// management bean (becomes part of inference bean)
+            	NycVehicleManagementStatusBean managementRecord = existing.getCurrentManagementState();          
+            	managementRecord.setInferenceEngineIsPrimary(_outputQueueSenderService.getIsPrimaryInferenceInstance());
+            	managementRecord.setDepotId(_vehicleAssignmentService.getAssignedDepotForVehicleId(_vehicleId));
+          
+            	BundleItem currentBundle = _bundleManagementService.getCurrentBundleMetadata();
+            	if (currentBundle != null) {
+            		managementRecord.setActiveBundleId(currentBundle.getId());
+            	}
+                    
+            	// inference result bean
+            	NycQueuedInferredLocationBean record = existing.getCurrentStateAsNycQueuedInferredLocationBean();
+            	record.setVehicleId(_vehicleId.toString());
+            	record.setManagementRecord(managementRecord);
+                
+                _outputQueueSenderService.enqueue(record);
+            }
         }
       } catch (final ProjectionException e) {
         // discard
@@ -593,9 +621,11 @@ public class VehicleLocationInferenceServiceImpl implements VehicleLocationInfer
 
     private boolean sendRecord(VehicleInferenceInstance existing) {
       if (_inferenceRecord != null) {
-        return existing.handleUpdate(_inferenceRecord);
-      } else if (_nycTestInferredLocationRecord != null) {
-        return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
+    	 if(_bypassInference == true) {
+    	 	return existing.handleBypassUpdate(_nycTestInferredLocationRecord);
+    	 } else {
+    	    return existing.handleUpdate(_inferenceRecord);
+    	 }
       }
       
       return false;

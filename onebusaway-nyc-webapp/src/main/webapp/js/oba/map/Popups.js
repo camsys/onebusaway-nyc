@@ -494,7 +494,7 @@ OBA.Popups = (function() {
 										distance += " <span class='not_bold'>(at terminal, scheduled to depart " + departureTime.format("h:MM TT") + ")</span>";
 									}
 								} else {
-									distance += " (at terminal)";
+									distance += " <span class='not_bold'>(at terminal)</span>";
 								}
 							}
 						
