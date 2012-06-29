@@ -170,6 +170,8 @@ jQuery(document).ready(function() {
 		jQuery("#prevalidate_id").text(qs["id"]);
 		jQuery("#buildBundle_id").text(qs["id"]);
 		jQuery("#buildBundle_bundleName").val(qs["name"]);
+		jQuery("#buildBox #bundleStartDateHolder #startDatePicker").val(qs["startDate"]);
+		jQuery("#buildBox #bundleEndDateHolder #endDatePicker").val(qs["endDate"]);
 		//hide the result link when reentering from email
 		jQuery("#buildBundle_resultLink").hide();
 		// just in case set the tab
