@@ -368,7 +368,7 @@ small {
 	margin: 0;
 	padding: .3em;
 	padding-left: 20px;
-	line-height: 1.2em;
+	line-height: 1.3em;
 }
 
 .arrivalsOnRoute li {
@@ -377,8 +377,13 @@ small {
 	background-image: url('img/bullet_bus.png');
 	background-repeat: no-repeat;
 	background-position: left center;
-	line-height: 120%;
 	white-space: nowrap;
+	display: inline;
+}
+
+.arrivalsOnRoute {
+	display: inline;
+	zoom: 1;  /* hasLayout fix for IE */
 }
 
 .arrivalsAtStop li {
@@ -387,12 +392,7 @@ small {
 	background-image: url('img/bullet_bus.png');
 	background-repeat: no-repeat;
 	background-position: left top;
-	line-height: 120%;
-	zoom: 1;   /* hasLayout fix for IE7 & IE8 quirks-mode */
-}
-
-.arrivalsOnRoute,.arrivalsOnRoute li {
-	display: inline;
+	zoom: 1;   /* hasLayout fix for IE */
 }
 
 .routeList a {

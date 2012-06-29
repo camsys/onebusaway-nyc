@@ -115,7 +115,8 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
     	}
     	StringBuffer msg = new StringBuffer();
     	msg.append("Your Build Results are available at ");
-    	msg.append(getResultLink(request.getBundleName(), response.getId()));
+    	msg.append(getResultLink(request.getBundleName(), response.getId(),
+    			request.getBundleStartDateString(), request.getBundleEndDateString()));
     	String subject = "Bundle Build " + response.getId() + " complete";
     	_emailService.send(request.getEmailAddress(), from, subject, msg);
     }
@@ -124,16 +125,21 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   @Override
   public BundleBuildResponse buildBundleResultURL(String id) {
 	  BundleBuildResponse bundleResponse = this.lookupBuildRequest(id);
-	  bundleResponse.setBundleResultLink(getResultLink(bundleResponse.getBundleBuildName(), bundleResponse.getId()));
+	  bundleResponse.setBundleResultLink(getResultLink(bundleResponse.getBundleBuildName(), bundleResponse.getId(),
+			  bundleResponse.getBundleStartDate(), bundleResponse.getBundleEndDate()));
 	  return bundleResponse;
   }
   
   
-  private String getResultLink(String bundleName, String responseId) {
+  private String getResultLink(String bundleName, String responseId, String bundleStartDate,
+		  String bundleEndDate) {
 	  StringBuffer resultLink = new StringBuffer();
 	  resultLink.append(getServerURL());
 	  resultLink.append("/admin/bundles/manage-bundles.action#Build");
-	  resultLink.append("?fromEmail=true&id=" + responseId +"&name=" + bundleName);
+	  resultLink.append("?fromEmail=true&id=" + responseId);
+	  resultLink.append("&name=" + bundleName);
+	  resultLink.append("&startDate=" + bundleStartDate);
+	  resultLink.append("&endDate=" + bundleEndDate);
 	  return resultLink.toString();
   }
 
@@ -188,10 +194,14 @@ public class BundleRequestServiceImpl implements BundleRequestService, ServletCo
   public BundleBuildResponse build(BundleBuildRequest bundleRequest) {
     String id = getNextId();
     bundleRequest.setId(id);
+    
     BundleBuildResponse bundleResponse = new BundleBuildResponse(id);
     bundleResponse.setBundleBuildName(bundleRequest.getBundleName());
-	  _buildMap.put(bundleResponse.getId(), bundleResponse);
-	  bundleResponse.addStatusMessage("queueing...");
+    bundleResponse.setBundleStartDate(bundleRequest.getBundleStartDateString());
+    bundleResponse.setBundleEndDate(bundleRequest.getBundleEndDateString());
+    
+	_buildMap.put(bundleResponse.getId(), bundleResponse);
+	bundleResponse.addStatusMessage("queueing...");
     _executorService.execute(new BuildThread(bundleRequest, bundleResponse));
     return bundleResponse;
   }

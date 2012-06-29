@@ -170,6 +170,8 @@ jQuery(document).ready(function() {
 		jQuery("#prevalidate_id").text(qs["id"]);
 		jQuery("#buildBundle_id").text(qs["id"]);
 		jQuery("#buildBundle_bundleName").val(qs["name"]);
+		jQuery("#buildBox #bundleStartDateHolder #startDatePicker").val(qs["startDate"]);
+		jQuery("#buildBox #bundleEndDateHolder #endDatePicker").val(qs["endDate"]);
 		//hide the result link when reentering from email
 		jQuery("#buildBundle_resultLink").hide();
 		// just in case set the tab
@@ -231,8 +233,16 @@ jQuery(document).ready(function() {
 	//Handle build button click event
 	jQuery("#buildBundle_buildButton").click(onBuildClick);
 	
+	//Enable or disable create/select button when user enters/removes directory name
 	jQuery("#manage-bundles_directoryName").live("input", function() {
-		enableSelectButton();
+		var text = jQuery("#manage-bundles_directoryName").val();
+		if(text.length > 0) {
+			enableSelectButton();
+		} else {
+			disableSelectButton();
+			jQuery("#createDirectory #createDirectoryContents #createDirectoryResult").hide();
+			disableContinueButton(jQuery("#create_continue"));
+		}
 	});
 	
 });
@@ -255,10 +265,7 @@ function onPrevalidateContinueClick() {
 function onSelectClick() {
 	var bundleDir = jQuery("#manage-bundles_directoryName").val();
 	var actionName = "selectDirectory";
-	if (bundleDir == undefined || bundleDir == null || bundleDir == "") {
-		alert("Missing bundle directory");
-		return;
-	}
+	
 	if (jQuery("#create").is(":checked")) {
 		actionName = "createDirectory";
 	}
@@ -301,9 +308,19 @@ function enableContinueButton(continueButton) {
 		.removeClass("submit_disabled").addClass("submit_enabled");	
 }
 
+function disableContinueButton(continueButton) {
+	jQuery(continueButton).attr("disabled", "disabled")
+		.removeClass("submit_enabled").addClass("submit_disabled");	
+}
+
 function enableSelectButton() {
 	jQuery("#createDirectory #createDirectoryContents #directoryButton").removeAttr("disabled")
 	.css("color", "#666");
+}
+
+function disableSelectButton() {
+	jQuery("#createDirectory #createDirectoryContents #directoryButton").attr("disabled", "disabled")
+	.css("color", "#999");
 }
 
 function toggleAdvancedOptions() {
