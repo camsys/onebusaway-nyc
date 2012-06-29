@@ -34,6 +34,9 @@ public interface VehicleLocationInferenceService {
   public void handleNycTestInferredLocationRecord(
       NycTestInferredLocationRecord record);
 
+  public void handleBypassUpdateForNycTestInferredLocationRecord(
+		  NycTestInferredLocationRecord record);
+  
   public void handleRealtimeEnvelopeRecord(RealtimeEnvelope message);
 
   public void resetVehicleLocation(AgencyAndId vid);

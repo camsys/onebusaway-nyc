@@ -386,12 +386,11 @@ public class SimulatorTask implements Runnable, EntityHandler {
       _log.info("sending record: index=" + nextRecordIndex + " "
           + _format.format(record.getTimestampAsDate()));
 
-//      if (_bypassInference) {
-        _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
-//      } else {
-//        final NycRawLocationRecord vlr = RecordLibrary.getNycTestInferredLocationRecordAsNycRawLocationRecord(record);
-//        _vehicleLocationInferenceService.handleNycRawLocationRecord(vlr);
-//      }
+      if (_bypassInference) {
+          _vehicleLocationInferenceService.handleBypassUpdateForNycTestInferredLocationRecord(record);
+      } else {
+          _vehicleLocationInferenceService.handleNycTestInferredLocationRecord(record);
+      }
 
       if (shouldExitAfterWaitingForInferenceToComplete(record))
         ;
