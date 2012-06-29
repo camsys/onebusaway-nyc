@@ -29,6 +29,9 @@
 
 <head>
 	<title>Error</title>
+	<s:url var="url" value="/css/admin.css">
+		</s:url>
+	  <link rel="stylesheet" type="text/css" href="${url}"/>
 </head>
 <body>
 	<div id="content">

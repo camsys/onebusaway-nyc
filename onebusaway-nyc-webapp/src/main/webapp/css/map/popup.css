@@ -121,6 +121,10 @@
 	background-repeat: no-repeat;
 }
 
+.popup ul li.arrival .not_bold {
+	font-weight: normal;
+}
+
 .popup ul li.nextStop {
 	white-space: no-wrap;
 	color: #000099;
@@ -214,7 +218,11 @@
 }
 
 #bustime .popup a.alert-link {
-	color: rgb(210,0,0);
+	color: rgb(225,0,0);
+	background: url("img/alert_icon.png");
+	background-position: 0 100%;
+	background-repeat: no-repeat;
+	padding-left: 21px;
 }
 
 #bustime .popup a:HOVER.alert-link {

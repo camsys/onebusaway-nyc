@@ -158,6 +158,7 @@
 	height: 30px;
 	display: inline;
 	background-image:url('img/Button_background.png');
+	color: #999;
 }
 
 .directoryLabels {
@@ -171,6 +172,13 @@
 
 .progress {
 	margin-right: 10px;
+}
+
+.required {
+	color: red;
+	font-weight: bold;
+	display: inline;
+	margin-left: 5px;
 }
 
 #createDirectory {
@@ -301,15 +309,18 @@
 
 #uploadFiles #s3_details {
 	margin-top: 20px;
+	vertical-align: middle;
 }
 
 
 #uploadFiles #gtfs_details {
 	margin-top: 10px;
+	vertical-align: middle;
 }
 
 #uploadFiles #stif_details {
 	margin-top: 10px;
+	vertical-align: middle;
 }
 
 #gtfs_location, #stif_location, #s3_location {
@@ -332,6 +343,10 @@
 #prevalidateInputs #validateBox #validating {
 	display: none;
 	padding: 50px;
+}
+
+#validateBox #bundleNameBox #prevalidate_bundleName {
+	display: block;
 }
 
 #prevalidateInputs #prevalidate_progress {
@@ -409,7 +424,7 @@
 
 
 #buildBox #buildBundle_buildButton {
-	border: 1px, transparent;
+	border: 1px transparent;
 	width: 150px;
 	height: 40px;
 	margin-top: 15px;
@@ -490,7 +505,7 @@
 
 #buildBundle #downloadLogs {
 	overflow: none;
-	width: 125px;
+	width: 160px;
 	margin-top: 10px;
 	border: solid 1px transparent;
 	height: 20px;

@@ -343,13 +343,13 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     SiriDistanceExtension distanceExtension = wrapper.getDistances();
 
     String message = "";
-    String distance = distanceExtension.getPresentableDistance();
+    String distance = "<strong>" + distanceExtension.getPresentableDistance() + "</strong>";
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
 
     if (isStopContext && progressStatus != null
         && progressStatus.getValue().contains("prevTrip")) {
-    	message += "after scheduled terminal stop";
+    	message += "+ scheduled layover at terminal";
 
     // at terminal label only appears in stop results
     } else if (isStopContext && progressStatus != null
@@ -358,9 +358,9 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl imp
     		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
     	
     		if(journey.getOriginAimedDepartureTime().getTime() < new Date().getTime()) {
-    			message += "at terminal, was scheduled to depart at " + formatter.format(journey.getOriginAimedDepartureTime());
+    			message += "at terminal, was scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
     		} else {    			
-    			message += "at terminal, is scheduled to depart at " + formatter.format(journey.getOriginAimedDepartureTime());
+    			message += "at terminal, scheduled to depart " + formatter.format(journey.getOriginAimedDepartureTime());
     		}
     	} else {
     		message += "at terminal";

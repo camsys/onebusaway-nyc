@@ -35,7 +35,8 @@
 			</div>
 			<div id="validateBox">
 				<div id="bundleNameBox">
-					<label class="adminLabel bundleLabel">Bundle Build Name :</label> 
+					<label class="adminLabel">Bundle Build Name</label>
+					<label class="required">*</label>  
 					<input type="text" id="prevalidate_bundleName" /> 
 				</div>
 				<input type="button" id="validateButton" value="Validate"
