@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.sms.actions;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -111,10 +112,11 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
   @Override
   public SearchResult getStopResult(StopBean stopBean, Set<String> routeIdFilter) {
     List<RouteAtStop> routesAtStop = new ArrayList<RouteAtStop>();
+    boolean matchesRouteIdFilter = false;
     
     for(RouteBean routeBean : stopBean.getRoutes()) {
-      if(routeIdFilter != null && !routeIdFilter.isEmpty() && !routeIdFilter.contains(routeBean.getId())) {
-        continue;
+      if((routeIdFilter == null || routeIdFilter.isEmpty()) || routeIdFilter != null && routeIdFilter.contains(routeBean.getId())) {
+        matchesRouteIdFilter = true;
       }
     
       StopsForRouteBean stopsForRoute = _nycTransitDataService.getStopsForRoute(routeBean.getId());
@@ -157,7 +159,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
       routesAtStop.add(routeAtStop);
     }
 
-    return new StopResult(stopBean, routesAtStop);
+    return new StopResult(stopBean, routesAtStop, matchesRouteIdFilter);
   }
 
   @Override
@@ -258,7 +260,7 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     SiriDistanceExtension distanceExtension = wrapper.getDistances();    
     
     String message = "";    
-    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mi.", "mi.", "");
+    String distance = _realtimeService.getPresentationService().getPresentableDistance(distanceExtension, "arriving", "stop", "stops", "mile", "miles", "");
 
     NaturalLanguageStringStructure progressStatus = journey.getProgressStatus();
     
@@ -268,8 +270,8 @@ public class SearchResultFactoryImpl extends AbstractSearchResultFactoryImpl {
     		message += "+layover@term.";
     	} else if(progressStatus != null && progressStatus.getValue().contains("layover")) {
     	   	if(journey.getOriginAimedDepartureTime() != null) {
-        		DateFormat formatter = DateFormat.getTimeInstance(DateFormat.SHORT);
-    			message += "@term, sched. depart. " + formatter.format(journey.getOriginAimedDepartureTime());
+        		DateFormat formatter = new SimpleDateFormat("h:mm");
+        		message += "@term. sched. dep. " + formatter.format(journey.getOriginAimedDepartureTime());
         	} else {
         		message += "@term.";
         	}

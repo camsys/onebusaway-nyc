@@ -16,6 +16,7 @@
 package org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.disabled;
 
 import static org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Logic.not;
+
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.Observation;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.VehicleStateLibrary;
 import org.onebusaway.nyc.vehicle_tracking.impl.inference.rules.Context;
@@ -28,16 +29,12 @@ import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.SensorModelResult
 import org.onebusaway.realtime.api.EVehiclePhase;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-//@Component
+// @Component
 public class DeadheadDuringRule implements SensorModelRule {
-
-  private VehicleStateLibrary _vehicleStateLibrary;
 
   @Autowired
   public void setVehicleStateLibrary(VehicleStateLibrary vehicleStateLibrary) {
-    _vehicleStateLibrary = vehicleStateLibrary;
   }
 
   @Override
@@ -63,31 +60,33 @@ public class DeadheadDuringRule implements SensorModelRule {
     final double pMoved = not(SensorModelSupportLibrary.computeVehicleHasNotMovedProbability(
         state.getMotionState(), obs));
 
-    result.addResultAsAnd(
-        "DEADHEAD_DURING <=> Vehicle has moved", pMoved);
+    result.addResultAsAnd("DEADHEAD_DURING <=> Vehicle has moved", pMoved);
 
-//    /**
-//     * Rule: DEADHEAD_DURING => not right on block
-//     */
-//    final double pDistanceFromBlock = library.computeDeadheadDistanceFromBlockProbability(
-//        obs, blockState);
-//    result.addResultAsAnd("DEADHEAD_DURING => not right on block",
-//        pDistanceFromBlock);
+    // /**
+    // * Rule: DEADHEAD_DURING => not right on block
+    // */
+    // final double pDistanceFromBlock =
+    // library.computeDeadheadDistanceFromBlockProbability(
+    // obs, blockState);
+    // result.addResultAsAnd("DEADHEAD_DURING => not right on block",
+    // pDistanceFromBlock);
 
-//    /**
-//     * Rule: DEADHEAD_DURING => resume block on time
-//     */
-//    final double pStartBlockOnTime = library.computeStartOrResumeBlockOnTimeProbability(
-//        state, obs);
-//    result.addResultAsAnd("DEADHEAD_DURING => resume block on time",
-//        pStartBlockOnTime);
+    // /**
+    // * Rule: DEADHEAD_DURING => resume block on time
+    // */
+    // final double pStartBlockOnTime =
+    // library.computeStartOrResumeBlockOnTimeProbability(
+    // state, obs);
+    // result.addResultAsAnd("DEADHEAD_DURING => resume block on time",
+    // pStartBlockOnTime);
 
-//    /**
-//     * Rule: DEADHEAD_DURING => served some part of block
-//     */
-//    final double pServedSomePartOfBlock = library.computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
-//    result.addResultAsAnd("DEADHEAD_DURING => served some part of block",
-//        pServedSomePartOfBlock);
+    // /**
+    // * Rule: DEADHEAD_DURING => served some part of block
+    // */
+    // final double pServedSomePartOfBlock =
+    // library.computeProbabilityOfServingSomePartOfBlock(state.getBlockState());
+    // result.addResultAsAnd("DEADHEAD_DURING => served some part of block",
+    // pServedSomePartOfBlock);
 
     return result;
   }

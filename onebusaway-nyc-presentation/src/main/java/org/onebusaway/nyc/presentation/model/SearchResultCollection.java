@@ -18,6 +18,10 @@ public class SearchResultCollection implements Serializable {
 
   private Set<String> _routeIdFilter = new HashSet<String>();
   
+  private Double _queryLat = null;
+  
+  private Double _queryLon = null;
+  
   public void addMatch(SearchResult thing) throws IllegalArgumentException {
     if(_resultType == null) { 
       _resultType = thing.getClass();
@@ -71,5 +75,21 @@ public class SearchResultCollection implements Serializable {
       return _resultType.getSimpleName();
     else
       return null;
-  }  
+  }
+
+  public Double getQueryLat() {
+    return _queryLat;
+  }
+
+  public void setQueryLat(Double queryLat) {
+    this._queryLat = queryLat;
+  }
+
+  public Double getQueryLon() {
+    return _queryLon;
+  }
+
+  public void setQueryLon(Double queryLon) {
+    this._queryLon = queryLon;
+  }
 }

@@ -24,9 +24,19 @@ public final class JourneyState {
 
   private final JourneyStartState data;
 
+  private final boolean isDetour;
+
+  private JourneyState(EVehiclePhase phase, boolean isDetour,
+      JourneyStartState data) {
+    this.phase = phase;
+    this.data = data;
+    this.isDetour = isDetour;
+  }
+
   private JourneyState(EVehiclePhase phase, JourneyStartState data) {
     this.phase = phase;
     this.data = data;
+    this.isDetour = false;
   }
 
   public EVehiclePhase getPhase() {
@@ -59,13 +69,12 @@ public final class JourneyState {
     return new JourneyState(EVehiclePhase.IN_PROGRESS, null);
   }
 
-  public static JourneyState layoverDuring() {
-    return new JourneyState(EVehiclePhase.LAYOVER_DURING, null);
+  public static JourneyState layoverDuring(boolean isDetour) {
+    return new JourneyState(EVehiclePhase.LAYOVER_DURING, isDetour, null);
   }
 
-  public static JourneyState deadheadDuring(CoordinatePoint journeyStart) {
-    final JourneyStartState jss = new JourneyStartState(journeyStart);
-    return new JourneyState(EVehiclePhase.DEADHEAD_DURING, jss);
+  public static JourneyState deadheadDuring(boolean isDetour) {
+    return new JourneyState(EVehiclePhase.DEADHEAD_DURING, isDetour, null);
   }
 
   public static JourneyState deadheadAfter() {
@@ -102,6 +111,10 @@ public final class JourneyState {
     if (phase != other.phase)
       return false;
     return true;
+  }
+
+  public boolean isDetour() {
+    return this.isDetour;
   }
 
 }

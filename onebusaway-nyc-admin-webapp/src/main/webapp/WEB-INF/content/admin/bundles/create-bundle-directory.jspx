@@ -34,7 +34,7 @@
 					Directory</label>
 			</div>
 			<div id="createDirectoryContents">
-				<s:textfield name="directoryName" cssClass="directoryName" />
+				<input type="text" id="directoryName" class="directoryName" />
 				<input type="button" id="directoryButton" value="Create"
 					class="inlineFormButton" disabled="disabled"/>
 				<div id="createDirectoryResult">

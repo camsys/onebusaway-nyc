@@ -15,6 +15,8 @@
  */
 package org.onebusaway.nyc.integration_tests.vehicle_tracking_webapp.cases;
 
+import org.onebusaway.realtime.api.EVehiclePhase;
+
 /**
  * 
  * Block # 12888412 with a first trip of 20101024EE_040000_B63_0089_B63_11.
@@ -31,5 +33,7 @@ public class Trace_7564_20101206T005551_IntegrationTest extends AbstractTraceRun
   public Trace_7564_20101206T005551_IntegrationTest() throws Exception {
     super("7564-2010-12-06T00-55-51.csv.gz");
     setBundle("b63-winter10", "2010-12-20T00:00:00EDT");
+    setMinAccuracyRatioForPhase(EVehiclePhase.IN_PROGRESS, 0.92);
+    setMinAccuracyRatioForPhase(EVehiclePhase.LAYOVER_DURING, 0.90);
   }
 }

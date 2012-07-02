@@ -71,7 +71,7 @@
 					</div>
 					<div id="buildBundle_resultLink">
 						<label class="adminLabel">Result Link :</label>
-						<label id="resultLink"></label>
+						<label id="resultLink"><!-- For IE --><s:property value="" /></label>
 					</div>
 				</div>
 			</div>

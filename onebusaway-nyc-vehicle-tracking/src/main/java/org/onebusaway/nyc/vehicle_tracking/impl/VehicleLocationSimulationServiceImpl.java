@@ -176,9 +176,8 @@ public class VehicleLocationSimulationServiceImpl implements
   public int simulateLocationsFromTrace(String filename, String traceType,
       InputStream traceInputStream, boolean runInRealtime,
       boolean pauseOnStart, boolean shiftStartTime, int minimumRecordInterval,
-      boolean bypassInference, boolean fillActualProperties, boolean loop, 
-      int historySize)
-      throws IOException {
+      boolean bypassInference, boolean fillActualProperties, boolean loop,
+      int historySize) throws IOException {
 
     final SimulatorTask task = new SimulatorTask();
     task.setFilename(filename);
@@ -234,19 +233,21 @@ public class VehicleLocationSimulationServiceImpl implements
   }
 
   @Override
-  public VehicleLocationDetails getParticleDetails(int taskId, int particleId, int recordIndex) {
+  public VehicleLocationDetails getParticleDetails(int taskId, int particleId,
+      int recordIndex) {
     final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
       return task.getParticleDetails(particleId, recordIndex);
     return null;
   }
-  
+
   @Override
-  public VehicleLocationDetails getTransitionParticleDetails(int taskId, int particleId, int transParticleNum,
-      int recordIndex) {
+  public VehicleLocationDetails getTransitionParticleDetails(int taskId,
+      int particleId, int transParticleNum, int recordIndex) {
     final SimulatorTask task = _tasks.get(taskId);
     if (task != null)
-      return task.getTransitionParticleDetails(particleId, transParticleNum, recordIndex);
+      return task.getTransitionParticleDetails(particleId, transParticleNum,
+          recordIndex);
     return null;
   }
 
@@ -805,34 +806,6 @@ public class VehicleLocationSimulationServiceImpl implements
   private String generateBlockServiceDateTag(AgencyAndId blockId,
       long serviceDate) {
     return blockId.toString() + "-" + serviceDate;
-  }
-
-  /****
-   * Simulation Property Methods
-   ****/
-  /*
-   * These correspond to the centrality of the current run.
-   */
-  private List<Double> getRunTransitionParams(Properties properties) {
-
-    final List<Double> transitionParams = new ArrayList<Double>();
-
-    final String raw = properties.getProperty(ARG_RUN_TRANSITION_PARAMS);
-
-    for (final String token : raw.split(",")) {
-
-      final String[] kvp = token.split("=");
-
-      if (kvp.length != 1)
-        throw new IllegalArgumentException("invalid run-transition params: "
-            + raw);
-
-      final double param = Double.parseDouble(kvp[0]);
-
-      transitionParams.add(param);
-    }
-
-    return transitionParams;
   }
 
   private int getShiftStartTimeProperty(Properties properties) {
