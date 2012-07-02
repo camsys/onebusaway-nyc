@@ -15,6 +15,15 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.simulator;
 
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.onebusaway.csv_entities.EntityHandler;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.nyc.vehicle_tracking.impl.particlefilter.Particle;
@@ -24,27 +33,14 @@ import org.onebusaway.nyc.vehicle_tracking.model.library.RecordLibrary;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationDetails;
 import org.onebusaway.nyc.vehicle_tracking.model.simulator.VehicleLocationSimulationSummary;
 import org.onebusaway.nyc.vehicle_tracking.services.inference.VehicleLocationInferenceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.TreeMultiset;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.text.DateFormat;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class SimulatorTask implements Runnable, EntityHandler {
 
@@ -58,7 +54,6 @@ public class SimulatorTask implements Runnable, EntityHandler {
 
   private final List<NycTestInferredLocationRecord> _results = new ArrayList<NycTestInferredLocationRecord>();
 
-//  private final Deque<VehicleLocationDetails> _details = new ArrayDeque<VehicleLocationDetails>();
   private final List<VehicleLocationDetails> _details = new ArrayList<VehicleLocationDetails>();
 
   private final AtomicInteger _recordsProcessed = new AtomicInteger();

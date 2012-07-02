@@ -15,15 +15,20 @@
  */
 package org.onebusaway.nyc.vehicle_tracking.impl.inference;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 import org.onebusaway.geospatial.model.CoordinatePoint;
 import org.onebusaway.geospatial.services.SphericalGeometryLibrary;
 import org.onebusaway.gtfs.model.AgencyAndId;
 import org.onebusaway.gtfs.model.calendar.ServiceDate;
 import org.onebusaway.nyc.transit_data.model.NycQueuedInferredLocationBean;
 import org.onebusaway.nyc.transit_data.model.NycVehicleManagementStatusBean;
-
 import org.onebusaway.nyc.transit_data_federation.bundle.tasks.stif.model.RunTripEntry;
-import org.onebusaway.nyc.transit_data_federation.impl.tdm.DummyOperatorAssignmentServiceImpl;
 import org.onebusaway.nyc.transit_data_federation.model.tdm.OperatorAssignmentItem;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.BaseLocationService;
 import org.onebusaway.nyc.transit_data_federation.services.nyc.DestinationSignCodeService;
@@ -52,24 +57,15 @@ import org.onebusaway.transit_data_federation.services.transit_graph.BlockConfig
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.BlockTripEntry;
 import org.onebusaway.transit_data_federation.services.transit_graph.TripEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.collect.TreeMultiset;
-
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class VehicleInferenceInstance {
 
@@ -87,8 +83,6 @@ public class VehicleInferenceInstance {
   private OperatorAssignmentService _operatorAssignmentService;
 
   private RunService _runService;
-
-  private long _optionalResetWindow = 10 * 60 * 1000;
 
   private long _automaticResetWindow = 20 * 60 * 1000;
 
@@ -141,16 +135,6 @@ public class VehicleInferenceInstance {
 
   /**
    * If we haven't received a GPS update in the specified window, the inference
-   * engine is reset only if the DSC has changed since the last update
-   * 
-   * @param optionalResetWindow
-   */
-  public void setOptionalResetWindow(long optionalResetWindow) {
-    _optionalResetWindow = optionalResetWindow;
-  }
-
-  /**
-   * If we haven't received a GPS update in the specified window, the inference
    * engine is reset no matter what
    * 
    * @param automaticResetWindow
@@ -189,9 +173,9 @@ public class VehicleInferenceInstance {
        * simply ignore the out-of-order record
        */
       if (backInTime > 5 * 60 * 1000) {
+        _log.info("resetting filter: time diff");
         _previousObservation = null;
         _particleFilter.reset();
-        _log.info("resetting filter: time diff");
       } else {
         _log.info("out-of-order record.  skipping update.");
         return false;
@@ -210,11 +194,7 @@ public class VehicleInferenceInstance {
        * back in time as well
        */
       final long delta = Math.abs(timestamp - _previousObservation.getTime());
-
       final NycRawLocationRecord lastRecord = _previousObservation.getRecord();
-
-//      final boolean dscChange = !ObjectUtils.equals(
-//          lastRecord.getDestinationSignCode(), record.getDestinationSignCode());
 
       reportedRunIdChange = !StringUtils.equals(lastRecord.getRunId(),
           record.getRunId());
@@ -223,7 +203,6 @@ public class VehicleInferenceInstance {
           record.getOperatorId());
 
       if (delta > _automaticResetWindow) {
-//          || (dscChange && delta > _optionalResetWindow)) {
         _log.info("resetting inference for vid=" + record.getVehicleId()
             + " since it's been " + (delta / 1000)
             + " seconds since the previous update");
@@ -427,7 +406,6 @@ public class VehicleInferenceInstance {
   /****
    * Service methods
    */
-
   public synchronized NycQueuedInferredLocationBean getCurrentStateAsNycQueuedInferredLocationBean() {
     final NycTestInferredLocationRecord tilr = getCurrentState();
     final NycQueuedInferredLocationBean record = RecordLibrary.getNycTestInferredLocationRecordAsNycQueuedInferredLocationBean(tilr);
@@ -449,7 +427,7 @@ public class VehicleInferenceInstance {
       // set sched. dev. if we have a match in UTS and are therefore comfortable
       // saying that this schedule deviation is a true match to the schedule.
       if (blockState.isRunFormal()) {
-        int deviation = //blockState.getScheduleDeviation(); 
+        int deviation = 
             (int)((record.getRecordTimestamp() - record.getServiceDate()) / 1000 - blockLocation.getScheduledTime());
 
         record.setScheduleDeviation(deviation);
@@ -466,7 +444,6 @@ public class VehicleInferenceInstance {
     return record;
   }
   
-
   public synchronized NycVehicleManagementStatusBean getCurrentManagementState() {
     final NycVehicleManagementStatusBean record = new NycVehicleManagementStatusBean();
 
@@ -644,8 +621,7 @@ public class VehicleInferenceInstance {
     return new RunResults(opAssignedRunId, fuzzyMatches, bestFuzzyDistance, routeIds);
   }
 
- 
-  private NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
+  private synchronized NycTestInferredLocationRecord getMostRecentParticleAsNycTestInferredLocationRecord() {
     Particle particle = _particleFilter.getMostLikelyParticle();
     if (particle == null)
       return null;
@@ -690,7 +666,7 @@ public class VehicleInferenceInstance {
 
       // formality match exposed to TDS
       if(blockState.isRunFormal()) {
-        statusFields.add("blockLevelInference");
+        statusFields.add("blockInf");
       }
 
       final BlockInstance blockInstance = blockState.getBlockState().getBlockInstance();

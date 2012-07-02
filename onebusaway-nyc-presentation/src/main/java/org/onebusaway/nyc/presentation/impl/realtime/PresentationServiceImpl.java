@@ -63,7 +63,7 @@ public class PresentationServiceImpl implements PresentationService {
       String status = statusBean.getStatus();
 
       if(status != null)
-        return status.contains("blockLevelInference");
+        return status.contains("blockInf");
       else
         return false;
     }
